@@ -2649,6 +2649,8 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     readFontJson(): string;
     // @internal (undocumented)
+    reattachDaemon(_requestContext: AuthorizedClientRequestContext): Promise<void>;
+    // @internal (undocumented)
     reinstateTxn(): IModelStatus;
     get relationships(): Relationships;
     // (undocumented)
@@ -4201,6 +4203,8 @@ export class SnapshotDb extends IModelDb {
     static findByKey(key: string): SnapshotDb;
     // (undocumented)
     get isSnapshot(): boolean;
+    // @beta (undocumented)
+    get isV2Checkpoint(): boolean;
     // @internal
     static openCheckpointV1(fileName: string, checkpoint: CheckpointProps): SnapshotDb;
     // @internal
@@ -4755,7 +4759,10 @@ export class V1CheckpointManager {
 // @internal
 export class V2CheckpointManager {
     // (undocumented)
-    static attach(checkpoint: CheckpointProps): Promise<string>;
+    static attach(checkpoint: CheckpointProps): Promise<{
+        filePath: string;
+        expiryTimestamp: number;
+    }>;
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
     }
 
