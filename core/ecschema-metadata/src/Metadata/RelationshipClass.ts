@@ -294,8 +294,10 @@ export class RelationshipConstraint implements CustomAttributeContainerProps {
 
     const loadEachConstraint = (constraintClassName: any) => {
       const tempConstraintClass = relClassSchema.lookupItemSync<AnyConstraintClass>(constraintClassName);
-      if (!tempConstraintClass)
+      if (!tempConstraintClass) {
+        console.log("here", constraintClassName);
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      }
       return tempConstraintClass;
     };
 

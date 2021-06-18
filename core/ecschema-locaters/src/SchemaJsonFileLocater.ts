@@ -101,4 +101,52 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     const schema = Schema.fromJsonSync(schemaText, context);
     return schema as T;
   }
+
+  public async getLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
+    // Grab all schema files that match the schema key
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
+    if (!candidates || candidates.length === 0)
+      return undefined;
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
+    const schemaPath = maxCandidate.fileName;
+
+    // Load the file
+    if (!await this.fileExists(schemaPath))
+      return undefined;
+
+    const schemaText = await this.readUtf8FileToString(schemaPath);
+    if (!schemaText)
+      return undefined;
+
+    this.addSchemaSearchPaths([path.dirname(schemaPath)]);
+
+    const schema = await Schema.fromJsonLoadingSchema(schemaText, context);
+    return schema as T;
+  }
+
+  public getLoadingSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
+    // Grab all schema files that match the schema key
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
+    if (!candidates || candidates.length === 0)
+      return undefined;
+
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
+    const schemaPath = maxCandidate.fileName;
+
+    // Load the file
+    if (!fs.existsSync(schemaPath))
+      return undefined;
+
+    const schemaText = fs.readFileSync(schemaPath, "utf-8");
+    if (!schemaText)
+      return undefined;
+
+    this.addSchemaSearchPaths([path.dirname(schemaPath)]);
+
+    const schema = Schema.fromJsonLoadingSchemaSync(schemaText, context);
+    return schema as T;
+  }
 }

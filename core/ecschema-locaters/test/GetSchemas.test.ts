@@ -37,13 +37,15 @@ describe("Concurrent schema accesses", () => {
     });
   });
 
-  it("should correctly deserialize schemas concurrently", async () => {
+  it.only("should correctly deserialize schemas concurrently", async () => {
     // Asynchronous
     const asyncSchemas: Schema[] = [];
     await Promise.all(schemaKeys.map(async (key) => {
       if (!key)
         return;
+      console.log(`Starting retrieval ${key.name}`);
       const schema = await context1.getSchema(key, SchemaMatchType.Latest);
+      console.log(`Finished retrieval ${key.name}`);
       if (!schema)
         return;
       asyncSchemas.push(schema);

@@ -73,24 +73,28 @@ export class SchemaReadHelper<T = unknown> {
     this._schema = schema;
 
     const cachedSchema = await this._context.getCachedSchema<U>(schema.schemaKey);
-    if (cachedSchema) {
+    if (cachedSchema)
       return cachedSchema;
-    }
 
-    // Need to add this schema to the context to be able to locate schemaItems within the context.
-    await this._context.addSchema(schema, this.loadSchema(schema));
-    // Await loading the schema and all it's references
-    await this._context.getSchema<U>(schema.schemaKey);
-
-    return schema;
-  }
-
-  private async loadSchema<U extends Schema>(schema: U): Promise<U> {
+    console.log(`Here, read Schema ${schema.name}`);
     // Load schema references first
     // Need to figure out if other schemas are present.
     for (const reference of this._parser.getReferences()) {
       await this.loadSchemaReference(reference);
     }
+
+    const cachedLoadingSchema = await this._context.getCachedLoadingSchema(schema.schemaKey);
+    if (!cachedLoadingSchema)
+      await this._context.addLoadingSchema(schema, this.loadSchema(schema));
+
+    // Await loading the rest of the schema
+    const loadedSchema = await this._context.getSchema<U>(schema.schemaKey);
+
+    return loadedSchema!;
+  }
+
+  private async loadSchema<U extends Schema>(schema: U): Promise<U> {
+    console.log(`Loading schema ${schema.name}`);
 
     if (this._visitorHelper)
       await this._visitorHelper.visitSchema(schema, false);
@@ -129,14 +133,14 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
-    // Need to add this schema to the context to be able to locate schemaItems within the context.
-    this._context.addSchemaSync(schema);
-
     // Load schema references first
     // Need to figure out if other schemas are present.
     for (const reference of this._parser.getReferences()) {
       this.loadSchemaReferenceSync(reference);
     }
+
+    // Need to add this schema to the context to be able to locate schemaItems within the context.
+    this._context.addSchemaSync(schema);
 
     if (this._visitorHelper)
       this._visitorHelper.visitSchemaSync(schema, false);
@@ -162,13 +166,74 @@ export class SchemaReadHelper<T = unknown> {
     return schema;
   }
 
+  public async readLoadingSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U> {
+    // Ensure context matches schema context
+    if (schema.context) {
+      if (this._context !== schema.context)
+        throw new ECObjectsError(ECObjectsStatus.DifferentSchemaContexts, "The SchemaContext of the schema must be the same SchemaContext held by the SchemaReadHelper.");
+    } else {
+      (schema as Schema as MutableSchema).setContext(this._context);
+    }
+
+    this._parser = new this._parserType(rawSchema);
+
+    // Load the schemas attributes but not the items or references of the schema
+    await schema.fromJSON(this._parser.parseSchema());
+
+    this._schema = schema;
+
+    console.log(`Here2, read loading Schema ${schema.name}`);
+    const cachedSchema = await this._context.getCachedSchema<U>(schema.schemaKey);
+    if (cachedSchema)
+      return cachedSchema;
+
+    // Load schema references first
+    // Need to figure out if other schemas are present.
+    for (const reference of this._parser.getReferences()) {
+      await this.loadSchemaReference(reference);
+    }
+
+    const cachedLoadingSchema = await this._context.getCachedLoadingSchema<U>(schema.schemaKey);
+    if (cachedLoadingSchema)
+      return cachedLoadingSchema;
+
+    await this._context.addLoadingSchema(schema, this.loadSchema(schema));
+
+    return schema;
+  }
+
+  public readLoadingSchemaSync<U extends Schema>(schema: U, rawSchema: T): U {
+    this._parser = new this._parserType(rawSchema);
+
+    // Loads all of the properties on the Schema object
+    schema.fromJSONSync(this._parser.parseSchema());
+
+    this._schema = schema;
+
+    // Load schema references first
+    // Need to figure out if other schemas are present.
+    for (const reference of this._parser.getReferences()) {
+      this.loadSchemaReferenceSync(reference);
+    }
+
+    const cachedLoadingSchema = this._context.getCachedLoadingSchemaSync<U>(schema.schemaKey);
+    if (cachedLoadingSchema)
+      return cachedLoadingSchema;
+
+    this._context.addLoadingSchemaSync(schema, this.loadSchema(schema));
+
+    return schema;
+  }
+
   /**
    * Ensures that the schema references can be located and adds them to the schema.
    * @param ref The object to read the SchemaReference's props from.
    */
   private async loadSchemaReference(ref: SchemaReferenceProps): Promise<void> {
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
-    const refSchema = await this._context.getLoadedOrLoadingSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
+    console.log(`Schema ${this._schema!.name} referencing ${ref.name}`);
+    const refSchema = await this._context.getLoadingSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
+    console.log(`Got here, Finished schema ${this._schema!.name} referencing ${ref.name}`);
     if (undefined === refSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
@@ -183,6 +248,8 @@ export class SchemaReadHelper<T = unknown> {
     if (errorMessage) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `${errorMessage}`);
     }
+
+    // await this._context.getSchema(schemaKey);
   }
 
   /**
@@ -191,7 +258,7 @@ export class SchemaReadHelper<T = unknown> {
    */
   private loadSchemaReferenceSync(ref: SchemaReferenceProps): void {
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
-    const refSchema = this._context.getLoadedOrLoadingSchemaSync(schemaKey, SchemaMatchType.LatestWriteCompatible);
+    const refSchema = this._context.getSchemaSync(schemaKey, SchemaMatchType.LatestWriteCompatible);
     if (!refSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
@@ -202,6 +269,7 @@ export class SchemaReadHelper<T = unknown> {
     for (const diagnostic of diagnostics) {
       errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
     }
+
     if (errorMessage) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `${errorMessage}`);
     }

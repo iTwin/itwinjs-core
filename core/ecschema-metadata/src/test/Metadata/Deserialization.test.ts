@@ -16,7 +16,7 @@ import { NavigationProperty } from "../../Metadata/Property";
 import { Schema } from "../../Metadata/Schema";
 import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
 import { XmlParser } from "../../Deserialization/XmlParser";
-import { deserializeXml, deserializeXmlSync, ReferenceSchemaLocater } from "../TestUtils/DeserializationHelpers";
+import { deserializeXml, deserializeXmlSync, deserializeXmlLoadingSchema, deserializeXmlLoadingSchemaSync, ReferenceSchemaLocater } from "../TestUtils/DeserializationHelpers";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -206,7 +206,7 @@ describe("Full Schema Deserialization", () => {
           },
         ],
       };
-      const locater = new ReferenceSchemaLocater(Schema.fromJsonSync);
+      const locater = new ReferenceSchemaLocater(Schema.fromJsonSync, Schema.fromJsonLoadingSchemaSync);
       locater.addSchema("RefSchemaA", schemaAJson);
       locater.addSchema("RefSchemaB", schemaBJson);
 
@@ -223,7 +223,7 @@ describe("Full Schema Deserialization", () => {
       await expect(Schema.fromJson(json, context)).to.be.rejectedWith(ECObjectsError, `ECObjects-3: Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB\r\n`);
     });
 
-    it("should throw for cyclic references (async)", async () => {
+    it.only("should throw for cyclic references (async)", async () => {
       const context = new SchemaContext();
 
       const schemaAJson = {
@@ -246,7 +246,7 @@ describe("Full Schema Deserialization", () => {
           },
         ],
       };
-      const locater = new ReferenceSchemaLocater(Schema.fromJson);
+      const locater = new ReferenceSchemaLocater(Schema.fromJson, Schema.fromJsonLoadingSchema);
       locater.addSchema("RefSchemaA", schemaAJson);
       locater.addSchema("RefSchemaB", schemaBJson);
 
@@ -260,6 +260,7 @@ describe("Full Schema Deserialization", () => {
           { name: "RefSchemaB", version: "2.0.0" },
         ],
       };
+      locater.addSchema("TestSchema", json);
       await expect(Schema.fromJson(json, context)).to.be.rejectedWith(ECObjectsError, `ECObjects-3: Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB\r\n`);
 
       const context2 = new SchemaContext();
@@ -313,7 +314,7 @@ describe("Full Schema Deserialization", () => {
         ],
       };
 
-      const locater2 = new ReferenceSchemaLocater(Schema.fromJson);
+      const locater2 = new ReferenceSchemaLocater(Schema.fromJson, Schema.fromJsonLoadingSchema);
       locater2.addSchema("RefSchemaC", schemaCJson);
       locater2.addSchema("RefSchemaD", schemaDJson);
       locater2.addSchema("RefSchemaE", schemaEJson);
@@ -381,7 +382,7 @@ describe("Full Schema Deserialization", () => {
         alias: "d",
       };
 
-      const locater = new ReferenceSchemaLocater(Schema.fromJsonSync);
+      const locater = new ReferenceSchemaLocater(Schema.fromJsonSync, Schema.fromJsonLoadingSchemaSync);
       locater.addSchema("RefSchemaA", schemaAJson);
       locater.addSchema("RefSchemaB", schemaBJson);
       locater.addSchema("RefSchemaC", schemaCJson);
@@ -414,7 +415,7 @@ describe("Full Schema Deserialization", () => {
         <ECSchemaReference name="TestSchema" version="01.02.03" alias="test"/>
       </ECSchema>`;
 
-      const locater = new ReferenceSchemaLocater(deserializeXmlSync);
+      const locater = new ReferenceSchemaLocater(deserializeXmlSync, deserializeXmlLoadingSchemaSync);
       locater.addSchema("RefSchemaA", schemaAXml);
       locater.addSchema("RefSchemaB", schemaBXml);
 
@@ -443,7 +444,7 @@ describe("Full Schema Deserialization", () => {
         <ECSchemaReference name="TestSchema" version="01.02.03" alias="test"/>
       </ECSchema>`;
 
-      const locater = new ReferenceSchemaLocater(deserializeXml);
+      const locater = new ReferenceSchemaLocater(deserializeXml, deserializeXmlLoadingSchema);
       locater.addSchema("RefSchemaA", schemaAXml);
       locater.addSchema("RefSchemaB", schemaBXml);
 
@@ -483,7 +484,7 @@ describe("Full Schema Deserialization", () => {
         <ECSchemaReference name="RefSchemaC" version="01.00.00" alias="c"/>
       </ECSchema>`;
 
-      const locater2 = new ReferenceSchemaLocater(deserializeXmlSync);
+      const locater2 = new ReferenceSchemaLocater(deserializeXmlSync, deserializeXmlLoadingSchemaSync);
       locater2.addSchema("RefSchemaC", schemaCXml);
       locater2.addSchema("RefSchemaD", schemaDXml);
       locater2.addSchema("RefSchemaE", schemaEXml);
@@ -526,7 +527,7 @@ describe("Full Schema Deserialization", () => {
       <ECSchema schemaName="RefSchemaD" alias="d" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
       </ECSchema>`;
 
-      const locater = new ReferenceSchemaLocater(deserializeXmlSync);
+      const locater = new ReferenceSchemaLocater(deserializeXmlSync, deserializeXmlLoadingSchemaSync);
       locater.addSchema("RefSchemaA", schemaAXml);
       locater.addSchema("RefSchemaB", schemaBXml);
       locater.addSchema("RefSchemaC", schemaCXml);
