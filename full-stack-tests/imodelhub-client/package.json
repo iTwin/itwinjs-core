@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client-tests",
-  "version": "2.18.0-dev.8",
+  "version": "2.18.0-dev.9",
   "main": "lib/imodelhub-client-tests.js",
   "description": "Tests the iModelHub client",
   "license": "MIT",

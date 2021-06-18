@@ -14,16 +14,17 @@ import {
   assert, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, PerfLogger,
   WSStatus,
 } from "@bentley/bentleyjs-core";
-import { ChangesType, IModelHubError } from "@bentley/imodelhub-client";
+import { IModelHubError } from "@bentley/imodelhub-client";
 import {
-  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
+  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps,
+  RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
+import { ChangesetFileProps, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetType } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
-import { ChangesetFileProps, ChangesetId, ChangesetIndex } from "./BackendHubAccess";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -31,7 +32,7 @@ import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
-/** The Id assigned to a briefcase by iModelHub, or a [[BriefcaseIdValue]] that identify special kinds of iModels.
+/** The Id assigned to a briefcase by iModelHub, or [[BriefcaseIdValue.Unassigned]] .
  * @public
  */
 export type BriefcaseId = number;
@@ -213,7 +214,7 @@ export class BriefcaseManager {
         requestContext,
         contextId: request.contextId,
         iModelId: request.iModelId,
-        changeSetId: (await this.changesetFromVersion(requestContext, IModelVersion.fromJSON(asOf), request.iModelId)).changesetId,
+        changeSetId: (await this.changesetFromVersion(requestContext, IModelVersion.fromJSON(asOf), request.iModelId)).id,
       },
       onProgress: request.onProgress,
     };
@@ -380,80 +381,65 @@ export class BriefcaseManager {
   }
 
   /** @internal */
-  public static async changesetFromVersion(requestContext: AuthorizedClientRequestContext, version: IModelVersion, iModelId: string): Promise<{ changesetId: ChangesetId, changesetIndex: ChangesetIndex }> {
-    const changesetId = await IModelHost.hubAccess.getChangesetIdFromVersion({ requestContext, iModelId, version });
-    const changesetIndex = await IModelHost.hubAccess.getChangesetIndexFromId({ requestContext, iModelId, changesetId });
-    requestContext.enter();
-    return { changesetId, changesetIndex };
+  public static async changesetFromVersion(requestContext: AuthorizedClientRequestContext, version: IModelVersion, iModelId: string): Promise<ChangesetProps> {
+    return IModelHost.hubAccess.getChangesetFromVersion({ requestContext, iModelId, version });
   }
 
   /** Processes (merges, reverses, reinstates) change sets to get the briefcase to the specified target version.
    * Note: The briefcase must have been opened ReadWrite, and the method keeps it in the same state.
    * @internal
    */
-  public static async processChangesets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex?: number): Promise<void> {
-    requestContext.enter();
-
+  public static async processChangesets(requestContext: AuthorizedClientRequestContext, db: IModelDb, target: ChangesetIndexOrId): Promise<void> {
     if (!db.isOpen || db.nativeDb.isReadonly()) // don't use db.isReadonly - we reopen the file writable just for this operation but db.isReadonly is still true
       throw new IModelError(ChangeSetStatus.ApplyError, "Briefcase must be open ReadWrite to process change sets");
 
-    if (undefined === targetChangeSetIndex)
-      targetChangeSetIndex = await IModelHost.hubAccess.getChangesetIndexFromId({ requestContext, iModelId: db.iModelId, changesetId: targetChangeSetId });
+    const targetIndex = target.index ?? (await IModelHost.hubAccess.queryChangeset({ requestContext, changeset: target, iModelId: db.iModelId })).index;
     const parentChangeSetId = db.nativeDb.getParentChangeSetId();
-    const parentChangeSetIndex = await IModelHost.hubAccess.getChangesetIndexFromId({ requestContext, iModelId: db.iModelId, changesetId: parentChangeSetId });
+    const parentChangeSetIndex = (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: db.iModelId, changeset: { id: parentChangeSetId } })).index;
     requestContext.enter();
 
     // Determine the reinstates, reversals or merges required
-    let reverseToId: string | undefined, reinstateToId: string | undefined, mergeToId: string | undefined;
     let reverseToIndex: number | undefined, reinstateToIndex: number | undefined, mergeToIndex: number | undefined;
     const reversedChangeSetId = db.nativeDb.getReversedChangeSetId();
     if (undefined !== reversedChangeSetId) {
-      const reversedChangeSetIndex = await IModelHost.hubAccess.getChangesetIndexFromId({ requestContext, iModelId: db.iModelId, changesetId: reversedChangeSetId });
-      if (targetChangeSetIndex < reversedChangeSetIndex) {
-        reverseToId = targetChangeSetId;
-        reverseToIndex = targetChangeSetIndex;
-      } else if (targetChangeSetIndex > reversedChangeSetIndex) {
-        reinstateToId = targetChangeSetId;
-        reinstateToIndex = targetChangeSetIndex;
-        if (targetChangeSetIndex > parentChangeSetIndex) {
-          reinstateToId = parentChangeSetId;
+      const reversedChangeSetIndex = (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: db.iModelId, changeset: { id: reversedChangeSetId } })).index;
+      if (targetIndex < reversedChangeSetIndex) {
+        reverseToIndex = targetIndex;
+      } else if (targetIndex > reversedChangeSetIndex) {
+        reinstateToIndex = targetIndex;
+        if (targetIndex > parentChangeSetIndex) {
           reinstateToIndex = parentChangeSetIndex;
-          mergeToId = targetChangeSetId;
-          mergeToIndex = targetChangeSetIndex;
+          mergeToIndex = targetIndex;
         }
       }
     } else {
-      if (targetChangeSetIndex < parentChangeSetIndex) {
-        reverseToId = targetChangeSetId;
-        reverseToIndex = targetChangeSetIndex;
-      } else if (targetChangeSetIndex > parentChangeSetIndex) {
-        mergeToId = targetChangeSetId;
-        mergeToIndex = targetChangeSetIndex;
+      if (targetIndex < parentChangeSetIndex) {
+        reverseToIndex = targetIndex;
+      } else if (targetIndex > parentChangeSetIndex) {
+        mergeToIndex = targetIndex;
       }
     }
-    if (typeof reverseToId === "undefined" && typeof reinstateToId === "undefined" && typeof mergeToId === "undefined")
-      return;
 
     // Reverse, reinstate and merge as necessary
-    const perfLogger = new PerfLogger("Processing change sets", () => ({ ...db.getRpcProps(), targetChangeSetId, targetChangeSetIndex }));
+    const perfLogger = new PerfLogger("Processing change sets", () => ({ ...db.getRpcProps(), targetIndex }));
     try {
-      if (typeof reverseToId !== "undefined") {
-        Logger.logTrace(loggerCategory, "Started reversing changes to the briefcase", () => ({ reverseToId, ...db.getRpcProps() }));
-        await BriefcaseManager.applyChangesets(requestContext, db, reverseToId, reverseToIndex!, ChangeSetApplyOption.Reverse);
+      if (typeof reverseToIndex !== "undefined") {
+        Logger.logTrace(loggerCategory, "Started reversing changes to the briefcase", () => ({ ...db.getRpcProps() }));
+        await BriefcaseManager.applyChangesets(requestContext, db, reverseToIndex, ChangeSetApplyOption.Reverse);
         requestContext.enter();
-        Logger.logTrace(loggerCategory, "Finished reversing changes to the briefcase", () => ({ reverseToId, ...db.getRpcProps() }));
+        Logger.logTrace(loggerCategory, "Finished reversing changes to the briefcase", () => ({ ...db.getRpcProps() }));
       }
-      if (typeof reinstateToId !== "undefined") {
-        Logger.logTrace(loggerCategory, "Started reinstating changes to the briefcase", () => ({ reinstateToId, ...db.getRpcProps() }));
-        await BriefcaseManager.applyChangesets(requestContext, db, reinstateToId, reinstateToIndex!, ChangeSetApplyOption.Reinstate);
+      if (typeof reinstateToIndex !== "undefined") {
+        Logger.logTrace(loggerCategory, "Started reinstating changes to the briefcase", () => ({ ...db.getRpcProps() }));
+        await BriefcaseManager.applyChangesets(requestContext, db, reinstateToIndex, ChangeSetApplyOption.Reinstate);
         requestContext.enter();
-        Logger.logTrace(loggerCategory, "Finished reinstating changes to the briefcase", () => ({ reinstateToId, ...db.getRpcProps() }));
+        Logger.logTrace(loggerCategory, "Finished reinstating changes to the briefcase", () => ({ ...db.getRpcProps() }));
       }
-      if (typeof mergeToId !== "undefined") {
-        Logger.logTrace(loggerCategory, "BriefcaseManager.processChangeSets: Started merging changes to the briefcase", () => ({ mergeToId, ...db.getRpcProps() }));
-        await BriefcaseManager.applyChangesets(requestContext, db, mergeToId, mergeToIndex!, ChangeSetApplyOption.Merge);
+      if (typeof mergeToIndex !== "undefined") {
+        Logger.logTrace(loggerCategory, "BriefcaseManager.processChangeSets: Started merging changes to the briefcase", () => ({ ...db.getRpcProps() }));
+        await BriefcaseManager.applyChangesets(requestContext, db, mergeToIndex, ChangeSetApplyOption.Merge);
         requestContext.enter();
-        Logger.logTrace(loggerCategory, "BriefcaseManager.processChangeSets: Finished merging changes to the briefcase", () => ({ mergeToId, ...db.getRpcProps() }));
+        Logger.logTrace(loggerCategory, "BriefcaseManager.processChangeSets: Finished merging changes to the briefcase", () => ({ ...db.getRpcProps() }));
       }
     } finally {
       perfLogger.dispose();
@@ -464,11 +450,8 @@ export class BriefcaseManager {
     return db.nativeDb.applyChangeSet(changeSet, processOption);
   }
 
-  private static async applyChangesets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetId: string, targetChangeSetIndex: number, processOption: ChangeSetApplyOption): Promise<void> {
-    requestContext.enter();
-
-    const currentChangeSetId = db.changeSetId!;
-    const currentChangeSetIndex = await IModelHost.hubAccess.getChangesetIndexFromId({ requestContext, iModelId: db.iModelId, changesetId: currentChangeSetId });
+  private static async applyChangesets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetIndex: number, processOption: ChangeSetApplyOption): Promise<void> {
+    const currentChangeSetIndex = (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: db.iModelId, changeset: { id: db.changeSetId! } })).index;
     if (targetChangeSetIndex === currentChangeSetIndex)
       return; // nothing to apply
 
@@ -477,7 +460,8 @@ export class BriefcaseManager {
     // Download change sets
     const changeSets = await IModelHost.hubAccess.downloadChangesets({
       requestContext, iModelId: db.iModelId,
-      range: { after: reverse ? targetChangeSetId : currentChangeSetId, end: reverse ? currentChangeSetId : targetChangeSetId },
+      range: { first: reverse ? targetChangeSetIndex + 1 : currentChangeSetIndex + 1, end: reverse ? currentChangeSetIndex : targetChangeSetIndex },
+      targetDir: BriefcaseManager.getChangeSetsPath(db.iModelId),
     });
     requestContext.enter();
     assert(changeSets.length <= Math.abs(targetChangeSetIndex - currentChangeSetIndex));
@@ -500,14 +484,14 @@ export class BriefcaseManager {
     if (db.openMode === OpenMode.Readonly)
       throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse changes in a ReadOnly briefcase");
 
-    const { changesetId: targetChangeSetId, changesetIndex: targetChangeSetIndex } = await BriefcaseManager.changesetFromVersion(requestContext, reverseToVersion, db.iModelId);
-    const currentChangeSetIndex = await IModelHost.hubAccess.getChangesetIndexFromId({ requestContext, iModelId: db.iModelId, changesetId: db.changeSetId });
+    const request = await BriefcaseManager.changesetFromVersion(requestContext, reverseToVersion, db.iModelId);
+    const currentChangeSetIndex = (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: db.iModelId, changeset: { id: db.changeSetId } })).index;
 
     requestContext.enter();
-    if (targetChangeSetIndex > currentChangeSetIndex)
+    if (request.index > currentChangeSetIndex)
       throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reverse to a later version");
 
-    return BriefcaseManager.processChangesets(requestContext, db, targetChangeSetId, targetChangeSetIndex);
+    return BriefcaseManager.processChangesets(requestContext, db, request);
   }
 
   /**
@@ -519,15 +503,14 @@ export class BriefcaseManager {
     if (db.openMode === OpenMode.Readonly)
       throw new IModelError(ChangeSetStatus.ApplyError, "Cannot reinstate changes in a ReadOnly briefcase");
 
-    const targetVersion: IModelVersion = reinstateToVersion || IModelVersion.asOfChangeSet(db.nativeDb.getParentChangeSetId());
-
-    const { changesetId: targetChangeSetId, changesetIndex: targetChangeSetIndex } = await BriefcaseManager.changesetFromVersion(requestContext, targetVersion, db.iModelId);
+    const targetVersion = reinstateToVersion || IModelVersion.asOfChangeSet(db.nativeDb.getParentChangeSetId());
+    const target = await BriefcaseManager.changesetFromVersion(requestContext, targetVersion, db.iModelId);
     requestContext.enter();
-    const currentChangeSetIndex = await IModelHost.hubAccess.getChangesetIndexFromId({ requestContext, iModelId: db.iModelId, changesetId: db.changeSetId });
-    if (targetChangeSetIndex < currentChangeSetIndex)
+    const currentChangeSetIndex = (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: db.iModelId, changeset: { id: db.changeSetId } })).index;
+    if (target.index < currentChangeSetIndex)
       throw new IModelError(ChangeSetStatus.ApplyError, "Can reinstate only to a later version");
 
-    return BriefcaseManager.processChangesets(requestContext, db, targetChangeSetId, targetChangeSetIndex);
+    return BriefcaseManager.processChangesets(requestContext, db, target);
   }
 
   /** Pull and merge changes from iModelHub
@@ -539,11 +522,11 @@ export class BriefcaseManager {
   public static async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, mergeToVersion: IModelVersion = IModelVersion.latest()): Promise<void> {
     requestContext.enter();
 
-    const { changesetId: targetChangeSetId, changesetIndex: targetChangeSetIndex } = await BriefcaseManager.changesetFromVersion(requestContext, mergeToVersion, db.iModelId);
+    const target = await BriefcaseManager.changesetFromVersion(requestContext, mergeToVersion, db.iModelId);
 
-    let currentChangeSetIndex: number;
+    let currentChangeSetIndex: ChangesetIndex;
     try {
-      currentChangeSetIndex = await IModelHost.hubAccess.getChangesetIndexFromId({ requestContext, iModelId: db.iModelId, changesetId: db.changeSetId });
+      currentChangeSetIndex = (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: db.iModelId, changeset: { id: db.changeSetId } })).index;
       requestContext.enter();
     } catch (error) {
       requestContext.enter();
@@ -553,27 +536,30 @@ export class BriefcaseManager {
       throw error;
     }
 
-    if (targetChangeSetIndex < currentChangeSetIndex)
+    if (target.index < currentChangeSetIndex)
       throw new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge");
 
     // await BriefcaseManager.updatePendingChangeSets(requestContext, db);
     // requestContext.enter();
 
-    return BriefcaseManager.processChangesets(requestContext, db, targetChangeSetId, targetChangeSetIndex);
+    return BriefcaseManager.processChangesets(requestContext, db, target);
   }
 
   /** Attempt to push a ChangeSet to iModelHub */
-  private static async pushChangeset(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesType, releaseLocks: boolean): Promise<void> {
+  private static async pushChangeset(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesetType, releaseLocks: boolean): Promise<void> {
     requestContext.enter();
 
     const changesetProps = db.nativeDb.startCreateChangeSet() as ChangesetFileProps;
     changesetProps.briefcaseId = db.briefcaseId;
-    changesetProps.changesType = changesetProps.changesType === ChangesType.Schema ? ChangesType.Schema : changeType;
+    changesetProps.changesType = changesetProps.changesType === ChangesetType.Schema ? ChangesetType.Schema : changeType;
     changesetProps.description = description;
     changesetProps.size = IModelJsFs.lstatSync(changesetProps.pathname)!.size;
 
     try {
-      await IModelHost.hubAccess.pushChangeset({ requestContext, iModelId: db.iModelId, changesetProps, releaseLocks });
+      const csIndex = await IModelHost.hubAccess.pushChangeset({ requestContext, iModelId: db.iModelId, changesetProps });
+      if (releaseLocks) {
+        await IModelHost.hubAccess.releaseAllLocks({ requestContext, iModelId: db.iModelId, briefcaseId: db.briefcaseId, csIndex });
+      }
       requestContext.enter();
     } catch (error) {
       requestContext.enter();
@@ -590,7 +576,7 @@ export class BriefcaseManager {
   }
 
   /** Attempt to pull merge and push once */
-  private static async pushChangesOnce(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesType, relinquishCodesLocks: boolean): Promise<void> {
+  private static async pushChangesOnce(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesetType, relinquishCodesLocks: boolean): Promise<void> {
     await BriefcaseManager.pullAndMergeChanges(requestContext, db, IModelVersion.latest());
     requestContext.enter();
 
@@ -625,7 +611,7 @@ export class BriefcaseManager {
    * @param relinquishCodesLocks release locks held and codes reserved (but not used) after pushing?
    * @internal
    */
-  public static async pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesType = ChangesType.Regular, relinquishCodesLocks: boolean = true): Promise<void> {
+  public static async pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType: ChangesetType = ChangesetType.Regular, relinquishCodesLocks: boolean = true): Promise<void> {
     requestContext.enter();
 
     const retryCount = 5;
