@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Add ability to clone Format and to add property setters. This allows a user to synchronously tweak a format in the frontend.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

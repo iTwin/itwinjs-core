@@ -8168,6 +8168,7 @@ export abstract class RenderSystem implements IDisposable {
     get supportsLogZBuffer(): boolean;
     // @internal (undocumented)
     get supportsNonuniformScaledInstancing(): boolean;
+    waitForAllExternalTextures(): Promise<void>;
 }
 
 // @public
