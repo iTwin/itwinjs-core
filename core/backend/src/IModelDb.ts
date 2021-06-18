@@ -2205,11 +2205,9 @@ export class BriefcaseDb extends IModelDb {
     super.saveChanges(description);
   }
 
-  /**
-   * Upgrades the profile or domain schemas and returns the new change set id
-   */
+  /** Upgrades the profile or domain schemas */
   private static async upgradeProfileOrDomainSchemas(arg: { requestContext: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps, upgradeOptions: UpgradeOptions, description: string }): Promise<void> {
-    const lockArg = { ...arg, ...arg.briefcase };
+    const lockArg = { ...arg, ...arg.briefcase, csIndex: 0 };
     const requestContext = arg.requestContext;
     // Lock schemas
     await IModelHost.hubAccess.acquireSchemaLock(lockArg);
@@ -2357,7 +2355,7 @@ export class BriefcaseDb extends IModelDb {
 
     await this.concurrencyControl.onPushChanges(requestContext);
 
-    await BriefcaseManager.pushChanges(requestContext, this, description, changeType);
+    await BriefcaseManager.pushChanges(requestContext, this, description, changeType as number);
     requestContext.enter();
     this.changeSetId = this.nativeDb.getParentChangeSetId();
     this.initializeIModelDb();
