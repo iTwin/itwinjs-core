@@ -5,22 +5,28 @@
 import { assert, expect } from "chai";
 import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
-import {
-  GraphicType, IModelApp, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
-} from "@bentley/imodeljs-frontend";
-import {
-  DisplayParams, Geometry, Mesh, MeshBuilder, PolyfacePrimitive, PolyfacePrimitiveList, PrimitiveBuilder, StrokesPrimitiveList,
-  StrokesPrimitivePointLists, ToleranceRatio, Triangle,
-} from "@bentley/imodeljs-frontend/lib/render-primitives";
+import { GraphicType } from "../../../render/GraphicBuilder";
+import { IModelApp } from "../../../IModelApp";
+import { MockRender } from "../../../render/MockRender";
+import { ScreenViewport } from "../../../Viewport";
+import { SpatialViewState } from "../../../SpatialViewState";
+import { DisplayParams } from "../../../render/primitives/DisplayParams";
+import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
+import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
+import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
+import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
+import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
+import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
+import { IModelConnection } from "../../../imodeljs-frontend";
+import { createBlankConnection } from "../../createBlankConnection";
+import { MeshBuilder } from "../../../render-primitives";
 
-export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
+class FakeDisplayParams extends DisplayParams {
+  public constructor() {
+    super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black);
+  }
 }
 
-/**
- * MESH BUILDER TESTS
- * tests all paths for each public method
- */
 describe("Mesh Builder Tests", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
@@ -32,9 +38,8 @@ describe("Mesh Builder Tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     await MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    spatialView = await imodel.views.load("0x34") as SpatialViewState;
-    spatialView.setStandardRotation(StandardViewId.RightIso);
+    imodel = createBlankConnection();
+    spatialView = SpatialViewState.createBlank(imodel, new Point3d(0, 0, 0), new Point3d(1, 1, 1));
   });
 
   after(async () => {
