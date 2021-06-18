@@ -155,7 +155,7 @@ export class ChangeSummaryManager {
     let startChangeSetId = "";
     if (options) {
       if (options.startVersion) {
-        startChangeSetId = await IModelHost.hubAccess.getChangesetIdFromVersion({ version: options.startVersion, requestContext, iModelId: ctx.iModelId });
+        startChangeSetId = (await IModelHost.hubAccess.getChangesetFromVersion({ version: options.startVersion, requestContext, iModelId: ctx.iModelId })).id;
         requestContext.enter();
       } else if (options.currentVersionOnly) {
         startChangeSetId = endChangeSetId;
@@ -258,13 +258,11 @@ export class ChangeSummaryManager {
   }
 
   /** @internal */
-  public static async downloadChangesets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, first: ChangesetId, end: ChangesetId): Promise<ChangesetFileProps[]> {
-    requestContext.enter();
-
-    const changeSetInfos = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: ctx.iModelId, range: { first, end } });
-    requestContext.enter();
-    assert(first === "" || first === changeSetInfos[0].id);
-    assert(end === changeSetInfos[changeSetInfos.length - 1].id);
+  public static async downloadChangesets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, firstId: ChangesetId, endId: ChangesetId): Promise<ChangesetFileProps[]> {
+    const iModelId = ctx.iModelId;
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstId }, requestContext })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: endId }, requestContext })).index;
+    const changeSetInfos = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
     return changeSetInfos;
   }
 
