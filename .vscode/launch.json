@@ -775,8 +775,12 @@
       "program": "${workspaceFolder}/presentation/testing/node_modules/mocha/bin/_mocha",
       "args": [
         "--config",
-        ".mocharc.json",
+        "../.mocharc.json",
         "--no-timeouts",
+        "-r",
+        "ignore-styles",
+        "-r",
+        "jsdom-global/register",
         "lib/test/**/*.test.js"
       ],
       "outFiles": [
@@ -1004,6 +1008,22 @@
       "args": [
         "--input=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/proj.ibim",
         "--script=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
+      ]
+    },
+    {
+      "name": "Webpack Plugin Tests",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/tools/webpack-core",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
       ]
     },
     // TEST APPS
