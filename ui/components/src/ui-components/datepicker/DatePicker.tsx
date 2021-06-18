@@ -45,7 +45,6 @@ function isSameDay(a: Date, b: Date) {
  * ```
  * @param inDateTime date/time at project location
  * @param utcOffset UTC offset for project location in minutes.
- *
  * @alpha
  */
 export function adjustDateToTimezone(inDateTime: Date, utcOffset: number) {
