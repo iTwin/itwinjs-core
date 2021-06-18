@@ -10,16 +10,36 @@ import * as child_process from "child_process";
 const execSync = child_process.execSync;
 let args = "";
 let browser = "";
-let isWindows = true;
+const isWindows = true;
 for (let i = 2; i < process.argv.length; i++) {
   const curArg = process.argv[i];
-  if (curArg === "nonwin") {
-    isWindows = false;
-    break;
+  switch (curArg) {
+    case "chrome_nonwinos":
+      browser = "chrome";
+      args += `${browser} `;
+      break;
+    case "edge_nonwinos":
+      browser = "chrome";
+      args += `${browser} `;
+      break;
+    case "firefox_nonwinos":
+      browser = "firefox";
+      args += `${browser} `;
+      break;
+    case "safari_nonwinos":
+      browser = "safari";
+      args += `${browser} `;
+      break;
+    case "chrome":
+    case "edge":
+    case "firefox":
+    case "safari":
+      browser = curArg;
+    // eslint-disable-next-line no-fallthrough
+    default:
+      args += `${curArg} `;
+      break;
   }
-  args += `${curArg} `;
-  if (curArg === "chrome" || curArg === "edge" || curArg === "firefox" || curArg === "safari")
-    browser = curArg;
 }
 execSync(`npm run start:web ${args}`, { stdio: [0, 1, 2] });
 
