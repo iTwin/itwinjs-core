@@ -572,9 +572,10 @@ export class BriefcaseManager {
     changesetProps.description = description;
     changesetProps.size = IModelJsFs.lstatSync(changesetProps.pathname)!.size;
 
-    // Refresh the access token since consolidation of the change set may have taken a significant time
-    // Note: pushChanges should never be called through RPC - it's only to be called in Agents and IPC applications
-    requestContext.accessToken = await IModelHost.authorizationClient?.getAccessToken(requestContext) ?? requestContext.accessToken;
+    // Refresh the access token since startCreateChangeSet may have taken significant time
+    const token = await IModelHost.getAccessToken();
+    if (token)
+      requestContext.accessToken = token;
 
     try {
       await IModelHost.hubAccess.pushChangeset({ requestContext, iModelId: db.iModelId, changesetProps, releaseLocks });
