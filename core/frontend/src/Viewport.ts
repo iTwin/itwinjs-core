@@ -1010,8 +1010,12 @@ export abstract class Viewport implements IDisposable {
       this._analysisFractionValid = false;
       IModelApp.requestNextAnimation();
     };
+    const analysisStyleChanged = () => {
+      this.invalidateRenderPlan();
+      analysisChanged();
+    };
     removals.push(settings.onAnalysisFractionChanged.addListener(analysisChanged));
-    removals.push(settings.onAnalysisStyleChanged.addListener(analysisChanged));
+    removals.push(settings.onAnalysisStyleChanged.addListener(analysisStyleChanged));
 
     const scheduleChanged = () => {
       this._timePointValid = false;

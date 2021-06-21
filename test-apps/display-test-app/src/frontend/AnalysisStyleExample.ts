@@ -236,11 +236,34 @@ export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
     if (type !== decorator.mesh.type) {
       decorator.dispose();
       decorator = new AnalysisDecorator(viewer.viewport, meshes[meshPicker.selectedIndex]);
+      populateStylePicker();
     }
   };
 
-  for (const style of decorator.mesh.styles.values()) {
+  const stylePicker = document.createElement("select");
+  stylePicker.className = "viewList";
+  viewer.toolBar.element.appendChild(stylePicker);
+  stylePicker.onchange = () => {
+    viewer.viewport.displayStyle.settings.analysisStyle = decorator.mesh.styles.get(stylePicker.value);
+    viewer.viewport.invalidateDecorations();
+  };
+
+  function populateStylePicker(): void {
+    while (stylePicker.firstChild)
+      stylePicker.removeChild(stylePicker.firstChild);
+
+    let style = undefined;
+    for (const name of decorator.mesh.styles.keys()) {
+      if (!style)
+        style = decorator.mesh.styles.get(name);
+
+      const option = document.createElement("option");
+      option.innerText = option.value = name;
+      stylePicker.appendChild(option);
+    }
+
     viewer.viewport.displayStyle.settings.analysisStyle = style;
-    break;
   }
+
+  populateStylePicker();
 }
