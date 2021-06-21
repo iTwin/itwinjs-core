@@ -394,7 +394,7 @@ export class PolyfaceData {
     if (this.normal && !transform.matrix.isIdentity)
       this.normal.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(transform.matrix);
 
-    return undefined === this.auxData || this.auxData.transformInPlace(transform);
+    return undefined === this.auxData || this.auxData.tryTransformInPlace(transform);
   }
   /**
    * * Search for duplication of coordinates within points, normals, and params.

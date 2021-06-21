@@ -188,7 +188,7 @@ export class PolyfaceAuxData {
    * @note This method may fail if a channel of [[AuxChannelDataType.Normal]] exists and `transform.matrix` is non-invertible.
    * @returns true if the channels were all successfully transformed.
    */
-  public transformInPlace(transform: Transform): boolean {
+  public tryTransformInPlace(transform: Transform): boolean {
     let inverseRot: Matrix3d | undefined;
     const rot = transform.matrix;
     const det = rot.determinant();

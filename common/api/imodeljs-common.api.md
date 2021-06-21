@@ -5218,6 +5218,7 @@ export class OctEncodedNormal {
     decode(): Vector3d;
     static decodeValue(val: number, result?: Vector3d): Vector3d;
     static encode(vec: XYAndZ): number;
+    static encodeXYZ(nx: number, ny: number, nz: number): number;
     static fromVector(val: XYAndZ): OctEncodedNormal;
     readonly value: number;
 }

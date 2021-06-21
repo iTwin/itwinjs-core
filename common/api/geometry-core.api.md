@@ -4047,6 +4047,7 @@ export class PolyfaceAuxData {
     indices: number[];
     isAlmostEqual(other: PolyfaceAuxData, tol?: number): boolean;
     static isAlmostEqual(left: PolyfaceAuxData | undefined, right: PolyfaceAuxData | undefined, tol?: number): boolean;
+    tryTransformInPlace(transform: Transform): boolean;
 }
 
 // @public

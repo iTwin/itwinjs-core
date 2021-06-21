@@ -12046,6 +12046,8 @@ export abstract class Viewport implements IDisposable {
     addTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     addViewedModels(models: Id64Arg): Promise<void>;
     get alwaysDrawn(): Id64Set | undefined;
+    get analysisFraction(): number;
+    set analysisFraction(fraction: number);
     // @internal (undocumented)
     get analysisFractionValid(): boolean;
     get antialiasSamples(): number;
