@@ -589,13 +589,13 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       const terrainSettings = this.backgroundMapSettings.terrainSettings;
       switch (terrainSettings.heightOriginMode) {
         case TerrainHeightOriginMode.Ground:
-          return (undefined ===  this.iModel.altitudeProvider.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.altitudeProvider.projectCenterAltitude;
+          return (undefined ===  this.iModel.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
 
         case TerrainHeightOriginMode.Geodetic:
           return terrainSettings.heightOrigin;
 
         case TerrainHeightOriginMode.Geoid:
-          return (undefined === this.iModel.altitudeProvider.geodeticToSeaLevel) ? undefined : terrainSettings.heightOrigin + this.iModel.altitudeProvider.geodeticToSeaLevel;
+          return (undefined === this.iModel.geodeticToSeaLevel) ? undefined : terrainSettings.heightOrigin + this.iModel.geodeticToSeaLevel;
       }
     } else {
       return this.backgroundMapSettings.groundBias;

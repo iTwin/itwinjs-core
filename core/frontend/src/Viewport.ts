@@ -974,6 +974,9 @@ export abstract class Viewport implements IDisposable {
       removals.push(view.details.onModelClipGroupsChanged.addListener(() => {
         this.invalidateScene();
       }));
+      removals.push(this.iModel.onMapElevationLoaded.addListener((_iModel: IModelConnection) => {
+        this.synchWithView();
+      }));
     }
   }
 
