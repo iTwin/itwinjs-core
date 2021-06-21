@@ -140,7 +140,7 @@ export class Surface {
       click: () => {
         this.openBlankConnection({
           name: "Analysis Style Example",
-          extents: new Range3d(-5, -5, -1, 5, 5, 1),
+          extents: new Range3d(0, 0, -20, 100, 100, 20),
         }).then((viewer) => openAnalysisStyleExample(viewer));
       },
     }));
