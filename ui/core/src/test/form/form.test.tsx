@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import { FieldDefinitions, FieldValues, Form } from "../../ui-core";
-import TestUtils from "../TestUtils";
+import TestUtils, { handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";
 
 describe("<Form />", () => {
 
@@ -20,6 +20,8 @@ describe("<Form />", () => {
   });
 
   afterEach(cleanup);
+
+  stubScrollIntoView();
 
   /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -49,6 +51,14 @@ describe("<Form />", () => {
       editor: "dropdown",
       value: "one",
       options: ["one", "two", "three", "four"],
+    },
+    PickList2: {
+      label: "pickList2",
+      editor: "dropdown",
+      value: 1,
+      options: {
+        1: "apple", 2: "pear", 3: "orange", 4: "grape",
+      },
     },
   };
 
@@ -103,11 +113,13 @@ describe("<Form />", () => {
     expect(lockInput.value).to.be.eq("on");
     fireEvent.click(lockInput); // associated lock value should be false
 
-    const pickList = form.container.querySelector("select#PickList") as HTMLSelectElement;
+    const pickList = form.container.querySelector(".iui-select#PickList") as HTMLSelectElement;
     expect(pickList).not.to.be.null;
-    expect(pickList.value).to.be.eq("one");
-    fireEvent.change(pickList, { target: { value: "four" } });
-    expect(pickList.value).to.be.eq("four");
+    selectChangeValueByText(pickList, "four", handleError);
+
+    const pickList2 = form.container.querySelector(".iui-select#PickList2") as HTMLSelectElement;
+    expect(pickList2).not.to.be.null;
+    selectChangeValueByText(pickList2, "grape", handleError);
 
     const button = form.container.querySelector("button") as HTMLButtonElement;
     expect(submitProcessed).to.be.eq(false);

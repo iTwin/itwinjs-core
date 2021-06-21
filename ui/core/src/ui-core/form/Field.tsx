@@ -7,9 +7,8 @@
  */
 
 import * as React from "react";
-import { Checkbox, Input, Textarea } from "@itwin/itwinui-react";
+import { Checkbox, Input, Select, SelectOption, Textarea } from "@itwin/itwinui-react";
 import { FieldDef, FormContext, FormContextState } from "./Form";
-import { Select } from "../select/Select";
 
 // cSpell:ignore multilinetextbox
 
@@ -21,7 +20,7 @@ export interface FieldProps extends FieldDef {
   id: string;
 }
 
-// type FieldDefOptions = FieldDef["options"];
+type FieldDefOptions = FieldDef["options"];
 
 /** Component that represents a single field in an input form. Only four type of editors are supported. Field gets/sets state data from/to the context control by the form.
  * @beta
@@ -31,25 +30,24 @@ export class Field extends React.Component<FieldProps> {
     super(props);
   }
 
-  // NEEDSWORK: Can change to iTwinUI-react Select component once the `id` prop is supported
-  // private _generateSelectOptions = (propOptions: FieldDefOptions): SelectOption<string>[] => {
-  //   const selectOptions: SelectOption<string>[] = [];
-  //   if (propOptions instanceof Array) {
-  //     propOptions.map((option: string) => (
-  //       { value: option, label: option }
-  //     ));
-  //   } else if (propOptions !== undefined) {
-  //     Object.keys(propOptions).map((key) => (
-  //       { value: key, label: propOptions[key] }
-  //     ));
-  //   }
+  private _generateSelectOptions = (propOptions: FieldDefOptions): SelectOption<string>[] => {
+    let selectOptions: SelectOption<string>[] = [];
 
-  //   return selectOptions;
-  // };
+    if (propOptions instanceof Array) {
+      selectOptions = propOptions.map((option: string) => (
+        { value: option, label: option }
+      ));
+    } else if (propOptions !== undefined) {
+      selectOptions = Object.keys(propOptions).map((key) => (
+        { value: key, label: propOptions[key] }
+      ));
+    }
+
+    return selectOptions;
+  };
 
   public render() {
-    // NEEDSWORK: Can change to iTwinUI-react Select component once the `id` prop is supported
-    // const selectOptions = this._generateSelectOptions(this.props.options);
+    const selectOptions = this._generateSelectOptions(this.props.options);
 
     return (
       <FormContext.Consumer>
@@ -82,16 +80,12 @@ export class Field extends React.Component<FieldProps> {
               />
             )}
             {this.props.editor!.toLowerCase() === "dropdown" && this.props.options && (
-              // NEEDSWORK: Can change to iTwinUI-react Select component once the `id` prop is supported
-              // eslint-disable-next-line deprecation/deprecation
               <Select
                 id={this.props.id}
-                name={this.props.id}
+                // name={this.props.id}
                 value={context!.values[this.props.id]}
-                onChange={(event) => context!.setValues({ [this.props.id]: event.currentTarget.value })}
-                options={this.props.options}
-                // onChange={(newValue: any) => context!.setValues({ [this.props.id]: newValue })}
-                // options={selectOptions}
+                onChange={(newValue: any) => context!.setValues({ [this.props.id]: newValue })}
+                options={selectOptions}
                 className="core-form-select"
               />
             )}
