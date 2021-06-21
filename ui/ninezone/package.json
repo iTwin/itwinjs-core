@@ -37,8 +37,7 @@
     "@bentley/ui-abstract": "workspace:^2.18.0-dev.7",
     "@bentley/ui-core": "workspace:^2.18.0-dev.7",
     "react": "^16.8.0",
-    "react-dom": "^16.8.0",
-    "react-transition-group": "^4.4.1"
+    "react-dom": "^16.8.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -96,6 +95,7 @@
   "dependencies": {
     "classnames": "^2.3.1",
     "immer": "^9.0.1",
+    "react-transition-group": "^4.4.1",
     "svg-sprite-loader": "4.2.1",
     "uuid": "^7.0.3"
   },
