@@ -41,6 +41,7 @@ export class MobxDemoView extends React.Component<MobxDemoViewProps> {
                 <td><Button disabled={shouldDisableSubmit}>Add bird</Button></td>
               </tr>
               <tr>
+                {/* eslint-disable-next-line deprecation/deprecation */}
                 <td><NumericInput className="numeric-input" min={-100} max={100} strict placeholder="Enter number" aria-label="Numeric demo" /></td>
                 <td>&nbsp;</td>
               </tr>

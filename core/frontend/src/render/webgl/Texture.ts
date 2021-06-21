@@ -6,7 +6,7 @@
  * @module WebGL
  */
 
-import { assert, dispose, Id64String } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
 import { imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
 import { IModelConnection } from "../../IModelConnection";
@@ -524,6 +524,7 @@ export interface ExternalTextureRequest {
 /** @internal */
 export class ExternalTextureLoader { /* currently exported for tests only */
   public static readonly instance = new ExternalTextureLoader(10);
+  public readonly onTexturesLoaded = new BeEvent<() => void>();
   private readonly _maxActiveRequests: number;
   private _activeRequests: Array<ExternalTextureRequest> = [];
   private _pendingRequests: Array<ExternalTextureRequest> = [];
@@ -542,6 +543,8 @@ export class ExternalTextureLoader { /* currently exported for tests only */
       const req = this._pendingRequests.shift()!;
       await this._activateRequest(req);
     }
+    if (this._activeRequests.length < 1 && this._pendingRequests.length < 1)
+      this.onTexturesLoaded.raiseEvent();
   }
 
   private async _activateRequest(req: ExternalTextureRequest) {

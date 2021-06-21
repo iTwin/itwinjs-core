@@ -33,6 +33,7 @@ export interface RootState {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const SampleAppActions = {
+  // eslint-disable-next-line jsdoc/require-jsdoc
   example: () => createAction("SampleApp:EXAMPLE"),
 };
 
