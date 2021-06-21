@@ -127,9 +127,8 @@ export class FrameStatsCollector {
         if (undefined !== this._onFrameStatsReady)
           this._onFrameStatsReady.raiseEvent(this._frameStats); // transmit this frame's statistics to any listeners
 
-        if (IModelApp.renderSystem.doTelemetry) {
+        if (IModelApp.renderSystem.doTelemetry)
           FrameStatsCollector._postTelemetry(this._frameStats); // eslint-disable-line @typescript-eslint/no-floating-promises
-        }
 
         this._frameStats.frameId++; // increment frame counter for next pending frame
       }
