@@ -109,14 +109,16 @@ export class IndexedPolyface extends Polyface {
    * @param transform
    */
   public tryTransformInPlace(transform: Transform) {
-    if (this.data.tryTransformInPlace(transform)) {
-      const determinant = transform.matrix.determinant();
-      if (determinant < 0) {
-        this.reverseIndices();
-        this.reverseNormals();
-      }
+    if (!this.data.tryTransformInPlace(transform))
+      return false;
+
+    const determinant = transform.matrix.determinant();
+    if (determinant < 0) {
+      this.reverseIndices();
+      this.reverseNormals();
     }
-    return false;
+
+    return true;
   }
   /** Reverse indices for a single facet. */
   public reverseSingleFacet(facetId: number) {
