@@ -249,7 +249,6 @@ export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
   viewer.toolBar.element.appendChild(stylePicker);
   stylePicker.onchange = () => {
     viewer.viewport.displayStyle.settings.analysisStyle = decorator.mesh.styles.get(stylePicker.value);
-    viewer.viewport.invalidateDecorations();
   };
 
   function populateStylePicker(): void {
