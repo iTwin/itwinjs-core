@@ -82,6 +82,7 @@ async function createMesh(type: AnalysisMeshType, displacementScale = 1): Promis
 class AnalysisDecorator {
   public readonly mesh: AnalysisMesh;
   private readonly _viewport: Viewport;
+  private readonly _id: string;
   private _graphic?: RenderGraphicOwner;
   private _dispose?: () => void;
 
@@ -89,6 +90,7 @@ class AnalysisDecorator {
     this._viewport = viewport;
     this.mesh = mesh;
     this._dispose = viewport.onDisposed.addOnce(() => this.dispose());
+    this._id = viewport.iModel.transientIds.next;
     IModelApp.viewManager.addDecorator(this);
   }
 
@@ -110,7 +112,7 @@ class AnalysisDecorator {
       return;
 
     if (!this._graphic) {
-      const builder = context.createGraphicBuilder(GraphicType.WorldDecoration);
+      const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._id);
       builder.addPolyface(this.mesh.polyface, false);
       this._graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
     }

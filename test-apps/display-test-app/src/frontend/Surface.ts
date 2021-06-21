@@ -5,7 +5,7 @@
 import { KeyinField, parseArgs } from "@bentley/frontend-devtools";
 import { Range3d } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
-import { BlankConnection, IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { BlankConnection, BlankConnectionProps, IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
 import { BrowserFileSelector, selectFileName } from "./FileOpen";
 import { FpsMonitor } from "./FpsMonitor";
@@ -138,7 +138,10 @@ export class Surface {
       iconUnicode: "\uea32", // play
       tooltip: "Analysis Style Example",
       click: () => {
-        this.openBlankConnection("Analysis Style Example").then((viewer) => openAnalysisStyleExample(viewer));
+        this.openBlankConnection({
+          name: "Analysis Style Example",
+          extents: new Range3d(-5, -5, -1, 5, 5, 1),
+        }).then((viewer) => openAnalysisStyleExample(viewer));
       },
     }));
 
@@ -146,11 +149,11 @@ export class Surface {
   }
 
   // create a new blank connection for testing backgroundMap and reality models.
-  private async openBlankConnection(name = "blank connection test"): Promise<Viewer> {
+  private async openBlankConnection(props?: Partial<BlankConnectionProps>): Promise<Viewer> {
     const iModel = BlankConnection.create({
-      location: Cartographic.fromDegrees(-75.686694, 40.065757, 0), // near Exton pa
-      extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-      name,
+      location: props?.location ?? Cartographic.fromDegrees(-75.686694, 40.065757, 0), // near Exton pa
+      extents: props?.extents ?? new Range3d(-1000, -1000, -100, 1000, 1000, 100),
+      name: props?.name ?? "blank connection test",
     });
 
     await iModel.backgroundMapLocation.initialize(iModel);
