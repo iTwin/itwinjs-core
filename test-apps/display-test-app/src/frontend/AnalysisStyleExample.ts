@@ -217,12 +217,29 @@ class AnalysisDecorator {
 }
 
 export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
-  // const cantilever = await createMesh("Cantilever", 100);
-  const flat = await createMesh("Flat")
+  const meshes = await Promise.all([createMesh("Flat"), createMesh("Cantilever", 100)]);
+  let decorator = new AnalysisDecorator(viewer.viewport, meshes[0]);
 
-  /* let decorator = */ new AnalysisDecorator(viewer.viewport, flat);
+  const meshPicker = document.createElement("select");
+  meshPicker.className = "viewList";
+  viewer.toolBar.element.appendChild(meshPicker);
+  for (const mesh of meshes) {
+    const option = document.createElement("option");
+    option.innerText = mesh.type;
+    option.value = mesh.type;
+    meshPicker.appendChild(option);
+  }
 
-  for (const style of flat.styles.values()) {
+  meshPicker.selectedIndex = 0;
+  meshPicker.onchange = () => {
+    const type = meshPicker.value as AnalysisMeshType;
+    if (type !== decorator.mesh.type) {
+      decorator.dispose();
+      decorator = new AnalysisDecorator(viewer.viewport, meshes[meshPicker.selectedIndex]);
+    }
+  };
+
+  for (const style of decorator.mesh.styles.values()) {
     viewer.viewport.displayStyle.settings.analysisStyle = style;
     break;
   }
