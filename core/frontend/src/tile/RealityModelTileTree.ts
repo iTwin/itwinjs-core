@@ -701,8 +701,27 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       return undefined;
 
     const strings = [];
+
+    const loader = (tree as RealityModelTileTree).loader ;
+    const type = await (loader as RealityModelTileLoader).tree.client.getRealityDataType();
+
+    // If a type is specified, display it
+    if (type !== undefined) {
+      switch (type.toUpperCase()) {
+        case "REALITYMESH3DTILES":
+          strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.RealityMesh3DTiles"));
+          break;
+        case "TERRAIN3DTILES":
+          strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Terrain3DTiles"));
+          break;
+        case "CESIUM3DTILES":
+          strings.push(IModelApp.i18n.translate("iModelJs:RealityModelTypes.Cesium3DTiles"));
+          break;
+      }
+    }
+
     if (this._name) {
-      strings.push(this._name);
+      strings.push(`${IModelApp.i18n.translate("iModelJs:TooltipInfo.Name")} ${this._name}`);
     } else {
       const cesiumAsset = parseCesiumUrl(this._url);
       strings.push(cesiumAsset ? `Cesium Asset: ${cesiumAsset.id}` : this._url);
@@ -906,5 +925,20 @@ export class RealityModelTileClient {
       return this._realityData!.getTileJson(requestContext as AuthorizedFrontendRequestContext, tileUrl);
 
     return this._doRequest(tileUrl, "json", requestContext);
+  }
+
+  /**
+   * Returns Reality Data type if available
+   */
+  public async getRealityDataType(): Promise<string | undefined> {
+    if (this.rdsProps && this._token) {
+      const authRequestContext = new AuthorizedFrontendRequestContext(this._token);
+
+      await this.initializeRDSRealityData(authRequestContext); // Only needed for PW Context Share data
+      return this._realityData!.type;
+    }
+
+    // The reality data type is not available if not stored on PW Context Share.
+    return undefined;
   }
 }
