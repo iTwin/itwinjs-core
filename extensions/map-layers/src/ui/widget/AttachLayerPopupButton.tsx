@@ -286,18 +286,18 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
                   // otherwise list feels cluttered.
                   (!!contextId && !!iModelId && layerNameUnderCursor && layerNameUnderCursor === source.name) &&
                   <>
-                    <UiCore.Button
+                    <Button
                       className="map-source-list-entry-button"
                       title={editLayerDefButtonTitle}
                       onClick={onItemEditButtonClicked}>
                       <UiCore.Icon iconSpec="icon-edit" />
-                    </UiCore.Button>
-                    <UiCore.Button
+                    </Button>
+                    <Button
                       className="map-source-list-entry-button"
                       title={removeLayerDefButtonTitle}
-                      onClick={(event) => { onItemRemoveButtonClicked(source, event); }}>
+                      onClick={(event: React.MouseEvent) => { onItemRemoveButtonClicked(source, event); }}>
                       <UiCore.Icon iconSpec="icon-delete" />
-                    </UiCore.Button>
+                    </Button>
                   </>}
 
               </UiCore.ListboxItem>

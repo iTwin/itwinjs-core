@@ -91,6 +91,7 @@ function PanelSelect({
     StagePanelLocation[StagePanelLocation.Bottom],
   ]);
   return (
+    // eslint-disable-next-line deprecation/deprecation
     <Select
       options={options}
       defaultValue={StagePanelLocation[location]}
@@ -126,6 +127,7 @@ function WidgetSelect({
     setOptions(newOptions);
   }, [frontstageDef]);
   return (
+    // eslint-disable-next-line deprecation/deprecation
     <Select
       options={options}
       defaultValue={id}
@@ -280,6 +282,7 @@ function PanelStateSelect({
     StagePanelState[StagePanelState.Off],
   ]);
   return (
+    // eslint-disable-next-line deprecation/deprecation
     <Select
       placeholder="State"
       options={options}
@@ -306,6 +309,7 @@ function WidgetStateSelect({
     WidgetState[WidgetState.Unloaded],
   ]);
   return (
+    // eslint-disable-next-line deprecation/deprecation
     <Select
       placeholder="State"
       options={options}

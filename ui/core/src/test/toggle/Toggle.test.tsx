@@ -9,6 +9,8 @@ import * as sinon from "sinon";
 import { render } from "@testing-library/react";
 import { Toggle, ToggleButtonType } from "../../ui-core";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("<Toggle />", () => {
   it("should render", () => {
     const wrapper = mount(

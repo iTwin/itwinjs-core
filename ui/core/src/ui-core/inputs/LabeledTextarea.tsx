@@ -11,6 +11,8 @@ import * as React from "react";
 import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
 import { Textarea, TextareaProps } from "./Textarea";
 
+/* eslint-disable deprecation/deprecation */
+
 /** Properties for [[LabeledTextarea]] component
  * @public
  * @deprecated Use LabeledTextareaProps in itwinui-react instead

@@ -6,6 +6,8 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { Button, ButtonSize, ButtonType } from "../../ui-core/button/Button";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("<Button />", () => {
   it("should render", () => {
     mount(<Button />);

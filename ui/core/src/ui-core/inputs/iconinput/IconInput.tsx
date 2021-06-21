@@ -33,8 +33,10 @@ const ForwardRefIconInput = React.forwardRef<HTMLInputElement, IconInputProps>(
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { icon, containerClassName, size, ...otherProps } = props;
 
+    // NEEDSWORK: still using ui-core Input component because of `nativeKeyHandler` prop
     return (
       <div className={classnames("core-iconInput-container", containerClassName)} >
+        {/* eslint-disable-next-line deprecation/deprecation */}
         <Input ref={ref} {...otherProps} />
         <div className="core-iconInput-icon">
           {icon}

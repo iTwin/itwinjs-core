@@ -289,7 +289,9 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
         />
       );
     } else {
+      // NEEDSWORK: still using ui-core Input component because of `nativeKeyHandler` prop
       reactNode = (
+        // eslint-disable-next-line deprecation/deprecation
         <Input
           {...inputProps}
           ref={this._inputElement}

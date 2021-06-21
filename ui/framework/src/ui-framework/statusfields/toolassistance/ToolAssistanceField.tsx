@@ -16,12 +16,13 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
-  FillCentered, HorizontalTabs, Icon, LabeledToggle, LocalSettingsStorage, SvgSprite, UiCore, UiSetting, UiSettingsResult, UiSettingsStatus, UiSettingsStorage,
+  FillCentered, HorizontalTabs, Icon, LocalSettingsStorage, SvgSprite, UiCore, UiSetting, UiSettingsResult, UiSettingsStatus, UiSettingsStorage,
 } from "@bentley/ui-core";
 import {
   FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog, ToolAssistanceItem,
   ToolAssistanceSeparator,
 } from "@bentley/ui-ninezone";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 import { CursorPrompt } from "../../cursor/cursorprompt/CursorPrompt";
 import { FrontstageManager, ToolIconChangedEventArgs } from "../../frontstage/FrontstageManager";
 import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager";
@@ -344,8 +345,9 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
               <>
                 <ToolAssistanceSeparator key="prompt-sep" />
                 <ToolAssistanceItem key="prompt-item">
-                  <LabeledToggle
+                  <ToggleSwitch
                     label={UiFramework.translate("toolAssistance.promptAtCursor")}
+                    labelPosition="right"
                     checked={this.state.showPromptAtCursor} onChange={this._onPromptAtCursorChange} />
                 </ToolAssistanceItem>
               </>

@@ -11,6 +11,8 @@ import * as React from "react";
 import { Input, InputProps } from "./Input";
 import { LabeledComponentProps, MessagedComponentProps } from "./LabeledComponentProps";
 
+/* eslint-disable deprecation/deprecation */
+
 /** Properties for [[LabeledInput]] components
  * @public
  * @deprecated Use LabeledInputProps in itwinui-react instead

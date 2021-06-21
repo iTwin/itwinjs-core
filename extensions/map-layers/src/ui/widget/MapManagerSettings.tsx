@@ -5,14 +5,13 @@
 // cSpell:ignore droppable Sublayer Basemap
 
 import * as React from "react";
-import { NumberInput, Select, Slider, Toggle } from "@bentley/ui-core";
+import { NumberInput, Slider, Toggle } from "@bentley/ui-core";
 import { ViewState3d } from "@bentley/imodeljs-frontend";
 import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainProps } from "@bentley/imodeljs-common";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-
-// NEEDSWORK - use Select & ToggleSwitch from iTwinUI-react
+import { Select, SelectOption } from "@itwin/itwinui-react";
 
 enum MapMaskingOption {
   None,
@@ -58,11 +57,11 @@ export function MapManagerSettings() {
   const terrainSettings = backgroundMapSettings.terrainSettings;
   const [groundBias, setGroundBias] = React.useState(() => backgroundMapSettings.groundBias);
 
-  const terrainHeightOptions = React.useRef({
-    geodetic: MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationTypeGeodetic"),
-    geoid: MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationTypeGeoid"),
-    ground: MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationTypeGround"),
-  });
+  const terrainHeightOptions = React.useRef<SelectOption<string>[]>([
+    { value: "geodetic", label: MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationTypeGeodetic") },
+    { value: "geoid", label: MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationTypeGeoid") },
+    { value: "ground", label: MapLayersUiItemsProvider.i18n.translate("mapLayers:Settings.ElevationTypeGround") },
+  ]);
 
   const updateMaskingSettings = React.useCallback((option: MapMaskingOption) => {
     if (option === MapMaskingOption.AllModels) {
@@ -86,11 +85,11 @@ export function MapManagerSettings() {
   }, [activeViewport]);
 
   const [heightOriginMode, setHeightOriginMode] = React.useState(() => getHeightOriginModeKey(terrainSettings.heightOriginMode));
-  const handleElevationTypeSelected = React.useCallback((event: React.ChangeEvent<HTMLSelectElement>): void => {
-    if (event.target.value) {
-      const newHeightOriginMode = getHeightOriginModeFromKey(event.target.value);
+  const handleElevationTypeSelected = React.useCallback((newValue: string): void => {
+    if (newValue) {
+      const newHeightOriginMode = getHeightOriginModeFromKey(newValue);
       updateTerrainSettings({ heightOriginMode: newHeightOriginMode });
-      setHeightOriginMode(event.target.value);
+      setHeightOriginMode(newValue);
     }
   }, [updateTerrainSettings]);
 
@@ -177,9 +176,11 @@ export function MapManagerSettings() {
         <Slider min={0} max={100} showMinMax showTooltip values={[transparency * 100]} onChange={handleAlphaChange} step={1} />
 
         <span className="map-manager-settings-label">{locatableLabel}</span>
+        {/* eslint-disable-next-line deprecation/deprecation */}
         <Toggle onChange={onLocatableToggle} isOn={isLocatable} />
 
         <span className="map-manager-settings-label">{maskingLabel}</span>
+        {/* eslint-disable-next-line deprecation/deprecation */}
         <Toggle onChange={onMaskingToggle} isOn={masking !== MapMaskingOption.None} />
 
         <>
@@ -187,6 +188,7 @@ export function MapManagerSettings() {
           <NumberInput disabled={applyTerrain} value={groundBias} onChange={handleElevationChange} onKeyDown={onKeyDown} />
 
           <span className="map-manager-settings-label">{useDepthBufferLabel}</span>
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <Toggle disabled={applyTerrain} onChange={onToggleUseDepthBuffer} isOn={useDepthBuffer} />
         </>
 
@@ -198,6 +200,7 @@ export function MapManagerSettings() {
           <div className="maplayers-settings-container">
 
             <span className="map-manager-settings-label">{enableLabel}</span>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <Toggle onChange={onToggleTerrain} isOn={applyTerrain} />
 
             <span className="map-manager-settings-label">{modelHeightLabel}</span>

@@ -14,5 +14,5 @@ import { Tile, TileProps } from "./Tile";
  * @deprecated
  */
 export function MinimalFeaturedTile(props: TileProps) {   // eslint-disable-line deprecation/deprecation
-  return <Tile {...props} minimal={true} featured={true} />;
+  return <Tile {...props} minimal={true} featured={true} />;  // eslint-disable-line deprecation/deprecation
 }

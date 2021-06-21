@@ -7,8 +7,8 @@ import React from "react";
 import { DiagnosticsLoggerSeverity } from "@bentley/presentation-common";
 import { DiagnosticsProps } from "@bentley/presentation-components";
 import { consoleDiagnosticsHandler } from "@bentley/presentation-frontend";
-import { ContextMenuDirection, GlobalContextMenu, LabeledToggle, PointProps } from "@bentley/ui-core";
-import { LabeledSelect } from "@itwin/itwinui-react";
+import { ContextMenuDirection, GlobalContextMenu, PointProps } from "@bentley/ui-core";
+import { LabeledSelect, ToggleSwitch } from "@itwin/itwinui-react";
 
 export interface DiagnosticsSelectorProps {
   onDiagnosticsOptionsChanged: (diagnosticsOptions: DiagnosticsProps) => void;
@@ -79,7 +79,7 @@ export function DiagnosticsSelector(props: DiagnosticsSelectorProps) {
           ]}
           value={devSeverity}
           onChange={(newValue: string) => setDevSeverity(newValue)} />
-        <LabeledToggle label="Measure performance" checked={shouldMeasurePerformance} onChange={handleMeasurePerformanceChange} />
+        <ToggleSwitch label="Measure performance" labelPosition="right" checked={shouldMeasurePerformance} onChange={handleMeasurePerformanceChange} />
       </GlobalContextMenu>
     </React.Fragment>
   );

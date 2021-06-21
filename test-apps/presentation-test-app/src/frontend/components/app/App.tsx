@@ -13,7 +13,7 @@ import {
 } from "@bentley/presentation-components";
 import { Presentation, SelectionChangeEventArgs } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { ElementSeparator, LabeledToggle, Orientation, RatioChangeResult } from "@bentley/ui-core";
+import { ElementSeparator, Orientation, RatioChangeResult } from "@bentley/ui-core";
 import { MyAppFrontend, MyAppSettings } from "../../api/MyAppFrontend";
 import FindSimilarWidget from "../find-similar-widget/FindSimilarWidget";
 import { GridWidget } from "../grid-widget/GridWidget";
@@ -23,6 +23,7 @@ import { RulesetSelector } from "../ruleset-selector/RulesetSelector";
 import { TreeWidget } from "../tree-widget/TreeWidget";
 import { UnitSystemSelector } from "../unit-system-selector/UnitSystemSelector";
 import ViewportContentControl from "../viewport/ViewportContentControl";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 
 export interface State {
   imodel?: IModelConnection;
@@ -265,7 +266,7 @@ export default class App extends React.Component<{}, State> {
           <IModelSelector onIModelSelected={this.onIModelSelected} activeIModelPath={this.state.imodelPath} />
           <RulesetSelector onRulesetSelected={this.onRulesetSelected} activeRulesetId={this.state.currentRulesetId} />
           <UnitSystemSelector selectedUnitSystem={this.state.activeUnitSystem} onUnitSystemSelected={this.onUnitSystemSelected} />
-          <LabeledToggle label="Persist settings" checked={this.state.persistSettings} onChange={this.onPersistSettingsValueChange} />
+          <ToggleSwitch label="Persist settings" labelPosition="right" checked={this.state.persistSettings} onChange={this.onPersistSettingsValueChange} />
         </div>
         {imodelComponents}
       </div>

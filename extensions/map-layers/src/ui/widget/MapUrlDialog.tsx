@@ -5,8 +5,8 @@
 // cSpell:ignore Modeless WMTS
 
 import * as React from "react";
-import { Input, LabeledInput, ProgressLinear, Radio } from "@itwin/itwinui-react";
-import { Dialog, Icon, InputStatus, Select } from "@bentley/ui-core";
+import { Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
+import { Dialog, Icon, InputStatus } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions } from "../Interfaces";
@@ -107,10 +107,14 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     };
   }, []);
 
-  const [mapTypes] = React.useState((): string[] => {
-    const types = [MAP_TYPES.arcGis, MAP_TYPES.wms, MAP_TYPES.wmts];
+  const [mapTypes] = React.useState((): SelectOption<string>[] => {
+    const types = [
+      { value: MAP_TYPES.arcGis, label: MAP_TYPES.arcGis },
+      { value: MAP_TYPES.wms, label: MAP_TYPES.wms },
+      { value: MAP_TYPES.wmts, label: MAP_TYPES.wmts },
+    ];
     if (mapTypesOptions?.supportTileUrl)
-      types.push(MAP_TYPES.tileUrl);
+      types.push({ value: MAP_TYPES.tileUrl, label: MAP_TYPES.tileUrl });
     return types;
   });
 
@@ -150,9 +154,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }
   }, [invalidCredentialsProvided, invalidCredentialsLabel, missingCredentialsLabel, serverRequireCredentials, userName, password, setWarningMessage]);
 
-  const handleMapTypeSelection = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setMapType(e.target.value);
-    e.preventDefault();
+  const handleMapTypeSelection = React.useCallback((newValue: string) => {
+    setMapType(newValue);
   }, [setMapType]);
 
   const handleCancel = React.useCallback(() => {
@@ -381,7 +384,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
               className="map-manager-base-select"
               options={mapTypes}
               value={mapType}
-              disabled={props.layerRequiringCredentials !== undefined || props.mapLayerSourceToEdit !== undefined} onChange={handleMapTypeSelection} />
+              disabled={props.layerRequiringCredentials !== undefined || props.mapLayerSourceToEdit !== undefined}
+              onChange={handleMapTypeSelection} />
             <span className="map-layer-source-label">{nameLabel}</span>
             <Input placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined} />
             <span className="map-layer-source-label">{urlLabel}</span>
