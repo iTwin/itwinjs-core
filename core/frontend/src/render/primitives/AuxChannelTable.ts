@@ -318,16 +318,6 @@ class AuxChannelTableBuilder {
       }
     }
 
-    // Invert quantization scale.
-    if (0 !== qParams.scale.x)
-      qParams.scale.x = 1 / qParams.scale.x;
-
-    if (0 !== qParams.scale.y)
-      qParams.scale.y = 1 / qParams.scale.y;
-
-    if (0 !== qParams.scale.z)
-      qParams.scale.z = 1 / qParams.scale.z;
-
     const displacements = this._props.displacements ?? (this._props.displacements = []);
     displacements.push({
       inputs,
