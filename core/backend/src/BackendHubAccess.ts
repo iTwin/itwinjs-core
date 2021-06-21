@@ -7,7 +7,6 @@
  */
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { ChangesType, LockLevel, LockType } from "@bentley/imodelhub-client";
 import { CodeProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { DownloadRequest } from "./CheckpointManager";
@@ -26,16 +25,32 @@ export type ChangesetId = string;
 /** @internal */
 export type ChangesetIndex = number;
 
+/** supply either changeset index, id, or both
+  * @internal
+  */
+export type ChangesetIndexOrId = { index: ChangesetIndex, id: ChangesetId } | { index: ChangesetIndex, id?: never } | { id: ChangesetId, index?: never };
+
+/** Value to indicate whether a changeset contains schema changes or not
+ * @public */
+export enum ChangesetType {
+  /** changeset does *not* contain schema changes. */
+  Regular = 0,
+  /** changeset *does* contain schema changes. */
+  Schema = 1,
+}
+
 /** Properties of a changeset
  * @internal
  */
 export interface ChangesetProps {
+  /** The index (sequence number) from IModelHub for this changeset. Larger index values were pushed later. */
+  index: ChangesetIndex;
   /** the ChangesetId */
   id: ChangesetId;
   /** the ChangeSetId of the parent changeset of this changeset */
   parentId: ChangesetId;
   /** The type of changeset */
-  changesType: ChangesType;
+  changesType: ChangesetType;
   /** The user-supplied description of the work this changeset holds */
   description: string;
   /** The BriefcaseId of the briefcase that created this changeset */
@@ -46,8 +61,6 @@ export interface ChangesetProps {
   userCreated: string;
   /** The size, in bytes, of this changeset */
   size?: number;
-  /** The index (sequence number) in IModelHub for this changeset. Larger index values were pushed later. */
-  index?: ChangesetIndex;
 }
 
 /** Properties of a changeset file
@@ -59,28 +72,37 @@ export interface ChangesetFileProps extends ChangesetProps {
 }
 
 /**
- * Properties that specify a range of changesetIds. There are two ways to specify the start of the range. You may either supply:
- * - `first` the ChangeSetId of the first changeset to be returned, or
- * - `after` the *parent* ChangeSetId of the first changeset to be returned.
- *
- * `end` specifies the ChangesetId of the last changeset to be returned. If undefined, all later changesets are returned.
+ * A range of changesets
  * @internal
  */
-export type ChangesetRange =
-  { first: ChangesetId, after?: never, end?: ChangesetId } |
-  { after: ChangesetId, first?: never, end?: ChangesetId };
+export interface ChangesetRange {
+  /** index of the first changeset */
+  first: ChangesetIndex;
+  /** index of last changeset. If undefined, all changesets after first are returned. */
+  end?: ChangesetIndex;
+}
+
+/** The scope of a lock.
+ * @public
+ */
+export enum LockScope {
+  /** The entity is not locked */
+  None,
+  /** Holding a shared lock blocks other users from acquiring the Exclusive lock on an entity. More than one user may acquire the shared lock. */
+  Shared,
+  /** A Lock that blocks other users from making modifications to an entity. */
+  Exclusive,
+}
 
 /**
  * The properties of an iModel server lock.
  * @beta
  */
 export interface LockProps {
-  /** The type of lock requested or held */
-  type: LockType;
-  /** The objectId for the lock */
-  objectId: Id64String;
-  /** the lock level */
-  level: LockLevel;
+  /** The entityId for the lock */
+  entityId: Id64String;
+  /** the lock scope */
+  scope: LockScope;
 }
 
 /** Argument for methods that must supply an IModelId
@@ -119,11 +141,16 @@ export interface BriefcaseIdArg extends IModelIdArg {
   briefcaseId: number;
 }
 
-/** Argument for methods that must supply an IModelId and a ChangesetId
+/** Argument for methods that must supply an IModelId and a changeset
  * @internal
  */
-export interface ChangesetIdArg extends IModelIdArg {
-  changesetId: ChangesetId;
+export interface ChangesetArg extends IModelIdArg {
+  changeset: ChangesetIndexOrId;
+}
+
+/** @internal */
+export interface ChangesetIndexArg extends IModelIdArg {
+  csIndex: ChangesetIndex;
 }
 
 /** Argument for methods that must supply an IModelId and a range of ChangesetIds.
@@ -143,24 +170,22 @@ export type CheckPointArg = DownloadRequest;
  */
 export interface BackendHubAccess {
   /** Download all the changesets in the specified range. */
-  downloadChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetFileProps[]>;
+  downloadChangesets: (arg: ChangesetRangeArg & { targetDir: LocalDirName }) => Promise<ChangesetFileProps[]>;
   /** Download a single changeset. */
-  downloadChangeset: (arg: ChangesetIdArg) => Promise<ChangesetFileProps>;
-  /** Query the changeset properties given a ChangesetId  */
-  queryChangeset: (arg: ChangesetIdArg) => Promise<ChangesetProps>;
-  /** Query an array of changeset properties given a range of ChangesetIds  */
+  downloadChangeset: (arg: ChangesetArg & { targetDir: LocalDirName }) => Promise<ChangesetFileProps>;
+  /** Query the changeset properties given a ChangesetIndex  */
+  queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
+  /** Query an array of changeset properties given a range of ChangesetIndexes  */
   queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
-  /** Query an array of changeset properties given a range of ChangesetIds  */
-  pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps, releaseLocks: boolean }) => Promise<void>;
-  /** Get the changesetId of the most recent changeset */
-  getLatestChangesetId: (arg: IModelIdArg) => Promise<ChangesetId>;
-  /** Get the changesetId for an IModelVersion */
-  getChangesetIdFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangesetId>;
-  /** Get the changesetId for a named version */
-  getChangesetIdFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<ChangesetId>;
+  /** push a changeset to iMOdelHub. Returns the newly pushed changeSet's index */
+  pushChangeset: (arg: IModelIdArg & { changesetProps: ChangesetFileProps }) => Promise<ChangesetIndex>;
+  /** Get the ChangesetProps of the most recent changeset */
+  getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
+  /** Get the ChangesetProps for an IModelVersion */
+  getChangesetFromVersion: (arg: IModelIdArg & { version: IModelVersion }) => Promise<ChangesetProps>;
+  /** Get the ChangesetProps for a named version */
+  getChangesetFromNamedVersion: (arg: IModelIdArg & { versionName: string }) => Promise<ChangesetProps>;
 
-  /** Get the index of the change set from its id */
-  getChangesetIndexFromId: (arg: ChangesetIdArg) => Promise<ChangesetIndex>;
   /** Acquire a new briefcaseId for the supplied iModelId
      * @note usually there should only be one briefcase per iModel per user.
      */
@@ -187,7 +212,7 @@ export interface BackendHubAccess {
   queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
 
   /** release all currently held locks */
-  releaseAllLocks: (arg: BriefcaseIdArg) => Promise<void>;
+  releaseAllLocks: (arg: BriefcaseIdArg & ChangesetIndexArg) => Promise<void>;
 
   /** Query codes */
   queryAllCodes: (arg: BriefcaseDbArg) => Promise<CodeProps[]>;

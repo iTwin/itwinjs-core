@@ -80,10 +80,10 @@ export class UserStatisticsQuery extends WsgQuery {
    * Query single instance by its id.
    * @param id Id of the instance to query.
    * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [GuidString]($bentley) value.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if id is undefined or empty.
    */
   public byId(id: string) {
-    ArgumentCheck.validGuid("id", id);
+    ArgumentCheck.defined("id", id);
     this._byId = id;
     return this;
   }
@@ -100,14 +100,14 @@ export class UserStatisticsQuery extends WsgQuery {
    * Query User Statistics by ids.
    * @param ids Ids of the users.
    * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if ids array is undefined or empty, or it contains invalid [GuidString]($bentley) values.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if ids array is undefined or empty, or it contains undefined or empty values.
    */
   public byIds(ids: string[]) {
     ArgumentCheck.nonEmptyArray("ids", ids);
 
     let filter = "$id+in+[";
     ids.forEach((id, index) => {
-      ArgumentCheck.validGuid(`ids[${index}]`, id);
+      ArgumentCheck.defined(`ids[${index}]`, id);
       if (index > 0)
         filter += ",";
       filter += `'${id}'`;
@@ -220,15 +220,14 @@ export class UserInfoQuery extends WsgQuery {
   /** Query UserInfo by user ids.
    * @param ids Ids of the users.
    * @returns This query.
-   * @throws [[IModelHubClientError]] if ids array is empty.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if ids array is undefined or empty, or it contains non-Guid values.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if ids array is undefined or empty, or it contains undefined or empty values.
    */
   public byIds(ids: string[]) {
     ArgumentCheck.nonEmptyArray("ids", ids);
 
     let filter = "$id+in+[";
     ids.forEach((id, index) => {
-      ArgumentCheck.validGuid(`id[${index}]`, id);
+      ArgumentCheck.defined(`id[${index}]`, id);
       if (index > 0)
         filter += ",";
       filter += `'${id}'`;
@@ -248,10 +247,10 @@ export class UserInfoQuery extends WsgQuery {
   /** Query single instance by its id.
    * @param id Id of the instance to query.
    * @returns This query.
-   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if id is undefined or it is not a valid [GuidString]($bentley) value.
+   * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) if id is undefined or empty.
    */
   public byId(id: string) {
-    ArgumentCheck.validGuid("id", id);
+    ArgumentCheck.defined("id", id);
     this._byId = id;
     return this;
   }
