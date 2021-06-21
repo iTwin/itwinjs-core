@@ -10,19 +10,11 @@ import {
   AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement2d, Placement3d,
 } from "@bentley/imodeljs-common";
 import {
-<<<<<<< HEAD
   BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionPartition, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
   ECSqlStatement, Element, ElementMultiAspect, ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
-  IModelCloneContext, IModelDb, IModelExporter, IModelExportHandler, IModelJsFs, IModelTransformer, InformationRecordModel,
+  IModelCloneContext, IModelDb, IModelExporter, IModelExportHandler, IModelJsFs, IModelSchemaLoader, IModelTransformer, InformationRecordModel,
   InformationRecordPartition, LinkElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition,
   PhysicalType, Relationship, RepositoryLink, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner, TemplateRecipe2d, TemplateRecipe3d,
-=======
-  BackendLoggerCategory, BackendRequestContext, CategorySelector, DisplayStyle3d, ECSqlStatement, Element, ElementMultiAspect,
-  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, IModelCloneContext, IModelDb, IModelExporter,
-  IModelExportHandler, IModelJsFs, IModelSchemaLoader, IModelTransformer, InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector,
-  OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, SnapshotDb,
-  SpatialCategory, Subject,
->>>>>>> 7f4e23e779 (don't import schemas as they are individually exported to keep processSchemas schema-import order independent  (#1645))
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import {
