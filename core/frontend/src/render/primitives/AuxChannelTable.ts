@@ -151,6 +151,13 @@ export class AuxChannelTable {
   }
 }
 
+function invert(num: number): number {
+  if (0 !== num)
+    num = 1 / num;
+
+  return num;
+}
+
 class AuxChannelTableBuilder {
   private readonly _view: DataView;
   private readonly _props: Mutable<AuxChannelTableProps>;
@@ -267,7 +274,7 @@ class AuxChannelTableBuilder {
       indices,
       name: channel.name ?? "",
       qOrigin: [range.low],
-      qScale: [qScale],
+      qScale: [invert(qScale)],
     });
   }
 
@@ -285,6 +292,12 @@ class AuxChannelTableBuilder {
       }
     }
 
+    const zeroDisplacement = false;
+    if (zeroDisplacement) {
+      range.low.set(0, 0, 0);
+      range.high.set(0, 0, 0);
+    }
+
     const qParams = QParams3d.fromRange(range);
     const qPoint = new QPoint3d();
     for (let i = 0; i < channel.data.length; i++) {
@@ -293,8 +306,11 @@ class AuxChannelTableBuilder {
 
       const data = channel.data[i];
       for (let j = 0; j < data.values.length; j += 3) {
-        point.set(data.values[j], data.values[j + 1], data.values[j + 2]);
-        qPoint.init(point, qParams);
+        if (!zeroDisplacement) {
+          point.set(data.values[j], data.values[j + 1], data.values[j + 2]);
+          qPoint.init(point, qParams);
+        }
+
         this._view.setUint16(byteIndex + 0, qPoint.x, true);
         this._view.setUint16(byteIndex + 2, qPoint.y, true);
         this._view.setUint16(byteIndex + 4, qPoint.z, true);
@@ -302,13 +318,23 @@ class AuxChannelTableBuilder {
       }
     }
 
+    // Invert quantization scale.
+    if (0 !== qParams.scale.x)
+      qParams.scale.x = 1 / qParams.scale.x;
+
+    if (0 !== qParams.scale.y)
+      qParams.scale.y = 1 / qParams.scale.y;
+
+    if (0 !== qParams.scale.z)
+      qParams.scale.z = 1 / qParams.scale.z;
+
     const displacements = this._props.displacements ?? (this._props.displacements = []);
     displacements.push({
       inputs,
       indices,
       name: channel.name ?? "",
       qOrigin: qParams.origin.toArray(),
-      qScale: qParams.scale.toArray(),
+      qScale: qParams.scale.toArray().map((x) => invert(x)),
     });
   }
 }
