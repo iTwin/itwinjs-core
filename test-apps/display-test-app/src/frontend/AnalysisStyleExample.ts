@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions } from "@bentley/geometry-core";
+import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions, Transform } from "@bentley/geometry-core";
 import {
   AnalysisStyle, AnalysisStyleProps, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettingsProps,
 } from "@bentley/imodeljs-common";
@@ -13,7 +13,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { Viewer } from "./Viewer";
 
-type AnalysisMeshType = "Cantilever" | "Flat";
+type AnalysisMeshType = "Cantilever" | "Flat with waves";
 
 interface AnalysisMesh {
   readonly type: AnalysisMeshType;
@@ -63,6 +63,14 @@ async function createCantilever(): Promise<Polyface> {
   const response = await fetch("Cantilever.json");
   const polyface = IModelJson.Reader.parse(await response.json()) as Polyface;
   assert(polyface instanceof Polyface);
+
+  // ###TODO: Displacements don't appear to get scaled - they're supposed to.
+  const transformPolyface = false;
+  if (transformPolyface) {
+    const transform = Transform.createScaleAboutPoint(new Point3d(), 30);
+    polyface.tryTransformInPlace(transform);
+  }
+
   return polyface;
 }
 
@@ -167,7 +175,7 @@ function createFlatMeshWithWaves(): Polyface {
 }
 
 async function createMesh(type: AnalysisMeshType, displacementScale = 1): Promise<AnalysisMesh> {
-  const polyface = "Flat" === type ? createFlatMeshWithWaves() : await createCantilever();
+  const polyface = "Flat with waves" === type ? createFlatMeshWithWaves() : await createCantilever();
   const styles = new Map<string, AnalysisStyle | undefined>();
   const mesh = { type, polyface,styles };
   populateAnalysisStyles(mesh, displacementScale);
@@ -217,7 +225,7 @@ class AnalysisDecorator {
 }
 
 export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
-  const meshes = await Promise.all([createMesh("Flat"), createMesh("Cantilever", 100)]);
+  const meshes = await Promise.all([createMesh("Flat with waves"), createMesh("Cantilever", 100)]);
   let decorator = new AnalysisDecorator(viewer.viewport, meshes[0]);
 
   const meshPicker = document.createElement("select");
