@@ -7,6 +7,9 @@
  */
 
 import { BeEvent } from "@bentley/bentleyjs-core";
+import { TelemetryEvent } from "@bentley/telemetry-client";
+import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
+import { IModelApp } from "../IModelApp";
 
 /** Describes timing statistics for a single rendered frame. Aside from `frameId`, `totalFrameTime`, and `totalSceneTime`, the other entries may represent operations that are not performed every frame and may contain an expected value of zero.
  * @note By default, the display system does not render frames continuously. The display system will render a new frame only when the view changes. Therefore, the data contained within this interface cannot directly be used to compute a representative framerate.
@@ -115,7 +118,7 @@ export class FrameStatsCollector {
   }
 
   public beginFrame() {
-    this._shouldRecordFrame = undefined !== this._onFrameStatsReady && this._onFrameStatsReady.numberOfListeners > 0;
+    this._shouldRecordFrame = IModelApp.renderSystem.doTelemetry || (undefined !== this._onFrameStatsReady && this._onFrameStatsReady.numberOfListeners > 0);
   }
 
   public endFrame(wasFrameDrawn = false) {
@@ -123,6 +126,11 @@ export class FrameStatsCollector {
       if (wasFrameDrawn) {
         if (undefined !== this._onFrameStatsReady)
           this._onFrameStatsReady.raiseEvent(this._frameStats); // transmit this frame's statistics to any listeners
+
+        if (IModelApp.renderSystem.doTelemetry) {
+          FrameStatsCollector._postTelemetry(this._frameStats); // eslint-disable-line @typescript-eslint/no-floating-promises
+        }
+
         this._frameStats.frameId++; // increment frame counter for next pending frame
       }
       this._clearStats();
@@ -138,5 +146,14 @@ export class FrameStatsCollector {
   public endTime(entry: keyof FrameStats) {
     if (this._shouldRecordFrame)
       this._end(entry);
+  }
+
+  private static async _postTelemetry(frameStats: Readonly<FrameStats>): Promise<void> {
+    if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
+      return;
+
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const telemetryEvent = new TelemetryEvent("FrameStats", undefined, undefined, undefined, undefined, undefined, { frameStats });
+    await IModelApp.telemetry.postTelemetry(requestContext, telemetryEvent);
   }
 }
