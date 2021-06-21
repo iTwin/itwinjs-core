@@ -3,21 +3,19 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { assert } from "chai";
 import * as path from "path";
 import { BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
-import {
-  Briefcase, ChangeSet, ChangeSetQuery, ChangesType, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery,
-} from "@bentley/imodelhub-client";
+import { Briefcase, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ChangesetFileProps, ChangesetId, ChangesetProps } from "../../BackendHubAccess";
+import { ChangesetFileProps, ChangesetProps, ChangesetType } from "../../BackendHubAccess";
 import { IModelDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
 import { IModelHubBackend } from "../../IModelHubBackend";
 import { IModelJsFs } from "../../IModelJsFs";
-import { assert } from "chai";
 import { HubMock } from "../HubMock";
 
 /** Utility to work with test iModels in the iModelHub */
@@ -33,7 +31,7 @@ export class HubUtility {
     readWrite: "ReadWriteTest",
   };
 
-  public static contextId: GuidString | undefined = undefined;
+  public static contextId: GuidString | undefined;
   /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
   public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
 
@@ -45,16 +43,11 @@ export class HubUtility {
   private static imodelCache = new Map<string, GuidString>();
   /** Returns the iModelId if the iModel exists. Otherwise, returns undefined. */
   public static async getTestIModelId(requestContext: AuthorizedClientRequestContext, name: string): Promise<GuidString> {
-    requestContext.enter();
     if (HubUtility.imodelCache.has(name))
       return HubUtility.imodelCache.get(name)!;
 
     const projectId = await HubUtility.getTestContextId(requestContext);
-    requestContext.enter();
-
     const imodelId = await HubUtility.queryIModelIdByName(requestContext, projectId, name);
-    requestContext.enter();
-
     HubUtility.imodelCache.set(name, imodelId);
     return imodelId;
   }
@@ -106,11 +99,6 @@ export class HubUtility {
     if (!iModelId)
       throw new Error(`IModel ${iModelName} not found`);
     return iModelId;
-  }
-
-  /** Query the latest change set (id) of the specified iModel */
-  public static async queryLatestChangeSetId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<ChangesetId> {
-    return IModelHost.hubAccess.getLatestChangesetId({ requestContext, iModelId });
   }
 
   /** Download all change sets of the specified iModel */
@@ -237,7 +225,7 @@ export class HubUtility {
     nativeDb.openIModel(briefcasePathname, OpenMode.ReadWrite);
     const changeSets = HubUtility.readChangeSets(iModelDir);
     const endNum: number = endCS ? endCS : changeSets.length;
-    const filteredCS = changeSets.filter((obj) => obj.index! >= startCS && obj.index! <= endNum);
+    const filteredCS = changeSets.filter((obj) => obj.index >= startCS && obj.index <= endNum);
 
     Logger.logInfo(HubUtility.logCategory, "Merging all available change sets");
     const applyOption = ChangeSetApplyOption.Merge;
@@ -283,7 +271,7 @@ export class HubUtility {
 
     const changeSets = HubUtility.readChangeSets(iModelDir);
     const lastMergedChangeSet = changeSets.find((value) => value.id === lastAppliedChangeSetId);
-    const filteredChangeSets = lastMergedChangeSet ? changeSets.filter((value) => value.index! > lastMergedChangeSet.index!) : changeSets;
+    const filteredChangeSets = lastMergedChangeSet ? changeSets.filter((value) => value.index > lastMergedChangeSet.index) : changeSets;
 
     // Logger.logInfo(HubUtility.logCategory, "Dumping all available change sets");
     // HubUtility.dumpChangeSetsToLog(iModel, changeSets);
@@ -319,7 +307,7 @@ export class HubUtility {
 
     // Reverse changes until there's a schema change set (note that schema change sets cannot be reversed)
     const reverseChangeSets = changeSets.reverse();
-    const schemaChangeIndex = reverseChangeSets.findIndex((token) => token.changesType === ChangesType.Schema);
+    const schemaChangeIndex = reverseChangeSets.findIndex((token) => token.changesType === ChangesetType.Schema);
     const filteredChangeSets = reverseChangeSets.slice(0, schemaChangeIndex); // exclusive of element at schemaChangeIndex
     if (status === ChangeSetStatus.Success) {
       Logger.logInfo(HubUtility.logCategory, "Reversing all available change sets");
@@ -360,7 +348,7 @@ export class HubUtility {
 
   /** Push an iModel to the Hub */
   public static async pushIModel(requestContext: AuthorizedClientRequestContext, projectId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
-    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that create iModesl");
+    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that create iModels");
     // Delete any existing iModels with the same name as the required iModel
     const locIModelName = iModelName || path.basename(pathname, ".bim");
     const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, locIModelName);
@@ -408,9 +396,8 @@ export class HubUtility {
     const changeSetsJson = JSON.parse(jsonStr);
 
     // Find the last change set that was already uploaded
-    const lastUploadedChangeSetId = await HubUtility.queryLatestChangeSetId(requestContext, briefcase.iModelId!);
-    const lastIndex = (lastUploadedChangeSetId === "") ? changeSetsJson.findIndex((changeSetJson: any) => changeSetJson.id === lastUploadedChangeSetId) : -1;
-    const filteredChangeSetsJson = (lastUploadedChangeSetId === "") ? changeSetsJson.slice(lastIndex + 1) : changeSetsJson;
+    const lastCs = await IModelHost.hubAccess.getLatestChangeset({ requestContext, iModelId: briefcase.iModelId! });
+    const filteredChangeSetsJson = (lastCs.index === 0) ? changeSetsJson.slice(lastCs.index + 1) : changeSetsJson;
 
     // Upload change sets
     const count = filteredChangeSetsJson.length;

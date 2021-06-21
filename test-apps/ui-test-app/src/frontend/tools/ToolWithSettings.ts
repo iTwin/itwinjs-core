@@ -121,16 +121,20 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   // ------------- use length toggle  ---------------
-  public useLengthProperty = new DialogProperty<boolean>(
-    PropertyDescriptionHelper.buildCheckboxDescription("useLength", "",
-      [
-        {
-          type: PropertyEditorParamTypes.SuppressEditorLabel,
-          suppressLabelPlaceholder: true,
-        } as SuppressLabelEditorParams,
-      ]
-    ),
-    true, undefined, false);
+  private _useLengthProperty: DialogProperty<boolean> | undefined;
+  public get useLengthProperty() {
+    if (!this._useLengthProperty)
+      this._useLengthProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildLockPropertyDescription("useLength"), false);
+    return this._useLengthProperty;
+  }
+
+  // ------------- Length (persisted in meters) ---------------
+  private _lengthProperty: DialogProperty<number> | undefined;
+  public get lengthProperty() {
+    if (!this._lengthProperty)
+      this._lengthProperty = new DialogProperty<number>(new LengthDescription("length"), 1.5, undefined, !this.useLengthProperty.value);
+    return this._lengthProperty;
+  }
 
   // ------------- Color Enum ---------------
   private enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithSettings.Options.${str}`); }
@@ -152,56 +156,96 @@ export class ToolWithSettings extends PrimitiveTool {
       ];
   };
 
-  public colorOptionProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildEnumPicklistEditorDescription(
-    "colorOption", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"), this.getColorChoices()), ToolOptions.Blue as number);
+  private _colorOptionProperty: DialogProperty<number> | undefined;
+  public get colorOptionProperty() {
+    if (!this._colorOptionProperty)
+      this._colorOptionProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildEnumPicklistEditorDescription(
+        "colorOption", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"), this.getColorChoices()), ToolOptions.Blue as number);
+    return this._colorOptionProperty;
+  }
 
-  // ------------- Color Picker ---------------
-  public colorPickerProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildColorPickerDescription("color", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
-    [ColorByName.blue, ColorByName.red, ColorByName.green, ColorByName.yellow, ColorByName.black, ColorByName.gray, ColorByName.purple, ColorByName.pink],
-    2), ColorByName.blue);
+  // ------------- Color Picker --------------
+  private _colorPickerProperty: DialogProperty<number> | undefined;
+  public get colorPickerProperty() {
+    if (!this._colorPickerProperty)
+      this._colorPickerProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildColorPickerDescription("color", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
+        [ColorByName.blue, ColorByName.red, ColorByName.green, ColorByName.yellow, ColorByName.black, ColorByName.gray, ColorByName.purple, ColorByName.pink],
+        2), ColorByName.blue);
+    return this._colorPickerProperty;
+  }
 
   // ------------- boolean based toggle button ---------------
-  public lockProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildToggleDescription("lockToggle", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Lock")), true, undefined, false);
+  private _lockProperty: DialogProperty<boolean> | undefined;
+  public get lockProperty() {
+    if (!this._lockProperty)
+      this._lockProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildToggleDescription("lockToggle",
+        IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Lock")), true, undefined, false);
+    return this._lockProperty;
+  }
 
   // ------------- boolean based toggle button ---------------
-  public imageCheckBoxProperty = new DialogProperty<boolean>(
-    PropertyDescriptionHelper.buildImageCheckBoxDescription("imageCheckBox", "", "icon-clear-night", "icon-clear-day", [{
-      type: PropertyEditorParamTypes.SuppressEditorLabel, suppressLabelPlaceholder: true,
-    } as SuppressLabelEditorParams]),
-    true, undefined, false);
+  private _imageCheckBoxProperty: DialogProperty<boolean> | undefined;
+  public get imageCheckBoxProperty() {
+    if (!this._imageCheckBoxProperty)
+      this._imageCheckBoxProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildImageCheckBoxDescription("imageCheckBox", "", "icon-clear-night", "icon-clear-day", [{
+          type: PropertyEditorParamTypes.SuppressEditorLabel, suppressLabelPlaceholder: true,
+        } as SuppressLabelEditorParams]),
+        true, undefined, false);
+    return this._imageCheckBoxProperty;
+  }
 
   // ------------- text based edit field ---------------
-  public cityProperty = new DialogProperty<string>(
-    PropertyDescriptionHelper.buildTextEditorDescription("city", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.City")),
-    "Exton", undefined);
+  private _cityProperty: DialogProperty<string> | undefined;
+  public get cityProperty() {
+    if (!this._cityProperty)
+      this._cityProperty = new DialogProperty<string>(PropertyDescriptionHelper.buildTextEditorDescription("city",
+        IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.City")), "Exton", undefined);
+    return this._cityProperty;
+  }
 
   // ------------- text based edit field ---------------
-  public stateProperty = new DialogProperty<string>(
-    PropertyDescriptionHelper.buildTextEditorDescription("state", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.State"),
-      [
-        {
-          type: PropertyEditorParamTypes.InputEditorSize,
-          size: 4,
-        } as InputEditorSizeParams,
-      ]
-    ),
-    "PA", undefined);
+  private _stateProperty: DialogProperty<string> | undefined;
+  public get stateProperty() {
+    if (!this._stateProperty)
+      this._stateProperty = new DialogProperty<string>(
+        PropertyDescriptionHelper.buildTextEditorDescription("state", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.State"),
+          [
+            {
+              type: PropertyEditorParamTypes.InputEditorSize,
+              size: 4,
+            } as InputEditorSizeParams,
+          ]
+        ),
+        "PA", undefined);
+    return this._stateProperty;
+  }
 
   // ------------- text based edit field ---------------
-  public coordinateProperty = new DialogProperty<string>(
-    PropertyDescriptionHelper.buildTextEditorDescription("coordinate", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Coordinate")),
-    "0.0, 0.0, 0.0", undefined);
+  private _coordinateProperty: DialogProperty<string> | undefined;
+  public get coordinateProperty() {
+    if (!this._coordinateProperty)
+      this._coordinateProperty = new DialogProperty<string>(
+        PropertyDescriptionHelper.buildTextEditorDescription("coordinate", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Coordinate")),
+        "0.0, 0.0, 0.0", undefined);
+    return this._coordinateProperty;
+  }
 
   // ------------- text based edit field ---------------
-  public numberProperty = new DialogProperty<number>(
-    PropertyDescriptionHelper.buildNumberEditorDescription("numberVal", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Number"),
-      {
-        type: PropertyEditorParamTypes.Range,
-        step: 2,
-        precision: 0,
-        minimum: 0,
-        maximum: 1000,
-      } as RangeEditorParams), 14.0 );
+  private _numberProperty: DialogProperty<number> | undefined;
+  public get numberProperty() {
+    if (!this._numberProperty)
+      this._numberProperty = new DialogProperty<number>(
+        PropertyDescriptionHelper.buildNumberEditorDescription("numberVal", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Number"),
+          {
+            type: PropertyEditorParamTypes.Range,
+            step: 2,
+            precision: 0,
+            minimum: 0,
+            maximum: 1000,
+          } as RangeEditorParams), 14.0);
+    return this._numberProperty;
+  }
 
   // ------------- display station value as text  ---------------
   private _stationFormatterSpec?: FormatterSpec;
@@ -226,18 +270,30 @@ export class ToolWithSettings extends PrimitiveTool {
     return numberValue.toFixed(2);
   }
 
-  public stationProperty = new DialogProperty<string>(
-    PropertyDescriptionHelper.buildTextEditorDescription("station", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Station")),
-    this.formatStation(0.0), undefined);
-
-  // ------------- Length (persisted in meters) ---------------
-  public lengthProperty = new DialogProperty<number>(new LengthDescription("length"), 1.5);
+  private _stationProperty: DialogProperty<string> | undefined;
+  public get stationProperty() {
+    if (!this._stationProperty)
+      this._stationProperty = new DialogProperty<string>(
+        PropertyDescriptionHelper.buildTextEditorDescription("station", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Station")),
+        this.formatStation(0.0), undefined);
+    return this._stationProperty;
+  }
 
   // ------------- Survey Length ---------------
-  public surveyLengthProperty = new DialogProperty<number>(new SurveyLengthDescription("surveyLength", "Survey"), 51.25);
+  private _surveyLengthProperty: DialogProperty<number> | undefined;
+  public get surveyLengthProperty() {
+    if (!this._surveyLengthProperty)
+      this._surveyLengthProperty = new DialogProperty<number>(new SurveyLengthDescription("surveyLength", "Survey"), 51.25);
+    return this._surveyLengthProperty;
+  }
 
   // ------------- Angle ---------------
-  public angleProperty = new DialogProperty<number>(new AngleDescription("angle", "Angle"), 0.0);
+  private _angleProperty: DialogProperty<number> | undefined;
+  public get angleProperty() {
+    if (!this._angleProperty)
+      this._angleProperty = new DialogProperty<number>(new AngleDescription("angle", "Angle"), 0.0);
+    return this._angleProperty;
+  }
 
   // -------- end of ToolSettings ----------
 

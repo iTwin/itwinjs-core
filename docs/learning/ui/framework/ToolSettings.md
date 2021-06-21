@@ -5,7 +5,74 @@ These UI components allow users to control settings/properties used by the "acti
 
 ## Default ToolSettings Provider
 
-Any Tool derived from Interactive tool can implement the method `supplyToolSettingsProperties` to supply an array of `DialogItem` objects that define the  property definitions and its position with a grid layout. The DefaultToolSettings provider will then automatically generate a type editor for the type of data required and show that editor in the row and column specified.  Unless suppressed via an `EditorParams`, a label will be generated using the `displayLabel` for the property and shown in the column to the left of the editor. .
+Any Tool derived from Interactive tool can implement the method `supplyToolSettingsProperties` to supply an array of `DialogItem` objects that define the property definitions and its position with a grid layout. The DefaultToolSettings provider will then automatically generate a type editor for the type of data required and show that editor in the row and column specified.  Unless suppressed via an `EditorParams`, a label will be generated using the `displayLabel` for the property and shown in the column to the left of the editor.
+
+### Example of Tool Defining properties to be shown in Tool Setting Zone
+
+```tsx
+export class SampleToolWithSetting extends PrimitiveTool {
+  public static toolId = "SampleToolWithSetting";
+
+  // --- some code removed for brevity ---
+
+  // is set the tool uses specified length value, if not tool calculates value an reports it back to UI via syncLengthInUi
+  private _useLengthProperty: DialogProperty<boolean> | undefined;
+  public get useLengthProperty() {
+    if (!this._useLengthProperty)
+      this._useLengthProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildLockPropertyDescription("useLength"), false);
+    return this._useLengthProperty;
+  }
+  public get useLength(): boolean { return this.useLengthProperty.value; }
+  public set useLength(value: boolean) { this.useLengthProperty.value = value; }
+
+  // length value to be used by tool if useLength is true
+  private _lengthProperty: DialogProperty<number> | undefined;
+  public get lengthProperty() {
+    if (!this._lengthProperty)
+      this._lengthProperty = new DialogProperty<number>(new LengthDescription("length", "Length")),
+        0.1, undefined, !this.useLength);
+    return this._lengthProperty;
+  }
+  public get length(): number { return this.lengthProperty.value; }
+  public set length(value: number) { this.lengthProperty.value = value; }
+
+  // Called by UI code to get list of properties to display in Tool Setting zone
+  public supplyToolSettingsProperties(): DialogItem[] | undefined {
+    const toolSettings = new Array<DialogItem>();
+      this._lengthProperty.isDisabled = !this.useLength; // enable length field when checkbox is checked
+      const useLengthLock = this._useLengthProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 });
+      toolSettings.push(this._lengthProperty.toDialogItem({ rowPriority: 2, columnIndex: 1 }, useLengthLock));
+    }
+    return toolSettings;
+  }
+
+  // Respond to user changes in the tool settings UI components
+  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+    if (updatedValue.propertyName === this.useLengthProperty.name) {
+      this.useLength = updatedValue.value.value as boolean;
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.useLengthProperty.item);
+      this.syncLengthState();
+    } else if (updatedValue.propertyName === this.lengthProperty.name) {
+      if (!updatedValue.value.value) {
+        this.syncLengthState(); // force UI to redisplay last valid value
+        return false;
+      }
+      this.length = updatedValue.value.value as number;
+      IModelApp.toolAdmin.toolSettingsState.saveToolSettingProperty(this.toolId, this.lengthProperty.item);
+      return true;
+    }
+    return false;
+  }
+
+  // Refresh the UI with the latest values from the tool
+  private syncLengthInUi(): void {
+    this._lengthProperty.displayValue = (this.lengthProperty.description as LengthDescription).format(this.length);
+    this._lengthProperty.isDisabled = !this.useLength;
+    this.syncToolSettingsProperties([this.lengthProperty.syncItem]);
+  }
+}
+```
 
 ### Informing Tool of property changes
 
