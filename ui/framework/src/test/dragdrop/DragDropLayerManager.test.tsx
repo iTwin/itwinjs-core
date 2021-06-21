@@ -8,6 +8,8 @@ import { BeDragDropContext } from "@bentley/ui-components";
 import { DragDropLayerManager, DragDropLayerRenderer } from "../../ui-framework";
 import TestUtils, { mount } from "../TestUtils";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("DragDropLayerManager", () => {
 
   before(async () => {
@@ -19,11 +21,11 @@ describe("DragDropLayerManager", () => {
   });
 
   it("getType returns undefined when no type set", () => {
-    expect(DragDropLayerManager.getType()).to.be.undefined; // eslint-disable-line deprecation/deprecation
+    expect(DragDropLayerManager.getType()).to.be.undefined;
   });
 
   it("getActiveLayer returns undefined when no type set", () => {
-    expect(DragDropLayerManager.getActiveLayer()).to.be.undefined; // eslint-disable-line deprecation/deprecation
+    expect(DragDropLayerManager.getActiveLayer()).to.be.undefined;
   });
 
   it("DragDropLayerRenderer should mount", () => {

@@ -35,7 +35,7 @@ import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley
 import { SampleModelessDialog } from "../dialogs/SampleModelessDialog";
 import { SampleModalDialog } from "../dialogs/SampleModalDialog";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
   public currentPageIndex = 0;

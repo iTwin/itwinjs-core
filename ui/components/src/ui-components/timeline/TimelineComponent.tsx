@@ -78,8 +78,6 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
       repeat: this.props.repeat ? true : false,
     };
 
-    this._expandLabel = UiComponents.translate("timeline.expand");
-    this._minimizeLabel = UiComponents.translate("timeline.minimize");
     this._repeatLabel = UiComponents.translate("timeline.repeat");
     // istanbul ignore else
     if (this.props.componentId) { // can't handle an event if we have no id
@@ -356,9 +354,6 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   };
 
   private _renderSettings = () => {
-    const expandName = (this.state.minimized) ? this._expandLabel : this._minimizeLabel;
-    const hasDates = this.props.startDate && this.props.endDate;
-    const alwaysMinimized = this.props.alwaysMinimized;
     const { totalDuration } = this.state;
     return (
       <>
@@ -367,7 +362,6 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
           role="button" tabIndex={-1} title={UiComponents.translate("button.label.settings")}
         ></span>
         <ContextMenu parent={this._settings} isOpened={this.state.isSettingsOpen} onClickOutside={this._onCloseSettings.bind(this)} position={RelativePosition.BottomRight}>
-          {!alwaysMinimized && hasDates && <ContextMenuItem name={expandName} onClick={this._onModeChanged} />}
           <ContextMenuItem name={this._repeatLabel} checked={this.state.repeat} onClick={this._onRepeatChanged} />
           <ContextMenuItem isSeparator={true} />
           <ContextMenuItem name={UiComponents.translate("timeline.slow")} checked={totalDuration === slowSpeed} onClick={this._onSetTotalDuration.bind(this, slowSpeed)} />
@@ -384,11 +378,10 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     const currentDate = this._currentDate();
     const durationString = this._displayTime(currentDuration);
     const totalDurationString = this._displayTime(totalDuration);
-    const hasDates = startDate && endDate;
-    const miniMode = minimized || !hasDates;
+    const hasDates = !!startDate && !!endDate;
 
     return (
-      <div data-testid="timeline-component" className={classnames("timeline-component", miniMode && "minimized", hasDates && "has-dates")} >
+      <div data-testid="timeline-component" className={classnames("timeline-component", !!minimized && "minimized", hasDates && "has-dates")} >
         <div className="header">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
           <PlayerButton className="play-backward" icon="icon-caret-left" onClick={this._onBackward}
@@ -399,7 +392,6 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
           <PlayerButton className="play-forward" icon="icon-caret-right" onClick={this._onForward}
             title={UiComponents.translate("timeline.backward")} />
           <span className="current-date">{currentDate.toLocaleDateString()}</span>
-          {!miniMode && this._renderSettings()}
         </div>
         <div className="scrubber">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
@@ -415,7 +407,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
             startDate={startDate}
             endDate={endDate}
             isPlaying={this.state.isPlaying}
-            inMiniMode={miniMode}
+            inMiniMode={!!minimized}
             showTime={!showDuration}
             onChange={this._onTimelineChange}
             onUpdate={this._onTimelineChange}
@@ -425,7 +417,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
             {hasDates && !showDuration && <span className="end-time">{endDate!.toLocaleTimeString()}</span>}
             {showDuration && <InlineEdit className="duration-end-time" defaultValue={totalDurationString} onChange={this._onTotalDurationChange} />}
           </div>
-          {miniMode && this._renderSettings()}
+          {minimized && this._renderSettings()}
         </div>
       </div>
     );
