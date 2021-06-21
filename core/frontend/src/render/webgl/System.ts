@@ -410,7 +410,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   /** Enable or disable telemetry for the render system. The system will use [[IModelApp.telemetry]] to post the telemetry data.
    * When enabled, this will send the data contained in [[FrameStats]] every rendered frame to the [[IModelApp.telemetry]] object.
-   * @param _enable If true, enable render system telemetry. Otherwise, disable render system telemetry.
+   * @param enable If true, enable render system telemetry. Otherwise, disable render system telemetry.
    * @alpha
    **/
   public enableTelemetry(enable: boolean) {
