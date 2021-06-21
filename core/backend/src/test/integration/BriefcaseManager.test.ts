@@ -105,22 +105,22 @@ describe("BriefcaseManager (#integration)", () => {
     assert.isFalse(IModelJsFs.existsSync(pathname3));
   });
 
-  it.only("should open iModels of specific versions from the Hub", async () => {
+  it("should open iModels of specific versions from the Hub", async () => {
     const iModelFirstVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON() });
     assert.exists(iModelFirstVersion);
-    assert.strictEqual(iModelFirstVersion.changeSetId!, "");
+    assert.strictEqual(iModelFirstVersion.changeset.id, "");
 
     const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: readOnlyTestIModelId });
 
     for (const [arrayIndex, versionName] of readOnlyTestVersions.entries()) {
       const iModelFromVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[arrayIndex + 1].id).toJSON() });
       assert.exists(iModelFromVersion);
-      assert.strictEqual(iModelFromVersion.changeSetId!, changeSets[arrayIndex + 1].id);
+      assert.strictEqual(iModelFromVersion.changeset.id, changeSets[arrayIndex + 1].id);
 
       const iModelFromChangeSet = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.named(versionName).toJSON() });
       assert.exists(iModelFromChangeSet);
       assert.strictEqual(iModelFromChangeSet, iModelFromVersion);
-      assert.strictEqual(iModelFromChangeSet.changeSetId!, changeSets[arrayIndex + 1].id);
+      assert.strictEqual(iModelFromChangeSet.changeset.id, changeSets[arrayIndex + 1].id);
 
       const elementCount = iModelFromVersion.withStatement("SELECT COUNT(*) FROM bis.Element", (stmt) => {
         stmt.step();

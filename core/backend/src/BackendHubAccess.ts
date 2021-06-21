@@ -7,71 +7,10 @@
  */
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { ChangesetId, ChangesetIndex, ChangesetIndexAndId, CodeProps, IModelVersion } from "@bentley/imodeljs-common";
+import { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { DownloadRequest } from "./CheckpointManager";
 
-/** @internal */
-export type LocalFileName = string;
-/** @internal */
-export type LocalDirName = string;
-
-/** supply either changeset index, id, or both
-  * @internal
-  */
-export type ChangesetIndexOrId = ChangesetIndexAndId | { index: ChangesetIndex, id?: never } | { id: ChangesetId, index?: never };
-
-/** Value to indicate whether a changeset contains schema changes or not
- * @public */
-export enum ChangesetType {
-  /** changeset does *not* contain schema changes. */
-  Regular = 0,
-  /** changeset *does* contain schema changes. */
-  Schema = 1,
-}
-
-/** Properties of a changeset
- * @internal
- */
-export interface ChangesetProps {
-  /** The index (sequence number) from IModelHub for this changeset. Larger index values were pushed later. */
-  index: ChangesetIndex;
-  /** the ChangesetId */
-  id: ChangesetId;
-  /** the ChangeSetId of the parent changeset of this changeset */
-  parentId: ChangesetId;
-  /** The type of changeset */
-  changesType: ChangesetType;
-  /** The user-supplied description of the work this changeset holds */
-  description: string;
-  /** The BriefcaseId of the briefcase that created this changeset */
-  briefcaseId: number;
-  /** The date this changeset was uploaded to the hub */
-  pushDate: string;
-  /** The identity of the user that created this changeset */
-  userCreated: string;
-  /** The size, in bytes, of this changeset */
-  size?: number;
-}
-
-/** Properties of a changeset file
- * @internal
- */
-export interface ChangesetFileProps extends ChangesetProps {
-  /** The full pathname of the local file holding this changeset. */
-  pathname: LocalFileName;
-}
-
-/**
- * A range of changesets
- * @internal
- */
-export interface ChangesetRange {
-  /** index of the first changeset */
-  first: ChangesetIndex;
-  /** index of last changeset. If undefined, all changesets after first are returned. */
-  end?: ChangesetIndex;
-}
 
 /** The scope of a lock.
  * @public

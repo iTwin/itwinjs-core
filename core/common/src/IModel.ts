@@ -12,27 +12,12 @@ import {
 import {
   Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@bentley/geometry-core";
+import { ChangesetId, ChangesetIdWithIndex, ChangesetIndex } from "./ChangesetProps";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { AxisAlignedBox3d } from "./geometry/Placement";
 import { IModelError } from "./IModelError";
 import { ThumbnailProps } from "./Thumbnail";
-
-/** A string that identifies a changeset.
- * @note this string is *not* a Guid. It is generated internally based on the content of the changeset.
- * @public
- */
-export type ChangesetId = string;
-
-/** The index of a changeset, assigned by iModelHub. Values >= 0 are invalid.
- * @public
- */
-export type ChangesetIndex = number;
-
-/** The index *and* Id of a changeset
- * @public
- */
-export interface ChangesetIndexAndId { index: ChangesetIndex, id: ChangesetId }
 
 /** The properties to open a connection to an iModel for RPC operations.
  * @public
@@ -457,7 +442,7 @@ export abstract class IModel implements IModelProps {
   public get iModelId(): GuidString | undefined { return this._iModelId; }
 
   /** @public */
-  public changeset: { id: string, index: number };
+  public changeset: ChangesetIdWithIndex;
 
   /** The Id of the last changeset that was applied to this iModel.
    * @note An empty string indicates the first version
@@ -478,6 +463,7 @@ export abstract class IModel implements IModelProps {
       contextId: this.contextId,
       iModelId: this.iModelId,
       changeSetId: this.changeset.id,
+      changesetIndex: this.changeset.index,
       openMode: this.openMode,
     };
   }
@@ -488,11 +474,12 @@ export abstract class IModel implements IModelProps {
       this._fileKey = tokenProps.key;
       this._contextId = tokenProps.contextId;
       this._iModelId = tokenProps.iModelId;
+      this.changeset = { id: tokenProps.changeSetId ?? "", index: tokenProps.changesetIndex };
     } else {
       this._fileKey = "";
+      this.changeset = { id: "", index: 0 };
     }
-    this.changeset = { id: tokenProps?.changeSetId ?? "", index: tokenProps?.changesetIndex ?? -1 };
-    this.openMode = openMode; // Note: The open mode passed through the RPC layer is ignored in the case of IModelDb-s
+    this.openMode = openMode;
   }
 
   /** @internal */

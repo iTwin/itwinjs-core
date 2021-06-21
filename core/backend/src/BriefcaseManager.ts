@@ -16,13 +16,12 @@ import {
 } from "@bentley/bentleyjs-core";
 import { IModelHubError } from "@bentley/imodelhub-client";
 import {
-  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps,
+  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, ChangesetFileProps, ChangesetIndexOrId, ChangesetProps, ChangesetType, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps,
   RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
-import { ChangesetFileProps, ChangesetIndexOrId, ChangesetProps, ChangesetType } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
@@ -208,13 +207,16 @@ export class BriefcaseManager {
     const fileName = request.fileName ?? this.getFileName({ briefcaseId, iModelId: request.iModelId });
     const asOf = request.asOf ?? IModelVersion.latest().toJSON();
 
+    const changeset = await this.changesetFromVersion(requestContext, IModelVersion.fromJSON(asOf), request.iModelId);
+
     const args = {
       localFile: fileName,
       checkpoint: {
         requestContext,
         contextId: request.contextId,
         iModelId: request.iModelId,
-        changeSetId: (await this.changesetFromVersion(requestContext, IModelVersion.fromJSON(asOf), request.iModelId)).id,
+        changeSetId: changeset.id,
+        changesetIndex: changeset.index,
       },
       onProgress: request.onProgress,
     };
@@ -227,6 +229,7 @@ export class BriefcaseManager {
       iModelId: request.iModelId,
       contextId: request.contextId,
       changeSetId: args.checkpoint.changeSetId,
+      changesetIndex: args.checkpoint.changesetIndex,
       fileSize,
     };
 
@@ -397,7 +400,7 @@ export class BriefcaseManager {
     if (targetIndex < 0)
       targetIndex = (await IModelHost.hubAccess.queryChangeset({ requestContext, changeset: target, iModelId: db.iModelId })).index;
     const parenChangeset = db.nativeDb.getParentChangeset();
-    if (parenChangeset.index < 0)
+    if (undefined === parenChangeset.index)
       parenChangeset.index = (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: db.iModelId, changeset: { id: parenChangeset.id } })).index;
 
     // Determine the reinstates, reversals or merges required
@@ -438,8 +441,8 @@ export class BriefcaseManager {
 
   private static async applyChangesets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetIndex: number, processOption: ChangeSetApplyOption): Promise<void> {
     let currentChangeSetIndex = db.changeset.index;
-    if (currentChangeSetIndex <= 0)
-      currentChangeSetIndex = (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: db.iModelId, changeset: { id: db.changeSetId! } })).index;
+    if (currentChangeSetIndex === undefined)
+      currentChangeSetIndex = (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: db.iModelId, changeset: { id: db.changeset.id } })).index;
     if (targetChangeSetIndex === currentChangeSetIndex)
       return; // nothing to apply
 
@@ -514,7 +517,7 @@ export class BriefcaseManager {
 
     let currentChangeSetIndex = db.changeset.index;
     try {
-      if (currentChangeSetIndex < 0)
+      if (currentChangeSetIndex === undefined)
         currentChangeSetIndex = (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: db.iModelId, changeset: db.changeset })).index;
       requestContext.enter();
     } catch (error) {

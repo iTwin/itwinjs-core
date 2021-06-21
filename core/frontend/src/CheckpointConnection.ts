@@ -159,7 +159,7 @@ export class CheckpointConnection extends IModelConnection {
       const openResponse = await CheckpointConnection.callOpen(requestContext, iModelRpcProps, this.openMode, this.routingContext);
       // The new/reopened connection may have a new rpcKey and/or changeSetId, but the other IModelRpcTokenProps should be the same
       this._fileKey = openResponse.key;
-      this._changeset = { id: openResponse.changeSetId!, index: openResponse.changesetIndex! };
+      this.changeset = { id: openResponse.changeSetId!, index: openResponse.changesetIndex };
 
     } catch (error) {
       reject(error.message);
@@ -225,7 +225,7 @@ export class RemoteBriefcaseConnection extends CheckpointConnection {
   public async pullAndMergeChanges(): Promise<void> {
     const rpc = IModelWriteRpcInterface.getClientForRouting(this.routingContext.token);
     const newProps: IModelConnectionProps = await rpc.pullAndMergeChanges(this.getRpcProps());
-    this._changeset = { id: newProps.changeSetId!, index: newProps.changesetIndex! };
+    this.changeset = { id: newProps.changeSetId!, index: newProps.changesetIndex };
     this.initialize(newProps.name!, newProps);
   }
 
@@ -235,7 +235,7 @@ export class RemoteBriefcaseConnection extends CheckpointConnection {
   public async pushChanges(description: string): Promise<void> {
     const rpc = IModelWriteRpcInterface.getClientForRouting(this.routingContext.token);
     const newProps: IModelConnectionProps = await rpc.pushChanges(this.getRpcProps(), description);
-    this._changeset = { id: newProps.changeSetId!, index: newProps.changesetIndex! };
+    this.changeset = { id: newProps.changeSetId!, index: newProps.changesetIndex };
     this.initialize(newProps.name!, newProps);
   }
   /** Update the project extents of this iModel.

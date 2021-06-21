@@ -8,12 +8,12 @@ import { join } from "path";
 import * as semver from "semver";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { ChangesetType, Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  BackendLoggerCategory, BisCoreSchema, BriefcaseDb, BriefcaseManager, ChangesetType, ConcurrencyControl, ECSqlStatement, Element,
-  ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelJsNative, IModelTransformer,
-  NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
+  BackendLoggerCategory, BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements,
+  ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelJsNative, IModelTransformer, NativeLoggerCategory,
+  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
@@ -592,7 +592,7 @@ describe("IModelTransformerHub (#integration)", () => {
   async function saveAndPushChanges(briefcaseDb: BriefcaseDb, description: string, changesType?: ChangesetType): Promise<void> {
     await briefcaseDb.concurrencyControl.request(requestContext);
     briefcaseDb.saveChanges(description);
-    return briefcaseDb.pushChanges(requestContext, description, changesType as number);
+    await briefcaseDb.pushChanges(requestContext, description, changesType as number);
   }
 
   function populateMaster(iModelDb: IModelDb, numbers: number[]): void {

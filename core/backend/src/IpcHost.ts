@@ -223,8 +223,7 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async pushChanges(key: string, description: string): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
     const requestContext = await IModelHost.getAuthorizedContext();
-    await iModelDb.pushChanges(requestContext, description);
-    return iModelDb.changeset;
+    return iModelDb.pushChanges(requestContext, description);
   }
 
   public async toggleGraphicalEditingScope(key: string, startSession: boolean): Promise<boolean> {

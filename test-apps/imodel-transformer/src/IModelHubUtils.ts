@@ -8,9 +8,9 @@ import { assert, Config, GuidString } from "@bentley/bentleyjs-core";
 import { ElectronAuthorizationBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 import { BriefcaseQuery, Version } from "@bentley/imodelhub-client";
 import {
-  BriefcaseDb, BriefcaseManager, ChangesetProps, IModelHost, IModelHubBackend, IModelJsFs, NativeHost, RequestNewBriefcaseArg,
+  BriefcaseDb, BriefcaseManager, IModelHost, IModelHubBackend, IModelJsFs, NativeHost, RequestNewBriefcaseArg,
 } from "@bentley/imodeljs-backend";
-import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, ChangesetProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 export namespace IModelHubUtils {

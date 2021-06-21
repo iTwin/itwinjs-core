@@ -6,11 +6,10 @@
 import { join } from "path";
 import * as sinon from "sinon";
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
-import { ChangesetId, ChangesetIndex, CodeProps, IModelVersion } from "@bentley/imodeljs-common";
+import { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetFileProps, ChangesetIndexArg, ChangesetProps,
-  ChangesetRange, ChangesetRangeArg, CheckPointArg, IModelIdArg, LocalDirName, LocalFileName, LockProps,
+  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetIndexArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps,
 } from "../BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
 import { SnapshotDb } from "../IModelDb";

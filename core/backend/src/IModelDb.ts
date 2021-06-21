@@ -15,10 +15,10 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, ChangesetIndexAndId, Code, CodeSpec, CreateEmptySnapshotIModelProps,
-  CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps,
-  ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps,
-  EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, ChangesetIndexAndId, Code, CodeSpec,
+  CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation,
+  ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData,
+  EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps,
   IModelTileTreeProps, IModelVersion, LocalBriefcaseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
   ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
@@ -2321,11 +2321,12 @@ export class BriefcaseDb extends IModelDb {
         this.closeAndReopen(OpenMode.Readonly);
     }
 
-    this.changeset = this.nativeDb.getParentChangeset();
-    IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeset);
+    const changeset = this.nativeDb.getParentChangeset() as ChangesetIndexAndId;
+    this.changeset = changeset;
+    IpcHost.notifyTxns(this, "notifyPulledChanges", changeset);
 
     this.initializeIModelDb();
-    return this.changeset;
+    return changeset;
   }
 
   /* changeType argument is unused and will be removed in 3.0*/
@@ -2337,24 +2338,26 @@ export class BriefcaseDb extends IModelDb {
    * @throws [[IModelError]] If there are unsaved changes or the pull and merge fails.
    * @note This function is a no-op if there are no changes to push.
    */
-  public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string, _unused?: any): Promise<void> {
+  public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string, _unused?: any): Promise<ChangesetIndexAndId> {
     if (this.nativeDb.hasUnsavedChanges())
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes");
     if (!this.allowLocalChanges)
       throw new IModelError(BentleyStatus.ERROR, "Briefcase must be obtained with SyncMode.PullAndPush and opened ReadWrite");
     if (!this.nativeDb.hasPendingTxns()) {
       await this.concurrencyControl.onPushEmpty(requestContext);
-      return; // nothing to push
+      return this.changeset as ChangesetIndexAndId; // nothing to push
     }
 
     await this.concurrencyControl.onPushChanges(requestContext);
 
     await BriefcaseManager.pushChanges(requestContext, this, description);
-    this.changeset = this.nativeDb.getParentChangeset();
+    const changeset = this.nativeDb.getParentChangeset() as ChangesetIndexAndId;
+    this.changeset = changeset;
     this.initializeIModelDb();
 
-    IpcHost.notifyTxns(this, "notifyPushedChanges", this.changeset);
-    return this.concurrencyControl.onPushedChanges(requestContext);
+    IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
+    await this.concurrencyControl.onPushedChanges(requestContext);
+    return changeset
   }
 
   /** Reverse a previously applied set of changes

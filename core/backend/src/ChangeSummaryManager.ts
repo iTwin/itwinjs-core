@@ -8,9 +8,8 @@
 
 import * as path from "path";
 import { assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@bentley/bentleyjs-core";
-import { ChangedValueState, ChangeOpCode, ChangesetId, IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { ChangedValueState, ChangeOpCode, ChangesetFileProps, ChangesetId, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ChangesetFileProps } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";

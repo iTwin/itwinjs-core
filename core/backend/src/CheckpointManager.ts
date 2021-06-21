@@ -250,21 +250,25 @@ export class CheckpointManager {
       const db = SnapshotDb.openForApplyChangesets(targetFile);
       const nativeDb = db.nativeDb;
 
-      if (nativeDb.hasPendingTxns()) {
-        Logger.logWarning(loggerCategory, "Checkpoint with Txns found - deleting them", () => traceInfo);
-        nativeDb.deleteAllTxns();
-      }
-
-      if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Unassigned)
-        nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-
-      // Validate the native briefcase against the checkpoint meta-data
       try {
+        if (nativeDb.hasPendingTxns()) {
+          Logger.logWarning(loggerCategory, "Checkpoint with Txns found - deleting them", () => traceInfo);
+          nativeDb.deleteAllTxns();
+        }
+
+        if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Unassigned)
+          nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+
         CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
         // Apply change sets if necessary
         const parentChangeset = nativeDb.getParentChangeset();
         if (parentChangeset.id !== checkpoint.changeSetId)
           await BriefcaseManager.processChangesets(checkpoint.requestContext, db, { id: checkpoint.changeSetId, index: checkpoint.changesetIndex });
+        else {
+          // make sure the parent changeset index is saved in the file - old versions didn't have it.
+          parentChangeset.index = checkpoint.changesetIndex;
+          nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(parentChangeset));
+        }
       } finally {
         db.saveChanges();
         db.close();
@@ -315,7 +319,7 @@ export class CheckpointManager {
       nativeDb.setDbGuid(Guid.normalize(checkpoint.iModelId));
       // Required to reset the ChangeSetId because setDbGuid clears the value.
       nativeDb.saveLocalValue("ParentChangeSetId", dbChangeset.id);
-      if (dbChangeset.index > 0)
+      if (undefined !== dbChangeset.index)
         nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(dbChangeset));
     }
 

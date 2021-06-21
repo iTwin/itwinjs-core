@@ -8,10 +8,8 @@ import * as Yargs from "yargs";
 import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { Version } from "@bentley/imodelhub-client";
-import {
-  BackendLoggerCategory, BackendRequestContext, ChangesetProps, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
-} from "@bentley/imodeljs-backend";
-import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
+import { BackendLoggerCategory, BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
+import { BriefcaseIdValue, ChangesetProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ElementUtils } from "./ElementUtils";
 import { IModelHubUtils } from "./IModelHubUtils";
