@@ -256,7 +256,7 @@ export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
     while (stylePicker.firstChild)
       stylePicker.removeChild(stylePicker.firstChild);
 
-    let style = undefined;
+    let style;
     for (const name of decorator.mesh.styles.keys()) {
       if (!style)
         style = decorator.mesh.styles.get(name);

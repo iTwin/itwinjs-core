@@ -137,11 +137,11 @@ export class Surface {
     tb.addItem(createToolButton({
       iconUnicode: "\uea32", // play
       tooltip: "Analysis Style Example",
-      click: () => {
-        this.openBlankConnection({
+      click: async () => {
+        this.openBlankConnection({ // eslint-disable-line @typescript-eslint/no-floating-promises
           name: "Analysis Style Example",
           extents: new Range3d(0, 0, -30, 100, 100, 20),
-        }).then((viewer) => openAnalysisStyleExample(viewer));
+        }).then(async (viewer) => openAnalysisStyleExample(viewer));
       },
     }));
 
