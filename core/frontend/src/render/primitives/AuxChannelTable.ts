@@ -292,12 +292,6 @@ class AuxChannelTableBuilder {
       }
     }
 
-    const zeroDisplacement = false;
-    if (zeroDisplacement) {
-      range.low.set(0, 0, 0);
-      range.high.set(0, 0, 0);
-    }
-
     const qParams = QParams3d.fromRange(range);
     const qPoint = new QPoint3d();
     for (let i = 0; i < channel.data.length; i++) {
@@ -306,10 +300,8 @@ class AuxChannelTableBuilder {
 
       const data = channel.data[i];
       for (let j = 0; j < data.values.length; j += 3) {
-        if (!zeroDisplacement) {
-          point.set(data.values[j], data.values[j + 1], data.values[j + 2]);
-          qPoint.init(point, qParams);
-        }
+        point.set(data.values[j], data.values[j + 1], data.values[j + 2]);
+        qPoint.init(point, qParams);
 
         this._view.setUint16(byteIndex + 0, qPoint.x, true);
         this._view.setUint16(byteIndex + 2, qPoint.y, true);
