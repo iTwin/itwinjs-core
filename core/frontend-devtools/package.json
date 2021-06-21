@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-devtools",
-  "version": "2.18.0-dev.11",
+  "version": "2.18.0-dev.12",
   "description": "Debug menu and supporting UI widgets",
   "main": "lib/frontend-devtools.js",
   "imodeljsSharedLibrary": true,
