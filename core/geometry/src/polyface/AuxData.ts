@@ -9,6 +9,9 @@
 
 // import { Point2d } from "./Geometry2d";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty */
+import { Transform } from "../geometry3d/Transform";
+import { Matrix3d } from "../geometry3d/Matrix3d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { NumberArray } from "../geometry3d/PointHelpers";
 // import { Geometry } from "./Geometry";
 import { Range1d } from "../geometry3d/Range";
@@ -21,7 +24,7 @@ export enum AuxChannelDataType {
   Scalar = 0,
   /** Distance (scalar) scaling is applied if associated [[Polyface]] is scaled. 3 Data values (x,y.z) per entry. */
   Distance = 1,
-  /** Displacement added to  vertex position.  Transformed and scaled with associated [[Polyface]]. 3 Data values (x,y.z) per entry.,*/
+  /** Displacement added to  vertex position.  Rotated and scaled with associated [[Polyface]]. 3 Data values (x,y.z) per entry.,*/
   Vector = 2,
   /** Normal -- replaces vertex normal.  Rotated with associated [[Polyface]] transformation. 3 Data values (x,y.z) per entry. */
   Normal = 3,
@@ -180,4 +183,55 @@ export class PolyfaceAuxData {
     return new PolyfaceAuxData(visitorChannels, []);
   }
 
+  /** Apply `transform` to the data in each channel.
+   * @see [[AuxChannelDataType]] for details regarding how each data type is affected by the transform.
+   * @note This method may fail if a channel of [[AuxChannelDataType.Normal]] exists and `transform.matrix` is non-invertible.
+   * @returns true if the channels were all successfully transformed.
+   */
+  public transformInPlace(transform: Transform): boolean {
+    let inverseRot: Matrix3d | undefined;
+    const rot = transform.matrix;
+    const det = rot.determinant();
+    const scale = Math.pow(Math.abs(det), 1 / 3) * (det >= 0 ? 1 : -1);
+
+    for (const channel of this.channels) {
+      for (const data of channel.data) {
+        switch (channel.dataType) {
+          case AuxChannelDataType.Scalar:
+            continue;
+          case AuxChannelDataType.Distance: {
+            for (let i = 0; i < data.values.length; i++)
+              data.values[i] *= scale;
+
+            break;
+          }
+          case AuxChannelDataType.Normal: {
+            inverseRot = inverseRot ?? rot.inverse();
+            if (!inverseRot)
+                return false;
+
+            transformPoints(data.values, (point) => inverseRot!.multiplyTransposeVectorInPlace(point));
+            break;
+          }
+          case AuxChannelDataType.Vector: {
+            transformPoints(data.values, (point) => rot.multiplyVectorInPlace(point));
+            break;
+          }
+        }
+      }
+    }
+
+    return true;
+  }
+}
+
+function transformPoints(coords: number[], transform: (point: Point3d) => void): void {
+  const point = new Point3d();
+  for (let i = 0; i < coords.length; i += 3) {
+    point.set(coords[i], coords[i + 1], coords[i + 2]);
+    transform(point);
+    coords[i] = point.x;
+    coords[i + 1] = point.y;
+    coords[i + 2] = point.z;
+  }
 }

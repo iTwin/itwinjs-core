@@ -384,17 +384,17 @@ export class PolyfaceData {
     if (this.normal)
       this.normal.scaleInPlace(-1.0);
   }
-  /** Apply `transform` to point and normal arrays.
+  /** Apply `transform` to point and normal arrays and to auxData.
    * * IMPORTANT This base class is just a data carrier.  It does not know if the index order and normal directions have special meaning.
    * * i.e. caller must separately reverse index order and normal direction if needed.
    */
-  public tryTransformInPlace(
-    transform: Transform): boolean {
+  public tryTransformInPlace(transform: Transform): boolean {
     this.point.multiplyTransformInPlace(transform);
 
     if (this.normal && !transform.matrix.isIdentity)
       this.normal.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(transform.matrix);
-    return true;
+
+    return undefined === this.auxData || this.auxData.transformInPlace(transform);
   }
   /**
    * * Search for duplication of coordinates within points, normals, and params.

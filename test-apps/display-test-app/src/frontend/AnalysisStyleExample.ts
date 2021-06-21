@@ -64,12 +64,8 @@ async function createCantilever(): Promise<Polyface> {
   const polyface = IModelJson.Reader.parse(await response.json()) as Polyface;
   assert(polyface instanceof Polyface);
 
-  // ###TODO: Displacements don't appear to get scaled - they're supposed to.
-  const transformPolyface = false;
-  if (transformPolyface) {
-    const transform = Transform.createScaleAboutPoint(new Point3d(), 30);
-    polyface.tryTransformInPlace(transform);
-  }
+  const transform = Transform.createScaleAboutPoint(new Point3d(), 30);
+  polyface.tryTransformInPlace(transform);
 
   return polyface;
 }
