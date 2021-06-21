@@ -34,7 +34,7 @@ describe("Schema rules tests", () => {
       context = new SchemaContext();
       const schemaA = await Schema.fromJson(schemaAJson, context);
       const schemaB = await Schema.fromJson(schemaBJson, context);
-      await (schemaA as MutableSchema).addReference(schemaB);
+      await (schemaA as MutableSchema).addValidateReference(schemaB);
       const result = Rules.validateSchemaReferences(schemaA);
 
       for await (const _diagnostic of result)
@@ -80,8 +80,8 @@ describe("Schema rules tests", () => {
         const coreCA = await Schema.fromJson(coreCustomAttributesJson, context);
         const schemaA = await Schema.fromJson(schemaAJson, context);
         const schemaB = await Schema.fromJson(schemaBJson, context);
-        await (schemaB as MutableSchema).addReference(coreCA);
-        await (schemaA as MutableSchema).addReference(schemaB);
+        await (schemaB as MutableSchema).addValidateReference(coreCA);
+        await (schemaA as MutableSchema).addValidateReference(schemaB);
 
         const result = Rules.validateSchemaReferences(schemaA);
 
@@ -126,8 +126,8 @@ describe("Schema rules tests", () => {
         const schemaA = await Schema.fromJson(schemaAJson, context);
         const schemaB = await Schema.fromJson(schemaBJson, context);
         const schemaC = await Schema.fromJson(schemaCJson, context);
-        await (schemaA as MutableSchema).addReference(schemaB);
-        await (schemaA as MutableSchema).addReference(schemaC);
+        await (schemaA as MutableSchema).addValidateReference(schemaB);
+        await (schemaA as MutableSchema).addValidateReference(schemaC);
 
         const result = Rules.validateSchemaReferences(schemaA);
 
@@ -170,7 +170,7 @@ describe("Schema rules tests", () => {
         context = new SchemaContext();
         const schemaA = await Schema.fromJson(schemaAJson, context);
         const schemaB = await Schema.fromJson(schemaBJson, context);
-        await (schemaA as MutableSchema).addReference(schemaB);
+        await (schemaA as MutableSchema).addValidateReference(schemaB);
 
         const result = Rules.validateSchemaReferences(schemaA);
 
@@ -218,11 +218,11 @@ describe("Schema rules tests", () => {
         const schemaB = await Schema.fromJson(schemaBJson, context);
         const schemaC = await Schema.fromJson(schemaCJson, context);
         const schemaD = await Schema.fromJson(schemaDJson, context);
-        await (schemaA as MutableSchema).addReference(schemaB);
-        await (schemaA as MutableSchema).addReference(schemaC);
-        await (schemaA as MutableSchema).addReference(schemaD);
-        await (schemaC as MutableSchema).addReference(schemaA);
-        await (schemaD as MutableSchema).addReference(schemaA);
+        await (schemaA as MutableSchema).addValidateReference(schemaB);
+        await (schemaA as MutableSchema).addValidateReference(schemaC);
+        await (schemaA as MutableSchema).addValidateReference(schemaD);
+        await (schemaC as MutableSchema).addValidateReference(schemaA);
+        await (schemaD as MutableSchema).addValidateReference(schemaA);
 
         const result = Rules.validateSchemaReferences(schemaA);
 

@@ -47,6 +47,7 @@ export class Schema implements CustomAttributeContainerProps {
   protected _label?: string;
   protected _description?: string;
   public readonly references: Schema[];
+  public readonly validateReferences: Schema[];
   private readonly _items: Map<string, SchemaItem>;
   private _customAttributes?: Map<string, CustomAttribute>;
   /**
@@ -76,6 +77,7 @@ export class Schema implements CustomAttributeContainerProps {
     this._schemaKey = (typeof (nameOrKey) === "string") ? new SchemaKey(nameOrKey, new ECVersion(readVer as number, writeVer, minorVer)) : nameOrKey;
     this._context = context;
     this.references = [];
+    this.validateReferences = [];
     this._items = new Map<string, SchemaItem>();
 
     if (alias !== undefined && ECName.validate(alias)) {
@@ -347,6 +349,20 @@ export class Schema implements CustomAttributeContainerProps {
 
   protected addReferenceSync(refSchema: Schema): void {
     this.references.push(refSchema);
+  }
+
+  protected async addValidateReference(refSchema: Schema): Promise<void> {
+      this.addValidateReferenceSync(refSchema);
+  }
+
+  protected addValidateReferenceSync(refSchema: Schema): void {
+    const findFunc = (schema: Schema) => {
+      return schema.schemaKey.matches(refSchema.schemaKey);
+    }
+
+    const foundRef = this.validateReferences.find(findFunc)
+    if (undefined === foundRef)
+      this.validateReferences.push(refSchema);
   }
 
   /**
@@ -663,5 +679,7 @@ export abstract class MutableSchema extends Schema {
   public abstract addItem<T extends SchemaItem>(item: T): void;
   public abstract addReference(refSchema: Schema): Promise<void>;
   public abstract addReferenceSync(refSchema: Schema): void;
+  public abstract addValidateReference(refSchema: Schema): Promise<void>;
+  public abstract addValidateReferenceSync(refSchema: Schema): void;
   public abstract setContext(schemaContext: SchemaContext): void;
 }

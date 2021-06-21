@@ -223,7 +223,7 @@ describe("Full Schema Deserialization", () => {
       await expect(Schema.fromJson(json, context)).to.be.rejectedWith(ECObjectsError, `ECObjects-3: Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB\r\n`);
     });
 
-    it.only("should throw for cyclic references (async)", async () => {
+    it("should throw for cyclic references (async)", async () => {
       const context = new SchemaContext();
 
       const schemaAJson = {
@@ -260,7 +260,6 @@ describe("Full Schema Deserialization", () => {
           { name: "RefSchemaB", version: "2.0.0" },
         ],
       };
-      locater.addSchema("TestSchema", json);
       await expect(Schema.fromJson(json, context)).to.be.rejectedWith(ECObjectsError, `ECObjects-3: Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB\r\n`);
 
       const context2 = new SchemaContext();

@@ -76,17 +76,8 @@ export class SchemaReadHelper<T = unknown> {
     if (cachedSchema)
       return cachedSchema;
 
-    console.log(`Here, read Schema ${schema.name}`);
-    // Load schema references first
-    // Need to figure out if other schemas are present.
-    for (const reference of this._parser.getReferences()) {
-      await this.loadSchemaReference(reference);
-    }
-
-    const cachedLoadingSchema = await this._context.getCachedLoadingSchema(schema.schemaKey);
-    if (!cachedLoadingSchema)
-      await this._context.addLoadingSchema(schema, this.loadSchema(schema));
-
+    await this._context.addSchema(schema, async () => this.loadSchema(schema));
+    console.log(`Here, added Schema ${schema.name} to cache`);
     // Await loading the rest of the schema
     const loadedSchema = await this._context.getSchema<U>(schema.schemaKey);
 
@@ -95,6 +86,12 @@ export class SchemaReadHelper<T = unknown> {
 
   private async loadSchema<U extends Schema>(schema: U): Promise<U> {
     console.log(`Loading schema ${schema.name}`);
+    // Load schema references first
+    // Need to figure out if other schemas are present.
+    for (const reference of this._parser.getReferences()) {
+      await this.validateSchemaReference(reference);
+      await this.loadSchemaReference(reference);
+    }
 
     if (this._visitorHelper)
       await this._visitorHelper.visitSchema(schema, false);
@@ -133,14 +130,14 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
+    // Need to add this schema to the context to be able to locate schemaItems within the context.
+    this._context.addSchemaSync(schema);
+
     // Load schema references first
     // Need to figure out if other schemas are present.
     for (const reference of this._parser.getReferences()) {
       this.loadSchemaReferenceSync(reference);
     }
-
-    // Need to add this schema to the context to be able to locate schemaItems within the context.
-    this._context.addSchemaSync(schema);
 
     if (this._visitorHelper)
       this._visitorHelper.visitSchemaSync(schema, false);
@@ -183,21 +180,15 @@ export class SchemaReadHelper<T = unknown> {
     this._schema = schema;
 
     console.log(`Here2, read loading Schema ${schema.name}`);
-    const cachedSchema = await this._context.getCachedSchema<U>(schema.schemaKey);
-    if (cachedSchema)
-      return cachedSchema;
+    const cachedLoadingSchema = await this._context.getLoadedOrLoadingSchema<U>(schema.schemaKey);
+    if (!cachedLoadingSchema)
+      await this._context.addSchema(schema, async () => this.loadSchema(schema));
 
     // Load schema references first
     // Need to figure out if other schemas are present.
     for (const reference of this._parser.getReferences()) {
-      await this.loadSchemaReference(reference);
+      await this.validateSchemaReference(reference);
     }
-
-    const cachedLoadingSchema = await this._context.getCachedLoadingSchema<U>(schema.schemaKey);
-    if (cachedLoadingSchema)
-      return cachedLoadingSchema;
-
-    await this._context.addLoadingSchema(schema, this.loadSchema(schema));
 
     return schema;
   }
@@ -210,34 +201,30 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
+    const cachedLoadingSchema = this._context.getLoadedOrLoadingSchemaSync<U>(schema.schemaKey);
+    if (cachedLoadingSchema)
+      return cachedLoadingSchema;
+
+    this._context.addSchemaSync(schema, async () => this.loadSchema(schema));
+
     // Load schema references first
     // Need to figure out if other schemas are present.
     for (const reference of this._parser.getReferences()) {
       this.loadSchemaReferenceSync(reference);
     }
 
-    const cachedLoadingSchema = this._context.getCachedLoadingSchemaSync<U>(schema.schemaKey);
-    if (cachedLoadingSchema)
-      return cachedLoadingSchema;
-
-    this._context.addLoadingSchemaSync(schema, this.loadSchema(schema));
-
     return schema;
   }
 
-  /**
-   * Ensures that the schema references can be located and adds them to the schema.
-   * @param ref The object to read the SchemaReference's props from.
-   */
-  private async loadSchemaReference(ref: SchemaReferenceProps): Promise<void> {
+  private async validateSchemaReference(ref: SchemaReferenceProps): Promise<void> {
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
     console.log(`Schema ${this._schema!.name} referencing ${ref.name}`);
-    const refSchema = await this._context.getLoadingSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
-    console.log(`Got here, Finished schema ${this._schema!.name} referencing ${ref.name}`);
+    let refSchema = await this._context.getLoadingSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
     if (undefined === refSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
-    await (this._schema as MutableSchema).addReference(refSchema);
+    await (this._schema as MutableSchema).addValidateReference(refSchema);
+    console.log(`Got here, Schema ${this._schema!.name} added reference ${ref.name}`);
     const diagnostics = validateSchemaReferences(this._schema!);
 
     let errorMessage: string = "";
@@ -248,8 +235,20 @@ export class SchemaReadHelper<T = unknown> {
     if (errorMessage) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `${errorMessage}`);
     }
+  }
 
-    // await this._context.getSchema(schemaKey);
+  /**
+   * Ensures that the schema references can be located and adds them to the schema.
+   * @param ref The object to read the SchemaReference's props from.
+   */
+  private async loadSchemaReference(ref: SchemaReferenceProps): Promise<void> {
+    const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
+    const refSchema = await this._context.getSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
+    if (undefined === refSchema)
+      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
+
+    await (this._schema as MutableSchema).addReference(refSchema);
+    console.log(`Got here, finished getting reference ${ref.name}`);
   }
 
   /**

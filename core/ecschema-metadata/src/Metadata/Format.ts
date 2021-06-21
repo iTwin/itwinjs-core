@@ -222,8 +222,10 @@ export class Format extends SchemaItem {
     // Units are separated from the rest of the deserialization because of the need to have separate sync and async implementation
     for (const unit of formatProps.composite.units) {
       const newUnit = await this.schema.lookupItem<Unit | InvertedUnit>(unit.name);
-      if (undefined === newUnit)
+      if (undefined === newUnit) {
+        console.log(unit.name);
         throw new ECObjectsError(ECObjectsStatus.InvalidECJson, ``);
+      }
       this.addUnit(newUnit, unit.label);
     }
   }
