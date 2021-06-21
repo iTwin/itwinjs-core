@@ -635,7 +635,7 @@ describe("ImodelChangesetPerformance own data", () => {
     nativeDb.closeIModel();
   }
 
-  async function lastChangesetToken(modelId: string): Promise<IModelJsNative.ChangeSetProps> {
+  async function lastChangesetToken(modelId: string): Promise<IModelJsNative.ChangesetFileProps> {
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     const changeSets = await IModelHubBackend.iModelClient.changeSets.get(requestContext, modelId);
     const changeSet = changeSets[changeSets.length - 1];
@@ -644,7 +644,7 @@ describe("ImodelChangesetPerformance own data", () => {
     const downloadDir = path.join(BriefcaseManager.cacheDir, modelId, "csets");
     await IModelHubBackend.iModelClient.changeSets.download(requestContext, modelId, query, downloadDir);
     const pathname = path.join(downloadDir, changeSet.fileName!);
-    return { id: changeSet.id!, parentId: changeSet.parentId!, pathname, changesType: changeSet.changesType, index: +changeSet.index! };
+    return { id: changeSet.id!, parentId: changeSet.parentId!, pathname, changesType: changeSet.changesType!, index: +changeSet.index!, pushDate: "", userCreated: "", briefcaseId: 0, description: "" };
   }
 
   before(async () => {
@@ -796,7 +796,7 @@ describe("ImodelChangesetPerformance own data", () => {
         requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
         try {
           const startTime = new Date().getTime();
-          saIModel.nativeDb.applyChangeSet(csToken, applyOption);
+          saIModel.nativeDb.applyChangeset(csToken, applyOption);
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("ImodelChangesetPerformance", "ChangesetInsert", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });
@@ -827,7 +827,7 @@ describe("ImodelChangesetPerformance own data", () => {
         console.log(`Applying Delete changeset to iModel ${iModelName}.`);
         try {
           const startTime = new Date().getTime();
-          saIModel.nativeDb.applyChangeSet(csToken, applyOption);
+          saIModel.nativeDb.applyChangeset(csToken, applyOption);
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("ImodelChangesetPerformance", "ChangesetDelete", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });
@@ -858,7 +858,7 @@ describe("ImodelChangesetPerformance own data", () => {
         console.log(`Applying Update changeset to iModel ${iModelName}.`);
         try {
           const startTime = new Date().getTime();
-          saIModel.nativeDb.applyChangeSet(csToken, applyOption);
+          saIModel.nativeDb.applyChangeset(csToken, applyOption);
           const endTime = new Date().getTime();
           const elapsedTime = (endTime - startTime) / 1000.0;
           reporter.addEntry("ImodelChangesetPerformance", "ChangesetUpdate", "Time(s)", elapsedTime, { ElementClassName: "PerfElementSub3", InitialCount: dbSize, opCount: opSize });

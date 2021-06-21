@@ -11,13 +11,12 @@
 import * as os from "os";
 import * as path from "path";
 import {
-  assert, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, PerfLogger,
-  WSStatus,
+  assert, ChangeSetApplyOption, ChangeSetStatus, ClientRequestContext, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode, WSStatus,
 } from "@bentley/bentleyjs-core";
 import { IModelHubError } from "@bentley/imodelhub-client";
 import {
-  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, ChangesetFileProps, ChangesetIndexOrId, ChangesetProps, ChangesetType, CreateIModelProps, IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps,
-  RequestNewBriefcaseProps,
+  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, ChangesetFileProps, ChangesetIndexOrId, ChangesetProps, ChangesetType, CreateIModelProps,
+  IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
@@ -404,25 +403,11 @@ export class BriefcaseManager {
       parenChangeset.index = (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: db.iModelId, changeset: { id: parenChangeset.id } })).index;
 
     // Determine the reinstates, reversals or merges required
-    let reverseToIndex: number | undefined, reinstateToIndex: number | undefined, mergeToIndex: number | undefined;
-    const reversedChangeSetId = db.nativeDb.getReversedChangeSetId();
-    if (undefined !== reversedChangeSetId) {
-      const reversedChangeSetIndex = (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId: db.iModelId, changeset: { id: reversedChangeSetId } })).index;
-      if (targetIndex < reversedChangeSetIndex) {
-        reverseToIndex = target.index;
-      } else if (targetIndex > reversedChangeSetIndex) {
-        reinstateToIndex = targetIndex;
-        if (targetIndex > parenChangeset.index) {
-          reinstateToIndex = parenChangeset.index;
-          mergeToIndex = targetIndex;
-        }
-      }
-    } else {
-      if (targetIndex < parenChangeset.index) {
-        reverseToIndex = targetIndex;
-      } else if (targetIndex > parenChangeset.index) {
-        mergeToIndex = targetIndex;
-      }
+    let reverseToIndex: number | undefined, mergeToIndex: number | undefined;
+    if (targetIndex < parenChangeset.index) {
+      reverseToIndex = targetIndex;
+    } else if (targetIndex > parenChangeset.index) {
+      mergeToIndex = targetIndex;
     }
 
     // Reverse, reinstate and merge as necessary
@@ -430,13 +415,11 @@ export class BriefcaseManager {
       await BriefcaseManager.applyChangesets(requestContext, db, mergeToIndex, ChangeSetApplyOption.Merge);
     } else if (reverseToIndex !== undefined) {
       await BriefcaseManager.applyChangesets(requestContext, db, reverseToIndex, ChangeSetApplyOption.Reverse);
-    } else if (reinstateToIndex !== undefined) {
-      await BriefcaseManager.applyChangesets(requestContext, db, reinstateToIndex, ChangeSetApplyOption.Reinstate);
     }
   }
 
   private static async applySingleChangeset(db: IModelDb, changeSet: ChangesetFileProps, processOption: ChangeSetApplyOption) {
-    return db.nativeDb.applyChangeSet(changeSet, processOption);
+    return db.nativeDb.applyChangeset(changeSet, processOption);
   }
 
   private static async applyChangesets(requestContext: AuthorizedClientRequestContext, db: IModelDb, targetChangeSetIndex: number, processOption: ChangeSetApplyOption): Promise<void> {
@@ -531,9 +514,6 @@ export class BriefcaseManager {
     if (target.index < currentChangeSetIndex)
       throw new IModelError(ChangeSetStatus.NothingToMerge, "Nothing to merge");
 
-    // await BriefcaseManager.updatePendingChangeSets(requestContext, db);
-    // requestContext.enter();
-
     return BriefcaseManager.processChangesets(requestContext, db, target);
   }
 
@@ -541,7 +521,7 @@ export class BriefcaseManager {
   private static async pushChangeset(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, releaseLocks: boolean): Promise<void> {
     requestContext.enter();
 
-    const changesetProps = db.nativeDb.startCreateChangeset() as ChangesetFileProps;
+    const changesetProps = db.nativeDb.startCreateChangeset();
     changesetProps.briefcaseId = db.briefcaseId;
     changesetProps.description = description;
     changesetProps.size = IModelJsFs.lstatSync(changesetProps.pathname)!.size;
@@ -562,7 +542,7 @@ export class BriefcaseManager {
       requestContext.enter();
     } catch (err) {
       requestContext.enter();
-      db.nativeDb.abandonCreateChangeSet();
+      db.nativeDb.abandonCreateChangeset();
       throw err;
     }
   }

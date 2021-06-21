@@ -134,7 +134,6 @@ describe("BriefcaseManager (#integration)", () => {
 
     const iModelLatestVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
     assert.isDefined(iModelLatestVersion);
-    assert.isUndefined(iModelLatestVersion.nativeDb.getReversedChangeSetId());
     assert.strictEqual(iModelLatestVersion.nativeDb.getParentChangeset().id, changeSets[3].id);
     assert.equal(iModelLatestVersion.nativeDb.getParentChangeset().index, changeSets[3].index);
 

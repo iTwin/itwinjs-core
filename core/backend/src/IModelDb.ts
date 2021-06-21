@@ -2357,7 +2357,7 @@ export class BriefcaseDb extends IModelDb {
 
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
     await this.concurrencyControl.onPushedChanges(requestContext);
-    return changeset
+    return changeset;
   }
 
   /** Reverse a previously applied set of changes

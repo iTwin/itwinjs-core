@@ -236,7 +236,7 @@ export class HubUtility {
       const startTime = new Date().getTime();
       let csResult = ChangeSetStatus.Success;
       try {
-        nativeDb.applyChangeSet(changeSet, applyOption);
+        nativeDb.applyChangeset(changeSet, applyOption);
       } catch (err) {
         csResult = err.errorNumber;
       }
@@ -316,7 +316,7 @@ export class HubUtility {
     if (status === ChangeSetStatus.Success) {
       Logger.logInfo(HubUtility.logCategory, "Reinstating all available change sets");
       filteredChangeSets.reverse();
-      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Reinstate);
+      status = HubUtility.applyChangeSetsToNativeDb(nativeDb, filteredChangeSets, ChangeSetApplyOption.Merge);
     }
 
     nativeDb.closeIModel();
@@ -524,7 +524,7 @@ export class HubUtility {
       ++count;
       Logger.logInfo(HubUtility.logCategory, `Started applying change set: ${count} of ${changeSets.length} (${new Date(Date.now()).toString()})`, () => ({ ...changeSet }));
       try {
-        nativeDb.applyChangeSet(changeSet, applyOption);
+        nativeDb.applyChangeset(changeSet, applyOption);
         Logger.logInfo(HubUtility.logCategory, "Successfully applied ChangeSet", () => ({ ...changeSet, status }));
       } catch (err) {
         Logger.logError(HubUtility.logCategory, `Error applying ChangeSet ${err.errorNumber}`, () => ({ ...changeSet }));
@@ -538,7 +538,7 @@ export class HubUtility {
   }
 
   public static dumpChangeSet(iModel: IModelDb, changeSet: ChangesetFileProps) {
-    iModel.nativeDb.dumpChangeSet(changeSet);
+    iModel.nativeDb.dumpChangeset(changeSet);
   }
 
   /** Dumps change sets to the log */

@@ -113,7 +113,7 @@ describe("ChangeSummary (#integration)", () => {
     assert.throw(() => ChangeSummaryManager.attachChangeCache(iModel));
   });
 
-  it.only("Extract ChangeSummaries", async () => {
+  it("Extract ChangeSummaries", async () => {
     setupTest(readOnlyTestIModelId);
 
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
