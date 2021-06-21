@@ -890,6 +890,7 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef) {
 export function useSaveFrontstageSettings(frontstageDef: FrontstageDef) {
   const nineZone = useNineZoneState(frontstageDef);
   const uiSettingsStorage = useUiSettingsStorageContext();
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const saveSetting = React.useCallback(debounce(async (id: string, version: number, state: NineZoneState) => {
     const setting: WidgetPanelsFrontstageState = {
       id,
