@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import * as semver from "semver";
 import { DbOpcode, DbResult, GuidString, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
-import { CodeState, HubCode, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery } from "@bentley/imodelhub-client";
+import { CodeState, HubCode, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
 import { CodeScopeSpec, CodeSpec, IModel, IModelError, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { WsgError } from "@bentley/itwin-client";
 import { IModelHubBackend } from "../../IModelHubBackend";
@@ -17,6 +17,7 @@ import {
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType, Timer } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
+import { LockScope } from "../../BackendHubAccess";
 
 export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
@@ -48,9 +49,9 @@ export async function createNewModelAndCategory(requestContext: AuthorizedBacken
 function toHubLock(props: LockProps, briefcaseId: number): Lock {
   const lock = new Lock();
   lock.briefcaseId = briefcaseId;
-  lock.lockLevel = props.level;
-  lock.lockType = props.type;
-  lock.objectId = props.objectId;
+  lock.lockLevel = props.scope as number;
+  lock.lockType = LockType.Element;
+  lock.objectId = props.entityId;
   // lock.releasedWithChangeSet =
   return lock;
 }
@@ -140,7 +141,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isTrue(bcA.briefcaseId !== undefined);
     assert.isTrue(bcB.briefcaseId !== undefined);
     const bcALockReq = toHubLock(ConcurrencyControl.Request.schemaLock, bcA.briefcaseId!);
-    const bcBLockReq = toHubLock(ConcurrencyControl.Request.getElementLock("0x1", LockLevel.Exclusive), bcB.briefcaseId!);
+    const bcBLockReq = toHubLock(ConcurrencyControl.Request.getElementLock("0x1", LockScope.Exclusive), bcB.briefcaseId!);
     // First, B acquires element lock
     const bcBLocksAcquired = await IModelHubBackend.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcBLockReq]);
     // Next, A acquires schema lock
@@ -575,7 +576,7 @@ describe("IModelWriteTest (#integration)", () => {
     //  Have another briefcase take out an exclusive lock on element #1
     const otherBriefcaseId = await IModelHost.hubAccess.acquireNewBriefcaseId({ requestContext: adminRequestContext, iModelId: rwIModelId });
     assert.notEqual(otherBriefcaseId, rwIModel.briefcaseId);
-    const otherBriefcaseLockReq = ConcurrencyControl.Request.getElementLock(elid1, LockLevel.Exclusive);
+    const otherBriefcaseLockReq = ConcurrencyControl.Request.getElementLock(elid1, LockScope.Exclusive);
     await IModelHost.hubAccess.acquireLocks({
       requestContext: adminRequestContext, briefcase: {
         briefcaseId: rwIModel.briefcaseId, changeSetId: rwIModel.changeSetId, iModelId: rwIModel.iModelId,
@@ -599,7 +600,7 @@ describe("IModelWriteTest (#integration)", () => {
       rwIModel.elements.updateElement(el1Props);
       // Also create another new element as part of the same txn.
       elid3 = rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, newModelId, spatialCategoryId));
-      assert.isTrue(rwIModel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(elid3, LockLevel.Exclusive))); // (tricky: ccmgr pretends that new elements are locked.)
+      assert.isTrue(rwIModel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(elid3, LockScope.Exclusive))); // (tricky: ccmgr pretends that new elements are locked.)
       assert.isTrue(rwIModel.concurrencyControl.hasPendingRequests); // we have to get the lock before we can carry through with this
       // let rejectedWithError: Error | undefined;
       // try {
@@ -619,10 +620,10 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isFalse(rwIModel.concurrencyControl.hasPendingRequests); // when we abandon changes, we also abandon the pending resource request
     assert.isUndefined(rwIModel.elements.getElement(elid1).userLabel, "the modification of element #1 should have been unwound");
     assert.isUndefined(rwIModel.elements.tryGetElement(elid3), "the insert of element #3 should have been unwound");
-    assert.isFalse(rwIModel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(elid3, LockLevel.Exclusive)), "The fake local lock on element #3 should have been discarded");
+    assert.isFalse(rwIModel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(elid3, LockScope.Exclusive)), "The fake local lock on element #3 should have been discarded");
     // ... but all committed changes and temporary locks were retained.
     assert.isTrue(undefined !== rwIModel.elements.tryGetElement(elid4), "the insert of the first new element should have been retained");
-    assert.isTrue(rwIModel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(elid4, LockLevel.Exclusive)), "The fake local lock on element #4 should have been retained");
+    assert.isTrue(rwIModel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(elid4, LockScope.Exclusive)), "The fake local lock on element #4 should have been retained");
 
     // This briefcase should be able to modify element #2.
     if (true) {

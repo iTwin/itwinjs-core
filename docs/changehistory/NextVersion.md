@@ -5,9 +5,11 @@ publish: false
 
 ## UI Changes
 
+### @bentley/ui-abstract package
+
 Added ability for [UiItemsProvider]($ui-abstract) to provide widgets to [AbstractZoneLocation]($ui-abstract) locations when running is AppUi version 1. Prior to this a widget could only be targeted to a [StagePanelLocation]($ui-abstract) location.
 
-### Example UiItemsProvider
+#### Example UiItemsProvider
 
 The example below, shows how to add a widget to a [StagePanelLocation]($ui-abstract) if UiFramework.uiVersion === "2" and to the "BottomRight" [AbstractZoneLocation]($ui-abstract) if UiFramework.uiVersion === "1".  See [UiItemsProvider.provideWidgets]($ui-abstract) for new `zoneLocation` argument.
 
@@ -44,3 +46,23 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
   }
 }
 ```
+
+### @bentley/ui-framework package
+
+- The need for an IModelApp to explicitly call [ConfigurableUiManager.initialize]($ui-framework) has been removed. This call is now made when processing [UiFramework.initialize]($ui-framework). This will not break any existing applications as subsequent calls to `ConfigurableUiManager.initialize()` are ignored.
+
+- If an application calls [UiFramework.setIModelConnection]($ui-framework) it will no longer need to explicitly call [SyncUiEventDispatcher.initializeConnectionEvents]($ui-framework) as `UiFramework.setIModelConnection` will call that method as it update the redux store.
+
+- The `version` prop passed to [FrameworkVersion]($ui-framework) component will update the [UiFramework.uiVersion] if necessary keeping the redux state matching the value defined by the prop.
+
+- The [ScheduleAnimationTimelineDataProvider]($ui-framework) is published for use by AppUi apps. Specifying this data provider to a [TimelineComponent]($ui-components) allows animation of the [RenderSchedule.Script]($common) if one exists for the view. A component that automatically detects a schedule script and attaches the data provider to its TimelineComponent can be found in the [DefaultViewOverlay]($ui-framework).
+
+- The [AnalysisAnimationTimelineDataProvider]($ui-framework) is published for use by AppUi apps. Specifying this data provider to a TimelineComponent allows animation of the information in the AnalysisDisplayProperties if the view's [DisplayStyleState]($frontend) contains one. A component that automatically detects analysis data and attaches the data provider to its TimelineComponent can be found in the [DefaultViewOverlay]($ui-framework).
+
+### @bentley/ui-componentsframework package
+
+- Added component [QuantityNumberInput]($ui-components) which accepts input for quantity values. The quantity value is shown as a single numeric value and the quantity "display" unit is shown next to the input control. The "display" unit is determined by the active unit system as defined by the [QuantityFormatter]($frontend). The control also provides buttons to increment and decrement the "displayed" value. The value reported by via the onChange function is in "persistence" units that can be stored in the iModel.
+
+### Quantity package
+
+The Format class now provides the method [Format.clone]($quantity) to clone an existing Format. [CloneOptions]($quantity) may be optionally passed into the clone method to adjust the format.

@@ -30,6 +30,9 @@
     ],
     "sampleEmail": "mrexample@users.noreply.github.com"
   },
+  "repository": {
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "projects": [
     {
       "packageName": "@bentley/backend-application-insights-client",

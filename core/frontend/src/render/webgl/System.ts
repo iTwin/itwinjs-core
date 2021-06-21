@@ -58,7 +58,7 @@ import { createScreenSpaceEffectBuilder, ScreenSpaceEffects } from "./ScreenSpac
 import { OffScreenTarget, OnScreenTarget } from "./Target";
 import { Techniques } from "./Technique";
 import { RealityMeshGeometry } from "./RealityMesh";
-import { Texture, TextureHandle } from "./Texture";
+import { ExternalTextureLoader, Texture, TextureHandle } from "./Texture";
 import { UniformHandle } from "./UniformHandle";
 import { PlanarGridGeometry } from "./PlanarGrid";
 
@@ -402,6 +402,19 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
 
   public doIdleWork(): boolean {
     return this.techniques.idleCompileNextShader();
+  }
+
+  /** Return a Promise which when resolved indicates that all pending external textures have finished loading from the backend. */
+  public async waitForAllExternalTextures(): Promise<void> {
+    const extTexLoader = ExternalTextureLoader.instance;
+    if (extTexLoader.numActiveRequests < 1 && extTexLoader.numPendingRequests < 1)
+      return Promise.resolve();
+    const promise = new Promise<void>((resolve: any) => {
+      extTexLoader.onTexturesLoaded.addOnce(() => {
+        resolve();
+      });
+    });
+    return promise;
   }
 
   /** Attempt to create a WebGLRenderingContext, returning undefined if unsuccessful. */

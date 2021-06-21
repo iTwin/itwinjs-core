@@ -337,8 +337,6 @@ export class SampleAppIModelApp {
     });
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `openViews: ${viewIdsParam}`);
 
-    SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
-
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
     const viewStates: ViewState[] = [];
@@ -425,8 +423,6 @@ export class SampleAppIModelApp {
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
-
-      SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
 
       // store the IModelConnection in the sample app store
       UiFramework.setIModelConnection(iModelConnection, true);
@@ -630,6 +626,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     return (
       <Provider store={SampleAppIModelApp.store} >
         <ThemeManager>
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <BeDragDropContext>
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
               <AppDragInteraction>
@@ -643,6 +640,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
                 </AppFrameworkVersion>
               </AppDragInteraction>
             </SafeAreaContext.Provider>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <DragDropLayerRenderer />
           </BeDragDropContext>
         </ThemeManager>

@@ -391,9 +391,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(menuPopupDiv).not.to.be.null;
     // renderedComponent.debug();
 
-    const expandItem = renderedComponent.getByText("timeline.expand");
-    expect(expandItem).not.to.be.null;
-
     renderedComponent.rerender(
       <TimelineComponent
         startDate={dataProvider.start}
@@ -408,9 +405,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
         alwaysMinimized={true}
       />,
     );
-
-    const nullExpandItem = renderedComponent.queryByText("timeline.expand");
-    expect(nullExpandItem).to.be.null;
   });
   it("Dynamically set duration", async () => {
     const dataProvider = new TestTimelineDataProvider();
@@ -558,7 +552,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
         endDate={dataProvider.end}
         initialDuration={50000}
         totalDuration={newDuration}
-        minimized={false}
+        minimized={true}
         showDuration={true}
         repeat={true}
         onChange={dataProvider.onAnimationFractionChanged}
@@ -577,7 +571,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
         endDate={dataProvider.end}
         initialDuration={dataProvider.initialDuration}
         totalDuration={dataProvider.duration}
-        minimized={false}
+        minimized={true}
         showDuration={true}
         onChange={dataProvider.onAnimationFractionChanged}
         onSettingsChange={dataProvider.onPlaybackSettingChanged}
@@ -597,7 +591,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
         endDate={newEndDate}
         initialDuration={50000}
         totalDuration={dataProvider.duration}
-        minimized={false}
+        minimized={true}
         showDuration={true}
         onChange={dataProvider.onAnimationFractionChanged}
         onSettingsChange={dataProvider.onPlaybackSettingChanged}
