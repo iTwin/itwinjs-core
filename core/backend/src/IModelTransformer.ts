@@ -6,6 +6,7 @@
  * @module iModels
  */
 import * as path from "path";
+import * as Semver from "semver";
 import { ClientRequestContext, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import * as ECSchemaMetaData from "@bentley/ecschema-metadata";
 import { Point3d, Transform } from "@bentley/geometry-core";
@@ -28,8 +29,6 @@ import { IModelJsFs } from "./IModelJsFs";
 import { DefinitionModel, Model } from "./Model";
 import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
-import * as Semver from "semver";
-import { BackendRequestContext } from "./BackendRequestContext";
 import { Schema } from "./Schema";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
@@ -766,7 +765,6 @@ export class IModelTransformer extends IModelExportHandler {
   protected async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
     const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
     IModelJsFs.writeFileSync(schemaPath, await schema.toXmlString());
-    await this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
   }
 
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
