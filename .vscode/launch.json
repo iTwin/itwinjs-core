@@ -915,19 +915,6 @@
       ]
     },
     {
-      "name": "analysis-importer",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/test-apps/analysis-importer/",
-      "type": "pwa-node",
-      "request": "launch",
-      "program": "${workspaceFolder}/test-apps/analysis-importer/lib/Main.js",
-      "outFiles": [
-        "${workspaceFolder}/test-apps/agent-test-app/lib/**/*.js"
-      ]
-    },
-    {
       "name": "Extension CLI Tests (Integration)",
       "presentation": {
         "group": "6_Misc"
