@@ -54,7 +54,6 @@ public;class AuxCoordSystemState
 internal;AzureMapsLayerImageryProvider 
 internal;B3dmReader 
 internal;BackgroundMapGeometry
-internal;BackgroundMapLocation
 beta;class BaseUnitFormattingSettingsProvider 
 internal;BatchedTileIdMap
 public;BatchOptions
