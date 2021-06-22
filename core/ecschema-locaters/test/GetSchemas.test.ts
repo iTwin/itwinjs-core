@@ -37,7 +37,7 @@ describe("Concurrent schema accesses", () => {
     });
   });
 
-  it.only("should correctly deserialize schemas concurrently", async () => {
+  it("should correctly deserialize schemas concurrently", async () => {
     // Asynchronous
     const asyncSchemas: Schema[] = [];
     await Promise.all(schemaKeys.map(async (key) => {
