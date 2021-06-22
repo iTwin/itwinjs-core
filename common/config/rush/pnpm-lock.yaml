@@ -3301,6 +3301,7 @@ importers:
       typescript: 4.1.6
     devDependencies:
       cpx: 1.5.0
+      typescript: 4.1.5
 
   ../../test-apps/display-performance-test-app:
     specifiers:
@@ -3974,8 +3975,6 @@ importers:
       fs-extra: ^8.1.0
       internal-tools: workspace:*
       lorem-ipsum: ^2.0.3
-      mobx: ^5.8.0
-      mobx-react: ^5.4.3
       npm-run-all: ^4.1.5
       null-loader: ^0.1.1
       react: ^16.8.0
@@ -4032,8 +4031,6 @@ importers:
       '@bentley/ui-ninezone': link:../../ui/ninezone
       classnames: 2.3.1
       lorem-ipsum: 2.0.3
-      mobx: 5.15.7
-      mobx-react: 5.4.4_mobx@5.15.7+react@16.14.0
       react: 16.14.0
       react-beautiful-dnd: 13.1.0_react-dom@16.14.0+react@16.14.0
       react-compound-slider: 2.5.0_react@16.14.0
@@ -16922,22 +16919,6 @@ packages:
     engines: {node: '>=10'}
     hasBin: true
 
-  /mobx-react/5.4.4_mobx@5.15.7+react@16.14.0:
-    resolution: {integrity: sha512-2mTzpyEjVB/RGk2i6KbcmP4HWcAUFox5ZRCrGvSyz49w20I4C4qql63grPpYrS9E9GKwgydBHQlA4y665LuRCQ==}
-    peerDependencies:
-      mobx: ^4.0.0 || ^5.0.0
-      react: ^0.13.0 || ^0.14.0 || ^15.0.0 || ^16.0.0
-    dependencies:
-      hoist-non-react-statics: 3.3.2
-      mobx: 5.15.7
-      react: 16.14.0
-      react-lifecycles-compat: 3.0.4
-    dev: false
-
-  /mobx/5.15.7:
-    resolution: {integrity: sha512-wyM3FghTkhmC+hQjyPGGFdpehrcX1KOXsDuERhfK2YbJemkUhEB+6wzEN639T21onxlfYBmriA1PFnvxTUhcKw==}
-    dev: false
-
   /mocha-junit-reporter/1.23.3_mocha@8.4.0:
     resolution: {integrity: sha512-ed8LqbRj1RxZfjt/oC9t12sfrWsjZ3gNnbhV1nuj9R/Jb5/P3Xb4duv2eCfCDMYH+fEu0mqca7m4wsiVjsxsvA==}
     peerDependencies:
@@ -19703,7 +19684,7 @@ packages:
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}
     dependencies:
-      '@babel/runtime': 7.9.0
+      '@babel/runtime': 7.14.0
 
   /regex-cache/0.4.4:
     resolution: {integrity: sha512-nVIZwtCjkC9YgvWkpM55B5rBhBYRZhAaJbgcFYXXsHnbZ9UZI9nnVWYZpBlCqv9ho2eZryPnWrZGsOdPwVWXWQ==}
