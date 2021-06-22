@@ -158,7 +158,9 @@ export class XYZ implements XYAndZ {
       && Geometry.isSameCoordinate(this.y, other.y, tol);
   }
   /** Return a JSON object as array `[x,y,z]` */
-  public toJSON(): XYZProps { return [this.x, this.y, this.z]; }
+  public toJSON(): XYZProps { return this.toArray(); }
+  /** Return as an array `[x,y,z]` */
+  public toArray(): number[] { return [this.x, this.y, this.z]; }
   /** Return a JSON object as key value pairs `{x: value, y: value, z: value}` */
   public toJSONXYZ(): XYZProps { return { x: this.x, y: this.y, z: this.z }; }
   /** Pack the x,y,z values in a Float64Array. */

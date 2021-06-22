@@ -12,6 +12,7 @@ import { AngleSweep } from '@bentley/geometry-core';
 import { AppearanceOverrideProps as AppearanceOverrideProps_2 } from '@bentley/imodeljs-common';
 import { Arc3d } from '@bentley/geometry-core';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
+import { AuxChannel } from '@bentley/geometry-core';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
@@ -58,6 +59,7 @@ import { CurvePrimitive } from '@bentley/geometry-core';
 import { DevToolsStatsOptions } from '@bentley/imodeljs-common';
 import { DialogItem } from '@bentley/ui-abstract';
 import { DialogItemValue } from '@bentley/ui-abstract';
+import { DialogProperty } from '@bentley/ui-abstract';
 import { DialogPropertyItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { Dictionary } from '@bentley/bentleyjs-core';
@@ -7449,6 +7451,7 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 // @internal
 export class RealityModelTileClient {
     constructor(url: string, accessToken?: AccessToken, contextId?: string);
+    getRealityDataType(): Promise<string | undefined>;
     // (undocumented)
     getRootDocument(url: string): Promise<any>;
     getTileContent(url: string): Promise<any>;
@@ -8787,7 +8790,9 @@ export class SetupCameraTool extends PrimitiveTool {
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     get cameraHeight(): number;
-    set cameraHeight(option: number);
+    set cameraHeight(value: number);
+    // (undocumented)
+    get cameraHeightProperty(): DialogProperty<number>;
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
@@ -8830,7 +8835,9 @@ export class SetupCameraTool extends PrimitiveTool {
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
     get targetHeight(): number;
-    set targetHeight(option: number);
+    set targetHeight(value: number);
+    // (undocumented)
+    get targetHeightProperty(): DialogProperty<number>;
     // (undocumented)
     protected _targetPtWorld: Point3d;
     // (undocumented)
@@ -8839,8 +8846,12 @@ export class SetupCameraTool extends PrimitiveTool {
     get useCameraHeight(): boolean;
     set useCameraHeight(option: boolean);
     // (undocumented)
+    get useCameraHeightProperty(): DialogProperty<boolean>;
+    // (undocumented)
     get useTargetHeight(): boolean;
-    set useTargetHeight(option: boolean);
+    set useTargetHeight(value: boolean);
+    // (undocumented)
+    get useTargetHeightProperty(): DialogProperty<boolean>;
     // (undocumented)
     viewport?: ScreenViewport;
 }
@@ -12027,13 +12038,10 @@ export abstract class Viewport implements IDisposable {
     addTiledGraphicsProvider(provider: TiledGraphicsProvider): void;
     addViewedModels(models: Id64Arg): Promise<void>;
     get alwaysDrawn(): Id64Set | undefined;
-    // @alpha (undocumented)
     get analysisFraction(): number;
     set analysisFraction(fraction: number);
     // @internal (undocumented)
     get analysisFractionValid(): boolean;
-    // @internal (undocumented)
-    get analysisStyle(): AnalysisStyle | undefined;
     get antialiasSamples(): number;
     set antialiasSamples(numSamples: number);
     // @internal
