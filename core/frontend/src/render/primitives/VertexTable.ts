@@ -67,12 +67,14 @@ export class VertexIndices {
   }
 }
 
-interface Dimensions {
+/** @internal */
+export interface Dimensions {
   width: number;
   height: number;
 }
 
-function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number): Dimensions {
+/** @internal */
+export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number): Dimensions {
   const maxSize = IModelApp.renderSystem.maxTextureSize;
   const nRgba = nEntries * nRgbaPerEntry + nExtraRgba;
 
@@ -730,8 +732,9 @@ export class MeshParams {
       material: createSurfaceMaterial(args.material),
     };
 
+    const channels = undefined !== args.auxChannels ? AuxChannelTable.fromChannels(args.auxChannels, vertices.numVertices) : undefined;
     const edges = convertEdges(args);
-    return new MeshParams(vertices, surface, edges, args.isPlanar);
+    return new MeshParams(vertices, surface, edges, args.isPlanar, channels);
   }
 }
 
