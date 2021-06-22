@@ -7,8 +7,12 @@
  */
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
+import {
+  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName,
+  LocalFileName,
+} from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { BriefcaseId } from "./BriefcaseManager";
 import { DownloadRequest } from "./CheckpointManager";
 
 /** The scope of a lock.
@@ -57,7 +61,7 @@ export interface IModelNameArg {
 export interface BriefcaseDbArg {
   requestContext?: AuthorizedClientRequestContext;
   briefcase: {
-    briefcaseId: number;
+    briefcaseId: BriefcaseId;
     iModelId: GuidString;
     changeSetId: ChangesetId;
   };

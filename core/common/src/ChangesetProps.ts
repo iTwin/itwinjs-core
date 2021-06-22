@@ -7,9 +7,9 @@
  * @module iModels
  */
 
-/** @internal */
+/** @public */
 export type LocalFileName = string;
-/** @internal */
+/** @public */
 export type LocalDirName = string;
 
 /** A string that identifies a changeset.
@@ -18,7 +18,8 @@ export type LocalDirName = string;
  */
 export type ChangesetId = string;
 
-/** The index of a changeset, assigned by iModelHub. Values >= 0 are invalid.
+/** The index of a changeset, assigned by iModelHub.
+ * @note 0 means "before the first changeset." Values less than 0 are invalid.
  * @public
  */
 export type ChangesetIndex = number;
@@ -34,7 +35,7 @@ export interface ChangesetIndexAndId { index: ChangesetIndex, id: ChangesetId }
 export interface ChangesetIdWithIndex { index?: ChangesetIndex, id: ChangesetId }
 
 /** either changeset index, id, or both
-* @internal
+* @public
 */
 export type ChangesetIndexOrId = ChangesetIndexAndId | { index: ChangesetIndex, id?: never } | { id: ChangesetId, index?: never };
 
@@ -48,7 +49,7 @@ export enum ChangesetType {
 }
 
 /** Properties of a changeset
- * @internal
+ * @beta
  */
 export interface ChangesetProps {
   /** The index (sequence number) from IModelHub for this changeset. Larger index values were pushed later. */
@@ -72,7 +73,7 @@ export interface ChangesetProps {
 }
 
 /** Properties of a changeset file
- * @internal
+ * @beta
  */
 export interface ChangesetFileProps extends ChangesetProps {
   /** The full pathname of the local file holding this changeset. */
@@ -81,7 +82,7 @@ export interface ChangesetFileProps extends ChangesetProps {
 
 /**
  * A range of changesets
- * @internal
+ * @public
  */
 export interface ChangesetRange {
   /** index of the first changeset */
