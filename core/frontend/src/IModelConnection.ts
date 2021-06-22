@@ -566,6 +566,8 @@ export abstract class IModelConnection extends IModel {
   }
   private _geodeticToSeaLevel?: number;
   private _projectCenterAltitude?: number;
+  private  _geodeticToSeaLevelRequest?: Promise<number>;
+  private _projectCenterAltitudeRequest?: Promise<number>;
 
   /** Event called immediately after map elevation request is completed.  This occurs only in the case where background map terrain is displayed
    * with either geiod or ground offset.   These require a query to BingElevation and therefore synching the view may be required
@@ -579,9 +581,10 @@ export abstract class IModelConnection extends IModel {
    * @internal
    */
   public get geodeticToSeaLevel(): number | undefined {
-    if (undefined === this._geodeticToSeaLevel) {
+    if (undefined === this._geodeticToSeaLevel && undefined === this._geodeticToSeaLevelRequest) {
       const elevationProvider = new BingElevationProvider();
-      elevationProvider.getGeodeticToSeaLevelOffset(this.projectExtents.center, this).then((geodeticToSeaLevel) => {
+      this._geodeticToSeaLevelRequest = elevationProvider.getGeodeticToSeaLevelOffset(this.projectExtents.center, this);
+      this._geodeticToSeaLevelRequest.then((geodeticToSeaLevel) => {
         this._geodeticToSeaLevel = geodeticToSeaLevel;
         this.onMapElevationLoaded.raiseEvent(this);
       }).catch((_error) => this._geodeticToSeaLevel = 0.0);
@@ -594,9 +597,10 @@ export abstract class IModelConnection extends IModel {
    * @internal
    */
   public get projectCenterAltitude(): number | undefined {
-    if (undefined === this._projectCenterAltitude) {
+    if (undefined === this._projectCenterAltitude && undefined === this._projectCenterAltitudeRequest) {
       const elevationProvider = new BingElevationProvider();
-      elevationProvider.getHeightValue(this.projectExtents.center, this).then((projectCenterAltitude) => {
+      this._projectCenterAltitudeRequest =  elevationProvider.getHeightValue(this.projectExtents.center, this);
+      this._projectCenterAltitudeRequest.then((projectCenterAltitude) => {
         this._projectCenterAltitude = projectCenterAltitude;
         this.onMapElevationLoaded.raiseEvent(this);
       }).catch((_error) => this._projectCenterAltitude = 0.0);
