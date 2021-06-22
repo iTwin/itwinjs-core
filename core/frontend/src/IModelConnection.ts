@@ -564,10 +564,8 @@ export abstract class IModelConnection extends IModel {
 
     return mapEcefToDb;
   }
-  private _geodeticToSeaLevel?: number;
-  private _projectCenterAltitude?: number;
-  private  _geodeticToSeaLevelRequest?: Promise<number>;
-  private _projectCenterAltitudeRequest?: Promise<number>;
+  private _geodeticToSeaLevel?: number | Promise<number>;
+  private _projectCenterAltitude?: number | Promise<number>;
 
   /** Event called immediately after map elevation request is completed.  This occurs only in the case where background map terrain is displayed
    * with either geiod or ground offset.   These require a query to BingElevation and therefore synching the view may be required
@@ -581,15 +579,15 @@ export abstract class IModelConnection extends IModel {
    * @internal
    */
   public get geodeticToSeaLevel(): number | undefined {
-    if (undefined === this._geodeticToSeaLevel && undefined === this._geodeticToSeaLevelRequest) {
+    if (undefined === this._geodeticToSeaLevel) {
       const elevationProvider = new BingElevationProvider();
-      this._geodeticToSeaLevelRequest = elevationProvider.getGeodeticToSeaLevelOffset(this.projectExtents.center, this);
-      this._geodeticToSeaLevelRequest.then((geodeticToSeaLevel) => {
+      this._geodeticToSeaLevel = elevationProvider.getGeodeticToSeaLevelOffset(this.projectExtents.center, this);
+      this._geodeticToSeaLevel.then((geodeticToSeaLevel) => {
         this._geodeticToSeaLevel = geodeticToSeaLevel;
         this.onMapElevationLoaded.raiseEvent(this);
       }).catch((_error) => this._geodeticToSeaLevel = 0.0);
     }
-    return this._geodeticToSeaLevel;
+    return ("number" === typeof this._geodeticToSeaLevel) ? this._geodeticToSeaLevel : undefined;
   }
 
   /** The altitude (geodetic) at the project center.  This will return undefined only if the request for the offset to Bing Elevation
@@ -597,15 +595,15 @@ export abstract class IModelConnection extends IModel {
    * @internal
    */
   public get projectCenterAltitude(): number | undefined {
-    if (undefined === this._projectCenterAltitude && undefined === this._projectCenterAltitudeRequest) {
+    if (undefined === this._projectCenterAltitude) {
       const elevationProvider = new BingElevationProvider();
-      this._projectCenterAltitudeRequest =  elevationProvider.getHeightValue(this.projectExtents.center, this);
-      this._projectCenterAltitudeRequest.then((projectCenterAltitude) => {
+      this._projectCenterAltitude =  elevationProvider.getHeightValue(this.projectExtents.center, this);
+      this._projectCenterAltitude.then((projectCenterAltitude) => {
         this._projectCenterAltitude = projectCenterAltitude;
         this.onMapElevationLoaded.raiseEvent(this);
       }).catch((_error) => this._projectCenterAltitude = 0.0);
     }
-    return this._projectCenterAltitude;
+    return  ("number" === typeof this._projectCenterAltitude) ? this._projectCenterAltitude : undefined;
   }
 }
 
