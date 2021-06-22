@@ -120,7 +120,7 @@ export interface GraphicBuilderOptions {
   /** If true, the order in which geometry is added to the builder is preserved.
    * This is useful for overlay and background graphics because they draw without using the depth buffer. For example, to draw an overlay containing a red shape with a white outline,
    * you would add the shape to the GraphicBuilder first, followed by the outline, to ensure the outline draws "in front of" the shape.
-   * It defaults to true fo overlays and background graphics, and false for other graphic types.
+   * It defaults to true for overlays and background graphics, and false for other graphic types.
    * It is not useful for other types of graphics and imposes a performance penalty due to increased number of draw calls.
    * For overlay and background graphics that do not need to draw in any particular order, the performance penalty can be eliminated by setting this to `false`.
    */

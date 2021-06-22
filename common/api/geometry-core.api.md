@@ -4045,8 +4045,9 @@ export class PolyfaceAuxData {
     clone(): PolyfaceAuxData;
     createForVisitor(): PolyfaceAuxData;
     indices: number[];
-    isAlmostEqual(other: PolyfaceAuxData, tol?: number): boolean;
+    isAlmostEqual(other: PolyfaceAuxData, tolerance?: number): boolean;
     static isAlmostEqual(left: PolyfaceAuxData | undefined, right: PolyfaceAuxData | undefined, tol?: number): boolean;
+    tryTransformInPlace(transform: Transform): boolean;
 }
 
 // @public
@@ -4355,7 +4356,7 @@ export class Range1d extends RangeBase {
     intersect(other: Range1d, result?: Range1d): Range1d;
     intersectRangeXXInPlace(x0: number, x1: number): void;
     intersectsRange(other: Range1d): boolean;
-    isAlmostEqual(other: Range1d): boolean;
+    isAlmostEqual(other: Readonly<Range1d>): boolean;
     get isAlmostZeroLength(): boolean;
     // (undocumented)
     get isExact01(): boolean;
@@ -4522,7 +4523,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
     intersect(other: Range3d, result?: Range3d): Range3d;
     intersectsRange(other: Range3d): boolean;
     intersectsRangeXY(other: Range3d): boolean;
-    isAlmostEqual(other: Range3d, tol?: number): boolean;
+    isAlmostEqual(other: Readonly<Range3d>, tol?: number): boolean;
     get isAlmostZeroX(): boolean;
     get isAlmostZeroY(): boolean;
     get isAlmostZeroZ(): boolean;
@@ -5766,6 +5767,7 @@ export class XYZ implements XYAndZ {
     setFromVector3d(other: Vector3d): void;
     setZero(): void;
     subtractInPlace(other: XYAndZ): void;
+    toArray(): number[];
     toFloat64Array(): Float64Array;
     toJSON(): XYZProps;
     toJSONXYZ(): XYZProps;

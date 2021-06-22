@@ -16,7 +16,7 @@ import { AppTools } from "../../tools/ToolSpecifications";
 import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import {
-  HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl,
+  HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl,
 } from "../widgets/PropertyGridDemoWidget";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ConditionalBooleanValue, WidgetState } from "@bentley/ui-abstract";
@@ -85,13 +85,6 @@ export class Frontstage2 extends FrontstageProvider {
           <Zone
             widgets={[
               <Widget isFreeform={true} element={<FrontstageNavigationWidget />} />,
-            ]}
-          />
-        }
-        centerRight={
-          <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
-            widgets={[
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
             ]}
           />
         }

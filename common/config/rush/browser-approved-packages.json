@@ -719,14 +719,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "mobx",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "mobx-react",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "mocha",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -987,10 +979,6 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
-      "name": "snap-shot-it",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "source-map-loader",
       "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -1101,10 +1089,6 @@
     {
       "name": "typescript-json-schema",
       "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "unionfs",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "url-loader",
