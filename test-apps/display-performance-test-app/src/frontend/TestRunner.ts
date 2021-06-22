@@ -12,7 +12,7 @@ import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
   PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
-import { ExternalTextureLoader, System } from "@bentley/imodeljs-frontend/lib/webgl";
+import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {
@@ -470,10 +470,7 @@ export class TestRunner {
       await BeDuration.wait(100);
     }
 
-    const extTexLoader = ExternalTextureLoader.instance;
-    while (extTexLoader.numActiveRequests > 0 || extTexLoader.numPendingRequests > 0) {
-      await BeDuration.wait(100);
-    }
+    await IModelApp.renderSystem.waitForAllExternalTextures();
 
     viewport.renderFrame();
     timer.stop();

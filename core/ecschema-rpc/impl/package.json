@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-rpcinterface-impl",
-  "version": "2.17.0-dev.29",
+  "version": "2.18.0-dev.8",
   "description": "Schema RPC Interface backend implementation",
   "main": "lib/ecschema-rpc-impl.js",
   "typings": "lib/ecschema-rpc-impl",

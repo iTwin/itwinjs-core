@@ -162,6 +162,8 @@ public;ElementLoadOptions
 public;ElementLoadProps 
 public;ElementProps 
 public;EmphasizeElementsProps
+public;EntityIdAndClassId
+public;EntityIdAndClassIdIterable = Iterable
 beta;EntityMetaData 
 beta;EntityMetaDataProps
 public;EntityProps

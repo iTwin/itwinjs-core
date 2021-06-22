@@ -2383,6 +2383,15 @@ export interface EmphasizeElementsProps {
     wantEmphasis?: boolean;
 }
 
+// @public
+export interface EntityIdAndClassId {
+    classId: Id64String;
+    id: Id64String;
+}
+
+// @public
+export type EntityIdAndClassIdIterable = Iterable<Readonly<EntityIdAndClassId>>;
+
 // @beta
 export class EntityMetaData implements EntityMetaDataProps {
     constructor(jsonObj: EntityMetaDataProps);
@@ -4437,6 +4446,8 @@ export interface IpcAppFunctions {
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
+    // (undocumented)
+    restartTxnSession: (key: string) => Promise<void>;
     // (undocumented)
     reverseAllTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)

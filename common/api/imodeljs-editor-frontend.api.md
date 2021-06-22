@@ -9,6 +9,7 @@ import { BasicManipulationCommandIpc } from '@bentley/imodeljs-editor-common';
 import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeModifierKeys } from '@bentley/imodeljs-frontend';
+import { BriefcaseConnection } from '@bentley/imodeljs-frontend';
 import { CanvasDecoration } from '@bentley/imodeljs-frontend';
 import { Cartographic } from '@bentley/imodeljs-common';
 import { ClipShape } from '@bentley/geometry-core';
@@ -700,6 +701,8 @@ export class ProjectLocationHideTool extends Tool {
 
 // @beta
 export class ProjectLocationSaveTool extends Tool {
+    // (undocumented)
+    protected allowRestartTxnSession(iModel: BriefcaseConnection): Promise<boolean>;
     // (undocumented)
     static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
     // (undocumented)

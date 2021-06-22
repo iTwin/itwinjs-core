@@ -4,13 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import "./VisibilityWidget.scss";
 import * as React from "react";
-import { IModelApp, IModelConnection, Viewport } from "@bentley/imodeljs-frontend";
+import { BeEvent, Id64Array, Id64String } from "@bentley/bentleyjs-core";
+import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { FilteringInput, SelectableContent, SelectionMode } from "@bentley/ui-components";
 import { WebFontIcon } from "@bentley/ui-core";
 import {
   CategoryTree, ClassGroupingOption, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories, WidgetControl,
 } from "@bentley/ui-framework";
+import { SampleAppIModelApp } from "../..";
 
 export class VisibilityWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -40,6 +42,7 @@ function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
   const modelsTreeProps = props.config?.modelsTree;
   const categoriesTreeProps = props.config?.categoriesTree;
   const selectLabel = IModelApp.i18n.translate("UiFramework:visibilityWidget.options");
+  const filteredElementIds = useElementIdsFiltering(props.activeView);
   return (
     <div className="ui-test-app-visibility-widget">
       <SelectableContent defaultSelectedContentId="models-tree" selectAriaLabel={selectLabel}>
@@ -47,8 +50,8 @@ function VisibilityTreeComponent(props: VisibilityTreeComponentProps) {
           id: "models-tree",
           label: IModelApp.i18n.translate("UiFramework:visibilityWidget.modeltree"),
           render: React.useCallback(
-            () => <ModelsTreeComponent iModel={imodel} activeView={activeView} enablePreloading={enablePreloading} {...modelsTreeProps} />,
-            [imodel, activeView, enablePreloading, modelsTreeProps],
+            () => <ModelsTreeComponent iModel={imodel} activeView={activeView} enablePreloading={enablePreloading} {...modelsTreeProps} filteredElementIds={filteredElementIds} />,
+            [imodel, activeView, enablePreloading, modelsTreeProps, filteredElementIds],
           ),
         },
         {
@@ -70,6 +73,7 @@ interface ModelsTreeComponentProps {
   selectionPredicate?: ModelsTreeSelectionPredicate;
   enablePreloading?: boolean;
   activeView?: Viewport;
+  filteredElementIds?: Id64Array;
 }
 
 function ModelsTreeComponent(props: ModelsTreeComponentProps) {
@@ -222,3 +226,78 @@ const useTreeFilteringState = () => {
     filteredProvider,
   };
 };
+
+const MAX_ELEMENTS_TO_FILTER_BY = 10000;
+const useElementIdsFiltering = (activeViewport: Viewport | undefined) => {
+  const [filteredElementIds, setFilteredElementIds] = React.useState<Id64Array | undefined>();
+
+  React.useEffect(() => {
+    const dropTriggerListener = ELEMENTS_FILTER.onTrigger.addListener(() => {
+      activeViewport && activeViewport.queryVisibleFeatures({ source: "screen" }, (features) => {
+        const ids = new Set<Id64String>();
+        for (const feature of features) {
+          ids.add(feature.elementId);
+          if (ids.size > MAX_ELEMENTS_TO_FILTER_BY) {
+            IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Too many elements visible in the view",
+              `There are too many elements visible in the view to filter the hierarchy. Please zoom-in closer to reduce the number of visible elements.`));
+            setFilteredElementIds(undefined);
+            return;
+          }
+        }
+        setFilteredElementIds([...ids]);
+      });
+    });
+    const dropCancelListener = ELEMENTS_FILTER.onCancel.addListener(() => {
+      setFilteredElementIds(undefined);
+    });
+    return () => {
+      dropTriggerListener();
+      dropCancelListener();
+    };
+  }, [activeViewport]);
+
+  React.useEffect(() => {
+    TriggerFilterHierarchyByVisibleElementIdsTool.register(SampleAppIModelApp.sampleAppNamespace);
+    CancelFilterHierarchyByVisibleElementIdsTool.register(SampleAppIModelApp.sampleAppNamespace);
+    return () => {
+      IModelApp.tools.unRegister(TriggerFilterHierarchyByVisibleElementIdsTool.toolId);
+      IModelApp.tools.unRegister(CancelFilterHierarchyByVisibleElementIdsTool.toolId);
+    };
+  }, []);
+
+  return filteredElementIds;
+};
+
+class FilterHierarchyByElementIds {
+  public readonly onTrigger = new BeEvent<() => void>();
+  public readonly onCancel = new BeEvent<() => void>();
+}
+const ELEMENTS_FILTER = new FilterHierarchyByElementIds();
+
+export class TriggerFilterHierarchyByVisibleElementIdsTool extends Tool {
+  public static toolId = "TriggerFilterHierarchyByVisibleElementIds";
+  public run(): boolean {
+    ELEMENTS_FILTER.onTrigger.raiseEvent();
+    return true;
+  }
+  public static get keyin(): string {
+    return "visibility widget trigger filter by visible elements";
+  }
+  public static get englishKeyin(): string {
+    return this.keyin;
+  }
+}
+
+export class CancelFilterHierarchyByVisibleElementIdsTool extends Tool {
+  public static toolId = "CancelFilterHierarchyByVisibleElementIds";
+  public run(): boolean {
+    ELEMENTS_FILTER.onCancel.raiseEvent();
+    return true;
+  }
+  public static get keyin(): string {
+    return "visibility widget cancel filter by visible elements";
+  }
+  public static get englishKeyin(): string {
+    return this.keyin;
+  }
+}
