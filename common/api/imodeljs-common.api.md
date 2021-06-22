@@ -2065,7 +2065,6 @@ export class EcefLocation implements EcefLocationProps {
     // (undocumented)
     toJSON(): EcefLocationProps;
     readonly xVector?: Vector3d;
-    // (undocumented)
     readonly yVector?: Vector3d;
 }
 
@@ -2075,7 +2074,6 @@ export interface EcefLocationProps {
     orientation: YawPitchRollProps;
     origin: XYZProps;
     xVector?: XYZProps;
-    // (undocumented)
     yVector?: XYZProps;
 }
 
