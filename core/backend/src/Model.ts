@@ -10,11 +10,11 @@
 
 import { assert, DbOpcode, DbResult, GuidString, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { LockLevel } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError, InformationPartitionElementProps,
-  ModelProps, RelatedElement,
+  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError,
+  InformationPartitionElementProps, ModelProps, RelatedElement,
 } from "@bentley/imodeljs-common";
+import { LockScope } from "./BackendHubAccess";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
 import { Entity } from "./Entity";
@@ -114,7 +114,7 @@ export class Model extends Entity implements ModelProps {
         break;
       }
       case DbOpcode.Delete: {
-        req.addLocks([ConcurrencyControl.Request.getModelLock(props.id!, LockLevel.Exclusive)]);
+        req.addLocks([ConcurrencyControl.Request.getModelLock(props.id!, LockScope.Exclusive)]);
         // before we can delete a model, we must delete all of its elements. If that fails, we cannot continue.
         iModel.withPreparedStatement(`select ecinstanceid from BisCore.Element where model.id=?`, (stmt) => {
           stmt.bindId(1, props.id!);
@@ -127,7 +127,7 @@ export class Model extends Entity implements ModelProps {
         break;
       }
       case DbOpcode.Update: {
-        req.addLocks([ConcurrencyControl.Request.getModelLock(props.id!, LockLevel.Exclusive)]);
+        req.addLocks([ConcurrencyControl.Request.getModelLock(props.id!, LockScope.Exclusive)]);
         break;
       }
     }

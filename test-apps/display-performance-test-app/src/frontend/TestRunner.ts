@@ -344,7 +344,6 @@ export class TestRunner {
     // Workaround for shifting map geometry when location needs to be asynchronously initialized.
     const imodel = context.iModel;
     await imodel.backgroundMapLocation.initialize(imodel);
-
     // Open the view.
     const view = await this.loadView(context);
     if (!view)
@@ -417,7 +416,7 @@ export class TestRunner {
     }
 
     if (config.backgroundMap)
-      viewport.changeBackgroundMapProps(viewport.displayStyle.settings.backgroundMap.clone(config.backgroundMap));
+      viewport.changeBackgroundMapProps(viewport.displayStyle.settings.backgroundMap.clone(config.backgroundMap).toJSON());
 
     // Apply symbology overrides
     if (view.elementOverrides)
@@ -472,6 +471,8 @@ export class TestRunner {
 
       await BeDuration.wait(100);
     }
+
+    await IModelApp.renderSystem.waitForAllExternalTextures();
 
     viewport.renderFrame();
     timer.stop();

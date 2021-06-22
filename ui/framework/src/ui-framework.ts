@@ -84,7 +84,10 @@ export * from "./ui-framework/frontstage/ModalSettingsStage";
 export * from "./ui-framework/hooks/useActiveIModelConnection";
 export * from "./ui-framework/hooks/useActiveViewport";
 export * from "./ui-framework/hooks/useAvailableUiItemsProviders";
+export * from "./ui-framework/hooks/useAnalysisAnimationDataProvider";
 export * from "./ui-framework/hooks/useFrameworkVersion";
+export * from "./ui-framework/hooks/useScheduleAnimationDataProvider";
+export * from "./ui-framework/hooks/useSolarDataProvider";
 
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
@@ -344,6 +347,11 @@ export * from "./ui-framework/zones/ZoneDef";
  * @docs-group-description OIDC
  * Classes for working with the OpenID Connect (OIDC) protocol
  */
+
+/**
+ * @docs-group-description ChildWindow
+ * Classes for working with child windows.
+ */
 /**
  * @docs-group-description ChildWindowManager
  * Classes for working with child windows.
@@ -382,7 +390,7 @@ export * from "./ui-framework/zones/ZoneDef";
  */
 /**
  * @docs-group-description ToolSettings
- * Classes for working Tool Settings
+ * Classes for working Tool Settings.  See learning documentation [Tool Settings]($docs/learning/ui/framework/toolsettings.md).
  */
 /**
  * @docs-group-description UiProvider
@@ -404,3 +412,8 @@ export * from "./ui-framework/zones/ZoneDef";
  * @docs-group-description Zone
  * Classes for working with a Zone
  */
+/**
+ * @docs-group-description Timeline
+ * Classes for working with a TimelineComponent
+ */
+

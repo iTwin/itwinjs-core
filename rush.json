@@ -30,6 +30,9 @@
     ],
     "sampleEmail": "mrexample@users.noreply.github.com"
   },
+  "repository": {
+    "url": "https://github.com/imodeljs/imodeljs"
+  },
   "projects": [
     {
       "packageName": "@bentley/backend-application-insights-client",
@@ -508,12 +511,6 @@
     {
       "packageName": "example-code-app",
       "projectFolder": "example-code/app",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "test-apps-analysis-importer",
-      "projectFolder": "test-apps/analysis-importer",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

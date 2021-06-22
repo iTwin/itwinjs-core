@@ -10,8 +10,9 @@ import { Id64String, using } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcOperation, RpcRegistry, RpcRequest, RpcSerializedValue } from "@bentley/imodeljs-common";
 import {
   ContentDescriptorRpcRequestOptions, ContentRpcRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions,
-  DistinctValuesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyCompareRpcOptions,
-  HierarchyRpcRequestOptions, KeySet, LabelRpcRequestOptions, Paged, PresentationRpcInterface, SelectionScopeRpcRequestOptions,
+  DistinctValuesRpcRequestOptions, ElementPropertiesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions,
+  HierarchyCompareRpcOptions, HierarchyRpcRequestOptions, KeySet, LabelRpcRequestOptions, Paged, PresentationRpcInterface,
+  SelectionScopeRpcRequestOptions,
 } from "../presentation-common";
 import { FieldDescriptorType } from "../presentation-common/content/Fields";
 import {
@@ -130,7 +131,7 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getFilteredNodePaths call", async () => {
-      const options: HierarchyRpcRequestOptions = {
+      const options: ExtendedHierarchyRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
       };
       await rpcInterface.getFilteredNodePaths(token, options, "filter");
@@ -138,7 +139,7 @@ describe("PresentationRpcInterface", () => {
     });
 
     it("forwards getNodePaths call", async () => {
-      const options: HierarchyRpcRequestOptions = {
+      const options: ExtendedHierarchyRpcRequestOptions = {
         rulesetOrId: faker.random.word(),
       };
       const keys = [[createRandomECInstanceKey(), createRandomECInstanceKey()]];
@@ -248,6 +249,14 @@ describe("PresentationRpcInterface", () => {
         keys: new KeySet().toJSON(),
       };
       await rpcInterface.getPagedDistinctValues(token, options);
+      expect(spy).to.be.calledOnceWith(toArguments(token, options));
+    });
+
+    it("forwards getElementProperties call", async () => {
+      const options: ElementPropertiesRpcRequestOptions = {
+        elementId: "0x1",
+      };
+      await rpcInterface.getElementProperties(token, options);
       expect(spy).to.be.calledOnceWith(toArguments(token, options));
     });
 

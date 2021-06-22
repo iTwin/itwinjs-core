@@ -7,14 +7,14 @@
  */
 
 import {
-  BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, RangeEditorParams,
+  BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, RangeEditorParams, SuppressLabelEditorParams,
 } from "./EditorParams";
 
 // cSpell:ignore Picklist
 
 /**
  * Information about an enumeration choice
- * @beta
+ * @public
  */
 export interface EnumerationChoice {
   label: string;
@@ -23,7 +23,7 @@ export interface EnumerationChoice {
 
 /**
  * Information about a set of enumeration choices
- * @beta
+ * @public
  */
 export interface EnumerationChoicesInfo {
   choices: Promise<EnumerationChoice[]> | EnumerationChoice[];
@@ -33,7 +33,7 @@ export interface EnumerationChoicesInfo {
 
 /**
  * Property renderer identification and customization attributes
- * @beta
+ * @public
  */
 export interface PropertyRendererInfo {
   name: string;
@@ -41,7 +41,7 @@ export interface PropertyRendererInfo {
 
 /**
  * Information about a Property Editor
- * @beta
+ * @public
  */
 export interface PropertyEditorInfo {
   /** Editor name used in addition to the typename to find the registered property editor */
@@ -52,7 +52,7 @@ export interface PropertyEditorInfo {
 
 /**
  * Information about a Property Converter
- * @beta
+ * @public
  */
 export interface PropertyConverterInfo {
   /** Converter name used in addition to the typename to find the registered property converter */
@@ -63,7 +63,7 @@ export interface PropertyConverterInfo {
 
 /**
  * [[PropertyDescription]] contains metadata about a Property
- * @beta
+ * @public
  */
 export interface PropertyDescription {
   /** Name of the property description */
@@ -99,7 +99,7 @@ export interface PropertyDescription {
  */
 export class PropertyDescriptionHelper {
   /** Builds a number description with a "weight-picker" editor name
-   * @alpha
+   * @beta
    */
   public static buildWeightPickerDescription(name: string, label: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     return {
@@ -114,7 +114,7 @@ export class PropertyDescriptionHelper {
   }
 
   /** Builds an editor that uses [NumberInput]($ui-core) control
-   * @alpha
+   * @beta
    */
   public static buildNumberEditorDescription(name: string, label: string, overrideParams?: RangeEditorParams, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     const editorParams = [{
@@ -138,7 +138,7 @@ export class PropertyDescriptionHelper {
   }
 
   /** Builds a string description
-   * @alpha
+   * @beta
    */
   public static buildTextEditorDescription(name: string, label: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     const editor = {
@@ -154,7 +154,7 @@ export class PropertyDescriptionHelper {
   }
 
   /** Builds an enum description
-   * @alpha
+   * @beta
    */
   public static buildEnumPicklistEditorDescription(name: string, label: string,
     choices: Promise<EnumerationChoice[]> | EnumerationChoice[],
@@ -174,8 +174,8 @@ export class PropertyDescriptionHelper {
     };
   }
 
-  /** Builds a number description with a "color-picker" editor name
-   * @alpha
+  /** Builds a number description for a tool settings or dialog property that will display a "color-picker" control.
+   * @beta
    */
   public static buildColorPickerDescription(name: string, label: string, colorValues: number[], numColumns: number,
     additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
@@ -199,8 +199,8 @@ export class PropertyDescriptionHelper {
     };
   }
 
-  /** Builds a boolean description with a "toggle" editor name
-   * @alpha
+  /** Builds a boolean description for a tool settings or dialog property that will display a "toggle" control.
+   * @beta
    */
   public static buildToggleDescription(name: string, label: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     return {
@@ -214,8 +214,8 @@ export class PropertyDescriptionHelper {
     };
   }
 
-  /** Builds a boolean description with a "image-check-box" editor name
-   * @alpha
+  /** Builds a boolean description for a tool settings or dialog property that will display a "image-check-box" control.
+   * @beta
    */
   public static buildImageCheckBoxDescription(name: string, label: string, imageOff: string, imageOn: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     const editorParams = [{
@@ -235,8 +235,8 @@ export class PropertyDescriptionHelper {
     };
   }
 
-  /** Builds a boolean description
-   * @alpha
+  /** Builds a boolean description for a tool settings or dialog property that will display a checkbox control.
+   * @beta
    */
   public static buildCheckboxDescription(name: string, label: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
     const editor = {
@@ -246,6 +246,27 @@ export class PropertyDescriptionHelper {
     return {
       name,
       displayLabel: label,
+      typename: "boolean",
+      editor,
+    };
+  }
+
+  /** Builds a property description for a tool settings or dialog `lock` property. This will create a checkbox control with no label.
+   * @beta
+   */
+  public static buildLockPropertyDescription(name: string, additionalParams: BasePropertyEditorParams[] = []): PropertyDescription {
+    const defaultParams = {
+      type: PropertyEditorParamTypes.SuppressEditorLabel,
+      suppressLabelPlaceholder: true,
+    } as SuppressLabelEditorParams;
+
+    const editor = {
+      params: [defaultParams, ...additionalParams],
+    };
+
+    return {
+      name,
+      displayLabel: "",
       typename: "boolean",
       editor,
     };

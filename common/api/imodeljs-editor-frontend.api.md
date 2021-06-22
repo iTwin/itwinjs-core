@@ -4,14 +4,25 @@
 
 ```ts
 
+import { Angle } from '@bentley/geometry-core';
 import { BasicManipulationCommandIpc } from '@bentley/imodeljs-editor-common';
 import { BeButtonEvent } from '@bentley/imodeljs-frontend';
+import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeModifierKeys } from '@bentley/imodeljs-frontend';
+import { BriefcaseConnection } from '@bentley/imodeljs-frontend';
+import { CanvasDecoration } from '@bentley/imodeljs-frontend';
+import { Cartographic } from '@bentley/imodeljs-common';
+import { ClipShape } from '@bentley/geometry-core';
+import { ClipVector } from '@bentley/geometry-core';
 import { CurvePrimitive } from '@bentley/geometry-core';
 import { DecorateContext } from '@bentley/imodeljs-frontend';
 import { DialogItem } from '@bentley/ui-abstract';
+import { DialogProperty } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { DynamicsContext } from '@bentley/imodeljs-frontend';
+import { EcefLocation } from '@bentley/imodeljs-common';
+import { EcefLocationProps } from '@bentley/imodeljs-common';
+import { EditManipulator } from '@bentley/imodeljs-frontend';
 import { ElementGeometryInfo } from '@bentley/imodeljs-common';
 import { ElementSetTool } from '@bentley/imodeljs-frontend';
 import { EventHandled } from '@bentley/imodeljs-frontend';
@@ -24,21 +35,27 @@ import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { JsonGeometryStream } from '@bentley/imodeljs-common';
+import { Matrix3d } from '@bentley/geometry-core';
 import { Path } from '@bentley/geometry-core';
 import { Placement } from '@bentley/imodeljs-common';
 import { PlacementProps } from '@bentley/imodeljs-common';
 import { Point3d } from '@bentley/geometry-core';
 import { PrimitiveTool } from '@bentley/imodeljs-frontend';
-import { PropertyDescription } from '@bentley/ui-abstract';
+import { Range1d } from '@bentley/geometry-core';
 import { Range3d } from '@bentley/geometry-core';
+import { Range3dProps } from '@bentley/geometry-core';
+import { Ray3d } from '@bentley/geometry-core';
 import { RenderGraphic } from '@bentley/imodeljs-frontend';
 import { RenderGraphicOwner } from '@bentley/imodeljs-frontend';
+import { ScreenViewport } from '@bentley/imodeljs-frontend';
 import { SnapDetail } from '@bentley/imodeljs-frontend';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
 import { Transform } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
+import { ViewClipControlArrow } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
+import { XYAndZ } from '@bentley/geometry-core';
 
 // @alpha (undocumented)
 export enum ArcMethod {
@@ -50,6 +67,14 @@ export enum ArcMethod {
     StartEndMid = 3,
     // (undocumented)
     StartMidEnd = 2
+}
+
+// @alpha (undocumented)
+export enum CircleMethod {
+    // (undocumented)
+    Center = 0,
+    // (undocumented)
+    Edge = 1
 }
 
 // @alpha (undocumented)
@@ -69,10 +94,6 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
-    protected getArcNormal(ev: BeButtonEvent): Vector3d;
-    // (undocumented)
-    protected _getMethodDescription: () => PropertyDescription;
-    // (undocumented)
     static iconSpec: string;
     // (undocumented)
     protected isComplete(_ev: BeButtonEvent): boolean;
@@ -81,6 +102,8 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     // (undocumented)
     get method(): ArcMethod;
     set method(method: ArcMethod);
+    // (undocumented)
+    get methodProperty(): DialogProperty<number>;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
@@ -94,6 +117,8 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     get radius(): number;
     set radius(value: number);
     // (undocumented)
+    get radiusProperty(): DialogProperty<number>;
+    // (undocumented)
     protected setupAccuDraw(): void;
     // (undocumented)
     protected showConstructionGraphics(ev: BeButtonEvent, context: DynamicsContext): boolean;
@@ -103,13 +128,71 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     get sweep(): number;
     set sweep(value: number);
     // (undocumented)
+    get sweepProperty(): DialogProperty<number>;
+    // (undocumented)
     static toolId: string;
     // (undocumented)
     get useRadius(): boolean;
     set useRadius(value: boolean);
     // (undocumented)
+    get useRadiusProperty(): DialogProperty<boolean>;
+    // (undocumented)
     get useSweep(): boolean;
     set useSweep(value: boolean);
+    // (undocumented)
+    get useSweepProperty(): DialogProperty<boolean>;
+    }
+
+// @alpha
+export class CreateCircleTool extends CreateOrContinuePathTool {
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    // (undocumented)
+    protected get createCurvePhase(): CreateCurvePhase;
+    // (undocumented)
+    protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected isComplete(_ev: BeButtonEvent): boolean;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    get method(): CircleMethod;
+    set method(method: CircleMethod);
+    // (undocumented)
+    get methodProperty(): DialogProperty<number>;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onReinitialize(): void;
+    // (undocumented)
+    onRestartTool(): void;
+    parseAndRun(...inputArgs: string[]): boolean;
+    // (undocumented)
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    get radius(): number;
+    set radius(value: number);
+    // (undocumented)
+    get radiusProperty(): DialogProperty<number>;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    protected showConstructionGraphics(ev: BeButtonEvent, context: DynamicsContext): boolean;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    get useRadius(): boolean;
+    set useRadius(value: boolean);
+    // (undocumented)
+    get useRadiusProperty(): DialogProperty<boolean>;
     }
 
 // @alpha
@@ -140,6 +223,26 @@ export abstract class CreateElementTool extends PrimitiveTool {
     get targetModelId(): Id64String;
     protected get wantAccuSnap(): boolean;
     protected get wantDynamics(): boolean;
+}
+
+// @alpha
+export class CreateEllipseTool extends CreateOrContinuePathTool {
+    // (undocumented)
+    protected get createCurvePhase(): CreateCurvePhase;
+    // (undocumented)
+    protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected isComplete(_ev: BeButtonEvent): boolean;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    static toolId: string;
 }
 
 // @alpha
@@ -212,11 +315,15 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     // (undocumented)
     decorate(context: DecorateContext): void;
     // (undocumented)
+    protected getCurrentRotation(ev: BeButtonEvent): Matrix3d;
+    // (undocumented)
     protected getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
     // (undocumented)
     protected getGeometryProps(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
     // (undocumented)
     protected getPlacementProps(): PlacementProps | undefined;
+    // (undocumented)
+    protected getUpVector(ev: BeButtonEvent): Vector3d;
     // (undocumented)
     protected _graphicsProvider?: DynamicGraphicsProvider;
     // (undocumented)
@@ -291,6 +398,55 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
 }
 
 // @alpha
+export class CreateRectangleTool extends CreateOrContinuePathTool {
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    // (undocumented)
+    protected cornerLocal?: Point3d;
+    // (undocumented)
+    protected get createCurvePhase(): CreateCurvePhase;
+    // (undocumented)
+    protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
+    // (undocumented)
+    protected createNewPath(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected isComplete(_ev: BeButtonEvent): boolean;
+    // (undocumented)
+    protected localToWorld: Transform;
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    protected originLocal?: Point3d;
+    parseAndRun(...inputArgs: string[]): boolean;
+    // (undocumented)
+    protected provideToolAssistance(mainInstrText?: string, additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    get radius(): number;
+    set radius(value: number);
+    // (undocumented)
+    get radiusProperty(): DialogProperty<number>;
+    // (undocumented)
+    protected setupAccuDraw(): void;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    get useRadius(): boolean;
+    set useRadius(value: boolean);
+    // (undocumented)
+    get useRadiusProperty(): DialogProperty<boolean>;
+    }
+
+// @alpha
 export class DeleteElementsTool extends ElementSetTool {
     // (undocumented)
     protected get allowDragSelect(): boolean;
@@ -335,7 +491,9 @@ export class DynamicGraphicsProvider {
 
 // @alpha
 export interface EditorOptions {
+    registerAllTools?: true | undefined;
     registerBasicManipulationTools?: true | undefined;
+    registerProjectLocationTools?: true | undefined;
     registerSketchTools?: true | undefined;
     registerUndoRedoTools?: true | undefined;
 }
@@ -369,6 +527,340 @@ export class MoveElementsTool extends TransformElementsTool {
     static toolId: string;
 }
 
+// @beta
+export class ProjectExtentsClipDecoration extends EditManipulator.HandleProvider {
+    constructor(viewport: ScreenViewport);
+    // (undocumented)
+    static allowEcefLocationChange(requireExisting: boolean, outputError?: boolean): boolean;
+    // (undocumented)
+    protected _allowEcefLocationChange: boolean;
+    // (undocumented)
+    static clear(clearClip?: boolean, resetGeolocation?: boolean): void;
+    // (undocumented)
+    protected clearControls(): void;
+    // (undocumented)
+    protected _clip?: ClipVector;
+    // (undocumented)
+    protected _clipId?: string;
+    // (undocumented)
+    protected _clipRange?: Range3d;
+    // (undocumented)
+    protected _clipShape?: ClipShape;
+    // (undocumented)
+    protected _clipShapeExtents?: Range1d;
+    // (undocumented)
+    protected _controlIds: string[];
+    // (undocumented)
+    protected _controls: ProjectExtentsControlArrow[];
+    // (undocumented)
+    protected createControls(): Promise<boolean>;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    protected drawAreaTooLargeIndicator(context: DecorateContext): void;
+    // (undocumented)
+    protected drawExtentTooLargeIndicator(context: DecorateContext, worldPoint: Point3d, sizePixels: number): void;
+    // (undocumented)
+    drawMonumentPoint(context: DecorateContext, point: Point3d, scaleFactor: number, id?: string): void;
+    // (undocumented)
+    drawNorthArrow(context: DecorateContext, northDir: Ray3d, id?: string): void;
+    // (undocumented)
+    protected _ecefLocation?: EcefLocation;
+    // (undocumented)
+    protected _extentsHeightValid: boolean;
+    // (undocumented)
+    protected _extentsLengthValid: boolean;
+    // (undocumented)
+    protected _extentsWidthValid: boolean;
+    // (undocumented)
+    fitExtents(): void;
+    // (undocumented)
+    static get(): ProjectExtentsClipDecoration | undefined;
+    // (undocumented)
+    getClockwiseAngleToNorth(): Angle;
+    // (undocumented)
+    getDecorationToolTip(hit: HitDetail): Promise<HTMLElement | string>;
+    // (undocumented)
+    getModifiedEcefLocation(): EcefLocation | undefined;
+    // (undocumented)
+    getModifiedExtents(): Range3d | undefined;
+    // (undocumented)
+    getMonumentPoint(): Point3d;
+    // (undocumented)
+    getNorthAngle(): Angle;
+    // (undocumented)
+    getNorthDirection(refOrigin?: Point3d): Ray3d;
+    // (undocumented)
+    protected hasValidGCS(): boolean;
+    // (undocumented)
+    static hide(): void;
+    // (undocumented)
+    protected init(): boolean;
+    protected get maxExtentHeight(): number;
+    protected get maxExtentLength(): number;
+    // (undocumented)
+    protected modifyControls(hit: HitDetail, _ev: BeButtonEvent): boolean;
+    // (undocumented)
+    protected _monumentId?: string;
+    // (undocumented)
+    protected _monumentPoint?: Point3d;
+    // (undocumented)
+    protected _northDirection?: Ray3d;
+    // (undocumented)
+    protected _northId?: string;
+    readonly onChanged: BeEvent<(iModel: IModelConnection, ev: ProjectLocationChanged) => void>;
+    // (undocumented)
+    onDecorationButtonEvent(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onManipulatorEvent(eventType: EditManipulator.EventType): void;
+    // (undocumented)
+    protected onRightClick(_hit: HitDetail, _ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    protected onTouchTap(hit: HitDetail, ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onViewClose(vp: ScreenViewport): void;
+    // (undocumented)
+    protected _removeViewCloseListener?: () => void;
+    // (undocumented)
+    resetGeolocation(): boolean;
+    // (undocumented)
+    resetViewClip(): boolean;
+    // (undocumented)
+    static show(vp: ScreenViewport, fitExtents?: boolean): boolean;
+    // (undocumented)
+    protected start(): void;
+    // (undocumented)
+    protected stop(): void;
+    // (undocumented)
+    protected _suspendDecorator: boolean;
+    // (undocumented)
+    suspendGeolocationDecorations: boolean;
+    // (undocumented)
+    testDecorationHit(id: string): boolean;
+    // (undocumented)
+    static update(): void;
+    // (undocumented)
+    protected updateDecorationListener(_add: boolean): void;
+    // (undocumented)
+    updateEcefLocation(origin: Cartographic, point?: Point3d, angle?: Angle): boolean;
+    // (undocumented)
+    updateNorthDirection(northDir: Ray3d): boolean;
+    // (undocumented)
+    viewport: ScreenViewport;
+}
+
+// @beta
+export class ProjectGeolocationMoveTool extends PrimitiveTool {
+    // (undocumented)
+    protected _current?: Point3d;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    onUnsuspend(): void;
+    // (undocumented)
+    protected _origin?: Point3d;
+    // (undocumented)
+    protected provideToolAssistance(): void;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    static startTool(): boolean;
+    // (undocumented)
+    static toolId: string;
+    }
+
+// @beta
+export class ProjectGeolocationNorthTool extends PrimitiveTool {
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    protected _northDir?: Ray3d;
+    // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled>;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    onUnsuspend(): void;
+    // (undocumented)
+    protected _origin?: Point3d;
+    // (undocumented)
+    protected provideToolAssistance(): void;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    static startTool(): boolean;
+    // (undocumented)
+    static toolId: string;
+    }
+
+// @beta
+export class ProjectGeolocationPointTool extends PrimitiveTool {
+    // (undocumented)
+    protected _accept: boolean;
+    // (undocumented)
+    acceptCoordinates(): void;
+    // (undocumented)
+    acceptKnownLocation(ev: BeButtonEvent): void;
+    // (undocumented)
+    get altitude(): number;
+    set altitude(value: number);
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    // (undocumented)
+    protected _cartographicFromArgs: boolean;
+    // (undocumented)
+    decorate(context: DecorateContext): void;
+    // (undocumented)
+    protected _haveToolSettings: boolean;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean;
+    // (undocumented)
+    isValidLocation(_ev: BeButtonEvent, _isButtonEvent: boolean): boolean;
+    // (undocumented)
+    protected _labelDeco?: LabelDecoration;
+    // (undocumented)
+    get latitude(): number;
+    set latitude(value: number);
+    // (undocumented)
+    get longitude(): number;
+    set longitude(value: number);
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    get north(): number;
+    set north(value: number);
+    // (undocumented)
+    onCleanup(): void;
+    // (undocumented)
+    onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onMouseMotion(ev: BeButtonEvent): Promise<void>;
+    // (undocumented)
+    onPostInstall(): void;
+    // (undocumented)
+    onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    onUnsuspend(): void;
+    // (undocumented)
+    protected _origin?: Point3d;
+    parseAndRun(...inputArgs: string[]): boolean;
+    // (undocumented)
+    protected provideToolAssistance(): void;
+    // (undocumented)
+    requireWriteableTarget(): boolean;
+    // (undocumented)
+    protected _scale: number;
+    // (undocumented)
+    protected setupAndPromptForNextAction(): void;
+    // (undocumented)
+    static startTool(): boolean;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    }
+
+// @beta
+export class ProjectLocationCancelTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export enum ProjectLocationChanged {
+    Extents = 0,
+    Geolocation = 1,
+    Hide = 4,
+    ResetExtents = 2,
+    ResetGeolocation = 3,
+    Save = 6,
+    Show = 5
+}
+
+// @beta
+export class ProjectLocationHideTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ProjectLocationSaveTool extends Tool {
+    // (undocumented)
+    protected allowRestartTxnSession(iModel: BriefcaseConnection): Promise<boolean>;
+    // (undocumented)
+    static callCommand<T extends keyof BasicManipulationCommandIpc>(method: T, ...args: Parameters<BasicManipulationCommandIpc[T]>): ReturnType<BasicManipulationCommandIpc[T]>;
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    protected saveChanges(deco: ProjectExtentsClipDecoration, extents?: Range3dProps, ecefLocation?: EcefLocationProps): Promise<void>;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class ProjectLocationShowTool extends Tool {
+    // (undocumented)
+    run(): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
 // @alpha
 export class RedoTool extends Tool {
     // (undocumented)
@@ -390,13 +882,13 @@ export enum RotateAbout {
 // @alpha
 export class RotateElementsTool extends TransformElementsTool {
     // (undocumented)
+    get aboutProperty(): DialogProperty<number>;
+    // (undocumented)
+    get angleProperty(): DialogProperty<number>;
+    // (undocumented)
     applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
     // (undocumented)
     protected calculateTransform(ev: BeButtonEvent): Transform | undefined;
-    // (undocumented)
-    protected _getAboutDescription: () => PropertyDescription;
-    // (undocumented)
-    protected _getMethodDescription: () => PropertyDescription;
     // (undocumented)
     protected haveFinalPoint: boolean;
     // (undocumented)
@@ -405,6 +897,8 @@ export class RotateElementsTool extends TransformElementsTool {
     static iconSpec: string;
     // (undocumented)
     static get maxArgs(): number;
+    // (undocumented)
+    get methodProperty(): DialogProperty<number>;
     // (undocumented)
     static get minArgs(): number;
     // (undocumented)
@@ -420,7 +914,7 @@ export class RotateElementsTool extends TransformElementsTool {
     protected get requireAcceptForSelectionSetDynamics(): boolean;
     // (undocumented)
     get rotateAbout(): RotateAbout;
-    set rotateAbout(about: RotateAbout);
+    set rotateAbout(method: RotateAbout);
     // (undocumented)
     get rotateAngle(): number;
     set rotateAngle(value: number);

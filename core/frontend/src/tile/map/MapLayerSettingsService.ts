@@ -15,7 +15,6 @@ export interface MapLayerSetting {
   url: string;
   name: string;
   formatId: string;
-  maxZoom: number | undefined;
   transparentBackground: boolean | undefined;
 }
 
@@ -47,7 +46,7 @@ export class MapLayerSettingsService {
       url: sourceJSON.url,
       name: sourceJSON.name,
       formatId: sourceJSON.formatId,
-      maxZoom: sourceJSON.maxZoom,
+
       transparentBackground: sourceJSON.transparentBackground,
     };
     const result: boolean = await MapLayerSettingsService.deleteOldSettings(requestContext, sourceJSON.url, sourceJSON.name, projectId, iModelId, storeOnIModel);
@@ -87,7 +86,6 @@ export class MapLayerSettingsService {
         url: newSource.url,
         name: newSource.name,
         formatId: newSource.formatId,
-        maxZoom: newSource.maxZoom,
         transparentBackground: newSource.transparentBackground,
       };
 

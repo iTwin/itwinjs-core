@@ -5,7 +5,7 @@
 import { KeyinField, parseArgs } from "@bentley/frontend-devtools";
 import { Range3d } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
-import { BlankConnection, IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { BlankConnection, BlankConnectionProps, IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
 import { BrowserFileSelector, selectFileName } from "./FileOpen";
 import { FpsMonitor } from "./FpsMonitor";
@@ -17,6 +17,7 @@ import { Viewer, ViewerProps } from "./Viewer";
 import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
 import { openStandaloneIModel } from "./openStandaloneIModel";
 import { setTitle } from "./Title";
+import { openAnalysisStyleExample } from "./AnalysisStyleExample";
 
 // cspell:ignore textbox topdiv
 
@@ -133,19 +134,32 @@ export class Surface {
       },
     }));
 
+    tb.addItem(createToolButton({
+      iconUnicode: "\uea32", // play
+      tooltip: "Analysis Style Example",
+      click: async () => {
+        this.openBlankConnection({ // eslint-disable-line @typescript-eslint/no-floating-promises
+          name: "Analysis Style Example",
+          extents: new Range3d(0, 0, -30, 100, 100, 20),
+        }).then(async (viewer) => openAnalysisStyleExample(viewer));
+      },
+    }));
+
     return tb;
   }
 
   // create a new blank connection for testing backgroundMap and reality models.
-  private async openBlankConnection() {
+  private async openBlankConnection(props?: Partial<BlankConnectionProps>): Promise<Viewer> {
     const iModel = BlankConnection.create({
-      location: Cartographic.fromDegrees(-75.686694, 40.065757, 0), // near Exton pa
-      extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-      name: "blank connection test",
+      location: props?.location ?? Cartographic.fromDegrees(-75.686694, 40.065757, 0), // near Exton pa
+      extents: props?.extents ?? new Range3d(-1000, -1000, -100, 1000, 1000, 100),
+      name: props?.name ?? "blank connection test",
     });
 
+    await iModel.backgroundMapLocation.initialize(iModel);
     const viewer = await this.createViewer({ iModel });
     viewer.dock(Dock.Full);
+    return viewer;
   }
 
   private async openIModel(filename?: string): Promise<void> {

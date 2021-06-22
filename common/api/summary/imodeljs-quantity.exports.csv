@@ -2,6 +2,8 @@ sep=;
 Release Tag;API Item
 beta;BadUnit 
 beta;BasicUnit 
+beta;CloneOptions
+beta;CloneUnit
 beta;CustomFormatProps 
 beta;DecimalPrecision
 beta;Format
