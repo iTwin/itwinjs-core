@@ -41,14 +41,16 @@ describe("SectionDrawing", () => {
     expect(drawing.sectionType).to.equal(SectionType.Section);
     expect(drawing.jsonProperties.drawingToSpatialTransform).to.be.undefined;
     expect(drawing.jsonProperties.sheetToSpatialTransform).to.be.undefined;
+    expect(drawing.drawingToSpatialTransform).to.be.undefined;
+    expect(drawing.sheetToSpatialTransform).to.be.undefined;
 
     // Modify values
     const drawingToSpatial = Transform.createTranslationXYZ(1, 2, 3);
     const sheetToSpatial = Transform.createTranslationXYZ(4, 5, 6);
     drawing.spatialView = new RelatedElement({ id: "0x123" });
     drawing.sectionType = SectionType.Elevation;
-    drawing.jsonProperties.drawingToSpatialTransform = drawingToSpatial.toJSON();
-    drawing.jsonProperties.sheetToSpatialTransform = sheetToSpatial.toJSON();
+    drawing.drawingToSpatialTransform = drawingToSpatial;
+    drawing.sheetToSpatialTransform = sheetToSpatial;
 
     // Expect updated values
     const expectProps = (json: SectionDrawingProps | SectionDrawing) => {

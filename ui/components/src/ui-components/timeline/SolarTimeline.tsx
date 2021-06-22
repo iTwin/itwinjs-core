@@ -678,7 +678,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
       width: `100%`,
       height: `100%`,
     };
-    const expandMinimizeLabel = isExpanded ? this._expandLabel : this._minimizeLabel;
+    const expandMinimizeLabel = isExpanded ? this._minimizeLabel : this._expandLabel;
 
     return (
       <div className={classnames("solar-timeline-wrapper", isExpanded && "expanded")} >

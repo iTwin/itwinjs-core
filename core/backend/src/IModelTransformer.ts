@@ -6,7 +6,9 @@
  * @module iModels
  */
 import * as path from "path";
+import * as Semver from "semver";
 import { ClientRequestContext, DbResult, Guid, Id64, Id64Set, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import * as ECSchemaMetaData from "@bentley/ecschema-metadata";
 import { Point3d, Transform } from "@bentley/geometry-core";
 import {
   Code, CodeSpec, ElementAspectProps, ElementProps, ExternalSourceAspectProps, FontProps, GeometricElement2dProps, GeometricElement3dProps, IModel,
@@ -15,7 +17,10 @@ import {
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
-import { DefinitionPartition, Element, FolderLink, GeometricElement2d, GeometricElement3d, InformationPartitionElement, Subject } from "./Element";
+import {
+  DefinitionElement, DefinitionPartition, Element, FolderLink, GeometricElement2d, GeometricElement3d, InformationPartitionElement,
+  RecipeDefinitionElement, Subject,
+} from "./Element";
 import { ChannelRootAspect, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
 import { ExternalSource, ExternalSourceAttachment, SynchronizationConfigLink } from "./ExternalSource";
 import { IModelCloneContext } from "./IModelCloneContext";
@@ -27,7 +32,6 @@ import { IModelJsFs } from "./IModelJsFs";
 import { DefinitionModel, Model } from "./Model";
 import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
-import * as Semver from "semver";
 import { Schema } from "./Schema";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
@@ -746,46 +750,44 @@ export class IModelTransformer extends IModelExportHandler {
     return targetElementAspectProps;
   }
 
+  /** The directory where schemas will be exported, a random temporary directory */
+  protected _schemaExportDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
+
+  /** Override of [IModelExportHandler.shouldExportSchema]($backend) that is called to determine if a schema should be exported
+   * @note the default behavior doesn't import schemas older than those already in the target
+   */
+  protected shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean {
+    const versionInTarget = this.targetDb.querySchemaVersion(schemaKey.name);
+    if (versionInTarget === undefined)
+      return true;
+    return Semver.gt(`${schemaKey.version.read}.${schemaKey.version.write}.${schemaKey.version.minor}`, Schema.toSemverString(versionInTarget));
+  }
+
+  /** Override of [IModelExportHandler.onExportSchema]($backend) that serializes a schema to disk for [[processSchemas]] to import into
+   * the target iModel when it is exported from the source iModel. */
+  protected async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
+    const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
+    IModelJsFs.writeFileSync(schemaPath, await schema.toXmlString());
+  }
+
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
    * It is more efficient to process *data* changes after the schema changes have been saved.
    */
   public async processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
-    requestContext.enter();
-    const schemasDir: string = path.join(KnownLocations.tmpdir, Guid.createValue());
-    IModelJsFs.mkdirSync(schemasDir);
     try {
-      this.sourceDb.nativeDb.exportSchemas(schemasDir);
-      const schemaFiles: string[] = IModelJsFs.readdirSync(schemasDir);
-      // some schemas are guaranteed to exist and importing them will be a duplicate schema error, so we filter them out
-      const importSchemasFullPaths = schemaFiles.map((schema) => path.join(schemasDir, schema));
-      const filteredSchemaPaths = importSchemasFullPaths.filter((schemaPath) => {
-        let schemaSource: string;
-        try {
-          schemaSource = IModelJsFs.readFileSync(schemaPath).toString("utf8");
-        } catch (err) {
-          Logger.logError(loggerCategory, `error reading xml schema file ${schemaPath}`);
-          return true;
-        }
-        const schemaVersionMatch = /<ECSchema .*?version="([0-9.]+)"/.exec(schemaSource);
-        const schemaNameMatch = /<ECSchema .*?schemaName="([^"]+)"/.exec(schemaSource);
-        if (schemaVersionMatch == null || schemaNameMatch == null) {
-          Logger.logError(loggerCategory, `failed to parse schema name or version, first 200 chars: '${schemaSource.slice(0, 200)}'`);
-          return true;
-        }
-        const [_fullVersionMatch, versionString] = schemaVersionMatch;
-        const [_fullNameMatch, schemaName] = schemaNameMatch;
-        const versionInTarget = this.targetDb.querySchemaVersion(schemaName);
-        const versionToImport = Schema.toSemverString(versionString);
-        if (versionInTarget && Semver.lte(versionToImport, versionInTarget))
-          return false;
-        return true;
-      });
-      if (filteredSchemaPaths.length > 0)
-        await this.targetDb.importSchemas(requestContext, filteredSchemaPaths);
+      requestContext.enter();
+      IModelJsFs.mkdirSync(this._schemaExportDir);
+      await this.exporter.exportSchemas();
+      requestContext.enter();
+      const exportedSchemaFiles = IModelJsFs.readdirSync(this._schemaExportDir);
+      if (exportedSchemaFiles.length === 0)
+        return;
+      const schemaFullPaths = exportedSchemaFiles.map((s) => path.join(this._schemaExportDir, s));
+      return this.targetDb.importSchemas(requestContext, schemaFullPaths);
     } finally {
       requestContext.enter();
-      IModelJsFs.removeSync(schemasDir);
+      IModelJsFs.removeSync(this._schemaExportDir);
     }
   }
 
@@ -888,10 +890,12 @@ export class TemplateModelCloner extends IModelTransformer {
   private _sourceIdToTargetIdMap?: Map<Id64String, Id64String>;
   /** Construct a new TemplateModelCloner
    * @param sourceDb The source IModelDb that contains the templates to clone
-   * @param targetDb The target IModelDb where the cloned template will be inserted
+   * @param targetDb Optionally specify the target IModelDb where the cloned template will be inserted. Typically should be left `undefined`.
+   * @note The expectation is that the template definitions are within the same iModel where instances will be placed.
    */
-  public constructor(sourceDb: IModelDb, targetDb: IModelDb) {
-    super(sourceDb, targetDb, { noProvenance: true });
+  public constructor(sourceDb: IModelDb, targetDb: IModelDb = sourceDb) {
+    super(sourceDb, targetDb, { noProvenance: true }); // WIP: need to decide the proper way to handle provenance
+    this.importer.autoExtendProjectExtents = false; // autoExtendProjectExtents is intended for transformation service use cases, not template --> instance cloning
   }
   /** Place a template from the sourceDb at the specified placement in the target model within the targetDb.
    * @param sourceTemplateModelId The Id of the template model in the sourceDb
@@ -938,11 +942,20 @@ export class TemplateModelCloner extends IModelTransformer {
     const predecessorIds: Id64Set = sourceElement.getPredecessorIds();
     predecessorIds.forEach((predecessorId: Id64String) => {
       if (Id64.invalid === this.context.findTargetElementId(predecessorId)) {
-        throw new IModelError(IModelStatus.BadRequest, "Required dependency not found in target iModel", Logger.logError, BackendLoggerCategory.IModelTransformer);
+        if (this.context.isBetweenIModels) {
+          throw new IModelError(IModelStatus.BadRequest, `Remapping for source dependency ${predecessorId} not found for target iModel`, Logger.logError, BackendLoggerCategory.IModelTransformer);
+        } else {
+          const definitionElement = this.sourceDb.elements.tryGetElement<DefinitionElement>(predecessorId, DefinitionElement);
+          if (definitionElement && !(definitionElement instanceof RecipeDefinitionElement)) {
+            this.context.remapElement(predecessorId, predecessorId); // when in the same iModel, can use existing DefinitionElements without remapping
+          } else {
+            throw new IModelError(IModelStatus.BadRequest, `Remapping for dependency ${predecessorId} not found`, Logger.logError, BackendLoggerCategory.IModelTransformer);
+          }
+        }
       }
     });
     const targetElementProps: ElementProps = super.onTransformElement(sourceElement);
-    targetElementProps.federationGuid = undefined; // clone from template should not maintain federationGuid
+    targetElementProps.federationGuid = Guid.createValue(); // clone from template should create a new federationGuid
     targetElementProps.code = Code.createEmpty(); // clone from template should not maintain codes
     if (sourceElement instanceof GeometricElement3d) {
       const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);

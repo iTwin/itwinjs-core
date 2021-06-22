@@ -50,9 +50,41 @@
         "MidPoint": "Define arc midpoint"
       }
     },
+    "CreateCircle": {
+      "keyin": "editor create circle",
+      "flyover": "Create Circle",
+      "Label": {
+        "Method": "Method",
+        "Radius": "Radius"
+      },
+      "Method": {
+        "Center": "Center",
+        "Edge": "Edge"
+      },
+      "Prompts": {
+        "CenterPoint": "Define circle center",
+        "EdgePoint": "Define point on edge"
+      }
+    },
+    "CreateEllipse": {
+      "keyin": "editor create ellipse",
+      "flyover": "Create Ellipse",
+      "Prompts": {
+        "CenterPoint": "Define ellipse center",
+        "MajorAxis": "Define major axis",
+        "MinorAxis": "Define minor axis"
+      }
+    },
     "CreateLineString": {
       "keyin": "editor create linestring",
       "flyover": "Create Linestring"
+    },
+    "CreateRectangle": {
+      "keyin": "editor create rectangle",
+      "flyover": "Create Rectangle",
+      "Label": {
+        "CornerRadius": "Corner Radius"
+      }
     },
     "UndoAll": {
       "keyin": "editor undo all",
@@ -109,6 +141,7 @@
         "AcceptHandle": "Accept project extents or handle"
       },
       "Message": {
+        "RestartTxn": "Undo of prior changes will no longer be possible, continue?",
         "NotActive": "Enable geolocation tools with 'editor project location show' first",
         "NotAllowed": "A valid geographic coordinate reference system already exists",
         "NotGeolocated": "Not geolocated",

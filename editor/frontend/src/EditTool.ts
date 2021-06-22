@@ -11,7 +11,7 @@ import { IModelApp, IpcApp } from "@bentley/imodeljs-frontend";
 import { DeleteElementsTool } from "./DeleteElementsTool";
 import { ProjectLocationCancelTool, ProjectLocationHideTool, ProjectLocationSaveTool, ProjectLocationShowTool } from "./ProjectLocation/ProjectExtentsDecoration";
 import { ProjectGeolocationMoveTool, ProjectGeolocationNorthTool, ProjectGeolocationPointTool } from "./ProjectLocation/ProjectGeolocation";
-import { CreateArcTool, CreateLineStringTool } from "./SketchTools";
+import { CreateArcTool, CreateCircleTool, CreateEllipseTool, CreateLineStringTool, CreateRectangleTool } from "./SketchTools";
 import { MoveElementsTool, RotateElementsTool } from "./TransformElementsTool";
 import { RedoTool, UndoAllTool, UndoTool } from "./UndoRedoTool";
 
@@ -106,7 +106,10 @@ export class EditTools {
     if (registerAllTools || options?.registerSketchTools) {
       const tools = [
         CreateArcTool,
+        CreateCircleTool,
+        CreateEllipseTool,
         CreateLineStringTool,
+        CreateRectangleTool,
       ];
 
       for (const tool of tools)

@@ -13,10 +13,9 @@ import { GenericUiEventArgs, RelativePosition, UiAdmin } from "@bentley/ui-abstr
 import { UiComponents } from "../UiComponents";
 import { ContextMenu, ContextMenuItem } from "./ContextMenu";
 import { InlineEdit } from "./InlineEdit";
-import { Milestone, PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces";
+import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces";
 import { PlayButton, PlayerButton } from "./PlayerButton";
 import { Scrubber } from "./Scrubber";
-import { Timeline } from "./Timeline";
 
 // cspell:ignore millisec
 
@@ -24,12 +23,13 @@ const slowSpeed = 60 * 1000;
 const mediumSpeed = 20 * 1000;
 const fastSpeed = 10 * 1000;
 
+/** @public */
 interface TimelineComponentProps {
   startDate?: Date; // start date
   endDate?: Date;   // end date
   totalDuration: number;  // total duration in milliseconds
   initialDuration?: number;  // initial value for current duration in milliseconds
-  milestones?: Milestone[]; // optional milestones
+  /* For future use. This prop will always be treated as true. */
   minimized?: boolean;  // show in minimized mode
   repeat?: boolean;  // repeat animation indefinitely
   showDuration?: boolean; // show the duration instead of time
@@ -37,13 +37,16 @@ interface TimelineComponentProps {
   onPlayPause?: (playing: boolean) => void; // callback triggered when play/pause button is pressed
   onJump?: (forward: boolean) => void; // callback triggered when backward/forward buttons are pressed
   onSettingsChange?: (arg: PlaybackSettings) => void; // callback triggered when a setting is changed
+  /* For future use. This prop will always be treated as true */
   alwaysMinimized?: boolean; // always display in miniMode with no expand menu
   componentId?: string; // must be set to use TimelineComponentEvents
 }
 
+/** @public */
 interface TimelineComponentState {
   isSettingsOpen: boolean; // settings popup is opened or closed
   isPlaying: boolean; // timeline is currently playing or paused
+  /* For future use. This will always be true */
   minimized?: boolean; // minimized mode
   currentDuration: number; // current duration in milliseconds
   totalDuration: number;  // total duration in milliseconds
@@ -51,7 +54,7 @@ interface TimelineComponentState {
 }
 
 /** Component used to playback timeline data
- * @alpha
+ * @public
  */
 export class TimelineComponent extends React.Component<TimelineComponentProps, TimelineComponentState> {
   private _timeLastCycle = 0;
@@ -69,14 +72,12 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     this.state = {
       isSettingsOpen: false,
       isPlaying: false,
-      minimized: this.props.alwaysMinimized ? /* istanbul ignore next */ true : this.props.minimized,
+      minimized: true,
       currentDuration: props.initialDuration ? props.initialDuration : /* istanbul ignore next */ 0,
       totalDuration: this.props.totalDuration,
       repeat: this.props.repeat ? true : false,
     };
 
-    this._expandLabel = UiComponents.translate("timeline.expand");
-    this._minimizeLabel = UiComponents.translate("timeline.minimize");
     this._repeatLabel = UiComponents.translate("timeline.repeat");
     // istanbul ignore else
     if (this.props.componentId) { // can't handle an event if we have no id
@@ -353,9 +354,6 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   };
 
   private _renderSettings = () => {
-    const expandName = (this.state.minimized) ? this._expandLabel : this._minimizeLabel;
-    const hasDates = this.props.startDate && this.props.endDate;
-    const alwaysMinimized = this.props.alwaysMinimized;
     const { totalDuration } = this.state;
     return (
       <>
@@ -364,7 +362,6 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
           role="button" tabIndex={-1} title={UiComponents.translate("button.label.settings")}
         ></span>
         <ContextMenu parent={this._settings} isOpened={this.state.isSettingsOpen} onClickOutside={this._onCloseSettings.bind(this)} position={RelativePosition.BottomRight}>
-          {!alwaysMinimized && hasDates && <ContextMenuItem name={expandName} onClick={this._onModeChanged} />}
           <ContextMenuItem name={this._repeatLabel} checked={this.state.repeat} onClick={this._onRepeatChanged} />
           <ContextMenuItem isSeparator={true} />
           <ContextMenuItem name={UiComponents.translate("timeline.slow")} checked={totalDuration === slowSpeed} onClick={this._onSetTotalDuration.bind(this, slowSpeed)} />
@@ -376,16 +373,15 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   };
 
   public render() {
-    const { startDate, endDate, milestones, showDuration } = this.props;
+    const { startDate, endDate, showDuration } = this.props;
     const { currentDuration, totalDuration, minimized } = this.state;
     const currentDate = this._currentDate();
     const durationString = this._displayTime(currentDuration);
     const totalDurationString = this._displayTime(totalDuration);
-    const hasDates = startDate && endDate;
-    const miniMode = minimized || !hasDates;
+    const hasDates = !!startDate && !!endDate;
 
     return (
-      <div data-testid="timeline-component" className={classnames("timeline-component", miniMode && "minimized", hasDates && "has-dates")} >
+      <div data-testid="timeline-component" className={classnames("timeline-component", !!minimized && "minimized", hasDates && "has-dates")} >
         <div className="header">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
           <PlayerButton className="play-backward" icon="icon-caret-left" onClick={this._onBackward}
@@ -396,16 +392,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
           <PlayerButton className="play-forward" icon="icon-caret-right" onClick={this._onForward}
             title={UiComponents.translate("timeline.backward")} />
           <span className="current-date">{currentDate.toLocaleDateString()}</span>
-          {!miniMode && this._renderSettings()}
         </div>
-        {!miniMode && <Timeline
-          className="timeline-timeline"
-          startDate={startDate!}
-          endDate={endDate!}
-          selectedDate={currentDate}
-          milestones={milestones}
-          isPlaying={this.state.isPlaying}
-        />}
         <div className="scrubber">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
           <div className="start-time-container">
@@ -420,7 +407,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
             startDate={startDate}
             endDate={endDate}
             isPlaying={this.state.isPlaying}
-            inMiniMode={miniMode}
+            inMiniMode={!!minimized}
             showTime={!showDuration}
             onChange={this._onTimelineChange}
             onUpdate={this._onTimelineChange}
@@ -430,7 +417,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
             {hasDates && !showDuration && <span className="end-time">{endDate!.toLocaleTimeString()}</span>}
             {showDuration && <InlineEdit className="duration-end-time" defaultValue={totalDurationString} onChange={this._onTotalDurationChange} />}
           </div>
-          {miniMode && this._renderSettings()}
+          {minimized && this._renderSettings()}
         </div>
       </div>
     );

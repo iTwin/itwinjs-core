@@ -6,6 +6,16 @@
  * @module Widget
  */
 
+/** Enum for AppUi 1 `Zone` locations that can have widgets added to them at run-time via [[UiItemsProvider]].
+ * @public
+ */
+export enum AbstractZoneLocation {
+  CenterLeft = 4,
+  CenterRight = 6,
+  BottomLeft = 7,
+  BottomRight = 9,
+}
+
 /** Available Stage Panel locations.
  * @public
  */

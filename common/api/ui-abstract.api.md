@@ -13,11 +13,11 @@ import { Id64String } from '@bentley/bentleyjs-core';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { XAndY } from '@bentley/geometry-core';
 
-// @beta
+// @public
 export interface AbstractActionItemProps extends CommonItemProps, CommandHandler {
 }
 
-// @beta
+// @public
 export interface AbstractMenuItemProps extends CommonItemProps {
     iconRight?: string | ConditionalStringValue;
     id: string;
@@ -64,7 +64,7 @@ export interface AbstractStatusBarLabelItem extends AbstractStatusBarItem {
     readonly labelSide?: StatusBarLabelSide;
 }
 
-// @beta
+// @public
 export interface AbstractToolbarProps {
     items: CommonToolbarItem[];
     toolbarId?: string;
@@ -95,6 +95,18 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly stateFunc?: (state: Readonly<WidgetState>) => WidgetState;
     readonly syncEventIds?: string[];
     readonly tooltip?: string | ConditionalStringValue;
+}
+
+// @public
+export enum AbstractZoneLocation {
+    // (undocumented)
+    BottomLeft = 7,
+    // (undocumented)
+    BottomRight = 9,
+    // (undocumented)
+    CenterLeft = 4,
+    // (undocumented)
+    CenterRight = 6
 }
 
 // @alpha
@@ -205,7 +217,7 @@ export interface ActionButton extends ToolbarItem {
     readonly label: string | ConditionalStringValue;
 }
 
-// @beta
+// @public
 export enum AlternateDateFormats {
     // (undocumented)
     IsoDateTime = 2,
@@ -223,7 +235,7 @@ export enum AlternateDateFormats {
     UtcShortWithDay = 5
 }
 
-// @beta
+// @public
 export interface ArrayValue extends BasePropertyValue {
     // (undocumented)
     items: PropertyRecord[];
@@ -291,7 +303,7 @@ export enum BadgeType {
     TechnicalPreview = 1
 }
 
-// @beta
+// @public
 export interface BaseDialogItem {
     // (undocumented)
     readonly isDisabled?: boolean;
@@ -301,13 +313,13 @@ export interface BaseDialogItem {
     readonly value: DialogItemValue;
 }
 
-// @beta
+// @public
 export interface BasePropertyEditorParams {
     // (undocumented)
     type: string;
 }
 
-// @beta
+// @public
 export interface BasePropertyValue {
     // (undocumented)
     valueFormat: PropertyValueFormat;
@@ -338,7 +350,7 @@ export abstract class BaseQuantityDescription implements PropertyDescription {
     typename: string;
 }
 
-// @beta
+// @public
 export interface ButtonGroupEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     buttons: IconDefinition[];
@@ -878,7 +890,7 @@ export const enum CharCode {
     z = 122
 }
 
-// @beta
+// @public
 export interface ColorEditorParams extends BasePropertyEditorParams {
     colorValues: number[];
     numColumns?: number;
@@ -886,7 +898,7 @@ export interface ColorEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.ColorData;
 }
 
-// @beta
+// @public
 export interface CommandHandler {
     execute?: (args?: any) => any;
     getCommandArgs?: () => any[];
@@ -910,7 +922,7 @@ export interface CommonBackstageItem extends ProvidedItem {
     readonly tooltip?: string | ConditionalStringValue;
 }
 
-// @beta
+// @public
 export interface CommonItemProps {
     applicationData?: any;
     badgeType?: BadgeType;
@@ -970,7 +982,7 @@ export interface CustomButtonDefinition extends ToolbarItem {
     readonly label?: string | ConditionalStringValue;
 }
 
-// @beta
+// @public
 export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
     // (undocumented)
     formatFunction: (numberValue: number) => string;
@@ -980,7 +992,7 @@ export interface CustomFormattedNumberParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.CustomFormattedNumber;
 }
 
-// @beta
+// @public
 export interface DateFormatter {
     // (undocumented)
     formateDate: (day: Date) => string;
@@ -1032,7 +1044,7 @@ export enum DialogButtonType {
     Yes = "yes"
 }
 
-// @beta
+// @public
 export interface DialogItem extends BaseDialogItem {
     // (undocumented)
     readonly editorPosition: EditorPosition;
@@ -1040,7 +1052,7 @@ export interface DialogItem extends BaseDialogItem {
     readonly lockProperty?: BaseDialogItem;
 }
 
-// @beta
+// @public
 export interface DialogItemValue {
     // (undocumented)
     displayValue?: string;
@@ -1048,7 +1060,7 @@ export interface DialogItemValue {
     value?: number | string | boolean | Date;
 }
 
-// @beta
+// @public
 export abstract class DialogLayoutDataProvider extends UiLayoutDataProvider {
     fireDialogButtonsReloadEvent(): void;
     // (undocumented)
@@ -1057,7 +1069,7 @@ export abstract class DialogLayoutDataProvider extends UiLayoutDataProvider {
     supplyButtonData(): DialogButtonDef[] | undefined;
 }
 
-// @beta
+// @public
 export class DialogProperty<T> {
     constructor(description: PropertyDescription, _value: T, _displayValue?: string | undefined, _isDisabled?: boolean | undefined);
     // (undocumented)
@@ -1072,6 +1084,8 @@ export class DialogProperty<T> {
     get isDisabled(): boolean;
     set isDisabled(val: boolean);
     // (undocumented)
+    get item(): DialogPropertyItem;
+    // (undocumented)
     get name(): string;
     // (undocumented)
     get syncItem(): DialogPropertySyncItem;
@@ -1082,7 +1096,7 @@ export class DialogProperty<T> {
     set value(val: T);
     }
 
-// @beta
+// @public
 export interface DialogPropertyItem {
     // (undocumented)
     readonly propertyName: string;
@@ -1090,7 +1104,7 @@ export interface DialogPropertyItem {
     readonly value: DialogItemValue;
 }
 
-// @beta
+// @public
 export interface DialogPropertySyncItem extends DialogPropertyItem {
     // (undocumented)
     readonly isDisabled?: boolean;
@@ -1098,7 +1112,7 @@ export interface DialogPropertySyncItem extends DialogPropertyItem {
     readonly property?: PropertyDescription;
 }
 
-// @beta
+// @public
 export interface DialogProps {
     height?: string | number;
     maxHeight?: string | number;
@@ -1110,7 +1124,7 @@ export interface DialogProps {
     width?: string | number;
 }
 
-// @beta
+// @public
 export interface DialogRow {
     // (undocumented)
     items: DialogItem[];
@@ -1118,7 +1132,7 @@ export interface DialogRow {
     priority: number;
 }
 
-// @beta
+// @public
 export interface EditorPosition {
     columnIndex: number;
     // @deprecated
@@ -1126,7 +1140,7 @@ export interface EditorPosition {
     rowPriority: number;
 }
 
-// @beta
+// @public
 export interface EnumerationChoice {
     // (undocumented)
     label: string;
@@ -1134,7 +1148,7 @@ export interface EnumerationChoice {
     value: string | number;
 }
 
-// @beta
+// @public
 export interface EnumerationChoicesInfo {
     // (undocumented)
     choices: Promise<EnumerationChoice[]> | EnumerationChoice[];
@@ -1197,11 +1211,11 @@ export function fuzzyScoreGracefulAggressive(pattern: string, lowPattern: string
 // @internal (undocumented)
 export type FuzzyScorer = (pattern: string, lowPattern: string, patternPos: number, word: string, lowWord: string, wordPos: number, firstMatchCanBeWeak: boolean) => FuzzyScore | undefined;
 
-// @beta
+// @public
 export class GenericUiEvent extends BeUiEvent<GenericUiEventArgs> {
 }
 
-// @beta
+// @public
 export interface GenericUiEventArgs {
     // (undocumented)
     uiComponentId: string;
@@ -1218,13 +1232,13 @@ export interface GroupButton extends ToolbarItem {
     readonly panelLabel?: string | ConditionalStringValue;
 }
 
-// @beta
+// @public
 export interface IconDefinition {
     iconSpec: string;
     isEnabledFunction?: () => boolean;
 }
 
-// @beta
+// @public
 export interface IconEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     definition: IconDefinition;
@@ -1232,7 +1246,7 @@ export interface IconEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.Icon;
 }
 
-// @beta
+// @public
 export interface IconListEditorParams extends BasePropertyEditorParams {
     iconValue: string;
     iconValues: string[];
@@ -1251,7 +1265,7 @@ export class IconSpecUtilities {
 // @internal
 export type IFilter = (word: string, wordToMatchAgainst: string) => IMatch[] | null;
 
-// @beta
+// @public
 export interface ImageCheckBoxParams extends BasePropertyEditorParams {
     // (undocumented)
     imageOff: string;
@@ -1269,7 +1283,7 @@ export interface IMatch {
     start: number;
 }
 
-// @beta
+// @public
 export interface InputEditorSizeParams extends BasePropertyEditorParams {
     maxLength?: number;
     size?: number;
@@ -1292,19 +1306,19 @@ export const isActionItem: (item: BackstageItem) => item is BackstageActionItem;
 // @public
 export function isArrowKey(key: string): boolean;
 
-// @beta
+// @public
 export const isButtonGroupEditorParams: (item: BasePropertyEditorParams) => item is ButtonGroupEditorParams;
 
-// @beta
+// @public
 export const isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEditorParams;
 
-// @beta
+// @public
 export const isCustomFormattedNumberParams: (item: BasePropertyEditorParams) => item is CustomFormattedNumberParams;
 
-// @beta
+// @public
 export const isIconListEditorParams: (item: BasePropertyEditorParams) => item is IconListEditorParams;
 
-// @beta
+// @public
 export const isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputEditorSizeParams;
 
 // @alpha
@@ -1319,13 +1333,13 @@ export function isPatternInWord(patternLow: string, patternPos: number, patternL
 // @public
 export const isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher;
 
-// @beta
+// @public
 export const isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams;
 
 // @internal (undocumented)
 export function isUpperAsciiLetter(code: number): boolean;
 
-// @beta
+// @public
 export interface LinkElementsInfo {
     matcher?: (displayValue: string) => Array<{
         start: number;
@@ -1358,7 +1372,7 @@ export function matchesSubString(word: string, wordToMatchAgainst: string): IMat
 // @internal
 export function matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null;
 
-// @beta
+// @public
 export interface MultilineTextEditorParams extends BasePropertyEditorParams {
     // (undocumented)
     rows: number;
@@ -1366,22 +1380,22 @@ export interface MultilineTextEditorParams extends BasePropertyEditorParams {
     type: PropertyEditorParamTypes.MultilineText;
 }
 
-// @beta
+// @public
 export type OnCancelFunc = () => void;
 
-// @beta
+// @public
 export type OnItemExecutedFunc = (item: any) => void;
 
-// @beta
+// @public
 export type OnNumberCommitFunc = (value: number) => void;
 
-// @beta
+// @public
 export type OnValueCommitFunc = (value: Primitives.Value) => void;
 
 // @internal (undocumented)
 export function or(...filter: IFilter[]): IFilter;
 
-// @beta
+// @public
 export interface ParseResults {
     // (undocumented)
     parseError?: string;
@@ -1389,7 +1403,7 @@ export interface ParseResults {
     value?: string | number | boolean | {} | string[] | Date | [] | undefined;
 }
 
-// @beta
+// @public
 export namespace Primitives {
     export type Boolean = boolean | string | {} | [];
     export interface Composite {
@@ -1431,11 +1445,10 @@ export namespace Primitives {
     export type ShortDate = string | Date;
     export type String = string;
     export type Text = string;
-    // (undocumented)
     export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite | InstanceKey;
 }
 
-// @beta
+// @public
 export interface PrimitiveValue extends BasePropertyValue {
     // (undocumented)
     displayValue?: string;
@@ -1445,7 +1458,7 @@ export interface PrimitiveValue extends BasePropertyValue {
     valueFormat: PropertyValueFormat.Primitive;
 }
 
-// @beta
+// @public
 export interface PropertyChangeResult {
     // (undocumented)
     errorMsg?: string;
@@ -1453,13 +1466,13 @@ export interface PropertyChangeResult {
     status: PropertyChangeStatus;
 }
 
-// @beta
+// @public
 export enum PropertyChangeStatus {
     Error = 2,
     Success = 0
 }
 
-// @beta
+// @public
 export interface PropertyConverterInfo {
     name?: string;
     options?: {
@@ -1467,7 +1480,7 @@ export interface PropertyConverterInfo {
     };
 }
 
-// @beta
+// @public
 export interface PropertyDescription {
     converter?: PropertyConverterInfo;
     dataController?: string;
@@ -1485,35 +1498,28 @@ export interface PropertyDescription {
 
 // @beta
 export class PropertyDescriptionHelper {
-    // @alpha
     static buildCheckboxDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildColorPickerDescription(name: string, label: string, colorValues: number[], numColumns: number, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildEnumPicklistEditorDescription(name: string, label: string, choices: Promise<EnumerationChoice[]> | EnumerationChoice[], additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildImageCheckBoxDescription(name: string, label: string, imageOff: string, imageOn: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
+    static buildLockPropertyDescription(name: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
     static buildNumberEditorDescription(name: string, label: string, overrideParams?: RangeEditorParams, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildTextEditorDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildToggleDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildWeightPickerDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
     static bumpEnumProperty(description: PropertyDescription, value: string | number): Promise<string | number>;
 }
 
-// @beta
+// @public
 export interface PropertyEditorInfo {
     name?: string;
     params?: PropertyEditorParams[];
 }
 
-// @beta
+// @public
 export type PropertyEditorParams = BasePropertyEditorParams;
 
-// @beta
+// @public
 export enum PropertyEditorParamTypes {
     // (undocumented)
     ButtonGroupData = "UiAbstract-ButtonGroupData",
@@ -1541,7 +1547,7 @@ export enum PropertyEditorParamTypes {
     SuppressEditorLabel = "UiAbstract-SuppressEditorLabel"
 }
 
-// @beta
+// @public
 export class PropertyRecord {
     constructor(value: PropertyValue, property: PropertyDescription);
     autoExpand?: boolean;
@@ -1560,16 +1566,16 @@ export class PropertyRecord {
     readonly value: PropertyValue;
 }
 
-// @beta
+// @public
 export interface PropertyRendererInfo {
     // (undocumented)
     name: string;
 }
 
-// @beta
+// @public
 export type PropertyValue = PrimitiveValue | StructValue | ArrayValue;
 
-// @beta
+// @public
 export enum PropertyValueFormat {
     // (undocumented)
     Array = 1,
@@ -1584,7 +1590,7 @@ export interface ProvidedItem {
     readonly providerId?: string;
 }
 
-// @beta
+// @public
 export interface RangeEditorParams extends BasePropertyEditorParams {
     maximum?: number;
     minimum?: number;
@@ -1618,7 +1624,7 @@ export enum RelativePosition {
     TopRight = 5
 }
 
-// @beta
+// @public
 export interface SliderEditorParams extends BasePropertyEditorParams {
     formatTick?: (tick: number) => string;
     formatTooltip?: (value: number) => string;
@@ -1715,7 +1721,7 @@ export enum StagePanelSection {
     Start = 0
 }
 
-// @beta
+// @public
 export enum StageUsage {
     // (undocumented)
     Edit = "Edit",
@@ -1855,10 +1861,10 @@ export enum StatusBarSection {
     Stage = 1
 }
 
-// @beta
+// @public
 export type StringGetter = () => string;
 
-// @beta
+// @public
 export interface StructValue extends BasePropertyValue {
     // (undocumented)
     members: {
@@ -1868,24 +1874,24 @@ export interface StructValue extends BasePropertyValue {
     valueFormat: PropertyValueFormat.Struct;
 }
 
-// @beta
+// @public
 export interface SuppressLabelEditorParams extends BasePropertyEditorParams {
     suppressLabelPlaceholder?: boolean;
     // (undocumented)
     type: PropertyEditorParamTypes.SuppressEditorLabel;
 }
 
-// @beta
+// @public
 export class SyncPropertiesChangeEvent extends BeUiEvent<SyncPropertiesChangeEventArgs> {
 }
 
-// @beta
+// @public
 export interface SyncPropertiesChangeEventArgs {
     // (undocumented)
     properties: DialogPropertySyncItem[];
 }
 
-// @beta
+// @public
 export enum TimeDisplay {
     // (undocumented)
     H12MC = "hh:mm aa",
@@ -1980,7 +1986,7 @@ export class UiAbstract {
     static translate(key: string | string[]): string;
 }
 
-// @beta
+// @public
 export class UiAdmin {
     // @alpha
     get accuDrawUi(): AccuDrawUiAdmin;
@@ -2021,7 +2027,7 @@ export class UiAdmin {
     updateFeatureFlags(uiFlags: UiFlags): void;
 }
 
-// @beta
+// @public
 export abstract class UiDataProvider {
     fireItemsReloadedEvent(): void;
     fireSyncPropertiesEvent(syncProperties: DialogPropertySyncItem[]): void;
@@ -2039,7 +2045,7 @@ export class UiError extends BentleyError {
     constructor(category: string, message: string, errorNumber?: number, log?: LogFunction, getMetaData?: GetMetaDataFunction | undefined);
 }
 
-// @beta
+// @public
 export interface UiFlags {
     allowKeyinPalette?: boolean;
 }
@@ -2099,7 +2105,7 @@ export class UiItemsManager {
     static getStatusBarItems(stageId: string, stageUsage: string): CommonStatusBarItem[];
     static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[];
     static getUiItemsProvider(providerId: string): UiItemsProvider | undefined;
-    static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps>;
+    static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps>;
     static get hasRegisteredProviders(): boolean;
     static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiItemProviderRegisteredEventArgs) => void>;
     static register(uiProvider: UiItemsProvider): void;
@@ -2117,10 +2123,10 @@ export interface UiItemsProvider {
     provideBackstageItems?: () => BackstageItem[];
     provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
     provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
-    provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) => ReadonlyArray<AbstractWidgetProps>;
+    provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation) => ReadonlyArray<AbstractWidgetProps>;
 }
 
-// @beta (undocumented)
+// @public (undocumented)
 export abstract class UiLayoutDataProvider extends UiDataProvider {
     applyUiPropertyChange: (_updatedValue: DialogPropertySyncItem) => void;
     static editorWantsLabel(item: DialogItem): boolean;

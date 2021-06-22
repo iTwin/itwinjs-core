@@ -62,5 +62,12 @@ describe("FrameworkAccuDraw localStorage Wrapper", () => {
         </FrameworkVersion>);
     });
 
+    it("BackstageAppButton should render in 1.0 mode", () => {
+      mount(
+        <FrameworkVersion version="1">
+          <BackstageAppButton icon={"icon-test"} />
+        </FrameworkVersion>);
+    });
+
   });
 });

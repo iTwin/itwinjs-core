@@ -3,7 +3,8 @@ Release Tag;API Item
 beta;BrowserAuthorizationCallbackHandler 
 beta;BrowserAuthorizationCallbackHandlerConfiguration
 beta;BrowserAuthorizationClient 
-beta;BrowserAuthorizationClientConfiguration
+beta;BrowserAuthorizationClientConfiguration 
+public;BrowserAuthorizationClientRequestOptions
 beta;FrontendAuthorizationClient 
 beta;isFrontendAuthorizationClient: (client: AuthorizationClient | undefined) => client is FrontendAuthorizationClient
 beta;OidcCallbackResponseMode
