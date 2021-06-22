@@ -47,6 +47,42 @@ Will result in this group of React components:
 
 ![sample lock toggle](./images/LengthLock.png "Length Lock")
 
+## Alternate approach
+
+The [PropertyDescriptionHelper]($ui-abstract) provides helper functions that will create [DialogProperty]($ui-abstract) objects that help with producing `DialogItems`. The example below is an excerpt from a class that defines a length and a useLength property.
+
+```tsx
+  private _useLengthProperty: DialogProperty<boolean> | undefined;
+  public get useLengthProperty() {
+    if (!this._useLengthProperty)
+      this._useLengthProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildLockPropertyDescription("useLength"), false);
+    return this._useLengthProperty;
+  }
+  public get useLength(): boolean { return this.useLengthProperty.value; }
+  public set useLength(value: boolean) { this.useLengthProperty.value = value; }
+
+  private _lengthProperty: DialogProperty<number> | undefined;
+  public get lengthProperty() {
+    if (!this._lengthProperty)
+      this._lengthProperty = new DialogProperty<number>(new LengthDescription("length", "Length")),
+        0.1, undefined, !this.useLength);
+    return this._lengthProperty;
+  }
+  public get length(): number { return this.lengthProperty.value; }
+  public set length(value: number) { this.lengthProperty.value = value; }
+  ```
+
+The code fragment below shows how to return a DialogItem that can be passed to UI for display.
+
+```tsx
+  // ensure controls are enabled/disabled base on current lock property state
+  this.lengthProperty.isDisabled = !this.useLength;
+
+  // get dialog item with nested "lock" item
+  this.lengthProperty.toDialogItem({ rowPriority: 2, columnIndex: 1 }, this.useLengthProperty.toDialogItem({ rowPriority: 2, columnIndex: 0 }));
+```
+
 ## API Reference
 
 - [DialogItem]($ui-abstract:Dialog)

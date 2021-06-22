@@ -303,6 +303,10 @@
       "allowedCategories": [ "common" ]
     },
     {
+      "name": "agentkeepalive",
+      "allowedCategories": [ "backend" ]
+    },
+    {
       "name": "almost-equal",
       "allowedCategories": [ "common" ]
     },
@@ -384,7 +388,7 @@
     },
     {
       "name": "chai-subset",
-      "allowedCategories": [ "backend", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "chalk",
@@ -532,7 +536,7 @@
     },
     {
       "name": "faker",
-      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
     },
     {
       "name": "fast-deep-equal",
@@ -687,6 +691,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "memfs",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "micro-memoize",
       "allowedCategories": [ "frontend" ]
     },
@@ -697,14 +705,6 @@
     {
       "name": "mkdirp",
       "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "mobx",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "mobx-react",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "mocha",
@@ -721,6 +721,10 @@
     {
       "name": "nock",
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+    },
+    {
+      "name": "node-fetch",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "nodemon",
@@ -773,6 +777,10 @@
     {
       "name": "postcss-safe-parser",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "proper-lockfile",
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "puppeteer",
@@ -956,7 +964,7 @@
     },
     {
       "name": "sinon-chai",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal", "tools" ]
     },
     {
       "name": "source-map-loader",

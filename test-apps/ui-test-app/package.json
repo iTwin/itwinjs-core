@@ -115,8 +115,6 @@
     "@bentley/map-layers": "workspace:*",
     "classnames": "^2.3.1",
     "lorem-ipsum": "^2.0.3",
-    "mobx": "^5.8.0",
-    "mobx-react": "^5.4.3",
     "react": "^16.8.0",
     "react-compound-slider": "^2.5.0",
     "react-dom": "^16.8.0",
@@ -124,6 +122,7 @@
     "react-beautiful-dnd": "^13.0.0",
     "react-select": "3.1.0",
     "redux": "^4.0.3",
+    "request": "^2.88.0",
     "request-promise": "^4.2.0",
     "semver": "^5.5.0"
   },

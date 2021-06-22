@@ -6,8 +6,10 @@
  * @module iModels
  */
 
-import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, Logger, OrderedId64Array } from "@bentley/bentleyjs-core";
-import { ChangedEntities, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
+import {
+  assert, BeEvent, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
+} from "@bentley/bentleyjs-core";
+import { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
@@ -37,12 +39,25 @@ export interface ValidationError {
  * @public
  */
 export interface TxnChangedEntities {
-  /** Ids of entities that were inserted by the transaction. */
+  /** Ids of entities that were inserted by the transaction.
+   * @deprecated use [[inserts]].
+   */
   inserted: OrderedId64Array;
-  /** Ids of entities that were deleted by the transaction. */
+  /** Ids of entities that were deleted by the transaction.
+   * @deprecated use [[deletes]].
+   */
   deleted: OrderedId64Array;
-  /** Ids of elements that were modified by the transaction. */
+  /** Ids of entities that were modified by the transaction.
+   * @deprecated use [[updates]].
+   */
   updated: OrderedId64Array;
+
+  /** The entities that were inserted by the transaction. */
+  readonly inserts: EntityIdAndClassIdIterable;
+  /** The entities that were deleted by the transaction. */
+  readonly deletes: EntityIdAndClassIdIterable;
+  /** The entities that were modified by the transaction, including any [[Element]]s for which one of their [[ElementAspect]]s was changed. */
+  readonly updates: EntityIdAndClassIdIterable;
 }
 
 type EntitiesChangedEvent = BeEvent<(changes: TxnChangedEntities) => void>;
@@ -54,29 +69,66 @@ export function setMaxEntitiesPerEvent(max: number): number {
   return prevMax;
 }
 
-class ChangedEntitiesProc implements TxnChangedEntities {
-  public static maxPerEvent = 1000;
+/** Maintains an ordered array of entity Ids and a parallel array containing the index of the corresponding entity's class Id. */
+class ChangedEntitiesArray {
+  public readonly entityIds = new OrderedId64Array();
+  private readonly _classIndices: number[] = [];
+  private readonly _classIds: IndexMap<Id64String>;
 
-  public inserted = new OrderedId64Array();
-  public deleted = new OrderedId64Array();
-  public updated = new OrderedId64Array();
+  public constructor(classIds: IndexMap<Id64String>) {
+    this._classIds = classIds;
+  }
+
+  public insert(entityId: Id64String, classId: Id64String): void {
+    const entityIndex = this.entityIds.insert(entityId);
+    const classIndex = this._classIds.insert(classId);
+    assert(classIndex >= 0);
+    if (this.entityIds.length !== this._classIndices.length) {
+      // New entity - insert corresponding class index entry.
+      this._classIndices.splice(entityIndex, 0, classIndex);
+    } else {
+      // Existing entity - update corresponding class index enty.
+      // (We do this because apparently connectors can (very rarely) change the class Id of an existing element).
+      this._classIndices[entityIndex] = classIndex;
+    }
+
+    assert(this.entityIds.length === this._classIndices.length);
+  }
+
+  public clear(): void {
+    this.entityIds.clear();
+    this._classIndices.length = 0;
+  }
+
+  public addToChangedEntities(entities: ChangedEntities, type: "deleted" | "inserted" | "updated"): void {
+    if (this.entityIds.length > 0)
+      entities[type] = CompressedId64Set.compressIds(this.entityIds);
+  }
+
+  public iterable(classIds: Id64Array): EntityIdAndClassIdIterable {
+    function* iterator(entityIds: ReadonlyArray<Id64String>, classIndices: number[]) {
+      const entity = { id: "", classId: "" };
+      for (let i = 0; i < entityIds.length; i++) {
+        entity.id = entityIds[i];
+        entity.classId = classIds[classIndices[i]];
+        yield entity;
+      }
+    }
+
+    return {
+      [Symbol.iterator]: () => iterator(this.entityIds.array, this._classIndices),
+    };
+  }
+}
+
+class ChangedEntitiesProc {
+  private readonly _classIds = new IndexMap<Id64String>((lhs, rhs) => compareStrings(lhs, rhs));
+  private readonly _inserted = new ChangedEntitiesArray(this._classIds);
+  private readonly _deleted = new ChangedEntitiesArray(this._classIds);
+  private readonly _updated = new ChangedEntitiesArray(this._classIds);
   private _currSize = 0;
 
-  private compressIds(): ChangedEntities {
-    const toCompressedIds = (idArray: OrderedId64Array) => idArray.isEmpty ? undefined : CompressedId64Set.compressIds(idArray);
-    return { inserted: toCompressedIds(this.inserted), deleted: toCompressedIds(this.deleted), updated: toCompressedIds(this.updated) };
-  }
-
-  private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
-    if (this._currSize > 0) {
-      evt.raiseEvent(this); // send to backend listeners
-      IpcHost.notifyTxns(iModel, evtName, this.compressIds()); // now notify frontend listeners
-      this.inserted.clear();
-      this.deleted.clear();
-      this.updated.clear();
-      this._currSize = 0;
-    }
-  }
+  public static maxPerEvent = 1000;
 
   public static process(iModel: BriefcaseDb | StandaloneDb, mgr: TxnManager): void {
     if (mgr.isDisposed) {
@@ -88,26 +140,59 @@ class ChangedEntitiesProc implements TxnChangedEntities {
     this.processChanges(iModel, mgr.onModelsChanged, "notifyModelsChanged");
   }
 
+  private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
+    if (this._currSize === 0)
+      return;
+
+    const classIds = this._classIds.toArray();
+
+    // Notify backend listeners.
+    const txnEntities: TxnChangedEntities = {
+      inserted: this._inserted.entityIds,
+      deleted: this._deleted.entityIds,
+      updated: this._updated.entityIds,
+      inserts: this._inserted.iterable(classIds),
+      deletes: this._deleted.iterable(classIds),
+      updates: this._updated.iterable(classIds),
+    };
+    evt.raiseEvent(txnEntities);
+
+    // Notify frontend listeners.
+    const entities: ChangedEntities = { };
+    this._inserted.addToChangedEntities(entities, "inserted");
+    this._deleted.addToChangedEntities(entities, "deleted");
+    this._updated.addToChangedEntities(entities, "updated");
+    IpcHost.notifyTxns(iModel, evtName, entities);
+
+    // Reset state.
+    this._inserted.clear();
+    this._deleted.clear();
+    this._updated.clear();
+    this._classIds.clear();
+    this._currSize = 0;
+  }
+
   private static processChanges(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
     try {
       const maxSize = this.maxPerEvent;
       const changes = new ChangedEntitiesProc();
       const select = "notifyElementsChanged" === evtName
-        ? "SELECT ElementId, ChangeType FROM temp.txn_Elements"
-        : "SELECT ModelId, ChangeType FROM temp.txn_Models";
+        ? "SELECT ElementId, ChangeType, ECClassId FROM temp.txn_Elements"
+        : "SELECT ModelId, ChangeType, ECClassId FROM temp.txn_Models";
       iModel.withPreparedSqliteStatement(select, (sql: SqliteStatement) => {
         const stmt = sql.stmt!;
         while (sql.step() === DbResult.BE_SQLITE_ROW) {
           const id = stmt.getValueId(0);
+          const classId = stmt.getValueId(2);
           switch (stmt.getValueInteger(1)) {
             case 0:
-              changes.inserted.insert(id);
+              changes._inserted.insert(id, classId);
               break;
             case 1:
-              changes.updated.insert(id);
+              changes._updated.insert(id, classId);
               break;
             case 2:
-              changes.deleted.insert(id);
+              changes._deleted.insert(id, classId);
               break;
           }
 

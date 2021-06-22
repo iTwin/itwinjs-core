@@ -7,8 +7,12 @@ public;AffineTransformProps
 public;AmbientLight
 public;AmbientLightProps
 public;AmbientOcclusion
-alpha;AnalysisStyle
-alpha;AnalysisStyleProps
+public;AnalysisStyle
+public;AnalysisStyleDisplacement
+public;AnalysisStyleDisplacementProps
+public;AnalysisStyleProps
+public;AnalysisStyleScalar
+public;AnalysisStyleScalarProps
 public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
@@ -162,6 +166,8 @@ public;ElementLoadOptions
 public;ElementLoadProps 
 public;ElementProps 
 public;EmphasizeElementsProps
+public;EntityIdAndClassId
+public;EntityIdAndClassIdIterable = Iterable
 beta;EntityMetaData 
 beta;EntityMetaDataProps
 public;EntityProps
@@ -337,6 +343,7 @@ internal;iTwinChannel: (channel: string) => string
 public;JsonGeometryStream
 public;LatAndLong
 public;LatLongAndHeight 
+internal;LegacyAnalysisStyleProps
 internal;LightLocationProps 
 public;LightSettings
 public;LightSettingsProps

@@ -7,9 +7,12 @@
 import { expect } from "chai";
 import * as moq from "typemoq";
 import * as sinon from "sinon";
+import { IModelRpcProps } from "@bentley/imodeljs-common";
+import { RpcRequestsHandler } from "@bentley/presentation-common";
+import { createRandomSelectionScope } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, IModelConnection, MockRender, ViewState } from "@bentley/imodeljs-frontend";
-import { Presentation } from "@bentley/presentation-frontend";
+import { IModelApp, IModelConnection, MockRender, SelectionSet, ViewState } from "@bentley/imodeljs-frontend";
+import { Presentation, SelectionManager, SelectionScopesManager, SelectionScopesManagerProps } from "@bentley/presentation-frontend";
 import { initialize as initializePresentationTesting, terminate as terminatePresentationTesting } from "@bentley/presentation-testing";
 import { ColorTheme, CursorMenuData, SettingsModalFrontstage, UiFramework, UserSettingsProvider } from "../ui-framework";
 import { DefaultIModelServices } from "../ui-framework/clientservices/DefaultIModelServices";
@@ -213,10 +216,6 @@ describe("UiFramework localStorage Wrapper", () => {
       UiFramework.setDefaultViewId(testViewId);
       expect(UiFramework.getDefaultViewId()).to.eq(testViewId);
 
-      const imodelMock = moq.Mock.ofType<IModelConnection>();
-      UiFramework.setIModelConnection(imodelMock.object);
-      expect(UiFramework.getIModelConnection()).to.eq(imodelMock.object);
-
       expect(settingsProvider.settingsLoaded).to.be.false;
 
       const uisettings = new LocalSettingsStorage();
@@ -290,5 +289,54 @@ describe("UiFramework localStorage Wrapper", () => {
       });
     });
 
+  });
+
+  describe("ConnectionEvents", () => {
+    const imodelToken: IModelRpcProps = { key: "" };
+    const imodelMock = moq.Mock.ofType<IModelConnection>();
+    const rpcRequestsHandlerMock = moq.Mock.ofType<RpcRequestsHandler>();
+    let manager: SelectionScopesManager | undefined;
+    let managerProps: SelectionScopesManagerProps;
+    let ss: SelectionSet;
+
+    const getManager = () => {
+      if (!manager)
+        manager = new SelectionScopesManager(managerProps);
+      return manager;
+    };
+
+    beforeEach(async () => {
+      await TestUtils.initializeUiFramework(false);
+
+      imodelMock.reset();
+      imodelMock.setup((x) => x.getRpcProps()).returns(() => imodelToken);
+
+      ss = new SelectionSet(imodelMock.object);
+      imodelMock.setup((x) => x.selectionSet).returns(() => ss);
+
+      rpcRequestsHandlerMock.reset();
+      manager = undefined;
+      managerProps = {
+        rpcRequestsHandler: rpcRequestsHandlerMock.object,
+      };
+
+      const result = [createRandomSelectionScope()];
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getSelectionScopes(moq.It.isObjectWith({ imodel: imodelToken, locale: undefined })))
+        .returns(async () => result)
+        .verifiable();
+
+      Presentation.setSelectionManager(new SelectionManager({ scopes: getManager() }));
+    });
+
+    afterEach(() => {
+      TestUtils.terminateUiFramework();
+    });
+
+    it("SessionState setIModelConnection", async () => {
+
+      UiFramework.setIModelConnection(imodelMock.object);
+      expect(UiFramework.getIModelConnection()).to.eq(imodelMock.object);
+    });
   });
 });
