@@ -168,6 +168,9 @@ export abstract class IModelDb extends IModel {
     this._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
 
+  /** @internal */
+  public async reattachDaemon(_requestContext: AuthorizedClientRequestContext): Promise<void> { }
+
   /** Event called when the iModel is about to be closed */
   public readonly onBeforeClose = new BeEvent<() => void>();
 
@@ -2397,6 +2400,10 @@ export class BriefcaseDb extends IModelDb {
  */
 export class SnapshotDb extends IModelDb {
   public get isSnapshot(): boolean { return true; }
+  /** @beta */
+  public get isV2Checkpoint(): boolean { return this._isV2Checkpoint; }
+  private _isV2Checkpoint: boolean;
+  private _reattachDueTimestamp: number | undefined;
   private _createClassViewsOnClose?: boolean;
   /** The full path to the snapshot iModel file.
    * @deprecated use pathName
@@ -2407,6 +2414,7 @@ export class SnapshotDb extends IModelDb {
     const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
     const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), changeSetId: nativeDb.getParentChangeSetId(), openMode };
     super(nativeDb, iModelRpcProps, openMode);
+    this._isV2Checkpoint = false;
   }
 
   public static findByKey(key: string): SnapshotDb {
@@ -2518,7 +2526,7 @@ export class SnapshotDb extends IModelDb {
    * @internal
    */
   public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
-    const filePath = await V2CheckpointManager.attach(checkpoint);
+    const { filePath, expiryTimestamp } = await V2CheckpointManager.attach(checkpoint);
     const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key: CheckpointManager.getKey(checkpoint) });
     snapshot._contextId = checkpoint.contextId;
     try {
@@ -2527,23 +2535,36 @@ export class SnapshotDb extends IModelDb {
       snapshot.close();
       throw err;
     }
+
+    snapshot._isV2Checkpoint = true;
+    snapshot.setReattachDueTimestamp(expiryTimestamp);
     return snapshot;
   }
 
-  /** Used to refresh the checkpoint daemon's access to this checkpoint's storage container.
+  /** Used to refresh the checkpoint daemon's access to this checkpoint's storage container if it's nearly expired.
    * @param requestContext The client request context.
    * @throws [[IModelError]] If the db is not a checkpoint.
    * @internal
    */
   public async reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    if (!this._changeSetId)
-      throw new IModelError(IModelStatus.WrongIModel, `SnapshotDb is not a checkpoint`);
-    await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this._changeSetId });
+    if (!this._isV2Checkpoint)
+      return;
+    if (this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
+      const { expiryTimestamp } = await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this._changeSetId! });
+      this.setReattachDueTimestamp(expiryTimestamp);
+    }
+  }
+
+  private setReattachDueTimestamp(expiryTimestamp: number) {
+    const expiresIn = expiryTimestamp - Date.now();
+
+    this._reattachDueTimestamp = Date.now() + expiresIn / 2;
   }
 
   /** @internal */
   public beforeClose(): void {
     super.beforeClose();
+
     if (this._createClassViewsOnClose) { // check for flag set during create
       if (BentleyStatus.SUCCESS !== this.nativeDb.createClassViewsInDb()) {
         throw new IModelError(IModelStatus.SQLiteError, "Error creating class views");
