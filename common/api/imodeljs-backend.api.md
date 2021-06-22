@@ -30,6 +30,7 @@ import { ChangesType } from '@bentley/imodelhub-client';
 import { ChannelRootAspectProps } from '@bentley/imodeljs-common';
 import { ClientAuthIntrospectionManager } from '@bentley/backend-itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
+import { ClipVector } from '@bentley/geometry-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
 import { CloudStorageContainerUrl } from '@bentley/imodeljs-common';
 import { CloudStorageProvider } from '@bentley/imodeljs-common';
@@ -4107,9 +4108,12 @@ export class SectionDrawing extends Drawing {
     constructor(props: SectionDrawingProps, iModel: IModelDb);
     // @internal (undocumented)
     static get className(): string;
+    displaySpatialView: boolean;
+    drawingBoundaryClip?: ClipVector;
+    drawingToSpatialTransform?: Transform;
     sectionType: SectionType;
+    sheetToSpatialTransform?: Transform;
     spatialView: RelatedElement;
-    // @internal (undocumented)
     toJSON(): SectionDrawingProps;
 }
 
