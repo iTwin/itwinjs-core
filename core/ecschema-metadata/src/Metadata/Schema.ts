@@ -346,7 +346,7 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   protected addReferenceSync(refSchema: Schema): void {
-      this.references.push(refSchema);
+    this.references.push(refSchema);
   }
 
   protected async updateReference(refSchema: Schema): Promise<void> {
@@ -356,7 +356,7 @@ export class Schema implements CustomAttributeContainerProps {
   protected updateReferenceSync(refSchema: Schema): void {
     const findFunc = (schema: Schema) => {
       return schema.schemaKey.matches(refSchema.schemaKey);
-    }
+    };
 
     const foundIndex = this.references.findIndex(findFunc);
     if (foundIndex === -1)

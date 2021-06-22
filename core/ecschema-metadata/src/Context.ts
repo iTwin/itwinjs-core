@@ -12,7 +12,7 @@ import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 interface SchemaInfo {
   schema: Schema;
   loadSchemaFunc?: () => Promise<Schema>;
-  loadSchemaPromise?: Promise<Schema>
+  loadSchemaPromise?: Promise<Schema>;
 }
 
 /**
@@ -186,7 +186,7 @@ export class SchemaCache implements ISchemaLocater {
 
     const findLoadedSchema = (schema: Schema) => {
       return schema.schemaKey.matches(schemaKey, matchType);
-    }
+    };
 
     const loadedSchema = this._loadedSchemas.find(findLoadedSchema);
     if (loadedSchema)

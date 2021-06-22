@@ -82,7 +82,7 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
     return this.getSchemaSync(key, matchType, context) as T;
   }
 
-  public getLoadingSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context:SchemaContext): T | undefined {
+  public getLoadingSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
     return this.getSchemaSync(key, matchType, context) as T;
   }
 

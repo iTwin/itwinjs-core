@@ -76,7 +76,7 @@ export class SchemaReadHelper<T = unknown> {
     if (cachedSchema)
       return cachedSchema;
 
-    await this._context.addSchema(schema, () => this.loadSchema(schema));
+    await this._context.addSchema(schema, async () => this.loadSchema(schema));
 
     console.log(`Added Schema ${schema.name} to cache`);
 
@@ -184,9 +184,9 @@ export class SchemaReadHelper<T = unknown> {
     console.log(`Partially loading Schema ${schema.name}`);
     const cachedLoadingSchema = await this._context.getCachedLoadedOrLoadingSchema<U>(schema.schemaKey);
     if (!cachedLoadingSchema)
-      await this._context.addSchema(schema, () => this.loadSchema(schema));
+      await this._context.addSchema(schema, async () => this.loadSchema(schema));
 
-    console.log(`Schema ${this._schema!.name} finished partial loading`);
+    console.log(`Schema ${this._schema.name} finished partial loading`);
     return schema;
   }
 
@@ -200,7 +200,7 @@ export class SchemaReadHelper<T = unknown> {
 
     const cachedLoadingSchema = this._context.getCachedLoadedOrLoadingSchemaSync<U>(schema.schemaKey);
     if (!cachedLoadingSchema)
-      this._context.addSchemaSync(schema, () => this.loadSchema(schema));
+      this._context.addSchemaSync(schema, async () => this.loadSchema(schema));
 
     return schema;
   }

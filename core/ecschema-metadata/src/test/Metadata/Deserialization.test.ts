@@ -16,7 +16,7 @@ import { NavigationProperty } from "../../Metadata/Property";
 import { Schema } from "../../Metadata/Schema";
 import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
 import { XmlParser } from "../../Deserialization/XmlParser";
-import { deserializeXml, deserializeXmlSync, deserializeXmlLoadingSchema, deserializeXmlLoadingSchemaSync, ReferenceSchemaLocater } from "../TestUtils/DeserializationHelpers";
+import { deserializeXml, deserializeXmlLoadingSchema, deserializeXmlLoadingSchemaSync, deserializeXmlSync, ReferenceSchemaLocater } from "../TestUtils/DeserializationHelpers";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
