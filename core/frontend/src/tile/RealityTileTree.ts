@@ -7,8 +7,10 @@
  */
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { Transform } from "@bentley/geometry-core";
+import { Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, Frustum, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
+import { GeoConverter } from "../GeoServices";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
@@ -110,6 +112,7 @@ export interface RealityTileTreeParams extends TileTreeParams {
   readonly loader: RealityTileLoader;
   readonly yAxisUp?: boolean;
   readonly rootTile: RealityTileParams;
+  readonly gcsConverterAvailable: boolean;
 }
 
 /** @internal */
@@ -117,6 +120,9 @@ export class RealityTileTree extends TileTree {
   public traversalChildrenByDepth: TraversalChildrenDetails[] = [];
   public readonly loader: RealityTileLoader;
   public readonly yAxisUp: boolean;
+  public cartesianRange: Range3d;
+  public cartesianTransitionDistance: number;
+  protected _gcsConverter: GeoConverter | undefined;
   protected _rootTile: RealityTile;
 
   public constructor(params: RealityTileTreeParams) {
@@ -124,6 +130,9 @@ export class RealityTileTree extends TileTree {
     this.loader = params.loader;
     this.yAxisUp = true === params.yAxisUp;
     this._rootTile = this.createTile(params.rootTile);
+    this.cartesianRange = BackgroundMapGeometry.getCartesianRange(this.iModel);
+    this.cartesianTransitionDistance = this.cartesianRange.diagonal().magnitudeXY() * .25;      // Transition distance from elliptical to cartesian.
+    this._gcsConverter = params.gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
   }
   public get rootTile(): RealityTile { return this._rootTile; }
   public get is3d() { return true; }
@@ -228,6 +237,21 @@ export class RealityTileTree extends TileTree {
       this.traversalChildrenByDepth.push(new TraversalChildrenDetails());
 
     return this.traversalChildrenByDepth[depth];
+  }
+  public get minReprojectionDepth(): number | undefined { return undefined; }
+
+  public doReprojectChildren(tile: Tile): boolean {
+    if (this._gcsConverter === undefined)
+      return false;
+
+    const minReprojectionDepth = this.minReprojectionDepth;
+    if (minReprojectionDepth !== undefined) {
+      const childDepth = tile.depth + 1;
+      if (childDepth < minReprojectionDepth)     // If the depth is too low (tile is too large) omit reprojection.
+        return false;
+    }
+
+    return this.cartesianRange.intersectsRange(tile.range);
   }
 
   public getBaseRealityDepth(_sceneContext: SceneContext) { return -1; }

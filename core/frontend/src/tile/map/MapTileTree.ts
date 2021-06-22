@@ -15,9 +15,7 @@ import {
   TerrainProviderName,
 } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
-import { BackgroundMapGeometry } from "../../BackgroundMapGeometry";
 import { TerrainDisplayOverrides } from "../../DisplayStyleState";
-import { GeoConverter } from "../../GeoServices";
 import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -65,9 +63,7 @@ export class MapTileTree extends RealityTileTree {
   public maxEarthEllipsoid: Ellipsoid;
   public globeMode: GlobeMode;
   public globeOrigin: Point3d;
-  public cartesianRange: Range3d;
-  public cartesianTransitionDistance: number;
-  private _gcsConverter: GeoConverter | undefined;
+
   private _mercatorTilingScheme: MapTilingScheme;
   public useDepthBuffer: boolean;
   public isOverlay: boolean;
@@ -76,17 +72,16 @@ export class MapTileTree extends RealityTileTree {
   public baseTransparent: boolean;
   public mapTransparent: boolean;
 
-  constructor(params: RealityTileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, public geodeticOffset: number, gcsConverterAvailable: boolean, public sourceTilingScheme: MapTilingScheme, id: MapTreeId) {
+  constructor(params: RealityTileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, public geodeticOffset: number, public sourceTilingScheme: MapTilingScheme, id: MapTreeId) {
     super(params);
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
     this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(ecefToDb, bimElevationBias, params.iModel, id.applyTerrain);
     const quadId = new QuadId(0, 0, 0);
-    this.cartesianRange = BackgroundMapGeometry.getCartesianRange(this.iModel);
     this.globeOrigin = this.ecefToDb.getOrigin().clone();
     this.earthEllipsoid = Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.ecefToDb.matrix, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.polar);
     const globalHeightRange = id.applyTerrain ? ApproximateTerrainHeights.instance.globalHeightRange : Range1d.createXX(0, 0);
     const globalRectangle = MapCartoRectangle.create();
-    this.cartesianTransitionDistance = this.cartesianRange.diagonal().magnitudeXY() * .25;      // Transition distance from elliptical to cartesian.
+
     this.globeMode = id.globeMode;
     this.isOverlay = id.isOverlay;
     this.useDepthBuffer = id.useDepthBuffer;
@@ -112,11 +107,12 @@ export class MapTileTree extends RealityTileTree {
       range = Range3d.createArray(MapTile.computeRangeCorners(corners, Vector3d.create(0, 0, 1), 0, scratchCorners, globalHeightRange));
     }
     this._rootTile = this.createGlobeChild({ contentId: quadId.contentId, maximumSize: 0, range }, quadId, range.corners(), globalRectangle, rootPatch, undefined);
-    this._gcsConverter = gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
+
   }
   public tileFromQuadId(quadId: QuadId): MapTile | undefined {
     return (this._rootTile as MapTile).tileFromQuadId(quadId);
   }
+  public get minReprojectionDepth(): number | undefined { return MapTileTree.minReprojectionDepth; }
 
   public imageryTrees: ImageryMapTileTree[] = [];
   private _layerSettings = new Map<Id64String, MapLayerSettings>();
@@ -181,17 +177,6 @@ export class MapTileTree extends RealityTileTree {
       return true;
 
     return false;  // Display as globe if more than 100 KM from project.
-  }
-
-  public doReprojectChildren(tile: Tile): boolean {
-    if (this._gcsConverter === undefined)
-      return false;
-
-    const childDepth = tile.depth + 1;
-    if (childDepth < MapTileTree.minReprojectionDepth)     // If the depth is too low (tile is too large) omit reprojection.
-      return false;
-
-    return this.cartesianRange.intersectsRange(tile.range);
   }
 
   public getCornerRays(rectangle: MapCartoRectangle): Ray3d[] | undefined {
@@ -260,7 +245,7 @@ export class MapTileTree extends RealityTileTree {
     if (iModelCoordinates.missing)
       return undefined;
 
-    return iModelCoordinates.result.map((result) => Point3d.fromJSON(result!.p));
+    return iModelCoordinates.result.map((result) => Point3d.fromJSON(result.p));
   }
 
   // Minimize reprojection requests by requesting this corners tile and a grid that will include all points for 4 levels of descendants.
@@ -286,7 +271,7 @@ export class MapTileTree extends RealityTileTree {
       }
     }
 
-    await this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(requestProps);
+    await this._gcsConverter.getIModelCoordinatesFromGeoCoordinates(requestProps);
   }
 
   private static _scratchCarto = new Cartographic();
@@ -391,7 +376,7 @@ class MapTileTreeProps implements RealityTileTreeParams {
   public iModel: IModelConnection;
   public get priority(): TileLoadPriority { return this.loader.priority; }
 
-  public constructor(modelId: Id64String, loader: MapTileLoader, iModel: IModelConnection) {
+  public constructor(modelId: Id64String, loader: MapTileLoader, iModel: IModelConnection, public gcsConverterAvailable: boolean) {
     this.id = this.modelId = modelId;
     this.loader = loader;
     this.iModel = iModel;
@@ -500,8 +485,8 @@ class MapTreeSupplier implements TileTreeSupplier {
     if (id.maskModelIds)
       await iModel.models.load(CompressedId64Set.decompressSet(id.maskModelIds));
 
-    const treeProps = new MapTileTreeProps(modelId, loader, iModel);
-    return new MapTileTree(treeProps, ecefToDb, bimElevationBias, geodeticOffset, gcsConverterAvailable, terrainProvider.tilingScheme, id);
+    const treeProps = new MapTileTreeProps(modelId, loader, iModel, gcsConverterAvailable);
+    return new MapTileTree(treeProps, ecefToDb, bimElevationBias, geodeticOffset, terrainProvider.tilingScheme, id);
   }
 }
 
