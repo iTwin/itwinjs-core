@@ -11,7 +11,6 @@ import { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexOrId, Ch
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { DownloadRequest } from "./CheckpointManager";
 
-
 /** The scope of a lock.
  * @public
  */

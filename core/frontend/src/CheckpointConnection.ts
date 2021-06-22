@@ -89,7 +89,7 @@ export class CheckpointConnection extends IModelConnection {
         throw new IModelError(BentleyStatus.ERROR, "IModelReadRpcInterface.openForRead() is not available");
       openForReadOperation.policy.retryInterval = () => connectionRetryInterval;
     } else {
-      openForWriteOperation = RpcOperation.lookup(IModelWriteRpcInterface, "openForWrite");
+      openForWriteOperation = RpcOperation.lookup(IModelWriteRpcInterface, "openForWrite"); // eslint-disable-line deprecation/deprecation
       if (!openForWriteOperation)
         throw new IModelError(BentleyStatus.ERROR, "IModelWriteRpcInterface.openForWrite() is not available");
       openForWriteOperation.policy.retryInterval = () => connectionRetryInterval;

@@ -50,7 +50,7 @@ export class Transformer extends IModelTransformer {
   }
 
   public static async transformChanges(requestContext: AuthorizedClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, sourceStartChangeSetId: string, options?: TransformerOptions): Promise<void> {
-    if ("" === sourceDb.changeSetId) {
+    if ("" === sourceDb.changeset.id) {
       assert("" === sourceStartChangeSetId);
       return this.transformAll(requestContext, sourceDb, targetDb, options);
     }

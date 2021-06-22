@@ -60,8 +60,8 @@ describe("BriefcaseManager (#integration)", () => {
     assert(iModel.isReadonly, "iModel not set to Readonly mode");
 
     const expectedChangeSet = await IModelHost.hubAccess.getChangesetFromVersion({ version: IModelVersion.first(), requestContext, iModelId: readOnlyTestIModelId });
-    assert.strictEqual(iModel.changeSetId!, expectedChangeSet.id);
-    assert.strictEqual(iModel.changeSetId!, expectedChangeSet.id);
+    assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
+    assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
 
     const pathname = iModel.pathName;
     assert.isTrue(IModelJsFs.existsSync(pathname));
@@ -151,7 +151,7 @@ describe("BriefcaseManager (#integration)", () => {
     const arg = { requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId };
     let checkpoint = await IModelTestUtils.openCheckpointUsingRpc(arg);
     // eslint-disable-next-line deprecation/deprecation
-    const compatName = V1CheckpointManager.getCompatibilityFileName({ ...arg, changeSetId: checkpoint.changeSetId! });
+    const compatName = V1CheckpointManager.getCompatibilityFileName({ ...arg, changeSetId: checkpoint.changeset.id });
     let checkpointName = checkpoint.pathName;
     checkpoint.close();
 

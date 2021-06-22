@@ -470,14 +470,14 @@ export abstract class IModel implements IModelProps {
 
   /** @internal */
   protected constructor(tokenProps: IModelRpcProps | undefined, openMode: OpenMode) {
+    this.changeset = { id: "", index: 0 };
+    this._fileKey = "";
     if (tokenProps) {
       this._fileKey = tokenProps.key;
       this._contextId = tokenProps.contextId;
       this._iModelId = tokenProps.iModelId;
-      this.changeset = { id: tokenProps.changeSetId ?? "", index: tokenProps.changesetIndex };
-    } else {
-      this._fileKey = "";
-      this.changeset = { id: "", index: 0 };
+      if (tokenProps.changeSetId)
+        this.changeset = { id: tokenProps.changeSetId, index: tokenProps.changesetIndex };
     }
     this.openMode = openMode;
   }
