@@ -2020,7 +2020,7 @@ describe("iModel", () => {
     const error = await getIModelError(imodel1.reattachDaemon(ctx));
     expectIModelError(IModelStatus.WrongIModel, error);
     const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
-    await imodel1.reattachDaemon(ctx)
+    await imodel1.reattachDaemon(ctx);
     assert.isTrue(attachMock.notCalled);
   });
 
