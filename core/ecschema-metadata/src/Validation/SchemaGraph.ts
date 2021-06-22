@@ -51,7 +51,7 @@ export class SchemaGraph {
       visited[schema.name] = true;
       recStack[schema.name] = true;
 
-      for (const refSchema of schema.validateReferences) {
+      for (const refSchema of schema.references) {
         if (!visited[refSchema.name] && this.detectCycleUtil(refSchema, visited, recStack, cycles)) {
           cycles.push({schema, refSchema});
           cycleFound = true;
@@ -73,7 +73,7 @@ export class SchemaGraph {
 
     this._schemas.push(schema);
 
-    for (const refSchema of schema.validateReferences) {
+    for (const refSchema of schema.references) {
       this.populateGraph(refSchema);
     }
   }

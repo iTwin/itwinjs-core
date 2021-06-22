@@ -249,7 +249,7 @@ export async function* validateSchemaReferences(schema: Schema): AsyncIterable<S
 
 export function* validateSchemaReferencesSync(schema: Schema): Iterable<SchemaDiagnostic<any[]>> {
   const aliases = new Map();
-  for (const schemaRef of schema.validateReferences) {
+  for (const schemaRef of schema.references) {
     if (schemaRef.customAttributes && schemaRef.customAttributes.has("CoreCustomAttributes.SupplementalSchema"))
       yield new Diagnostics.SupplementalSchemasCannotBeReferenced(schema, [schema.name, schemaRef.name]);
 
