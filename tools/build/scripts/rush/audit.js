@@ -38,8 +38,8 @@ const rushCommonDir = path.join(__dirname, "../../../../common/");
   // All security issues should be addressed asap.
   const excludedAdvisories = [
     1700, // https://npmjs.com/advisories/1700
-    1754, // https://npmjs.com/advisories/1754
-    1755, // https://npmjs.com/advisories/1755
+    1754, // https://npmjs.com/advisories/1754. Waiting for fix, https://github.com/svg/svgo/pull/1485.
+    1755, // https://npmjs.com/advisories/1755. Waiting for fix, https://github.com/sindresorhus/normalize-url/issues/135
   ];
 
   let shouldFailBuild = false;
