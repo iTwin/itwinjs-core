@@ -209,8 +209,10 @@ export abstract class ViewState extends ElementState {
     this.displayStyle.viewFlags = flags;
   }
 
-  /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
-  public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.settings.analysisStyle; }
+  /** @see [DisplayStyleSettings.analysisStyle]($common). */
+  public get analysisStyle(): AnalysisStyle | undefined {
+    return this.displayStyle.settings.analysisStyle;
+  }
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
    * @see [[DisplayStyleState.scheduleScript]].

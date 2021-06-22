@@ -169,6 +169,7 @@ class FrontstageNavigationWidget extends React.Component {
 
   public render() {
     return (
+      // eslint-disable-next-line deprecation/deprecation
       <NavigationWidget
         navigationAidId="StandardRotationNavigationAid"
         horizontalToolbar={this._horizontalToolbar}

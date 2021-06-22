@@ -16,10 +16,10 @@ import {
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
-  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation, isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d,
-  Placement3d, PlacementProps, SolarShadowSettings, SubCategoryAppearance,
-  SubCategoryOverride, ViewFlags,
+  BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
+  ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation,
+  isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d, Placement3d, PlacementProps,
+  SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { AuxCoordSystemState } from "./AuxCoordSys";
 import { BackgroundMapGeometry } from "./BackgroundMapGeometry";
@@ -442,7 +442,7 @@ export abstract class Viewport implements IDisposable {
   /** @internal */
   public get frustFraction(): number { return this._viewingSpace.frustFraction; }
 
-  /** @alpha */
+  /** @see [DisplayStyleSettings.analysisFraction]($common). */
   public get analysisFraction(): number {
     return this.displayStyle.settings.analysisFraction;
   }
@@ -852,8 +852,6 @@ export abstract class Viewport implements IDisposable {
     }
   }
 
-  /** @internal */
-  public get analysisStyle(): AnalysisStyle | undefined { return this.view.analysisStyle; }
   /** The iModel of this Viewport */
   public get iModel(): IModelConnection { return this.view.iModel; }
   /** @internal */
@@ -1018,8 +1016,12 @@ export abstract class Viewport implements IDisposable {
       this._analysisFractionValid = false;
       IModelApp.requestNextAnimation();
     };
+    const analysisStyleChanged = () => {
+      this.invalidateRenderPlan();
+      analysisChanged();
+    };
     removals.push(settings.onAnalysisFractionChanged.addListener(analysisChanged));
-    removals.push(settings.onAnalysisStyleChanged.addListener(analysisChanged));
+    removals.push(settings.onAnalysisStyleChanged.addListener(analysisStyleChanged));
 
     const scheduleChanged = () => {
       this._timePointValid = false;
@@ -2192,7 +2194,7 @@ export abstract class Viewport implements IDisposable {
 
     if (!this._analysisFractionValid) {
       this._analysisFractionValid = isRedrawNeeded = true;
-      target.analysisFraction = this.analysisFraction;
+      target.analysisFraction = this.displayStyle.settings.analysisFraction;
     }
 
     if (!this._timePointValid) {
