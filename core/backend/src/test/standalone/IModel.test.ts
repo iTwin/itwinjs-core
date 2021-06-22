@@ -36,8 +36,13 @@ import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
+<<<<<<< HEAD
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
+=======
+import { IModelHubBackend } from "../../IModelHubBackend";
+import { V2CheckpointManager } from "../../CheckpointManager";
+>>>>>>> 0c54200f55 (Add RpcBriefcaseUtility.findOrOpen and automatically refresh SAS key for v2 checkpoints (backport #1417) (#1664))
 
 // spell-checker: disable
 
@@ -1806,11 +1811,12 @@ describe("iModel", () => {
     expectIModelError(IModelStatus.BadRequest, error);
   });
 
-  it("should throw when attempting to re-attach a non-checkpoint snapshot", async () => {
+  it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(imodel1.reattachDaemon(ctx));
-    expectIModelError(IModelStatus.WrongIModel, error);
+    const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
+    await imodel1.reattachDaemon(ctx);
+    assert.isTrue(attachMock.notCalled);
   });
 
   // This is skipped because it fails unpredictably - the timeouts don't seem to happen as expected
