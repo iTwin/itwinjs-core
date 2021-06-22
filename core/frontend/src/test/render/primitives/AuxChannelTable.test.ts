@@ -51,7 +51,7 @@ describe("AuxChannelTable", () => {
     expect(params.inputs).to.deep.equal([data.input]);
     expect(params.indices).to.deep.equal([0]);
     expect(params.qOrigin).to.equal(0);
-    expect(params.qScale).to.equal(0xffff / 0x7fff);
+    expect(params.qScale).to.equal(0x7fff / 0xffff);
   });
 
   it("lays out a single vector channel tightly packed", () => {
@@ -79,9 +79,9 @@ describe("AuxChannelTable", () => {
     expect(Array.from(disp.qOrigin)).to.deep.equal([0, 0, 0x8000]);
     // Loss of precision when storing in Float32Array...
     const qScale = Array.from(disp.qScale);
-    expect(Geometry.isSameCoordinate(qScale[0], 0xffff/0x7fff, 0.00001)).to.be.true;
+    expect(Geometry.isSameCoordinate(qScale[0], 0x7fff/0xffff, 1/0.00001)).to.be.true;
     expect(qScale[1]).to.equal(0);
-    expect(Geometry.isSameCoordinate(qScale[2], 0xffff/0x7fff, 0.00001)).to.be.true;
+    expect(Geometry.isSameCoordinate(qScale[2], 0x7fff/0xffff, 1/0.00001)).to.be.true;
   });
 
   it("lays out a single channel containing multiple data lists", () => {
