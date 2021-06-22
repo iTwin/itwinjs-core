@@ -3,24 +3,30 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
-import { Arc3d, LineString3d, Loop, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { Arc3d, AuxChannel, AuxChannelData, AuxChannelDataType, LineString3d, Loop, Point3d, PolyfaceAuxData, PolyfaceBuilder, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, GraphicParams } from "@bentley/imodeljs-common";
-import {
-  GraphicType, IModelApp, IModelConnection, MockRender, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
-} from "@bentley/imodeljs-frontend";
-import {
-  DisplayParams, Geometry, Mesh, MeshBuilder, PolyfacePrimitive, PolyfacePrimitiveList, PrimitiveBuilder, StrokesPrimitiveList,
-  StrokesPrimitivePointLists, ToleranceRatio, Triangle,
-} from "@bentley/imodeljs-frontend/lib/render-primitives";
+import { GraphicType } from "../../../render/GraphicBuilder";
+import { IModelApp } from "../../../IModelApp";
+import { MockRender } from "../../../render/MockRender";
+import { ScreenViewport } from "../../../Viewport";
+import { SpatialViewState } from "../../../SpatialViewState";
+import { DisplayParams } from "../../../render/primitives/DisplayParams";
+import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
+import { Mesh, MeshGraphicArgs } from "../../../render/primitives/mesh/MeshPrimitives";
+import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primitives/Polyface";
+import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
+import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
+import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
+import { IModelConnection } from "../../../imodeljs-frontend";
+import { createBlankConnection } from "../../createBlankConnection";
+import { MeshBuilder, MeshParams } from "../../../render-primitives";
 
-export class FakeDisplayParams extends DisplayParams {
-  public constructor() { super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black); }
+class FakeDisplayParams extends DisplayParams {
+  public constructor() {
+    super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black);
+  }
 }
 
-/**
- * MESH BUILDER TESTS
- * tests all paths for each public method
- */
 describe("Mesh Builder Tests", () => {
   let imodel: IModelConnection;
   let spatialView: SpatialViewState;
@@ -32,9 +38,8 @@ describe("Mesh Builder Tests", () => {
 
   before(async () => {   // Create a ViewState to load into a Viewport
     await MockRender.App.startup();
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
-    spatialView = await imodel.views.load("0x34") as SpatialViewState;
-    spatialView.setStandardRotation(StandardViewId.RightIso);
+    imodel = createBlankConnection();
+    spatialView = SpatialViewState.createBlank(imodel, new Point3d(0, 0, 0), new Point3d(1, 1, 1));
   });
 
   after(async () => {
@@ -377,18 +382,6 @@ describe("Mesh Builder Tests", () => {
     expect(mb.mesh.polylines!.length).to.equal(0);
   });
 
-  // it("beginPolyface", () => {
-
-  // });
-
-  // it("endPolyface", () => {
-
-  // });
-
-  // it("addVertex", () => {
-
-  // });
-
   it("addTriangle", () => {
     const triangle = new Triangle();
     triangle.setIndices(1, 2, 3);
@@ -410,5 +403,115 @@ describe("Mesh Builder Tests", () => {
     triangle.setIndices(0, 0, 0);
     mb = MeshBuilder.create({ displayParams, type, range, is2d, isPlanar, tolerance, areaTolerance });
     expect(() => mb.addTriangle(triangle)).to.throw("Programmer Error");
+  });
+
+  function createMeshBuilder(type: Mesh.PrimitiveType, range: Range3d, options?: Partial<Omit<MeshBuilder.Props, "range" | "type">>): MeshBuilder {
+    options = options ?? { };
+    const tolerance = options.tolerance ?? 0.15;
+    return MeshBuilder.create({
+      type,
+      range,
+      tolerance,
+      areaTolerance: options.areaTolerance ?? ToleranceRatio.facetArea * tolerance,
+      displayParams: options.displayParams ?? new FakeDisplayParams(),
+      is2d: options.is2d ?? false,
+      isPlanar: options.isPlanar ?? true,
+    });
+  }
+
+  describe("aux data", () => {
+    function expectAuxChannelTable(mesh: Mesh, expectedUint16Data: number[]): void {
+      const args = new MeshGraphicArgs();
+      mesh.getGraphics(args, IModelApp.renderSystem);
+      const meshParams = MeshParams.create(args.meshArgs);
+      const aux = meshParams.auxChannels!;
+      expect(aux).not.to.be.undefined;
+      expect(Array.from(new Uint16Array(aux.data.buffer))).to.deep.equal(expectedUint16Data);
+    }
+
+    it("preserves aux data for triangle facets", () => {
+      const pfBuilder = PolyfaceBuilder.create();
+      pfBuilder.addTriangleFacet([new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(1, 1, 0)]);
+
+      const pf = pfBuilder.claimPolyface();
+      const channelData = new AuxChannelData(1, [0, 0x7fff, 0xffff]);
+      const channel = new AuxChannel([channelData], AuxChannelDataType.Scalar, "s");
+      pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 2]);
+
+      const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
+      meshBuilder.addFromPolyface(pf, { includeParams: false, fillColor: 0 });
+      const mesh = meshBuilder.mesh;
+      expect(mesh.points.length).to.equal(3);
+      expect(mesh.auxChannels!.length).to.equal(1);
+      expect(mesh.auxChannels).to.deep.equal(pf.data.auxData.channels);
+
+      expectAuxChannelTable(mesh, [0, 0x7fff, 0xffff, 0]); // trailing zero is unused byte in last texel.
+    });
+
+    it("preserves aux data for facets with more than 3 sides", () => {
+      const pfBuilder = PolyfaceBuilder.create();
+      pfBuilder.addQuadFacet([new Point3d(0, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0), new Point3d(1, 0, 0)]);
+
+      const pf = pfBuilder.claimPolyface();
+      const channelData = new AuxChannelData(1, [0, 0x4fff, 0xbfff, 0xffff]);
+      const channel = new AuxChannel([channelData], AuxChannelDataType.Scalar, "s");
+      pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 2, 3]);
+
+      const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
+      meshBuilder.addFromPolyface(pf, { includeParams: false, fillColor: 0 });
+      const mesh = meshBuilder.mesh;
+      expect(mesh.points.length).to.equal(6);
+      expect(mesh.auxChannels!.length).to.equal(1);
+
+      const aux = mesh.auxChannels![0];
+      expect(aux.data.length).to.equal(1);
+      const expectedData = [0, 0x4fff, 0xbfff, 0, 0xbfff, 0xffff];
+      expect(aux.data[0].values).to.deep.equal(expectedData);
+      expectAuxChannelTable(mesh, expectedData);
+    });
+
+    it("maps aux data to vertices based on indices", () => {
+      const pfBuilder = PolyfaceBuilder.create();
+      pfBuilder.addQuadFacet([new Point3d(0, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0), new Point3d(1, 0, 0)]);
+
+      const pf = pfBuilder.claimPolyface();
+      const channelData = new AuxChannelData(1, [0x4000, 0x6000, 0x8000]);
+      const channel = new AuxChannel([channelData], AuxChannelDataType.Scalar, "s");
+      pf.data.auxData = new PolyfaceAuxData([channel], [2, 0, 0, 1]);
+
+      const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
+      meshBuilder.addFromPolyface(pf, { includeParams: false, fillColor: 0 });
+      const mesh = meshBuilder.mesh;
+      expect(mesh.points.length).to.equal(6);
+      expect(mesh.auxChannels!.length).to.equal(1);
+
+      const aux = mesh.auxChannels![0];
+      expect(aux.data.length).to.equal(1);
+      expect(aux.data[0].values).to.deep.equal([0x8000, 0x4000, 0x4000, 0x8000, 0x4000, 0x6000]);
+      expectAuxChannelTable(mesh, [0xffff, 0, 0, 0xffff, 0, 0x8000]);
+    });
+
+    it("produces aux data for vector channel", () => {
+      const pfBuilder = PolyfaceBuilder.create();
+      pfBuilder.addQuadFacet([new Point3d(0, 0, 0), new Point3d(0, 1, 0), new Point3d(1, 1, 0), new Point3d(1, 0, 0)]);
+
+      const pf = pfBuilder.claimPolyface();
+      const channelData = new AuxChannelData(1, [0, 1, 2, 3, 4, 0xffff]);
+      const channel = new AuxChannel([channelData], AuxChannelDataType.Vector, "v");
+      pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 1, 0]);
+
+      const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
+      meshBuilder.addFromPolyface(pf, { includeParams: false, fillColor: 0 });
+
+      const aux = meshBuilder.mesh.auxChannels![0];
+      expect(aux.data[0].values).to.deep.equal([
+        0, 1, 2, 3, 4, 0xffff, 3, 4, 0xffff,
+        0, 1, 2, 3, 4, 0xffff, 0, 1, 2,
+      ]);
+      expectAuxChannelTable(meshBuilder.mesh, [
+        0, 0, 0, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff, 0xffff,
+        0, 0, 0, 0xffff, 0xffff, 0xffff, 0, 0, 0,
+      ]);
+    });
   });
 });
