@@ -159,7 +159,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /presentation                   @imodeljs/presentation
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
 
-/test-apps/analysis-importer                @RBBentley @pmconne
 /test-apps/display-performance-test-app     @imodeljs/display @hnn0003
 /test-apps/display-test-app                 @bbastings @kabentley @imodeljs/display
 /test-apps/export-gltf                      @mgooding @MichaelBelousov

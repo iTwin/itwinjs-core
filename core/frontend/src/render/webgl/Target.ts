@@ -475,7 +475,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       return;
 
     this.isFadeOutActive = plan.isFadeOutActive;
-    this.analysisStyle = plan.analysisStyle === undefined ? undefined : plan.analysisStyle.clone();
+    this.analysisStyle = plan.analysisStyle;
     this.analysisTexture = plan.analysisTexture;
 
     this.uniforms.branch.updateViewClip(plan.clip, plan.clipStyle);
