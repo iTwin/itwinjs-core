@@ -567,7 +567,7 @@ export abstract class IModelConnection extends IModel {
   private _geodeticToSeaLevel?: number;
   private _projectCenterAltitude?: number;
 
-  /** Event called immediately after map requst is completed.  This occurs only in the case where background map terrain is displayed
+  /** Event called immediately after map elevation request is completed.  This occurs only in the case where background map terrain is displayed
    * with either geiod or ground offset.   These require a query to BingElevation and therefore synching the view may be required
    * when the request is completed.
    * @internal
@@ -575,7 +575,7 @@ export abstract class IModelConnection extends IModel {
   public readonly onMapElevationLoaded = new BeEvent<(_imodel: IModelConnection) => void>();
 
   /** The offset between sea level and the geodetic ellipsoid.  This will return undefined only if the request for the offset to Bing Elevation
-   * is in process, and in this case the onMapElevationLoaded event is raised when the request is completed.
+   * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
    * @internal
    */
   public get geodeticToSeaLevel(): number | undefined {
@@ -590,7 +590,7 @@ export abstract class IModelConnection extends IModel {
   }
 
   /** The altitude (geodetic) at the project center.  This will return undefined only if the request for the offset to Bing Elevation
-   * is in process, and in this case the onMapElevationLoaded event is raised when the request is completed.
+   * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
    * @internal
    */
   public get projectCenterAltitude(): number | undefined {
