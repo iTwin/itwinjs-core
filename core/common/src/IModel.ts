@@ -52,8 +52,9 @@ export interface EcefLocationProps {
   orientation: YawPitchRollProps;
   /** Optional position on the earth used to establish the ECEF coordinates. */
   cartographicOrigin?: LatLongAndHeight;
-  /** Optional, column vectors if projected */
+  /** Optional X column vector used with yVector to calculate potentialluy non-rigid transform if a projection is present. */
   xVector?: XYZProps;
+  /** Optional Y column vector used with xVector to calculate potentialluy non-rigid transform if a projection is present. */
   yVector?: XYZProps;
 }
 
@@ -191,8 +192,9 @@ export class EcefLocation implements EcefLocationProps {
   public readonly orientation: YawPitchRollAngles;
   /** Optional position on the earth used to establish the ECEF origin and orientation. */
   public readonly cartographicOrigin?: Cartographic;
-  /** Optional, column vectors for ECEF non-rigid ECEF transform  */
+  /** Optional X column vector used with yVector to calculate potentialluy non-rigid transform if a projection is present. */
   public readonly xVector?: Vector3d;
+  /** Optional Y column vector used with xVector to calculate potentialluy non-rigid transform if a projection is present. */
   public readonly yVector?: Vector3d;
 
   private _transform: Transform;

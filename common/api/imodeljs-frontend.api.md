@@ -4525,7 +4525,7 @@ export abstract class IModelConnection extends IModel {
     fontMap?: FontMap;
     // @internal
     protected _gcsDisabled: boolean;
-    // (undocumented)
+    // @internal
     get geodeticToSeaLevel(): number | undefined;
     // @internal
     readonly geoServices: GeoServices;
@@ -4560,7 +4560,7 @@ export abstract class IModelConnection extends IModel {
     // @internal
     readonly onMapElevationLoaded: BeEvent<(_imodel: IModelConnection) => void>;
     static readonly onOpen: BeEvent<(_imodel: IModelConnection) => void>;
-    // (undocumented)
+    // @internal
     get projectCenterAltitude(): number | undefined;
     query(ecsql: string, bindings?: any[] | object, limitRows?: number, quota?: QueryQuota, priority?: QueryPriority, abbreviateBlobs?: boolean): AsyncIterableIterator<any>;
     queryEntityIds(params: EntityQueryParams): Promise<Id64Set>;
