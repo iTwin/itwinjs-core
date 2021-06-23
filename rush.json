@@ -522,12 +522,6 @@
       "shouldPublish": false
     },
     {
-      "packageName": "test-apps-analysis-importer",
-      "projectFolder": "test-apps/analysis-importer",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
       "packageName": "export-gltf",
       "projectFolder": "test-apps/export-gltf",
       "reviewCategory": "internal",

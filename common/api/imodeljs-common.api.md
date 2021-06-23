@@ -177,52 +177,59 @@ export namespace AmbientOcclusion {
     }
 }
 
-// @alpha (undocumented)
+// @public
 export class AnalysisStyle {
+    clone(changedProps: AnalysisStyleProps): AnalysisStyle;
     // (undocumented)
-    clone(out?: AnalysisStyle): AnalysisStyle;
+    static readonly defaults: AnalysisStyle;
     // (undocumented)
-    copyFrom(source: AnalysisStyle): void;
+    readonly displacement?: AnalysisStyleDisplacement;
+    equals(other: AnalysisStyle): boolean;
+    static fromJSON(props?: AnalysisStyleProps): AnalysisStyle;
+    readonly normalChannelName?: string;
     // (undocumented)
-    displacementChannelName?: string;
-    // (undocumented)
-    displacementScale?: number;
-    // (undocumented)
-    static fromJSON(json?: AnalysisStyleProps): AnalysisStyle;
-    // (undocumented)
-    inputName?: string;
-    // (undocumented)
-    inputRange?: Range1d;
-    // (undocumented)
-    normalChannelName?: string;
-    // (undocumented)
-    scalarChannelName?: string;
-    // (undocumented)
-    scalarRange?: Range1d;
-    // (undocumented)
-    scalarThematicSettings?: ThematicGradientSettings;
-    // (undocumented)
+    readonly scalar?: AnalysisStyleScalar;
     toJSON(): AnalysisStyleProps;
 }
 
-// @alpha
+// @public
+export class AnalysisStyleDisplacement {
+    readonly channelName: string;
+    equals(other: AnalysisStyleDisplacement): boolean;
+    static fromJSON(props: AnalysisStyleDisplacementProps): AnalysisStyleDisplacement;
+    readonly scale: number;
+    toJSON(): AnalysisStyleDisplacementProps;
+}
+
+// @public
+export interface AnalysisStyleDisplacementProps {
+    channelName: string;
+    scale?: number;
+}
+
+// @public
 export interface AnalysisStyleProps {
-    // (undocumented)
-    displacementChannelName?: string;
-    // (undocumented)
-    displacementScale?: number;
-    // (undocumented)
-    inputName?: string;
-    // (undocumented)
-    inputRange?: Range1dProps;
-    // (undocumented)
+    displacement?: AnalysisStyleDisplacementProps;
     normalChannelName?: string;
-    // (undocumented)
-    scalarChannelName?: string;
-    // (undocumented)
-    scalarRange?: Range1dProps;
-    // (undocumented)
-    scalarThematicSettings?: ThematicGradientSettingsProps;
+    scalar?: AnalysisStyleScalarProps;
+}
+
+// @public
+export class AnalysisStyleScalar {
+    readonly channelName: string;
+    equals(other: AnalysisStyleScalar): boolean;
+    static fromJSON(props: AnalysisStyleScalarProps): AnalysisStyleScalar;
+    get gradient(): Gradient.Symb;
+    readonly range: Readonly<Range1d>;
+    readonly thematicSettings: ThematicGradientSettings;
+    toJSON(): AnalysisStyleScalarProps;
+}
+
+// @public
+export interface AnalysisStyleScalarProps {
+    channelName: string;
+    range: Range1dProps;
+    thematicSettings?: ThematicGradientSettingsProps;
 }
 
 // @public
@@ -1837,10 +1844,8 @@ export class DisplayStyleSettings {
         styles?: DisplayStyleSettingsProps;
     }, options?: DisplayStyleSettingsOptions);
     addExcludedElements(id: Id64String | Iterable<Id64String>): void;
-    // @alpha (undocumented)
     get analysisFraction(): number;
     set analysisFraction(fraction: number);
-    // @alpha
     get analysisStyle(): AnalysisStyle | undefined;
     set analysisStyle(style: AnalysisStyle | undefined);
     applyOverrides(overrides: DisplayStyleSettingsProps): void;
@@ -1880,9 +1885,7 @@ export class DisplayStyleSettings {
     get monochromeMode(): MonochromeMode;
     set monochromeMode(mode: MonochromeMode);
     readonly onAmbientOcclusionSettingsChanged: BeEvent<(newSettings: AmbientOcclusion.Settings) => void>;
-    // @alpha
     readonly onAnalysisFractionChanged: BeEvent<(newFraction: number) => void>;
-    // @alpha
     readonly onAnalysisStyleChanged: BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>;
     readonly onApplyOverrides: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
     readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
@@ -1935,9 +1938,7 @@ export interface DisplayStyleSettingsOptions {
 
 // @public
 export interface DisplayStyleSettingsProps {
-    // @alpha
     analysisFraction?: number;
-    // @alpha
     analysisStyle?: AnalysisStyleProps;
     backgroundColor?: ColorDefProps;
     backgroundMap?: BackgroundMapProps;
@@ -2064,6 +2065,8 @@ export class EcefLocation implements EcefLocationProps {
     readonly origin: Point3d;
     // (undocumented)
     toJSON(): EcefLocationProps;
+    readonly xVector?: Vector3d;
+    readonly yVector?: Vector3d;
 }
 
 // @public
@@ -2071,6 +2074,8 @@ export interface EcefLocationProps {
     cartographicOrigin?: LatLongAndHeight;
     orientation: YawPitchRollProps;
     origin: XYZProps;
+    xVector?: XYZProps;
+    yVector?: XYZProps;
 }
 
 // @public
@@ -4601,6 +4606,22 @@ export interface LatLongAndHeight extends LatAndLong {
 }
 
 // @internal
+export interface LegacyAnalysisStyleProps {
+    // (undocumented)
+    displacementChannelName?: string;
+    // (undocumented)
+    displacementScale?: number;
+    // (undocumented)
+    normalChannelName?: string;
+    // (undocumented)
+    scalarChannelName?: string;
+    // (undocumented)
+    scalarRange?: Range1dProps;
+    // (undocumented)
+    scalarThematicSettings?: ThematicGradientSettingsProps;
+}
+
+// @internal
 export interface LightLocationProps extends GeometricElement3dProps {
     // (undocumented)
     enabled?: boolean;
@@ -5201,6 +5222,7 @@ export class OctEncodedNormal {
     decode(): Vector3d;
     static decodeValue(val: number, result?: Vector3d): Vector3d;
     static encode(vec: XYAndZ): number;
+    static encodeXYZ(nx: number, ny: number, nz: number): number;
     static fromVector(val: XYAndZ): OctEncodedNormal;
     readonly value: number;
 }
@@ -8052,7 +8074,7 @@ export class ThematicGradientSettings {
     static get contentRange(): number;
     readonly customKeys: Gradient.KeyColor[];
     // (undocumented)
-    static defaults: ThematicGradientSettings;
+    static readonly defaults: ThematicGradientSettings;
     // (undocumented)
     equals(other: ThematicGradientSettings): boolean;
     // (undocumented)

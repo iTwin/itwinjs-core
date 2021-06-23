@@ -8,8 +8,8 @@ import * as path from "path";
 import { DbResult, Id64, Id64Set, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Angle, Point2d, Point3d, Range2d, Range3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  Code, CodeScopeSpec, DefinitionElementProps, GeometricElement2dProps, IModel, PhysicalElementProps, Placement2d, Placement3d, RepositoryLinkProps,
-  SubCategoryAppearance,
+  Code, CodeScopeSpec, DefinitionElementProps, GeometricElement2dProps, GeometryStreamProps, IModel, PhysicalElementProps, Placement2d, Placement3d,
+  RepositoryLinkProps, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import {
   BackendLoggerCategory, BackendRequestContext, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
@@ -18,11 +18,12 @@ import {
   RecipeDefinitionElement, RepositoryLink, SnapshotDb, SpatialCategory, TemplateModelCloner, TemplateRecipe2d, TemplateRecipe3d,
   TypeDefinitionElement,
 } from "../../imodeljs-backend";
+import { IModelTransformOptions } from "../../IModelTransformer";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelTransformerUtils } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
-const createClassViews = false; // can set to true to make it easier to debug catalog structure
+const createClassViews = false; // can set to true to make it easier to debug the catalog structure
 
 /** Structure of a Catalog
  * - As with *normal* iModels, the CodeValue of the root Subject is the name of this catalog.
@@ -41,9 +42,17 @@ const createClassViews = false; // can set to true to make it easier to debug ca
  * @note Each catalog creator should create their own CodeSpec for DefinitionContainers with a prefix/namespace that ensures uniqueness.
  *
  * @note Standard domain categories are supported by finding in the catalog by name using the DefinitionContainer scope and remapping to the standard domain category known by the application.
+ *
+ * @note Templates from different perspectives (physical vs. drawing, for example) can be related via a DefinitionGroup (or subclass thereof)
+ * and by the DefinitionGroupGroupsDefinitions relationship (or subclass thereof).
  */
 
-/** This function mocks a Catalog Connector that reads ACME Equipment product data and outputs a catalog of components. */
+/** This function mocks a Catalog Connector that reads ACME Equipment product data and outputs a catalog of components.
+ * Notes about this catalog:
+ * - Utilizes the TestDomain schema
+ * - Has templates for the physical perspective and for a drawing perspective.
+ * - Groups the physical template with a corresponding drawing template.
+ */
 async function createAcmeCatalog(dbFile: string): Promise<void> {
   const db = SnapshotDb.createEmpty(dbFile, { rootSubject: { name: "ACME Equipment" }, createClassViews });
   const domainSchemaFilePath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
@@ -51,26 +60,69 @@ async function createAcmeCatalog(dbFile: string): Promise<void> {
   const manufacturerName = "ACME";
   const productLineName = `${manufacturerName} Product Line A`;
   const containerCodeSpecId = db.codeSpecs.insert("ACME:Equipment", CodeScopeSpec.Type.Repository); // A catalog creator should insert their own CodeSpec for DefinitionContainers
+  const templateGroupCodeSpecId = db.codeSpecs.insert("ACME:TemplateGroup", CodeScopeSpec.Type.Model);
   const containerCode = createContainerCode(containerCodeSpecId, productLineName);
   const containerId = DefinitionContainer.insert(db, IModel.dictionaryId, containerCode); // This sample has a DefinitionContainer per product line
-  const categoryId = SpatialCategory.insert(db, containerId, "Equipment", new SubCategoryAppearance()); // "Equipment" is the name of a standard domain category in this sample
+  const spatialCategoryId = SpatialCategory.insert(db, containerId, "Equipment", new SubCategoryAppearance()); // "Equipment" is the name of a standard domain SpatialCategory in this sample
+  const drawingCategoryId = DrawingCategory.insert(db, containerId, "Symbols", new SubCategoryAppearance()); // "Symbols" is the name of a standard domain DrawingCategory in this sample
 
-  const series1 = insertAcmeEquipmentRecipe(db, containerId, categoryId, 1); // a template recipe can be referenced by more than one PhysicalType
-  const series2 = insertAcmeEquipmentRecipe(db, containerId, categoryId, 2);
-  const series3 = insertAcmeEquipmentRecipe(db, containerId, categoryId, 3);
-  insertEquipmentType(db, containerId, "A-101", series1, manufacturerName, productLineName);
-  insertEquipmentType(db, containerId, "A-102", series1, manufacturerName, productLineName);
-  insertEquipmentType(db, containerId, "A-201", series2, manufacturerName, productLineName);
-  insertEquipmentType(db, containerId, "A-202", series2, manufacturerName, productLineName);
-  insertEquipmentType(db, containerId, "A-203", series2, manufacturerName, productLineName);
-  insertEquipmentType(db, containerId, "A-301", series3, manufacturerName, productLineName);
+  const codeValue1 = "A-1 Series";
+  const physicalGeomProps1 = IModelTransformerUtils.createBox(new Point3d(1, 1, 1));
+  const physicalRecipeId1 = insertEquipmentRecipe(db, containerId, spatialCategoryId, codeValue1, physicalGeomProps1); // a template recipe can be referenced by more than one PhysicalType
+  insertEquipmentType(db, containerId, "A-101", physicalRecipeId1, manufacturerName, productLineName);
+  insertEquipmentType(db, containerId, "A-102", physicalRecipeId1, manufacturerName, productLineName);
+  const symbolGeomProps1 = IModelTransformerUtils.createRectangle(Point2d.create(1, 1));
+  const symbolRecipeId1 = insertSymbolRecipe(db, containerId, drawingCategoryId, codeValue1, symbolGeomProps1);
+  const groupProps1: DefinitionElementProps = {
+    classFullName: DefinitionGroup.classFullName,
+    model: containerId,
+    code: new Code({ spec: templateGroupCodeSpecId, scope: containerId, value: codeValue1 }),
+  };
+  const groupId1 = db.elements.insertElement(groupProps1);
+  DefinitionGroupGroupsDefinitions.insert(db, groupId1, physicalRecipeId1);
+  DefinitionGroupGroupsDefinitions.insert(db, groupId1, symbolRecipeId1);
+
+  const codeValue2 = "A-2 Series";
+  const physicalGeomProps2 = IModelTransformerUtils.createBox(new Point3d(2, 2, 2));
+  const physicalRecipeId2 = insertEquipmentRecipe(db, containerId, spatialCategoryId, codeValue2, physicalGeomProps2);
+  insertEquipmentType(db, containerId, "A-201", physicalRecipeId2, manufacturerName, productLineName);
+  insertEquipmentType(db, containerId, "A-202", physicalRecipeId2, manufacturerName, productLineName);
+  insertEquipmentType(db, containerId, "A-203", physicalRecipeId2, manufacturerName, productLineName);
+  const symbolGeomProps2 = IModelTransformerUtils.createRectangle(Point2d.create(2, 2));
+  const symbolRecipeId2 = insertSymbolRecipe(db, containerId, drawingCategoryId, codeValue2, symbolGeomProps2);
+  const groupProps2: DefinitionElementProps = {
+    classFullName: DefinitionGroup.classFullName,
+    model: containerId,
+    code: new Code({ spec: templateGroupCodeSpecId, scope: containerId, value: codeValue2 }),
+  };
+  const groupId2 = db.elements.insertElement(groupProps2);
+  DefinitionGroupGroupsDefinitions.insert(db, groupId2, physicalRecipeId2);
+  DefinitionGroupGroupsDefinitions.insert(db, groupId2, symbolRecipeId2);
+
+  const codeValue3 = "A-3 Series";
+  const physicalGeomProps3 = IModelTransformerUtils.createBox(new Point3d(3, 3, 3));
+  const physicalRecipeId3 = insertEquipmentRecipe(db, containerId, spatialCategoryId, codeValue3, physicalGeomProps3);
+  insertEquipmentType(db, containerId, "A-301", physicalRecipeId3, manufacturerName, productLineName);
+  const symbolGeomProps3 = IModelTransformerUtils.createRectangle(Point2d.create(3, 3));
+  const symbolRecipeId3 = insertSymbolRecipe(db, containerId, drawingCategoryId, codeValue3, symbolGeomProps3);
+  const groupProps3: DefinitionElementProps = {
+    classFullName: DefinitionGroup.classFullName,
+    model: containerId,
+    code: new Code({ spec: templateGroupCodeSpecId, scope: containerId, value: codeValue3 }),
+  };
+  const groupId3 = db.elements.insertElement(groupProps3);
+  DefinitionGroupGroupsDefinitions.insert(db, groupId3, physicalRecipeId3);
+  DefinitionGroupGroupsDefinitions.insert(db, groupId3, symbolRecipeId3);
 
   db.saveChanges();
   db.close();
 }
 
 /** This function mocks a Catalog Connector that reads Best Equipment product data and outputs a catalog of components.
- * @note This demonstrates multiple containers (mapped to product line in this sample) for a single catalog.
+ * Notes about this catalog:
+ * - Utilizes the TestDomain schema
+ * - Demonstrates multiple containers (mapped to product line in this sample) for a single catalog.
+ * - Happens to only have templates for the physical perspective (no symbols, no groups)
 */
 async function createBestCatalog(dbFile: string): Promise<void> {
   const db = SnapshotDb.createEmpty(dbFile, { rootSubject: { name: "Best Equipment" } });
@@ -84,35 +136,51 @@ async function createBestCatalog(dbFile: string): Promise<void> {
   const containerCodeB = createContainerCode(containerCodeSpecId, productLineNameB);
   const containerIdB = DefinitionContainer.insert(db, IModel.dictionaryId, containerCodeB);
   const categoryIdB = SpatialCategory.insert(db, containerIdB, "Equipment", new SubCategoryAppearance());
-  const seriesB2 = insertBestEquipmentRecipe(db, containerIdB, categoryIdB, 2);
-  const seriesB3 = insertBestEquipmentRecipe(db, containerIdB, categoryIdB, 3);
-  insertEquipmentType(db, containerIdB, "B-201", seriesB2, manufacturerName, productLineNameB);
-  insertEquipmentType(db, containerIdB, "B-202", seriesB2, manufacturerName, productLineNameB);
-  insertEquipmentType(db, containerIdB, "B-301", seriesB3, manufacturerName, productLineNameB);
-  insertEquipmentType(db, containerIdB, "B-302", seriesB3, manufacturerName, productLineNameB);
-  insertEquipmentType(db, containerIdB, "B-303", seriesB3, manufacturerName, productLineNameB);
-  insertEquipmentType(db, containerIdB, "B-304", seriesB3, manufacturerName, productLineNameB);
+
+  const codeValueB2 = "B-2 Series";
+  const physicalGeomPropsB2 = IModelTransformerUtils.createCylinder(2);
+  const physicalRecipeIdB2 = insertEquipmentRecipe(db, containerIdB, categoryIdB, codeValueB2, physicalGeomPropsB2);
+  insertEquipmentType(db, containerIdB, "B-201", physicalRecipeIdB2, manufacturerName, productLineNameB);
+  insertEquipmentType(db, containerIdB, "B-202", physicalRecipeIdB2, manufacturerName, productLineNameB);
+
+  const codeValueB3 = "B-3 Series";
+  const physicalGeomPropsB3 = IModelTransformerUtils.createCylinder(3);
+  const physicalRecipeIdB3 = insertEquipmentRecipe(db, containerIdB, categoryIdB, codeValueB3, physicalGeomPropsB3);
+  insertEquipmentType(db, containerIdB, "B-301", physicalRecipeIdB3, manufacturerName, productLineNameB);
+  insertEquipmentType(db, containerIdB, "B-302", physicalRecipeIdB3, manufacturerName, productLineNameB);
+  insertEquipmentType(db, containerIdB, "B-303", physicalRecipeIdB3, manufacturerName, productLineNameB);
+  insertEquipmentType(db, containerIdB, "B-304", physicalRecipeIdB3, manufacturerName, productLineNameB);
 
   // Product Line D
   const productLineNameD = `${manufacturerName} Product Line D`;
   const containerCodeD = createContainerCode(containerCodeSpecId, productLineNameD);
   const containerIdD = DefinitionContainer.insert(db, IModel.dictionaryId, containerCodeD);
   const categoryIdD = SpatialCategory.insert(db, containerIdD, "Equipment", new SubCategoryAppearance());
-  const seriesD1 = insertBestEquipmentRecipe(db, containerIdD, categoryIdD, 1);
-  const seriesD2 = insertBestEquipmentRecipe(db, containerIdD, categoryIdD, 2);
-  insertEquipmentType(db, containerIdD, "D-101", seriesD1, manufacturerName, productLineNameD);
-  insertEquipmentType(db, containerIdD, "D-102", seriesD1, manufacturerName, productLineNameD);
-  insertEquipmentType(db, containerIdD, "D-201", seriesD2, manufacturerName, productLineNameD);
-  insertEquipmentType(db, containerIdD, "D-202", seriesD2, manufacturerName, productLineNameD);
+
+  const codeValueD1 = "D-1 Series";
+  const physicalGeomPropsD1 = IModelTransformerUtils.createCylinder(1);
+  const physicalRecipeIdD1 = insertEquipmentRecipe(db, containerIdD, categoryIdD, codeValueD1, physicalGeomPropsD1);
+  insertEquipmentType(db, containerIdD, "D-101", physicalRecipeIdD1, manufacturerName, productLineNameD);
+  insertEquipmentType(db, containerIdD, "D-102", physicalRecipeIdD1, manufacturerName, productLineNameD);
+
+  const codeValueD2 = "D-2 Series";
+  const physicalGeomPropsD2 = IModelTransformerUtils.createCylinder(2);
+  const physicalRecipeIdD2 = insertEquipmentRecipe(db, containerIdD, categoryIdD, codeValueD2, physicalGeomPropsD2);
+  insertEquipmentType(db, containerIdD, "D-201", physicalRecipeIdD2, manufacturerName, productLineNameD);
+  insertEquipmentType(db, containerIdD, "D-202", physicalRecipeIdD2, manufacturerName, productLineNameD);
 
   db.saveChanges();
   db.close();
 }
 
-/** This function creates test catalog components. */
+/** This function creates test catalog components.
+ * Notes about this catalog:
+ * - Utilizes only the builtin BisCore and Generic schemas
+ * - Has an example template (Assembly) that contains multiple elements
+ * - Has no associated PhysicalTypes
+*/
 async function createTestCatalog(dbFile: string): Promise<void> {
   const db: SnapshotDb = SnapshotDb.createEmpty(dbFile, { rootSubject: { name: "Test Catalog" }, createClassViews });
-  const templateGroupCodeSpecId = db.codeSpecs.insert("Test:TemplateGroup", CodeScopeSpec.Type.Model);
   const containerCodeSpecId = db.codeSpecs.insert("Test:Components", CodeScopeSpec.Type.Repository);
   const containerCode = createContainerCode(containerCodeSpecId, "Test Components");
   const containerId = DefinitionContainer.insert(db, IModel.dictionaryId, containerCode);
@@ -174,26 +242,6 @@ async function createTestCatalog(dbFile: string): Promise<void> {
   };
   db.elements.insertElement(drawingGraphicProps);
 
-  // Groups a TemplateRecipe3d to be used for 3d with a TemplateRecipe2d to be used for 2d drawings
-  const groupProps1: DefinitionElementProps = {
-    classFullName: DefinitionGroup.classFullName,
-    model: containerId,
-    code: new Code({ spec: templateGroupCodeSpecId, scope: containerId, value: "Assembly + DrawingGraphic" }),
-  };
-  const groupId1 = db.elements.insertElement(groupProps1);
-  DefinitionGroupGroupsDefinitions.insert(db, groupId1, assemblyTemplateId);
-  DefinitionGroupGroupsDefinitions.insert(db, groupId1, drawingGraphicTemplateId);
-
-  // Groups a TemplateRecipe3d to be used for 3d with a TemplateRecipe2d to be used for 2d drawings
-  const groupProps2: DefinitionElementProps = {
-    classFullName: DefinitionGroup.classFullName,
-    model: containerId,
-    code: new Code({ spec: templateGroupCodeSpecId, scope: containerId, value: "Cylinder + DrawingGraphic" }),
-  };
-  const groupId2 = db.elements.insertElement(groupProps2);
-  DefinitionGroupGroupsDefinitions.insert(db, groupId2, cylinderTemplateId);
-  DefinitionGroupGroupsDefinitions.insert(db, groupId2, drawingGraphicTemplateId);
-
   db.saveChanges();
   db.close();
 }
@@ -243,38 +291,33 @@ function indexCatalog(db: IModelDb, outputFile: string): void {
 /** Mocks the creation of a template recipe that would be the responsibility of a Catalog Connector.
  * @note This sample creates a single element in the template model, but 1-N elements are supported.
  */
-function insertAcmeEquipmentRecipe(db: IModelDb, modelId: Id64String, categoryId: Id64String, seriesNumber: number): Id64String {
-  const templateCodeValue = `A-${seriesNumber} Series`;
-  const templateId = TemplateRecipe3d.insert(db, modelId, templateCodeValue);
+function insertEquipmentRecipe(db: IModelDb, modelId: Id64String, categoryId: Id64String, codeValue: string, geom: GeometryStreamProps): Id64String {
+  const templateId = TemplateRecipe3d.insert(db, modelId, codeValue);
   const equipmentProps: PhysicalElementProps = {
     classFullName: "TestDomain:Equipment",
-    model: templateId,
+    model: templateId, // the sub-model of the TemplateRecipe3d
     category: categoryId,
     code: Code.createEmpty(),
-    userLabel: templateCodeValue,
+    userLabel: codeValue,
     placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
-    geom: IModelTransformerUtils.createCylinder(seriesNumber),
+    geom,
   };
   db.elements.insertElement(equipmentProps);
   return templateId;
 }
 
-/** Mocks the creation of a template recipe that would be the responsibility of a Catalog Connector.
- * @note This sample creates a single element in the template model, but 1-N elements are supported.
- */
-function insertBestEquipmentRecipe(db: IModelDb, modelId: Id64String, categoryId: Id64String, seriesNumber: number): Id64String {
-  const templateCodeValue = `B-${seriesNumber} Series`;
-  const templateId = TemplateRecipe3d.insert(db, modelId, templateCodeValue);
-  const equipmentProps: PhysicalElementProps = {
-    classFullName: "TestDomain:Equipment",
-    model: templateId,
+function insertSymbolRecipe(db: IModelDb, modelId: Id64String, categoryId: Id64String, codeValue: string, geom: GeometryStreamProps): Id64String {
+  const templateId = TemplateRecipe2d.insert(db, modelId, codeValue);
+  const drawingGraphicProps: GeometricElement2dProps = {
+    classFullName: DrawingGraphic.classFullName,
+    model: templateId, // the sub-model of the TemplateRecipe2d
     category: categoryId,
     code: Code.createEmpty(),
-    userLabel: templateCodeValue,
-    placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
-    geom: IModelTransformerUtils.createBox(new Point3d(seriesNumber, seriesNumber, seriesNumber)),
+    userLabel: codeValue,
+    placement: { origin: Point2d.createZero(), angle: 0 },
+    geom,
   };
-  db.elements.insertElement(equipmentProps);
+  db.elements.insertElement(drawingGraphicProps);
   return templateId;
 }
 
@@ -420,16 +463,26 @@ function insertCatalogRepositoryLink(iModelDb: IModelDb, codeValue: string, url:
 
 /** Specialization of IModelTransformer designed to import definitions from a catalog. */
 class CatalogImporter extends IModelTransformer {
-  private _targetStandardCategories: Map<string, Id64String>;
+  private _targetSpatialCategories: Map<string, Id64String> | undefined;
+  private _targetDrawingCategories: Map<string, Id64String> | undefined;
 
   /** Construct a new CatalogImporter.
    * @param sourceDb The catalog
    * @param targetDb The iModel to import into
+   * @param targetScopeElementId The optional Id of the Element in the **target** iModel that represents the **source** repository as a whole and scopes its [ExternalSourceAspect]($backend) instances used to store provenance.
+   * If `undefined` then provenance back to the catalog cannot be stored.
+   * @param targetSpatialCategories Optional remapping for standard spatial categories.
+   * @param targetDrawingCategories Optional remapping for standard drawing categories.
    */
-  public constructor(sourceDb: IModelDb, targetDb: IModelDb, targetScopeElementId: Id64String, targetStandardCategories: Map<string, Id64String>) {
-    super(sourceDb, targetDb, { targetScopeElementId });
+  public constructor(sourceDb: IModelDb, targetDb: IModelDb, targetScopeElementId?: Id64String, targetSpatialCategories?: Map<string, Id64String>, targetDrawingCategories?: Map<string, Id64String>) {
+    const options: IModelTransformOptions = {
+      targetScopeElementId,
+      noProvenance: targetScopeElementId ? undefined : true, // can't store provenance if targetScopeElementId is not defined
+    };
+    super(sourceDb, targetDb, options);
     this.importer.autoExtendProjectExtents = false;
-    this._targetStandardCategories = targetStandardCategories;
+    this._targetSpatialCategories = targetSpatialCategories;
+    this._targetDrawingCategories = targetDrawingCategories;
   }
   public async importDefinitionContainers(): Promise<void> {
     const containerIds = queryContainerIds(this.sourceDb);
@@ -453,13 +506,14 @@ class CatalogImporter extends IModelTransformer {
       // catch NotFound error and continue
     }
     if (undefined === targetContainerId) {
-      this._remapStandardCategories();
+      this._remapSpatialCategories();
+      this._remapDrawingCategories();
       await this.exporter.exportElement(sourceContainerId);
       return this.exporter.exportModel(sourceContainerId);
     }
   }
-  private _remapStandardCategories(): void {
-    if (this._targetStandardCategories.size === 0) {
+  private _remapSpatialCategories(): void {
+    if (undefined === this._targetSpatialCategories || this._targetSpatialCategories.size === 0) {
       return;
     }
     const sql = `SELECT ECInstanceId,CodeValue FROM ${SpatialCategory.classFullName}`;
@@ -467,8 +521,25 @@ class CatalogImporter extends IModelTransformer {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const sourceCategoryId = statement.getValue(0).getId();
         const sourceCategoryName = statement.getValue(1).getString();
-        if (this._targetStandardCategories.has(sourceCategoryName)) {
-          const targetCategoryId = this._targetStandardCategories.get(sourceCategoryName)!;
+        if (this._targetSpatialCategories!.has(sourceCategoryName)) {
+          const targetCategoryId = this._targetSpatialCategories!.get(sourceCategoryName)!;
+          this.context.remapElement(sourceCategoryId, targetCategoryId);
+          this.importer.doNotUpdateElementIds.add(targetCategoryId);
+        }
+      }
+    });
+  }
+  private _remapDrawingCategories(): void {
+    if (undefined === this._targetDrawingCategories || this._targetDrawingCategories.size === 0) {
+      return;
+    }
+    const sql = `SELECT ECInstanceId,CodeValue FROM ${DrawingCategory.classFullName}`;
+    this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
+      while (DbResult.BE_SQLITE_ROW === statement.step()) {
+        const sourceCategoryId = statement.getValue(0).getId();
+        const sourceCategoryName = statement.getValue(1).getString();
+        if (this._targetDrawingCategories!.has(sourceCategoryName)) {
+          const targetCategoryId = this._targetDrawingCategories!.get(sourceCategoryName)!;
           this.context.remapElement(sourceCategoryId, targetCategoryId);
           this.importer.doNotUpdateElementIds.add(targetCategoryId);
         }
@@ -523,11 +594,14 @@ describe("Catalog", () => {
     const domainSchemaFilePath = path.join(KnownTestLocations.assetsDir, "TestDomain.ecschema.xml");
     await iModelDb.importSchemas(new BackendRequestContext(), [domainSchemaFilePath]);
     const physicalModelId = PhysicalModel.insert(iModelDb, IModel.rootSubjectId, "Physical");
-    const categoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Equipment", new SubCategoryAppearance());
-    const standardCategories = new Map<string, Id64String>();
-    standardCategories.set("Equipment", categoryId);
+    const spatialCategoryId = SpatialCategory.insert(iModelDb, IModel.dictionaryId, "Equipment", new SubCategoryAppearance());
+    const standardSpatialCategories = new Map<string, Id64String>();
+    standardSpatialCategories.set("Equipment", spatialCategoryId);
     const drawingListModelId = DocumentListModel.insert(iModelDb, IModel.rootSubjectId, "Drawings");
     const drawingId = Drawing.insert(iModelDb, drawingListModelId, "Drawing1");
+    const drawingCategoryId = DrawingCategory.insert(iModelDb, IModel.dictionaryId, "Symbols", new SubCategoryAppearance());
+    const standardDrawingCategories = new Map<string, Id64String>();
+    standardDrawingCategories.set("Symbols", drawingCategoryId);
 
     { // import ACME Equipment catalog
       const catalogDb = SnapshotDb.openFile(acmeCatalogDbFile);
@@ -537,7 +611,7 @@ describe("Catalog", () => {
       const catalogContainerCodeSpec = catalogDb.codeSpecs.getById(catalogContainer.code.spec);
       const catalogContainerCodeValue = catalogContainer.code.value;
       const catalogRepositoryLinkId = insertCatalogRepositoryLink(iModelDb, path.basename(acmeCatalogDbFile), acmeCatalogDbFile);
-      const catalogImporter = new CatalogImporter(catalogDb, iModelDb, catalogRepositoryLinkId, standardCategories);
+      const catalogImporter = new CatalogImporter(catalogDb, iModelDb, catalogRepositoryLinkId, standardSpatialCategories, standardDrawingCategories);
       await catalogImporter.importDefinitionContainers();
       catalogImporter.dispose();
       catalogDb.close();
@@ -554,7 +628,7 @@ describe("Catalog", () => {
       assert.isTrue(Id64.isValidId64(queryEquipmentTypeId(iModelDb, importedContainerId, "A-201")!));
       assert.isTrue(Id64.isValidId64(queryEquipmentTypeId(iModelDb, importedContainerId, "A-301")!));
       const templateRecipeIds = queryTemplateRecipeIds(iModelDb, importedContainerId);
-      assert.equal(templateRecipeIds.size, 3); // expected value from createAcmeCatalog
+      assert.equal(templateRecipeIds.size, 6); // expected value from createAcmeCatalog
     }
 
     { // import Best Equipment catalog
@@ -569,7 +643,7 @@ describe("Catalog", () => {
       const catalogContainerCodeSpec = catalogDb.codeSpecs.getById(catalogContainer.code.spec);
       const catalogContainerCodeValue = catalogContainer.code.value;
       const catalogRepositoryLinkId = insertCatalogRepositoryLink(iModelDb, path.basename(bestCatalogDbFile), bestCatalogDbFile);
-      const catalogImporter = new CatalogImporter(catalogDb, iModelDb, catalogRepositoryLinkId, standardCategories);
+      const catalogImporter = new CatalogImporter(catalogDb, iModelDb, catalogRepositoryLinkId, standardSpatialCategories, standardDrawingCategories);
       await catalogImporter.importDefinitionContainer(catalogContainerId); // only going to import 1 of the 2 containers
       catalogImporter.dispose();
       catalogDb.close();
@@ -599,7 +673,7 @@ describe("Catalog", () => {
       const catalogRepositoryLinkId = insertCatalogRepositoryLink(iModelDb, path.basename(testCatalogDbFile), testCatalogDbFile);
       const catalogTemplateRecipeIds = queryTemplateRecipeIds(catalogDb, catalogContainer.id);
       assert.equal(catalogTemplateRecipeIds.size, 3); // expected value from createTestCatalog
-      const catalogImporter = new CatalogImporter(catalogDb, iModelDb, catalogRepositoryLinkId, new Map()); // no standard categories in this case
+      const catalogImporter = new CatalogImporter(catalogDb, iModelDb, catalogRepositoryLinkId); // no standard categories in this case
       const cylinderTemplateCode = TemplateRecipe3d.createCode(catalogDb, catalogContainer.id, "Cylinder Template");
       const cylinderTemplateId = catalogDb.elements.queryElementIdByCode(cylinderTemplateCode)!;
       catalogImporter.exporter.excludeElement(cylinderTemplateId); // one way to implement partial import, another is by overriding shouldExportElement
