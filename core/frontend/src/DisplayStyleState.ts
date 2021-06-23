@@ -583,18 +583,19 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public getIsBackgroundMapVisible(): boolean {
     return undefined !== this.iModel.ecefLocation && (this.viewFlags.backgroundMap || this.anyMapLayersVisible(false));
   }
-  public get backgroundMapElevationBias(): number {
+  /** @internal */
+  public get backgroundMapElevationBias(): number | undefined{
     if (this.backgroundMapSettings.applyTerrain) {
       const terrainSettings = this.backgroundMapSettings.terrainSettings;
       switch (terrainSettings.heightOriginMode) {
         case TerrainHeightOriginMode.Ground:
-          return terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.backgroundMapLocation.projectCenterAltitude;
+          return (undefined ===  this.iModel.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
 
         case TerrainHeightOriginMode.Geodetic:
           return terrainSettings.heightOrigin;
 
         case TerrainHeightOriginMode.Geoid:
-          return terrainSettings.heightOrigin + this.iModel.backgroundMapLocation.geodeticToSeaLevel;
+          return (undefined === this.iModel.geodeticToSeaLevel) ? undefined : terrainSettings.heightOrigin + this.iModel.geodeticToSeaLevel;
       }
     } else {
       return this.backgroundMapSettings.groundBias;
@@ -608,6 +609,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return undefined;
 
     const bimElevationBias = this.backgroundMapElevationBias;
+
+    if (undefined === bimElevationBias)
+      return undefined;
 
     const globeMode = this.globeMode;
     if (undefined === this._backgroundMapGeometry || this._backgroundMapGeometry.globeMode !== globeMode || this._backgroundMapGeometry.bimElevationBias !== bimElevationBias) {
