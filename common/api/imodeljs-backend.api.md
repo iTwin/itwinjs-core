@@ -4523,16 +4523,11 @@ export class V1CheckpointManager {
 // @internal
 export class V2CheckpointManager {
     // (undocumented)
-<<<<<<< HEAD
-    static attach(checkpoint: CheckpointProps): Promise<string>;
-    static downloadCheckpoint(request: DownloadRequest): Promise<void>;
-=======
     static attach(checkpoint: CheckpointProps): Promise<{
         filePath: string;
         expiryTimestamp: number;
     }>;
-    static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
->>>>>>> 0c54200f55 (Add RpcBriefcaseUtility.findOrOpen and automatically refresh SAS key for v2 checkpoints (backport #1417) (#1664))
+    static downloadCheckpoint(request: DownloadRequest): Promise<void>;
     }
 
 // @beta
