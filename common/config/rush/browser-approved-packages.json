@@ -47,10 +47,6 @@
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/ecschema-editing",
-      "allowedCategories": [ "backend", "common", "integration-testing", "tools" ]
-    },
-    {
       "name": "@bentley/ecschema-locaters",
       "allowedCategories": [ "tools" ]
     },
