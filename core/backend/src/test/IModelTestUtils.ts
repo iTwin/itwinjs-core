@@ -11,8 +11,8 @@ import {
 import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
-  BriefcaseProps, Code, CodeProps, ElementProps, GeometricElement3dProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, RelatedElement,
-  RpcConfiguration, RpcManager, SyncMode,
+  BriefcaseProps, Camera, Code, CodeProps, ElementProps, GeometricElement3dProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, RelatedElement,
+  RpcConfiguration, RpcManager, SyncMode, ViewDefinition3dProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
@@ -26,6 +26,7 @@ import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { Schema, Schemas } from "../Schema";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { Matrix3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 
 /** Class for simple test timing */
 export class Timer {
@@ -309,6 +310,29 @@ export class IModelTestUtils {
       code: elemCode ? elemCode : Code.createEmpty(),
     };
     return testImodel.elements.createElement(elementProps);
+  }
+
+  public static createViewDefinitionElement(selectedModel: IModelDb, categoryId: Id64String, displayStyleId: string): any {
+    const standardView = StandardViewIndex.Iso;
+    const rotation = Matrix3d.createStandardWorldToView(standardView);
+    const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
+    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
+    const range: Range3d = new Range3d(1, 1, 1, 8, 8, 8);
+    const rotatedRange = rotationTransform.multiplyRange(range);
+
+    const elementProps: ViewDefinition3dProps = {
+      categorySelectorId: categoryId,
+      displayStyleId,
+      code: Code.createEmpty(),
+      model: IModel.dictionaryId,
+      classFullName: "BisCore:SpatialViewDefinition",
+      cameraOn: false,
+      origin: rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z),
+      extents: rotatedRange.diagonal(),
+      angles,
+      camera: new Camera(),
+    };
+    return selectedModel.elements.createElement(elementProps);
   }
 
   public static async startBackend(): Promise<void> {
