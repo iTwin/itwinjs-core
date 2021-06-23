@@ -577,7 +577,7 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
-      '@bentley/imodeljs-native': 2.18.0
+      '@bentley/imodeljs-native': 2.18.1
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/perf-tools': workspace:*
@@ -628,7 +628,7 @@ importers:
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/imodeljs-native': 2.18.0
+      '@bentley/imodeljs-native': 2.18.1
       '@bentley/usage-logging-client': link:../../clients/usage-logging
       deep-assign: 2.0.0
       form-data: 2.5.1
@@ -3365,47 +3365,6 @@ importers:
     devDependencies:
       cpx: 1.5.0
 
-  ../../test-apps/analysis-importer:
-    specifiers:
-      '@bentley/bentleyjs-core': workspace:*
-      '@bentley/build-tools': workspace:*
-      '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
-      '@bentley/imodeljs-backend': workspace:*
-      '@bentley/imodeljs-common': workspace:*
-      '@bentley/itwin-client': workspace:*
-      '@types/body-parser': ^1.17.0
-      '@types/express': ^4.16.1
-      '@types/node': 10.14.1
-      body-parser: ^1.18.2
-      child_process: ^1.0.2
-      cpx: ^1.5.0
-      eslint: ^6.8.0
-      express: ^4.16.3
-      null-loader: ^0.1.1
-      rimraf: ^3.0.2
-      typescript: ~4.1.0
-    dependencies:
-      '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/geometry-core': link:../../core/geometry
-      '@bentley/imodeljs-backend': link:../../core/backend
-      '@bentley/imodeljs-common': link:../../core/common
-      '@bentley/itwin-client': link:../../clients/itwin
-      body-parser: 1.19.0
-    devDependencies:
-      '@bentley/build-tools': link:../../tools/build
-      '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/body-parser': 1.19.0
-      '@types/express': 4.17.12
-      '@types/node': 10.14.1
-      child_process: 1.0.2
-      cpx: 1.5.0
-      eslint: 6.8.0
-      express: 4.17.1
-      null-loader: 0.1.1
-      rimraf: 3.0.2
-      typescript: 4.1.5
-
   ../../test-apps/display-performance-test-app:
     specifiers:
       '@bentley/backend-itwin-client': workspace:*
@@ -4078,8 +4037,6 @@ importers:
       fs-extra: ^8.1.0
       internal-tools: workspace:*
       lorem-ipsum: ^2.0.3
-      mobx: ^5.8.0
-      mobx-react: ^5.4.3
       npm-run-all: ^4.1.5
       null-loader: ^0.1.1
       react: ^16.8.0
@@ -4136,8 +4093,6 @@ importers:
       '@bentley/ui-ninezone': link:../../ui/ninezone
       classnames: 2.3.1
       lorem-ipsum: 2.0.3
-      mobx: 5.15.7
-      mobx-react: 5.4.4_mobx@5.15.7+react@16.14.0
       react: 16.14.0
       react-beautiful-dnd: 13.1.0_react-dom@16.14.0+react@16.14.0
       react-compound-slider: 2.5.0_react@16.14.0
@@ -7458,8 +7413,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/2.18.0:
-    resolution: {integrity: sha512-NYaBaK2/HB0dYSgfKjYNhrAfL9bBSKsuTIfyb4T5YW77OJS4NTclgtOUQ7bQGYHoaVeD756U/+T5aXOM2Tr1Ag==}
+  /@bentley/imodeljs-native/2.18.1:
+    resolution: {integrity: sha512-k5bNdbNlXzhw3lI+cMnkCRb5AA9Ylvm/dPwTJwgKg/qRzLHKiSGEXSxaCRVlgWCsqC+ly/lhRYC8F/6fGFSOGw==}
     requiresBuild: true
     dev: false
 
@@ -17006,22 +16961,6 @@ packages:
     resolution: {integrity: sha512-vVqVZQyf3WLx2Shd0qJ9xuvqgAyKPLAiqITEtqW0oIUjzo3PePDd6fW9iFz30ef7Ysp/oiWqbhszeGWW2T6Gzw==}
     engines: {node: '>=10'}
     hasBin: true
-
-  /mobx-react/5.4.4_mobx@5.15.7+react@16.14.0:
-    resolution: {integrity: sha512-2mTzpyEjVB/RGk2i6KbcmP4HWcAUFox5ZRCrGvSyz49w20I4C4qql63grPpYrS9E9GKwgydBHQlA4y665LuRCQ==}
-    peerDependencies:
-      mobx: ^4.0.0 || ^5.0.0
-      react: ^0.13.0 || ^0.14.0 || ^15.0.0 || ^16.0.0
-    dependencies:
-      hoist-non-react-statics: 3.3.2
-      mobx: 5.15.7
-      react: 16.14.0
-      react-lifecycles-compat: 3.0.4
-    dev: false
-
-  /mobx/5.15.7:
-    resolution: {integrity: sha512-wyM3FghTkhmC+hQjyPGGFdpehrcX1KOXsDuERhfK2YbJemkUhEB+6wzEN639T21onxlfYBmriA1PFnvxTUhcKw==}
-    dev: false
 
   /mocha-junit-reporter/1.23.3_mocha@8.4.0:
     resolution: {integrity: sha512-ed8LqbRj1RxZfjt/oC9t12sfrWsjZ3gNnbhV1nuj9R/Jb5/P3Xb4duv2eCfCDMYH+fEu0mqca7m4wsiVjsxsvA==}
