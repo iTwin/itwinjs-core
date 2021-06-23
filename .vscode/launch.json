@@ -940,6 +940,7 @@
         "--sourceIModelId='73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a'", // ReadOnlyTest
         "--targetFile='d:/tmp/test-target.bim'",
         "--logTransformer",
+        "--logChangesets",
       ],
       "outFiles": [
         "${workspaceFolder}/test-apps/imodel-transformer/lib/**/*.js",

@@ -11,6 +11,7 @@ import { ECVersion, Schema, SchemaKey } from "@bentley/ecschema-metadata";
 import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { ChangesetId } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
 import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
@@ -251,11 +252,11 @@ export class IModelExporter {
 
   /** Export changes from the source iModel.
    * @param requestContext The request context
-   * @param startChangeSetId Include changes from this changeset up through and including the current changeset.
+   * @param startChangesetId Include changes from this changeset up through and including the current changeset.
    * If this parameter is not provided, then just the current changeset will be exported.
-   * @note To form a range of versions to export, set `startChangeSetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
+   * @note To form a range of versions to export, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
    */
-  public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void> {
+  public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void> {
     requestContext.enter();
     if (!this.sourceDb.isBriefcaseDb()) {
       throw new IModelError(IModelStatus.BadRequest, "Must be a briefcase to export changes", Logger.logError, loggerCategory);
@@ -265,10 +266,10 @@ export class IModelExporter {
       requestContext.enter();
       return;
     }
-    if (undefined === startChangeSetId) {
-      startChangeSetId = this.sourceDb.changeSetId;
+    if (undefined === startChangesetId) {
+      startChangesetId = this.sourceDb.changeSetId;
     }
-    this._sourceDbChanges = await ChangedInstanceIds.initialize(requestContext, this.sourceDb, startChangeSetId);
+    this._sourceDbChanges = await ChangedInstanceIds.initialize(requestContext, this.sourceDb, startChangesetId);
     requestContext.enter();
     await this.exportCodeSpecs();
     await this.exportFonts();
@@ -351,16 +352,16 @@ export class IModelExporter {
   public async exportCodeSpecByName(codeSpecName: string): Promise<void> {
     const codeSpec: CodeSpec = this.sourceDb.codeSpecs.getByName(codeSpecName);
     let isUpdate: boolean | undefined;
-    if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+    if (undefined !== this._sourceDbChanges) { // is changeset information available?
       if (this._sourceDbChanges.codeSpec.insertIds.has(codeSpec.id)) {
         isUpdate = false;
       } else if (this._sourceDbChanges.codeSpec.updateIds.has(codeSpec.id)) {
         isUpdate = true;
       } else {
-        return; // not in changeSet, don't export
+        return; // not in changeset, don't export
       }
     }
-    // passed changeSet test, now apply standard exclusion rules
+    // passed changeset test, now apply standard exclusion rules
     if (this._excludedCodeSpecNames.has(codeSpec.name)) {
       Logger.logInfo(loggerCategory, `Excluding CodeSpec: ${codeSpec.name}`);
       return;
@@ -407,14 +408,14 @@ export class IModelExporter {
    */
   public async exportFontByNumber(fontNumber: number): Promise<void> {
     let isUpdate: boolean | undefined;
-    if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+    if (undefined !== this._sourceDbChanges) { // is changeset information available?
       const fontId: Id64String = Id64.fromUint32Pair(fontNumber, 0); // changeset information uses Id64String, not number
       if (this._sourceDbChanges.font.insertIds.has(fontId)) {
         isUpdate = false;
       } else if (this._sourceDbChanges.font.updateIds.has(fontId)) {
         isUpdate = true;
       } else {
-        return; // not in changeSet, don't export
+        return; // not in changeset, don't export
       }
     }
     Logger.logTrace(loggerCategory, `exportFontById(${fontNumber})`);
@@ -447,13 +448,13 @@ export class IModelExporter {
   /** Export the model (the container only) from the source iModel. */
   private async exportModelContainer(model: Model): Promise<void> {
     let isUpdate: boolean | undefined;
-    if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+    if (undefined !== this._sourceDbChanges) { // is changeset information available?
       if (this._sourceDbChanges.model.insertIds.has(model.id)) {
         isUpdate = false;
       } else if (this._sourceDbChanges.model.updateIds.has(model.id)) {
         isUpdate = true;
       } else {
-        return; // not in changeSet, don't export
+        return; // not in changeset, don't export
       }
     }
     this.handler.callProtected.onExportModel(model, isUpdate);
@@ -476,7 +477,7 @@ export class IModelExporter {
       Logger.logTrace(loggerCategory, `visitElements=false, skipping exportModelContents(${modelId})`);
       return;
     }
-    if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+    if (undefined !== this._sourceDbChanges) { // is changeset information available?
       if (!this._sourceDbChanges.model.insertIds.has(modelId) && !this._sourceDbChanges.model.updateIds.has(modelId)) {
         return; // this optimization assumes that the Model changes (LastMod) any time an Element in the Model changes
       }
@@ -566,7 +567,7 @@ export class IModelExporter {
       return;
     }
     let isUpdate: boolean | undefined;
-    if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+    if (undefined !== this._sourceDbChanges) { // is changeset information available?
       if (this._sourceDbChanges.element.insertIds.has(elementId)) {
         isUpdate = false;
       } else if (this._sourceDbChanges.element.updateIds.has(elementId)) {
@@ -641,7 +642,7 @@ export class IModelExporter {
       uniqueAspects = uniqueAspects.filter((a) => this.shouldExportElementAspect(a));
       if (uniqueAspects.length > 0) {
         uniqueAspects.forEach(async (uniqueAspect: ElementUniqueAspect) => {
-          if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+          if (undefined !== this._sourceDbChanges) { // is changeset information available?
             if (this._sourceDbChanges.aspect.insertIds.has(uniqueAspect.id)) {
               this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, false);
               await this.trackProgress();
@@ -649,7 +650,7 @@ export class IModelExporter {
               this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, true);
               await this.trackProgress();
             } else {
-              // not in changeSet, don't export
+              // not in changeset, don't export
             }
           } else {
             this.handler.callProtected.onExportElementUniqueAspect(uniqueAspect, undefined);
@@ -695,16 +696,16 @@ export class IModelExporter {
       return;
     }
     let isUpdate: boolean | undefined;
-    if (undefined !== this._sourceDbChanges) { // is changeSet information available?
+    if (undefined !== this._sourceDbChanges) { // is changeset information available?
       if (this._sourceDbChanges.relationship.insertIds.has(relInstanceId)) {
         isUpdate = false;
       } else if (this._sourceDbChanges.relationship.updateIds.has(relInstanceId)) {
         isUpdate = true;
       } else {
-        return; // not in changeSet, don't export
+        return; // not in changeset, don't export
       }
     }
-    // passed changeSet test, now apply standard exclusion rules
+    // passed changeset test, now apply standard exclusion rules
     Logger.logTrace(loggerCategory, `exportRelationship(${relClassFullName}, ${relInstanceId})`);
     const relationship: Relationship = this.sourceDb.relationships.getInstance(relClassFullName, relInstanceId);
     for (const excludedRelationshipClass of this._excludedRelationshipClasses) {
@@ -750,18 +751,18 @@ class ChangedInstanceIds {
   public relationship = new ChangedInstanceOps();
   public font = new ChangedInstanceOps();
   private constructor() { }
-  public static async initialize(requestContext: AuthorizedClientRequestContext, iModelDb: BriefcaseDb, startChangeSetId: string): Promise<ChangedInstanceIds> {
+  public static async initialize(requestContext: AuthorizedClientRequestContext, iModelDb: BriefcaseDb, startChangesetId: ChangesetId): Promise<ChangedInstanceIds> {
     requestContext.enter();
     const extractContext = new ChangeSummaryExtractContext(iModelDb); // NOTE: ChangeSummaryExtractContext is nothing more than a wrapper around IModelDb that has a method to get the iModelId
-    // NOTE: ChangeSummaryManager.downloadChangesets has nothing really to do with change summaries but has the desired behavior of including the start changeSet (unlike BriefcaseManager.downloadChangesets)
-    const changeSets = await ChangeSummaryManager.downloadChangesets(requestContext, extractContext, startChangeSetId, iModelDb.changeSetId);
+    // NOTE: ChangeSummaryManager.downloadChangesets has nothing really to do with change summaries but has the desired behavior of including the start changeset (unlike BriefcaseManager.downloadChangesets)
+    const changesets = await ChangeSummaryManager.downloadChangesets(requestContext, extractContext, startChangesetId, iModelDb.changeSetId);
     requestContext.enter();
     const changedInstanceIds = new ChangedInstanceIds();
-    changeSets.forEach((changeSet): void => {
-      const changeSetPath = changeSet.pathname;
-      const statusOrResult = iModelDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
+    changesets.forEach((changeset): void => {
+      const changesetPath = changeset.pathname;
+      const statusOrResult = iModelDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changesetPath);
       if (undefined !== statusOrResult.error) {
-        throw new IModelError(statusOrResult.error.status, "Error processing changeSet", Logger.logError, loggerCategory);
+        throw new IModelError(statusOrResult.error.status, "Error processing changeset", Logger.logError, loggerCategory);
       }
       if ("" !== statusOrResult.result) {
         const result: IModelJsNative.ChangedInstanceIdsProps = JSON.parse(statusOrResult.result!);
