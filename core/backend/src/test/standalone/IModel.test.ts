@@ -36,13 +36,9 @@ import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
-<<<<<<< HEAD
 let lastPushTimeMillis = 0;
 let lastAutoPushEventType: AutoPushEventType | undefined;
-=======
-import { IModelHubBackend } from "../../IModelHubBackend";
 import { V2CheckpointManager } from "../../CheckpointManager";
->>>>>>> 0c54200f55 (Add RpcBriefcaseUtility.findOrOpen and automatically refresh SAS key for v2 checkpoints (backport #1417) (#1664))
 
 // spell-checker: disable
 

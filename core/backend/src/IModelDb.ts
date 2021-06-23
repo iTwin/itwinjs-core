@@ -2553,11 +2553,6 @@ export class SnapshotDb extends IModelDb {
    * @internal
    */
   public async reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void> {
-<<<<<<< HEAD
-    if (!this._changeSetId)
-      throw new IModelError(IModelStatus.WrongIModel, `SnapshotDb is not a checkpoint`, Logger.logError, loggerCategory);
-    await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this._changeSetId });
-=======
     if (!this._isV2Checkpoint)
       return;
     if (this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
@@ -2570,7 +2565,6 @@ export class SnapshotDb extends IModelDb {
     const expiresIn = expiryTimestamp - Date.now();
 
     this._reattachDueTimestamp = Date.now() + expiresIn / 2;
->>>>>>> 0c54200f55 (Add RpcBriefcaseUtility.findOrOpen and automatically refresh SAS key for v2 checkpoints (backport #1417) (#1664))
   }
 
   /** @internal */
