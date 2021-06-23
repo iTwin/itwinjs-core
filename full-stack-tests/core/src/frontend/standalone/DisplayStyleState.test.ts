@@ -219,7 +219,6 @@ describe("DisplayStyle", () => {
         gradientSettings: {
           mode: 1,
           colorScheme: 1,
-          customKeys: [],
           stepCount: 3,
           marginColor: ColorByName.pink,
           colorMix: 0.333,
