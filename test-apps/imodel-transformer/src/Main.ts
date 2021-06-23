@@ -9,7 +9,7 @@ import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@bentley
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { Version } from "@bentley/imodelhub-client";
 import {
-  BackendLoggerCategory, BackendRequestContext, ChangesetIndex, ChangesetProps, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
+  BackendLoggerCategory, BackendRequestContext, ChangesetId, ChangesetIndex, ChangesetProps, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
 } from "@bentley/imodeljs-backend";
 import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -23,9 +23,9 @@ interface CommandLineArgs {
   sourceContextId?: GuidString;
   sourceIModelId?: GuidString;
   sourceIModelName?: string;
-  sourceStartChangesetId?: string;
+  sourceStartChangesetId?: ChangesetId;
   sourceStartChangesetIndex?: ChangesetIndex;
-  sourceEndChangesetId?: string;
+  sourceEndChangesetId?: ChangesetId;
   sourceEndChangesetIndex?: ChangesetIndex;
   targetFile: string;
   targetContextId?: GuidString;

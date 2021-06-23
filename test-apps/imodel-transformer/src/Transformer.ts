@@ -49,14 +49,14 @@ export class Transformer extends IModelTransformer {
     transformer.logElapsedTime();
   }
 
-  public static async transformChanges(requestContext: AuthorizedClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, sourceStartChangeSetId: string, options?: TransformerOptions): Promise<void> {
+  public static async transformChanges(requestContext: AuthorizedClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, sourceStartChangesetId: string, options?: TransformerOptions): Promise<void> {
     if ("" === sourceDb.changeSetId) {
-      assert("" === sourceStartChangeSetId);
+      assert("" === sourceStartChangesetId);
       return this.transformAll(requestContext, sourceDb, targetDb, options);
     }
     const transformer = new Transformer(sourceDb, targetDb, options);
     transformer.initialize(options);
-    await transformer.startChangesetId(requestContext, sourceStartChangeSetId);
+    await transformer.processChanges(requestContext, sourceStartChangesetId);
     await transformer.saveChanges("processChanges");
     if (options?.deleteUnusedGeometryParts) {
       transformer.deleteUnusedGeometryParts();
