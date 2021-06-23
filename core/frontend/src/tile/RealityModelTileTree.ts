@@ -591,7 +591,7 @@ export namespace RealityModelTileTree {
     const accessToken = await getAccessToken();
     const tileClient = new RealityModelTileClient(url, accessToken, iModel.contextId);
     const json = await tileClient.getRootDocument(url);
-    let rootTransform = iModel.ecefLocation ? iModel.backgroundMapLocation.getMapEcefToDb(0) : Transform.createIdentity();
+    let rootTransform = iModel.ecefLocation ? iModel.getMapEcefToDb(0) : Transform.createIdentity();
     const geoConverter = iModel.noGcsDefined ? undefined : iModel.geoServices.getConverter("WGS84");
     if (geoConverter !== undefined) {
       let realityTileRange = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)!.range;
@@ -673,8 +673,12 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       return undefined;
 
     const drawArgs = super.createDrawArgs(context);
-    if (drawArgs !== undefined && this._iModel.isGeoLocated && tree.isContentUnbounded)
-      drawArgs.location.origin.z += context.viewport.view.displayStyle.backgroundMapElevationBias;
+    if (drawArgs !== undefined && this._iModel.isGeoLocated && tree.isContentUnbounded) {
+      const elevationBias = context.viewport.view.displayStyle.backgroundMapElevationBias;
+
+      if (undefined !== elevationBias)
+        drawArgs.location.origin.z += elevationBias;
+    }
 
     return drawArgs;
   }

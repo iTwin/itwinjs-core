@@ -156,7 +156,6 @@ export class Surface {
       name: props?.name ?? "blank connection test",
     });
 
-    await iModel.backgroundMapLocation.initialize(iModel);
     const viewer = await this.createViewer({ iModel });
     viewer.dock(Dock.Full);
     return viewer;

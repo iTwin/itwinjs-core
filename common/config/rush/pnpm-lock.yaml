@@ -577,7 +577,7 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
-      '@bentley/imodeljs-native': 2.18.0
+      '@bentley/imodeljs-native': 2.18.1
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/perf-tools': workspace:*
@@ -628,7 +628,7 @@ importers:
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/imodeljs-native': 2.18.0
+      '@bentley/imodeljs-native': 2.18.1
       '@bentley/usage-logging-client': link:../../clients/usage-logging
       deep-assign: 2.0.0
       form-data: 2.5.1
@@ -5359,7 +5359,7 @@ packages:
   /@axe-core/react/4.2.1:
     resolution: {integrity: sha512-g12GaW60emfQzedVCNlmr1OM2VXWwuGzoiv2zblxwjwN5DTL8LzDwqRoazo5FlxvOQ8re5k2/wXE7GFVxrYDwg==}
     dependencies:
-      axe-core: 4.2.2
+      axe-core: 4.2.3
       requestidlecallback: 0.3.0
     dev: true
 
@@ -7157,7 +7157,7 @@ packages:
       babel-plugin-polyfill-corejs2: 0.2.2_@babel+core@7.7.4
       babel-plugin-polyfill-corejs3: 0.2.3_@babel+core@7.7.4
       babel-plugin-polyfill-regenerator: 0.2.2_@babel+core@7.7.4
-      core-js-compat: 3.15.0
+      core-js-compat: 3.15.1
       semver: 6.3.0
     transitivePeerDependencies:
       - supports-color
@@ -7224,7 +7224,7 @@ packages:
       '@babel/preset-modules': 0.1.4_@babel+core@7.9.0
       '@babel/types': 7.14.5
       browserslist: 4.11.1
-      core-js-compat: 3.15.0
+      core-js-compat: 3.15.1
       invariant: 2.2.4
       levenary: 1.1.1
       semver: 5.7.1
@@ -7297,7 +7297,7 @@ packages:
     resolution: {integrity: sha512-Wvzcw4mBYbTagyBVZpAJWI06auSIj033T/yNE0Zn1xcup83MieCddZA7ls3kme17L4NOGBrQ09Q+nKB41RLWBA==}
     engines: {node: '>=6.9.0'}
     dependencies:
-      core-js-pure: 3.15.0
+      core-js-pure: 3.15.1
       regenerator-runtime: 0.13.7
 
   /@babel/runtime/7.14.6:
@@ -7350,8 +7350,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/2.18.0:
-    resolution: {integrity: sha512-NYaBaK2/HB0dYSgfKjYNhrAfL9bBSKsuTIfyb4T5YW77OJS4NTclgtOUQ7bQGYHoaVeD756U/+T5aXOM2Tr1Ag==}
+  /@bentley/imodeljs-native/2.18.1:
+    resolution: {integrity: sha512-k5bNdbNlXzhw3lI+cMnkCRb5AA9Ylvm/dPwTJwgKg/qRzLHKiSGEXSxaCRVlgWCsqC+ly/lhRYC8F/6fGFSOGw==}
     requiresBuild: true
     dev: false
 
@@ -9915,8 +9915,8 @@ packages:
     engines: {node: '>=4'}
     dev: false
 
-  /axe-core/4.2.2:
-    resolution: {integrity: sha512-OKRkKM4ojMEZRJ5UNJHmq9tht7cEnRnqKG6KyB/trYws00Xtkv12mHtlJ0SK7cmuNbrU8dPUova3ELTuilfBbw==}
+  /axe-core/4.2.3:
+    resolution: {integrity: sha512-pXnVMfJKSIWU2Ml4JHP7pZEPIrgBO1Fd3WGx+fPBsS+KRGhE4vxooD8XBGWbQOIVSZsVK7pUDBBkCicNu80yzQ==}
     engines: {node: '>=4'}
     dev: true
 
@@ -10169,7 +10169,7 @@ packages:
     dependencies:
       '@babel/core': 7.7.4
       '@babel/helper-define-polyfill-provider': 0.2.3_@babel+core@7.7.4
-      core-js-compat: 3.15.0
+      core-js-compat: 3.15.1
     transitivePeerDependencies:
       - supports-color
 
@@ -11487,14 +11487,14 @@ packages:
       webpack: 4.42.0
       webpack-sources: 1.4.3
 
-  /core-js-compat/3.15.0:
-    resolution: {integrity: sha512-8X6lWsG+s7IfOKzV93a7fRYfWRZobOfjw5V5rrq43Vh/W+V6qYxl7Akalsvgab4PFT/4L/pjQbdBUEM36NXKrw==}
+  /core-js-compat/3.15.1:
+    resolution: {integrity: sha512-xGhzYMX6y7oEGQGAJmP2TmtBLvR4nZmRGEcFa3ubHOq5YEp51gGN9AovVa0AoujGZIq+Wm6dISiYyGNfdflYww==}
     dependencies:
       browserslist: 4.16.6
       semver: 7.0.0
 
-  /core-js-pure/3.15.0:
-    resolution: {integrity: sha512-RO+LFAso8DB6OeBX9BAcEGvyth36QtxYon1OyVsITNVtSKr/Hos0BXZwnsOJ7o+O6KHtK+O+cJIEj9NGg6VwFA==}
+  /core-js-pure/3.15.1:
+    resolution: {integrity: sha512-OZuWHDlYcIda8sJLY4Ec6nWq2hRjlyCqCZ+jCflyleMkVt3tPedDVErvHslyS2nbO+SlBFMSBJYvtLMwxnrzjA==}
     requiresBuild: true
 
   /core-js/2.6.12:
@@ -11502,8 +11502,8 @@ packages:
     deprecated: core-js@<3.3 is no longer maintained and not recommended for usage due to the number of issues. Because of the V8 engine whims, feature detection in old core-js versions could cause a slowdown up to 100x even if nothing is polyfilled. Please, upgrade your dependencies to the actual version of core-js.
     requiresBuild: true
 
-  /core-js/3.15.0:
-    resolution: {integrity: sha512-GUbtPllXMYRzIgHNZ4dTYTcUemls2cni83Q4Q/TrFONHfhcg9oEGOtaGHfb0cpzec60P96UKPvMkjX1jET8rUw==}
+  /core-js/3.15.1:
+    resolution: {integrity: sha512-h8VbZYnc9pDzueiS2610IULDkpFFPunHwIpl8yRwFahAEEdSpHlTy3h3z3rKq5h11CaUdBEeRViu9AYvbxiMeg==}
     requiresBuild: true
 
   /core-util-is/1.0.2:
@@ -13942,7 +13942,7 @@ packages:
     engines: {node: '>=10.0'}
     dependencies:
       boolean: 3.1.2
-      core-js: 3.15.0
+      core-js: 3.15.1
       es6-error: 4.1.1
       matcher: 3.0.0
       roarr: 2.15.4
@@ -17514,7 +17514,7 @@ packages:
     dependencies:
       acorn: 7.4.1
       base64-js: 1.5.1
-      core-js: 3.15.0
+      core-js: 3.15.1
       crypto-js: 4.0.0
       serialize-javascript: 4.0.0
     dev: false
@@ -19111,7 +19111,7 @@ packages:
     resolution: {integrity: sha512-OfBnObtnGgLGfweORmdZbyEz+3dgVePQBb3zipiaDsMHV1NpWm0rDFYIVXFV/AK+x4VIIfWHhrdMIeoTLyRr2g==}
     engines: {node: '>=6'}
     dependencies:
-      core-js: 3.15.0
+      core-js: 3.15.1
       object-assign: 4.1.1
       promise: 8.1.0
       raf: 3.4.1
