@@ -9,13 +9,14 @@
 import "./TimelineComponent.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { GenericUiEventArgs, RelativePosition, UiAdmin } from "@bentley/ui-abstract";
+import { AbstractMenuItemProps, ConditionalBooleanValue, GenericUiEventArgs, IconSpecUtilities, UiAdmin } from "@bentley/ui-abstract";
 import { UiComponents } from "../UiComponents";
-import { ContextMenu, ContextMenuItem } from "./ContextMenu";
+import { ContextMenu, ContextMenuDirection, ContextMenuItem, ContextMenuItemProps } from "@bentley/ui-core";
 import { InlineEdit } from "./InlineEdit";
 import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces";
 import { PlayButton, PlayerButton } from "./PlayerButton";
 import { Scrubber } from "./Scrubber";
+import { totalmem } from "os";
 
 // cspell:ignore millisec
 
@@ -23,6 +24,30 @@ const slowSpeed = 60 * 1000;
 const mediumSpeed = 20 * 1000;
 const fastSpeed = 10 * 1000;
 
+/**
+ * @public
+ */
+export type MenuPlacement= "append"|"prefix"|"replace";
+/**
+ * @public
+ */
+export interface TimelineContextMenuProps {
+  items: TimelineMenuItemProps[];
+  itemPlacement?: MenuPlacement;
+  includeRepeat?: boolean;
+}
+/**
+ * @public
+ */
+export interface TimelineMenuItemProps {
+  /** localized label for menu item */
+  label: string;
+
+  /** duration for the entire timeline to play */
+  timelineDuration: number;
+  /** Disabled */
+  disabled?: boolean;
+}
 /** @public */
 interface TimelineComponentProps {
   startDate?: Date; // start date
@@ -40,6 +65,7 @@ interface TimelineComponentProps {
   /* For future use. This prop will always be treated as true */
   alwaysMinimized?: boolean; // always display in miniMode with no expand menu
   componentId?: string; // must be set to use TimelineComponentEvents
+
 }
 
 /** @public */
@@ -51,6 +77,7 @@ interface TimelineComponentState {
   currentDuration: number; // current duration in milliseconds
   totalDuration: number;  // total duration in milliseconds
   repeat: boolean; // automatically restart when the timeline is finished playing
+  appMenuItems?: TimelineMenuItemProps[];
 }
 
 /** Component used to playback timeline data
@@ -61,10 +88,13 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   private _requestFrame = 0;
   private _unmounted = false;
   private _settings: HTMLElement | null = null;
-  private _expandLabel: string = "Expand";
-  private _minimizeLabel: string = "Minimize";
   private _repeatLabel: string = "Repeat";
   private _removeListener?: () => void;
+  private _standardTimelineMenuItems: TimelineMenuItemProps[] = [
+    {label: UiComponents.translate("timeline.slow"), timelineDuration: slowSpeed },
+    {label: UiComponents.translate("timeline.medium"),  timelineDuration: mediumSpeed },
+    {label: UiComponents.translate("timeline.fast"),  timelineDuration: fastSpeed },
+  ];
 
   constructor(props: TimelineComponentProps) {
     super(props);
@@ -123,6 +153,34 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
       this._onSetTotalDuration(this.props.totalDuration);
     }
   }
+  private _createMenuItemNodes(itemList: TimelineMenuItemProps[], currentTimelineDuration: number): React.ReactNode[] {
+    const itemNodes: React.ReactNode[] = [];
+
+    itemList.forEach((item: TimelineMenuItemProps, index: number) => {
+      const reactItem = this._createMenuItemNode(item, index, currentTimelineDuration);
+      // istanbul ignore else
+      if (reactItem)
+        itemNodes.push(reactItem);
+    });
+
+    return itemNodes;
+  }
+
+  private _createMenuItemNode(item: TimelineMenuItemProps, index: number, currentTimelineDuration: number): React.ReactNode {
+    let node: React.ReactNode = null;
+    const label = item.label;
+    const iconSpec = currentTimelineDuration === item.timelineDuration ? "icon icon-checkmark" : undefined;
+    const isDisabled: boolean = ConditionalBooleanValue.getValue(item.disabled);
+    const sel = () => this._onSetTotalDuration (item.timelineDuration);
+
+    node = (
+      <ContextMenuItem key={index} onSelect={sel} icon={iconSpec} disabled={isDisabled} >
+        {label}
+      </ContextMenuItem>
+    );
+    return node;
+  }
+
   private _handleTimelinePausePlayEvent = (args: GenericUiEventArgs): void => {
     const timelineArgs = args as TimelinePausePlayArgs;
     // istanbul ignore else
@@ -298,16 +356,6 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     this.setState({ isSettingsOpen: false });
   };
 
-  // istanbul ignore next - WIP
-  private _onModeChanged = () => {
-    this.setState(
-      (prevState) => ({ minimized: !prevState.minimized, isSettingsOpen: false }),
-      () => {
-        if (this.props.onSettingsChange) {
-          this.props.onSettingsChange({ minimized: this.state.minimized });
-        }
-      });
-  };
   private _changeRepeatSetting = (newValue?: boolean) => {
     // istanbul ignore else
     if (newValue !== undefined) {
@@ -342,7 +390,9 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     return new Date();
   };
 
-  private _onSetTotalDuration = (milliseconds: number) => {
+  private _onSetTotalDuration = (milliseconds?: number) => {
+    if (!milliseconds)
+      return;
     this.setState(
       { totalDuration: milliseconds, isSettingsOpen: false },
       () => {
@@ -353,6 +403,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
       });
   };
 
+
   private _renderSettings = () => {
     const { totalDuration } = this.state;
     return (
@@ -361,12 +412,10 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
         <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2" ref={(element) => this._settings = element} onClick={this._onSettingsClick}
           role="button" tabIndex={-1} title={UiComponents.translate("button.label.settings")}
         ></span>
-        <ContextMenu parent={this._settings} isOpened={this.state.isSettingsOpen} onClickOutside={this._onCloseSettings.bind(this)} position={RelativePosition.BottomRight}>
-          <ContextMenuItem name={this._repeatLabel} checked={this.state.repeat} onClick={this._onRepeatChanged} />
-          <ContextMenuItem isSeparator={true} />
-          <ContextMenuItem name={UiComponents.translate("timeline.slow")} checked={totalDuration === slowSpeed} onClick={this._onSetTotalDuration.bind(this, slowSpeed)} />
-          <ContextMenuItem name={UiComponents.translate("timeline.medium")} checked={totalDuration === mediumSpeed} onClick={this._onSetTotalDuration.bind(this, mediumSpeed)} />
-          <ContextMenuItem name={UiComponents.translate("timeline.fast")} checked={totalDuration === fastSpeed} onClick={this._onSetTotalDuration.bind(this, fastSpeed)} />
+        <ContextMenu opened={this.state.isSettingsOpen} onOutsideClick={this._onCloseSettings.bind(this)} direction={ContextMenuDirection.BottomRight}>
+          <ContextMenuItem icon={this.state.repeat && "icon icon-checkmark"} onSelect={() => this._onRepeatChanged()}>{this._repeatLabel}</ContextMenuItem>
+          <ContextMenuItem> {"--------"} </ContextMenuItem>
+          {this._createMenuItemNodes(this._standardTimelineMenuItems, totalDuration)}
         </ContextMenu>
       </>
     );
