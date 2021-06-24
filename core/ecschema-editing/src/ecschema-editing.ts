@@ -23,6 +23,10 @@ export { SchemaValidater } from "./Validation/SchemaValidater";
  * Set of classes used to perform editing of ECSchemas.
  */
 /**
+ * @docs-group-description Diagnostic
+ * Set of classes to categorize and manage ECSchema validation results.
+ */
+/**
  * @docs-group-description Validation
  * Set of classes used to perform validation on ECSchemas.
  */

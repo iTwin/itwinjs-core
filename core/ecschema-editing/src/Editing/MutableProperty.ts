@@ -4,6 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import { CustomAttribute, Property } from "@bentley/ecschema-metadata";
 
+/**
+ * @internal
+ * An abstract class used for schema editing.
+ */
 export abstract class MutableProperty extends Property {
   public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
 }
