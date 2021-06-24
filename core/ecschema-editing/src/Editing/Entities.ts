@@ -2,6 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+// eslint-disable-next-line @typescript-eslint/triple-slash-reference
+/// <reference path="ECClasses.ts" />
+
 /** @packageDocumentation
  * @module Editing
  */
@@ -11,7 +15,6 @@ import {
   Mixin, RelationshipClass, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType, StrengthDirection,
 } from "@bentley/ecschema-metadata";
 import { SchemaContextEditor } from "./Editor";
-import { Editors as E } from "./ECClasses";
 import { MutableEntityClass } from "./Mutable/MutableEntityClass";
 import { MutableSchema } from "./Mutable/MutableSchema";
 
@@ -23,7 +26,7 @@ export namespace Editors {
    * @alpha
    * A class extending ECClasses allowing you to create schema items of type EntityClass.
    */
-  export class Entities extends E.ECClasses {
+  export class Entities extends ECClasses {
     public constructor(_schemaEditor: SchemaContextEditor) {
       super(_schemaEditor);
     }
