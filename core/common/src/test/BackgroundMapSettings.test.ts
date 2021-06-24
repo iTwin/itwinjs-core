@@ -9,7 +9,7 @@ import { MapLayerSettings } from "../MapLayerSettings";
 import { TerrainHeightOriginMode } from "../TerrainSettings";
 
 describe("BackgroundMapSettings", () => {
-  it("round-trips through JSON", () => {
+  it.only("round-trips through JSON", () => {
     const roundTrip = (input: BackgroundMapProps | undefined, expected: BackgroundMapProps | "input") => {
       if (!input)
         input = {};
@@ -52,6 +52,7 @@ describe("BackgroundMapSettings", () => {
       const expectedSettings = BackgroundMapSettings.fromJSON(expected);
       expect(settings.equals(expectedSettings)).to.be.true;
 
+      // Check synch through base map layer.
       const mapLayer = MapLayerSettings.fromMapSettings(settings);
       const providerProps = BackgroundMapSettings.providerFromMapLayer(mapLayer.toJSON());
       const synchedFromProvider = settings.clone(providerProps);
@@ -70,6 +71,10 @@ describe("BackgroundMapSettings", () => {
     roundTrip({ providerData: { mapType: BackgroundMapType.Hybrid } }, {});
     roundTrip({ providerData: { mapType: BackgroundMapType.Street } }, "input");
     roundTrip({ providerData: { mapType: BackgroundMapType.Aerial } }, "input");
+
+    roundTrip({  providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } }, "input");
+    roundTrip({  providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Aerial } }, "input");
+
     roundTrip({ providerData: { mapType: -123 } }, {});
 
     roundTrip({ transparency: false }, {});

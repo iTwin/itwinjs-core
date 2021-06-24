@@ -243,12 +243,12 @@ export class BackgroundMapSettings {
         mapType = BackgroundMapType.Aerial;
     } else if (props.formatId === "Mapbox") {
       providerName = "MapBoxProvider";
-      if (props.url.indexOf("streets") > 0)
+      if (props.url.indexOf("streets-satellite") > 0)
+        mapType = BackgroundMapType.Hybrid;
+      else if (props.url.indexOf("streets") > 0)
         mapType = BackgroundMapType.Street;
       else if (props.url.indexOf("satellite") > 0)
         mapType = BackgroundMapType.Aerial;
-      else if (props.url.indexOf("streets-satellite") > 0)
-        mapType = BackgroundMapType.Hybrid;
     } else
       return undefined;
 
