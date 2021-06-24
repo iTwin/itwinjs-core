@@ -653,7 +653,7 @@ export interface ChangesetFileProps extends ChangesetProps {
 // @internal
 export type ChangesetId = string;
 
-// @internal (undocumented)
+// @beta (undocumented)
 export type ChangesetIndex = number;
 
 // @internal (undocumented)
@@ -687,7 +687,7 @@ export interface ChangesetProps {
     userCreated: string;
 }
 
-// @internal
+// @beta
 export interface ChangesetRange {
     end?: ChangesetIndex;
     first: ChangesetIndex;
@@ -718,7 +718,7 @@ export interface ChangeSummary {
     id: Id64String;
 }
 
-// @beta (undocumented)
+// @beta @deprecated (undocumented)
 export class ChangeSummaryExtractContext {
     constructor(iModel: IModelDb);
     // (undocumented)
@@ -727,7 +727,7 @@ export class ChangeSummaryExtractContext {
     get iModelId(): GuidString;
 }
 
-// @beta
+// @beta @deprecated
 export interface ChangeSummaryExtractOptions {
     currentVersionOnly?: boolean;
     startVersion?: IModelVersion;
@@ -744,10 +744,12 @@ export class ChangeSummaryManager {
             className: string;
         };
     }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string;
-    // @deprecated
+    static createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]>;
+    static createChangeSummary(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb): Promise<Id64String>;
     static detachChangeCache(iModel: IModelDb): void;
-    // @internal (undocumented)
-    static downloadChangesets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, firstId: ChangesetId, endId: ChangesetId): Promise<ChangesetFileProps[]>;
+    // @internal
+    static downloadChangesets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, firstId: ChangesetId, lastId: ChangesetId): Promise<ChangesetFileProps[]>;
+    // @deprecated
     static extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
     static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[];
     static isChangeCacheAttached(iModel: IModelDb): boolean;
@@ -1175,6 +1177,14 @@ export interface CrashReportingConfigNameValuePair {
     name: string;
     // (undocumented)
     value: string;
+}
+
+// @beta
+export interface CreateChangeSummaryArgs {
+    contextId: GuidString;
+    iModelId: GuidString;
+    range: ChangesetRange;
+    requestContext?: AuthorizedClientRequestContext;
 }
 
 // @public
@@ -2980,7 +2990,7 @@ export class IModelHubBackend {
     // (undocumented)
     static getRequestContext(arg: {
         requestContext?: AuthorizedClientRequestContext;
-    }): Promise<AuthorizedBackendRequestContext | AuthorizedClientRequestContext>;
+    }): Promise<AuthorizedClientRequestContext | AuthorizedBackendRequestContext>;
     // (undocumented)
     static get iModelClient(): IModelClient;
     // (undocumented)

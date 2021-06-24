@@ -121,7 +121,7 @@ export class IModelVersion {
    * that Id without any validation.
    * @deprecated use IModelHost/IModelApp hubAccess.getChangesetIdFromVersion
    */
-  public async evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString> {
+  public async evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<string> {
     if (this._first)
       return "";
 
@@ -150,7 +150,7 @@ export class IModelVersion {
    * @internal - public only so tests can catch calls to it and fail.
    * @deprecated use IModelHost/IModelApp hubAccess.getChangesetIdFromVersion
    */
-  public static async getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<GuidString> {
+  public static async getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<string> {
     const versions = await imodelClient.versions.get(requestContext, iModelId, new VersionQuery().select("ChangeSetId").byName(versionName));
 
     if (!versions[0] || !versions[0].changeSetId)

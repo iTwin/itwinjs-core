@@ -42,16 +42,18 @@ internal;ChangedElementsDb
 internal;ChangesetArg 
 internal;ChangesetFileProps 
 internal;ChangesetId = string
-internal;ChangesetIndex = number
+beta;ChangesetIndex = number
 internal;ChangesetIndexArg 
 internal;ChangesetIndexOrId =
 internal;ChangesetProps
-internal;ChangesetRange
+beta;ChangesetRange
 internal;ChangesetRangeArg 
 public;ChangesetType
 beta;ChangeSummary
 beta;ChangeSummaryExtractContext
+deprecated;ChangeSummaryExtractContext
 beta;ChangeSummaryExtractOptions
+deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
 internal;CheckPointArg = DownloadRequest
@@ -75,6 +77,7 @@ internal;StateCache
 alpha;ConcurrencyControlChannel = ConcurrencyControl.Channel
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
+beta;CreateChangeSummaryArgs
 public;DefinitionContainer 
 public;class DefinitionElement 
 public;DefinitionGroup 

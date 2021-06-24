@@ -13,7 +13,7 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
-import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
+import { ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, GeometricElement, RecipeDefinitionElement, RepositoryLink } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
@@ -750,16 +750,16 @@ class ChangedInstanceIds {
   public relationship = new ChangedInstanceOps();
   public font = new ChangedInstanceOps();
   private constructor() { }
-  public static async initialize(requestContext: AuthorizedClientRequestContext, iModelDb: BriefcaseDb, startChangeSetId: string): Promise<ChangedInstanceIds> {
+
+  public static async initialize(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, firstChangeSetId: string): Promise<ChangedInstanceIds> {
     requestContext.enter();
-    const extractContext = new ChangeSummaryExtractContext(iModelDb); // NOTE: ChangeSummaryExtractContext is nothing more than a wrapper around IModelDb that has a method to get the iModelId
-    // NOTE: ChangeSummaryManager.downloadChangesets has nothing really to do with change summaries but has the desired behavior of including the start changeSet (unlike BriefcaseManager.downloadChangesets)
-    const changeSets = await ChangeSummaryManager.downloadChangesets(requestContext, extractContext, startChangeSetId, iModelDb.changeSetId);
+
+    const changeSets = await ChangeSummaryManager.downloadChangesets(requestContext, iModel.iModelId, firstChangeSetId, iModel.changeSetId);
     requestContext.enter();
     const changedInstanceIds = new ChangedInstanceIds();
     changeSets.forEach((changeSet): void => {
       const changeSetPath = changeSet.pathname;
-      const statusOrResult = iModelDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
+      const statusOrResult = iModel.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
       if (undefined !== statusOrResult.error) {
         throw new IModelError(statusOrResult.error.status, "Error processing changeSet", Logger.logError, loggerCategory);
       }

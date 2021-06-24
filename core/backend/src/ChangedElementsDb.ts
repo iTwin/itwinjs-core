@@ -10,7 +10,7 @@ import { DbResult, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyj
 import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
+import { ChangeSummaryManager } from "./ChangeSummaryManager";
 import { ECDbOpenMode } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
@@ -101,9 +101,7 @@ export class ChangedElementsDb implements IDisposable {
    */
   public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     requestContext.enter();
-    const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
-
-    const changesets = await ChangeSummaryManager.downloadChangesets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
+    const changesets = await ChangeSummaryManager.downloadChangesets(requestContext, briefcase.iModelId, options.startChangesetId, options.endChangesetId);
     requestContext.enter();
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
@@ -130,8 +128,7 @@ export class ChangedElementsDb implements IDisposable {
    */
   public async processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     requestContext.enter();
-    const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
-    const changesets = await ChangeSummaryManager.downloadChangesets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
+    const changesets = await ChangeSummaryManager.downloadChangesets(requestContext, briefcase.iModelId, options.startChangesetId, options.endChangesetId);
     requestContext.enter();
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
