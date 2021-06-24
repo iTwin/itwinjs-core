@@ -9,7 +9,7 @@ import { MapLayerSettings } from "../MapLayerSettings";
 import { TerrainHeightOriginMode } from "../TerrainSettings";
 
 describe("BackgroundMapSettings", () => {
-  it.only("round-trips through JSON", () => {
+  it("round-trips through JSON", () => {
     const roundTrip = (input: BackgroundMapProps | undefined, expected: BackgroundMapProps | "input") => {
       if (!input)
         input = {};

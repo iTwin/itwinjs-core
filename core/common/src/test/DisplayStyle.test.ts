@@ -16,6 +16,7 @@ import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from 
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
+import { MapLayerSettings } from "../MapLayerSettings";
 
 /* eslint-disable deprecation/deprecation */
 //  - for DisplayStyleSettings.excludedElements.
@@ -247,6 +248,26 @@ describe("DisplayStyleSettings", () => {
       map.clear();
       expectEvents([]);
     });
+  });
+
+  it("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
+    const style = new DisplayStyleSettings({});
+    expect(style.backgroundMap.providerName).to.equal("BingProvider");
+    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
+
+    let base = style.mapImagery.backgroundBase as MapLayerSettings;
+    expect(base).instanceOf(MapLayerSettings);
+    expect(base.formatId).to.equal("BingMaps");
+    expect(base.url.indexOf("AerialWithLabels")).least(1);
+
+    style.backgroundMap = style.backgroundMap.clone({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } });
+    base = style.mapImagery.backgroundBase as MapLayerSettings;
+    expect(base.formatId).to.equal("MapBoxImagery");
+    expect(base.url.indexOf("mapbox.streets/")).least(1);
+
+    style.mapImagery.backgroundBase = MapLayerSettings.fromMapSettings(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }));
+    expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
+    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
   });
 });
 
