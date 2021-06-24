@@ -61,7 +61,6 @@ export interface PropertyEditResults {
   errorMessage?: string;
 }
 
-// TODO: Put class SchemaContextEditor into separate file.
 /**
  * A class that allows you to edit and create schemas, classes, and items from the SchemaContext level.
  * @alpha
