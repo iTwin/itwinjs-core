@@ -2,6 +2,24 @@
   "name": "@bentley/imodeljs-quantity",
   "entries": [
     {
+      "version": "2.16.4",
+      "tag": "@bentley/imodeljs-quantity_v2.16.4",
+      "date": "Wed, 23 Jun 2021 17:09:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.3",
+      "tag": "@bentley/imodeljs-quantity_v2.16.3",
+      "date": "Wed, 16 Jun 2021 20:29:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.2",
+      "tag": "@bentley/imodeljs-quantity_v2.16.2",
+      "date": "Thu, 03 Jun 2021 18:08:11 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.16.1",
       "tag": "@bentley/imodeljs-quantity_v2.16.1",
       "date": "Thu, 27 May 2021 20:04:22 GMT",

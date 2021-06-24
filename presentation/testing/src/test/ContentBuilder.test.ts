@@ -81,8 +81,7 @@ class DataProvider extends EmptyDataProvider {
     fields: [
       new Field(createCategoryDescription(), "width", "width", createStringTypeDescription(), false, 1),
       new Field(createCategoryDescription(), "title", "title", createStringTypeDescription(), false, 1),
-      new Field(createCategoryDescription(), "weight", "weight", createStringTypeDescription(), false, 1),
-      new Field(createCategoryDescription(), "weight", "weight", createStringTypeDescription(), false, 1), // Repeated so that sort function could be tested
+      new Field(createCategoryDescription(), "radius", "radius", createStringTypeDescription(), false, 1),
     ],
     contentFlags: 1,
   });

@@ -12,7 +12,7 @@ import { CommonStatusBarItem } from "./statusbar/StatusBarItem";
 import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "./toolbars/ToolbarItem";
 import { UiAbstract } from "./UiAbstract";
 import { AbstractWidgetProps } from "./widget/AbstractWidgetProps";
-import { StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
+import { AbstractZoneLocation, StagePanelLocation, StagePanelSection } from "./widget/StagePanel";
 
 /** Action taken by the application on item provided by a UiItemsProvider
  * @public
@@ -42,8 +42,8 @@ export interface UiItemsProvider {
   /** UiItemsManager calls following method to augment Widget lists.
    * @note Returned widgets must provide unique `AbstractWidgetProps["id"]` to correctly save/restore App layout.
    */
-  provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) => ReadonlyArray<AbstractWidgetProps>;
-
+  provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection,
+    zoneLocation?: AbstractZoneLocation) => ReadonlyArray<AbstractWidgetProps>;
   /** Called if the application changed the Toolbar button item */
   onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
   /** Called if the application changed the StatusBar item */
@@ -56,7 +56,7 @@ export interface UiItemsProvider {
 
 /** UIProvider Registered Event Args interface.
  * @public
- */
+ */
 export interface UiItemProviderRegisteredEventArgs {
   providerId: string;
 }
@@ -192,7 +192,7 @@ export class UiItemsManager {
    * @param section the section within location.
    * @returns An array of AbstractWidgetProps that will be used to create widgets.
    */
-  public static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps> {
+  public static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
     const widgets: AbstractWidgetProps[] = [];
 
     if (0 === UiItemsManager._registeredUiItemsProviders.size)
@@ -201,7 +201,7 @@ export class UiItemsManager {
     UiItemsManager._registeredUiItemsProviders.forEach((uiProvider: UiItemsProvider) => {
       // istanbul ignore else
       if (uiProvider.provideWidgets) {
-        uiProvider.provideWidgets(stageId, stageUsage, location, section)
+        uiProvider.provideWidgets(stageId, stageUsage, location, section, zoneLocation)
           .forEach((widget: AbstractWidgetProps) => widgets.push({ ...widget, providerId: uiProvider.id }));
       }
     });
