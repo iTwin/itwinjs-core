@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 "use strict";
 
@@ -27,7 +27,18 @@ const messages = {
 };
 
 /** @type {typeof messages} */
-const messageIds = Object.keys(messages).reduce((obj, key) => {obj[key] = key; return obj;}, {});
+const messageIds = Object.keys(messages).reduce((obj, key) => {
+  obj[key] = key;
+  return obj;
+}, {});
+
+/** throw an error indicating an unreachable condition was reached
+ * @param {string} msg
+ * @returns {never}
+ */
+function unreachable(msg) {
+  throw Error(msg);
+}
 
 /** @typedef {import("@typescript-eslint/typescript-estree")} TSESTreeModule */
 /** @typedef {TSESTree.FunctionExpression | TSESTree.ArrowFunctionExpression | TSESTree.FunctionDeclaration} FuncDeclLike */
@@ -50,8 +61,7 @@ function back(array) {
  * @returns {T | undefined}
  */
 function findAfter(array, predicate) {
-  if (array === undefined)
-    return undefined;
+  if (array === undefined) return undefined;
   const index = array.findIndex(predicate);
   return array[index + 1];
 }
@@ -70,61 +80,19 @@ class ASTPreconditionViolated extends Error {}
  *        } stmt
  * @param {import("@typescript-eslint/experimental-utils/dist/ts-eslint").RuleFixer} fixer
  * @param {{textBefore?: string}}  options
- * @returns {void}
+ * @returns {import("@typescript-eslint/experimental-utils/dist/ts-eslint").RuleFix[]}
  */
 // XXX: make sure reqCtx is not placed inside if statements incorrectly
-function promoteBlocklessStmtFixer(stmt, fixer, {textBefore} = {textBefore: ""}) {
-  const body
-    = stmt.type === "IfStatement"
-    ? stmt.consequent
-    : stmt.body;
-  fixer.insertTextBefore(body, "{" + textBefore);
-  fixer.insertTextAfter(body, "}");
-}
-
-/**
- * Return the statement immediately following the input statement
- // TODO: expand to all input nodes types, not just statements
- * @param {TSESTree.Statement} stmt
- * @returns {TSESTree.Statement | undefined} Statement
- */
-function getNextStatement(stmt) {
-  if (stmt.parent === undefined)
-    throw new ASTPreconditionViolated("no parent");
-  switch (stmt.parent.type) {
-    // XXX: don't these only show up when the statement isn't embedded in the block statement but in the parameter initializers or something?
-    case "ArrowFunctionExpression":
-      if (stmt.parent.body.type === "BlockStatement")
-        return findAfter(stmt.parent.body.body, s => s === stmt);
-      // XXX: promote block-less ARROW FUNC EXPR to block
-      // XXX: handle empty body
-      else return;
-    case "FunctionDeclaration":
-    case "FunctionExpression":
-      return findAfter(stmt.parent.body.body, s => s === stmt);
-    case "CatchClause":
-      return findAfter(stmt.parent.body.body, s => s === stmt);
-    case "TryStatement":
-      return findAfter(stmt.parent.block.body, s => s === stmt);
-    case "BlockStatement":
-      return findAfter(stmt.parent.body, s => s === stmt);
-    case "IfStatement":
-      // XXX: promote block-less IF-CONSEQUENCE to block
-      // XXX: handle empty body
-      if (stmt.parent.consequent.type === "BlockStatement")
-        return stmt.parent.consequent.body[0];
-      else return;
-    case "ForInStatement":
-    case "ForStatement":
-    case "ForOfStatement":
-      // XXX: promote block-less FOR BODY to blocks
-      // XXX: handle empty body
-      if (stmt.parent.body.type === "BlockStatement")
-        return stmt.parent.body.body[0];
-      else return;
-    default:
-      throw Error(`Unhandled case: ${stmt.parent.type}`);
-  }
+function promoteBlocklessStmtFixer(
+  stmt,
+  fixer,
+  { textBefore } = { textBefore: "" }
+) {
+  const body = stmt.type === "IfStatement" ? stmt.consequent : stmt.body;
+  return [
+    fixer.insertTextBefore(body, "{" + textBefore),
+    fixer.insertTextAfter(body, "}"),
+  ];
 }
 
 /** @type {import("eslint").Rule.RuleModule} */
@@ -151,10 +119,9 @@ const rule = {
           },
           [OPTION_CONTEXT_ARG_NAME]: {
             type: "string",
-            description:
-              `The name to use for adding an ClientRequestContext parameter when fixing. Defaults to 'clientRequestContext'`,
+            description: `The name to use for adding an ClientRequestContext parameter when fixing. Defaults to 'clientRequestContext'`,
             default: "clientRequestContext",
-          }
+          },
         },
       },
     ],
@@ -166,8 +133,11 @@ const rule = {
     const parserServices = getParserServices(context);
     const checker = parserServices.program.getTypeChecker();
     const extraOpts = context.options[0];
-    const dontPropagate = extraOpts && extraOpts[OPTION_DONT_PROPAGATE] || false;
-    const contextArgName = extraOpts && extraOpts[OPTION_CONTEXT_ARG_NAME] || "clientRequestContext";
+    const dontPropagate =
+      (extraOpts && extraOpts[OPTION_DONT_PROPAGATE]) || false;
+    const contextArgName =
+      (extraOpts && extraOpts[OPTION_CONTEXT_ARG_NAME]) ||
+      "clientRequestContext";
 
     /**
      * @param {TSESTree.Node} node
@@ -176,56 +146,160 @@ const rule = {
     function getOuterFunction(node) {
       /** @type {TSESTree.Node | undefined} */
       let cur = node;
-      while (cur && !(cur.type === "FunctionExpression" || cur.type === "ArrowFunctionExpression" || cur.type === "FunctionDeclaration"))
+      while (
+        cur &&
+        !(
+          cur.type === "FunctionExpression" ||
+          cur.type === "ArrowFunctionExpression" ||
+          cur.type === "FunctionDeclaration"
+        )
+      )
         cur = cur.parent;
       return cur;
     }
 
     /**
      * @param {TSESTree.Expression} node
-     * @returns {TSESTree.Statement | undefined}
+     * @returns {TSESTree.Statement | TSESTree.VariableDeclaration | undefined}
      */
-    function getExpressionOuterStatement(node) {
+    function getExprOuterStmt(node) {
       /** @type {TSESTree.Node | undefined} */
       let cur = node;
-      while (cur && !/Statement$/.test(cur.type))
+      while (
+        cur &&
+        !/(Statement|Declaration)$/.test(cur.type) &&
+        cur.parent &&
+        cur.parent.type !== "FunctionExpression" &&
+        cur.parent.type !== "ArrowFunctionExpression" &&
+        cur.parent.type !== "FunctionDeclaration"
+      )
         cur = cur.parent;
       return cur;
     }
 
     /**
-    * @param {FuncDeclLike} node
-    * @returns {boolean}
-    */
+     * Return the statement immediately following the input statement
+     * @param {TSESTree.Node} node
+     * @returns {void}
+     */
+    function ensureNextStmtIsCtxEntry(node) {
+      if (node.parent === undefined)
+        throw new ASTPreconditionViolated("no parent");
+
+      /** @type {{[K in AST_NODE_TYPES]: (node: TSESTree.Node & {parent: { type: K }}) => TSESTree.Node | undefined}} */
+      const nextStmtMethods = {
+        ArrowFunctionExpression(node) {
+          if (node.parent.body.type === "BlockStatement") {
+            return findAfter(node.parent.body.body, (s) => s === node);
+            // XXX: promote block-less ARROW FUNC EXPR to block
+            // XXX: handle empty body
+          } else {
+            context.report({
+              node,
+              messageId: messageIds.noEnterOnAwaitResume,
+              fix(fixer) {
+                return promoteBlocklessStmtFixer(node.parent, fixer, {
+                  textBefore: ``,
+                });
+              },
+            });
+            return undefined;
+          }
+        },
+        FunctionExpression(node) {
+          return findAfter(node.parent.body.body, (s) => s === node);
+        },
+        FunctionDeclaration(node) {
+          return this.FunctionExpression(node);
+        },
+        CatchClause(node) {
+          return findAfter(node.parent.body.body, (s) => s === node);
+        },
+        TryStatement(node) {
+          return findAfter(node.parent.block.body, (s) => s === node);
+        },
+        BlockStatement(node) {
+          return findAfter(node.parent.body, (s) => s === node);
+        },
+        IfStatement(node) {
+          // XXX: promote block-less IF-CONSEQUENCE to block
+          // XXX: handle empty body
+          if (node.parent.consequent.type === "BlockStatement") {
+            return node.parent.consequent.body[0];
+          } else {
+            return undefined;
+          }
+        },
+        ForInStatement(node) {
+          return undefined;
+        },
+        ForStatement(node) {},
+        ForOfStatement(node) {
+          // XXX: promote block-less FOR BODY to blocks
+          // XXX: handle empty body
+          if (node.parent.body.type === "BlockStatement") {
+            return node.parent.body.body[0];
+          } else {
+            return undefined;
+          }
+        },
+      };
+
+      const nextStmt =
+        node.parent.type in nextStmtMethods
+          ? nextStmtMethods[node.parent.type](node)
+          : unreachable("unhandled statement");
+
+      if (nextStmt === undefined) return;
+
+      if (!isClientRequestContextEnter(nextStmt, lastFunc.reqCtxArgName)) {
+        context.report({
+          node: nextStmt,
+          messageId: messageIds.noEnterOnAwaitResume,
+          data: { reqCtxArgName: lastFunc.reqCtxArgName },
+          fix(fixer) {
+            return fixer.insertTextBefore(
+              nextStmt,
+              `${lastFunc.reqCtxArgName}.enter();`
+            );
+          },
+        });
+      }
+    }
+
+    /**
+     * @param {FuncDeclLike} node
+     * @returns {boolean}
+     */
     function returnsPromise(node) {
+      /** @type {TSESTreeModule.TSESTreeToTSNode<TSESTree.Node>} */
       const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
       if (!tsNode) return false;
       const signature = checker.getSignatureFromDeclaration(tsNode);
       if (!signature) return false;
       const returnType = signature && signature.getReturnType();
       if (!returnType) return false;
-      return returnType.symbol && checker.getFullyQualifiedName(returnType.symbol) === "Promise";
+      return (
+        returnType.symbol &&
+        checker.getFullyQualifiedName(returnType.symbol) === "Promise"
+      );
     }
 
     /**
-    * @param {TSESTree.Statement} node
-    * @param {string} reqCtxArgName
-    * @return {boolean}
-    */
+     * @param {TSESTree.Node} node
+     * @param {string} reqCtxArgName
+     * @return {boolean}
+     */
     function isClientRequestContextEnter(node, reqCtxArgName) {
-      if (!node)
-        return false;
-      // until JSDoc supports `as const`, using explicit strings is easier
-      // see: https://github.com/microsoft/TypeScript/issues/30445
-      return (
+      return Boolean(
         node &&
-        node.type === AST_NODE_TYPES.ExpressionStatement &&
-        node.expression.type === AST_NODE_TYPES.CallExpression &&
-        node.expression.callee.type === AST_NODE_TYPES.MemberExpression &&
-        node.expression.callee.object.type === AST_NODE_TYPES.Identifier &&
-        node.expression.callee.object.name === reqCtxArgName &&
-        node.expression.callee.property.type === AST_NODE_TYPES.Identifier &&
-        node.expression.callee.property.name === "enter"
+          node.type === AST_NODE_TYPES.ExpressionStatement &&
+          node.expression.type === AST_NODE_TYPES.CallExpression &&
+          node.expression.callee.type === AST_NODE_TYPES.MemberExpression &&
+          node.expression.callee.object.type === AST_NODE_TYPES.Identifier &&
+          node.expression.callee.object.name === reqCtxArgName &&
+          node.expression.callee.property.type === AST_NODE_TYPES.Identifier &&
+          node.expression.callee.property.name === "enter"
       );
     }
 
@@ -242,18 +316,23 @@ const rule = {
      * @param {FuncDeclLike} node
      */
     function VisitFuncDeclLike(node) {
-      if (!returnsPromise(node))
-        return;
+      if (!returnsPromise(node)) return;
 
       /** @type {TSESTreeModule.TSESTreeToTSNode<TSESTree.FunctionExpression>} */
       const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
 
       const clientReqCtx = node.params.find((p) => {
-        const actualParam = p.type === AST_NODE_TYPES.TSParameterProperty ? p.parameter : p;
+        const actualParam =
+          p.type === AST_NODE_TYPES.TSParameterProperty ? p.parameter : p;
         const tsParam = parserServices.esTreeNodeToTSNodeMap.get(actualParam);
         const type = checker.getTypeAtLocation(tsParam);
         // TODO: should probably check the package name here too
-        return type.symbol && /ClientRequestContext$/.test(checker.getFullyQualifiedName(type.symbol));
+        return (
+          type.symbol &&
+          /ClientRequestContext$/.test(
+            checker.getFullyQualifiedName(type.symbol)
+          )
+        );
       });
 
       if (clientReqCtx === undefined) {
@@ -264,9 +343,11 @@ const rule = {
             const hasOtherParams = node.params.length > 0;
             return fixer.insertTextBeforeRange(
               [tsNode.parameters.pos, tsNode.parameters.end],
-              `${contextArgName}: ClientRequestContext${hasOtherParams ? ", " : ""}`
+              `${contextArgName}: ClientRequestContext${
+                hasOtherParams ? ", " : ""
+              }`
             );
-          }
+          },
         });
         return;
       }
@@ -282,51 +363,57 @@ const rule = {
       if (node.body.type === "BlockStatement") {
         const firstStmt = node.body.body[0];
         if (!isClientRequestContextEnter(firstStmt, reqCtxArgName))
-        context.report({
-          node: firstStmt || node.body,
-          messageId: messageIds.noEnterOnFirstLine,
-          data: { reqCtxArgName },
-          fix(fixer) {
-            if (firstStmt)
-              return fixer.insertTextBefore(firstStmt, `${reqCtxArgName}.enter();`);
-            else if (tsNode.body)
-              return fixer.insertTextBeforeRange(
-                // TODO: clarify why the tsNode locations are like this
-                [tsNode.body.end-1, tsNode.body.end],
-                `${reqCtxArgName}.enter();`
-              );
-            return null;
-          },
-        });
+          context.report({
+            node: firstStmt || node.body,
+            messageId: messageIds.noEnterOnFirstLine,
+            data: { reqCtxArgName },
+            fix(fixer) {
+              if (firstStmt)
+                return fixer.insertTextBefore(
+                  firstStmt,
+                  `${reqCtxArgName}.enter();`
+                );
+              else if (tsNode.body)
+                return fixer.insertTextBeforeRange(
+                  // TODO: clarify why the tsNode locations are like this
+                  [tsNode.body.end - 1, tsNode.body.end],
+                  `${reqCtxArgName}.enter();`
+                );
+              return null;
+            },
+          });
       }
     }
 
     /** @param {TSESTree.FunctionExpression} node */
     function ExitFuncDeclLike(node) {
       const lastFunc = back(asyncFuncStack);
-      if (!lastFunc || lastFunc.func !== node)
-        return;
+      if (!lastFunc || lastFunc.func !== node) return;
       asyncFuncStack.pop();
       for (const await_ of lastFunc.awaits) {
-        const stmt = getExpressionOuterStatement(await_);
-        if (stmt === undefined)
-          throw Error("unexpected AST format, await expression was not inside a statement");
+        //const stmt = getExprOuterStmt(await_);
         // TODO: test + handle cases for expression bodies of arrow functions
-        if (stmt.parent === undefined)
-          throw Error("unexpected AST format, stmt had no parent node");
-        const nextStmt =  getNextStatement(stmt);
-        if (nextStmt && !isClientRequestContextEnter(nextStmt, lastFunc.reqCtxArgName)) {
+        ensureNextStmtIsCtxEntry(await_);
+        /*
+        if (
+          nextStmt &&
+          !isClientRequestContextEnter(nextStmt, lastFunc.reqCtxArgName)
+        ) {
           context.report({
             node: nextStmt,
             messageId: messageIds.noEnterOnAwaitResume,
             data: { reqCtxArgName: lastFunc.reqCtxArgName },
             fix(fixer) {
-              return fixer.insertTextAfter(stmt, `${lastFunc.reqCtxArgName}.enter();`);
+              return fixer.insertTextBefore(
+                nextStmt,
+                `${lastFunc.reqCtxArgName}.enter();`
+              );
             },
           });
         }
+        */
       }
-    };
+    }
 
     return {
       /** @param {TSESTree.AwaitExpression} node */
@@ -340,8 +427,7 @@ const rule = {
       CatchClause(node) {
         const outerFunc = getOuterFunction(node);
         const lastFunc = back(asyncFuncStack);
-        if (lastFunc === undefined || lastFunc.func !== outerFunc)
-          return;
+        if (lastFunc === undefined || lastFunc.func !== outerFunc) return;
 
         // TODO: abstract firstStmt check and fixer to reused function
         const firstStmt = node.body.body[0];
@@ -356,11 +442,14 @@ const rule = {
                 const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
                 return fixer.insertTextBeforeRange(
                   // TODO: clarify why the tsNode locations are like this
-                  [tsNode.block.end-1, tsNode.block.end],
+                  [tsNode.block.end - 1, tsNode.block.end],
                   `${lastFunc.reqCtxArgName}.enter();`
                 );
               }
-              return fixer.insertTextBefore(firstStmt, `${lastFunc.reqCtxArgName}.enter();`);
+              return fixer.insertTextBefore(
+                firstStmt,
+                `${lastFunc.reqCtxArgName}.enter();`
+              );
             },
           });
       },
@@ -370,43 +459,58 @@ const rule = {
         // get the outer function and compare to the top of the stack
         const outerFunc = getOuterFunction(node);
         const lastFunc = back(asyncFuncStack);
-        if (lastFunc === undefined || lastFunc.func !== outerFunc)
-          return;
+        if (lastFunc === undefined || lastFunc.func !== outerFunc) return;
         // TODO: use type checking to check for thenable's methods
-        const isThen = (node.callee.name || node.callee.property.name || node.callee.property.value) === "then";
-        const isCatch = (node.callee.name || node.callee.property.name || node.callee.property.value) === "catch";
+        const isThen =
+          (node.callee.name ||
+            node.callee.property.name ||
+            node.callee.property.value) === "then";
+        const isCatch =
+          (node.callee.name ||
+            node.callee.property.name ||
+            node.callee.property.value) === "catch";
         const isPromiseCallback = isThen || isCatch;
         if (isPromiseCallback) {
           const callback = node.arguments[0];
-          if (callback.type === "FunctionExpression" || callback.type === "ArrowFunctionExpression") {
+          if (
+            callback.type === "FunctionExpression" ||
+            callback.type === "ArrowFunctionExpression"
+          ) {
             // FIXME: deal with non-block body in async funcs...
             if (callback.body.type === "BlockStatement") {
               const firstStmt = callback.body.body[0];
-              if (!isClientRequestContextEnter(firstStmt, lastFunc.reqCtxArgName))
-              context.report({
-                node: firstStmt || callback.body,
-                messageId: isThen ? messageIds.noEnterOnThenResume : messageIds.noEnterOnCatchResume,
-                data: { reqCtxArgName: lastFunc.reqCtxArgName },
-                fix(fixer) {
-                  const bodyIsEmpty = firstStmt === undefined;
-                  if (bodyIsEmpty) {
-                    /** @type {TSESTreeModule.TSESTreeToTSNode<TSESTree.CallExpression>} */
-                    const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
-                    return fixer.insertTextBeforeRange(
-                      // TODO: abstract out inserting into empty bodies
-                      // TODO: clarify why the tsNode locations are like this
-                      [tsNode.getEnd()-1, tsNode.getEnd()],
+              if (
+                !isClientRequestContextEnter(firstStmt, lastFunc.reqCtxArgName)
+              )
+                context.report({
+                  node: firstStmt || callback.body,
+                  messageId: isThen
+                    ? messageIds.noEnterOnThenResume
+                    : messageIds.noEnterOnCatchResume,
+                  data: { reqCtxArgName: lastFunc.reqCtxArgName },
+                  fix(fixer) {
+                    const bodyIsEmpty = firstStmt === undefined;
+                    if (bodyIsEmpty) {
+                      /** @type {TSESTreeModule.TSESTreeToTSNode<TSESTree.CallExpression>} */
+                      const tsNode =
+                        parserServices.esTreeNodeToTSNodeMap.get(node);
+                      return fixer.insertTextBeforeRange(
+                        // TODO: abstract out inserting into empty bodies
+                        // TODO: clarify why the tsNode locations are like this
+                        [tsNode.getEnd() - 1, tsNode.getEnd()],
+                        `${lastFunc.reqCtxArgName}.enter();`
+                      );
+                    }
+                    return fixer.insertTextBefore(
+                      firstStmt,
                       `${lastFunc.reqCtxArgName}.enter();`
                     );
-                  }
-                  return fixer.insertTextBefore(firstStmt, `${lastFunc.reqCtxArgName}.enter();`);
-                },
-              });
+                  },
+                });
             }
           }
         }
       },
-
 
       "ArrowFunctionExpression:exit": ExitFuncDeclLike,
       "FunctionDeclaration:exit": ExitFuncDeclLike,
