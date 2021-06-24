@@ -157,7 +157,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Modify a subset of the background map display settings.
    * @param name props JSON representation of the properties to change. Any properties not present will retain their current values in `this.backgroundMapSettings`.
-   * @note If the style is associated with a Viewport, [[Viewport.changeBackgroundMapProps]] should be used instead to ensure the view updates immediately.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map.
    *
    * Example that changes only the elevation, leaving the provider and type unchanged:
