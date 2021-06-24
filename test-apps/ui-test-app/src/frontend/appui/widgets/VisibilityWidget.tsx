@@ -10,9 +10,12 @@ import { IPresentationTreeDataProvider } from "@bentley/presentation-components"
 import { FilteringInput, SelectableContent, SelectionMode } from "@bentley/ui-components";
 import { WebFontIcon } from "@bentley/ui-core";
 import {
-  CategoryTree, ClassGroupingOption, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories, WidgetControl,
+  CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories, WidgetControl,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../..";
+
+import filterIconSvg from "../icons/filter.svg?sprite";
+import cancelFilterIconSvg from "../icons/filter-outlined.svg?sprite";
 
 export class VisibilityWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -286,6 +289,15 @@ export class TriggerFilterHierarchyByVisibleElementIdsTool extends Tool {
   public static get englishKeyin(): string {
     return this.keyin;
   }
+
+  public static getCommandItemDef() {
+    return new CommandItemDef({
+      iconSpec: `svg:${filterIconSvg}`,
+      commandId: "TriggerFilterHierarchyByVisibleElementIds",
+      label: "Enable filter tree by visible elements",
+      execute: () => { IModelApp.tools.run(TriggerFilterHierarchyByVisibleElementIdsTool.toolId); },
+    });
+  }
 }
 
 export class CancelFilterHierarchyByVisibleElementIdsTool extends Tool {
@@ -299,5 +311,14 @@ export class CancelFilterHierarchyByVisibleElementIdsTool extends Tool {
   }
   public static get englishKeyin(): string {
     return this.keyin;
+  }
+
+  public static getCommandItemDef() {
+    return new CommandItemDef({
+      iconSpec: `svg:${cancelFilterIconSvg}`,
+      commandId: "CancelFilterHierarchyByVisibleElementIds",
+      label: "Cancel filter tree by visible elements",
+      execute: () => { IModelApp.tools.run(CancelFilterHierarchyByVisibleElementIdsTool.toolId); },
+    });
   }
 }

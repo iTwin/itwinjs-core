@@ -46,7 +46,7 @@ import { UnifiedSelectionPropertyGridWidgetControl } from "../widgets/UnifiedSel
 import { UnifiedSelectionTableWidgetControl } from "../widgets/UnifiedSelectionTableWidget";
 import { ViewportWidget } from "../widgets/ViewportWidget";
 import { VisibilityTreeWidgetControl } from "../widgets/VisibilityTreeWidget";
-import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
+import { CancelFilterHierarchyByVisibleElementIdsTool, TriggerFilterHierarchyByVisibleElementIdsTool, VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 import { OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/UiProviderTool";
 
@@ -742,6 +742,8 @@ class AdditionalTools {
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
     // ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, { groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinPaletteButtonItemDef, { groupPriority: -10 }),
+    ToolbarHelper.createToolbarItemFromItemDef(1, TriggerFilterHierarchyByVisibleElementIdsTool.getCommandItemDef(), { groupPriority: -10 }),
+    ToolbarHelper.createToolbarItemFromItemDef(2, CancelFilterHierarchyByVisibleElementIdsTool.getCommandItemDef(), { groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage, { groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(115, AppTools.tool1, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2, { groupPriority: 20 }),
