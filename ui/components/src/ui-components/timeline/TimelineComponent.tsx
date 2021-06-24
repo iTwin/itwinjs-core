@@ -9,14 +9,13 @@
 import "./TimelineComponent.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { AbstractMenuItemProps, ConditionalBooleanValue, GenericUiEventArgs, IconSpecUtilities, UiAdmin } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue, GenericUiEventArgs, UiAdmin } from "@bentley/ui-abstract";
 import { UiComponents } from "../UiComponents";
-import { ContextMenu, ContextMenuDirection, ContextMenuItem, ContextMenuItemProps } from "@bentley/ui-core";
+import { ContextMenu, ContextMenuDirection, ContextMenuItem } from "@bentley/ui-core";
 import { InlineEdit } from "./InlineEdit";
 import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces";
 import { PlayButton, PlayerButton } from "./PlayerButton";
 import { Scrubber } from "./Scrubber";
-import { totalmem } from "os";
 
 // cspell:ignore millisec
 
@@ -25,18 +24,7 @@ const mediumSpeed = 20 * 1000;
 const fastSpeed = 10 * 1000;
 
 /**
- * @public
- */
-export type MenuPlacement= "append"|"prefix"|"replace";
-/**
- * @public
- */
-export interface TimelineContextMenuProps {
-  items: TimelineMenuItemProps[];
-  itemPlacement?: MenuPlacement;
-  includeRepeat?: boolean;
-}
-/**
+ * TimelineMenuItemProps specifies playback speed entries in the Timeline's ContextMenu
  * @public
  */
 export interface TimelineMenuItemProps {
@@ -45,10 +33,10 @@ export interface TimelineMenuItemProps {
 
   /** duration for the entire timeline to play */
   timelineDuration: number;
-  /** Disabled */
-  disabled?: boolean;
 }
-/** @public */
+/** TimelineComponentProps configure the timeline
+ * @public
+ */
 interface TimelineComponentProps {
   startDate?: Date; // start date
   endDate?: Date;   // end date
@@ -65,10 +53,11 @@ interface TimelineComponentProps {
   /* For future use. This prop will always be treated as true */
   alwaysMinimized?: boolean; // always display in miniMode with no expand menu
   componentId?: string; // must be set to use TimelineComponentEvents
-
+  includeRepeat?: boolean; // include the repeat option on the Timeline Context Menu
+  appMenuItems?: TimelineMenuItemProps[]; // app-supplied speed entries in the Timeline Context Menu
+  appMenuItemOption?: "replace"|"append"|"prefix"; // how to include the supplied app menu items in the Timeline Context Menu
 }
-
-/** @public */
+/** @internal */
 interface TimelineComponentState {
   isSettingsOpen: boolean; // settings popup is opened or closed
   isPlaying: boolean; // timeline is currently playing or paused
@@ -77,7 +66,7 @@ interface TimelineComponentState {
   currentDuration: number; // current duration in milliseconds
   totalDuration: number;  // total duration in milliseconds
   repeat: boolean; // automatically restart when the timeline is finished playing
-  appMenuItems?: TimelineMenuItemProps[];
+  includeRepeat: boolean; // include the repeat option in the timeline context menu
 }
 
 /** Component used to playback timeline data
@@ -106,6 +95,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
       currentDuration: props.initialDuration ? props.initialDuration : /* istanbul ignore next */ 0,
       totalDuration: this.props.totalDuration,
       repeat: this.props.repeat ? true : false,
+      includeRepeat: this.props.includeRepeat  || this.props.includeRepeat === undefined ? true : false,
     };
 
     this._repeatLabel = UiComponents.translate("timeline.repeat");
@@ -170,11 +160,10 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     let node: React.ReactNode = null;
     const label = item.label;
     const iconSpec = currentTimelineDuration === item.timelineDuration ? "icon icon-checkmark" : undefined;
-    const isDisabled: boolean = ConditionalBooleanValue.getValue(item.disabled);
     const sel = () => this._onSetTotalDuration (item.timelineDuration);
 
     node = (
-      <ContextMenuItem key={index} onSelect={sel} icon={iconSpec} disabled={isDisabled} >
+      <ContextMenuItem key={index} onSelect={sel} icon={iconSpec} >
         {label}
       </ContextMenuItem>
     );
@@ -403,7 +392,6 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
       });
   };
 
-
   private _renderSettings = () => {
     const { totalDuration } = this.state;
     return (
@@ -413,9 +401,11 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
           role="button" tabIndex={-1} title={UiComponents.translate("button.label.settings")}
         ></span>
         <ContextMenu opened={this.state.isSettingsOpen} onOutsideClick={this._onCloseSettings.bind(this)} direction={ContextMenuDirection.BottomRight}>
-          <ContextMenuItem icon={this.state.repeat && "icon icon-checkmark"} onSelect={() => this._onRepeatChanged()}>{this._repeatLabel}</ContextMenuItem>
-          <ContextMenuItem> {"--------"} </ContextMenuItem>
-          {this._createMenuItemNodes(this._standardTimelineMenuItems, totalDuration)}
+          {this.state.includeRepeat && <ContextMenuItem icon={this.state.repeat && "icon icon-checkmark"} onSelect={() => this._onRepeatChanged()}>{this._repeatLabel}</ContextMenuItem>}
+          {this.state.includeRepeat && <div className="separator" role="separator" />}
+          {this.props.appMenuItems && this.props.appMenuItemOption === "prefix" && this._createMenuItemNodes(this.props.appMenuItems, totalDuration)}
+          {!!this.props.appMenuItems || !!this.props.appMenuItemOption || this.props.appMenuItemOption !== "replace" && this._createMenuItemNodes(this._standardTimelineMenuItems, totalDuration)}
+          {this.props.appMenuItems && this.props.appMenuItemOption && this.props.appMenuItemOption !== "prefix" && this._createMenuItemNodes(this.props.appMenuItems, totalDuration)}
         </ContextMenu>
       </>
     );
