@@ -227,6 +227,8 @@ export class BackgroundMapSettings {
 
     return BackgroundMapSettings.fromJSON(props);
   }
+
+  /** @internal */
   public static providerFromMapLayer(props: MapLayerProps): BackgroundMapProps | undefined {
     let providerName, mapType;
     if (!props.url)
