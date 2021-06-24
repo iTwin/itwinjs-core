@@ -10400,7 +10400,8 @@ export class Tiles {
     purgeTileTrees(modelIds: Id64Array | undefined): Promise<void>;
     // @internal
     reset(): void;
-    }
+    updateForScheduleScript(scriptSourceElementId: Id64String): Promise<void>;
+}
 
 // @public
 export abstract class TileTree {
@@ -10517,6 +10518,11 @@ export abstract class TileTreeReference {
 
 // @public
 export interface TileTreeSupplier {
+    // @internal
+    addModelsAnimatedByScript?: (modelIds: Set<Id64String_2>, scriptSourceId: Id64String_2, trees: Iterable<{
+        id: any;
+        owner: TileTreeOwner;
+    }>) => void;
     compareTileTreeIds(lhs: any, rhs: any): number;
     createTileTree(id: any, iModel: IModelConnection): Promise<TileTree | undefined>;
     readonly isEcefDependent?: true;

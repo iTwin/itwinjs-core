@@ -93,6 +93,12 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
   public getOwner(id: PrimaryTreeId, iModel: IModelConnection): TileTreeOwner {
     return iModel.tiles.getTileTreeOwner(id, this);
   }
+
+  public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: PrimaryTreeId, owner: TileTreeOwner }>): void {
+    for (const tree of trees)
+      if (tree.id.treeId.animationId === scriptSourceId)
+        modelIds.add(tree.id.modelId);
+  }
 }
 
 const primaryTreeSupplier = new PrimaryTreeSupplier();
