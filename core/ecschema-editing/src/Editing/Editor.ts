@@ -17,22 +17,21 @@ import {
   SchemaMatchType, StrengthDirection, StructArrayPropertyProps, StructClass, StructClassProps, StructPropertyProps, Unit, UnitProps,
   UnitSystem, UnitSystemProps,
 } from "@bentley/ecschema-metadata";
-import { MutableClass, MutableStructClass } from "./MutableClass";
-
-import { MutableCAClass } from "./MutableCAClass";
-import { MutableConstant } from "./MutableConstant";
-import { MutableEntityClass } from "./MutableEntityClass";
-import { MutableEnumeration } from "./MutableEnumeration";
-import { MutableFormat } from "./MutableFormat";
-import { MutableInvertedUnit } from "./MutableInvertedUnit";
-import { MutableKindOfQuantity } from "./MutableKindOfQuantity";
-import { MutableMixin } from "./MutableMixin";
-import { MutablePhenomenon } from "./MutablePhenomenon";
-import { MutablePropertyCategory } from "./MutablePropertyCategory";
-import { MutableRelationshipClass } from "./MutableRelationshipClass";
-import { MutableSchema } from "./MutableSchema";
-import { MutableUnit } from "./MutableUnit";
-import { MutableUnitSystem } from "./MutableUnitSystem";
+import { MutableClass, MutableStructClass } from "./Mutable/MutableClass";
+import { MutableCAClass } from "./Mutable/MutableCAClass";
+import { MutableConstant } from "./Mutable/MutableConstant";
+import { MutableEntityClass } from "./Mutable/MutableEntityClass";
+import { MutableEnumeration } from "./Mutable/MutableEnumeration";
+import { MutableFormat } from "./Mutable/MutableFormat";
+import { MutableInvertedUnit } from "./Mutable/MutableInvertedUnit";
+import { MutableKindOfQuantity } from "./Mutable/MutableKindOfQuantity";
+import { MutableMixin } from "./Mutable/MutableMixin";
+import { MutablePhenomenon } from "./Mutable/MutablePhenomenon";
+import { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory";
+import { MutableRelationshipClass } from "./Mutable/MutableRelationshipClass";
+import { MutableSchema } from "./Mutable/MutableSchema";
+import { MutableUnit } from "./Mutable/MutableUnit";
+import { MutableUnitSystem } from "./Mutable/MutableUnitSystem";
 import { assert } from "@bentley/bentleyjs-core";
 
 // We can either add validation in Editor, or in the protected methods of Schema.
