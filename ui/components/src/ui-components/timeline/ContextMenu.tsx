@@ -10,6 +10,7 @@ import { CommonProps, Popup } from "@bentley/ui-core";
 
 /** Properties for [[ContextMenuItem]] component
  * @internal
+ * @deprecated
  */
 export interface MenuItem {
   /** Name of the context menu item */
@@ -29,6 +30,7 @@ export interface MenuItem {
 /**
  * A context menu item.
  * @internal
+ * @deprecated
  */
 export class ContextMenuItem extends React.Component<MenuItem> {
 
@@ -66,6 +68,7 @@ export class ContextMenuItem extends React.Component<MenuItem> {
 
 /** Properties for [[ContextMenu]] component
  * @internal
+ * @deprecated
  */
 export interface ContextMenuProps extends CommonProps {
   /** Show or hide the context menu */
@@ -82,6 +85,7 @@ export interface ContextMenuProps extends CommonProps {
 
 /** Context menu for timeline component
  * @internal
+ * @deprecated
  */
 export class ContextMenu extends React.Component<ContextMenuProps> {
   // istanbul ignore next - WIP
