@@ -71,8 +71,9 @@ class ASTPreconditionViolated extends Error {}
 /**
  * Given a syntax construct that has a statement child, replace
  * that statement child with a block
- * @param { TSESTree.Statement
+ * /param { TSESTree.Statement
  *        | TSESTree.ArrowFunctionExpression
+ * @param { TSESTree.ArrowFunctionExpression
  *        | TSESTree.IfStatement
  *        | TSESTree.ForOfStatement
  *        | TSESTree.ForInStatement
@@ -159,108 +160,114 @@ const rule = {
     }
 
     /**
-     * @param {TSESTree.Expression} node
-     * @returns {TSESTree.Statement | TSESTree.VariableDeclaration | undefined}
-     */
-    function getExprOuterStmt(node) {
-      /** @type {TSESTree.Node | undefined} */
-      let cur = node;
-      while (
-        cur &&
-        !/(Statement|Declaration)$/.test(cur.type) &&
-        cur.parent &&
-        cur.parent.type !== "FunctionExpression" &&
-        cur.parent.type !== "ArrowFunctionExpression" &&
-        cur.parent.type !== "FunctionDeclaration"
-      )
-        cur = cur.parent;
-      return cur;
-    }
-
-    /**
      * Return the statement immediately following the input statement
      * @param {TSESTree.Node} node
+     * @param {string} reqCtxArgName
      * @returns {void}
      */
-    function ensureNextStmtIsCtxEntry(node) {
+    function reportOnNoNextCtxEntry(node, reqCtxArgName) {
       if (node.parent === undefined)
         throw new ASTPreconditionViolated("no parent");
 
-      /** @type {{[K in AST_NODE_TYPES]: (node: TSESTree.Node & {parent: { type: K }}) => TSESTree.Node | undefined}} */
-      const nextStmtMethods = {
-        ArrowFunctionExpression(node) {
-          if (node.parent.body.type === "BlockStatement") {
+      const Handled = Symbol.for("Handled");
+
+      /** @param {TSESTree.Node & {parent: FuncDeclLike}} node */
+      function NextFromFuncDeclLike(node) {
+        if (node.parent.body.type === "BlockStatement") {
+          return findAfter(node.parent.body.body, (s) => s === node);
+          // XXX: promote block-less ARROW FUNC EXPR to block
+          // XXX: handle empty body
+        } else {
+          context.report({
+            node,
+            messageId: messageIds.noEnterOnAwaitResume,
+            fix(fixer) {
+              return promoteBlocklessStmtFixer(node.parent, fixer, {
+                textBefore: ``,
+              });
+            },
+          });
+          return Handled;
+        }
+      }
+
+      /** @param {TSESTree.Node & {parent: TSESTree.ForStatement | TSESTree.ForInStatement | TSESTree.ForOfStatement}} node */
+      function NextFromForStatement(node) {
+        if (node.parent.body.type === "BlockStatement") {
+          return findAfter(node.parent.body.body, (s) => s === node);
+          // XXX: promote block-less ARROW FUNC EXPR to block
+          // XXX: handle empty body
+        } else {
+          context.report({
+            node,
+            messageId: messageIds.noEnterOnAwaitResume,
+            fix(fixer) {
+              return promoteBlocklessStmtFixer(node.parent, fixer, {
+                textBefore: ``,
+              });
+            },
+          });
+          return Handled;
+        }
+      }
+
+      /** @param {TSESTree.Node} node */
+      function handleOrReturnSimpleNextStmt(node) {
+        /** @type {{[K in AST_NODE_TYPES]: (node: TSESTree.Node & {parent: { type: K }}) => TSESTree.Node | typeof Handled | undefined}} */
+        const handleParentTypeMap = {
+          ArrowFunctionExpression: NextFromFuncDeclLike,
+          FunctionExpression: NextFromFuncDeclLike,
+          FunctionDeclaration: NextFromFuncDeclLike,
+          CatchClause(node) {
             return findAfter(node.parent.body.body, (s) => s === node);
-            // XXX: promote block-less ARROW FUNC EXPR to block
+          },
+          TryStatement(node) {
+            return findAfter(node.parent.block.body, (s) => s === node);
+          },
+          BlockStatement(node) {
+            return findAfter(node.parent.body, (s) => s === node);
+          },
+          IfStatement(node) {
+            // XXX: promote block-less IF-CONSEQUENCE to block
             // XXX: handle empty body
-          } else {
-            context.report({
-              node,
-              messageId: messageIds.noEnterOnAwaitResume,
-              fix(fixer) {
-                return promoteBlocklessStmtFixer(node.parent, fixer, {
-                  textBefore: ``,
-                });
-              },
-            });
-            return undefined;
-          }
-        },
-        FunctionExpression(node) {
-          return findAfter(node.parent.body.body, (s) => s === node);
-        },
-        FunctionDeclaration(node) {
-          return this.FunctionExpression(node);
-        },
-        CatchClause(node) {
-          return findAfter(node.parent.body.body, (s) => s === node);
-        },
-        TryStatement(node) {
-          return findAfter(node.parent.block.body, (s) => s === node);
-        },
-        BlockStatement(node) {
-          return findAfter(node.parent.body, (s) => s === node);
-        },
-        IfStatement(node) {
-          // XXX: promote block-less IF-CONSEQUENCE to block
-          // XXX: handle empty body
-          if (node.parent.consequent.type === "BlockStatement") {
-            return node.parent.consequent.body[0];
-          } else {
-            return undefined;
-          }
-        },
-        ForInStatement(node) {
-          return undefined;
-        },
-        ForStatement(node) {},
-        ForOfStatement(node) {
-          // XXX: promote block-less FOR BODY to blocks
-          // XXX: handle empty body
-          if (node.parent.body.type === "BlockStatement") {
-            return node.parent.body.body[0];
-          } else {
-            return undefined;
-          }
-        },
-      };
+            if (node.parent.consequent.type === "BlockStatement") {
+              return node.parent.consequent.body[0];
+            } else {
+              return Handled;
+            }
+          },
+          ForOfStatement: NextFromForStatement,
+          ForInStatement: NextFromForStatement,
+          ForStatement: NextFromForStatement,
+        };
 
-      const nextStmt =
-        node.parent.type in nextStmtMethods
-          ? nextStmtMethods[node.parent.type](node)
-          : unreachable("unhandled statement");
+        return node.parent && node.parent.type in handleParentTypeMap
+          ? handleParentTypeMap[node.parent.type](node)
+          : unreachable("unhandled parent type");
+      }
 
-      if (nextStmt === undefined) return;
+      const nextStmt = handleOrReturnSimpleNextStmt(node);
 
-      if (!isClientRequestContextEnter(nextStmt, lastFunc.reqCtxArgName)) {
+      if (nextStmt === Handled) return;
+      else if (nextStmt === undefined) {
+        context.report({
+          node,
+          messageId: messageIds.noEnterOnAwaitResume,
+          data: { reqCtxArgName: reqCtxArgName },
+          fix(fixer) {
+            // TODO: clarify/fix
+            return fixer.insertTextBefore(node, `${reqCtxArgName}.enter();`);
+          },
+        });
+      } else if (!isClientRequestContextEnter(nextStmt, reqCtxArgName)) {
         context.report({
           node: nextStmt,
           messageId: messageIds.noEnterOnAwaitResume,
-          data: { reqCtxArgName: lastFunc.reqCtxArgName },
+          data: { reqCtxArgName },
           fix(fixer) {
             return fixer.insertTextBefore(
               nextStmt,
-              `${lastFunc.reqCtxArgName}.enter();`
+              `${reqCtxArgName}.enter();`
             );
           },
         });
@@ -393,25 +400,7 @@ const rule = {
       for (const await_ of lastFunc.awaits) {
         //const stmt = getExprOuterStmt(await_);
         // TODO: test + handle cases for expression bodies of arrow functions
-        ensureNextStmtIsCtxEntry(await_);
-        /*
-        if (
-          nextStmt &&
-          !isClientRequestContextEnter(nextStmt, lastFunc.reqCtxArgName)
-        ) {
-          context.report({
-            node: nextStmt,
-            messageId: messageIds.noEnterOnAwaitResume,
-            data: { reqCtxArgName: lastFunc.reqCtxArgName },
-            fix(fixer) {
-              return fixer.insertTextBefore(
-                nextStmt,
-                `${lastFunc.reqCtxArgName}.enter();`
-              );
-            },
-          });
-        }
-        */
+        reportOnNoNextCtxEntry(await_, lastFunc.reqCtxArgName);
       }
     }
 
