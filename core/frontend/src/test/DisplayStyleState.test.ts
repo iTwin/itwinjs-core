@@ -40,7 +40,7 @@ describe("DisplayStyleState", () => {
     expect(base.url.indexOf("mapbox.streets/")).least(1);
 
     settings.mapImagery.backgroundBase = MapLayerSettings.fromMapSettings(settings.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }));
-    base = settings.mapImagery.backgroundBase as MapLayerSettings;
+    base = settings.mapImagery.backgroundBase;
     expect(base.formatId).to.equal("MapboxImagery");
     expect(base.url.indexOf("mapbox.satellite/")).least(1);
     expect(settings.backgroundMap.providerName).to.equal("MapBoxProvider");
