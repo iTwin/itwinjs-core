@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, BeDuration, BeEvent, BeTimePoint, Id64Array, ProcessDetector,
+  assert, BeDuration, BeEvent, BeTimePoint, Id64Array, Id64String, ProcessDetector,
 } from "@bentley/bentleyjs-core";
 import {
   CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface,

@@ -38,6 +38,7 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     loadTree: async () => undefined,
     iModel: undefined as unknown as IModelConnection,
   };
+
   public compareTileTreeIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
     return compareIds(lhs, rhs);
   }
@@ -64,6 +65,12 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
 
   public getOwner(id: ClassifierTreeId, iModel: IModelConnection): TileTreeOwner {
     return Id64.isValid(id.modelId) ? iModel.tiles.getTileTreeOwner(id, this) : this._nonexistentTreeOwner;
+  }
+
+  public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner }>): void {
+    for (const tree of trees)
+      if (tree.id.animationId === scriptSourceId)
+        modelIds.add(tree.id.modelId);
   }
 }
 

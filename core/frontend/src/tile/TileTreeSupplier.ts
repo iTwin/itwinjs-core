@@ -6,8 +6,9 @@
  * @module Tiles
  */
 
+import {Id64String} from "../../../bentley/lib/Id";
 import { IModelConnection } from "../IModelConnection";
-import { TileTree } from "./internal";
+import { TileTree, TileTreeOwner } from "./internal";
 
 /** Interface adopted by an object which can supply a [[TileTree]] for rendering.
  * A supplier can supply any number of tile trees; the only requirement is that each tile tree has a unique identifier within the context of the supplier and a single IModelConnection.
@@ -30,4 +31,10 @@ export interface TileTreeSupplier {
    * the updated ECEF location whenever they are next requested.
    */
   readonly isEcefDependent?: true;
+
+  /** Given the set of trees belonging to this supplier, add the modelIds associated with any trees that are animated by
+   * the schedule script hosted by the specified RenderTimeline or DisplayStyle element.
+   * @internal
+   */
+  addModelsAnimatedByScript?: (modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: any, owner: TileTreeOwner }>) => void;
 }
