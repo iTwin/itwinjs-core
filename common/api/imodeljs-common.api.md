@@ -4773,7 +4773,6 @@ export interface MapImageryProps {
 
 // @beta
 export class MapImagerySettings {
-    // (undocumented)
     get backgroundBase(): BaseLayerSettings;
     set backgroundBase(base: BaseLayerSettings);
     // (undocumented)
