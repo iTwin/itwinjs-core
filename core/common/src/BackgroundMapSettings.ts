@@ -205,6 +205,7 @@ export class BackgroundMapSettings {
   /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
    * @returns A BackgroundMapSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
+   * @note If changing the provider it is currently necessary to also make same change to update the imagery base layer.
    */
   public clone(changedProps?: BackgroundMapProps): BackgroundMapSettings {
     if (undefined === changedProps)

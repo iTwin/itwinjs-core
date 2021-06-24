@@ -63,6 +63,7 @@ export class MapImagerySettings {
     }
   }
   public get backgroundBase(): BaseLayerSettings { return this._backgroundBase; }
+  /**  @note If changing the base provider it is currently necessary to also update the background map settings.*/
   public set backgroundBase(base: BaseLayerSettings) { this._backgroundBase = base; }
   public get backgroundLayers(): MapLayerSettings[] { return this._backgroundLayers; }
   public get overlayLayers(): MapLayerSettings[] { return this._overlayLayers; }
