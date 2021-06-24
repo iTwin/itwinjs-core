@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import {Id64String} from "../../../bentley/lib/Id";
+import {Id64String} from "@bentley/bentleyjs-core";
 import { IModelConnection } from "../IModelConnection";
 import { TileTree, TileTreeOwner } from "./internal";
 

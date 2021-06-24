@@ -242,7 +242,7 @@ describe("tile tree", () => {
     options.useProjectExtents = false;
 
     const context = new BackendRequestContext();
-    const loadTree = () => db.tiles.requestTileTreeProps(context, iModelTileTreeIdToString(modelId, treeId, options));
+    const loadTree = async () => db.tiles.requestTileTreeProps(context, iModelTileTreeIdToString(modelId, treeId, options));
 
     let tree = await loadTree();
     expect(tree.contentIdQualifier).to.be.undefined;
