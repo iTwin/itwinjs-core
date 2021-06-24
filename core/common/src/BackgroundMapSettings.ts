@@ -235,10 +235,10 @@ export class BackgroundMapSettings {
       providerName = "BingProvider";
       if (props.url.indexOf("Road") > 0)
         mapType = BackgroundMapType.Street;
+      else if (props.url.indexOf("AerialWithLabels") > 0)
+        mapType = BackgroundMapType.Hybrid;
       else if (props.url.indexOf("Aerial") > 0)
         mapType = BackgroundMapType.Aerial;
-      else if (props.url.indexOf("Hybrid") > 0)
-        mapType = BackgroundMapType.Hybrid;
     } else if (props.formatId === "Mapbox") {
       providerName = "MapBoxProvider";
       if (props.url.indexOf("streets") > 0)

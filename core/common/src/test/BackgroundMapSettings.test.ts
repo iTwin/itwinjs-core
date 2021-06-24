@@ -5,6 +5,7 @@
 
 import { expect } from "chai";
 import { BackgroundMapProps, BackgroundMapSettings, BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
+import { MapLayerSettings } from "../MapLayerSettings";
 import { TerrainHeightOriginMode } from "../TerrainSettings";
 
 describe("BackgroundMapSettings", () => {
@@ -50,6 +51,11 @@ describe("BackgroundMapSettings", () => {
 
       const expectedSettings = BackgroundMapSettings.fromJSON(expected);
       expect(settings.equals(expectedSettings)).to.be.true;
+
+      const mapLayer = MapLayerSettings.fromMapSettings(settings);
+      const providerProps = BackgroundMapSettings.providerFromMapLayer(mapLayer.toJSON());
+      const synchedFromProvider = settings.clone(providerProps);
+      expect(settings.equals(synchedFromProvider)).to.be.true;
     };
 
     roundTrip(undefined, {});
