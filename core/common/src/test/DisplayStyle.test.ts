@@ -315,12 +315,8 @@ describe("DisplayStyleSettings overrides", () => {
       sensorSettings: undefined,
       sunDirection: [1, 0, -1],
       gradientSettings: {
-        mode: 0,
-        colorScheme: 0,
-        customKeys: [],
         stepCount: 2,
         marginColor: ColorByName.magenta,
-        colorMix: 0,
       },
     },
   };
@@ -354,14 +350,9 @@ describe("DisplayStyleSettings overrides", () => {
 
   const iModelProps: DisplayStyle3dSettingsProps = {
     analysisStyle: {
-      inputName: "channel1",
-      inputRange: undefined,
-      displacementChannelName: "channel2",
-      displacementScale: undefined,
-      normalChannelName: undefined,
-      scalarChannelName: undefined,
-      scalarThematicSettings: undefined,
-      scalarRange: [1, 5],
+      displacement: {
+        channelName: "channel2",
+      },
     },
     analysisFraction: 0.2,
     scheduleScript: [{
@@ -409,12 +400,8 @@ describe("DisplayStyleSettings overrides", () => {
     thematic: {
       displayMode: ThematicDisplayMode.Height,
       gradientSettings: {
-        mode: 0,
         stepCount: 2,
         marginColor: ColorByName.magenta,
-        colorScheme: 0,
-        customKeys: [],
-        colorMix: 0,
       },
       axis: [-1, 0, 1],
       sunDirection: [1, 0, -1],
@@ -483,14 +470,15 @@ describe("DisplayStyleSettings overrides", () => {
     test({
       viewflags,
       analysisStyle: {
-        inputName: undefined,
-        inputRange: [2, 4],
-        displacementChannelName: "displacement",
-        displacementScale: 2.5,
+        displacement: {
+          channelName: "displacement",
+          scale: 2.5,
+        },
         normalChannelName: "normal",
-        scalarChannelName: undefined,
-        scalarThematicSettings: undefined,
-        scalarRange: undefined,
+        scalar: {
+          channelName: "scalar",
+          range: [-1, 2],
+        },
       },
       analysisFraction: 0.8,
     });
@@ -583,7 +571,7 @@ describe("DisplayStyleSettings overrides", () => {
         gradientSettings: {
           mode: 1,
           colorScheme: 1,
-          customKeys: [],
+          customKeys: [{ value: 0.5, color: 1234 }],
           stepCount: 3,
           marginColor: ColorByName.pink,
           colorMix: 0.5,

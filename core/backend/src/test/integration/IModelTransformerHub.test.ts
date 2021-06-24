@@ -8,19 +8,18 @@ import { join } from "path";
 import * as semver from "semver";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { ChangesType } from "@bentley/imodelhub-client";
 import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  BackendLoggerCategory, BisCoreSchema, BriefcaseDb, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect,
-  GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelJsNative, IModelTransformer, NativeLoggerCategory, PhysicalModel,
-  PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
+  BackendLoggerCategory, BisCoreSchema, BriefcaseDb, BriefcaseManager, ChangesetType, ConcurrencyControl, ECSqlStatement, Element,
+  ElementRefersToElements, ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelJsNative, IModelTransformer,
+  NativeLoggerCategory, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 describe("IModelTransformerHub (#integration)", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
@@ -515,7 +514,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const changeSetBranch1State4 = branchDb1.changeSetId;
       assert.notEqual(changeSetBranch1State4, changeSetBranch1State2);
 
-      const masterDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: masterIModelId, range: { after: "", end: masterDb.changeSetId } });
+      const masterDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: masterIModelId, targetDir: BriefcaseManager.getChangeSetsPath(masterIModelId) });
       assert.equal(masterDbChangeSets.length, 3);
       const masterDeletedElementIds = new Set<Id64String>();
       for (const masterDbChangeSet of masterDbChangeSets) {
@@ -554,7 +553,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assertPhysicalObjects(replayedDb, state4); // should have same ending state as masterDb
 
       // make sure there are no deletes in the replay history (all elements that were eventually deleted from masterDb were excluded)
-      const replayedDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: replayedIModelId, range: { after: "", end: replayedDb.changeSetId } });
+      const replayedDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: replayedIModelId, targetDir: BriefcaseManager.getChangeSetsPath(replayedIModelId) });
       assert.isAtLeast(replayedDbChangeSets.length, masterDbChangeSets.length); // replayedDb will have more changeSets when seed contains elements
       const replayedDeletedElementIds = new Set<Id64String>();
       for (const replayedDbChangeSet of replayedDbChangeSets) {
@@ -590,10 +589,10 @@ describe("IModelTransformerHub (#integration)", () => {
     });
   }
 
-  async function saveAndPushChanges(briefcaseDb: BriefcaseDb, description: string, changesType?: ChangesType): Promise<void> {
+  async function saveAndPushChanges(briefcaseDb: BriefcaseDb, description: string, changesType?: ChangesetType): Promise<void> {
     await briefcaseDb.concurrencyControl.request(requestContext);
     briefcaseDb.saveChanges(description);
-    return briefcaseDb.pushChanges(requestContext, description, changesType);
+    return briefcaseDb.pushChanges(requestContext, description, changesType as number);
   }
 
   function populateMaster(iModelDb: IModelDb, numbers: number[]): void {

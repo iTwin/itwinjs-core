@@ -16,7 +16,6 @@ import {
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BackendRequestContext } from "./BackendRequestContext";
 import { ECSqlStatement } from "./ECSqlStatement";
 import {
   DefinitionElement, DefinitionPartition, Element, FolderLink, GeometricElement2d, GeometricElement3d, InformationPartitionElement,
@@ -769,7 +768,6 @@ export class IModelTransformer extends IModelExportHandler {
   protected async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
     const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
     IModelJsFs.writeFileSync(schemaPath, await schema.toXmlString());
-    await this.targetDb.importSchemas(new BackendRequestContext(), [schemaPath]);
   }
 
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.

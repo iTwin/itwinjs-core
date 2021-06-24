@@ -333,12 +333,14 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
           values={this._milestones()}
         >
           <Rail>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             {(railProps) => <TooltipRail {...railProps} />}
           </Rail>
           <Handles>
             {({ handles, activeHandleID, getHandleProps }) => (
               <div className="slider-handles">
                 {handles.map((handle: SliderItem, index: number) => (
+                  // eslint-disable-next-line deprecation/deprecation
                   <Handle
                     key={handle.id}
                     handle={handle}
@@ -364,6 +366,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
               </div>
             )}
           </Ticks>
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <Needle startDate={startDate} endDate={endDate} selectedDate={selectedDate} />
         </Slider>
       </div>

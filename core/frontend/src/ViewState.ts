@@ -209,8 +209,10 @@ export abstract class ViewState extends ElementState {
     this.displayStyle.viewFlags = flags;
   }
 
-  /** Get the AnalysisDisplayProperties from the displayStyle of this ViewState. */
-  public get analysisStyle(): AnalysisStyle | undefined { return this.displayStyle.settings.analysisStyle; }
+  /** @see [DisplayStyleSettings.analysisStyle]($common). */
+  public get analysisStyle(): AnalysisStyle | undefined {
+    return this.displayStyle.settings.analysisStyle;
+  }
 
   /** The [RenderSchedule.Script]($common) that animates the contents of the view, if any.
    * @see [[DisplayStyleState.scheduleScript]].
@@ -260,7 +262,6 @@ export abstract class ViewState extends ElementState {
    */
   public async load(): Promise<void> {
     const promises = [
-      this.iModel.backgroundMapLocation.initialize(this.iModel),
       this.loadAcs(),
       this.displayStyle.load(),
     ];
@@ -1006,8 +1007,7 @@ export abstract class ViewState extends ElementState {
     if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid || this.iModel.projectExtents.containsPoint(point))
       return Vector3d.unitZ();
 
-    // Note - use the calculated ECEF tranform rather than stored which may not be accurate.
-    const earthCenter = this.iModel.backgroundMapLocation.getMapEcefToDb(0).origin;
+    const earthCenter = this.iModel.getMapEcefToDb(0).origin;
     const normal = Vector3d.createStartEnd(earthCenter, point);
     normal.normalizeInPlace();
 
