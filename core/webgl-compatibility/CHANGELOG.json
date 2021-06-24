@@ -2,6 +2,12 @@
   "name": "@bentley/webgl-compatibility",
   "entries": [
     {
+      "version": "2.16.4",
+      "tag": "@bentley/webgl-compatibility_v2.16.4",
+      "date": "Wed, 23 Jun 2021 17:09:07 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.16.3",
       "tag": "@bentley/webgl-compatibility_v2.16.3",
       "date": "Wed, 16 Jun 2021 20:29:32 GMT",
