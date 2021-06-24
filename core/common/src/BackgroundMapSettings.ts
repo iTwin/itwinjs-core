@@ -6,6 +6,7 @@
  * @module DisplayStyles
  */
 
+import { MapLayerProps } from "./MapLayerSettings";
 import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { TerrainProps, TerrainSettings } from "./TerrainSettings";
 
@@ -204,6 +205,7 @@ export class BackgroundMapSettings {
   /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
    * @returns A BackgroundMapSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
+   * @note If changing the provider it is currently necessary to also make same change to update the imagery base layer.
    */
   public clone(changedProps?: BackgroundMapProps): BackgroundMapSettings {
     if (undefined === changedProps)
@@ -225,5 +227,32 @@ export class BackgroundMapSettings {
     };
 
     return BackgroundMapSettings.fromJSON(props);
+  }
+
+  /** @internal */
+  public static providerFromMapLayer(props: MapLayerProps): BackgroundMapProps | undefined {
+    let providerName, mapType;
+    if (!props.url)
+      return undefined;
+    if (props.formatId === "BingMaps") {
+      providerName = "BingProvider";
+      if (props.url.indexOf("Road") > 0)
+        mapType = BackgroundMapType.Street;
+      else if (props.url.indexOf("AerialWithLabels") > 0)
+        mapType = BackgroundMapType.Hybrid;
+      else if (props.url.indexOf("Aerial") > 0)
+        mapType = BackgroundMapType.Aerial;
+    } else if (props.formatId === "MapboxImagery") {
+      providerName = "MapBoxProvider";
+      if (props.url.indexOf("streets-satellite") > 0)
+        mapType = BackgroundMapType.Hybrid;
+      else if (props.url.indexOf("streets") > 0)
+        mapType = BackgroundMapType.Street;
+      else if (props.url.indexOf("satellite") > 0)
+        mapType = BackgroundMapType.Aerial;
+    } else
+      return undefined;
+
+    return mapType !== undefined && providerName !== undefined ?  { providerName, providerData: { mapType } } : undefined;
   }
 }
