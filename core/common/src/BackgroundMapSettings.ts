@@ -241,7 +241,7 @@ export class BackgroundMapSettings {
         mapType = BackgroundMapType.Hybrid;
       else if (props.url.indexOf("Aerial") > 0)
         mapType = BackgroundMapType.Aerial;
-    } else if (props.formatId === "Mapbox") {
+    } else if (props.formatId === "MapboxImagery") {
       providerName = "MapBoxProvider";
       if (props.url.indexOf("streets-satellite") > 0)
         mapType = BackgroundMapType.Hybrid;
