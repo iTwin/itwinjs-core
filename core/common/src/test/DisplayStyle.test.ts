@@ -13,6 +13,11 @@ import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProj
 import { SpatialClassificationProps } from "../SpatialClassificationProps";
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
+<<<<<<< HEAD
+=======
+import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
+import { MapLayerSettings } from "../MapLayerSettings";
+>>>>>>> 1c2cf763d8 (Synch legacy map settings when base layer provider is changed (#1709))
 
 /* eslint-disable deprecation/deprecation */
 //  - for DisplayStyleSettings.excludedElements.
@@ -141,6 +146,134 @@ describe("DisplayStyleSettings", () => {
       test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.add("0x3"); settings.clearExcludedElements(); });
     });
   });
+<<<<<<< HEAD
+=======
+
+  describe("planarClipMasks", () => {
+    function makeSettings(priority: number) {
+      return PlanarClipMaskSettings.createByPriority(priority);
+    }
+
+    function makeProps(priority: number, modelId: Id64String) {
+      return {
+        ...makeSettings(priority).toJSON(),
+        modelId,
+      };
+    }
+
+    it("initializes from JSON", () => {
+      function expectMasks(json: DisplayStylePlanarClipMaskProps[] | undefined, expectedPairs: Array<[Id64String, PlanarClipMaskSettings]>): void {
+        const styleProps = json ? { styles: { planarClipOvr: json } } : { };
+        const style = new DisplayStyleSettings(styleProps);
+        expect(Array.from(style.planarClipMasks)).to.deep.equal(expectedPairs);
+      }
+
+      expectMasks(undefined, []);
+      expectMasks([], []);
+
+      expectMasks([makeProps(1, "0")], []);
+      expectMasks([makeProps(1, "NotAnId")], []);
+
+      expectMasks([{ modelId: "0x1", mode: PlanarClipMaskMode.None }], []);
+
+      expectMasks([makeProps(123, "0x456")], [["0x456", makeSettings(123)]]);
+      expectMasks([makeProps(5, "0x1"), makeProps(1, "0x5"), makeProps(3, "0x3")], [["0x1", makeSettings(5)], ["0x5", makeSettings(1)], ["0x3", makeSettings(3)]]);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x1")], [["0x1", makeSettings(2)]]);
+    });
+
+    it("synchronizes JSON and in-memory representations", () => {
+      function expectMasks(initialProps: DisplayStylePlanarClipMaskProps[] | undefined,
+        func: (masks: Map<Id64String, PlanarClipMaskSettings>, style: DisplayStyleSettings) => void,
+        expectedPairs: Array<[Id64String, PlanarClipMaskSettings]>,
+        expectedProps: DisplayStylePlanarClipMaskProps[] | undefined) {
+        const styleProps = initialProps ? { styles: { planarClipOvr: initialProps } } : { };
+        const style = new DisplayStyleSettings(styleProps);
+
+        func(style.planarClipMasks, style);
+
+        expect(Array.from(style.planarClipMasks)).to.deep.equal(expectedPairs);
+        expect(style.toJSON().planarClipOvr).to.deep.equal(expectedProps);
+      }
+
+      expectMasks(undefined, (map) => {
+        map.set("0x2", makeSettings(2));
+        map.set("0x1", makeSettings(1));
+        map.set("0x3", makeSettings(3));
+      }, [["0x2", makeSettings(2)], ["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
+      [makeProps(2, "0x2"), makeProps(1, "0x1"), makeProps(3, "0x3")]);
+
+      expectMasks([makeProps(1, "0x1")], (map) => map.set("0x1", makeSettings(2)),
+        [["0x1", makeSettings(2)]], [makeProps(2, "0x1")]);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(3, "0x3"), makeProps(2, "0x2")], (map) => {
+        map.delete("0x2");
+        map.delete("0x4");
+      }, [["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
+      [makeProps(1, "0x1"), makeProps(3, "0x3")]);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map) => map.clear(), [], undefined);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map, style) => {
+        style.toJSON().planarClipOvr = [makeProps(4, "0x4")];
+        expect(typeof (map as any).populate).to.equal("function");
+        (map as any).populate();
+      }, [["0x4", makeSettings(4)]], [makeProps(4, "0x4")]);
+    });
+
+    it("dispatches events", () => {
+      const events: Array<[Id64String, boolean]> = [];
+      const style = new DisplayStyleSettings({});
+      style.onPlanarClipMaskChanged.addListener((id, newMask) => {
+        events.push([id, undefined !== newMask]);
+      });
+
+      const map = style.planarClipMasks;
+      function expectEvents(expected: Array<[Id64String, boolean]>): void {
+        expect(events).to.deep.equal(expected);
+        events.length = 0;
+      }
+
+      const mask = makeSettings(1);
+      map.set("0x1", mask);
+      expectEvents([["0x1", true]]);
+
+      map.delete("0x1");
+      expectEvents([["0x1", false]]);
+
+      map.set("0x1", mask);
+      map.set("0x2", mask);
+      expectEvents([["0x1", true], ["0x2", true]]);
+
+      map.clear();
+      expectEvents([["0x1", false], ["0x2", false]]);
+
+      map.clear();
+      expectEvents([]);
+    });
+  });
+
+  // ###TODO @rbbentley
+  it.skip("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
+    const style = new DisplayStyleSettings({});
+    expect(style.backgroundMap.providerName).to.equal("BingProvider");
+    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
+
+    let base = style.mapImagery.backgroundBase as MapLayerSettings;
+    expect(base).instanceOf(MapLayerSettings);
+    expect(base.formatId).to.equal("BingMaps");
+    expect(base.url.indexOf("AerialWithLabels")).least(1);
+
+    style.backgroundMap = style.backgroundMap.clone({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } });
+    base = style.mapImagery.backgroundBase as MapLayerSettings;
+    expect(base.formatId).to.equal("MapboxImagery");
+    expect(base.url.indexOf("mapbox.streets/")).least(1);
+
+    style.mapImagery.backgroundBase = MapLayerSettings.fromMapSettings(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }));
+    expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
+    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
+  });
+>>>>>>> 1c2cf763d8 (Synch legacy map settings when base layer provider is changed (#1709))
 });
 
 describe("DisplayStyleSettings overrides", () => {
