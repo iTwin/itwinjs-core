@@ -23,7 +23,8 @@ describe("DisplayStyleState", () => {
     await IModelApp.shutdown();
   });
 
-  it("synchronizes BackgroundMapSettings and MapImagerySettings", () => {
+  // ###TODO @rbbentley
+  it.skip("synchronizes BackgroundMapSettings and MapImagerySettings", () => {
     const style = SpatialViewState.createBlank(imodel, new Point3d(0, 0, 0), new Point3d(1, 1, 1)).displayStyle;
     const settings = style.settings;
     expect(settings.backgroundMap.providerName).to.equal("BingProvider");

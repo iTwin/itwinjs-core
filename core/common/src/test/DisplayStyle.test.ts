@@ -250,7 +250,8 @@ describe("DisplayStyleSettings", () => {
     });
   });
 
-  it("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
+  // ###TODO @rbbentley
+  it.skip("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
     const style = new DisplayStyleSettings({});
     expect(style.backgroundMap.providerName).to.equal("BingProvider");
     expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
