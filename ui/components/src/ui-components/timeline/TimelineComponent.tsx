@@ -9,7 +9,7 @@
 import "./TimelineComponent.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ConditionalBooleanValue, GenericUiEventArgs, UiAdmin } from "@bentley/ui-abstract";
+import { GenericUiEventArgs, UiAdmin } from "@bentley/ui-abstract";
 import { UiComponents } from "../UiComponents";
 import { ContextMenu, ContextMenuDirection, ContextMenuItem } from "@bentley/ui-core";
 import { InlineEdit } from "./InlineEdit";
@@ -22,7 +22,15 @@ import { Scrubber } from "./Scrubber";
 const slowSpeed = 60 * 1000;
 const mediumSpeed = 20 * 1000;
 const fastSpeed = 10 * 1000;
-
+/**
+ * TimelineMenuOptions: how the app wants the timeline speeds to be installed on the TimelineComponent's ContextMenu
+ * "replace" : use the app-supplied items in place of the standard items
+ * "append" : add the app-supplied items following the standard items
+ * "prefix" : add the app-supplied items before the standard items
+ *
+ * @public
+ */
+export type TimelineMenuItemOption = "replace"|"append"|"prefix";
 /**
  * TimelineMenuItemProps specifies playback speed entries in the Timeline's ContextMenu
  * @public
@@ -55,7 +63,7 @@ interface TimelineComponentProps {
   componentId?: string; // must be set to use TimelineComponentEvents
   includeRepeat?: boolean; // include the repeat option on the Timeline Context Menu
   appMenuItems?: TimelineMenuItemProps[]; // app-supplied speed entries in the Timeline Context Menu
-  appMenuItemOption?: "replace"|"append"|"prefix"; // how to include the supplied app menu items in the Timeline Context Menu
+  appMenuItemOption?: TimelineMenuItemOption; // how to include the supplied app menu items in the Timeline Context Menu
 }
 /** @internal */
 interface TimelineComponentState {
@@ -394,18 +402,30 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
 
   private _renderSettings = () => {
     const { totalDuration } = this.state;
+    let contextMenuItems: Array<TimelineMenuItemProps> = [];
+
+    if (!this.props.appMenuItems){
+      contextMenuItems = this._standardTimelineMenuItems;
+    } else {
+      if (this.props.appMenuItemOption === "append"){
+        contextMenuItems = this._standardTimelineMenuItems.concat(this.props.appMenuItems);
+      }else if (this.props.appMenuItemOption === "prefix") {
+        contextMenuItems = this.props.appMenuItems.concat(this._standardTimelineMenuItems);
+      } else {
+        contextMenuItems = this.props.appMenuItems;
+      }
+    }
+
     return (
       <>
         {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
         <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2" ref={(element) => this._settings = element} onClick={this._onSettingsClick}
           role="button" tabIndex={-1} title={UiComponents.translate("button.label.settings")}
         ></span>
-        <ContextMenu opened={this.state.isSettingsOpen} onOutsideClick={this._onCloseSettings.bind(this)} direction={ContextMenuDirection.BottomRight}>
-          {this.state.includeRepeat && <ContextMenuItem icon={this.state.repeat && "icon icon-checkmark"} onSelect={() => this._onRepeatChanged()}>{this._repeatLabel}</ContextMenuItem>}
+        <ContextMenu opened={this.state.isSettingsOpen} onOutsideClick={this._onCloseSettings} direction={ContextMenuDirection.BottomRight}>
+          {this.state.includeRepeat && <ContextMenuItem icon={this.state.repeat && "icon icon-checkmark"} onSelect={this._onRepeatChanged}>{this._repeatLabel}</ContextMenuItem>}
           {this.state.includeRepeat && <div className="separator" role="separator" />}
-          {this.props.appMenuItems && this.props.appMenuItemOption === "prefix" && this._createMenuItemNodes(this.props.appMenuItems, totalDuration)}
-          {!!this.props.appMenuItems || !!this.props.appMenuItemOption || this.props.appMenuItemOption !== "replace" && this._createMenuItemNodes(this._standardTimelineMenuItems, totalDuration)}
-          {this.props.appMenuItems && this.props.appMenuItemOption && this.props.appMenuItemOption !== "prefix" && this._createMenuItemNodes(this.props.appMenuItems, totalDuration)}
+          {this._createMenuItemNodes(contextMenuItems, totalDuration)}
         </ContextMenu>
       </>
     );
