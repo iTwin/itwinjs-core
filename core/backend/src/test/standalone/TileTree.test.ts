@@ -5,9 +5,9 @@
 import { expect } from "chai";
 import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Box, Point3d, Range3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { Code, ColorDef, GeometryStreamBuilder, IModel, PhysicalElementProps } from "@bentley/imodeljs-common";
+import { BatchType, Code, ColorDef, defaultTileOptions, GeometryStreamBuilder, IModel, iModelTileTreeIdToString, PhysicalElementProps, PrimaryTileTreeId, RenderSchedule } from "@bentley/imodeljs-common";
 import {
-  BackendRequestContext, GenericSchema, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
+  BackendRequestContext, GenericSchema, IModelDb, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SnapshotDb, SpatialCategory,
   SubjectOwnsPartitionElements,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -74,6 +74,16 @@ function scaleProjectExtents(db: IModelDb, scale: number): Range3d {
 describe("tile tree", () => {
   let db: SnapshotDb;
   let modelId: string;
+  let spatialElementId: string;
+  let renderTimelineId: string;
+
+  function makeScript(buildTimeline: (timeline: RenderSchedule.ElementTimelineBuilder) => void): RenderSchedule.ScriptProps {
+    const scriptBuilder = new RenderSchedule.ScriptBuilder();
+    const modelBuilder = scriptBuilder.addModelTimeline(modelId);
+    const elemBuilder = modelBuilder.addElementTimeline(spatialElementId);
+    buildTimeline(elemBuilder);
+    return scriptBuilder.finish();
+  }
 
   before(() => {
     const props = {
@@ -104,11 +114,26 @@ describe("tile tree", () => {
         angles: YawPitchRollAngles.createDegrees(0, 0, 0),
       },
     };
-    db.elements.insertElement(elemProps);
+
+    spatialElementId = db.elements.insertElement(elemProps);
+
+    const script = makeScript((timeline) => timeline.addVisibility(1234, 0.5));
+    const renderTimeline = RenderTimeline.fromJSON({
+      script: JSON.stringify(script),
+      classFullName: RenderTimeline.classFullName,
+      model: IModel.dictionaryId,
+      code: Code.createEmpty(),
+    }, db);
+    renderTimelineId = db.elements.insertElement(renderTimeline);
+    expect(Id64.isValid(renderTimelineId)).to.be.true;
   });
 
   after(() => {
-    db?.close();
+    db.close();
+  });
+
+  afterEach(() => {
+    db.nativeDb.purgeTileTrees(undefined);
   });
 
   it("should update after changing project extents and purging", async () => {
@@ -205,5 +230,70 @@ describe("tile tree", () => {
 
     expect(tree.contentIdQualifier).not.to.equal(prevQualifier);
     expect(tree.contentIdQualifier).not.to.be.undefined;
+  });
+
+  it("should include checksum on schedule script contents", async () => {
+    const treeId: PrimaryTileTreeId = {
+      type: BatchType.Primary,
+      edgesRequired: false,
+    };
+
+    const options = { ...defaultTileOptions };
+    options.useProjectExtents = false;
+
+    const context = new BackendRequestContext();
+    const loadTree = () => db.tiles.requestTileTreeProps(context, iModelTileTreeIdToString(modelId, treeId, options));
+
+    let tree = await loadTree();
+    expect(tree.contentIdQualifier).to.be.undefined;
+
+    options.useProjectExtents = true;
+    tree = await loadTree();
+    const extentsChecksum = tree.contentIdQualifier!;
+    expect(extentsChecksum).not.to.be.undefined;
+    expect(extentsChecksum.length).least(1);
+
+    options.useProjectExtents = false;
+    treeId.animationId = renderTimelineId;
+    tree = await loadTree();
+    const scriptChecksum = tree.contentIdQualifier!;
+    expect(scriptChecksum).not.to.be.undefined;
+    expect(scriptChecksum.length).least(1);
+
+    options.useProjectExtents = true;
+    tree = await loadTree();
+    expect(tree.contentIdQualifier).to.equal(`${scriptChecksum}${extentsChecksum}`);
+  });
+
+  it("should update checksum after purge when schedule script contents change", async () => {
+    const treeId: PrimaryTileTreeId = {
+      type: BatchType.Primary,
+      edgesRequired: false,
+      animationId: renderTimelineId,
+    };
+
+    const options = { ...defaultTileOptions };
+    options.useProjectExtents = false;
+
+    const context = new BackendRequestContext();
+    const tree1 = await db.tiles.requestTileTreeProps(context, iModelTileTreeIdToString(modelId, treeId, options));
+    const checksum1 = tree1.contentIdQualifier!;
+    expect(checksum1.length).least(1);
+
+    const renderTimeline = db.elements.getElement<RenderTimeline>(renderTimelineId);
+    const props = renderTimeline.toJSON();
+    props.script = JSON.stringify(makeScript((timeline) => timeline.addVisibility(4321, 0.25)));
+    db.elements.updateElement(props);
+
+    const tree2 = await db.tiles.requestTileTreeProps(context, iModelTileTreeIdToString(modelId, treeId, options));
+    expect(tree2).not.to.equal(tree1);
+    expect(tree2).to.deep.equal(tree1);
+
+    db.nativeDb.purgeTileTrees(undefined);
+    const tree3 = await db.tiles.requestTileTreeProps(context, iModelTileTreeIdToString(modelId, treeId, options));
+    expect(tree3).not.to.equal(tree2);
+    expect(tree3).not.to.equal(tree1);
+    expect(tree3.contentIdQualifier).not.to.equal(tree1.contentIdQualifier);
+    expect(tree3.contentIdQualifier!.length).least(1);
   });
 });
