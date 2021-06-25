@@ -16,21 +16,31 @@ import { GeometryQuery } from "../curve/GeometryQuery";
 import { Transform } from "../geometry3d/Transform";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 
+/**
+ * fitPoints and end condition data for [[InterpolationCurve3d]]
+ * @public
+ */
 export interface InterpolationCurve3dProps {
+   /** Order of the computed bspline.   (one more than degree) */
   order?: number;
+  /** true if the bspline construction should be periodic */
   closed?: boolean;
   isChordLenKnots?: number;
   isColinearTangents?: number;
   isChordLenTangent?: number;
   isNaturalTangents?: number;
+  /** optional start tangent.  Use of the tangent magnitude may be indicated by other flags. */
   startTangent?: Vector3d;
+  /** optional end tangent.  Use of the tangent magnitude may be indicated by other flags. */
   endTangent?: Vector3d;
+  /** Points that the curve must pass through */
   fitPoints: Point3d[];
+  /** knots for curve fitting */
   knots?: number[] | Float64Array;
 }
 /**
  * Interpolating curve.
- * * Derive from proxy curve
+ * * Derive from [[ProxyCurve]]
  * * Use a [[BSplineCurve3d]] as the proxy
  * *
  * @public
@@ -49,7 +59,9 @@ private constructor(properties: InterpolationCurve3dProps, proxyCurve: CurvePrim
   public dispatchToGeometryHandler(handler: GeometryHandler) {
     return handler.handleInterpolationCurve3d(this);
   }
-
+/**
+ * Create an [[InterpolationCurve3d]] based on points, knots, and other properties inthe [[InterpolationCurve3dProps]]
+ */
   public static create(properties: InterpolationCurve3dProps): InterpolationCurve3d | undefined {
     // points are required ...
     if (properties.fitPoints === undefined)
@@ -71,6 +83,10 @@ private constructor(properties: InterpolationCurve3dProps, proxyCurve: CurvePrim
     return result;
   }
 
+  /**
+   * Return json key-value pairs for for this [[InterpolationCurve3d]].
+   * @returns
+   */
   public toJSON(): any {
     const result = {
       fitPoints: Point3dArray.cloneDeepJSONNumberArrays(this._properties.fitPoints),
@@ -86,6 +102,11 @@ private constructor(properties: InterpolationCurve3dProps, proxyCurve: CurvePrim
         };
     return result;
   }
+  /**
+   * Return a clone of the given [[InterpolationCurve3dProps]]
+   * @param properties
+   * @returns
+   */
   public static cloneProperties(properties: InterpolationCurve3dProps): InterpolationCurve3dProps{
     return  {
       fitPoints: Point3dArray.clonePoint3dArray(properties.fitPoints),
@@ -100,7 +121,8 @@ private constructor(properties: InterpolationCurve3dProps, proxyCurve: CurvePrim
       endTangent: properties.endTangent?.clone(),
       };
 
-}
+  }
+  /** Clone the [[InterpolationCurve3dProps]] object in this [[InterpolationCurve3dProps]] */
   public cloneProperties(): InterpolationCurve3dProps {
     return InterpolationCurve3d.cloneProperties(this._properties);
   }
@@ -125,6 +147,10 @@ private constructor(properties: InterpolationCurve3dProps, proxyCurve: CurvePrim
   }
     return false;
   }
+  /**
+   * Reverse the curve direction.
+   * * This updates both the defining properties and the proxy bspline.
+   */
   public reverseInPlace(): void {
     this._proxyCurve.reverseInPlace();
     this._properties.fitPoints.reverse();
@@ -134,15 +160,24 @@ private constructor(properties: InterpolationCurve3dProps, proxyCurve: CurvePrim
     this._properties.startTangent = this._properties.endTangent;
     this._properties.endTangent = oldStart;
   }
+  /**
+   * Transform this [[InterpolationCurve3d]] and its defining data in place
+   */
   public tryTransformInPlace(transform: Transform): boolean {
     return this._proxyCurve.tryTransformInPlace(transform);
   }
+  /**
+   * Return a transformed clone.
+   */
   public cloneTransformed(transform: Transform): GeometryQuery | undefined {
     const myClone = this.clone();
     if (myClone && myClone?.tryTransformInPlace(transform))
       return myClone;
     return undefined;
   }
+  /**
+   * Return a clone.
+   */
   public clone(): GeometryQuery | undefined {
     const proxyClone = this._proxyCurve.clone();
     if (proxyClone) {
@@ -150,7 +185,7 @@ private constructor(properties: InterpolationCurve3dProps, proxyCurve: CurvePrim
     }
     return undefined;
   }
-
+/** Test if `other` is also an [[InterpolationCurve3d]] */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof InterpolationCurve3d; }
 
 }

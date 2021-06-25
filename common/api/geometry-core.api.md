@@ -1636,7 +1636,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
 export type CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined;
 
 // @public
-export type CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolatingCurve";
+export type CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolationCurve";
 
 // @public
 export enum CurveSearchStatus {
@@ -2844,6 +2844,43 @@ export type IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "c
 
 // @internal
 export function interpolateColor(color0: number, fraction: number, color1: number): number;
+
+// @public
+export class InterpolationCurve3d extends ProxyCurve {
+    static areAlmostEqualProperties(dataA: InterpolationCurve3dProps | undefined, dataB: InterpolationCurve3dProps | undefined): boolean;
+    clone(): GeometryQuery | undefined;
+    static cloneProperties(properties: InterpolationCurve3dProps): InterpolationCurve3dProps;
+    cloneProperties(): InterpolationCurve3dProps;
+    cloneTransformed(transform: Transform): GeometryQuery | undefined;
+    copyFitPointsFloat64Array(): Float64Array;
+    static create(properties: InterpolationCurve3dProps): InterpolationCurve3d | undefined;
+    // (undocumented)
+    curvePrimitiveType: CurvePrimitiveType;
+    // (undocumented)
+    dispatchToGeometryHandler(handler: GeometryHandler): any;
+    isSameGeometryClass(other: GeometryQuery): boolean;
+    reverseInPlace(): void;
+    toJSON(): any;
+    tryTransformInPlace(transform: Transform): boolean;
+}
+
+// @public
+export interface InterpolationCurve3dProps {
+    closed?: boolean;
+    endTangent?: Vector3d;
+    fitPoints: Point3d[];
+    // (undocumented)
+    isChordLenKnots?: number;
+    // (undocumented)
+    isChordLenTangent?: number;
+    // (undocumented)
+    isColinearTangents?: number;
+    // (undocumented)
+    isNaturalTangents?: number;
+    knots?: number[] | Float64Array;
+    order?: number;
+    startTangent?: Vector3d;
+}
 
 // @public
 export enum InverseMatrixState {
@@ -4315,6 +4352,26 @@ export class PowerPolynomial {
     static degreeKnownEvaluate(coff: Float64Array, degree: number, x: number): number;
     static evaluate(coff: Float64Array, x: number): number;
     static zero(coff: Float64Array): void;
+}
+
+// @public
+export abstract class ProxyCurve extends CurvePrimitive {
+    constructor(proxyCurve: CurvePrimitive);
+    computeStrokeCountForOptions(options?: StrokeOptions): number;
+    // (undocumented)
+    dispatchToGeometryHandler(handler: GeometryHandler): any;
+    emitStrokableParts(dest: IStrokeHandler, options?: StrokeOptions): void;
+    emitStrokes(dest: LineString3d, options?: StrokeOptions): void;
+    extendRange(rangeToExtend: Range3d, transform?: Transform): void;
+    fractionToPoint(fraction: number, result?: Point3d): Point3d;
+    fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors | undefined;
+    fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d;
+    isInPlane(plane: Plane3dByOriginAndUnitNormal): boolean;
+    // (undocumented)
+    protected _proxyCurve: CurvePrimitive;
+    // (undocumented)
+    quickLength(): number;
+    range(transform?: Transform, result?: Range3d): Range3d;
 }
 
 // @internal
