@@ -91,6 +91,12 @@ export class Tiles {
           this.dropSupplier(supplier);
       }
     });
+
+    // When project extents change, purge tile trees for spatial models.
+    iModel.onProjectExtentsChanged.addListener(async () => {
+      if (!iModel.isBriefcaseConnection() || !iModel.editingScope)
+        await this.purgeModelTrees(this.getSpatialModels());
+    });
   }
 
   /** @internal */
@@ -114,6 +120,15 @@ export class Tiles {
     return IModelApp.tileAdmin.purgeTileTrees(this._iModel, modelIds);
   }
 
+  private getModelsAnimatedByScheduleScript(scriptSourceElementId: Id64String): Set<Id64String> {
+    const modelIds = new Set<Id64String>();
+    for (const supplier of this._treesBySupplier.keys())
+      if (supplier.addModelsAnimatedByScript)
+        supplier.addModelsAnimatedByScript(modelIds, scriptSourceElementId, this.getTreeOwnersForSupplier(supplier));
+
+    return modelIds;
+  }
+
   /** Update the [[Tile]]s for any [[TileTree]]s that use the [RenderSchedule.Script]($common) hosted by the specified
    * [RenderTimeline]($backend) or [DisplayStyle]($backend) element. This method should be invoked after
    * the host element is updated in the database with a new script, so that any [[Viewport]]s displaying tiles produced
@@ -122,18 +137,25 @@ export class Tiles {
    * @public
    */
   public async updateForScheduleScript(scriptSourceElementId: Id64String): Promise<void> {
-    const modelIds = new Set<Id64String>();
-    for (const supplier of this._treesBySupplier.keys()) {
-      if (supplier.addModelsAnimatedByScript)
-        supplier.addModelsAnimatedByScript(modelIds, scriptSourceElementId, this.getTreeOwnersForSupplier(supplier));
-    }
+    return this.purgeModelTrees(this.getModelsAnimatedByScheduleScript(scriptSourceElementId));
+  }
 
+  private async purgeModelTrees(modelIds: Set<Id64String>): Promise<void> {
     if (0 === modelIds.size)
       return;
 
     const ids = Array.from(modelIds);
     await this.purgeTileTrees(ids);
     IModelApp.viewManager.refreshForModifiedModels(ids);
+  }
+
+  private getSpatialModels(): Set<Id64String> {
+    const modelIds = new Set<Id64String>();
+    for (const supplier of this._treesBySupplier.keys())
+      if (supplier.addSpatialModels)
+        supplier.addSpatialModels(modelIds, this.getTreeOwnersForSupplier(supplier));
+
+    return modelIds;
   }
 
   /** Obtain the owner of a TileTree.

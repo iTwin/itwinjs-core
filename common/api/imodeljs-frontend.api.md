@@ -10526,6 +10526,11 @@ export interface TileTreeSupplier {
         id: any;
         owner: TileTreeOwner;
     }>) => void;
+    // @internal
+    addSpatialModels?: (modelIds: Set<Id64String>, trees: Iterable<{
+        id: any;
+        owner: TileTreeOwner;
+    }>) => void;
     compareTileTreeIds(lhs: any, rhs: any): number;
     createTileTree(id: any, iModel: IModelConnection): Promise<TileTree | undefined>;
     readonly isEcefDependent?: true;

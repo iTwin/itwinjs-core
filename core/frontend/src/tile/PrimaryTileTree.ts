@@ -99,6 +99,12 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
       if (tree.id.treeId.animationId === scriptSourceId)
         modelIds.add(tree.id.modelId);
   }
+
+  public addSpatialModels(modelIds: Set<Id64String>, trees: Iterable<{ id: PrimaryTreeId, owner: TileTreeOwner }>): void {
+    for (const tree of trees)
+      if (tree.id.is3d)
+        modelIds.add(tree.id.modelId);
+  }
 }
 
 const primaryTreeSupplier = new PrimaryTreeSupplier();
