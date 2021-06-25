@@ -93,10 +93,9 @@ export class Tiles {
     });
 
     // When project extents change, purge tile trees for spatial models.
-    const handleProjectExtents = false;
     iModel.onProjectExtentsChanged.addListener(async () => {
-      if (handleProjectExtents)
-        this.purgeModelTrees(this.getSpatialModels());
+      if (!iModel.isBriefcaseConnection() || !iModel.editingScope)
+        await this.purgeModelTrees(this.getSpatialModels());
     });
   }
 
