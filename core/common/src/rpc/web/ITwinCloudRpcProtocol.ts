@@ -71,7 +71,8 @@ export abstract class ITwinCloudRpcProtocol extends WebAppRpcProtocol {
   /** Supplies the OpenAPI-compatible URI path for an RPC operation. */
   public supplyPathForOperation(operation: RpcOperation, request: RpcRequest | undefined) {
     const prefix = this.pathPrefix;
-    const operationName = operation.operationName;
+    const apiName = this.apiName;
+    const operationName = `${operation.interfaceDefinition}-${operation.operationName}`;
 
     let contextId: string = "";
     let iModelId: string = "";
@@ -102,7 +103,7 @@ export abstract class ITwinCloudRpcProtocol extends WebAppRpcProtocol {
       routeChangeSetId = token.changeSetId || "0";
     }
 
-    return `${prefix}/visualization/context/${contextId}/imodel/${iModelId}${!!routeChangeSetId ? `/changeset/${routeChangeSetId}` : ""}/${operationName}`;
+    return `${prefix}/${apiName}/context/${contextId}/imodel/${iModelId}${!!routeChangeSetId ? `/changeset/${routeChangeSetId}` : ""}/${operationName}`;
   }
 
   /**

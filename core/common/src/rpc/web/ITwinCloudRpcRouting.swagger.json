@@ -5,7 +5,7 @@
     "version": "v1.0"
   },
   "paths": {
-    "/visualization/Context/{contextId}/iModel/{iModelId}/Changeset/{changesetId}/queryRows": {
+    "/visualization/Context/{contextId}/iModel/{iModelId}/Changeset/{changesetId}/{rpcInterfaceId}/{rpcInterfaceVersionId}/{rpcInterfaceOperationId}": {
       "get": {
         "requestBody": {
           "content": {
@@ -66,53 +66,7 @@
           }
         },
         {
-          "name": "operationId",
-          "in": "path",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        }
-      ]
-    },
-    "/visualization/Context/{contextId}/iModel/{iModelId}/Changeset/{changesetId}/getElementProperties": {
-      "get": {
-        "requestBody": {
-          "content": {
-            "text": {
-              "schema": {
-                "type": "string"
-              }
-            }
-          },
-          "required": true
-        },
-        "responses": {
-          "200": {
-            "description": "Success",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          },
-          "default": {
-            "description": "Error",
-            "content": {
-              "application/json": {
-                "schema": {
-                  "type": "object"
-                }
-              }
-            }
-          }
-        }
-      },
-      "parameters": [
-        {
-          "name": "contextId",
+          "name": "rpcInterfaceId",
           "in": "path",
           "required": true,
           "schema": {
@@ -120,7 +74,7 @@
           }
         },
         {
-          "name": "iModelId",
+          "name": "rpcInterfaceVersionId",
           "in": "path",
           "required": true,
           "schema": {
@@ -128,15 +82,7 @@
           }
         },
         {
-          "name": "changeSetId",
-          "in": "path",
-          "required": true,
-          "schema": {
-            "type": "string"
-          }
-        },
-        {
-          "name": "operationId",
+          "name": "rpcInterfaceOperationId",
           "in": "path",
           "required": true,
           "schema": {
