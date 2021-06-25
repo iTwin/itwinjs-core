@@ -50,9 +50,41 @@
         "MidPoint": "Define arc midpoint"
       }
     },
+    "CreateCircle": {
+      "keyin": "editor create circle",
+      "flyover": "Create Circle",
+      "Label": {
+        "Method": "Method",
+        "Radius": "Radius"
+      },
+      "Method": {
+        "Center": "Center",
+        "Edge": "Edge"
+      },
+      "Prompts": {
+        "CenterPoint": "Define circle center",
+        "EdgePoint": "Define point on edge"
+      }
+    },
+    "CreateEllipse": {
+      "keyin": "editor create ellipse",
+      "flyover": "Create Ellipse",
+      "Prompts": {
+        "CenterPoint": "Define ellipse center",
+        "MajorAxis": "Define major axis",
+        "MinorAxis": "Define minor axis"
+      }
+    },
     "CreateLineString": {
       "keyin": "editor create linestring",
       "flyover": "Create Linestring"
+    },
+    "CreateRectangle": {
+      "keyin": "editor create rectangle",
+      "flyover": "Create Rectangle",
+      "Label": {
+        "CornerRadius": "Corner Radius"
+      }
     },
     "UndoAll": {
       "keyin": "editor undo all",

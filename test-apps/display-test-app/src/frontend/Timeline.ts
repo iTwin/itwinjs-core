@@ -29,11 +29,11 @@ class AnalysisTimelineProvider {
   }
 
   public update(time: number, vp: Viewport): void {
-    vp.analysisFraction = time / 100;
+    vp.displayStyle.settings.analysisFraction = time / 100;
   }
 
   public getCurrentTime(vp: Viewport): number {
-    return vp.analysisFraction * 100;
+    return vp.displayStyle.settings.analysisFraction * 100;
   }
 }
 
