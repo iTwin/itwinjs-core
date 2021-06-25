@@ -50,8 +50,6 @@ beta;ChangesetRange
 internal;ChangesetRangeArg 
 public;ChangesetType
 beta;ChangeSummary
-beta;ChangeSummaryExtractContext
-deprecated;ChangeSummaryExtractContext
 beta;ChangeSummaryExtractOptions
 deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager

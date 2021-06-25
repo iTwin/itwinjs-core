@@ -13,11 +13,12 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
-import { ChangeSummaryManager } from "./ChangeSummaryManager";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, GeometricElement, RecipeDefinitionElement, RepositoryLink } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { IModelHost } from "./IModelHost";
 import { IModelSchemaLoader } from "./IModelSchemaLoader";
 import { DefinitionModel, Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
@@ -754,7 +755,11 @@ class ChangedInstanceIds {
   public static async initialize(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, firstChangeSetId: string): Promise<ChangedInstanceIds> {
     requestContext.enter();
 
-    const changeSets = await ChangeSummaryManager.downloadChangesets(requestContext, iModel.iModelId, firstChangeSetId, iModel.changeSetId);
+    const iModelId = iModel.iModelId;
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangeSetId }, requestContext })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: iModel.changeSetId }, requestContext })).index;
+    const changeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+
     requestContext.enter();
     const changedInstanceIds = new ChangedInstanceIds();
     changeSets.forEach((changeSet): void => {

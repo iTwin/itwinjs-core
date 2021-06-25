@@ -18,7 +18,8 @@ The deprecated method works by creating a range of Change Summaries by starting 
 
 [ChangeSummaryManager.detachChangeCache]($imodeljs-backend)  can now be used to detach the cache after querying the change summary to continue change summary creation if necessary.
 
-[ChangeSummaryExtractOptions]($imodeljs-backend) and [ChangeSummaryExtractContext]($imodeljs-backend) are also deprecated as a consequence of the above changes. [CreateChangeSummaryArgs]($imodel-backend) serves a similar purpose with the newer methods.
+[ChangeSummaryExtractOptions]($imodeljs-backend) was also deprecated as a consequence of the above changes. [CreateChangeSummaryArgs]($imodel-backend) serves a similar purpose with the newer methods.
+[ChangeSummaryExtractContext]($imodeljs-backend) was unused and has been removed.
 
 ## UI changes
 

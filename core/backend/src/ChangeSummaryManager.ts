@@ -10,7 +10,7 @@ import { assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLog
 import { ChangedValueState, ChangeOpCode, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as path from "path";
-import { ChangesetFileProps, ChangesetId, ChangesetRange } from "./BackendHubAccess";
+import { ChangesetRange } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
@@ -22,7 +22,7 @@ import { IModelJsFs } from "./IModelJsFs";
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
 /** Represents an instance of the `ChangeSummary` ECClass from the `ECDbChange` ECSchema
- * combined with the information from the related `ChangeSet` instance (from the `IModelChange` ECSchema) from
+ * combined with the information from the related `Changeset` instance (from the `IModelChange` ECSchema) from
  * which the Change Summary was extracted.
  *
  * See also
@@ -52,7 +52,7 @@ export interface InstanceChange {
 
 /** Options for [ChangeSummaryManager.extractChangeSummaries]($backend).
  * @beta
- * @deprecated
+ * @deprecated Use [CreateChangeSummaryArgs]($imodeljs-backend) instead
  */
 export interface ChangeSummaryExtractOptions {
   /** If specified, change summaries are extracted from the start version to the current version as of which the iModel
@@ -63,16 +63,6 @@ export interface ChangeSummaryExtractOptions {
    *  was opened.
    */
   currentVersionOnly?: boolean;
-}
-
-/**
- * @beta
- * @deprecated
-*/
-export class ChangeSummaryExtractContext {
-  public constructor(public readonly iModel: IModelDb) { }
-
-  public get iModelId(): GuidString { return this.iModel.iModelId; }
 }
 
 /** Options for [ChangeSummaryManager.createChangeSummaries]($backend).
@@ -166,7 +156,7 @@ export class ChangeSummaryManager {
    * @param options Extraction options
    * @return the Ids of the extracted change summaries.
    * @throws [IModelError]($common) if the iModel is standalone
-   * @deprecated Use ChangeSummaryManager.createChangeSummaries instead
+   * @deprecated Use [ChangeSummaryManager.createChangeSummaries]($imodeljs-backend) instead
    */
   public static async extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]> { // eslint-disable-line deprecation/deprecation
     requestContext.enter();
@@ -191,8 +181,11 @@ export class ChangeSummaryManager {
     const totalPerf = new PerfLogger(`ChangeSummaryManager.extractChangeSummaries [ChangeSets: ${startChangeSetId} through ${endChangeSetId}, iModel: ${iModelId}]`);
 
     // download necessary changesets if they were not downloaded before and retrieve infos about those changesets
-    let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos and download ChangeSets from Hub");
-    const changeSetInfos = await ChangeSummaryManager.downloadChangesets(requestContext, iModelId, startChangeSetId, endChangeSetId);
+    let perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Retrieve ChangeSetInfos and download Changesets from Hub");
+
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: startChangeSetId }, requestContext })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: endChangeSetId }, requestContext })).index;
+    const changeSetInfos = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
     requestContext.enter();
     perfLogger.dispose();
     Logger.logTrace(loggerCategory, "Retrieved changesets to extract from from cache or from hub.", () => ({ iModelId, startChangeSetId, endChangeSetId, changeSets: changeSetInfos }));
@@ -271,17 +264,6 @@ export class ChangeSummaryManager {
       totalPerf.dispose();
       Logger.logInfo(loggerCategory, "Finished Change Summary extraction.", () => ({ iModelId, startChangeSetId, endChangeSetId }));
     }
-  }
-
-  /**
-   * Download a range of change sets including the first and last
-   * @internal
-  */
-  public static async downloadChangesets(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, firstId: ChangesetId, lastId: ChangesetId): Promise<ChangesetFileProps[]> {
-    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstId }, requestContext })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: lastId }, requestContext })).index;
-    const changeSetInfos = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
-    return changeSetInfos;
   }
 
   private static openOrCreateChangesFile(iModel: BriefcaseDb): ECDb {
