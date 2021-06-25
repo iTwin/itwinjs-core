@@ -72,6 +72,11 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
       if (tree.id.animationId === scriptSourceId)
         modelIds.add(tree.id.modelId);
   }
+
+  public addSpatialModels(modelIds: Set<Id64String>, trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner }>): void {
+    for (const tree of trees)
+      modelIds.add(tree.id.modelId);
+  }
 }
 
 const classifierTreeSupplier = new ClassifierTreeSupplier();

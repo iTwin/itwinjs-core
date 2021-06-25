@@ -34,7 +34,14 @@ export interface TileTreeSupplier {
 
   /** Given the set of trees belonging to this supplier, add the modelIds associated with any trees that are animated by
    * the schedule script hosted by the specified RenderTimeline or DisplayStyle element.
+   * @see [[Tiles.updateForScheduleScript]].
    * @internal
    */
   addModelsAnimatedByScript?: (modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: any, owner: TileTreeOwner }>) => void;
+
+  /** Given the set of trees belonging to this supplier, add the modelIds associated with any trees representing spatial models.
+   * @see [[Tiles.getSpatialModels]].
+   * @internal
+   */
+  addSpatialModels?: (modelIds: Set<Id64String>, trees: Iterable<{ id: any, owner: TileTreeOwner }>) => void;
 }
