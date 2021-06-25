@@ -104,8 +104,11 @@ beta;CompositeFilterType
 beta;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
 internal;ContextMenu 
+deprecated;ContextMenu 
 internal;ContextMenuItem 
+deprecated;ContextMenuItem 
 internal;ContextMenuProps 
+deprecated;ContextMenuProps 
 beta;ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element
 beta;ControlledSelectableContentProps
 public;ControlledTree(props: ControlledTreeProps): JSX.Element
@@ -304,6 +307,7 @@ internal;MapMode
 public;MapPayloadToInspireNodeCallback
 deprecated;MapPayloadToInspireNodeCallback
 internal;MenuItem
+deprecated;MenuItem
 internal;Milestone
 deprecated;Milestone
 public;MilestoneRange
@@ -523,6 +527,8 @@ deprecated;Timeline
 public;TimelineComponent 
 public;TimelineDataProvider
 public;TimelineDateDisplay
+public;TimelineMenuItemOption = "replace" | "append" | "prefix"
+public;TimelineMenuItemProps
 public;TimelinePausePlayAction
 public;TimelinePausePlayArgs 
 internal;TimelineProps 

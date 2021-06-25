@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { BaseTimelineDataProvider } from "../../ui-components/timeline/BaseTimelineDataProvider";
 import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../ui-components/timeline/interfaces";
-import { TimelineComponent } from "../../ui-components/timeline/TimelineComponent";
+import { TimelineComponent, TimelineMenuItemProps } from "../../ui-components/timeline/TimelineComponent";
 import TestUtils from "../TestUtils";
 import { UiAdmin } from "@bentley/ui-abstract";
 
@@ -338,11 +338,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(repeatItem).not.to.be.null;
     fireEvent.click(repeatItem);
 
-    // clicking on menuitem will close menu
-    // fireEvent.click(settingMenuSpan);
-    const possibleMenuPopupDiv = renderedComponent.queryByTestId("timeline-contextmenu-div");
-    expect(possibleMenuPopupDiv).to.be.null;
-
     expect(dataProvider.settingsCallbackCalled).to.be.true;
 
     const durationInputField = renderedComponent.queryByTestId("timeline-duration-edit-input");
@@ -641,4 +636,158 @@ describe("<TimelineComponent showDuration={true} />", () => {
     fireEvent.click(backButton);
     expect (spyOnJump).to.be.called;
   });
+  it("should append items", () => {
+    const duration = 8 * 1000;
+    const startDate = new Date(2014, 6, 6);
+    const endDate = new Date(2016, 8, 12);
+    const appendMenuItems: TimelineMenuItemProps[] = [
+      {label: "8 seconds", timelineDuration: 8*1000 },
+      {label: "5 Seconds",  timelineDuration: 5*1000 },
+      {label: "3 Seconds",  timelineDuration: 3*1000 },
+    ];
+    const renderedComponent = render (
+      <div>
+        <TimelineComponent
+          startDate={startDate}
+          endDate={endDate}
+          initialDuration={0}
+          totalDuration={duration}
+          minimized={true}
+          showDuration={true}
+          alwaysMinimized={true}
+          appMenuItemOption={"append"}
+          appMenuItems={appendMenuItems}
+          componentId={"sampleApp-appendSampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
+        />
+      </div>
+    );
+    expect(renderedComponent).not.to.be.undefined;
+
+    const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
+    fireEvent.click(settingMenuSpan);
+
+    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
+    expect(menuPopupDiv).not.to.be.null;
+    // renderedComponent.debug();
+    const addedItem = renderedComponent.getByText("8 seconds");
+    expect(addedItem).not.to.be.null;
+
+    const standardItem = renderedComponent.getByText ("timeline.slow");
+    expect(standardItem).not.to.be.null;
+  });
+  it("should prefix items", () => {
+    const duration = 500;
+    const startDate = new Date(2014, 6, 6);
+    const endDate = new Date(2016, 8, 12);
+    const prefixMenuItems: TimelineMenuItemProps[] = [
+      {label: "1/2 Second", timelineDuration: 500 },
+      {label: "1 Seconds",  timelineDuration: 1000 },
+      {label: "2 Seconds",  timelineDuration: 2*1000 },
+    ];
+    const renderedComponent = render (
+      <div>
+        <TimelineComponent
+          startDate={startDate}
+          endDate={endDate}
+          initialDuration={0}
+          totalDuration={duration}
+          minimized={true}
+          showDuration={true}
+          alwaysMinimized={true}
+          appMenuItemOption={"prefix"}
+          appMenuItems={prefixMenuItems}
+          componentId={"sampleApp-prefixSampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
+        />
+      </div>
+    );
+    expect(renderedComponent).not.to.be.undefined;
+
+    const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
+    fireEvent.click(settingMenuSpan);
+
+    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
+    expect(menuPopupDiv).not.to.be.null;
+    // renderedComponent.debug();
+    const addedItem = renderedComponent.getByText("2 Seconds");
+    expect(addedItem).not.to.be.null;
+    fireEvent.click(addedItem);
+
+    const standardItem = renderedComponent.getByText ("timeline.slow");
+    expect(standardItem).not.to.be.null;
+  });
+  it("should replace items", () => {
+    const duration = 40 * 1000;
+    const startDate = new Date(2018, 6, 6);
+    const endDate = new Date(2021, 8, 12);
+    const replaceMenuItems: TimelineMenuItemProps[] = [
+      {label: "40 Seconds", timelineDuration: 40*1000 },
+      {label: "1 Minute",  timelineDuration: 60*1000 },
+      {label: "90 Seconds",  timelineDuration: 90*1000 },
+    ];
+    const renderedComponent = render (
+      <div className="component-examples">
+        <TimelineComponent
+          startDate={startDate}
+          endDate={endDate}
+          initialDuration={0}
+          totalDuration={duration}
+          minimized={true}
+          showDuration={true}
+          alwaysMinimized={true}
+          appMenuItemOption={"replace"}
+          appMenuItems={replaceMenuItems}
+          componentId={"sampleApp-replaceSampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
+        />
+      </div>
+    );
+    expect(renderedComponent).not.to.be.undefined;
+
+    const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
+    fireEvent.click(settingMenuSpan);
+
+    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
+    expect(menuPopupDiv).not.to.be.null;
+    // renderedComponent.debug();
+    const addedItem = renderedComponent.queryByText("40 Seconds");
+    expect(addedItem).not.to.be.null;
+
+    expect(renderedComponent.queryByText ("timeline.slow")).to.be.null;
+  });
+  it("should remove repeat option", () => {
+    const duration = 40 * 1000;
+    const startDate = new Date(2018, 6, 6);
+    const endDate = new Date(2021, 8, 12);
+    const renderedComponent = render (
+      <div className="component-examples">
+        <TimelineComponent
+          startDate={startDate}
+          endDate={endDate}
+          initialDuration={0}
+          totalDuration={duration}
+          minimized={true}
+          showDuration={true}
+          alwaysMinimized={true}
+          includeRepeat={false}
+          componentId={"sampleApp-noRepeatSampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
+        />
+      </div>
+    );
+    expect(renderedComponent).not.to.be.undefined;
+
+    const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
+    fireEvent.click(settingMenuSpan);
+
+    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
+    expect(menuPopupDiv).not.to.be.null;
+    // renderedComponent.debug();
+
+    expect(renderedComponent.queryByText ("timeline.repeat")).to.be.null;
+
+    const mouseUp = document.createEvent("HTMLEvents");
+    mouseUp.initEvent("mouseup");
+    sinon.stub(mouseUp, "target").get(() => document.createElement("div"));
+    window.dispatchEvent(mouseUp);
+  });
+
 });
+

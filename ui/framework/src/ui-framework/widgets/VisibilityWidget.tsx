@@ -25,6 +25,7 @@ import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
 
 // cspell:ignore modeltree
+/* eslint-disable deprecation/deprecation */
 
 /**
  * Types of hierarchies displayed in the `VisibilityComponent`

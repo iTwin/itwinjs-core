@@ -23,7 +23,7 @@ const slowSpeed = 60 * 1000;
 const mediumSpeed = 20 * 1000;
 const fastSpeed = 10 * 1000;
 /**
- * TimelineMenuOptions: how the app wants the timeline speeds to be installed on the TimelineComponent's ContextMenu
+ * [[TimelineMenuOptions]]: specifies how the app wants the timeline speeds to be installed on the TimelineComponent's ContextMenu
  * "replace" : use the app-supplied items in place of the standard items
  * "append" : add the app-supplied items following the standard items
  * "prefix" : add the app-supplied items before the standard items
@@ -32,7 +32,7 @@ const fastSpeed = 10 * 1000;
  */
 export type TimelineMenuItemOption = "replace"|"append"|"prefix";
 /**
- * TimelineMenuItemProps specifies playback speed entries in the Timeline's ContextMenu
+ * [[TimelineMenuItemProps]] specifies playback speed entries in the Timeline's ContextMenu
  * @public
  */
 export interface TimelineMenuItemProps {
@@ -42,7 +42,7 @@ export interface TimelineMenuItemProps {
   /** duration for the entire timeline to play */
   timelineDuration: number;
 }
-/** TimelineComponentProps configure the timeline
+/** [[TimelineComponentProps]] configure the timeline
  * @public
  */
 interface TimelineComponentProps {
@@ -77,7 +77,7 @@ interface TimelineComponentState {
   includeRepeat: boolean; // include the repeat option in the timeline context menu
 }
 
-/** Component used to playback timeline data
+/** [[TimelineComponent]] is used to playback timeline data
  * @public
  */
 export class TimelineComponent extends React.Component<TimelineComponentProps, TimelineComponentState> {
@@ -151,33 +151,6 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
       this._onSetTotalDuration(this.props.totalDuration);
     }
   }
-  private _createMenuItemNodes(itemList: TimelineMenuItemProps[], currentTimelineDuration: number): React.ReactNode[] {
-    const itemNodes: React.ReactNode[] = [];
-
-    itemList.forEach((item: TimelineMenuItemProps, index: number) => {
-      const reactItem = this._createMenuItemNode(item, index, currentTimelineDuration);
-      // istanbul ignore else
-      if (reactItem)
-        itemNodes.push(reactItem);
-    });
-
-    return itemNodes;
-  }
-
-  private _createMenuItemNode(item: TimelineMenuItemProps, index: number, currentTimelineDuration: number): React.ReactNode {
-    let node: React.ReactNode = null;
-    const label = item.label;
-    const iconSpec = currentTimelineDuration === item.timelineDuration ? "icon icon-checkmark" : undefined;
-    const sel = () => this._onSetTotalDuration (item.timelineDuration);
-
-    node = (
-      <ContextMenuItem key={index} onSelect={sel} icon={iconSpec} >
-        {label}
-      </ContextMenuItem>
-    );
-    return node;
-  }
-
   private _handleTimelinePausePlayEvent = (args: GenericUiEventArgs): void => {
     const timelineArgs = args as TimelinePausePlayArgs;
     // istanbul ignore else
@@ -387,9 +360,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     return new Date();
   };
 
-  private _onSetTotalDuration = (milliseconds?: number) => {
-    if (!milliseconds)
-      return;
+  private _onSetTotalDuration = (milliseconds: number) => {
     this.setState(
       { totalDuration: milliseconds, isSettingsOpen: false },
       () => {
@@ -399,6 +370,31 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
         }
       });
   };
+  private _createMenuItemNodes(itemList: TimelineMenuItemProps[], currentTimelineDuration: number): React.ReactNode[] {
+    const itemNodes: React.ReactNode[] = [];
+
+    itemList.forEach((item: TimelineMenuItemProps, index: number) => {
+      const reactItem = this._createMenuItemNode(item, index, currentTimelineDuration);
+      // istanbul ignore else
+      if (reactItem)
+        itemNodes.push(reactItem);
+    });
+
+    return itemNodes;
+  }
+
+  private _createMenuItemNode(item: TimelineMenuItemProps, index: number, currentTimelineDuration: number): React.ReactNode {
+    let node: React.ReactNode = null;
+    const label = item.label;
+    const iconSpec = currentTimelineDuration === item.timelineDuration ? "icon icon-checkmark" : undefined;
+
+    node = (
+      <ContextMenuItem key={index} onSelect={() => this._onSetTotalDuration (item.timelineDuration)} icon={iconSpec} >
+        {label}
+      </ContextMenuItem>
+    );
+    return node;
+  }
 
   private _renderSettings = () => {
     const { totalDuration } = this.state;
@@ -422,7 +418,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
         <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2" ref={(element) => this._settings = element} onClick={this._onSettingsClick}
           role="button" tabIndex={-1} title={UiComponents.translate("button.label.settings")}
         ></span>
-        <ContextMenu opened={this.state.isSettingsOpen} onOutsideClick={this._onCloseSettings} direction={ContextMenuDirection.BottomRight}>
+        <ContextMenu opened={this.state.isSettingsOpen} onOutsideClick={this._onCloseSettings} direction={ContextMenuDirection.BottomRight} data-testid="timeline-contextmenu-div">
           {this.state.includeRepeat && <ContextMenuItem icon={this.state.repeat && "icon icon-checkmark"} onSelect={this._onRepeatChanged}>{this._repeatLabel}</ContextMenuItem>}
           {this.state.includeRepeat && <div className="separator" role="separator" />}
           {this._createMenuItemNodes(contextMenuItems, totalDuration)}
@@ -442,7 +438,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     return (
       <div data-testid="timeline-component" className={classnames("timeline-component", !!minimized && "minimized", hasDates && "has-dates")} >
         <div className="header">
-          <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
+          <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} data-testid="timeline-play" />
           <PlayerButton className="play-backward" icon="icon-caret-left" onClick={this._onBackward}
             title={UiComponents.translate("timeline.backward")} />
           <PlayerButton className="play-button-step" icon="icon-media-controls-circular-play"

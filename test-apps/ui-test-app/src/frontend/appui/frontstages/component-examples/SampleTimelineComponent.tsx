@@ -4,18 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { TimelineComponent, TimelineMenuItemProps } from "@bentley/ui-components";
-
 export function ItemsAppendedSampleTimeline() {
   const duration = 8 * 1000;
   const startDate = new Date(2014, 6, 6);
-  const endDate = new Date(2016, 8, 12);
+  const endDate = new Date(2017, 8, 12);
   const appendMenuItems: TimelineMenuItemProps[] = [
-    {label: "8 seconds", timelineDuration: 8*1000 },
+    {label: "8 Seconds", timelineDuration: 8*1000 },
     {label: "5 Seconds",  timelineDuration: 5*1000 },
     {label: "3 Seconds",  timelineDuration: 3*1000 },
   ];
   return (
-    <div>
+    <div style={{width:"100%", height:"auto"}}>
       <TimelineComponent
         startDate={startDate}
         endDate={endDate}
@@ -35,14 +34,14 @@ export function ItemsAppendedSampleTimeline() {
 export function ItemsPrefixedSampleTimeline() {
   const duration = 500;
   const startDate = new Date(2014, 6, 6);
-  const endDate = new Date(2016, 8, 12);
+  const endDate = new Date(2017, 8, 12);
   const prefixMenuItems: TimelineMenuItemProps[] = [
-    {label: "1/2 Second", timelineDuration: 500 },
-    {label: "1 Seconds",  timelineDuration: 1000 },
-    {label: "2 Seconds",  timelineDuration: 2*1000 },
+    {label: "70 Seconds", timelineDuration: 70*100 },
+    {label: "1 Minute",  timelineDuration: 60*1000 },
+    {label: "50 Seconds",  timelineDuration: 50*1000 },
   ];
   return (
-    <div>
+    <div style={{width:"100%", height:"auto"}}>
       <TimelineComponent
         startDate={startDate}
         endDate={endDate}
@@ -61,15 +60,15 @@ export function ItemsPrefixedSampleTimeline() {
 
 export function ItemsReplacedSampleTimeline() {
   const duration = 40 * 1000;
-  const startDate = new Date(2020, 6, 6);
-  const endDate = new Date(2020, 8, 12);
+  const startDate = new Date(2018, 6, 6);
+  const endDate = new Date(2021, 8, 12);
   const replaceMenuItems: TimelineMenuItemProps[] = [
-    {label: "40 Second", timelineDuration: 40*1000 },
+    {label: "40 Seconds", timelineDuration: 40*1000 },
     {label: "1 Minute",  timelineDuration: 60*1000 },
     {label: "90 Seconds",  timelineDuration: 90*1000 },
   ];
   return (
-    <div className="component-examples">
+    <div style={{width:"100%", height:"auto"}}>
       <TimelineComponent
         startDate={startDate}
         endDate={endDate}
@@ -87,10 +86,10 @@ export function ItemsReplacedSampleTimeline() {
 }
 export function NoRepeatSampleTimeline() {
   const duration = 10 * 1000;
-  const startDate = new Date(2020, 6, 6);
-  const endDate = new Date(2020, 8, 12);
+  const startDate = new Date(2018, 6, 6);
+  const endDate = new Date(2021, 8, 12);
   return (
-    <div className="component-examples">
+    <div style={{width:"100%", height:"auto"}}>
       <TimelineComponent
         startDate={startDate}
         endDate={endDate}
