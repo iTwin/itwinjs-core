@@ -35,8 +35,8 @@ interface PrimaryTreeId {
 class PlanProjectionTileTree extends IModelTileTree {
   public readonly baseElevation: number;
 
-  public constructor(params: IModelTileTreeParams, baseElevation: number) {
-    super(params);
+  public constructor(params: IModelTileTreeParams, treeId: PrimaryTileTreeId, baseElevation: number) {
+    super(params, treeId);
     this.baseElevation = baseElevation;
   }
 }
@@ -71,7 +71,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
 
     const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, options);
     if (!id.isPlanProjection)
-      return new IModelTileTree(params);
+      return new IModelTileTree(params, id.treeId);
 
     let elevation = 0;
     try {
@@ -87,7 +87,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
       //
     }
 
-    return new PlanProjectionTileTree(params, elevation);
+    return new PlanProjectionTileTree(params, id.treeId, elevation);
   }
 
   public getOwner(id: PrimaryTreeId, iModel: IModelConnection): TileTreeOwner {

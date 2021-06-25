@@ -3576,6 +3576,7 @@ export interface GraphicsRequestProps {
     readonly id: string;
     readonly location?: TransformProps;
     readonly omitEdges?: boolean;
+    readonly sectionCut?: string;
     readonly toleranceLog10: number;
     // @alpha
     readonly treeFlags?: TreeFlags;
