@@ -238,7 +238,9 @@ export class BriefcaseManager {
       throw new IModelError(err.errorNumber, `Could not open downloaded briefcase for write access: ${fileName}, err=${err.message}`);
     }
     try {
-      nativeDb.resetBriefcaseId(briefcaseId);
+      if (nativeDb.getBriefcaseId() !== briefcaseId)
+        nativeDb.resetBriefcaseId(briefcaseId);
+
       if (nativeDb.getParentChangeSetId() !== args.checkpoint.changeSetId)
         throw new IModelError(IModelStatus.InvalidId, `Downloaded briefcase has wrong changesetId: ${fileName}`);
     } finally {
