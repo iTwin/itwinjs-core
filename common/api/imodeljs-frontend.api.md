@@ -10519,7 +10519,12 @@ export abstract class TileTreeReference {
 // @public
 export interface TileTreeSupplier {
     // @internal
-    addModelsAnimatedByScript?: (modelIds: Set<Id64String_2>, scriptSourceId: Id64String_2, trees: Iterable<{
+    addModelsAnimatedByScript?: (modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{
+        id: any;
+        owner: TileTreeOwner;
+    }>) => void;
+    // @internal
+    addSpatialModels?: (modelIds: Set<Id64String>, trees: Iterable<{
         id: any;
         owner: TileTreeOwner;
     }>) => void;
