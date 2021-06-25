@@ -416,6 +416,8 @@ export class BackgroundMapSettings {
     readonly mapType: BackgroundMapType;
     // @beta
     readonly planarClipMask: PlanarClipMaskSettings;
+    // @internal (undocumented)
+    static providerFromMapLayer(props: MapLayerProps): BackgroundMapProps | undefined;
     readonly providerName: BackgroundMapProviderName;
     readonly terrainSettings: TerrainSettings;
     // (undocumented)
@@ -4750,7 +4752,6 @@ export interface MapImageryProps {
 
 // @beta
 export class MapImagerySettings {
-    // (undocumented)
     get backgroundBase(): BaseLayerSettings;
     set backgroundBase(base: BaseLayerSettings);
     // (undocumented)
