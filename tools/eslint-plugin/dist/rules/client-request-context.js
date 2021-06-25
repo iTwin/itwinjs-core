@@ -173,16 +173,29 @@ const rule = {
 
       /** @param {TSESTree.Node & {parent: FuncDeclLike}} node */
       function NextFromFuncDeclLike(node) {
-        if (node.parent.body.type === "BlockStatement") {
-          return findAfter(node.parent.body.body, (s) => s === node);
-          // XXX: promote block-less ARROW FUNC EXPR to block
-          // XXX: handle empty body
+        // If the await was in the expression body of a non-block arrow function expr,
+        // it returns immediately so we don't need to re-enter the context.
+        // XXX: If the await is not at the top of the expression
+        // e.g. async (reqCtx) => someFunc(f, await g);
+        // and we start supporting splitting such nested expressions with awaits
+        // then we'll need to reconsider this
+        if (node.parent.body.type !== "BlockStatement") {
+          return undefined;
+        }
+        return findAfter(node.parent.body.body, (s) => s === node);
+      }
+
+      /** @param {TSESTree.Node & {parent: TSESTree.ForStatement | TSESTree.ForInStatement | TSESTree.ForOfStatement}} node */
+      function NextFromForStatement(node) {
+        const loop = node.parent;
+        if (loop.body.type === "BlockStatement") {
+          return findAfter(loop.body.body, (s) => s === node);
         } else {
           context.report({
             node,
             messageId: messageIds.noEnterOnAwaitResume,
             fix(fixer) {
-              return promoteBlocklessStmtFixer(node.parent, fixer, {
+              return promoteBlocklessStmtFixer(loop, fixer, {
                 textBefore: ``,
               });
             },
@@ -191,24 +204,32 @@ const rule = {
         }
       }
 
-      /** @param {TSESTree.Node & {parent: TSESTree.ForStatement | TSESTree.ForInStatement | TSESTree.ForOfStatement}} node */
-      function NextFromForStatement(node) {
-        if (node.parent.body.type === "BlockStatement") {
-          return findAfter(node.parent.body.body, (s) => s === node);
-          // XXX: promote block-less ARROW FUNC EXPR to block
-          // XXX: handle empty body
-        } else {
+      /** @param {TSESTree.Node & {parent: TSESTree.Node}} node */
+      function NextFromGeneric(node) {
+        let cur = node,
+          outerStmt = node;
+        while (cur.type !== "BlockStatement") {
+          if (!cur.parent) unreachable("AST precondition violation");
+          outerStmt = cur;
+          cur = cur.parent;
+        }
+        const nextStmt = findAfter(cur.body, (s) => s === outerStmt);
+
+        if (nextStmt === undefined)
           context.report({
             node,
             messageId: messageIds.noEnterOnAwaitResume,
+            data: { reqCtxArgName: reqCtxArgName },
             fix(fixer) {
-              return promoteBlocklessStmtFixer(node.parent, fixer, {
-                textBefore: ``,
-              });
+              // TODO: clarify/fix
+              return fixer.insertTextAfter(
+                outerStmt,
+                `${reqCtxArgName}.enter();`
+              );
             },
           });
-          return Handled;
-        }
+
+        return Handled;
       }
 
       /** @param {TSESTree.Node} node */
@@ -243,7 +264,7 @@ const rule = {
 
         return node.parent && node.parent.type in handleParentTypeMap
           ? handleParentTypeMap[node.parent.type](node)
-          : unreachable("unhandled parent type");
+          : NextFromGeneric(node);
       }
 
       const nextStmt = handleOrReturnSimpleNextStmt(node);
@@ -256,10 +277,10 @@ const rule = {
           data: { reqCtxArgName: reqCtxArgName },
           fix(fixer) {
             // TODO: clarify/fix
-            return fixer.insertTextBefore(node, `${reqCtxArgName}.enter();`);
+            return fixer.insertTextAfter(node, `${reqCtxArgName}.enter();`);
           },
         });
-      } else if (!isClientRequestContextEnter(nextStmt, reqCtxArgName)) {
+      } else if (!isReqCtxEntry(nextStmt, reqCtxArgName)) {
         context.report({
           node: nextStmt,
           messageId: messageIds.noEnterOnAwaitResume,
@@ -297,7 +318,7 @@ const rule = {
      * @param {string} reqCtxArgName
      * @return {boolean}
      */
-    function isClientRequestContextEnter(node, reqCtxArgName) {
+    function isReqCtxEntry(node, reqCtxArgName) {
       return Boolean(
         node &&
           node.type === AST_NODE_TYPES.ExpressionStatement &&
@@ -369,7 +390,7 @@ const rule = {
 
       if (node.body.type === "BlockStatement") {
         const firstStmt = node.body.body[0];
-        if (!isClientRequestContextEnter(firstStmt, reqCtxArgName))
+        if (!isReqCtxEntry(firstStmt, reqCtxArgName))
           context.report({
             node: firstStmt || node.body,
             messageId: messageIds.noEnterOnFirstLine,
@@ -420,7 +441,7 @@ const rule = {
 
         // TODO: abstract firstStmt check and fixer to reused function
         const firstStmt = node.body.body[0];
-        if (!isClientRequestContextEnter(firstStmt, lastFunc.reqCtxArgName))
+        if (!isReqCtxEntry(firstStmt, lastFunc.reqCtxArgName))
           context.report({
             node: firstStmt || node.body,
             messageId: messageIds.noEnterOnCatchResume,
@@ -468,9 +489,7 @@ const rule = {
             // FIXME: deal with non-block body in async funcs...
             if (callback.body.type === "BlockStatement") {
               const firstStmt = callback.body.body[0];
-              if (
-                !isClientRequestContextEnter(firstStmt, lastFunc.reqCtxArgName)
-              )
+              if (!isReqCtxEntry(firstStmt, lastFunc.reqCtxArgName))
                 context.report({
                   node: firstStmt || callback.body,
                   messageId: isThen
@@ -507,6 +526,48 @@ const rule = {
       ArrowFunctionExpression: VisitFuncDeclLike,
       FunctionDeclaration: VisitFuncDeclLike,
       FunctionExpression: VisitFuncDeclLike,
+      ForOfStatement(loop) {
+        if (!loop.await) return;
+
+        const outerFunc = getOuterFunction(loop);
+        const lastFunc = back(asyncFuncStack);
+        if (lastFunc === undefined || lastFunc.func !== outerFunc) return;
+
+        if (
+          !isReqCtxEntry(
+            loop.body.type === "BlockStatement" ? loop.body.body[0] : loop.body,
+            lastFunc.reqCtxArgName
+          )
+        ) {
+          // WIP: generically handle checking statement if it is a block statement, if it needs to become one for changes, etc
+        }
+        if (
+          loop.body.type === "BlockStatement" &&
+          !isReqCtxEntry(loop.body.body[0], lastFunc.reqCtxArgName)
+        ) {
+          context.report({
+            node: loop.body.body[0] || loop.body,
+            messageId: messageIds.noEnterOnAwaitResume,
+            fix(fixer) {
+              if (loop.body.type !== "BlockStatement")
+                throw unreachable("must be block statement");
+              if (loop.body.range === undefined)
+                throw unreachable("node range was undefined");
+              if (loop.body.body[0] !== undefined)
+                return fixer.insertTextBefore(
+                  loop.body.body[0],
+                  `${lastFunc.reqCtxArgName}.enter();`
+                );
+              else
+                return fixer.insertTextAfterRange(
+                  [loop.body.range[0] + 1, loop.body.range[1]],
+                  `${lastFunc.reqCtxArgName}.enter();`
+                );
+            },
+          });
+        } else if (loop.body.type !== "BlockStatement") {
+        }
+      },
     };
   },
 };
