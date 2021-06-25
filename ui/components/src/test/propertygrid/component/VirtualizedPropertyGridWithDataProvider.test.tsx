@@ -434,6 +434,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       }
 
       before(() => {
+        // eslint-disable-next-line react/display-name
         PropertyCategoryRendererManager.defaultManager.addRenderer("test_renderer", () => () => <>Custom renderer</>);
       });
 
@@ -452,6 +453,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
       it("uses property category renderer manager from props when available", async () => {
         dataProvider = setupDataProvider("test_category", { expandCustomCategory: true });
         const rendererManager = new PropertyCategoryRendererManager();
+        // eslint-disable-next-line react/display-name
         rendererManager.addRenderer("test_renderer", () => () => <>Test renderer from props</>);
         const { findByText } = render(
           <VirtualizedPropertyGridWithDataProvider
@@ -1190,13 +1192,13 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           highlight={highlightValue}
         />
       );
-      await waitForElement(() => container.querySelector('[class="components-property-grid"]'));
+      await waitForElement(() => container.querySelector('[class="components-virtualized-property-grid"]'));
 
       rerender(<VirtualizedPropertyGridWithDataProvider
         orientation={Orientation.Horizontal}
         dataProvider={providerMock.object}
       />);
-      await waitForElement(() => container.querySelector('[class="components-property-grid"]'));
+      await waitForElement(() => container.querySelector('[class="components-virtualized-property-grid"]'));
 
       expect(scrollToItemFake).to.not.have.been.called;
     });

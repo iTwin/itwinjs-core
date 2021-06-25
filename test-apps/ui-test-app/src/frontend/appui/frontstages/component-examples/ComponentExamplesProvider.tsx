@@ -14,7 +14,7 @@ import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvi
 import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
   adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
-  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, Table, TableDataChangeEvent, TableDataProvider, WeightPickerButton,
+  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, QuantityNumberInput, Table, TableDataChangeEvent, TableDataProvider, WeightPickerButton,
 } from "@bentley/ui-components";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
@@ -33,6 +33,7 @@ import { SampleImageCheckBox } from "./SampleImageCheckBox";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
+import { TableExampleContent } from "../../contentviews/TableExampleContent";
 
 function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
@@ -120,6 +121,7 @@ async function provideFormatSpec(formatProps: FormatProps, persistenceUnit: Unit
 }
 
 function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persistenceUnitName: string, initialMagnitude: number }) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialFormatProps: FormatProps = {
     formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes"],
     precision: 4,
@@ -164,7 +166,7 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
 
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
-      { (formatterSpec && formattedValue) &&
+      {(formatterSpec && formattedValue) &&
         <>
           <span>{formattedValue}</span>
           <FormatPopupButton initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={handleFormatChange}
@@ -616,7 +618,7 @@ export class ComponentExamplesProvider {
     };
   }
 
-  private static get mergedCellsSamples(): ComponentExampleCategory {
+  private static get tableSamples(): ComponentExampleCategory {
     const testRecord = (valueString: string): PropertyRecord => {
       const value: PropertyValue = {
         value: valueString,
@@ -631,14 +633,31 @@ export class ComponentExamplesProvider {
       return new PropertyRecord(value, description);
     };
 
-    const rowData = [{
-      key: "row1",
-      cells: [
-        { key: "1", record: testRecord("Cell 1 text") },
-        { key: "2", record: testRecord("Text in the merged cells (2, 3)"), mergedCellsCount: 2, alignment: HorizontalAlignment.Center },
-        { key: "3", record: testRecord("") },
-        { key: "4", record: testRecord("Cell 4 text") }],
-    },
+    const rowData = [
+      {
+        key: "row1",
+        cells: [
+          { key: "1", record: testRecord("Cell 1-1 text") },
+          { key: "2", record: testRecord("Cell 1-2 text") },
+          { key: "3", record: testRecord("Cell 1-3 text") },
+          { key: "4", record: testRecord("Cell 1-4 text") }],
+      },
+      {
+        key: "row2",
+        cells: [
+          { key: "1", record: testRecord("Cell 2-1 text") },
+          { key: "2", record: testRecord("Text in the merged cells (2-2, 2-3)"), mergedCellsCount: 2, alignment: HorizontalAlignment.Center },
+          { key: "3", record: testRecord("") },
+          { key: "4", record: testRecord("Cell 2-4 text") }],
+      },
+      {
+        key: "row3",
+        cells: [
+          { key: "1", record: testRecord("Cell 3-1 text") },
+          { key: "2", record: testRecord("Cell 3-2 text") },
+          { key: "3", record: testRecord("Cell 3-3 text") },
+          { key: "4", record: testRecord("Cell 3-4 text") }],
+      },
     ];
     const onColumnsChanged = new TableDataChangeEvent();
     const onRowsChanged = new TableDataChangeEvent();
@@ -656,12 +675,12 @@ export class ComponentExamplesProvider {
     };
 
     return {
-      title: "Merged Table Cells",
+      title: "Tables",
       examples: [
-        createComponentExample("Table", "Table with merged cells",
-          <Table
-            dataProvider={dataProvider}
-          />),
+        createComponentExample("Basic Table", "Table with merged cells",
+          <div style={{ height: "115px", width: "100%" }}> <Table dataProvider={dataProvider} /></div>),
+        createComponentExample("Table w/options", "Table with filters and edit cells",
+          <div style={{ height: "360px", width: "100%" }}><TableExampleContent /></div>),
       ],
     };
   }
@@ -875,6 +894,14 @@ export class ComponentExamplesProvider {
           <QuantityInput initialValue={initialVolume} quantityType={QuantityType.Volume} onQuantityChange={onVolumeChange} />),
         createComponentExample("Temperature (Custom)", undefined,
           <ParsedInput onChange={onTemperatureChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />),
+        createComponentExample("Quantity Number Input", "QuantityType.Length",
+          <QuantityNumberInput style={{ width: "140px" }} persistenceValue={initialLength} step={0.25} snap quantityType={QuantityType.Length} onChange={onLengthChange} />),
+        createComponentExample("Quantity Number Input", "QuantityType.LengthEngineering",
+          <QuantityNumberInput style={{ width: "140px" }} placeholder={"Specify Length"} step={0.25} snap quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} />),
+        createComponentExample("Quantity Number Input", "QuantityType.Angle",
+          <QuantityNumberInput style={{ width: "140px" }} persistenceValue={initialAngle} step={0.5} snap quantityType={QuantityType.Angle} onChange={onAngleChange} />),
+        createComponentExample("Quantity Number Input", "QuantityType.Volume",
+          <QuantityNumberInput showTouchButtons persistenceValue={initialVolume} step={0.5} snap quantityType={QuantityType.Volume} onChange={onVolumeChange} />),
       ],
     };
   }
@@ -1164,7 +1191,9 @@ export class ComponentExamplesProvider {
     return {
       title: "Deprecated Components",
       examples: [
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
       ],
     };
@@ -1212,6 +1241,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.selectSamples,
       ComponentExamplesProvider.sliderSamples,
       ComponentExamplesProvider.splitButtonSamples,
+      ComponentExamplesProvider.tableSamples,
       ComponentExamplesProvider.tabsSamples,
       ComponentExamplesProvider.textSamples,
       ComponentExamplesProvider.tileSamples,
@@ -1220,7 +1250,6 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.quantityFormatting,
       ComponentExamplesProvider.settingPage,
       ComponentExamplesProvider.deprecatedComponentSamples,
-      ComponentExamplesProvider.mergedCellsSamples,
     ];
   }
 }

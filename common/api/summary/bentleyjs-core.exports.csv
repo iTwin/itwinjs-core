@@ -82,6 +82,7 @@ public;lowerBound
 public;LRUCache
 public;LRUDictionary
 public;LRUMap
+public;Mutable
 public;MutableCompressedId64Set 
 public;ObservableSet
 beta;OneAtATimeAction

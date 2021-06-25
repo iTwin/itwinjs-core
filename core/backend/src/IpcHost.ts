@@ -19,7 +19,7 @@ import { cancelTileContentRequests } from "./rpc-impl/IModelTileRpcImpl";
 
 /**
   * Options for [[IpcHost.startup]]
-  * @beta
+  * @public
   */
 export interface IpcHostOpts {
   iModelHost?: IModelHostConfiguration;
@@ -37,7 +37,7 @@ export interface IpcHostOpts {
 /**
  * Used by applications that have a dedicated backend. IpcHosts may send messages to their corresponding IpcApp.
  * @note if either end terminates, the other must too.
- * @beta
+ * @public
  */
 export class IpcHost {
   public static noStack = false;
@@ -137,7 +137,7 @@ export class IpcHost {
  * to ensure all methods and signatures are correct.
  *
  * Then, call `MyClass.register` at startup to connect your class to your channel.
- * @beta
+ * @public
  */
 export abstract class IpcHandler {
   /** All subclasses must implement this method to specify their channel name. */
@@ -207,8 +207,8 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async isRedoPossible(key: string): Promise<boolean> {
     return IModelDb.findByKey(key).nativeDb.isRedoPossible();
   }
-  public async getUndoString(key: string, allowCrossSessions?: boolean): Promise<string> {
-    return IModelDb.findByKey(key).nativeDb.getUndoString(allowCrossSessions);
+  public async getUndoString(key: string): Promise<string> {
+    return IModelDb.findByKey(key).nativeDb.getUndoString();
   }
   public async getRedoString(key: string): Promise<string> {
     return IModelDb.findByKey(key).nativeDb.getUndoString();
@@ -237,14 +237,17 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.isGeometricModelTrackingSupported();
   }
 
-  public async reverseTxns(key: string, numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus> {
-    return IModelDb.findByKey(key).nativeDb.reverseTxns(numOperations, allowCrossSessions);
+  public async reverseTxns(key: string, numOperations: number): Promise<IModelStatus> {
+    return IModelDb.findByKey(key).nativeDb.reverseTxns(numOperations);
   }
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
     return IModelDb.findByKey(key).nativeDb.reverseAll();
   }
   public async reinstateTxn(key: string): Promise<IModelStatus> {
     return IModelDb.findByKey(key).nativeDb.reinstateTxn();
+  }
+  public async restartTxnSession(key: string): Promise<void> {
+    return IModelDb.findByKey(key).nativeDb.restartTxnSession();
   }
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {

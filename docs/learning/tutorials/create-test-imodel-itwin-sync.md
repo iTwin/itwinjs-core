@@ -6,12 +6,11 @@ You should have a basic understanding of [iModels]($docs/learning/imodels.md), [
 
 ## Create iModel
 
-Before you create an iModel, you must first have an iTwin project that will contain the iModel. The [registration dashboard](../../../getting-started/registration-dashboard/?tab=1) provides a way for users to create a iModel for development testing purposes.
+Before you create an iModel, you must first have an iTwin project that will contain the iModel. The "[Create sample iModel](https://developer.bentley.com/create-imodel/)" page provides a way for users to create an iModel for development testing purposes.
 
-- Go to the [registration dashboard](../../../getting-started/registration-dashboard/?tab=1&create=empty)
-- Click the "+ New iModel" button
+- Go to the "[Create sample iModel](https://developer.bentley.com/create-imodel/)" page
 - Give your test iModel a name
-- Select the iTwin Synchronizer radio option
+- Select the iTwin Synchronizer option
   - Add the email addresses of anyone else you would like to grant access to the iModel
   - Any other users will also have to have a Bentley account
 - Click Submit
@@ -37,7 +36,7 @@ Creating a named version is required to view the iModel on iModelHub.
 
 Edit one of the source files with its native design tool, save, and sync the changes with iModelHub using the iTwin Synchronizer. Review the evolving timeline of the iModel. When you get to a point you want others to see, create a new Named Version.
 
-Build and run the [query-agent](https://github.com/imodeljs/imodeljs-samples/tree/master/agent-app/query-agent) which will listen to changesets pushed to iModelHub. Pull the changeset information, and parse useful details contained in them. Take a specific action if the changeset meets certain criteria.
+Build and run the [agent-starter](./develop-agent) which will listen to changesets pushed to iModelHub. Pull the changeset information, and parse useful details contained in them. Take a specific action if the changeset meets certain criteria.
 
 ---
 

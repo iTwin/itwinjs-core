@@ -3,52 +3,70 @@ publish: false
 ---
 # NextVersion
 
-## New IModel events
+## Scientific visualization
 
-[IModel]($common)s now emit events when their properties change.
+The [AnalysisStyle]($common) APIs have been cleaned up and promoted to `@public`. An AnalysisStyle is used to animate a mesh that has been supplemented with [PolyfaceAuxData]($geometry-core), by recoloring and/or deforming its vertices over time. This enables visualization of the effects of computed, changing variables like stress and temperature.
 
-* [IModel.onProjectExtentsChanged]($common)
-* [IModel.onGlobalOriginChanged]($common)
-* [IModel.onEcefLocationChanged]($common)
-* [IModel.onGeographicCoordinateSystemChanged]($common)
-* [IModel.onRootSubjectChanged]($common)
-* [IModel.onNameChanged]($common)
+## UI changes
 
-Within [IpcApp]($frontend)-based applications, [BriefcaseConnection]($frontend)s now automatically synchronize their properties in response to such events produced by changes on the backend. For example, if [BriefcaseDb.projectExtents]($backend) is modified, [BriefcaseConnection.projectExtents]($frontend) will be updated to match and both the BriefcaseDb and BriefcaseConnection will emit an `onProjectExtentsChanged` event.
+### @bentley/ui-abstract package
 
-## Promoted APIs
+Added ability for [UiItemsProvider]($ui-abstract) to provide widgets to [AbstractZoneLocation]($ui-abstract) locations when running is AppUi version 1. Prior to this a widget could only be targeted to a [StagePanelLocation]($ui-abstract) location.
 
-The following previously `alpha` or `beta` APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of the package.
+#### Example UiItemsProvider
 
-### [@bentley/bentleyjs-core](https://www.itwinjs.org/reference/bentleyjs-core/)
+The example below, shows how to add a widget to a [StagePanelLocation]($ui-abstract) if UiFramework.uiVersion === "2" and to the "BottomRight" [AbstractZoneLocation]($ui-abstract) if UiFramework.uiVersion === "1".  See [UiItemsProvider.provideWidgets]($ui-abstract) for new `zoneLocation` argument.
 
-* [ReadonlySortedArray.findEquivalent]($bentleyjs-core) and [ReadonlySortedArray.indexOfEquivalent]($bentleyjs-core) for locating an element based on a custom criterion.
+```tsx
+export class ExtensionUiItemsProvider implements UiItemsProvider {
+  public readonly id = "ExtensionUiItemsProvider";
+  public static i18n: I18N;
+  private _backstageItems?: BackstageItem[];
 
-### [@bentley/imodeljs-common](https://www.itwinjs.org/reference/imodeljs-common/)
+  public constructor(i18n: I18N) {
+    ExtensionUiItemsProvider.i18n = i18n;
+  }
 
-* [RenderSchedule]($common) for defining scripts to visualize changes in an iModel over time.
-* [DisplayStyleSettings.renderTimeline]($common) for associating a [RenderTimeline]($backend) with a [DisplayStyle]($backend).
-* [DisplayStyleSettings.timePoint]($common) for specifying the currently-simulated point along a view's [RenderSchedule.Script]($common).
-* [ElementGraphicsRequestProps]($common) for generating [RenderGraphic]($frontend)s from [GeometricElement]($backend)s or arbitrary geometry streams.
+  /** provideWidgets() is called for each registered UI provider to allow the provider to add widgets to a specific section of a stage panel.
+   *  items to the StatusBar.
+   */
+  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
+    const widgets: AbstractWidgetProps[] = [];
+    // section will be undefined if uiVersion === "1" and in that case we can add widgets to the specified zoneLocation
+    if ((undefined === section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.BottomRight) ||
+      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End && "1" !== UiFramework.uiVersion)) {
+      {
+        widgets.push({
+          id: PresentationPropertyGridWidgetControl.id,
+          icon: PresentationPropertyGridWidgetControl.iconSpec,  // icon required if uiVersion === "1"
+          label: PresentationPropertyGridWidgetControl.label,
+          defaultState: WidgetState.Open,
+          getWidgetContent: () => <PresentationPropertyGridWidget />, // eslint-disable-line react/display-name
+          canPopout: true,  // canPopout ignore if uiVersion === "1"
+        });
+      }
+    }
+    return widgets;
+  }
+}
+```
 
-### [@bentley/imodeljs-frontend](https://www.itwinjs.org/reference/imodeljs-frontend/)
+### @bentley/ui-framework package
 
-* [LookAndMoveTool]($frontend) for using videogame-like mouse and keyboard controls to navigate a 3d view.
-* [SetupCameraTool]($frontend) for defining the camera for a [SpatialViewState]($frontend).
-* [IModelApp.queryRenderCompatibility]($frontend) for determining the set of WebGL features supported by your browser and device.
-* [ToolAdmin.exceptionHandler]($frontend) and [ToolAdmin.exceptionOptions]($frontend) for customizing how your app reacts to unhandled exceptions.
-* [Viewport.antialiasSamples]($frontend) and [ViewManager.setAntialiasingAllViews]($frontend) for applying [antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) to make viewport images appear smoother.
+- The need for an IModelApp to explicitly call [ConfigurableUiManager.initialize]($ui-framework) has been removed. This call is now made when processing [UiFramework.initialize]($ui-framework). This will not break any existing applications as subsequent calls to `ConfigurableUiManager.initialize()` are ignored.
 
-### [@bentley/imodeljs-backend](https://www.itwinjs.org/reference/imodeljs-backend/)
+- If an application calls [UiFramework.setIModelConnection]($ui-framework) it will no longer need to explicitly call [SyncUiEventDispatcher.initializeConnectionEvents]($ui-framework) as `UiFramework.setIModelConnection` will call that method as it update the redux store.
 
-* [TxnManager]($backend) for managing local changes to a [BriefcaseDb]($backend).
-* [IModelDb.computeProjectExtents]($backend) for computing default project extents based on the ranges of spatial elements.
-* [IModelDb.generateElementGraphics]($backend) for generating [RenderGraphic]($frontend)s from [GeometricElement]($backend)s or arbitrary geometry streams.
-* [IModelDb.getGeometryContainment]($backend) for computing the containment of a set of [GeometricElement]($backend)s within a [ClipVector]($geometry-core).
-* [IModelDb.getMassProperties]($backend) for computing [GeometricElement]($backend) properties like area and volume.
-* [RenderTimeline]($backend) element for persisting a [RenderSchedule.Script]($common).
-* [SectionDrawingLocation]($backend) element identifying the location of a [SectionDrawing]($backend) in the context of a [SpatialModel]($backend).
+- The `version` prop passed to [FrameworkVersion]($ui-framework) component will update the [UiFramework.uiVersion] if necessary keeping the redux state matching the value defined by the prop.
 
-## Popout Widgets
+- The [ScheduleAnimationTimelineDataProvider]($ui-framework) is published for use by AppUi apps. Specifying this data provider to a [TimelineComponent]($ui-components) allows animation of the [RenderSchedule.Script]($common) if one exists for the view. A component that automatically detects a schedule script and attaches the data provider to its TimelineComponent can be found in the [DefaultViewOverlay]($ui-framework).
 
-IModelApps, that use AppUi version "2", can now specify if a Widget can support being "popped-out" to a child popup window. The child window runs in the same javascript context as the parent application window. See [Child Window Manager]($docs/learning/ui/framework/ChildWindows.md) for more details.
+- The [AnalysisAnimationTimelineDataProvider]($ui-framework) is published for use by AppUi apps. Specifying this data provider to a TimelineComponent allows animation of the information in the AnalysisDisplayProperties if the view's [DisplayStyleState]($frontend) contains one. A component that automatically detects analysis data and attaches the data provider to its TimelineComponent can be found in the [DefaultViewOverlay]($ui-framework).
+
+### @bentley/ui-componentsframework package
+
+- Added component [QuantityNumberInput]($ui-components) which accepts input for quantity values. The quantity value is shown as a single numeric value and the quantity "display" unit is shown next to the input control. The "display" unit is determined by the active unit system as defined by the [QuantityFormatter]($frontend). The control also provides buttons to increment and decrement the "displayed" value. The value reported by via the onChange function is in "persistence" units that can be stored in the iModel.
+
+### Quantity package
+
+The Format class now provides the method [Format.clone]($quantity) to clone an existing Format. [CloneOptions]($quantity) may be optionally passed into the clone method to adjust the format.

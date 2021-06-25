@@ -21,14 +21,12 @@
               "arePolymorphic": true,
               "relatedInstances": [
                 {
-                  "relationship": {
-                    "schemaName": "BisCore",
-                    "className": "ModelContainsElements"
-                  },
-                  "requiredDirection": "Backward",
-                  "class": {
-                    "schemaName": "BisCore",
-                    "className": "Model"
+                  "relationshipPath": {
+                    "relationship": {
+                      "schemaName": "BisCore",
+                      "className": "ModelContainsElements"
+                    },
+                    "direction": "Backward"
                   },
                   "isRequired": true,
                   "alias": "model"
@@ -56,14 +54,12 @@
               "arePolymorphic": true,
               "relatedInstances": [
                 {
-                  "relationship": {
-                    "schemaName": "BisCore",
-                    "className": "ModelContainsElements"
-                  },
-                  "requiredDirection": "Backward",
-                  "class": {
-                    "schemaName": "BisCore",
-                    "className": "Model"
+                  "relationshipPath": {
+                    "relationship": {
+                      "schemaName": "BisCore",
+                      "className": "ModelContainsElements"
+                    },
+                    "direction": "Backward"
                   },
                   "isRequired": true,
                   "alias": "model"
@@ -83,19 +79,15 @@
       "specifications": [
         {
           "specType": "RelatedInstanceNodes",
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "CategoryOwnsSubCategories"
-            ]
-          },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SubCategory"
-            ]
-          },
-          "requiredDirection": "Forward",
+          "relationshipPaths": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "CategoryOwnsSubCategories"
+              },
+              "direction": "Forward"
+            }
+          ],
           "groupByClass": false,
           "groupByLabel": false
         }

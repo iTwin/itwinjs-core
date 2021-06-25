@@ -8,7 +8,10 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelDb, IpcHandler } from "@bentley/imodeljs-backend";
-import { NodeKeyJSON, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariableJSON, SetRulesetVariableParams, UpdateHierarchyStateParams } from "@bentley/presentation-common";
+import {
+  NodeKeyJSON, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariableJSON, SetRulesetVariableParams, UnsetRulesetVariableParams,
+  UpdateHierarchyStateParams,
+} from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { Presentation } from "./Presentation";
 
@@ -19,6 +22,11 @@ export class PresentationIpcHandler extends IpcHandler implements PresentationIp
   public async setRulesetVariable(params: SetRulesetVariableParams<RulesetVariableJSON>): Promise<void> {
     const { clientId, rulesetId, variable } = params;
     Presentation.getManager(clientId).vars(rulesetId).setValue(variable.id, variable.type, variable.value);
+  }
+
+  public async unsetRulesetVariable(params: UnsetRulesetVariableParams): Promise<void> {
+    const { clientId, rulesetId, variableId } = params;
+    Presentation.getManager(clientId).vars(rulesetId).unset(variableId);
   }
 
   public async updateHierarchyState(params: UpdateHierarchyStateParams<NodeKeyJSON>): Promise<void> {
