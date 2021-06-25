@@ -1,6 +1,11 @@
 # Change Log - @bentley/perf-tools
 
-This log was last generated on Wed, 23 Jun 2021 17:09:07 GMT and should not be manually modified.
+This log was last generated on Fri, 25 Jun 2021 16:03:01 GMT and should not be manually modified.
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+_Version update only_
 
 ## 2.16.4
 Wed, 23 Jun 2021 17:09:07 GMT
