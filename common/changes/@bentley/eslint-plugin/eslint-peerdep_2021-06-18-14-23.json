@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/eslint-plugin",
-      "comment": "",
+      "comment": "Typescript is now a peer-dependency",
       "type": "none"
     }
   ],
