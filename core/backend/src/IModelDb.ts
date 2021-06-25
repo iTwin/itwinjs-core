@@ -2397,9 +2397,6 @@ export class BriefcaseDb extends IModelDb {
  */
 export class SnapshotDb extends IModelDb {
   public get isSnapshot(): boolean { return true; }
-  /** @beta */
-  public get isV2Checkpoint(): boolean { return this._isV2Checkpoint; }
-  private _isV2Checkpoint: boolean;
   private _reattachDueTimestamp: number | undefined;
   private _createClassViewsOnClose?: boolean;
   /** The full path to the snapshot iModel file.
@@ -2412,7 +2409,6 @@ export class SnapshotDb extends IModelDb {
     const changeset = nativeDb.getParentChangeset();
     const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), changeSetId: changeset.id, changesetIndex: changeset.index, openMode };
     super(nativeDb, iModelRpcProps, openMode);
-    this._isV2Checkpoint = false;
   }
 
   public static findByKey(key: string): SnapshotDb {
@@ -2534,7 +2530,6 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
-    snapshot._isV2Checkpoint = true;
     snapshot.setReattachDueTimestamp(expiryTimestamp);
     return snapshot;
   }
@@ -2545,18 +2540,16 @@ export class SnapshotDb extends IModelDb {
    * @internal
    */
   public async reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    if (!this._isV2Checkpoint)
-      return;
-    if (this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
-      const { expiryTimestamp } = await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this._changeSetId! });
+    if (undefined !== this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
+      const { expiryTimestamp } = await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this.changeset.id });
       this.setReattachDueTimestamp(expiryTimestamp);
     }
   }
 
   private setReattachDueTimestamp(expiryTimestamp: number) {
-    const expiresIn = expiryTimestamp - Date.now();
-
-    this._reattachDueTimestamp = Date.now() + expiresIn / 2;
+    const now = Date.now();
+    const expiresIn = expiryTimestamp - now;
+    this._reattachDueTimestamp = now + (expiresIn / 2);
   }
 
   /** @internal */

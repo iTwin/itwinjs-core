@@ -229,7 +229,6 @@ export class IModelTestUtils {
 
   /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
   public static async openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<SnapshotDb> {
-    args.requestContext.enter();
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 

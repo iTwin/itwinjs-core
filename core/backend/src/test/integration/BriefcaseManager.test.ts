@@ -53,7 +53,7 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should open and close an iModel from the Hub", async () => {
-    const iModel = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON() });
+    const iModel = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON(), deleteFirst: true });
     assert.exists(iModel, "No iModel returned from call to BriefcaseManager.open");
 
     // Validate that the IModelDb is readonly
@@ -106,7 +106,7 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should open iModels of specific versions from the Hub", async () => {
-    const iModelFirstVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON() });
+    const iModelFirstVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON(), deleteFirst: true });
     assert.exists(iModelFirstVersion);
     assert.strictEqual(iModelFirstVersion.changeset.id, "");
 
@@ -132,9 +132,10 @@ describe("BriefcaseManager (#integration)", () => {
       iModelFromChangeSet.close();
     }
 
-    const iModelLatestVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId });
+    const iModelLatestVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, deleteFirst: true });
     assert.isDefined(iModelLatestVersion);
     assert.strictEqual(iModelLatestVersion.nativeDb.getParentChangeset().id, changeSets[3].id);
+
     assert.equal(iModelLatestVersion.nativeDb.getParentChangeset().index, changeSets[3].index);
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelFirstVersion);
