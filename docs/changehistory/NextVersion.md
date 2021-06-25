@@ -7,6 +7,20 @@ publish: false
 
 The [AnalysisStyle]($common) APIs have been cleaned up and promoted to `@public`. An AnalysisStyle is used to animate a mesh that has been supplemented with [PolyfaceAuxData]($geometry-core), by recoloring and/or deforming its vertices over time. This enables visualization of the effects of computed, changing variables like stress and temperature.
 
+## Modifications to the Change Summary API
+
+[ChangeSummaryManager.extractChangeSummaries]($imodeljs-backend) has now been deprecated, and replaced with two methods - [ChangeSummaryManager.createChangeSummaries]($imodeljs-backend) and [ChangeSummaryManager.createChangeSummary]($imodeljs-backend).
+
+The deprecated method works by creating a range of Change Summaries by starting with the end version, reversing Changesets one by one until the specified start version. Since Changesets containing schema changes cannot be reversed, the method may fail to create some Change Summaries. The new replacement instead walks the versions in the forward direction.
+
+- [ChangeSummaryManager.createChangeSummaries]($imodeljs-backend) creates Change Summaries for a range of Changesets by walking the versions in a forward direction starting with the specified first version.
+- [ChangeSummaryManager.createChangeSummary]($imodeljs-backend) creates a single Change Summary for the current version of the iModel, i.e., the last applied Changeset.
+
+[ChangeSummaryManager.detachChangeCache]($imodeljs-backend)  can now be used to detach the cache after querying the change summary to continue change summary creation if necessary.
+
+[ChangeSummaryExtractOptions]($imodeljs-backend) was also deprecated as a consequence of the above changes. [CreateChangeSummaryArgs]($imodeljs-backend) serves a similar purpose with the newer methods.
+ChangeSummaryExtractContext was unused and has been removed.
+
 ## UI changes
 
 ### @bentley/ui-abstract package
