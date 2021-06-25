@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-backend",
-  "version": "2.18.0-dev.15",
+  "version": "2.18.0-dev.16",
   "description": "iModel.js editor backend",
   "main": "lib/imodeljs-editor-backend.js",
   "typings": "lib/imodeljs-editor-backend",
@@ -34,10 +34,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.15",
-    "@bentley/geometry-core": "workspace:^2.18.0-dev.15",
-    "@bentley/imodeljs-backend": "workspace:^2.18.0-dev.15",
-    "@bentley/imodeljs-common": "workspace:^2.18.0-dev.15"
+    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.16",
+    "@bentley/geometry-core": "workspace:^2.18.0-dev.16",
+    "@bentley/imodeljs-backend": "workspace:^2.18.0-dev.16",
+    "@bentley/imodeljs-common": "workspace:^2.18.0-dev.16"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
