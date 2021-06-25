@@ -60,7 +60,7 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     };
 
     const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, options);
-    return new IModelTileTree(params);
+    return new IModelTileTree(params, id);
   }
 
   public getOwner(id: ClassifierTreeId, iModel: IModelConnection): TileTreeOwner {
