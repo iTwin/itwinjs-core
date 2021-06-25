@@ -142,7 +142,7 @@ export class V2CheckpointManager {
     }
   }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<string> {
+  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: string, expiryTimestamp: number }> {
     const args = await this.getCommandArgs(checkpoint);
     if (undefined === args.daemonDir || args.daemonDir === "")
       throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
@@ -156,7 +156,9 @@ export class V2CheckpointManager {
 
       throw new IModelError(attachResult.result, error);
     }
-    return BlobDaemon.getDbFileName(args);
+    const sasTokenExpiry = new URLSearchParams(args.auth).get("se");
+
+    return { filePath: BlobDaemon.getDbFileName(args), expiryTimestamp: sasTokenExpiry ? Date.parse(sasTokenExpiry) : 0 };
   }
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {

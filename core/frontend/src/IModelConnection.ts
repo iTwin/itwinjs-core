@@ -9,7 +9,7 @@
 import {
   assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
+import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams, FontMap, FontMapProps,
   GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
@@ -17,17 +17,17 @@ import {
   ModelProps, ModelQueryParams, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
   SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
-import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
+import { CheckpointConnection, RemoteBriefcaseConnection } from "./CheckpointConnection";
 import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
-import { CheckpointConnection, RemoteBriefcaseConnection } from "./CheckpointConnection";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
+import { BingElevationProvider } from "./tile/map/BingElevation";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 
@@ -73,10 +73,6 @@ export abstract class IModelConnection extends IModel {
   public readonly subcategories: SubCategoriesCache;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
-  /** The map location.
-   * @internal
-   */
-  public readonly backgroundMapLocation = new BackgroundMapLocation();
   /** The Geographic location services available for this iModelConnection
    * @internal
    */
@@ -228,10 +224,6 @@ export abstract class IModelConnection extends IModel {
     this.subcategories = new SubCategoriesCache(this);
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
-
-    this.onEcefLocationChanged.addListener(() => {
-      this.backgroundMapLocation.onEcefChanged(this.ecefLocation);
-    });
 
     this.onProjectExtentsChanged.addListener(() => {
       // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
@@ -556,6 +548,62 @@ export abstract class IModelConnection extends IModel {
       if (vp.view.isSpatialView() && vp.iModel === this)
         vp.invalidateController();
     }
+  }
+
+  /** @internal */
+  public getMapEcefToDb(bimElevationBias: number): Transform {
+    if (!this.ecefLocation)
+      return Transform.createIdentity();
+
+    const mapEcefToDb = this.ecefLocation.getTransform().inverse();
+    if (!mapEcefToDb) {
+      assert(false);
+      return Transform.createIdentity();
+    }
+    mapEcefToDb.origin.z += bimElevationBias;
+
+    return mapEcefToDb;
+  }
+  private _geodeticToSeaLevel?: number | Promise<number>;
+  private _projectCenterAltitude?: number | Promise<number>;
+
+  /** Event called immediately after map elevation request is completed.  This occurs only in the case where background map terrain is displayed
+   * with either geiod or ground offset.   These require a query to BingElevation and therefore synching the view may be required
+   * when the request is completed.
+   * @internal
+   */
+  public readonly onMapElevationLoaded = new BeEvent<(_imodel: IModelConnection) => void>();
+
+  /** The offset between sea level and the geodetic ellipsoid.  This will return undefined only if the request for the offset to Bing Elevation
+   * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
+   * @internal
+   */
+  public get geodeticToSeaLevel(): number | undefined {
+    if (undefined === this._geodeticToSeaLevel) {
+      const elevationProvider = new BingElevationProvider();
+      this._geodeticToSeaLevel = elevationProvider.getGeodeticToSeaLevelOffset(this.projectExtents.center, this);
+      this._geodeticToSeaLevel.then((geodeticToSeaLevel) => {
+        this._geodeticToSeaLevel = geodeticToSeaLevel;
+        this.onMapElevationLoaded.raiseEvent(this);
+      }).catch((_error) => this._geodeticToSeaLevel = 0.0);
+    }
+    return ("number" === typeof this._geodeticToSeaLevel) ? this._geodeticToSeaLevel : undefined;
+  }
+
+  /** The altitude (geodetic) at the project center.  This will return undefined only if the request for the offset to Bing Elevation
+   * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
+   * @internal
+   */
+  public get projectCenterAltitude(): number | undefined {
+    if (undefined === this._projectCenterAltitude) {
+      const elevationProvider = new BingElevationProvider();
+      this._projectCenterAltitude =  elevationProvider.getHeightValue(this.projectExtents.center, this);
+      this._projectCenterAltitude.then((projectCenterAltitude) => {
+        this._projectCenterAltitude = projectCenterAltitude;
+        this.onMapElevationLoaded.raiseEvent(this);
+      }).catch((_error) => this._projectCenterAltitude = 0.0);
+    }
+    return  ("number" === typeof this._projectCenterAltitude) ? this._projectCenterAltitude : undefined;
   }
 }
 
@@ -978,8 +1026,6 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
       if (undefined === ctor)
         throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggerCategory, () => viewProps);
-
-      await this._iModel.backgroundMapLocation.initialize(this._iModel);
 
       const viewState = ctor.createFromProps(viewProps, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector

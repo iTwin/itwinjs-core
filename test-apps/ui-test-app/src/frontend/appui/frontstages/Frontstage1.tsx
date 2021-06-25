@@ -17,7 +17,7 @@ import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { NestedFrontstage1 } from "./NestedFrontstage1";
 import { UiAdmin, WidgetState } from "@bentley/ui-abstract";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 function RightPanel() {
   const direction = useWidgetDirection();

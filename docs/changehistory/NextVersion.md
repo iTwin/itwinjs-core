@@ -3,7 +3,15 @@ publish: false
 ---
 # NextVersion
 
-## UI Changes
+## Scientific visualization
+
+The [AnalysisStyle]($common) APIs have been cleaned up and promoted to `@public`. An AnalysisStyle is used to animate a mesh that has been supplemented with [PolyfaceAuxData]($geometry-core), by recoloring and/or deforming its vertices over time. This enables visualization of the effects of computed, changing variables like stress and temperature.
+
+## Section-cut element graphics
+
+[TileAdmin.requestElementGraphics]($frontend) can now produce section-cut graphics if [ElementGraphicsRequestProps.sectionCut]($common) is supplied. The temporary element graphics produced during interactive editing will automatically include section-cut graphics based on the viewport's [CutStyle]($common).
+
+## UI changes
 
 ### @bentley/ui-abstract package
 

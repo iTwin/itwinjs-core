@@ -1,6 +1,6 @@
 {
   "name": "@bentley/oidc-signin-tool",
-  "version": "2.18.0-dev.8",
+  "version": "2.18.0-dev.13",
   "description": "OIDC Signin Helper",
   "main": "lib/index.js",
   "typings": "lib/index",
