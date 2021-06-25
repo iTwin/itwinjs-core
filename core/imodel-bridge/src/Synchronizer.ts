@@ -316,10 +316,8 @@ export class Synchronizer {
       return;
     }
     const sql = `SELECT aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Kind !='DocumentWithBeGuid'`;
-
     const deleteElements: Id64String[] = new Array<Id64String>();
     const deleteDefElements: Id64String[] = new Array<Id64String>();
-
     const db = this.imodel as BriefcaseDb;
     this.imodel.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
