@@ -13,6 +13,7 @@ import { BezierCurveBase } from "../bspline/BezierCurveBase";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BSplineSurface3d, BSplineSurface3dH } from "../bspline/BSplineSurface";
+import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
 import { Arc3d } from "../curve/Arc3d";
 import { CoordinateXYZ } from "../curve/CoordinateXYZ";
 import { BagOfCurves, CurveCollection } from "../curve/CurveCollection";
@@ -55,6 +56,8 @@ export abstract class GeometryHandler {
   public handleCurveCollection(_g: CurveCollection): any { }
   /** handle strongly typed  BSplineCurve3d  */
   public abstract handleBSplineCurve3d(g: BSplineCurve3d): any;
+  /** handle strongly typed  BSplineCurve3d  */
+  public abstract handleInterpolationCurve3d(g: InterpolationCurve3d): any;
   /** handle strongly typed  BSplineCurve3dH  */
   public abstract handleBSplineCurve3dH(g: BSplineCurve3dH): any;
   /** handle strongly typed  BSplineSurface3d  */
@@ -80,6 +83,7 @@ export abstract class GeometryHandler {
   public handleUnionRegion(g: UnionRegion): any { return this.handleCurveCollection(g); }
   /** handle strongly typed  BagOfCurves (base class method calls handleCurveCollection) */
   public handleBagOfCurves(g: BagOfCurves): any { return this.handleCurveCollection(g); }
+  /** handle strongly typed  BagOfCurves (base class method calls handleCurveCollection) */
   /** handle strongly typed  Sphere */
   public abstract handleSphere(g: Sphere): any;
   /** handle strongly typed  Cone */
@@ -124,6 +128,8 @@ export class NullGeometryHandler extends GeometryHandler {
   public handleCurveCollection(_g: CurveCollection): any { return undefined; }
   /** no-action implementation */
   public handleBSplineCurve3d(_g: BSplineCurve3d): any { return undefined; }
+  /** no-action implementation */
+  public handleInterpolationCurve3d(_g: InterpolationCurve3d): any { return undefined; }
   /** no-action implementation */
   public handleBSplineCurve3dH(_g: BSplineCurve3dH): any { return undefined; }
   /** no-action implementation */
@@ -185,6 +191,8 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
   public handleArc3d(_g: Arc3d): any { return undefined; }
   /** no-action implementation */
   public handleBSplineCurve3d(_g: BSplineCurve3d): any { return undefined; }
+  /** no-action implementation */
+  public handleInterpolationCurve3d(_g: InterpolationCurve3d): any { return undefined; }
   /** no-action implementation */
   public handleBSplineCurve3dH(_g: BSplineCurve3dH): any { return undefined; }
   /** no-action implementation */

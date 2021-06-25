@@ -723,7 +723,9 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     copyPointsFloat64Array(): Float64Array;
     static create(poleArray: Float64Array | Point3d[], knotArray: Float64Array | number[], order: number): BSplineCurve3d | undefined;
     // (undocumented)
-    static createThroughPoints(points: IndexedXYZCollection, order: number): BSplineCurve3d | undefined;
+    static createFromInterpolationCurve3dProps(props: InterpolationCurve3dProps): BSplineCurve3d | undefined;
+    // (undocumented)
+    static createThroughPoints(points: IndexedXYZCollection | Point3d[], order: number): BSplineCurve3d | undefined;
     static createUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;
@@ -761,6 +763,9 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
     collectBezierSpans(prefer3dH: boolean): BezierCurveBase[];
     copyKnots(includeExtraEndKnot: boolean): number[];
     readonly curvePrimitiveType = "bsplineCurve";
+    set definitionData(data: any);
+    // (undocumented)
+    get definitionData(): any;
     get degree(): number;
     endPoint(): Point3d;
     abstract evaluatePointAndDerivativeInSpan(spanIndex: number, spanFraction: number, result?: Ray3d): Ray3d;
@@ -1631,7 +1636,7 @@ export abstract class CurvePrimitive extends GeometryQuery {
 export type CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined;
 
 // @public
-export type CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex";
+export type CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolatingCurve";
 
 // @public
 export enum CurveSearchStatus {
@@ -1929,6 +1934,8 @@ export class GeodesicPathSolver {
 // @public
 export class Geometry {
     static almostEqualArrays<T>(a: T[] | undefined, b: T[] | undefined, testFunction: (p: T, q: T) => boolean): boolean;
+    static almostEqualNumberArrays(a: number[] | Float64Array | undefined, b: number[] | Float64Array | undefined, testFunction: (p: number, q: number) => boolean): boolean;
+    static areEqualAllowUndefined<T>(a: T | undefined, b: T | undefined, resultIfBothUndefined?: boolean): boolean;
     static axisIndexToRightHandedAxisOrder(axisIndex: AxisIndex): AxisOrder;
     static axisOrderToAxis(order: AxisOrder, index: number): number;
     static clamp(value: number, min: number, max: number): number;
@@ -2031,6 +2038,7 @@ export abstract class GeometryHandler {
     abstract handleCoordinateXYZ(g: CoordinateXYZ): any;
     handleCurveCollection(_g: CurveCollection): any;
     abstract handleIndexedPolyface(g: IndexedPolyface): any;
+    abstract handleInterpolationCurve3d(g: InterpolationCurve3d): any;
     abstract handleLinearSweep(g: LinearSweep): any;
     abstract handleLineSegment3d(g: LineSegment3d): any;
     abstract handleLineString3d(g: LineString3d): any;
@@ -2507,6 +2515,7 @@ export namespace IModelJson {
         static parseCurveCollectionMembers(result: CurveCollection, data?: any): CurveCollection | undefined;
         static parseCylinderProps(json?: CylinderProps): Cone | undefined;
         static parseIndexedMesh(data?: any): IndexedPolyface | undefined;
+        static parseInterpolationCurve(data?: any): InterpolationCurve3d | undefined;
         static parseLinearSweep(json?: any): LinearSweep | undefined;
         static parsePointArray(json?: any[]): Point3d[];
         static parsePolyfaceAuxData(data?: any): PolyfaceAuxData | undefined;
@@ -2597,6 +2606,7 @@ export namespace IModelJson {
         handleCone(data: Cone): any;
         handleCoordinateXYZ(data: CoordinateXYZ): any;
         handleIndexedPolyface(pf: IndexedPolyface): any;
+        handleInterpolationCurve3d(curve: InterpolationCurve3d): any;
         handleLinearSweep(data: LinearSweep): any;
         handleLineSegment3d(data: LineSegment3d): any;
         handleLineString3d(data: LineString3d): any;
@@ -2762,6 +2772,7 @@ export abstract class IndexedXYZCollection {
     cyclicIndex(i: number): number;
     abstract distanceIndexIndex(index0: number, index1: number): number | undefined;
     abstract distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
+    getArray(): Point3d[];
     abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
     abstract getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d;
     getRange(): Range3d;
@@ -3482,6 +3493,7 @@ export class NullGeometryHandler extends GeometryHandler {
     handleCoordinateXYZ(_g: CoordinateXYZ): any;
     handleCurveCollection(_g: CurveCollection): any;
     handleIndexedPolyface(_g: IndexedPolyface): any;
+    handleInterpolationCurve3d(_g: InterpolationCurve3d): any;
     handleLinearSweep(_g: LinearSweep): any;
     handleLineSegment3d(_g: LineSegment3d): any;
     handleLineString3d(_g: LineString3d): any;
@@ -3835,7 +3847,7 @@ export class Point3dArray {
     static cloneDeepJSONNumberArrays(data: MultiLineStringDataVariant): any[];
     static cloneDeepXYZPoint3dArrays(data: MultiLineStringDataVariant): any[];
     static clonePoint2dArray(data: XYAndZ[]): Point2d[];
-    static clonePoint3dArray(data: XYAndZ[]): Point3d[];
+    static clonePoint3dArray(data: XYAndZ[] | Float64Array): Point3d[];
     static cloneWithMaxEdgeLength(points: Point3d[], maxEdgeLength: number): Point3d[];
     static closestPointIndex(data: XYAndZ[], spacePoint: XYAndZ): number;
     static computeConvexHullXY(points: Point3d[], hullPoints: Point3d[], insidePoints: Point3d[], addClosurePoint?: boolean): void;
@@ -4649,6 +4661,7 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
     handleCoordinateXYZ(_g: CoordinateXYZ): any;
     handleCurveCollection(g: CurveCollection): any;
     handleIndexedPolyface(_g: IndexedPolyface): any;
+    handleInterpolationCurve3d(_g: InterpolationCurve3d): any;
     handleLinearSweep(_g: LinearSweep): any;
     handleLineSegment3d(_g: LineSegment3d): any;
     handleLineString3d(_g: LineString3d): any;

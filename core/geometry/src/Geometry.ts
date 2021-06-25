@@ -825,6 +825,46 @@ export class Geometry {
     }
   return false;
   }
+
+/** test for  match of typed arrays (e.g. Float64Array). */
+public static almostEqualNumberArrays(a: number[] | Float64Array | undefined, b: number[] | Float64Array | undefined,
+  testFunction: (p: number, q: number) => boolean): boolean{
+  if (Array.isArray(a) && a.length === 0)
+    a = undefined;
+if (Array.isArray(b) && b.length === 0)
+    b = undefined;
+if (a === undefined && b === undefined)
+  return true;
+if (Array.isArray(a) && Array.isArray(b)) {
+  if (a.length !== b.length)
+    return false;
+  for (let i = 0; i < a.length; i++){
+    if (!testFunction (a[i],b[i]))
+      return false;
+    }
+  return true;
+  }
+return false;
+}
+
+  /**
+   * Return
+   * * true if both values are defined and equal (with ===).
+   * * false if both defined by not equal
+   * * return (option arg) resultIfBothUndefined when both are undefined.
+   * * return false if one is defined and the other undefined
+   * @param a first value
+   * @param b second value
+   * @param resultIfBothUndefined return value when both are undefined.
+   * @returns
+   */
+  public static areEqualAllowUndefined<T>(a: T | undefined, b: T | undefined, resultIfBothUndefined: boolean = true): boolean{
+    if (a === undefined && b === undefined)
+      return resultIfBothUndefined;
+    if (a !== undefined && b !== undefined)
+      return a === b;
+    return false;
+  }
   /** clone an array whose members have a clone method.
    * * undefined return from clone is forced into the output array.
   */

@@ -675,10 +675,23 @@ export class Point3dArray {
    * Return an array containing clones of the Point3d data[]
    * @param data source data
    */
-  public static clonePoint3dArray(data: XYAndZ[]): Point3d[] {
-    return data.map((p: XYAndZ) => Point3d.create(p.x, p.y, p.z));
+  public static clonePoint3dArray(data: XYAndZ[] | Float64Array): Point3d[] {
+    const result: Point3d[] = [];
+    if (data.length === 0)
+      return result;
+    if (data instanceof Float64Array) {
+      for (let i = 0; i + 2 < data.length; i += 3)
+        result.push(Point3d.create(data[i], data[i + 1], data[i + 2]));
+      return result;
+    }
+    for (const p of data) {
+      if (Array.isArray(p))
+        result.push(Point3d.create (p[0], p[1], p[2]));
+      else
+        result.push(Point3d.create(p.x, p.y, p.z));
+    }
+    return result;
   }
-
   /**
    * Return an array containing Point2d with xy parts of each Point3d
    * @param data source data

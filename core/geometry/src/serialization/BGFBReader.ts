@@ -42,6 +42,8 @@ import { Segment1d } from "../geometry3d/Segment1d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
+import { InterpolationCurve3d, InterpolationCurve3dProps } from "../bspline/InterpolationCurve3d";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 
 /** * Context to write to a flatbuffer blob.
  *  * This class is internal.
@@ -79,7 +81,72 @@ export class BGFBReader {
     }
     return undefined;
   }
-  /**
+/*
+  public writeInterpolationCurve3dAsFBVariantGeometry(data: InterpolationCurve3dData): number | undefined {
+    const fitPointsOffset = this.writeDoubleArray(data.copyFitPointsFloat64Array());
+    if (fitPointsOffset === undefined)
+    return undefined;
+  const knotOffset = data.knots ? this.writeDoubleArray(data.knots) : 0;
+
+    // REMARK: some native or flatbuffer quirk made startTangent a point and endTangent a vector.
+  const startTangentOffset = data.startTangent ?
+    BGFBAccessors.DPoint3d.createDPoint3d(this.builder,
+      data.startTangent.x, data.startTangent.y, data.startTangent.z)
+      : 0;
+  const endTangentOffset = data.endTangent ?
+      BGFBAccessors.DVector3d.createDVector3d(this.builder,
+        data.endTangent.x, data.endTangent.y, data.endTangent.z)
+        : 0;
+    BGFBAccessors.InterpolationCurve.startInterpolationCurve(this.builder);
+  BGFBAccessors.InterpolationCurve.addFitPoints(this.builder, fitPointsOffset);
+  if (data.order)
+    BGFBAccessors.InterpolationCurve.addOrder(this.builder, data.order);
+  if (data.closed)
+    BGFBAccessors.InterpolationCurve.addClosed(this.builder, data.closed);
+  if (data.isChordLenKnots)
+    BGFBAccessors.InterpolationCurve.addIsChordLenKnots(this.builder, data.isChordLenKnots);
+  if (data.isColinearTangents)
+    BGFBAccessors.InterpolationCurve.addIsColinearTangents(this.builder, data.isColinearTangents);
+  if (data.isChordLenKnots)
+    BGFBAccessors.InterpolationCurve.addIsChordLenKnots(this.builder, data.isChordLenKnots);
+  if (data.isNaturalTangents)
+    BGFBAccessors.InterpolationCurve.addIsNaturalTangents(this.builder, data.isNaturalTangents);
+  if (startTangentOffset !== 0)
+    BGFBAccessors.InterpolationCurve.addStartTangent(this.builder, startTangentOffset);
+  if (endTangentOffset !== 0)
+    BGFBAccessors.InterpolationCurve.addEndTangent(this.builder, endTangentOffset);
+  if (knotOffset !== 0)
+    BGFBAccessors.InterpolationCurve.addKnots(this.builder, knotOffset);
+  const headerOffset = BGFBAccessors.InterpolationCurve.endInterpolationCurve(this.builder);
+  return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve, headerOffset, 0);
+  }
+*/
+/**
+ * Extract an interpolating curve
+ * @param variant read position in the flat buffer.
+ */
+  public readInterpolationCurve3d(header: BGFBAccessors.InterpolationCurve): InterpolationCurve3d | undefined {
+    const xyzArray = header.fitPointsArray();
+    if (xyzArray instanceof Float64Array){
+    const knots = header.knotsArray();
+    const props: InterpolationCurve3dProps = {
+      order: header.order (),
+      closed: header.closed(),
+      isChordLenKnots: header.isChordLenKnots(),
+      isColinearTangents: header.isColinearTangents(),
+      isChordLenTangent: header.isChordLenTangents(),
+      startTangent: undefined,
+      endTangent: undefined,
+      fitPoints: Point3dArray.clonePoint3dArray (xyzArray),
+      knots: knots?.slice (0),
+    };
+  // const closed = header.closed();
+  return InterpolationCurve3d.create(props);
+}
+  return undefined;
+}
+
+/**
    * Extract a bspline curve
    * @param variant read position in the flat buffer.
    */
@@ -181,8 +248,12 @@ export class BGFBReader {
       const offsetToTransitionSpiralTable = variant.geometry(new BGFBAccessors.TransitionSpiral());
       if (offsetToTransitionSpiralTable !== null)
         return this.readTransitionSpiral(offsetToTransitionSpiralTable);
-    }
-    return undefined;
+    } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve) {
+        const offsetToInterpolationCurveTable = variant.geometry(new BGFBAccessors.InterpolationCurve());
+        if (offsetToInterpolationCurveTable !== null)
+          return this.readInterpolationCurve3d(offsetToInterpolationCurveTable);
+      }
+      return undefined;
   }
   /**
    * Extract a curve primitive
@@ -498,7 +569,8 @@ export class BGFBReader {
       case BGFBAccessors.VariantGeometryUnion.tagEllipticArc:
       case BGFBAccessors.VariantGeometryUnion.tagBsplineCurve:
       case BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral:
-        {
+      case BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve:
+          {
           return this.readCurvePrimitiveFromVariant(variant);
         }
       case BGFBAccessors.VariantGeometryUnion.tagCurveVector:

@@ -36,6 +36,7 @@ import { Checker } from "../Checker";
 import { Range1d } from "../../geometry3d/Range";
 import { ParityRegion } from "../../curve/ParityRegion";
 import { Loop } from "../../curve/Loop";
+import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
 
 /** Like  NullGeometryHandler, but allow various CurveCollections to flow to base class, where they reach handleCurveCollection. */
 export class MinimalGeometryHandler extends GeometryHandler {
@@ -49,6 +50,8 @@ export class MinimalGeometryHandler extends GeometryHandler {
   // public handleCurveCollection(_g: CurveCollection): any { return undefined; }
   /** no-action implementation */
   public handleBSplineCurve3d(_g: BSplineCurve3d): any { return undefined; }
+  /** no-action implementation */
+  public handleInterpolationCurve3d(_g: InterpolationCurve3d): any { return undefined; }
   /** no-action implementation */
   public handleBSplineCurve3dH(_g: BSplineCurve3dH): any { return undefined; }
   /** no-action implementation */
