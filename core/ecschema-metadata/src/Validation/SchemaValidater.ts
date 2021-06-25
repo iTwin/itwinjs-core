@@ -15,6 +15,8 @@ import { AnyDiagnostic } from "./Diagnostic";
 import { SchemaWalker } from "./SchemaWalker";
 import { ECRuleSet } from "./ECRules";
 
+/* eslint-disable deprecation/deprecation */
+
 class CollectionReporter extends SuppressionDiagnosticReporter {
   private _diagnostics: AnyDiagnostic[] = [];
 
@@ -36,6 +38,7 @@ class CollectionReporter extends SuppressionDiagnosticReporter {
 /**
  * Applies EC Rules, see [[ECRuleSet]], to a given Schema and reports any violations.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export class SchemaValidater {
   /**

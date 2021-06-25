@@ -26,6 +26,7 @@ import { IRuleSet } from "../../Validation/Rules";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
+/* eslint-disable deprecation/deprecation */
 export class TestReporter implements IDiagnosticReporter {
   public async report(_diagnostic: Diagnostics.AnyDiagnostic) {
   }
