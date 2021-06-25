@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "Accomodated the inability to reverse Changesets when creating change summaries. ",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "32458710+ramanujam-raman@users.noreply.github.com"
+}

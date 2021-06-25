@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Constant, CustomAttribute, CustomAttributeClass, ECClassModifier, ECVersion, EntityClass, Enumeration,
+import { Constant, CustomAttribute, CustomAttributeClass, ECClassModifier, EntityClass, Enumeration,
   Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PrimitiveType, PropertyCategory,
   RelationshipClass, Schema, SchemaContext, SchemaItem, StructClass, Unit, UnitSystem,
 } from "@bentley/ecschema-metadata";

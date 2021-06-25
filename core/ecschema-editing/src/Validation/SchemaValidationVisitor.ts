@@ -97,7 +97,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[AnyClass]] instance found during schema traversal.
+   * Called for each [AnyClass]($ecschema-metadata) instance found during schema traversal.
    * @param ecClass an ECClass object.
    */
   public async visitClass(ecClass: AnyClass): Promise<void> {
@@ -106,7 +106,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[AnyProperty]] instance of an ECClass.
+   * Called for each [AnyProperty]($ecschema-metadata) instance of an ECClass.
    * @param property an AnyProperty object.
    */
   public async visitProperty(property: AnyProperty): Promise<void> {
@@ -115,7 +115,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[EntityClass]] instance found during schema traversal.
+   * Called for each [EntityClass]($ecschema-metadata) instance found during schema traversal.
    * @param entityClass an EntityClass object.
    */
   public async visitEntityClass(entity: EntityClass): Promise<void> {
@@ -124,7 +124,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[StructClass]] instance found during schema traversal.
+   * Called for each [StructClass]($ecschema-metadata) instance found during schema traversal.
    * @param structClass a StructClass object.
    */
   public async visitStructClass(struct: StructClass): Promise<void> {
@@ -133,7 +133,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[Mixin]] instance found during schema traversal.
+   * Called for each [Mixin]($ecschema-metadata) instance found during schema traversal.
    * @param mixin a Mixin object.
    */
   public async visitMixin(mixin: Mixin): Promise<void> {
@@ -142,7 +142,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[RelationshipClass]] instance found during schema traversal.
+   * Called for each [RelationshipClass]($ecschema-metadata) instance found during schema traversal.
    * @param relationshipClass a RelationshipClass object.
    */
   public async visitRelationshipClass(relationship: RelationshipClass): Promise<void> {
@@ -151,7 +151,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[RelationshipConstraint]] of each RelationshipClass found during schema traversal.
+   * Called for each [RelationshipConstraint]($ecschema-metadata) of each RelationshipClass found during schema traversal.
    * @param relationshipConstraint a RelationshipConstraint object.
    */
   public async visitRelationshipConstraint(constraint: RelationshipConstraint): Promise<void> {
@@ -160,7 +160,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[CustomAttributeClass]] instance found during schema traversal.
+   * Called for each [CustomAttributeClass]($ecschema-metadata) instance found during schema traversal.
    * @param customAttributeClass a CustomAttributeClass object.
    */
   public async visitCustomAttributeClass(customAttribute: CustomAttributeClass): Promise<void> {
@@ -169,7 +169,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[CustomAttribute]] container in the schema.
+   * Called for each [CustomAttribute]($ecschema-metadata) container in the schema.
    * @param customAttributeContainer a [[CustomAttributeContainerProps]] object.
    */
   public async visitCustomAttributeContainer(container: CustomAttributeContainerProps): Promise<void> {
@@ -187,7 +187,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[Enumeration]] instance found during schema traversal.
+   * Called for each [Enumeration]($ecschema-metadata) instance found during schema traversal.
    * @param enumeration an Enumeration object.
    */
   public async visitEnumeration(enumeration: Enumeration) {
@@ -196,7 +196,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[KindOfQuantity]] instance found during schema traversal.
+   * Called for each [KindOfQuantity]($ecschema-metadata) instance found during schema traversal.
    * @param koq a KindOfQuantity object.
    */
   public async visitKindOfQuantity(koq: KindOfQuantity) {
@@ -205,7 +205,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[PropertyCategory]] instance found during schema traversal.
+   * Called for each [PropertyCategory]($ecschema-metadata) instance found during schema traversal.
    * @param category a PropertyCategory object.
    */
   public async visitPropertyCategory(category: PropertyCategory) {
@@ -214,7 +214,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[Format]] instance found during schema traversal.
+   * Called for each [Format]($ecschema-metadata) instance found during schema traversal.
    * @param format a Format object.
    */
   public async visitFormat(format: Format): Promise<void> {
@@ -223,7 +223,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[Unit]] instance found during schema traversal.
+   * Called for each [Unit]($ecschema-metadata) instance found during schema traversal.
    * @param unit a Unit object.
    */
   public async visitUnit(unit: Unit): Promise<void> {
@@ -232,7 +232,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[InvertedUnit]] instance found during schema traversal.
+   * Called for each [InvertedUnit]($ecschema-metadata) instance found during schema traversal.
    * @param invertedUnit an InvertedUnit object.
    */
   public async visitInvertedUnit(invertedUnit: InvertedUnit): Promise<void> {
@@ -241,7 +241,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[UnitSystem]] instance found during schema traversal.
+   * Called for each [UnitSystem]($ecschema-metadata) instance found during schema traversal.
    * @param unitSystem a UnitSystem object.
    */
   public async visitUnitSystem(unitSystem: UnitSystem): Promise<void> {
@@ -250,7 +250,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[Phenomenon]] instance found during schema traversal.
+   * Called for each [Phenomenon]($ecschema-metadata) instance found during schema traversal.
    * @param phenomena a Phenomenon object.
    */
   public async visitPhenomenon(phenomenon: Phenomenon): Promise<void> {
@@ -259,7 +259,7 @@ export class SchemaValidationVisitor implements ISchemaPartVisitor {
   }
 
   /**
-   * Called for each [[Constant]] instance found during schema traversal.
+   * Called for each [Constant]($ecschema-metadata) instance found during schema traversal.
    * @param constant a Constant object.
    */
   public async visitConstant(constant: Constant): Promise<void> {
