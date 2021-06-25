@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "Add props to the TimelineComponent that will allow apps to pass a set of items to be prefixed, appended, or to replace the context menu entries.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+}
