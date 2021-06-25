@@ -13,6 +13,7 @@ import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProj
 import { SpatialClassificationProps } from "../SpatialClassificationProps";
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
+import { MapLayerSettings } from "../MapLayerSettings";
 
 /* eslint-disable deprecation/deprecation */
 //  - for DisplayStyleSettings.excludedElements.
@@ -140,6 +141,27 @@ describe("DisplayStyleSettings", () => {
 
       test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.add("0x3"); settings.clearExcludedElements(); });
     });
+  });
+
+  // ###TODO @rbbentley
+  it.skip("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
+    const style = new DisplayStyleSettings({});
+    expect(style.backgroundMap.providerName).to.equal("BingProvider");
+    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
+
+    let base = style.mapImagery.backgroundBase as MapLayerSettings;
+    expect(base).instanceOf(MapLayerSettings);
+    expect(base.formatId).to.equal("BingMaps");
+    expect(base.url.indexOf("AerialWithLabels")).least(1);
+
+    style.backgroundMap = style.backgroundMap.clone({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } });
+    base = style.mapImagery.backgroundBase as MapLayerSettings;
+    expect(base.formatId).to.equal("MapboxImagery");
+    expect(base.url.indexOf("mapbox.streets/")).least(1);
+
+    style.mapImagery.backgroundBase = MapLayerSettings.fromMapSettings(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }));
+    expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
+    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
   });
 });
 
