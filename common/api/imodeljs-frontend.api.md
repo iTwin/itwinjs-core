@@ -143,6 +143,7 @@ import { IModelConnectionProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
+import { IModelTileTreeId } from '@bentley/imodeljs-common';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { IModelVersionProps } from '@bentley/imodeljs-common';
@@ -4747,7 +4748,7 @@ export function iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | 
 
 // @internal
 export class IModelTileTree extends TileTree {
-    constructor(params: IModelTileTreeParams);
+    constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId);
     // (undocumented)
     get batchType(): BatchType;
     // (undocumented)
@@ -4781,6 +4782,8 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     protected _selectTiles(args: TileDrawArgs): Tile[];
     get staticBranch(): IModelTile;
+    // (undocumented)
+    readonly stringifiedSectionClip?: string;
     get tileState(): "static" | "dynamic" | "interactive" | "disposed";
     // (undocumented)
     get viewFlagOverrides(): ViewFlagOverrides;
@@ -10519,7 +10522,7 @@ export abstract class TileTreeReference {
 // @public
 export interface TileTreeSupplier {
     // @internal
-    addModelsAnimatedByScript?: (modelIds: Set<Id64String_2>, scriptSourceId: Id64String_2, trees: Iterable<{
+    addModelsAnimatedByScript?: (modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{
         id: any;
         owner: TileTreeOwner;
     }>) => void;
