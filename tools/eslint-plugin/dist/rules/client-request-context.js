@@ -68,32 +68,18 @@ function findAfter(array, predicate) {
 
 class ASTPreconditionViolated extends Error {}
 
-/**
- * Given a syntax construct that has a statement child, replace
- * that statement child with a block
- * /param { TSESTree.Statement
- *        | TSESTree.ArrowFunctionExpression
- * @param { TSESTree.ArrowFunctionExpression
- *        | TSESTree.IfStatement
- *        | TSESTree.ForOfStatement
- *        | TSESTree.ForInStatement
- *        | TSESTree.ForStatement
- *        } stmt
- * @param {import("@typescript-eslint/experimental-utils/dist/ts-eslint").RuleFixer} fixer
- * @param {{textBefore?: string}}  options
- * @returns {import("@typescript-eslint/experimental-utils/dist/ts-eslint").RuleFix[]}
- */
-// XXX: make sure reqCtx is not placed inside if statements incorrectly
-function promoteBlocklessStmtFixer(
-  stmt,
-  fixer,
-  { textBefore } = { textBefore: "" }
-) {
-  const body = stmt.type === "IfStatement" ? stmt.consequent : stmt.body;
-  return [
-    fixer.insertTextBefore(body, "{" + textBefore),
-    fixer.insertTextAfter(body, "}"),
-  ];
+/** @param {TSESTree.Node | null | undefined} n1 */
+/** @param {TSESTree.Node | null | undefined} n2 */
+/** @returns {boolean} */
+function nodeContains(n1, n2) {
+  return (
+    n1 !== undefined &&
+    n1 !== null &&
+    n2 !== undefined &&
+    n2 !== null &&
+    n1.range[0] <= n2.range[0] &&
+    n1.range[1] >= n2.range[1]
+  );
 }
 
 /** @type {import("eslint").Rule.RuleModule} */
@@ -234,7 +220,7 @@ const rule = {
 
       /** @param {TSESTree.Node} node */
       function handleOrReturnSimpleNextStmt(node) {
-        /** @type {{[K in AST_NODE_TYPES]: (node: TSESTree.Node & {parent: { type: K }}) => TSESTree.Node | typeof Handled | undefined}} */
+        /** @type {{[K in AST_NODE_TYPES]?: (node: TSESTree.Node & {parent: { type: K }}) => TSESTree.Node | typeof Handled | undefined}} */
         const handleParentTypeMap = {
           ArrowFunctionExpression: NextFromFuncDeclLike,
           FunctionExpression: NextFromFuncDeclLike,
@@ -251,6 +237,10 @@ const rule = {
           IfStatement(node) {
             // XXX: promote block-less IF-CONSEQUENCE to block
             // XXX: handle empty body
+            if (nodeContains(node.parent.consequent, node)) {
+            } else if (nodeContains(node.parent.alternate, node)) {
+            } else if (nodeContains(node.parent.test, node)) {
+            } else unreachable("no other valid children of IfStatement");
             if (node.parent.consequent.type === "BlockStatement") {
               return node.parent.consequent.body[0];
             } else {
@@ -329,6 +319,80 @@ const rule = {
           node.expression.callee.property.type === AST_NODE_TYPES.Identifier &&
           node.expression.callee.property.name === "enter"
       );
+    }
+
+    /**
+     * Given a syntax construct that has a statement child, replace
+     * that statement child with a block
+     * @param { TSESTree.Statement
+     *        | TSESTree.ArrowFunctionExpression
+     *        | TSESTree.IfStatement
+     *        | TSESTree.ForOfStatement
+     *        | TSESTree.ForInStatement
+     *        | TSESTree.ForStatement
+     *        } stmt
+     * @param {import("@typescript-eslint/experimental-utils/dist/ts-eslint").RuleFixer} fixer
+     * @param {{textBefore?: string}}  options
+     * @returns {import("@typescript-eslint/experimental-utils/dist/ts-eslint").RuleFix[]}
+     */
+    // technically, although I don't plan to handle it (yet) because of its rarity, one could have a correct non-block body
+    // that this doesn't cover, like the following:
+    // for await (const x of y) (reqCtx.enter(), x.f());
+    // async (reqCtx, x) => (reqCtx.enter(), x.f());
+    function promoteBlocklessStmtFixer(
+      stmt,
+      { textBefore } = { textBefore: "" }
+    ) {
+      const body = stmt.type === "IfStatement" ? stmt.consequent : stmt.body;
+      return [
+        fixer.insertTextBefore(body, "{" + textBefore),
+        fixer.insertTextAfter(body, "}"),
+      ];
+
+      if (
+        !isReqCtxEntry(
+          body.type === "BlockStatement" ? body.body[0] : body,
+          lastFunc.reqCtxArgName
+        )
+      ) {
+        if (body.type === "BlockStatement") {
+          if (!isReqCtxEntry(body.body[0], lastFunc.reqCtxArgName))
+            context.report({
+              node: body.body[0] || body,
+              messageId: messageIds.noEnterOnAwaitResume,
+              fix(fixer) {
+                if (body.type !== "BlockStatement")
+                  throw unreachable("must be block statement");
+                if (body.range === undefined)
+                  throw unreachable("node range was undefined");
+                if (body.body[0] !== undefined)
+                  return fixer.insertTextBefore(
+                    body.body[0],
+                    `${lastFunc.reqCtxArgName}.enter();`
+                  );
+                else
+                  return fixer.insertTextAfterRange(
+                    [body.range[0] + 1, body.range[1] - 1],
+                    `${lastFunc.reqCtxArgName}.enter();`
+                  );
+              },
+            });
+        }
+      } else if (body.type !== "BlockStatement") {
+        context.report({
+          node: body,
+          messageId: messageIds.noEnterOnAwaitResume,
+          fix(fixer) {
+            return [
+              fixer.insertTextBefore(
+                body,
+                `{${lastFunc.reqCtxArgName}.enter();`
+              ),
+              fixer.insertTextAfter(body, `}`),
+            ];
+          },
+        });
+      }
     }
 
     /**
@@ -533,39 +597,50 @@ const rule = {
         const lastFunc = back(asyncFuncStack);
         if (lastFunc === undefined || lastFunc.func !== outerFunc) return;
 
+        const { body } = loop;
         if (
           !isReqCtxEntry(
-            loop.body.type === "BlockStatement" ? loop.body.body[0] : loop.body,
+            body.type === "BlockStatement" ? body.body[0] : body,
             lastFunc.reqCtxArgName
           )
         ) {
-          // WIP: generically handle checking statement if it is a block statement, if it needs to become one for changes, etc
-        }
-        if (
-          loop.body.type === "BlockStatement" &&
-          !isReqCtxEntry(loop.body.body[0], lastFunc.reqCtxArgName)
-        ) {
+          if (body.type === "BlockStatement") {
+            if (!isReqCtxEntry(body.body[0], lastFunc.reqCtxArgName))
+              context.report({
+                node: body.body[0] || body,
+                messageId: messageIds.noEnterOnAwaitResume,
+                fix(fixer) {
+                  if (body.type !== "BlockStatement")
+                    throw unreachable("must be block statement");
+                  if (body.range === undefined)
+                    throw unreachable("node range was undefined");
+                  if (body.body[0] !== undefined)
+                    return fixer.insertTextBefore(
+                      body.body[0],
+                      `${lastFunc.reqCtxArgName}.enter();`
+                    );
+                  else
+                    return fixer.insertTextAfterRange(
+                      [body.range[0] + 1, body.range[1] - 1],
+                      `${lastFunc.reqCtxArgName}.enter();`
+                    );
+                },
+              });
+          }
+        } else if (body.type !== "BlockStatement") {
           context.report({
-            node: loop.body.body[0] || loop.body,
+            node: body,
             messageId: messageIds.noEnterOnAwaitResume,
             fix(fixer) {
-              if (loop.body.type !== "BlockStatement")
-                throw unreachable("must be block statement");
-              if (loop.body.range === undefined)
-                throw unreachable("node range was undefined");
-              if (loop.body.body[0] !== undefined)
-                return fixer.insertTextBefore(
-                  loop.body.body[0],
-                  `${lastFunc.reqCtxArgName}.enter();`
-                );
-              else
-                return fixer.insertTextAfterRange(
-                  [loop.body.range[0] + 1, loop.body.range[1]],
-                  `${lastFunc.reqCtxArgName}.enter();`
-                );
+              return [
+                fixer.insertTextBefore(
+                  body,
+                  `{${lastFunc.reqCtxArgName}.enter();`
+                ),
+                fixer.insertTextAfter(body, `}`),
+              ];
             },
           });
-        } else if (loop.body.type !== "BlockStatement") {
         }
       },
     };

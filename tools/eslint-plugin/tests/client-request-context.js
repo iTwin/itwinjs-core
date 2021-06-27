@@ -234,6 +234,14 @@ new ESLintTester({
           }
         `,
       },
+      {
+        code: makeTest`
+          async function forAwaitLoop(reqCtx: ClientRequestContext) {
+            reqCtx.enter();
+            for await (const item of iter) {}
+          }
+        `,
+      },
     ],
     invalid: [
       {
@@ -607,7 +615,7 @@ new ESLintTester({
         `,
       },
       {
-        only: true,
+        //only: true,
         code: makeTest`
           async function awaitInBlocklessArrowFunc(reqCtx: ClientRequestContext) {
             reqCtx.enter();
@@ -621,6 +629,26 @@ new ESLintTester({
             reqCtx.enter();
             const subAsync = async (reqCtx2: ClientRequestContext) => {reqCtx2.enter();await Promise.resolve(5)};
             return subAsync(reqCtx);
+          }
+        `,
+      },
+      {
+        only: true,
+        code: makeTest`
+          async function forAwaitLoop(reqCtx: ClientRequestContext) {
+            reqCtx.enter();
+            const a = [];
+            for await (const item of iter) a.push(item);
+            return a;
+          }
+        `,
+        errors: [{ messageId: "noEnterOnAwaitResume" }],
+        output: makeTest`
+          async function forAwaitLoop(reqCtx: ClientRequestContext) {
+            reqCtx.enter();
+            const a = [];
+            for await (const item of iter) {reqCtx.enter();a.push(item);}
+            return a;
           }
         `,
       },
