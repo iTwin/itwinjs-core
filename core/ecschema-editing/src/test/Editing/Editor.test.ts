@@ -224,7 +224,7 @@ describe("Editor tests", () => {
           $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
           name: "ValidSchema",
           version: "1.2.3",
-          alias: "vs"
+          alias: "vs",
         };
 
         context = new SchemaContext();
