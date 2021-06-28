@@ -1,6 +1,37 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Fri, 25 Jun 2021 16:03:01 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Promote APIs to public.
+- Include ECClass Ids in TxnChangedEntities.
+- Changes in BriefcaseHandling and ConcurrencyControl to support recovery after deleted changeset
+- download V2 checkpoints asynchronously
+- Deprecate IModelExporter.excludeElementCategory in favor of excludeElementsInCategory
+- make IModelExporter.onExportSchema async
+- Notify frontend via Ipc when IModelDb properties change.
+- added IModelHost.hubAccess api for mocking IModelHub for tests
+- all Element.onInsert and Element.onUpdate methods to modify properties
+- Add "first synchronization" optimizations to IModelTransformer
+- Don't allow undo of changes to project extents or geolocation.
+- promote BriefcaseManager to public
+- make IpcHost and NativeHost @public
+- Deprecate useless Texture properties.
+- added TxnManager.restartSession
+- Fixed removal of schema locks if upgrading schemas is a no-op.
+- Tests for iModel.UpdateIModelProps()
+- fix schema-import occurring potentially out of order
+- dont reimport schemas that already exist by default during transformations
+- Use ecef location calculated for projected iModels
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
 
 ## 2.16.5
 Fri, 25 Jun 2021 16:03:01 GMT
