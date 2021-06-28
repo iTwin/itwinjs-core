@@ -12,6 +12,7 @@ export * from "./Validation/Rules";
 export * from "./Validation/SchemaValidationVisitor";
 export * from "./Validation/SchemaWalker";
 export * from "./Validation/SchemaCompareDiagnostics";
+export * from "./Editing/Editor";
 export { ISuppressionRule, IRuleSuppressionSet, IRuleSuppressionMap } from "./Validation/RuleSuppressionSet";
 export { SchemaValidater } from "./Validation/SchemaValidater";
 
@@ -21,6 +22,10 @@ export { SchemaValidater } from "./Validation/SchemaValidater";
 /**
  * @docs-group-description Editing
  * Set of classes used to perform editing of ECSchemas.
+ */
+/**
+ * @docs-group-description Diagnostic
+ * Set of classes to categorize and manage ECSchema validation results.
  */
 /**
  * @docs-group-description Validation

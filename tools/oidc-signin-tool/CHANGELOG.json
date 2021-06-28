@@ -2,6 +2,18 @@
   "name": "@bentley/oidc-signin-tool",
   "entries": [
     {
+      "version": "2.16.6",
+      "tag": "@bentley/oidc-signin-tool_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.5",
+      "tag": "@bentley/oidc-signin-tool_v2.16.5",
+      "date": "Fri, 25 Jun 2021 16:03:01 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.16.4",
       "tag": "@bentley/oidc-signin-tool_v2.16.4",
       "date": "Wed, 23 Jun 2021 17:09:07 GMT",
