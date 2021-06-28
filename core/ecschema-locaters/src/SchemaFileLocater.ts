@@ -114,7 +114,6 @@ export abstract class SchemaFileLocater {
       return undefined;
 
     const schemaText = await this.readUtf8FileToString(schemaPath);
-    console.log(`Read schema text: ${schemaPath}`)
     if (!schemaText)
       return undefined;
 

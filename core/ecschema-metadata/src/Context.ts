@@ -12,7 +12,7 @@ import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 interface LoadingSchema {
   schema: Schema;
   loadSchema?: Promise<Schema>;
-  loadSchemaFunc?: () => Promise<Schema>
+  loadSchemaFunc?: () => Promise<Schema>;
 }
 
 /**
@@ -102,7 +102,6 @@ export class SchemaCache implements ISchemaLocater {
 
   public async checkAndAddSchema<T extends Schema>(schema: T, loadSchema: () => Promise<T>) {
     if (!this.getLoadingSchemaSync<T>(schema.schemaKey)) {
-      console.log(`Adding schema ${schema.name}`);
       this._loadingSchemas.push({ schema, loadSchemaFunc: loadSchema });
     }
   }
@@ -129,8 +128,8 @@ export class SchemaCache implements ISchemaLocater {
     if (loadedSchema)
       return loadedSchema as T;
 
-    const findLoadingSchema = (loadingSchema: LoadingSchema) => {
-      return loadingSchema.schema.schemaKey.matches(schemaKey, matchType);
+    const findLoadingSchema = (currSchema: LoadingSchema) => {
+      return currSchema.schema.schemaKey.matches(schemaKey, matchType);
     };
 
     const loadingSchema = this._loadingSchemas.find(findLoadingSchema);
@@ -203,8 +202,8 @@ export class SchemaCache implements ISchemaLocater {
     if (loadedSchema)
       return loadedSchema as T;
 
-    const findLoadingSchema = (loadingSchema: LoadingSchema) => {
-      return loadingSchema.schema.schemaKey.matches(schemaKey, matchType);
+    const findLoadingSchema = (currSchema: LoadingSchema) => {
+      return currSchema.schema.schemaKey.matches(schemaKey, matchType);
     };
 
     const loadingSchema = this._loadingSchemas.find(findLoadingSchema);
