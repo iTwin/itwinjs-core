@@ -642,8 +642,10 @@ export class IModelTransformer extends IModelExportHandler {
       if (DbResult.BE_SQLITE_ROW === statement.step()) {
         const json: any = JSON.parse(statement.getValue(1).getString());
         if (undefined !== json.targetRelInstanceId) {
-          const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
-          this.importer.deleteRelationship(targetRelationship);
+          const targetRelationship = this.targetDb.relationships.tryGetInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
+          if (targetRelationship) {
+            this.importer.deleteRelationship(targetRelationship);
+          }
           this.targetDb.elements.deleteAspect(statement.getValue(0).getId());
         }
       }
