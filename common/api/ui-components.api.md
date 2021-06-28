@@ -4811,6 +4811,42 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     }
 
 // @public
+export interface TimelineComponentProps {
+    // (undocumented)
+    alwaysMinimized?: boolean;
+    // (undocumented)
+    appMenuItemOption?: TimelineMenuItemOption;
+    // (undocumented)
+    appMenuItems?: TimelineMenuItemProps[];
+    // (undocumented)
+    componentId?: string;
+    // (undocumented)
+    endDate?: Date;
+    // (undocumented)
+    includeRepeat?: boolean;
+    // (undocumented)
+    initialDuration?: number;
+    // (undocumented)
+    minimized?: boolean;
+    // (undocumented)
+    onChange?: (duration: number) => void;
+    // (undocumented)
+    onJump?: (forward: boolean) => void;
+    // (undocumented)
+    onPlayPause?: (playing: boolean) => void;
+    // (undocumented)
+    onSettingsChange?: (arg: PlaybackSettings) => void;
+    // (undocumented)
+    repeat?: boolean;
+    // (undocumented)
+    showDuration?: boolean;
+    // (undocumented)
+    startDate?: Date;
+    // (undocumented)
+    totalDuration: number;
+}
+
+// @public
 export interface TimelineDataProvider {
     animationFraction?: number;
     duration: number;

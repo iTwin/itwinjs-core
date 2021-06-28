@@ -525,6 +525,7 @@ beta;ThemedEnumPropertyEditor
 internal;Timeline 
 deprecated;Timeline 
 public;TimelineComponent 
+public;TimelineComponentProps
 public;TimelineDataProvider
 public;TimelineDateDisplay
 public;TimelineMenuItemOption = "replace" | "append" | "prefix"
