@@ -2,6 +2,12 @@
   "name": "@bentley/perf-tools",
   "entries": [
     {
+      "version": "2.16.6",
+      "tag": "@bentley/perf-tools_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.16.5",
       "tag": "@bentley/perf-tools_v2.16.5",
       "date": "Fri, 25 Jun 2021 16:03:01 GMT",
