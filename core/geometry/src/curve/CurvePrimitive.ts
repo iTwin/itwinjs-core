@@ -8,7 +8,7 @@
 import { Clipper } from "../clipping/ClipUtils";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import {BezierCurve3d, BSplineCurve3d, CurveChainWithDistanceIndex, DirectSpiral3d, IntegratedSpiral3d} from "../geometry-core";
+import { BezierCurve3d, BSplineCurve3d, CurveChainWithDistanceIndex, DirectSpiral3d, IntegratedSpiral3d } from "../geometry-core";
 import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
@@ -19,11 +19,11 @@ import { Transform } from "../geometry3d/Transform";
 import { Order2Bezier } from "../numerics/BezierPolynomials";
 import { Newton1dUnboundedApproximateDerivative, NewtonEvaluatorRtoR } from "../numerics/Newton";
 import { GaussMapper } from "../numerics/Quadrature";
-import {Arc3d} from "./Arc3d";
+import { Arc3d } from "./Arc3d";
 import { CurveExtendOptions, VariantCurveExtendParameter } from "./CurveExtendMode";
 import { CurveIntervalRole, CurveLocationDetail, CurveSearchStatus } from "./CurveLocationDetail";
 import { GeometryQuery } from "./GeometryQuery";
-import {LineSegment3d} from "./LineSegment3d";
+import { LineSegment3d } from "./LineSegment3d";
 import { LineString3d } from "./LineString3d";
 import { StrokeOptions } from "./StrokeOptions";
 
