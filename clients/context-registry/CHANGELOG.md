@@ -1,6 +1,16 @@
 # Change Log - @bentley/context-registry-client
 
-This log was last generated on Mon, 28 Jun 2021 13:12:55 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:10 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:10 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
 
 ## 2.16.6
 Mon, 28 Jun 2021 13:12:55 GMT

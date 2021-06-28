@@ -10,6 +10,7 @@ import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { Version } from "@bentley/imodelhub-client";
 import {
   BackendLoggerCategory, BackendRequestContext, ChangesetId, ChangesetIndex, ChangesetProps, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
+  StandaloneDb,
 } from "@bentley/imodeljs-backend";
 import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -232,16 +233,20 @@ void (async () => {
       });
     } else {
       assert(undefined !== args.targetFile);
-      // target is a local snapshot file
+      // target is a local standalone file
       const targetFile = args.targetFile ? path.normalize(args.targetFile) : "";
-      // clean target output file before continuing (regardless of args.clean value)
-      if (IModelJsFs.existsSync(targetFile)) {
-        IModelJsFs.removeSync(targetFile);
+      if (processChanges) {
+        targetDb = StandaloneDb.openFile(targetFile);
+      } else {
+        // clean target output file before continuing (regardless of args.clean value)
+        if (IModelJsFs.existsSync(targetFile)) {
+          IModelJsFs.removeSync(targetFile);
+        }
+        targetDb = StandaloneDb.createEmpty(targetFile, { // use StandaloneDb instead of SnapshotDb to enable processChanges testing
+          rootSubject: { name: `${sourceDb.rootSubject.name}-Transformed` },
+          ecefLocation: sourceDb.ecefLocation,
+        });
       }
-      targetDb = SnapshotDb.createEmpty(targetFile, {
-        rootSubject: { name: `${sourceDb.rootSubject.name}-Transformed` },
-        ecefLocation: sourceDb.ecefLocation,
-      });
     }
 
     if (args.logProvenanceScopes) {

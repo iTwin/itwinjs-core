@@ -1,6 +1,23 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Mon, 28 Jun 2021 13:12:55 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Add ability to define state of popout widgets in NinezoneState.
+- Add ability to maintain tab state even if UiItemsProvider that added the tab is not loaded. This allow preference size to be maintained.
+- fix css deprecation warning about using 'fit-available'.
+- Update scss to remove use of slash for division to avoid SASS deprecation warnings.
+- Fix sass error reported by Civil iTwin.
+- publish in-use APIs
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
 
 ## 2.16.6
 Mon, 28 Jun 2021 13:12:55 GMT
@@ -39,7 +56,7 @@ Mon, 24 May 2021 15:58:39 GMT
 
 - Update unit tests for resizeObserver fix.
 - Update test to account for different number of calls to getBoundingClientRect.
-- Update to latest classnames package 
+- Update to latest classnames package
 
 ## 2.15.6
 Wed, 26 May 2021 15:55:19 GMT
@@ -370,7 +387,7 @@ Thu, 20 Aug 2020 20:57:10 GMT
 - lock down @types/react version at 16.9.43 to prevent build error from csstype dependency
 - Added Table component keyboard row selection. Miscellaneous a11y fixes.
 - Switch to ESLint
-- Add drop shadow to toolsettings overflow popup.  
+- Add drop shadow to toolsettings overflow popup.
 - Close widget overflow popup when tab is clicked.
 - Add corner resize handles to floating widgets.
 - Add preferredPanelWidgetSize to TabState.
@@ -477,7 +494,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Ability to drag docked tool settings to widget mode.
 - Support for floating widget targets.
-- Fix safe area insets for bottom zones w/o footer. 
+- Fix safe area insets for bottom zones w/o footer.
 - Keep active tab visible.
 - Reparent widget content when dragging widget around.
 - Floating widget stacking order.

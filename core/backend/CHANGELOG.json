@@ -2,6 +2,81 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.17.0",
+      "tag": "@bentley/imodeljs-backend_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Promote APIs to public."
+          },
+          {
+            "comment": "Include ECClass Ids in TxnChangedEntities."
+          },
+          {
+            "comment": "Changes in BriefcaseHandling and ConcurrencyControl to support recovery after deleted changeset"
+          },
+          {
+            "comment": "download V2 checkpoints asynchronously"
+          },
+          {
+            "comment": "Deprecate IModelExporter.excludeElementCategory in favor of excludeElementsInCategory"
+          },
+          {
+            "comment": "make IModelExporter.onExportSchema async"
+          },
+          {
+            "comment": "Notify frontend via Ipc when IModelDb properties change."
+          },
+          {
+            "comment": "added IModelHost.hubAccess api for mocking IModelHub for tests"
+          },
+          {
+            "comment": "all Element.onInsert and Element.onUpdate methods to modify properties"
+          },
+          {
+            "comment": "Add \"first synchronization\" optimizations to IModelTransformer"
+          },
+          {
+            "comment": "Don't allow undo of changes to project extents or geolocation."
+          },
+          {
+            "comment": "promote BriefcaseManager to public"
+          },
+          {
+            "comment": "make IpcHost and NativeHost @public"
+          },
+          {
+            "comment": "Deprecate useless Texture properties."
+          },
+          {
+            "comment": "added TxnManager.restartSession"
+          },
+          {
+            "comment": "Fixed removal of schema locks if upgrading schemas is a no-op."
+          },
+          {
+            "comment": "Tests for iModel.UpdateIModelProps()"
+          },
+          {
+            "comment": "fix schema-import occurring potentially out of order"
+          },
+          {
+            "comment": "dont reimport schemas that already exist by default during transformations"
+          },
+          {
+            "comment": "Use ecef location calculated for projected iModels"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.7",
+      "tag": "@bentley/imodeljs-backend_v2.16.7",
+      "date": "Mon, 28 Jun 2021 18:13:04 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.16.6",
       "tag": "@bentley/imodeljs-backend_v2.16.6",
       "date": "Mon, 28 Jun 2021 13:12:55 GMT",

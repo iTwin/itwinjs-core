@@ -2,6 +2,27 @@
   "name": "@bentley/eslint-plugin",
   "entries": [
     {
+      "version": "2.17.0",
+      "tag": "@bentley/eslint-plugin_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Output parent symbol and skip local files in no-internal eslint rule"
+          },
+          {
+            "comment": "Added no-internal-report command to @bentley/eslint-plugin"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.7",
+      "tag": "@bentley/eslint-plugin_v2.16.7",
+      "date": "Mon, 28 Jun 2021 18:13:04 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.16.6",
       "tag": "@bentley/eslint-plugin_v2.16.6",
       "date": "Mon, 28 Jun 2021 13:12:55 GMT",

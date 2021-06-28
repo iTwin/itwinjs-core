@@ -2,6 +2,87 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.17.0",
+      "tag": "@bentley/imodeljs-common_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clean up and promote beta RenderMaterial and RenderTexture APIs."
+          },
+          {
+            "comment": "Include ECClass Ids in ChangedEntities; provide iteration via ChangedEntitiesIterable."
+          },
+          {
+            "comment": "Added editor apis to request and update geometry, exercised by CreateOrContinuePathTool."
+          },
+          {
+            "comment": "Clean up and promote DisplayStyleSettings APIs for planar clip masks and reality model appearance overrides."
+          },
+          {
+            "comment": "Clean up spatial classification APIs and promote to public."
+          },
+          {
+            "comment": "Export EmphasizeElementProps from common, deprecate from frontend."
+          },
+          {
+            "comment": "Corrected geographicCoordinateSystem property from GeographicCRS to GeographicCRSProps in iModelProps\""
+          },
+          {
+            "comment": "Persist 'visible' property of map-layers.  Removed unused 'maxZoom' property on MapLayerProps."
+          },
+          {
+            "comment": "Made MaplayerSource independent from MapLayerProps."
+          },
+          {
+            "comment": "Add events for changes to IModel properties. Add RenderSchedule.ScriptBuilder for assembling a new schedule script."
+          },
+          {
+            "comment": "deprecate IModelVersion.evaluateChangeSet"
+          },
+          {
+            "comment": "Changed area to extent to conform with iModelHub public API"
+          },
+          {
+            "comment": "Promote various APIs to public. Remove useless TextureProps properties."
+          },
+          {
+            "comment": "Don't allow undo of changes to project extents or geolocation."
+          },
+          {
+            "comment": "promote BriefcaseManager to public"
+          },
+          {
+            "comment": "Promoted GCS model to public API"
+          },
+          {
+            "comment": "Make Ipc interfaces @public. Promote BriefcaseManager to public"
+          },
+          {
+            "comment": "Clean up and promote beta RenderMaterial and RenderTexture APIs."
+          },
+          {
+            "comment": "Remove useless TextureProps properties."
+          },
+          {
+            "comment": "TextureLoadProps takes a maxTextureSize."
+          },
+          {
+            "comment": "Removed unrequired sourceEllipsoidId and targetEllipsoidId from Geodetic Transforms"
+          },
+          {
+            "comment": "Add RenderSchedule.ScriptBuilder for assembling a new schedule script."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.7",
+      "tag": "@bentley/imodeljs-common_v2.16.7",
+      "date": "Mon, 28 Jun 2021 18:13:04 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.16.6",
       "tag": "@bentley/imodeljs-common_v2.16.6",
       "date": "Mon, 28 Jun 2021 13:12:55 GMT",

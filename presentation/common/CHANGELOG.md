@@ -1,6 +1,21 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Mon, 28 Jun 2021 13:12:55 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Added ability to associate content items with given input keys.
+- Added `relationshipMeaning` property to `NestedContentField`
+- Send `Id64[]` ruleset variables as `CompressedId64Set`
+- Introduce `Ruleset.version` attribute.
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
 
 ## 2.16.6
 Mon, 28 Jun 2021 13:12:55 GMT
