@@ -293,6 +293,7 @@ beta;IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedCompo
 beta;IModelConnectedViewport: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
 beta;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
+deprecated;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
 internal;IModelInfo
 internal;IModelScope
 internal;IModelServices
@@ -707,9 +708,13 @@ beta;ViewSelectorProps
 public;ViewUtilities
 alpha;VisibilityChangeListener = (nodeIds?: string[]) => void
 beta;VisibilityComponent 
+deprecated;VisibilityComponent 
 beta;VisibilityComponentConfig
+deprecated;VisibilityComponentConfig
 public;VisibilityComponentHierarchy
+deprecated;VisibilityComponentHierarchy
 beta;VisibilityComponentProps
+deprecated;VisibilityComponentProps
 alpha;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 
@@ -719,6 +724,7 @@ alpha;VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JS
 alpha;VisibilityTreeNoFilteredDataProps
 alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
 beta;VisibilityWidget 
+deprecated;VisibilityWidget 
 public;Widget 
 public;WIDGET_OPACITY_DEFAULT = 0.9
 internal;WidgetChangedEventArgs

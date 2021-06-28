@@ -1041,19 +1041,19 @@ export class CompositeTypeConverter extends TypeConverter {
     sortCompare(valueA: Primitives.Composite, valueB: Primitives.Composite, ignoreCase?: boolean | undefined): number;
 }
 
-// @internal
+// @internal @deprecated
 export class ContextMenu extends React.Component<ContextMenuProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @internal
+// @internal @deprecated
 export class ContextMenuItem extends React.Component<MenuItem> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @internal
+// @internal @deprecated
 export interface ContextMenuProps extends CommonProps {
     isOpened: boolean;
     items?: MenuItem[];
@@ -2733,7 +2733,7 @@ export const matchLinks: (text: string) => Array<{
     url: string;
 }>;
 
-// @internal
+// @internal @deprecated
 export interface MenuItem {
     checked?: boolean;
     disabled?: boolean;
@@ -4811,6 +4811,42 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     }
 
 // @public
+export interface TimelineComponentProps {
+    // (undocumented)
+    alwaysMinimized?: boolean;
+    // (undocumented)
+    appMenuItemOption?: TimelineMenuItemOption;
+    // (undocumented)
+    appMenuItems?: TimelineMenuItemProps[];
+    // (undocumented)
+    componentId?: string;
+    // (undocumented)
+    endDate?: Date;
+    // (undocumented)
+    includeRepeat?: boolean;
+    // (undocumented)
+    initialDuration?: number;
+    // (undocumented)
+    minimized?: boolean;
+    // (undocumented)
+    onChange?: (duration: number) => void;
+    // (undocumented)
+    onJump?: (forward: boolean) => void;
+    // (undocumented)
+    onPlayPause?: (playing: boolean) => void;
+    // (undocumented)
+    onSettingsChange?: (arg: PlaybackSettings) => void;
+    // (undocumented)
+    repeat?: boolean;
+    // (undocumented)
+    showDuration?: boolean;
+    // (undocumented)
+    startDate?: Date;
+    // (undocumented)
+    totalDuration: number;
+}
+
+// @public
 export interface TimelineDataProvider {
     animationFraction?: number;
     duration: number;
@@ -4834,6 +4870,15 @@ export interface TimelineDataProvider {
 export enum TimelineDateDisplay {
     ActualTime = 0,
     ProjectTime = 1
+}
+
+// @public
+export type TimelineMenuItemOption = "replace" | "append" | "prefix";
+
+// @public
+export interface TimelineMenuItemProps {
+    label: string;
+    timelineDuration: number;
 }
 
 // @public
