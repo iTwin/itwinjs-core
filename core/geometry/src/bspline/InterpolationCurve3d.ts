@@ -10,7 +10,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { ProxyCurve } from "../curve/ProxyCurve";
-import { CurvePrimitive, CurvePrimitiveType } from "../curve/CurvePrimitive";
+import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { BSplineCurve3d } from "./BSplineCurve";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Transform } from "../geometry3d/Transform";
@@ -46,7 +46,7 @@ export interface InterpolationCurve3dProps {
  * @public
  */
 export class InterpolationCurve3d extends ProxyCurve  {
-  public readonly curvePrimitiveType: CurvePrimitiveType;
+  public readonly curvePrimitiveType = "interpolationCurve";
   private _properties: InterpolationCurve3dProps;
   /**
    * CAPTURE properties and proxy curve.
@@ -54,7 +54,6 @@ export class InterpolationCurve3d extends ProxyCurve  {
 private constructor(properties: InterpolationCurve3dProps, proxyCurve: CurvePrimitive) {
     super(proxyCurve);
   this._properties = properties;
-  this.curvePrimitiveType = "interpolationCurve";
   }
   public dispatchToGeometryHandler(handler: GeometryHandler) {
     return handler.handleInterpolationCurve3d(this);

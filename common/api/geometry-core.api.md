@@ -184,7 +184,7 @@ export type AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: Cu
 export type AnyCurve = CurvePrimitive | CurveCollection;
 
 // @public
-export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex;
+export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex | InterpolationCurve3d;
 
 // @public
 export type AnyGeometryQuery = Polyface | CurvePrimitive | CurveCollection | SolidPrimitive | CoordinateXYZ | PointString3d | BSpline2dNd;
@@ -2858,7 +2858,7 @@ export class InterpolationCurve3d extends ProxyCurve {
     copyFitPointsFloat64Array(): Float64Array;
     static create(properties: InterpolationCurve3dProps): InterpolationCurve3d | undefined;
     // (undocumented)
-    curvePrimitiveType: CurvePrimitiveType;
+    readonly curvePrimitiveType = "interpolationCurve";
     // (undocumented)
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     isSameGeometryClass(other: GeometryQuery): boolean;
