@@ -1,6 +1,34 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Mon, 28 Jun 2021 13:12:55 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Clean up and promote beta RenderMaterial and RenderTexture APIs.
+- Include ECClass Ids in ChangedEntities; provide iteration via ChangedEntitiesIterable.
+- Added editor apis to request and update geometry, exercised by CreateOrContinuePathTool.
+- Clean up and promote DisplayStyleSettings APIs for planar clip masks and reality model appearance overrides.
+- Clean up spatial classification APIs and promote to public.
+- Export EmphasizeElementProps from common, deprecate from frontend.
+- Corrected geographicCoordinateSystem property from GeographicCRS to GeographicCRSProps in iModelProps"
+- Persist 'visible' property of map-layers.  Removed unused 'maxZoom' property on MapLayerProps.
+- Made MaplayerSource independent from MapLayerProps.
+- Add events for changes to IModel properties. Add RenderSchedule.ScriptBuilder for assembling a new schedule script.
+- deprecate IModelVersion.evaluateChangeSet
+- Changed area to extent to conform with iModelHub public API
+- Promote various APIs to public. Remove useless TextureProps properties.
+- Don't allow undo of changes to project extents or geolocation.
+- promote BriefcaseManager to public
+- Promoted GCS model to public API
+- Make Ipc interfaces @public. Promote BriefcaseManager to public
+- Clean up and promote beta RenderMaterial and RenderTexture APIs.
+- Remove useless TextureProps properties.
+- TextureLoadProps takes a maxTextureSize.
+- Removed unrequired sourceEllipsoidId and targetEllipsoidId from Geodetic Transforms
+- Add RenderSchedule.ScriptBuilder for assembling a new schedule script.
 
 ## 2.16.6
 Mon, 28 Jun 2021 13:12:55 GMT

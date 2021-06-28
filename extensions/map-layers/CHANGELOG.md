@@ -1,6 +1,17 @@
 # Change Log - @bentley/map-layers
 
-This log was last generated on Mon, 28 Jun 2021 13:12:55 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+-  Allow saved map-layer definition to be edited.
+- Made MaplayerSource independent from MapLayerProps.
+- MapManagerSettings UI Refresh. Added tests.
+- Fixed typo in activeViewport.view.isSpatialView: it should be invoked as a method and not a property.
+- Fixed a bug where an elevation offset value of 0 could not be in the UI.
 
 ## 2.16.6
 Mon, 28 Jun 2021 13:12:55 GMT

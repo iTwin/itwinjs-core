@@ -1,6 +1,23 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 28 Jun 2021 13:12:55 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Allow style to be passed to weight picker.
+- Fix array and struct property contents not being rendered in property grid when the properties have `hideCompositePropertyLabel` flag.
+- Added `mergedCellsCount` property to `CellItem`. It is used for determining width of the cell.
+- Added `overflow` property for `react-grid-Cell__value` element. `zIndex` is set in `TableCellContent` style property. These updates are necessary for rendering merged cells in `Table` component.
+- Updated `Table` component so that it would be possible to merge cells in it
+- Update scss to remove use of slash for division to avoid SASS deprecation warnings.
+- Publis in-use APIs
+- Refactor TimelineComponent to remove experimental milestones feature.
+- `TreeRenderer`: Fix tree nodes being loaded repeatedly in some cases.
+- `VirtualizedPropertyGrid`: Remove top and bottom padding.
+- `VirtualizedPropertyGridWithDataProvider`: Fix loading animation overflowing its parent container.
 
 ## 2.16.6
 Mon, 28 Jun 2021 13:12:55 GMT

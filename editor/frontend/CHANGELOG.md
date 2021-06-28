@@ -1,6 +1,17 @@
 # Change Log - @bentley/imodeljs-editor-frontend
 
-This log was last generated on Mon, 28 Jun 2021 13:12:55 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Added editor apis to request and update geometry, exercised by CreateOrContinuePathTool.
+- Added arc by 3 points tool. Ensure tools always get motion event before decorate or onDynamicFrame.
+- Make EditManipulator public
+- Added tools for changing project extents and geolocation.
+- Don't allow undo of changes to project extents or geolocation.
 
 ## 2.16.6
 Mon, 28 Jun 2021 13:12:55 GMT
