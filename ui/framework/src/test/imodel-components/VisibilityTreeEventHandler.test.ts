@@ -10,6 +10,8 @@ import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus, Visibil
 import { AbstractTreeNodeLoaderWithProvider, TreeModel, TreeModelChanges, TreeModelNode, TreeModelSource } from "@bentley/ui-components";
 import { SelectionHandler } from "@bentley/presentation-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { createSimpleTreeModelNode } from "./Common";
+import TestUtils from "../TestUtils";
 
 describe("VisibilityTreeEventHandler", () => {
 
@@ -20,7 +22,7 @@ describe("VisibilityTreeEventHandler", () => {
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
 
   const changeVisibility = sinon.fake();
-  const getVisibilityStatus = sinon.spy();
+  const getVisibilityStatus = sinon.stub();
   const dispose = sinon.fake();
   const onVisibilityChange = new BeEvent<VisibilityChangeListener>();
 
@@ -31,16 +33,23 @@ describe("VisibilityTreeEventHandler", () => {
     dispose,
   };
 
+  const testVisibilityStatus: VisibilityStatus = {
+    state: "visible",
+    isDisabled: false,
+  };
+
   beforeEach(async () => {
     modelSourceMock.reset();
+    modelMock.reset();
     nodeLoaderMock.reset();
     dataProviderMock.reset();
     selectionHandlerMock.reset();
     changeVisibility.resetHistory();
-    getVisibilityStatus.resetHistory();
+    getVisibilityStatus.reset();
     dispose.resetHistory();
 
-    modelMock.setup((x) => x.getNode(moq.It.isAny())).returns(() => moq.Mock.ofType<TreeModelNode>().object);
+    getVisibilityStatus.returns(testVisibilityStatus);
+    modelMock.setup((x) => x.getNode(moq.It.isAny())).returns(() => createSimpleTreeModelNode());
     modelSourceMock.setup((x) => x.onModelChanged).returns(() => new BeUiEvent<[TreeModel, TreeModelChanges]>());
     modelSourceMock.setup((x) => x.getModel()).returns(() => modelMock.object);
     nodeLoaderMock.setup((x) => x.dataProvider).returns(() => dataProviderMock.object);
@@ -59,28 +68,51 @@ describe("VisibilityTreeEventHandler", () => {
   };
 
   describe("onChangeVisibility", () => {
-
-    it("doesn't call getVisibilityStatus() when onChangeVisibility event is raised with visibilityStatus", async () => {
-      const testVisibilityStatus: VisibilityStatus = {
-        state: "visible",
-        isDisabled: false,
-      };
-
+    it("calls getVisibilityStatus() only on the nodes, whose visibility status is not known when onChangeVisibility event is raised with only visibilityStatus", async () => {
       const visibilityStatus: Map<string, VisibilityStatus> = new Map([
-        ["testId", testVisibilityStatus],
+        ["testId2", testVisibilityStatus],
       ]);
 
-      using(createHandler({ visibilityHandler }), (_) => {
+      const treeModelNodes = [
+        createSimpleTreeModelNode("testId1"),
+        createSimpleTreeModelNode("testId2"),
+        createSimpleTreeModelNode("testId3"),
+      ];
+
+      modelMock.setup((x) => x.iterateTreeModelNodes()).returns(() => treeModelNodes[Symbol.iterator]());
+
+      await using(createHandler({ visibilityHandler }), async (_) => {
         onVisibilityChange.raiseEvent(undefined, visibilityStatus);
-        expect(getVisibilityStatus.notCalled).to.be.true;
       });
+      await TestUtils.flushAsyncOperations();
+
+      // getVisibilityStatus() is called 3 times from VisibilityTreeEventHandler constructor and 2 times by raising onVisibilityChange event.
+      expect(getVisibilityStatus.callCount).to.eq(5);
     });
 
-    it("calls getVisibilityStatus() when onChangeVisibility event is raised with nodeIds", async () => {
-      using(createHandler({ visibilityHandler }), (_) => {
-        onVisibilityChange.raiseEvent(["testId"]);
-        expect(getVisibilityStatus.called).to.be.true;
+    it("calls getVisibilityStatus() when onChangeVisibility event is raised with only nodeIds", async () => {
+      await using(createHandler({ visibilityHandler }), async (_) => {
+        onVisibilityChange.raiseEvent(["testId1", "testId2"]);
       });
+      expect(getVisibilityStatus.callCount).to.eq(2);
+    });
+
+    it("calls getVisibilityStatus() only on the nodes, whose visibilityStatus is not known", async () => {
+      const visibilityStatus: Map<string, VisibilityStatus> = new Map([
+        ["testId1", testVisibilityStatus],
+      ]);
+
+      const node1 = createSimpleTreeModelNode("testId1");
+      const node2 = createSimpleTreeModelNode("testId2");
+
+      modelMock.reset();
+      modelMock.setup((x) => x.getNode("testId1")).returns(() => node1);
+      modelMock.setup((x) => x.getNode("testId2")).returns(() => node2);
+
+      await using(createHandler({ visibilityHandler }), async (_) => {
+        onVisibilityChange.raiseEvent(["testId1", "testId2"], visibilityStatus);
+      });
+      expect(getVisibilityStatus.callCount).to.eq(1);
     });
 
   });

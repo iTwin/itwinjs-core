@@ -144,14 +144,7 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
   }
 
   private async updateCheckboxes(affectedNodes?: string[], visibilityStatus?: Map<string, VisibilityStatus>) {
-    const checkBoxInfos = new Map<string, CheckBoxInfo>();
-    if (visibilityStatus) {
-      visibilityStatus.forEach((value, key) => {
-        checkBoxInfos.set(key, this.createCheckboxInfo(value));
-      });
-    }
-
-    const changes = visibilityStatus ? checkBoxInfos : await (affectedNodes ? this.collectAffectedNodesCheckboxInfos(affectedNodes) : this.collectAllNodesCheckboxInfos());
+    const changes = await (affectedNodes ? this.collectAffectedNodesCheckboxInfos(affectedNodes, visibilityStatus) : this.collectAllNodesCheckboxInfos(visibilityStatus));
     this.updateModel(changes);
   }
 
@@ -171,7 +164,7 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
     });
   }
 
-  private async collectAffectedNodesCheckboxInfos(affectedNodes: string[]) {
+  private async collectAffectedNodesCheckboxInfos(affectedNodes: string[], visibilityStatus?: Map<string, VisibilityStatus>) {
     const nodeStates = new Map<string, CheckBoxInfo>();
     if (affectedNodes.length === 0)
       return nodeStates;
@@ -182,24 +175,27 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
       if (!node)
         continue;
 
-      nodeStates.set(nodeId, await this.getNodeCheckBoxInfo(node));
+      nodeStates.set(nodeId, await this.getNodeCheckBoxInfo(node, visibilityStatus));
     }
     return nodeStates;
   }
 
-  private async collectAllNodesCheckboxInfos() {
+  private async collectAllNodesCheckboxInfos(visibilityStatus?: Map<string, VisibilityStatus>) {
     const nodeStates = new Map<string, CheckBoxInfo>();
     for (const node of this.modelSource.getModel().iterateTreeModelNodes()) {
-      nodeStates.set(node.id, await this.getNodeCheckBoxInfo(node));
+      nodeStates.set(node.id, await this.getNodeCheckBoxInfo(node, visibilityStatus));
     }
     return nodeStates;
   }
 
-  private async getNodeCheckBoxInfo(node: TreeModelNode): Promise<CheckBoxInfo> {
+  private async getNodeCheckBoxInfo(node: TreeModelNode, visibilityStatus?: Map<string, VisibilityStatus>): Promise<CheckBoxInfo> {
     if (!this._visibilityHandler)
       return { ...node.checkbox, isVisible: false };
 
-    const result = this._visibilityHandler.getVisibilityStatus(node.item, this.getNodeKey(node.item));
+    const result = visibilityStatus ?
+      (visibilityStatus.get(node.id) ?? this._visibilityHandler.getVisibilityStatus(node.item, this.getNodeKey(node.item))) :
+      this._visibilityHandler.getVisibilityStatus(node.item, this.getNodeKey(node.item));
+
     if (isPromiseLike(result))
       return this.createCheckboxInfo(await result);
     return this.createCheckboxInfo(result);
