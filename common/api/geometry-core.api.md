@@ -184,6 +184,9 @@ export type AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: Cu
 export type AnyCurve = CurvePrimitive | CurveCollection;
 
 // @public
+export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex;
+
+// @public
 export type AnyGeometryQuery = Polyface | CurvePrimitive | CurveCollection | SolidPrimitive | CoordinateXYZ | PointString3d | BSpline2dNd;
 
 // @public
