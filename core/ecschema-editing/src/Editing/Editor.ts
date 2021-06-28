@@ -166,6 +166,18 @@ export class SchemaContextEditor {
     return {};
   }
 
+  /**
+   * Increments the minor version of a schema.
+   * @param schemaKey The SchemaKey identifying the schema.
+   */
+  public async incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaEditResults> {
+    const schema = (await this.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+    schema.setVersion(schema.readVersion, schema.writeVersion, schema.minorVersion + 1);
+    return {};
+  }
+
   private removeReference(schema: Schema, refSchema: Schema) {
     const index: number = schema.references.indexOf(refSchema);
     if (index !== -1) {
