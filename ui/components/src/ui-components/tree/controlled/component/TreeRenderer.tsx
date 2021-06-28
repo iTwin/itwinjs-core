@@ -9,14 +9,16 @@
 import "./ControlledTree.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { areEqual, ListChildComponentProps, ListOnItemsRenderedProps } from "react-window";
+import { areEqual, ListChildComponentProps, ListOnItemsRenderedProps, VariableSizeList } from "react-window";
 import { concat } from "rxjs/internal/observable/concat";
 import { timer } from "rxjs/internal/observable/timer";
+import { ReplaySubject } from "rxjs/internal/ReplaySubject";
+import { Subscription } from "rxjs/internal/Subscription";
 import { assert } from "@bentley/bentleyjs-core";
 import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
+import { ConditionalAutoSizer } from "../../../common/ConditionalAutoSizer";
 import { createContextWithMandatoryProvider } from "../../../common/UseContextWithMandatoryProvider";
 import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";
-import { VirtualizedList, VirtualizedListAttributes } from "../internal/VirtualizedList";
 import { TreeActions } from "../TreeActions";
 import {
   isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes,
@@ -158,36 +160,53 @@ export const [
  * @beta
  */
 export class TreeRenderer extends React.Component<TreeRendererProps> implements TreeRendererAttributes {
-  private treeRendererRef = React.createRef<React.ElementRef<typeof TreeRendererInner>>();
+  private observableScrollToItem = new ReplaySubject<Parameters<TreeRendererAttributes["scrollToNode"]>>(1);
+  private refSubscription: Subscription | undefined = undefined;
 
   /** @inheritdoc */
   public scrollToNode(nodeId: string, alignment?: Alignment) {
-    assert(this.treeRendererRef.current !== null);
-    this.treeRendererRef.current.scrollToNode(nodeId, alignment);
+    this.observableScrollToItem.next([nodeId, alignment]);
   }
 
+  private setTreeRendererRef: React.Ref<TreeRendererAttributes> = (ref) => {
+    this.refSubscription?.unsubscribe();
+    this.refSubscription = undefined;
+    if (ref) {
+      this.refSubscription = this.observableScrollToItem.subscribe((args) => ref.scrollToNode(...args));
+    }
+  };
+
   public render() {
-    return <TreeRendererInner ref={this.treeRendererRef} {...this.props} />;
+    return (
+      <ConditionalAutoSizer width={this.props.width} height={this.props.height}>
+        {(size) => <TreeRendererInner ref={this.setTreeRendererRef} {...this.props} {...size} />}
+      </ConditionalAutoSizer>
+    );
   }
 }
 
+type TreeRendererInnerProps = TreeRendererProps & {
+  width: number;
+  height: number;
+};
+
 // eslint-disable-next-line react/display-name
-const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererProps>((props, ref) => {
-  const virtualizedListRef = React.useRef<VirtualizedListAttributes>(null);
-  useTreeRendererAttributes(ref, virtualizedListRef, props.visibleNodes);
+const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererInnerProps>((props, ref) => {
+  const variableSizeListRef = React.useRef<VariableSizeList>(null);
+  useTreeRendererAttributes(ref, variableSizeListRef, props.visibleNodes);
 
   const previousVisibleNodes = usePrevious(props.visibleNodes);
   const previousNodeHeight = usePrevious(props.nodeHeight);
   if ((previousVisibleNodes !== undefined && previousVisibleNodes !== props.visibleNodes)
     || (previousNodeHeight !== undefined && previousNodeHeight !== props.nodeHeight)) {
     /* istanbul ignore else */
-    if (virtualizedListRef.current) {
-      virtualizedListRef.current.resetAfterIndex(0, false);
+    if (variableSizeListRef.current) {
+      variableSizeListRef.current.resetAfterIndex(0, false);
     }
   }
 
   const coreTreeRef = React.useRef<CoreTree>(null);
-  const [minContainerWidth, setMinContainerWidth] = React.useState(0);
+  const minContainerWidth = React.useRef<number>(0);
   const onLabelRendered = useScrollToActiveMatch(coreTreeRef, props.nodeHighlightingProps);
   const highlightingEngine = React.useMemo(
     () => props.nodeHighlightingProps && new HighlightingEngine(props.nodeHighlightingProps),
@@ -202,7 +221,8 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
     onLabelRendered,
     highlightingEngine,
     onNodeWidthMeasured: (width: number) => {
-      setMinContainerWidth((prev) => width > prev ? width : prev);
+      if (width > minContainerWidth.current)
+        minContainerWidth.current = width;
     },
     onNodeEditorClosed: () => {
       setFocusToSelected(coreTreeRef);
@@ -210,7 +230,11 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
     },
   }), [props, onLabelRendered, highlightingEngine]);
 
-  const onTreeSizeChanged = React.useCallback(() => setMinContainerWidth(0), []);
+  const prevTreeWidth = React.useRef<number>(0);
+  if (props.width !== prevTreeWidth.current) {
+    minContainerWidth.current = 0;
+    prevTreeWidth.current = props.width;
+  }
 
   const itemKey = React.useCallback(
     (index: number) => getNodeKey(props.visibleNodes.getAtIndex(index)!),
@@ -237,16 +261,20 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
       index++;
     }
 
-    assert(virtualizedListRef.current !== null);
-    virtualizedListRef.current.scrollToItem(index);
+    assert(variableSizeListRef.current !== null);
+    variableSizeListRef.current.scrollToItem(index);
   }, [nodeHighlightingProps]); // eslint-disable-line react-hooks/exhaustive-deps
 
   const innerElementType = React.useCallback(
     // eslint-disable-next-line react/display-name
     React.forwardRef(({ style, ...rest }: ListChildComponentProps, innerRef: React.Ref<HTMLDivElement>) => (
-      <div ref={innerRef} style={{ ...style, minWidth: minContainerWidth }} {...rest} />
+      <div
+        ref={innerRef}
+        style={{ ...style, minWidth: minContainerWidth.current }}
+        {...rest}
+      />
     )),
-    [minContainerWidth],
+    [],
   );
 
   const handleKeyDown = React.useCallback((e: React.KeyboardEvent) => {
@@ -265,12 +293,11 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
   return (
     <TreeRendererContextProvider value={rendererContext}>
       <CoreTree ref={coreTreeRef} className="components-controlledTree" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-        <VirtualizedList
-          ref={virtualizedListRef}
+        <VariableSizeList
+          ref={variableSizeListRef}
           className={"ReactWindow__VariableSizeList"}
           width={props.width}
           height={props.height}
-          onTreeSizeChanged={onTreeSizeChanged}
           itemCount={props.visibleNodes.getNumNodes()}
           itemSize={itemSize}
           estimatedItemSize={25}
@@ -280,7 +307,7 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
           onItemsRendered={handleRenderedItemsChange}
         >
           {Node}
-        </VirtualizedList>
+        </VariableSizeList>
       </CoreTree>
     </TreeRendererContextProvider>
   );
@@ -381,7 +408,7 @@ function useNodeLoading(
 
 function useTreeRendererAttributes(
   ref: React.Ref<TreeRendererAttributes>,
-  variableSizeListRef: React.RefObject<VirtualizedListAttributes>,
+  variableSizeListRef: React.RefObject<VariableSizeList>,
   visibleNodes: VisibleTreeNodes,
 ) {
   React.useImperativeHandle(
@@ -413,7 +440,7 @@ function getHighlightedNodeId(highlightableTreeProps?: HighlightableTreeProps) {
 
 function useScrollToActiveMatch(treeRef: React.RefObject<CoreTree>, highlightableTreeProps?: HighlightableTreeProps) {
   const scrollToActive = React.useRef(false);
-  React.useLayoutEffect(() => {
+  React.useEffect(() => {
     scrollToActive.current = true;
   }, [highlightableTreeProps]);
 
@@ -425,6 +452,7 @@ function useScrollToActiveMatch(treeRef: React.RefObject<CoreTree>, highlightabl
 
       scrollToActive.current = false;
       const scrollTo = [...treeRef.current.getElementsByClassName(HighlightingEngine.ACTIVE_CLASS_NAME)];
+      // istanbul ignore else
       if (scrollTo.length > 0 && scrollTo[0].scrollIntoView)
         scrollTo[0].scrollIntoView({ behavior: "auto", block: "nearest", inline: "end" });
     }, [highlightableTreeProps, treeRef]);
