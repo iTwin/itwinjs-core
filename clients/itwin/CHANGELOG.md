@@ -1,6 +1,13 @@
 # Change Log - @bentley/itwin-client
 
-This log was last generated on Mon, 28 Jun 2021 13:12:55 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- WsgClient.getUrl returns incomplete URL when querying concurently for the first time
 
 ## 2.16.6
 Mon, 28 Jun 2021 13:12:55 GMT

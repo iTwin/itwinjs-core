@@ -2,6 +2,30 @@
   "name": "@bentley/map-layers",
   "entries": [
     {
+      "version": "2.17.0",
+      "tag": "@bentley/map-layers_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": " Allow saved map-layer definition to be edited."
+          },
+          {
+            "comment": "Made MaplayerSource independent from MapLayerProps."
+          },
+          {
+            "comment": "MapManagerSettings UI Refresh. Added tests."
+          },
+          {
+            "comment": "Fixed typo in activeViewport.view.isSpatialView: it should be invoked as a method and not a property."
+          },
+          {
+            "comment": "Fixed a bug where an elevation offset value of 0 could not be in the UI."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.16.6",
       "tag": "@bentley/map-layers_v2.16.6",
       "date": "Mon, 28 Jun 2021 13:12:55 GMT",

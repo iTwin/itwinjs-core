@@ -2,6 +2,30 @@
   "name": "@bentley/imodeljs-editor-frontend",
   "entries": [
     {
+      "version": "2.17.0",
+      "tag": "@bentley/imodeljs-editor-frontend_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Added editor apis to request and update geometry, exercised by CreateOrContinuePathTool."
+          },
+          {
+            "comment": "Added arc by 3 points tool. Ensure tools always get motion event before decorate or onDynamicFrame."
+          },
+          {
+            "comment": "Make EditManipulator public"
+          },
+          {
+            "comment": "Added tools for changing project extents and geolocation."
+          },
+          {
+            "comment": "Don't allow undo of changes to project extents or geolocation."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.16.6",
       "tag": "@bentley/imodeljs-editor-frontend_v2.16.6",
       "date": "Mon, 28 Jun 2021 13:12:55 GMT",
