@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-metadata",
-  "version": "2.18.0-dev.16",
+  "version": "2.18.0-dev.19",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/ecschema-metadata.js",
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run createLocalization && npm run copy:test-assets",
+    "build": "tsc 1>&2 && npm run copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-metadata",
@@ -20,8 +20,7 @@
     "test": "betools test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./ecschema-metadata.ts --onlyJson",
     "cover": "nyc npm test",
-    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs",
-    "createLocalization": "node ./build/createLocalization.js"
+    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
   },
   "keywords": [
     "Bentley",
@@ -63,8 +62,8 @@
     "xmlhttprequest": "^1.8.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.16",
-    "@bentley/imodeljs-i18n": "workspace:^2.18.0-dev.16"
+    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.19",
+    "@bentley/imodeljs-i18n": "workspace:^2.18.0-dev.19"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"

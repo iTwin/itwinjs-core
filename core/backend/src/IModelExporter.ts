@@ -13,11 +13,12 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BisCoreSchema } from "./BisCoreSchema";
-import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, GeometricElement, RecipeDefinitionElement, RepositoryLink } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { IModelHost } from "./IModelHost";
 import { IModelSchemaLoader } from "./IModelSchemaLoader";
 import { DefinitionModel, Model } from "./Model";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
@@ -750,16 +751,20 @@ class ChangedInstanceIds {
   public relationship = new ChangedInstanceOps();
   public font = new ChangedInstanceOps();
   private constructor() { }
-  public static async initialize(requestContext: AuthorizedClientRequestContext, iModelDb: BriefcaseDb, startChangeSetId: string): Promise<ChangedInstanceIds> {
+
+  public static async initialize(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, firstChangeSetId: string): Promise<ChangedInstanceIds> {
     requestContext.enter();
-    const extractContext = new ChangeSummaryExtractContext(iModelDb); // NOTE: ChangeSummaryExtractContext is nothing more than a wrapper around IModelDb that has a method to get the iModelId
-    // NOTE: ChangeSummaryManager.downloadChangesets has nothing really to do with change summaries but has the desired behavior of including the start changeSet (unlike BriefcaseManager.downloadChangesets)
-    const changeSets = await ChangeSummaryManager.downloadChangesets(requestContext, extractContext, startChangeSetId, iModelDb.changeSetId);
+
+    const iModelId = iModel.iModelId;
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangeSetId }, requestContext })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: iModel.changeSetId }, requestContext })).index;
+    const changeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+
     requestContext.enter();
     const changedInstanceIds = new ChangedInstanceIds();
     changeSets.forEach((changeSet): void => {
       const changeSetPath = changeSet.pathname;
-      const statusOrResult = iModelDb.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
+      const statusOrResult = iModel.nativeDb.extractChangedInstanceIdsFromChangeSet(changeSetPath);
       if (undefined !== statusOrResult.error) {
         throw new IModelError(statusOrResult.error.status, "Error processing changeSet", Logger.logError, loggerCategory);
       }

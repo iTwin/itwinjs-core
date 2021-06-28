@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module Framework
  */
-import { BriefcaseDb, ECSqlStatement, Element, ElementOwnsChildElements, ExternalSourceAspect, IModelDb, RepositoryLink } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, DefinitionElement, ECSqlStatement, Element, ElementOwnsChildElements, ExternalSourceAspect, IModelDb, RepositoryLink } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { DbOpcode, DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import { Code, ExternalSourceAspectProps, IModel, IModelError, RelatedElement, RepositoryLinkProps } from "@bentley/imodeljs-common";
@@ -316,7 +316,8 @@ export class Synchronizer {
       return;
     }
     const sql = `SELECT aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Kind !='DocumentWithBeGuid'`;
-    const toDelete: Id64String[] = new Array<Id64String>();
+    const deleteElements: Id64String[] = new Array<Id64String>();
+    const deleteDefElements: Id64String[] = new Array<Id64String>();
     const db = this.imodel as BriefcaseDb;
     this.imodel.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
@@ -324,11 +325,16 @@ export class Synchronizer {
         const elementId = statement.getValue(0).getId();
         const elementChannelRoot = db.concurrencyControl.channel.getChannelOfElement(db.elements.getElement(elementId));
         if (elementChannelRoot.channelRoot === db.concurrencyControl.channel.channelRoot && !(this._seenElements.includes(elementId))) {
-          toDelete.push(elementId);
+          const element = db.elements.getElement(elementId);
+          if (element instanceof DefinitionElement)
+            deleteDefElements.push(elementId);
+          else
+            deleteElements.push(elementId);
         }
       }
     });
-    this.imodel.elements.deleteElement(toDelete);
+    this.imodel.elements.deleteElement(deleteElements);
+    this.imodel.elements.deleteDefinitionElements(deleteDefElements);
   }
 
   private detectDeletedElementsInFile() {
@@ -342,19 +348,26 @@ export class Synchronizer {
 
   private detectDeletedElementsForScope(scopeId: Id64String) {
     const sql = `SELECT aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=?`;
-    const toDelete: Id64String[] = new Array<Id64String>();
+    const deleteElements: Id64String[] = new Array<Id64String>();
+    const deleteDefElements: Id64String[] = new Array<Id64String>();
     this.imodel.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId(1, scopeId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         // If the element is in a scope that was processed and we didn't visit it, delete it
         const elementId = statement.getValue(0).getId();
+        const element = this.imodel.elements.getElement(elementId);
+
         if (!(this._seenElements.includes(elementId))) {
-          toDelete.push(elementId);
+          if (element instanceof DefinitionElement)
+            deleteDefElements.push(elementId);
+          else
+            deleteElements.push(elementId);
         }
         this.detectDeletedElementsForScope(elementId);
       }
     });
-    this.imodel.elements.deleteElement(toDelete);
+    this.imodel.elements.deleteElement(deleteElements);
+    this.imodel.elements.deleteDefinitionElements(deleteDefElements);
   }
 
   private updateResultInIModelForOneElement(results: SynchronizationResults): IModelStatus {
