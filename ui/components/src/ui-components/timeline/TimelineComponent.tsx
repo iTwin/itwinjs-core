@@ -42,7 +42,8 @@ export interface TimelineMenuItemProps {
   /** duration for the entire timeline to play */
   timelineDuration: number;
 }
-/** [[TimelineComponentProps]] configure the timeline
+/**
+ *  [[TimelineComponentProps]] configure the timeline
  * @public
  */
 interface TimelineComponentProps {
@@ -77,7 +78,8 @@ interface TimelineComponentState {
   includeRepeat: boolean; // include the repeat option in the timeline context menu
 }
 
-/** [[TimelineComponent]] is used to playback timeline data
+/**
+ * [[TimelineComponent]] is used to playback timeline data
  * @public
  */
 export class TimelineComponent extends React.Component<TimelineComponentProps, TimelineComponentState> {
