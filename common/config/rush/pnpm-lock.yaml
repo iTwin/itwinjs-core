@@ -2160,7 +2160,7 @@ importers:
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/presentation-common': workspace:*
-      '@bentley/react-scripts': 4.0.3-dev.1
+      '@bentley/react-scripts': 4.0.3-dev.2
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
@@ -2217,7 +2217,7 @@ importers:
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/presentation-common': link:../../presentation/common
-      '@bentley/react-scripts': 4.0.3-dev.1_react@16.14.0+typescript@4.1.5
+      '@bentley/react-scripts': 4.0.3-dev.2_react@16.14.0+typescript@4.1.5
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/ui-components': link:../../ui/components
       '@bentley/ui-core': link:../../ui/core
@@ -3362,7 +3362,7 @@ importers:
       '@bentley/perf-tools': workspace:*
       '@bentley/projectshare-client': workspace:*
       '@bentley/rbac-client': workspace:*
-      '@bentley/react-scripts': 4.0.3-dev.1
+      '@bentley/react-scripts': 4.0.3-dev.2
       '@bentley/ui-abstract': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/express': ^4.16.1
@@ -3406,7 +3406,7 @@ importers:
       '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/perf-tools': link:../../tools/perf-tools
-      '@bentley/react-scripts': 4.0.3-dev.1_react@16.14.0+typescript@4.1.5
+      '@bentley/react-scripts': 4.0.3-dev.2_react@16.14.0+typescript@4.1.5
       '@types/body-parser': 1.19.0
       '@types/express': 4.17.12
       '@types/node': 10.14.1
@@ -3452,7 +3452,7 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/mobile-manager': workspace:*
       '@bentley/rbac-client': workspace:*
-      '@bentley/react-scripts': 4.0.3-dev.1
+      '@bentley/react-scripts': 4.0.3-dev.2
       '@bentley/ui-abstract': workspace:*
       '@bentley/webgl-compatibility': workspace:*
       '@types/body-parser': ^1.17.0
@@ -3505,7 +3505,7 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/react-scripts': 4.0.3-dev.1_react@16.14.0+typescript@4.1.5
+      '@bentley/react-scripts': 4.0.3-dev.2_react@16.14.0+typescript@4.1.5
       '@types/body-parser': 1.19.0
       '@types/express': 4.17.12
       '@types/fs-extra': 4.0.11
@@ -3819,7 +3819,7 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/icons-generic-webfont': ^1.0.15
-      '@bentley/react-scripts': 4.0.3-dev.1
+      '@bentley/react-scripts': 4.0.3-dev.2
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
@@ -3851,7 +3851,7 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/react-scripts': 4.0.3-dev.1_react@16.14.0+typescript@4.1.5
+      '@bentley/react-scripts': 4.0.3-dev.2_react@16.14.0+typescript@4.1.5
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.13
       '@types/react-router-dom': 5.1.7
@@ -3876,7 +3876,7 @@ importers:
       '@bentley/presentation-common': workspace:*
       '@bentley/presentation-components': workspace:*
       '@bentley/presentation-frontend': workspace:*
-      '@bentley/react-scripts': 4.0.3-dev.1
+      '@bentley/react-scripts': 4.0.3-dev.2
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
@@ -3925,7 +3925,7 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/react-scripts': 4.0.3-dev.1_react@16.14.0+typescript@4.1.5
+      '@bentley/react-scripts': 4.0.3-dev.2_react@16.14.0+typescript@4.1.5
       '@types/bunyan': 1.8.6
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.13
@@ -3981,7 +3981,7 @@ importers:
       '@bentley/presentation-frontend': workspace:*
       '@bentley/projectshare-client': workspace:*
       '@bentley/rbac-client': workspace:*
-      '@bentley/react-scripts': 4.0.3-dev.1
+      '@bentley/react-scripts': 4.0.3-dev.2
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
@@ -4080,7 +4080,7 @@ importers:
       '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/logger-config': link:../../core/logger-config
-      '@bentley/react-scripts': 4.0.3-dev.1_react@16.14.0+typescript@4.1.5
+      '@bentley/react-scripts': 4.0.3-dev.2_react@16.14.0+typescript@4.1.5
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
       '@types/react': 16.9.43
@@ -4978,7 +4978,7 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodeljs-i18n': workspace:*
-      '@bentley/react-scripts': 4.0.3-dev.1
+      '@bentley/react-scripts': 4.0.3-dev.2
       '@bentley/ui-abstract': workspace:*
       '@testing-library/react': ^8.0.1
       '@testing-library/react-hooks': ^3.2.1
@@ -5048,7 +5048,7 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodeljs-i18n': link:../../core/i18n
-      '@bentley/react-scripts': 4.0.3-dev.1_59acd50e5539ce6dd550ffb3879fbd1d
+      '@bentley/react-scripts': 4.0.3-dev.2_59acd50e5539ce6dd550ffb3879fbd1d
       '@bentley/ui-abstract': link:../abstract
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
@@ -5119,7 +5119,7 @@ importers:
       '@bentley/presentation-testing': workspace:*
       '@bentley/product-settings-client': workspace:*
       '@bentley/rbac-client': workspace:*
-      '@bentley/react-scripts': 4.0.3-dev.1
+      '@bentley/react-scripts': 4.0.3-dev.2
       '@bentley/telemetry-client': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
@@ -5212,7 +5212,7 @@ importers:
       '@bentley/presentation-testing': link:../../presentation/testing
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@bentley/rbac-client': link:../../clients/rbac
-      '@bentley/react-scripts': 4.0.3-dev.1_59acd50e5539ce6dd550ffb3879fbd1d
+      '@bentley/react-scripts': 4.0.3-dev.2_59acd50e5539ce6dd550ffb3879fbd1d
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@bentley/ui-abstract': link:../abstract
       '@bentley/ui-components': link:../components
@@ -5271,7 +5271,7 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/react-scripts': 4.0.3-dev.1
+      '@bentley/react-scripts': 4.0.3-dev.2
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-core': workspace:*
       '@testing-library/react': ^8.0.1
@@ -5323,7 +5323,7 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/react-scripts': 4.0.3-dev.1_59acd50e5539ce6dd550ffb3879fbd1d
+      '@bentley/react-scripts': 4.0.3-dev.2_59acd50e5539ce6dd550ffb3879fbd1d
       '@bentley/ui-abstract': link:../abstract
       '@bentley/ui-core': link:../core
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
@@ -9465,8 +9465,8 @@ packages:
     requiresBuild: true
     dev: false
 
-  /@bentley/react-scripts/4.0.3-dev.1_59acd50e5539ce6dd550ffb3879fbd1d:
-    resolution: {integrity: sha512-agTZ9QFEcEWryNvZbNDoanopMcAHJ4Mj3YVB6+dlOzDr+7dgJeD9OJqOc00DDTjkM+1WD/qb+XSPZUZoJSdcbg==}
+  /@bentley/react-scripts/4.0.3-dev.2_59acd50e5539ce6dd550ffb3879fbd1d:
+    resolution: {integrity: sha512-LUddc6HjYl0JUSVMMd3IQCPEthwDOEqL7QjeujkptIXUnXjH/AwFewiIOnxypw+bpS7SNX3lB2RXCramA1ySpQ==}
     engines: {node: ^10.12.0 || >=12.0.0}
     hasBin: true
     peerDependencies:
@@ -9565,8 +9565,8 @@ packages:
       - webpack-plugin-serve
     dev: true
 
-  /@bentley/react-scripts/4.0.3-dev.1_react@16.14.0+typescript@4.1.5:
-    resolution: {integrity: sha512-agTZ9QFEcEWryNvZbNDoanopMcAHJ4Mj3YVB6+dlOzDr+7dgJeD9OJqOc00DDTjkM+1WD/qb+XSPZUZoJSdcbg==}
+  /@bentley/react-scripts/4.0.3-dev.2_react@16.14.0+typescript@4.1.5:
+    resolution: {integrity: sha512-LUddc6HjYl0JUSVMMd3IQCPEthwDOEqL7QjeujkptIXUnXjH/AwFewiIOnxypw+bpS7SNX3lB2RXCramA1ySpQ==}
     engines: {node: ^10.12.0 || >=12.0.0}
     hasBin: true
     peerDependencies:
@@ -23528,6 +23528,7 @@ packages:
   /sane/4.1.0:
     resolution: {integrity: sha512-hhbzAgTIX8O7SHfp2c8/kREfEn4qO/9q8C9beyY6+tvZ87EpoZ3i1RIEvp27YBswnNbY9mWd6paKVmKbAgLfZA==}
     engines: {node: 6.* || 8.* || >= 10.*}
+    deprecated: some dependency vulnerabilities fixed, support for node < 10 dropped, and newer ECMAScript syntax/features added
     hasBin: true
     dependencies:
       '@cnakazawa/watch': 1.0.4
