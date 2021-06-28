@@ -56,6 +56,8 @@ export class Transformer extends IModelTransformer {
     }
     const transformer = new Transformer(sourceDb, targetDb, options);
     transformer.initialize(options);
+    await transformer.processSchemas(requestContext);
+    await transformer.saveChanges("processSchemas");
     await transformer.processChanges(requestContext, sourceStartChangesetId);
     await transformer.saveChanges("processChanges");
     if (options?.deleteUnusedGeometryParts) {
