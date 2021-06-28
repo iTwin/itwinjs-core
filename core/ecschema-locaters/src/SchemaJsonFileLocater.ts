@@ -16,7 +16,6 @@ import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
  * @alpha
  */
 export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaLocater {
-
   /**
    * Constructs a SchemaKey based on the information in the Schema JSON
    * @param data The Schema JSON as a string
@@ -57,15 +56,13 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    // Load the file
-    if (!await this.fileExists(schemaPath))
-      return undefined;
+    if (!await this.findCachedSchemaText(schemaKey)) {
+      await this.addSchemaText(schemaKey, this.readSchemaText(schemaPath));
+    }
 
-    const schemaText = await this.readUtf8FileToString(schemaPath);
+    const schemaText = await this.getSchemaText(schemaKey);
     if (!schemaText)
       return undefined;
-
-    this.addSchemaSearchPaths([path.dirname(schemaPath)]);
 
     const schema = await Schema.fromJson(schemaText, context);
     return schema as T;
@@ -112,15 +109,13 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    // Load the file
-    if (!await this.fileExists(schemaPath))
-      return undefined;
+    if (!await this.findCachedSchemaText(schemaKey)) {
+      await this.addSchemaText(schemaKey, this.readSchemaText(schemaPath));
+    }
 
-    const schemaText = await this.readUtf8FileToString(schemaPath);
+    const schemaText = await this.getSchemaText(schemaKey);
     if (!schemaText)
       return undefined;
-
-    this.addSchemaSearchPaths([path.dirname(schemaPath)]);
 
     const schema = await Schema.fromJsonLoadingSchema(schemaText, context);
     return schema as T;

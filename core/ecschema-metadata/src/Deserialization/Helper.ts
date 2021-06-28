@@ -72,11 +72,14 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
+    console.log(`At readSchema for: ${schema.name}`);
+
     const cachedSchema = await this._context.getCachedSchema<U>(schema.schemaKey);
     if (cachedSchema)
       return cachedSchema;
 
-    await this._context.addSchema(schema, async () => this.loadSchema(schema));
+    await this._context.checkAndAddSchema(schema, async () => this.loadSchema(schema));
+    console.log(`Added schema ${schema.name} to cache`);
 
     // Await loading the rest of the schema
     const loadedSchema = await this._context.getSchema<U>(schema.schemaKey);
@@ -90,6 +93,8 @@ export class SchemaReadHelper<T = unknown> {
     for (const reference of this._parser.getReferences()) {
       await this.loadSchemaReference(reference);
     }
+
+    console.log(`Loading schema ${schema.name}`);
 
     if (this._visitorHelper)
       await this._visitorHelper.visitSchema(schema, false);
@@ -112,6 +117,7 @@ export class SchemaReadHelper<T = unknown> {
     if (this._visitorHelper)
       await this._visitorHelper.visitSchema(schema);
 
+    console.log(`Finished loading schema ${schema.name}`);
     return schema;
   }
 
@@ -177,10 +183,11 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
-    const cachedLoadingSchema = await this._context.getCachedLoadedOrLoadingSchema<U>(schema.schemaKey);
-    if (!cachedLoadingSchema)
-      await this._context.addSchema(schema, async () => this.loadSchema(schema));
+    console.log(`At readLoadingSchema for: ${schema.name}`);
 
+    await this._context.checkAndAddSchema(schema, async () => this.loadSchema(schema));
+
+    console.log(`Schema ${this._schema.name} finished partial loading`);
     return schema;
   }
 
@@ -192,9 +199,7 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
-    const cachedLoadingSchema = this._context.getCachedLoadedOrLoadingSchemaSync<U>(schema.schemaKey);
-    if (!cachedLoadingSchema)
-      this._context.addSchemaSync(schema, async () => this.loadSchema(schema));
+    this._context.checkAndAddSchemaSync(schema, async () => this.loadSchema(schema));
 
     return schema;
   }
@@ -209,11 +214,13 @@ export class SchemaReadHelper<T = unknown> {
     if (refSchema)
       return;
 
+    console.log(`Schema ${this._schema!.name} referencing ${ref.name}`);
     refSchema = await this._context.getLoadingSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
     if (undefined === refSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
     await (this._schema as MutableSchema).addReference(refSchema);
+    console.log(`Schema ${this._schema!.name} added reference ${ref.name}`);
     const diagnostics = validateSchemaReferences(this._schema!);
 
     let errorMessage: string = "";

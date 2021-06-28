@@ -33,18 +33,17 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    // Load the file
-    if (undefined === await this.fileExists(schemaPath))
-      return undefined;
+    if (!await this.findCachedSchemaText(key)) {
+      await this.addSchemaText(key, this.readSchemaText(schemaPath));
+    }
 
-    const schemaText = await this.readUtf8FileToString(schemaPath);
+    const schemaText = await this.getSchemaText(key);
     if (undefined === schemaText)
       return undefined;
 
     const parser = new DOMParser();
     const document = parser.parseFromString(schemaText);
 
-    this.addSchemaSearchPaths([path.dirname(schemaPath)]);
     const reader = new SchemaReadHelper(XmlParser, context);
     let schema: Schema = new Schema(context);
     schema = await reader.readSchema(schema, document);
@@ -98,18 +97,17 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    // Load the file
-    if (undefined === await this.fileExists(schemaPath))
-      return undefined;
+    if (!await this.findCachedSchemaText(key)) {
+      await this.addSchemaText(key, this.readSchemaText(schemaPath));
+    }
 
-    const schemaText = await this.readUtf8FileToString(schemaPath);
+    const schemaText = await this.getSchemaText(key);
     if (undefined === schemaText)
       return undefined;
 
     const parser = new DOMParser();
     const document = parser.parseFromString(schemaText);
 
-    this.addSchemaSearchPaths([path.dirname(schemaPath)]);
     const reader = new SchemaReadHelper(XmlParser, context);
     let schema: Schema = new Schema(context);
     schema = await reader.readLoadingSchema(schema, document);
