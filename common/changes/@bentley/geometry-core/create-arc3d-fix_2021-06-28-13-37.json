@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "Use ZXY axis order in Arc3d.createCenterNormalRadius().",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "10091419+GerardasB@users.noreply.github.com"
+}
