@@ -5,6 +5,7 @@
 /** @packageDocumentation
  * @module Curve
  */
+import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
 import { Clipper } from "../clipping/ClipUtils";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
@@ -43,7 +44,7 @@ export type CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bspline
 /** Union type for subclasses of [[CurvePrimitive]]. Specific subclasses can be discriminated at compile- or run-time using [[CurvePrimitive.curvePrimitiveType]].
  * @public
  */
-export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex;
+export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex | InterpolationCurve3d;
 
 /** function signature for callback which announces a pair of numbers, such as a fractional interval, along with a containing CurvePrimitive.
  * @public
