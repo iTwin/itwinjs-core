@@ -46,7 +46,7 @@ export interface InterpolationCurve3dProps {
  * @public
  */
 export class InterpolationCurve3d extends ProxyCurve  {
-  public curvePrimitiveType: CurvePrimitiveType;
+  public readonly curvePrimitiveType: CurvePrimitiveType;
   private _properties: InterpolationCurve3dProps;
   /**
    * CAPTURE properties and proxy curve.
@@ -60,7 +60,7 @@ private constructor(properties: InterpolationCurve3dProps, proxyCurve: CurvePrim
     return handler.handleInterpolationCurve3d(this);
   }
 /**
- * Create an [[InterpolationCurve3d]] based on points, knots, and other properties inthe [[InterpolationCurve3dProps]]
+ * Create an [[InterpolationCurve3d]] based on points, knots, and other properties in the [[InterpolationCurve3dProps]]
  */
   public static create(properties: InterpolationCurve3dProps): InterpolationCurve3d | undefined {
     // points are required ...
@@ -164,7 +164,11 @@ private constructor(properties: InterpolationCurve3dProps, proxyCurve: CurvePrim
    * Transform this [[InterpolationCurve3d]] and its defining data in place
    */
   public tryTransformInPlace(transform: Transform): boolean {
-    return this._proxyCurve.tryTransformInPlace(transform);
+    const proxyOk = this._proxyCurve.tryTransformInPlace(transform);
+    if (proxyOk) {
+      transform.multiplyPoint3dArray(this._properties.fitPoints);
+    }
+    return proxyOk;
   }
   /**
    * Return a transformed clone.
