@@ -1,6 +1,6 @@
 {
   "name": "@bentley/projectshare-client",
-  "version": "2.18.0-dev.18",
+  "version": "2.18.0-dev.19",
   "description": "iModel.js ProjectShare Client",
   "main": "lib/projectshare-client.js",
   "typings": "lib/projectshare-client",
@@ -36,8 +36,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.18",
-    "@bentley/itwin-client": "workspace:^2.18.0-dev.18"
+    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.19",
+    "@bentley/itwin-client": "workspace:^2.18.0-dev.19"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
