@@ -29,7 +29,7 @@ import { WidgetControl } from "../widgets/WidgetControl";
 
 /**
  * Types of hierarchies displayed in the `VisibilityComponent`
- * @public
+ * @public @deprecated
  */
 export enum VisibilityComponentHierarchy {
   Models = "models",
@@ -39,7 +39,7 @@ export enum VisibilityComponentHierarchy {
 
 /**
  * Data structure that describes visibility component configuration
- * @beta
+ * @beta @deprecated
  */
 export interface VisibilityComponentConfig {
   modelsTree?: {
@@ -55,7 +55,7 @@ export interface VisibilityComponentConfig {
 
 /**
  * Props for `VisibilityComponent`
- * @beta
+ * @beta @deprecated
  */
 export interface VisibilityComponentProps {
   /** iModel whose data should be displayed in the component */
@@ -80,7 +80,7 @@ interface VisibilityTreeState {
 }
 
 /** VisibilityComponent React component.
- * @beta
+ * @beta @deprecated
  */
 // istanbul ignore next
 export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
@@ -221,12 +221,12 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
 }
 
 /** VisibilityComponent that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
- * @beta
+ * @beta @deprecated
  */
 export const IModelConnectedVisibilityComponent = connectIModelConnection(null, null)(VisibilityComponent); // eslint-disable-line @typescript-eslint/naming-convention
 
 /** VisibilityWidget React component.
- * @beta
+ * @beta @deprecated
  */
 // istanbul ignore next
 export class VisibilityWidget extends WidgetControl {
