@@ -3,7 +3,25 @@ publish: false
 ---
 # NextVersion
 
-## UI Changes
+## Scientific visualization
+
+The [AnalysisStyle]($common) APIs have been cleaned up and promoted to `@public`. An AnalysisStyle is used to animate a mesh that has been supplemented with [PolyfaceAuxData]($geometry-core), by recoloring and/or deforming its vertices over time. This enables visualization of the effects of computed, changing variables like stress and temperature.
+
+## Modifications to the Change Summary API
+
+[ChangeSummaryManager.extractChangeSummaries]($imodeljs-backend) has now been deprecated, and replaced with two methods - [ChangeSummaryManager.createChangeSummaries]($imodeljs-backend) and [ChangeSummaryManager.createChangeSummary]($imodeljs-backend).
+
+The deprecated method works by creating a range of Change Summaries by starting with the end version, reversing Changesets one by one until the specified start version. Since Changesets containing schema changes cannot be reversed, the method may fail to create some Change Summaries. The new replacement instead walks the versions in the forward direction.
+
+- [ChangeSummaryManager.createChangeSummaries]($imodeljs-backend) creates Change Summaries for a range of Changesets by walking the versions in a forward direction starting with the specified first version.
+- [ChangeSummaryManager.createChangeSummary]($imodeljs-backend) creates a single Change Summary for the current version of the iModel, i.e., the last applied Changeset.
+
+[ChangeSummaryManager.detachChangeCache]($imodeljs-backend)  can now be used to detach the cache after querying the change summary to continue change summary creation if necessary.
+
+[ChangeSummaryExtractOptions]($imodeljs-backend) was also deprecated as a consequence of the above changes. [CreateChangeSummaryArgs]($imodeljs-backend) serves a similar purpose with the newer methods.
+ChangeSummaryExtractContext was unused and has been removed.
+
+## UI changes
 
 ### @bentley/ui-abstract package
 
@@ -68,3 +86,25 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
 ### Quantity package
 
 The Format class now provides the method [Format.clone]($quantity) to clone an existing Format. [CloneOptions]($quantity) may be optionally passed into the clone method to adjust the format.
+
+## [@bentley/ecschema-metadata](https://www.itwinjs.org/reference/ecschema-metadata/) changes
+
+To reduce the size and limit the scope of the APIs available in the ecschema-metadata package, all APIs associated with EC Schema editing and validation have been moved to the [@bentley/ecschema-editing](https://www.itwinjs.org/reference/ecschema-editing/) package. This includes all source code under the [Validation](https://www.itwinjs.org/reference/ecschema-metadata/) and [Editing](https://www.itwinjs.org/reference/ecschema-metadata/editing/) folders. All corresponding @beta types defined in the ecschema-metadata package have been deprecated.  All @alpha types have been removed from the ecschema-metadata package. The source code move is the first step of a larger proposal for Schema editing and validation enhancements for connectors and editing applications. You may read and provide feedback on this initial proposal via this [github discussion](https://github.com/imodeljs/imodeljs/discussions/1525).
+
+### Deprecated @beta types (moved to ecschema-editing)
+
+- IDiagnostic, BaseDiagnostic (including all sub-classes), DiagnosticType, DiagnosticCategory, DiagnosticCodes, Diagnostics
+- IDiagnosticReporter, SuppressionDiagnosticReporter, FormatDiagnosticReporter, LoggingDiagnosticReporter
+- IRuleSet, ECRuleSet
+- ISuppressionRule, BaseSuppressionRule, IRuleSuppressionMap, BaseRuleSuppressionMap, IRuleSuppressionSet
+- SchemaCompareCodes, SchemaCompareDiagnostics
+- SchemaValidater, SchemaValidationVisitor
+
+### Removed @alpha types (moved to ecschema-editing)
+
+- SchemaEditResults, SchemaItemEditResults, PropertyEditResults,
+SchemaContextEditor
+- Editors namespace, which includes all editor classes (ie. ECClasses, Entities, Mixins, etc.)
+- ISchemaChange, ISchemaChanges, ChangeType
+- BaseSchemaChange, BaseSchemaChanges (including all sub-classes)
+- ISchemaComparer, SchemaComparer, SchemaCompareDirection, ISchemaCompareReporter
