@@ -85,7 +85,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   private _requestFrame = 0;
   private _unmounted = false;
   private _settings: HTMLElement | null = null;
-  private _repeatLabel: string = "Repeat";
+  private _repeatLabel: string;
   private _removeListener?: () => void;
   private _standardTimelineMenuItems: TimelineMenuItemProps[] = [
     {label: UiComponents.translate("timeline.slow"), timelineDuration: slowSpeed },
