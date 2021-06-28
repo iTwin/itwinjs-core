@@ -2,6 +2,39 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "2.17.0",
+      "tag": "@bentley/ui-ninezone_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability to define state of popout widgets in NinezoneState."
+          },
+          {
+            "comment": "Add ability to maintain tab state even if UiItemsProvider that added the tab is not loaded. This allow preference size to be maintained."
+          },
+          {
+            "comment": "fix css deprecation warning about using 'fit-available'."
+          },
+          {
+            "comment": "Update scss to remove use of slash for division to avoid SASS deprecation warnings."
+          },
+          {
+            "comment": "Fix sass error reported by Civil iTwin."
+          },
+          {
+            "comment": "publish in-use APIs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.6",
+      "tag": "@bentley/ui-ninezone_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.16.5",
       "tag": "@bentley/ui-ninezone_v2.16.5",
       "date": "Fri, 25 Jun 2021 16:03:01 GMT",

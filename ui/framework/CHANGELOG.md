@@ -1,6 +1,24 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Fri, 25 Jun 2021 16:03:01 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Add ability to "pop-out" a widget to a child window.
+- Export EmphasizeElementProps from common, deprecate from frontend.
+- Add ability to maintain tab state even if UiItemsProvider that added the tab is not loaded. This allow preference size to be maintained.
+- Add 100ms wait during unit test for open window processing to be triggered.
+- Add getters to retrieve the list of category and model overrides & make update category/model overrides functions public
+- publish in-use APIs
+- Refactor SolarTimeline and ScheduleAnimationProvider to use new TimelineComponent iteration.
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
 
 ## 2.16.5
 Fri, 25 Jun 2021 16:03:01 GMT

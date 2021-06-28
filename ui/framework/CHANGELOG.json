@@ -2,6 +2,42 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.17.0",
+      "tag": "@bentley/ui-framework_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability to \"pop-out\" a widget to a child window."
+          },
+          {
+            "comment": "Export EmphasizeElementProps from common, deprecate from frontend."
+          },
+          {
+            "comment": "Add ability to maintain tab state even if UiItemsProvider that added the tab is not loaded. This allow preference size to be maintained."
+          },
+          {
+            "comment": "Add 100ms wait during unit test for open window processing to be triggered."
+          },
+          {
+            "comment": "Add getters to retrieve the list of category and model overrides & make update category/model overrides functions public"
+          },
+          {
+            "comment": "publish in-use APIs"
+          },
+          {
+            "comment": "Refactor SolarTimeline and ScheduleAnimationProvider to use new TimelineComponent iteration."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.6",
+      "tag": "@bentley/ui-framework_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.16.5",
       "tag": "@bentley/ui-framework_v2.16.5",
       "date": "Fri, 25 Jun 2021 16:03:01 GMT",

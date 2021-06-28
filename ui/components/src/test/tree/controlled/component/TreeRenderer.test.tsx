@@ -9,9 +9,9 @@ import { Observable } from "rxjs/internal/Observable";
 import sinon from "sinon";
 import * as moq from "typemoq";
 import { PrimitiveValue, SpecialKey } from "@bentley/ui-abstract";
-import { fireEvent, render } from "@testing-library/react";
+import { act, fireEvent, render } from "@testing-library/react";
 import { TreeNodeRendererProps } from "../../../../ui-components/tree/controlled/component/TreeNodeRenderer";
-import { TreeRenderer } from "../../../../ui-components/tree/controlled/component/TreeRenderer";
+import { TreeRenderer, TreeRendererProps } from "../../../../ui-components/tree/controlled/component/TreeRenderer";
 import { from } from "../../../../ui-components/tree/controlled/Observable";
 import { TreeActions } from "../../../../ui-components/tree/controlled/TreeActions";
 import {
@@ -23,10 +23,17 @@ import TestUtils from "../../../TestUtils";
 import { createRandomMutableTreeModelNode } from "../RandomTreeNodesHelpers";
 
 describe("TreeRenderer", () => {
-
   const visibleNodesMock = moq.Mock.ofType<VisibleTreeNodes>();
   const treeActionsMock = moq.Mock.ofType<TreeActions>();
   const nodeLoaderMock = moq.Mock.ofType<ITreeNodeLoader>();
+  const defaultProps: TreeRendererProps = {
+    nodeLoader: nodeLoaderMock.object,
+    treeActions: treeActionsMock.object,
+    visibleNodes: visibleNodesMock.object,
+    nodeHeight: () => 50,
+    width: 200,
+    height: 200,
+  };
 
   before(async () => {
     await TestUtils.initializeUiComponents();
@@ -38,13 +45,6 @@ describe("TreeRenderer", () => {
     delete (Element.prototype as any).scrollIntoView;
   });
 
-  beforeEach(() => {
-    // note: this is needed for AutoSizer used by the Tree to
-    // have non-zero size and render the virtualized list
-    sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
-    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
-  });
-
   afterEach(() => {
     visibleNodesMock.reset();
     treeActionsMock.reset();
@@ -54,14 +54,7 @@ describe("TreeRenderer", () => {
 
   it("renders without nodes", () => {
     visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 0);
-    const renderNode = render(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 50}
-      />);
-
+    const renderNode = render(<TreeRenderer {...defaultProps} />);
     expect(renderNode).to.not.be.undefined;
   });
 
@@ -71,13 +64,7 @@ describe("TreeRenderer", () => {
     visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
     visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
 
-    const { getByText } = render(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 50}
-      />);
+    const { getByText } = render(<TreeRenderer {...defaultProps} />);
 
     getByText(label);
   });
@@ -96,13 +83,7 @@ describe("TreeRenderer", () => {
       visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
       visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
 
-      const { container } = render(
-        <TreeRenderer
-          nodeLoader={nodeLoaderMock.object}
-          treeActions={treeActionsMock.object}
-          visibleNodes={visibleNodesMock.object}
-          nodeHeight={() => 50}
-        />);
+      const { container } = render(<TreeRenderer {...defaultProps} />);
 
       expect(container).to.not.be.null;
       nodeLoaderMock.verify((x) => x.loadNode(treeRoot, 0), moq.Times.once());
@@ -122,13 +103,7 @@ describe("TreeRenderer", () => {
       visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
       visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
 
-      const { container } = render(
-        <TreeRenderer
-          nodeLoader={nodeLoaderMock.object}
-          treeActions={treeActionsMock.object}
-          visibleNodes={visibleNodesMock.object}
-          nodeHeight={() => 50}
-        />);
+      const { container } = render(<TreeRenderer {...defaultProps} />);
 
       expect(container).to.not.be.null;
       nodeLoaderMock.verify((x) => x.loadNode(parentNode, 0), moq.Times.once());
@@ -147,13 +122,7 @@ describe("TreeRenderer", () => {
       visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
       visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
 
-      const { container } = render(
-        <TreeRenderer
-          nodeLoader={nodeLoaderMock.object}
-          treeActions={treeActionsMock.object}
-          visibleNodes={visibleNodesMock.object}
-          nodeHeight={() => 50}
-        />);
+      const { container } = render(<TreeRenderer {...defaultProps} />);
 
       expect(container).to.not.be.null;
       nodeLoaderMock.verify((x) => x.loadNode(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
@@ -168,24 +137,10 @@ describe("TreeRenderer", () => {
         .returns(() => new Observable(() => { }))
         .verifiable(moq.Times.once());
 
-      const { rerender } = render(
-        <TreeRenderer
-          nodeLoader={nodeLoaderMock.object}
-          treeActions={treeActionsMock.object}
-          visibleNodes={treeModel.computeVisibleNodes()}
-          nodeHeight={() => 50}
-        />,
-      );
+      const { rerender } = render(<TreeRenderer {...defaultProps} visibleNodes={treeModel.computeVisibleNodes()} />);
       nodeLoaderMock.verifyAll();
 
-      rerender(
-        <TreeRenderer
-          nodeLoader={nodeLoaderMock.object}
-          treeActions={treeActionsMock.object}
-          visibleNodes={treeModel.computeVisibleNodes()}
-          nodeHeight={() => 50}
-        />,
-      );
+      rerender(<TreeRenderer {...defaultProps} visibleNodes={treeModel.computeVisibleNodes()} />);
       nodeLoaderMock.verifyAll();
     });
   });
@@ -196,13 +151,7 @@ describe("TreeRenderer", () => {
     visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
     visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
 
-    const { getByText, rerender } = render(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 50}
-      />);
+    const { getByText, rerender } = render(<TreeRenderer {...defaultProps} />);
 
     getByText(label);
 
@@ -212,13 +161,7 @@ describe("TreeRenderer", () => {
     newVisibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
     newVisibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => newNode);
 
-    rerender(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={newVisibleNodesMock.object}
-        nodeHeight={() => 50}
-      />);
+    rerender(<TreeRenderer {...defaultProps} visibleNodes={newVisibleNodesMock.object} />);
 
     getByText(newLabel);
   });
@@ -234,27 +177,13 @@ describe("TreeRenderer", () => {
       return <>{(props.node.label.value as PrimitiveValue).value}</>;
     };
 
-    const { rerender, getByText } = render(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 50}
-        nodeRenderer={NodeRenderer}
-      />);
+    const { rerender, getByText } = render(<TreeRenderer {...defaultProps} nodeRenderer={NodeRenderer} />);
 
     const nodeBefore = getByText("test_node_2");
     expect(nodeBefore.style.height).to.be.equal("50px");
     expect(nodeBefore.style.top).to.be.equal("50px");
 
-    rerender(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 20}
-        nodeRenderer={NodeRenderer}
-      />);
+    rerender(<TreeRenderer {...defaultProps} nodeHeight={() => 20} nodeRenderer={NodeRenderer} />);
 
     const nodeAfter = getByText("test_node_2");
     expect(nodeAfter.style.height).to.be.equal("20px");
@@ -268,14 +197,7 @@ describe("TreeRenderer", () => {
 
     const spy = sinon.spy();
 
-    const { getByText } = render(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 50}
-        onItemsRendered={spy}
-      />);
+    const { getByText } = render(<TreeRenderer {...defaultProps} onItemsRendered={spy} />);
 
     getByText("test node 1");
     expect(spy).to.be.calledOnceWith({ overscanStartIndex: 0, visibleStartIndex: 0, overscanStopIndex: 1, visibleStopIndex: 1 });
@@ -309,26 +231,10 @@ describe("TreeRenderer", () => {
     const horizontalScrollSpy = sinon.spy();
     sinon.replace(Element.prototype, "scrollIntoView", horizontalScrollSpy);
 
-    const { rerender } = render(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 50}
-      />,
-    );
+    const { rerender } = render(<TreeRenderer {...defaultProps} />);
 
     // need to rerender because after first render VariableSizeList ref is not set
-    rerender(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 50}
-        nodeHighlightingProps={highlightProps}
-        nodeRenderer={nodeRenderer}
-      />,
-    );
+    rerender(<TreeRenderer {...defaultProps} nodeHighlightingProps={highlightProps} nodeRenderer={nodeRenderer}/>);
     onLabelRendered!(node2);
 
     expect(verticalScrollSpy).to.be.calledWith(1);
@@ -346,13 +252,7 @@ describe("TreeRenderer", () => {
     treeActionsMock.setup((x) => x.onTreeKeyDown).returns(() => spyKeyDown);
     treeActionsMock.setup((x) => x.onTreeKeyUp).returns(() => spyKeyUp);
 
-    const renderNode = render(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 50}
-      />);
+    const renderNode = render(<TreeRenderer {...defaultProps} />);
 
     expect(renderNode).to.not.be.undefined;
 
@@ -370,14 +270,7 @@ describe("TreeRenderer", () => {
     visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 1);
     visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node);
 
-    const { rerender } = render(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        onNodeEditorClosed={spy}
-        nodeHeight={() => 50}
-      />);
+    const { rerender } = render(<TreeRenderer {...defaultProps} onNodeEditorClosed={spy} />);
 
     expect(spy).to.not.be.called;
     node.editingInfo = { onCommit: () => { }, onCancel: () => { } };
@@ -386,29 +279,34 @@ describe("TreeRenderer", () => {
       return <div className={HighlightingEngine.ACTIVE_CLASS_NAME} />;
     };
 
-    rerender(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 50}
-        onNodeEditorClosed={spy}
-        nodeRenderer={nodeRenderer}
-      />);
+    rerender(<TreeRenderer {...defaultProps} onNodeEditorClosed={spy} nodeRenderer={nodeRenderer} />);
 
     expect(spy).to.not.be.called;
     node.editingInfo = undefined;
 
-    rerender(
-      <TreeRenderer
-        nodeLoader={nodeLoaderMock.object}
-        treeActions={treeActionsMock.object}
-        visibleNodes={visibleNodesMock.object}
-        nodeHeight={() => 50}
-        onNodeEditorClosed={spy}
-      />);
+    rerender(<TreeRenderer {...defaultProps} onNodeEditorClosed={spy} />);
 
     expect(spy).to.be.called;
+  });
+
+  it("resizes scrollable content width to be as wide as the widest node after scrolling", () => {
+    const node1 = createRandomMutableTreeModelNode();
+    const node2 = createRandomMutableTreeModelNode();
+    visibleNodesMock.setup((x) => x.getNumNodes()).returns(() => 2);
+    visibleNodesMock.setup((x) => x.getAtIndex(0)).returns(() => node1);
+    visibleNodesMock.setup((x) => x.getAtIndex(1)).returns(() => node2);
+    visibleNodesMock.setup((x) => x.getIndexOfNode(node2.id)).returns(() => 1);
+
+    sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 123);
+
+    const ref = React.createRef<TreeRenderer>();
+    const { container } = render(<TreeRenderer ref={ref} {...defaultProps} height={50} />);
+
+    const innerContainerInitial = container.querySelector<HTMLDivElement>(".ReactWindow__VariableSizeList > div")!;
+    expect(innerContainerInitial.style.minWidth).to.be.equal("0");
+
+    act(() => ref.current!.scrollToNode(node2.id));
+    expect(innerContainerInitial.style.minWidth).to.be.equal("123px");
   });
 
   describe("scrollToNode", () => {
@@ -426,17 +324,7 @@ describe("TreeRenderer", () => {
 
     it("scrolls to the specified node", () => {
       const treeRendererRef: React.RefObject<TreeRenderer> = { current: null };
-      render(React.createElement(() => {
-        return (
-          <TreeRenderer
-            ref={treeRendererRef}
-            nodeLoader={nodeLoaderMock.object}
-            treeActions={treeActionsMock.object}
-            visibleNodes={visibleNodesMock.object}
-            nodeHeight={() => 50}
-          />
-        );
-      }));
+      render(<TreeRenderer ref={treeRendererRef} {...defaultProps} />);
 
       treeRendererRef.current!.scrollToNode("test_id", "smart");
       expect(scrollToItemFake).to.have.been.calledOnceWithExactly(15, "smart");
@@ -450,15 +338,7 @@ describe("TreeRenderer", () => {
           treeRendererRef.current?.scrollToNode("test_id", "smart");
         }, []);
 
-        return (
-          <TreeRenderer
-            ref={treeRendererRef}
-            nodeLoader={nodeLoaderMock.object}
-            treeActions={treeActionsMock.object}
-            visibleNodes={visibleNodesMock.object}
-            nodeHeight={() => 50}
-          />
-        );
+        return <TreeRenderer ref={treeRendererRef} {...defaultProps} />;
       }));
 
       expect(scrollToItemFake).to.have.been.calledOnceWithExactly(15, "smart");

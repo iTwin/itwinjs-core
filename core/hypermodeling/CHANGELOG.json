@@ -2,6 +2,30 @@
   "name": "@bentley/hypermodeling-frontend",
   "entries": [
     {
+      "version": "2.17.0",
+      "tag": "@bentley/hypermodeling-frontend_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SectionMarkerSet.findMarkerById."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.6",
+      "tag": "@bentley/hypermodeling-frontend_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix regression causing section graphics to be clipped by view clip."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.16.5",
       "tag": "@bentley/hypermodeling-frontend_v2.16.5",
       "date": "Fri, 25 Jun 2021 16:03:01 GMT",

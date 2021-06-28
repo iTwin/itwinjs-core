@@ -1,6 +1,23 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Fri, 25 Jun 2021 16:03:01 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:10 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:10 GMT
+
+### Updates
+
+- Added new error to indicate corrupt briefcase state
+- Add IndexMap.toArray() and OrderedId64Array.array.
+- Added new error to indicate corrupt briefcase state
+- Add CompressedId64Set.sortAndCompress.
+- Add Mutable<T>.
+- Promote BeUiEvent to public.
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
 
 ## 2.16.5
 Fri, 25 Jun 2021 16:03:01 GMT
