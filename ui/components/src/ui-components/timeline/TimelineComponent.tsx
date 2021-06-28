@@ -46,7 +46,7 @@ export interface TimelineMenuItemProps {
  *  [[TimelineComponentProps]] configure the timeline
  * @public
  */
-interface TimelineComponentProps {
+export interface TimelineComponentProps {
   startDate?: Date; // start date
   endDate?: Date;   // end date
   totalDuration: number;  // total duration in milliseconds
