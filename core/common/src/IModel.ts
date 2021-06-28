@@ -52,6 +52,10 @@ export interface EcefLocationProps {
   orientation: YawPitchRollProps;
   /** Optional position on the earth used to establish the ECEF coordinates. */
   cartographicOrigin?: LatLongAndHeight;
+  /** Optional X column vector used with [[yVector]] to calculate potentially non-rigid transform if a projection is present. */
+  xVector?: XYZProps;
+  /** Optional Y column vector used with [[xVector]] to calculate potentially non-rigid transform if a projection is present. */
+  yVector?: XYZProps;
 }
 
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).
@@ -188,11 +192,15 @@ export class EcefLocation implements EcefLocationProps {
   public readonly orientation: YawPitchRollAngles;
   /** Optional position on the earth used to establish the ECEF origin and orientation. */
   public readonly cartographicOrigin?: Cartographic;
+  /** Optional X column vector used with [[yVector]] to calculate potentially non-rigid transform if a projection is present. */
+  public readonly xVector?: Vector3d;
+  /** Optional Y column vector used with [[xVector]] to calculate potentially non-rigid transform if a projection is present. */
+  public readonly yVector?: Vector3d;
+
+  private _transform: Transform;
 
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
-  public getTransform(): Transform {
-    return Transform.createOriginAndMatrix(this.origin, this.orientation.toMatrix3d());
-  }
+  public getTransform(): Transform { return this._transform;  }
 
   /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
   constructor(props: EcefLocationProps) {
@@ -200,6 +208,20 @@ export class EcefLocation implements EcefLocationProps {
     this.orientation = YawPitchRollAngles.fromJSON(props.orientation).freeze();
     if (props.cartographicOrigin)
       this.cartographicOrigin = Cartographic.fromRadians(props.cartographicOrigin.longitude, props.cartographicOrigin.latitude, props.cartographicOrigin.height).freeze();
+    if (props.xVector && props.yVector) {
+      this.xVector = Vector3d.fromJSON(props.xVector);
+      this.yVector = Vector3d.fromJSON(props.yVector);
+    }
+    let matrix;
+    if (this.xVector && this.yVector) {
+      const zVector = this.xVector.crossProduct(this.yVector);
+      if (zVector.normalizeInPlace())
+        matrix = Matrix3d.createColumns(this.xVector, this.yVector, zVector);
+    }
+    if (!matrix)
+      matrix = this.orientation.toMatrix3d();
+
+    this._transform = Transform.createOriginAndMatrix(this.origin, matrix);
   }
 
   /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
@@ -236,6 +258,15 @@ export class EcefLocation implements EcefLocationProps {
     if (!this.origin.isAlmostEqual(other.origin) || !this.orientation.isAlmostEqual(other.orientation))
       return false;
 
+    if ((this.xVector === undefined) !== (other.xVector === undefined) || (this.yVector === undefined) !== (other.yVector === undefined))
+      return false;
+
+    if (this.xVector !== undefined && other.xVector !== undefined && !this.xVector.isAlmostEqual(other.xVector))
+      return false;
+
+    if (this.yVector !== undefined && other.yVector !== undefined && !this.yVector.isAlmostEqual(other.yVector))
+      return false;
+
     const thisCarto = this.cartographicOrigin;
     const otherCarto = other.cartographicOrigin;
     if (undefined === thisCarto || undefined === otherCarto)
@@ -252,6 +283,12 @@ export class EcefLocation implements EcefLocationProps {
 
     if (this.cartographicOrigin)
       props.cartographicOrigin = this.cartographicOrigin.toJSON();
+
+    if (this.xVector)
+      props.xVector = this.xVector.toJSON();
+
+    if (this.yVector)
+      props.yVector = this.yVector.toJSON();
 
     return props;
   }

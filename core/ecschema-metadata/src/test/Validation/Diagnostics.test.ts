@@ -20,6 +20,7 @@ describe("Diagnostics tests", () => {
     testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 0, 0);
   });
 
+  /* eslint-disable deprecation/deprecation */
   it("diagnosticCategoryToString, Error, proper string returned", () => {
     const result = Diagnostics.diagnosticCategoryToString(Diagnostics.DiagnosticCategory.Error);
     expect(result).to.equal("Error");

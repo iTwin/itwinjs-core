@@ -972,6 +972,12 @@ export abstract class Viewport implements IDisposable {
       removals.push(view.details.onModelClipGroupsChanged.addListener(() => {
         this.invalidateScene();
       }));
+      // If a map elevation request is required (only in cases where terrain is not geodetic)
+      // then the completion of the request will require synching with the view so that the
+      // frustum depth is recalculated correctly.  Register this for removal when the view is detached.
+      removals.push(this.iModel.onMapElevationLoaded.addListener((_iModel: IModelConnection) => {
+        this.synchWithView();
+      }));
     }
   }
 

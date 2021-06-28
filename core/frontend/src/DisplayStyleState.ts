@@ -157,7 +157,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
 
   /** Modify a subset of the background map display settings.
    * @param name props JSON representation of the properties to change. Any properties not present will retain their current values in `this.backgroundMapSettings`.
-   * @note If the style is associated with a Viewport, [[Viewport.changeBackgroundMapProps]] should be used instead to ensure the view updates immediately.
    * @see [[ViewFlags.backgroundMap]] for toggling display of the map.
    *
    * Example that changes only the elevation, leaving the provider and type unchanged:
@@ -403,6 +402,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
         if (backgroundLayerSettings)
           this.settings.mapImagery.backgroundBase = backgroundLayerSettings;
       }
+      const mapProvider = BackgroundMapSettings.providerFromMapLayer(props);
+      if (mapProvider)
+        this.backgroundMapSettings = this.backgroundMapSettings.clone(mapProvider);
     }
     this._synchBackgroundMapImagery();
   }
@@ -583,18 +585,19 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   public getIsBackgroundMapVisible(): boolean {
     return undefined !== this.iModel.ecefLocation && (this.viewFlags.backgroundMap || this.anyMapLayersVisible(false));
   }
-  public get backgroundMapElevationBias(): number {
+  /** @internal */
+  public get backgroundMapElevationBias(): number | undefined{
     if (this.backgroundMapSettings.applyTerrain) {
       const terrainSettings = this.backgroundMapSettings.terrainSettings;
       switch (terrainSettings.heightOriginMode) {
         case TerrainHeightOriginMode.Ground:
-          return terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.backgroundMapLocation.projectCenterAltitude;
+          return (undefined ===  this.iModel.projectCenterAltitude) ? undefined : terrainSettings.heightOrigin + terrainSettings.exaggeration * this.iModel.projectCenterAltitude;
 
         case TerrainHeightOriginMode.Geodetic:
           return terrainSettings.heightOrigin;
 
         case TerrainHeightOriginMode.Geoid:
-          return terrainSettings.heightOrigin + this.iModel.backgroundMapLocation.geodeticToSeaLevel;
+          return (undefined === this.iModel.geodeticToSeaLevel) ? undefined : terrainSettings.heightOrigin + this.iModel.geodeticToSeaLevel;
       }
     } else {
       return this.backgroundMapSettings.groundBias;
@@ -608,6 +611,9 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
       return undefined;
 
     const bimElevationBias = this.backgroundMapElevationBias;
+
+    if (undefined === bimElevationBias)
+      return undefined;
 
     const globeMode = this.globeMode;
     if (undefined === this._backgroundMapGeometry || this._backgroundMapGeometry.globeMode !== globeMode || this._backgroundMapGeometry.bimElevationBias !== bimElevationBias) {

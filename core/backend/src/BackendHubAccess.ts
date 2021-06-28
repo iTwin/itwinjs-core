@@ -22,7 +22,7 @@ export type LocalDirName = string;
  */
 export type ChangesetId = string;
 
-/** @internal */
+/** @beta */
 export type ChangesetIndex = number;
 
 /** supply either changeset index, id, or both
@@ -73,7 +73,7 @@ export interface ChangesetFileProps extends ChangesetProps {
 
 /**
  * A range of changesets
- * @internal
+ * @beta
  */
 export interface ChangesetRange {
   /** index of the first changeset */

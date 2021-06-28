@@ -48,7 +48,7 @@ export class IModelHubBackend {
     return this._imodelClient;
   }
 
-  public static async getRequestContext(arg: { requestContext?: AuthorizedClientRequestContext }) {
+  public static async getRequestContext(arg: { requestContext?: AuthorizedClientRequestContext }): Promise<AuthorizedClientRequestContext> {
     return arg.requestContext ?? AuthorizedBackendRequestContext.create();
   }
 
