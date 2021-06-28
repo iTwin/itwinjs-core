@@ -50,7 +50,7 @@
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/imodeljs-markup": "workspace:*",
     "@bentley/frontend-devtools": "workspace:*",
-    "@bentley/react-scripts": "3.4.9",
+    "@bentley/react-scripts": "3.4.13",
     "@types/lorem-ipsum": "^1.0.2",
     "@types/node": "10.14.1",
     "@types/react": "16.9.43",

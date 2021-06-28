@@ -2225,7 +2225,7 @@ importers:
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/presentation-common': workspace:*
-      '@bentley/react-scripts': 3.4.9
+      '@bentley/react-scripts': 3.4.13
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
@@ -2282,7 +2282,7 @@ importers:
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/presentation-common': link:../../presentation/common
-      '@bentley/react-scripts': 3.4.9_typescript@4.1.6
+      '@bentley/react-scripts': 3.4.13_typescript@4.1.6
       '@bentley/ui-abstract': link:../../ui/abstract
       '@bentley/ui-components': link:../../ui/components
       '@bentley/ui-core': link:../../ui/core
@@ -3388,7 +3388,7 @@ importers:
       '@bentley/perf-tools': workspace:*
       '@bentley/projectshare-client': workspace:*
       '@bentley/rbac-client': workspace:*
-      '@bentley/react-scripts': 3.4.9
+      '@bentley/react-scripts': 3.4.13
       '@bentley/ui-abstract': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/express': ^4.16.1
@@ -3432,7 +3432,7 @@ importers:
       '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/perf-tools': link:../../tools/perf-tools
-      '@bentley/react-scripts': 3.4.9_typescript@4.1.6
+      '@bentley/react-scripts': 3.4.13_typescript@4.1.6
       '@types/body-parser': 1.19.0
       '@types/express': 4.17.12
       '@types/node': 10.14.1
@@ -3478,7 +3478,7 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/mobile-manager': workspace:*
       '@bentley/rbac-client': workspace:*
-      '@bentley/react-scripts': 3.4.9
+      '@bentley/react-scripts': 3.4.13
       '@bentley/ui-abstract': workspace:*
       '@bentley/webgl-compatibility': workspace:*
       '@types/body-parser': ^1.17.0
@@ -3533,7 +3533,7 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/react-scripts': 3.4.9_sass@1.35.1+typescript@4.1.6
+      '@bentley/react-scripts': 3.4.13_typescript@4.1.6
       '@types/body-parser': 1.19.0
       '@types/express': 4.17.12
       '@types/fs-extra': 4.0.11
@@ -3849,7 +3849,7 @@ importers:
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/icons-generic-webfont': ^1.0.15
-      '@bentley/react-scripts': 3.4.9
+      '@bentley/react-scripts': 3.4.13
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
@@ -3881,7 +3881,7 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/react-scripts': 3.4.9_typescript@4.1.6
+      '@bentley/react-scripts': 3.4.13_typescript@4.1.6
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.13
       '@types/react-router-dom': 5.1.7
@@ -3906,7 +3906,7 @@ importers:
       '@bentley/presentation-common': workspace:*
       '@bentley/presentation-components': workspace:*
       '@bentley/presentation-frontend': workspace:*
-      '@bentley/react-scripts': 3.4.9
+      '@bentley/react-scripts': 3.4.13
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
@@ -3956,7 +3956,7 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/react-scripts': 3.4.9_sass@1.35.1+typescript@4.1.6
+      '@bentley/react-scripts': 3.4.13_typescript@4.1.6
       '@types/bunyan': 1.8.6
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.13
@@ -4013,7 +4013,7 @@ importers:
       '@bentley/presentation-frontend': workspace:*
       '@bentley/projectshare-client': workspace:*
       '@bentley/rbac-client': workspace:*
-      '@bentley/react-scripts': 3.4.9
+      '@bentley/react-scripts': 3.4.13
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
@@ -4109,7 +4109,7 @@ importers:
       '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/logger-config': link:../../core/logger-config
-      '@bentley/react-scripts': 3.4.9_sass@1.35.1+typescript@4.1.6
+      '@bentley/react-scripts': 3.4.13_typescript@4.1.6
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
       '@types/react': 16.9.43
@@ -4566,7 +4566,7 @@ importers:
       file-loader: ^4.2.0
       fs-extra: ^8.1.0
       glob: ^7.1.2
-      mini-css-extract-plugin: 0.8.0
+      mini-css-extract-plugin: 0.11.3
       nodemon: ^2.0.4
       null-loader: ^0.1.1
       postcss-flexbugs-fixes: 4.1.0
@@ -4606,7 +4606,7 @@ importers:
       file-loader: 4.3.0_webpack@4.42.0
       fs-extra: 8.1.0
       glob: 7.1.7
-      mini-css-extract-plugin: 0.8.0_webpack@4.42.0
+      mini-css-extract-plugin: 0.11.3_webpack@4.42.0
       nodemon: 2.0.7
       null-loader: 0.1.1
       postcss-flexbugs-fixes: 4.1.0
@@ -5032,7 +5032,7 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodeljs-i18n': workspace:*
-      '@bentley/react-scripts': 3.4.9
+      '@bentley/react-scripts': 3.4.13
       '@bentley/ui-abstract': workspace:*
       '@testing-library/react': ^8.0.1
       '@testing-library/react-hooks': ^3.2.1
@@ -5102,7 +5102,7 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodeljs-i18n': link:../../core/i18n
-      '@bentley/react-scripts': 3.4.9_typescript@4.1.6
+      '@bentley/react-scripts': 3.4.13_typescript@4.1.6
       '@bentley/ui-abstract': link:../abstract
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
       '@testing-library/react-hooks': 3.7.0_98e0eb37a9f7280a1c5a6c886619f5b4
@@ -5173,7 +5173,7 @@ importers:
       '@bentley/presentation-testing': workspace:*
       '@bentley/product-settings-client': workspace:*
       '@bentley/rbac-client': workspace:*
-      '@bentley/react-scripts': 3.4.9
+      '@bentley/react-scripts': 3.4.13
       '@bentley/telemetry-client': workspace:*
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-components': workspace:*
@@ -5266,7 +5266,7 @@ importers:
       '@bentley/presentation-testing': link:../../presentation/testing
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@bentley/rbac-client': link:../../clients/rbac
-      '@bentley/react-scripts': 3.4.9_typescript@4.1.6
+      '@bentley/react-scripts': 3.4.13_typescript@4.1.6
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@bentley/ui-abstract': link:../abstract
       '@bentley/ui-components': link:../components
@@ -5325,7 +5325,7 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/react-scripts': 3.4.9
+      '@bentley/react-scripts': 3.4.13
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-core': workspace:*
       '@testing-library/react': ^8.0.1
@@ -5377,7 +5377,7 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/react-scripts': 3.4.9_typescript@4.1.6
+      '@bentley/react-scripts': 3.4.13_typescript@4.1.6
       '@bentley/ui-abstract': link:../abstract
       '@bentley/ui-core': link:../core
       '@testing-library/react': 8.0.9_react-dom@16.14.0+react@16.14.0
@@ -7418,8 +7418,8 @@ packages:
     requiresBuild: true
     dev: false
 
-  /@bentley/react-scripts/3.4.9_sass@1.35.1+typescript@4.1.6:
-    resolution: {integrity: sha512-hgopwXROuw8iES05mxF1gylvVMOuqYfLR88YjDz1D0CUP6g5ZycSUuV0zwjN32XySKDdZi0OmerbITRj1VgwOA==}
+  /@bentley/react-scripts/3.4.13_typescript@4.1.6:
+    resolution: {integrity: sha512-VsH6p/H7JQbqqVcIap7BmFy/gWykUZ3Bp5xMuIjIWgmYM/c/ijJiOQjKeVXYOKFMscnsf7CzQ+5DasBfWZWglw==}
     engines: {node: '>=8.10'}
     hasBin: true
     peerDependencies:
@@ -7462,8 +7462,8 @@ packages:
       jest-environment-jsdom-fourteen: 1.0.1
       jest-resolve: 24.9.0
       jest-watch-typeahead: 0.4.2
-      mini-css-extract-plugin: 0.9.0_webpack@4.42.0
-      optimize-css-assets-webpack-plugin: 5.0.3_webpack@4.42.0
+      mini-css-extract-plugin: 0.11.3_webpack@4.42.0
+      optimize-css-assets-webpack-plugin: 5.0.8_webpack@4.42.0
       pnp-webpack-plugin: 1.6.4_typescript@4.1.6
       postcss-flexbugs-fixes: 4.1.0
       postcss-loader: 3.0.0
@@ -7474,6 +7474,7 @@ packages:
       react-dev-utils: 11.0.4
       resolve: 1.15.0
       resolve-url-loader: 3.1.2
+      sass: 1.35.1
       sass-loader: 8.0.2_sass@1.35.1+webpack@4.42.0
       semver: 6.3.0
       source-map-loader: 1.1.3_webpack@4.42.0
@@ -7495,89 +7496,6 @@ packages:
     transitivePeerDependencies:
       - fibers
       - node-sass
-      - sass
-      - supports-color
-      - webpack-cli
-    dev: true
-
-  /@bentley/react-scripts/3.4.9_typescript@4.1.6:
-    resolution: {integrity: sha512-hgopwXROuw8iES05mxF1gylvVMOuqYfLR88YjDz1D0CUP6g5ZycSUuV0zwjN32XySKDdZi0OmerbITRj1VgwOA==}
-    engines: {node: '>=8.10'}
-    hasBin: true
-    peerDependencies:
-      typescript: ^3.2.1
-    peerDependenciesMeta:
-      typescript:
-        optional: true
-    dependencies:
-      '@babel/core': 7.9.0
-      '@bentley/webpack-tools-core': 2.16.5_webpack@4.42.0
-      '@svgr/webpack': 4.3.3
-      '@typescript-eslint/eslint-plugin': 4.26.0_381178be61ede49b0b66d5fc43bb9e62
-      '@typescript-eslint/parser': 4.26.0_eslint@6.8.0+typescript@4.1.6
-      babel-eslint: 10.1.0_eslint@6.8.0
-      babel-jest: 24.9.0_@babel+core@7.9.0
-      babel-loader: 8.1.0_@babel+core@7.9.0+webpack@4.42.0
-      babel-plugin-import-remove-resource-query: 1.0.0
-      babel-plugin-named-asset-import: 0.3.7_@babel+core@7.9.0
-      babel-plugin-strip-requirejs-plugin-prefix: 1.0.0
-      babel-preset-react-app: 9.1.2
-      camelcase: 5.3.1
-      case-sensitive-paths-webpack-plugin: 2.3.0
-      css-loader: 3.4.2_webpack@4.42.0
-      dotenv: 8.2.0
-      dotenv-expand: 5.1.0
-      eslint: 6.8.0
-      eslint-config-react-app: 5.2.1_f130622bd12e6690d57b5c08a93aad03
-      eslint-loader: 3.0.3_eslint@6.8.0+webpack@4.42.0
-      eslint-plugin-flowtype: 4.6.0_eslint@6.8.0
-      eslint-plugin-import: 2.20.1_eslint@6.8.0
-      eslint-plugin-jsx-a11y: 6.2.3_eslint@6.8.0
-      eslint-plugin-react: 7.19.0_eslint@6.8.0
-      eslint-plugin-react-hooks: 1.7.0_eslint@6.8.0
-      fast-sass-loader: 2.0.0_webpack@4.42.0
-      file-loader: 4.3.0_webpack@4.42.0
-      fs-extra: 8.1.0
-      html-webpack-plugin: 4.0.0-beta.11_webpack@4.42.0
-      identity-obj-proxy: 3.0.0
-      jest: 24.9.0
-      jest-environment-jsdom-fourteen: 1.0.1
-      jest-resolve: 24.9.0
-      jest-watch-typeahead: 0.4.2
-      mini-css-extract-plugin: 0.9.0_webpack@4.42.0
-      optimize-css-assets-webpack-plugin: 5.0.3_webpack@4.42.0
-      pnp-webpack-plugin: 1.6.4_typescript@4.1.6
-      postcss-flexbugs-fixes: 4.1.0
-      postcss-loader: 3.0.0
-      postcss-normalize: 8.0.1
-      postcss-preset-env: 6.7.0
-      postcss-safe-parser: 4.0.1
-      react-app-polyfill: 1.0.6
-      react-dev-utils: 11.0.4
-      resolve: 1.15.0
-      resolve-url-loader: 3.1.2
-      sass-loader: 8.0.2_webpack@4.42.0
-      semver: 6.3.0
-      source-map-loader: 1.1.3_webpack@4.42.0
-      speed-measure-webpack-plugin: 1.5.0_webpack@4.42.0
-      style-loader: 0.23.1
-      svg-sprite-loader: 4.2.1_webpack@4.42.0
-      terser-webpack-plugin: 3.0.7_webpack@4.42.0
-      ts-jest: 24.3.0_jest@24.9.0
-      ts-pnp: 1.1.6_typescript@4.1.6
-      typescript: 4.1.6
-      url-loader: 2.3.0_file-loader@4.3.0+webpack@4.42.0
-      webpack: 4.42.0
-      webpack-dev-server: 3.11.0_webpack@4.42.0
-      webpack-filter-warnings-plugin: 1.2.1_webpack@4.42.0
-      webpack-manifest-plugin: 2.2.0_webpack@4.42.0
-      workbox-webpack-plugin: 4.3.1_webpack@4.42.0
-    optionalDependencies:
-      fsevents: 2.1.2
-    transitivePeerDependencies:
-      - fibers
-      - node-sass
-      - sass
       - supports-color
       - webpack-cli
     dev: true
@@ -8534,8 +8452,8 @@ packages:
   /@types/events/3.0.0:
     resolution: {integrity: sha512-EaObqwIvayI5a8dCzhFrjKzVwKLxjoG9T6Ppd5CEo07LRKfQ8Yokw54r5+Wq7FaBQ+yXRvQAYPrHwya1/UFt9g==}
 
-  /@types/express-serve-static-core/4.17.21:
-    resolution: {integrity: sha512-gwCiEZqW6f7EoR8TTEfalyEhb1zA5jQJnRngr97+3pzMaO1RKoI1w2bw07TK72renMUVWcWS5mLI6rk1NqN0nA==}
+  /@types/express-serve-static-core/4.17.22:
+    resolution: {integrity: sha512-WdqmrUsRS4ootGha6tVwk/IVHM1iorU8tGehftQD2NWiPniw/sm7xdJOIlXLwqdInL9wBw/p7oO8vaYEF3NDmA==}
     dependencies:
       '@types/node': 10.14.1
       '@types/qs': 6.9.6
@@ -8546,7 +8464,7 @@ packages:
     resolution: {integrity: sha512-pTYas6FrP15B1Oa0bkN5tQMNqOcVXa9j4FTFtO8DWI9kppKib+6NJtfTOOLcwxuuYvcX2+dVG6et1SxW/Kc17Q==}
     dependencies:
       '@types/body-parser': 1.19.0
-      '@types/express-serve-static-core': 4.17.21
+      '@types/express-serve-static-core': 4.17.22
       '@types/qs': 6.9.6
       '@types/serve-static': 1.13.9
     dev: true
@@ -13399,20 +13317,6 @@ packages:
       webpack: 4.42.0
     dev: true
 
-  /fast-sass-loader/2.0.0_webpack@4.42.0:
-    resolution: {integrity: sha512-q9q59bL8XvforoQw+qpwiLPDWGMZ2MfrwuOjvFKyGvON9uawOaNc7QDHKxjfqRM/gs1htXywQVqxjcTMcHDesw==}
-    peerDependencies:
-      sass: 1.x
-      webpack: 1.x || 2.x || 3.x || 4.x || 5.x
-    dependencies:
-      async: 2.6.3
-      cli-source-preview: 1.1.0
-      co: 4.6.0
-      fs-extra: 3.0.1
-      loader-utils: 1.4.0
-      webpack: 4.42.0
-    dev: true
-
   /fast-sha256/1.3.0:
     resolution: {integrity: sha512-n11RGP/lrWEFI/bWdygLxhI+pVeo1ZYIVwvvPkW7azl/rOy+F3HYRZ2K5zeE9mmkhQppyv9sQFx0JM9UabnpPQ==}
     dev: false
@@ -16842,31 +16746,17 @@ packages:
       tiny-warning: 1.0.3
     dev: false
 
-  /mini-css-extract-plugin/0.8.0_webpack@4.42.0:
-    resolution: {integrity: sha512-MNpRGbNA52q6U92i0qbVpQNsgk7LExy41MdAlG84FeytfDOtRIf/mCHdEgG8rpTKOaNKiqUnZdlptF469hxqOw==}
+  /mini-css-extract-plugin/0.11.3_webpack@4.42.0:
+    resolution: {integrity: sha512-n9BA8LonkOkW1/zn+IbLPQmovsL0wMb9yx75fMJQZf2X1Zoec9yTZtyMePcyu19wPkmFbzZZA6fLTotpFhQsOA==}
     engines: {node: '>= 6.9.0'}
     peerDependencies:
-      webpack: ^4.4.0
+      webpack: ^4.4.0 || ^5.0.0
     dependencies:
       loader-utils: 1.4.0
       normalize-url: 1.9.1
       schema-utils: 1.0.0
       webpack: 4.42.0
       webpack-sources: 1.4.3
-    dev: false
-
-  /mini-css-extract-plugin/0.9.0_webpack@4.42.0:
-    resolution: {integrity: sha512-lp3GeY7ygcgAmVIcRPBVhIkf8Us7FZjA+ILpal44qLdSu11wmjKQ3d9k15lfD7pO4esu9eUIAW7qiYIBppv40A==}
-    engines: {node: '>= 6.9.0'}
-    peerDependencies:
-      webpack: ^4.4.0
-    dependencies:
-      loader-utils: 1.4.0
-      normalize-url: 1.9.1
-      schema-utils: 1.0.0
-      webpack: 4.42.0
-      webpack-sources: 1.4.3
-    dev: true
 
   /minimalistic-assert/1.0.1:
     resolution: {integrity: sha512-UtJcAD4yEaGtjPezWuO9wC4nwUnVH/8/Im3yEHQP4b67cXlD/Qr9hdITCU1xDbSEXg2XKNaP8jsReV7vQd00/A==}
@@ -17657,8 +17547,8 @@ packages:
       is-wsl: 1.1.0
     dev: true
 
-  /optimize-css-assets-webpack-plugin/5.0.3_webpack@4.42.0:
-    resolution: {integrity: sha512-q9fbvCRS6EYtUKKSwI87qm2IxlyJK5b4dygW1rKUBT6mMDhdG5e5bZT63v6tnJR9F9FB/H5a0HTmtw+laUBxKA==}
+  /optimize-css-assets-webpack-plugin/5.0.8_webpack@4.42.0:
+    resolution: {integrity: sha512-mgFS1JdOtEGzD8l+EuISqL57cKO+We9GcoiQEmdCWRqqck+FGNmYJtx9qfAPzEz+lRrlThWMuGDaRkI/yWNx/Q==}
     peerDependencies:
       webpack: ^4.0.0
     dependencies:
@@ -19750,7 +19640,7 @@ packages:
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}
     dependencies:
-      '@babel/runtime': 7.9.0
+      '@babel/runtime': 7.14.6
 
   /regex-cache/0.4.4:
     resolution: {integrity: sha512-nVIZwtCjkC9YgvWkpM55B5rBhBYRZhAaJbgcFYXXsHnbZ9UZI9nnVWYZpBlCqv9ho2eZryPnWrZGsOdPwVWXWQ==}
@@ -20250,6 +20140,7 @@ packages:
   /sane/4.1.0:
     resolution: {integrity: sha512-hhbzAgTIX8O7SHfp2c8/kREfEn4qO/9q8C9beyY6+tvZ87EpoZ3i1RIEvp27YBswnNbY9mWd6paKVmKbAgLfZA==}
     engines: {node: 6.* || 8.* || >= 10.*}
+    deprecated: some dependency vulnerabilities fixed, support for node < 10 dropped, and newer ECMAScript syntax/features added
     hasBin: true
     dependencies:
       '@cnakazawa/watch': 1.0.4
@@ -20311,30 +20202,6 @@ packages:
       loader-utils: 1.4.0
       neo-async: 2.6.2
       sass: 1.35.1
-      schema-utils: 2.7.1
-      semver: 6.3.0
-      webpack: 4.42.0
-    dev: true
-
-  /sass-loader/8.0.2_webpack@4.42.0:
-    resolution: {integrity: sha512-7o4dbSK8/Ol2KflEmSco4jTjQoV988bM82P9CZdmo9hR3RLnvNc0ufMNdMrB0caq38JQ/FgF4/7RcbcfKzxoFQ==}
-    engines: {node: '>= 8.9.0'}
-    peerDependencies:
-      fibers: '>= 3.1.0'
-      node-sass: ^4.0.0
-      sass: ^1.3.0
-      webpack: ^4.36.0 || ^5.0.0
-    peerDependenciesMeta:
-      fibers:
-        optional: true
-      node-sass:
-        optional: true
-      sass:
-        optional: true
-    dependencies:
-      clone-deep: 4.0.1
-      loader-utils: 1.4.0
-      neo-async: 2.6.2
       schema-utils: 2.7.1
       semver: 6.3.0
       webpack: 4.42.0

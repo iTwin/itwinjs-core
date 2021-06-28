@@ -70,7 +70,7 @@
     "@bentley/config-loader": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/react-scripts": "3.4.9",
+    "@bentley/react-scripts": "3.4.13",
     "@bentley/backend-webpack-tools": "workspace:*",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",

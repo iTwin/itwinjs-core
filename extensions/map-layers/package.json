@@ -44,7 +44,7 @@
     "@bentley/imodeljs-quantity": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/presentation-common": "workspace:*",
-    "@bentley/react-scripts": "3.4.9",
+    "@bentley/react-scripts": "3.4.13",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/ui-components": "workspace:*",
     "@bentley/ui-core": "workspace:*",
