@@ -27,6 +27,6 @@ jobs:
   - template: jobs/ci-core.yaml
     parameters:
       name: Node_12
-      nodeVersion: 12.17.0
+      nodeVersion: 14.17.0
       pool:
         vmImage: $(OS)
