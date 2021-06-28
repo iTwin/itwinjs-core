@@ -23,7 +23,7 @@ const slowSpeed = 60 * 1000;
 const mediumSpeed = 20 * 1000;
 const fastSpeed = 10 * 1000;
 /**
- * [[TimelineMenuOptions]]: specifies how the app wants the timeline speeds to be installed on the TimelineComponent's ContextMenu
+ * [[TimelineMenuItemOption]]: specifies how the app wants the timeline speeds to be installed on the TimelineComponent's ContextMenu
  * "replace" : use the app-supplied items in place of the standard items
  * "append" : add the app-supplied items following the standard items
  * "prefix" : add the app-supplied items before the standard items
