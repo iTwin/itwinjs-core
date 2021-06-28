@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@bentley/geometry-core";
+import { AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
@@ -346,6 +346,27 @@ export abstract class GraphicBuilder {
 
   /** Append a 3d planar region to the builder. */
   public abstract addLoop(loop: Loop): void;
+
+  /** Append a [CurvePrimitive]($geometry-core) to the builder. */
+  public addCurvePrimitive(curve: AnyCurvePrimitive): void {
+    switch (curve.curvePrimitiveType) {
+      case "lineString":
+        this.addLineString(curve.points);
+        break;
+      case "lineSegment":
+        this.addLineString([ curve.startPoint(), curve.endPoint() ]);
+        break;
+      case "arc":
+        this.addArc(curve, false, false);
+        break;
+      default:
+        const path = new Path();
+        if (path.tryAddChild(curve))
+          this.addPath(path);
+
+        break;
+    }
+  }
 
   /** Append a mesh to the builder.
    * @param meshData Describes the mesh
