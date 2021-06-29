@@ -86,7 +86,7 @@ describe("VisibilityTreeEventHandler", () => {
       expect(getVisibilityStatus.callCount).to.eq(2);
     });
 
-    it("calls getVisibilityStatus() when onChangeVisibility event is raised with only nodeIds", async () => {
+    it("calls 'getVisibilityStatus' for all nodes if visibility status is not provided", async () => {
       await using(createHandler({ visibilityHandler }), async (_) => {
         onVisibilityChange.raiseEvent(["testId1", "testId2"]);
         await TestUtils.flushAsyncOperations();
