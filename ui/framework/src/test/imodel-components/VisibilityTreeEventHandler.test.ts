@@ -97,7 +97,7 @@ describe("VisibilityTreeEventHandler", () => {
       expect(getVisibilityStatus.callCount).to.eq(2);
     });
 
-    it("calls getVisibilityStatus() only on the nodes, whose visibilityStatus is not known", async () => {
+    it("calls 'getVisibilityStatus' for nodes whose visibility status is not known when updating affected nodes", async () => {
       const visibilityStatus: Map<string, VisibilityStatus> = new Map([
         ["testId1", testVisibilityStatus],
       ]);
