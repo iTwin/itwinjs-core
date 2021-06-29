@@ -221,12 +221,12 @@ describe("TileMetadata", () => {
 
   it("computes TileOptions from tree and content Ids", () => {
     interface Options {
-      version: number,
-      instancing?: boolean,
-      elision?: boolean,
-      noPatterns?: boolean,
-      externalTextures?: boolean,
-      projectExtents?: boolean,
+      version: number;
+      instancing?: boolean;
+      elision?: boolean;
+      noPatterns?: boolean;
+      externalTextures?: boolean;
+      projectExtents?: boolean;
     }
 
     function test(treeId: string, contentId: string, expected: Options | "content" | "tree"): void {
