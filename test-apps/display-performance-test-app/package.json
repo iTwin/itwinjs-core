@@ -15,7 +15,7 @@
     "compile": "npm run build:backend & tsc",
     "build": "npm run build:backend & npm run build:frontend",
     "build:backend": "tsc -p tsconfig.backend.json",
-    "build:frontend": "react-scripts build",
+    "build:frontend": "react-scripts --max_old_space_size=8192 build",
     "clean": "rimraf lib build .rush/temp/package-deps*.json",
     "docs": "",
     "lint": "eslint -f visualstudio --config package.json --no-eslintrc \"./src/**/*.ts\" 1>&2",
