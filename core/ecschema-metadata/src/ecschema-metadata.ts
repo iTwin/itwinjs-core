@@ -12,7 +12,6 @@ export * from "./Deserialization/Helper";
 export * from "./Deserialization/XmlParser";
 export * from "./ECName";
 export * from "./ECObjects";
-export * from "./Editor/Editor";
 export * from "./Exception";
 export * from "./Interfaces";
 export { ECClass, StructClass } from "./Metadata/Class";
@@ -42,6 +41,7 @@ export * from "./SchemaKey";
 export * from "./utils/FormatEnums";
 export * from "./Validation/Diagnostic";
 export * from "./Validation/DiagnosticReporter";
+/* eslint-disable-next-line deprecation/deprecation */
 export { DiagnosticCodes, Diagnostics, ECRuleSet } from "./Validation/ECRules";
 export * from "./Validation/LoggingDiagnosticReporter";
 export * from "./Validation/Rules";
@@ -49,26 +49,19 @@ export * from "./Validation/SchemaValidationVisitor";
 export * from "./Validation/SchemaWalker";
 export * from "./SchemaPartVisitorDelegate";
 export * from "./Validation/SchemaCompareDiagnostics";
-export * from "./Validation/SchemaComparer";
-export * from "./Validation/SchemaChanges";
-export * from "./Validation/SchemaCompareReporter";
+/* eslint-disable-next-line deprecation/deprecation */
 export { ISuppressionRule, IRuleSuppressionSet, IRuleSuppressionMap } from "./Validation/RuleSuppressionSet";
+/* eslint-disable-next-line deprecation/deprecation */
 export { SchemaValidater } from "./Validation/SchemaValidater";
+export { CustomAttribute, CustomAttributeContainerProps} from "./Metadata/CustomAttribute";
+export { SchemaGraph } from "./utils/SchemaGraph";
 
 /** @docs-package-description
- * The ecschema-metadata package contains classes for working with, validating, and editing ECSchemas that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
+ * The ecschema-metadata package contains classes for working with ECSchemas that can be used in both [frontend]($docs/learning/frontend/index.md) and [backend]($docs/learning/backend/index.md).
  */
 /**
  * @docs-group-description Metadata
  * Definitions of classes and interfaces that represent all [EC elements]($docs/bis/ec/index.md).
- */
-/**
- * @docs-group-description Validation
- * Set of classes used to perform validation on ECSchemas.
- */
-/**
- * @docs-group-description Comparison
- * Set of classes to enable comparison of ECSchemas.
  */
 /**
  * @docs-group-description Utils

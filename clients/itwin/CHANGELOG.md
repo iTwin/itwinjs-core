@@ -1,6 +1,33 @@
 # Change Log - @bentley/itwin-client
 
-This log was last generated on Wed, 16 Jun 2021 20:29:32 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+### Updates
+
+- WsgClient.getUrl returns incomplete URL when querying concurently for the first time
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+_Version update only_
+
+## 2.16.4
+Wed, 23 Jun 2021 17:09:07 GMT
+
+_Version update only_
 
 ## 2.16.3
 Wed, 16 Jun 2021 20:29:32 GMT
@@ -315,7 +342,7 @@ Thu, 20 Aug 2020 20:57:10 GMT
 
 ### Updates
 
-- Fix bug in AccessToken's fromJson 
+- Fix bug in AccessToken's fromJson
 - Added HttpRequestOptions to request methods for passing additional options to HTTP requests.
 - accomoadate strict property initialization on dependent subpackages
 - Switch to ESLint
@@ -381,7 +408,7 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
 - Added unlink for file handler
 - Removed/moved some properties from AuthorizationClient interf
 - rename imodeljs-clients to itwin-client
@@ -400,7 +427,7 @@ Tue, 31 Mar 2020 15:44:19 GMT
 
 ### Updates
 
-- Fixed downloading of files using https/streaming to resolve when the filestream is closed instead of when the input stream is exhausted. 
+- Fixed downloading of files using https/streaming to resolve when the filestream is closed instead of when the input stream is exhausted.
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -416,7 +443,7 @@ Wed, 12 Feb 2020 17:45:50 GMT
 - iModel write API development
 - Fix broken links
 - Added support for backward slashes in erroneous URLs of Reality Data in PW Context Share
-- Fixes to integration tests. 
+- Fixes to integration tests.
 - Better documentation of OidcDesktopClient/IOidcFrontendClient
 
 ## 1.11.0
@@ -440,7 +467,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 ### Updates
 
-- Setup OidcDesktopClient for Electron use cases. 
+- Setup OidcDesktopClient for Electron use cases.
 - Fix issue with Code InstanceId encoding
 
 ## 1.8.0
@@ -461,7 +488,7 @@ Fri, 01 Nov 2019 13:28:37 GMT
 - Fixed issues with use of OIDC AuthCode workflow in Electron and Single Page Applications.
 - Fixed a typo in the RealityDataServices client for accessing the lastAccessedTimestamp
 - Fix thumbnail download issue in ElectronJs
-- Enhancements to the ProjectShare plugin. 
+- Enhancements to the ProjectShare plugin.
 - Added Basic authentication for iModelBank
 - fixed ios client issues
 - Fix for Bug#192178 - Settings service returns only 20 at a time from namespace query. Also, use query rather than /Namespace/Settingname url to avoid 404 return code.
@@ -513,7 +540,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 ### Updates
 
 - Removed missing group descriptions
-- Added feature tracking info to userInfo obtained by OidcBrowserClient. 
+- Added feature tracking info to userInfo obtained by OidcBrowserClient.
 - Update to TypeScript 3.5
 
 ## 1.0.0
@@ -522,13 +549,13 @@ Mon, 03 Jun 2019 18:09:39 GMT
 ### Updates
 
 - RPC system now accepts only basic values (primitives, "interface" objects, and binary).
-- Updated release tags. 
+- Updated release tags.
 - Added state for Checkpoint class
 - Added an error for seed file timeout
 - Switched from iModelHub Project API to Context API
-- Fixed release tags. 
+- Fixed release tags.
 - Added query option to get owned briefcases
-- Logging changes. 
+- Logging changes.
 - Refactored and simplified implementation of IModelDb.open
 - Added hability to obtain an Azure blub SAS URL write-access.
 - Added methods to SettingsAdmin that retrieve all settings saved with the given namespace. Intended for use with user-named settings such as Named Clips.
@@ -546,7 +573,7 @@ Mon, 13 May 2019 15:52:05 GMT
 ### Updates
 
 - Adds parameter for api-extractor to validate missing release tags
-- Allowed setup of global Request timeouts. 
+- Allowed setup of global Request timeouts.
 - Added initial iModelHub Checkpoint API.
 - Added 'query' method for Config, which combines the functions of 'has' and 'get'
 - Fix broken links
@@ -555,11 +582,11 @@ Mon, 13 May 2019 15:52:05 GMT
 - add support for imodelbank use in clients-backend
 - Introduce LoggerCategory enum to advertise logger categories used by this package.
 - Put sourcemap in npm package.
-- Fixes to OidcBrowserClient. 
+- Fixes to OidcBrowserClient.
 - Added Reality Data creation/delete/update and relationship support.
 - remove .only from test
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
-- Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Minimized serialization/deserialization costs when round tripping SAML based AccessToken-s.
 - Upgrade TypeDoc dependency to 0.14.2
 - add sessionId to usage logging
 - remove redundant usage and feature log properties
@@ -581,8 +608,8 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - OIDC changes needed for Angular client
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
-- Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package. 
-- Fixed expansion of config variables. 
+- Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package.
+- Fixed expansion of config variables.
 - Remove unneeded typedoc plugin dependency
 - Fix error parsing
 - Documentation improvements
@@ -592,9 +619,9 @@ Wed, 06 Mar 2019 15:41:22 GMT
 - Added creatorId, new method to list RD per project, identified numerous area for changes WIP
 - Implemented spatial criterai when searching through all reality data associated to a project.
 - Threading issue accessing Reality Data, RealityData class was transformed to be the main data access object instead of the client that was used by most/all reality data causing cache data clash and mix between many reality data.
-- Removed RBAC client - the RBAC service is considered internal. 
+- Removed RBAC client - the RBAC service is considered internal.
 - Handled error with fetching host information on deployed machines.
-- WIP fixes to Usage Logging. 
+- WIP fixes to Usage Logging.
 - upgrade to TypeScript 3.2.2
 
 ## 0.188.0
@@ -612,8 +639,8 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- More logging of HTTP requests, and enabled use of fiddler for backend diagnostics. 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
+- More logging of HTTP requests, and enabled use of fiddler for backend diagnostics.
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT
@@ -688,7 +715,7 @@ Thu, 06 Dec 2018 22:03:29 GMT
 
 ### Updates
 
-- Appended system environment with "imjs" prefix to Config. 
+- Appended system environment with "imjs" prefix to Config.
 - Fixes to errors during file downloads
 - added AzureFileHandler for ios
 - Custom imodelJs noDirectImport lint rule implemented, noDuplicateImport lint rule turned on.
@@ -750,10 +777,10 @@ Thu, 08 Nov 2018 17:59:20 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Removed PropertySerializer used by ECJsonTypeMap.
 - OIDC related enhancments (WIP).
-- Fixed more integration tests. 
+- Fixed more integration tests.
 - Updated to TypeScript 3.1
 
 ## 0.163.0
@@ -798,7 +825,7 @@ Mon, 15 Oct 2018 19:36:09 GMT
 
 ### Updates
 
-- Cleaned up frontend configuration. 
+- Cleaned up frontend configuration.
 - add default Buddi URL and region and a added docs for region id
 
 ## 0.157.0

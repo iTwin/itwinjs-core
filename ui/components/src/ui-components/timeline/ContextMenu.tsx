@@ -7,9 +7,12 @@ import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { CommonProps, Popup } from "@bentley/ui-core";
+/* eslint-disable deprecation/deprecation */
 
+/* istanbul ignore next */
 /** Properties for [[ContextMenuItem]] component
  * @internal
+ * @deprecated
  */
 export interface MenuItem {
   /** Name of the context menu item */
@@ -26,9 +29,11 @@ export interface MenuItem {
   onClick?: () => void;
 }
 
+/* istanbul ignore next */
 /**
  * A context menu item.
  * @internal
+ * @deprecated
  */
 export class ContextMenuItem extends React.Component<MenuItem> {
 
@@ -64,8 +69,10 @@ export class ContextMenuItem extends React.Component<MenuItem> {
   }
 }
 
+/* istanbul ignore next */
 /** Properties for [[ContextMenu]] component
  * @internal
+ * @deprecated
  */
 export interface ContextMenuProps extends CommonProps {
   /** Show or hide the context menu */
@@ -80,8 +87,10 @@ export interface ContextMenuProps extends CommonProps {
   parent: HTMLElement | null;
 }
 
+/* istanbul ignore next */
 /** Context menu for timeline component
  * @internal
+ * @deprecated
  */
 export class ContextMenu extends React.Component<ContextMenuProps> {
   // istanbul ignore next - WIP

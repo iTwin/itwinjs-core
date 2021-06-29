@@ -1,6 +1,6 @@
 # @bentley/eslint-plugin
 
-ESLint plugin with default configuration and custom rules for iModel.js projects
+ESLint plugin with default configuration and custom rules for iModel.js projects. For best results, use with Typescript 4.1+
 
 ## Installation
 
@@ -50,7 +50,7 @@ As a side effect, any additional plugins added in consumer packages won't be loa
 
 ## Rules not in recommended configs
 
-### `no-internal` - prevents use of internal/alpha APIs. Example configurations:
+### `no-internal` - prevents use of internal/alpha APIs. Example configurations
 
 ```json
 // custom config
@@ -72,7 +72,8 @@ The rule will report an error whenever you use anything marked with one of the t
 Allowed tags: `internal`, `alpha`, `beta`, `public`.
 
 ## Helper commands
-### `no-internal-report` - Runs eslint with the `@bentley/no-internal` rule turned on ("error") using a custom formatter that summarizes the output.
+
+### `no-internal-report` - Runs eslint with the `@bentley/no-internal` rule turned on ("error") using a custom formatter that summarizes the output
 
 This can be run using `npx` or from the scripts section of `package.json`:
 

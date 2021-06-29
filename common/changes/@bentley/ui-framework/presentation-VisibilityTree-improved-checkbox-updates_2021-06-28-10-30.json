@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Improved `onVisibilityChange` event to allow passing new visibility status.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "30312645+aurislt7@users.noreply.github.com"
+}

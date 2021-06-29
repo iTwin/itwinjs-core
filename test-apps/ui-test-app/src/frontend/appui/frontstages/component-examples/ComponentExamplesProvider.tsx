@@ -34,6 +34,7 @@ import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
 import { TableExampleContent } from "../../contentviews/TableExampleContent";
+import { ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
 
 function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
@@ -1221,6 +1222,19 @@ export class ComponentExamplesProvider {
     };
   }
 
+  private static get timelineSamples(): ComponentExampleCategory {
+    const examples = [];
+    examples.push(
+      createComponentExample("TimelineComponent", "With appended menu items", <ItemsAppendedSampleTimeline/> ),
+      createComponentExample("TimelineComponent", "With prefixed menu items", <ItemsPrefixedSampleTimeline/> ),
+      createComponentExample("TimelineComponent", "With menu items replaced", <ItemsReplacedSampleTimeline/> ),
+      createComponentExample("TimelineComponent", "With no repeat option", <NoRepeatSampleTimeline/> ),
+    );
+    return {
+      title: "Timelines",
+      examples,
+    };
+  }
   public static get categories(): ComponentExampleCategory[] {
     return [
       ComponentExamplesProvider.badgeSamples,
@@ -1245,6 +1259,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.tabsSamples,
       ComponentExamplesProvider.textSamples,
       ComponentExamplesProvider.tileSamples,
+      ComponentExamplesProvider.timelineSamples,
       ComponentExamplesProvider.toggleSamples,
       ComponentExamplesProvider.weightSamples,
       ComponentExamplesProvider.quantityFormatting,

@@ -3046,7 +3046,7 @@ export const IModelConnectedViewport: import("react-redux").ConnectedComponent<R
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
 
-// @beta
+// @beta @deprecated
 export const IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent<typeof VisibilityComponent, any>;
 
 // @internal
@@ -7077,9 +7077,9 @@ export class ViewUtilities {
 }
 
 // @alpha
-export type VisibilityChangeListener = (nodeIds?: string[]) => void;
+export type VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map<string, VisibilityStatus>) => void;
 
-// @beta
+// @beta @deprecated
 export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
     constructor(props: any);
     // (undocumented)
@@ -7089,7 +7089,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
     render(): JSX.Element;
     }
 
-// @beta
+// @beta @deprecated
 export interface VisibilityComponentConfig {
     // (undocumented)
     modelsTree?: {
@@ -7104,7 +7104,7 @@ export interface VisibilityComponentConfig {
     };
 }
 
-// @public
+// @public @deprecated
 export enum VisibilityComponentHierarchy {
     // (undocumented)
     Categories = "categories",
@@ -7114,7 +7114,7 @@ export enum VisibilityComponentHierarchy {
     SpatialContainment = "spatial-containment"
 }
 
-// @beta
+// @beta @deprecated
 export interface VisibilityComponentProps {
     activeTreeRef?: React.Ref<HTMLDivElement>;
     activeViewport?: Viewport;
@@ -7179,7 +7179,7 @@ export interface VisibilityTreeNoFilteredDataProps {
 // @alpha
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
 
-// @beta
+// @beta @deprecated
 export class VisibilityWidget extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)

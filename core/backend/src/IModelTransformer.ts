@@ -442,7 +442,8 @@ export class IModelTransformer extends IModelExportHandler {
       targetElementId = this.context.findTargetElementId(sourceElement.id);
       targetElementProps = this.onTransformElement(sourceElement);
     }
-    if (!Id64.isValidId64(targetElementId)) {
+    // if an existing remapping was not yet found, check by Code as long as the CodeScope is valid (invalid means a missing predecessor so not worth checking)
+    if (!Id64.isValidId64(targetElementId) && Id64.isValidId64(targetElementProps.code.scope)) {
       targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
       if (undefined !== targetElementId) {
         const targetElement: Element = this.targetDb.elements.getElement(targetElementId);
@@ -642,8 +643,10 @@ export class IModelTransformer extends IModelExportHandler {
       if (DbResult.BE_SQLITE_ROW === statement.step()) {
         const json: any = JSON.parse(statement.getValue(1).getString());
         if (undefined !== json.targetRelInstanceId) {
-          const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
-          this.importer.deleteRelationship(targetRelationship);
+          const targetRelationship = this.targetDb.relationships.tryGetInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
+          if (targetRelationship) {
+            this.importer.deleteRelationship(targetRelationship);
+          }
           this.targetDb.elements.deleteAspect(statement.getValue(0).getId());
         }
       }
@@ -863,17 +866,17 @@ export class IModelTransformer extends IModelExportHandler {
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
  * Inserts, updates, and deletes are determined by inspecting the changeset(s).
  * @param requestContext The request context
- * @param startChangeSetId Include changes from this changeset up through and including the current changeset.
+ * @param startChangesetId Include changes from this changeset up through and including the current changeset.
  * If this parameter is not provided, then just the current changeset will be exported.
- * @note To form a range of versions to process, set `startChangeSetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
+ * @note To form a range of versions to process, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
  */
-  public async processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void> {
+  public async processChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void> {
     requestContext.enter();
     Logger.logTrace(loggerCategory, "processChanges()");
     this.logSettings();
     this.validateScopeProvenance();
     this.initFromExternalSourceAspects();
-    await this.exporter.exportChanges(requestContext, startChangeSetId);
+    await this.exporter.exportChanges(requestContext, startChangesetId);
     requestContext.enter();
     await this.processDeferredElements();
     this.importer.computeProjectExtents();
