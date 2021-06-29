@@ -8209,6 +8209,11 @@ export interface TileOptions {
     readonly useProjectExtents: boolean;
 }
 
+// @internal (undocumented)
+export namespace TileOptions {
+    export function fromTreeIdAndContentId(treeId: string, contentId: string): TileOptions;
+}
+
 // @internal
 export interface TileProps {
     contentId: string;
