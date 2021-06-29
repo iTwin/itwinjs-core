@@ -68,7 +68,7 @@ describe("VisibilityTreeEventHandler", () => {
   };
 
   describe("onChangeVisibility", () => {
-    it("calls getVisibilityStatus() only on the nodes, whose visibility status is not known when onChangeVisibility event is raised with only visibilityStatus", async () => {
+    it("calls 'getVisibilityStatus' for nodes whose visibility status is not known when updating all nodes", async () => {
       const visibilityStatus: Map<string, VisibilityStatus> = new Map([
         ["testId2", testVisibilityStatus],
       ]);
