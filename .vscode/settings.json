@@ -16,11 +16,11 @@
     "**/*.build.error.log": true,
     "**/generated-docs": true,
     "**/package-deps.json": true,
-    // "**/node_modules": true,
-    // "**/test-apps/**/build": true,
-    // "**/out": true,
-    // "**/lib": true,
-    // "common/temp": true
+    "**/node_modules": true,
+    "**/test-apps/**/build": true,
+    "**/out": true,
+    "**/lib": true,
+    "common/temp": true
   },
   "files.trimTrailingWhitespace": true,
   "typescript.tsdk": "node_modules\\typescript\\lib",
