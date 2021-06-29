@@ -250,9 +250,20 @@ describe("TileMetadata", () => {
 
     test("", "", "tree");
     test("4_1-0x1c", "", "content");
-    test("", "-4-0-1-2-3-4-5", "tree");
+    test("", "-0-1-2-3-4-5", "tree");
 
     test("blah", "blah", "tree");
-    test("4-0_0x1c", "blah", "content");
+    test("4_0-0x1c", "blah", "content");
+    test("4-1_0x1c", "-0-1-2-3-4-5", "tree");
+    test("4_1-0x1c", "0-1-2-3-4-5", "content");
+
+    test("4_0-0x1c", "-0-0", { version: 4 });
+    test("Ad_1", "-0-0", { version: 0xad, projectExtents: true });
+    test("f_2", "-0-0", { version: 15 });
+    test("f_3", "-0-0", { version: 15, projectExtents: true });
+
+    test("4_0", "-3-0", { version: 4, elision: true, instancing: true });
+    test("4_0", "-c-5", { version: 4, noPatterns: true, externalTextures: true });
+    test("a_1", "-F-2", { version: 10, projectExtents: true, noPatterns: true, externalTextures: true, instancing: true, elision: true });
   });
 });

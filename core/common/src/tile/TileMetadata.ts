@@ -120,12 +120,15 @@ function treeFlagsAndFormatVersionFromId(id: string): { flags: TreeFlags, versio
   if (0 === id.length)
     throw new Error("Invalid tree Id");
 
-  const parts = id.split("-");
-  if (parts.length >= 2) {
-    const version = Number.parseInt(parts[0], 16);
-    const flags = Number.parseInt(parts[1], 16);
-    if (!Number.isNaN(version) || !Number.isNaN(flags))
-      return { version, flags };
+  let parts = id.split("-");
+  if (parts.length > 0) {
+    parts = parts[0].split("_");
+    if (parts.length === 2) {
+      const version = Number.parseInt(parts[0], 16);
+      const flags = Number.parseInt(parts[1], 16);
+      if (!Number.isNaN(version) || !Number.isNaN(flags))
+        return { version, flags };
+    }
   }
 
   throw new Error("Invalid tree Id");
