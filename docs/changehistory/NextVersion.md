@@ -9,7 +9,7 @@ The [AnalysisStyle]($common) APIs have been cleaned up and promoted to `@public`
 
 ## Section-cut element graphics
 
-[TileAdmin.requestElementGraphics]($frontend) can now produce section-cut graphics if [ElementGraphicsRequestProps.sectionCut]($common) is supplied. The temporary element graphics produced during interactive editing will automatically include section-cut graphics based on the viewport's [CutStyle]($common).
+[TileAdmin.requestElementGraphics]($frontend) can now produce section-cut graphics if [GraphicsRequestProps.sectionCut]($common) is supplied. The temporary element graphics produced during interactive editing will automatically include section-cut graphics based on the viewport's [CutStyle]($common).
 
 ## Change summary API changes
 
