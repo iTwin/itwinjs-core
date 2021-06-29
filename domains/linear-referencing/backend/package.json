@@ -1,6 +1,6 @@
 {
   "name": "@bentley/linear-referencing-backend",
-  "version": "2.18.0-dev.21",
+  "version": "2.19.0-dev.0",
   "main": "lib/linear-referencing-backend.js",
   "typings": "lib/linear-referencing-backend",
   "license": "MIT",
@@ -32,10 +32,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.21",
-    "@bentley/imodeljs-backend": "workspace:^2.18.0-dev.21",
-    "@bentley/imodeljs-common": "workspace:^2.18.0-dev.21",
-    "@bentley/linear-referencing-common": "workspace:^2.18.0-dev.21"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.0",
+    "@bentley/imodeljs-backend": "workspace:^2.19.0-dev.0",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.0",
+    "@bentley/linear-referencing-common": "workspace:^2.19.0-dev.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
