@@ -96,13 +96,14 @@ export class ImageryMapTile extends RealityTile {
       const row = this.quadId.row * 2;
       const children = [];
       const childrenAreLeaves = (this.depth + 1) === imageryTree.maxDepth;
+      const childrenAreDisabled = (this.depth + 1) <= 10;   // TODO: Get the min LOD from capabilities
       const tilingScheme = imageryTree.tilingScheme;
       for (let j = 0; j < rowCount; j++) {
         for (let i = 0; i < columnCount; i++) {
           const quadId = new QuadId(level, column + i, row + j);
           const rectangle = tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
           const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
-          const maximumSize = imageryTree.imageryLoader.maximumScreenSize;
+          const maximumSize = (childrenAreDisabled ?  0 : imageryTree.imageryLoader.maximumScreenSize);
           children.push(new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle));
         }
       }
