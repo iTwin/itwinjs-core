@@ -21,16 +21,14 @@ describe("VisibilityTreeEventHandler", () => {
   const dataProviderMock = moq.Mock.ofType<IPresentationTreeDataProvider>();
   const selectionHandlerMock = moq.Mock.ofType<SelectionHandler>();
 
-  const changeVisibility = sinon.fake();
   const getVisibilityStatus = sinon.stub();
-  const dispose = sinon.fake();
   const onVisibilityChange = new BeEvent<VisibilityChangeListener>();
 
   const visibilityHandler: IVisibilityHandler = {
-    changeVisibility,
+    changeVisibility: sinon.fake(),
     getVisibilityStatus,
     onVisibilityChange,
-    dispose,
+    dispose: sinon.fake(),
   };
 
   const testVisibilityStatus: VisibilityStatus = {
@@ -44,9 +42,7 @@ describe("VisibilityTreeEventHandler", () => {
     nodeLoaderMock.reset();
     dataProviderMock.reset();
     selectionHandlerMock.reset();
-    changeVisibility.resetHistory();
     getVisibilityStatus.reset();
-    dispose.resetHistory();
 
     getVisibilityStatus.returns(testVisibilityStatus);
     modelMock.setup((x) => x.getNode(moq.It.isAny())).returns(() => createSimpleTreeModelNode());
@@ -82,17 +78,18 @@ describe("VisibilityTreeEventHandler", () => {
       modelMock.setup((x) => x.iterateTreeModelNodes()).returns(() => treeModelNodes[Symbol.iterator]());
 
       await using(createHandler({ visibilityHandler }), async (_) => {
+        await TestUtils.flushAsyncOperations();
+        getVisibilityStatus.resetHistory();
         onVisibilityChange.raiseEvent(undefined, visibilityStatus);
+        await TestUtils.flushAsyncOperations();
       });
-      await TestUtils.flushAsyncOperations();
-
-      // getVisibilityStatus() is called 3 times from VisibilityTreeEventHandler constructor and 2 times by raising onVisibilityChange event.
-      expect(getVisibilityStatus.callCount).to.eq(5);
+      expect(getVisibilityStatus.callCount).to.eq(2);
     });
 
     it("calls getVisibilityStatus() when onChangeVisibility event is raised with only nodeIds", async () => {
       await using(createHandler({ visibilityHandler }), async (_) => {
         onVisibilityChange.raiseEvent(["testId1", "testId2"]);
+        await TestUtils.flushAsyncOperations();
       });
       expect(getVisibilityStatus.callCount).to.eq(2);
     });
@@ -111,6 +108,7 @@ describe("VisibilityTreeEventHandler", () => {
 
       await using(createHandler({ visibilityHandler }), async (_) => {
         onVisibilityChange.raiseEvent(["testId1", "testId2"], visibilityStatus);
+        await TestUtils.flushAsyncOperations();
       });
       expect(getVisibilityStatus.callCount).to.eq(1);
     });
