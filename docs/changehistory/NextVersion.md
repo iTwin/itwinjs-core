@@ -77,9 +77,11 @@ export class ExtensionUiItemsProvider implements UiItemsProvider {
 
 - The [AnalysisAnimationTimelineDataProvider]($ui-framework) is published for use by AppUi apps. Specifying this data provider to a TimelineComponent allows animation of the information in the AnalysisDisplayProperties if the view's [DisplayStyleState]($frontend) contains one. A component that automatically detects analysis data and attaches the data provider to its TimelineComponent can be found in the [DefaultViewOverlay]($ui-framework).
 
-### @bentley/ui-componentsframework package
+### @bentley/ui-components package
 
 - Added component [QuantityNumberInput]($ui-components) which accepts input for quantity values. The quantity value is shown as a single numeric value and the quantity "display" unit is shown next to the input control. The "display" unit is determined by the active unit system as defined by the [QuantityFormatter]($frontend). The control also provides buttons to increment and decrement the "displayed" value. The value reported by via the onChange function is in "persistence" units that can be stored in the iModel.
+
+- Apps that use the [TimelineComponent]($ui-components) can now customize their own playback speeds by providing an array of [TimelineMenuItemProps]($ui-components) to the component. These can either be appended to or prefix the standard items, or they can replace them entirely. An option has also been added to the [TimelineComponentProps]($ui-components) to allow the app to turn on/off the Repeat menu item in the context menu.
 
 ### Quantity package
 

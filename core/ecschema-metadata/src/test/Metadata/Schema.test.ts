@@ -15,6 +15,7 @@ import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { createEmptyXmlDocument, getElementChildren, getElementChildrenByTagName } from "../TestUtils/SerializationHelper";
 import { SchemaReadHelper } from "../../Deserialization/Helper";
 import { XmlParser } from "../../Deserialization/XmlParser";
+import { SchemaKey } from "../../SchemaKey";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 describe("Schema", () => {
@@ -1388,6 +1389,64 @@ describe("Schema", () => {
         const rightSchema = new Schema(context, "RightSchema", "rs", 1, 2, 3);
         const result = leftSchema.schemaKey.compareByVersion(rightSchema.schemaKey);
         assert.strictEqual(result, 0);
+      });
+    });
+    describe("setVersion Tests", () => {
+      it("Update read, write and minor version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, "TestSchema", "ls", 1, 2, 3);
+        testSchema.setVersion(2, 3, 4);
+        assert.strictEqual(testSchema.readVersion, 2);
+        assert.strictEqual(testSchema.writeVersion, 3);
+        assert.strictEqual(testSchema.minorVersion, 4);
+      });
+      it("Update read version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, "TestSchema", "ls", 1, 2, 3);
+        testSchema.setVersion(2);
+        assert.strictEqual(testSchema.readVersion, 2);
+        assert.strictEqual(testSchema.writeVersion, 2);
+        assert.strictEqual(testSchema.minorVersion, 3);
+      });
+      it("Update write version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, "TestSchema", "ls", 1, 2, 3);
+        testSchema.setVersion(undefined, 3);
+        assert.strictEqual(testSchema.readVersion, 1);
+        assert.strictEqual(testSchema.writeVersion, 3);
+        assert.strictEqual(testSchema.minorVersion, 3);
+      });
+      it("Update write version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, "TestSchema", "ls", 1, 2, 3);
+        testSchema.setVersion(undefined, undefined, 4);
+        assert.strictEqual(testSchema.readVersion, 1);
+        assert.strictEqual(testSchema.writeVersion, 2);
+        assert.strictEqual(testSchema.minorVersion, 4);
+      });
+      it("version not initialized, update read version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, new SchemaKey("TestSchema"), "ts");
+        testSchema.setVersion(1);
+        assert.strictEqual(testSchema.readVersion, 1);
+        assert.strictEqual(testSchema.writeVersion, 0);
+        assert.strictEqual(testSchema.minorVersion, 0);
+      });
+      it("version not initialized, update write version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, new SchemaKey("TestSchema"), "ts");
+        testSchema.setVersion(undefined, 1);
+        assert.strictEqual(testSchema.readVersion, 0);
+        assert.strictEqual(testSchema.writeVersion, 1);
+        assert.strictEqual(testSchema.minorVersion, 0);
+      });
+      it("version not initialized, update write version, version set correctly", async () => {
+        const context = new SchemaContext();
+        const testSchema = new Schema(context, new SchemaKey("TestSchema"), "ts");
+        testSchema.setVersion(undefined, undefined, 1);
+        assert.strictEqual(testSchema.readVersion, 0);
+        assert.strictEqual(testSchema.writeVersion, 0);
+        assert.strictEqual(testSchema.minorVersion, 1);
       });
     });
   });

@@ -38,6 +38,7 @@ export enum ECObjectsStatus {
   DifferentSchemaContexts = ECOBJECTS_ERROR_BASE + 24,
   InvalidSchemaComparisonArgument = ECOBJECTS_ERROR_BASE + 25,
   InvalidSchemaAlias = ECOBJECTS_ERROR_BASE + 26,
+  InvalidSchemaKey = ECOBJECTS_ERROR_BASE + 27,
 }
 
 /** @internal */

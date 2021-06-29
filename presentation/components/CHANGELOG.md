@@ -12,6 +12,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - Updated table/DataProvider so that it would find sameInstance nested properties and extract their values/fields when needed.
 - `usePropertyDataProviderWithUnifiedSelection`: Add selected element count to the return value.
 
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
 ## 2.16.6
 Mon, 28 Jun 2021 13:12:55 GMT
 
@@ -807,7 +812,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Fix filtered tree rendering "0 matches found" when there's no filtering applied and data provider returns 0 nodes
 - Updated to TypeScript 3.1
 - React to Tree API changes

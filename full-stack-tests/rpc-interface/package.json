@@ -1,6 +1,6 @@
 {
   "name": "@bentley/rpcinterface-full-stack-tests",
-  "version": "2.18.0-dev.19",
+  "version": "2.18.0-dev.20",
   "description": "Test the full iModel.js stack (frontend and backend) using standard RPC interfaces",
   "license": "MIT",
   "scripts": {

@@ -218,6 +218,26 @@ describe("Editor tests", () => {
       });
     });
 
+    describe("Schema Version Tests", () => {
+      it("incrementMinorVersion, version incremented successfully", async () => {
+        const schemaJson = {
+          $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",
+          name: "ValidSchema",
+          version: "1.2.3",
+          alias: "vs",
+        };
+
+        context = new SchemaContext();
+        testSchema = await Schema.fromJson(schemaJson, context);
+        testEditor = new SchemaContextEditor(context);
+
+        const result = await testEditor.incrementMinorVersion(testSchema.schemaKey);
+
+        expect(result).to.eql({});
+        expect(testSchema.minorVersion).to.equal(4);
+      });
+    });
+
     describe("edits an existing schema", () => {
       const schemaJson = {
         $schema: "https://dev.bentley.com/json_schemas/ec/32/ecschema",

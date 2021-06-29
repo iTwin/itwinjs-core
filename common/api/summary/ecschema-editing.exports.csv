@@ -18,6 +18,7 @@ beta;Diagnostics:
 beta;DiagnosticType
 beta;diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem"
 beta;ECRuleSet: IRuleSet
+alpha;Editors
 beta;class FormatDiagnosticReporter 
 beta;IDiagnostic
 beta;IDiagnosticReporter
@@ -28,11 +29,15 @@ beta;IRuleSuppressionSet
 beta;ISuppressionRule
 beta;LoggingDiagnosticReporter 
 beta;class PropertyDiagnostic
+alpha;PropertyEditResults
 beta;class RelationshipConstraintDiagnostic
 beta;SchemaCompareCodes:
 beta;SchemaCompareDiagnostics:
+alpha;SchemaContextEditor
 beta;class SchemaDiagnostic
+alpha;SchemaEditResults
 beta;class SchemaItemDiagnostic
+alpha;SchemaItemEditResults
 beta;SchemaValidater
 beta;SchemaValidationVisitor 
 internal;SchemaWalker
