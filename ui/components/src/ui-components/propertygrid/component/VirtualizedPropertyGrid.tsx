@@ -10,15 +10,16 @@ import "./VirtualizedPropertyGrid.scss";
 import classnames from "classnames";
 import * as _ from "lodash";
 import * as React from "react";
-import AutoSizer, { Size } from "react-virtualized-auto-sizer";
+import { Size } from "react-virtualized-auto-sizer";
 import { areEqual, ListChildComponentProps, VariableSizeList } from "react-window";
+import { assert } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
 import { FilteredType, MutableCategorizedPrimitiveProperty, MutableGridCategory } from "../../../ui-components";
+import { ConditionalAutoSizer } from "../../common/ConditionalAutoSizer";
 import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { createContextWithMandatoryProvider } from "../../common/UseContextWithMandatoryProvider";
 import { PropertyUpdatedArgs } from "../../editors/EditorContainer";
-import { PropertyCategoryRendererManager, PropertyCategoryRendererProps } from "../PropertyCategoryRendererManager";
 import { ActionButtonRenderer } from "../../properties/renderers/ActionButtonRenderer";
 import { PropertyGridColumnInfo } from "../../properties/renderers/PropertyGridColumns";
 import { PropertyValueRendererManager } from "../../properties/ValueRendererManager";
@@ -28,13 +29,13 @@ import { FlatGridItemType } from "../internal/flat-items/MutableFlatGridItem";
 import { FlatPropertyRenderer } from "../internal/flat-properties/FlatPropertyRenderer";
 import { IPropertyGridEventHandler } from "../internal/PropertyGridEventHandler";
 import { IPropertyGridModel } from "../internal/PropertyGridModel";
+import { PropertyCategoryRendererManager, PropertyCategoryRendererProps } from "../PropertyCategoryRendererManager";
 import { IPropertyDataProvider, PropertyCategory } from "../PropertyDataProvider";
 import { ColumnResizingPropertyListPropsSupplier } from "./ColumnResizingPropertyListPropsSupplier";
 import { FlatItemNestedBorderWrapper } from "./FlatItemNestedBorderWrapper";
 import { PropertyCategoryBlock } from "./PropertyCategoryBlock";
 import { CommonPropertyGridProps, PropertyGridCommons } from "./PropertyGridCommons";
 import { PropertyGridEventsRelatedPropsSupplier } from "./PropertyGridEventsRelatedPropsSupplier";
-import { assert } from "@bentley/bentleyjs-core";
 
 /** Properties for [[VirtualizedPropertyGrid]] React component
  * @beta
@@ -47,6 +48,8 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
     filteredTypes?: FilteredType[];
   };
   propertyCategoryRendererManager?: PropertyCategoryRendererManager;
+  width?: number;
+  height?: number;
 }
 
 /** State of [[VirtualizedPropertyGrid]] React component
@@ -312,75 +315,76 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
         >
           {(selectionContext) => {
             const onResize = _.memoize(this._onResize(resizeContext.onListWidthChanged), () => resizeContext.onListWidthChanged);
-            return (< AutoSizer onResize={onResize}>
-              {({ width, height }: Size) => {
-                const gridContext: VirtualizedPropertyGridContext = {
-                  orientation: resizeContext.orientation,
-                  gridWidth: this.state.width,
+            return (
+              <ConditionalAutoSizer width={this.props.width} height={this.props.height} onResize={onResize}>
+                {({ width, height }: Size) => {
+                  const gridContext: VirtualizedPropertyGridContext = {
+                    orientation: resizeContext.orientation,
+                    gridWidth: this.state.width,
 
-                  isPropertyHoverEnabled: selectionContext.isPropertyHoverEnabled,
-                  isPropertySelectionEnabled: selectionContext.isPropertySelectionEnabled,
-                  selectedPropertyKey: selectionContext.selectedPropertyKey,
+                    isPropertyHoverEnabled: selectionContext.isPropertyHoverEnabled,
+                    isPropertySelectionEnabled: selectionContext.isPropertySelectionEnabled,
+                    selectedPropertyKey: selectionContext.selectedPropertyKey,
 
-                  onPropertyClicked: selectionContext.onPropertyClicked,
-                  onPropertyRightClicked: selectionContext.onPropertyRightClicked,
-                  onPropertyContextMenu: selectionContext.onPropertyContextMenu,
+                    onPropertyClicked: selectionContext.onPropertyClicked,
+                    onPropertyRightClicked: selectionContext.onPropertyRightClicked,
+                    onPropertyContextMenu: selectionContext.onPropertyContextMenu,
 
-                  editingPropertyKey: selectionContext.editingPropertyKey,
-                  onEditCommit: selectionContext.onEditCommit,
-                  onEditCancel: selectionContext.onEditCancel,
+                    editingPropertyKey: selectionContext.editingPropertyKey,
+                    onEditCommit: selectionContext.onEditCommit,
+                    onEditCancel: selectionContext.onEditCancel,
 
-                  eventHandler: this.props.eventHandler,
-                  dataProvider: this.props.dataProvider,
+                    eventHandler: this.props.eventHandler,
+                    dataProvider: this.props.dataProvider,
 
-                  actionButtonRenderers: this.props.actionButtonRenderers,
-                  propertyValueRendererManager: this.props.propertyValueRendererManager,
-                  propertyCategoryRendererManager: this.props.propertyCategoryRendererManager,
+                    actionButtonRenderers: this.props.actionButtonRenderers,
+                    propertyValueRendererManager: this.props.propertyValueRendererManager,
+                    propertyCategoryRendererManager: this.props.propertyCategoryRendererManager,
 
-                  columnRatio: resizeContext.columnRatio,
-                  columnInfo: resizeContext.columnInfo,
-                  isResizeHandleBeingDragged: resizeContext.isResizeHandleBeingDragged,
-                  isResizeHandleHovered: resizeContext.isResizeHandleHovered,
-                  onColumnRatioChanged: resizeContext.onColumnChanged,
-                  onResizeHandleDragChanged: resizeContext.onResizeHandleDragChanged,
-                  onResizeHandleHoverChanged: resizeContext.onResizeHandleHoverChanged,
+                    columnRatio: resizeContext.columnRatio,
+                    columnInfo: resizeContext.columnInfo,
+                    isResizeHandleBeingDragged: resizeContext.isResizeHandleBeingDragged,
+                    isResizeHandleHovered: resizeContext.isResizeHandleHovered,
+                    onColumnRatioChanged: resizeContext.onColumnChanged,
+                    onResizeHandleDragChanged: resizeContext.onResizeHandleDragChanged,
+                    onResizeHandleHoverChanged: resizeContext.onResizeHandleHoverChanged,
 
-                  highlight: this.props.highlight,
-                };
+                    highlight: this.props.highlight,
+                  };
 
-                const renderContext: PropertyGridInternalContext = {
-                  gridItems: this.state.gridItems,
-                  gridEventHandler: this.props.eventHandler,
-                  gridModel: this.props.model,
-                  style: this.props.style,
-                  className: this.props.className,
-                  onItemHeightChanged: this._handleNodeHeightChange,
-                  gridContext,
-                };
+                  const renderContext: PropertyGridInternalContext = {
+                    gridItems: this.state.gridItems,
+                    gridEventHandler: this.props.eventHandler,
+                    gridModel: this.props.model,
+                    style: this.props.style,
+                    className: this.props.className,
+                    onItemHeightChanged: this._handleNodeHeightChange,
+                    gridContext,
+                  };
 
-                return (
-                  <PropertyGridInternalContextProvider value={renderContext}>
-                    <div className={classnames("components-virtualized-property-grid", "components-smallEditor-host")}>
-                      <VariableSizeList
-                        className={classnames("components-property-grid-wrapper", "ReactWindow__VariableSizeList", this.props.className)}
-                        width={width}
-                        height={height}
-                        itemCount={this.state.gridItems.length}
-                        itemSize={this._calculateNodeHeightByIndex}
-                        estimatedItemSize={this.calculateEstimatedHeight()}
-                        overscanCount={10}
-                        layout="vertical"
-                        style={this.props.style}
-                        itemKey={this._getNodeKey}
-                        ref={this._listRef}
-                      >
-                        {FlatGridItemNode}
-                      </VariableSizeList>
-                    </div>
-                  </PropertyGridInternalContextProvider>
-                );
-              }}
-            </AutoSizer>
+                  return (
+                    <PropertyGridInternalContextProvider value={renderContext}>
+                      <div className={classnames("components-virtualized-property-grid", "components-smallEditor-host")}>
+                        <VariableSizeList
+                          className={classnames("components-property-grid-wrapper", "ReactWindow__VariableSizeList", this.props.className)}
+                          width={width}
+                          height={height}
+                          itemCount={this.state.gridItems.length}
+                          itemSize={this._calculateNodeHeightByIndex}
+                          estimatedItemSize={this.calculateEstimatedHeight()}
+                          overscanCount={10}
+                          layout="vertical"
+                          style={this.props.style}
+                          itemKey={this._getNodeKey}
+                          ref={this._listRef}
+                        >
+                          {FlatGridItemNode}
+                        </VariableSizeList>
+                      </div>
+                    </PropertyGridInternalContextProvider>
+                  );
+                }}
+              </ConditionalAutoSizer>
             );
           }}
         </PropertyGridEventsRelatedPropsSupplier >

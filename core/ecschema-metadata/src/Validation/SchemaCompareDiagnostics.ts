@@ -32,6 +32,7 @@ import {
 /**
  * The unique diagnostic codes for Schema comparison.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export const SchemaCompareCodes = {
   SchemaDelta: "SC-100",
@@ -73,9 +74,12 @@ import { AnyProperty, RelationshipConstraint } from "../ecschema-metadata";
 import { CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
 /* eslint-enable no-duplicate-imports, @typescript-eslint/no-unused-vars */
 
+/* eslint-disable deprecation/deprecation */
+
 /**
  * The list of [[IDiagnostic]] implementation classes used by the Schema comparison framework.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export const SchemaCompareDiagnostics = {
   /** Required message parameters: property name, property A value, property B value */

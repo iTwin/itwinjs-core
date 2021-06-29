@@ -1,6 +1,26 @@
 # Change Log - @bentley/webpack-tools-core
 
-This log was last generated on Wed, 23 Jun 2021 17:09:07 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+_Version update only_
 
 ## 2.16.4
 Wed, 23 Jun 2021 17:09:07 GMT
@@ -138,7 +158,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
 
-- Add function to check versions semantically 
+- Add function to check versions semantically
 - Changed the way CopyExternalsPlugin works to grab more dependencies
 
 ## 2.10.3
@@ -153,7 +173,7 @@ Fri, 08 Jan 2021 14:52:02 GMT
 
 ### Updates
 
-- Add function to check versions semantically 
+- Add function to check versions semantically
 
 ## 2.10.1
 Tue, 22 Dec 2020 00:53:38 GMT

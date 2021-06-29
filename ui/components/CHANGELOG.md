@@ -1,6 +1,38 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Wed, 23 Jun 2021 17:09:07 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Allow style to be passed to weight picker.
+- Fix array and struct property contents not being rendered in property grid when the properties have `hideCompositePropertyLabel` flag.
+- Added `mergedCellsCount` property to `CellItem`. It is used for determining width of the cell.
+- Added `overflow` property for `react-grid-Cell__value` element. `zIndex` is set in `TableCellContent` style property. These updates are necessary for rendering merged cells in `Table` component.
+- Updated `Table` component so that it would be possible to merge cells in it
+- Update scss to remove use of slash for division to avoid SASS deprecation warnings.
+- Publis in-use APIs
+- Refactor TimelineComponent to remove experimental milestones feature.
+- `TreeRenderer`: Fix tree nodes being loaded repeatedly in some cases.
+- `VirtualizedPropertyGrid`: Remove top and bottom padding.
+- `VirtualizedPropertyGridWithDataProvider`: Fix loading animation overflowing its parent container.
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+_Version update only_
 
 ## 2.16.4
 Wed, 23 Jun 2021 17:09:07 GMT
@@ -33,7 +65,7 @@ Mon, 24 May 2021 15:58:39 GMT
 - Improved Multi-Value column filtering in the Table component
 - Move `VirtualizedPropertyGrid` related types from @alpha to @beta.
 - Fixed getting distinct values when Table rows are updated
-- Update to latest classnames package 
+- Update to latest classnames package
 
 ## 2.15.6
 Wed, 26 May 2021 15:55:19 GMT
@@ -499,7 +531,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Fix toolbar overflow panel display.
-- Update to only show group separators if toolbar is not transparent. 
+- Update to only show group separators if toolbar is not transparent.
 - Fix toolbar error when scaling up UI.
 - Property grid horizontal layout updated according to UX requirements.
 - Fixed Table filter renderers after react-select version upgrade
@@ -971,7 +1003,7 @@ Wed, 19 Dec 2018 18:26:14 GMT
 - Added DragDrop tests, added component withDragDrop HOC tests
 - Synchronizing navigation aids with view definition changes
 - Simplified property pane tooltips and improved Property Pane performance.
-- Simplified struct and array tooltips in Table component. 
+- Simplified struct and array tooltips in Table component.
 - Fix BeInspireTree's event listening functions to handle array inputs
 - Fix BeInspireTree's muting events with allowed number of triggers
 - Cache BeInspireTree.visible() result for better performance
@@ -1101,7 +1133,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Fix: Do not start search if input field is empty
 - Use strongly typed enums for identifying keyboard keys
 - PropertyGrid property editing and unit tests
