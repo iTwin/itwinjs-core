@@ -1,0 +1,86 @@
+{
+  "name": "@bentley/ecschema-editing",
+  "version": "2.18.0-dev.20",
+  "description": "ECSchema editing and validation API",
+  "license": "MIT",
+  "main": "lib/ecschema-editing.js",
+  "typings": "lib/ecschema-editing",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/ecschema-editing"
+  },
+  "scripts": {
+    "compile": "npm run build",
+    "build": "tsc 1>&2 && npm run createLocalization && npm run copy:test-assets",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "extract-api": "betools extract-api --entry=ecschema-editing",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "test": "betools test",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-editing/file.json --tsIndexFile=./ecschema-editing.ts --onlyJson",
+    "cover": "nyc npm test",
+    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs",
+    "createLocalization": "node ./scripts/createLocalization.js"
+  },
+  "keywords": [
+    "Bentley",
+    "iModel",
+    "iModel.js",
+    "EC"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/imodeljs-i18n": "workspace:*",
+    "@bentley/ecschema-metadata": "workspace:*",
+    "@bentley/units-schema": "^1.0.5",
+    "@types/almost-equal": "1.1.0",
+    "@types/benchmark": "^2.1.0",
+    "@types/chai": "^4.1.4",
+    "@types/chai-as-promised": "^7",
+    "@types/i18next-node-fs-backend": "^2.1.0",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "10.14.1",
+    "@types/sinon": "^9.0.0",
+    "@types/xmldom": "^0.1.30",
+    "benchmark": "^2.1.4",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "cpx": "^1.5.0",
+    "eslint": "^7.11.0",
+    "i18next-node-fs-backend": "^2.1.3",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
+    "rimraf": "^3.0.2",
+    "sinon": "^9.0.2",
+    "typescript": "~4.1.0",
+    "xmldom": "^0.5.0",
+    "xmlhttprequest": "^1.8.0"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.20",
+    "@bentley/imodeljs-i18n": "workspace:^2.18.0-dev.20",
+    "@bentley/ecschema-metadata": "workspace:^2.18.0-dev.20"
+  },
+  "dependencies": {
+    "almost-equal": "^1.1.0"
+  },
+  "nyc": {
+    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended",
+    "rules": {
+      "radix": "warn",
+      "@typescript-eslint/explicit-member-accessibility": "warn"
+    }
+  }
+}

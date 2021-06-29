@@ -104,8 +104,11 @@ beta;CompositeFilterType
 beta;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
 internal;ContextMenu 
+deprecated;ContextMenu 
 internal;ContextMenuItem 
+deprecated;ContextMenuItem 
 internal;ContextMenuProps 
+deprecated;ContextMenuProps 
 beta;ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element
 beta;ControlledSelectableContentProps
 public;ControlledTree(props: ControlledTreeProps): JSX.Element
@@ -304,6 +307,7 @@ internal;MapMode
 public;MapPayloadToInspireNodeCallback
 deprecated;MapPayloadToInspireNodeCallback
 internal;MenuItem
+deprecated;MenuItem
 internal;Milestone
 deprecated;Milestone
 public;MilestoneRange
@@ -427,6 +431,8 @@ public;PropertyViewProps
 alpha;QuantityFormatPanel(props: QuantityFormatPanelProps): JSX.Element
 alpha;QuantityFormatPanelProps 
 beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element
+beta;QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null
+beta;QuantityNumberInputProps 
 beta;QuantityProps 
 public;ReactDataGridColumn 
 alpha;RenderedItemsRange
@@ -479,6 +485,7 @@ beta;StandardTypeConverterTypeNames
 deprecated;StandardTypeConverterTypeNames
 beta;StandardTypeNames
 deprecated;StandardTypeNames
+beta;StepFunctionProp = number | ((direction: string) => number | undefined)
 public;StringOperatorProcessor
 public;StringTypeConverter 
 public;StructPropertyValueRenderer 
@@ -518,8 +525,11 @@ beta;ThemedEnumPropertyEditor
 internal;Timeline 
 deprecated;Timeline 
 public;TimelineComponent 
+public;TimelineComponentProps
 public;TimelineDataProvider
 public;TimelineDateDisplay
+public;TimelineMenuItemOption = "replace" | "append" | "prefix"
+public;TimelineMenuItemProps
 public;TimelinePausePlayAction
 public;TimelinePausePlayArgs 
 internal;TimelineProps 

@@ -136,7 +136,7 @@
     },
     {
       "name": "@bentley/imodeljs-i18n",
-      "allowedCategories": [ "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-markup",
@@ -248,7 +248,7 @@
     },
     {
       "name": "@bentley/units-schema",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/usage-logging-client",
@@ -308,7 +308,7 @@
     },
     {
       "name": "almost-equal",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "applicationinsights",
@@ -336,7 +336,7 @@
     },
     {
       "name": "benchmark",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "body-parser",
@@ -608,7 +608,7 @@
     },
     {
       "name": "i18next-node-fs-backend",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "i18next-xhr-backend",
@@ -691,6 +691,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "memfs",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "micro-memoize",
       "allowedCategories": [ "frontend" ]
     },
@@ -701,14 +705,6 @@
     {
       "name": "mkdirp",
       "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "mobx",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "mobx-react",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "mocha",
@@ -725,6 +721,10 @@
     {
       "name": "nock",
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+    },
+    {
+      "name": "node-fetch",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "nodemon",
@@ -1128,7 +1128,7 @@
     },
     {
       "name": "xmlhttprequest",
-      "allowedCategories": [ "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
     },
     {
       "name": "xpath",

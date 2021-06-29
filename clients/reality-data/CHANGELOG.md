@@ -1,6 +1,39 @@
 # Change Log - @bentley/reality-data-client
 
-This log was last generated on Thu, 03 Jun 2021 18:08:11 GMT and should not be manually modified.
+This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Add support to list Cesium3DTiles reality data type from Project Wise ContextShare.
+- Reactivated Tests. Simplified tile download. Mark getModelData as deprecated
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+_Version update only_
+
+## 2.16.4
+Wed, 23 Jun 2021 17:09:07 GMT
+
+_Version update only_
+
+## 2.16.3
+Wed, 16 Jun 2021 20:29:32 GMT
+
+_Version update only_
 
 ## 2.16.2
 Thu, 03 Jun 2021 18:08:11 GMT

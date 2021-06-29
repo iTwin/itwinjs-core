@@ -183,6 +183,7 @@ export * from "./ui-components/favorite/FavoritePropertyList";
 
 export * from "./ui-components/inputs/QuantityInput";
 export * from "./ui-components/inputs/ParsedInput";
+export * from "./ui-components/inputs/QuantityNumberInput";
 
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/SimpleTreeDataProvider";

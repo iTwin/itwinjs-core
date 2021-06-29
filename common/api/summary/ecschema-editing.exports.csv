@@ -1,0 +1,44 @@
+sep=;
+Release Tag;API Item
+beta;AnyDiagnostic = IDiagnostic
+beta;class BaseDiagnostic
+beta;BaseRule
+beta;class ClassDiagnostic
+beta;createClassDiagnosticClass
+beta;createCustomAttributeContainerDiagnosticClass
+beta;createPropertyDiagnosticClass
+beta;createRelationshipConstraintDiagnosticClass
+beta;createSchemaDiagnosticClass
+beta;createSchemaItemDiagnosticClass
+beta;class CustomAttributeContainerDiagnostic
+beta;DiagnosticCategory
+beta;diagnosticCategoryToString(category: DiagnosticCategory): "Error" | "Warning" | "Message" | "Suggestion"
+beta;DiagnosticCodes:
+beta;Diagnostics:
+beta;DiagnosticType
+beta;diagnosticTypeToString(type: DiagnosticType): "CustomAttributeContainer" | "None" | "Property" | "RelationshipConstraint" | "Schema" | "SchemaItem"
+beta;ECRuleSet: IRuleSet
+alpha;Editors
+beta;class FormatDiagnosticReporter 
+beta;IDiagnostic
+beta;IDiagnosticReporter
+beta;IRule
+beta;IRuleSet
+beta;IRuleSuppressionMap
+beta;IRuleSuppressionSet
+beta;ISuppressionRule
+beta;LoggingDiagnosticReporter 
+beta;class PropertyDiagnostic
+alpha;PropertyEditResults
+beta;class RelationshipConstraintDiagnostic
+beta;SchemaCompareCodes:
+beta;SchemaCompareDiagnostics:
+alpha;SchemaContextEditor
+beta;class SchemaDiagnostic
+alpha;SchemaEditResults
+beta;class SchemaItemDiagnostic
+alpha;SchemaItemEditResults
+beta;SchemaValidater
+beta;SchemaValidationVisitor 
+internal;SchemaWalker
+beta;class SuppressionDiagnosticReporter 
