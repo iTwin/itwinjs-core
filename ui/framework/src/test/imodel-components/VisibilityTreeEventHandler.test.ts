@@ -63,7 +63,7 @@ describe("VisibilityTreeEventHandler", () => {
     return new VisibilityTreeEventHandler(props);
   };
 
-  describe("onChangeVisibility", () => {
+  describe("onVisibilityChange", () => {
     it("calls 'getVisibilityStatus' for nodes whose visibility status is not known when updating all nodes", async () => {
       const visibilityStatus: Map<string, VisibilityStatus> = new Map([
         ["testId2", testVisibilityStatus],
