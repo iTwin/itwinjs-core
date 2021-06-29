@@ -56,7 +56,7 @@
     "@bentley/config-loader": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/react-scripts": "4.0.3-dev.2",
+    "@bentley/react-scripts": "4.0.3",
     "@types/bunyan": "^1.8.4",
     "@types/react": "16.9.43",
     "@types/react-dom": "^16.8.0",

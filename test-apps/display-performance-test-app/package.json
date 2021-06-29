@@ -59,7 +59,7 @@
     "@bentley/config-loader": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/react-scripts": "4.0.3-dev.2",
+    "@bentley/react-scripts": "4.0.3",
     "@types/body-parser": "^1.17.0",
     "@types/express": "^4.16.1",
     "@types/node": "10.14.1",

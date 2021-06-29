@@ -48,7 +48,7 @@
     "@bentley/logger-config": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/react-scripts": "4.0.3-dev.2",
+    "@bentley/react-scripts": "4.0.3",
     "@types/lorem-ipsum": "^1.0.2",
     "@types/node": "10.14.1",
     "@types/react": "16.9.43",
