@@ -47,8 +47,7 @@ export class RenderScheduleState extends RenderSchedule.ScriptReference {
     const branches = new Map<string, AnimationBranchState>();
     for (const model of this.script.modelTimelines) {
       addAnimationBranch(model.modelId, model, -1, branches, time);
-      for (let i = 0; i < model.elementTimelines.length; i++) {
-        const elem = model.elementTimelines[i];
+      for (const elem of model.elementTimelines) {
         if (elem.getVisibility(time) <= 0)
           branches.set(formatBranchId(model.modelId, elem.batchId), { omit: true });
         else
