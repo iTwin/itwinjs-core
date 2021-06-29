@@ -7,12 +7,7 @@ import { expect } from "chai";
 import { Point3d, Range3d } from "@bentley/geometry-core";
 import { BatchType } from "../FeatureTable";
 import {
-  computeTileChordTolerance,
-  defaultTileOptions,
-  IModelTileTreeId,
-  iModelTileTreeIdToString,
-  TileMetadata,
-  TreeFlags,
+  computeTileChordTolerance, defaultTileOptions, IModelTileTreeId, iModelTileTreeIdToString, TileMetadata, TileOptions, TreeFlags,
 } from "../tile/TileMetadata";
 
 describe("TileMetadata", () => {
@@ -222,5 +217,42 @@ describe("TileMetadata", () => {
       const expected = `${options.maximumMajorTileFormatVersion.toString(16)}_${test.flags.toString(16)}-${test.baseId}${modelId}`;
       expect(actual).to.equal(expected);
     }
+  });
+
+  it("computes TileOptions from tree and content Ids", () => {
+    interface Options {
+      version: number,
+      instancing?: boolean,
+      elision?: boolean,
+      noPatterns?: boolean,
+      externalTextures?: boolean,
+      projectExtents?: boolean,
+    }
+
+    function test(treeId: string, contentId: string, expected: Options | "content" | "tree"): void {
+      if (typeof expected === "string") {
+        expect(() => TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.throw(`Invalid ${expected} Id`);
+      } else {
+        const options: TileOptions = {
+          maximumMajorTileFormatVersion: expected.version,
+          enableInstancing: true === expected.instancing,
+          enableImprovedElision: true === expected.elision,
+          ignoreAreaPatterns: true === expected.noPatterns,
+          enableExternalTextures: true === expected.externalTextures,
+          useProjectExtents: true === expected.projectExtents,
+          disableMagnification: false,
+          alwaysSubdivideIncompleteTiles: false,
+        };
+
+        expect(TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.deep.equal(options);
+      }
+    }
+
+    test("", "", "tree");
+    test("4_1-0x1c", "", "content");
+    test("", "-4-0-1-2-3-4-5", "tree");
+
+    test("blah", "blah", "tree");
+    test("4-0_0x1c", "blah", "content");
   });
 });
