@@ -8,7 +8,7 @@ import { ECClassGroupingNodeKey, ECInstancesNodeKey, InstanceKey, StandardNodeTy
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { createRandomPropertyRecord, createRandomTreeNodeItem } from "../../../../../presentation/components/lib/test/_helpers/UiComponents";
 import { TreeModelNode, TreeModelNodeInput } from "@bentley/ui-components";
-import { CheckBoxState } from "../../../../core/lib/ui-core";
+import { CheckBoxState } from "@bentley/ui-core";
 
 /** @internal */
 export const createSimpleTreeModelNode = (id?: string): TreeModelNode => {
