@@ -49,11 +49,10 @@ export class RenderScheduleState extends RenderSchedule.ScriptReference {
       addAnimationBranch(model.modelId, model, -1, branches, time);
       for (let i = 0; i < model.elementTimelines.length; i++) {
         const elem = model.elementTimelines[i];
-        const branchId = i + 1;
         if (elem.getVisibility(time) <= 0)
-          branches.set(formatBranchId(model.modelId, branchId), { omit: true });
+          branches.set(formatBranchId(model.modelId, elem.batchId), { omit: true });
         else
-          addAnimationBranch(model.modelId, elem, branchId, branches, time);
+          addAnimationBranch(model.modelId, elem, elem.batchId, branches, time);
       }
     }
 
