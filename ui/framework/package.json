@@ -80,7 +80,7 @@
     "@bentley/presentation-testing": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
     "@bentley/rbac-client": "workspace:*",
-    "@bentley/react-scripts": "3.4.9",
+    "@bentley/react-scripts": "3.4.13",
     "@bentley/telemetry-client": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/ui-components": "workspace:*",
