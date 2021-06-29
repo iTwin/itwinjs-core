@@ -194,7 +194,6 @@ export class VisibilityTreeEventHandler extends UnifiedSelectionTreeEventHandler
 
     const result = visibilityStatus?.get(node.id) ?? this._visibilityHandler.getVisibilityStatus(node.item, this.getNodeKey(node.item));
 
-
     if (isPromiseLike(result))
       return this.createCheckboxInfo(await result);
     return this.createCheckboxInfo(result);

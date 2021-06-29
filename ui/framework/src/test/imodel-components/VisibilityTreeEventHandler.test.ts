@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { BeEvent, BeUiEvent, using } from "@bentley/bentleyjs-core";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { IVisibilityHandler, VisibilityChangeListener, VisibilityStatus, VisibilityTreeEventHandler, VisibilityTreeEventHandlerParams } from "../../ui-framework/imodel-components/VisibilityTreeEventHandler";
-import { AbstractTreeNodeLoaderWithProvider, TreeModel, TreeModelChanges, TreeModelNode, TreeModelSource } from "@bentley/ui-components";
+import { AbstractTreeNodeLoaderWithProvider, TreeModel, TreeModelChanges, TreeModelSource } from "@bentley/ui-components";
 import { SelectionHandler } from "@bentley/presentation-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { createSimpleTreeModelNode } from "./Common";
