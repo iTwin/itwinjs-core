@@ -156,7 +156,7 @@ describe("useLayoutResizeObserver", () => {
 
   const ResizableContainerObserverNoChildren = () => {
     // initial values are not used since size is faked below and value should come from initial layout in 'sizer' container
-    const [observedBounds, setObservedBounds] = React.useState({ width: 0, height: 0 });
+    const [, setObservedBounds] = React.useState({ width: 0, height: 0 });
     const onResize = React.useCallback((width: number, height: number) => {
       setObservedBounds({ width, height });
     }, []);
@@ -263,17 +263,13 @@ describe("useLayoutResizeObserver", () => {
   });
 
   it("ResizableContainerObserver - should call onResize (width and height)", async () => {
-    const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "ResizeObserver");
     boundingClientRect = size_100_50;
 
     const wrapper = render(<ResizableContainerObserverNoChildren />);
     await TestUtils.flushAsyncOperations();
 
     const container = wrapper.container.querySelector("div.uicore-resizable-container") as HTMLDivElement;
-    expect(container!.style.display).to.be.eql("none");
+    expect(container.style.display).to.be.eql("none");
     wrapper.unmount();
   });
-
-
 });
-
