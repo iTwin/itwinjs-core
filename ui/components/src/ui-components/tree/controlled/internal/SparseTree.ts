@@ -130,17 +130,25 @@ export class SparseTree<T extends Node> {
     children.setLength(numChildren);
   }
 
-  public removeChild(parentId: string | undefined, childId: string) {
+  public removeChild(parentId: string | undefined, child: string | number): void {
     const children = this.getChildren(parentId);
     if (children === undefined)
       return;
 
-    const childIndex = children.getIndex(childId);
-    if (childIndex !== undefined) {
-      children.remove(childIndex);
-    }
+    if (typeof child === "string") {
+      const childIndex = children.getIndex(child);
+      if (childIndex !== undefined) {
+        children.remove(childIndex);
+      }
 
-    this.deleteSubtree(childId);
+      this.deleteSubtree(child);
+    } else {
+      const childId = children.get(child);
+      children.remove(child);
+      if (childId !== undefined) {
+        this.deleteSubtree(childId);
+      }
+    }
   }
 
   public deleteSubtree(parentId: string | undefined, deleteParent: boolean = true) {
