@@ -269,7 +269,7 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
     const rootRange = Range3d.createXYZXYZ(-Angle.piRadians, -Angle.piOver2Radians, 0, Angle.piRadians, Angle.piOver2Radians, 0);
     const rootTileProps = { contentId: rootTileId, range: rootRange, maximumSize: 0 };
     const loader = new ImageryTileLoader(imageryProvider, iModel);
-    const treeProps = { rootTile: rootTileProps, id: modelId, modelId, iModel, location: Transform.createIdentity(), priority: TileLoadPriority.Map, loader };
+    const treeProps = { rootTile: rootTileProps, id: modelId, modelId, iModel, location: Transform.createIdentity(), priority: TileLoadPriority.Map, loader, gcsConverterAvailable: false };
     return new ImageryMapTileTree(treeProps, loader);
   }
 }

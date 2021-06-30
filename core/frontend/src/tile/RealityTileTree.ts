@@ -7,8 +7,8 @@
  */
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
-import { ColorDef, Frustum, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Cartographic, ColorDef, Frustum, FrustumPlanes, GeoCoordStatus, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { GeoConverter } from "../GeoServices";
 import { IModelApp } from "../IModelApp";
@@ -16,6 +16,11 @@ import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
+
+// eslint-disable-next-line prefer-const
+let skipReprojection = false;
+// eslint-disable-next-line prefer-const
+let doSquare = false;
 
 /** @internal */
 export class TraversalDetails {
@@ -106,12 +111,20 @@ export class TraversalSelectionContext {
 
 const scratchFrustum = new Frustum();
 const scratchFrustumPlanes = new FrustumPlanes();
+const scratchPoint = Point3d.createZero();
+const scratchCarto = new Cartographic();
+const cornerAxes = [0, 1, 2, 4];
+const scratchCorners = Range3d.createNull().corners();
+const scratchAxes = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
+const scratchTransform = Transform.createIdentity();
+const scratchRange = Range3d.createNull();
 
 /** @internal */
 export interface RealityTileTreeParams extends TileTreeParams {
   readonly loader: RealityTileLoader;
   readonly yAxisUp?: boolean;
   readonly rootTile: RealityTileParams;
+  readonly rootToEcef?: Transform;
   readonly gcsConverterAvailable: boolean;
 }
 
@@ -124,6 +137,8 @@ export class RealityTileTree extends TileTree {
   public cartesianTransitionDistance: number;
   protected _gcsConverter: GeoConverter | undefined;
   protected _rootTile: RealityTile;
+  protected _rootToEcef?: Transform;
+  protected _ecefToDb?: Transform;
 
   public constructor(params: RealityTileTreeParams) {
     super(params);
@@ -133,6 +148,12 @@ export class RealityTileTree extends TileTree {
     this.cartesianRange = BackgroundMapGeometry.getCartesianRange(this.iModel);
     this.cartesianTransitionDistance = this.cartesianRange.diagonal().magnitudeXY() * .25;      // Transition distance from elliptical to cartesian.
     this._gcsConverter = params.gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
+    if (params.rootToEcef) {
+      this._rootToEcef = params.rootToEcef;
+      const dbToRoot = this.iModelTransform;
+      const dbToEcef = this._rootToEcef.multiplyTransformTransform(dbToRoot);
+      this._ecefToDb = dbToEcef.inverse();
+    }
   }
   public get rootTile(): RealityTile { return this._rootTile; }
   public get is3d() { return true; }
@@ -238,20 +259,91 @@ export class RealityTileTree extends TileTree {
 
     return this.traversalChildrenByDepth[depth];
   }
-  public get minReprojectionDepth(): number | undefined { return undefined; }
 
   public doReprojectChildren(tile: Tile): boolean {
-    if (this._gcsConverter === undefined)
+    if (skipReprojection || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
       return false;
 
-    const minReprojectionDepth = this.minReprojectionDepth;
-    if (minReprojectionDepth !== undefined) {
-      const childDepth = tile.depth + 1;
-      if (childDepth < minReprojectionDepth)     // If the depth is too low (tile is too large) omit reprojection.
-        return false;
-    }
+    const tileRange = this.iModelTransform.isIdentity ? tile.range : this.iModelTransform.multiplyRange(tile.range, scratchRange);
 
-    return this.cartesianRange.intersectsRange(tile.range);
+    return this.cartesianRange.intersectsRange(tileRange);
+  }
+
+  public transformFromAxes(axes: Point3d[]): Transform {
+    const origin = axes[0].clone();
+    let matrix;
+
+    if (doSquare) {
+      const xVector = Vector3d.createStartEnd(origin, axes[1]);
+      const yVector = Vector3d.createStartEnd(origin, axes[2]);
+      const zVector = xVector.unitCrossProduct(yVector);
+      matrix = Matrix3d.createColumns(xVector, yVector, zVector!);
+    } else {
+      matrix = Matrix3d.createColumns (Vector3d.createStartEnd(origin, axes[1]), Vector3d.createStartEnd(origin, axes[2]), Vector3d.createStartEnd(origin, axes[3]));
+    }
+    return Transform.createRefs(origin, matrix);
+  }
+
+  public reprojectAndResolveChildren(parent: Tile, children: Tile[], resolve: (children: Tile[] | undefined) => void): void {
+    if (!this.doReprojectChildren(parent)) {
+      resolve(children);
+      return;
+    }
+    const requestProps = [];
+
+    const tileToUnprojected = new Array<Transform>();
+    const rootToEcef = this._rootToEcef!;   // Tested for undefined in doReprojectChildren
+    const ecefToDb = this._ecefToDb!;       // Tested for undefined in doReprojectChildren
+    const rootToDb = this.iModelTransform;
+    const dbToRoot = rootToDb.inverse()!;
+    const dbToEcef = ecefToDb.inverse()!;
+    const ecefTileRange = dbToEcef.multiplyRange(this.iModel.projectExtents);
+    for (const child of children) {
+      let axisIndex = 0;
+      const realityChild = child as RealityTile;
+      const corners = realityChild.rangeCorners ? realityChild.rangeCorners : realityChild.range.corners(scratchCorners);
+      const childToEcef = realityChild.transformToRoot ? rootToEcef.multiplyTransformTransform(realityChild.transformToRoot, scratchTransform) : rootToEcef;
+      const childToDb = realityChild.transformToRoot ? rootToDb.multiplyTransformTransform(realityChild.transformToRoot, scratchTransform) : rootToDb;
+      for (const cornerAxis of cornerAxes) {
+        const corner = corners[cornerAxis];
+        const ecefPoint = childToEcef.multiplyPoint3d(corner, scratchPoint);
+        const carto = Cartographic.fromEcef(ecefPoint, scratchCarto);
+        childToDb.multiplyPoint3d(corner, scratchAxes[axisIndex++]);
+        assert(carto !== undefined);
+        requestProps.push({ x: carto.longitudeDegrees, y: carto.latitudeDegrees, z: carto.height });
+      }
+      tileToUnprojected.push(this.transformFromAxes(scratchAxes));
+    }
+    this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(requestProps).then((response) => {
+      if (response.iModelCoords.length === 4 * children.length) {
+        let responseIndex = 0, outIndex = 0, childIndex = 0;
+        for (; childIndex < children.length; childIndex++) {
+          for (outIndex = 0; outIndex < 4; ) {
+            const iModelCoord = response.iModelCoords[responseIndex++];
+            if (iModelCoord.s === GeoCoordStatus.Success) {
+              scratchAxes[outIndex++].setFromJSON(iModelCoord.p);
+            } else
+              break;
+          }
+          if (outIndex === 4) {
+            const realityChild = children[childIndex] as RealityTile;
+            const tileToReprojected = this.transformFromAxes(scratchAxes);
+            const unprojectedToTile = tileToUnprojected[childIndex].inverse();
+            if (unprojectedToTile) {
+              const dbReprojection = tileToReprojected.multiplyTransformTransform (unprojectedToTile);
+              const rootReprojection = dbToRoot.multiplyTransformTransform(dbReprojection, scratchTransform).multiplyTransformTransform(rootToDb, scratchTransform);
+              if (realityChild.transformToRoot)
+                realityChild.transformToRoot = rootReprojection.multiplyTransformTransform(realityChild.transformToRoot);
+              else
+                realityChild.transformToRoot = rootReprojection.clone();
+            }
+          }
+        }
+      }
+      resolve(children);
+    }).catch(() => {
+      resolve(children);    // Error occured in reprojection - just resolve with unprojected corners.
+    });
   }
 
   public getBaseRealityDepth(_sceneContext: SceneContext) { return -1; }

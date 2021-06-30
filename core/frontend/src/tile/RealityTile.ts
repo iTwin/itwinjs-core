@@ -27,12 +27,13 @@ export interface RealityTileParams extends TileParams {
 
 const scratchLoadedChildren = new Array<RealityTile>();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
+
 /**
  * A specialization of tiles that represent reality tiles.  3D Tilesets and maps use this class and have their own optimized traversal and lifetime management.
  * @internal
  */
 export class RealityTile extends Tile {
-  public readonly transformToRoot?: Transform;
+  public transformToRoot?: Transform;   // May be reset during reprojection.
   public readonly additiveRefinement?: boolean;
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
@@ -95,7 +96,8 @@ export class RealityTile extends Tile {
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
     this.realityRoot.loader.loadChildren(this).then((children: Tile[] | undefined) => {
-      resolve(children);
+      if (children)
+        this.realityRoot.reprojectAndResolveChildren(this, children, resolve);
     }).catch((err) => {
       reject(err);
     });
