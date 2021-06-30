@@ -537,6 +537,15 @@ describe("SparseArray", () => {
       expect(sparseArray.getLength()).to.be.eq(7);
       expect(sparseArray.get(0)).to.be.eq(testItems[0].value);
     });
+
+    it("does nothing when attempting to remove at position past the end", () => {
+      sparseArray.insert(0, 0);
+      sparseArray.insert(1, 1);
+      sparseArray.remove(2);
+      expect(sparseArray.getLength()).to.be.eq(2);
+      expect(sparseArray.get(0)).to.be.eq(0);
+      expect(sparseArray.get(1)).to.be.eq(1);
+    });
   });
 
   describe("iterateValues", () => {
