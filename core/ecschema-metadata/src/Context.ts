@@ -91,7 +91,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param schema The schema to add to the cache.
    */
   public addSchemaSync<T extends Schema>(schema: T, loadSchema?: () => Promise<T>) {
-    if (this.getSchemaSync<T>(schema.schemaKey))
+    if (this.getLoadingSchemaSync<T>(schema.schemaKey))
       throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
 
     if (loadSchema)
@@ -107,7 +107,7 @@ export class SchemaCache implements ISchemaLocater {
   }
 
   public checkAndAddSchemaSync<T extends Schema>(schema: T, loadSchema: () => Promise<T>) {
-    if (!this.getSchemaSync<T>(schema.schemaKey))
+    if (!this.getLoadingSchemaSync<T>(schema.schemaKey))
       this._loadingSchemas.push({ schema, loadSchemaFunc: loadSchema });
   }
 
@@ -135,20 +135,26 @@ export class SchemaCache implements ISchemaLocater {
     const loadingSchema = this._loadingSchemas.find(findLoadingSchema);
     if (loadingSchema?.loadSchema) {
       const schema = await loadingSchema.loadSchema;
-      // Add the schema to _loadedSchemas and remove it from _loadingSchemas
-      this._loadedSchemas.push(schema);
-      const loadingSchemaIndex = this._loadingSchemas.findIndex(findLoadingSchema);
-      this._loadingSchemas.splice(loadingSchemaIndex, 1);
+      if (!this._loadedSchemas.find(findLoadedSchema)) {
+        // Add the schema to _loadedSchemas and remove it from _loadingSchemas
+        this._loadedSchemas.push(schema);
+        const loadingSchemaIndex = this._loadingSchemas.findIndex(findLoadingSchema);
+        if (loadingSchemaIndex !== -1)
+          this._loadingSchemas.splice(loadingSchemaIndex, 1);
+      }
       return schema as T;
     }
 
     if (loadingSchema?.loadSchemaFunc) {
       loadingSchema.loadSchema = loadingSchema.loadSchemaFunc();
       const schema = await loadingSchema.loadSchema;
-      // Add the schema to _loadedSchemas and remove it from _loadingSchemas
-      this._loadedSchemas.push(schema);
-      const loadingSchemaIndex = this._loadingSchemas.findIndex(findLoadingSchema);
-      this._loadingSchemas.splice(loadingSchemaIndex, 1);
+      if (!this._loadedSchemas.find(findLoadedSchema)) {
+        // Add the schema to _loadedSchemas and remove it from _loadingSchemas
+        this._loadedSchemas.push(schema);
+        const loadingSchemaIndex = this._loadingSchemas.findIndex(findLoadingSchema);
+        if (loadingSchemaIndex !== -1)
+          this._loadingSchemas.splice(loadingSchemaIndex, 1);
+      }
       return schema as T;
     }
 

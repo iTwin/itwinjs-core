@@ -72,10 +72,6 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
-    const cachedSchema = await this._context.getCachedSchema<U>(schema.schemaKey);
-    if (cachedSchema)
-      return cachedSchema;
-
     await this._context.checkAndAddSchema(schema, async () => this.loadSchema(schema));
 
     // Await loading the rest of the schema
@@ -234,12 +230,8 @@ export class SchemaReadHelper<T = unknown> {
    */
   private loadSchemaReferenceSync(ref: SchemaReferenceProps): void {
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
-    let refSchema = this._schema!.getReferenceSync(ref.name);
-    if (refSchema)
-      return;
-
-    refSchema = this._context.getLoadingSchemaSync(schemaKey, SchemaMatchType.LatestWriteCompatible);
-    if (undefined === refSchema)
+    const refSchema = this._context.getSchemaSync(schemaKey, SchemaMatchType.LatestWriteCompatible);
+    if (!refSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
     (this._schema as MutableSchema).addReferenceSync(refSchema);
@@ -249,16 +241,9 @@ export class SchemaReadHelper<T = unknown> {
     for (const diagnostic of diagnostics) {
       errorMessage += `${diagnostic.code}: ${diagnostic.messageText}\r\n`;
     }
-
     if (errorMessage) {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `${errorMessage}`);
     }
-
-    refSchema = this._context.getSchemaSync(schemaKey, SchemaMatchType.LatestWriteCompatible);
-    if (undefined === refSchema)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
-
-    (this._schema as MutableSchema).updateReferenceSync(refSchema);
   }
 
   /**
