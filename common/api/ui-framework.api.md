@@ -7077,7 +7077,7 @@ export class ViewUtilities {
 }
 
 // @alpha
-export type VisibilityChangeListener = (nodeIds?: string[]) => void;
+export type VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map<string, VisibilityStatus>) => void;
 
 // @beta @deprecated
 export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {

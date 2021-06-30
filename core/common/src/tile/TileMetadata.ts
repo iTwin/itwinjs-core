@@ -65,6 +65,31 @@ export interface TileOptions {
 }
 
 /** @internal */
+export namespace TileOptions {
+  /** Given the string representation of an [[IModelTileTreeId]] and the contentId of a [Tile]($frontend) belonging to that [TileTree]($frontend),
+   * compute the [[TileOptions]] that were used to generate the Ids.
+   * @throws Error if `treeId` or `contentId` are not valid Ids.
+   * @note `treeId` and `contentId` are assumed to be valid Ids. They are not fully parsed and validated - only the information required by this function is extracted.
+   * @note `treeId` and `contentId` are assumed to have been produced for version 4 or later of the iMdl tile format.
+   */
+  export function fromTreeIdAndContentId(treeId: string, contentId: string): TileOptions {
+    const tree = treeFlagsAndFormatVersionFromId(treeId);
+    const contentFlags = contentFlagsFromId(contentId);
+
+    return {
+      maximumMajorTileFormatVersion: tree.version,
+      enableInstancing: 0 !== (contentFlags & ContentFlags.AllowInstancing),
+      enableImprovedElision: 0 !== (contentFlags & ContentFlags.ImprovedElision),
+      ignoreAreaPatterns: 0 !== (contentFlags & ContentFlags.IgnoreAreaPatterns),
+      enableExternalTextures: 0 !== (contentFlags & ContentFlags.ExternalTextures),
+      useProjectExtents: 0 !== (tree.flags & TreeFlags.UseProjectExtents),
+      disableMagnification: false,
+      alwaysSubdivideIncompleteTiles: false,
+    };
+  }
+}
+
+/** @internal */
 export const defaultTileOptions: TileOptions = Object.freeze({
   maximumMajorTileFormatVersion: CurrentImdlVersion.Major,
   enableInstancing: true,
@@ -75,6 +100,39 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   disableMagnification: false,
   alwaysSubdivideIncompleteTiles: false,
 });
+
+function contentFlagsFromId(id: string): ContentFlags {
+  if (0 === id.length || "-" !== id[0])
+    throw new Error("Invalid content Id");
+
+  // V4: -flags-d-i-j-k-m - version in tree Id
+  const end = id.indexOf("-", 1);
+  if (-1 !== end) {
+    const flags = Number.parseInt(id.substring(1, end), 16);
+    if (!Number.isNaN(flags))
+      return flags;
+  }
+
+  throw new Error("Invalid content Id");
+}
+
+function treeFlagsAndFormatVersionFromId(id: string): { flags: TreeFlags, version: number } {
+  if (0 === id.length)
+    throw new Error("Invalid tree Id");
+
+  let parts = id.split("-");
+  if (parts.length > 0) {
+    parts = parts[0].split("_");
+    if (parts.length === 2) {
+      const version = Number.parseInt(parts[0], 16);
+      const flags = Number.parseInt(parts[1], 16);
+      if (!Number.isNaN(version) || !Number.isNaN(flags))
+        return { version, flags };
+    }
+  }
+
+  throw new Error("Invalid tree Id");
+}
 
 /** @internal */
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number {

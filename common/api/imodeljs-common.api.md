@@ -3578,6 +3578,7 @@ export interface GraphicsRequestProps {
     readonly id: string;
     readonly location?: TransformProps;
     readonly omitEdges?: boolean;
+    readonly sectionCut?: string;
     readonly toleranceLog10: number;
     // @alpha
     readonly treeFlags?: TreeFlags;
@@ -8207,6 +8208,11 @@ export interface TileOptions {
     readonly maximumMajorTileFormatVersion: number;
     // (undocumented)
     readonly useProjectExtents: boolean;
+}
+
+// @internal (undocumented)
+export namespace TileOptions {
+    export function fromTreeIdAndContentId(treeId: string, contentId: string): TileOptions;
 }
 
 // @internal
