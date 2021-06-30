@@ -23,7 +23,6 @@
 
   // The input itself
   input {
-    @include iui-input;
     min-height: $uicore-component-height-normal;
     padding: $uicore-iui-input-padding;
     box-sizing:border-box;

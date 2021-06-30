@@ -27,8 +27,11 @@
     border: none;
     box-shadow: none;
     margin: 0;
-    padding-left: 0;
-    padding-right: 0;
+
+    &.iui-input {
+      padding-left: 0;
+      padding-right: 0;
+    }
 
     &:focus {
       outline: 0px;
