@@ -349,6 +349,7 @@ class RealityModelTileLoader extends RealityTileLoader {
   public get doDrapeBackgroundMap(): boolean { return this.tree.doDrapeBackgroundMap; }
 
   public get maxDepth(): number { return 32; }  // Can be removed when element tile selector is working.
+  public get minDepth(): number { return 0; }
   public get priority(): TileLoadPriority { return TileLoadPriority.Context; }
   public getBatchIdMap(): BatchedTileIdMap | undefined { return this._batchedIdMap; }
   public get clipLowResolutionTiles(): boolean { return true; }
