@@ -239,6 +239,7 @@ interface TableState {
   keyboardEditorCellKey?: string;
   // TODO: Enable, when table gets refactored
   // popup?: PropertyPopupState;
+  gridContainer: HTMLDivElement | null;
 }
 
 const initialState: TableState = {
@@ -250,6 +251,7 @@ const initialState: TableState = {
   menuVisible: false,
   menuX: 0,
   menuY: 0,
+  gridContainer: null,
 };
 
 interface CellKey {
@@ -428,6 +430,8 @@ export class Table extends React.Component<TableProps, TableState> {
 
   /** @internal */
   public componentDidMount() {
+    let gridContainer: HTMLDivElement | null = null;
+
     this._isMounted = true;
 
     // The previously used ReactResizeDetector, which does not work in popout/child windows, used deprecated React.findDomNode
@@ -435,11 +439,12 @@ export class Table extends React.Component<TableProps, TableState> {
     // same HTMLDivElement from grid as was used previously by ReactResizeDetector.
     if (this._gridRef.current) {
       const grid = this._gridRef.current as any;
-      // hack force the _gridContainerRef to hold the proper DOM node
-      (this._gridContainerRef as React.MutableRefObject<HTMLDivElement | null>).current = grid.getDataGridDOMNode();
+      gridContainer = grid.getDataGridDOMNode();
     }
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.update();
+    this.setState({ gridContainer }, () => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.update();
+    });
   }
 
   /** @internal */
@@ -1225,6 +1230,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _createRowRenderer = () => {
     return (props: { row: RowProps, [k: string]: React.ReactNode }) => {
+      // istanbul ignore next
       const renderRow = this.props.renderRow ? this.props.renderRow : this.renderRow;
       const { row: rowProps, ...reactDataGridRowProps } = props;
       if (this._tableSelectionTarget === TableSelectionTarget.Row) {
@@ -1701,7 +1707,7 @@ export class Table extends React.Component<TableProps, TableState> {
               onClose={this._hideContextMenu}
               onShowHideChange={this._handleShowHideChange} />
           }
-          <ElementResizeObserver watchedElement={this._gridContainerRef}
+          <ElementResizeObserver watchedElement={this.state.gridContainer}
             render={({ width, height }) => (
               <ReactDataGrid
                 ref={this._gridRef}

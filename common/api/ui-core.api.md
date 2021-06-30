@@ -691,7 +691,7 @@ export const DivWithOutsideClick: {
 
 // @beta
 export function ElementResizeObserver({ watchedElement, render }: {
-    watchedElement: React.RefObject<HTMLElement>;
+    watchedElement: HTMLElement | null;
     render: (props: RenderPropsArgs) => JSX.Element;
 }): JSX.Element;
 
@@ -2616,7 +2616,7 @@ export function useDisposable<TDisposable extends IDisposable>(createDisposable:
 export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void;
 
 // @internal
-export function useLayoutResizeObserver(ref: React.RefObject<HTMLElement>, onResize?: (width?: number, height?: number) => void): (number | undefined)[];
+export function useLayoutResizeObserver(inElement: HTMLElement | null, onResize?: (width?: number, height?: number) => void): (number | undefined)[];
 
 // @public
 export function useOnOutsideClick<T extends Element>(onOutsideClick?: () => void,

@@ -6,7 +6,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { act, renderHook } from "@testing-library/react-hooks";
 import * as ResizeObserverModule from "../../../ui-core/utils/hooks/ResizeObserverPolyfill";
-import { ElementResizeObserver, ResizableContainerObserver, useLayoutResizeObserver, useResizeObserver } from "../../../ui-core/utils/hooks/useResizeObserver";
+import { ElementResizeObserver, ResizableContainerObserver, useResizeObserver } from "../../../ui-core/utils/hooks/useResizeObserver";
 import { createDOMRect } from "../../Utils";
 import TestUtils from "../../TestUtils";
 import { render } from "@testing-library/react";
@@ -130,56 +130,60 @@ describe("useResizeObserver", () => {
 });
 
 describe("useLayoutResizeObserver", () => {
-  const Tester = () => {
-    const containerRef = React.useRef<HTMLDivElement>(null);
-    const [width, height] = useLayoutResizeObserver(containerRef);
+  const size_0_0 = createDOMRect({ width: 0, height: 0 });
+  const size_100_50 = createDOMRect({ width: 100, height: 50 });
+  const size_300_100 = createDOMRect({ width: 300, height: 100 });
+  let boundingClientRect = size_0_0;
+  stubRaf();
+  const sandbox = sinon.createSandbox();
+
+  const ResizableContainerObserverTester = () => {
+    // initial values are not used since size is faked below and value should come from initial layout in 'sizer' container
+    const [observedBounds, setObservedBounds] = React.useState({ width: 0, height: 0 });
+    const onResize = React.useCallback((width: number, height: number) => {
+      setObservedBounds({ width, height });
+    }, []);
+
     return (
-      <div data-testid="sizer" ref={containerRef} className="sizer">
-        <span data-testid="width">{width ?? 0}</span>
-        <span data-testid="height">{height ?? 0}</span>
+      <div data-testid="sizer" className="sizer">
+        <ResizableContainerObserver onResize={onResize}>
+          <span data-testid="width">{observedBounds.width}</span>
+          <span data-testid="height">{observedBounds.height}</span>
+        </ResizableContainerObserver>
       </div>
     );
   };
 
-  stubRaf();
-  const sandbox = sinon.createSandbox();
+  const ResizableContainerObserverNoChildren = () => {
+    // initial values are not used since size is faked below and value should come from initial layout in 'sizer' container
+    const [, setObservedBounds] = React.useState({ width: 0, height: 0 });
+    const onResize = React.useCallback((width: number, height: number) => {
+      setObservedBounds({ width, height });
+    }, []);
 
-  afterEach(() => {
-    sandbox.restore();
-  });
-
-  it("should call onResize (width and height)", async () => {
-    const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "ResizeObserver");
-    const wrapper = render(<Tester />);
-    expect(wrapper.getByTestId("width").textContent).to.eql("0");
-    expect(wrapper.getByTestId("height").textContent).to.eql("0");
-    const container = wrapper.getByTestId("sizer");
-    sinon.stub(container, "getBoundingClientRect").returns(createDOMRect({ width: 300, height: 100 }));
-    // Call the ResizeObserver callback.
-    resizeObserverSpy.firstCall.args[0]([{
-      contentRect: createDOMRect({ width: 300, height: 100 }), // not used - we call getBoundingClientRect in resize function
-      target: container,
-    }], resizeObserverSpy.firstCall.returnValue);
-    await TestUtils.flushAsyncOperations();
-    expect(wrapper.getByTestId("width").textContent).to.eql("300");
-    expect(wrapper.getByTestId("height").textContent).to.eql("100");
-    wrapper.unmount();
-  });
-});
-
-describe("ElementResizeObserver", () => {
-  stubRaf();
-  const sandbox = sinon.createSandbox();
-
-  afterEach(() => {
-    sandbox.restore();
-  });
+    return (
+      <div data-testid="sizer" className="sizer">
+        <ResizableContainerObserver onResize={onResize}>
+        </ResizableContainerObserver>
+      </div>
+    );
+  };
 
   const ElementResizeObserverTester = () => {
     const containerRef = React.useRef<HTMLDivElement>(null);
+    const [containerElement, setContainerElement] = React.useState<HTMLDivElement | null>(null);
+    const isMountedRef = React.useRef(false);
+
+    React.useEffect(() => {
+      if (!isMountedRef.current && containerRef.current) {
+        isMountedRef.current = true;
+        setContainerElement(containerRef.current);
+      }
+    }, []);
+
     return (
       <div data-testid="sizer" ref={containerRef} className="sizer">
-        <ElementResizeObserver watchedElement={containerRef} render=
+        <ElementResizeObserver watchedElement={containerElement} render=
           {({ width, height }) => (
             <>
               <span data-testid="width">{width ?? 0}</span>
@@ -191,72 +195,48 @@ describe("ElementResizeObserver", () => {
     );
   };
 
-  it("should call onResize (width and height)", async () => {
-    const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "ResizeObserver");
-    let isFirstCall = true;
+  beforeEach(() => {
+    boundingClientRect = size_0_0;
+
     sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
-      if (this.classList.contains("sizer")) {
-        if (isFirstCall) {
-          isFirstCall = false;
-          return createDOMRect({ width: 100, height: 50 });
-        }
-        return createDOMRect({ width: 300, height: 100 });
+      if (this.classList.contains("sizer") || this.classList.contains("uicore-resizable-container")) {
+        return boundingClientRect;
       }
       return createDOMRect();
     });
-
-    const wrapper = render(<ElementResizeObserverTester />);
-    expect(wrapper.getByTestId("width").textContent).to.eql("100");
-    expect(wrapper.getByTestId("height").textContent).to.eql("50");
-    const container = wrapper.getByTestId("sizer");
-    resizeObserverSpy.firstCall.args[0]([{
-      contentRect: createDOMRect({ width: 300, height: 100 }), // not used - we call getBoundingClientRect in resize function
-      target: container,
-    }], resizeObserverSpy.firstCall.returnValue);
-    await TestUtils.flushAsyncOperations();
-    expect(wrapper.getByTestId("width").textContent).to.eql("300");
-    expect(wrapper.getByTestId("height").textContent).to.eql("100");
-    wrapper.unmount();
   });
-});
-
-describe("ResizableContainerObserver", () => {
-  stubRaf();
-  const sandbox = sinon.createSandbox();
 
   afterEach(() => {
     sandbox.restore();
   });
 
-  const ResizableContainerObserverTester = () => {
-    // initial values are not used since size is faked below and value should come from initial layout in 'sizer' container
-    const [observedBounds, setObservedBounds] = React.useState({ width: 0, height: 0 });
-    const onResize = React.useCallback((width: number, height: number) => {
-      setObservedBounds({ width, height });
-    }, []);
-
-    return (
-      <div data-testid="sizer" className="sizer">
-        <ResizableContainerObserver onResize={onResize} >
-          <span data-testid="width">{observedBounds.width}</span>
-          <span data-testid="height">{observedBounds.height}</span>
-        </ResizableContainerObserver>
-      </div>
-    );
-  };
-
-  it("should call onResize (width and height)", async () => {
+  it("ElementResizeObserver - should call onResize (width and height)", async () => {
     const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "ResizeObserver");
-    let useFirstSize = true;
-    sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
-      if (this.classList.contains("sizer") || this.classList.contains("uicore-resizable-container")) {
-        if (useFirstSize) {
-          return createDOMRect({ width: 100, height: 50 });
-        }
-        return createDOMRect({ width: 100, height: 200 });
-      }
-      return createDOMRect();
-    });
+    boundingClientRect = size_100_50;
+
+    const wrapper = render(<ElementResizeObserverTester />);
+    await TestUtils.flushAsyncOperations();
+
+    expect(wrapper.getByTestId("width").textContent).to.eql("100");
+    expect(wrapper.getByTestId("height").textContent).to.eql("50");
+    const container = wrapper.getByTestId("sizer");
+
+    boundingClientRect = size_300_100;
+    // Call the ResizeObserver callback.
+    resizeObserverSpy.firstCall.args[0]([{
+      contentRect: createDOMRect({ width: 300, height: 100 }), // we ignore this in hook and just get size from getBoundingClientRect method.
+      target: container,
+    }], resizeObserverSpy.firstCall.returnValue);
+    await TestUtils.flushAsyncOperations();
+
+    expect(wrapper.getByTestId("width").textContent).to.eql("300");
+    expect(wrapper.getByTestId("height").textContent).to.eql("100");
+    wrapper.unmount();
+  });
+
+  it("ResizableContainerObserver - should call onResize (width and height)", async () => {
+    const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "ResizeObserver");
+    boundingClientRect = size_100_50;
 
     const wrapper = render(<ResizableContainerObserverTester />);
     await TestUtils.flushAsyncOperations();
@@ -267,27 +247,29 @@ describe("ResizableContainerObserver", () => {
     expect(container).to.not.be.null;
     await TestUtils.flushAsyncOperations();
 
+    boundingClientRect = size_300_100;
+    // Call the ResizeObserver callback.
     resizeObserverSpy.firstCall.args[0]([{
-      contentRect: createDOMRect({ width: 100, height: 50 }), // not used - we call getBoundingClientRect in resize function
+      contentRect: createDOMRect({ width: 300, height: 100 }), // we ignore this in hook and just get size from getBoundingClientRect method.
       target: container,
     }], resizeObserverSpy.firstCall.returnValue);
-
-    await TestUtils.flushAsyncOperations();
-    expect(wrapper.getByTestId("width").textContent).to.eql("100");
-    expect(wrapper.getByTestId("height").textContent).to.eql("50");
-
-    await TestUtils.flushAsyncOperations();
-    useFirstSize = false;
-    resizeObserverSpy.secondCall.args[0]([{
-      contentRect: createDOMRect({ width: 100, height: 200 }), // not used - we call getBoundingClientRect in resize function
-      target: container,
-    }], resizeObserverSpy.secondCall.returnValue);
     await TestUtils.flushAsyncOperations();
 
-    expect(wrapper.getByTestId("width").textContent).to.eql("100");
-    expect(wrapper.getByTestId("height").textContent).to.eql("200");
+    await TestUtils.flushAsyncOperations();
+    expect(wrapper.getByTestId("width").textContent).to.eql("300");
+    expect(wrapper.getByTestId("height").textContent).to.eql("100");
 
     wrapper.unmount();
   });
-});
 
+  it("ResizableContainerObserver - should call onResize (width and height)", async () => {
+    boundingClientRect = size_100_50;
+
+    const wrapper = render(<ResizableContainerObserverNoChildren />);
+    await TestUtils.flushAsyncOperations();
+
+    const container = wrapper.container.querySelector("div.uicore-resizable-container") as HTMLDivElement;
+    expect(container.style.display).to.be.eql("none");
+    wrapper.unmount();
+  });
+});

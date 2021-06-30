@@ -708,7 +708,7 @@ beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
-alpha;VisibilityChangeListener = (nodeIds?: string[]) => void
+alpha;VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map
 beta;VisibilityComponent 
 deprecated;VisibilityComponent 
 beta;VisibilityComponentConfig

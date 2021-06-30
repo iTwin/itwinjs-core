@@ -16,7 +16,6 @@ import { GetHandleProps, Handles, Rail, Slider, SliderItem, Ticks } from "react-
 import { ColorByName, ColorDef, HSVColor } from "@bentley/imodeljs-common";
 import { RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import { BodyText, CommonProps, ElementResizeObserver, Popup } from "@bentley/ui-core";
-import { Tooltip } from "@itwin/itwinui-react";
 import { UiComponents } from "../../ui-components/UiComponents";
 import { HueSlider } from "../color/HueSlider";
 import { SaturationPicker } from "../color/SaturationPicker";
@@ -26,6 +25,7 @@ import { PlayButton } from "./PlayerButton";
 import { SpeedTimeline } from "./SpeedTimeline";
 import { adjustDateToTimezone, DatePicker } from "../datepicker/DatePicker";
 import { TimeField, TimeSpec } from "../datepicker/TimeField";
+import { Tooltip } from "@itwin/itwinui-react";
 
 // cSpell:ignore millisec solarsettings showticks shadowcolor solartimeline datepicker millisecs
 
@@ -86,6 +86,7 @@ interface TooltipRailProps {
 interface TooltipRailState {
   value: number | null;
   percent: number | null;
+  tooltipTarget: HTMLDivElement | undefined;
 }
 
 class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
@@ -100,6 +101,7 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     this.state = {
       value: null,
       percent: null,
+      tooltipTarget: undefined,
     };
   }
 
@@ -120,6 +122,12 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     } else {
       this.setState(getEventData(e));
     }
+  };
+
+  private _handleTooltipTarget = (element: HTMLDivElement | null) => {
+    this.setState({
+      tooltipTarget: element || undefined,
+    });
   };
 
   public render() {
@@ -186,8 +194,19 @@ interface TimelineProps extends CommonProps {
   onUpdate?: (values: ReadonlyArray<number>) => void;
 }
 
-class Timeline extends React.PureComponent<TimelineProps> {
+interface TimelineState {
+  sunriseTooltipTarget: HTMLSpanElement | undefined;
+  sunsetTooltipTarget: HTMLSpanElement | undefined;
+  timelineElement: HTMLDivElement | null;
+}
+
+class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
   private _timelineRef = React.createRef<HTMLDivElement>();
+  public readonly state = {
+    sunriseTooltipTarget: undefined,
+    sunsetTooltipTarget: undefined,
+    timelineElement: null,
+  };
 
   private _getTickValues = (width: number) => {
     const tickValues: number[] = [];
@@ -205,6 +224,23 @@ class Timeline extends React.PureComponent<TimelineProps> {
     return tickValues;
   };
 
+  private _handleSunriseTooltipTarget = (element: HTMLSpanElement | null) => {
+    this.setState({
+      sunriseTooltipTarget: element || undefined,
+    });
+  };
+
+  private _handleSunsetTooltipTarget = (element: HTMLSpanElement | null) => {
+    this.setState({
+      sunsetTooltipTarget: element || undefined,
+    });
+  };
+
+  /** @internal */
+  public componentDidMount() {
+    this.setState({ timelineElement: this._timelineRef.current });
+  }
+
   public render() {
     const { formatTick, formatTime, onChange, onUpdate, dayStartMs, sunSetOffsetMs, sunRiseOffsetMs, currentTimeOffsetMs } = this.props;
     const domain = [0, millisecPerDay];
@@ -219,7 +255,7 @@ class Timeline extends React.PureComponent<TimelineProps> {
           </span>
         </Tooltip>
         <div ref={this._timelineRef} className="ui-component-solar-slider-sizer">
-          <ElementResizeObserver watchedElement={this._timelineRef}
+          <ElementResizeObserver watchedElement={this.state.timelineElement}
             render={({ width }) => (
               <Slider
                 mode={(curr, next) => {
@@ -644,7 +680,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
       width: `100%`,
       height: `100%`,
     };
-    const expandMinimizeLabel = isExpanded ? this._minimizeLabel : this._expandLabel;
+    const expandMinimizeLabel = isExpanded ? this._expandLabel : this._minimizeLabel;
 
     return (
       <div className={classnames("solar-timeline-wrapper", isExpanded && "expanded")} >
