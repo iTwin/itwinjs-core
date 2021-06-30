@@ -80,7 +80,31 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
   public get size(): number { return this._keys.length; }
 
   /** Returns an iterator over the key-value pairs in the Dictionary suitable for use in `for-of` loops. Entries are returned in sorted order by key. */
-  public [Symbol.iterator](): Iterator<DictionaryEntry<K, V>> { return new DictionaryIterator<K, V>(this._keys, this._values); }
+  public [Symbol.iterator](): Iterator<DictionaryEntry<K, V>> {
+    return new DictionaryIterator<K, V>(this._keys, this._values);
+  }
+
+  public keys(): Iterable<K> {
+    function * iterator(dict: Dictionary<K, V>) {
+      for (const entry of dict)
+        yield entry.key;
+    }
+
+    return {
+      [Symbol.iterator]: () => iterator(this),
+    };
+  }
+
+  public values(): Iterable<V> {
+    function * iterator(dict: Dictionary<K, V>) {
+      for (const entry of dict)
+        yield entry.value;
+    }
+
+    return {
+      [Symbol.iterator]: () => iterator(this),
+    };
+  }
 
   /** Removes all entries from this dictionary */
   public clear(): void {
