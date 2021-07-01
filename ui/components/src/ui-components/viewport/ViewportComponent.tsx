@@ -80,11 +80,18 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
 
   private _handleDisconnectFromViewManager = () => {
     const screenViewport = this._vp;
+    const parentDiv = this._viewportDiv.current;
+
     if (screenViewport) {
       const viewManager = IModelApp.viewManager;
       viewManager.dropViewport(screenViewport, true);
       screenViewport.onViewChanged.removeListener(this._handleViewChanged);
       this._vp = undefined;
+    }
+    // istanbul ignore else
+    if (parentDiv) {
+      const parentWindow = parentDiv.ownerDocument.defaultView as Window;
+      parentWindow.removeEventListener("beforeunload", this._handleDisconnectFromViewManager, false);
     }
   };
 
