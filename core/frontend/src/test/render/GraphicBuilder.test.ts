@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform,
+  Cone, Point3d, PolyfaceBuilder, Range3d, Sphere, StrokeOptions, Transform,
 } from "@bentley/geometry-core";
 import { ColorByName, QParams3d, QPoint3dList, RenderMode } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicBuilderOptions, GraphicType } from "../../render/GraphicBuilder";
@@ -221,6 +221,64 @@ describe("GraphicBuilder", () => {
 
       test(false);
       test(true);
+    });
+
+    it("should produce edges", () => {
+      function expectEdges(expected: "silhouette" | "segment" | "both" | "none", addToGraphic: (builder: GraphicBuilder) => void): void {
+        let expectSilhouettes = false;
+        let expectSegments = false;
+        switch (expected) {
+          case "both":
+            expectSilhouettes = expectSegments = true;
+            break;
+          case "silhouette":
+            expectSilhouettes = true;
+            break;
+          case "segment":
+            expectSegments = true;
+            break;
+        }
+
+        const verifyParams = (params: MeshParams) => {
+          expect(undefined === params.edges).to.equal("none" === expected);
+          expect(params.edges?.polylines).to.be.undefined;
+          if (params.edges) {
+            expect(undefined !== params.edges.segments).to.equal(expectSegments);
+            expect(undefined !== params.edges.silhouettes).to.equal(expectSilhouettes);
+          }
+        };
+
+        expect(viewport.viewFlags.edgesRequired()).to.be.true;
+
+        overrideCreateMesh(verifyParams);
+        expect(createMeshInvoked).to.be.false;
+
+        const builder = IModelApp.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.Scene, viewport);
+        expect(builder.wantEdges).to.be.true;
+        addToGraphic(builder);
+
+        builder.finish();
+        expect(createMeshInvoked).to.be.true;
+      }
+
+      expectEdges("silhouette", (builder) => {
+        builder.addSolidPrimitive(Sphere.createCenterRadius(new Point3d(0, 0, 0), 1));
+      });
+
+      expectEdges("segment", (builder) => {
+        builder.addShape([new Point3d(0, 0, 0), new Point3d(0, 1, 0), new Point3d(0, 1, 1), new Point3d(0, 0, 0)]);
+      });
+
+      expectEdges("both", (builder) => {
+        const cone = Cone.createAxisPoints(new Point3d(0, 0, 0), new Point3d(0, 0, 1), 0.5, 0.25, true)!;
+        expect(cone).not.to.be.undefined;
+        builder.addSolidPrimitive(cone);
+      });
+
+      expectEdges("none", (builder) => {
+        builder.wantEdges = false;
+        builder.addSolidPrimitive(Sphere.createCenterRadius(new Point3d(0, 0, 0), 1));
+      });
     });
   });
 });
