@@ -154,13 +154,7 @@ describe("useLayoutResizeObserver", () => {
     );
   };
 
-  const ResizableContainerObserverNoChildren = () => {
-    // initial values are not used since size is faked below and value should come from initial layout in 'sizer' container
-    const [, setObservedBounds] = React.useState({ width: 0, height: 0 });
-    const onResize = React.useCallback((width: number, height: number) => {
-      setObservedBounds({ width, height });
-    }, []);
-
+  const ResizableContainerObserverNoChildren = ({ onResize }: { onResize: (width: number, height: number) => void }) => {
     return (
       <div data-testid="sizer" className="sizer">
         <ResizableContainerObserver onResize={onResize}>
@@ -263,13 +257,34 @@ describe("useLayoutResizeObserver", () => {
   });
 
   it("ResizableContainerObserver - should call onResize (width and height)", async () => {
+    const resizeObserverSpy = sandbox.spy(ResizeObserverModule, "ResizeObserver");
     boundingClientRect = size_100_50;
+    let currentWidth = 0;
+    let currentHeight = 0;
+    const onResize = (width: number, height: number) => {
+      currentWidth = width;
+      currentHeight = height;
+    };
 
-    const wrapper = render(<ResizableContainerObserverNoChildren />);
+    const wrapper = render(<ResizableContainerObserverNoChildren onResize={onResize} />);
     await TestUtils.flushAsyncOperations();
 
     const container = wrapper.container.querySelector("div.uicore-resizable-container") as HTMLDivElement;
     expect(container.style.display).to.be.eql("none");
+    expect(currentWidth).to.eql(100);
+    expect(currentHeight).to.eql(50);
+
+    boundingClientRect = size_300_100;
+    // Call the ResizeObserver callback.
+    resizeObserverSpy.firstCall.args[0]([{
+      contentRect: createDOMRect({ width: 300, height: 100 }), // we ignore this in hook and just get size from getBoundingClientRect method.
+      target: container.parentElement,
+    }], resizeObserverSpy.firstCall.returnValue);
+    await TestUtils.flushAsyncOperations();
+
+    expect(currentWidth).to.eql(300);
+    expect(currentHeight).to.eql(100);
+
     wrapper.unmount();
   });
 });
