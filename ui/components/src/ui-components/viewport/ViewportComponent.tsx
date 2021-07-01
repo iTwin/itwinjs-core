@@ -78,6 +78,16 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     };
   }
 
+  private _handleDisconnectFromViewManager = () => {
+    const screenViewport = this._vp;
+    if (screenViewport) {
+      const viewManager = IModelApp.viewManager;
+      viewManager.dropViewport(screenViewport, true);
+      screenViewport.onViewChanged.removeListener(this._handleViewChanged);
+      this._vp = undefined;
+    }
+  }
+
   public async componentDidMount() {
     this._mounted = true;
 
@@ -98,9 +108,14 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       return;
 
     const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
-    const screenViewport = this.props.screenViewportOverride ? this.props.screenViewportOverride : /* istanbul ignore next */ ScreenViewport;
-    this._vp = screenViewport.create(this._viewportDiv.current, viewState);
+    const screenViewportFactory = this.props.screenViewportOverride ? this.props.screenViewportOverride : /* istanbul ignore next */ ScreenViewport;
+    const parentDiv = this._viewportDiv.current;
+    const screenViewport = screenViewportFactory.create(parentDiv, viewState);
+    this._vp = screenViewport;
     viewManager.addViewport(this._vp);
+
+    const parentWindow = parentDiv.ownerDocument.defaultView as Window;
+    parentWindow.addEventListener("beforeunload", this._handleDisconnectFromViewManager, false);
 
     ViewportComponentEvents.initialize();
     ViewportComponentEvents.onDrawingViewportChangeEvent.addListener(this._handleDrawingViewportChangeEvent);
@@ -118,14 +133,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
 
   public componentWillUnmount() {
     this._mounted = false;
-
-    /* istanbul ignore else */
-    if (this._vp) {
-      const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
-      viewManager.dropViewport(this._vp, true);
-      this._vp.onViewChanged.removeListener(this._handleViewChanged);
-    }
-
+    this._handleDisconnectFromViewManager();
     ViewportComponentEvents.onDrawingViewportChangeEvent.removeListener(this._handleDrawingViewportChangeEvent);
     ViewportComponentEvents.onCubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent);
     ViewportComponentEvents.onStandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent);
