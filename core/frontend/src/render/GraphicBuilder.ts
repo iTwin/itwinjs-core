@@ -136,10 +136,10 @@ export interface GraphicBuilderOptions {
   applyAspectRatioSkew?: boolean;
 
   /** Controls whether normals are generated for surfaces. Normals allow 3d geometry to receive lighting; without them the geometry will be unaffected by lighting.
-   * By default, normals are generated only for graphics of type [[GraphicType.Scene]].
+   * By default, normals are generated only for graphics of type [[GraphicType.Scene]]; or for any type of graphic if [[GraphicBuilder.wantEdges]] is true, because 
+   * normals are required to prevent z-fighting between surfaces and their edges. This default can be overridden by explicitly specifying `true` or `false`.
    * @note Currently, no API exists to generate normals for a [Polyface]($geometry-core) that lacks them. Until such an API becomes available, if you want a lit Polyface, you
    * must both set `wantNormals` to `true` **and** supply a Polyface with precomputed normals to `addPolyface`.
-   * @note Normals are required for proper edge display, so they are always produced if [[generateEdges]] is `true`.
    * @see [[GraphicType]] for a description of whether and how different types of graphics are affected by lighting.
    */
   wantNormals?: boolean;
@@ -253,7 +253,7 @@ export abstract class GraphicBuilder {
    * @see [[GraphicBuilderOptions.wantNormals]] for more details.
    */
   public get wantNormals(): boolean {
-    return this.wantEdges || true === this._options.wantNormals || this.type === GraphicType.Scene;
+    return this._options.wantNormals ?? (this.wantEdges || this.type === GraphicType.Scene);
   }
   public set wantNormals(want: boolean) {
     this._options.wantNormals = want;

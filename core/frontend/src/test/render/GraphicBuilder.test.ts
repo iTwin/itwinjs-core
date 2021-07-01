@@ -6,8 +6,8 @@ import { expect } from "chai";
 import {
   Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform,
 } from "@bentley/geometry-core";
-import { ColorByName, QParams3d, QPoint3dList } from "@bentley/imodeljs-common";
-import { GraphicType } from "../../render/GraphicBuilder";
+import { ColorByName, QParams3d, QPoint3dList, RenderMode } from "@bentley/imodeljs-common";
+import { GraphicBuilder, GraphicBuilderOptions, GraphicType } from "../../render/GraphicBuilder";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
@@ -15,29 +15,105 @@ import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
 import { SpatialViewState } from "../../SpatialViewState";
 import { MeshArgs, MeshParams, SurfaceType } from "../../render-primitives";
-import {MeshGraphic} from "../../webgl";
+import { MeshGraphic } from "../../render/webgl/Mesh";
 import { InstancedGraphicParams } from "../../render/InstancedGraphicParams";
 
 describe("GraphicBuilder", () => {
   let imodel: IModelConnection;
   let viewport: ScreenViewport;
 
+  const viewDiv = document.createElement("div");
+  viewDiv.style.width = viewDiv.style.height = "1000px";
+  document.body.appendChild(viewDiv);
+
   before(async () => {
     await IModelApp.startup();
     imodel = createBlankConnection();
+  });
 
-    const viewDiv = document.createElement("div");
-    viewDiv.style.width = viewDiv.style.height = "1000px";
-    document.body.appendChild(viewDiv);
-
+  beforeEach(() => {
     const spatialView = SpatialViewState.createBlank(imodel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
     viewport = ScreenViewport.create(viewDiv, spatialView);
   });
 
+  afterEach(() => viewport.dispose());
+
   after(async () => {
-    viewport.dispose();
     await imodel.close();
     await IModelApp.shutdown();
+  });
+
+  type BuilderOpts = Omit<GraphicBuilderOptions, "viewport" | "type">;
+
+  function makeBuilder(type: GraphicType, options: BuilderOpts): GraphicBuilder {
+    return IModelApp.renderSystem.createGraphic({ type, viewport, ...options });
+  }
+
+  const graphicTypes = [GraphicType.ViewBackground, GraphicType.Scene, GraphicType.WorldDecoration, GraphicType.WorldOverlay, GraphicType.ViewOverlay];
+
+  describe("generates normals", () => {
+    function expectNormals(type: GraphicType, options: BuilderOpts, expected: boolean): void {
+      const builder = makeBuilder(type, options);
+      expect(builder.wantNormals).to.equal(expected);
+    }
+
+    it("for scene graphics only by default", () => {
+      for (const type of graphicTypes)
+        expectNormals(type, {}, type === GraphicType.Scene);
+    });
+
+    it("always if generating edges", () => {
+      expect(viewport.viewFlags.edgesRequired()).to.be.true;
+      for (const type of graphicTypes) {
+        expectNormals(type, { generateEdges: true }, true);
+        expectNormals(type, { generateEdges: false }, type === GraphicType.Scene);
+        expectNormals(type, { generateEdges: true, wantNormals: false }, false);
+      }
+    });
+
+    it("always if explicitly requested", () => {
+      for (const type of graphicTypes)
+        expectNormals(type, { wantNormals: true }, true);
+    });
+
+    it("never if explicitly specified", () => {
+      for (const type of graphicTypes)
+        expectNormals(type, { wantNormals: false }, false);
+    });
+  });
+
+  describe("generates edges", () => {
+    function expectEdges(type: GraphicType, options: BuilderOpts, expected: boolean): void {
+      const builder = makeBuilder(type, options);
+      expect(builder.wantEdges).to.equal(expected);
+    }
+
+    it("by default only for scene graphics, if view flags require them", () => {
+      expect(viewport.viewFlags.edgesRequired()).to.be.true;
+      for (const type of graphicTypes)
+        expectEdges(type, {}, type === GraphicType.Scene);
+    });
+
+    it("never, if view flags do not require them", () => {
+      const vf = viewport.viewFlags.clone();
+      vf.renderMode = RenderMode.SmoothShade;
+      vf.visibleEdges = false;
+      viewport.viewFlags = vf;
+      expect(viewport.viewFlags.edgesRequired()).to.be.false;
+
+      for (const type of graphicTypes)
+        expectEdges(type, {}, false);
+    });
+
+    it("always if explicitly requested", () => {
+      for (const type of graphicTypes)
+        expectEdges(type, { generateEdges: true }, true);
+    });
+
+    it("never if explicitly specified", () => {
+      for (const type of graphicTypes)
+        expectEdges(type, { generateEdges: false }, false);
+    });
   });
 
   describe("createTriMesh", () => {
