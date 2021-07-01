@@ -1121,6 +1121,8 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     // (undocumented)
     get maximumZoomLevel(): number;
     // (undocumented)
+    get minimumZoomLevel(): number;
+    // (undocumented)
     serviceJson: any;
     // (undocumented)
     protected _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void): void;
@@ -5637,6 +5639,8 @@ export class MapTileLoader extends RealityTileLoader {
     // (undocumented)
     get maxDepth(): number;
     // (undocumented)
+    get minDepth(): number;
+    // (undocumented)
     protected _modelId: Id64String;
     // (undocumented)
     get priority(): TileLoadPriority;
@@ -7665,6 +7669,8 @@ export abstract class RealityTileLoader {
     // (undocumented)
     abstract get maxDepth(): number;
     // (undocumented)
+    abstract get minDepth(): number;
+    // (undocumented)
     get parentsAndChildrenExclusive(): boolean;
     // (undocumented)
     readonly preloadRealityParentDepth: number;
@@ -7715,6 +7721,8 @@ export class RealityTileTree extends TileTree {
     protected logTiles(label: string, tiles: IterableIterator<Tile>): void;
     // (undocumented)
     get maxDepth(): number;
+    // (undocumented)
+    get minDepth(): number;
     // (undocumented)
     get parentsAndChildrenExclusive(): boolean;
     // (undocumented)
