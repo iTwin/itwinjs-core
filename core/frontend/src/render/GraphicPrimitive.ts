@@ -126,8 +126,8 @@ export interface GraphicPolyface {
  * @public
  */
 export interface GraphicSolidPrimitive {
-  type: "solidPrimitive",
-  solidPrimitive: SolidPrimitive,
+  type: "solidPrimitive";
+  solidPrimitive: SolidPrimitive;
 }
 
 /** Union type representing a graphic primitive that can be supplied to [[GraphicBuilder.addPrimitive]].

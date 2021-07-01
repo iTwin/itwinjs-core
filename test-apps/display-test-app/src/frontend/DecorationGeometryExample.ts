@@ -57,9 +57,9 @@ class GeometryDecorator {
   }
 
   private addBox(cx: number): void {
-  const box = Box.createRange(new Range3d(cx, 0, 0, cx + 1, 1, 1), true);
-  if (box)
-    this.addDecorator((builder) => builder.addSolidPrimitive(box));
+    const box = Box.createRange(new Range3d(cx, 0, 0, cx + 1, 1, 1), true);
+    if (box)
+      this.addDecorator((builder) => builder.addSolidPrimitive(box));
   }
 
   private addSphere(cx: number): void {
