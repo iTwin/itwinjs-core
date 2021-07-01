@@ -383,7 +383,7 @@ function buildMeshEdges(mesh: Mesh, polyface: MeshBuilderPolyface): void {
   }
 
   // Now populate the MeshEdges.
-  // ###TODO edge chains
+  // ###TODO edge chains?
   if (undefined === mesh.edges)
     mesh.edges = new MeshEdges();
 
