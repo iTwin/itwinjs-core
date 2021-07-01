@@ -28,8 +28,7 @@ class GeometryDecorator {
 
     const colors = [ColorDef.blue, ColorDef.red, ColorDef.green];
     let colorIndex = 0;
-    // ###TODO If I add them to a branch, they are not pickable - figure out why and fix it.
-    // const branch = new GraphicBranch();
+    const branch = new GraphicBranch();
     for (const [key, value] of this._decorators) {
       const builder = context.createGraphicBuilder(GraphicType.Scene, undefined, key);
       builder.wantNormals = true;
@@ -40,12 +39,11 @@ class GeometryDecorator {
 
       builder.setSymbology(color, color, 1);
       value(builder);
-      // branch.add(builder.finish());
-      context.addDecoration(GraphicType.Scene, builder.finish());
+      branch.add(builder.finish());
     }
 
-    // const graphic = context.createGraphicBranch(branch, Transform.createIdentity());
-    // context.addDecoration(GraphicType.Scene, graphic);
+    const graphic = context.createGraphicBranch(branch, Transform.createIdentity());
+    context.addDecoration(GraphicType.Scene, graphic);
   }
 
   private addShape(ox: number): void {
