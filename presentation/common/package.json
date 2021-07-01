@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-common",
-  "version": "2.19.0-dev.1",
+  "version": "2.19.0-dev.2",
   "description": "Common pieces for iModel.js presentation packages",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
@@ -43,9 +43,9 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.1",
-    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.1",
-    "@bentley/imodeljs-quantity": "workspace:^2.19.0-dev.1"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.2",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.2",
+    "@bentley/imodeljs-quantity": "workspace:^2.19.0-dev.2"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
