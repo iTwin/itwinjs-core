@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { IndexedPolyface, Loop, Path, Point3d, Range3d, Transform } from "@bentley/geometry-core";
+import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@bentley/geometry-core";
 import { IModelConnection } from "../../../IModelConnection";
 import { GraphicBranch } from "../../GraphicBranch";
 import { RenderGraphic } from "../../RenderGraphic";
@@ -103,6 +103,15 @@ export class GeometryAccumulator {
 
     this.calculateTransform(transform, range);
     return this.addGeometry(Geometry.createFromPolyface(ipf, transform, range, displayParams));
+  }
+
+  public addSolidPrimitive(primitive: SolidPrimitive, displayParams: DisplayParams, transform: Transform): boolean {
+    const range = this.getPrimitiveRange(primitive);
+    if (!range)
+      return false;
+
+    this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromSolidPrimitive(primitive, transform, range, displayParams));
   }
 
   public addGeometry(geom: Geometry): boolean { this.geometries.push(geom); return true; }

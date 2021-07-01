@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Arc3d, Loop, Path, Point2d, Point3d, Polyface } from "@bentley/geometry-core";
+import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@bentley/geometry-core";
 
 /** Base interface for a 2d [[GraphicPrimitive]] that can be supplied to [[GraphicBuilder.addPrimitive]].
  * @public
@@ -121,6 +121,15 @@ export interface GraphicPolyface {
   filled?: boolean;
 }
 
+/** A [[GraphicPrimitive]] representing a [SolidPrimitive]($geometry-core) to be supplied to [[GraphicBuilder.addPrimitive]].
+ * @see [[GraphicBuilder.addSolidPrimitive]].
+ * @public
+ */
+export interface GraphicSolidPrimitive {
+  type: "solidPrimitive",
+  solidPrimitive: SolidPrimitive,
+}
+
 /** Union type representing a graphic primitive that can be supplied to [[GraphicBuilder.addPrimitive]].
  * Each primitive type corresponds to one of GraphicBuilder's `addXXX` methods. This is useful when the precise type of
  * geometry is not known at the point at which it is added to the builder. As a simple example:
@@ -142,4 +151,4 @@ export interface GraphicPolyface {
  * ```
  * @public
  */
-export type GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface;
+export type GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface | GraphicSolidPrimitive;

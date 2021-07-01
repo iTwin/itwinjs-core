@@ -7,7 +7,9 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@bentley/geometry-core";
+import {
+  AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
+} from "@bentley/geometry-core";
 import { ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
@@ -393,6 +395,9 @@ export abstract class GraphicBuilder {
    */
   public abstract addPolyface(meshData: Polyface, filled: boolean): void;
 
+  /** Append a solid primitive to the builder. */
+  public abstract addSolidPrimitive(solidPrimitive: SolidPrimitive): void;
+
   /** Append any primitive to the builder.
    * @param primitive The graphic primitive to append.
    */
@@ -430,6 +435,9 @@ export abstract class GraphicBuilder {
         break;
       case "polyface":
         this.addPolyface(primitive.polyface, true === primitive.filled);
+        break;
+      case "solidPrimitive":
+        this.addSolidPrimitive(primitive.solidPrimitive);
         break;
     }
   }

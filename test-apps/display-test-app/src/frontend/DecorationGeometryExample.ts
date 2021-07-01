@@ -17,7 +17,7 @@ class GeometryDecorator {
     this._iModel = viewport.iModel;
 
     // this.addSphere(0);
-    // this.addBox(2);
+    this.addBox(2);
     // this.addCone(4);
     this.addShape(6);
   }
@@ -46,10 +46,11 @@ class GeometryDecorator {
     this._decorators.set(this._iModel.transientIds.next, (builder) => builder.addShape(points));
   }
 
-  // private addBox(cx: number): void {
-  //   const box = Box.createRange(new Range3d(cx, 0, 0, cx + 1, 1, 1));
-  //   this._decorators.set(this._iModel.transientIds.next, (builder) => builder.addSolidPrimitive(
-  // }
+  private addBox(cx: number): void {
+  const box = Box.createRange(new Range3d(cx, 0, 0, cx + 1, 1, 1), true);
+  if (box)
+    this._decorators.set(this._iModel.transientIds.next, (builder) => builder.addSolidPrimitive(box));
+  }
 }
 
 export function openDecorationGeometryExample(viewer: Viewer): void {
