@@ -77,6 +77,7 @@ export class MeshBuilder {
    * @param props the properties required for this operation
    */
   public addFromPolyface(polyface: IndexedPolyface, props: MeshBuilder.PolyfaceOptions): void {
+    this.beginPolyface(polyface, props.edgeOptions);
     const visitor = polyface.createVisitor();
 
     while (visitor.moveToNextFacet()) {
@@ -254,7 +255,9 @@ export namespace MeshBuilder { // eslint-disable-line no-redeclare
     includeParams: boolean;
     fillColor: number;
     mappedTexture?: TextureMapping;
+    edgeOptions: MeshEdgeCreationOptions;
   }
+
   export interface PolyfaceVisitorOptions extends PolyfaceOptions {
     triangleCount: number;
     haveParam: boolean;

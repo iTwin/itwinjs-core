@@ -134,6 +134,12 @@ export interface GraphicBuilderOptions {
    * @see [[GraphicType]] for a description of whether and how different types of graphics are affected by lighting.
    */
   wantNormals?: boolean;
+  /** Controls whether edges are generated for surfaces.
+   * Edges are only displayed if [ViewFlags.renderMode]($common) is not [RenderMode.SmoothShade]($common) or [ViewFlags.visibleEdges]($common) is `true`.
+   * Since all decoration graphics except [[GraphicType.Scene]] are drawn in smooth shaded mode with no visible edges, by default edges are only produced for scene graphics.
+   * That default can be overridden by explicitly specifying `true` or `false` here.
+   */
+  generateEdges?: boolean;
 }
 
 /** @internal */
@@ -237,6 +243,16 @@ export abstract class GraphicBuilder {
   }
   public set wantNormals(want: boolean) {
     this._options.wantNormals = want;
+  }
+
+  /** Controls whether edges are generated for surfaces.
+   * @see [[GraphicBuilderOptions.generateEdges]] for more details.
+   */
+  public get wantEdges(): boolean {
+    return this._options.generateEdges ?? this.type === GraphicType.Scene;
+  }
+  public set wantEdges(want: boolean) {
+    this._options.generateEdges = want;
   }
 
   /** Whether the builder's geometry is defined in [[CoordSystem.View]] coordinates.

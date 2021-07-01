@@ -123,12 +123,11 @@ export class GeometryAccumulator {
    */
   public toMeshBuilderMap(options: GeometryOptions, tolerance: number, pickableId?: string): MeshBuilderMap {
     const { geometries } = this; // declare internal dependencies
-    const { wantSurfacesOnly, wantPreserveOrder } = options;
 
     const range = geometries.computeRange();
     const is2d = !range.isNull && range.isAlmostZeroZ;
 
-    return MeshBuilderMap.createFromGeometries(geometries, tolerance, range, is2d, wantSurfacesOnly, wantPreserveOrder, pickableId);
+    return MeshBuilderMap.createFromGeometries(geometries, tolerance, range, is2d, options, pickableId);
   }
 
   public toMeshes(options: GeometryOptions, tolerance: number, pickableId?: string): MeshList {
