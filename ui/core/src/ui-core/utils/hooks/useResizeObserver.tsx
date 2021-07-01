@@ -184,7 +184,8 @@ export function useLayoutResizeObserver(inElement: HTMLElement | null, onResize?
 }
 
 /** Prop the ElementResizeObserver sends to the render function.
- *  @beta */
+ *  @public
+ */
 export interface RenderPropsArgs {
   width?: number;
   height?: number;
@@ -192,28 +193,34 @@ export interface RenderPropsArgs {
 
 /** ElementResizeObserver provides functionality similar to ReactResizeDetector when a render function is specified. This implementation properly handles
  * observing element in pop-out/child windows.
- *  @beta
+ *  @public
  */
 export function ElementResizeObserver({ watchedElement, render }: { watchedElement: HTMLElement | null, render: (props: RenderPropsArgs) => JSX.Element }) {
   const [width, height] = useLayoutResizeObserver(watchedElement);
   return render({ width, height });
 }
 
-/** ResizableContainerObserver is a component that provides the same functionality as the ReactResizeDetector option to call a function when
- * the observed element is resized. This implementation properly handles observing element in pop-out/child windows.
- * @beta */
+/** ResizableContainerObserver is a component that provides the functionality similar to the ReactResizeDetector option that call a function when
+ * the observed element is resized. This implementation properly handles observing element in pop-out/child windows. If children nodes are defined then
+ * the div added by the component is considered the container whose size will be observed. If no children are provided then the component will report
+ * size changes from its parent container.
+ * @public
+ */
 export function ResizableContainerObserver({ onResize, children }: { onResize: (width: number, height: number) => void, children?: React.ReactNode }) {
   const containerRef = React.useRef<HTMLDivElement>(null);  // set to non-zero when requestAnimationFrame processing is active
-  const [containerElement, setContainerElement] = React.useState<HTMLDivElement | null>(null);
+  const [containerElement, setContainerElement] = React.useState<HTMLElement | null>(null);
   const isMountedRef = React.useRef(false);
+  const hasChildren = React.Children.count(children) !== 0;
 
+  // if no children are specified then monitor size of parent element.
   React.useEffect(() => {
     // istanbul ignore next
     if (!isMountedRef.current && containerRef.current) {
       isMountedRef.current = true;
-      setContainerElement(containerRef.current);
+      const hasParent = !!containerRef.current.parentElement;
+      setContainerElement(hasChildren && hasParent ? containerRef.current : containerRef.current.parentElement);
     }
-  }, []);
+  }, [hasChildren]);
 
   const processResize = React.useCallback((width?: number, height?: number) => {
     // istanbul ignore next
@@ -221,7 +228,6 @@ export function ResizableContainerObserver({ onResize, children }: { onResize: (
   }, [onResize]);
 
   useLayoutResizeObserver(containerElement, processResize);
-  const hasChildren = React.Children.count(children) !== 0;
   const style: React.CSSProperties = hasChildren ? { width: "100%", height: "100%" } : { display: "none" };
 
   return (
