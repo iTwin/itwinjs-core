@@ -150,6 +150,7 @@ export interface GraphicBuilderOptions {
    * only if [ViewFlags.edgesRequired]($common) is true for the [[viewport]].
    * That default can be overridden by explicitly specifying `true` or `false`. This can be useful for non-scene decorations contained in a [[GraphicBranch]] that applies [ViewFlagOverrides]($common)
    * that change the edge display settings; or for scene decorations that might be cached for reuse after the viewport's edge settings are changed.
+   * @note Edges will tend to z-fight with their surfaces unless the graphic is [[pickable]].
    */
   generateEdges?: boolean;
 }
