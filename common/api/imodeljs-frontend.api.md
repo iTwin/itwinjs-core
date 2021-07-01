@@ -2659,7 +2659,7 @@ export class ElementAgenda {
     get count(): number;
     readonly elements: Id64Array;
     find(id: Id64String): boolean;
-    getSource(): ModifyElementSource.Unknown | ModifyElementSource;
+    getSource(): ModifyElementSource;
     readonly groupMarks: GroupMark[];
     has(id: string): boolean;
     // (undocumented)

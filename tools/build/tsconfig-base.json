@@ -15,7 +15,6 @@
     "declaration": true,
     "strict": true,
     "noImplicitAny": true,
-    "noImplicitOverride": true,
     "strictNullChecks": true,
     "noImplicitThis": true,
     "alwaysStrict": true,
