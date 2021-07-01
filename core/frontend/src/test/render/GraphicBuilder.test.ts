@@ -7,11 +7,16 @@ import {
   Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform,
 } from "@bentley/geometry-core";
 import { ColorByName, QParams3d, QPoint3dList } from "@bentley/imodeljs-common";
-import {
-  GraphicType, IModelApp, IModelConnection, InstancedGraphicParams, RenderSystem, ScreenViewport, SnapshotConnection, SpatialViewState, StandardViewId,
-} from "@bentley/imodeljs-frontend";
-import { MeshArgs, MeshParams, SurfaceType} from "@bentley/imodeljs-frontend/lib/render-primitives";
-import { MeshGraphic } from "@bentley/imodeljs-frontend/lib/webgl";
+import { GraphicType } from "../../render/GraphicBuilder";
+import { IModelApp } from "../../IModelApp";
+import { IModelConnection } from "../../IModelConnection";
+import { createBlankConnection } from "../createBlankConnection";
+import { RenderSystem } from "../../render/RenderSystem";
+import { ScreenViewport } from "../../Viewport";
+import { SpatialViewState } from "../../SpatialViewState";
+import { MeshArgs, MeshParams, SurfaceType } from "../../render-primitives";
+import {MeshGraphic} from "../../webgl";
+import { InstancedGraphicParams } from "../../render/InstancedGraphicParams";
 
 describe("GraphicBuilder", () => {
   let imodel: IModelConnection;
@@ -19,15 +24,13 @@ describe("GraphicBuilder", () => {
 
   before(async () => {
     await IModelApp.startup();
-    imodel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
+    imodel = createBlankConnection();
 
     const viewDiv = document.createElement("div");
     viewDiv.style.width = viewDiv.style.height = "1000px";
     document.body.appendChild(viewDiv);
 
-    const spatialView = await imodel.views.load("0x34") as SpatialViewState;
-    spatialView.setStandardRotation(StandardViewId.RightIso);
-
+    const spatialView = SpatialViewState.createBlank(imodel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
     viewport = ScreenViewport.create(viewDiv, spatialView);
   });
 
@@ -113,7 +116,7 @@ describe("GraphicBuilder", () => {
         const pfBuilder = PolyfaceBuilder.create(options);
         pfBuilder.addTriangleFacet(createTriangle());
 
-        const gfBuilder = IModelApp.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.Scene, viewport);
+        const gfBuilder = IModelApp.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.WorldDecoration, viewport);
         gfBuilder.wantNormals = requestNormals; // should have no effect - normals come from polyface only, we don't generate them.
         gfBuilder.addPolyface(pfBuilder.claimPolyface(), false);
         const gf = gfBuilder.finish();
@@ -132,7 +135,7 @@ describe("GraphicBuilder", () => {
         injectNormalsCheck(wantNormals);
         expect(createMeshInvoked).to.be.false;
 
-        const builder = IModelApp.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.Scene, viewport);
+        const builder = IModelApp.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.WorldDecoration, viewport);
         builder.wantNormals = wantNormals;
         builder.addShape(createTriangle());
         const gf = builder.finish();
@@ -142,10 +145,6 @@ describe("GraphicBuilder", () => {
 
       test(false);
       test(true);
-    });
-
-    it("should not generate normals for 2d views", () => {
-      // ###TODO: Currently we *always* generate normals.
     });
   });
 });

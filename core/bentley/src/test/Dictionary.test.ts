@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { compareStrings, Dictionary, SortedArray } from "../bentleyjs-core";
+import { compareStrings, Dictionary } from "../bentleyjs-core";
 import { expectSorted, Id } from "./SortedArray.test";
 
 describe("Dictionary", () => {
