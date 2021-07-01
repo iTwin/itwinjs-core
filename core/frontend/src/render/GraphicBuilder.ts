@@ -136,8 +136,11 @@ export interface GraphicBuilderOptions {
   wantNormals?: boolean;
   /** Controls whether edges are generated for surfaces.
    * Edges are only displayed if [ViewFlags.renderMode]($common) is not [RenderMode.SmoothShade]($common) or [ViewFlags.visibleEdges]($common) is `true`.
-   * Since all decoration graphics except [[GraphicType.Scene]] are drawn in smooth shaded mode with no visible edges, by default edges are only produced for scene graphics.
-   * That default can be overridden by explicitly specifying `true` or `false` here.
+   * Since all decoration graphics except [[GraphicType.Scene]] are drawn in smooth shaded mode with no visible edges, by default edges are only produced for scene graphics, and
+   * only if [ViewFlags.edgesRequired]($common) is true for the [[viewport]].
+   * That default can be overridden by explicitly specifying `true` or `false`. This can be useful for non-scene decorations contained in a [[GraphicBranch]] that applies [ViewFlagOverrides]($common)
+   * that change the edge display settings; and for scene decorations that might be reused after the viewport's edge settings are changed - e.g., by a [[Decorator]] for
+   * which [[ViewportDecorator.useCachedDecorations]] returns `true`.
    */
   generateEdges?: boolean;
 }

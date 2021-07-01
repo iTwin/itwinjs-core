@@ -359,12 +359,9 @@ function buildMeshEdges(mesh: Mesh, polyface: MeshBuilderPolyface): void {
       const polyfaceEdge = new MeshEdge(polyfaceIndices[j], polyfaceIndices[jNext]);
       const edgeInfo = new EdgeInfo(triangle.isEdgeVisible(j), triangleNormalIndex, meshEdge, polyfacePoints[j], polyfacePoints[jNext]);
 
-      // ###TODO Dictionary.insertOrFind()
-      const existingEdgeInfo = edgeMap.get(polyfaceEdge);
-      if (existingEdgeInfo)
-        existingEdgeInfo.addFace(edgeInfo.visible, triangleNormalIndex);
-      else
-        edgeMap.set(polyfaceEdge, edgeInfo);
+      const findOrInsert = edgeMap.findOrInsert(polyfaceEdge, edgeInfo);
+      if (!findOrInsert.inserted)
+        findOrInsert.value.addFace(edgeInfo.visible, triangleNormalIndex);
     }
 
     const normal = Vector3d.createCrossProductToPoints(polyfacePoints[0], polyfacePoints[1], polyfacePoints[2]);

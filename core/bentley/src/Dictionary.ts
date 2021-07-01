@@ -155,13 +155,24 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
    * @returns true if the new entry was inserted, false if an entry with an equivalent key already exists.
    */
   public insert(key: K, value: V): boolean {
-    const bound = this.lowerBound(key);
-    if (!bound.equal) {
-      this._keys.splice(bound.index, 0, this._cloneKey(key));
-      this._values.splice(bound.index, 0, this._cloneValue(value));
-    }
+    const result = this.findOrInsert(key, value);
+    return result.inserted;
+  }
 
-    return !bound.equal;
+  /** Obtains the value associated with the specified key, or inserts it if the specified key does not yet exist.
+   * @param key The key to search for.
+   * @param value The value to associate with `key` if `key` does not yet exist in the dictionary.
+   * @returns The found or inserted value and a flag indicating whether the new value was inserted.
+   */
+  public findOrInsert(key: K, value: V): { value: V, inserted: boolean } {
+    const bound = this.lowerBound(key);
+    if (bound.equal)
+      return { value: this._values[bound.index], inserted: false };
+
+    value = this._cloneValue(value);
+    this._keys.splice(bound.index, 0, this._cloneKey(key));
+    this._values.splice(bound.index, 0, value);
+    return { value, inserted: true };
   }
 
   /**
