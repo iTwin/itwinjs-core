@@ -7,7 +7,7 @@
  */
 
 import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
-import { Matrix3d, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { Matrix3d, Point3d, Range3d, Transform, Vector3d, XYZProps } from "@bentley/geometry-core";
 import { Cartographic, ColorDef, Frustum, FrustumPlanes, GeoCoordStatus, ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { BackgroundMapGeometry } from "../BackgroundMapGeometry";
 import { GeoConverter } from "../GeoServices";
@@ -113,11 +113,14 @@ const scratchFrustum = new Frustum();
 const scratchFrustumPlanes = new FrustumPlanes();
 const scratchPoint = Point3d.createZero();
 const scratchCarto = new Cartographic();
-const cornerAxes = [0, 1, 2, 4];
-const scratchCorners = Range3d.createNull().corners();
-const scratchAxes = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 const scratchTransform = Transform.createIdentity();
-const scratchRange = Range3d.createNull();
+const scratchRange = Range3d.createNull(), scratchIntersectRange = Range3d.createNull();
+
+interface ChildReprojection {
+  child: RealityTile;
+  ecefCenter: Point3d;
+  dbCenter: Point3d;
+}
 
 /** @internal */
 export interface RealityTileTreeParams extends TileTreeParams {
@@ -150,7 +153,7 @@ export class RealityTileTree extends TileTree {
     this._gcsConverter = params.gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
     if (params.rootToEcef) {
       this._rootToEcef = params.rootToEcef;
-      const dbToRoot = this.iModelTransform;
+      const dbToRoot = this.iModelTransform.inverse()!;
       const dbToEcef = this._rootToEcef.multiplyTransformTransform(dbToRoot);
       this._ecefToDb = dbToEcef.inverse();
     }
@@ -284,53 +287,51 @@ export class RealityTileTree extends TileTree {
     return Transform.createRefs(origin, matrix);
   }
 
-  public reprojectAndResolveChildren(parent: Tile, children: Tile[], resolve: (children: Tile[] | undefined) => void): void {
-    if (!this.doReprojectChildren(parent)) {
-      resolve(children);
-      return;
-    }
-    const requestProps = [];
-
-    const tileToUnprojected = new Array<Transform>();
+  private async calculateChildReprojections(reprojections: ChildReprojection[]): Promise<void> {
     const rootToEcef = this._rootToEcef!;   // Tested for undefined in doReprojectChildren
-    const ecefToDb = this._ecefToDb!;       // Tested for undefined in doReprojectChildren
-    const rootToDb = this.iModelTransform;
-    const dbToRoot = rootToDb.inverse()!;
-    const dbToEcef = ecefToDb.inverse()!;
-    const ecefTileRange = dbToEcef.multiplyRange(this.iModel.projectExtents);
-    for (const child of children) {
-      let axisIndex = 0;
-      const realityChild = child as RealityTile;
-      const corners = realityChild.rangeCorners ? realityChild.rangeCorners : realityChild.range.corners(scratchCorners);
+    const requestProps = [];
+    const requestFromEcef = (childToEcef: Transform, childPoint: Point3d) => {
+      const ecefPoint = childToEcef.multiplyPoint3d(childPoint, scratchPoint);
+      const carto = Cartographic.fromEcef(ecefPoint, scratchCarto);
+      assert(carto !== undefined);
+      return { x: carto.longitudeDegrees, y: carto.latitudeDegrees, z: carto.height };
+    };
+
+    for (const reprojection of reprojections) {
+      const realityChild = reprojection.child;
       const childToEcef = realityChild.transformToRoot ? rootToEcef.multiplyTransformTransform(realityChild.transformToRoot, scratchTransform) : rootToEcef;
-      const childToDb = realityChild.transformToRoot ? rootToDb.multiplyTransformTransform(realityChild.transformToRoot, scratchTransform) : rootToDb;
-      for (const cornerAxis of cornerAxes) {
-        const corner = corners[cornerAxis];
-        const ecefPoint = childToEcef.multiplyPoint3d(corner, scratchPoint);
-        const carto = Cartographic.fromEcef(ecefPoint, scratchCarto);
-        childToDb.multiplyPoint3d(corner, scratchAxes[axisIndex++]);
-        assert(carto !== undefined);
-        requestProps.push({ x: carto.longitudeDegrees, y: carto.latitudeDegrees, z: carto.height });
-      }
-      tileToUnprojected.push(this.transformFromAxes(scratchAxes));
+
+      const ecefOrigin = reprojection.ecefCenter;
+      requestProps.push(requestFromEcef(childToEcef, ecefOrigin));
+      requestProps.push(requestFromEcef(childToEcef,ecefOrigin.plusXYZ(1, 0, 0)));
+      requestProps.push(requestFromEcef(childToEcef,ecefOrigin.plusXYZ(0, 1, 0)));
+      requestProps.push(requestFromEcef(childToEcef,ecefOrigin.plusXYZ(0, 0, 1)));
     }
+
     this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(requestProps).then((response) => {
-      if (response.iModelCoords.length === 4 * children.length) {
-        let responseIndex = 0, outIndex = 0, childIndex = 0;
-        for (; childIndex < children.length; childIndex++) {
-          for (outIndex = 0; outIndex < 4; ) {
-            const iModelCoord = response.iModelCoords[responseIndex++];
-            if (iModelCoord.s === GeoCoordStatus.Success) {
-              scratchAxes[outIndex++].setFromJSON(iModelCoord.p);
-            } else
-              break;
-          }
-          if (outIndex === 4) {
-            const realityChild = children[childIndex] as RealityTile;
-            const tileToReprojected = this.transformFromAxes(scratchAxes);
-            const unprojectedToTile = tileToUnprojected[childIndex].inverse();
-            if (unprojectedToTile) {
-              const dbReprojection = tileToReprojected.multiplyTransformTransform (unprojectedToTile);
+      if (response.iModelCoords.length !== 4 * reprojections.length) {
+        return;
+      }
+      let responseIndex = 0;
+      const reprojectedCoords = response.iModelCoords;
+      const rootToDb = this.iModelTransform;
+      const dbToRoot = rootToDb.inverse()!;
+
+      for (const reprojection of reprojections) {
+        let i = 0;
+        for (; i < 4; i++)
+          if (GeoCoordStatus.Success !== reprojectedCoords[responseIndex + i].s)
+            break;
+        if (i === 4) {  /** All reprojections successful */
+          const reprojectedOrigin = Point3d.fromJSON(reprojectedCoords[responseIndex++].p);
+          const xVector = Vector3d.createStartEnd(reprojectedOrigin, Point3d.fromJSON((reprojectedCoords[responseIndex++].p)));
+          const yVector = Vector3d.createStartEnd(reprojectedOrigin, Point3d.fromJSON((reprojectedCoords[responseIndex++].p)));
+          const zVector = Vector3d.createStartEnd(reprojectedOrigin, Point3d.fromJSON((reprojectedCoords[responseIndex++].p)));
+          const matrix = Matrix3d.createColumns(xVector, yVector, zVector);
+          if (matrix !== undefined) {
+            const dbReprojection = Transform.createMatrixPickupPutdown(matrix, reprojection.dbCenter, reprojectedOrigin);
+            if (dbReprojection) {
+              const realityChild = reprojection.child;
               const rootReprojection = dbToRoot.multiplyTransformTransform(dbReprojection, scratchTransform).multiplyTransformTransform(rootToDb, scratchTransform);
               if (realityChild.transformToRoot)
                 realityChild.transformToRoot = rootReprojection.multiplyTransformTransform(realityChild.transformToRoot);
@@ -340,10 +341,82 @@ export class RealityTileTree extends TileTree {
           }
         }
       }
+    }).catch(() => { });
+  }
+
+  public reprojectAndResolveChildren(parent: Tile, children: Tile[], resolve: (children: Tile[] | undefined) => void): void {
+    if (!this.doReprojectChildren(parent)) {
       resolve(children);
-    }).catch(() => {
-      resolve(children);    // Error occured in reprojection - just resolve with unprojected corners.
-    });
+      return;
+    }
+
+    const ecefToDb = this._ecefToDb!;       // Tested for undefined in doReprojectChildren
+    const rootToDb = this.iModelTransform;
+    const dbToEcef = ecefToDb.inverse()!;
+    const projectRange = this.iModel.projectExtents;
+    const reprojectChildren = new Array<ChildReprojection>();
+    for (const child of children) {
+      const realityChild = child as RealityTile;
+      const childRange  = realityChild.rangeCorners ? Range3d.createTransformedArray(rootToDb, realityChild.rangeCorners) : rootToDb.multiplyRange(realityChild.contentRange, scratchRange);
+      const intersectRange = projectRange.intersect(childRange, scratchIntersectRange);
+      if (!intersectRange.isNull) {
+        const dbCenter = intersectRange.center;
+        const ecefCenter = dbToEcef.multiplyPoint3d(dbCenter);
+        reprojectChildren.push({child: realityChild, ecefCenter, dbCenter});
+      }
+    }
+    if (reprojectChildren.length === 0)
+      resolve(children);
+    else {
+      const requestProps = new Array<XYZProps>();
+      const pushRequestFromEcef = (ecefPoint: Point3d) => {
+        const carto = Cartographic.fromEcef(ecefPoint, scratchCarto);
+        if (carto)
+          requestProps.push({ x: carto.longitudeDegrees, y: carto.latitudeDegrees, z: carto.height });
+      };
+
+      for (const reprojection of reprojectChildren) {
+        const ecefOrigin = reprojection.ecefCenter;
+        pushRequestFromEcef(ecefOrigin);
+        for (let i = 0; i < 3; i++)
+          pushRequestFromEcef(ecefOrigin.plus(dbToEcef.matrix.getColumn(i)));
+      }
+
+      if (requestProps.length !== 4 * reprojectChildren.length)
+        resolve(children);
+      else {
+        this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(requestProps).then((response) => {
+          let responseIndex = 0;
+          const reprojectedCoords = response.iModelCoords;
+          const dbToRoot = rootToDb.inverse()!;
+
+          for (const reprojection of reprojectChildren) {
+            if (reprojectedCoords.every((coord) => coord.s === GeoCoordStatus.Success)) {
+              const reprojectedOrigin = Point3d.fromJSON(reprojectedCoords[responseIndex++].p);
+              const xVector = Vector3d.createStartEnd(reprojectedOrigin, Point3d.fromJSON((reprojectedCoords[responseIndex++].p)));
+              const yVector = Vector3d.createStartEnd(reprojectedOrigin, Point3d.fromJSON((reprojectedCoords[responseIndex++].p)));
+              const zVector = Vector3d.createStartEnd(reprojectedOrigin, Point3d.fromJSON((reprojectedCoords[responseIndex++].p)));
+              const matrix = Matrix3d.createColumns(xVector, yVector, zVector);
+              if (matrix !== undefined) {
+                const dbReprojection = Transform.createMatrixPickupPutdown(matrix, reprojection.dbCenter, reprojectedOrigin);
+                if (dbReprojection) {
+                  const realityChild = reprojection.child;
+                  const rootReprojection = dbToRoot.multiplyTransformTransform(dbReprojection).multiplyTransformTransform(rootToDb);
+                  if (realityChild.transformToRoot)
+                    realityChild.transformToRoot = rootReprojection.multiplyTransformTransform(realityChild.transformToRoot);
+                  else
+                    realityChild.transformToRoot = rootReprojection.clone();
+                }
+              }
+            }
+          }
+
+          resolve(children);
+        }).catch(() => {
+          resolve(children);    // Error occured in reprojection - just resolve with unprojected corners.
+        });
+      }
+    }
   }
 
   public getBaseRealityDepth(_sceneContext: SceneContext) { return -1; }
