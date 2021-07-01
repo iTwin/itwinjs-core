@@ -31,7 +31,6 @@ class GeometryDecorator {
     const branch = new GraphicBranch();
     for (const [key, value] of this._decorators) {
       const builder = context.createGraphicBuilder(GraphicType.Scene, undefined, key);
-      builder.wantNormals = true;
 
       const color = colors[colorIndex++];
       if (colorIndex >= colors.length)

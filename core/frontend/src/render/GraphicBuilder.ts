@@ -113,12 +113,16 @@ export interface PickableGraphicOptions extends BatchOptions {
 export interface GraphicBuilderOptions {
   /** The viewport in which the resultant [[RenderGraphic]] is to be drawn, used for calculating the graphic's level of detail. */
   viewport: Viewport;
+
   /** The type of graphic to produce. */
   type: GraphicType;
+
   /** The local-to-world transform in which the builder's geometry is to be defined - by default, an identity transform. */
   placement?: Transform;
+
   /** If the graphic is to be pickable, specifies the pickable Id and other options. */
   pickable?: PickableGraphicOptions;
+
   /** If true, the order in which geometry is added to the builder is preserved.
    * This is useful for overlay and background graphics because they draw without using the depth buffer. For example, to draw an overlay containing a red shape with a white outline,
    * you would add the shape to the GraphicBuilder first, followed by the outline, to ensure the outline draws "in front of" the shape.
@@ -127,22 +131,25 @@ export interface GraphicBuilderOptions {
    * For overlay and background graphics that do not need to draw in any particular order, the performance penalty can be eliminated by setting this to `false`.
    */
   preserveOrder?: boolean;
+
   /** If true, [[ViewState.getAspectRatioSkew]] will be taken into account when computing the level of detail for the produced graphics. */
   applyAspectRatioSkew?: boolean;
+
   /** Controls whether normals are generated for surfaces. Normals allow 3d geometry to receive lighting; without them the geometry will be unaffected by lighting.
-   * By default, normals are not generated.
+   * By default, normals are generated only for graphics of type [[GraphicType.Scene]].
    * @note Currently, no API exists to generate normals for a [Polyface]($geometry-core) that lacks them. Until such an API becomes available, if you want a lit Polyface, you
    * must both set `wantNormals` to `true` **and** supply a Polyface with precomputed normals to `addPolyface`.
+   * @note Normals are required for proper edge display, so they are always produced if [[generateEdges]] is `true`.
    * @see [[GraphicType]] for a description of whether and how different types of graphics are affected by lighting.
    */
   wantNormals?: boolean;
+
   /** Controls whether edges are generated for surfaces.
    * Edges are only displayed if [ViewFlags.renderMode]($common) is not [RenderMode.SmoothShade]($common) or [ViewFlags.visibleEdges]($common) is `true`.
    * Since all decoration graphics except [[GraphicType.Scene]] are drawn in smooth shaded mode with no visible edges, by default edges are only produced for scene graphics, and
    * only if [ViewFlags.edgesRequired]($common) is true for the [[viewport]].
    * That default can be overridden by explicitly specifying `true` or `false`. This can be useful for non-scene decorations contained in a [[GraphicBranch]] that applies [ViewFlagOverrides]($common)
-   * that change the edge display settings; and for scene decorations that might be reused after the viewport's edge settings are changed - e.g., by a [[Decorator]] for
-   * which [[ViewportDecorator.useCachedDecorations]] returns `true`.
+   * that change the edge display settings; or for scene decorations that might be cached for reuse after the viewport's edge settings are changed.
    */
   generateEdges?: boolean;
 }
@@ -241,10 +248,11 @@ export abstract class GraphicBuilder {
   }
 
   /** Controls whether normals are generated for surfaces.
+   * @note Normals are required for proper edge display, so they are always produced if [[wantEdges]] is `true`.
    * @see [[GraphicBuilderOptions.wantNormals]] for more details.
    */
   public get wantNormals(): boolean {
-    return true === this._options.wantNormals;
+    return this.wantEdges || true === this._options.wantNormals || this.type === GraphicType.Scene;
   }
   public set wantNormals(want: boolean) {
     this._options.wantNormals = want;
@@ -254,7 +262,7 @@ export abstract class GraphicBuilder {
    * @see [[GraphicBuilderOptions.generateEdges]] for more details.
    */
   public get wantEdges(): boolean {
-    return this._options.generateEdges ?? this.type === GraphicType.Scene;
+    return this._options.generateEdges ?? (this.type === GraphicType.Scene && this.viewport.viewFlags.edgesRequired());
   }
   public set wantEdges(want: boolean) {
     this._options.generateEdges = want;
