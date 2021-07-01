@@ -86,7 +86,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       screenViewport.onViewChanged.removeListener(this._handleViewChanged);
       this._vp = undefined;
     }
-  }
+  };
 
   public async componentDidMount() {
     this._mounted = true;
