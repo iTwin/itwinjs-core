@@ -84,6 +84,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
     return new DictionaryIterator<K, V>(this._keys, this._values);
   }
 
+  /** Provides iteration over the keys in this Dictionary, in sorted order. */
   public keys(): Iterable<K> {
     function * iterator(dict: Dictionary<K, V>) {
       for (const entry of dict)
@@ -95,6 +96,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
     };
   }
 
+  /** Provides iteration over the values in this Dictionary, in sorted order by the corresponding keys. */
   public values(): Iterable<V> {
     function * iterator(dict: Dictionary<K, V>) {
       for (const entry of dict)
@@ -171,7 +173,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
 
     value = this._cloneValue(value);
     this._keys.splice(bound.index, 0, this._cloneKey(key));
-    this._values.splice(bound.index, 0, value);
+    this._values.splice(bound.index, 0, this._cloneValue(value));
     return { value, inserted: true };
   }
 
