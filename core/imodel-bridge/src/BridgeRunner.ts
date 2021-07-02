@@ -619,9 +619,9 @@ export async function retryLoop(atomicOp: () => Promise<void>): Promise<void> {
       } else {
         throw err;
       }
-      continue;
     }
     await new Promise(resolve => setTimeout(resolve, 10 * 1000)); // 10 seconds buffer
     break;
   }
 }
+
