@@ -3,18 +3,16 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DbOpcode, DbResult, GuidString, Id64, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
-import { Matrix3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { DbOpcode, DbResult, GuidString, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { CodeState, HubCode, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
-import { Camera, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementProps, IModel, IModelError, RequestNewBriefcaseProps, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { CodeScopeSpec, CodeSpec, IModel, IModelError, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { WsgError } from "@bentley/itwin-client";
 import { assert, expect } from "chai";
 import * as semver from "semver";
 import { LockScope } from "../../BackendHubAccess";
 import { IModelHubBackend } from "../../IModelHubBackend";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DictionaryModel, DisplayStyle3d, Element, IModelHost, IModelJsFs, LockProps,
-  ModelSelector, SpatialCategory, SpatialViewDefinition, SqliteStatement, SqliteValue, SqliteValueType,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, LockProps, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType, Timer } from "../IModelTestUtils";
@@ -1071,70 +1069,4 @@ describe("IModelWriteTest (#integration)", () => {
 
     await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, contextId: projectId, iModelId });
   });
-
-  it("create SpatialViewDefinition and throw errors on bad input (#integration)", async () => {
-    const requestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
-
-    // Recreate the iModel
-    const iModelName = "CreateViewDefinitionTest";
-    let iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext, contextId: testContextId, iModelName });
-    if (iModelId)
-      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: testContextId, iModelId });
-    iModelId = await BriefcaseManager.create(requestContext, testContextId, iModelName, { rootSubject: { name: "defaultRoot" } });
-
-    // Basic setup
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testContextId, iModelId });
-    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-
-    const { modelId, spatialCategoryId } = await createNewModelAndCategory(requestContext, iModel);
-    const displayStyleId = DisplayStyle3d.insert(iModel, IModel.dictionaryId, "default", { backgroundColor: ColorDef.fromString("rgb(255,0,0)") });
-    const modelSelectorId = ModelSelector.insert(iModel, IModel.dictionaryId, "default", [modelId]);
-    const categorySelectorId = CategorySelector.insert(iModel, IModel.dictionaryId, "default", [spatialCategoryId]);
-    await iModel.concurrencyControl.request(requestContext);
-    iModel.saveChanges("Basic setup");
-
-    const standardView = StandardViewIndex.Iso;
-    const rotation = Matrix3d.createStandardWorldToView(standardView);
-    const angles = YawPitchRollAngles.createFromMatrix3d(rotation);
-    const rotationTransform = Transform.createOriginAndMatrix(undefined, rotation);
-    const range = new Range3d(1, 1, 1, 8, 8, 8);
-    const rotatedRange = rotationTransform.multiplyRange(range);
-    const basicProps = {
-      code: Code.createEmpty(),
-      model: IModel.dictionaryId,
-      classFullName: "BisCore:SpatialViewDefinition",
-      cameraOn: false,
-      origin: rotation.multiplyTransposeXYZ(rotatedRange.low.x, rotatedRange.low.y, rotatedRange.low.z),
-      extents: rotatedRange.diagonal(),
-      angles,
-      camera: new Camera(),
-    };
-
-    // Bad way to create - error checks
-    assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, categorySelectorId } as ElementProps), IModelError); // Missing displayStyleId
-    assert.throws(() => iModel.elements.createElement({ ...basicProps, categorySelectorId, displayStyleId } as ElementProps), IModelError); // Missing modelSelectorId
-    assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, displayStyleId } as ElementProps), IModelError); // Missing categorySelectorId
-    // Uncomment after the fixes are made in native code
-    // assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), IModelError); // Bad displayStyleId
-    // assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId: modelId, displayStyleId, categorySelectorId } as ElementProps), IModelError); // Bad modelSelectorId
-    // assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), IModelError); // Bad categorySelectorId
-
-    // Better way to create and insert
-    const props: SpatialViewDefinitionProps = { ...basicProps, modelSelectorId, categorySelectorId, displayStyleId };
-    const viewDefinition = iModel.elements.createElement<SpatialViewDefinition>(props);
-    let viewDefinitionId = iModel.elements.insertElement(viewDefinition);
-    assert.isNotEmpty(viewDefinitionId);
-    assert.isTrue(Id64.isValid(viewDefinitionId));
-
-    // Best way to create and insert
-    viewDefinitionId = SpatialViewDefinition.insertWithCamera(iModel, IModel.dictionaryId, "default", modelSelectorId, categorySelectorId, displayStyleId, iModel.projectExtents);
-    iModel.views.setDefaultViewId(viewDefinitionId);
-
-    await iModel.concurrencyControl.request(requestContext);
-    iModel.saveChanges("Added default category");
-    iModel.close();
-
-    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: testContextId, iModelId });
-  });
-
 });
