@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+import { BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 import { LogLevel } from "@bentley/bentleyjs-core";
 import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
@@ -63,6 +64,7 @@ export class Settings {
   public gprid?: string;
   public logLevel?: number;
   public users: TestUserCredentials[] = [];
+  public clientConfiguration?: BackendAuthorizationClientConfiguration;
 
   public iModels: IModelData[] = [];
   public get iModel(): IModelData { return this.iModels[0]; }
@@ -189,6 +191,15 @@ export class Settings {
       email: process.env.USER_WITH_ACCESS_USERNAME || "",
       password: process.env.USER_WITH_ACCESS_PASSWORD || "",
     });
+
+    // Get client configuration
+    if (undefined !== process.env.CLIENT_WITH_ACCESS_ID && undefined !== process.env.CLIENT_WITH_ACCESS_SECRET && undefined !== process.env.CLIENT_WITH_ACCESS_SCOPES) {
+      this.clientConfiguration = {
+        clientId: process.env.CLIENT_WITH_ACCESS_ID,
+        clientSecret: process.env.CLIENT_WITH_ACCESS_SECRET,
+        scope: process.env.CLIENT_WITH_ACCESS_SCOPES,
+      };
+    }
   }
 
   public toString(): string {

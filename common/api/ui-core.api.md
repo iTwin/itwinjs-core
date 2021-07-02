@@ -684,9 +684,9 @@ export const DivWithOutsideClick: {
     contextType?: React.Context<any> | undefined;
 };
 
-// @beta
+// @public
 export function ElementResizeObserver({ watchedElement, render }: {
-    watchedElement: React.RefObject<HTMLElement>;
+    watchedElement: HTMLElement | null;
     render: (props: RenderPropsArgs) => JSX.Element;
 }): JSX.Element;
 
@@ -890,10 +890,10 @@ export function getBestBWContrastColor(hexColor: string): "black" | "white";
 // @internal (undocumented)
 export function getButtonTypeClassName(buttonType?: ButtonType): string;
 
-// @internal
+// @public
 export function getCssVariable(variableName: string, htmlElement?: HTMLElement): string;
 
-// @internal
+// @public
 export function getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number;
 
 // @internal
@@ -1469,7 +1469,7 @@ export enum Orientation {
     Vertical = 1
 }
 
-// @internal (undocumented)
+// @public (undocumented)
 export type OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent;
 
 // @internal
@@ -1855,7 +1855,7 @@ export interface RectangleProps {
     readonly top: number;
 }
 
-// @beta
+// @public
 export interface RenderPropsArgs {
     // (undocumented)
     height?: number;
@@ -1863,7 +1863,7 @@ export interface RenderPropsArgs {
     width?: number;
 }
 
-// @beta
+// @public
 export function ResizableContainerObserver({ onResize, children }: {
     onResize: (width: number, height: number) => void;
     children?: React.ReactNode;
@@ -2597,9 +2597,9 @@ export function useDisposable<TDisposable extends IDisposable>(createDisposable:
 export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void;
 
 // @internal
-export function useLayoutResizeObserver(ref: React.RefObject<HTMLElement>, onResize?: (width?: number, height?: number) => void): (number | undefined)[];
+export function useLayoutResizeObserver(inElement: HTMLElement | null, onResize?: (width?: number, height?: number) => void): (number | undefined)[];
 
-// @internal
+// @public
 export function useOnOutsideClick<T extends Element>(onOutsideClick?: () => void,
 outsideEventPredicate?: (e: OutsideClickEvent) => boolean): React.RefObject<T>;
 

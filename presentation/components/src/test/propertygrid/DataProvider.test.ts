@@ -10,7 +10,7 @@ import { BeEvent, using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat,
+  applyOptionalPrefix, ArrayTypeDescription, CategoryDescription, Content, ContentFlags, Field, Item, Property, PropertyValueFormat,
   RelationshipMeaning, StructFieldMemberDescription, StructTypeDescription, TypeDescription, ValuesDictionary,
 } from "@bentley/presentation-common";
 import {
@@ -23,7 +23,6 @@ import { createRandomId } from "@bentley/presentation-common/lib/test/_helpers/r
 import { FavoritePropertiesManager, FavoritePropertiesScope, Presentation, PresentationManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory } from "@bentley/ui-components";
-import { applyOptionalPrefix } from "../../presentation-components/common/ContentBuilder";
 import { CacheInvalidationProps } from "../../presentation-components/common/ContentDataProvider";
 import { initializeLocalization } from "../../presentation-components/common/Utils";
 import { FAVORITES_CATEGORY_NAME } from "../../presentation-components/favorite-properties/DataProvider";
@@ -319,6 +318,24 @@ describe("PropertyDataProvider", () => {
 
         beforeEach(() => {
           setup();
+        });
+
+        it("assigns category renderer", async () => {
+          const field = createPrimitiveField({
+            category: createTestCategoryDescription({
+              renderer: { name: "test" },
+            }),
+          });
+          const descriptor = createTestContentDescriptor({ fields: [field] });
+          const values: ValuesDictionary<any> = {
+            [field.name]: "",
+          };
+          const displayValues: ValuesDictionary<any> = {
+            [field.name]: "",
+          };
+          const record = createTestContentItem({ values, displayValues });
+          (provider as any).getContent = async () => new Content(descriptor, [record]);
+          expect(await provider.getData()).to.matchSnapshot();
         });
 
         it("handles records with no values", async () => {

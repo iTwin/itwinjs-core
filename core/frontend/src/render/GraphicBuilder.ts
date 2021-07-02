@@ -7,7 +7,7 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@bentley/geometry-core";
+import { AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@bentley/geometry-core";
 import { ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
@@ -120,7 +120,7 @@ export interface GraphicBuilderOptions {
   /** If true, the order in which geometry is added to the builder is preserved.
    * This is useful for overlay and background graphics because they draw without using the depth buffer. For example, to draw an overlay containing a red shape with a white outline,
    * you would add the shape to the GraphicBuilder first, followed by the outline, to ensure the outline draws "in front of" the shape.
-   * It defaults to true fo overlays and background graphics, and false for other graphic types.
+   * It defaults to true for overlays and background graphics, and false for other graphic types.
    * It is not useful for other types of graphics and imposes a performance penalty due to increased number of draw calls.
    * For overlay and background graphics that do not need to draw in any particular order, the performance penalty can be eliminated by setting this to `false`.
    */
@@ -346,6 +346,27 @@ export abstract class GraphicBuilder {
 
   /** Append a 3d planar region to the builder. */
   public abstract addLoop(loop: Loop): void;
+
+  /** Append a [CurvePrimitive]($geometry-core) to the builder. */
+  public addCurvePrimitive(curve: AnyCurvePrimitive): void {
+    switch (curve.curvePrimitiveType) {
+      case "lineString":
+        this.addLineString(curve.points);
+        break;
+      case "lineSegment":
+        this.addLineString([ curve.startPoint(), curve.endPoint() ]);
+        break;
+      case "arc":
+        this.addArc(curve, false, false);
+        break;
+      default:
+        const path = new Path();
+        if (path.tryAddChild(curve))
+          this.addPath(path);
+
+        break;
+    }
+  }
 
   /** Append a mesh to the builder.
    * @param meshData Describes the mesh

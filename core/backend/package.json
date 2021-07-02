@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "2.17.0-dev.23",
+  "version": "2.19.0-dev.2",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -55,15 +55,15 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/backend-itwin-client": "workspace:^2.17.0-dev.23",
-    "@bentley/bentleyjs-core": "workspace:^2.17.0-dev.23",
-    "@bentley/ecschema-metadata": "workspace:^2.17.0-dev.23",
-    "@bentley/geometry-core": "workspace:^2.17.0-dev.23",
-    "@bentley/imodelhub-client": "workspace:^2.17.0-dev.23",
-    "@bentley/imodeljs-common": "workspace:^2.17.0-dev.23",
-    "@bentley/itwin-client": "workspace:^2.17.0-dev.23",
-    "@bentley/rbac-client": "workspace:^2.17.0-dev.23",
-    "@bentley/telemetry-client": "workspace:^2.17.0-dev.23"
+    "@bentley/backend-itwin-client": "workspace:^2.19.0-dev.2",
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.2",
+    "@bentley/ecschema-metadata": "workspace:^2.19.0-dev.2",
+    "@bentley/geometry-core": "workspace:^2.19.0-dev.2",
+    "@bentley/imodelhub-client": "workspace:^2.19.0-dev.2",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.2",
+    "@bentley/itwin-client": "workspace:^2.19.0-dev.2",
+    "@bentley/rbac-client": "workspace:^2.19.0-dev.2",
+    "@bentley/telemetry-client": "workspace:^2.19.0-dev.2"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -102,7 +102,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx": "^1.5.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "event-stream": "~4.0.1",
     "internal-tools": "workspace:*",
     "mkdirp": "^1.0.4",
@@ -121,7 +121,7 @@
   "dependencies": {
     "@azure/storage-blob": "10.4.0",
     "@bentley/context-registry-client": "workspace:*",
-    "@bentley/imodeljs-native": "2.17.1",
+    "@bentley/imodeljs-native": "2.18.2",
     "@bentley/usage-logging-client": "workspace:*",
     "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",

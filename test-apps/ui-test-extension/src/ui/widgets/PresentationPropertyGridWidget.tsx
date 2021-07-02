@@ -14,19 +14,46 @@ import {
   VirtualizedPropertyGridWithDataProviderProps,
 } from "@bentley/ui-components";
 import { ContextMenuItem, ContextMenuItemProps, FillCentered, GlobalContextMenu, Icon, Orientation } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, FrameworkVersionSwitch, UiFramework, WidgetControl } from "@bentley/ui-framework";
+import { ConfigurableCreateInfo, useActiveIModelConnection, useFrameworkVersion, WidgetControl } from "@bentley/ui-framework";
 import { ExtensionUiItemsProvider } from "../ExtensionUiItemsProvider";
-
-interface PresentationPropertyGridWidgetProps {
-  iModelConnection: IModelConnection | (() => IModelConnection | undefined);
-}
 
 export type ContextMenuItemInfo = ContextMenuItemProps & React.Attributes & { label: string };
 
-export interface State {
-  dataProvider?: PresentationPropertyDataProvider;
-  contextMenu?: PropertyGridContextMenuArgs;
-  contextMenuItemInfos?: ContextMenuItemInfo[];
+// eslint-disable-next-line @typescript-eslint/naming-convention
+function FavoriteActionButton({ field, imodel }: { field: Field, imodel: IModelConnection }) {
+  const isMountedRef = React.useRef(false);
+  React.useEffect(() => {
+    isMountedRef.current = true;
+    return () => { isMountedRef.current = false; };
+  }, []);
+
+  const getIsFavoriteField = React.useCallback(() => {
+    return Presentation.favoriteProperties.has(field, imodel, FavoritePropertiesScope.IModel);
+  }, [field, imodel]);
+
+  const [isFavorite, setIsFavorite] = React.useState(false);
+
+  const toggleFavoriteProperty = React.useCallback(async () => {
+    if (getIsFavoriteField()) {
+      await Presentation.favoriteProperties.remove(field, imodel, FavoritePropertiesScope.IModel);
+      isMountedRef.current && setIsFavorite(false);
+    } else {
+      await Presentation.favoriteProperties.add(field, imodel, FavoritePropertiesScope.IModel);
+      isMountedRef.current && setIsFavorite(true);
+    }
+  }, [field, getIsFavoriteField, imodel]);
+
+  const onActionButtonClicked = React.useCallback(async () => {
+    void toggleFavoriteProperty();
+  }, [toggleFavoriteProperty]);
+
+  return (
+    <div onClick={onActionButtonClicked}>
+      {isFavorite ?
+        <Icon iconSpec="icon-star" /> :
+        <Icon iconSpec="icon-star" />}
+    </div>
+  );
 }
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -38,205 +65,149 @@ function PresentationPropertyGrid(props: VirtualizedPropertyGridWithDataProvider
   return <VirtualizedPropertyGridWithDataProvider {...props} />;
 }
 
-export class PresentationPropertyGridWidget extends React.Component<PresentationPropertyGridWidgetProps, State> {
-  constructor(props: PresentationPropertyGridWidgetProps) {
-    super(props);
-    const imodel = (typeof this.props.iModelConnection === "function") ? this.props.iModelConnection() : this.props.iModelConnection;
-    if (imodel) {
-      this.state = {
-        dataProvider: createDataProvider(imodel),
-      };
-    }
+function createDataProvider(imodel: IModelConnection | undefined): PresentationPropertyDataProvider | undefined {
+  if (imodel) {
+    const provider = new PresentationPropertyDataProvider({ imodel });
+    provider.isNestedPropertyCategoryGroupingEnabled = true;
+    return provider;
   }
+  return undefined;
+}
 
-  private _onAddFavorite = async (propertyField: Field) => {
-    const imodel = (typeof this.props.iModelConnection === "function") ? this.props.iModelConnection() : this.props.iModelConnection;
-    if (imodel)
-      await Presentation.favoriteProperties.add(propertyField, imodel, FavoritePropertiesScope.IModel);
-    this.setState({ contextMenu: undefined });
-  };
-  private _onRemoveFavorite = async (propertyField: Field) => {
-    const imodel = (typeof this.props.iModelConnection === "function") ? this.props.iModelConnection() : this.props.iModelConnection;
-    if (imodel)
-      await Presentation.favoriteProperties.remove(propertyField, imodel, FavoritePropertiesScope.IModel);
-    this.setState({ contextMenu: undefined });
-  };
+function useDataProvider(iModelConnection: IModelConnection | undefined): PresentationPropertyDataProvider | undefined {
+  const [dataProvider, setDataProvider] = React.useState(createDataProvider(iModelConnection));
+  React.useEffect(() => {
+    setDataProvider(createDataProvider(iModelConnection));
+  }, [iModelConnection]);
 
-  private _onPropertyContextMenu = (args: PropertyGridContextMenuArgs) => {
+  return dataProvider;
+}
+
+// eslint-disable-next-line @typescript-eslint/naming-convention
+export function PresentationPropertyGridWidget() {
+  const iModelConnection = useActiveIModelConnection();
+  const dataProvider = useDataProvider(iModelConnection);
+
+  const [contextMenu, setContextMenu] = React.useState<PropertyGridContextMenuArgs | undefined>(undefined);
+  const [contextMenuItemInfos, setContextMenuItemInfos] = React.useState<ContextMenuItemInfo[] | undefined>(undefined);
+
+  const version = useFrameworkVersion();
+  const componentId = ("2" === version) ? "uifw-v2-container" : "uifw-v1-container";
+  const style: React.CSSProperties = ("2" === version) ? { height: "100%", width: "100%", position: "absolute" } : { height: "100%" };
+
+  const onAddFavorite = React.useCallback(async (propertyField: Field) => {
+    if (iModelConnection)
+      await Presentation.favoriteProperties.add(propertyField, iModelConnection, FavoritePropertiesScope.IModel);
+    setContextMenu(undefined);
+  }, [iModelConnection]);
+
+  const onRemoveFavorite = React.useCallback(async (propertyField: Field) => {
+    if (iModelConnection)
+      await Presentation.favoriteProperties.remove(propertyField, iModelConnection, FavoritePropertiesScope.IModel);
+    setContextMenu(undefined);
+  }, [iModelConnection]);
+
+  const setupContextMenu = React.useCallback((args: PropertyGridContextMenuArgs) => {
+    if (iModelConnection && dataProvider) {
+      void dataProvider.getFieldByPropertyRecord(args.propertyRecord)
+        .then((field) => {
+          const items: ContextMenuItemInfo[] = [];
+          if (field !== undefined) {
+            if (Presentation.favoriteProperties.has(field, iModelConnection, FavoritePropertiesScope.IModel)) {
+              items.push({
+                key: "remove-favorite",
+                icon: "icon-remove-2",
+                onSelect: async () => onRemoveFavorite(field),
+                title: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.remove-favorite.description"),
+                label: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.remove-favorite.label"),
+              });
+            } else {
+              items.push({
+                key: "add-favorite",
+                icon: "icon-add",
+                onSelect: async () => onAddFavorite(field),
+                title: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.add-favorite.description"),
+                label: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.add-favorite.label"),
+              });
+            }
+          }
+          setContextMenu(args);
+          setContextMenuItemInfos(items.length > 0 ? items : undefined);
+        });
+    }
+  }, [iModelConnection, dataProvider, onRemoveFavorite, onAddFavorite]);
+
+  const onPropertyContextMenu = React.useCallback((args: PropertyGridContextMenuArgs) => {
     args.event.persist();
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.buildContextMenu(args);
-  };
+    setupContextMenu(args);
+  }, [setupContextMenu]);
 
-  private _onContextMenuOutsideClick = () => {
-    this.setState({ contextMenu: undefined });
-  };
+  const onContextMenuOutsideClick = React.useCallback(() => {
+    setContextMenu(undefined);
+  }, []);
 
-  private _onContextMenuEsc = () => {
-    this.setState({ contextMenu: undefined });
-  };
+  const onContextMenuEsc = React.useCallback(() => {
+    setContextMenu(undefined);
+  }, []);
 
-  private async buildContextMenu(args: PropertyGridContextMenuArgs) {
-    const imodel = (typeof this.props.iModelConnection === "function") ? this.props.iModelConnection() : this.props.iModelConnection;
-    if (this.state.dataProvider && imodel) {
-      const field = await this.state.dataProvider.getFieldByPropertyRecord(args.propertyRecord);
-      const items: ContextMenuItemInfo[] = [];
-      if (field !== undefined) {
-        if (Presentation.favoriteProperties.has(field, imodel, FavoritePropertiesScope.IModel)) {
-          items.push({
-            key: "remove-favorite",
-            icon: "icon-remove-2",
-            onSelect: async () => this._onRemoveFavorite(field),
-            title: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.remove-favorite.description"),
-            label: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.remove-favorite.label"),
-          });
-        } else {
-          items.push({
-            key: "add-favorite",
-            icon: "icon-add",
-            onSelect: async () => this._onAddFavorite(field),
-            title: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.add-favorite.description"),
-            label: ExtensionUiItemsProvider.i18n.translate("uiTestExtension:properties.context-menu.add-favorite.label"),
-          });
-        }
-      }
-
-      this.setState({ contextMenu: args, contextMenuItemInfos: items.length > 0 ? items : undefined });
-    }
-  }
-
-  private renderContextMenu() {
-    if (!this.state.contextMenu || !this.state.contextMenuItemInfos)
-      return undefined;
-
-    const items: React.ReactNode[] = [];
-    this.state.contextMenuItemInfos.forEach((info: ContextMenuItemInfo) => (
-      items.push(
-        <ContextMenuItem
-          key={info.key}
-          onSelect={info.onSelect}
-          title={info.title}
-          icon={info.icon}
-        >
-          {info.label}
-        </ContextMenuItem>,
-      )
-    ));
-
-    return (
-      <GlobalContextMenu
-        opened={true}
-        onOutsideClick={this._onContextMenuOutsideClick}
-        onEsc={this._onContextMenuEsc}
-        identifier="PropertiesWidget"
-        x={this.state.contextMenu.event.clientX}
-        y={this.state.contextMenu.event.clientY}
-      >
-        {items}
-      </GlobalContextMenu>
-    );
-  }
-
-  private _favoriteActionButtonRenderer = (props: ActionButtonRendererProps) => {
-    const { dataProvider } = this.state;
-    const imodel = (typeof this.props.iModelConnection === "function") ? this.props.iModelConnection() : this.props.iModelConnection;
-    if (imodel && dataProvider) {
+  const favoriteActionButtonRenderer = React.useCallback((props: ActionButtonRendererProps) => {
+    if (iModelConnection && dataProvider) {
       const { property } = props;
       // eslint-disable-next-line react-hooks/rules-of-hooks
-      const field = useAsyncValue(React.useMemo(async () => dataProvider.getFieldByPropertyRecord(property), [dataProvider, property]));
+      const field = useAsyncValue(React.useMemo(async () => dataProvider.getFieldByPropertyRecord(property), [property]));
 
       return (
         <div>
           {
             field &&
-            (Presentation.favoriteProperties.has(field, imodel, FavoritePropertiesScope.IModel) || props.isPropertyHovered) &&
+            (Presentation.favoriteProperties.has(field, iModelConnection, FavoritePropertiesScope.IModel) || props.isPropertyHovered) &&
             <FavoriteActionButton
               field={field}
-              imodel={imodel} />
+              imodel={iModelConnection} />
           }
         </div>
       );
     }
     return null;
-  };
+  }, [dataProvider, iModelConnection]);
 
-  public render() {
-    if (!this.state.dataProvider)
-      return null;
+  return (
+    <div data-component-id={componentId} style={style}>
+      {dataProvider &&
+        <>
+          <PresentationPropertyGrid
+            dataProvider={dataProvider}
+            orientation={Orientation.Horizontal}
+            isPropertyHoverEnabled={true}
+            onPropertyContextMenu={onPropertyContextMenu}
+            actionButtonRenderers={[favoriteActionButtonRenderer]}
+          />
 
-    const actionButtonRenderers = [this._favoriteActionButtonRenderer];
-    if (this.props.iModelConnection) {
-      const element = <>
-        <PresentationPropertyGrid
-          dataProvider={this.state.dataProvider}
-          orientation={Orientation.Horizontal}
-          isPropertyHoverEnabled={true}
-          onPropertyContextMenu={this._onPropertyContextMenu}
-          actionButtonRenderers={actionButtonRenderers}
-        />
-        {this.renderContextMenu()}
-      </>;
-      return (
-        <FrameworkVersionSwitch
-          v1={<div style={{ height: "100%" }}>{element}</div>}
-          v2={<div style={{ height: "100%", width: "100%", position: "absolute" }}>{element}</div>}
-        />
-      );
-    }
-
-    return null;
-  }
-}
-
-function createDataProvider(imodel: IModelConnection): PresentationPropertyDataProvider {
-  const provider = new PresentationPropertyDataProvider({ imodel });
-  provider.isNestedPropertyCategoryGroupingEnabled = true;
-  return provider;
-}
-
-interface FavoriteActionButtonProps {
-  field: Field;
-  imodel: IModelConnection;
-}
-
-class FavoriteActionButton extends React.Component<FavoriteActionButtonProps> {
-
-  private _isMounted = false;
-
-  public componentDidMount() {
-    this._isMounted = true;
-  }
-
-  public componentWillUnmount() {
-    this._isMounted = false;
-  }
-
-  public render() {
-    return (
-      <div onClick={this._onActionButtonClicked}>
-        {this.isFavorite() ?
-          <Icon iconSpec="icon-star" /> :
-          <Icon iconSpec="icon-star" />}
-      </div>
-    );
-  }
-
-  private _onActionButtonClicked = () => {
-    this.toggleFavoriteProperty(); // eslint-disable-line @typescript-eslint/no-floating-promises
-  };
-
-  private async toggleFavoriteProperty() {
-    if (this.isFavorite())
-      await Presentation.favoriteProperties.remove(this.props.field, this.props.imodel, FavoritePropertiesScope.IModel);
-    else
-      await Presentation.favoriteProperties.add(this.props.field, this.props.imodel, FavoritePropertiesScope.IModel);
-    if (this._isMounted)
-      this.setState({ isFavorite: this.isFavorite() });
-  }
-
-  private isFavorite(): boolean {
-    return Presentation.favoriteProperties.has(this.props.field, this.props.imodel, FavoritePropertiesScope.IModel);
-  }
+          {contextMenu && contextMenuItemInfos &&
+            <GlobalContextMenu
+              opened={true}
+              onOutsideClick={onContextMenuOutsideClick}
+              onEsc={onContextMenuEsc}
+              identifier="TableWidget"
+              x={contextMenu.event.clientX}
+              y={contextMenu.event.clientY}
+            >
+              {contextMenuItemInfos.map((info: ContextMenuItemInfo) =>
+                <ContextMenuItem
+                  key={info.key}
+                  onSelect={info.onSelect}
+                  title={info.title}
+                  icon={info.icon}
+                >
+                  {info.label}
+                </ContextMenuItem>
+              )}
+            </GlobalContextMenu>
+          }
+        </>
+      }
+    </div>
+  );
 }
 
 /** PresentationPropertyGridWidgetControl provides a widget that shows properties returned from Presentation System
@@ -256,6 +227,6 @@ export class PresentationPropertyGridWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    this.reactNode = <PresentationPropertyGridWidget iModelConnection={UiFramework.getIModelConnection} />;
+    this.reactNode = <PresentationPropertyGridWidget />;
   }
 }

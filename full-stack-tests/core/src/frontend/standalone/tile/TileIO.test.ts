@@ -610,7 +610,7 @@ describe("mirukuru TileTree", () => {
 
     const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: true, allowInstancing: true };
     const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
-    const tree = new IModelTileTree(params);
+    const tree = new IModelTileTree(params, { edgesRequired: true, type: BatchType.Primary });
 
     const response: TileRequest.Response = await tree.staticBranch.requestContent();
     expect(response).not.to.be.undefined;
@@ -660,7 +660,7 @@ describe("mirukuru TileTree", () => {
 
     // Test current version of tile tree by asking model to load it
     const modelTree = await getTileTree(imodel, "0x1c");
-    await test(modelTree, CurrentImdlVersion.Combined, "-3-0-0-0-0-1");
+    await test(modelTree, CurrentImdlVersion.Combined, "-b-0-0-0-0-1");
 
     // Test directly loading a tile tree of version 3.0
     const v3Props = await IModelApp.tileAdmin.requestTileTreeProps(imodel, "0x1c");
@@ -669,7 +669,7 @@ describe("mirukuru TileTree", () => {
     const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: false, allowInstancing: false };
     const params = iModelTileTreeParamsFromJSON(v3Props, imodel, "0x1c", options);
 
-    const v3Tree = new IModelTileTree(params);
+    const v3Tree = new IModelTileTree(params, { edgesRequired: false, type: BatchType.Primary });
     await test(v3Tree, 0x00030000, "_3_0_0_0_0_0_1");
   });
 
@@ -878,7 +878,7 @@ describe.skip("TileAdmin", () => {
 
         const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: true, allowInstancing: true };
         const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
-        const tree = new IModelTileTree(params);
+        const tree = new IModelTileTree(params, { edgesRequired: true, type: BatchType.Primary });
 
         const intfc = IModelTileRpcInterface.getClient();
         const generateTileContent = intfc.generateTileContent;

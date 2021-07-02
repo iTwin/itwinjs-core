@@ -6,12 +6,11 @@
  * @module Tiles
  */
 import { compareStrings, compareStringsOrUndefined, Id64, Id64String } from "@bentley/bentleyjs-core";
-import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString, SpatialClassificationProps } from "@bentley/imodeljs-common";
+import { BatchType, ClassifierTileTreeId, compareIModelTileTreeIds, iModelTileTreeIdToString, SpatialClassifier, SpatialClassifiers } from "@bentley/imodeljs-common";
 import { DisplayStyleState } from "../DisplayStyleState";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { GeometricModelState } from "../ModelState";
-import { SpatialClassifiers } from "../SpatialClassifiers";
 import { SceneContext } from "../ViewContext";
 import { ViewState } from "../ViewState";
 import {
@@ -39,6 +38,7 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     loadTree: async () => undefined,
     iModel: undefined as unknown as IModelConnection,
   };
+
   public compareTileTreeIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
     return compareIds(lhs, rhs);
   }
@@ -60,11 +60,22 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     };
 
     const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, options);
-    return new IModelTileTree(params);
+    return new IModelTileTree(params, id);
   }
 
   public getOwner(id: ClassifierTreeId, iModel: IModelConnection): TileTreeOwner {
     return Id64.isValid(id.modelId) ? iModel.tiles.getTileTreeOwner(id, this) : this._nonexistentTreeOwner;
+  }
+
+  public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner }>): void {
+    for (const tree of trees)
+      if (tree.id.animationId === scriptSourceId)
+        modelIds.add(tree.id.modelId);
+  }
+
+  public addSpatialModels(modelIds: Set<Id64String>, trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner }>): void {
+    for (const tree of trees)
+      modelIds.add(tree.id.modelId);
   }
 }
 
@@ -74,7 +85,7 @@ const classifierTreeSupplier = new ClassifierTreeSupplier();
 export abstract class SpatialClassifierTileTreeReference extends TileTreeReference {
   public abstract get classifiers(): SpatialClassifiers;
   public abstract get isPlanar(): boolean;
-  public abstract get activeClassifier(): SpatialClassificationProps.Classifier | undefined;
+  public abstract get activeClassifier(): SpatialClassifier | undefined;
 }
 
 /** @internal */
@@ -97,7 +108,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   }
 
   public get classifiers(): SpatialClassifiers { return this._classifiers; }
-  public get activeClassifier(): SpatialClassificationProps.Classifier | undefined { return this.classifiers.active; }
+  public get activeClassifier(): SpatialClassifier | undefined { return this.classifiers.active; }
 
   public get castsShadows() {
     return false;

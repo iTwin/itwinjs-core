@@ -7,8 +7,13 @@ public;AffineTransformProps
 public;AmbientLight
 public;AmbientLightProps
 public;AmbientOcclusion
-alpha;AnalysisStyle
-alpha;AnalysisStyleProps
+public;AnalysisStyle
+public;AnalysisStyleDisplacement
+public;AnalysisStyleDisplacementProps
+public;AnalysisStyleProps
+public;AnalysisStyleScalar
+public;AnalysisStyleScalarProps
+public;AppearanceOverrideProps
 public;AreaFillProps
 public;AreaPattern
 public;AuxCoordSystem2dProps 
@@ -95,7 +100,11 @@ internal;computeChildTileProps(parent: TileMetadata, idProvider: ContentIdProvid
 internal;computeTileChordTolerance(tile: TileMetadata, is3d: boolean): number
 alpha;ContentFlags
 internal;class ContentIdProvider
+public;ContextRealityModel
 public;ContextRealityModelProps
+public;ContextRealityModelProps
+public;ContextRealityModels
+public;ContextRealityModelsContainer
 public;CreateEmptySnapshotIModelProps = CreateIModelProps & CreateSnapshotIModelProps
 internal;CreateEmptyStandaloneIModelProps = CreateIModelProps & CreateStandaloneIModelProps
 public;CreateIModelProps 
@@ -118,11 +127,12 @@ public;DisplayStyle3dProps
 public;DisplayStyle3dSettings 
 public;DisplayStyle3dSettingsProps 
 public;DisplayStyleLoadProps
-beta;DisplayStyleModelAppearanceProps 
+public;DisplayStyleModelAppearanceProps 
 public;DisplayStyleOverridesOptions
+public;DisplayStylePlanarClipMaskProps 
 public;DisplayStyleProps 
-beta;DisplayStyleRealityModelPlanarClipMaskProps 
 public;DisplayStyleSettings
+public;DisplayStyleSettingsOptions
 public;DisplayStyleSettingsProps
 public;DisplayStyleSubCategoryProps 
 beta;DomainOptions
@@ -155,6 +165,9 @@ public;ElementIdsAndRangesProps
 public;ElementLoadOptions
 public;ElementLoadProps 
 public;ElementProps 
+public;EmphasizeElementsProps
+public;EntityIdAndClassId
+public;EntityIdAndClassIdIterable = Iterable
 beta;EntityMetaData 
 beta;EntityMetaDataProps
 public;EntityProps
@@ -175,6 +188,7 @@ internal;FeatureGates
 internal;FeatureIndex
 internal;FeatureIndexType
 public;FeatureOverrides 
+public;FeatureOverrideType
 public;FeatureTable 
 internal;FeatureTableHeader
 public;FilePropertyProps
@@ -329,6 +343,7 @@ internal;iTwinChannel: (channel: string) => string
 public;JsonGeometryStream
 public;LatAndLong
 public;LatLongAndHeight 
+internal;LegacyAnalysisStyleProps
 internal;LightLocationProps 
 public;LightSettings
 public;LightSettingsProps
@@ -414,10 +429,10 @@ public;Placement2dProps
 public;Placement3d 
 public;Placement3dProps
 public;PlacementProps = Placement2dProps | Placement3dProps
-beta;PlanarClipMaskMode
-beta;PlanarClipMaskPriority
-beta;PlanarClipMaskProps
-beta;PlanarClipMaskSettings
+public;PlanarClipMaskMode
+public;PlanarClipMaskPriority
+public;PlanarClipMaskProps
+public;PlanarClipMaskSettings
 public;PlanProjectionSettings
 public;PlanProjectionSettingsProps
 internal;PntsHeader 
@@ -562,7 +577,14 @@ public;SolarLightProps
 public;SolarShadowSettings
 public;SolarShadowSettingsProps
 public;SourceAndTarget
-beta;SpatialClassificationProps
+public;SpatialClassifier
+public;SpatialClassifierFlags
+public;SpatialClassifierFlagsProps
+public;SpatialClassifierInsideDisplay
+public;SpatialClassifierOutsideDisplay
+public;SpatialClassifierProps
+public;SpatialClassifiers 
+public;SpatialClassifiersContainer
 public;SpatialViewDefinitionProps 
 public;StandaloneOpenOptions = OpenDbKey
 beta;StorageValue = string | number | boolean | null | Uint8Array
@@ -582,7 +604,7 @@ internal;TestRpcManager
 public;TextString
 public;TextStringPrimitive
 public;TextStringProps
-alpha;TextureLoadProps
+public;TextureLoadProps
 public;TextureMapping
 public;TextureMapping
 public;TextureMapProps
@@ -609,6 +631,7 @@ internal;tileFormatFromNumber(formatNumber: number): TileFormat
 internal;class TileHeader
 internal;TileMetadata 
 internal;TileMetadataReader
+internal;TileOptions
 internal;TileOptions
 internal;TileProps
 internal;TileReadError 

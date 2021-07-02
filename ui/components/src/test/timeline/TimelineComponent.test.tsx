@@ -8,8 +8,8 @@ import React from "react";
 import * as sinon from "sinon";
 import { act, cleanup, fireEvent, render } from "@testing-library/react";
 import { BaseTimelineDataProvider } from "../../ui-components/timeline/BaseTimelineDataProvider";
-import { Milestone, PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../ui-components/timeline/interfaces";
-import { TimelineComponent } from "../../ui-components/timeline/TimelineComponent";
+import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../ui-components/timeline/interfaces";
+import { TimelineComponent, TimelineMenuItemProps } from "../../ui-components/timeline/TimelineComponent";
 import TestUtils from "../TestUtils";
 import { UiAdmin } from "@bentley/ui-abstract";
 
@@ -39,7 +39,7 @@ class TestTimelineDataProvider extends BaseTimelineDataProvider {
     this.playing = playing;
   };
 
-  constructor(addMilestones: boolean) {
+  constructor() {
     super();
 
     this.animationFraction = 0.3;
@@ -48,27 +48,6 @@ class TestTimelineDataProvider extends BaseTimelineDataProvider {
     const startDate = new Date(2014, 6, 6);
     const endDate = new Date(2016, 8, 12);
 
-    const milestones: Milestone[] = [
-      { id: "1", date: new Date(2014, 6, 15), label: "First meeting", readonly: true },
-      { id: "2", date: new Date(2014, 8, 15), label: "meeting 2", readonly: true },
-      { id: "3", date: new Date(2014, 10, 15), label: "meeting 3", readonly: true },
-      { id: "4", date: new Date(2014, 12, 15), label: "meeting 4", readonly: true },
-      { id: "5", date: new Date(2015, 2, 15), label: "meeting 5", readonly: true },
-      { id: "6", date: new Date(2015, 4, 15), label: "meeting 6", readonly: true },
-      { id: "7", date: new Date(2015, 6, 15), label: "meeting 7", readonly: false },
-      { id: "8", date: new Date(2015, 8, 15), label: "meeting 8", readonly: false },
-      { id: "9", date: new Date(2015, 10, 15), label: "meeting 9", readonly: false },
-      { id: "10", date: new Date(2015, 12, 15), label: "meeting 10", readonly: false },
-      { id: "11", date: new Date(2016, 2, 15), label: "meeting 11" },
-      {
-        id: "12", date: new Date(2016, 4, 15), label: "meeting 12", readonly: true, children: [
-          { id: "12-1", date: new Date(2016, 4, 17), label: "meeting 12a", readonly: true, parentId: "12" },
-          { id: "12-2", date: new Date(2016, 4, 18), label: "meeting 12b", readonly: true, parentId: "12" },
-        ],
-      },
-      { id: "13", date: new Date(2016, 6, 15), label: "Last meeting" },
-    ];
-
     this.updateSettings({
       duration,
       loop,
@@ -76,10 +55,6 @@ class TestTimelineDataProvider extends BaseTimelineDataProvider {
 
     this.start = startDate;
     this.end = endDate;
-
-    if (addMilestones) {
-      this._milestones = milestones;
-    }
   }
 }
 
@@ -140,7 +115,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
   });
 
   it("should render without milestones - minimized", async () => {
-    const dataProvider = new TestTimelineDataProvider(false);
+    const dataProvider = new TestTimelineDataProvider();
     expect(dataProvider.loop).to.be.false;
     fakeTimers = sinon.useFakeTimers();
 
@@ -149,7 +124,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
       endDate={dataProvider.end}
       initialDuration={dataProvider.initialDuration}
       totalDuration={dataProvider.duration}
-      milestones={dataProvider.getMilestones()}
       minimized={true}
       showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
@@ -187,118 +161,8 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(dataProvider.pointerCallbackCalled).to.be.true;
   });
 
-  it("should render with milestones - minimized", async () => {
-    const dataProvider = new TestTimelineDataProvider(true);
-    fakeTimers = sinon.useFakeTimers();
-
-    const renderedComponent = render(<TimelineComponent
-      startDate={dataProvider.start}
-      endDate={dataProvider.end}
-      initialDuration={dataProvider.initialDuration}
-      totalDuration={dataProvider.duration}
-      milestones={dataProvider.getMilestones()}
-      minimized={true}
-      showDuration={true}
-      onChange={dataProvider.onAnimationFractionChanged}
-      onPlayPause={dataProvider.onPlayPause} />);
-
-    expect(renderedComponent).not.to.be.undefined;
-    // hit play/pause button to start animation
-    const playButtons = renderedComponent.getAllByTestId("play-button");
-    const playButton = playButtons[playButtons.length - 1];
-    expect(dataProvider.playing).to.be.false;
-    expect(dataProvider.pointerCallbackCalled).to.be.false;
-
-    fireEvent.click(playButton);
-    // Wait for animation.
-    fakeTimers.tick(600);
-    // Wait for 1st raf cb.
-    fakeTimers.tick(1);
-
-    // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    // await new Promise((r) => { setTimeout(r, 40); });
-    expect(dataProvider.playing).to.be.true;
-
-    // hit play/pause button to pause animation
-    fireEvent.click(playButton);
-    // Wait for animation.
-    fakeTimers.tick(600);
-    // Wait for 1st raf cb.
-    fakeTimers.tick(1);
-
-    // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    // await new Promise((r) => { setTimeout(r, 40); });
-    expect(dataProvider.playing).to.be.false;
-    expect(dataProvider.pointerCallbackCalled).to.be.true;
-  });
-
-  it("should render without milestones - expanded", async () => {
-    const dataProvider = new TestTimelineDataProvider(false);
-
-    const renderedComponent = render(<TimelineComponent
-      startDate={dataProvider.start}
-      endDate={dataProvider.end}
-      initialDuration={dataProvider.initialDuration}
-      totalDuration={dataProvider.duration}
-      milestones={dataProvider.getMilestones()}
-      minimized={false}
-      showDuration={true}
-      onChange={dataProvider.onAnimationFractionChanged}
-      onPlayPause={dataProvider.onPlayPause} />);
-
-    expect(renderedComponent).not.to.be.undefined;
-  });
-
-  it("should render with milestones - expanded", async () => {
-    const dataProvider = new TestTimelineDataProvider(true);
-    fakeTimers = sinon.useFakeTimers();
-
-    const renderedComponent = render(<TimelineComponent
-      startDate={dataProvider.start}
-      endDate={dataProvider.end}
-      initialDuration={dataProvider.initialDuration}
-      totalDuration={dataProvider.duration}
-      milestones={dataProvider.getMilestones()}
-      minimized={false}
-      showDuration={true}
-      onChange={dataProvider.onAnimationFractionChanged}
-      onJump={dataProvider.onJump}
-      onPlayPause={dataProvider.onPlayPause} />);
-
-    expect(renderedComponent).not.to.be.undefined;
-    // hit play/pause button to start animation
-    const jumpForwardButton = renderedComponent.getByTestId("play-forward");
-    expect(dataProvider.forwardCallbackCalled).to.be.false;
-    expect(dataProvider.playing).to.be.false;
-    expect(dataProvider.pointerCallbackCalled).to.be.false;
-
-    fireEvent.click(jumpForwardButton);
-
-    // Wait for animation.
-    fakeTimers.tick(600);
-    // Wait for 1st raf cb.
-    fakeTimers.tick(1);
-
-    // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    // await new Promise((r) => { setTimeout(r, 40); });
-    expect(dataProvider.forwardCallbackCalled).to.be.true;
-
-    const jumpBackwardButton = renderedComponent.getByTestId("play-backward");
-    expect(dataProvider.backwardCallbackCalled).to.be.false;
-    fireEvent.click(jumpBackwardButton);
-
-    // Wait for animation.
-    fakeTimers.tick(600);
-    // Wait for 1st raf cb.
-    fakeTimers.tick(1);
-
-    // kill some time to wait for setState and subsequent call to window.requestAnimationFrame to process
-    // await new Promise((r) => { setTimeout(r, 40); });
-    expect(dataProvider.backwardCallbackCalled).to.be.true;
-  });
-
-  it("timeline with short duration - expanded", async () => {
-    const dataProvider = new TestTimelineDataProvider(true);
+  it("timeline with short duration", async () => {
+    const dataProvider = new TestTimelineDataProvider();
     dataProvider.getSettings().duration = 20;  // make sure this is shorter than 40 so we get to end of animation
 
     fakeTimers = sinon.useFakeTimers();
@@ -308,8 +172,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
       endDate={dataProvider.end}
       initialDuration={dataProvider.initialDuration}
       totalDuration={dataProvider.duration}
-      milestones={dataProvider.getMilestones()}
-      minimized={false}
+      minimized={true}
       showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onJump={dataProvider.onJump}
@@ -335,7 +198,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
   });
 
   it("timeline with short duration (repeat animation loop) - expanded", async () => {
-    const dataProvider = new TestTimelineDataProvider(true);
+    const dataProvider = new TestTimelineDataProvider();
     dataProvider.getSettings().duration = 30;  // make sure this is shorter than 40 so we get to end of animation
     dataProvider.getSettings().loop = true;
     fakeTimers = sinon.useFakeTimers();
@@ -345,8 +208,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
       endDate={dataProvider.end}
       initialDuration={dataProvider.initialDuration}
       totalDuration={dataProvider.duration}
-      milestones={dataProvider.getMilestones()}
-      minimized={false}
+      minimized={true}
       showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onJump={dataProvider.onJump}
@@ -376,7 +238,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
   });
 
   it("timeline with short duration (repeat set and at end of animation loop) - expanded", async () => {
-    const dataProvider = new TestTimelineDataProvider(true);
+    const dataProvider = new TestTimelineDataProvider();
     dataProvider.getSettings().duration = 30;  // make sure this is shorter than 40 so we get to end of animation
     dataProvider.getSettings().loop = true;
     dataProvider.animationFraction = 1.0;
@@ -387,8 +249,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
       endDate={dataProvider.end}
       initialDuration={dataProvider.initialDuration}
       totalDuration={dataProvider.duration}
-      milestones={dataProvider.getMilestones()}
-      minimized={false}
+      minimized={true}
       showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
       onJump={dataProvider.onJump}
@@ -417,7 +278,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
   });
 
   it("timeline with no dates (Analysis animation", async () => {
-    const dataProvider = new TestTimelineDataProvider(false);
+    const dataProvider = new TestTimelineDataProvider();
     dataProvider.getSettings().duration = 30;  // make sure this is shorter than the timeout of 40 so we get to end of animation
     fakeTimers = sinon.useFakeTimers();
 
@@ -450,14 +311,13 @@ describe("<TimelineComponent showDuration={true} />", () => {
   });
 
   it("open/close timeline settings - minimized", async () => {
-    const dataProvider = new TestTimelineDataProvider(false);
+    const dataProvider = new TestTimelineDataProvider();
 
     const renderedComponent = render(<TimelineComponent
       startDate={dataProvider.start}
       endDate={dataProvider.end}
       initialDuration={dataProvider.initialDuration}
       totalDuration={dataProvider.duration}
-      milestones={dataProvider.getMilestones()}
       minimized={true}
       showDuration={true}
       onChange={dataProvider.onAnimationFractionChanged}
@@ -477,11 +337,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
     const repeatItem = renderedComponent.getByText("timeline.repeat");
     expect(repeatItem).not.to.be.null;
     fireEvent.click(repeatItem);
-
-    // clicking on menuitem will close menu
-    // fireEvent.click(settingMenuSpan);
-    const possibleMenuPopupDiv = renderedComponent.queryByTestId("timeline-contextmenu-div");
-    expect(possibleMenuPopupDiv).to.be.null;
 
     expect(dataProvider.settingsCallbackCalled).to.be.true;
 
@@ -505,7 +360,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
     // expect(dataProvider.duration).to.be.equal(66000);
   });
   it("open/close timeline settings - always minimized", async () => {
-    const dataProvider = new TestTimelineDataProvider(false);
+    const dataProvider = new TestTimelineDataProvider();
 
     const renderedComponent = render(
       <TimelineComponent
@@ -513,7 +368,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
         endDate={dataProvider.end}
         initialDuration={dataProvider.initialDuration}
         totalDuration={dataProvider.duration}
-        milestones={dataProvider.getMilestones()}
         minimized={true}
         showDuration={true}
         onChange={dataProvider.onAnimationFractionChanged}
@@ -532,16 +386,12 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(menuPopupDiv).not.to.be.null;
     // renderedComponent.debug();
 
-    const expandItem = renderedComponent.getByText("timeline.expand");
-    expect(expandItem).not.to.be.null;
-
     renderedComponent.rerender(
       <TimelineComponent
         startDate={dataProvider.start}
         endDate={dataProvider.end}
         initialDuration={dataProvider.initialDuration}
         totalDuration={dataProvider.duration}
-        milestones={dataProvider.getMilestones()}
         minimized={true}
         showDuration={false}
         onChange={dataProvider.onAnimationFractionChanged}
@@ -550,12 +400,9 @@ describe("<TimelineComponent showDuration={true} />", () => {
         alwaysMinimized={true}
       />,
     );
-
-    const nullExpandItem = renderedComponent.queryByText("timeline.expand");
-    expect(nullExpandItem).to.be.null;
   });
   it("Dynamically set duration", async () => {
-    const dataProvider = new TestTimelineDataProvider(false);
+    const dataProvider = new TestTimelineDataProvider();
 
     const renderedComponent = render(
       <TimelineComponent
@@ -563,7 +410,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
         endDate={dataProvider.end}
         initialDuration={dataProvider.initialDuration}
         totalDuration={dataProvider.duration}
-        milestones={dataProvider.getMilestones()}
         minimized={true}
         showDuration={true}
         onChange={dataProvider.onAnimationFractionChanged}
@@ -582,7 +428,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
         endDate={dataProvider.end}
         initialDuration={50000}
         totalDuration={dataProvider.duration}
-        milestones={dataProvider.getMilestones()}
         minimized={true}
         showDuration={true}
         onChange={dataProvider.onAnimationFractionChanged}
@@ -593,7 +438,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
     );
   });
   it("onPlayPause called for TimerPausePlay event", () => {
-    const dataProvider = new TestTimelineDataProvider(false);
+    const dataProvider = new TestTimelineDataProvider();
     const spyOnPlayPause = sinon.spy();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const renderedComponent = render(<TimelineComponent
@@ -618,14 +463,13 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(spyOnPlayPause.calledThrice).to.be.true;
   });
   it("re-render on repeat change", () => {
-    const dataProvider = new TestTimelineDataProvider(false);
+    const dataProvider = new TestTimelineDataProvider();
     const renderedComponent = render(
       <TimelineComponent
         startDate={dataProvider.start}
         endDate={dataProvider.end}
         initialDuration={dataProvider.initialDuration}
         totalDuration={dataProvider.duration}
-        milestones={dataProvider.getMilestones()}
         minimized={false}
         showDuration={true}
         repeat={false}
@@ -646,7 +490,6 @@ describe("<TimelineComponent showDuration={true} />", () => {
         endDate={dataProvider.end}
         initialDuration={50000}
         totalDuration={dataProvider.duration}
-        milestones={dataProvider.getMilestones()}
         minimized={false}
         showDuration={true}
         repeat={true}
@@ -676,14 +519,13 @@ describe("<TimelineComponent showDuration={true} />", () => {
     fireEvent.click(repeatItem);
   });
   it("re-render on totalDuration change", () => {
-    const dataProvider = new TestTimelineDataProvider(false);
+    const dataProvider = new TestTimelineDataProvider();
     const renderedComponent = render(
       <TimelineComponent
         startDate={dataProvider.start}
         endDate={dataProvider.end}
         initialDuration={dataProvider.initialDuration}
         totalDuration={dataProvider.duration}
-        milestones={dataProvider.getMilestones()}
         minimized={false}
         showDuration={true}
         repeat={false}
@@ -705,8 +547,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
         endDate={dataProvider.end}
         initialDuration={50000}
         totalDuration={newDuration}
-        milestones={dataProvider.getMilestones()}
-        minimized={false}
+        minimized={true}
         showDuration={true}
         repeat={true}
         onChange={dataProvider.onAnimationFractionChanged}
@@ -718,15 +559,14 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(dataProvider.getSettings().duration).to.be.eq(newDuration);
   });
   it("re-render on new start and end date", () => {
-    const dataProvider = new TestTimelineDataProvider(false);
+    const dataProvider = new TestTimelineDataProvider();
     const renderedComponent = render(
       <TimelineComponent
         startDate={dataProvider.start}
         endDate={dataProvider.end}
         initialDuration={dataProvider.initialDuration}
         totalDuration={dataProvider.duration}
-        milestones={dataProvider.getMilestones()}
-        minimized={false}
+        minimized={true}
         showDuration={true}
         onChange={dataProvider.onAnimationFractionChanged}
         onSettingsChange={dataProvider.onPlaybackSettingChanged}
@@ -746,8 +586,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
         endDate={newEndDate}
         initialDuration={50000}
         totalDuration={dataProvider.duration}
-        milestones={dataProvider.getMilestones()}
-        minimized={false}
+        minimized={true}
         showDuration={true}
         onChange={dataProvider.onAnimationFractionChanged}
         onSettingsChange={dataProvider.onPlaybackSettingChanged}
@@ -763,4 +602,192 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(endDateItem).not.to.be.null;
     expect(endDateItem?.innerHTML).to.be.eq(newEndDate.toLocaleDateString());
   });
+  it("should call onForward on forward button click", () => {
+    const dataProvider = new TestTimelineDataProvider();
+    const spyOnJump = sinon.spy();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const renderedComponent = render(<TimelineComponent
+      initialDuration={dataProvider.initialDuration}
+      totalDuration={dataProvider.duration}
+      minimized={true}
+      showDuration={true}
+      onChange={dataProvider.onAnimationFractionChanged}
+      onJump={spyOnJump}
+      onPlayPause={dataProvider.onPlayPause}
+      componentId={"TestTimeline"} />);
+    const forwardButton = renderedComponent.getAllByTestId("play-forward")[0];
+    fireEvent.click(forwardButton);
+    expect (spyOnJump).to.be.called;
+  });
+  it("should call onBackward on back button click", () => {
+    const dataProvider = new TestTimelineDataProvider();
+    const spyOnJump = sinon.spy();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const renderedComponent = render(<TimelineComponent
+      initialDuration={dataProvider.initialDuration}
+      totalDuration={dataProvider.duration}
+      minimized={true}
+      showDuration={true}
+      onChange={dataProvider.onAnimationFractionChanged}
+      onJump={spyOnJump}
+      onPlayPause={dataProvider.onPlayPause}
+      componentId={"TestTimeline"} />);
+    const backButton = renderedComponent.getAllByTestId("play-backward")[0];
+    fireEvent.click(backButton);
+    expect (spyOnJump).to.be.called;
+  });
+  it("should append items", () => {
+    const duration = 8 * 1000;
+    const startDate = new Date(2014, 6, 6);
+    const endDate = new Date(2016, 8, 12);
+    const appendMenuItems: TimelineMenuItemProps[] = [
+      {label: "8 seconds", timelineDuration: 8*1000 },
+      {label: "5 Seconds",  timelineDuration: 5*1000 },
+      {label: "3 Seconds",  timelineDuration: 3*1000 },
+    ];
+    const renderedComponent = render (
+      <div>
+        <TimelineComponent
+          startDate={startDate}
+          endDate={endDate}
+          initialDuration={0}
+          totalDuration={duration}
+          minimized={true}
+          showDuration={true}
+          alwaysMinimized={true}
+          appMenuItemOption={"append"}
+          appMenuItems={appendMenuItems}
+          componentId={"sampleApp-appendSampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
+        />
+      </div>
+    );
+    expect(renderedComponent).not.to.be.undefined;
+
+    const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
+    fireEvent.click(settingMenuSpan);
+
+    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
+    expect(menuPopupDiv).not.to.be.null;
+    // renderedComponent.debug();
+    const addedItem = renderedComponent.getByText("8 seconds");
+    expect(addedItem).not.to.be.null;
+
+    const standardItem = renderedComponent.getByText ("timeline.slow");
+    expect(standardItem).not.to.be.null;
+  });
+  it("should prefix items", () => {
+    const duration = 500;
+    const startDate = new Date(2014, 6, 6);
+    const endDate = new Date(2016, 8, 12);
+    const prefixMenuItems: TimelineMenuItemProps[] = [
+      {label: "1/2 Second", timelineDuration: 500 },
+      {label: "1 Seconds",  timelineDuration: 1000 },
+      {label: "2 Seconds",  timelineDuration: 2*1000 },
+    ];
+    const renderedComponent = render (
+      <div>
+        <TimelineComponent
+          startDate={startDate}
+          endDate={endDate}
+          initialDuration={0}
+          totalDuration={duration}
+          minimized={true}
+          showDuration={true}
+          alwaysMinimized={true}
+          appMenuItemOption={"prefix"}
+          appMenuItems={prefixMenuItems}
+          componentId={"sampleApp-prefixSampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
+        />
+      </div>
+    );
+    expect(renderedComponent).not.to.be.undefined;
+
+    const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
+    fireEvent.click(settingMenuSpan);
+
+    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
+    expect(menuPopupDiv).not.to.be.null;
+    // renderedComponent.debug();
+    const addedItem = renderedComponent.getByText("2 Seconds");
+    expect(addedItem).not.to.be.null;
+    fireEvent.click(addedItem);
+
+    const standardItem = renderedComponent.getByText ("timeline.slow");
+    expect(standardItem).not.to.be.null;
+  });
+  it("should replace items", () => {
+    const duration = 40 * 1000;
+    const startDate = new Date(2018, 6, 6);
+    const endDate = new Date(2021, 8, 12);
+    const replaceMenuItems: TimelineMenuItemProps[] = [
+      {label: "40 Seconds", timelineDuration: 40*1000 },
+      {label: "1 Minute",  timelineDuration: 60*1000 },
+      {label: "90 Seconds",  timelineDuration: 90*1000 },
+    ];
+    const renderedComponent = render (
+      <div className="component-examples">
+        <TimelineComponent
+          startDate={startDate}
+          endDate={endDate}
+          initialDuration={0}
+          totalDuration={duration}
+          minimized={true}
+          showDuration={true}
+          alwaysMinimized={true}
+          appMenuItemOption={"replace"}
+          appMenuItems={replaceMenuItems}
+          componentId={"sampleApp-replaceSampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
+        />
+      </div>
+    );
+    expect(renderedComponent).not.to.be.undefined;
+
+    const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
+    fireEvent.click(settingMenuSpan);
+
+    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
+    expect(menuPopupDiv).not.to.be.null;
+    // renderedComponent.debug();
+    const addedItem = renderedComponent.queryByText("40 Seconds");
+    expect(addedItem).not.to.be.null;
+
+    expect(renderedComponent.queryByText ("timeline.slow")).to.be.null;
+  });
+  it("should remove repeat option", () => {
+    const duration = 40 * 1000;
+    const startDate = new Date(2018, 6, 6);
+    const endDate = new Date(2021, 8, 12);
+    const renderedComponent = render (
+      <div className="component-examples">
+        <TimelineComponent
+          startDate={startDate}
+          endDate={endDate}
+          initialDuration={0}
+          totalDuration={duration}
+          minimized={true}
+          showDuration={true}
+          alwaysMinimized={true}
+          includeRepeat={false}
+          componentId={"sampleApp-noRepeatSampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
+        />
+      </div>
+    );
+    expect(renderedComponent).not.to.be.undefined;
+
+    const settingMenuSpan = renderedComponent.getByTestId("timeline-settings");
+    fireEvent.click(settingMenuSpan);
+
+    const menuPopupDiv = renderedComponent.getByTestId("timeline-contextmenu-div");
+    expect(menuPopupDiv).not.to.be.null;
+    // renderedComponent.debug();
+
+    expect(renderedComponent.queryByText ("timeline.repeat")).to.be.null;
+
+    const mouseUp = document.createEvent("HTMLEvents");
+    mouseUp.initEvent("mouseup");
+    sinon.stub(mouseUp, "target").get(() => document.createElement("div"));
+    window.dispatchEvent(mouseUp);
+  });
+
 });
+

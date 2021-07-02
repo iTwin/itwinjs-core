@@ -204,8 +204,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
           }
 
           if (validation.status === MapLayerSourceStatus.Valid) {
-            source.subLayers = validation.subLayers;
-
             // Attach layer and update settings service (only if editing)
             if (layerRequiringCredentialsIdx !== undefined) {
               // Update username / password
@@ -225,7 +223,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
                 if (!(await MapLayerSettingsService.storeSourceInSettingsService(source, storeOnIModel, vp.iModel.contextId!, vp.iModel.iModelId!)))
                   return;
               }
-              const layerSettings = source.toLayerSettings();
+              const layerSettings = source.toLayerSettings(validation.subLayers);
               if (layerSettings) {
                 vp.displayStyle.attachMapLayerSettings(layerSettings, isOverlay, undefined);
 
