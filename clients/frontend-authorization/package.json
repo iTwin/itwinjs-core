@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-authorization-client",
-  "version": "2.17.0",
+  "version": "2.17.1",
   "description": "iModel.js Frontend Authorization Client",
   "main": "lib/frontend-authorization-client.js",
   "typings": "lib/frontend-authorization-client",
@@ -34,8 +34,8 @@
     "oidc-client": "^1.9.1"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.17.0",
-    "@bentley/itwin-client": "workspace:^2.17.0"
+    "@bentley/bentleyjs-core": "workspace:^2.17.1",
+    "@bentley/itwin-client": "workspace:^2.17.1"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
