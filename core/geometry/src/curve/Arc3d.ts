@@ -196,7 +196,7 @@ export class Arc3d extends CurvePrimitive implements BeJSONFunctions {
    * @param result optional preallocated result.
    */
   public static createCenterNormalRadius(center: Point3d | undefined, normal: Vector3d, radius: number, result?: Arc3d): Arc3d {
-    const frame = Matrix3d.createRigidHeadsUp(normal, AxisOrder.ZYX);
+    const frame = Matrix3d.createRigidHeadsUp(normal);
     return Arc3d.createScaledXYColumns(center, frame, radius, radius, undefined, result);
   }
 

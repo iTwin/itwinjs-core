@@ -938,9 +938,9 @@ export class AccuDraw {
 
   private stringToDistance(str: string): QuantityParseResult {
     const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Length);
-    if(parserSpec)
+    if (parserSpec)
       return parserSpec.parseToQuantityValue(str);
-    return {ok: false, error: ParseError.InvalidParserSpec};
+    return { ok: false, error: ParseError.InvalidParserSpec };
   }
 
   private stringToAngle(inString: string): QuantityParseResult {
@@ -949,7 +949,7 @@ export class AccuDraw {
     const parserSpec = IModelApp.quantityFormatter.findParserSpecByQuantityType(QuantityType.Angle);
     if (parserSpec)
       return parserSpec.parseToQuantityValue(inString);
-    return {ok: false, error: ParseError.InvalidParserSpec};
+    return { ok: false, error: ParseError.InvalidParserSpec };
   }
 
   private updateFieldValue(index: ItemField, input: string, _out: { isBearing: boolean }): BentleyStatus {
@@ -977,7 +977,7 @@ export class AccuDraw {
         return BentleyStatus.ERROR;
 
       case ItemField.ANGLE_Item:
-        parseResult =this.stringToAngle(input);
+        parseResult = this.stringToAngle(input);
         if (Parser.isParsedQuantity(parseResult)) {
           this._angle = parseResult.value;
           break;
@@ -2126,6 +2126,7 @@ export class AccuDraw {
     let projectionVector = new Vector3d();
 
     if (perpendicular) {
+      // eslint-disable-next-line react-hooks/rules-of-hooks
       if (AccuDraw.useACSContextRotation(vp, true)) { // Project along ACS axis to AccuDraw plane...
         const rMatrix = vp.getAuxCoordRotation(AccuDraw._tempRot);
         const axes = ThreeAxes.createFromMatrix3d(rMatrix);
@@ -2692,6 +2693,7 @@ export class AccuDraw {
       return false; // Disallow AccuDraw being enabled for exaggerated views...
 
     // NOTE: If ACS Plane lock setup initial and base rotation to ACS...
+    // eslint-disable-next-line react-hooks/rules-of-hooks
     if (vp && AccuDraw.useACSContextRotation(vp, false)) {
       this.setRotationMode(RotationMode.ACS);
       this.flags.baseRotation = RotationMode.ACS;

@@ -198,6 +198,7 @@ interface TimelineProps extends CommonProps {
 interface TimelineState {
   sunriseTooltipTarget: HTMLSpanElement | undefined;
   sunsetTooltipTarget: HTMLSpanElement | undefined;
+  timelineElement: HTMLDivElement | null;
 }
 
 class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
@@ -205,6 +206,7 @@ class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
   public readonly state = {
     sunriseTooltipTarget: undefined,
     sunsetTooltipTarget: undefined,
+    timelineElement: null,
   };
 
   private _getTickValues = (width: number) => {
@@ -235,6 +237,11 @@ class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
     });
   };
 
+  /** @internal */
+  public componentDidMount() {
+    this.setState({ timelineElement: this._timelineRef.current });
+  }
+
   public render() {
     const { formatTick, formatTime, onChange, onUpdate, dayStartMs, sunSetOffsetMs, sunRiseOffsetMs, currentTimeOffsetMs } = this.props;
     const domain = [0, millisecPerDay];
@@ -252,7 +259,7 @@ class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
           </Tooltip>
         </span>
         <div ref={this._timelineRef} className="ui-component-solar-slider-sizer">
-          <ElementResizeObserver watchedElement={this._timelineRef}
+          <ElementResizeObserver watchedElement={this.state.timelineElement}
             render={({ width }) => (
               <Slider
                 mode={(curr, next) => {

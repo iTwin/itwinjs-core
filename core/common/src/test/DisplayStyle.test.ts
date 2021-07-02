@@ -16,6 +16,7 @@ import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from 
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
 import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
+import { MapLayerSettings } from "../MapLayerSettings";
 
 /* eslint-disable deprecation/deprecation */
 //  - for DisplayStyleSettings.excludedElements.
@@ -248,6 +249,27 @@ describe("DisplayStyleSettings", () => {
       expectEvents([]);
     });
   });
+
+  // ###TODO @rbbentley
+  it.skip("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
+    const style = new DisplayStyleSettings({});
+    expect(style.backgroundMap.providerName).to.equal("BingProvider");
+    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
+
+    let base = style.mapImagery.backgroundBase as MapLayerSettings;
+    expect(base).instanceOf(MapLayerSettings);
+    expect(base.formatId).to.equal("BingMaps");
+    expect(base.url.indexOf("AerialWithLabels")).least(1);
+
+    style.backgroundMap = style.backgroundMap.clone({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } });
+    base = style.mapImagery.backgroundBase as MapLayerSettings;
+    expect(base.formatId).to.equal("MapboxImagery");
+    expect(base.url.indexOf("mapbox.streets/")).least(1);
+
+    style.mapImagery.backgroundBase = MapLayerSettings.fromMapSettings(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }));
+    expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
+    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
+  });
 });
 
 describe("DisplayStyleSettings overrides", () => {
@@ -315,12 +337,8 @@ describe("DisplayStyleSettings overrides", () => {
       sensorSettings: undefined,
       sunDirection: [1, 0, -1],
       gradientSettings: {
-        mode: 0,
-        colorScheme: 0,
-        customKeys: [],
         stepCount: 2,
         marginColor: ColorByName.magenta,
-        colorMix: 0,
       },
     },
   };
@@ -354,14 +372,9 @@ describe("DisplayStyleSettings overrides", () => {
 
   const iModelProps: DisplayStyle3dSettingsProps = {
     analysisStyle: {
-      inputName: "channel1",
-      inputRange: undefined,
-      displacementChannelName: "channel2",
-      displacementScale: undefined,
-      normalChannelName: undefined,
-      scalarChannelName: undefined,
-      scalarThematicSettings: undefined,
-      scalarRange: [1, 5],
+      displacement: {
+        channelName: "channel2",
+      },
     },
     analysisFraction: 0.2,
     scheduleScript: [{
@@ -409,12 +422,8 @@ describe("DisplayStyleSettings overrides", () => {
     thematic: {
       displayMode: ThematicDisplayMode.Height,
       gradientSettings: {
-        mode: 0,
         stepCount: 2,
         marginColor: ColorByName.magenta,
-        colorScheme: 0,
-        customKeys: [],
-        colorMix: 0,
       },
       axis: [-1, 0, 1],
       sunDirection: [1, 0, -1],
@@ -483,14 +492,15 @@ describe("DisplayStyleSettings overrides", () => {
     test({
       viewflags,
       analysisStyle: {
-        inputName: undefined,
-        inputRange: [2, 4],
-        displacementChannelName: "displacement",
-        displacementScale: 2.5,
+        displacement: {
+          channelName: "displacement",
+          scale: 2.5,
+        },
         normalChannelName: "normal",
-        scalarChannelName: undefined,
-        scalarThematicSettings: undefined,
-        scalarRange: undefined,
+        scalar: {
+          channelName: "scalar",
+          range: [-1, 2],
+        },
       },
       analysisFraction: 0.8,
     });
@@ -583,7 +593,7 @@ describe("DisplayStyleSettings overrides", () => {
         gradientSettings: {
           mode: 1,
           colorScheme: 1,
-          customKeys: [],
+          customKeys: [{ value: 0.5, color: 1234 }],
           stepCount: 3,
           marginColor: ColorByName.pink,
           colorMix: 0.5,

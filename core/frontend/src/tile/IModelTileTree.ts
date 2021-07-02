@@ -10,7 +10,7 @@ import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@bentley
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
   BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
-  IModelTileTreeProps, ModelGeometryChanges, TileProps, ViewFlagOverrides,
+  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, TileProps, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
@@ -316,6 +316,7 @@ export class IModelTileTree extends TileTree {
   public readonly maxTilesToSkip: number;
   public readonly maxInitialTilesToSkip: number;
   public readonly contentIdProvider: ContentIdProvider;
+  public readonly stringifiedSectionClip?: string;
   /** Strictly for debugging/testing - forces tile selection to halt at the specified depth. */
   public debugMaxDepth?: number;
   /** A little hacky...we must not override selectTiles(), but draw() needs to distinguish between static and dynamic tiles.
@@ -324,10 +325,13 @@ export class IModelTileTree extends TileTree {
    */
   private _numStaticTilesSelected = 0;
 
-  public constructor(params: IModelTileTreeParams) {
+  public constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId) {
     super(params);
     this.contentIdQualifier = params.contentIdQualifier;
     this.geometryGuid = params.geometryGuid;
+
+    if (BatchType.Primary === treeId.type)
+      this.stringifiedSectionClip = treeId.sectionCut;
 
     this.maxInitialTilesToSkip = params.maxInitialTilesToSkip ?? 0;
     this.maxTilesToSkip = IModelApp.tileAdmin.maximumLevelsToSkip;

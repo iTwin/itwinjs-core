@@ -6,18 +6,16 @@
  * @module Elements
  */
 
-import {
-  assert, CompressedId64Set, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array,
-} from "@bentley/bentleyjs-core";
-import { Range3d, Transform } from "@bentley/geometry-core";
-import { LockLevel } from "@bentley/imodelhub-client";
+import { assert, CompressedId64Set, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@bentley/bentleyjs-core";
+import { ClipVector, Range3d, Transform } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
   GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
-  Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps, SectionType,
-  SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
+  Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps,
+  SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
+import { LockScope } from "./BackendHubAccess";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { Entity } from "./Entity";
 import { IModelCloneContext } from "./IModelCloneContext";
@@ -156,12 +154,12 @@ export class Element extends Entity implements ElementProps {
       case DbOpcode.Insert: {
         if (Code.isValid(props.code) && !Code.isEmpty(props.code))
           req.addCodes([props.code]);
-        req.addLocks([ConcurrencyControl.Request.getModelLock(props.model, LockLevel.Shared)]);
+        req.addLocks([ConcurrencyControl.Request.getModelLock(props.model, LockScope.Shared)]);
         break;
       }
       case DbOpcode.Delete: {
         assert(props.id !== undefined);
-        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockLevel.Exclusive)]);
+        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockScope.Exclusive)]);
 
         // Elements.deleteElement will automatically delete children, so we must automatically request the necessary resources for the children.
         iModel.elements.queryChildren(props.id).forEach((childId) => {
@@ -171,7 +169,7 @@ export class Element extends Entity implements ElementProps {
       }
       case DbOpcode.Update: {
         assert(props.id !== undefined);
-        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockLevel.Exclusive)]);
+        req.addLocks([ConcurrencyControl.Request.getElementLock(props.id, LockScope.Exclusive)]);
 
         assert(original !== undefined && original.id === props.id);
         if (original !== undefined) {
@@ -180,7 +178,7 @@ export class Element extends Entity implements ElementProps {
             req.addCodes([props.code]);
 
           if (props.model !== original.model)
-            req.addLocks([ConcurrencyControl.Request.getModelLock(original.model, LockLevel.Shared)]);
+            req.addLocks([ConcurrencyControl.Request.getModelLock(original.model, LockScope.Shared)]);
         }
         break;
       }
@@ -700,7 +698,8 @@ export class VolumeElement extends SpatialLocationElement {
   public constructor(props: GeometricElement3dProps, iModel: IModelDb) { super(props, iModel); }
 }
 
-/** A SectionDrawingLocation element identifies the location of a [[SectionDrawing]] in the context of a [[SpatialModel]].
+/** A SectionDrawingLocation element identifies the location of a [[SectionDrawing]] in the context of a [[SpatialModel]],
+ * enabling [HyperModeling]($hypermodeling).
  * @note The associated ECClass was added to the BisCore schema in version 1.0.11.
  * @public
  */
@@ -870,6 +869,7 @@ export class Drawing extends Document {
 
 /** A document that represents a section drawing, that is, a graphical documentation derived from a planar
  * section of a spatial view. A SectionDrawing element is modelled by a [[SectionDrawingModel]] or a [[GraphicalModel3d]].
+ * A [[SectionDrawingLocation]] can associate the drawing with a spatial location, enabling [HyperModeling]($hypermodeling).
  * @public
  */
 export class SectionDrawing extends Drawing {
@@ -877,6 +877,17 @@ export class SectionDrawing extends Drawing {
   public sectionType: SectionType;
   /** The spatial view from which the section was generated. */
   public spatialView: RelatedElement;
+  /** A transform from the section drawing model's coordinates to spatial coordinates. */
+  public drawingToSpatialTransform?: Transform;
+  /** If the section drawing is placed onto a [[Sheet]] via a [[ViewAttachment]], a transform from the sheet's coordinates to spatial coordinates. */
+  public sheetToSpatialTransform?: Transform;
+  /** If the section drawing is placed onto a [[Sheet]] via a [[ViewAttachment]], the clip to apply to the sheet graphics when drawn in the context
+   * of the spatial view.
+   * @note The ClipVector is defined in spatial coordinates.
+   */
+  public drawingBoundaryClip?: ClipVector;
+  /** If true, when displaying the section drawing as a [DrawingViewState]($frontend), the [[spatialView]] will also be displayed. */
+  public displaySpatialView: boolean;
 
   /** @internal */
   public static get className(): string { return "SectionDrawing"; }
@@ -886,15 +897,39 @@ export class SectionDrawing extends Drawing {
     super(props, iModel);
     this.sectionType = JsonUtils.asInt(props.sectionType, SectionType.Section);
     this.spatialView = RelatedElement.fromJSON(props.spatialView) ?? RelatedElement.none;
+    this.displaySpatialView = JsonUtils.asBool(props.jsonProperties?.displaySpatialView);
+
+    const json = props.jsonProperties;
+    if (!json)
+      return;
+
+    if (json.drawingToSpatialTransform)
+      this.drawingToSpatialTransform = Transform.fromJSON(json.drawingToSpatialTransform);
+
+    if (json.sheetToSpatialTransform)
+      this.sheetToSpatialTransform = Transform.fromJSON(json.sheetToSpatialTransform);
+
+    if (json.drawingBoundaryClip)
+      this.drawingBoundaryClip = ClipVector.fromJSON(json.drawingBoundaryClip);
   }
 
-  /** @internal */
+  /** Convert to JSON representation. */
   public toJSON(): SectionDrawingProps {
-    return {
+    const props: SectionDrawingProps = {
       ...super.toJSON(),
       sectionType: this.sectionType,
       spatialView: this.spatialView.toJSON(),
     };
+
+    if (!props.jsonProperties)
+      props.jsonProperties = { };
+
+    props.jsonProperties.displaySpatialView = this.displaySpatialView ? true : undefined;
+    props.jsonProperties.drawingToSpatialTransform = this.drawingToSpatialTransform?.toJSON();
+    props.jsonProperties.sheetToSpatialTransform = this.sheetToSpatialTransform?.toJSON();
+    props.jsonProperties.drawingBoundaryClip = this.drawingBoundaryClip?.toJSON();
+
+    return props;
   }
 }
 

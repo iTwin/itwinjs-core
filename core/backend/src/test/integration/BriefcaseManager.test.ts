@@ -59,9 +59,9 @@ describe("BriefcaseManager (#integration)", () => {
     // Validate that the IModelDb is readonly
     assert(iModel.isReadonly, "iModel not set to Readonly mode");
 
-    const expectedChangeSetId = await IModelHost.hubAccess.getChangesetIdFromVersion({ version: IModelVersion.first(), requestContext, iModelId: readOnlyTestIModelId });
-    assert.strictEqual(iModel.changeSetId!, expectedChangeSetId);
-    assert.strictEqual(iModel.changeSetId!, expectedChangeSetId);
+    const expectedChangeSet = await IModelHost.hubAccess.getChangesetFromVersion({ version: IModelVersion.first(), requestContext, iModelId: readOnlyTestIModelId });
+    assert.strictEqual(iModel.changeSetId!, expectedChangeSet.id);
+    assert.strictEqual(iModel.changeSetId!, expectedChangeSet.id);
 
     const pathname = iModel.pathName;
     assert.isTrue(IModelJsFs.existsSync(pathname));
@@ -486,6 +486,8 @@ describe("BriefcaseManager (#integration)", () => {
     // eslint-disable-next-line no-console
     console.log(`download took ${watch.elapsedSeconds} seconds`);
     const iModel = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
+
+    await expect(BriefcaseManager.downloadBriefcase(requestContext, args)).to.be.rejectedWith(IModelError, "already exists", "should not be able to download a briefcase if a file with that name already exists");
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
     assert.isAbove(numProgressCalls, 0, "download progress called");

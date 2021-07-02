@@ -107,7 +107,6 @@ const dtaFrontendMain = async () => {
     dpiAwareViewports: false !== configuration.dpiAwareViewports,
     devicePixelRatioOverride: configuration.devicePixelRatioOverride,
     dpiAwareLOD: true === configuration.dpiAwareLOD,
-    doIdleWork: false !== configuration.doIdleWork,
     useWebGL2: false !== configuration.useWebGL2,
     planProjections: true,
     debugShaders: true === configuration.debugShaders,
