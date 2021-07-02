@@ -778,6 +778,10 @@ export class IModelTransformer extends IModelExportHandler {
    * It is more efficient to process *data* changes after the schema changes have been saved.
    */
   public async processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
+    // pending PR https://github.com/typescript-eslint/typescript-eslint/pull/3601 fixes the rule @typescript-eslint/return-await
+    // to work in try/catch syntax that contains a nested function
+    // until that merges and we upgrade our dependency, the callback cannot be defined inside the try block
+    const makeAbsolute = (s: string) => path.join(this._schemaExportDir, s);
     try {
       requestContext.enter();
       IModelJsFs.mkdirSync(this._schemaExportDir);
@@ -786,7 +790,7 @@ export class IModelTransformer extends IModelExportHandler {
       const exportedSchemaFiles = IModelJsFs.readdirSync(this._schemaExportDir);
       if (exportedSchemaFiles.length === 0)
         return;
-      const schemaFullPaths = exportedSchemaFiles.map((s) => path.join(this._schemaExportDir, s));
+      const schemaFullPaths = exportedSchemaFiles.map(makeAbsolute);
       return this.targetDb.importSchemas(requestContext, schemaFullPaths);
     } finally {
       requestContext.enter();
