@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "2.19.0-dev.2",
+  "version": "2.19.0-dev.3",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/ui-ninezone.js",
   "typings": "lib/ui-ninezone",
@@ -33,9 +33,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.2",
-    "@bentley/ui-abstract": "workspace:^2.19.0-dev.2",
-    "@bentley/ui-core": "workspace:^2.19.0-dev.2",
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.3",
+    "@bentley/ui-abstract": "workspace:^2.19.0-dev.3",
+    "@bentley/ui-core": "workspace:^2.19.0-dev.3",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -47,7 +47,7 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/react-scripts": "3.4.13",
+    "@bentley/react-scripts": "4.0.3",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/ui-core": "workspace:*",
     "@testing-library/react": "^8.0.1",
@@ -71,7 +71,7 @@
     "enzyme": "^3.4.0",
     "enzyme-adapter-react-16": "^1.15.5",
     "enzyme-to-json": "^3.3.4",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "ignore-styles": "^5.0.1",
     "jsdom": "^11.12.0",
     "jsdom-global": "3.0.2",
