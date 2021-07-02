@@ -131,6 +131,9 @@ export function buildNormalsFast(polyface: IndexedPolyface, creaseTolerance: num
   const builder = new NormalBuilder(polyface, 1.0e-10);
 
   const pointIndexToFacets: VertexFacets[] = [];
+  for (let i = 0; i < polyface.pointCount; i++)
+    pointIndexToFacets.push(new VertexFacets());
+
   const indexIndexToFacet: Facet[] = [];
   let facet = new Facet();
 
@@ -152,12 +155,13 @@ export function buildNormalsFast(polyface: IndexedPolyface, creaseTolerance: num
 
   const minDot = Math.cos(creaseTolerance);
   const minArea = sizeTolerance * sizeTolerance;
+  const defaultFacet = new Facet();
   for (let i = 0, indexCount = polyface.data.indexCount; i < indexCount; i++) {
     const pointIndex = Math.abs(polyface.data.pointIndex[i]);
     if (0 === pointIndex) {
       builder.addNormalIndexTerminator();
     } else {
-      const thisFacet = indexIndexToFacet[i];
+      const thisFacet = indexIndexToFacet[i] ?? defaultFacet;
       const zeroBasedIndex = pointIndex - 1;
 
       let normal;
