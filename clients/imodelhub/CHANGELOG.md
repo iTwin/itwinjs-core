@@ -1,6 +1,11 @@
 # Change Log - @bentley/imodelhub-client
 
-This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Jul 2021 15:38:30 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:30 GMT
+
+_Version update only_
 
 ## 2.17.0
 Mon, 28 Jun 2021 16:20:11 GMT
@@ -291,7 +296,7 @@ Fri, 02 Oct 2020 18:03:32 GMT
 
 ### Updates
 
-- Fixed lint warnings.
+- Fixed lint warnings. 
 - Changed the bulk lock deletion to use the new chunked bulk lock delete API
 
 ## 2.6.5
@@ -421,17 +426,17 @@ Thu, 28 May 2020 22:48:59 GMT
 
 - Added FailedToGetProductSettings error
 - Download ChangeSets in chunks
-- Simplified logging for monitoring briefcase operations.
+- Simplified logging for monitoring briefcase operations. 
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
 - Changed ChangeSets download API
 - Added unlink for file handler
-- Updated docs.
+- Updated docs. 
 - Changeset download get sas url just before starting download
 - react to changes in imodeljs-clients
 - update imodelbank auth clients to implement FrontendAuthorizationClient
