@@ -41,6 +41,7 @@ export class MapTileLoader extends RealityTileLoader {
   }
 
   public get maxDepth(): number { return this._terrainProvider.maxDepth; }
+  public get minDepth(): number { return 0;}
   public get terrainProvider(): TerrainMeshProvider { return this._terrainProvider; }
 
   public getRequestChannel(_tile: Tile) {
