@@ -181,7 +181,7 @@ const rule = {
             node,
             messageId: messageIds.noEnterOnAwaitResume,
             fix(fixer) {
-              return promoteBlocklessStmtFixer(loop, fixer, {
+              return checkReentryNonBlockStmt(loop, fixer, {
                 textBefore: ``,
               });
             },
@@ -235,16 +235,19 @@ const rule = {
             return findAfter(node.parent.body, (s) => s === node);
           },
           IfStatement(node) {
-            // XXX: promote block-less IF-CONSEQUENCE to block
-            // XXX: handle empty body
-            if (nodeContains(node.parent.consequent, node)) {
-            } else if (nodeContains(node.parent.alternate, node)) {
-            } else if (nodeContains(node.parent.test, node)) {
-            } else unreachable("no other valid children of IfStatement");
-            if (node.parent.consequent.type === "BlockStatement") {
-              return node.parent.consequent.body[0];
-            } else {
-              return Handled;
+            for (const parentBranchKey of ["consequent", "alternate"])
+              if (nodeContains(node.parent[parentBranchKey], node))
+                return checkReentryNonBlockStmt(node, parentBranchKey);
+            if (nodeContains(node.parent.test, node)) {
+              context.report({
+                node,
+                fix(fixer) {
+                  return fixer.insertTextBefore(
+                    node.parent,
+                    `${reqCtxArgName}.enter();`
+                  );
+                },
+              });
             }
           },
           ForOfStatement: NextFromForStatement,
@@ -330,69 +333,29 @@ const rule = {
      *        | TSESTree.ForOfStatement
      *        | TSESTree.ForInStatement
      *        | TSESTree.ForStatement
-     *        } stmt
-     * @param {import("@typescript-eslint/experimental-utils/dist/ts-eslint").RuleFixer} fixer
-     * @param {{textBefore?: string}}  options
-     * @returns {import("@typescript-eslint/experimental-utils/dist/ts-eslint").RuleFix[]}
+     *        } node
+     * @param {string} reqCtxArgName
+     * /returns {import("@typescript-eslint/experimental-utils/dist/ts-eslint").RuleFix[]}
      */
     // technically, although I don't plan to handle it (yet) because of its rarity, one could have a correct non-block body
     // that this doesn't cover, like the following:
     // for await (const x of y) (reqCtx.enter(), x.f());
     // async (reqCtx, x) => (reqCtx.enter(), x.f());
-    function promoteBlocklessStmtFixer(
-      stmt,
-      { textBefore } = { textBefore: "" }
-    ) {
-      const body = stmt.type === "IfStatement" ? stmt.consequent : stmt.body;
-      return [
-        fixer.insertTextBefore(body, "{" + textBefore),
-        fixer.insertTextAfter(body, "}"),
-      ];
+    function checkReentryNonBlockStmt(node, reqCtxArgName) {
+      if (isReqCtxEntry(node, reqCtxArgName)) return;
+      if (node.type === "BlockStatement")
+        unreachable("should not be called where block statements are used");
 
-      if (
-        !isReqCtxEntry(
-          body.type === "BlockStatement" ? body.body[0] : body,
-          lastFunc.reqCtxArgName
-        )
-      ) {
-        if (body.type === "BlockStatement") {
-          if (!isReqCtxEntry(body.body[0], lastFunc.reqCtxArgName))
-            context.report({
-              node: body.body[0] || body,
-              messageId: messageIds.noEnterOnAwaitResume,
-              fix(fixer) {
-                if (body.type !== "BlockStatement")
-                  throw unreachable("must be block statement");
-                if (body.range === undefined)
-                  throw unreachable("node range was undefined");
-                if (body.body[0] !== undefined)
-                  return fixer.insertTextBefore(
-                    body.body[0],
-                    `${lastFunc.reqCtxArgName}.enter();`
-                  );
-                else
-                  return fixer.insertTextAfterRange(
-                    [body.range[0] + 1, body.range[1] - 1],
-                    `${lastFunc.reqCtxArgName}.enter();`
-                  );
-              },
-            });
-        }
-      } else if (body.type !== "BlockStatement") {
-        context.report({
-          node: body,
-          messageId: messageIds.noEnterOnAwaitResume,
-          fix(fixer) {
-            return [
-              fixer.insertTextBefore(
-                body,
-                `{${lastFunc.reqCtxArgName}.enter();`
-              ),
-              fixer.insertTextAfter(body, `}`),
-            ];
-          },
-        });
-      }
+      context.report({
+        node,
+        messageId: messageIds.noEnterOnAwaitResume,
+        fix(fixer) {
+          return [
+            fixer.insertTextBefore(node, `{${reqCtxArgName}.enter();`),
+            fixer.insertTextAfter(node, `}`),
+          ];
+        },
+      });
     }
 
     /**
