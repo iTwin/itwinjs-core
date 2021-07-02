@@ -64,12 +64,8 @@ class NormalBuilder {
     polyface.data.normalIndex = this._normalIndex;
   }
 
-  public addNormalIndexTerminator(): void {
-    this._normalIndex.push(0);
-  }
-
-  public addNormalIndex(zeroBasedIndex: number): void {
-    this._normalIndex.push(zeroBasedIndex + 1);
+  public addNormalIndex(index: number): void {
+    this._normalIndex.push(index);
   }
 
   /** Returns corresponding normal index. */
@@ -127,7 +123,6 @@ export function buildNormalsFast(polyface: IndexedPolyface, creaseTolerance: num
     return;
 
   const facePoints: Point3d[] = [];
-  const points = polyface.data.point;
   const builder = new NormalBuilder(polyface, 1.0e-10);
 
   const pointIndexToFacets: VertexFacets[] = [];
@@ -135,41 +130,35 @@ export function buildNormalsFast(polyface: IndexedPolyface, creaseTolerance: num
     pointIndexToFacets.push(new VertexFacets());
 
   const indexIndexToFacet: Facet[] = [];
-  let facet = new Facet();
 
-  for (let i = 0, indexCount = polyface.data.indexCount; i < indexCount; i++) {
-    const pointIndex = Math.abs(polyface.data.pointIndex[i]);
-    if (0 === pointIndex) {
-      if (facePoints.length > 0) {
-        facet.init(facePoints);
-        facet = new Facet();
-        facePoints.length = 0;
-      }
-    } else {
-      const zeroBasedIndex = pointIndex - 1;
-      facePoints.push(points.getPoint3dAtUncheckedPointIndex(zeroBasedIndex));
-      pointIndexToFacets[zeroBasedIndex].facets.push(facet);
-      indexIndexToFacet[i] = facet;
+  let indexIndex = 0;
+  let facet = new Facet();
+  const visitor = polyface.createVisitor();
+  while (visitor.moveToNextFacet()) {
+    if (facePoints.length > 0) {
+      facet.init(facePoints);
+      facet = new Facet();
+      facePoints.length = 0;
+    }
+
+    for (let i = 0; i < visitor.indexCount; i++) {
+      facePoints.push(visitor.point.getPoint3dAtUncheckedPointIndex(i));
+      const pointIndex = visitor.clientPointIndex(i);
+      pointIndexToFacets[pointIndex].facets.push(facet);
+      indexIndexToFacet[indexIndex++] = facet;
     }
   }
 
   const minDot = Math.cos(creaseTolerance);
   const minArea = sizeTolerance * sizeTolerance;
-  const defaultFacet = new Facet();
-  for (let i = 0, indexCount = polyface.data.indexCount; i < indexCount; i++) {
-    const pointIndex = Math.abs(polyface.data.pointIndex[i]);
-    if (0 === pointIndex) {
-      builder.addNormalIndexTerminator();
-    } else {
-      const thisFacet = indexIndexToFacet[i] ?? defaultFacet;
-      const zeroBasedIndex = pointIndex - 1;
 
-      let normal;
-      if (thisFacet.area < minArea)
-        normal = thisFacet.normal;
-      else
-        normal = pointIndexToFacets[zeroBasedIndex].computeSharedNormal(thisFacet, minDot);
-
+  indexIndex = 0;
+  visitor.reset();
+  while (visitor.moveToNextFacet()) {
+    for (let i = 0; i < visitor.indexCount; i++) {
+      const pointIndex = visitor.clientPointIndex(i);
+      const thisFacet = indexIndexToFacet[indexIndex++];
+      const normal = thisFacet.area < minArea ? thisFacet.normal : pointIndexToFacets[pointIndex].computeSharedNormal(thisFacet, minDot);
       builder.addNormalIndex(builder.findOrAddNormal(normal));
     }
   }
