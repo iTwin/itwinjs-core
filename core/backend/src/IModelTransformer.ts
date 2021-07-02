@@ -773,15 +773,16 @@ export class IModelTransformer extends IModelExportHandler {
     IModelJsFs.writeFileSync(schemaPath, await schema.toXmlString());
   }
 
+  // pending PR https://github.com/typescript-eslint/typescript-eslint/pull/3601 fixes the rule @typescript-eslint/return-await
+  // to work in try/catch syntax in functions that contain a nested function
+  // until that merges and we upgrade our dependency, the callback cannot be defined inside the try block
+  private makeAbsolute = (s: string) => path.join(this._schemaExportDir, s);
+
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
    * It is more efficient to process *data* changes after the schema changes have been saved.
    */
   public async processSchemas(requestContext: ClientRequestContext | AuthorizedClientRequestContext): Promise<void> {
-    // pending PR https://github.com/typescript-eslint/typescript-eslint/pull/3601 fixes the rule @typescript-eslint/return-await
-    // to work in try/catch syntax that contains a nested function
-    // until that merges and we upgrade our dependency, the callback cannot be defined inside the try block
-    const makeAbsolute = (s: string) => path.join(this._schemaExportDir, s);
     try {
       requestContext.enter();
       IModelJsFs.mkdirSync(this._schemaExportDir);
@@ -790,8 +791,8 @@ export class IModelTransformer extends IModelExportHandler {
       const exportedSchemaFiles = IModelJsFs.readdirSync(this._schemaExportDir);
       if (exportedSchemaFiles.length === 0)
         return;
-      const schemaFullPaths = exportedSchemaFiles.map(makeAbsolute);
-      return this.targetDb.importSchemas(requestContext, schemaFullPaths);
+      const schemaFullPaths = exportedSchemaFiles.map(this.makeAbsolute);
+      return await this.targetDb.importSchemas(requestContext, schemaFullPaths);
     } finally {
       requestContext.enter();
       IModelJsFs.removeSync(this._schemaExportDir);
