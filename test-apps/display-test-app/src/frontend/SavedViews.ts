@@ -64,10 +64,10 @@ export class SavedViewPicker extends ToolBarDropDown {
   }
 
   public async populate(): Promise<void> {
-    if (!this._imodel.isOpen)
+    if (!this._imodel.isOpen && !this._imodel.isBlank)
       return;
 
-    const filename = this._imodel.key;
+    const filename = this._imodel.isBlank ? this._imodel.rootSubject.name : this._imodel.key;
     const esvString = await DtaRpcInterface.getClient().readExternalSavedViews(filename);
     this._views.loadFromString(esvString);
     this.populateFromViewList();
