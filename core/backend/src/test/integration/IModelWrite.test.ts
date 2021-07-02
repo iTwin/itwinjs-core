@@ -12,7 +12,7 @@ import * as semver from "semver";
 import { LockScope } from "../../BackendHubAccess";
 import { IModelHubBackend } from "../../IModelHubBackend";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, LockProps, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, LockProps, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType, Timer } from "../IModelTestUtils";
