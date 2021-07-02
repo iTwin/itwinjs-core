@@ -304,9 +304,7 @@
     },
     {
       "name": "agentkeepalive",
-      "allowedCategories": [
-        "backend"
-      ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "almost-equal",
@@ -786,9 +784,7 @@
     },
     {
       "name": "proper-lockfile",
-      "allowedCategories": [
-        "backend"
-      ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "puppeteer",
