@@ -15,9 +15,9 @@ import { System } from "../../../render/webgl/System";
 
 describe("FrameBuffer tests", () => {
   // eslint-disable-next-line no-return-await
-  before(async () => await IModelApp.startup());
+  before(async () => IModelApp.startup());
   // eslint-disable-next-line no-return-await
-  after(async () => await IModelApp.shutdown());
+  after(async () => IModelApp.shutdown());
 
   it("should produce and bind a valid framebuffer with single color attachment", () => {
     if (!IModelApp.hasRenderSystem)
