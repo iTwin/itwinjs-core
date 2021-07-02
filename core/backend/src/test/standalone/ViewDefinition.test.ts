@@ -10,10 +10,8 @@ import { CategorySelector, DictionaryModel, DisplayStyle3d, IModelDb, ModelSelec
 import { IModelTestUtils } from "../IModelTestUtils";
 
 export function createNewModelAndCategory(rwIModel: IModelDb, parent?: Id64String) {
-  // Create PhysicalPartition, PhysicalModel
   const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartition(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), parent);
 
-  // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
@@ -64,13 +62,13 @@ describe("ViewDefinition", () => {
     };
 
     // Bad way to create - error checks
-    assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, categorySelectorId } as ElementProps), IModelError); // Missing displayStyleId
-    assert.throws(() => iModel.elements.createElement({ ...basicProps, categorySelectorId, displayStyleId } as ElementProps), IModelError); // Missing modelSelectorId
-    assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, displayStyleId } as ElementProps), IModelError); // Missing categorySelectorId
+    assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, categorySelectorId } as ElementProps), IModelError, "displayStyleId is invalid"); // Missing displayStyleId
+    assert.throws(() => iModel.elements.createElement({ ...basicProps, categorySelectorId, displayStyleId } as ElementProps), IModelError, "modelSelectorId is invalid"); // Missing modelSelectorId
+    assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, displayStyleId } as ElementProps), IModelError, "categorySelectorId is invalid"); // Missing categorySelectorId
     // Uncomment after the fixes are made in native code
-    // assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), IModelError); // Bad displayStyleId
-    // assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId: modelId, displayStyleId, categorySelectorId } as ElementProps), IModelError); // Bad modelSelectorId
-    // assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), IModelError); // Bad categorySelectorId
+    // assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), IModelError, "displayStyleId is invalid"); // Bad displayStyleId
+    // assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId: modelId, displayStyleId, categorySelectorId } as ElementProps), IModelError, "modelSelectorId is invalid"); // Bad modelSelectorId
+    // assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), IModelError, "categorySelectorId is invalid"); // Bad categorySelectorId
 
     // Better way to create and insert
     const props: SpatialViewDefinitionProps = { ...basicProps, modelSelectorId, categorySelectorId, displayStyleId };
