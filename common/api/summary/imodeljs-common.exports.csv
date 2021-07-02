@@ -632,6 +632,7 @@ internal;class TileHeader
 internal;TileMetadata 
 internal;TileMetadataReader
 internal;TileOptions
+internal;TileOptions
 internal;TileProps
 internal;TileReadError 
 internal;TileReadStatus
