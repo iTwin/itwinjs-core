@@ -1,6 +1,6 @@
 {
   "name": "@bentley/express-server",
-  "version": "2.19.0-dev.1",
+  "version": "2.19.0-dev.2",
   "description": "iModel.js express utilities",
   "main": "lib/ExpressServer.js",
   "typings": "lib/ExpressServer",
@@ -43,7 +43,7 @@
     "@types/sinon": "^9.0.0",
     "@types/supertest": "^2.0.4",
     "chai": "^4.1.2",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",

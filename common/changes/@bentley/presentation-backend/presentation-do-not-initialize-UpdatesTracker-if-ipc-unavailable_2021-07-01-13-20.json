@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-backend",
+      "comment": "Do not initialize UpdatesTracker if IPC host is not available. Fixes a problem of presentation manager trying to use IPC after changes to the iModel are made.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-backend",
+  "email": "35135765+grigasp@users.noreply.github.com"
+}

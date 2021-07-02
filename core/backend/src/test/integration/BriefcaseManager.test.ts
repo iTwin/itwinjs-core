@@ -487,6 +487,8 @@ describe("BriefcaseManager (#integration)", () => {
     console.log(`download took ${watch.elapsedSeconds} seconds`);
     const iModel = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
 
+    await expect(BriefcaseManager.downloadBriefcase(requestContext, args)).to.be.rejectedWith(IModelError, "already exists", "should not be able to download a briefcase if a file with that name already exists");
+
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
     assert.isAbove(numProgressCalls, 0, "download progress called");
     assert.isAbove(done, 0, "done set");
