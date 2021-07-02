@@ -24,6 +24,7 @@ import { Transform } from "../geometry3d/Transform";
 import { FacetFaceData } from "./FacetFaceData";
 import { IndexedPolyfaceVisitor } from "./IndexedPolyfaceVisitor";
 import { PolyfaceData } from "./PolyfaceData";
+import { buildNormalsFast } from "./BuildNormalsFast";
 
 function allDefined(valueA: any, valueB: any, valueC: any): boolean {
   return valueA !== undefined && valueB !== undefined && valueC !== undefined;
@@ -546,6 +547,14 @@ export class IndexedPolyface extends Polyface {
   /** Second step of double dispatch:  call `handler.handleIndexedPolyface(this)` */
   public dispatchToGeometryHandler(handler: GeometryHandler): any {
     return handler.handleIndexedPolyface(this);
+  }
+
+  /** Quickly generate normals for this polyface, if [[normalCount]] is zero. This function does nothing if the polyface already has normals.
+   * @param creaseTolerance Dihedral angle considered "smooth" for a single edge.
+   * @param sharedEdgeSizeTolerance If a facet is smaller than this tolerance, expensive shared normal calculation will be skipped.
+   */
+  public buildNormalsFast(creaseTolerance: number, sharedEdgeSizeTolerance: number): void {
+    buildNormalsFast(this, creaseTolerance, sharedEdgeSizeTolerance);
   }
 }
 
