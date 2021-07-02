@@ -1,6 +1,11 @@
 # Change Log - @bentley/imodeljs-editor-common
 
-This log was last generated on Mon, 28 Jun 2021 18:13:04 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Jul 2021 17:40:46 GMT and should not be manually modified.
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
 
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT

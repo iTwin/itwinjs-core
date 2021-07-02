@@ -1,6 +1,6 @@
 {
   "name": "@bentley/eslint-plugin",
-  "version": "2.16.7",
+  "version": "2.16.8",
   "description": "ESLint plugin with default configuration and custom rules for iModel.js projects",
   "license": "MIT",
   "keywords": [
