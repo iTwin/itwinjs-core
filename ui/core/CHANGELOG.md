@@ -1,6 +1,24 @@
 # Change Log - @bentley/ui-core
 
+<<<<<<< HEAD
 This log was last generated on Mon, 28 Jun 2021 18:13:04 GMT and should not be manually modified.
+=======
+This log was last generated on Fri, 02 Jul 2021 15:38:31 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Update use of resize observer to be compatible with using it in a child/popup window.
+- Update scss to remove use of slash for division to avoid SASS deprecation warnings.
+- Publish in-use APIs
+>>>>>>> 3b97eb234b (2.17.1 changelogs (#1780))
 
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT

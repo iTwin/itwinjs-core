@@ -1,6 +1,27 @@
 # Change Log - @bentley/ui-ninezone
 
+<<<<<<< HEAD
 This log was last generated on Mon, 28 Jun 2021 18:13:04 GMT and should not be manually modified.
+=======
+This log was last generated on Fri, 02 Jul 2021 15:38:31 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Add ability to define state of popout widgets in NinezoneState.
+- Add ability to maintain tab state even if UiItemsProvider that added the tab is not loaded. This allow preference size to be maintained.
+- fix css deprecation warning about using 'fit-available'.
+- Update scss to remove use of slash for division to avoid SASS deprecation warnings.
+- Fix sass error reported by Civil iTwin.
+- publish in-use APIs
+>>>>>>> 3b97eb234b (2.17.1 changelogs (#1780))
 
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT

@@ -1,6 +1,42 @@
 # Change Log - @bentley/imodeljs-frontend
 
+<<<<<<< HEAD
 This log was last generated on Mon, 28 Jun 2021 18:13:04 GMT and should not be manually modified.
+=======
+This log was last generated on Fri, 02 Jul 2021 15:38:31 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Promote APIs to public.
+- DR request for doClipPlaneOrientView to choose "better" view x direction.
+- Added arc by 3 points tool. Ensure tools always get motion event before decorate or onDynamicFrame.
+- Clean up and promote DisplayStyleState APIs for context reality models.
+- Add TiledGraphicsProvider.isLoadingComplete.
+- Make EditManipulator public
+- Export EmphasizeElementProps from common, deprecate from frontend.
+- External textures enabled by default for TileAdmin. External textures will downsample to maxTextureSize of client.
+- Make flash settings customizable for a viewport.
+- Allow saved map-layer definition to be edited.
+- Removed unused 'maxZoom' property on MapLayerProps.  Added MapLayerSourceProps interface.
+- Made MaplayerSource independent from MapLayerProps.
+- Add GraphicBuilder.addPrimitive accepting any type of primitive.
+- Synchronize IModelConnection properties in response to Ipc notifications.
+- added IModelApp.hubAccess and deprecated IModelApp.iModelClient
+- Promote various APIs to public. Add GraphicBuilder.addPrimitive accepting any type of primitive.
+- set authorizationClient to undefined in IModelApp.shutdown
+- Don't allow undo of changes to project extents or geolocation.
+- make IpcApp and NativeApp @public
+- Prevent preflight for ContextShare tile request
+- Erase touch cursor when it is drawn in a different view.
+>>>>>>> 3b97eb234b (2.17.1 changelogs (#1780))
 
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT

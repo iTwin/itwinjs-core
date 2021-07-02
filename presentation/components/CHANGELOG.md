@@ -1,6 +1,25 @@
 # Change Log - @bentley/presentation-components
 
+<<<<<<< HEAD
 This log was last generated on Mon, 28 Jun 2021 18:13:04 GMT and should not be manually modified.
+=======
+This log was last generated on Fri, 02 Jul 2021 15:38:31 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Move `immer` from `devDependencies` into `dependencies`.
+- `usePresentationTreeNodeLoader`: Fix change in props not being properly reflected when hierarchy auto-update is enabled.
+- Updated table/DataProvider so that it would find sameInstance nested properties and extract their values/fields when needed.
+- `usePropertyDataProviderWithUnifiedSelection`: Add selected element count to the return value.
+>>>>>>> 3b97eb234b (2.17.1 changelogs (#1780))
 
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT

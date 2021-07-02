@@ -1,6 +1,23 @@
 # Change Log - @bentley/eslint-plugin
 
+<<<<<<< HEAD
 This log was last generated on Mon, 28 Jun 2021 18:13:04 GMT and should not be manually modified.
+=======
+This log was last generated on Fri, 02 Jul 2021 15:38:30 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:30 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Output parent symbol and skip local files in no-internal eslint rule
+- Added no-internal-report command to @bentley/eslint-plugin
+>>>>>>> 3b97eb234b (2.17.1 changelogs (#1780))
 
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT
