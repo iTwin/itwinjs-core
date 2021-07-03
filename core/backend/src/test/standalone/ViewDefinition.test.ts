@@ -9,9 +9,8 @@ import { assert } from "chai";
 import { CategorySelector, DictionaryModel, DisplayStyle3d, IModelDb, ModelSelector, SpatialCategory, SpatialViewDefinition, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-export function createNewModelAndCategory(rwIModel: IModelDb, parent?: Id64String) {
-  const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartition(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), parent);
-
+function createNewModelAndCategory(rwIModel: IModelDb, parent?: Id64String) {
+  const modelId = IModelTestUtils.createAndInsertPhysicalPartition(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), parent);
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
@@ -34,10 +33,11 @@ describe("ViewDefinition", () => {
   });
 
   after(() => {
+    iModel.abandonChanges();
     iModel.close();
   });
 
-  it("create SpatialViewDefinition and throw errors on bad input", async () => {
+  it("create SpatialViewDefinition and throw errors on bad input", () => {
     const { modelId, spatialCategoryId } = createNewModelAndCategory(iModel);
     const displayStyleId = DisplayStyle3d.insert(iModel, IModel.dictionaryId, "default", { backgroundColor: ColorDef.fromString("rgb(255,0,0)") });
     const modelSelectorId = ModelSelector.insert(iModel, IModel.dictionaryId, "default", [modelId]);
@@ -61,14 +61,15 @@ describe("ViewDefinition", () => {
       camera: new Camera(),
     };
 
-    // Bad way to create - error checks
-    assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, categorySelectorId } as ElementProps), IModelError, "displayStyleId is invalid"); // Missing displayStyleId
-    assert.throws(() => iModel.elements.createElement({ ...basicProps, categorySelectorId, displayStyleId } as ElementProps), IModelError, "modelSelectorId is invalid"); // Missing modelSelectorId
-    assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, displayStyleId } as ElementProps), IModelError, "categorySelectorId is invalid"); // Missing categorySelectorId
-    // Uncomment after the fixes are made in native code
-    // assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), IModelError, "displayStyleId is invalid"); // Bad displayStyleId
-    // assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId: modelId, displayStyleId, categorySelectorId } as ElementProps), IModelError, "modelSelectorId is invalid"); // Bad modelSelectorId
-    // assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), IModelError, "categorySelectorId is invalid"); // Bad categorySelectorId
+    // attempt to create a ViewDefinition element with invalid properties
+    assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, categorySelectorId } as ElementProps), IModelError, "displayStyleId is invalid");
+    assert.throws(() => iModel.elements.createElement({ ...basicProps, categorySelectorId, displayStyleId } as ElementProps), IModelError, "modelSelectorId is invalid");
+    assert.throws(() => iModel.elements.createElement({ ...basicProps, modelSelectorId, displayStyleId } as ElementProps), IModelError, "categorySelectorId is invalid");
+
+    // attempt to insert a ViewDefinition with invalid properties (uncomment after the fixes are made in native code)
+    // assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId, displayStyleId: modelId } as ElementProps), IModelError, "invalid displayStyle");
+    // assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId: modelId, displayStyleId, categorySelectorId } as ElementProps), IModelError, "invalid modelSelector");
+    // assert.throws(() => iModel.elements.insertElement({ ...basicProps, modelSelectorId, categorySelectorId: modelId, displayStyleId } as ElementProps), IModelError, "invalid categorySelector");
 
     // Better way to create and insert
     const props: SpatialViewDefinitionProps = { ...basicProps, modelSelectorId, categorySelectorId, displayStyleId };
@@ -80,9 +81,6 @@ describe("ViewDefinition", () => {
     // Best way to create and insert
     viewDefinitionId = SpatialViewDefinition.insertWithCamera(iModel, IModel.dictionaryId, "default", modelSelectorId, categorySelectorId, displayStyleId, iModel.projectExtents);
     iModel.views.setDefaultViewId(viewDefinitionId);
-
-    iModel.saveChanges("Added default category");
-    iModel.close();
   });
 
 });
