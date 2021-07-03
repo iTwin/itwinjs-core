@@ -775,7 +775,7 @@ export class IModelTransformer extends IModelExportHandler {
 
   // pending PR https://github.com/typescript-eslint/typescript-eslint/pull/3601 fixes the rule @typescript-eslint/return-await
   // to work in try/catch syntax in functions that contain a nested function
-  // until that merges and we upgrade our dependency, the callback cannot be defined inside the try block
+  // until that merges and we upgrade our dependency, the callback cannot be defined inside the method it is used
   private makeAbsolute = (s: string) => path.join(this._schemaExportDir, s);
 
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.

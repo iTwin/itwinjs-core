@@ -974,7 +974,7 @@ describe("IModelTransformer", () => {
     const importSchemasResolved = sinon.spy();
     let importSchemasPromise: Promise<void>;
 
-    sinon.replace(targetDb, "importSchemas", sinon.fake(() => {
+    sinon.replace(targetDb, "importSchemas", sinon.fake(async () => {
       importSchemasPromise = new Promise((resolve) => setImmediate(() => {
         importSchemasResolved();
         resolve(undefined);
