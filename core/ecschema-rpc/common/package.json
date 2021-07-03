@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-rpcinterface-common",
-  "version": "2.19.0-dev.3",
+  "version": "2.19.0-dev.4",
   "description": "Schema RPC Interface common interface",
   "main": "lib/ecschema-rpc-interface.js",
   "typings": "lib/ecschema-rpc-interface",
