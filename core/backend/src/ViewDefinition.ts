@@ -6,13 +6,13 @@
  * @module ViewDefinitions
  */
 
-import { Id64, Id64Array, Id64Set, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64Array, Id64Set, Id64String, IModelStatus, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   Angle, Matrix3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
   AuxCoordSystem2dProps, AuxCoordSystem3dProps, AuxCoordSystemProps, BisCodeSpec, Camera,
-  CategorySelectorProps, Code, CodeScopeProps, CodeSpec, LightLocationProps, ModelSelectorProps, RelatedElement,
+  CategorySelectorProps, Code, CodeScopeProps, CodeSpec, IModelError, LightLocationProps, ModelSelectorProps, RelatedElement,
   SpatialViewDefinitionProps, ViewAttachmentProps, ViewDefinition2dProps, ViewDefinition3dProps, ViewDefinitionProps, ViewDetails, ViewDetails3d,
 } from "@bentley/imodeljs-common";
 import { DefinitionElement, GraphicalElement2d, SpatialLocationElement } from "./Element";
@@ -178,8 +178,14 @@ export abstract class ViewDefinition extends DefinitionElement implements ViewDe
   /** @internal */
   protected constructor(props: ViewDefinitionProps, iModel: IModelDb) {
     super(props, iModel);
+
     this.categorySelectorId = Id64.fromJSON(props.categorySelectorId);
+    if (!Id64.isValid(this.categorySelectorId))
+      throw new IModelError(IModelStatus.BadArg, `categorySelectorId is invalid`);
+
     this.displayStyleId = Id64.fromJSON(props.displayStyleId);
+    if (!Id64.isValid(this.displayStyleId))
+      throw new IModelError(IModelStatus.BadArg, `displayStyleId is invalid`);
   }
 
   /** @internal */
@@ -317,19 +323,28 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
   public static get className(): string { return "SpatialViewDefinition"; }
   /** The Id of the [[ModelSelector]] for this SpatialViewDefinition. */
   public modelSelectorId: Id64String;
+
   /** @internal */
-  constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) { super(props, iModel); this.modelSelectorId = Id64.fromJSON(props.modelSelectorId); }
+  constructor(props: SpatialViewDefinitionProps, iModel: IModelDb) {
+    super(props, iModel);
+    this.modelSelectorId = Id64.fromJSON(props.modelSelectorId);
+    if (!Id64.isValid(this.modelSelectorId))
+      throw new IModelError(IModelStatus.BadArg, `modelSelectorId is invalid`);
+  }
+
   /** @internal */
   public toJSON(): SpatialViewDefinitionProps {
     const json = super.toJSON() as SpatialViewDefinitionProps;
     json.modelSelectorId = this.modelSelectorId;
     return json;
   }
+
   /** @internal */
   protected collectPredecessorIds(predecessorIds: Id64Set): void {
     super.collectPredecessorIds(predecessorIds);
     predecessorIds.add(this.modelSelectorId);
   }
+
   /** Load this view's ModelSelector from the IModelDb. */
   public loadModelSelector(): ModelSelector { return this.iModel.elements.getElement<ModelSelector>(this.modelSelectorId); }
   /**
