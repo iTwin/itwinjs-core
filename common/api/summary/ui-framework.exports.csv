@@ -32,7 +32,7 @@ public;ActivityMessageUpdatedEvent
 internal;addMissingWidgets(frontstageDef: FrontstageDef, initialState: NineZoneState): NineZoneState
 internal;addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageDef, side: PanelSide): NineZoneState
 internal;addWidgets(state: NineZoneState, widgets: ReadonlyArray
-alpha;AnalysisAnimationTimelineDataProvider 
+public;AnalysisAnimationTimelineDataProvider 
 public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 internal;appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray
@@ -70,8 +70,8 @@ beta;BackstageStageLauncher
 deprecated;BackstageStageLauncher 
 beta;BackstageToggledArgs
 public;BaseItemState
-beta;BasicNavigationWidget(props: BasicNavigationWidgetProps): JSX.Element
-beta;BasicNavigationWidgetProps
+public;BasicNavigationWidget(props: BasicNavigationWidgetProps): JSX.Element
+public;BasicNavigationWidgetProps
 beta;BasicToolWidget(props: BasicToolWidgetProps): JSX.Element
 beta;BasicToolWidgetProps
 public;BooleanListenerProps
@@ -124,7 +124,7 @@ public;ConfigurableUiElement
 public;ConfigurableUiManager
 public;ConfigurableUiReducer(state: ConfigurableUiState | undefined, action: ConfigurableUiActionsUnion): ConfigurableUiState
 public;ConfigurableUiState
-beta;connectIModelConnection: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps
+public;connectIModelConnection: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps
 beta;connectIModelConnectionAndViewState: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps
 public;ContentCallback = (content: ContentProps) => void
 public;ContentControl 
@@ -178,7 +178,7 @@ deprecated;DefaultNavigationProps
 beta;DefaultNavigationWidget 
 deprecated;DefaultNavigationWidget 
 internal;DefaultToolSettingsProvider 
-alpha;DefaultViewOverlay 
+public;DefaultViewOverlay({ viewport, onPlayPause }: ViewOverlayProps): JSX.Element
 public;DialogChangedEvent 
 public;DialogChangedEventArgs
 internal;DialogGridContainer({ componentGenerator, containerClassName }: DialogGridContainerProps): JSX.Element
@@ -203,7 +203,7 @@ beta;DrawingNavigationAidControl
 public;ElementTooltip 
 public;ElementTooltipChangedEvent 
 public;ElementTooltipChangedEventArgs
-alpha;EmphasizeElementsChangedArgs
+public;EmphasizeElementsChangedArgs
 beta;ExpandableSection 
 beta;ExpandableSectionProps 
 internal;expandWidget: (base:
@@ -278,9 +278,9 @@ internal;GroupedItems = ReadonlyArray
 internal;GroupItem 
 public;GroupItemDef 
 public;GroupItemProps 
-alpha;HideIsolateEmphasizeAction
-alpha;class HideIsolateEmphasizeActionHandler
-alpha;HideIsolateEmphasizeManager 
+public;HideIsolateEmphasizeAction
+public;class HideIsolateEmphasizeActionHandler
+public;HideIsolateEmphasizeManager 
 alpha;HTMLElementPopup 
 alpha;HTMLElementPopupProps 
 beta;IModelAppUiSettings 
@@ -293,6 +293,7 @@ beta;IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedCompo
 beta;IModelConnectedViewport: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
 beta;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
+deprecated;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
 internal;IModelInfo
 internal;IModelScope
 internal;IModelServices
@@ -423,7 +424,7 @@ internal;packNineZoneState(state: NineZoneState): SavedNineZoneState
 internal;PanelSizeChangedEvent 
 internal;PanelSizeChangedEventArgs
 beta;PanelStateChangedEvent 
-beta;PanelStateChangedEventArgs
+public;PanelStateChangedEventArgs
 internal;panelStateToIsCollapsed: (panelState: StagePanelState) => boolean
 public;PointerMessage 
 public;PointerMessageChangedEvent 
@@ -477,17 +478,17 @@ internal;RULESET_MODELS: Ruleset
 internal;RULESET_MODELS_GROUPED_BY_CLASS: Ruleset
 internal;RULESET_SPATIAL_BREAKDOWN: Ruleset
 internal;RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset
-alpha;SafeAreaContext: React.Context
+public;SafeAreaContext: React.Context
 public;SavedView
 public;SavedViewLayout
 public;SavedViewLayoutProps
 public;SavedViewProps 
 internal;saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window): Promise
-alpha;ScheduleAnimationTimelineDataProvider 
+public;ScheduleAnimationTimelineDataProvider 
 beta;SectionsStatusField(props: SectionsStatusFieldProps): JSX.Element
 beta;SectionsStatusFieldProps 
 beta;selectionContextStateFunc(state: Readonly
-beta;SelectionContextToolDefinitions
+public;SelectionContextToolDefinitions
 public;SelectionInfoField: import("react-redux").ConnectedComponent
 public;SelectionScopeField: import("react-redux").ConnectedComponent
 public;SeparatorBackstageItem 
@@ -655,9 +656,10 @@ public;UiVisibilityChangedEvent
 public;UiVisibilityEventArgs
 internal;useActiveFrontstageDef(): FrontstageDef | undefined
 beta;useActiveFrontstageId: () => string
-beta;useActiveIModelConnection(): IModelConnection | undefined
+public;useActiveIModelConnection(): IModelConnection | undefined
 internal;useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined
-beta;useActiveViewport(): ScreenViewport | undefined
+public;useActiveViewport(): ScreenViewport | undefined
+public;useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined): AnalysisAnimationTimelineDataProvider | undefined
 internal;useAvailableUiItemsProviders(): readonly string[]
 beta;useBackstageManager: () => BackstageManager
 internal;useDefaultBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
@@ -678,6 +680,8 @@ beta;UserSettingsProvider
 public;UserSettingsStorage 
 internal;useSavedFrontstageState(frontstageDef: FrontstageDef): void
 internal;useSaveFrontstageSettings(frontstageDef: FrontstageDef): void
+public;useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): ScheduleAnimationTimelineDataProvider | undefined
+beta;useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
 internal;useSyncDefinitions(frontstageDef: FrontstageDef): void
 internal;useToolSettingsNode(): React.ReactNode
@@ -694,6 +698,7 @@ alpha;ValidationTextbox
 internal;VersionInfo
 beta;ViewAttributesStatusField 
 public;ViewLayout
+public;ViewOverlayProps
 public;ViewportContentControl 
 beta;ViewSelector 
 beta;ViewSelectorChangedEvent 
@@ -701,11 +706,15 @@ beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
-alpha;VisibilityChangeListener = (nodeIds?: string[]) => void
+alpha;VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map
 beta;VisibilityComponent 
+deprecated;VisibilityComponent 
 beta;VisibilityComponentConfig
+deprecated;VisibilityComponentConfig
 public;VisibilityComponentHierarchy
+deprecated;VisibilityComponentHierarchy
 beta;VisibilityComponentProps
+deprecated;VisibilityComponentProps
 alpha;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 
@@ -715,6 +724,7 @@ alpha;VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JS
 alpha;VisibilityTreeNoFilteredDataProps
 alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
 beta;VisibilityWidget 
+deprecated;VisibilityWidget 
 public;Widget 
 public;WIDGET_OPACITY_DEFAULT = 0.9
 internal;WidgetChangedEventArgs
@@ -756,7 +766,7 @@ internal;WidgetTab
 internal;WidgetTabs =
 public;WidgetType
 public;withMessageCenterFieldProps: 
-alpha;withSafeArea: 
+public;withSafeArea: 
 public;withStatusFieldProps: 
 public;Workflow 
 public;WorkflowActivatedEvent 

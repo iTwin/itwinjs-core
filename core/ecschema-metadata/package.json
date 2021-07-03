@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-metadata",
-  "version": "2.17.0-dev.15",
+  "version": "2.19.0-dev.4",
   "description": "ECObjects core concepts in typescript",
   "license": "MIT",
   "main": "lib/ecschema-metadata.js",
@@ -12,7 +12,7 @@
   },
   "scripts": {
     "compile": "npm run build",
-    "build": "tsc 1>&2 && npm run createLocalization && npm run copy:test-assets",
+    "build": "tsc 1>&2 && npm run copy:test-assets",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
     "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
     "extract-api": "betools extract-api --entry=ecschema-metadata",
@@ -20,8 +20,7 @@
     "test": "betools test",
     "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/ecschema-metadata/file.json --tsIndexFile=./ecschema-metadata.ts --onlyJson",
     "cover": "nyc npm test",
-    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs",
-    "createLocalization": "node ./build/createLocalization.js"
+    "start": "npm run lint && npm run clean && npm run build && npm run test & npm run cover & npm run docs"
   },
   "keywords": [
     "Bentley",
@@ -34,10 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.17.0-dev.15",
-    "@bentley/build-tools": "2.17.0-dev.15",
-    "@bentley/eslint-plugin": "2.17.0-dev.15",
-    "@bentley/imodeljs-i18n": "2.17.0-dev.15",
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/units-schema": "^1.0.5",
     "@types/almost-equal": "1.1.0",
     "@types/benchmark": "^2.1.0",
@@ -52,7 +51,7 @@
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "cpx": "^1.5.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "i18next-node-fs-backend": "^2.1.3",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
@@ -63,8 +62,8 @@
     "xmlhttprequest": "^1.8.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.17.0-dev.15",
-    "@bentley/imodeljs-i18n": "^2.17.0-dev.15"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.4",
+    "@bentley/imodeljs-i18n": "workspace:^2.19.0-dev.4"
   },
   "dependencies": {
     "almost-equal": "^1.1.0"

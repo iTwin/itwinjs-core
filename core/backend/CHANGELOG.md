@@ -1,6 +1,76 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 24 May 2021 15:58:39 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Jul 2021 15:38:31 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.17.10 
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Promote APIs to public.
+- Include ECClass Ids in TxnChangedEntities.
+- Changes in BriefcaseHandling and ConcurrencyControl to support recovery after deleted changeset
+- download V2 checkpoints asynchronously
+- Deprecate IModelExporter.excludeElementCategory in favor of excludeElementsInCategory
+- make IModelExporter.onExportSchema async
+- Notify frontend via Ipc when IModelDb properties change.
+- added IModelHost.hubAccess api for mocking IModelHub for tests
+- all Element.onInsert and Element.onUpdate methods to modify properties
+- Add "first synchronization" optimizations to IModelTransformer
+- Don't allow undo of changes to project extents or geolocation.
+- promote BriefcaseManager to public
+- make IpcHost and NativeHost @public
+- Deprecate useless Texture properties.
+- added TxnManager.restartSession
+- Fixed removal of schema locks if upgrading schemas is a no-op.
+- Tests for iModel.UpdateIModelProps()
+- fix schema-import occurring potentially out of order
+- dont reimport schemas that already exist by default during transformations
+- Use ecef location calculated for projected iModels
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+_Version update only_
+
+## 2.16.4
+Wed, 23 Jun 2021 17:09:07 GMT
+
+_Version update only_
+
+## 2.16.3
+Wed, 16 Jun 2021 20:29:32 GMT
+
+_Version update only_
+
+## 2.16.2
+Thu, 03 Jun 2021 18:08:11 GMT
+
+### Updates
+
+- Upgrade to @bentley/imodeljs-native@2.16.2
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+_Version update only_
 
 ## 2.16.0
 Mon, 24 May 2021 15:58:39 GMT
@@ -21,6 +91,11 @@ Mon, 24 May 2021 15:58:39 GMT
 - only add listener for shutdown once for IModelDb
 - change arguments to protected static methods of Element, Model, ElementAspect. Only affects schema writers.
 - Update version compare classes for property path support and briefcase rolling
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
 
 ## 2.15.5
 Thu, 20 May 2021 15:06:26 GMT

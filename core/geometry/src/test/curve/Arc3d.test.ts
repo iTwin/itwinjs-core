@@ -498,4 +498,15 @@ describe("Arc3d", () => {
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "Arc3d", "CodeCheckerArcTransitionD");
   });
+  it("CreateCenterNormalRadius", () => {
+    const ck = new Checker();
+
+    for (const normal of [Vector3d.unitX(), Vector3d.unitY(-2), Vector3d.unitZ(3), new Vector3d(1, 2, 3)]) {
+      const arc = Arc3d.createCenterNormalRadius(undefined, normal, 10);
+      ck.testVector3d(normal.normalize()!, arc.perpendicularVector, `for normal ${prettyPrint(normal)}`);
+    }
+
+    ck.checkpoint("Arc3d.CreateCenterNormalRadius");
+    expect(ck.getNumErrors()).equals(0);
+  });
 });

@@ -28,7 +28,7 @@ export abstract class TestRpcInterface extends RpcInterface {
   public async restartIModelHost(): Promise<void> {
     return this.forward(arguments);
   }
-  public async extractChangeSummaries(_iModelRpcProps: IModelRpcProps, _options: any): Promise<void> {
+  public async createChangeSummary(_iModelRpcProps: IModelRpcProps): Promise<void> {
     return this.forward(arguments);
   }
   public async deleteChangeCache(_iModelRpcProps: IModelRpcProps): Promise<void> {

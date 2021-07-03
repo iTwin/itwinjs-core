@@ -177,52 +177,66 @@ export namespace AmbientOcclusion {
     }
 }
 
-// @alpha (undocumented)
+// @public
 export class AnalysisStyle {
+    clone(changedProps: AnalysisStyleProps): AnalysisStyle;
     // (undocumented)
-    clone(out?: AnalysisStyle): AnalysisStyle;
+    static readonly defaults: AnalysisStyle;
     // (undocumented)
-    copyFrom(source: AnalysisStyle): void;
+    readonly displacement?: AnalysisStyleDisplacement;
+    equals(other: AnalysisStyle): boolean;
+    static fromJSON(props?: AnalysisStyleProps): AnalysisStyle;
+    readonly normalChannelName?: string;
     // (undocumented)
-    displacementChannelName?: string;
-    // (undocumented)
-    displacementScale?: number;
-    // (undocumented)
-    static fromJSON(json?: AnalysisStyleProps): AnalysisStyle;
-    // (undocumented)
-    inputName?: string;
-    // (undocumented)
-    inputRange?: Range1d;
-    // (undocumented)
-    normalChannelName?: string;
-    // (undocumented)
-    scalarChannelName?: string;
-    // (undocumented)
-    scalarRange?: Range1d;
-    // (undocumented)
-    scalarThematicSettings?: ThematicGradientSettings;
-    // (undocumented)
+    readonly scalar?: AnalysisStyleScalar;
     toJSON(): AnalysisStyleProps;
 }
 
-// @alpha
+// @public
+export class AnalysisStyleDisplacement {
+    readonly channelName: string;
+    equals(other: AnalysisStyleDisplacement): boolean;
+    static fromJSON(props: AnalysisStyleDisplacementProps): AnalysisStyleDisplacement;
+    readonly scale: number;
+    toJSON(): AnalysisStyleDisplacementProps;
+}
+
+// @public
+export interface AnalysisStyleDisplacementProps {
+    channelName: string;
+    scale?: number;
+}
+
+// @public
 export interface AnalysisStyleProps {
-    // (undocumented)
-    displacementChannelName?: string;
-    // (undocumented)
-    displacementScale?: number;
-    // (undocumented)
-    inputName?: string;
-    // (undocumented)
-    inputRange?: Range1dProps;
-    // (undocumented)
+    displacement?: AnalysisStyleDisplacementProps;
     normalChannelName?: string;
-    // (undocumented)
-    scalarChannelName?: string;
-    // (undocumented)
-    scalarRange?: Range1dProps;
-    // (undocumented)
-    scalarThematicSettings?: ThematicGradientSettingsProps;
+    scalar?: AnalysisStyleScalarProps;
+}
+
+// @public
+export class AnalysisStyleScalar {
+    readonly channelName: string;
+    equals(other: AnalysisStyleScalar): boolean;
+    static fromJSON(props: AnalysisStyleScalarProps): AnalysisStyleScalar;
+    get gradient(): Gradient.Symb;
+    readonly range: Readonly<Range1d>;
+    readonly thematicSettings: ThematicGradientSettings;
+    toJSON(): AnalysisStyleScalarProps;
+}
+
+// @public
+export interface AnalysisStyleScalarProps {
+    channelName: string;
+    range: Range1dProps;
+    thematicSettings?: ThematicGradientSettingsProps;
+}
+
+// @public
+export interface AppearanceOverrideProps {
+    color?: ColorDefProps;
+    ids?: Id64Array;
+    overrideType?: FeatureOverrideType;
 }
 
 // @public
@@ -409,6 +423,8 @@ export class BackgroundMapSettings {
     readonly mapType: BackgroundMapType;
     // @beta
     readonly planarClipMask: PlanarClipMaskSettings;
+    // @internal (undocumented)
+    static providerFromMapLayer(props: MapLayerProps): BackgroundMapProps | undefined;
     readonly providerName: BackgroundMapProviderName;
     readonly terrainSettings: TerrainSettings;
     // (undocumented)
@@ -1556,22 +1572,66 @@ export abstract class ContentIdProvider {
 }
 
 // @public
-export interface ContextRealityModelProps {
-    // @beta
-    appearanceOverrides?: FeatureAppearanceProps;
-    // @beta (undocumented)
-    classifiers?: SpatialClassificationProps.Properties[];
+export class ContextRealityModel {
+    constructor(props: ContextRealityModelProps);
+    get appearanceOverrides(): FeatureAppearance | undefined;
+    set appearanceOverrides(overrides: FeatureAppearance | undefined);
     // (undocumented)
-    description?: string;
-    // (undocumented)
-    name?: string;
+    protected _appearanceOverrides?: FeatureAppearance;
+    readonly classifiers?: SpatialClassifiers;
+    readonly description: string;
+    matchesNameAndUrl(name: string, url: string): boolean;
+    readonly name: string;
+    readonly onAppearanceOverridesChanged: BeEvent<(newOverrides: FeatureAppearance | undefined, model: ContextRealityModel) => void>;
+    readonly onPlanarClipMaskChanged: BeEvent<(newSettings: PlanarClipMaskSettings | undefined, model: ContextRealityModel) => void>;
     // @alpha (undocumented)
+    readonly orbitGtBlob?: Readonly<OrbitGtBlobProps>;
+    // (undocumented)
+    protected _planarClipMask?: PlanarClipMaskSettings;
+    get planarClipMaskSettings(): PlanarClipMaskSettings | undefined;
+    set planarClipMaskSettings(settings: PlanarClipMaskSettings | undefined);
+    // (undocumented)
+    protected readonly _props: ContextRealityModelProps;
+    readonly realityDataId?: string;
+    toJSON(): ContextRealityModelProps;
+    readonly url: string;
+}
+
+// @public
+export interface ContextRealityModelProps {
+    appearanceOverrides?: FeatureAppearanceProps;
+    classifiers?: SpatialClassifierProps[];
+    description?: string;
+    name?: string;
+    // @alpha
     orbitGtBlob?: OrbitGtBlobProps;
-    // @beta (undocumented)
     planarClipMask?: PlanarClipMaskProps;
     realityDataId?: string;
-    // (undocumented)
     tilesetUrl: string;
+}
+
+// @public (undocumented)
+export namespace ContextRealityModelProps {
+    export function clone(input: ContextRealityModelProps): ContextRealityModelProps;
+}
+
+// @public
+export class ContextRealityModels {
+    constructor(container: ContextRealityModelsContainer, createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel);
+    add(props: ContextRealityModelProps): ContextRealityModel;
+    clear(): void;
+    delete(model: ContextRealityModel): boolean;
+    get models(): ReadonlyArray<ContextRealityModel>;
+    readonly onAppearanceOverridesChanged: BeEvent<(model: ContextRealityModel, newOverrides: FeatureAppearance | undefined) => void>;
+    readonly onChanged: BeEvent<(previousModel: ContextRealityModel | undefined, newModel: ContextRealityModel | undefined) => void>;
+    readonly onPlanarClipMaskChanged: BeEvent<(model: ContextRealityModel, newSettings: PlanarClipMaskSettings | undefined) => void>;
+    replace(toReplace: ContextRealityModel, replaceWith: ContextRealityModelProps): ContextRealityModel;
+    update(toUpdate: ContextRealityModel, updateProps: Partial<ContextRealityModelProps>): ContextRealityModel;
+}
+
+// @public
+export interface ContextRealityModelsContainer {
+    contextRealityModels?: ContextRealityModelProps[];
 }
 
 // @public
@@ -1606,8 +1666,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1507328,
-    Major = 23,
+    Combined = 1572864,
+    Major = 24,
     Minor = 0
 }
 
@@ -1700,7 +1760,7 @@ export interface DisplayStyle3dProps extends DisplayStyleProps {
 export class DisplayStyle3dSettings extends DisplayStyleSettings {
     constructor(jsonProperties: {
         styles?: DisplayStyle3dSettingsProps;
-    });
+    }, options?: DisplayStyleSettingsOptions);
     get ambientOcclusionSettings(): AmbientOcclusion.Settings;
     set ambientOcclusionSettings(ao: AmbientOcclusion.Settings);
     // @internal
@@ -1754,7 +1814,7 @@ export interface DisplayStyleLoadProps {
     omitScheduleScriptElementIds?: boolean;
 }
 
-// @beta
+// @public
 export interface DisplayStyleModelAppearanceProps extends FeatureAppearanceProps {
     modelId?: Id64String;
 }
@@ -1769,27 +1829,25 @@ export interface DisplayStyleOverridesOptions {
 }
 
 // @public
+export interface DisplayStylePlanarClipMaskProps extends PlanarClipMaskProps {
+    modelId?: Id64String;
+}
+
+// @public
 export interface DisplayStyleProps extends DefinitionElementProps {
     jsonProperties?: {
         styles?: DisplayStyleSettingsProps;
     };
 }
 
-// @beta
-export interface DisplayStyleRealityModelPlanarClipMaskProps extends PlanarClipMaskProps {
-    modelId?: Id64String;
-}
-
 // @public
 export class DisplayStyleSettings {
     constructor(jsonProperties: {
         styles?: DisplayStyleSettingsProps;
-    });
+    }, options?: DisplayStyleSettingsOptions);
     addExcludedElements(id: Id64String | Iterable<Id64String>): void;
-    // @alpha (undocumented)
     get analysisFraction(): number;
     set analysisFraction(fraction: number);
-    // @alpha
     get analysisStyle(): AnalysisStyle | undefined;
     set analysisStyle(style: AnalysisStyle | undefined);
     applyOverrides(overrides: DisplayStyleSettingsProps): void;
@@ -1804,24 +1862,15 @@ export class DisplayStyleSettings {
     set clipStyle(style: ClipStyle);
     // @internal (undocumented)
     get compressedExcludedElementIds(): CompressedId64Set;
+    get contextRealityModels(): ContextRealityModels;
     dropExcludedElement(id: Id64String): void;
     dropExcludedElements(id: Id64String | Iterable<Id64String>): void;
     dropModelAppearanceOverride(id: Id64String): void;
-    // @beta
-    dropModelPlanarClipMaskOverride(id: Id64String): boolean;
     dropSubCategoryOverride(id: Id64String): void;
-    // @internal (undocumented)
-    equalModelAppearanceOverrides(other: DisplayStyleSettings): boolean;
-    // @internal (undocumented)
-    equalPlanarClipMaskOverrides(other: DisplayStyleSettings): boolean;
-    // @internal (undocumented)
-    equalSubCategoryOverrides(other: DisplayStyleSettings): boolean;
     get excludedElementIds(): OrderedId64Iterable;
     // @deprecated
     get excludedElements(): Set<Id64String>;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
-    // @beta
-    getModelPlanarClipMask(id: Id64String): PlanarClipMaskSettings | undefined;
     getSubCategoryOverride(id: Id64String): SubCategoryOverride | undefined;
     get hasModelAppearanceOverride(): boolean;
     get hasSubCategoryOverride(): boolean;
@@ -1838,9 +1887,7 @@ export class DisplayStyleSettings {
     get monochromeMode(): MonochromeMode;
     set monochromeMode(mode: MonochromeMode);
     readonly onAmbientOcclusionSettingsChanged: BeEvent<(newSettings: AmbientOcclusion.Settings) => void>;
-    // @alpha
     readonly onAnalysisFractionChanged: BeEvent<(newFraction: number) => void>;
-    // @alpha
     readonly onAnalysisStyleChanged: BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>;
     readonly onApplyOverrides: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
     readonly onBackgroundColorChanged: BeEvent<(newColor: ColorDef) => void>;
@@ -1856,9 +1903,8 @@ export class DisplayStyleSettings {
     readonly onMonochromeColorChanged: BeEvent<(newColor: ColorDef) => void>;
     readonly onMonochromeModeChanged: BeEvent<(newMode: MonochromeMode) => void>;
     readonly onOverridesApplied: BeEvent<(overrides: Readonly<DisplayStyleSettingsProps>) => void>;
+    readonly onPlanarClipMaskChanged: BeEvent<(modelId: Id64String, newSettings: PlanarClipMaskSettings | undefined) => void>;
     readonly onPlanProjectionSettingsChanged: BeEvent<(modelId: Id64String, newSettings: PlanProjectionSettings | undefined) => void>;
-    // @beta
-    readonly onRealityModelPlanarClipMaskChanged: BeEvent<(idOrIndex: Id64String | number, newSettings: PlanarClipMaskSettings | undefined) => void>;
     readonly onRenderTimelineChanged: BeEvent<(newRenderTimeline: Id64String | undefined) => void>;
     // @internal @deprecated
     readonly onScheduleScriptPropsChanged: BeEvent<(newProps: Readonly<RenderSchedule.ModelTimelineProps[]> | undefined) => void>;
@@ -1868,11 +1914,8 @@ export class DisplayStyleSettings {
     readonly onTimePointChanged: BeEvent<(newTimePoint: number | undefined) => void>;
     readonly onViewFlagsChanged: BeEvent<(newFlags: Readonly<ViewFlags>) => void>;
     overrideModelAppearance(modelId: Id64String, ovr: FeatureAppearance): void;
-    // @beta
-    overrideModelPlanarClipMask(modelId: Id64String, planarClipMask: PlanarClipMaskSettings): boolean;
     overrideSubCategory(id: Id64String, ovr: SubCategoryOverride): void;
-    // @internal (undocumented)
-    raiseRealityModelPlanarClipMaskChangedEvent(idOrIndex: Id64String | number, ovr?: PlanarClipMaskSettings): void;
+    get planarClipMasks(): Map<Id64String, PlanarClipMaskSettings>;
     get renderTimeline(): Id64String | undefined;
     set renderTimeline(id: Id64String | undefined);
     // @internal @deprecated (undocumented)
@@ -1891,10 +1934,13 @@ export class DisplayStyleSettings {
     }
 
 // @public
+export interface DisplayStyleSettingsOptions {
+    createContextRealityModel?: (props: ContextRealityModelProps) => ContextRealityModel;
+}
+
+// @public
 export interface DisplayStyleSettingsProps {
-    // @alpha
     analysisFraction?: number;
-    // @alpha
     analysisStyle?: AnalysisStyleProps;
     backgroundColor?: ColorDefProps;
     backgroundMap?: BackgroundMapProps;
@@ -1903,12 +1949,10 @@ export interface DisplayStyleSettingsProps {
     excludedElements?: Id64Array | CompressedId64Set;
     // @alpha
     mapImagery?: MapImageryProps;
-    // @beta
     modelOvr?: DisplayStyleModelAppearanceProps[];
     monochromeColor?: ColorDefProps;
     monochromeMode?: MonochromeMode;
-    // @beta
-    planarClipOvr?: DisplayStyleRealityModelPlanarClipMaskProps[];
+    planarClipOvr?: DisplayStylePlanarClipMaskProps[];
     renderTimeline?: Id64String;
     // @internal @deprecated
     scheduleScript?: RenderSchedule.ModelTimelineProps[];
@@ -2023,6 +2067,8 @@ export class EcefLocation implements EcefLocationProps {
     readonly origin: Point3d;
     // (undocumented)
     toJSON(): EcefLocationProps;
+    readonly xVector?: Vector3d;
+    readonly yVector?: Vector3d;
 }
 
 // @public
@@ -2030,6 +2076,8 @@ export interface EcefLocationProps {
     cartographicOrigin?: LatLongAndHeight;
     orientation: YawPitchRollProps;
     origin: XYZProps;
+    xVector?: XYZProps;
+    yVector?: XYZProps;
 }
 
 // @public
@@ -2325,6 +2373,27 @@ export interface ElementProps extends EntityProps {
     parent?: RelatedElementProps;
     userLabel?: string;
 }
+
+// @public
+export interface EmphasizeElementsProps {
+    alwaysDrawn?: Id64Array;
+    alwaysDrawnExclusiveEmphasized?: Id64Array;
+    appearanceOverride?: AppearanceOverrideProps[];
+    defaultAppearance?: FeatureAppearanceProps;
+    isAlwaysDrawnExclusive?: boolean;
+    neverDrawn?: Id64Array;
+    unanimatedAppearance?: FeatureAppearanceProps;
+    wantEmphasis?: boolean;
+}
+
+// @public
+export interface EntityIdAndClassId {
+    classId: Id64String;
+    id: Id64String;
+}
+
+// @public
+export type EntityIdAndClassIdIterable = Iterable<Readonly<EntityIdAndClassId>>;
 
 // @beta
 export class EntityMetaData implements EntityMetaDataProps {
@@ -2637,11 +2706,11 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     // @internal
     protected _patterns: boolean;
     setAlwaysDrawn(id: Id64String): void;
-    setAlwaysDrawnSet(ids: Id64Set, exclusive: boolean, ignoreSubCategory?: boolean): void;
+    setAlwaysDrawnSet(ids: Iterable<Id64String>, exclusive: boolean, ignoreSubCategory?: boolean): void;
     setAnimationNodeNeverDrawn(id: number): void;
     setDefaultOverrides(appearance: FeatureAppearance, replaceExisting?: boolean): void;
     setNeverDrawn(id: Id64String): void;
-    setNeverDrawnSet(ids: Id64Set): void;
+    setNeverDrawnSet(ids: Iterable<Id64String>): void;
     setVisibleSubCategory(id: Id64String): void;
     // @internal
     protected readonly _subCategoryOverrides: Id64.Uint32Map<FeatureAppearance>;
@@ -2650,6 +2719,13 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     // @internal
     protected readonly _visibleSubCategories: Id64.Uint32Set;
     }
+
+// @public
+export enum FeatureOverrideType {
+    AlphaOnly = 1,
+    ColorAndAlpha = 2,
+    ColorOnly = 0
+}
 
 // @public
 export class FeatureTable extends IndexMap<Feature> {
@@ -3502,6 +3578,7 @@ export interface GraphicsRequestProps {
     readonly id: string;
     readonly location?: TransformProps;
     readonly omitEdges?: boolean;
+    readonly sectionCut?: string;
     readonly toleranceLog10: number;
     // @alpha
     readonly treeFlags?: TreeFlags;
@@ -4216,12 +4293,17 @@ export interface IModelTileTreeProps extends TileTreeProps {
 // @public
 export class IModelVersion {
     static asOfChangeSet(changeSetId: string): IModelVersion;
+    // @deprecated
     evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString>;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
     // @deprecated
     static fromJson(jsonObj: any): IModelVersion;
     getAsOfChangeSet(): GuidString | undefined;
+    // @internal @deprecated
+    static getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<GuidString>;
+    // @internal @deprecated
+    static getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<GuidString>;
     getName(): string | undefined;
     get isFirst(): boolean;
     get isLatest(): boolean;
@@ -4301,7 +4383,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
 }
 
 // @public
-export interface InformationPartitionElementProps extends DefinitionElementProps {
+export interface InformationPartitionElementProps extends ElementProps {
     // (undocumented)
     description?: string;
 }
@@ -4354,7 +4436,7 @@ export interface IpcAppFunctions {
     cancelTileContentRequests: (tokenProps: IModelRpcProps, _contentIds: TileTreeContentIds[]) => Promise<void>;
     closeIModel: (key: string) => Promise<void>;
     getRedoString: (key: string) => Promise<string>;
-    getUndoString: (key: string, allowCrossSessions?: boolean) => Promise<string>;
+    getUndoString: (key: string) => Promise<string>;
     hasPendingTxns: (key: string) => Promise<boolean>;
     // (undocumented)
     isGraphicalEditingSupported: (key: string) => Promise<boolean>;
@@ -4369,9 +4451,11 @@ export interface IpcAppFunctions {
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
+    restartTxnSession: (key: string) => Promise<void>;
+    // (undocumented)
     reverseAllTxn: (key: string) => Promise<IModelStatus>;
     // (undocumented)
-    reverseTxns: (key: string, numOperations: number, allowCrossSessions?: boolean) => Promise<IModelStatus>;
+    reverseTxns: (key: string, numOperations: number) => Promise<IModelStatus>;
     saveChanges: (key: string, description?: string) => Promise<void>;
     // (undocumented)
     toggleGraphicalEditingScope: (key: string, _startSession: boolean) => Promise<boolean>;
@@ -4397,22 +4481,22 @@ export type IpcInvokeReturn = {
     };
 };
 
-// @beta
+// @public
 export type IpcListener = (evt: Event, ...args: any[]) => void;
 
-// @beta
+// @public
 export interface IpcSocket {
     addListener: (channel: string, listener: IpcListener) => RemoveFunction;
     removeListener: (channel: string, listener: IpcListener) => void;
     send: (channel: string, ...data: any[]) => void;
 }
 
-// @beta
+// @public
 export interface IpcSocketBackend extends IpcSocket {
     handle: (channel: string, handler: (...args: any[]) => Promise<any>) => RemoveFunction;
 }
 
-// @beta
+// @public
 export interface IpcSocketFrontend extends IpcSocket {
     invoke: (channel: string, ...args: any[]) => Promise<any>;
 }
@@ -4501,7 +4585,7 @@ export function isPowerOfTwo(num: number): boolean;
 // @internal (undocumented)
 export function isValidImageSourceFormat(format: ImageSourceFormat): boolean;
 
-// @beta
+// @internal
 export const iTwinChannel: (channel: string) => string;
 
 // @public
@@ -4522,6 +4606,22 @@ export interface LatAndLong {
 export interface LatLongAndHeight extends LatAndLong {
     // (undocumented)
     height: number;
+}
+
+// @internal
+export interface LegacyAnalysisStyleProps {
+    // (undocumented)
+    displacementChannelName?: string;
+    // (undocumented)
+    displacementScale?: number;
+    // (undocumented)
+    normalChannelName?: string;
+    // (undocumented)
+    scalarChannelName?: string;
+    // (undocumented)
+    scalarRange?: Range1dProps;
+    // (undocumented)
+    scalarThematicSettings?: ThematicGradientSettingsProps;
 }
 
 // @internal
@@ -4674,7 +4774,6 @@ export interface MapImageryProps {
 
 // @beta
 export class MapImagerySettings {
-    // (undocumented)
     get backgroundBase(): BaseLayerSettings;
     set backgroundBase(base: BaseLayerSettings);
     // (undocumented)
@@ -4701,7 +4800,6 @@ export interface MapLayerProps {
     accessKey?: MapLayerKey;
     formatId?: string;
     isBase?: boolean;
-    maxZoom?: number;
     name?: string;
     subLayers?: MapSubLayerProps[];
     transparency?: number;
@@ -4861,6 +4959,8 @@ export interface MaterialProps {
 // @internal (undocumented)
 export class MeshEdge {
     constructor(index0?: number, index1?: number);
+    // (undocumented)
+    compareTo(other: MeshEdge): number;
     // (undocumented)
     indices: number[];
 }
@@ -5126,6 +5226,7 @@ export class OctEncodedNormal {
     decode(): Vector3d;
     static decodeValue(val: number, result?: Vector3d): Vector3d;
     static encode(vec: XYAndZ): number;
+    static encodeXYZ(nx: number, ny: number, nz: number): number;
     static fromVector(val: XYAndZ): OctEncodedNormal;
     readonly value: number;
 }
@@ -5480,7 +5581,7 @@ export interface Placement3dProps {
 // @public (undocumented)
 export type PlacementProps = Placement2dProps | Placement3dProps;
 
-// @beta
+// @public
 export enum PlanarClipMaskMode {
     ExcludeElements = 5,
     IncludeElements = 4,
@@ -5490,16 +5591,15 @@ export enum PlanarClipMaskMode {
     Priority = 1
 }
 
-// @beta
+// @public
 export enum PlanarClipMaskPriority {
     BackgroundMap = -2048,
-    BIM = 2048,
+    DesignModel = 2048,
     GlobalRealityModel = -1024,
-    Maximum = 4096,
     RealityModel = 0
 }
 
-// @beta
+// @public
 export interface PlanarClipMaskProps {
     mode: PlanarClipMaskMode;
     modelIds?: CompressedId64Set;
@@ -5508,20 +5608,22 @@ export interface PlanarClipMaskProps {
     transparency?: number;
 }
 
-// @beta
+// @public
 export class PlanarClipMaskSettings {
     clone(changedProps?: PlanarClipMaskProps): PlanarClipMaskSettings;
-    static create(mode: PlanarClipMaskMode, modelIds?: Id64Set, subCategoryOrElementIds?: Id64Set, transparency?: number): PlanarClipMaskSettings | undefined;
+    get compressedModelIds(): CompressedId64Set | undefined;
     static createByPriority(priority: number, transparency?: number): PlanarClipMaskSettings;
+    static createForElementsOrSubCategories(mode: PlanarClipMaskMode.IncludeElements | PlanarClipMaskMode.ExcludeElements | PlanarClipMaskMode.IncludeSubCategories, elementOrSubCategoryIds: Iterable<Id64String>, modelIds?: Iterable<Id64String>, transparency?: number): PlanarClipMaskSettings;
+    static createForModels(modelIds: Iterable<Id64String> | undefined, transparency?: number): PlanarClipMaskSettings;
     static defaults: PlanarClipMaskSettings;
     // (undocumented)
     equals(other: PlanarClipMaskSettings): boolean;
     static fromJSON(json?: PlanarClipMaskProps): PlanarClipMaskSettings;
     get isValid(): boolean;
     readonly mode: PlanarClipMaskMode;
-    readonly modelIds?: CompressedId64Set;
+    readonly modelIds?: OrderedId64Iterable;
     readonly priority?: number;
-    readonly subCategoryOrElementIds?: CompressedId64Set;
+    readonly subCategoryOrElementIds?: OrderedId64Iterable;
     toJSON(): PlanarClipMaskProps;
     readonly transparency?: number;
 }
@@ -7496,47 +7598,84 @@ export interface SourceAndTarget {
     targetId: Id64String;
 }
 
-// @beta
-export namespace SpatialClassificationProps {
-    export interface Classifier {
-        expand: number;
-        flags: FlagsProps;
-        modelId: Id64String;
-        name: string;
-    }
-    export enum Display {
-        Dimmed = 2,
-        ElementColor = 4,
-        Hilite = 3,
-        Off = 0,
-        On = 1
-    }
-    export function equalClassifiers(lhs: Classifier, rhs: Classifier): boolean;
-    export function equalFlags(lhs: FlagsProps, rhs: FlagsProps): boolean;
-    export function equalProperties(lhs: Properties, rhs: Properties): boolean;
-    export class Flags implements FlagsProps {
-        constructor(inside?: Display, outside?: Display, isVolumeClassifier?: boolean);
-        // (undocumented)
-        inside: Display;
-        // (undocumented)
-        isVolumeClassifier: boolean;
-        // (undocumented)
-        outside: Display;
-        readonly type = 0;
-    }
-    export interface FlagsProps {
-        // (undocumented)
-        inside: SpatialClassificationProps.Display;
-        // (undocumented)
-        isVolumeClassifier?: boolean;
-        // (undocumented)
-        outside: SpatialClassificationProps.Display;
-        readonly type: number;
-    }
-    export interface Properties extends Classifier {
-        // (undocumented)
-        isActive: boolean;
-    }
+// @public
+export class SpatialClassifier {
+    constructor(modelId: Id64String, name: string, flags?: SpatialClassifierFlags, expand?: number);
+    clone(changedProps?: Partial<SpatialClassifierProps>): SpatialClassifier;
+    equals(other: SpatialClassifier): boolean;
+    equalsProps(props: SpatialClassifierProps): boolean;
+    readonly expand: number;
+    readonly flags: SpatialClassifierFlags;
+    static fromJSON(props: SpatialClassifierProps): SpatialClassifier;
+    readonly modelId: Id64String;
+    readonly name: string;
+    toJSON(): SpatialClassifierProps;
+}
+
+// @public
+export class SpatialClassifierFlags {
+    constructor(inside?: SpatialClassifierInsideDisplay, outside?: SpatialClassifierOutsideDisplay, isVolumeClassifier?: boolean);
+    clone(changedProps?: Partial<SpatialClassifierFlagsProps>): SpatialClassifierFlags;
+    equals(other: SpatialClassifierFlags): boolean;
+    equalsProps(props: SpatialClassifierFlagsProps): boolean;
+    static fromJSON(props: SpatialClassifierFlagsProps): SpatialClassifierFlags;
+    readonly inside: SpatialClassifierInsideDisplay;
+    readonly isVolumeClassifier: boolean;
+    readonly outside: SpatialClassifierOutsideDisplay;
+    toJSON(): SpatialClassifierFlagsProps;
+}
+
+// @public
+export interface SpatialClassifierFlagsProps {
+    inside: SpatialClassifierInsideDisplay;
+    isVolumeClassifier?: boolean;
+    outside: SpatialClassifierOutsideDisplay;
+}
+
+// @public
+export enum SpatialClassifierInsideDisplay {
+    Dimmed = 2,
+    ElementColor = 4,
+    Hilite = 3,
+    Off = 0,
+    On = 1
+}
+
+// @public
+export enum SpatialClassifierOutsideDisplay {
+    Dimmed = 2,
+    Off = 0,
+    On = 1
+}
+
+// @public
+export interface SpatialClassifierProps {
+    expand: number;
+    flags: SpatialClassifierFlagsProps;
+    isActive?: boolean;
+    modelId: Id64String;
+    name: string;
+}
+
+// @public
+export class SpatialClassifiers implements Iterable<SpatialClassifier> {
+    [Symbol.iterator](): Iterator<SpatialClassifier>;
+    constructor(container: SpatialClassifiersContainer);
+    get active(): SpatialClassifier | undefined;
+    add(classifier: SpatialClassifier): SpatialClassifier;
+    clear(): void;
+    delete(classifier: SpatialClassifier): SpatialClassifier | undefined;
+    find(criterion: (classifier: SpatialClassifier) => boolean): SpatialClassifier | undefined;
+    findEquivalent(classifier: SpatialClassifier): SpatialClassifier | undefined;
+    has(classifier: SpatialClassifier): boolean;
+    replace(toReplace: SpatialClassifier, replacement: SpatialClassifier): boolean;
+    setActive(active: SpatialClassifier | undefined): SpatialClassifier | undefined;
+    get size(): number;
+}
+
+// @public
+export interface SpatialClassifiersContainer {
+    classifiers?: SpatialClassifierProps[];
 }
 
 // @public
@@ -7745,8 +7884,9 @@ export interface TextStringProps {
     widthFactor?: number;
 }
 
-// @alpha
+// @public
 export interface TextureLoadProps {
+    maxTextureSize?: number;
     name: Id64String;
 }
 
@@ -7938,7 +8078,7 @@ export class ThematicGradientSettings {
     static get contentRange(): number;
     readonly customKeys: Gradient.KeyColor[];
     // (undocumented)
-    static defaults: ThematicGradientSettings;
+    static readonly defaults: ThematicGradientSettings;
     // (undocumented)
     equals(other: ThematicGradientSettings): boolean;
     // (undocumented)
@@ -8070,6 +8210,11 @@ export interface TileOptions {
     readonly maximumMajorTileFormatVersion: number;
     // (undocumented)
     readonly useProjectExtents: boolean;
+}
+
+// @internal (undocumented)
+export namespace TileOptions {
+    export function fromTreeIdAndContentId(treeId: string, contentId: string): TileOptions;
 }
 
 // @internal
@@ -8671,7 +8816,6 @@ export class ViewFlags {
     dimensions: boolean;
     // @internal
     edgeMask: number;
-    // @internal (undocumented)
     edgesRequired(): boolean;
     // (undocumented)
     equals(other: ViewFlags): boolean;

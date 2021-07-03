@@ -30,6 +30,8 @@ import {
 
 import sinon = require("sinon");
 
+/* eslint-disable deprecation/deprecation */
+
 describe("SchemaValidationVisitor tests", () => {
   let visitor: SchemaValidationVisitor;
   let schema: Schema;

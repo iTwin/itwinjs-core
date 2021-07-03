@@ -1,6 +1,63 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 24 May 2021 15:58:39 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Jul 2021 15:38:31 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Allow style to be passed to weight picker.
+- Fix array and struct property contents not being rendered in property grid when the properties have `hideCompositePropertyLabel` flag.
+- Added `mergedCellsCount` property to `CellItem`. It is used for determining width of the cell.
+- Added `overflow` property for `react-grid-Cell__value` element. `zIndex` is set in `TableCellContent` style property. These updates are necessary for rendering merged cells in `Table` component.
+- Updated `Table` component so that it would be possible to merge cells in it
+- Update scss to remove use of slash for division to avoid SASS deprecation warnings.
+- Publis in-use APIs
+- Refactor TimelineComponent to remove experimental milestones feature.
+- `TreeRenderer`: Fix tree nodes being loaded repeatedly in some cases.
+- `VirtualizedPropertyGrid`: Remove top and bottom padding.
+- `VirtualizedPropertyGridWithDataProvider`: Fix loading animation overflowing its parent container.
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+_Version update only_
+
+## 2.16.4
+Wed, 23 Jun 2021 17:09:07 GMT
+
+_Version update only_
+
+## 2.16.3
+Wed, 16 Jun 2021 20:29:32 GMT
+
+_Version update only_
+
+## 2.16.2
+Thu, 03 Jun 2021 18:08:11 GMT
+
+_Version update only_
+
+## 2.16.1
+Thu, 27 May 2021 20:04:22 GMT
+
+_Version update only_
 
 ## 2.16.0
 Mon, 24 May 2021 15:58:39 GMT
@@ -14,6 +71,11 @@ Mon, 24 May 2021 15:58:39 GMT
 - Move `VirtualizedPropertyGrid` related types from @alpha to @beta.
 - Fixed getting distinct values when Table rows are updated
 - Update to latest classnames package 
+
+## 2.15.6
+Wed, 26 May 2021 15:55:19 GMT
+
+_Version update only_
 
 ## 2.15.5
 Thu, 20 May 2021 15:06:26 GMT

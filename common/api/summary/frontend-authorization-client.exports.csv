@@ -3,5 +3,6 @@ Release Tag;API Item
 public;BrowserAuthorizationCallbackHandler 
 public;BrowserAuthorizationCallbackHandlerConfiguration
 public;BrowserAuthorizationClient 
-public;BrowserAuthorizationClientConfiguration
+public;BrowserAuthorizationClientConfiguration 
+public;BrowserAuthorizationClientRequestOptions
 public;FrontendAuthorizationClient 

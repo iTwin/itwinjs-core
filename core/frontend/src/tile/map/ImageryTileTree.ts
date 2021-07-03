@@ -96,13 +96,18 @@ export class ImageryMapTile extends RealityTile {
       const row = this.quadId.row * 2;
       const children = [];
       const childrenAreLeaves = (this.depth + 1) === imageryTree.maxDepth;
+
+      // If children depth is lower than min LOD, mark them as disabled.
+      // This is important: if those tiles are requested and the server refuse to serve them,
+      // they will be marked as not found and their descendant will never be displayed.
+      const childrenAreDisabled = (this.depth + 1) < imageryTree.minDepth;
       const tilingScheme = imageryTree.tilingScheme;
       for (let j = 0; j < rowCount; j++) {
         for (let i = 0; i < columnCount; i++) {
           const quadId = new QuadId(level, column + i, row + j);
           const rectangle = tilingScheme.tileXYToRectangle(quadId.column, quadId.row, quadId.level);
           const range = Range3d.createXYZXYZ(rectangle.low.x, rectangle.low.x, 0, rectangle.high.x, rectangle.high.y, 0);
-          const maximumSize = imageryTree.imageryLoader.maximumScreenSize;
+          const maximumSize = (childrenAreDisabled ?  0 : imageryTree.imageryLoader.maximumScreenSize);
           children.push(new ImageryMapTile({ parent: this, isLeaf: childrenAreLeaves, contentId: quadId.contentId, range, maximumSize }, imageryTree, quadId, rectangle));
         }
       }
@@ -178,6 +183,7 @@ class ImageryTileLoader extends RealityTileLoader {
   }  // Prioritized fast, cached tiles first.
 
   public get maxDepth(): number { return this._imageryProvider.maximumZoomLevel; }
+  public get minDepth(): number { return this._imageryProvider.minimumZoomLevel; }
   public get priority(): TileLoadPriority { return TileLoadPriority.Map; }
   public getLogo(vp: ScreenViewport): HTMLTableRowElement | undefined { return this._imageryProvider.getLogo(vp); }
   public get maximumScreenSize(): number { return this._imageryProvider.maximumScreenSize; }

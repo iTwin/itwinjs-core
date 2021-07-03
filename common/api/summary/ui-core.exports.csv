@@ -62,7 +62,7 @@ public;DisabledText(props: TextProps): JSX.Element
 public;Div(props: DivProps): JSX.Element
 public;DivProps 
 public;DivWithOutsideClick:
-beta;ElementResizeObserver({ watchedElement, render }:
+public;ElementResizeObserver({ watchedElement, render }:
 public;ElementSeparator: (props: ElementSeparatorProps) => JSX.Element
 public;ElementSeparatorProps 
 public;ExecuteHandler = (this: void) => void
@@ -95,8 +95,8 @@ beta;FormProps
 beta;GetAutoSuggestDataFunc = (value: string) => AutoSuggestData[]
 internal;getBestBWContrastColor(hexColor: string): "black" | "white"
 internal;getButtonTypeClassName(buttonType?: ButtonType): string
-internal;getCssVariable(variableName: string, htmlElement?: HTMLElement): string
-internal;getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number
+public;getCssVariable(variableName: string, htmlElement?: HTMLElement): string
+public;getCssVariableAsNumber(variableName: string, htmlElement?: HTMLElement): number
 internal;getDisplayName: (component: React.ComponentType
 internal;getToolbarBackdropFilter: (filterBlur: number) => string
 internal;getToolbarBackgroundColor: (opacity: number) => string
@@ -193,7 +193,7 @@ public;OmitChildrenProp
 beta;OptionsType = Array
 beta;OptionType
 public;Orientation
-internal;OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent
+public;OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent
 internal;percentInRange(percent: number): number
 internal;placementToPosition(placement: TooltipPlacement | undefined): RelativePosition
 internal;Point 
@@ -227,8 +227,8 @@ internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direct
 deprecated;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
 internal;Rectangle 
 public;RectangleProps
-beta;RenderPropsArgs
-beta;ResizableContainerObserver({ onResize, children }:
+public;RenderPropsArgs
+public;ResizableContainerObserver({ onResize, children }:
 internal;ResizeObserver: ResizeObserverType
 internal;ResizeObserverType = typeof import("resize-observer-polyfill").default
 beta;ScrollPositionMaintainer 
@@ -313,7 +313,7 @@ public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;useDisposable
 public;useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void
-internal;useLayoutResizeObserver(ref: React.RefObject
+internal;useLayoutResizeObserver(inElement: HTMLElement | null, onResize?: (width?: number, height?: number) => void): (number | undefined)[]
 public;useOptionalDisposable
 internal;useProximityToMouse: (elementSet: WidgetElementSet, snap?: boolean, threshold?: number) => number
 internal;useRefEffect

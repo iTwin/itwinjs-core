@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./index.scss";
-// Mobx demo
-import { configure as mobxConfigure } from "mobx";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
@@ -63,7 +61,7 @@ import { Tool1 } from "./tools/Tool1";
 import { Tool2 } from "./tools/Tool2";
 import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
-import { OpenCustomPopoutTool, OpenViewPopoutTool, OpenWidgetPopoutTool, UiProviderTool } from "./tools/UiProviderTool";
+import { OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, UiProviderTool } from "./tools/UiProviderTool";
 
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
@@ -203,9 +201,6 @@ export class SampleAppIModelApp {
     // register core commands not automatically registered
     ViewClipByPlaneTool.register();
 
-    // Mobx configuration
-    mobxConfigure({ enforceActions: "observed" });
-
     if (SampleAppIModelApp.testAppConfiguration?.reactAxeConsole) {
       if (process.env.NODE_ENV !== "production") {
         await reactAxe(React, ReactDOM, 1000);
@@ -229,7 +224,7 @@ export class SampleAppIModelApp {
     AnalysisAnimationTool.register(this.sampleAppNamespace);
     UiProviderTool.register(this.sampleAppNamespace);
     ToolWithDynamicSettings.register(this.sampleAppNamespace);
-    OpenWidgetPopoutTool.register(this.sampleAppNamespace);
+    OpenComponentExamplesPopoutTool.register(this.sampleAppNamespace);
     OpenCustomPopoutTool.register(this.sampleAppNamespace);
     OpenViewPopoutTool.register(this.sampleAppNamespace);
 
@@ -247,7 +242,7 @@ export class SampleAppIModelApp {
 
     await MarkupApp.initialize();
     await FrontendDevTools.initialize();
-    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true, registerSketchTools: true });
+    await EditTools.initialize({ registerAllTools: true });
 
     // Favorite Properties Support
     SampleAppIModelApp._selectionSetListener.initialize();
@@ -336,8 +331,6 @@ export class SampleAppIModelApp {
     });
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `openViews: ${viewIdsParam}`);
 
-    SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
-
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
     const viewStates: ViewState[] = [];
@@ -424,8 +417,6 @@ export class SampleAppIModelApp {
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
-
-      SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
 
       // store the IModelConnection in the sample app store
       UiFramework.setIModelConnection(iModelConnection, true);
@@ -627,6 +618,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     return (
       <Provider store={SampleAppIModelApp.store} >
         <ThemeManager>
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <BeDragDropContext>
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
               <AppDragInteraction>
@@ -640,6 +632,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
                 </AppFrameworkVersion>
               </AppDragInteraction>
             </SafeAreaContext.Provider>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <DragDropLayerRenderer />
           </BeDragDropContext>
         </ThemeManager>

@@ -607,6 +607,9 @@ export abstract class InteractiveTool extends Tool {
    */
   public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string> { return _hit.getToolTip(); }
 
+  /** Convenience method to check whether control key is currently down without needing a button event. */
+  public get isControlDown(): boolean { return IModelApp.toolAdmin.currentInputState.isControlDown; }
+
   /** Fill the supplied button event from the current cursor location.   */
   public getCurrentButtonEvent(ev: BeButtonEvent): void { IModelApp.toolAdmin.fillEventFromCursorLocation(ev); }
 
@@ -646,11 +649,14 @@ export abstract class InteractiveTool extends Tool {
       toolAdmin.setLocateCursor(enableLocate);
     }
 
-    accuSnap.enableLocate(enableLocate);
-    if (undefined !== enableSnap)
-      accuSnap.enableSnap(enableSnap);
-    else
-      accuSnap.enableSnap(false);
+    // Always set the one that is true first, otherwise AccuSnap will clear the TouchCursor.
+    if (enableLocate) {
+      accuSnap.enableLocate(true);
+      accuSnap.enableSnap(true === enableSnap);
+    } else {
+      accuSnap.enableSnap(true === enableSnap);
+      accuSnap.enableLocate(false);
+    }
 
     if (undefined !== coordLockOvr) {
       toolAdmin.toolState.coordLockOvr = coordLockOvr;
@@ -705,7 +711,9 @@ export abstract class InteractiveTool extends Tool {
   public async bumpToolSetting(_settingIndex?: number): Promise<boolean> { return false; }
 }
 
-/** The InputCollector class can be used to implement a command for gathering input (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.
+/** The InputCollector class can be used to implement a command for gathering input
+ * (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.
+ * An InputCollector will suspend the active PrimitiveTool and can be suspended by a ViewTool.
  * @public
  */
 export abstract class InputCollector extends InteractiveTool {

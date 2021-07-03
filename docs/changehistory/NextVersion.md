@@ -3,8 +3,39 @@ publish: false
 ---
 # NextVersion
 
-## Changes to Authorization
+## Decoration graphics enhancements
 
+### Visible edges
+
+Graphics produced by a [GraphicBuilder]($frontend) can now produce edges for surfaces. By default, edges are only produced for graphics of type [GraphicType.Scene]($frontend), and only if the [Viewport]($frontend)'s [ViewFlags]($common) specify that edges should be displayed. To generate edges for other types of graphics, or to prevent them from being generated, override [GraphicBuilderOptions.generateEdges]($frontend) or [GraphicBuilder.wantEdges]($frontend) when creating the graphic. Note that surfaces will z-fight with their edges to a degree unless the graphic is also pickable - see [GraphicBuilderOptions.pickable]($frontend).
+
+### Solid primitives in decorations
+
+Decoration graphics can now be produced from [SolidPrimitive]($geometry-core)s - e.g., spheres, cones, slabs, swept surfaces, and so on - using [GraphicBuilder.addSolidPrimitive]($frontend).
+
+## Dictionary enhancements
+
+[Dictionary.keys]($bentleyjs-core) and [Dictionary.values]($bentleyjs-core) enable iteration of the dictionary's keys and values in the same manner as a standard Map.
+
+[Dictionary.findOrInsert]($bentleyjs-core) returns the existing value associated with a key, or - if none yet exists - inserts a new value with that key. It also returns a flag indicating whether or not a new value was inserted. This allows the following code that requires two lookups of the key:
+
+```ts
+let value = dictionary.get(key);
+let inserted = undefined !== value;
+if (undefined === value)
+  inserted = dictionary.insert(key, value = newValue);
+
+alert(`${value} was ${inserted ? "inserted" : "already present"}`);
+```
+
+To be replaced with a more efficient version that requires only one lookup:
+
+```ts
+const result = dictionary.findOrInsert(key, value);
+alert(`${result.value} was ${result.inserted ? "inserted" : "already present"}`);
+```
+
+## Authorization
 ### Authorization utilities made public
 
 More of the utilities and classes around authorization are now declared public -
@@ -29,53 +60,3 @@ Provided ways to control the expiry of tokens issued by AgentAuthorizationClient
 
 - [AgentAuthorizationClient.refreshAccessToken]($backend-itwin-client) refreshes the token for the maximum period of validity, irrespective of whether the token has expired or not
 - [AgentAuthorizationClientConfiguration.expireSafety]($backend-itwin-client) can be now be passed when initializing [AgentAuthorizationClient]($backend-itwin-client) to control the expiry check. The value supplied (in seconds) is used as a buffer to check the token for validity/expiry.
-
-## New IModel events
-
-[IModel]($common)s now emit events when their properties change.
-
-- [IModel.onProjectExtentsChanged]($common)
-- [IModel.onGlobalOriginChanged]($common)
-- [IModel.onEcefLocationChanged]($common)
-- [IModel.onGeographicCoordinateSystemChanged]($common)
-- [IModel.onRootSubjectChanged]($common)
-- [IModel.onNameChanged]($common)
-
-Within [IpcApp]($frontend)-based applications, [BriefcaseConnection]($frontend)s now automatically synchronize their properties in response to such events produced by changes on the backend. For example, if [BriefcaseDb.projectExtents]($backend) is modified, [BriefcaseConnection.projectExtents]($frontend) will be updated to match and both the BriefcaseDb and BriefcaseConnection will emit an `onProjectExtentsChanged` event.
-
-## Promoted APIs
-
-The following previously `alpha` or `beta` APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of the package.
-
-### [@bentley/bentleyjs-core](https://www.itwinjs.org/reference/bentleyjs-core/)
-
-- [ReadonlySortedArray.findEquivalent]($bentleyjs-core) and [ReadonlySortedArray.indexOfEquivalent]($bentleyjs-core) for locating an element based on a custom criterion.
-
-### [@bentley/imodeljs-common](https://www.itwinjs.org/reference/imodeljs-common/)
-
-- [RenderSchedule]($common) for defining scripts to visualize changes in an iModel over time.
-- [DisplayStyleSettings.renderTimeline]($common) for associating a [RenderTimeline]($backend) with a [DisplayStyle]($backend).
-- [DisplayStyleSettings.timePoint]($common) for specifying the currently-simulated point along a view's [RenderSchedule.Script]($common).
-- [ElementGraphicsRequestProps]($common) for generating [RenderGraphic]($frontend)s from [GeometricElement]($backend)s or arbitrary geometry streams.
-
-### [@bentley/imodeljs-frontend](https://www.itwinjs.org/reference/imodeljs-frontend/)
-
-- [LookAndMoveTool]($frontend) for using videogame-like mouse and keyboard controls to navigate a 3d view.
-- [SetupCameraTool]($frontend) for defining the camera for a [SpatialViewState]($frontend).
-- [IModelApp.queryRenderCompatibility]($frontend) for determining the set of WebGL features supported by your browser and device.
-- [ToolAdmin.exceptionHandler]($frontend) and [ToolAdmin.exceptionOptions]($frontend) for customizing how your app reacts to unhandled exceptions.
-- [Viewport.antialiasSamples]($frontend) and [ViewManager.setAntialiasingAllViews]($frontend) for applying [antialiasing](https://en.wikipedia.org/wiki/Multisample_anti-aliasing) to make viewport images appear smoother.
-
-### [@bentley/imodeljs-backend](https://www.itwinjs.org/reference/imodeljs-backend/)
-
-- [TxnManager]($backend) for managing local changes to a [BriefcaseDb]($backend).
-- [IModelDb.computeProjectExtents]($backend) for computing default project extents based on the ranges of spatial elements.
-- [IModelDb.generateElementGraphics]($backend) for generating [RenderGraphic]($frontend)s from [GeometricElement]($backend)s or arbitrary geometry streams.
-- [IModelDb.getGeometryContainment]($backend) for computing the containment of a set of [GeometricElement]($backend)s within a [ClipVector]($geometry-core).
-- [IModelDb.getMassProperties]($backend) for computing [GeometricElement]($backend) properties like area and volume.
-- [RenderTimeline]($backend) element for persisting a [RenderSchedule.Script]($common).
-- [SectionDrawingLocation]($backend) element identifying the location of a [SectionDrawing]($backend) in the context of a [SpatialModel]($backend).
-
-## Popout Widgets
-
-IModelApps, that use AppUi version "2", can now specify if a Widget can support being "popped-out" to a child popup window. The child window runs in the same javascript context as the parent application window. See [Child Window Manager]($docs/learning/ui/framework/ChildWindows.md) for more details.

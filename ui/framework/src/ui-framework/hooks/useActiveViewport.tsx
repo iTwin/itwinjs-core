@@ -9,10 +9,12 @@
 import { useEffect, useState } from "react";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ActiveContentChangedEventArgs, ContentViewManager } from "../content/ContentViewManager";
+import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 
 /** React hook that maintains the active viewport.
- * @beta
+ * @public
  */
+// istanbul ignore next
 export function useActiveViewport(): ScreenViewport | undefined {
   const [activeViewport, setActiveViewport] = useState(IModelApp.viewManager.selectedView);
   useEffect(() => {
@@ -28,5 +30,19 @@ export function useActiveViewport(): ScreenViewport | undefined {
       ContentViewManager.onActiveContentChangedEvent.removeListener(onActiveContentChanged);
     };
   }, []);
+
+  useEffect(() => {
+    const syncIdsOfInterest = [SyncUiEventId.ActiveContentChanged, SyncUiEventId.ContentControlActivated, SyncUiEventId.FrontstageReady];
+    const handleSyncUiEvent = (args: SyncUiEventArgs): void => {
+      // istanbul ignore else
+      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
+        const activeContentControl = ContentViewManager.getActiveContentControl();
+        setActiveViewport(activeContentControl && activeContentControl.viewport);
+      }
+    };
+
+    return SyncUiEventDispatcher.onSyncUiEvent.addListener(handleSyncUiEvent);
+  }, []);
+
   return activeViewport;
 }

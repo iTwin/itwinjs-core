@@ -57,7 +57,10 @@ export class TouchCursor implements CanvasDecoration {
 
     this.position.setFrom(viewLocation);
     this._offsetPosition.setFrom(offsetLocation);
-    this.viewport = vp;
+    if (vp !== this.viewport) {
+      this.viewport.invalidateDecorations();
+      this.viewport = vp;
+    }
     vp.invalidateDecorations();
     return true;
   }
@@ -511,7 +514,7 @@ export class AccuSnap implements Decorator {
   private unFlashViews() {
     this.needFlash.clear();
     this.areFlashed.forEach((vp) => {
-      vp.setFlashed(undefined, 0.0);
+      vp.setFlashed(undefined);
     });
     this.areFlashed.clear();
   }
@@ -658,13 +661,14 @@ export class AccuSnap implements Decorator {
       geometryClass: thisHit.geometryClass,
     };
 
-    if (!thisHit.isElementHit) {
-      const thisGeom = IModelApp.viewManager.getDecorationGeometry(thisHit);
-      if (undefined === thisGeom) {
-        if (out) out.snapStatus = SnapStatus.NoSnapPossible;
-        return undefined;
-      }
+    const thisGeom = (thisHit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(thisHit) : IModelApp.viewManager.getDecorationGeometry(thisHit));
+
+    if (undefined !== thisGeom) {
       requestProps.decorationGeometry = [{ id: thisHit.sourceId, geometryStream: thisGeom }];
+    } else if (!thisHit.isElementHit) {
+      if (out)
+        out.snapStatus = SnapStatus.NoSnapPossible;
+      return undefined;
     }
 
     if (snapModes.includes(SnapMode.Intersection)) {
@@ -673,14 +677,15 @@ export class AccuSnap implements Decorator {
           if (thisHit.sourceId === hit.sourceId || thisHit.iModel !== hit.iModel)
             continue;
 
-          if (!hit.isElementHit) {
-            const geom = IModelApp.viewManager.getDecorationGeometry(hit);
-            if (undefined === geom)
-              continue;
+          const geom = (hit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(hit) : IModelApp.viewManager.getDecorationGeometry(hit));
+
+          if (undefined !== geom) {
             if (undefined === requestProps.decorationGeometry)
               requestProps.decorationGeometry = [{ id: thisHit.sourceId, geometryStream: geom }];
             else
               requestProps.decorationGeometry.push({ id: thisHit.sourceId, geometryStream: geom });
+          } else if (!hit.isElementHit) {
+            continue;
           }
 
           if (undefined === requestProps.intersectCandidates)

@@ -23,7 +23,7 @@ import { RenderedItemsRange, TreeRenderer, TreeRendererProps } from "./TreeRende
 
 /**
  * Properties for [[ControlledTree]]
- * @beta
+ * @public
  */
 export interface ControlledTreeProps extends CommonProps {
   /** Flat list of nodes to be rendered in tree. */
@@ -60,11 +60,15 @@ export interface ControlledTreeProps extends CommonProps {
    * @alpha
    */
   onItemsRendered?: (items: RenderedItemsRange) => void;
+  /** Width of the tree renderer. */
+  width?: number;
+  /** Height of the tree renderer. */
+  height?: number;
 }
 
 /**
  * React tree component which rendering is fully controlled from outside.
- * @beta
+ * @public
  */
 export function ControlledTree(props: ControlledTreeProps) {
   const nodeHeight = useNodeHeight(!!props.descriptionsEnabled);
@@ -79,7 +83,7 @@ export function ControlledTree(props: ControlledTreeProps) {
 
   const eventDispatcher = useEventDispatcher(props.nodeLoader, props.treeEvents, props.selectionMode, props.visibleNodes);
 
-  const treeProps: TreeRendererProps = React.useMemo(() => ({
+  const treeProps: TreeRendererProps = {
     nodeRenderer,
     nodeHeight,
     treeActions: eventDispatcher,
@@ -87,7 +91,9 @@ export function ControlledTree(props: ControlledTreeProps) {
     visibleNodes: props.visibleNodes,
     nodeHighlightingProps: props.nodeHighlightingProps,
     onItemsRendered: props.onItemsRendered,
-  }), [nodeRenderer, nodeHeight, eventDispatcher, props.nodeLoader, props.visibleNodes, props.nodeHighlightingProps, props.onItemsRendered]);
+    width: props.width,
+    height: props.height,
+  };
 
   const loading = useRootNodeLoader(props.visibleNodes, props.nodeLoader);
   const noData = props.visibleNodes.getNumRootNodes() === 0;

@@ -9,10 +9,10 @@ import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logg
 /** @packageDocumentation
  * @module Framework
  */
-import { ChangesType, LockLevel } from "@bentley/imodelhub-client";
+import { ChangesType } from "@bentley/imodelhub-client";
 import {
   BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative,
-  SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
+  LockScope, SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
 } from "@bentley/imodeljs-backend";
 import { IModel, IModelError, LocalBriefcaseProps, OpenBriefcaseProps, SubjectProps } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -223,6 +223,7 @@ abstract class IModelDbBuilder {
   public abstract acquire(): Promise<void>;
 
   protected abstract _updateExistingData(): Promise<void>;
+  protected abstract _finalizeChanges(): Promise<void>;
   protected abstract _initDomainSchema(): Promise<void>;
   protected abstract _importDefinitions(): Promise<void>;
 
@@ -282,12 +283,13 @@ abstract class IModelDbBuilder {
 
   protected abstract _enterChannel(channelRootId: Id64String, lockRoot?: boolean): Promise<void>;
 
-  public async updateExistingData(): Promise<void> {
-    await this._updateExistingData();
+  protected detectDeletedElements() {
     if (this._bridgeArgs.doDetectDeletedElements) {
       this._bridge.synchronizer.detectDeletedElements();
     }
+  }
 
+  protected updateProjectExtents() {
     const options: ComputeProjectExtentsOptions = {
       reportExtentsWithOutliers: false,
       reportOutliers: false,
@@ -306,7 +308,8 @@ abstract class IModelDbBuilder {
   public async updateExistingIModel() {
     await this._initDomainSchema();
     await this._importDefinitions();
-    return this.updateExistingData();
+    await this._updateExistingData();
+    await this._finalizeChanges();
   }
 
   public get imodel() {
@@ -347,7 +350,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     assert(!this._imodel.concurrencyControl.locks.hasCodeSpecsLock, "bridgeRunner must release all locks before switching channels");
     const currentRoot = this._imodel.concurrencyControl.channel.channelRoot;
     if (currentRoot !== undefined)
-      assert(!this._imodel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(currentRoot, LockLevel.Exclusive)), "bridgeRunner must release channel locks before switching channels");
+      assert(!this._imodel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(currentRoot, LockScope.Exclusive)), "bridgeRunner must release channel locks before switching channels");
   }
 
   protected async _enterChannel(channelRootId: Id64String, lockRoot: boolean = true) {
@@ -433,6 +436,25 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     return this._saveAndPushChanges(dataChangesDescription, ChangesType.Regular);
   }
 
+  protected async _finalizeChanges(): Promise<void> {
+    assert(this._requestContext !== undefined);
+    assert(this._imodel instanceof BriefcaseDb);
+    assert(!this._imodel.concurrencyControl.locks.hasSchemaLock);
+    assert(this._imodel.concurrencyControl.isBulkMode);
+
+    await this.enterBridgeChannel();
+    assert(this._imodel.concurrencyControl.channel.isChannelRootLocked);
+
+    this.detectDeletedElements();
+    this.updateProjectExtents();
+
+    let dataChangesDescription = "Finalizing changes";
+    if (this._bridge.getDataChangesDescription)
+      dataChangesDescription = this._bridge.getDataChangesDescription();
+
+    return this._saveAndPushChanges(dataChangesDescription, ChangesType.Regular);
+  }
+
   /** Pushes any pending transactions to the hub. */
   private async _pushChanges(pushComments: string, type: ChangesType) {
     assert(this._requestContext !== undefined);
@@ -482,13 +504,13 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new Error("Must initialize IModelId before using");
     let props: LocalBriefcaseProps;
     if (this._bridgeArgs.argsJson && this._bridgeArgs.argsJson.briefcaseId) {
-      props = await BriefcaseManager.downloadBriefcase(this._requestContext, {briefcaseId: this._bridgeArgs.argsJson.briefcaseId, contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
+      props = await BriefcaseManager.downloadBriefcase(this._requestContext, { briefcaseId: this._bridgeArgs.argsJson.briefcaseId, contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId });
     } else {
-      props = await BriefcaseManager.downloadBriefcase(this._requestContext, {contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
-      if(this._bridgeArgs.argsJson) {
+      props = await BriefcaseManager.downloadBriefcase(this._requestContext, { contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId });
+      if (this._bridgeArgs.argsJson) {
         this._bridgeArgs.argsJson.briefcaseId = props.briefcaseId; // don't overwrite other arguments if anything is passed in
       } else {
-        this._bridgeArgs.argsJson= {briefcaseId: props.briefcaseId};
+        this._bridgeArgs.argsJson = { briefcaseId: props.briefcaseId };
       }
     }
     let briefcaseDb: BriefcaseDb | undefined;
@@ -556,6 +578,13 @@ class SnapshotDbBuilder extends IModelDbBuilder {
   protected async _updateExistingData() {
     assert(this._imodel !== undefined);
     await this._bridge.updateExistingData();
+    this._imodel.saveChanges();
+  }
+
+  protected async _finalizeChanges() {
+    assert(this._imodel !== undefined);
+    this.detectDeletedElements();
+    this.updateProjectExtents();
     this._imodel.saveChanges();
   }
 }

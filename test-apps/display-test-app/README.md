@@ -149,8 +149,6 @@ You can use these environment variables to alter the default behavior of various
   * Unless set to "0" or "false", the system will attempt to create a WebGL2 context before possibly falling back to WebGL1.
 * SVT_MAX_TILES_TO_SKIP
   * The number of levels of iModel tile trees to skip before loading graphics.
-* SVT_DISABLE_IDLE_WORK
-  * If defined, do not try to perform idle work (precompiling shader) when there are no viewports.
 * SVT_DEBUG_SHADERS
   * If defined, and the WEBGL_debug_shaders extension is supported, collect debug info during shader compilation. See the `dta output shaders` key-in.
 * SVT_WINDOW_SIZE

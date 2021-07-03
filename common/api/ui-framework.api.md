@@ -54,7 +54,7 @@ import { DraggedWidgetManagerProps } from '@bentley/ui-ninezone';
 import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { ECClassGroupingNodeKey } from '@bentley/presentation-common';
-import { EmphasizeElementsProps } from '@bentley/imodeljs-frontend';
+import { EmphasizeElementsProps } from '@bentley/imodeljs-common';
 import { FunctionKey as FunctionKey_2 } from '@bentley/ui-abstract';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { GuidString } from '@bentley/bentleyjs-core';
@@ -62,6 +62,7 @@ import { HorizontalAnchor } from '@bentley/ui-ninezone';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { IconProps } from '@bentley/ui-core';
 import { IconSpec } from '@bentley/ui-core';
+import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { IFilteredPresentationTreeDataProvider } from '@bentley/presentation-components';
@@ -141,7 +142,6 @@ import { StringGetter } from '@bentley/ui-abstract';
 import { Tab } from '@bentley/ui-ninezone';
 import { TabMode } from '@bentley/ui-ninezone';
 import { TabState } from '@bentley/ui-ninezone';
-import { TimelineDataProvider } from '@bentley/ui-components';
 import { Tool } from '@bentley/imodeljs-frontend';
 import { ToolAdmin } from '@bentley/imodeljs-frontend';
 import { ToolAssistanceInstruction } from '@bentley/imodeljs-frontend';
@@ -449,7 +449,7 @@ export function addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageD
 // @internal (undocumented)
 export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDef>, side: PanelSide, widgetId: WidgetIdTypes): NineZoneState;
 
-// @alpha
+// @public
 export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport);
     // (undocumented)
@@ -690,10 +690,10 @@ export interface BaseItemState {
     isVisible?: boolean;
 }
 
-// @beta
+// @public
 export function BasicNavigationWidget(props: BasicNavigationWidgetProps): JSX.Element;
 
-// @beta
+// @public
 export interface BasicNavigationWidgetProps {
     additionalHorizontalItems?: CommonToolbarItem[];
     additionalVerticalItems?: CommonToolbarItem[];
@@ -1192,7 +1192,7 @@ export interface ConfigurableUiState {
     widgetOpacity: number;
 }
 
-// @beta
+// @public
 export const connectIModelConnection: (mapStateToProps?: any, mapDispatchToProps?: any) => import("react-redux").InferableComponentEnhancerWithProps<any, any>;
 
 // @beta
@@ -1712,16 +1712,8 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
     updateToolSettingsNodes(): void;
 }
 
-// @alpha
-export class DefaultViewOverlay extends React.Component<Props, State> {
-    constructor(props: any);
-    // (undocumented)
-    componentDidMount(): void;
-    // (undocumented)
-    componentWillUnmount(): void;
-    // (undocumented)
-    render(): React.ReactNode;
-    }
+// @public
+export function DefaultViewOverlay({ viewport, onPlayPause }: ViewOverlayProps): JSX.Element;
 
 // @public
 export class DialogChangedEvent extends UiEvent<DialogChangedEventArgs> {
@@ -1911,7 +1903,7 @@ export interface ElementTooltipChangedEventArgs {
     pt?: XAndY;
 }
 
-// @alpha
+// @public
 export interface EmphasizeElementsChangedArgs {
     readonly action: HideIsolateEmphasizeAction;
     readonly viewport: ScreenViewport;
@@ -2638,6 +2630,8 @@ export class FrontstageManager {
     static readonly onToolPanelOpenedEvent: UiEvent<void>;
     static readonly onToolSettingsReloadEvent: UiEvent<void>;
     // @internal (undocumented)
+    static readonly onWidgetDefsUpdatedEvent: UiEvent<void>;
+    // @internal (undocumented)
     static readonly onWidgetExpandEvent: UiEvent<WidgetEventArgs>;
     // @internal (undocumented)
     static readonly onWidgetLabelChangedEvent: UiEvent<WidgetChangedEventArgs>;
@@ -2929,7 +2923,7 @@ export interface GroupItemProps extends ItemProps {
     panelLabelKey?: string;
 }
 
-// @alpha
+// @public
 export enum HideIsolateEmphasizeAction {
     // (undocumented)
     ClearHiddenIsolatedEmphasized = "ClearHiddenIsolatedEmphasized",
@@ -2953,7 +2947,7 @@ export enum HideIsolateEmphasizeAction {
     IsolateSelectedModels = "IsolateSelectedModels"
 }
 
-// @alpha
+// @public
 export abstract class HideIsolateEmphasizeActionHandler {
     abstract areFeatureOverridesActive(vp: Viewport): boolean;
     // (undocumented)
@@ -2971,7 +2965,7 @@ export abstract class HideIsolateEmphasizeActionHandler {
     abstract processIsolateSelectedElementsModel(): Promise<void>;
 }
 
-// @alpha
+// @public
 export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandler {
     areFeatureOverridesActive(vp: Viewport): boolean;
     static clearEmphasize(vp: Viewport | undefined): void;
@@ -2979,6 +2973,8 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     static clearOverrideModels(vp: Viewport): void;
     static emphasizeSelected(vp: Viewport, emphasisSilhouette?: boolean): Promise<void>;
     static emphasizeSelectedCategory(vp: Viewport): Promise<void>;
+    static getCategoryOverrides(vp: Viewport): Set<string> | undefined;
+    static getModelOverrides(vp: Viewport): Set<string> | undefined;
     static hideCommand(vp: Viewport): Promise<void>;
     static hideSelected(vp: Viewport): void;
     static hideSelectedElementsCategory(vp: Viewport): Promise<void>;
@@ -3002,7 +2998,9 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     processIsolateSelected(): Promise<void>;
     processIsolateSelectedElementsCategory(): Promise<void>;
     processIsolateSelectedElementsModel(): Promise<void>;
-    }
+    static updateCategoryOverride(vp: Viewport, ids: string[]): void;
+    static updateModelOverride(vp: Viewport, ids: string[]): void;
+}
 
 // @alpha
 export class HTMLElementPopup extends React.PureComponent<HTMLElementPopupProps, HTMLElementPopupState> {
@@ -3048,7 +3046,7 @@ export const IModelConnectedViewport: import("react-redux").ConnectedComponent<R
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
 
-// @beta
+// @beta @deprecated
 export const IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent<typeof VisibilityComponent, any>;
 
 // @internal
@@ -3987,6 +3985,8 @@ export interface ModelsTreeProps {
     // @deprecated
     enablePreloading?: boolean;
     // @alpha
+    filteredElementIds?: Id64Array;
+    // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
     iModel: IModelConnection;
     // @alpha
@@ -4209,7 +4209,7 @@ export interface PanelSizeChangedEventArgs {
 export class PanelStateChangedEvent extends UiEvent<PanelStateChangedEventArgs> {
 }
 
-// @beta
+// @public
 export interface PanelStateChangedEventArgs {
     // (undocumented)
     panelDef: StagePanelDef;
@@ -4601,7 +4601,7 @@ export const RULESET_SPATIAL_BREAKDOWN: Ruleset;
 // @internal (undocumented)
 export const RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS: Ruleset;
 
-// @alpha
+// @public
 export const SafeAreaContext: React.Context<SafeAreaInsets>;
 
 // @public
@@ -4640,7 +4640,7 @@ export interface SavedViewProps extends ViewStateProps {
 // @internal (undocumented)
 export function saveFrontstagePopoutWidgetSizeAndPosition(state: NineZoneState, stageId: string, stageVersion: number, childWindowId: string, childWindow: Window): Promise<NineZoneState>;
 
-// @alpha
+// @public
 export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvider {
     constructor(viewState: ViewState, viewport?: ScreenViewport);
     // (undocumented)
@@ -4663,7 +4663,7 @@ export interface SectionsStatusFieldProps extends StatusFieldProps {
 // @beta
 export function selectionContextStateFunc(state: Readonly<BaseItemState>): BaseItemState;
 
-// @beta
+// @public
 export class SelectionContextToolDefinitions {
     // (undocumented)
     static get clearHideIsolateEmphasizeElementsItemDef(): CommandItemDef;
@@ -6216,12 +6216,12 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
 }
 
 // @internal
-export class Toolbar extends React.Component<ToolbarProps, State_2> {
+export class Toolbar extends React.Component<ToolbarProps, State> {
     constructor(props: ToolbarProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
-    componentDidUpdate(prevProps: ToolbarProps, _prevState: State_2): void;
+    componentDidUpdate(prevProps: ToolbarProps, _prevState: State): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
@@ -6804,14 +6804,17 @@ export function useActiveFrontstageDef(): FrontstageDef | undefined;
 // @beta
 export const useActiveFrontstageId: () => string;
 
-// @beta
+// @public
 export function useActiveIModelConnection(): IModelConnection | undefined;
 
 // @internal (undocumented)
 export function useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined;
 
-// @beta
+// @public
 export function useActiveViewport(): ScreenViewport | undefined;
+
+// @public
+export function useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined): AnalysisAnimationTimelineDataProvider | undefined;
 
 // @internal
 export function useAvailableUiItemsProviders(): readonly string[];
@@ -6890,6 +6893,12 @@ export function useSavedFrontstageState(frontstageDef: FrontstageDef): void;
 
 // @internal (undocumented)
 export function useSaveFrontstageSettings(frontstageDef: FrontstageDef): void;
+
+// @public
+export function useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): ScheduleAnimationTimelineDataProvider | undefined;
+
+// @beta
+export function useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined;
 
 // @internal (undocumented)
 export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
@@ -6973,6 +6982,14 @@ export interface ViewLayout {
     contentLayoutDef: ContentLayoutDef;
     // (undocumented)
     viewStates: Array<ViewState | undefined>;
+}
+
+// @public
+export interface ViewOverlayProps {
+    // (undocumented)
+    onPlayPause?: (playing: boolean) => void;
+    // (undocumented)
+    viewport: ScreenViewport;
 }
 
 // @public
@@ -7060,9 +7077,9 @@ export class ViewUtilities {
 }
 
 // @alpha
-export type VisibilityChangeListener = (nodeIds?: string[]) => void;
+export type VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map<string, VisibilityStatus>) => void;
 
-// @beta
+// @beta @deprecated
 export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
     constructor(props: any);
     // (undocumented)
@@ -7072,7 +7089,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
     render(): JSX.Element;
     }
 
-// @beta
+// @beta @deprecated
 export interface VisibilityComponentConfig {
     // (undocumented)
     modelsTree?: {
@@ -7087,7 +7104,7 @@ export interface VisibilityComponentConfig {
     };
 }
 
-// @public
+// @public @deprecated
 export enum VisibilityComponentHierarchy {
     // (undocumented)
     Categories = "categories",
@@ -7097,7 +7114,7 @@ export enum VisibilityComponentHierarchy {
     SpatialContainment = "spatial-containment"
 }
 
-// @beta
+// @beta @deprecated
 export interface VisibilityComponentProps {
     activeTreeRef?: React.Ref<HTMLDivElement>;
     activeViewport?: Viewport;
@@ -7162,7 +7179,7 @@ export interface VisibilityTreeNoFilteredDataProps {
 // @alpha
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
 
-// @beta
+// @beta @deprecated
 export class VisibilityWidget extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
@@ -7648,7 +7665,7 @@ export enum WidgetType {
 // @public
 export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
 
-// @alpha
+// @public
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {
     new (props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>): {
         render(): JSX.Element;

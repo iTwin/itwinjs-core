@@ -207,6 +207,8 @@ export class UiFramework {
     // initialize any standalone settings providers that don't need to have defaults set by iModelApp
     UiShowHideSettingsProvider.initialize();
 
+    ConfigurableUiManager.initialize();
+
     return readFinishedPromise;
   }
 
@@ -406,7 +408,12 @@ export class UiFramework {
   }
 
   public static setIModelConnection(iModelConnection: IModelConnection | undefined, immediateSync = false) {
-    UiFramework.dispatchActionToStore(SessionStateActionId.SetIModelConnection, iModelConnection, immediateSync);
+    const oldConnection = UiFramework.getIModelConnection();
+    if (oldConnection !== iModelConnection) {
+      iModelConnection && SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
+      oldConnection && undefined === iModelConnection && SyncUiEventDispatcher.clearConnectionEvents(oldConnection);
+      UiFramework.dispatchActionToStore(SessionStateActionId.SetIModelConnection, iModelConnection, immediateSync);
+    }
   }
 
   public static getIModelConnection(): IModelConnection | undefined {
@@ -554,7 +561,7 @@ export class UiFramework {
     Logger.logInfo(UiFramework.loggerCategory(UiFramework), `Ui Version changed to ${args.version} `);
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     UiFramework.postTelemetry(`Ui Version changed to ${args.version} `, "F2772C81-962D-4755-807C-2D675A5FF399");
-    UiFramework._uiVersion = args.version;
+    UiFramework.setUiVersion(args.version);
   };
 
   // istanbul ignore next

@@ -1,11 +1,14 @@
 {
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/rush.schema.json",
-  "rushVersion": "5.34.2",
-  "pnpmVersion": "4.12.5",
-  "nodeSupportedVersionRange": ">=10.17.0 <15.0.0",
+  "rushVersion": "5.47.0",
+  "pnpmVersion": "6.4.0",
+  "nodeSupportedVersionRange": ">=12.17.0 <15.0.0",
   "projectFolderMinDepth": 2,
   "projectFolderMaxDepth": 3,
   "ensureConsistentVersions": true,
+  "pnpmOptions": {
+    "useWorkspaces": true
+  },
   "approvedPackagesPolicy": {
     "reviewCategories": [
       "frontend",
@@ -26,6 +29,9 @@
       "[^@]+@users\\.noreply\\.github\\.com"
     ],
     "sampleEmail": "mrexample@users.noreply.github.com"
+  },
+  "repository": {
+    "url": "https://github.com/imodeljs/imodeljs"
   },
   "projects": [
     {
@@ -379,6 +385,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/ecschema-editing",
+      "projectFolder": "core/ecschema-editing",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/webpack-tools-core",
       "projectFolder": "tools/webpack-core",
       "reviewCategory": "tools",
@@ -505,12 +518,6 @@
     {
       "packageName": "example-code-app",
       "projectFolder": "example-code/app",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "test-apps-analysis-importer",
-      "projectFolder": "test-apps/analysis-importer",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

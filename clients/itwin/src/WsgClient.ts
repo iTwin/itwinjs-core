@@ -13,6 +13,7 @@ import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 import { request, RequestOptions, RequestQueryOptions, RequestTimeoutOptions, Response, ResponseError } from "./Request";
 import { ChunkedQueryContext } from "./ChunkedQueryContext";
+import { once } from "lodash";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Clients;
 
@@ -253,17 +254,17 @@ export abstract class WsgClient extends Client {
    * @returns URL for the service
    */
   public async getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
-    if (this._url) {
-      return this._url;
-    }
+    return this._getUrlHelper(requestContext, excludeApiVersion);
+  }
 
+  private _getUrlHelper = once(async (requestContext: ClientRequestContext, excludeApiVersion?: boolean) => {
     const url = await super.getUrl(requestContext);
     this._url = url;
     if (!excludeApiVersion) {
       this._url = `${this._url}/${this.apiVersion}`;
     }
     return this._url; // TODO: On the server this really needs a lifetime!!
-  }
+  });
 
   /** used by clients to delete strongly typed instances through the standard WSG REST API */
   protected async deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void> {

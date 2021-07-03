@@ -19,7 +19,7 @@ import { BrowserAuthorizationClientRedirectState } from "./BrowserAuthorizationC
  * Configuration required to initialize [[BrowserAuthorizationClient]]
  * @public
  */
-export interface BrowserAuthorizationClientConfiguration {
+export interface BrowserAuthorizationClientConfiguration extends BrowserAuthorizationClientRequestOptions {
   /** The URL of the OIDC/OAuth2 provider. If left undefined, the Bentley auth authority will be used by default. */
   readonly authority?: string;
   /** The unique client id registered through the issuing authority. Required to obtain authorization from the user. */
@@ -40,6 +40,16 @@ export interface BrowserAuthorizationClientConfiguration {
   readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
   /** if true, do NOT attempt a silent signIn on startup of the application */
   readonly noSilentSignInOnAppStartup?: boolean;
+}
+
+/**
+ * Interface describing per-request configuration options for authorization requests
+ * see: https://openid.net/specs/openid-connect-core-1_0.html#AuthRequest
+ * @public
+ */
+export interface BrowserAuthorizationClientRequestOptions {
+  /** The required action demanded of the user before the authentication request can succeed */
+  prompt?: "none" | "login" | "consent" | "select_account" | string;
 }
 
 /**
@@ -93,6 +103,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       response_type: basicSettings.responseType, // eslint-disable-line @typescript-eslint/naming-convention
       automaticSilentRenew: true,
       userStore: new WebStorageStateStore({ store: window.localStorage }),
+      prompt: basicSettings.prompt,
     };
 
     if (advancedSettings) {
@@ -141,10 +152,10 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * If an error prevents the redirection from occurring, the returned promise will be rejected with the responsible error.
    * Otherwise, the browser's window will be redirected away from the current page, effectively ending execution here.
    */
-  public async signInRedirect(requestContext: ClientRequestContext, successRedirectUrl?: string): Promise<void> {
+  public async signInRedirect(requestContext: ClientRequestContext, successRedirectUrl?: string, args?: BrowserAuthorizationClientRequestOptions): Promise<void> {
     requestContext.enter();
 
-    const user = await this.nonInteractiveSignIn(requestContext);
+    const user = await this.nonInteractiveSignIn(requestContext, args);
     if (user) {
       return;
     }
@@ -154,25 +165,24 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       successRedirectUrl: successRedirectUrl || window.location.href,
     };
 
-    await userManager.signinRedirect({
-      state,
-    }); // This call changes the window's URL, which effectively ends execution here unless an exception is thrown.
+    const redirectArgs = Object.assign({ state }, args);
+    await userManager.signinRedirect(redirectArgs); // This call changes the window's URL, which effectively ends execution here unless an exception is thrown.
   }
 
   /**
    * Attempts a sign-in via popup with the authorization provider
    * @param requestContext
    */
-  public async signInPopup(requestContext: ClientRequestContext): Promise<void> {
+  public async signInPopup(requestContext: ClientRequestContext, args?: BrowserAuthorizationClientRequestOptions): Promise<void> {
     requestContext.enter();
 
-    let user = await this.nonInteractiveSignIn(requestContext);
+    let user = await this.nonInteractiveSignIn(requestContext, args);
     if (user) {
       return;
     }
 
     const userManager = await this.getUserManager(requestContext);
-    user = await userManager.signinPopup();
+    user = await userManager.signinPopup(args);
     assert(user && !user.expired, "Expected userManager.signinPopup to always resolve to an authorized user");
     return;
   }
@@ -194,15 +204,17 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * - tries to load the user from storage
    * - tries to silently sign-in the user
    */
-  protected async nonInteractiveSignIn(requestContext: ClientRequestContext): Promise<User | undefined> {
+  protected async nonInteractiveSignIn(requestContext: ClientRequestContext, args?: BrowserAuthorizationClientRequestOptions): Promise<User | undefined> {
+    const userManager = await this.getUserManager(requestContext);
+    const settingsPromptRequired = userManager.settings.prompt !== undefined && userManager.settings.prompt !== "none";
+    const argsPromptRequired = args?.prompt !== undefined && args.prompt !== "none";
+    if (settingsPromptRequired || argsPromptRequired) { // No need to even try a silent sign in if we know the prompt will force its failure.
+      return undefined;
+    }
+
     let user = await this.loadUser(requestContext);
     if (user) {
       return user;
-    }
-
-    const userManager = await this.getUserManager(requestContext);
-    if (userManager.settings.prompt && userManager.settings.prompt !== "none") { // No need to even try a silent sign in if we know the prompt will force its failure.
-      return undefined;
     }
 
     // Attempt a silent sign-in

@@ -28,7 +28,7 @@ export enum StagePanelState {
 }
 
 /** Panel State Changed Event Args interface.
- * @beta
+ * @public
  */
 export interface PanelStateChangedEventArgs {
   panelDef: StagePanelDef;
@@ -88,6 +88,7 @@ export class StagePanelDef extends WidgetHost {
     // istanbul ignore else
     if (UiFramework.uiVersion === "2") {
       const frontstageDef = FrontstageManager.activeFrontstageDef;
+      // istanbul ignore else
       if (frontstageDef && frontstageDef.nineZoneState) {
         const side = toPanelSide(this.location);
         frontstageDef.nineZoneState = setPanelSize(frontstageDef.nineZoneState, side, size);

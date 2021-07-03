@@ -12,14 +12,19 @@ import * as moq from "typemoq";
 import { ClientRequestContext, DbResult, using } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@bentley/imodeljs-backend";
 import {
-  ArrayTypeDescription, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor,
-  DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory,
-  HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, ItemJSON, KeySet, KindOfQuantityInfo,
-  LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PresentationUnitSystem,
-  PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset, SelectClassInfoJSON,
-  SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  ArrayTypeDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes,
+  Descriptor, DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
+  DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
+  FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions,
+  HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, LabelRequestOptions,
+  NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PresentationUnitSystem, PrimitiveTypeDescription,
+  PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset, SelectClassInfoJSON, SelectionInfo,
+  SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@bentley/presentation-common";
+import {
+  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField,
+} from "@bentley/presentation-common/lib/test/_helpers/Content";
+import { createTestECClassInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
 import {
   createRandomCategory, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfoJSON, createRandomECInstanceKey,
   createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId,
@@ -39,6 +44,7 @@ import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 import { WithClientRequestContext } from "../presentation-backend/Utils";
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
+
 describe("PresentationManager", () => {
 
   before(async () => {
@@ -251,10 +257,25 @@ describe("PresentationManager", () => {
         addon.reset();
       });
 
-      it("sets up ruleset directories if supplied", () => {
-        const dirs = ["test1", "test2"];
-        addon.setup((x) => x.setupRulesetDirectories(dirs)).verifiable();
+      it("sets up primary ruleset directories if supplied", () => {
+        const dirs = ["test1", "test2", "test2"];
+        const addonDirs = [path.join(PRESENTATION_BACKEND_ASSETS_ROOT, "primary-presentation-rules"), "test1", "test2"];
+        addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
         using(new PresentationManager({ addon: addon.object, rulesetDirectories: dirs }), (pm: PresentationManager) => { pm; });
+        addon.verifyAll();
+      });
+
+      it("sets up presentation backend's primary ruleset directories using `presentationAssetsRoot` as string if supplied", () => {
+        const addonDirs = [path.join("/test", "primary-presentation-rules")];
+        addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
+        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (pm: PresentationManager) => { pm; });
+        addon.verifyAll();
+      });
+
+      it("sets up presentation backend's primary ruleset directories using `presentationAssetsRoot.backend` if supplied", () => {
+        const addonDirs = [path.join("/backend-test", "primary-presentation-rules")];
+        addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
+        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: { backend: "/backend-test", common: "/common-test" } }), (_pm: PresentationManager) => { });
         addon.verifyAll();
       });
 
@@ -329,7 +350,10 @@ describe("PresentationManager", () => {
         });
       });
 
-      it("creates an `UpdateTracker` when in read-write mode and `updatesPollInterval` is specified", () => {
+      it("creates an `UpdateTracker` when in read-write mode, `updatesPollInterval` is specified and IPC host is available", () => {
+        sinon.stub(IpcHost, "isValid").get(() => true);
+        sinon.stub(PresentationIpcHandler, "register").returns(() => { });
+
         const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
         const stub = sinon.stub(UpdatesTracker, "create").returns(tracker);
         using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123 }), (_) => {
@@ -337,6 +361,14 @@ describe("PresentationManager", () => {
           expect(tracker.dispose).to.not.be.called; // eslint-disable-line @typescript-eslint/unbound-method
         });
         expect(tracker.dispose).to.be.calledOnce; // eslint-disable-line @typescript-eslint/unbound-method
+      });
+
+      it("doesn't create an `UpdateTracker` when IPC host is unavailable", () => {
+        sinon.stub(IpcHost, "isValid").get(() => false);
+        const stub = sinon.stub(UpdatesTracker, "create");
+        using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123 }), (_) => {
+          expect(stub).to.not.be.called;
+        });
       });
 
     });
@@ -1154,8 +1186,8 @@ describe("PresentationManager", () => {
     describe("compareHierarchies", () => {
 
       it("[deprecated] addon to compare hierarchies after ruleset change", async () => {
-        const var1 = { id: "var", type: VariableValueTypes.Id64, value: 123 };
-        const var2 = { id: "var", type: VariableValueTypes.Id64, value: 465 };
+        const var1: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 123 };
+        const var2: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 465 };
         const nodeKey = createRandomECInstancesNodeKey();
 
         // what the addon receives
@@ -1196,8 +1228,8 @@ describe("PresentationManager", () => {
       });
 
       it("requests addon to compare hierarchies based on ruleset and variables' changes", async () => {
-        const var1 = { id: "var", type: VariableValueTypes.Id64, value: 123 };
-        const var2 = { id: "var", type: VariableValueTypes.Id64, value: 465 };
+        const var1: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 123 };
+        const var2: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 465 };
         const nodeKey = createRandomECInstancesNodeKey();
 
         // what the addon receives
@@ -1274,8 +1306,8 @@ describe("PresentationManager", () => {
       });
 
       it("requests addon to compare hierarchies based on ruleset variables' changes", async () => {
-        const var1 = { id: "var", type: VariableValueTypes.Id64, value: 123 };
-        const var2 = { id: "var", type: VariableValueTypes.Id64, value: 465 };
+        const var1: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 123 };
+        const var2: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 465 };
 
         // what the addon receives
         const expectedParams = {
@@ -2463,6 +2495,81 @@ describe("PresentationManager", () => {
         };
         const result = await manager.getPagedDistinctValues(options);
         verifyWithExpectedResult(result, addonResponse, expectedParams);
+      });
+
+    });
+
+    describe("getElementProperties", () => {
+
+      it("returns element properties", async () => {
+        // what the addon receives
+        const elementKey = { className: "BisCore:Element", id: "0x123" };
+        setupIModelForElementKey(imodelMock, elementKey);
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: new KeySet([elementKey]).toJSON(),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+            },
+            rulesetId: "ElementProperties",
+          },
+        };
+
+        // what the addon returns
+        const addonContentResponse = new Content(
+          createTestContentDescriptor({
+            fields: [
+              createTestSimpleContentField({
+                name: "test",
+                label: "Test Field",
+                category: createTestCategoryDescription({ label: "Test Category" }),
+              }),
+            ],
+          }),
+          [
+            createTestContentItem({
+              label: "test label",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {
+                test: "test value",
+              },
+              displayValues: {
+                test: "test display value",
+              },
+            }),
+          ],
+        ).toJSON();
+        setup(addonContentResponse);
+
+        // test
+        const options: WithClientRequestContext<ElementPropertiesRequestOptions<IModelDb>> = {
+          requestContext: ClientRequestContext.current,
+          imodel: imodelMock.object,
+          elementId: elementKey.id,
+        };
+        const expectedResponse: ElementProperties = {
+          class: "Test Class",
+          id: "0x123",
+          label: "test label",
+          items: {
+            ["Test Category"]: {
+              type: "category",
+              items: {
+                ["Test Field"]: {
+                  type: "primitive",
+                  value: "test display value",
+                },
+              },
+            },
+          },
+        };
+        const result = await manager.getElementProperties(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(expectedResponse);
       });
 
     });

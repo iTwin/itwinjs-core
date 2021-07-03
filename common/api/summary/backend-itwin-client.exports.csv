@@ -9,9 +9,11 @@ internal;BackendFeatureUsageTelemetryClient
 public;BackendITwinClientLoggerCategory
 alpha;class BackendTelemetryClient 
 alpha;BackendTelemetryEvent 
+internal;BlobDownloader
 internal;BufferedStream 
 alpha;ClientAuthDetail
 alpha;ClientAuthIntrospectionManager
+internal;ConfigData
 beta;DelegationAuthorizationClient 
 beta;DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration
 internal;HttpRequestHost
@@ -31,5 +33,6 @@ beta;OidcDelegationClient = DelegationAuthorizationClient
 deprecated;OidcDelegationClient = DelegationAuthorizationClient
 beta;OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration
 deprecated;OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration
+internal;ProgressData
 internal;StorageServiceFileHandler 
 internal;UrlFileHandler 
