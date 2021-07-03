@@ -1,6 +1,6 @@
 {
   "name": "@bentley/geonames-extension",
-  "version": "2.19.0-dev.2",
+  "version": "2.19.0-dev.4",
   "description": "Geolocation Extension",
   "main": "index.js",
   "license": "MIT",
@@ -31,7 +31,7 @@
     "@bentley/extension-webpack-tools": "workspace:*",
     "@types/node": "10.14.1",
     "cpx": "^1.5.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.1.0"
   },

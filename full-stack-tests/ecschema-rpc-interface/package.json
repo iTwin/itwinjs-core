@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-rpcinterface-tests",
-  "version": "2.19.0-dev.2",
+  "version": "2.19.0-dev.4",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -62,7 +62,7 @@
     "@types/node": "10.14.1",
     "@types/puppeteer": "2.0.1",
     "cpx": "^1.5.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "npm-run-all": "^4.1.5",
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",

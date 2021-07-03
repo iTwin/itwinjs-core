@@ -256,6 +256,7 @@ import { SmoothTransformBetweenFrusta } from '@bentley/geometry-core';
 import { SnapRequestProps } from '@bentley/imodeljs-common';
 import { SnapResponseProps } from '@bentley/imodeljs-common';
 import { SolarShadowSettings } from '@bentley/imodeljs-common';
+import { SolidPrimitive } from '@bentley/geometry-core';
 import { SortedArray } from '@bentley/bentleyjs-core';
 import { SpatialClassifier } from '@bentley/imodeljs-common';
 import { SpatialClassifierInsideDisplay } from '@bentley/imodeljs-common';
@@ -3877,6 +3878,7 @@ export abstract class GraphicBuilder {
     addRangeBoxFromCorners(p: Point3d[]): void;
     abstract addShape(points: Point3d[]): void;
     abstract addShape2d(points: Point2d[], zDepth: number): void;
+    abstract addSolidPrimitive(solidPrimitive: SolidPrimitive): void;
     get applyAspectRatioSkew(): boolean;
     set applyAspectRatioSkew(apply: boolean);
     abstract finish(): RenderGraphic;
@@ -3898,6 +3900,8 @@ export abstract class GraphicBuilder {
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
     get type(): GraphicType;
     get viewport(): Viewport;
+    get wantEdges(): boolean;
+    set wantEdges(want: boolean);
     get wantNormals(): boolean;
     set wantNormals(want: boolean);
 }
@@ -3905,6 +3909,7 @@ export abstract class GraphicBuilder {
 // @public
 export interface GraphicBuilderOptions {
     applyAspectRatioSkew?: boolean;
+    generateEdges?: boolean;
     pickable?: PickableGraphicOptions;
     placement?: Transform;
     preserveOrder?: boolean;
@@ -3975,7 +3980,7 @@ export interface GraphicPolyface {
 }
 
 // @public
-export type GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface;
+export type GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface | GraphicSolidPrimitive;
 
 // @public
 export interface GraphicPrimitive2d {
@@ -4016,6 +4021,14 @@ export interface GraphicShape2d extends GraphicPrimitive2d {
     points: Point2d[];
     // (undocumented)
     type: "shape2d";
+}
+
+// @public
+export interface GraphicSolidPrimitive {
+    // (undocumented)
+    solidPrimitive: SolidPrimitive;
+    // (undocumented)
+    type: "solidPrimitive";
 }
 
 // @public
