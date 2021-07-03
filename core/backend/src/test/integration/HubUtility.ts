@@ -444,7 +444,7 @@ export class HubUtility {
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
   public static async purgeAcquiredBriefcasesById(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, onReachThreshold: () => void = () => { }, acquireThreshold: number = 16): Promise<void> {
-    assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
+    assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const briefcases = await IModelHost.hubAccess.getMyBriefcaseIds({ requestContext, iModelId });
     if (briefcases.length > acquireThreshold) {
       if (undefined !== onReachThreshold)
