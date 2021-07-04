@@ -166,7 +166,8 @@ const rule = {
         // and we start supporting splitting such nested expressions with awaits
         // then we'll need to reconsider this
         if (node.parent.body.type !== "BlockStatement") {
-          return undefined;
+          checkReentryNonBlockStmt(node, reqCtxArgName);
+          return Handled;
         }
         return findAfter(node.parent.body.body, (s) => s === node);
       }

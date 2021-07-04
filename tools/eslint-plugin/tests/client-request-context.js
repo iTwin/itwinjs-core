@@ -615,7 +615,7 @@ new ESLintTester({
         `,
       },
       {
-        //only: true,
+        only: true,
         code: makeTest`
           async function awaitInBlocklessArrowFunc(reqCtx: ClientRequestContext) {
             reqCtx.enter();
@@ -654,7 +654,6 @@ new ESLintTester({
         `,
       },
       {
-        only: true,
         code: makeTest`
           async function awaitInForLoopCondition(reqCtx: ClientRequestContext) {
             reqCtx.enter();
