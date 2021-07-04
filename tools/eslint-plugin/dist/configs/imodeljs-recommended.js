@@ -372,7 +372,7 @@ module.exports = {
     "@bentley/prefer-get": "error",
     "@bentley/react-set-state-usage": ["error", { "updater-only": false, "allow-object": true }],
     "@bentley/require-basic-rpc-values": "off",
-    "@bentley/client-request-context": ["error"],
+    "@bentley/request-context": ["error"],
   },
   settings: {
     "react": {
@@ -383,7 +383,7 @@ module.exports = {
     {
       files: ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
       rules: {
-        "@bentley/client-request-context": ["off"],
+        "@bentley/request-context": ["off"],
       }
     }
   ]

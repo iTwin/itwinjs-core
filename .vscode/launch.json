@@ -1637,14 +1637,14 @@
       ]
     },
     {
-      "name": "eslint rule tests @bentley/client-request-context",
+      "name": "eslint rule tests @bentley/request-context",
       "presentation": {
         "group": "6_Misc"
       },
       "cwd": "${workspaceFolder}/tools/eslint-plugin",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/tools/eslint-plugin/tests/client-request-context.js",
+      "program": "${workspaceFolder}/tools/eslint-plugin/tests/request-context.js",
       "console": "integratedTerminal",
     }
   ],

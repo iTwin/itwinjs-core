@@ -7,8 +7,7 @@
 
 const ESLintTester = require("eslint").RuleTester;
 const BentleyESLintPlugin = require("../dist");
-const ClientRequestContextESLintRule =
-  BentleyESLintPlugin.rules["client-request-context"];
+const RequestContextESLintRule = BentleyESLintPlugin.rules["request-context"];
 
 // TODO: see if we can automatically inject a prelude into the parser options instead of using this
 const prelude = `
@@ -54,8 +53,8 @@ new ESLintTester({
     project: "./tsconfig.test.json",
   },
 }).run(
-  "client-request-context",
-  ClientRequestContextESLintRule,
+  "request-context",
+  RequestContextESLintRule,
   supportSkippedAndOnlyInTests({
     valid: [
       {
@@ -268,9 +267,9 @@ new ESLintTester({
           {
             messageId: "noEnterOnFirstLine",
             data: { reqCtxArgName: "reqCtx" },
-            output: makeTest`async function missingFirstEnterCallEmptyBody(reqCtx: ClientRequestContext) {reqCtx.enter();}`,
           },
         ],
+        output: makeTest`async function missingFirstEnterCallEmptyBody(reqCtx: ClientRequestContext) {reqCtx.enter();}`,
       },
       {
         code: makeTest`

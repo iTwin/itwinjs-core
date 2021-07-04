@@ -91,7 +91,7 @@ const rule = {
     type: "problem",
     docs: {
       description:
-        "Follow the ClientRequestContext rules " +
+        "Follow the RequestContext rules " +
         "(see https://www.itwinjs.org/learning/backend/managingclientrequestcontext/)",
       category: "TypeScript",
     },
@@ -349,7 +349,7 @@ const rule = {
         // TODO: should probably check the package name here too
         return (
           type.symbol &&
-          /ClientRequestContext$/.test(
+          /(Authorized)?(Client|Backend)?RequestContext$/.test(
             checker.getFullyQualifiedName(type.symbol)
           )
         );
