@@ -546,9 +546,7 @@ const rule = {
       ArrowFunctionExpression: VisitFuncDeclLike,
       FunctionDeclaration: VisitFuncDeclLike,
       FunctionExpression: VisitFuncDeclLike,
-      ForOfStatement(loop) {
-        if (!loop.await) return;
-
+      "ForOfStatement[await = true]"(loop) {
         const outerFunc = getOuterFunction(loop);
         const lastFunc = back(asyncFuncStack);
         if (lastFunc === undefined || lastFunc.func !== outerFunc) return;
@@ -557,7 +555,7 @@ const rule = {
         if (
           body.type === "BlockStatement" &&
           !isReqCtxEntry(body.body[0], lastFunc.reqCtxArgName)
-        )
+        ) {
           context.report({
             node: body.body[0] || body,
             messageId: messageIds.noEnterOnAwaitResume,
@@ -578,7 +576,7 @@ const rule = {
                 );
             },
           });
-        else if (!isReqCtxEntry(body, lastFunc.reqCtxArgName))
+        } else if (!isReqCtxEntry(body, lastFunc.reqCtxArgName)) {
           context.report({
             node: body,
             messageId: messageIds.noEnterOnAwaitResume,
@@ -592,6 +590,7 @@ const rule = {
               ];
             },
           });
+        }
       },
     };
   },
