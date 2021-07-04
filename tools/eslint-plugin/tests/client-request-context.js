@@ -168,16 +168,6 @@ new ESLintTester({
         `,
       },
       {
-        code: makeTest`
-          class C {
-            async dontNeedEnterIfAwaitIsLastStatement(reqCtx: ClientRequestContext) {
-              reqCtx.enter();
-              await Promise.resolve(5);
-            }
-          }
-        `,
-      },
-      {
         code: makeTest`async function f(ctx: IMJSBackend.ClientRequestContext) {ctx.enter();}`,
       },
       {
@@ -234,14 +224,6 @@ new ESLintTester({
           }
         `,
       },
-      {
-        code: makeTest`
-          async function forAwaitLoop(reqCtx: ClientRequestContext) {
-            reqCtx.enter();
-            for await (const item of iter) {}
-          }
-        `,
-      },
     ],
     invalid: [
       {
@@ -259,8 +241,8 @@ new ESLintTester({
           class Bad {
             async badMethod(reqCtx: ClientRequestContext) {
               reqCtx.enter();
-              await Promise.resolve(5);reqCtx.enter();
-              const badStatement = 10;
+              await Promise.resolve(5);
+              reqCtx.enter();const badStatement = 10;
             }
           }
         `,
@@ -466,7 +448,6 @@ new ESLintTester({
           {
             messageId: "noEnterOnCatchResume",
             data: { reqCtxArgName: "reqCtx" },
-            data: { reqCtxArgName: "reqCtx" },
           },
         ],
         output: makeTest`
@@ -510,7 +491,7 @@ new ESLintTester({
       },
       {
         code: makeTest`
-          function bathBothThenCalls(reqCtx: ClientRequestContext) {
+          function badBothThenCalls(reqCtx: ClientRequestContext) {
             reqCtx.enter();
             return Promise.resolve().then(() => {
               const notEnterFirst = 7;
@@ -527,30 +508,21 @@ new ESLintTester({
           {
             messageId: "noEnterOnThenResume",
             data: { reqCtxArgName: "reqCtx" },
-            output: makeTest`
-              function bathBothThenCalls(reqCtx: ClientRequestContext) {
-                reqCtx.enter();
-                return Promise.resolve().then(() => {
-                  const notEnterFirst = 7;
-                }).then(() => {
-                  reqCtx.enter();const notEnterFirst = 10;
-                });
-              }
-            `,
           },
         ],
         output: makeTest`
-          function bathBothThenCalls(reqCtx: ClientRequestContext) {
+          function badBothThenCalls(reqCtx: ClientRequestContext) {
             reqCtx.enter();
             return Promise.resolve().then(() => {
               reqCtx.enter();const notEnterFirst = 7;
             }).then(() => {
-              const notEnterFirst = 10;
+              reqCtx.enter();const notEnterFirst = 10;
             });
           }
         `,
       },
       {
+        only: true,
         code: makeTest`
           async function badAsyncCatch(reqCtx: ClientRequestContext) {
             reqCtx.enter();
@@ -615,7 +587,6 @@ new ESLintTester({
         `,
       },
       {
-        only: true,
         code: makeTest`
           async function awaitInBlocklessArrowFunc(reqCtx: ClientRequestContext) {
             reqCtx.enter();
@@ -671,6 +642,35 @@ new ESLintTester({
             for (let i = 0; i <= await check(); ++i)
               {reqCtx.enter();a.push(i);}
             return a;
+          }
+        `,
+      },
+      {
+        code: makeTest`
+          class C {
+            async suggestOnReturnAwait(reqCtx: ClientRequestContext) {
+              reqCtx.enter();
+              return await Promise.resolve(5);
+            }
+          }
+        `,
+        errors: [{ messageId: "noEnterOnAwaitResumeSuggest" }],
+      },
+      {
+        code: makeTest`
+          async function awaitInWhileLoopCondition(reqCtx: ClientRequestContext) {
+            reqCtx.enter();
+            while (!await check())
+              {mutate();}
+          }
+        `,
+        errors: [{ messageId: "noEnterOnAwaitResume" }],
+        // XXX: this should probably also add a reqCtx.enter() immediately after the loop body
+        output: makeTest`
+          async function awaitInWhileLoopCondition(reqCtx: ClientRequestContext) {
+            reqCtx.enter();
+            while (!await check())
+              {reqCtx.enter();mutate();}
           }
         `,
       },

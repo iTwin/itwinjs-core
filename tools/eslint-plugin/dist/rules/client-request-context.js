@@ -21,6 +21,9 @@ const messages = {
   noEnterOnThenResume: `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately in any 'then' callbacks`,
   // TODO: should probably do it after expressions, not statements but that might be more complicated...
   noEnterOnAwaitResume: `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately after resuming from an awaited statement`,
+  noEnterOnAwaitResumeSuggest:
+    `All ${asyncFuncMoniker}s must call 'enter' on their ClientRequestContext immediately after resuming from an awaited statement. ` +
+    `Try assigning an intermediate variable to the await result, calling {{reqCtxArgName}}.enter(), and then returning`,
   noEnterOnCatchResume: `All ${asyncFuncMoniker}s must call '{{reqCtxArgName}}.enter()' immediately after catching an async exception`,
   didntPropagate: `All ${asyncFuncMoniker}s must propagate their async to functions`,
   calledCurrent: `All ${asyncFuncMoniker}s must not call ClientRequestContext.current`,
@@ -172,8 +175,8 @@ const rule = {
         return findAfter(node.parent.body.body, (s) => s === node);
       }
 
-      /** @param {TSESTree.Node & {parent: TSESTree.ForStatement | TSESTree.ForInStatement | TSESTree.ForOfStatement}} node */
-      function NextFromForStatement(node) {
+      /** @param {TSESTree.Node & {parent: TSESTree.ForStatement | TSESTree.ForInStatement | TSESTree.ForOfStatement | TSESTree.WhileStatement | TSESTree.DoWhileStatement}} node */
+      function NextFromLoop(node) {
         const loop = node.parent;
         // if the `await` was in the init/step/iterator-expr, it may still have a block statement
         if (loop.body.type === "BlockStatement") {
@@ -210,9 +213,11 @@ const rule = {
               checkReentryNonBlockStmt(node.parent.alternate, reqCtxArgName);
             return Handled;
           },
-          ForOfStatement: NextFromForStatement,
-          ForInStatement: NextFromForStatement,
-          ForStatement: NextFromForStatement,
+          ForOfStatement: NextFromLoop,
+          ForInStatement: NextFromLoop,
+          ForStatement: NextFromLoop,
+          WhileStatement: NextFromLoop,
+          DoWhileStatement: NextFromLoop,
         };
 
         return node.parent && handleParentTypeMap[node.parent.type]
@@ -418,7 +423,18 @@ const rule = {
       AwaitExpression(node) {
         const lastFunc = back(asyncFuncStack);
         // if the stack is empty, this is a top-level await and we can ignore it
-        if (lastFunc) lastFunc.awaits.add(node);
+        if (!lastFunc) return;
+
+        // awaits in return statements require a context entry but we can't fix it without an intermediate variable
+        if (node.parent && node.parent.type === "ReturnStatement") {
+          context.report({
+            node,
+            messageId: messageIds.noEnterOnAwaitResumeSuggest,
+            data: { reqCtxArgName: lastFunc.reqCtxArgName },
+          });
+        } else {
+          lastFunc.awaits.add(node);
+        }
       },
 
       /** @param {TSESTree.CatchClause} node */
