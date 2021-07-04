@@ -209,7 +209,7 @@ const rule = {
             const inTest = nodeContains(node.parent.test, node);
             if (inThen || inTest)
               checkReentryNonBlockStmt(node.parent.consequent, reqCtxArgName);
-            if (inElse || inTest)
+            if (node.parent.alternate && (inElse || inTest))
               checkReentryNonBlockStmt(node.parent.alternate, reqCtxArgName);
             return Handled;
           },
@@ -234,8 +234,7 @@ const rule = {
           messageId: messageIds.noEnterOnAwaitResume,
           data: { reqCtxArgName: reqCtxArgName },
           fix(fixer) {
-            // TODO: clarify/fix
-            return fixer.insertTextAfter(node, `${reqCtxArgName}.enter();`);
+            return fixer.insertTextAfter(node, `;${reqCtxArgName}.enter();`);
           },
         });
       } else if (!isReqCtxEntry(nextStmt, reqCtxArgName)) {
@@ -246,7 +245,7 @@ const rule = {
           fix(fixer) {
             return fixer.insertTextBefore(
               nextStmt,
-              `${reqCtxArgName}.enter();`
+              `;${reqCtxArgName}.enter();`
             );
           },
         });
@@ -553,12 +552,12 @@ const rule = {
               if (body.body[0] !== undefined)
                 return fixer.insertTextBefore(
                   body.body[0],
-                  `${lastFunc.reqCtxArgName}.enter();`
+                  `;${lastFunc.reqCtxArgName}.enter();`
                 );
               else
                 return fixer.insertTextAfterRange(
                   [body.range[0] + 1, body.range[1] - 1],
-                  `${lastFunc.reqCtxArgName}.enter();`
+                  `;${lastFunc.reqCtxArgName}.enter();`
                 );
             },
           });

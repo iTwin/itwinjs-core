@@ -242,7 +242,7 @@ new ESLintTester({
             async badMethod(reqCtx: ClientRequestContext) {
               reqCtx.enter();
               await Promise.resolve(5);
-              reqCtx.enter();const badStatement = 10;
+              ;reqCtx.enter();const badStatement = 10;
             }
           }
         `,
@@ -522,12 +522,12 @@ new ESLintTester({
         `,
       },
       {
-        only: true,
         code: makeTest`
           async function badAsyncCatch(reqCtx: ClientRequestContext) {
             reqCtx.enter();
             try {
-              await Promise.resolve()
+              await Promise.resolve();
+              reqCtx.enter();
             } catch (ignore) {
               // no immediate context.enter
             }
@@ -543,7 +543,8 @@ new ESLintTester({
           async function badAsyncCatch(reqCtx: ClientRequestContext) {
             reqCtx.enter();
             try {
-              await Promise.resolve()
+              await Promise.resolve();
+              reqCtx.enter();
             } catch (ignore) {
               // no immediate context.enter
             reqCtx.enter();}
@@ -670,7 +671,23 @@ new ESLintTester({
           async function awaitInWhileLoopCondition(reqCtx: ClientRequestContext) {
             reqCtx.enter();
             while (!await check())
-              {reqCtx.enter();mutate();}
+              {;reqCtx.enter();mutate();}
+          }
+        `,
+      },
+      {
+        code: makeTest`
+          async function noSemiColons(reqCtx: ClientRequestContext) {
+            reqCtx.enter();
+            await test()
+          }
+        `,
+        errors: [{ messageId: "noEnterOnAwaitResume" }],
+        // XXX: this should probably also add a reqCtx.enter() immediately after the loop body
+        output: makeTest`
+          async function noSemiColons(reqCtx: ClientRequestContext) {
+            reqCtx.enter();
+            await test();reqCtx.enter();
           }
         `,
       },
