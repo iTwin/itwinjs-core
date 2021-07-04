@@ -1,6 +1,6 @@
 {
   "name": "@bentley/map-layers",
-  "version": "2.19.0-dev.4",
+  "version": "2.19.0-dev.5",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/map-layers.js",
   "typings": "lib/map-layers",
