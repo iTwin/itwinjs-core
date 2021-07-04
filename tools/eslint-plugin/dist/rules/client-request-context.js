@@ -174,45 +174,18 @@ const rule = {
       /** @param {TSESTree.Node & {parent: TSESTree.ForStatement | TSESTree.ForInStatement | TSESTree.ForOfStatement}} node */
       function NextFromForStatement(node) {
         const loop = node.parent;
+        // if the `await` was in the init/step/iterator-expr, it may still have a block statement
         if (loop.body.type === "BlockStatement") {
           return findAfter(loop.body.body, (s) => s === node);
         } else {
-          checkReentryNonBlockStmt(node, reqCtxArgName);
+          checkReentryNonBlockStmt(loop.body, reqCtxArgName);
           return Handled;
         }
       }
 
-      /** @param {TSESTree.Node & {parent: TSESTree.Node}} node */
-      function NextFromGeneric(node) {
-        let cur = node,
-          outerStmt = node;
-        while (cur.type !== "BlockStatement") {
-          if (!cur.parent) unreachable("AST precondition violation");
-          outerStmt = cur;
-          cur = cur.parent;
-        }
-        const nextStmt = findAfter(cur.body, (s) => s === outerStmt);
-
-        if (nextStmt === undefined)
-          context.report({
-            node,
-            messageId: messageIds.noEnterOnAwaitResume,
-            data: { reqCtxArgName: reqCtxArgName },
-            fix(fixer) {
-              // TODO: clarify/fix
-              return fixer.insertTextAfter(
-                outerStmt,
-                `${reqCtxArgName}.enter();`
-              );
-            },
-          });
-
-        return Handled;
-      }
-
       /** @param {TSESTree.Node} node */
       function handleOrReturnSimpleNextStmt(node) {
-        /** @type {{[K in AST_NODE_TYPES]?: (node: TSESTree.Node & {parent: { type: K }}) => TSESTree.Node | typeof Handled | undefined}} */
+        /** @type {{[K in AST_NODE_TYPES]?: (node: TSESTree.Node & {parent: { type: K }}) => (TSESTree.Node | typeof Handled | undefined)}} */
         const handleParentTypeMap = {
           ArrowFunctionExpression: NextFromFuncDeclLike,
           FunctionExpression: NextFromFuncDeclLike,
@@ -227,29 +200,23 @@ const rule = {
             return findAfter(node.parent.body, (s) => s === node);
           },
           IfStatement(node) {
-            for (const parentBranchKey of ["consequent", "alternate"])
-              if (nodeContains(node.parent[parentBranchKey], node))
-                return checkReentryNonBlockStmt(node, parentBranchKey);
-            if (nodeContains(node.parent.test, node)) {
-              context.report({
-                node,
-                fix(fixer) {
-                  return fixer.insertTextBefore(
-                    node.parent,
-                    `${reqCtxArgName}.enter();`
-                  );
-                },
-              });
-            }
+            const inThen = nodeContains(node.parent.consequent, node);
+            const inElse = nodeContains(node.parent.alternate, node);
+            const inTest = nodeContains(node.parent.test, node);
+            if (inThen || inTest)
+              checkReentryNonBlockStmt(node.parent.consequent, reqCtxArgName);
+            if (inElse || inTest)
+              checkReentryNonBlockStmt(node.parent.alternate, reqCtxArgName);
+            return Handled;
           },
           ForOfStatement: NextFromForStatement,
           ForInStatement: NextFromForStatement,
           ForStatement: NextFromForStatement,
         };
 
-        return node.parent && node.parent.type in handleParentTypeMap
+        return node.parent && handleParentTypeMap[node.parent.type]
           ? handleParentTypeMap[node.parent.type](node)
-          : NextFromGeneric(node);
+          : handleOrReturnSimpleNextStmt(node.parent);
       }
 
       const nextStmt = handleOrReturnSimpleNextStmt(node);
@@ -490,7 +457,7 @@ const rule = {
         const outerFunc = getOuterFunction(node);
         const lastFunc = back(asyncFuncStack);
         if (lastFunc === undefined || lastFunc.func !== outerFunc) return;
-        // TODO: use type checking to check for thenable's methods
+        // TODO: use type checking to check it is a thenable method
         const isThen =
           (node.callee.name ||
             node.callee.property.name ||
@@ -509,7 +476,7 @@ const rule = {
             // FIXME: deal with non-block body in async funcs...
             if (callback.body.type === "BlockStatement") {
               const firstStmt = callback.body.body[0];
-              if (!isReqCtxEntry(firstStmt, lastFunc.reqCtxArgName))
+              if (!isReqCtxEntry(firstStmt, lastFunc.reqCtxArgName)) {
                 context.report({
                   node: firstStmt || callback.body,
                   messageId: isThen
@@ -535,6 +502,7 @@ const rule = {
                     );
                   },
                 });
+              }
             }
           }
         }
@@ -546,6 +514,7 @@ const rule = {
       ArrowFunctionExpression: VisitFuncDeclLike,
       FunctionDeclaration: VisitFuncDeclLike,
       FunctionExpression: VisitFuncDeclLike,
+      /** @param {TSESTree.ForOfStatement} loop */
       "ForOfStatement[await = true]"(loop) {
         const outerFunc = getOuterFunction(loop);
         const lastFunc = back(asyncFuncStack);

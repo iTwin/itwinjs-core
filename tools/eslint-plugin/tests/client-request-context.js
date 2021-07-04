@@ -633,7 +633,6 @@ new ESLintTester({
         `,
       },
       {
-        only: true,
         code: makeTest`
           async function forAwaitLoop(reqCtx: ClientRequestContext) {
             reqCtx.enter();
@@ -655,7 +654,7 @@ new ESLintTester({
         `,
       },
       {
-        //only: false,
+        only: true,
         code: makeTest`
           async function awaitInForLoopCondition(reqCtx: ClientRequestContext) {
             reqCtx.enter();

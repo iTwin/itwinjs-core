@@ -1645,6 +1645,7 @@
       "type": "pwa-node",
       "request": "launch",
       "program": "${workspaceFolder}/tools/eslint-plugin/tests/client-request-context.js",
+      "console": "integratedTerminal",
     }
   ],
   "compounds": [
