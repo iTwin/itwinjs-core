@@ -177,15 +177,7 @@ const rule = {
         if (loop.body.type === "BlockStatement") {
           return findAfter(loop.body.body, (s) => s === node);
         } else {
-          context.report({
-            node,
-            messageId: messageIds.noEnterOnAwaitResume,
-            fix(fixer) {
-              return checkReentryNonBlockStmt(loop, fixer, {
-                textBefore: ``,
-              });
-            },
-          });
+          checkReentryNonBlockStmt(node, reqCtxArgName);
           return Handled;
         }
       }
@@ -342,9 +334,10 @@ const rule = {
     // for await (const x of y) (reqCtx.enter(), x.f());
     // async (reqCtx, x) => (reqCtx.enter(), x.f());
     function checkReentryNonBlockStmt(node, reqCtxArgName) {
-      if (isReqCtxEntry(node, reqCtxArgName)) return;
       if (node.type === "BlockStatement")
         unreachable("should not be called where block statements are used");
+
+      if (isReqCtxEntry(node, reqCtxArgName)) return;
 
       context.report({
         node,
@@ -562,35 +555,30 @@ const rule = {
 
         const { body } = loop;
         if (
-          !isReqCtxEntry(
-            body.type === "BlockStatement" ? body.body[0] : body,
-            lastFunc.reqCtxArgName
-          )
-        ) {
-          if (body.type === "BlockStatement") {
-            if (!isReqCtxEntry(body.body[0], lastFunc.reqCtxArgName))
-              context.report({
-                node: body.body[0] || body,
-                messageId: messageIds.noEnterOnAwaitResume,
-                fix(fixer) {
-                  if (body.type !== "BlockStatement")
-                    throw unreachable("must be block statement");
-                  if (body.range === undefined)
-                    throw unreachable("node range was undefined");
-                  if (body.body[0] !== undefined)
-                    return fixer.insertTextBefore(
-                      body.body[0],
-                      `${lastFunc.reqCtxArgName}.enter();`
-                    );
-                  else
-                    return fixer.insertTextAfterRange(
-                      [body.range[0] + 1, body.range[1] - 1],
-                      `${lastFunc.reqCtxArgName}.enter();`
-                    );
-                },
-              });
-          }
-        } else if (body.type !== "BlockStatement") {
+          body.type === "BlockStatement" &&
+          !isReqCtxEntry(body.body[0], lastFunc.reqCtxArgName)
+        )
+          context.report({
+            node: body.body[0] || body,
+            messageId: messageIds.noEnterOnAwaitResume,
+            fix(fixer) {
+              if (body.type !== "BlockStatement")
+                throw unreachable("must be block statement");
+              if (body.range === undefined)
+                throw unreachable("node range was undefined");
+              if (body.body[0] !== undefined)
+                return fixer.insertTextBefore(
+                  body.body[0],
+                  `${lastFunc.reqCtxArgName}.enter();`
+                );
+              else
+                return fixer.insertTextAfterRange(
+                  [body.range[0] + 1, body.range[1] - 1],
+                  `${lastFunc.reqCtxArgName}.enter();`
+                );
+            },
+          });
+        else if (!isReqCtxEntry(body, lastFunc.reqCtxArgName))
           context.report({
             node: body,
             messageId: messageIds.noEnterOnAwaitResume,
@@ -604,7 +592,6 @@ const rule = {
               ];
             },
           });
-        }
       },
     };
   },

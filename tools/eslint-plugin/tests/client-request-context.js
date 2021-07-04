@@ -638,7 +638,8 @@ new ESLintTester({
           async function forAwaitLoop(reqCtx: ClientRequestContext) {
             reqCtx.enter();
             const a = [];
-            for await (const item of iter) a.push(item);
+            for await (const item of iter)
+              a.push(item);
             return a;
           }
         `,
@@ -647,7 +648,30 @@ new ESLintTester({
           async function forAwaitLoop(reqCtx: ClientRequestContext) {
             reqCtx.enter();
             const a = [];
-            for await (const item of iter) {reqCtx.enter();a.push(item);}
+            for await (const item of iter)
+              {reqCtx.enter();a.push(item);}
+            return a;
+          }
+        `,
+      },
+      {
+        //only: false,
+        code: makeTest`
+          async function awaitInForLoopCondition(reqCtx: ClientRequestContext) {
+            reqCtx.enter();
+            const a = [];
+            for (let i = 0; i <= await check(); ++i)
+              a.push(i);
+            return a;
+          }
+        `,
+        errors: [{ messageId: "noEnterOnAwaitResume" }],
+        output: makeTest`
+          async function awaitInForLoopCondition(reqCtx: ClientRequestContext) {
+            reqCtx.enter();
+            const a = [];
+            for (let i = 0; i <= await check(); ++i)
+              {reqCtx.enter();a.push(i);}
             return a;
           }
         `,
