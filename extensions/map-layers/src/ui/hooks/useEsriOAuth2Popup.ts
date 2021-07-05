@@ -38,7 +38,7 @@ export function useEsriOAuth2Popup(visible: boolean, contextUrl: string, onClose
       console.log("opening popup");
       const oauthState = encodeURIComponent(savedContextUrl.current);
       const arcgisUrl = `https://www.arcgis.com/sharing/rest/oauth2/authorize?client_id=${EsriOAuth2.arcGisOnlineClientId}&response_type=token&expiration=${EsriOAuth2.expiration}&redirect_uri=${EsriOAuth2.redirectUri}&state=${oauthState}`;
-      const popup = window.open(arcgisUrl, "ArcGIS login", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=450,height=400");
+      const popup = window.open(arcgisUrl, "ArcGIS login", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=450,height=450");
       if (popup !== null) {
         popup.focus();
         popupWindow.current = popup;
