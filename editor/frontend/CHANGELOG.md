@@ -18,6 +18,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - Added tools for changing project extents and geolocation.
 - Don't allow undo of changes to project extents or geolocation.
 
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT
 

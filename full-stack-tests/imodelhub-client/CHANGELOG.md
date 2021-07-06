@@ -15,6 +15,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - fixed mock test for new blob downloader
 - Use new iModelHub permissions API
 
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT
 
@@ -407,7 +412,7 @@ Fri, 10 Jul 2020 17:23:14 GMT
 
 ### Updates
 
-- Switched projects for some iModelHub tests. 
+- Switched projects for some iModelHub tests.
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT
