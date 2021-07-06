@@ -18,6 +18,7 @@ import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Wind
 import { openStandaloneIModel } from "./openStandaloneIModel";
 import { setTitle } from "./Title";
 import { openAnalysisStyleExample } from "./AnalysisStyleExample";
+import { openDecorationGeometryExample } from "./DecorationGeometryExample";
 
 // cspell:ignore textbox topdiv
 
@@ -142,6 +143,17 @@ export class Surface {
           name: "Analysis Style Example",
           extents: new Range3d(0, 0, -30, 100, 100, 20),
         }).then(async (viewer) => openAnalysisStyleExample(viewer));
+      },
+    }));
+
+    tb.addItem(createToolButton({
+      iconUnicode: "\ue9d8",
+      tooltip: "Decoration Geometry Example",
+      click: async () => {
+        this.openBlankConnection({ // eslint-disable-line @typescript-eslint/no-floating-promises
+          name: "Decoration Geometry Example",
+          extents: new Range3d(-1, -1, -1, 13, 2, 2),
+        }).then(async (viewer) => openDecorationGeometryExample(viewer));
       },
     }));
 

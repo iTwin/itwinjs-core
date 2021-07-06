@@ -74,7 +74,7 @@ export class Settings {
 
     // Parse environment
     if (undefined !== process.env.ENVIRONMENT)
-      this.env = parseInt(process.env.ENVIRONMENT, 0);
+      this.env = parseInt(process.env.ENVIRONMENT, 10);
 
     // Parse OIDC
     if (undefined === process.env.OIDC_CLIENT_ID)

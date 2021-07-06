@@ -138,9 +138,6 @@ const setupStandaloneConfiguration = () => {
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
 
-  if (undefined !== process.env.SVT_DISABLE_IDLE_WORK)
-    configuration.doIdleWork = false;
-
   if (undefined !== process.env.SVT_DEBUG_SHADERS)
     configuration.debugShaders = true;
 

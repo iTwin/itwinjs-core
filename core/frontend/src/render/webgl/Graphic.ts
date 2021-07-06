@@ -259,6 +259,10 @@ export class Branch extends Graphic {
     this.branch.dispose();
   }
 
+  public get isPickable(): boolean {
+    return this.branch.entries.some((gf) => (gf as Graphic).isPickable);
+  }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.branch.collectStatistics(stats);
   }

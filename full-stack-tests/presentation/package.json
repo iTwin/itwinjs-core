@@ -79,7 +79,7 @@
     "@types/testing-library__react-hooks": "^3.1.0",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "ignore-styles": "^5.0.1",
     "internal-tools": "workspace:*",
     "jsdom-global": "3.0.2",
