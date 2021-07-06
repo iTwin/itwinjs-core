@@ -2067,7 +2067,7 @@ export abstract class ViewState2d extends ViewState {
   }
 
   /** @internal */
-  public forEachModelTreeRef(func: (ref: TileTreeReference) => void): void {
+  public override forEachModelTreeRef(func: (ref: TileTreeReference) => void): void {
     const ref = this._tileTreeRef;
     if (undefined !== ref)
       func(ref);

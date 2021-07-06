@@ -409,7 +409,7 @@ export class DrawingViewState extends ViewState2d {
   }
 
   /** @internal */
-  public isDrawingView(): this is DrawingViewState { return true; }
+  public override isDrawingView(): this is DrawingViewState { return true; }
 
   /** @internal */
   public override getOrigin() {

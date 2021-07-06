@@ -3232,7 +3232,7 @@ export class OffScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public get viewRect(): ViewRect {
+  public override get viewRect(): ViewRect {
     return this.target.viewRect;
   }
 

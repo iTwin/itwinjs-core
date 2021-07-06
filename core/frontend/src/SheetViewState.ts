@@ -318,7 +318,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public isDrawingView(): this is DrawingViewState { return false; }
+  public override isDrawingView(): this is DrawingViewState { return false; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
     super(props, iModel, categories, displayStyle);
@@ -371,12 +371,12 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public get defaultExtentLimits() {
+  public override get defaultExtentLimits() {
     return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 };
   }
 
   /** @internal */
-  public getViewedExtents(): AxisAlignedBox3d {
+  public override getViewedExtents(): AxisAlignedBox3d {
     return this._viewedExtents;
   }
 

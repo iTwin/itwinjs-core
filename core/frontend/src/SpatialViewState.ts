@@ -100,7 +100,7 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** @internal */
-  public isSpatialView(): this is SpatialViewState { return true; }
+  public override isSpatialView(): this is SpatialViewState { return true; }
 
   public override equals(other: this): boolean { return super.equals(other) && this.modelSelector.equals(other.modelSelector); }
 
@@ -168,7 +168,7 @@ export class SpatialViewState extends ViewState3d {
   }
 
   /** @internal */
-  public forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
+  public override forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void {
     for (const ref of this._treeRefs)
       func(ref);
   }
