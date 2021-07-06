@@ -180,7 +180,7 @@ export type OnFlashedIdChangedEventArgs = {
 } | {
   readonly previous: Id64String;
   readonly current: undefined;
-}
+};
 
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
