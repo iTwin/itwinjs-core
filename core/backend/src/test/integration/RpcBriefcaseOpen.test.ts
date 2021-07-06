@@ -54,8 +54,8 @@ describe("RpcBriefcaseOpen (#integration)", () => {
 
     // Cleanup
     IModelJsFs.unlinkSync(newPathname);
-    IModelHost.hubAccess.releaseBriefcase({ requestContext, iModelId, briefcaseId });
-    IModelHost.hubAccess.releaseBriefcase({ requestContext, iModelId, briefcaseId: newBriefcaseId });
+    await IModelHost.hubAccess.releaseBriefcase({ requestContext, iModelId, briefcaseId });
+    await IModelHost.hubAccess.releaseBriefcase({ requestContext, iModelId, briefcaseId: newBriefcaseId });
 
     HubMock.shutdown();
   });
