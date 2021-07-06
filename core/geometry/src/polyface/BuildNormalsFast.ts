@@ -119,9 +119,6 @@ class VertexFacets {
  * @internal
  */
 export function buildNormalsFast(polyface: IndexedPolyface, creaseTolerance: number, sizeTolerance: number): void {
-  if (0 !== polyface.normalCount)
-    return;
-
   const facePoints: Point3d[] = [];
   const builder = new NormalBuilder(polyface, 1.0e-10);
 
@@ -134,18 +131,19 @@ export function buildNormalsFast(polyface: IndexedPolyface, creaseTolerance: num
   let indexIndex = 0;
   let facet = new Facet();
   const visitor = polyface.createVisitor();
-  while (visitor.moveToNextFacet()) {
-    if (facePoints.length > 0) {
-      facet.init(facePoints);
-      facet = new Facet();
-      facePoints.length = 0;
-    }
 
+  while (visitor.moveToNextFacet()) {
     for (let i = 0; i < visitor.indexCount; i++) {
       facePoints.push(visitor.point.getPoint3dAtUncheckedPointIndex(i));
       const pointIndex = visitor.clientPointIndex(i);
       pointIndexToFacets[pointIndex].facets.push(facet);
       indexIndexToFacet[indexIndex++] = facet;
+    }
+
+    if (facePoints.length > 0) {
+      facet.init(facePoints);
+      facet = new Facet();
+      facePoints.length = 0;
     }
   }
 

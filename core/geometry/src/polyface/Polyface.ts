@@ -549,7 +549,7 @@ export class IndexedPolyface extends Polyface {
     return handler.handleIndexedPolyface(this);
   }
 
-  /** Quickly generate normals for this polyface, if [[normalCount]] is zero. This function does nothing if the polyface already has normals.
+  /** Quickly generate normals for this polyface. If the polyface already has normals, they are replaced.
    * @param creaseTolerance Dihedral angle considered "smooth" for a single edge.
    * @param sharedEdgeSizeTolerance If a facet is smaller than this tolerance, expensive shared normal calculation will be skipped.
    */
