@@ -8,11 +8,10 @@
 
 import {
   DelayedPromiseWithProps, ECObjectsError, ECObjectsStatus, InvertedUnitProps, SchemaItemKey,
-  SchemaItemType, SchemaKey, SchemaMatchType, Unit, UnitSystem,
+  SchemaItemType, SchemaKey, Unit, UnitSystem,
 } from "@bentley/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableInvertedUnit } from "./Mutable/MutableInvertedUnit";
-import { MutableSchema } from "./Mutable/MutableSchema";
 
 /**
  * @alpha
@@ -21,7 +20,7 @@ import { MutableSchema } from "./Mutable/MutableSchema";
 export class InvertedUnits {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
   public async create(schemaKey: SchemaKey, name: string, invertsUnitKey: SchemaItemKey, unitSystemKey: SchemaItemKey, displayLabel?: string): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     const newUnit = (await schema.createInvertedUnit(name)) as MutableInvertedUnit;
@@ -47,7 +46,7 @@ export class InvertedUnits {
   }
 
   public async createFromProps(schemaKey: SchemaKey, invertedUnitProps: InvertedUnitProps): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     if (invertedUnitProps.name === undefined) return { errorMessage: `No name was supplied within props.` };

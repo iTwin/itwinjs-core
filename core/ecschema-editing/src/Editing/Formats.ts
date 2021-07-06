@@ -6,10 +6,9 @@
  * @module Editing
  */
 
-import { FormatProps, FormatType, InvertedUnit, SchemaItemKey, SchemaKey, SchemaMatchType, Unit } from "@bentley/ecschema-metadata";
+import { FormatProps, FormatType, InvertedUnit, SchemaItemKey, SchemaKey, Unit } from "@bentley/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableFormat } from "./Mutable/MutableFormat";
-import { MutableSchema } from "./Mutable/MutableSchema";
 
 /**
  * @alpha
@@ -18,7 +17,7 @@ import { MutableSchema } from "./Mutable/MutableSchema";
 export class Formats {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
   public async create(schemaKey: SchemaKey, name: string, formatType: FormatType, displayLabel?: string, units?: SchemaItemKey[]): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     const newFormat = (await schema.createFormat(name)) as MutableFormat;
     if (newFormat === undefined) {
       return { errorMessage: `Failed to create class ${name} in schema ${schemaKey.toString(true)}.` };
@@ -45,7 +44,7 @@ export class Formats {
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, formatProps: FormatProps): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     if (formatProps.name === undefined) return { errorMessage: `No name was supplied within props.` };

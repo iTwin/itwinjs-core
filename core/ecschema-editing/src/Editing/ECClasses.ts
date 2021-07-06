@@ -8,10 +8,10 @@
 
 import {
   ECClass, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
-  PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaMatchType, StructArrayPropertyProps,
+  PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, StructArrayPropertyProps,
   StructClass, StructPropertyProps,
 } from "@bentley/ecschema-metadata";
-import { PropertyEditResults, SchemaContextEditor  } from "./Editor";
+import { PropertyEditResults, SchemaContextEditor } from "./Editor";
 import { MutableClass } from "./Mutable/MutableClass";
 
 /**
@@ -28,7 +28,7 @@ export class ECClasses {
    * @param type The PrimitiveType assigned to the new property.
    */
   public async createPrimitiveProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<PropertyEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(classKey.schemaKey, SchemaMatchType.Latest));
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined) return { errorMessage: `Failed to create property ${name} because the schema ${classKey.schemaKey.toString(true)} could not be found` };
 
     const ecClass = await schema.getItem<ECClass>(classKey.name);
@@ -52,7 +52,7 @@ export class ECClasses {
   }
 
   public async createPrimitivePropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitivePropertyProps): Promise<PropertyEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(classKey.schemaKey, SchemaMatchType.Latest));
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined) return { errorMessage: `Failed to create property ${name} because the schema ${classKey.schemaKey.toString(true)} could not be found` };
 
     const ecClass = await schema.getItem<ECClass>(classKey.name);
@@ -76,7 +76,7 @@ export class ECClasses {
   }
 
   public async createEnumerationProperty(classKey: SchemaItemKey, name: string, type: Enumeration): Promise<PropertyEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(classKey.schemaKey, SchemaMatchType.Latest));
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined) return { errorMessage: `Failed to create property ${name} because the schema ${classKey.schemaKey.toString(true)} could not be found` };
 
     const ecClass = await schema.getItem<ECClass>(classKey.name);
@@ -102,7 +102,7 @@ export class ECClasses {
     return { itemKey: classKey, propertyName: name };
   }
   public async createEnumerationPropertyFromProps(classKey: SchemaItemKey, name: string, type: Enumeration, enumProps: EnumerationPropertyProps): Promise<PropertyEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(classKey.schemaKey, SchemaMatchType.Latest));
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined) return { errorMessage: `Failed to create property ${name} because the schema ${classKey.schemaKey.toString(true)} could not be found` };
 
     const ecClass = await schema.getItem<ECClass>(classKey.name);
@@ -125,7 +125,7 @@ export class ECClasses {
     return { itemKey: classKey, propertyName: name };
   }
   public async createPrimitiveArrayProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<PropertyEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(classKey.schemaKey, SchemaMatchType.Latest));
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined) return { errorMessage: `Failed to create property ${name} because the schema ${classKey.schemaKey.toString(true)} could not be found` };
     const ecClass = await schema.getItem<ECClass>(classKey.name);
     if (ecClass === undefined) return { errorMessage: `Failed to create property ${name} because the class ${classKey.name} was not found in ${classKey.schemaKey.toString(true)}` };
@@ -147,7 +147,7 @@ export class ECClasses {
   }
 
   public async createPrimitiveArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitiveArrayPropertyProps): Promise<PropertyEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(classKey.schemaKey, SchemaMatchType.Latest));
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined) return { errorMessage: `Failed to create property ${name} because the schema ${classKey.schemaKey.toString(true)} could not be found` };
     const ecClass = await schema.getItem<ECClass>(classKey.name);
     if (ecClass === undefined) return { errorMessage: `Failed to create property ${name} because the class ${classKey.name} was not found in ${classKey.schemaKey.toString(true)}` };
@@ -170,7 +170,7 @@ export class ECClasses {
   }
 
   public async createStructProperty(classKey: SchemaItemKey, name: string, type: StructClass): Promise<PropertyEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(classKey.schemaKey, SchemaMatchType.Latest));
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined) return { errorMessage: `Failed to create property ${name} because the schema ${classKey.schemaKey.toString(true)} could not be found` };
     const ecClass = await schema.getItem<ECClass>(classKey.name);
     if (ecClass === undefined) return { errorMessage: `Failed to create property ${name} because the class ${classKey.name} was not found in ${classKey.schemaKey.toString(true)}` };
@@ -192,7 +192,7 @@ export class ECClasses {
   }
 
   public async createStructPropertyFromProps(classKey: SchemaItemKey, name: string, type: StructClass, structProps: StructPropertyProps): Promise<PropertyEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(classKey.schemaKey, SchemaMatchType.Latest));
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined) return { errorMessage: `Failed to create property ${name} because the schema ${classKey.schemaKey.toString(true)} could not be found` };
     const ecClass = await schema.getItem<ECClass>(classKey.name);
     if (ecClass === undefined) return { errorMessage: `Failed to create property ${name} because the class ${classKey.name} was not found in ${classKey.schemaKey.toString(true)}` };
@@ -215,7 +215,7 @@ export class ECClasses {
   }
 
   public async createStructArrayProperty(classKey: SchemaItemKey, name: string, type: StructClass): Promise<PropertyEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(classKey.schemaKey, SchemaMatchType.Latest));
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined) return { errorMessage: `Failed to create property ${name} because the schema ${classKey.schemaKey.toString(true)} could not be found` };
     const ecClass = await schema.getItem<ECClass>(classKey.name);
     if (ecClass === undefined) return { errorMessage: `Failed to create property ${name} because the class ${classKey.name} was not found in ${classKey.schemaKey.toString(true)}` };
@@ -237,7 +237,7 @@ export class ECClasses {
   }
 
   public async createStructArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: StructClass, structProps: StructArrayPropertyProps): Promise<PropertyEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(classKey.schemaKey, SchemaMatchType.Latest));
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined) return { errorMessage: `Failed to create property ${name} because the schema ${classKey.schemaKey.toString(true)} could not be found` };
     const ecClass = await schema.getItem<ECClass>(classKey.name);
     if (ecClass === undefined) return { errorMessage: `Failed to create property ${name} because the class ${classKey.name} was not found in ${classKey.schemaKey.toString(true)}` };

@@ -8,11 +8,10 @@
 
 import {
   ECObjectsError, ECObjectsStatus, Format, InvertedUnit, KindOfQuantityProps, OverrideFormat,
-  SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType, Unit,
+  SchemaItemKey, SchemaItemType, SchemaKey, Unit,
 } from "@bentley/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableKindOfQuantity } from "./Mutable/MutableKindOfQuantity";
-import { MutableSchema } from "./Mutable/MutableSchema";
 
 /**
  * @alpha
@@ -21,7 +20,7 @@ import { MutableSchema } from "./Mutable/MutableSchema";
 export class KindOfQuantities {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
   public async createFromProps(schemaKey: SchemaKey, koqProps: KindOfQuantityProps): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     if (koqProps.name === undefined) return { errorMessage: `No name was supplied within props.` };

@@ -8,12 +8,11 @@
 
 import {
   DelayedPromiseWithProps, ECClassModifier, ECObjectsError, ECObjectsStatus, EntityClass, EntityClassProps,
-  Mixin, RelationshipClass, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType, StrengthDirection,
+  Mixin, RelationshipClass, SchemaItemKey, SchemaItemType, SchemaKey, StrengthDirection,
 } from "@bentley/ecschema-metadata";
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
 import { MutableEntityClass } from "./Mutable/MutableEntityClass";
-import { MutableSchema } from "./Mutable/MutableSchema";
 
 /**
  * @alpha
@@ -24,7 +23,7 @@ export class Entities extends ECClasses {
     super(_schemaEditor);
   }
   public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClass?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     const newClass = (await schema.createEntityClass(name, modifier)) as MutableEntityClass;
@@ -54,7 +53,7 @@ export class Entities extends ECClasses {
    * @param entityProps a json object that will be used to populate the new EntityClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, entityProps: EntityClassProps): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     if (entityProps.name === undefined) return { errorMessage: `No name was supplied within props.` };

@@ -6,10 +6,9 @@
  * @module Editing
  */
 
-import { DelayedPromiseWithProps, ECClass, SchemaItemKey, SchemaKey, SchemaMatchType, StructClass, StructClassProps } from "@bentley/ecschema-metadata";
+import { DelayedPromiseWithProps, ECClass, SchemaItemKey, SchemaKey, StructClass, StructClassProps } from "@bentley/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
-import { MutableSchema } from "./Mutable/MutableSchema";
 import { MutableClass, MutableStructClass } from "./Mutable/MutableClass";
 
 /**
@@ -21,7 +20,7 @@ export class Structs extends ECClasses {
   }
 
   public async create(schemaKey: SchemaKey, name: string, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     const newClass = (await schema.createStructClass(name)) as MutableStructClass;
@@ -45,7 +44,7 @@ export class Structs extends ECClasses {
    * @param structProps a json object that will be used to populate the new StructClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, structProps: StructClassProps): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     if (structProps.name === undefined) return { errorMessage: `No name was supplied within props.` };

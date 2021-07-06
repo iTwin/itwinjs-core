@@ -8,11 +8,10 @@
 
 import {
   ECObjectsError, ECObjectsStatus, RelationshipClass, RelationshipClassProps, SchemaItemKey, SchemaItemType,
-  SchemaKey, SchemaMatchType, StrengthDirection,
+  SchemaKey, StrengthDirection,
 } from "@bentley/ecschema-metadata";
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
-import { MutableSchema } from "./Mutable/MutableSchema";
 import { MutableRelationshipClass } from "./Mutable/MutableRelationshipClass";
 
 /**
@@ -28,7 +27,7 @@ export class RelationshipClasses extends ECClasses {
   // // TODO: Add relationshipConstraint, multiplicity arguments.
   // // Note: This method is not done yet, there's a lot of arguments.
   // public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, strength: StrengthType, direction: StrengthDirection, sourceMultiplicity: RelationshipMultiplicity, targetMultiplicity: RelationshipMultiplicity, baseClass?: SchemaItemKey) {
-  //   const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+  //   const schema = await this._schemaEditor.getSchema(schemaKey);
   //   if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
   //   const newClass = (await schema.createRelationshipClass(name, modifier)) as MutableRelationshipClass;
@@ -52,7 +51,7 @@ export class RelationshipClasses extends ECClasses {
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, relationshipProps: RelationshipClassProps): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     if (relationshipProps.name === undefined) return { errorMessage: `No name was supplied within props.` };

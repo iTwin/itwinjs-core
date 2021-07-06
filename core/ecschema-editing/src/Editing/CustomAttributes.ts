@@ -8,11 +8,10 @@
 
 import {
   CustomAttributeClass, CustomAttributeClassProps, CustomAttributeContainerType, DelayedPromiseWithProps, ECClass,
-  SchemaItemKey, SchemaKey, SchemaMatchType,
+  SchemaItemKey, SchemaKey,
 } from "@bentley/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { ECClasses } from "./ECClasses";
-import { MutableSchema } from "./Mutable/MutableSchema";
 import { MutableCAClass } from "./Mutable/MutableCAClass";
 
 /**
@@ -25,7 +24,7 @@ export class CustomAttributes extends ECClasses {
   }
 
   public async create(schemaKey: SchemaKey, name: string, containerType: CustomAttributeContainerType, displayLabel?: string, baseClass?: SchemaItemKey): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     const newClass = (await schema.createCustomAttributeClass(name)) as MutableCAClass;
@@ -50,7 +49,7 @@ export class CustomAttributes extends ECClasses {
    * @param caProps a json object that will be used to populate the new CustomAttributeClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, caProps: CustomAttributeClassProps): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     if (caProps.name === undefined) return { errorMessage: `No name was supplied within props.` };

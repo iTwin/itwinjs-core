@@ -7,9 +7,9 @@
  */
 
 import {
-  AnyEnumerator, ECObjectsError, ECObjectsStatus, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
+  AnyEnumerator, ECObjectsError, ECObjectsStatus, EnumerationProps, PrimitiveType, SchemaItemKey, SchemaKey
+} from "@bentley/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
-import { MutableSchema } from "./Mutable/MutableSchema";
 import { MutableEnumeration } from "./Mutable/MutableEnumeration";
 
 /**
@@ -20,7 +20,7 @@ export class Enumerations {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
 
   public async create(schemaKey: SchemaKey, name: string, type: PrimitiveType.Integer | PrimitiveType.String, displayLabel?: string, isStrict?: boolean, enumerators?: AnyEnumerator[]): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Exact)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     const newEnum = (await schema.createEnumeration(name, type)) as MutableEnumeration;
@@ -47,7 +47,7 @@ export class Enumerations {
    * @param relationshipProps a json object that will be used to populate the new RelationshipClass. Needs a name value passed in.
    */
   public async createFromProps(schemaKey: SchemaKey, enumProps: EnumerationProps): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     if (enumProps.name === undefined) return { errorMessage: `No name was supplied within props.` };

@@ -6,9 +6,8 @@
  * @module Editing
  */
 
-import { SchemaKey, SchemaMatchType, UnitSystemProps } from "@bentley/ecschema-metadata";
+import { SchemaKey, UnitSystemProps } from "@bentley/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
-import { MutableSchema } from "./Mutable/MutableSchema";
 import { MutableUnitSystem } from "./Mutable/MutableUnitSystem";
 
 /**
@@ -18,7 +17,7 @@ import { MutableUnitSystem } from "./Mutable/MutableUnitSystem";
 export class UnitSystems {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
   public async create(schemaKey: SchemaKey, name: string, displayLabel?: string): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     const newUnitSystem = (await schema.createUnitSystem(name)) as MutableUnitSystem;
@@ -27,7 +26,7 @@ export class UnitSystems {
   }
 
   public async createFromProps(schemaKey: SchemaKey, unitSystemProps: UnitSystemProps): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     if (unitSystemProps.name === undefined) return { errorMessage: `No name was supplied within props.` };

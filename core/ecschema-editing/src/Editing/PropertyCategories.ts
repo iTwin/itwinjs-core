@@ -6,10 +6,9 @@
  * @module Editing
  */
 
-import { ECObjectsError, ECObjectsStatus, PropertyCategoryProps, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
+import { ECObjectsError, ECObjectsStatus, PropertyCategoryProps, SchemaItemKey, SchemaItemType, SchemaKey } from "@bentley/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutablePropertyCategory } from "./Mutable/MutablePropertyCategory";
-import { MutableSchema } from "./Mutable/MutableSchema";
 
 /**
  * @alpha
@@ -18,7 +17,7 @@ import { MutableSchema } from "./Mutable/MutableSchema";
 export class PropertyCategories {
   public constructor(protected _schemaEditor: SchemaContextEditor) { }
   public async create(schemaKey: SchemaKey, name: string, priority: number, displayLabel?: string): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     const newPropCategory = (await schema.createPropertyCategory(name)) as MutablePropertyCategory;
@@ -28,7 +27,7 @@ export class PropertyCategories {
   }
 
   public async createFromProps(schemaKey: SchemaKey, propertyCategoryProps: PropertyCategoryProps): Promise<SchemaItemEditResults> {
-    const schema = (await this._schemaEditor.schemaContext.getCachedSchema(schemaKey, SchemaMatchType.Latest)) as MutableSchema;
+    const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
     if (propertyCategoryProps.name === undefined) return { errorMessage: `No name was supplied within props.` };
