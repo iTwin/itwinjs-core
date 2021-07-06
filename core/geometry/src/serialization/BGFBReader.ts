@@ -43,7 +43,6 @@ import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
 
-
 /** * Context to write to a flatbuffer blob.
  *  * This class is internal.
  *  * Public access is through BentleyGeometryFlatBuffer.geometryToBytes()
@@ -332,24 +331,22 @@ export class BGFBReader {
           // The flatbuffer data is one based.
           // If numPerFace is less than 2, facets are variable size and zero terminated
           // If numPerFace is 2 or more, indices are blocked
-          let i0 = 0;
           const numIndex = pointIndexI32.length;
-          const addIndicesInBlock = (i0: number, i1: number) => {
-            for (let i = i0; i < i1; i++) {
-              const q = pointIndexI32[i];
+          const addIndicesInBlock = (k0: number, k1: number) => {
+            for (let k = k0; k < k1; k++) {
+              const q = pointIndexI32[k];
               polyface.addPointIndex(Math.abs(q) - 1, q > 0);
               if (normalF64 && normalIndexI32) {
-                polyface.addNormalIndex(Math.abs(normalIndexI32[i]) - 1);
+                polyface.addNormalIndex(Math.abs(normalIndexI32[k]) - 1);
               }
               if (paramF64 && paramIndexI32) {
-                polyface.addParamIndex(Math.abs(paramIndexI32[i]) - 1);
+                polyface.addParamIndex(Math.abs(paramIndexI32[k]) - 1);
               }
               if (intColorU32 && colorIndexI32) {
-                polyface.addColorIndex(Math.abs(colorIndexI32[i]) - 1);
+                polyface.addColorIndex(Math.abs(colorIndexI32[k]) - 1);
               }
             }
           };
-
 
           if (numPerFace > 1) {
             for (let i0 = 0; i0 + numPerFace <= numIndex; i0 += numPerFace){
@@ -357,6 +354,7 @@ export class BGFBReader {
               polyface.terminateFacet(true);
             }
           } else {
+            let i0 = 0;
             for (let i1 = i0; i1 < numIndex; i1++) {
               if (pointIndexI32[i1] === 0) {
                 addIndicesInBlock(i0, i1);
