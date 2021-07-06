@@ -2486,7 +2486,7 @@ export class DrawingViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d, sectionDrawing?: SectionDrawingViewProps);
     // @internal
     static alwaysDisplaySpatialView: boolean;
-    // @internal
+    // @internal (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // @internal
     get attachment(): Object | undefined;
@@ -2494,33 +2494,33 @@ export class DrawingViewState extends ViewState2d {
     get attachmentInfo(): Object;
     // @internal (undocumented)
     attachToViewport(): void;
-    // @internal
+    // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState;
-    // @internal
+    // @internal (undocumented)
     createScene(context: SceneContext): void;
     // (undocumented)
     get defaultExtentLimits(): ExtentLimits;
     // @internal (undocumented)
     detachFromViewport(): void;
-    // @internal
+    // @internal (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
-    // @internal
+    // @internal (undocumented)
     getExtents(): Vector3d;
-    // @internal
+    // @internal (undocumented)
     getOrigin(): import("@bentley/geometry-core").Point3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
     // @internal
     static hideDrawingGraphics: boolean;
-    // @internal
+    // @internal (undocumented)
     isDrawingView(): this is DrawingViewState;
-    // @internal
+    // @internal (undocumented)
     load(): Promise<void>;
-    // @internal
+    // @internal (undocumented)
     get secondaryViewports(): Iterable<import("./Viewport").Viewport>;
     // @internal
     get sectionDrawingInfo(): SectionDrawingInfo;
@@ -6770,12 +6770,12 @@ export class OffScreenViewport extends Viewport {
     static create(options: OffScreenViewportOptions): OffScreenViewport;
     // @internal
     static createViewport(view: ViewState, target: RenderTarget, lockAspectRatio?: boolean): OffScreenViewport;
-    // @internal
+    // @internal (undocumented)
     get isAspectRatioLocked(): boolean;
     // (undocumented)
     protected _isAspectRatioLocked: boolean;
     setRect(rect: ViewRect): void;
-    // @internal
+    // @internal (undocumented)
     get viewRect(): ViewRect;
 }
 
@@ -6890,7 +6890,7 @@ export namespace OrbitGtTileTree {
 // @public
 export class OrthographicViewState extends SpatialViewState {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
-    // @internal
+    // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     supportsCamera(): boolean;
@@ -8580,7 +8580,7 @@ export class ScreenViewport extends Viewport {
     setEventController(controller?: EventController): void;
     // @internal
     static setToParentSize(div: HTMLElement): void;
-    // @internal
+    // @internal (undocumented)
     synchWithView(options?: ViewChangeOptions | boolean): void;
     readonly toolTipDiv: HTMLDivElement;
     // @internal (undocumented)
@@ -8939,34 +8939,34 @@ export class SheetModelState extends GeometricModel2dState {
 // @public
 export class SheetViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
-    // @internal
+    // @internal (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // (undocumented)
     get attachmentIds(): Id64Array;
     // @internal
     get attachments(): Object[] | undefined;
-    // @internal
+    // @internal (undocumented)
     attachToViewport(): void;
-    // @internal
+    // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
-    // @internal
+    // @internal (undocumented)
     collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void;
-    // @internal
+    // @internal (undocumented)
     computeFitRange(): Range3d;
     // (undocumented)
     static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState;
-    // @internal
+    // @internal (undocumented)
     createScene(context: SceneContext): void;
-    // @internal
+    // @internal (undocumented)
     decorate(context: DecorateContext): void;
-    // @internal
+    // @internal (undocumented)
     get defaultExtentLimits(): {
         min: number;
         max: number;
     };
-    // @internal
+    // @internal (undocumented)
     detachFromViewport(): void;
     // @internal
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
@@ -8974,13 +8974,13 @@ export class SheetViewState extends ViewState2d {
     getExtents(): import("@bentley/geometry-core").Vector3d;
     // (undocumented)
     getOrigin(): Point3d;
-    // @internal
+    // @internal (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
-    // @internal
+    // @internal (undocumented)
     isDrawingView(): this is DrawingViewState;
     // @internal
     load(): Promise<void>;
-    // @internal
+    // @internal (undocumented)
     get secondaryViewports(): Iterable<Viewport>;
     readonly sheetSize: Point2d;
     // (undocumented)
@@ -9205,9 +9205,9 @@ export class SpatialViewState extends ViewState3d {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
     // (undocumented)
     addViewedModel(id: Id64String): void;
-    // @internal
+    // @internal (undocumented)
     attachToViewport(): void;
-    // @internal
+    // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     clearViewedModels(): void;
@@ -9217,25 +9217,25 @@ export class SpatialViewState extends ViewState3d {
     static createBlank(iModel: IModelConnection, origin: XYAndZ, extents: XYAndZ, rotation?: Matrix3d): SpatialViewState;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState;
-    // @internal
+    // @internal (undocumented)
     createScene(context: SceneContext): void;
     // (undocumented)
     get defaultExtentLimits(): {
         min: number;
         max: number;
     };
-    // @internal
+    // @internal (undocumented)
     detachFromViewport(): void;
     // (undocumented)
     equals(other: this): boolean;
     // (undocumented)
     forEachModel(func: (model: GeometricModelState) => void): void;
-    // @internal
+    // @internal (undocumented)
     forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
     protected getDisplayedExtents(): AxisAlignedBox3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
-    // @internal
+    // @internal (undocumented)
     isSpatialView(): this is SpatialViewState;
     // (undocumented)
     load(): Promise<void>;
