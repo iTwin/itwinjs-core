@@ -8992,7 +8992,7 @@ export class SheetViewState extends ViewState2d {
     getViewedExtents(): AxisAlignedBox3d;
     // @internal (undocumented)
     isDrawingView(): this is DrawingViewState;
-    // @internal
+    // @internal (undocumented)
     isSheetView(): this is SheetViewState;
     // @internal
     load(): Promise<void>;
