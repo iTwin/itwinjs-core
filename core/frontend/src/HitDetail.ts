@@ -154,7 +154,9 @@ export class HitDetail {
   }
 
   /** Draw this HitDetail as a Decoration. Causes the picked element to *flash* */
-  public draw(_context: DecorateContext) { this.viewport.setFlashed(this.sourceId); }
+  public draw(_context: DecorateContext) {
+    this.viewport.flashedId = this.sourceId;
+  }
 
   /** Get the tooltip content for this HitDetail. */
   public async getToolTip(): Promise<HTMLElement | string> {

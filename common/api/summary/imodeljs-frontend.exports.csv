@@ -387,6 +387,7 @@ public;OffScreenViewport
 public;OffScreenViewportOptions
 beta;OidcBrowserClient 
 deprecated;OidcBrowserClient 
+public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
 beta;openImageDataUrlInNewWindow(url: string, title?: string): void
