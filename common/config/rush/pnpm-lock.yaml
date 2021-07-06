@@ -4257,8 +4257,8 @@ importers:
       tslint-etc: ^1.5.2
       tsutils: ~3.17.1
       typedoc: ^0.16.8
-      typedoc-plugin-external-module-name: 3.0.0
-      typedoc-plugin-internal-external: 2.1.1
+      typedoc-plugin-external-module-name: 4.0.6
+      typedoc-plugin-internal-external: 2.2.0
       typescript: ~4.3.0
       yargs: ^16.0.0
     dependencies:
@@ -4283,8 +4283,8 @@ importers:
       tslint-etc: 1.13.10_tslint@5.20.1+typescript@4.3.5
       tsutils: 3.17.1_typescript@4.3.5
       typedoc: 0.16.11
-      typedoc-plugin-external-module-name: 3.0.0_typedoc@0.16.11
-      typedoc-plugin-internal-external: 2.1.1_typedoc@0.16.11
+      typedoc-plugin-external-module-name: 4.0.6_typedoc@0.16.11
+      typedoc-plugin-internal-external: 2.2.0_typedoc@0.16.11
       typescript: 4.3.5
       yargs: 16.2.0
     devDependencies:
@@ -14106,7 +14106,7 @@ packages:
       source-map: 0.6.1
       wordwrap: 1.0.0
     optionalDependencies:
-      uglify-js: 3.13.10
+      uglify-js: 3.4.10
     dev: false
 
   /har-schema/2.0.0:
@@ -21908,18 +21908,18 @@ packages:
       underscore: 1.13.1
     dev: false
 
-  /typedoc-plugin-external-module-name/3.0.0_typedoc@0.16.11:
-    resolution: {integrity: sha512-mTPO5Z+HIrM3b24A5/auFg+7ps7Y1jAGuccnOBhHcfUH3ZedInYdJuFcdisjDCW0i8BmRzCShB/KEpiG64oIWw==}
+  /typedoc-plugin-external-module-name/4.0.6_typedoc@0.16.11:
+    resolution: {integrity: sha512-WqJW5gbfeQD7VA96p5eRFkVlPPGXfpaAo7M/sNOeBwSBTRylKYX15kAVaGP6iM/VhXtDagTMyKhwG97sENfKHA==}
     peerDependencies:
-      typedoc: '>=0.7.0 <0.15.0'
+      typedoc: '>=0.7.0 <0.20.0'
     dependencies:
       lodash: 4.17.21
       semver: 7.3.5
       typedoc: 0.16.11
     dev: false
 
-  /typedoc-plugin-internal-external/2.1.1_typedoc@0.16.11:
-    resolution: {integrity: sha512-T7f/zb4HDReKo8yhSyNUf6flhaWkIJx9/Od9BkNzXOBBaKs+TgWH5sLxQ5aeGa5IDDWohrtrFvHWm3D/RQq2Nw==}
+  /typedoc-plugin-internal-external/2.2.0_typedoc@0.16.11:
+    resolution: {integrity: sha512-xeh+NemurGr23cm1kf6Mec5TB0pCSllm3l3+hJg1ersl00xgC6klVpD1GBKqliGxnLo7blytZrnHsS4w/bzeOA==}
     peerDependencies:
       typedoc: '>=0.7.2 <1.0.0'
     dependencies:
@@ -21941,7 +21941,7 @@ packages:
       progress: 2.0.3
       shelljs: 0.8.4
       typedoc-default-themes: 0.7.2
-      typescript: 3.7.7
+      typescript: 4.3.5
     dev: false
 
   /typemoq/2.1.0:
@@ -21984,13 +21984,6 @@ packages:
   /uc.micro/1.0.6:
     resolution: {integrity: sha512-8Y75pvTYkLJW2hWQHXxoqRgV7qb9B+9vFEtidML+7koHUFapnVJAZ6cKs+Qjz5Aw3aZWHMC6u0wJE3At+nSGwA==}
     dev: false
-
-  /uglify-js/3.13.10:
-    resolution: {integrity: sha512-57H3ACYFXeo1IaZ1w02sfA71wI60MGco/IQFjOqK+WtKoprh7Go2/yvd2HPtoJILO2Or84ncLccI4xoHMTSbGg==}
-    engines: {node: '>=0.8.0'}
-    hasBin: true
-    dev: false
-    optional: true
 
   /uglify-js/3.4.10:
     resolution: {integrity: sha512-Y2VsbPVs0FIshJztycsO2SfPk7/KAF/T72qzv9u5EpQ4kB2hQoHlhNQTsNyy6ul7lQtqJN/AoWeS23OzEiEFxw==}

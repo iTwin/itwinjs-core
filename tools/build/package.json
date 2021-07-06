@@ -51,8 +51,8 @@
     "tslint-etc": "^1.5.2",
     "tsutils": "~3.17.1",
     "typedoc": "^0.16.8",
-    "typedoc-plugin-external-module-name": "3.0.0",
-    "typedoc-plugin-internal-external": "2.1.1",
+    "typedoc-plugin-external-module-name": "4.0.6",
+    "typedoc-plugin-internal-external": "2.2.0",
     "typescript": "~4.3.0",
     "yargs": "^16.0.0"
   },
