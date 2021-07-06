@@ -10,7 +10,7 @@ import { assert, BeEvent, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
 import { imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
 import { IModelConnection } from "../../IModelConnection";
-import { IModelApp } from "../../imodeljs-frontend";
+import { IModelApp } from "../../IModelApp";
 import { WebGLDisposable } from "./Disposable";
 import { GL } from "./GL";
 import { UniformHandle } from "./UniformHandle";

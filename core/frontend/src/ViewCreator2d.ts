@@ -20,7 +20,7 @@ import { IModelConnection } from "./IModelConnection";
 import { ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { SheetViewState } from "./SheetViewState";
-import { EntityState, loggerCategory } from "./imodeljs-frontend";
+import { EntityState } from "./EntityState";
 
 /** Options for creating a [[ViewState2d]] via [[ViewCreator2d]].
  *  @public
@@ -89,10 +89,10 @@ export class ViewCreator2d {
       const modelType = modelProps[0].classFullName;
       baseClassName = await this._imodel.findClassFor(modelType, undefined);
     } else
-      throw new IModelError(IModelStatus.BadModel, "ViewCreator2d._getModelBaseClassName: modelId is invalid", Logger.logError, loggerCategory, () => ({ modelId }));
+      throw new IModelError(IModelStatus.BadModel, "ViewCreator2d._getModelBaseClassName: modelId is invalid");
 
     if (baseClassName === undefined)
-      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d.getViewForModel: modelType is invalid", Logger.logError, loggerCategory, () => ({ modelId }));
+      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d.getViewForModel: modelType is invalid");
 
     return baseClassName;
   }
@@ -114,7 +114,7 @@ export class ViewCreator2d {
       props = await this._addSheetViewProps(modelId, props);
       viewState = SheetViewState.createFromProps(props, this._imodel);
     } else
-      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d._createViewState2d: modelType not supported", Logger.logError, loggerCategory, () => ({ modelType, modelId }));
+      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d._createViewState2d: modelType not supported");
 
     return viewState;
   }

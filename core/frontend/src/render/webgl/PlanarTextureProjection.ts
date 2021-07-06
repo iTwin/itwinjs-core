@@ -13,8 +13,8 @@ import {
 } from "@bentley/geometry-core";
 import { Frustum, FrustumPlanes, Npc, RenderMode } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
-import { SceneContext, Tile } from "../../imodeljs-frontend";
-import { TileTreeReference } from "../../tile/internal";
+import { SceneContext } from "../../ViewContext";
+import { Tile, TileTreeReference } from "../../tile/internal";
 import { ViewState3d } from "../../ViewState";
 import { RenderState } from "./RenderState";
 import { Target } from "./Target";

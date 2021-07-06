@@ -46,7 +46,6 @@ import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
-import { SheetViewState } from "./SheetViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
@@ -657,7 +656,7 @@ export abstract class Viewport implements IDisposable {
     if (!this._sceneValid)
       return;
 
-    if (this.view.displayStyle.wantShadows || this.view instanceof SheetViewState)
+    if (this.view.displayStyle.wantShadows || this.view.isSheetView())
       this.invalidateScene();
   }
 

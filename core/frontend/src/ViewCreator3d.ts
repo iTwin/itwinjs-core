@@ -19,7 +19,7 @@ import { StandardViewId } from "./StandardView";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";
 import { SpatialViewState } from "./SpatialViewState";
-import { Environment, loggerCategory } from "./imodeljs-frontend";
+import { Environment } from "./DisplayStyleState";
 
 /** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
  *  @public
@@ -64,7 +64,7 @@ export class ViewCreator3d {
 
     const models = modelIds ? modelIds : await this._getAllModels();
     if (models === undefined || models.length === 0)
-      throw new IModelError(IModelStatus.BadModel, "ViewCreator3d.createDefaultView: no 3D models found in iModel", Logger.logError, loggerCategory, () => ({ models }));
+      throw new IModelError(IModelStatus.BadModel, "ViewCreator3d.createDefaultView: no 3D models found in iModel");
 
     const props = await this._createViewStateProps(models, options);
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
