@@ -59,6 +59,7 @@ export class Enumerations {
     await newEnum.fromJSON(enumProps);
     return { itemKey: newEnum.key };
   }
+  
   public async addEnumerator(enumerationKey: SchemaItemKey, enumerator: AnyEnumerator): Promise<void> {
     const enumeration = (await this._schemaEditor.schemaContext.getSchemaItem(enumerationKey)) as MutableEnumeration;
 
