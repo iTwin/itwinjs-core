@@ -234,7 +234,7 @@ export abstract class IModelConnection extends IModel {
   /** Called prior to connection closing. Raises close events and calls tiles.dispose.
    * @internal
    */
-  protected beforeClose() {
+  protected beforeClose(): void {
     this.onClose.raiseEvent(this); // event for this connection
     IModelConnection.onClose.raiseEvent(this); // event for all connections
     this.tiles.dispose();
@@ -647,6 +647,11 @@ export class BlankConnection extends IModelConnection {
    * @note A BlankConnection should not be used after calling `close`.
    */
   public async close(): Promise<void> {
+    this.beforeClose();
+  }
+
+  /** @internal */
+  public closeSync(): void {
     this.beforeClose();
   }
 }
