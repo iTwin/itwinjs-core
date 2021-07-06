@@ -14,6 +14,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 
 - TaggedGeometryData to support subdivision surfaces and future variant meshes
 
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT
 
@@ -546,7 +551,7 @@ Fri, 22 Nov 2019 14:03:34 GMT
 
 ### Updates
 
-- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal 
+- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal
 - Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections
 - Intersect Ray with Sphere
 - Spherical patch range; optional result in range3d.corners()
@@ -677,7 +682,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Triangulation bug (multiple holes not linked correctly)
 - Fix broken links
 - Put sourcemap in npm package.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - New code for regularizing a single face.
 - Upgrade TypeDoc dependency to 0.14.2
 
