@@ -68,10 +68,10 @@ function makeViewableGeometry(): GeometryQuery[] {
 // create viewing setup from given vectors local Z, Y rotations.
 // append the (rotated) geometry to the GeometryQuery[].
 //
-function collectViewableGeometry(ck: Checker, geometry: GeometryQuery[], rightVector: Vector3d, upVector: Vector3d, leftNoneRight: number, topNoneBottom: number, xShift: number, yShift: number, expectedIndex: StandardViewIndex) {
+function collectViewableGeometry(ck: Checker, geometry: GeometryQuery[], rightVector: Vector3d, upVector: Vector3d, leftNoneRight: number, topNoneBottom: number, xShift: number, yShift: number, expectedIndex: StandardViewIndex | 0) {
   const geometry0 = makeViewableGeometry();
   const axes0 = Matrix3d.createViewedAxes(rightVector, upVector, leftNoneRight, topNoneBottom)!;
-  if ((expectedIndex as number) !== 0) {
+  if (expectedIndex !== 0) {
     const standardAxes = Matrix3d.createStandardWorldToView(expectedIndex, true);
     ck.testMatrix3d(axes0, standardAxes, "standard view axis check");
   }
