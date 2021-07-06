@@ -40,14 +40,19 @@ export function openBlankViewport(options?: BlankViewportOptions): ScreenViewpor
 
   const view = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
 
-  /*
   class BlankViewport extends ScreenViewport {
+    public ownedIModel?: BlankConnection;
+
     public dispose(): void {
       document.body.removeChild(this.parentDiv);
       super.dispose();
+      this.ownedIModel?.closeSync();
     }
   }
-  */
 
-  return /*Blank*/ ScreenViewport.create(parentDiv, view);
+  const viewport = BlankViewport.create(parentDiv, view) as BlankViewport;
+  if (undefined === options?.iModel)
+    viewport.ownedIModel = iModel;
+
+  return viewport;
 }

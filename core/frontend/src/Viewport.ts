@@ -248,7 +248,9 @@ export abstract class Viewport implements IDisposable {
   /** Event invoked after [[renderFrame]] detects that the dimensions of the viewport's [[ViewRect]] have changed.
    */
   public readonly onResized = new BeEvent<(vp: Viewport) => void>();
-  /** Event dispatched immediately after [[flashedId]] changes, supplying the Ids of the previousl-y and/or currently-flashed objects. */
+  /** Event dispatched immediately after [[flashedId]] changes, supplying the Ids of the previousl-y and/or currently-flashed objects.
+   * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
+   */
   public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
 
   /** This is initialized by a call to [[changeView]] sometime shortly after the constructor is invoked.
@@ -1430,12 +1432,15 @@ export abstract class Viewport implements IDisposable {
     this.invalidateDecorations();
   }
 
+  private _assigningFlashedId = false;
+
   /** The Id of the currently-flashed object.
    * The "flashed" visual effect is typically applied to the object in the viewport currently under the mouse cursor, to indicate
    * it is ready to be interacted with by a tool. [[ToolAdmin]] is responsible for updating it when the mouse cursor moves.
    * The object is usually an [Element]($backend) but could also be a [Model]($backend) or pickable decoration produced by a [[Decorator]].
    * The setter ignores any string that is not a well-formed [Id64String]($bentleyjs-core). Passing [Id64.invalid]($bentleyjs-core) to the
    * setter is equivalent to passing `undefined` - both mean "nothing is flashed".
+   * @throws Error if an attempt is made to change this property from within an [[onFlashedIdChanged]] event callback.
    * @see [[onFlashedIdChanged]] to be notified when the flashed object changes.
    * @see [[flashSettings]] to customize the visual effect.
    */
@@ -1443,19 +1448,27 @@ export abstract class Viewport implements IDisposable {
     return this._flashedElem;
   }
   public set flashedId(id: Id64String | undefined) {
+    if (this._assigningFlashedId)
+      throw new Error("Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback.");
+
     if (id === Id64.invalid)
       id = undefined;
 
-    const previous = this._lastFlashedElem;
+    const previous = this._flashedElem;
     if (id === previous || (undefined !== id && !Id64.isId64(id)))
       return;
 
     this._lastFlashedElem = this._flashedElem;
     this._flashedElem = id;
 
-    // The comparison `id !== previous` above ensures the following assertion, but the compiler doesn't recognize it.
-    assert(undefined !== id || undefined !== previous);
-    this.onFlashedIdChanged.raiseEvent(this, { current: id!, previous });
+    this._assigningFlashedId = true;
+    try {
+      // The comparison `id !== previous` above ensures the following assertion, but the compiler doesn't recognize it.
+      assert(undefined !== id || undefined !== previous);
+      this.onFlashedIdChanged.raiseEvent(this, { current: id!, previous });
+    } finally {
+      this._assigningFlashedId = false;
+    }
   }
 
   /** Set or clear the currently *flashed* element.
