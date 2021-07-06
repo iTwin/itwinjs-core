@@ -259,7 +259,7 @@ export class Branch extends Graphic {
     this.branch.dispose();
   }
 
-  public get isPickable(): boolean {
+  public override get isPickable(): boolean {
     return this.branch.entries.some((gf) => (gf as Graphic).isPickable);
   }
 
