@@ -9,7 +9,6 @@ import { GraphicType } from "../../../render/GraphicBuilder";
 import { IModelApp } from "../../../IModelApp";
 import { MockRender } from "../../../render/MockRender";
 import { ScreenViewport } from "../../../Viewport";
-import { SpatialViewState } from "../../../SpatialViewState";
 import { DisplayParams } from "../../../render/primitives/DisplayParams";
 import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 import { Mesh, MeshGraphicArgs } from "../../../render/primitives/mesh/MeshPrimitives";
@@ -17,9 +16,8 @@ import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primit
 import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
 import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
 import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
-import { IModelConnection } from "../../../imodeljs-frontend";
-import { createBlankConnection } from "../../createBlankConnection";
-import { MeshBuilder, MeshParams } from "../../../render-primitives";
+import { MeshBuilder, MeshEdgeCreationOptions, MeshParams } from "../../../render-primitives";
+import { openBlankViewport } from "../../openBlankViewport";
 
 class FakeDisplayParams extends DisplayParams {
   public constructor() {
@@ -28,22 +26,15 @@ class FakeDisplayParams extends DisplayParams {
 }
 
 describe("Mesh Builder Tests", () => {
-  let imodel: IModelConnection;
-  let spatialView: SpatialViewState;
-
-  const viewDiv = document.createElement("div");
-  assert(null !== viewDiv);
-  viewDiv.style.width = viewDiv.style.height = "1000px";
-  document.body.appendChild(viewDiv);
+  let viewport: ScreenViewport;
 
   before(async () => {   // Create a ViewState to load into a Viewport
     await MockRender.App.startup();
-    imodel = createBlankConnection();
-    spatialView = SpatialViewState.createBlank(imodel, new Point3d(0, 0, 0), new Point3d(1, 1, 1));
+    viewport = openBlankViewport();
   });
 
   after(async () => {
-    if (imodel) await imodel.close();
+    viewport.dispose();
     await MockRender.App.shutdown();
   });
 
@@ -67,7 +58,6 @@ describe("Mesh Builder Tests", () => {
   });
 
   it("addStrokePointLists", () => {
-    const viewport = ScreenViewport.create(viewDiv, spatialView);
     const primBuilder = new PrimitiveBuilder(IModelApp.renderSystem, {type: GraphicType.Scene, viewport });
 
     const pointA = new Point3d(-100, 0, 0);
