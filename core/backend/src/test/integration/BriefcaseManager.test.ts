@@ -409,7 +409,7 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should reuse a briefcaseId when re-opening iModels for pullAndPush workflows", async () => {
-    const args = { requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, deleteFirst: true };
+    const args = { requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, deleteFirst: false };
     const iModel1 = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const briefcaseId1: number = iModel1.briefcaseId;
     iModel1.close(); // Keeps the briefcase by default
