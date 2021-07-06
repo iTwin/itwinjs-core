@@ -4,11 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ScreenViewport } from "../Viewport";
-import { Marker } from "../Marker";
 import { Decorator } from "../ViewManager";
 import { DecorateContext } from "../ViewContext";
 import { IModelApp } from "../IModelApp";
 import { openBlankViewport } from "./openBlankViewport";
+import { Marker } from "../Marker";
 
 describe("ScreenViewport", () => {
   beforeEach(async () => {
