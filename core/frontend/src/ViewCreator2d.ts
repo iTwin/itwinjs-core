@@ -12,7 +12,7 @@ API for creating a 2D view from a given modelId and modelType (classFullName).
 Additional options (such as background color) can be passed during view creation.
 */
 
-import { Id64Array, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, IModelError, ModelSelectorProps, SheetProps, ViewDefinition2dProps, ViewStateProps } from "@bentley/imodeljs-common";
 import { Range3d } from "@bentley/geometry-core";
 import { DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";

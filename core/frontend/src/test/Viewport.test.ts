@@ -11,8 +11,8 @@ import { openBlankViewport } from "./openBlankViewport";
 describe("Viewport", () => {
   let viewport: ScreenViewport;
 
-  before(async () => await IModelApp.startup());
-  after(async () => await IModelApp.shutdown());
+  before(async () => IModelApp.startup());
+  after(async () => IModelApp.shutdown());
   beforeEach(() => viewport = openBlankViewport());
   afterEach(() => viewport.dispose());
 
