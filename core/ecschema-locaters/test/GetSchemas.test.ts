@@ -39,41 +39,33 @@ describe("Concurrent schema accesses", () => {
 
   it("should correctly deserialize schemas concurrently", async () => {
     // Asynchronous
-    const asyncSchemas: Schema[] = [];
-    await Promise.all(schemaKeys.map(async (key) => {
+    const schemaPromises = schemaKeys.map(async (key): Promise<Schema | undefined> => {
       if (!key)
-        return;
-      console.log(`Starting retrieval ${key.name}`);
+        return undefined;
+
       const schema = await context1.getSchema(key, SchemaMatchType.Latest);
-      console.log(`Finished retrieval ${key.name}`);
-      if (!schema)
-        return;
-      asyncSchemas.push(schema);
-      return;
-    }));
-    expect(asyncSchemas.length).to.equal(schemaKeys.length);
+      return schema;
+    });
+    const asyncSchemas = await Promise.all(schemaPromises);
 
     // Synchronous
-    const syncSchemas: Schema[] = [];
-    schemaKeys.forEach((key) => {
+    const syncSchemas = schemaKeys.map((key): Schema | undefined => {
       if (!key)
-        return;
+        return undefined;
+
       const schema = context2.getSchemaSync(key, SchemaMatchType.Latest);
-      if (!schema)
-        return;
-      syncSchemas.push(schema);
-      return;
+      return schema;
     });
-    expect(syncSchemas.length).to.equal(schemaKeys.length);
 
     for (let i = 0; i < schemaKeys.length; i++) {
       const syncSchema = syncSchemas[i];
-      const syncSerialized = syncSchema.toJSON();
+      expect(syncSchema).not.to.be.undefined;
+      const syncJSON = syncSchema!.toJSON();
 
-      const asyncSchema = asyncSchemas.find(asyncSchema => asyncSchema.schemaKey.matches(syncSchema.schemaKey));
+      const asyncSchema = asyncSchemas.find(asyncSchema => asyncSchema!.schemaKey.matches(syncSchema!.schemaKey));
       expect(asyncSchema).not.to.be.undefined;
-      const asyncSerialized = asyncSchema!.toJSON();
-      expect(asyncSerialized).to.deep.equal(syncSerialized);
+      const asyncJSON = asyncSchema!.toJSON();
+      expect(asyncJSON).to.deep.equal(syncJSON);
     }
   });
 

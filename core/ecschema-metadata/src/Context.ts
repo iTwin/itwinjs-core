@@ -77,13 +77,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param loadSchema Promise that resolves when the schema has been completely loaded
    */
   public async addSchema<T extends Schema>(schema: T, loadSchema?: () => Promise<T>) {
-    if (this.getLoadingSchemaSync<T>(schema.schemaKey))
-      throw new ECObjectsError(ECObjectsStatus.DuplicateSchema, `The schema, ${schema.schemaKey.toString()}, already exists within this cache.`);
-
-    if (loadSchema)
-      this._loadingSchemas.push({ schema, loadSchemaFunc: loadSchema });
-    else
-      this._loadedSchemas.push(schema);
+    this.addSchemaSync(schema, loadSchema);
   }
 
   /**
@@ -101,9 +95,7 @@ export class SchemaCache implements ISchemaLocater {
   }
 
   public async checkAndAddSchema<T extends Schema>(schema: T, loadSchema: () => Promise<T>) {
-    if (!this.getLoadingSchemaSync<T>(schema.schemaKey)) {
-      this._loadingSchemas.push({ schema, loadSchemaFunc: loadSchema });
-    }
+    this.checkAndAddSchemaSync(schema, loadSchema);
   }
 
   public checkAndAddSchemaSync<T extends Schema>(schema: T, loadSchema: () => Promise<T>) {
@@ -142,6 +134,7 @@ export class SchemaCache implements ISchemaLocater {
         if (loadingSchemaIndex !== -1)
           this._loadingSchemas.splice(loadingSchemaIndex, 1);
       }
+
       return schema as T;
     }
 
@@ -149,7 +142,6 @@ export class SchemaCache implements ISchemaLocater {
       loadingSchema.loadSchema = loadingSchema.loadSchemaFunc();
       const schema = await loadingSchema.loadSchema;
       if (!this._loadedSchemas.find(findLoadedSchema)) {
-        // Add the schema to _loadedSchemas and remove it from _loadingSchemas
         this._loadedSchemas.push(schema);
         const loadingSchemaIndex = this._loadingSchemas.findIndex(findLoadingSchema);
         if (loadingSchemaIndex !== -1)

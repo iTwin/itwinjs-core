@@ -46,7 +46,7 @@ export class Schema implements CustomAttributeContainerProps {
   protected _alias?: string;
   protected _label?: string;
   protected _description?: string;
-  public references: Schema[];
+  public readonly references: Schema[];
   private readonly _items: Map<string, SchemaItem>;
   private _customAttributes?: Map<string, CustomAttribute>;
   /**
@@ -347,22 +347,6 @@ export class Schema implements CustomAttributeContainerProps {
 
   protected addReferenceSync(refSchema: Schema): void {
     this.references.push(refSchema);
-  }
-
-  protected async updateReference(refSchema: Schema): Promise<void> {
-    this.updateReferenceSync(refSchema);
-  }
-
-  protected updateReferenceSync(refSchema: Schema): void {
-    const findFunc = (schema: Schema) => {
-      return schema.schemaKey.matches(refSchema.schemaKey);
-    };
-
-    const foundIndex = this.references.findIndex(findFunc);
-    if (foundIndex === -1)
-      this.references.push(refSchema);
-    else
-      this.references[foundIndex] = refSchema;
   }
 
   /**

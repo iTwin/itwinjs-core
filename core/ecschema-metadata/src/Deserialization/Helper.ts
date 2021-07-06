@@ -175,7 +175,9 @@ export class SchemaReadHelper<T = unknown> {
 
     await this._context.checkAndAddSchema(schema, async () => this.loadSchema(schema));
 
-    return schema;
+    // Will have schema here since it's checked or added above
+    const foundSchema = await this._context.getCachedLoadedOrLoadingSchema<U>(schema.schemaKey);
+    return foundSchema!;
   }
 
   public readLoadingSchemaSync<U extends Schema>(schema: U, rawSchema: T): U {
@@ -188,7 +190,7 @@ export class SchemaReadHelper<T = unknown> {
 
     this._context.checkAndAddSchemaSync(schema, async () => this.loadSchema(schema));
 
-    return schema;
+    return this._context.getCachedLoadedOrLoadingSchemaSync<U>(schema.schemaKey)!;
   }
 
   /**
@@ -197,11 +199,7 @@ export class SchemaReadHelper<T = unknown> {
    */
   private async loadSchemaReference(ref: SchemaReferenceProps): Promise<void> {
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
-    let refSchema = await this._schema!.getReference(ref.name);
-    if (refSchema)
-      return;
-
-    refSchema = await this._context.getLoadingSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
+    let refSchema = await this._context.getLoadingSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
     if (undefined === refSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
@@ -217,11 +215,8 @@ export class SchemaReadHelper<T = unknown> {
       throw new ECObjectsError(ECObjectsStatus.InvalidECJson, `${errorMessage}`);
     }
 
-    refSchema = await this._context.getSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
-    if (undefined === refSchema)
-      throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
-
-    await (this._schema as MutableSchema).updateReference(refSchema);
+    // Load the referenced schema here after validating it
+    await this._context.getSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
   }
 
   /**

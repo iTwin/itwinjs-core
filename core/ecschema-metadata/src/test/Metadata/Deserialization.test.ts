@@ -220,7 +220,7 @@ describe("Full Schema Deserialization", () => {
           { name: "RefSchemaB", version: "2.0.0" },
         ],
       };
-      await expect(Schema.fromJson(json, context)).to.be.rejectedWith(ECObjectsError, `ECObjects-3: Schema 'RefSchemaB' has reference cycles: TestSchema --> RefSchemaB, RefSchemaB --> TestSchema\r\n`);
+      expect(() => Schema.fromJsonSync(json, context)).to.throw(ECObjectsError, `ECObjects-3: Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB\r\n`);
     });
 
     it("should throw for cyclic references (async)", async () => {
@@ -381,7 +381,7 @@ describe("Full Schema Deserialization", () => {
         alias: "d",
       };
 
-      const locater = new ReferenceSchemaLocater(Schema.fromJsonSync, Schema.fromJsonLoadingSchemaSync);
+      const locater = new ReferenceSchemaLocater(Schema.fromJson, Schema.fromJsonLoadingSchema);
       locater.addSchema("RefSchemaA", schemaAJson);
       locater.addSchema("RefSchemaB", schemaBJson);
       locater.addSchema("RefSchemaC", schemaCJson);
@@ -426,7 +426,7 @@ describe("Full Schema Deserialization", () => {
       <ECSchemaReference name="RefSchemaB" version="02.00.00" alias="b"/>
       </ECSchema>`;
 
-      await expect(deserializeXml(testSchemaXML, context)).to.be.rejectedWith(ECObjectsError, `ECObjects-3: Schema 'RefSchemaB' has reference cycles: TestSchema --> RefSchemaB, RefSchemaB --> TestSchema\r\n`);
+      expect(() => deserializeXmlSync(testSchemaXML, context)).to.throw(ECObjectsError, `ECObjects-3: Schema 'TestSchema' has reference cycles: RefSchemaB --> TestSchema, TestSchema --> RefSchemaB\r\n`);
     });
 
     it("should throw for cyclic references in XML (async)", async () => {
@@ -526,7 +526,7 @@ describe("Full Schema Deserialization", () => {
       <ECSchema schemaName="RefSchemaD" alias="d" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
       </ECSchema>`;
 
-      const locater = new ReferenceSchemaLocater(deserializeXmlSync, deserializeXmlLoadingSchemaSync);
+      const locater = new ReferenceSchemaLocater(deserializeXml, deserializeXmlLoadingSchema);
       locater.addSchema("RefSchemaA", schemaAXml);
       locater.addSchema("RefSchemaB", schemaBXml);
       locater.addSchema("RefSchemaC", schemaCXml);
