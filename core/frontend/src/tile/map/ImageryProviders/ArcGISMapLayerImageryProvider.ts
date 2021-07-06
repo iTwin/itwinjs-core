@@ -10,9 +10,12 @@ import { Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
 import { Cartographic, ImageSource, MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
 import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
-import { ArcGisErrorCode, ArcGisTokenClientType, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, NotifyMessageDetails, OutputMessagePriority } from "../../../imodeljs-frontend";
+import {NotifyMessageDetails, OutputMessagePriority} from "../../../NotificationManager";
 import { ScreenViewport } from "../../../Viewport";
-import { ArcGisTokenManager, ArcGisUtilities, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId } from "../../internal";
+import {
+  ArcGisErrorCode, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
+  MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId,
+} from "../../internal";
 
 // eslint-disable-next-line prefer-const
 let doToolTips = true;

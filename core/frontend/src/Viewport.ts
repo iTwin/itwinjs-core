@@ -46,7 +46,6 @@ import { GraphicList } from "./render/RenderGraphic";
 import { RenderMemory } from "./render/RenderMemory";
 import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
-import { SheetViewState } from "./SheetViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
 import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
@@ -168,6 +167,20 @@ declare global {
   }
 }
 
+/** Payload for the [[Viewport.onFlashedIdChanged]] event indicating Ids of the currently- and/or previously-flashed objects.
+ * @public
+ */
+export type OnFlashedIdChangedEventArgs = {
+  readonly current: Id64String;
+  readonly previous: Id64String;
+} | {
+  readonly current: Id64String;
+  readonly previous: undefined;
+} | {
+  readonly previous: Id64String;
+  readonly current: undefined;
+};
+
 /** A Viewport renders the contents of one or more [GeometricModel]($backend)s onto an `HTMLCanvasElement`.
  *
  * It holds a [[ViewState]] object that defines its viewing parameters; the ViewState in turn defines the [[DisplayStyleState]],
@@ -235,6 +248,10 @@ export abstract class Viewport implements IDisposable {
   /** Event invoked after [[renderFrame]] detects that the dimensions of the viewport's [[ViewRect]] have changed.
    */
   public readonly onResized = new BeEvent<(vp: Viewport) => void>();
+  /** Event dispatched immediately after [[flashedId]] changes, supplying the Ids of the previousl-y and/or currently-flashed objects.
+   * @note Attempting to assign to [[flashedId]] from within the event callback will produce an exception.
+   */
+  public readonly onFlashedIdChanged = new BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>();
 
   /** This is initialized by a call to [[changeView]] sometime shortly after the constructor is invoked.
    * During that time it can be undefined. DO NOT assign directly to this member - use `setView()`.
@@ -641,7 +658,7 @@ export abstract class Viewport implements IDisposable {
     if (!this._sceneValid)
       return;
 
-    if (this.view.displayStyle.wantShadows || this.view instanceof SheetViewState)
+    if (this.view.displayStyle.wantShadows || this.view.isSheetView())
       this.invalidateScene();
   }
 
@@ -1415,16 +1432,53 @@ export abstract class Viewport implements IDisposable {
     this.invalidateDecorations();
   }
 
+  private _assigningFlashedId = false;
+
+  /** The Id of the currently-flashed object.
+   * The "flashed" visual effect is typically applied to the object in the viewport currently under the mouse cursor, to indicate
+   * it is ready to be interacted with by a tool. [[ToolAdmin]] is responsible for updating it when the mouse cursor moves.
+   * The object is usually an [Element]($backend) but could also be a [Model]($backend) or pickable decoration produced by a [[Decorator]].
+   * The setter ignores any string that is not a well-formed [Id64String]($bentleyjs-core). Passing [Id64.invalid]($bentleyjs-core) to the
+   * setter is equivalent to passing `undefined` - both mean "nothing is flashed".
+   * @throws Error if an attempt is made to change this property from within an [[onFlashedIdChanged]] event callback.
+   * @see [[onFlashedIdChanged]] to be notified when the flashed object changes.
+   * @see [[flashSettings]] to customize the visual effect.
+   */
+  public get flashedId(): Id64String | undefined {
+    return this._flashedElem;
+  }
+  public set flashedId(id: Id64String | undefined) {
+    if (this._assigningFlashedId)
+      throw new Error("Cannot assign to Viewport.flashedId from within an onFlashedIdChanged event callback.");
+
+    if (id === Id64.invalid)
+      id = undefined;
+
+    const previous = this._flashedElem;
+    if (id === previous || (undefined !== id && !Id64.isId64(id)))
+      return;
+
+    this._lastFlashedElem = this._flashedElem;
+    this._flashedElem = id;
+
+    this._assigningFlashedId = true;
+    try {
+      // The comparison `id !== previous` above ensures the following assertion, but the compiler doesn't recognize it.
+      assert(undefined !== id || undefined !== previous);
+      this.onFlashedIdChanged.raiseEvent(this, { current: id!, previous });
+    } finally {
+      this._assigningFlashedId = false;
+    }
+  }
+
   /** Set or clear the currently *flashed* element.
    * @note This method is not typically invoked directly - [[ToolAdmin]] will invoke it for you when the user hovers over an element.
    * @param id The Id of the element to flash. If undefined, remove (un-flash) the currently flashed element.
    * @param _duration Ignored - the duration from [[Viewport.flashSettings]] is used.
+   * @deprecated Set flashedId directly.
    */
   public setFlashed(id: string | undefined, _duration?: number): void {
-    if (id !== this._flashedElem) {
-      this._lastFlashedElem = this._flashedElem;
-      this._flashedElem = id;
-    }
+    this.flashedId = id;
   }
 
   public get auxCoordSystem(): AuxCoordSystemState { return this.view.auxiliaryCoordinateSystem; }
@@ -2099,14 +2153,14 @@ export abstract class Viewport implements IDisposable {
   private processFlash(): boolean {
     let needsFlashUpdate = false;
 
-    if (this._flashedElem !== this._lastFlashedElem) {
+    if (this.flashedId !== this._lastFlashedElem) {
       this._flashIntensity = 0.0;
       this._flashUpdateTime = BeTimePoint.now();
-      this._lastFlashedElem = this._flashedElem; // flashing has begun; this is now the previous flash
-      needsFlashUpdate = this._flashedElem === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
+      this._lastFlashedElem = this.flashedId; // flashing has begun; this is now the previous flash
+      needsFlashUpdate = this.flashedId === undefined; // notify render thread that flash has been turned off (signified by undefined elem)
     }
 
-    if (this._flashedElem !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
+    if (this.flashedId !== undefined && this._flashIntensity < this.flashSettings.maxIntensity) {
       assert(undefined !== this._flashUpdateTime);
 
       const flashDuration = this.flashSettings.duration;
@@ -2254,9 +2308,9 @@ export abstract class Viewport implements IDisposable {
 
     let requestNextAnimation = false;
     if (this.processFlash()) {
-      target.setFlashed(undefined !== this._flashedElem ? this._flashedElem : Id64.invalid, this._flashIntensity);
+      target.setFlashed(undefined !== this.flashedId ? this.flashedId : Id64.invalid, this._flashIntensity);
       isRedrawNeeded = true;
-      requestNextAnimation = undefined !== this._flashedElem;
+      requestNextAnimation = undefined !== this.flashedId;
     }
 
     this._frameStatsCollector.beginTime("onBeforeRenderTime");
