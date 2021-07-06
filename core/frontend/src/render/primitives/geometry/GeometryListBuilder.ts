@@ -7,7 +7,7 @@
  */
 
 import {
-  Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform,
+  Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@bentley/geometry-core";
 import { FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@bentley/imodeljs-common";
 import { GraphicBuilder, GraphicBuilderOptions } from "../../GraphicBuilder";
@@ -127,6 +127,10 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
     this.wantNormals = wantedNormals && undefined !== meshData.data.normal && 0 < meshData.data.normal.length;
     this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.placement);
     this.wantNormals = wantedNormals;
+  }
+
+  public addSolidPrimitive(primitive: SolidPrimitive): void {
+    this.accum.addSolidPrimitive(primitive, this.getMeshDisplayParams(), this.placement);
   }
 
   public abstract reset(): void;

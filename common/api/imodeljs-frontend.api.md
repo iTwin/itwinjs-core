@@ -144,6 +144,7 @@ import { IModelConnectionProps } from '@bentley/imodeljs-common';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/imodeljs-common';
+import { IModelTileTreeId } from '@bentley/imodeljs-common';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { IModelVersionProps } from '@bentley/imodeljs-common';
@@ -255,6 +256,7 @@ import { SmoothTransformBetweenFrusta } from '@bentley/geometry-core';
 import { SnapRequestProps } from '@bentley/imodeljs-common';
 import { SnapResponseProps } from '@bentley/imodeljs-common';
 import { SolarShadowSettings } from '@bentley/imodeljs-common';
+import { SolidPrimitive } from '@bentley/geometry-core';
 import { SortedArray } from '@bentley/bentleyjs-core';
 import { SpatialClassifier } from '@bentley/imodeljs-common';
 import { SpatialClassifierInsideDisplay } from '@bentley/imodeljs-common';
@@ -1121,6 +1123,8 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined>;
     // (undocumented)
     get maximumZoomLevel(): number;
+    // (undocumented)
+    get minimumZoomLevel(): number;
     // (undocumented)
     serviceJson: any;
     // (undocumented)
@@ -3874,6 +3878,7 @@ export abstract class GraphicBuilder {
     addRangeBoxFromCorners(p: Point3d[]): void;
     abstract addShape(points: Point3d[]): void;
     abstract addShape2d(points: Point2d[], zDepth: number): void;
+    abstract addSolidPrimitive(solidPrimitive: SolidPrimitive): void;
     get applyAspectRatioSkew(): boolean;
     set applyAspectRatioSkew(apply: boolean);
     abstract finish(): RenderGraphic;
@@ -3895,6 +3900,8 @@ export abstract class GraphicBuilder {
     setSymbology(lineColor: ColorDef, fillColor: ColorDef, lineWidth: number, linePixels?: LinePixels): void;
     get type(): GraphicType;
     get viewport(): Viewport;
+    get wantEdges(): boolean;
+    set wantEdges(want: boolean);
     get wantNormals(): boolean;
     set wantNormals(want: boolean);
 }
@@ -3902,6 +3909,7 @@ export abstract class GraphicBuilder {
 // @public
 export interface GraphicBuilderOptions {
     applyAspectRatioSkew?: boolean;
+    generateEdges?: boolean;
     pickable?: PickableGraphicOptions;
     placement?: Transform;
     preserveOrder?: boolean;
@@ -3972,7 +3980,7 @@ export interface GraphicPolyface {
 }
 
 // @public
-export type GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface;
+export type GraphicPrimitive = GraphicLineString | GraphicLineString2d | GraphicPointString | GraphicPointString2d | GraphicShape | GraphicShape2d | GraphicArc | GraphicArc2d | GraphicPath | GraphicLoop | GraphicPolyface | GraphicSolidPrimitive;
 
 // @public
 export interface GraphicPrimitive2d {
@@ -4013,6 +4021,14 @@ export interface GraphicShape2d extends GraphicPrimitive2d {
     points: Point2d[];
     // (undocumented)
     type: "shape2d";
+}
+
+// @public
+export interface GraphicSolidPrimitive {
+    // (undocumented)
+    solidPrimitive: SolidPrimitive;
+    // (undocumented)
+    type: "solidPrimitive";
 }
 
 // @public
@@ -4749,7 +4765,7 @@ export function iModelTileParamsFromJSON(props: TileProps, parent: IModelTile | 
 
 // @internal
 export class IModelTileTree extends TileTree {
-    constructor(params: IModelTileTreeParams);
+    constructor(params: IModelTileTreeParams, treeId: IModelTileTreeId);
     // (undocumented)
     get batchType(): BatchType;
     // (undocumented)
@@ -4783,6 +4799,8 @@ export class IModelTileTree extends TileTree {
     // (undocumented)
     protected _selectTiles(args: TileDrawArgs): Tile[];
     get staticBranch(): IModelTile;
+    // (undocumented)
+    readonly stringifiedSectionClip?: string;
     get tileState(): "static" | "dynamic" | "interactive" | "disposed";
     // (undocumented)
     get viewFlagOverrides(): ViewFlagOverrides;
@@ -5638,6 +5656,8 @@ export class MapTileLoader extends RealityTileLoader {
     loadTileContent(tile: MapTile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TerrainTileContent>;
     // (undocumented)
     get maxDepth(): number;
+    // (undocumented)
+    get minDepth(): number;
     // (undocumented)
     protected _modelId: Id64String;
     // (undocumented)
@@ -7667,6 +7687,8 @@ export abstract class RealityTileLoader {
     // (undocumented)
     abstract get maxDepth(): number;
     // (undocumented)
+    abstract get minDepth(): number;
+    // (undocumented)
     get parentsAndChildrenExclusive(): boolean;
     // (undocumented)
     readonly preloadRealityParentDepth: number;
@@ -7717,6 +7739,8 @@ export class RealityTileTree extends TileTree {
     protected logTiles(label: string, tiles: IterableIterator<Tile>): void;
     // (undocumented)
     get maxDepth(): number;
+    // (undocumented)
+    get minDepth(): number;
     // (undocumented)
     get parentsAndChildrenExclusive(): boolean;
     // (undocumented)
@@ -10402,7 +10426,8 @@ export class Tiles {
     purgeTileTrees(modelIds: Id64Array | undefined): Promise<void>;
     // @internal
     reset(): void;
-    }
+    updateForScheduleScript(scriptSourceElementId: Id64String): Promise<void>;
+}
 
 // @public
 export abstract class TileTree {
@@ -10519,6 +10544,16 @@ export abstract class TileTreeReference {
 
 // @public
 export interface TileTreeSupplier {
+    // @internal
+    addModelsAnimatedByScript?: (modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{
+        id: any;
+        owner: TileTreeOwner;
+    }>) => void;
+    // @internal
+    addSpatialModels?: (modelIds: Set<Id64String>, trees: Iterable<{
+        id: any;
+        owner: TileTreeOwner;
+    }>) => void;
     compareTileTreeIds(lhs: any, rhs: any): number;
     createTileTree(id: any, iModel: IModelConnection): Promise<TileTree | undefined>;
     readonly isEcefDependent?: true;

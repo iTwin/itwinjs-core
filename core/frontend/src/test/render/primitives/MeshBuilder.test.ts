@@ -19,13 +19,15 @@ import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../rende
 import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
 import { IModelConnection } from "../../../imodeljs-frontend";
 import { createBlankConnection } from "../../createBlankConnection";
-import { MeshBuilder, MeshParams } from "../../../render-primitives";
+import { MeshBuilder, MeshEdgeCreationOptions, MeshParams } from "../../../render-primitives";
 
 class FakeDisplayParams extends DisplayParams {
   public constructor() {
     super(DisplayParams.Type.Linear, ColorDef.black, ColorDef.black);
   }
 }
+
+const edgeOptions = new MeshEdgeCreationOptions(MeshEdgeCreationOptions.Type.NoEdges);
 
 describe("Mesh Builder Tests", () => {
   let imodel: IModelConnection;
@@ -167,7 +169,7 @@ describe("Mesh Builder Tests", () => {
 
     const includeParams = false;
     const fillColor = ColorDef.white.tbgr;
-    mb.addFromPolyface(pfPrim.indexedPolyface, { includeParams, fillColor });
+    mb.addFromPolyface(pfPrim.indexedPolyface, { edgeOptions, includeParams, fillColor });
 
     expect(mb.triangleSet.length).to.equal(2);
   });
@@ -216,7 +218,7 @@ describe("Mesh Builder Tests", () => {
     const visitor = pfPrim.indexedPolyface.createVisitor();
     const includeParams = false;
     const fillColor = ColorDef.white.tbgr;
-    mb.addFromPolyfaceVisitor(visitor, { includeParams, fillColor });
+    mb.addFromPolyfaceVisitor(visitor, { edgeOptions, includeParams, fillColor });
 
     expect(mb.triangleSet.length).to.equal(1);
   });
@@ -266,7 +268,7 @@ describe("Mesh Builder Tests", () => {
     const triangleCount = visitor.pointCount - 2;
     const haveParam = includeParams && visitor.paramCount > 0;
     const triangleIndex = 0;
-    const vertices = mb.createTriangleVertices(triangleIndex, visitor, { fillColor, includeParams, haveParam, triangleCount });
+    const vertices = mb.createTriangleVertices(triangleIndex, visitor, { edgeOptions, fillColor, includeParams, haveParam, triangleCount });
 
     expect(vertices!.length).to.equal(3);
   });
@@ -309,7 +311,7 @@ describe("Mesh Builder Tests", () => {
     const triangleCount = visitor.pointCount - 2;
     const haveParam = includeParams && visitor.paramCount > 0;
     const triangleIndex = 0;
-    const triangle = mb.createTriangleVertices(triangleIndex, visitor, { fillColor, includeParams, haveParam, triangleCount });
+    const triangle = mb.createTriangleVertices(triangleIndex, visitor, { edgeOptions, fillColor, includeParams, haveParam, triangleCount });
 
     expect(triangle).to.not.be.undefined;
   });
@@ -439,7 +441,7 @@ describe("Mesh Builder Tests", () => {
       pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 2]);
 
       const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
-      meshBuilder.addFromPolyface(pf, { includeParams: false, fillColor: 0 });
+      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 });
       const mesh = meshBuilder.mesh;
       expect(mesh.points.length).to.equal(3);
       expect(mesh.auxChannels!.length).to.equal(1);
@@ -458,7 +460,7 @@ describe("Mesh Builder Tests", () => {
       pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 2, 3]);
 
       const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
-      meshBuilder.addFromPolyface(pf, { includeParams: false, fillColor: 0 });
+      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 });
       const mesh = meshBuilder.mesh;
       expect(mesh.points.length).to.equal(6);
       expect(mesh.auxChannels!.length).to.equal(1);
@@ -480,7 +482,7 @@ describe("Mesh Builder Tests", () => {
       pf.data.auxData = new PolyfaceAuxData([channel], [2, 0, 0, 1]);
 
       const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
-      meshBuilder.addFromPolyface(pf, { includeParams: false, fillColor: 0 });
+      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 });
       const mesh = meshBuilder.mesh;
       expect(mesh.points.length).to.equal(6);
       expect(mesh.auxChannels!.length).to.equal(1);
@@ -501,7 +503,7 @@ describe("Mesh Builder Tests", () => {
       pf.data.auxData = new PolyfaceAuxData([channel], [0, 1, 1, 0]);
 
       const meshBuilder = createMeshBuilder(Mesh.PrimitiveType.Mesh, Range3d.fromJSON({ low: [0, 0, 0], high: [1, 1, 0] }));
-      meshBuilder.addFromPolyface(pf, { includeParams: false, fillColor: 0 });
+      meshBuilder.addFromPolyface(pf, { edgeOptions, includeParams: false, fillColor: 0 });
 
       const aux = meshBuilder.mesh.auxChannels![0];
       expect(aux.data[0].values).to.deep.equal([
