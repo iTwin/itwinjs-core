@@ -249,10 +249,10 @@ export class FrameBuffer implements WebGLDisposable {
 
   // Chiefly for debugging currently - assumes RGBA, unsigned byte, want all pixels.
   public get debugPixels(): Uint8Array | undefined {
-    if (!this.isBound || 0 === this._colorTextures.length || this._colorTextures[0] instanceof TextureHandle)
+    if (!this.isBound || 0 === this._colorTextures.length || !(this._colorTextures[0] instanceof TextureHandle))
       return undefined;
 
-    const tex: TextureHandle = this._colorTextures[0];
+    const tex = this._colorTextures[0];
     if (GL.Texture.Format.Rgba !== tex.format || GL.Texture.DataType.UnsignedByte !== tex.dataType)
       return undefined;
 
