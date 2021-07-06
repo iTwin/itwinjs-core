@@ -319,6 +319,8 @@ export class SheetViewState extends ViewState2d {
 
   /** @internal override */
   public isDrawingView(): this is DrawingViewState { return false; }
+  /** @internal override */
+  public isSheetView(): this is SheetViewState { return true; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
     super(props, iModel, categories, displayStyle);
