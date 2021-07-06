@@ -244,7 +244,7 @@ export class Format extends SchemaItem {
     // Serialize the minimal amount of information needed so anything that is the same as the default, do not serialize.
     if (0.0 !== this.roundFactor) schemaJson.roundFactor = this.roundFactor;
     if (ShowSignOption.OnlyNegative !== this.showSignOption) schemaJson.showSignOption = showSignOptionToString(this.showSignOption);
-    if (0x0 !== this.formatTraits as number) schemaJson.formatTraits = formatTraitsToArray(this.formatTraits);
+    if (0x0 !== this.formatTraits) schemaJson.formatTraits = formatTraitsToArray(this.formatTraits);
     if ("." !== this.decimalSeparator) schemaJson.decimalSeparator = this.decimalSeparator;
     if ("," !== this.thousandSeparator) schemaJson.thousandSeparator = this.thousandSeparator;
     if (" " !== this.uomSeparator) schemaJson.uomSeparator = this.uomSeparator;
