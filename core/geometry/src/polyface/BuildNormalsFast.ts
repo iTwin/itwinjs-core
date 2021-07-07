@@ -99,7 +99,7 @@ class VertexFacets {
 
   public computeSharedNormal(thisFacet: Facet, minDot: number): Vector3d {
     let shared = false;
-    let normal = thisFacet.normal.clone();
+    const normal = thisFacet.normal.clone();
 
     for (const facet of this.facets) {
       if (facet !== thisFacet && facet.normal.dotProduct(thisFacet.normal) < minDot) {
