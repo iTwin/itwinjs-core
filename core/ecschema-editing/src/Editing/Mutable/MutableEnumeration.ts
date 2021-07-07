@@ -8,7 +8,7 @@ import { AnyEnumerator, Enumeration } from "@bentley/ecschema-metadata";
  * An abstract class used for schema editing.
  */
 export abstract class MutableEnumeration extends Enumeration {
-  public abstract addEnumerator(enumerator: AnyEnumerator): void;
-  public abstract setIsStrict(isStrict: boolean): void;
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override addEnumerator(enumerator: AnyEnumerator): void;
+  public abstract override setIsStrict(isStrict: boolean): void;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }

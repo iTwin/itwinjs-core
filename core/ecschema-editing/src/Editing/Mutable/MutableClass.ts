@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { CustomAttribute, ECClass, ECClassModifier, Enumeration, EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty,
+import {
+  CustomAttribute, ECClass, ECClassModifier, Enumeration, EnumerationArrayProperty, EnumerationProperty, PrimitiveArrayProperty,
   PrimitiveProperty, PrimitiveType, Property, StructArrayProperty, StructClass, StructProperty,
 } from "@bentley/ecschema-metadata";
 
@@ -11,7 +12,7 @@ import { CustomAttribute, ECClass, ECClassModifier, Enumeration, EnumerationArra
  * An abstract class used for schema editing.
  */
 export abstract class MutableStructClass extends StructClass {
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }
 
 /**
@@ -19,27 +20,27 @@ export abstract class MutableStructClass extends StructClass {
  * @internal
  */
 export abstract class MutableClass extends ECClass {
-  public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
-  public abstract setModifier(modifier: ECClassModifier): void;
-  public abstract createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
-  public abstract createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
-  public abstract createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
+  public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
+  public abstract override setModifier(modifier: ECClassModifier): void;
+  public abstract override createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
+  public abstract override createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
+  public abstract override createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
 
-  public abstract createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
-  public abstract createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
-  public abstract createPrimitivePropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property;
+  public abstract override createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
+  public abstract override createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
+  public abstract override createPrimitivePropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property;
 
-  public abstract createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
-  public abstract createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
-  public abstract createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
+  public abstract override createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
+  public abstract override createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
+  public abstract override createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
 
-  public abstract createPrimitiveArrayPropertySync(name: string, primitiveType: PrimitiveType): PrimitiveArrayProperty;
-  public abstract createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
-  public abstract createPrimitiveArrayPropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property;
+  public abstract override createPrimitiveArrayPropertySync(name: string, primitiveType: PrimitiveType): PrimitiveArrayProperty;
+  public abstract override createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
+  public abstract override createPrimitiveArrayPropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property;
 
-  public abstract createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty>;
-  public abstract createStructPropertySync(name: string, structType: string | StructClass): StructProperty;
+  public abstract override createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty>;
+  public abstract override createStructPropertySync(name: string, structType: string | StructClass): StructProperty;
 
-  public abstract createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
-  public abstract createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty;
+  public abstract override createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
+  public abstract override createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty;
 }

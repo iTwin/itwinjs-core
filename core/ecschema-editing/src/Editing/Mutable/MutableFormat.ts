@@ -9,14 +9,14 @@ import { Format, FormatType, InvertedUnit, ShowSignOption, Unit } from "@bentley
  * An abstract class used for schema editing.
  */
 export abstract class MutableFormat extends Format {
-  public abstract addUnit(unit: Unit | InvertedUnit, label?: string): void;
-  public abstract setPrecision(precision: number): void;
-  public abstract setFormatType(formatType: FormatType): void;
-  public abstract setRoundFactor(roundFactor: number): void;
-  public abstract setShowSignOption(signOption: ShowSignOption): void;
-  public abstract setDecimalSeparator(separator: string): void;
-  public abstract setThousandSeparator(separator: string): void;
-  public abstract setUomSeparator(separator: string): void;
-  public abstract setStationSeparator(separator: string): void;
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override addUnit(unit: Unit | InvertedUnit, label?: string): void;
+  public abstract override setPrecision(precision: number): void;
+  public abstract override setFormatType(formatType: FormatType): void;
+  public abstract override setRoundFactor(roundFactor: number): void;
+  public abstract override setShowSignOption(signOption: ShowSignOption): void;
+  public abstract override setDecimalSeparator(separator: string): void;
+  public abstract override setThousandSeparator(separator: string): void;
+  public abstract override setUomSeparator(separator: string): void;
+  public abstract override setStationSeparator(separator: string): void;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }
