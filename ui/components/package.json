@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-components",
-  "version": "2.19.0-dev.3",
+  "version": "2.19.0-dev.8",
   "description": "iModel.js UI complex components",
   "main": "lib/ui-components.js",
   "typings": "lib/ui-components",
@@ -33,14 +33,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.3",
-    "@bentley/geometry-core": "workspace:^2.19.0-dev.3",
-    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.3",
-    "@bentley/imodeljs-frontend": "workspace:^2.19.0-dev.3",
-    "@bentley/imodeljs-i18n": "workspace:^2.19.0-dev.3",
-    "@bentley/imodeljs-quantity": "workspace:^2.19.0-dev.3",
-    "@bentley/ui-abstract": "workspace:^2.19.0-dev.3",
-    "@bentley/ui-core": "workspace:^2.19.0-dev.3",
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.8",
+    "@bentley/geometry-core": "workspace:^2.19.0-dev.8",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.8",
+    "@bentley/imodeljs-frontend": "workspace:^2.19.0-dev.8",
+    "@bentley/imodeljs-i18n": "workspace:^2.19.0-dev.8",
+    "@bentley/imodeljs-quantity": "workspace:^2.19.0-dev.8",
+    "@bentley/ui-abstract": "workspace:^2.19.0-dev.8",
+    "@bentley/ui-core": "workspace:^2.19.0-dev.8",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },

@@ -39,6 +39,7 @@ import { ViewChangeOptions } from "./ViewAnimation";
 import { Viewport } from "./Viewport";
 import { DrawingViewState } from "./DrawingViewState";
 import { SpatialViewState } from "./SpatialViewState";
+import { SheetViewState } from "./SheetViewState";
 import { ViewStatus } from "./ViewStatus";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
 
@@ -338,6 +339,8 @@ export abstract class ViewState extends ElementState {
   public abstract isSpatialView(): this is SpatialViewState;
   /** Returns true if this ViewState is-a [[DrawingViewState]] */
   public abstract isDrawingView(): this is DrawingViewState;
+  /** Returns true if this ViewState is-a [[SheetViewState]] */
+  public isSheetView(): this is SheetViewState { return false; }
   /** Returns true if [[ViewTool]]s are allowed to operate in three dimensions on this view. */
   public abstract allow3dManipulations(): boolean;
   /** @internal */

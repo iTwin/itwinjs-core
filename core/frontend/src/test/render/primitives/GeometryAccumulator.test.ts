@@ -25,7 +25,7 @@ describe("GeometryAccumulator tests", () => {
   canvas.width = canvas.height = 1000;
   document.body.appendChild(canvas);
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  before(async () => {
     await IModelApp.startup();
     iModel = createBlankConnection();
     spatialView = SpatialViewState.createBlank(iModel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
