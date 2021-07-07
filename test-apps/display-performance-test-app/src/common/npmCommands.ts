@@ -12,10 +12,12 @@ let args = "";
 let browser = "";
 for (let i = 2; i < process.argv.length; i++) {
   const curArg = process.argv[i];
+  console.log(`curArg: ${curArg}`); // eslint-disable-line
   args += `${curArg} `;
   if (curArg === "chrome" || curArg === "edge" || curArg === "firefox" || curArg === "safari")
     browser = curArg;
 }
+console.log(`browser: ${browser}`); // eslint-disable-line
 execSync(`npm run start:web ${args}`, { stdio: [0, 1, 2] });
 
 switch (browser) {

@@ -30,6 +30,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     }
     let argOutputPath: string | undefined;
     process.argv.forEach((arg, index) => {
+      console.log(`args ${  index  }: ${  arg}`); // eslint-disable-line
       if (index >= 2 && arg !== "chrome" && arg !== "edge" && arg !== "firefox" && arg !== "safari" && arg !== "headless" && arg !== "no_debug" && arg.split(".").pop() !== "json") {
         while (arg.endsWith("\\") || arg.endsWith("\/"))
           arg = arg.slice(0, -1);
@@ -169,6 +170,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     // Browser only
     if (DisplayPerfRpcInterface.webServer) DisplayPerfRpcInterface.webServer.close();
     if (DisplayPerfRpcInterface.backendServer) DisplayPerfRpcInterface.backendServer.close();
+    if (DisplayPerfRpcInterface.chrome) console.log(`CHROME INTERFACE SHOULD BE KILLED`); // eslint-disable-line
     if (DisplayPerfRpcInterface.chrome) await DisplayPerfRpcInterface.chrome.kill();
   }
 

@@ -52,7 +52,7 @@ function startWebServer() {
   const chromeFlags: Array<string> = [];
 
   process.argv.forEach((arg) => {
-    console.log("arg: " + arg);
+    console.log(`arg: ${  arg}`);
     if (arg.split(".").pop() === "json")
       DisplayPerfRpcInterface.jsonFilePath = arg;
     else if (arg === "chrome" || arg === "edge" || arg === "firefox" || arg === "safari")
@@ -100,7 +100,7 @@ function startWebServer() {
   // ---------------------------------------------
   // Start the browser, if given a specific one
   // ---------------------------------------------
-  console.log("browser: " + browser);
+  console.log(`browser: ${  browser}`);
   switch (browser) {
     case "chrome":
       console.log("CHROME");
