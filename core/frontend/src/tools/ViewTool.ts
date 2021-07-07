@@ -377,7 +377,7 @@ export abstract class ViewManip extends ViewTool {
   /** @internal */
   public pickDepthPoint(ev: BeButtonEvent, isPreview: boolean = false): Point3d | undefined {
     if (!isPreview && ev.viewport && undefined !== this.getDepthPointGeometryId())
-      ev.viewport.setFlashed(undefined);
+      ev.viewport.flashedId = undefined;
 
     this.clearDepthPoint();
     if (isPreview && this.inDynamicUpdate)
@@ -521,7 +521,8 @@ export abstract class ViewManip extends ViewTool {
     if (ev.viewport && (showDepthChanged || prevSourceId)) {
       const currSourceId = this.getDepthPointGeometryId();
       if (currSourceId !== prevSourceId)
-        ev.viewport.setFlashed(currSourceId);
+        ev.viewport.flashedId = currSourceId;
+
       ev.viewport.invalidateDecorations();
     }
   }
