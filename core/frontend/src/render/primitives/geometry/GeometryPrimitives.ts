@@ -8,7 +8,7 @@
 
 import { assert } from "@bentley/bentleyjs-core";
 import {
-  Angle, CurveChain, IndexedPolyface, Loop, Path, Point3d, PolyfaceBuilder, Range3d, SolidPrimitive, StrokeOptions, SweepContour, Transform,
+  CurveChain, IndexedPolyface, Loop, Path, Point3d, PolyfaceBuilder, PolyfaceQuery, Range3d, SolidPrimitive, StrokeOptions, SweepContour, Transform,
 } from "@bentley/geometry-core";
 import { DisplayParams } from "../DisplayParams";
 import { PolyfacePrimitive, PolyfacePrimitiveList } from "../Polyface";
@@ -238,7 +238,7 @@ export class PrimitivePolyfaceGeometry extends Geometry {
       if (this.polyface.data.normalIndex)
         this.polyface.data.normalIndex = [];
     } else if (!this.polyface.data.normal || 0 === this.polyface.data.normal.length) {
-      this.polyface.buildNormalsFast(Angle.degreesToRadians(45), 5);
+      PolyfaceQuery.buildAverageNormals(this.polyface);
     }
 
     assert(this.transform.isIdentity);

@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/geometry-core",
-      "comment": "Add IndexedPolyface.buildNormalsFast to produce normals.",
+      "comment": "",
       "type": "none"
     }
   ],
