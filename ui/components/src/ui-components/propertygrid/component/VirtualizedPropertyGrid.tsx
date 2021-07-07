@@ -500,10 +500,6 @@ const FlatGridItemNode = React.memo(
               />
             </FlatItemNestedBorderWrapper>
           );
-        /* istanbul ignore next */
-        default:
-          const unhandledType = (node as any).type;
-          throw new Error(`Unhandled item type: ${unhandledType}`);
       }
     }
 
