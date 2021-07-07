@@ -40,11 +40,21 @@ public;CategoryOwnsSubCategories
 public;CategorySelector 
 internal;ChangedElementsDb 
 internal;ChangesetArg 
+<<<<<<< HEAD
 internal;ChangesetIndexArg 
+=======
+internal;ChangesetFileProps 
+internal;ChangesetId = string
+beta;ChangesetIndex = number
+internal;ChangesetIndexArg 
+internal;ChangesetIndexOrId =
+internal;ChangesetProps
+beta;ChangesetRange
+>>>>>>> origin/imodel02
 internal;ChangesetRangeArg 
 beta;ChangeSummary
-beta;ChangeSummaryExtractContext
 beta;ChangeSummaryExtractOptions
+deprecated;ChangeSummaryExtractOptions
 beta;ChangeSummaryManager
 public;ChannelRootAspect 
 internal;CheckPointArg = DownloadRequest
@@ -68,6 +78,7 @@ internal;StateCache
 alpha;ConcurrencyControlChannel = ConcurrencyControl.Channel
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
+beta;CreateChangeSummaryArgs
 public;DefinitionContainer 
 public;class DefinitionElement 
 public;DefinitionGroup 

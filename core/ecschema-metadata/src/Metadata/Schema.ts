@@ -355,6 +355,21 @@ export class Schema implements CustomAttributeContainerProps {
   protected setContext(context: SchemaContext): void {
     this._context = context;
   }
+
+  /**
+   * Sets the version of the SchemaKey identifying the schema.
+   * @param readVersion The read version of the schema. If undefined, the value from the existing SchemaKey will be used.
+   * @param writeVersion The write version of the schema. If undefined, the value from the existing SchemaKey will be used.
+   * @param minorVersion The minor version of the schema. If undefined, the value from the existing SchemaKey will be used.
+   */
+  public setVersion(readVersion?: number, writeVersion?: number, minorVersion?: number): void {
+    if (!this._schemaKey)
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaKey, `The schema '${this.name}' has an invalid SchemaKey.`);
+
+    const newVersion = new ECVersion(readVersion ?? this._schemaKey.readVersion, writeVersion ?? this._schemaKey.writeVersion, minorVersion ?? this._schemaKey.minorVersion);
+    this._schemaKey = new SchemaKey(this._schemaKey.name, newVersion);
+  }
+
   /**
    * Gets an item from within this schema. To get by full name use lookupItem instead.
    * @param key the local (unqualified) name, lookup is case-insensitive

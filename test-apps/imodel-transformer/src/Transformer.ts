@@ -6,14 +6,13 @@
 import { assert, ClientRequestContext, DbResult, Id64, Id64Array, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
 import {
   Category, CategorySelector, DisplayStyle, DisplayStyle3d, ECSqlStatement, Element, ElementRefersToElements, GeometricModel3d, GeometryPart,
-  IModelDb, IModelTransformer, IModelTransformOptions, InformationPartitionElement, ModelSelector, PhysicalModel, PhysicalPartition,
-  Relationship, SpatialCategory, SpatialViewDefinition, SubCategory, ViewDefinition,
+  IModelDb, IModelTransformer, IModelTransformOptions, ModelSelector, PhysicalModel, PhysicalPartition, Relationship, SpatialCategory,
+  SpatialViewDefinition, SubCategory, ViewDefinition,
 } from "@bentley/imodeljs-backend";
 import { ElementProps, IModel } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
-export const loggerCategory = "imodel-transformer-Transformer";
-export const progressLoggerCategory = "Progress";
+export const loggerCategory = "imodel-transformer";
 
 export interface TransformerOptions extends IModelTransformOptions {
   simplifyElementGeometry?: boolean;
@@ -25,6 +24,7 @@ export interface TransformerOptions extends IModelTransformOptions {
 }
 
 export class Transformer extends IModelTransformer {
+  private _authorizedClientRequestContext?: AuthorizedClientRequestContext;
   private _numSourceElements = 0;
   private _numSourceElementsProcessed = 0;
   private _numSourceRelationships = 0;
@@ -38,29 +38,31 @@ export class Transformer extends IModelTransformer {
     const transformer = new Transformer(sourceDb, targetDb, options);
     transformer.initialize(options);
     await transformer.processSchemas(requestContext);
-    targetDb.saveChanges("processSchemas");
+    await transformer.saveChanges("processSchemas");
     await transformer.processAll();
-    targetDb.saveChanges("processAll");
+    await transformer.saveChanges("processAll");
     if (options?.deleteUnusedGeometryParts) {
       transformer.deleteUnusedGeometryParts();
-      targetDb.saveChanges("deleteUnusedGeometryParts");
+      await transformer.saveChanges("deleteUnusedGeometryParts");
     }
     transformer.dispose();
     transformer.logElapsedTime();
   }
 
-  public static async transformChanges(requestContext: AuthorizedClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, sourceStartChangeSetId: string, options?: TransformerOptions): Promise<void> {
+  public static async transformChanges(requestContext: AuthorizedClientRequestContext, sourceDb: IModelDb, targetDb: IModelDb, sourceStartChangesetId: string, options?: TransformerOptions): Promise<void> {
     if ("" === sourceDb.changeset.id) {
-      assert("" === sourceStartChangeSetId);
+      assert("" === sourceStartChangesetId);
       return this.transformAll(requestContext, sourceDb, targetDb, options);
     }
     const transformer = new Transformer(sourceDb, targetDb, options);
     transformer.initialize(options);
-    await transformer.processChanges(requestContext, sourceStartChangeSetId);
-    targetDb.saveChanges("processChanges");
+    await transformer.processSchemas(requestContext);
+    await transformer.saveChanges("processSchemas");
+    await transformer.processChanges(requestContext, sourceStartChangesetId);
+    await transformer.saveChanges("processChanges");
     if (options?.deleteUnusedGeometryParts) {
       transformer.deleteUnusedGeometryParts();
-      targetDb.saveChanges("deleteUnusedGeometryParts");
+      await transformer.saveChanges("deleteUnusedGeometryParts");
     }
     transformer.dispose();
     transformer.logElapsedTime();
@@ -71,8 +73,8 @@ export class Transformer extends IModelTransformer {
   }
 
   private initialize(options?: TransformerOptions): void {
-    Logger.logInfo(progressLoggerCategory, `sourceDb=${this.sourceDb.pathName}`);
-    Logger.logInfo(progressLoggerCategory, `targetDb=${this.targetDb.pathName}`);
+    Logger.logInfo(loggerCategory, `sourceDb=${this.sourceDb.pathName}`);
+    Logger.logInfo(loggerCategory, `targetDb=${this.targetDb.pathName}`);
     this.logChangeTrackingMemoryUsed();
 
     // customize transformer using the specified options
@@ -119,13 +121,13 @@ export class Transformer extends IModelTransformer {
     this._numSourceElements = this.sourceDb.withPreparedStatement(`SELECT COUNT(*) FROM ${Element.classFullName}`, (statement: ECSqlStatement): number => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
     });
-    Logger.logInfo(progressLoggerCategory, `numSourceElements=${this._numSourceElements}`);
+    Logger.logInfo(loggerCategory, `numSourceElements=${this._numSourceElements}`);
 
     // query for and log the number of source Relationships that will be processed
     this._numSourceRelationships = this.sourceDb.withPreparedStatement(`SELECT COUNT(*) FROM ${ElementRefersToElements.classFullName}`, (statement: ECSqlStatement): number => {
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getInteger() : 0;
     });
-    Logger.logInfo(progressLoggerCategory, `numSourceRelationships=${this._numSourceRelationships}`);
+    Logger.logInfo(loggerCategory, `numSourceRelationships=${this._numSourceRelationships}`);
   }
 
   /** Initialize IModelTransformer to exclude SubCategory Elements and geometry entries in a SubCategory from the target iModel.
@@ -207,9 +209,6 @@ export class Transformer extends IModelTransformer {
    * @note Override of IModelExportHandler.shouldExportElement
    */
   protected shouldExportElement(sourceElement: Element): boolean {
-    if (sourceElement instanceof InformationPartitionElement) {
-      Logger.logInfo(progressLoggerCategory, `${sourceElement.classFullName} "${sourceElement.getDisplayLabel()}"`);
-    }
     if (this._numSourceElementsProcessed < this._numSourceElements) { // with deferred element processing, the number processed can be more than the total
       ++this._numSourceElementsProcessed;
     }
@@ -237,26 +236,45 @@ export class Transformer extends IModelTransformer {
 
   protected async onProgress(): Promise<void> {
     if (this._numSourceElementsProcessed > 0) {
-      Logger.logInfo(progressLoggerCategory, `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements} elements`);
+      if (this._numSourceElementsProcessed >= this._numSourceElements) {
+        Logger.logInfo(loggerCategory, `Processed all ${this._numSourceElements} elements`);
+      } else {
+        Logger.logInfo(loggerCategory, `Processed ${this._numSourceElementsProcessed} of ${this._numSourceElements} elements`);
+      }
     }
     if (this._numSourceRelationshipsProcessed > 0) {
-      Logger.logInfo(progressLoggerCategory, `Processed ${this._numSourceRelationshipsProcessed} of ${this._numSourceRelationships} relationships`);
+      if (this._numSourceRelationshipsProcessed >= this._numSourceRelationships) {
+        Logger.logInfo(loggerCategory, `Processed all ${this._numSourceRelationships} relationships`);
+      } else {
+        Logger.logInfo(loggerCategory, `Processed ${this._numSourceRelationshipsProcessed} of ${this._numSourceRelationships} relationships`);
+      }
     }
     this.logElapsedTime();
     this.logChangeTrackingMemoryUsed();
+    await this.saveChanges("onProgress");
     return super.onProgress();
+  }
+
+  private async saveChanges(description: string): Promise<void> {
+    if (this.targetDb.isBriefcaseDb()) {
+      assert(this._authorizedClientRequestContext !== undefined);
+      await this.targetDb.concurrencyControl.request(this._authorizedClientRequestContext);
+      this.targetDb.saveChanges(description);
+    } else {
+      this.targetDb.saveChanges(description);
+    }
   }
 
   private logElapsedTime(): void {
     const elapsedTimeMinutes: number = (new Date().valueOf() - this._startTime.valueOf()) / 60000.0;
-    Logger.logInfo(progressLoggerCategory, `Elapsed time: ${Math.round(100 * elapsedTimeMinutes) / 100.0} minutes`);
+    Logger.logInfo(loggerCategory, `Elapsed time: ${Math.round(100 * elapsedTimeMinutes) / 100.0} minutes`);
   }
 
   public logChangeTrackingMemoryUsed(): void {
     if (this.targetDb.isBriefcase) {
       const bytesUsed = this.targetDb.nativeDb.getChangeTrackingMemoryUsed(); // can't call this internal method unless targetDb has change tracking enabled
       const mbUsed = Math.round((bytesUsed * 100) / (1024 * 1024)) / 100;
-      Logger.logInfo(progressLoggerCategory, `Change Tracking Memory Used: ${mbUsed} MB`);
+      Logger.logInfo(loggerCategory, `Change Tracking Memory Used: ${mbUsed} MB`);
     }
   }
 

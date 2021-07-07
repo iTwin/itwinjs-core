@@ -8,14 +8,15 @@ import * as Yargs from "yargs";
 import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { Version } from "@bentley/imodelhub-client";
-import { BackendLoggerCategory, BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb } from "@bentley/imodeljs-backend";
-import { BriefcaseIdValue, ChangesetProps, IModelVersion } from "@bentley/imodeljs-common";
+import {
+  BackendLoggerCategory, BackendRequestContext, ChangesetId, ChangesetIndex, ChangesetProps, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
+  StandaloneDb,
+} from "@bentley/imodeljs-backend";
+import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ElementUtils } from "./ElementUtils";
 import { IModelHubUtils } from "./IModelHubUtils";
-import { Transformer, TransformerOptions } from "./Transformer";
-
-const loggerCategory = "imodel-transformer";
+import { loggerCategory, Transformer, TransformerOptions } from "./Transformer";
 
 interface CommandLineArgs {
   hub?: string;
@@ -23,14 +24,16 @@ interface CommandLineArgs {
   sourceContextId?: GuidString;
   sourceIModelId?: GuidString;
   sourceIModelName?: string;
-  sourceStartChangeSetId?: string;
-  sourceEndChangeSetId?: string;
+  sourceStartChangesetId?: ChangesetId;
+  sourceStartChangesetIndex?: ChangesetIndex;
+  sourceEndChangesetId?: ChangesetId;
+  sourceEndChangesetIndex?: ChangesetIndex;
   targetFile: string;
   targetContextId?: GuidString;
   targetIModelId?: GuidString;
   targetIModelName?: string;
   clean?: boolean;
-  logChangeSets: boolean;
+  logChangesets: boolean;
   logNamedVersions: boolean;
   logProvenanceScopes: boolean;
   logTransformer: boolean;
@@ -48,6 +51,7 @@ interface CommandLineArgs {
 void (async () => {
   try {
     Yargs.usage("Transform the specified source iModel into a new target iModel");
+    Yargs.strict();
 
     // iModelHub environment options
     Yargs.option("hub", { desc: "The iModelHub environment: prod | qa | dev", type: "string", default: "prod" });
@@ -59,8 +63,10 @@ void (async () => {
     Yargs.option("sourceContextId", { desc: "The iModelHub context containing the source iModel", type: "string" });
     Yargs.option("sourceIModelId", { desc: "The guid of the source iModel", type: "string", default: undefined });
     Yargs.option("sourceIModelName", { desc: "The name of the source iModel", type: "string", default: undefined });
-    Yargs.option("sourceStartChangeSetId", { desc: "The starting changeSet of the source iModel to transform", type: "string", default: undefined });
-    Yargs.option("sourceEndChangeSetId", { desc: "The ending changeSet of the source iModel to transform", type: "string", default: undefined });
+    Yargs.option("sourceStartChangesetId", { desc: "The starting changeset of the source iModel to transform", type: "string", default: undefined });
+    Yargs.option("sourceStartChangesetIndex", { desc: "The starting changeset of the source iModel to transform", type: "number", default: undefined });
+    Yargs.option("sourceEndChangesetId", { desc: "The ending changeset of the source iModel to transform", type: "string", default: undefined });
+    Yargs.option("sourceEndChangesetIndex", { desc: "The ending changeset of the source iModel to transform", type: "number", default: undefined });
 
     // used if the target iModel is a snapshot
     Yargs.option("targetFile", { desc: "The full path to the target iModel", type: "string" });
@@ -74,7 +80,7 @@ void (async () => {
     Yargs.option("clean", { desc: "If true, refetch briefcases and clean/delete the target before beginning", type: "boolean", default: undefined });
 
     // print/debug options
-    Yargs.option("logChangeSets", { desc: "If true, log the list of changeSets", type: "boolean", default: false });
+    Yargs.option("logChangesets", { desc: "If true, log the list of changesets", type: "boolean", default: false });
     Yargs.option("logNamedVersions", { desc: "If true, log the list of named versions", type: "boolean", default: false });
     Yargs.option("logProvenanceScopes", { desc: "If true, log the provenance scopes in the source and target iModels", type: "boolean", default: false });
     Yargs.option("logTransformer", { desc: "If true, turn on verbose logging for iModel transformation", type: "boolean", default: false });
@@ -124,30 +130,45 @@ void (async () => {
       assert(undefined !== args.sourceIModelId);
       const sourceContextId = Guid.normalize(args.sourceContextId);
       const sourceIModelId = Guid.normalize(args.sourceIModelId);
-      const sourceEndVersion = args.sourceEndChangeSetId ? IModelVersion.asOfChangeSet(args.sourceEndChangeSetId) : IModelVersion.latest();
+      let sourceEndVersion = IModelVersion.latest();
       const sourceContext = await contextRegistry.getProject(requestContext, {
         $filter: `$id+eq+'${sourceContextId}'`,
       });
       assert(undefined !== sourceContext);
       Logger.logInfo(loggerCategory, `sourceContextId=${sourceContextId}, name=${sourceContext.name}`);
       Logger.logInfo(loggerCategory, `sourceIModelId=${sourceIModelId}`);
-      if (args.sourceStartChangeSetId) {
+      if (args.sourceStartChangesetIndex || args.sourceStartChangesetId) {
+        assert(!(args.sourceStartChangesetIndex && args.sourceStartChangesetId), "Pick single way to specify starting changeset");
         processChanges = true;
-        Logger.logInfo(loggerCategory, `sourceStartChangeSetId=${args.sourceStartChangeSetId}`);
+        if (args.sourceStartChangesetIndex) {
+          args.sourceStartChangesetId = await IModelHubUtils.queryChangesetId(requestContext, sourceIModelId, args.sourceStartChangesetIndex);
+        } else {
+          args.sourceStartChangesetIndex = await IModelHubUtils.queryChangesetIndex(requestContext, sourceIModelId, args.sourceStartChangesetId!);
+        }
+        Logger.logInfo(loggerCategory, `sourceStartChangesetIndex=${args.sourceStartChangesetIndex}`);
+        Logger.logInfo(loggerCategory, `sourceStartChangesetId=${args.sourceStartChangesetId}`);
       }
-      if (args.sourceEndChangeSetId) {
-        Logger.logInfo(loggerCategory, `sourceEndChangeSetId=${args.sourceEndChangeSetId}`);
+      if (args.sourceEndChangesetIndex || args.sourceEndChangesetId) {
+        assert(!(args.sourceEndChangesetIndex && args.sourceEndChangesetId), "Pick single way to specify ending changeset");
+        if (args.sourceEndChangesetIndex) {
+          args.sourceEndChangesetId = await IModelHubUtils.queryChangesetId(requestContext, sourceIModelId, args.sourceEndChangesetIndex);
+        } else {
+          args.sourceEndChangesetIndex = await IModelHubUtils.queryChangesetIndex(requestContext, sourceIModelId, args.sourceEndChangesetId!);
+        }
+        sourceEndVersion = IModelVersion.asOfChangeSet(args.sourceEndChangesetId!);
+        Logger.logInfo(loggerCategory, `sourceEndChangesetIndex=${args.sourceEndChangesetIndex}`);
+        Logger.logInfo(loggerCategory, `sourceEndChangesetId=${args.sourceEndChangesetId}`);
       }
 
-      if (args.logChangeSets) {
-        await IModelHubUtils.forEachChangeSet(requestContext, sourceIModelId, (changeSet: ChangesetProps) => {
-          Logger.logInfo(loggerCategory, `sourceChangeSet: id="${changeSet.id}", description="${changeSet.description}"}`);
+      if (args.logChangesets) {
+        await IModelHubUtils.forEachChangeset(requestContext, sourceIModelId, (changeset: ChangesetProps) => {
+          Logger.logInfo(loggerCategory, `sourceChangeset: index=${changeset.index}, id="${changeset.id}", description="${changeset.description}"}`);
         });
       }
 
       if (args.logNamedVersions) {
         await IModelHubUtils.forEachNamedVersion(requestContext, sourceIModelId, (namedVersion: Version) => {
-          Logger.logInfo(loggerCategory, `sourceNamedVersion: id="${namedVersion.id}", changeSetId="${namedVersion.changeSetId}", name="${namedVersion.name}"`);
+          Logger.logInfo(loggerCategory, `sourceNamedVersion: id="${namedVersion.id}", changesetId="${namedVersion.changeSetId}", name="${namedVersion.name}"`);
         });
       }
 
@@ -194,15 +215,15 @@ void (async () => {
       Logger.logInfo(loggerCategory, `targetContextId=${targetContextId}`);
       Logger.logInfo(loggerCategory, `targetIModelId=${targetIModelId}`);
 
-      if (args.logChangeSets) {
-        await IModelHubUtils.forEachChangeSet(requestContext, targetIModelId, (changeSet: ChangesetProps) => {
-          Logger.logInfo(loggerCategory, `targetChangeSet: id="${changeSet.id}", description="${changeSet.description}"`);
+      if (args.logChangesets) {
+        await IModelHubUtils.forEachChangeset(requestContext, targetIModelId, (changeset: ChangesetProps) => {
+          Logger.logInfo(loggerCategory, `targetChangeset:  index="${changeset.index}", id="${changeset.id}", description="${changeset.description}"`);
         });
       }
 
       if (args.logNamedVersions) {
         await IModelHubUtils.forEachNamedVersion(requestContext, targetIModelId, (namedVersion: Version) => {
-          Logger.logInfo(loggerCategory, `targetNamedVersion: id="${namedVersion.id}", changeSetId="${namedVersion.changeSetId}", name="${namedVersion.name}"`);
+          Logger.logInfo(loggerCategory, `targetNamedVersion: id="${namedVersion.id}", changesetId="${namedVersion.changeSetId}", name="${namedVersion.name}"`);
         });
       }
 
@@ -212,16 +233,20 @@ void (async () => {
       });
     } else {
       assert(undefined !== args.targetFile);
-      // target is a local snapshot file
+      // target is a local standalone file
       const targetFile = args.targetFile ? path.normalize(args.targetFile) : "";
-      // clean target output file before continuing (regardless of args.clean value)
-      if (IModelJsFs.existsSync(targetFile)) {
-        IModelJsFs.removeSync(targetFile);
+      if (processChanges) {
+        targetDb = StandaloneDb.openFile(targetFile);
+      } else {
+        // clean target output file before continuing (regardless of args.clean value)
+        if (IModelJsFs.existsSync(targetFile)) {
+          IModelJsFs.removeSync(targetFile);
+        }
+        targetDb = StandaloneDb.createEmpty(targetFile, { // use StandaloneDb instead of SnapshotDb to enable processChanges testing
+          rootSubject: { name: `${sourceDb.rootSubject.name}-Transformed` },
+          ecefLocation: sourceDb.ecefLocation,
+        });
       }
-      targetDb = SnapshotDb.createEmpty(targetFile, {
-        rootSubject: { name: `${sourceDb.rootSubject.name}-Transformed` },
-        ecefLocation: sourceDb.ecefLocation,
-      });
     }
 
     if (args.logProvenanceScopes) {
@@ -247,8 +272,8 @@ void (async () => {
 
     if (processChanges) {
       assert(requestContext instanceof AuthorizedClientRequestContext);
-      assert(undefined !== args.sourceStartChangeSetId);
-      await Transformer.transformChanges(requestContext, sourceDb, targetDb, args.sourceStartChangeSetId, transformerOptions);
+      assert(undefined !== args.sourceStartChangesetId);
+      await Transformer.transformChanges(requestContext, sourceDb, targetDb, args.sourceStartChangesetId, transformerOptions);
     } else {
       await Transformer.transformAll(requestContext, sourceDb, targetDb, transformerOptions);
     }

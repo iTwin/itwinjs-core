@@ -134,6 +134,23 @@
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
+    {
+      "name": "EC Schema Editing Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/ecschema-editing",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
     { /* PARTIAL */
       "name": "[NODE] Certa Test Runner for Frontend Tests",
       "presentation": {
@@ -940,6 +957,7 @@
         "--sourceIModelId='73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a'", // ReadOnlyTest
         "--targetFile='d:/tmp/test-target.bim'",
         "--logTransformer",
+        "--logChangesets",
       ],
       "outFiles": [
         "${workspaceFolder}/test-apps/imodel-transformer/lib/**/*.js",

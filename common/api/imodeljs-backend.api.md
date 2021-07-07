@@ -677,16 +677,7 @@ export interface ChangeSummary {
     id: Id64String;
 }
 
-// @beta (undocumented)
-export class ChangeSummaryExtractContext {
-    constructor(iModel: IModelDb);
-    // (undocumented)
-    readonly iModel: IModelDb;
-    // (undocumented)
-    get iModelId(): GuidString;
-}
-
-// @beta
+// @beta @deprecated
 export interface ChangeSummaryExtractOptions {
     currentVersionOnly?: boolean;
     startVersion?: IModelVersion;
@@ -703,10 +694,10 @@ export class ChangeSummaryManager {
             className: string;
         };
     }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string;
-    // @deprecated
+    static createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]>;
+    static createChangeSummary(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb): Promise<Id64String>;
     static detachChangeCache(iModel: IModelDb): void;
-    // @internal (undocumented)
-    static downloadChangesets(requestContext: AuthorizedClientRequestContext, ctx: ChangeSummaryExtractContext, firstId: ChangesetId, endId: ChangesetId): Promise<ChangesetFileProps[]>;
+    // @deprecated
     static extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
     static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[];
     static isChangeCacheAttached(iModel: IModelDb): boolean;
@@ -1136,6 +1127,14 @@ export interface CrashReportingConfigNameValuePair {
     name: string;
     // (undocumented)
     value: string;
+}
+
+// @beta
+export interface CreateChangeSummaryArgs {
+    contextId: GuidString;
+    iModelId: GuidString;
+    range: ChangesetRange;
+    requestContext?: AuthorizedClientRequestContext;
 }
 
 // @public
@@ -2733,7 +2732,7 @@ export class IModelExporter {
     excludeElementsInCategory(categoryId: Id64String): void;
     excludeRelationshipClass(classFullName: string): void;
     exportAll(): Promise<void>;
-    exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void>;
+    exportChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void>;
     exportChildElements(elementId: Id64String): Promise<void>;
     exportCodeSpecById(codeSpecId: Id64String): Promise<void>;
     exportCodeSpecByName(codeSpecName: string): Promise<void>;
@@ -3121,7 +3120,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
     protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps;
     processAll(): Promise<void>;
-    processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void>;
+    processChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void>;
     processChildElements(sourceElementId: Id64String): Promise<void>;
     processCodeSpec(codeSpecName: string): Promise<void>;
     processCodeSpecs(): Promise<void>;

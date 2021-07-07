@@ -463,6 +463,8 @@ export interface DEPRECATED_RelatedPropertiesSpecification {
     relationshipMeaning?: RelationshipMeaning;
     relationships?: MultiSchemaClassesSpecification | MultiSchemaClassesSpecification[];
     requiredDirection?: RelationshipDirection;
+    // @beta
+    skipIfDuplicate?: boolean;
 }
 
 // @public
@@ -2383,6 +2385,8 @@ export interface RelatedPropertiesSpecificationNew {
     properties?: Array<string | PropertySpecification> | RelatedPropertiesSpecialValues;
     propertiesSource: RelationshipPathSpecification;
     relationshipMeaning?: RelationshipMeaning;
+    // @beta
+    skipIfDuplicate?: boolean;
 }
 
 // @public

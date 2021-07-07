@@ -1,0 +1,21 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "`TreeRenderer`: Add ability to explicitly specify component's width and height.",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "`VirtualizedPropertyGrid`: Add ability to explicitly specify component's width and height.",
+      "type": "none"
+    },
+    {
+      "packageName": "@bentley/ui-components",
+      "comment": "`ControlledTree`: Accept and forward size props to `TreeRenderer`.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-components",
+  "email": "70327485+roluk@users.noreply.github.com"
+}
