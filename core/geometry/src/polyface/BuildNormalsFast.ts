@@ -39,9 +39,9 @@ class QPoint3d {
 
   public compareTo(rhs: QPoint3d): number {
     let cmp = compare(this.x, rhs.x);
-    if (cmp) {
+    if (!cmp) {
       cmp = compare(this.y, rhs.y);
-      if (cmp)
+      if (!cmp)
         cmp = compare(this.z, rhs.z);
     }
 

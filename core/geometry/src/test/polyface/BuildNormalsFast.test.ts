@@ -49,4 +49,12 @@ describe("IndexedPolyface.buildNormalsFast", () => {
     pts.reverse();
     expectNormals(createPolygon(pts), [[0, -1, 0]], [0, 0, 0, 0]);
   });
+
+  it("produces expected normals for triangle mesh", () => {
+    const builder = PolyfaceBuilder.create();
+    builder.addPolygon([new Point3d(0, 0, 0), new Point3d(1, 0, 0), new Point3d(1, 1, 0)]);
+    builder.addPolygon([new Point3d(1, 0, 0), new Point3d(1, 0, 1), new Point3d(1, 1, 0)]);
+    const polyface = builder.claimPolyface();
+    expectNormals(polyface, [[0, 0, 1], [-1, 0, 0]], [0, 0, 0, 1, 1, 1]);
+  });
 });
