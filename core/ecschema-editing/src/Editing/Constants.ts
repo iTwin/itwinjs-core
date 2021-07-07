@@ -6,7 +6,7 @@
  * @module Editing
  */
 
-import { ConstantProps, DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
+import { ConstantProps, DelayedPromiseWithProps, Phenomenon, SchemaItemKey, SchemaItemType, SchemaKey } from "@bentley/ecschema-metadata";
 import { SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableConstant } from "./Mutable/MutableConstant";
 

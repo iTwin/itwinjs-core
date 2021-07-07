@@ -30,7 +30,7 @@ export class ECClasses {
   public async createPrimitiveProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {
-      mutableClass = await this.getClass(classKey);
+      mutableClass = await this.getClass(classKey, name);
     } catch (e) {
       return { errorMessage: e.message };
     }
@@ -42,7 +42,7 @@ export class ECClasses {
   public async createPrimitivePropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitivePropertyProps): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {
-      mutableClass = await this.getClass(classKey);
+      mutableClass = await this.getClass(classKey, name);
     } catch (e) {
       return { errorMessage: e.message };
     }
@@ -55,7 +55,7 @@ export class ECClasses {
   public async createEnumerationProperty(classKey: SchemaItemKey, name: string, type: Enumeration): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {
-      mutableClass = await this.getClass(classKey);
+      mutableClass = await this.getClass(classKey, name);
     } catch (e) {
       return { errorMessage: e.message };
     }
@@ -69,7 +69,7 @@ export class ECClasses {
   public async createEnumerationPropertyFromProps(classKey: SchemaItemKey, name: string, type: Enumeration, enumProps: EnumerationPropertyProps): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {
-      mutableClass = await this.getClass(classKey);
+      mutableClass = await this.getClass(classKey, name);
     } catch (e) {
       return { errorMessage: e.message };
     }
@@ -81,7 +81,7 @@ export class ECClasses {
   public async createPrimitiveArrayProperty(classKey: SchemaItemKey, name: string, type: PrimitiveType): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {
-      mutableClass = await this.getClass(classKey);
+      mutableClass = await this.getClass(classKey, name);
     } catch (e) {
       return { errorMessage: e.message };
     }
@@ -93,7 +93,7 @@ export class ECClasses {
   public async createPrimitiveArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: PrimitiveType, primitiveProps: PrimitiveArrayPropertyProps): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {
-      mutableClass = await this.getClass(classKey);
+      mutableClass = await this.getClass(classKey, name);
     } catch (e) {
       return { errorMessage: e.message };
     }
@@ -106,7 +106,7 @@ export class ECClasses {
   public async createStructProperty(classKey: SchemaItemKey, name: string, type: StructClass): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {
-      mutableClass = await this.getClass(classKey);
+      mutableClass = await this.getClass(classKey, name);
     } catch (e) {
       return { errorMessage: e.message };
     }
@@ -118,7 +118,7 @@ export class ECClasses {
   public async createStructPropertyFromProps(classKey: SchemaItemKey, name: string, type: StructClass, structProps: StructPropertyProps): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {
-      mutableClass = await this.getClass(classKey);
+      mutableClass = await this.getClass(classKey, name);
     } catch (e) {
       return { errorMessage: e.message };
     }
@@ -131,7 +131,7 @@ export class ECClasses {
   public async createStructArrayProperty(classKey: SchemaItemKey, name: string, type: StructClass): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {
-      mutableClass = await this.getClass(classKey);
+      mutableClass = await this.getClass(classKey, name);
     } catch (e) {
       return { errorMessage: e.message };
     }
@@ -143,7 +143,7 @@ export class ECClasses {
   public async createStructArrayPropertyFromProps(classKey: SchemaItemKey, name: string, type: StructClass, structProps: StructArrayPropertyProps): Promise<PropertyEditResults> {
     let mutableClass: MutableClass;
     try {
-      mutableClass = await this.getClass(classKey);
+      mutableClass = await this.getClass(classKey, name);
     } catch (e) {
       return { errorMessage: e.message };
     }
@@ -153,12 +153,12 @@ export class ECClasses {
     return { itemKey: classKey, propertyName: name };
   }
 
-  private async getClass(classKey: SchemaItemKey): Promise<MutableClass> {
+  private async getClass(classKey: SchemaItemKey, name: string): Promise<MutableClass> {
     const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined)
       throw new Error(`Failed to create property ${name} because the schema ${classKey.schemaKey.toString(true)} could not be found`);
 
-      const ecClass = await schema.getItem<ECClass>(classKey.name);
+    const ecClass = await schema.getItem<ECClass>(classKey.name);
     if (ecClass === undefined)
       throw new Error(`Failed to create property ${name} because the class ${classKey.name} was not found in ${classKey.schemaKey.toString(true)}`);
 
@@ -170,7 +170,7 @@ export class ECClasses {
       case SchemaItemType.RelationshipClass:
         break;
       default:
-        throw new Error(`Schema item type not supported` );
+        throw new Error(`Schema item type not supported`);
     }
 
     return ecClass as MutableClass;
