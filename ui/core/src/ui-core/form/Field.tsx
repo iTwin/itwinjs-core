@@ -46,7 +46,7 @@ export class Field extends React.Component<FieldProps> {
     return selectOptions;
   };
 
-  public render() {
+  public override render() {
     const selectOptions = this._generateSelectOptions(this.props.options);
 
     return (

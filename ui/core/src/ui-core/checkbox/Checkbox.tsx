@@ -76,7 +76,7 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {  // eslint-di
       this._checkboxInput.current.indeterminate = indeterminate;
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     if (this.props.indeterminate !== undefined)
       this._setIndeterminate(this.props.indeterminate);
 
@@ -85,12 +85,12 @@ export class Checkbox extends React.PureComponent<CheckboxProps> {  // eslint-di
   }
 
   /** @internal */
-  public componentDidUpdate(_prevProps: CheckboxProps) {  // eslint-disable-line deprecation/deprecation
+  public override componentDidUpdate(_prevProps: CheckboxProps) {  // eslint-disable-line deprecation/deprecation
     if (this.props.indeterminate !== undefined)
       this._setIndeterminate(this.props.indeterminate);
   }
 
-  public render() {
+  public override render() {
     const { status, disabled, label, indeterminate, className, inputClassName, inputStyle, labelClassName, labelStyle, // eslint-disable-line @typescript-eslint/no-unused-vars
       onClick, onBlur, setFocus, inputRef, ...inputProps } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const checkBoxClass = classnames("core-checkbox",

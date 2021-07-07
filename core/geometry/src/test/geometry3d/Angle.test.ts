@@ -22,7 +22,6 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 // allow _radians and _degrees as property names
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-console */
-/* eslint-disable use-isnan */
 class AngleTests {
   constructor(public noisy: boolean = false) { }
   public testAlmostEqual(ck: Checker) {
@@ -902,9 +901,9 @@ describe("MiscAngles", () => {
   it("Angle.fromJSON", () => {
     const ck = new Checker();
     // verify that numeric tests with NaN return false ...
-    ck.testFalse(Number.NaN > 0, "NaN > 0");
-    ck.testFalse(Number.NaN < 0, "NaN < 0");
-    ck.testFalse(Number.NaN === 0, "NaN === 0");
+    ck.testFalse(Number.NaN > 0, "NaN > 0"); // eslint-disable-line use-isnan
+    ck.testFalse(Number.NaN < 0, "NaN < 0"); // eslint-disable-line use-isnan
+    ck.testFalse(Number.NaN === 0, "NaN === 0"); // eslint-disable-line use-isnan
     ck.testExactNumber(0, Angle.adjustDegrees0To360(Number.NaN));
     ck.testExactNumber(0, Angle.adjustDegreesSigned180(Number.NaN));
     ck.testExactNumber(0, Angle.adjustRadians0To2Pi(Number.NaN));

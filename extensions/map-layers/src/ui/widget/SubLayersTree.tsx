@@ -176,7 +176,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
     this._removeModelChangedListener = this.modelSource.onModelChanged.addListener(this.onModelChanged);
   }
 
-  public dispose() {
+  public override dispose() {
     this._removeModelChangedListener();
     super.dispose();
   }
@@ -272,7 +272,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
   }
 
   /** Changes nodes checkboxes states until event is handled or handler is disposed */
-  public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs) {
+  public override onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs) {
     // call base checkbox handling
     const baseHandling = super.onCheckboxStateChanged({ stateChanges });
 

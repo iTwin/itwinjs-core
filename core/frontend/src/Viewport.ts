@@ -742,13 +742,13 @@ export abstract class Viewport implements IDisposable {
   public get backgroundMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundMap; }
 
   /** @internal */
-  public get overlayMap(): MapTileTreeReference  | undefined { return this._mapTiledGraphicsProvider?.overlayMap; }
+  public get overlayMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.overlayMap; }
 
   /** @internal */
   public get backgroundDrapeMap(): MapTileTreeReference | undefined { return this._mapTiledGraphicsProvider?.backgroundDrapeMap; }
 
   /** @internal */
-  public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined  { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
+  public getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined { return this._mapTiledGraphicsProvider?.getMapLayerImageryProvider(index, isOverlay); }
 
   /** Returns true if this Viewport is currently displaying the model with the specified Id. */
   public viewsModel(modelId: Id64String): boolean { return this.view.viewsModel(modelId); }
@@ -2677,13 +2677,13 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  public dispose(): void {
+  public override dispose(): void {
     super.dispose();
     this._decorationCache.clear();
   }
 
   /** @internal */
-  public invalidateScene(): void {
+  public override invalidateScene(): void {
     super.invalidateScene();
 
     // When the scene is invalidated, so are all cached decorations - they will be regenerated.
@@ -2974,7 +2974,7 @@ export class ScreenViewport extends Viewport {
   public get viewRect(): ViewRect { this._viewRange.init(0, 0, this.canvas.clientWidth, this.canvas.clientHeight); return this._viewRange; }
 
   /** @internal */
-  protected addDecorations(decorations: Decorations): void {
+  protected override addDecorations(decorations: Decorations): void {
     // SEE: decorationDiv doc comment
     // eslint-disable-next-line deprecation/deprecation
     ScreenViewport.markAllChildrenForRemoval(this.decorationDiv);
@@ -3002,8 +3002,8 @@ export class ScreenViewport extends Viewport {
     this.canvas.style.cursor = cursor;
   }
 
-  /** @internal override */
-  public synchWithView(options?: ViewChangeOptions | boolean): void {
+  /** @internal */
+  public override synchWithView(options?: ViewChangeOptions | boolean): void {
     options = (undefined === options) ? {} :
       (typeof options !== "boolean") ? options : { noSaveInUndo: !options }; // for backwards compatibility, was "saveInUndo"
 
@@ -3016,7 +3016,7 @@ export class ScreenViewport extends Viewport {
   }
 
   /** @internal */
-  protected validateRenderPlan() {
+  protected override validateRenderPlan() {
     super.validateRenderPlan();
     this._lastPose = this.view.savePose();
   }
@@ -3025,7 +3025,7 @@ export class ScreenViewport extends Viewport {
    * @param view a fully loaded (see discussion at [[ViewState.load]] ) ViewState
    * @param opts options for how the view change operation should work
    */
-  public changeView(view: ViewState, opts?: ViewChangeOptions) {
+  public override changeView(view: ViewState, opts?: ViewChangeOptions) {
     if (view === this.view) // nothing to do
       return;
 
@@ -3280,13 +3280,13 @@ export class OffScreenViewport extends Viewport {
     return vp;
   }
 
-  /** @internal override */
-  public get isAspectRatioLocked(): boolean {
+  /** @internal */
+  public override get isAspectRatioLocked(): boolean {
     return this._isAspectRatioLocked;
   }
 
-  /** @internal override */
-  public get viewRect(): ViewRect {
+  /** @internal */
+  public override get viewRect(): ViewRect {
     return this.target.viewRect;
   }
 

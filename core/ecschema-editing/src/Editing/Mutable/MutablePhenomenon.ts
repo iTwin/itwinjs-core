@@ -9,6 +9,6 @@ import { Phenomenon } from "@bentley/ecschema-metadata";
  * An abstract class used for schema editing.
  */
 export abstract class MutablePhenomenon extends Phenomenon {
-  public abstract setDefinition(definition: string): Promise<void>;
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override setDefinition(definition: string): Promise<void>;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }

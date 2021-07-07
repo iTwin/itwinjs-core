@@ -48,7 +48,7 @@ class SelectionScopeFieldComponent extends React.Component<SelectionScopeFieldPr
     }
   };
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const scopeOptions: SelectOption<string>[] = this.props.availableSelectionScopes.map((scope: PresentationSelectionScope) => {
       return { value: scope.id, label: scope.label };
     });

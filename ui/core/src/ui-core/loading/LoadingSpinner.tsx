@@ -40,7 +40,7 @@ export class LoadingSpinner extends React.PureComponent<LoadingSpinnerProps> {
     messageOnTop: false,
   };
 
-  public render() {
+  public override render() {
     const { message, messageOnTop, size, ...rest } = this.props;
     type SizeType = LoadingSpinnerProps["size"];
     const getRadialSize = (sizeProp: SizeType) => {

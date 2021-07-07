@@ -92,7 +92,7 @@ interface ToolAssistanceFieldState {
  */
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
   /** @internal */
-  public static contextType = UiSettingsContext;
+  public static override contextType = UiSettingsContext;
   /** @internal */
   public declare context: React.ContextType<typeof UiSettingsContext>;
 
@@ -147,7 +147,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   /** @internal */
-  public async componentDidMount() {
+  public override async componentDidMount() {
     this._isMounted = true;
     MessageManager.onToolAssistanceChangedEvent.addListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.addListener(this._handleToolIconChangedEvent);
@@ -162,7 +162,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
     MessageManager.onToolAssistanceChangedEvent.removeListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.removeListener(this._handleToolIconChangedEvent);
@@ -292,7 +292,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   };
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { instructions } = this.state;
     const dialogTitle = (IModelApp.toolAdmin.activeTool) ? /* istanbul ignore next */ IModelApp.toolAdmin.activeTool.flyover : UiFramework.translate("toolAssistance.title");
     const mouseLabel = UiFramework.translate("toolAssistance.mouse");

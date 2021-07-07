@@ -38,7 +38,7 @@ export const WIDGET_OPACITY_DEFAULT = 0.90;
 
 /** Properties of [[ThemeManagerComponent]].
  */
-interface ThemeProps {
+interface ThemeManagerProps {
   /** theme ("light", "dark", etc.) */
   theme: string;
   /* Widget Opacity */
@@ -59,23 +59,23 @@ function mapStateToProps(state: any) {
 }
 
 /** @internal */
-interface State {
+interface ThemeManagerState {
   ownerDocument: Document | undefined;
 }
 
 /** ThemeManagerComponent handles setting themes.
  */
-class ThemeManagerComponent extends React.Component<ThemeProps, State> {
+class ThemeManagerComponent extends React.Component<ThemeManagerProps, ThemeManagerState> {
 
-  public readonly state: State = {
+  public override readonly state: ThemeManagerState = {
     ownerDocument: undefined,
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     this._setTheme(this.props.theme);
   }
 
-  public componentDidUpdate(prevProps: ThemeProps) {
+  public override componentDidUpdate(prevProps: ThemeManagerProps) {
     if (this.props.theme !== prevProps.theme)
       this._setTheme(this.props.theme);
     if (this.props.widgetOpacity !== prevProps.widgetOpacity)
@@ -99,7 +99,7 @@ class ThemeManagerComponent extends React.Component<ThemeProps, State> {
     }
   };
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const theme: ThemeType = (this.props.theme === SYSTEM_PREFERRED_COLOR_THEME) ? "os" : this.props.theme as ThemeType;
 
     return (

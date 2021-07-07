@@ -64,7 +64,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
   private _closing: boolean = false;
 
   /** @internal */
-  public readonly state: Readonly<SplitButtonState> = { expanded: false };
+  public override readonly state: Readonly<SplitButtonState> = { expanded: false };
 
   constructor(props: SplitButtonProps) {    // eslint-disable-line deprecation/deprecation
     super(props);
@@ -74,7 +74,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     };
   }
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     let icon = (<></>);
     if (this.props.icon !== undefined) {
       icon = (

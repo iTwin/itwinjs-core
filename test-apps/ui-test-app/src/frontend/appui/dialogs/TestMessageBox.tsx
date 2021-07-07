@@ -21,7 +21,7 @@ export interface TestMessageBoxState {
 }
 
 export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMessageBoxState> {
-  public readonly state: Readonly<TestMessageBoxState>;
+  public override readonly state: Readonly<TestMessageBoxState>;
 
   constructor(props: TestMessageBoxProps) {
     super(props);
@@ -32,7 +32,7 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
 
   /* eslint-disable @typescript-eslint/no-floating-promises */
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     // cspell:disable
     return (
       <MessageBox
@@ -56,7 +56,7 @@ export class TestMessageBox extends React.Component<TestMessageBoxProps, TestMes
     // cspell:enable
   }
 
-  public componentDidUpdate(prevProps: TestMessageBoxProps) {
+  public override componentDidUpdate(prevProps: TestMessageBoxProps) {
     if (prevProps !== this.props) {
       this.setState((_, props) => ({ opened: props.opened }));
     }

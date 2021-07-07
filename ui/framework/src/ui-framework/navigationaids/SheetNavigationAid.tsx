@@ -31,7 +31,7 @@ export class SheetNavigationAidControl extends NavigationAidControl {
     this.reactNode = <SheetNavigationAid iModelConnection={options.imodel} />;
   }
 
-  public getSize(): string | undefined { return "96px"; }
+  public override getSize(): string | undefined { return "96px"; }
 }
 
 /** Data displayed about sheet
@@ -62,7 +62,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   private _isMounted = false;
 
   /** @internal */
-  public readonly state: Readonly<SheetNavigationState> = {
+  public override readonly state: Readonly<SheetNavigationState> = {
     index: 0,
     sheetData: [],
   };
@@ -76,7 +76,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   }
 
   /** Adds listeners when components mounts */
-  public async componentDidMount() {
+  public override async componentDidMount() {
     this._isMounted = true;
 
     CardContainer.onCardSelectedEvent.addListener(this._handleCardSelected);
@@ -91,7 +91,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   }
 
   /** Removes listeners when component will unmount */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
 
     CardContainer.onCardSelectedEvent.removeListener(this._handleCardSelected);
@@ -132,7 +132,7 @@ export class SheetNavigationAid extends React.Component<SheetNavigationProps, Sh
   }
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const name = (this.state.sheetData.length > 0) ? /* istanbul ignore next */ this.state.sheetData[this.state.index].name : "";
     const sheet = UiFramework.translate("general.sheet");
     const ofStr = UiComponents.translate("general.of");

@@ -28,7 +28,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
   private _inputElement = React.createRef<HTMLInputElement>();
 
   /** @internal */
-  public readonly state: Readonly<ToggleEditorState> = {
+  public override readonly state: Readonly<ToggleEditorState> = {
     toggleValue: false,
     isDisabled: false,
   };
@@ -89,18 +89,18 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -127,7 +127,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     const className = classnames("components-cell-editor", "components-toggle-editor", this.props.className);
     const isChecked = this.state.toggleValue;
     const isDisabled = !!this.state.isDisabled;
@@ -153,7 +153,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
  */
 export class TogglePropertyEditor extends PropertyEditorBase {
   // istanbul ignore next
-  public get containerHandlesBlur(): boolean {
+  public override get containerHandlesBlur(): boolean {
     return false;
   }
 

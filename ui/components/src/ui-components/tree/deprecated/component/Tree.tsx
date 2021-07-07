@@ -426,7 +426,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
   }
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._mounted = true;
     this.assignModelListeners(this.state.model);
     this.assignDataProviderListeners(this.props.dataProvider);
@@ -443,7 +443,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this.state.nodeLoadingOrchestrator.cancelLoading();
 
     this.dropModelListeners(this.state.model);
@@ -453,7 +453,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
     this._mounted = false;
   }
 
-  public shouldComponentUpdate(nextProps: TreeProps, nextState: TreeState): boolean {
+  public override shouldComponentUpdate(nextProps: TreeProps, nextState: TreeState): boolean {
     if (this.state.modelReady !== nextState.modelReady || this.state.model !== nextState.model) {
       // always render when modelReady or model changes
       return true;
@@ -475,7 +475,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: TreeProps, prevState: TreeState) {
+  public override componentDidUpdate(prevProps: TreeProps, prevState: TreeState) {
     this._selectionHandler.selectionMode = this.props.selectionMode!;
 
     if (this.props.selectedNodes !== prevProps.selectedNodes) {
@@ -879,7 +879,7 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     if (!this.state.modelReady) {
       return (
         <div className="components-tree-loader">
@@ -982,10 +982,10 @@ export class DEPRECATED_Tree extends React.Component<TreeProps, TreeState> {
  * Default component for rendering a node for the [[DEPRECATED_Tree]]
  */
 class PlaceholderNode extends React.Component<{ node: BeInspireTreeNode<TreeNodeItem> }> {
-  public shouldComponentUpdate(nextProps: TreeNodeProps) {
+  public override shouldComponentUpdate(nextProps: TreeNodeProps) {
     return nextProps.node.isDirty() || this.props.node.id !== nextProps.node.id;
   }
-  public render() {
+  public override render() {
     // note: props get mutated here
     this.props.node.setDirty(false);
     const level = this.props.node.getParents().length + 1;

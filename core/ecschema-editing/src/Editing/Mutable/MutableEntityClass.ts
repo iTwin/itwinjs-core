@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { DelayedPromiseWithProps, ECClass, ECObjectsError, ECObjectsStatus, EntityClass, Mixin, NavigationProperty,
+import {
+  DelayedPromiseWithProps, ECClass, ECObjectsError, ECObjectsStatus, EntityClass, Mixin, NavigationProperty,
   parseStrengthDirection, RelationshipClass, StrengthDirection,
 } from "@bentley/ecschema-metadata";
 
@@ -11,10 +12,10 @@ import { DelayedPromiseWithProps, ECClass, ECObjectsError, ECObjectsStatus, Enti
  * @internal
  */
 export abstract class MutableEntityClass extends EntityClass {
-  public abstract addMixin(mixin: Mixin): any;
-  public abstract createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
-  public abstract createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override addMixin(mixin: Mixin): any;
+  public abstract override createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
+  public abstract override createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }
 
 /** @internal */

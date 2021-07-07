@@ -9,6 +9,6 @@ import { CustomAttributeClass, CustomAttributeContainerType } from "@bentley/ecs
  * An abstract class used for Schema editing.
  */
 export abstract class MutableCAClass extends CustomAttributeClass {
-  public abstract setContainerType(containerType: CustomAttributeContainerType): void;
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override setContainerType(containerType: CustomAttributeContainerType): void;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }

@@ -86,7 +86,7 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
     }
   };
 
-  public render() {
+  public override render() {
     const disableSignInOnClick = this.props.disableSignInOnClick === undefined ? true : this.props.disableSignInOnClick; // disableSignInOnClick defaults to true!
     return (
       <div className={classnames("components-signin", this.props.className)} style={this.props.style}>

@@ -49,7 +49,7 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "semver": "^5.5.0",
-    "typescript": "~4.1.0"
+    "typescript": "~4.3.0"
   },
   "dependencies": {
     "flatbuffers": "~1.12.0"

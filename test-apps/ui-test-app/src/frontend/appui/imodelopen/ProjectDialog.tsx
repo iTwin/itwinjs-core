@@ -41,7 +41,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
   };
 
   // called when this component is first loaded
-  public async componentDidMount() {
+  public override async componentDidMount() {
     this.getRecentProjects(this.props.filterType!);
   }
 
@@ -130,7 +130,7 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
     );
   }
 
-  public render() {
+  public override render() {
     const searchClassName = classnames("tabs-searchbox", this.state.activeFilter !== ProjectScope.All && "hidden");
     return (
       <div className="modal-background fade-in-fast">

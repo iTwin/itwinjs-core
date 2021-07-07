@@ -37,7 +37,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
   private _inputElement = React.createRef<HTMLInputElement>();
 
   /** @internal */
-  public readonly state: Readonly<TextEditorState> = {
+  public override readonly state: Readonly<TextEditorState> = {
     inputValue: "",
     readonly: false,
   };
@@ -72,18 +72,18 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -129,7 +129,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
   }
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const className = classnames("components-cell-editor", "components-text-editor", this.props.className);
     const minSize = this.state.size ? this.state.size : 8;
     const minWidthStyle: React.CSSProperties = {

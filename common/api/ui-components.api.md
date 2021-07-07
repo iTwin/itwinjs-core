@@ -163,7 +163,7 @@ export type AnimationFractionChangeHandler = (animationFraction: number) => void
 // @public
 export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode;
 }
 
 // @beta
@@ -200,7 +200,7 @@ export abstract class BasePointTypeConverter extends TypeConverter {
     // (undocumented)
     protected abstract constructPoint(_values: Primitives.Point): ConvertedPrimitives.Point | undefined;
     // (undocumented)
-    convertFromString(value: string): ConvertedPrimitives.Point2d | ConvertedPrimitives.Point3d | undefined;
+    convertFromString(value: string): ConvertedPrimitives.Point | undefined;
     // (undocumented)
     convertToString(value?: Primitives.Point): string | Promise<string>;
     // (undocumented)
@@ -3370,7 +3370,7 @@ export class PrimitivePropertyRenderer extends React.Component<PrimitiveRenderer
 // @public
 export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode;
 }
 
 // @internal (undocumented)
@@ -4457,7 +4457,7 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
 // @public
 export class StructPropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode;
 }
 
 // @public

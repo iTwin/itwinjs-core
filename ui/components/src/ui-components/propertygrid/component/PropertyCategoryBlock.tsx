@@ -47,7 +47,7 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
   };
 
   /** @internal */
-  public render() {
+  public override render() {
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
     const { highlight, category, children, onExpansionToggled, ...props } = this.props;
     const activeMatchIndex = this.props.category.name === highlight?.activeHighlight?.highlightedItemIdentifier ? highlight.activeHighlight.highlightIndex : undefined;

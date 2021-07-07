@@ -74,7 +74,7 @@ export class MessageBox extends React.PureComponent<MessageBoxProps> {
     modal: true,
   };
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     return (
       <Dialog
         title={this.props.title}
@@ -132,7 +132,7 @@ export class MessageContainer extends React.PureComponent<MessageContainerProps>
     return iconClassName;
   }
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     const iconClassName = classnames(
       "icon",
       "core-message-box-icon",

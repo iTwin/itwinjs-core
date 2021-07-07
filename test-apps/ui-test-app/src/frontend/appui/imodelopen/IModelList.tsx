@@ -66,7 +66,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
       this.props.onIModelSelected(iModelInfo);
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     this.setState((_, props) => {
       if (props.iModels && 1 === props.iModels.length)
         return { currentIModel: props.iModels[0] };
@@ -157,7 +157,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     }
   }
 
-  public render() {
+  public override render() {
     const classThumbnails = classnames("viewtype icon icon-placeholder", !this.state.showDetails && "active");
     const classList = classnames("viewtype icon icon-list", this.state.showDetails && "active");
     return (

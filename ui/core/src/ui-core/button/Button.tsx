@@ -67,7 +67,7 @@ export class Button extends React.PureComponent<ButtonProps> {    // eslint-disa
     return iuiButtonType;
   };
 
-  public render() {
+  public override render() {
     const { buttonType, size, className, style, onClick, ...props } = this.props;
 
     const iuiButtonType = this.getIuiButtonType(buttonType);

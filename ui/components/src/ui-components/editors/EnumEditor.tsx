@@ -31,7 +31,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   private _divElement = React.createRef<HTMLDivElement>();
 
   /** @internal */
-  public readonly state: Readonly<EnumEditorState> = {
+  public override readonly state: Readonly<EnumEditorState> = {
     selectValue: "",
     valueIsNumber: false,
     options: [],
@@ -94,18 +94,18 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -152,7 +152,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     const className = classnames("components-cell-editor", "components-enum-editor", this.props.className);
     const selectValue = this.state.selectValue !== undefined ? this.state.selectValue.toString() : /* istanbul ignore next */ undefined;
 
@@ -183,10 +183,10 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
   */
 export class EnumPropertyEditor extends PropertyEditorBase {
   // istanbul ignore next
-  public get containerHandlesEnter(): boolean {
+  public override get containerHandlesEnter(): boolean {
     return false;
   }
-  public get containerStopsKeydownPropagation(): boolean {
+  public override get containerStopsKeydownPropagation(): boolean {
     return false;
   }
 

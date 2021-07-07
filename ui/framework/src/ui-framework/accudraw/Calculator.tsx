@@ -112,7 +112,7 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
     this._equalsClicked = false;
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     this._mainDivFocus();
   }
 
@@ -121,7 +121,7 @@ export class Calculator extends React.PureComponent<CalculatorProps, CalculatorS
       this._mainDiv.current.focus();
   }
 
-  public render() {
+  public override render() {
     const { className, resultIcon, onOk, onCancel, initialValue, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     const classNames = classnames(
@@ -231,7 +231,7 @@ interface CalculatorKeyPadProps extends CommonProps {
 }
 
 class CalculatorKeyPad extends React.PureComponent<CalculatorKeyPadProps> {
-  public render() {
+  public override render() {
 
     return (
       <div className={classnames("uifw-calculator-button-grid")}>
@@ -289,7 +289,7 @@ class ValueButton extends React.PureComponent<ValueButtonProps> {
     this.props.onClick(this.props.keyChar);
   };
 
-  public render() {
+  public override render() {
     const { className, keyChar, onClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     const itemClassNames = classnames(
@@ -318,7 +318,7 @@ class OperatorButton extends React.PureComponent<OperatorButtonProps> {
     this.props.onClick(this.props.operator);
   };
 
-  public render() {
+  public override render() {
     const { className, children, operator, onClick, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     const itemClassNames = classnames(

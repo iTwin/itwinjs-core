@@ -40,7 +40,7 @@ export interface ExpandableBlockProps extends CommonProps {
  */
 export class ExpandableBlock extends React.PureComponent<ExpandableBlockProps> {  // eslint-disable-line deprecation/deprecation
 
-  public render() {
+  public override render() {
     const cName = classnames(
       "uicore-expandable-blocks-block",
       this.props.caption && "with-caption",

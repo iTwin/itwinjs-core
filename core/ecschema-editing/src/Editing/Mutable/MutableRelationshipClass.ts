@@ -9,7 +9,7 @@ import { CustomAttribute, NavigationProperty, RelationshipClass, RelationshipCon
  * @internal
  */
 export abstract class MutableRelationshipConstraint extends RelationshipConstraint {
-  public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
+  public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
 
 }
 
@@ -18,11 +18,11 @@ export abstract class MutableRelationshipConstraint extends RelationshipConstrai
  * An abstract class used for schema editing.
  */
 export abstract class MutableRelationshipClass extends RelationshipClass {
-  public get source() { return this._source as MutableRelationshipConstraint; }
-  public get target() { return this._target as MutableRelationshipConstraint; }
-  public abstract setStrength(strength: StrengthType): void;
-  public abstract setStrengthDirection(direction: StrengthDirection): void;
-  public abstract createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
-  public abstract createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public override get source() { return this._source as MutableRelationshipConstraint; }
+  public override get target() { return this._target as MutableRelationshipConstraint; }
+  public abstract override setStrength(strength: StrengthType): void;
+  public abstract override setStrengthDirection(direction: StrengthDirection): void;
+  public abstract override createNavigationProperty(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): Promise<NavigationProperty>;
+  public abstract override createNavigationPropertySync(name: string, relationship: string | RelationshipClass, direction: string | StrengthDirection): NavigationProperty;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }
