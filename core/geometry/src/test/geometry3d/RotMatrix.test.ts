@@ -1025,12 +1025,12 @@ describe("MatrixProductAliasing", () => {
     const origin = Point3d.create(1, 2, 3);
     const transform = Transform.createOriginAndMatrix(origin, matrix);
     const transform1 = transform.cloneRigid(AxisOrder.XYZ);
-    ck.testType<Transform>(transform1, "confirm corrected code returned a transform.");
+    ck.testType(transform1, Transform, "confirm corrected code returned a transform.");
     for (const scale of [1.0 / matrix.maxAbs(), 10, 100, 1000]) {
       const matrix1 = matrix.scale(scale);
       const transform2 = Transform.createOriginAndMatrix(origin, matrix1);
       const transform3 = transform2.cloneRigid(AxisOrder.XYZ);
-      ck.testType<Transform>(transform3, "cloneRigid");
+      ck.testType(transform3, Transform, "cloneRigid");
     }
     for (const a of [1.0e-5, 1.0e-4, 1.0e-2, 1, 1.0e3, 1.0e6]) {
       const matrixA = Matrix3d.createScale(a, a, a);

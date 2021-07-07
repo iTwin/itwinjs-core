@@ -261,8 +261,9 @@ export class Checker {
 
     return false;
   }
-  public testType<T>(data: T | undefined, ...params: any[]): data is T {
-    if (data !== undefined)
+
+  public testType<T extends Function>(data: any, classType: T, ...params: any[]): data is T["prototype"] {
+    if (data !== undefined && data instanceof classType)
       return this.announceOK();
     this.announceError("Expect defined with type", data, params);
     return false;
