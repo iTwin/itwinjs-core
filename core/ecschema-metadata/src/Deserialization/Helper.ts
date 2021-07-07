@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { SchemaContext } from "../Context";
+import { LoadSchema, SchemaContext } from "../Context";
 import { parsePrimitiveType, parseSchemaItemType, SchemaItemType, SchemaMatchType } from "../ECObjects";
 import { ECObjectsError, ECObjectsStatus } from "../Exception";
 import { AnyClass, AnySchemaItem } from "../Interfaces";
@@ -72,7 +72,9 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
-    await this._context.checkAndAddSchema(schema, async () => this.loadSchema(schema));
+    // Need to check if schema is already in cache synchronously
+    if (undefined === this._context.getCachedLoadedOrLoadingSchemaSync(schema.schemaKey))
+      await this._context.addSchema(schema, new LoadSchema(async () => this.loadSchema(schema)));
 
     // Await loading the rest of the schema
     const loadedSchema = await this._context.getSchema<U>(schema.schemaKey);
@@ -80,6 +82,7 @@ export class SchemaReadHelper<T = unknown> {
     return loadedSchema!;
   }
 
+  /* Finish loading the rest of the schema */
   private async loadSchema<U extends Schema>(schema: U): Promise<U> {
     // Load schema references first
     // Need to figure out if other schemas are present.
@@ -92,8 +95,7 @@ export class SchemaReadHelper<T = unknown> {
 
     // Load all schema items
     for (const [itemName, itemType, rawItem] of this._parser.getItems()) {
-      // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema,
-      // which would be found when adding to the context.
+      // Make sure the item has not already been read. No need to check the SchemaContext because all SchemaItems are added to a Schema, which would be found when adding to the context.
       if (await schema.getItem(itemName) !== undefined)
         continue;
 
@@ -157,6 +159,11 @@ export class SchemaReadHelper<T = unknown> {
     return schema;
   }
 
+  /**
+   * Partially populates the given Schema from a serialized representation. Partially-loaded schemas are needed in loadSchemaReference for validating schema references do not contain a cycle first before fully loading the schemas.
+   * @param schema The Schema to populate
+   * @param rawSchema The serialized data to use to populate the Schema.
+   */
   public async readLoadingSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U> {
     // Ensure context matches schema context
     if (schema.context) {
@@ -173,13 +180,20 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
-    await this._context.checkAndAddSchema(schema, async () => this.loadSchema(schema));
+    // Need to check if schema is already in cache synchronously
+    if (undefined === this._context.getCachedLoadedOrLoadingSchemaSync(schema.schemaKey))
+      await this._context.addSchema(schema, new LoadSchema(async () => this.loadSchema(schema)));
 
-    // Will have schema here since it's checked or added above
+    // Will have schema here since it's checked to be in cache or added above
     const foundSchema = await this._context.getCachedLoadedOrLoadingSchema<U>(schema.schemaKey);
     return foundSchema!;
   }
 
+  /**
+   * Partially populates the given Schema from a serialized representation. Partially-loaded schemas are needed in loadSchemaReference for validating schema references do not contain a cycle first before fully loading the schemas.
+   * @param schema The Schema to populate
+   * @param rawSchema The serialized data to use to populate the Schema.
+   */
   public readLoadingSchemaSync<U extends Schema>(schema: U, rawSchema: T): U {
     this._parser = new this._parserType(rawSchema);
 
@@ -188,7 +202,8 @@ export class SchemaReadHelper<T = unknown> {
 
     this._schema = schema;
 
-    this._context.checkAndAddSchemaSync(schema, async () => this.loadSchema(schema));
+    if (undefined === this._context.getCachedLoadedOrLoadingSchemaSync(schema.schemaKey))
+      this._context.addSchemaSync(schema, new LoadSchema(async () => this.loadSchema(schema)));
 
     return this._context.getCachedLoadedOrLoadingSchemaSync<U>(schema.schemaKey)!;
   }
@@ -199,7 +214,7 @@ export class SchemaReadHelper<T = unknown> {
    */
   private async loadSchemaReference(ref: SchemaReferenceProps): Promise<void> {
     const schemaKey = new SchemaKey(ref.name, ECVersion.fromString(ref.version));
-    let refSchema = await this._context.getLoadingSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
+    const refSchema = await this._context.getLoadingSchema(schemaKey, SchemaMatchType.LatestWriteCompatible);
     if (undefined === refSchema)
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Could not locate the referenced schema, ${ref.name}.${ref.version}, of ${this._schema!.schemaKey.name}`);
 
