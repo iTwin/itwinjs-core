@@ -689,7 +689,7 @@ export const DivWithOutsideClick: {
     contextType?: React.Context<any> | undefined;
 };
 
-// @beta
+// @public
 export function ElementResizeObserver({ watchedElement, render }: {
     watchedElement: HTMLElement | null;
     render: (props: RenderPropsArgs) => JSX.Element;
@@ -1873,7 +1873,7 @@ export interface RectangleProps {
     readonly top: number;
 }
 
-// @beta
+// @public
 export interface RenderPropsArgs {
     // (undocumented)
     height?: number;
@@ -1881,7 +1881,7 @@ export interface RenderPropsArgs {
     width?: number;
 }
 
-// @beta
+// @public
 export function ResizableContainerObserver({ onResize, children }: {
     onResize: (width: number, height: number) => void;
     children?: React.ReactNode;

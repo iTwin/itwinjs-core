@@ -71,7 +71,7 @@ public;DisabledText(props: TextProps): JSX.Element
 public;Div(props: DivProps): JSX.Element
 public;DivProps 
 public;DivWithOutsideClick:
-beta;ElementResizeObserver({ watchedElement, render }:
+public;ElementResizeObserver({ watchedElement, render }:
 public;ElementSeparator: (props: ElementSeparatorProps) => JSX.Element
 public;ElementSeparatorProps 
 public;ExecuteHandler = (this: void) => void
@@ -263,8 +263,8 @@ internal;ReactStepFunctionProp = number | ((component: ReactNumericInput, direct
 deprecated;ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined)
 internal;Rectangle 
 public;RectangleProps
-beta;RenderPropsArgs
-beta;ResizableContainerObserver({ onResize, children }:
+public;RenderPropsArgs
+public;ResizableContainerObserver({ onResize, children }:
 internal;ResizeObserver: ResizeObserverType
 internal;ResizeObserverType = typeof import("resize-observer-polyfill").default
 beta;ScrollPositionMaintainer 

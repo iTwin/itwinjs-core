@@ -14,7 +14,7 @@ To start the application, simply install its dependencies and run it:
   rush install
   ```
 
-2. Build the application using `rush build`, or to rebuild ui-test-app, use `npm run build` in the `imodeljs\test-apps\ui-test-app` directory.
+2. Build the application using `rushx build`, or to rebuild ui-test-app, use `npm run build` in the `imodeljs\test-apps\ui-test-app` directory.
 
   ```sh
   rush build

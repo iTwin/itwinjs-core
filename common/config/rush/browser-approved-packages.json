@@ -948,7 +948,7 @@
     },
     {
       "name": "sass",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "sass-loader",

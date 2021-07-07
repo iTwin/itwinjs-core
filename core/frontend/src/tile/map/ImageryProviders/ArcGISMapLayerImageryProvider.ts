@@ -10,9 +10,12 @@ import { Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
 import { Cartographic, ImageSource, MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
 import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
-import { ArcGisErrorCode, ArcGisTokenClientType, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, NotifyMessageDetails, OutputMessagePriority } from "../../../imodeljs-frontend";
+import {NotifyMessageDetails, OutputMessagePriority} from "../../../NotificationManager";
 import { ScreenViewport } from "../../../Viewport";
-import { ArcGisTokenManager, ArcGisUtilities, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId } from "../../internal";
+import {
+  ArcGisErrorCode, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
+  MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId,
+} from "../../internal";
 
 // eslint-disable-next-line prefer-const
 let doToolTips = true;
@@ -21,6 +24,7 @@ const scratchQuadId = new QuadId(0, 0, 0);
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   private _maxDepthFromLod = 0;
+  private _minDepthFromLod = 0;
   private _copyrightText = "Copyright";
   private _querySupported = false;
   private _tileMapSupported = false;
@@ -31,6 +35,8 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   }
 
   protected get _filterByCartoRange() { return false; }      // Can't trust footprint ranges (USGS Hydro)
+
+  public get minimumZoomLevel() { return Math.max(super.minimumZoomLevel, this._minDepthFromLod); }
   public get maximumZoomLevel() { return this._maxDepthFromLod > 0 ? this._maxDepthFromLod : super.maximumZoomLevel; }
 
   public uintToString(uintArray: any) {
@@ -102,9 +108,8 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       return undefined;
     }
   }
-
   protected _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) {
-    if (!this._tileMapSupported || tile.quadId.level < 4) {
+    if (!this._tileMapSupported || tile.quadId.level < Math.max(4, this.minimumZoomLevel)) {
       resolveChildren();
       return;
     }
@@ -148,6 +153,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       resolveChildren();
     });
   }
+
   private isEpsg3857Compatible(tileInfo: any) {
     if (tileInfo.spatialReference?.latestWkid !== 3857 || !Array.isArray(tileInfo.lods))
       return false;
@@ -181,6 +187,14 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
             this.cartoRange = MapCartoRectangle.createFromDegrees(layer.layerDefinition.extent.xmin, layer.layerDefinition.extent.ymin, layer.layerDefinition.extent.xmax, layer.layerDefinition.extent.ymax);
             break;
           }
+        }
+      }
+
+      // Read minLOD if available
+      if (json.minLOD !== undefined) {
+        const minLod = parseInt(json.minLOD, 10);
+        if (!Number.isNaN(minLod)) {
+          this._minDepthFromLod = minLod;
         }
       }
     }

@@ -6,5 +6,6 @@
 !lib/**/*.js.map
 !lib/**/*.*css
 !lib/public/**/*
+lib/public/locales/en-PSEUDO
 lib/test
 !*.md

@@ -1,6 +1,11 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Jul 2021 15:38:30 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:30 GMT
+
+_Version update only_
 
 ## 2.17.0
 Mon, 28 Jun 2021 16:20:11 GMT
@@ -10,6 +15,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - Add functions to encode and decode ECNames.
 - Added tests for validating custom attribute namespace and schema version
 - Added get fullName tests for each schema item type if they didn't exist before
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
 
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT

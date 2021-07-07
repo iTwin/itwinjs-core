@@ -128,6 +128,7 @@ export class RealityTileTree extends TileTree {
   public get rootTile(): RealityTile { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return this.loader.maxDepth; }
+  public get minDepth() { return this.loader.minDepth; }
   public get isContentUnbounded() { return this.loader.isContentUnbounded; }
   public get isTransparent() { return false; }
 
