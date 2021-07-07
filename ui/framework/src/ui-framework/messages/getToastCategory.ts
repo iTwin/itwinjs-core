@@ -9,7 +9,7 @@
 import { MessageSeverity } from "@bentley/ui-core";
 
 /** @internal */
-export function getAlertType(severity: MessageSeverity) {
+export function getToastCategory(severity: MessageSeverity) {
   switch (severity) {
     case MessageSeverity.Information:
       return "informational";
@@ -19,8 +19,7 @@ export function getAlertType(severity: MessageSeverity) {
     case MessageSeverity.Fatal:
       return "negative";
     case MessageSeverity.None:
-      return "positive";
     default:
-      return undefined;
+      return "positive";
   }
 }

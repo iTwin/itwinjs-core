@@ -11,7 +11,9 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
 import { MessageSeverity } from "@bentley/ui-core";
-import { Message, MessageButton, MessageHyperlink, MessageLayout, MessageProgress, Toast } from "@bentley/ui-ninezone";
+import { MessageHyperlink, MessageLayout, MessageProgress, Toast } from "@bentley/ui-ninezone";
+import { IconButton } from "@itwin/itwinui-react";
+import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";
 import {
   AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, MessageCenterField, StatusBar, StatusBarCenterSection,
   StatusBarLeftSection, StatusBarRightSection, StatusBarSpaceBetween, StatusBarWidgetControl, StatusBarWidgetControlArgs, WidgetDef,
@@ -75,7 +77,7 @@ describe("StatusBar", () => {
     wrapper.update();
 
     expect(wrapper.find(Toast).length).to.eq(1);
-    expect(wrapper.find(Message).length).to.eq(1);
+    expect(wrapper.find(ToastPresentation).length).to.eq(1);
     expect(wrapper.find(MessageLayout).length).to.eq(1);
     wrapper.unmount();
   });
@@ -105,9 +107,9 @@ describe("StatusBar", () => {
     notifications.outputMessage(details);
     wrapper.update();
 
-    expect(wrapper.find(Message).length).to.eq(1);
+    expect(wrapper.find(ToastPresentation).length).to.eq(1);
     expect(wrapper.find(MessageLayout).length).to.eq(1);
-    expect(wrapper.find(MessageButton).length).to.eq(1);
+    expect(wrapper.find(IconButton).length).to.eq(1);
     wrapper.unmount();
   });
 
@@ -119,13 +121,13 @@ describe("StatusBar", () => {
     notifications.outputMessage(details);
     wrapper.update();
 
-    expect(wrapper.find(MessageButton).length).to.eq(1);
+    expect(wrapper.find(IconButton).length).to.eq(1);
 
-    wrapper.find(MessageButton).simulate("click");
+    wrapper.find(IconButton).simulate("click");
     fakeTimers.tick(1000);
     fakeTimers.restore();
     wrapper.update();
-    expect(wrapper.find(Message).length).to.eq(0);
+    expect(wrapper.find(ToastPresentation).length).to.eq(0);
     wrapper.unmount();
   });
 
@@ -137,12 +139,12 @@ describe("StatusBar", () => {
     notifications.outputActivityMessage("Message text", 50);
     wrapper.update();
 
-    expect(wrapper.find(Message).length).to.eq(1);
+    expect(wrapper.find(ToastPresentation).length).to.eq(1);
     expect(wrapper.find(MessageProgress).length).to.eq(1);
 
     notifications.endActivityMessage(ActivityMessageEndReason.Completed);
     wrapper.update();
-    expect(wrapper.find(Message).length).to.eq(0);
+    expect(wrapper.find(ToastPresentation).length).to.eq(0);
     wrapper.unmount();
   });
 
@@ -153,11 +155,11 @@ describe("StatusBar", () => {
     notifications.setupActivityMessage(details);
     notifications.outputActivityMessage("Message text", 50);
     wrapper.update();
-    expect(wrapper.find(Message).length).to.eq(1);
+    expect(wrapper.find(ToastPresentation).length).to.eq(1);
 
     wrapper.find(MessageHyperlink).simulate("click");
     wrapper.update();
-    expect(wrapper.find(Message).length).to.eq(0);
+    expect(wrapper.find(ToastPresentation).length).to.eq(0);
     wrapper.unmount();
   });
 
@@ -168,11 +170,11 @@ describe("StatusBar", () => {
     notifications.setupActivityMessage(details);
     notifications.outputActivityMessage("Message text", 50);
     wrapper.update();
-    expect(wrapper.find(Message).length).to.eq(1);
+    expect(wrapper.find(ToastPresentation).length).to.eq(1);
 
-    wrapper.find(MessageButton).simulate("click");
+    wrapper.find(IconButton).simulate("click");
     wrapper.update();
-    expect(wrapper.find(Message).length).to.eq(0);
+    expect(wrapper.find(ToastPresentation).length).to.eq(0);
     wrapper.unmount();
   });
 
@@ -188,7 +190,7 @@ describe("StatusBar", () => {
     notifications.outputActivityMessage("Message text", 50);
     wrapper.update();
 
-    expect(wrapper.find(Message).length).to.eq(3);
+    expect(wrapper.find(ToastPresentation).length).to.eq(3);
     wrapper.unmount();
   });
 
@@ -205,14 +207,14 @@ describe("StatusBar", () => {
     notifications.outputMessage(details3);
     wrapper.update();
 
-    expect(wrapper.find(Message).length).to.eq(3);
+    expect(wrapper.find(ToastPresentation).length).to.eq(3);
 
     const details4 = new NotifyMessageDetails(OutputMessagePriority.None, "A brief message 4.", undefined, OutputMessageType.Sticky);
     notifications.outputMessage(details4);
     wrapper.update();
 
-    expect(wrapper.find(Message).length).to.eq(3);
-    expect(wrapper.find(MessageButton).length).to.eq(3);
+    expect(wrapper.find(ToastPresentation).length).to.eq(3);
+    expect(wrapper.find(IconButton).length).to.eq(3);
     wrapper.unmount();
   });
 
@@ -223,7 +225,7 @@ describe("StatusBar", () => {
     notifications.outputMessage(details);
     wrapper.update();
 
-    expect(wrapper.find(Message).length).to.eq(0);
+    expect(wrapper.find(ToastPresentation).length).to.eq(0);
     wrapper.unmount();
   });
 
@@ -234,11 +236,11 @@ describe("StatusBar", () => {
     notifications.outputMessage(details);
     wrapper.update();
 
-    expect(wrapper.find(Message).length).to.eq(1);
+    expect(wrapper.find(ToastPresentation).length).to.eq(1);
 
     MessageManager.clearMessages();
     wrapper.update();
-    expect(wrapper.find(Message).length).to.eq(0);
+    expect(wrapper.find(ToastPresentation).length).to.eq(0);
     wrapper.unmount();
   });
 
