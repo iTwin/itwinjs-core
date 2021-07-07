@@ -1235,7 +1235,6 @@ function getViewFlagsString(test: TestCase): string {
 }
 
 function getBrowserName(userAgent: string): string {
-  console.log(`userAgent: ${userAgent}`); // eslint-disable-line
   const lowUserAgent = userAgent.toLowerCase();
   if (lowUserAgent.includes("electron"))
     return "Electron";
