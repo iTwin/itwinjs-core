@@ -22,6 +22,7 @@ import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 // allow _radians and _degrees as property names
 /* eslint-disable @typescript-eslint/naming-convention */
 /* eslint-disable no-console */
+/* eslint-disable use-isnan */
 class AngleTests {
   constructor(public noisy: boolean = false) { }
   public testAlmostEqual(ck: Checker) {
