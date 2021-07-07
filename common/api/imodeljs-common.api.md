@@ -4960,6 +4960,8 @@ export interface MaterialProps {
 export class MeshEdge {
     constructor(index0?: number, index1?: number);
     // (undocumented)
+    compareTo(other: MeshEdge): number;
+    // (undocumented)
     indices: number[];
 }
 
@@ -8816,7 +8818,6 @@ export class ViewFlags {
     dimensions: boolean;
     // @internal
     edgeMask: number;
-    // @internal (undocumented)
     edgesRequired(): boolean;
     // (undocumented)
     equals(other: ViewFlags): boolean;

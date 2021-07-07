@@ -6,7 +6,7 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions, Transform } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, AnalysisStyleProps, ColorByName, ColorDef, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettingsProps,
+  AnalysisStyle, AnalysisStyleProps, ColorByName, ColorDef, RenderMode, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettingsProps,
 } from "@bentley/imodeljs-common";
 import {
   DecorateContext, GraphicType, IModelApp, RenderGraphicOwner, StandardViewId, Viewport,
@@ -210,14 +210,14 @@ class AnalysisDecorator {
       return;
 
     if (!this._graphic) {
-      const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._id);
+      const builder = context.createGraphicBuilder(GraphicType.Scene, undefined, this._id);
       const color = ColorDef.fromTbgr(ColorByName.darkSlateBlue);
       builder.setSymbology(color, color, 1);
       builder.addPolyface(this.mesh.polyface, false);
       this._graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
     }
 
-    context.addDecoration(GraphicType.WorldDecoration, this._graphic);
+    context.addDecoration(GraphicType.Scene, this._graphic);
   }
 }
 
@@ -270,6 +270,11 @@ export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
   assert(viewer.viewport.view.is3d());
   viewer.viewport.setStandardRotation(StandardViewId.Iso);
   viewer.viewport.zoomToVolume(viewer.viewport.iModel.projectExtents);
+
+  const viewFlags = viewer.viewport.viewFlags.clone();
+  viewFlags.renderMode = RenderMode.SolidFill;
+  viewer.viewport.viewFlags = viewFlags;
+
   viewer.viewport.view.getDisplayStyle3d().settings.environment = {
     sky: {
       display: true,

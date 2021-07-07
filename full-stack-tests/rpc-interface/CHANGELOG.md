@@ -1,9 +1,21 @@
 # Change Log - @bentley/rpcinterface-full-stack-tests
 
-This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+This log was last generated on Fri, 02 Jul 2021 15:38:31 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+### Updates
+
+- Add basic test using client credentials OIDC workflow
 
 ## 2.17.0
 Mon, 28 Jun 2021 16:20:11 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
 
 _Version update only_
 

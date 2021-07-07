@@ -7,7 +7,9 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform } from "@bentley/geometry-core";
+import {
+  AnyCurvePrimitive, Arc3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
+} from "@bentley/geometry-core";
 import { ColorDef, Frustum, GraphicParams, LinePixels, Npc } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../IModelConnection";
 import { Viewport } from "../Viewport";
@@ -111,12 +113,16 @@ export interface PickableGraphicOptions extends BatchOptions {
 export interface GraphicBuilderOptions {
   /** The viewport in which the resultant [[RenderGraphic]] is to be drawn, used for calculating the graphic's level of detail. */
   viewport: Viewport;
+
   /** The type of graphic to produce. */
   type: GraphicType;
+
   /** The local-to-world transform in which the builder's geometry is to be defined - by default, an identity transform. */
   placement?: Transform;
+
   /** If the graphic is to be pickable, specifies the pickable Id and other options. */
   pickable?: PickableGraphicOptions;
+
   /** If true, the order in which geometry is added to the builder is preserved.
    * This is useful for overlay and background graphics because they draw without using the depth buffer. For example, to draw an overlay containing a red shape with a white outline,
    * you would add the shape to the GraphicBuilder first, followed by the outline, to ensure the outline draws "in front of" the shape.
@@ -125,15 +131,28 @@ export interface GraphicBuilderOptions {
    * For overlay and background graphics that do not need to draw in any particular order, the performance penalty can be eliminated by setting this to `false`.
    */
   preserveOrder?: boolean;
+
   /** If true, [[ViewState.getAspectRatioSkew]] will be taken into account when computing the level of detail for the produced graphics. */
   applyAspectRatioSkew?: boolean;
+
   /** Controls whether normals are generated for surfaces. Normals allow 3d geometry to receive lighting; without them the geometry will be unaffected by lighting.
-   * By default, normals are not generated.
+   * By default, normals are generated only for graphics of type [[GraphicType.Scene]]; or for any type of graphic if [[GraphicBuilder.wantEdges]] is true, because
+   * normals are required to prevent z-fighting between surfaces and their edges. This default can be overridden by explicitly specifying `true` or `false`.
    * @note Currently, no API exists to generate normals for a [Polyface]($geometry-core) that lacks them. Until such an API becomes available, if you want a lit Polyface, you
    * must both set `wantNormals` to `true` **and** supply a Polyface with precomputed normals to `addPolyface`.
    * @see [[GraphicType]] for a description of whether and how different types of graphics are affected by lighting.
    */
   wantNormals?: boolean;
+
+  /** Controls whether edges are generated for surfaces.
+   * Edges are only displayed if [ViewFlags.renderMode]($common) is not [RenderMode.SmoothShade]($common) or [ViewFlags.visibleEdges]($common) is `true`.
+   * Since all decoration graphics except [[GraphicType.Scene]] are drawn in smooth shaded mode with no visible edges, by default edges are only produced for scene graphics, and
+   * only if [ViewFlags.edgesRequired]($common) is true for the [[viewport]].
+   * That default can be overridden by explicitly specifying `true` or `false`. This can be useful for non-scene decorations contained in a [[GraphicBranch]] that applies [ViewFlagOverrides]($common)
+   * that change the edge display settings; or for scene decorations that might be cached for reuse after the viewport's edge settings are changed.
+   * @note Edges will tend to z-fight with their surfaces unless the graphic is [[pickable]].
+   */
+  generateEdges?: boolean;
 }
 
 /** @internal */
@@ -230,13 +249,24 @@ export abstract class GraphicBuilder {
   }
 
   /** Controls whether normals are generated for surfaces.
+   * @note Normals are required for proper edge display, so they are always produced if [[wantEdges]] is `true`.
    * @see [[GraphicBuilderOptions.wantNormals]] for more details.
    */
   public get wantNormals(): boolean {
-    return true === this._options.wantNormals;
+    return this._options.wantNormals ?? (this.wantEdges || this.type === GraphicType.Scene);
   }
   public set wantNormals(want: boolean) {
     this._options.wantNormals = want;
+  }
+
+  /** Controls whether edges are generated for surfaces.
+   * @see [[GraphicBuilderOptions.generateEdges]] for more details.
+   */
+  public get wantEdges(): boolean {
+    return this._options.generateEdges ?? (this.type === GraphicType.Scene && this.viewport.viewFlags.edgesRequired());
+  }
+  public set wantEdges(want: boolean) {
+    this._options.generateEdges = want;
   }
 
   /** Whether the builder's geometry is defined in [[CoordSystem.View]] coordinates.
@@ -374,6 +404,9 @@ export abstract class GraphicBuilder {
    */
   public abstract addPolyface(meshData: Polyface, filled: boolean): void;
 
+  /** Append a solid primitive to the builder. */
+  public abstract addSolidPrimitive(solidPrimitive: SolidPrimitive): void;
+
   /** Append any primitive to the builder.
    * @param primitive The graphic primitive to append.
    */
@@ -411,6 +444,9 @@ export abstract class GraphicBuilder {
         break;
       case "polyface":
         this.addPolyface(primitive.polyface, true === primitive.filled);
+        break;
+      case "solidPrimitive":
+        this.addSolidPrimitive(primitive.solidPrimitive);
         break;
     }
   }

@@ -513,9 +513,9 @@ export class AccuSnap implements Decorator {
 
   private unFlashViews() {
     this.needFlash.clear();
-    this.areFlashed.forEach((vp) => {
-      vp.setFlashed(undefined);
-    });
+    for (const vp of this.areFlashed)
+      vp.flashedId = undefined;
+
     this.areFlashed.clear();
   }
 
