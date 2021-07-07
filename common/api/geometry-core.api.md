@@ -184,6 +184,9 @@ export type AnnounceNumberNumberCurvePrimitive = (a0: number, a1: number, cp: Cu
 export type AnyCurve = CurvePrimitive | CurveCollection;
 
 // @public
+export type AnyCurvePrimitive = Arc3d | LineSegment3d | LineString3d | BSplineCurve3d | BezierCurve3d | DirectSpiral3d | IntegratedSpiral3d | CurveChainWithDistanceIndex;
+
+// @public
 export type AnyGeometryQuery = Polyface | CurvePrimitive | CurveCollection | SolidPrimitive | CoordinateXYZ | PointString3d | BSpline2dNd;
 
 // @public
@@ -4159,7 +4162,7 @@ export class PolyfaceData {
     getEdgeVisible(i: number): boolean;
     getNormal(i: number): Vector3d | undefined;
     getParam(i: number): Point2d | undefined;
-    getPoint(i: number): Point3d | undefined;
+    getPoint(i: number, out?: Point3d): Point3d | undefined;
     get indexCount(): number;
     isAlmostEqual(other: PolyfaceData): boolean;
     isAlmostEqualParamIndexUV(index: number, u: number, v: number): boolean;

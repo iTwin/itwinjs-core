@@ -29,6 +29,7 @@ export async function runWebpack(config: any, vol?: any) {
 
 export function getTestConfig(srcFile: string, pluginsToTest: any[], externalsToTest?: any[], rules?: any[]) {
   return {
+    mode: "production",
     entry: [
       path.join(__dirname, srcFile),
     ],

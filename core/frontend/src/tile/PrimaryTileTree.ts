@@ -35,8 +35,8 @@ interface PrimaryTreeId {
 class PlanProjectionTileTree extends IModelTileTree {
   public readonly baseElevation: number;
 
-  public constructor(params: IModelTileTreeParams, baseElevation: number) {
-    super(params);
+  public constructor(params: IModelTileTreeParams, treeId: PrimaryTileTreeId, baseElevation: number) {
+    super(params, treeId);
     this.baseElevation = baseElevation;
   }
 }
@@ -71,7 +71,7 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
 
     const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, options);
     if (!id.isPlanProjection)
-      return new IModelTileTree(params);
+      return new IModelTileTree(params, id.treeId);
 
     let elevation = 0;
     try {
@@ -87,11 +87,23 @@ class PrimaryTreeSupplier implements TileTreeSupplier {
       //
     }
 
-    return new PlanProjectionTileTree(params, elevation);
+    return new PlanProjectionTileTree(params, id.treeId, elevation);
   }
 
   public getOwner(id: PrimaryTreeId, iModel: IModelConnection): TileTreeOwner {
     return iModel.tiles.getTileTreeOwner(id, this);
+  }
+
+  public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: PrimaryTreeId, owner: TileTreeOwner }>): void {
+    for (const tree of trees)
+      if (tree.id.treeId.animationId === scriptSourceId)
+        modelIds.add(tree.id.modelId);
+  }
+
+  public addSpatialModels(modelIds: Set<Id64String>, trees: Iterable<{ id: PrimaryTreeId, owner: TileTreeOwner }>): void {
+    for (const tree of trees)
+      if (tree.id.is3d)
+        modelIds.add(tree.id.modelId);
   }
 }
 
@@ -168,22 +180,22 @@ class PrimaryTreeReference extends TileTreeReference {
     }
   }
 
-  protected getViewFlagOverrides(_tree: TileTree) {
+  protected override getViewFlagOverrides(_tree: TileTree) {
     return this._viewFlagOverrides;
   }
 
-  protected getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined {
+  protected override getAppearanceProvider(_tree: TileTree): FeatureAppearanceProvider | undefined {
     if (this._sectionCutAppearanceProvider && this.view.displayStyle.settings.clipStyle.cutStyle.appearance)
       return this._sectionCutAppearanceProvider;
 
     return undefined;
   }
 
-  protected getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined {
+  protected override getHiddenLineSettings(_tree: TileTree): HiddenLine.Settings | undefined {
     return this._sectionClip ? this.view.displayStyle.settings.clipStyle.cutStyle.hiddenLine : undefined;
   }
 
-  public get castsShadows() {
+  public override get castsShadows() {
     return true;
   }
 
@@ -191,12 +203,12 @@ class PrimaryTreeReference extends TileTreeReference {
     return false;
   }
 
-  protected getClipVolume(_tree: TileTree): RenderClipVolume | undefined {
+  protected override getClipVolume(_tree: TileTree): RenderClipVolume | undefined {
     // ###TODO: reduce frequency with which getModelClip() is called
     return this.view.is3d() && !this._sectionClip ? this.view.getModelClip(this.model.id) : undefined;
   }
 
-  public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+  public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
     const args = super.createDrawArgs(context);
     if (args)
       args.intersectionClip = this._sectionClip;
@@ -246,7 +258,7 @@ class PrimaryTreeReference extends TileTreeReference {
     return super.computeTransform(tree);
   }
 
-  protected computeTransform(tree: TileTree): Transform {
+  protected override computeTransform(tree: TileTree): Transform {
     const tf = this.computeBaseTransform(tree);
     return this.view.getModelDisplayTransform(this.model.id, tf);
   }
@@ -254,7 +266,7 @@ class PrimaryTreeReference extends TileTreeReference {
 
 /** @internal */
 export class AnimatedTreeReference extends PrimaryTreeReference {
-  protected computeBaseTransform(tree: TileTree): Transform {
+  protected override computeBaseTransform(tree: TileTree): Transform {
     const tf = super.computeBaseTransform(tree);
     const style = this.view.displayStyle;
     const script = style.scheduleScript;
@@ -279,15 +291,15 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
     this._viewFlagOverrides.setForceSurfaceDiscard(true);
   }
 
-  public get castsShadows() {
+  public override get castsShadows() {
     return false;
   }
 
-  protected get isPlanProjection(): boolean {
+  protected override get isPlanProjection(): boolean {
     return true;
   }
 
-  public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+  public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
     const args = super.createDrawArgs(context);
     if (undefined !== args && this._id.treeId.enforceDisplayPriority) {
       args.drawGraphics = () => { // eslint-disable-line @typescript-eslint/unbound-method
@@ -316,7 +328,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
     return args;
   }
 
-  protected computeBaseTransform(tree: TileTree): Transform {
+  protected override computeBaseTransform(tree: TileTree): Transform {
     assert(tree instanceof PlanProjectionTileTree);
     const transform = tree.iModelTransform.clone(this._baseTransform);
 
@@ -327,7 +339,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
     return transform;
   }
 
-  public draw(args: TileDrawArgs): void {
+  public override draw(args: TileDrawArgs): void {
     const settings = this.getSettings();
     if (undefined === settings || settings.enforceDisplayPriority || !settings.overlay)
       super.draw(args);
@@ -339,7 +351,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
     return this._view3d.getDisplayStyle3d().settings.getPlanProjectionSettings(this.model.id);
   }
 
-  protected createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
+  protected override createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
     const id = super.createTreeId(view, modelId, undefined);
     const settings = this.getSettings();
     if (undefined !== settings && settings.enforceDisplayPriority)
@@ -370,7 +382,7 @@ class MaskTreeReference extends TileTreeReference {
   protected _id: PrimaryTreeId;
   private _owner: TileTreeOwner;
   public readonly model: GeometricModelState;
-  public get castsShadows() { return false; }
+  public override get castsShadows() { return false; }
   public constructor(model: GeometricModelState) {
     super();
     this.model = model;
