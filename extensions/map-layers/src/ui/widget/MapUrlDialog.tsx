@@ -99,6 +99,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [settingsStorage, setSettingsStorageRadio] = React.useState("Project");
   const [layerAuthMethod, setLayerAuthMethod] = React.useState(MapLayerAuthType.None);
   const [esriOAuth2Succeeded, setEsriOAuth2Succeeded] = React.useState<undefined|boolean>(undefined);
+  const [showEsriOauth2Popup, setShowEsriOauth2Popup] = React.useState(false);
 
   const [mapType, setMapType] = React.useState(getFormatFromProps() ?? MAP_TYPES.arcGis);
 
@@ -125,10 +126,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   // we don't always want to enable it in the UI.
   const [settingsStorageDisabled] = React.useState( !isSettingsStorageAvailable|| props.mapLayerSourceToEdit !== undefined || props.layerRequiringCredentials !== undefined );
 
-  React.useEffect(() => {
-    setServerRequireCredentials(layerAuthMethod === MapLayerAuthType.Basic || layerAuthMethod === MapLayerAuthType.EsriToken);
-  }, [layerAuthMethod]);
-
   const [layerRequiringCredentialsIdx] = React.useState((): number | undefined => {
     if (props.layerRequiringCredentials === undefined || !props.layerRequiringCredentials.name || !props.layerRequiringCredentials.url) {
       return undefined;
@@ -152,6 +149,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       setInvalidCredentialsProvided(false);
 
     if (esriOAuth2Succeeded === false) {
+      setShowEsriOauth2Popup(false);
       setEsriOAuth2Succeeded(undefined);
     }
     if (layerAuthMethod !== MapLayerAuthType.None) {
@@ -190,16 +188,11 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   }, [esriOAuth2Succeeded]);
 
   // return true if authorization is needed
-  const checkAuthStatus = React.useCallback((sourceValidation: MapLayerSourceValidation) => {
+  const updateAuthState = React.useCallback((sourceValidation: MapLayerSourceValidation) => {
     const sourceRequireAuth = (sourceValidation.status === MapLayerSourceStatus.RequireAuth);
     const invalidCredentials = (sourceValidation.status === MapLayerSourceStatus.InvalidCredentials);
-    if (sourceRequireAuth) {
-      if (sourceValidation.authMethod !== undefined) {
-        setLayerAuthMethod(sourceValidation.authMethod);
-        if (sourceValidation.authMethod === MapLayerAuthType.EsriOAuth2) {
-          handleArcGisLogin();
-        }
-      }
+    if (sourceRequireAuth && sourceValidation.authMethod !== undefined) {
+      setLayerAuthMethod(sourceValidation.authMethod);
     }
     if (invalidCredentials) {
       setInvalidCredentialsProvided(true);
@@ -208,7 +201,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }
 
     return sourceRequireAuth || invalidCredentials;
-  }, [handleArcGisLogin, invalidCredentialsProvided]);
+  }, [invalidCredentialsProvided]);
 
   const updateAttachedLayer = React.useCallback(async (source: MapLayerSource, validation: MapLayerSourceValidation) => {
     const vp = props?.activeViewport;
@@ -277,14 +270,14 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   }, [isOverlay, onOkResult, props.activeViewport, props.layerRequiringCredentials, settingsStorage, settingsStorageDisabled]);
 
   // Validate the layer source and attempt to attach (or update) the layer.
-  // Returns true if no further input is needed from end-user.
+  // Returns true if no further input is needed from end-user (i.e. close the dialog)
   const attemptAttachSource = React.useCallback(async (source: MapLayerSource): Promise<boolean> => {
     try {
       const validation = await source.validateSource(true);
 
       if (validation.status === MapLayerSourceStatus.Valid) {
         return (layerRequiringCredentialsIdx === undefined ? doAttach(source, validation) : updateAttachedLayer(source, validation) );
-      } else if (checkAuthStatus(validation)) {
+      } else if (updateAuthState(validation)) {
         return false;
       } else {
         const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.ValidationError");
@@ -298,7 +291,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       return true;
     }
 
-  }, [checkAuthStatus, doAttach, layerRequiringCredentialsIdx, updateAttachedLayer]);
+  }, [updateAuthState, doAttach, layerRequiringCredentialsIdx, updateAttachedLayer]);
 
   const onNameChange = React.useCallback((event: React.ChangeEvent<HTMLInputElement>) => {
     setMapName(event.target.value);
@@ -382,7 +375,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   // We need to validate the source in order to get the authentification type,
   // some of them might requirer explicit username/password fields.
   React.useEffect(() => {
-
     // Attach source asynchronously.
     void (async () => {
       if (props.layerRequiringCredentials?.url !== undefined && props.layerRequiringCredentials?.name !== undefined) {
@@ -395,13 +387,13 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
             if (isMounted.current) {
               setLayerAttachPending(false);
             }
-            checkAuthStatus(validation);
+            updateAuthState(validation);
           }
         } catch (_error) {}
       }
     })();
 
-  }, [checkAuthStatus, props.layerRequiringCredentials]);
+  }, [props.layerRequiringCredentials, updateAuthState]);
 
   const dialogContainer = React.useRef<HTMLDivElement>(null);
 
@@ -428,16 +420,14 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
   // EsriOAuth2Callback events handler
   React.useEffect(() => {
-    const handleEsriOAuth2Callback = (success: boolean, serviceUrl: string) => {
+    const handleEsriOAuth2Callback = (success: boolean, _state: string ) => {
       if (success) {
         setEsriOAuth2Succeeded(true);
         setShowEsriOauth2Popup(false);
-        console.log(`MapUrlDialog handled EsriOAuth2Callback event. SUCCESS serviceUrl=${serviceUrl}`);
         setLayerAttachPending(false);
-        // try adding the layer the same way if user clicked the ok button
-        handleOk();
+        handleOk(); // Add the layer the same way the user would do by clicking 'ok'
       } else {
-        console.log(`handleEsriOAuth2Callback handled EsriOAuth2Callback event. ERROR`);
+        setEsriOAuth2Succeeded(false);
       }
 
     };
@@ -448,17 +438,25 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     };
   }, [handleOk]);
 
-  const [showEsriOauth2Popup, setShowEsriOauth2Popup] = React.useState(false);
+  //
+  // Monitors authentication method changes
+  React.useEffect(() => {
+    setServerRequireCredentials(layerAuthMethod === MapLayerAuthType.Basic || layerAuthMethod === MapLayerAuthType.EsriToken);
 
+    if (esriOAuth2Succeeded !== false && layerAuthMethod === MapLayerAuthType.EsriOAuth2) {
+      handleArcGisLogin();
+    }
+  }, [esriOAuth2Succeeded, handleArcGisLogin, layerAuthMethod]);
+
+  // Monitors Oauth2 popup was closed
   const handleEsriOAuth2PopupClose = React.useCallback(() => {
-    console.log("MapUrlDialog: PopupDialog was closed");
     setShowEsriOauth2Popup(false);
     setLayerAuthPending(false);
     if (esriOAuth2Succeeded === undefined)
       setEsriOAuth2Succeeded(false);  // indicates there was a failed attempt
-
   }, [esriOAuth2Succeeded]);
 
+  // Utility function to get warning message section
   function renderWarningMessage(): React.ReactNode {
     let node: React.ReactNode;
     let warningMessage: string|undefined;
@@ -500,7 +498,6 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   // Use a hook to display the popup.
   // The display of the popup is controlled by the 'showEsriOauth2Popup' state variable.
   useEsriOAuth2Popup(showEsriOauth2Popup, mapUrl, handleEsriOAuth2PopupClose);
-
   return (
     <div ref={dialogContainer}>
       <Dialog

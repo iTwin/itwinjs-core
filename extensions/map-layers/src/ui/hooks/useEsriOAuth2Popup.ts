@@ -7,8 +7,9 @@ import useInterval from "./useInterval";
 import {EsriOAuth2} from "@bentley/imodeljs-frontend";
 
 // Hook that will show a popup window and trigger the ESRI OAuth2 process.
-// Note: An interval is used to check get closed by user: because we access
+// Note: An interval is used to check if popup window was closed by user: because we access
 // a cross domain resource inside the popup, we don't have access to popup window events.
+// As a workaround, we periodically check if popup is still alive.
 // Reference: https://stackoverflow.com/questions/9388380/capture-the-close-event-of-popup-window-in-javascript/48240128#48240128
 export function useEsriOAuth2Popup(visible: boolean, contextUrl: string, onClose: () => void) {
 
@@ -16,26 +17,37 @@ export function useEsriOAuth2Popup(visible: boolean, contextUrl: string, onClose
   const [checkPopupAliveDelay, setCheckPopupAliveDelay] = React.useState<number|undefined>();
   const popupWindow = React.useRef<Window>();
 
-  const checkPopupOpen = () => {
-    console.log("checkPopupOpen called");
+  const checkPopupOpen = React.useCallback(() => {
     if (popupWindow.current?.closed ) {
       onClose();
       setCheckPopupAliveDelay(undefined);
       popupWindow.current = undefined;
     }
-  };
+  }, [onClose]);
 
+  // Whenever the hook is unloaded, make sure
+  // the pop get closed.  Also calls the onClose callback.
+  React.useEffect(() => {
+    return () => {
+      if (popupWindow.current !== undefined ) {
+        popupWindow.current.close();
+        checkPopupOpen();
+      }
+    };
+  }, [checkPopupOpen]);
+
+  // Timer that checks if popup was closed by end-user
   useInterval(checkPopupOpen, checkPopupAliveDelay);
 
+  // Store the context URL whenever it changes
   React.useEffect(() => {
     savedContextUrl.current = contextUrl;
   }, [contextUrl]);
 
+  // Monitors the pop visibility changes and open/close the popup accordingly.
   React.useEffect(() => {
-
     // If visible and a popup window is not already open, open a new popup window
     if (visible && popupWindow.current === undefined) {
-      console.log("opening popup");
       const oauthState = encodeURIComponent(savedContextUrl.current);
       const arcgisUrl = `https://www.arcgis.com/sharing/rest/oauth2/authorize?client_id=${EsriOAuth2.arcGisOnlineClientId}&response_type=token&expiration=${EsriOAuth2.expiration}&redirect_uri=${EsriOAuth2.redirectUri}&state=${oauthState}`;
       const popup = window.open(arcgisUrl, "ArcGIS login", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=450,height=450");
@@ -50,14 +62,13 @@ export function useEsriOAuth2Popup(visible: boolean, contextUrl: string, onClose
 
     // If not visible but a previous popup window is still open, close it.
     if (!visible && popupWindow.current !== undefined ) {
-      console.log("Closing popup");
       popupWindow.current.close();
       popupWindow.current = undefined;
       setCheckPopupAliveDelay(undefined);
       onClose();
     }
 
-  }, [checkPopupAliveDelay, onClose, visible]);
+  },  [onClose, visible]);
 }
 
 export default useEsriOAuth2Popup;
