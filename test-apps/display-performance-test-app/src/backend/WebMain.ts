@@ -52,6 +52,7 @@ function startWebServer() {
   const chromeFlags: Array<string> = [];
 
   process.argv.forEach((arg) => {
+    console.log("arg: " + arg);
     if (arg.split(".").pop() === "json")
       DisplayPerfRpcInterface.jsonFilePath = arg;
     else if (arg === "chrome" || arg === "edge" || arg === "firefox" || arg === "safari")
@@ -99,8 +100,10 @@ function startWebServer() {
   // ---------------------------------------------
   // Start the browser, if given a specific one
   // ---------------------------------------------
+  console.log("browser: " + browser);
   switch (browser) {
     case "chrome":
+      console.log("CHROME");
       if (process.platform === "darwin") { // Ie, if running on Mac
         child_process.execSync("open -a \"Google Chrome\" http://localhost:3000");
       } else {
@@ -109,12 +112,15 @@ function startWebServer() {
           chromeFlags,
         }).then((val) => { DisplayPerfRpcInterface.chrome = val; });
       }
+      console.log("CHROME OPENED");
       break;
     case "edge":
       child_process.execSync("start microsoft-edge:http://localhost:3000");
       break;
     case "safari":
+      console.log("SAFARI");
       child_process.execSync("open -a Safari http://localhost:3000");
+      console.log("SAFARI OPENED");
       break;
     case "firefox":
       if (process.platform === "darwin") { // Ie, if running on Mac
