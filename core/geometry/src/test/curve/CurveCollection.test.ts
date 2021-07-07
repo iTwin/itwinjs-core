@@ -55,10 +55,10 @@ function verifyCurveCollection(ck: Checker, collection: CurveCollection) {
     ck.testCoordinate(length0, length2, "path2.sumLengths");
   }
   const path3 = collection.cloneTransformed(scaleTransform);
-  if (ck.testPointer(path3) && path3) {
+  if (ck.testPointer(path3)) {
     if (!ck.testBoolean(false, path3.isAlmostEqual(collection), "cloneTransform not almostEqual")) {
       const path3A = collection.cloneTransformed(scaleTransform);
-      if (ck.testPointer(path3A) && path3A) {
+      if (ck.testPointer(path3A)) {
         ck.testBoolean(false, path3A.isAlmostEqual(collection), "cloneTransform not almostEqual");
       }
     }

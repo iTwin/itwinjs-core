@@ -27,12 +27,12 @@ function verifyInverseGo(ck: Checker, matrixA: Matrix3d) {
     if (ck.testPointer(matrixB, "matrix has inverse") && matrixB) {
       const matrixAB = matrixA.multiplyMatrixMatrix(matrixB);
       ck.testTrue(matrixAB.isIdentity, "verify A*A^inverse is identity");
-    // verify in-place inverse
-    let matrixE = matrixA.clone();
-    matrixE.inverse(matrixE);
-    if (!ck.testMatrix3d(matrixB, matrixE, "in-place inverse")) {
-      matrixE = matrixA.clone();
+      // verify in-place inverse
+      let matrixE = matrixA.clone();
       matrixE.inverse(matrixE);
+      if (!ck.testMatrix3d(matrixB, matrixE, "in-place inverse")) {
+        matrixE = matrixA.clone();
+        matrixE.inverse(matrixE);
       }
 
     }
@@ -247,7 +247,7 @@ describe("Matrix3d.Factors", () => {
       const data = rigid.getAxisAndAngleOfRotation();
       if (ck.testTrue(data.ok, "Extract axis and angle")) {
         const rigid1 = Matrix3d.createRotationAroundVector(data.axis, data.angle);
-        if (ck.testPointer(rigid1) && rigid1)
+        if (ck.testPointer(rigid1))
           ck.testMatrix3d(rigid, rigid1, "round trip rotation around vector");
       }
     }
@@ -764,7 +764,7 @@ describe("SkewFactorization", () => {
     const ck = new Checker();
     for (const matrix of Sample.createScaleSkewMatrix3d()) {
       const factors = skewFactors(matrix);
-      if (ck.testPointer(factors) && factors !== undefined) {
+      if (ck.testPointer(factors)) {
         const product = factors.rigidFactor.multiplyMatrixMatrix(factors.skewFactor);
         ck.testMatrix3d(matrix, product, "rigid*skew=matrix");
         ck.testTrue(factors.skewFactor.isUpperTriangular, "upper triangular skew factors");
