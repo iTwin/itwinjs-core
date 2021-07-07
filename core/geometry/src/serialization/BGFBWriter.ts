@@ -143,18 +143,18 @@ export class BGFBWriter {
   }
 
   public writeInterpolationCurve3dAsFBVariantGeometry(curve: InterpolationCurve3d): number | undefined {
-    const props = curve.cloneProperties();
+    const props = curve.cloneProps();
     const fitPointsOffset = this.writeDoubleArray(curve.copyFitPointsFloat64Array());
     const knotOffset = props.knots ? this.writeDoubleArray(props.knots) : 0;
 
       // REMARK: some native or flatbuffer quirk made startTangent a point and endTangent a vector.
     const startTangentOffset = props.startTangent ?
       BGFBAccessors.DPoint3d.createDPoint3d(this.builder,
-        props.startTangent.x, props.startTangent.y, props.startTangent.z)
-        : 0;
+          XYZ.x(props.startTangent), XYZ.y(props.startTangent), XYZ.z(props.startTangent))
+            : 0;
     const endTangentOffset = props.endTangent ?
-        BGFBAccessors.DVector3d.createDVector3d(this.builder,
-          props.endTangent.x, props.endTangent.y, props.endTangent.z)
+      BGFBAccessors.DVector3d.createDVector3d(this.builder,
+        XYZ.x(props.endTangent), XYZ.y(props.endTangent), XYZ.z(props.endTangent))
           : 0;
       BGFBAccessors.InterpolationCurve.startInterpolationCurve(this.builder);
     BGFBAccessors.InterpolationCurve.addFitPoints(this.builder, fitPointsOffset);

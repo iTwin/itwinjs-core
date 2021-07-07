@@ -42,8 +42,8 @@ import { Segment1d } from "../geometry3d/Segment1d";
 import { IntegratedSpiral3d } from "../curve/spiral/IntegratedSpiral3d";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
-import { InterpolationCurve3d, InterpolationCurve3dProps } from "../bspline/InterpolationCurve3d";
-import { Point3dArray } from "../geometry3d/PointHelpers";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
+import { NumberArray, Point3dArray } from "../geometry3d/PointHelpers";
 
 /** * Context to write to a flatbuffer blob.
  *  * This class is internal.
@@ -129,20 +129,18 @@ export class BGFBReader {
     const xyzArray = header.fitPointsArray();
     if (xyzArray instanceof Float64Array){
     const knots = header.knotsArray();
-    const props: InterpolationCurve3dProps = {
-      order: header.order (),
-      closed: header.closed(),
-      isChordLenKnots: header.isChordLenKnots(),
-      isColinearTangents: header.isColinearTangents(),
-      isChordLenTangent: header.isChordLenTangents(),
-      startTangent: undefined,
-      endTangent: undefined,
-      fitPoints: Point3dArray.clonePoint3dArray (xyzArray),
-      knots: knots?.slice (0),
-    };
-  // const closed = header.closed();
-  return InterpolationCurve3d.create(props);
-}
+      const options = new InterpolationCurve3dOptions(Point3dArray.clonePoint3dArray(xyzArray), knots ? NumberArray.create(knots) : undefined);
+      options.order = header.order();
+      options.closed = header.closed();
+      options.isChordLenKnots = header.isChordLenKnots();
+      options.isColinearTangents = header.isColinearTangents();
+      options.isChordLenTangent = header.isChordLenTangents();
+      const startTangent = header.startTangent();
+      options.startTangent = startTangent !== null ? Vector3d.create(startTangent.x(), startTangent.y(), startTangent.z()) : undefined;
+      const endTangent = header.startTangent();
+      options.startTangent = endTangent !== null ? Vector3d.create(endTangent.x(), endTangent.y(), endTangent.z()) : undefined;
+      return InterpolationCurve3d.createCapture(options);
+    }
   return undefined;
 }
 

@@ -243,7 +243,7 @@ describe("CreateIModelJsonSamples", () => {
     ck.testTrue(mesh.isAlmostEqual(meshB), "confirm json round trip");
   });
   /* reread the files from several known sources */
-  it("ReadIModelJson", () => {
+  it.only("ReadIModelJson", () => {
     const ck = new Checker();
     const compareObj = new DeepCompare();
     const skipList = ["xyVectors", "readme", "README"];
@@ -284,7 +284,9 @@ describe("CreateIModelJsonSamples", () => {
             const jsonObject3 = IModelJson.Writer.toIModelJson(geometryQuery1);
             const geometryQuery3 = IModelJson.Reader.parse(jsonObject3);
             if (deepAlmostEqual(geometryQuery1, geometryQuery3)) {
-              console.log(" json round trip warning.  json round trip mismatch but secondary geometry round trip matches ", jsonObject1, jsonObject3);
+              console.log(" json round trip warning.  json round trip mismatch but secondary geometry round trip matches ");
+              console.log("jsonObject1:", prettyPrint(jsonObject1));
+              console.log("jsonObject3:", prettyPrint(jsonObject3));
             } else {
               ck.announceError("imjs => GeometryQuery =>imjs round trip failure", currFile);
               console.log("jsonObject1:", prettyPrint(jsonObject1));

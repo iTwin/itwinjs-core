@@ -51,6 +51,7 @@ import { TorusPipe } from "../solid/TorusPipe";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
 import { InterpolationCurve3d as InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
+import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
 // cspell:word bagof
 /* eslint-disable no-console*/
 /**
@@ -887,6 +888,13 @@ export namespace IModelJson {
       return InterpolationCurve3d.create(data);
     }
 
+    /** Parse `bcurve` content (right side)to an Akima curve object. */
+    public static parseAkimaCurve3d(data?: any): AkimaCurve3d | undefined {
+      if (data === undefined)
+        return undefined;
+      return AkimaCurve3d.create(data);
+    }
+
     /** Parse array of json objects to array of instances. */
     public static parseArray(data?: any): any[] | undefined {
       if (Array.isArray(data)) {
@@ -1252,6 +1260,8 @@ export namespace IModelJson {
           return Reader.parseBcurve(json.bcurve);
         } else if (json.hasOwnProperty("interpolationCurve")) {
           return Reader.parseInterpolationCurve(json.interpolationCurve);
+        } else if (json.hasOwnProperty("akimaCurve")) {
+          return Reader.parseAkimaCurve3d(json.akimaCurve);
         } else if (json.hasOwnProperty("path")) {
           return Reader.parseCurveCollectionMembers(new Path(), json.path);
         } else if (json.hasOwnProperty("loop")) {
@@ -1867,8 +1877,13 @@ export namespace IModelJson {
 
     /** Convert strongly typed instance to tagged json */
     public handleInterpolationCurve3d(curve: InterpolationCurve3d): any {
-      return { interpolationCurve: curve.cloneProperties()};
+      return { interpolationCurve: curve.cloneProps()};
     }
+    /** Convert strongly typed instance to tagged json */
+    public handleAkimaCurve3d(curve: AkimaCurve3d): any {
+      return { akimaCurve: curve.cloneProps()};
+    }
+
     /** Convert strongly typed instance to tagged json */
     public handleBezierCurve3d(curve: BezierCurve3d): any {
       const knots = [];

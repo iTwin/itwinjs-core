@@ -7,6 +7,7 @@
  * @module ArraysAndInterfaces
  */
 
+import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BezierCurveBase } from "../bspline/BezierCurveBase";
@@ -46,29 +47,31 @@ import { Point3d, Vector3d } from "./Point3dVector3d";
  * @public
  */
 export abstract class GeometryHandler {
-  /** handle strongly typed LineSegment3d */
+  /** handle strongly typed [[LineSegment3d]] */
   public abstract handleLineSegment3d(g: LineSegment3d): any;
-  /** handle strongly typed  LineString3d  */
+  /** handle strongly typed  [[LineString3d]]  */
   public abstract handleLineString3d(g: LineString3d): any;
-  /** handle strongly typed  Arc3d  */
+  /** handle strongly typed  [[Arc3d]]  */
   public abstract handleArc3d(g: Arc3d): any;
-  /** handle strongly typed  CurveCollection  */
+  /** handle strongly typed  [[CurveCollection]]  */
   public handleCurveCollection(_g: CurveCollection): any { }
-  /** handle strongly typed  BSplineCurve3d  */
+  /** handle strongly typed  [[BSplineCurve3d]]  */
   public abstract handleBSplineCurve3d(g: BSplineCurve3d): any;
-  /** handle strongly typed  BSplineCurve3d  */
+  /** handle strongly typed  [[InterpolatingCurve3d]]  */
   public abstract handleInterpolationCurve3d(g: InterpolationCurve3d): any;
-  /** handle strongly typed  BSplineCurve3dH  */
+  /** handle strongly typed  [[InterpolatingCurve3d]]  */
+  public abstract handleAkimaCurve3d(g: AkimaCurve3d): any;
+  /** handle strongly typed  [[BSplineCurve3dH]]  */
   public abstract handleBSplineCurve3dH(g: BSplineCurve3dH): any;
-  /** handle strongly typed  BSplineSurface3d  */
+  /** handle strongly typed  [[BSplineSurface3d]]  */
   public abstract handleBSplineSurface3d(g: BSplineSurface3d): any;
-  /** handle strongly typed  CoordinateXYZ  */
+  /** handle strongly typed  [[CoordinateXYZ]]  */
   public abstract handleCoordinateXYZ(g: CoordinateXYZ): any;
-  /** handle strongly typed  BSplineSurface3dH  */
+  /** handle strongly typed  [[BSplineSurface3dH]]  */
   public abstract handleBSplineSurface3dH(g: BSplineSurface3dH): any;
-  /** handle strongly typed  IndexedPolyface  */
+  /** handle strongly typed  [[IndexedPolyface]]  */
   public abstract handleIndexedPolyface(g: IndexedPolyface): any;
-  /** handle strongly typed TransitionSpiral3d
+  /** handle strongly typed [[TransitionSpiral3d]]
    * @alpha
    */
   public abstract handleTransitionSpiral(g: TransitionSpiral3d): any;
@@ -130,6 +133,8 @@ export class NullGeometryHandler extends GeometryHandler {
   public handleBSplineCurve3d(_g: BSplineCurve3d): any { return undefined; }
   /** no-action implementation */
   public handleInterpolationCurve3d(_g: InterpolationCurve3d): any { return undefined; }
+  /** no-action implementation */
+  public handleAkimaCurve3d(_g: AkimaCurve3d): any { return undefined; }
   /** no-action implementation */
   public handleBSplineCurve3dH(_g: BSplineCurve3dH): any { return undefined; }
   /** no-action implementation */
@@ -193,6 +198,8 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
   public handleBSplineCurve3d(_g: BSplineCurve3d): any { return undefined; }
   /** no-action implementation */
   public handleInterpolationCurve3d(_g: InterpolationCurve3d): any { return undefined; }
+  /** no-action implementation */
+  public handleAkimaCurve3d(_g: AkimaCurve3d): any { return undefined; }
   /** no-action implementation */
   public handleBSplineCurve3dH(_g: BSplineCurve3dH): any { return undefined; }
   /** no-action implementation */
