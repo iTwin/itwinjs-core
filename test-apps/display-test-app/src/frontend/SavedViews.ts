@@ -51,7 +51,7 @@ export class SavedViewPicker extends ToolBarDropDown {
   protected _open() { this._element.style.display = "block"; }
   protected _close() { this._element.style.display = "none"; }
 
-  public get onViewChanged(): Promise<void> | undefined {
+  public override get onViewChanged(): Promise<void> | undefined {
     if (this._imodel !== this._vp.iModel) {
       this._imodel = this._vp.iModel;
       return this.populate();
@@ -64,10 +64,10 @@ export class SavedViewPicker extends ToolBarDropDown {
   }
 
   public async populate(): Promise<void> {
-    if (!this._imodel.isOpen && !this._imodel.isBlank)
+    if (!this._imodel.isOpen)
       return;
 
-    const filename = this._imodel.isBlank ? this._imodel.rootSubject.name : this._imodel.key;
+    const filename = this._imodel.key;
     const esvString = await DtaRpcInterface.getClient().readExternalSavedViews(filename);
     this._views.loadFromString(esvString);
     this.populateFromViewList();
