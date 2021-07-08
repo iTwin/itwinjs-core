@@ -1146,7 +1146,7 @@ describe("iModel", () => {
     assert.isTrue(imodel5.isGeoLocated);
     const center = { x: 289095, y: 3803860, z: 10 }; // near center of project extents, 10 meters above ground.
     const ecefPt = imodel5.spatialToEcef(center);
-    const pt = {x: -3575156.3661052254, y: 3873432.0891543664, z: 3578996.012643183};
+    const pt = { x: -3575156.3661052254, y: 3873432.0891543664, z: 3578996.012643183 };
     assert.isTrue(ecefPt.isAlmostEqual(pt), "spatialToEcef");
 
     const z2 = imodel5.ecefToSpatial(ecefPt);
