@@ -10,7 +10,7 @@ import {
   ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
 } from "@bentley/bentleyjs-core";
 import {
-  Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
+  GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
