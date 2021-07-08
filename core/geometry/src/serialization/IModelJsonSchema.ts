@@ -493,7 +493,7 @@ export namespace IModelJson {
     tagA: number;
     /** Second integer tag.  */
     tagB: number;
-/** application specific integer data */
+    /** application specific integer data */
     intData?: number[];
     /** application specific doubles */
     doubleData?: number[];
@@ -587,9 +587,9 @@ export namespace IModelJson {
       if (tagA !== undefined) {
         const result = new TaggedNumericData(tagA, tagB);
         if (json.hasOwnProperty("intData"))
-          result.intData = this.parseNumberArrayProperty (json, "intData", 0,undefined);
+          result.intData = this.parseNumberArrayProperty(json, "intData", 0, undefined);
         if (json.hasOwnProperty("doubleData"))
-          result.doubleData = this.parseNumberArrayProperty (json, "doubleData", 0,undefined);
+          result.doubleData = this.parseNumberArrayProperty(json, "doubleData", 0, undefined);
         return result;
       }
       return undefined;
@@ -960,7 +960,7 @@ export namespace IModelJson {
         const numPerFace = data.hasOwnProperty("numPerFace") ? data.numPerFace : 0;
         if (data.hasOwnProperty("expectedClosure")) {
           const q = data.expectedClosure;
-          if (Number.isFinite (q)) {
+          if (Number.isFinite(q)) {
             polyface.expectedClosure = q;
           }
         }
@@ -1014,7 +1014,7 @@ export namespace IModelJson {
         if (data.hasOwnProperty("auxData"))
           polyface.data.auxData = Reader.parsePolyfaceAuxData(data.auxData, numPerFace);
 
-        if (data.hasOwnProperty("tags")){
+        if (data.hasOwnProperty("tags")) {
           polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(data.tags);
         }
 
@@ -1314,7 +1314,7 @@ export namespace IModelJson {
   export class Writer extends GeometryHandler {
 
     public handleTaggedNumericData(data: TaggedNumericData): TaggedNumericDataProps {
-      const result: TaggedNumericDataProps = { tagA: data.tagA, tagB: data.tagB};
+      const result: TaggedNumericDataProps = { tagA: data.tagA, tagB: data.tagB };
       if (data.intData !== undefined && data.intData.length > 0)
         result.intData = data.intData.slice();
       if (data.doubleData !== undefined && data.doubleData.length > 0)
@@ -1575,26 +1575,26 @@ export namespace IModelJson {
     }
 
     /** Convert strongly typed instance to tagged json */
-    public handlePath(data: Path): any {
+    public override handlePath(data: Path): any {
       return { path: this.collectChildren(data) };
     }
     /** Convert strongly typed instance to tagged json */
-    public handleLoop(data: Loop): any {
+    public override handleLoop(data: Loop): any {
       return { loop: this.collectChildren(data) };
     }
 
     /** Convert strongly typed instance to tagged json */
-    public handleParityRegion(data: ParityRegion): any {
+    public override handleParityRegion(data: ParityRegion): any {
       return { parityRegion: this.collectChildren(data) };
     }
 
     /** Convert strongly typed instance to tagged json */
-    public handleUnionRegion(data: UnionRegion): any {
+    public override handleUnionRegion(data: UnionRegion): any {
       return { unionRegion: this.collectChildren(data) };
     }
 
     /** Convert strongly typed instance to tagged json */
-    public handleBagOfCurves(data: BagOfCurves): any {
+    public override handleBagOfCurves(data: BagOfCurves): any {
       return { bagOfCurves: this.collectChildren(data) };
     }
 
@@ -1788,7 +1788,7 @@ export namespace IModelJson {
       }
       // assemble the contents in alphabetical order.
       const contents: { [k: string]: any } = {};
-      if (pf.expectedClosure  !== 0)
+      if (pf.expectedClosure !== 0)
         contents.expectedClosure = pf.expectedClosure;
       if (pf.twoSided)
         contents.twoSided = true;

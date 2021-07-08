@@ -11,7 +11,7 @@ import { addCsrfHeader, ChangeSet, ChangeSetQuery, IModelClient, IModelHubClient
 import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { FrontendFeatureUsageTelemetryClient } from "@bentley/usage-logging-client";
-import { IModelApp } from "./imodeljs-frontend";
+import { IModelApp } from "./IModelApp";
 
 /** @internal */
 export type ChangeSetId = string;

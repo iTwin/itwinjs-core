@@ -1600,6 +1600,8 @@ export class BingMapsImageryLayerProvider extends MapLayerImageryProvider {
 // @public
 export class BlankConnection extends IModelConnection {
     close(): Promise<void>;
+    // @internal (undocumented)
+    closeSync(): void;
     get contextId(): GuidString | undefined;
     set contextId(contextId: GuidString | undefined);
     static create(props: BlankConnectionProps): BlankConnection;
@@ -2486,7 +2488,7 @@ export class DrawingViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, extents: AxisAlignedBox3d, sectionDrawing?: SectionDrawingViewProps);
     // @internal
     static alwaysDisplaySpatialView: boolean;
-    // @internal
+    // @internal (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // @internal
     get attachment(): Object | undefined;
@@ -2494,33 +2496,33 @@ export class DrawingViewState extends ViewState2d {
     get attachmentInfo(): Object;
     // @internal (undocumented)
     attachToViewport(): void;
-    // @internal
+    // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): DrawingViewState;
-    // @internal
+    // @internal (undocumented)
     createScene(context: SceneContext): void;
     // (undocumented)
     get defaultExtentLimits(): ExtentLimits;
     // @internal (undocumented)
     detachFromViewport(): void;
-    // @internal
+    // @internal (undocumented)
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
-    // @internal
+    // @internal (undocumented)
     getExtents(): Vector3d;
-    // @internal
+    // @internal (undocumented)
     getOrigin(): import("@bentley/geometry-core").Point3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
     // @internal
     static hideDrawingGraphics: boolean;
-    // @internal
+    // @internal (undocumented)
     isDrawingView(): this is DrawingViewState;
-    // @internal
+    // @internal (undocumented)
     load(): Promise<void>;
-    // @internal
+    // @internal (undocumented)
     get secondaryViewports(): Iterable<import("./Viewport").Viewport>;
     // @internal
     get sectionDrawingInfo(): SectionDrawingInfo;
@@ -2660,7 +2662,7 @@ export class ElementAgenda {
     get count(): number;
     readonly elements: Id64Array;
     find(id: Id64String): boolean;
-    getSource(): ModifyElementSource.Unknown | ModifyElementSource;
+    getSource(): ModifyElementSource;
     readonly groupMarks: GroupMark[];
     has(id: string): boolean;
     // (undocumented)
@@ -6770,12 +6772,12 @@ export class OffScreenViewport extends Viewport {
     static create(options: OffScreenViewportOptions): OffScreenViewport;
     // @internal
     static createViewport(view: ViewState, target: RenderTarget, lockAspectRatio?: boolean): OffScreenViewport;
-    // @internal
+    // @internal (undocumented)
     get isAspectRatioLocked(): boolean;
     // (undocumented)
     protected _isAspectRatioLocked: boolean;
     setRect(rect: ViewRect): void;
-    // @internal
+    // @internal (undocumented)
     get viewRect(): ViewRect;
 }
 
@@ -6804,6 +6806,18 @@ export class OidcBrowserClient extends ImsAuthorizationClient implements Fronten
     protected signInSilent(requestContext: ClientRequestContext): Promise<User>;
     signOut(requestContext?: ClientRequestContext): Promise<void>;
     }
+
+// @public
+export type OnFlashedIdChangedEventArgs = {
+    readonly current: Id64String;
+    readonly previous: Id64String;
+} | {
+    readonly current: Id64String;
+    readonly previous: undefined;
+} | {
+    readonly previous: Id64String;
+    readonly current: undefined;
+};
 
 // @alpha
 export type OnFrameStatsReadyEvent = BeEvent<(frameStats: Readonly<FrameStats>) => void>;
@@ -6890,7 +6904,7 @@ export namespace OrbitGtTileTree {
 // @public
 export class OrthographicViewState extends SpatialViewState {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
-    // @internal
+    // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     supportsCamera(): boolean;
@@ -8580,7 +8594,7 @@ export class ScreenViewport extends Viewport {
     setEventController(controller?: EventController): void;
     // @internal
     static setToParentSize(div: HTMLElement): void;
-    // @internal
+    // @internal (undocumented)
     synchWithView(options?: ViewChangeOptions | boolean): void;
     readonly toolTipDiv: HTMLDivElement;
     // @internal (undocumented)
@@ -8939,34 +8953,34 @@ export class SheetModelState extends GeometricModel2dState {
 // @public
 export class SheetViewState extends ViewState2d {
     constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array);
-    // @internal
+    // @internal (undocumented)
     get areAllTileTreesLoaded(): boolean;
     // (undocumented)
     get attachmentIds(): Id64Array;
     // @internal
     get attachments(): Object[] | undefined;
-    // @internal
+    // @internal (undocumented)
     attachToViewport(): void;
-    // @internal
+    // @internal (undocumented)
     changeViewedModel(modelId: Id64String): Promise<void>;
     // @internal (undocumented)
     static get className(): string;
-    // @internal
+    // @internal (undocumented)
     collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void;
-    // @internal
+    // @internal (undocumented)
     computeFitRange(): Range3d;
     // (undocumented)
     static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState;
-    // @internal
+    // @internal (undocumented)
     createScene(context: SceneContext): void;
-    // @internal
+    // @internal (undocumented)
     decorate(context: DecorateContext): void;
-    // @internal
+    // @internal (undocumented)
     get defaultExtentLimits(): {
         min: number;
         max: number;
     };
-    // @internal
+    // @internal (undocumented)
     detachFromViewport(): void;
     // @internal
     discloseTileTrees(trees: DisclosedTileTreeSet): void;
@@ -8974,13 +8988,15 @@ export class SheetViewState extends ViewState2d {
     getExtents(): import("@bentley/geometry-core").Vector3d;
     // (undocumented)
     getOrigin(): Point3d;
-    // @internal
+    // @internal (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
-    // @internal
+    // @internal (undocumented)
     isDrawingView(): this is DrawingViewState;
+    // @internal (undocumented)
+    isSheetView(): this is SheetViewState;
     // @internal
     load(): Promise<void>;
-    // @internal
+    // @internal (undocumented)
     get secondaryViewports(): Iterable<Viewport>;
     readonly sheetSize: Point2d;
     // (undocumented)
@@ -9205,9 +9221,9 @@ export class SpatialViewState extends ViewState3d {
     constructor(props: SpatialViewDefinitionProps, iModel: IModelConnection, arg3: CategorySelectorState, displayStyle: DisplayStyle3dState, modelSelector: ModelSelectorState);
     // (undocumented)
     addViewedModel(id: Id64String): void;
-    // @internal
+    // @internal (undocumented)
     attachToViewport(): void;
-    // @internal
+    // @internal (undocumented)
     static get className(): string;
     // (undocumented)
     clearViewedModels(): void;
@@ -9217,25 +9233,25 @@ export class SpatialViewState extends ViewState3d {
     static createBlank(iModel: IModelConnection, origin: XYAndZ, extents: XYAndZ, rotation?: Matrix3d): SpatialViewState;
     // (undocumented)
     static createFromProps(props: ViewStateProps, iModel: IModelConnection): SpatialViewState;
-    // @internal
+    // @internal (undocumented)
     createScene(context: SceneContext): void;
     // (undocumented)
     get defaultExtentLimits(): {
         min: number;
         max: number;
     };
-    // @internal
+    // @internal (undocumented)
     detachFromViewport(): void;
     // (undocumented)
     equals(other: this): boolean;
     // (undocumented)
     forEachModel(func: (model: GeometricModelState) => void): void;
-    // @internal
+    // @internal (undocumented)
     forEachModelTreeRef(func: (treeRef: TileTreeReference) => void): void;
     protected getDisplayedExtents(): AxisAlignedBox3d;
     // (undocumented)
     getViewedExtents(): AxisAlignedBox3d;
-    // @internal
+    // @internal (undocumented)
     isSpatialView(): this is SpatialViewState;
     // (undocumented)
     load(): Promise<void>;
@@ -12144,6 +12160,8 @@ export abstract class Viewport implements IDisposable {
     set featureOverrideProvider(provider: FeatureOverrideProvider | undefined);
     findFeatureOverrideProvider(predicate: (provider: FeatureOverrideProvider) => boolean): FeatureOverrideProvider | undefined;
     findFeatureOverrideProviderOfType<T>(type: Constructor<T>): T | undefined;
+    get flashedId(): Id64String | undefined;
+    set flashedId(id: Id64String | undefined);
     get flashSettings(): FlashSettings;
     set flashSettings(settings: FlashSettings);
     // @internal (undocumented)
@@ -12235,6 +12253,7 @@ export abstract class Viewport implements IDisposable {
     readonly onDisposed: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverrideProviderChanged: BeEvent<(vp: Viewport) => void>;
     readonly onFeatureOverridesChanged: BeEvent<(vp: Viewport) => void>;
+    readonly onFlashedIdChanged: BeEvent<(vp: Viewport, args: OnFlashedIdChangedEventArgs) => void>;
     // @alpha
     readonly onFrameStats: BeEvent<(frameStats: Readonly<FrameStats>) => void>;
     readonly onNeverDrawnChanged: BeEvent<(vp: Viewport) => void>;
@@ -12285,6 +12304,7 @@ export abstract class Viewport implements IDisposable {
     setAlwaysDrawn(ids: Id64Set, exclusive?: boolean): void;
     setAnimator(animator?: Animator): void;
     setFeatureOverrideProviderChanged(): void;
+    // @deprecated
     setFlashed(id: string | undefined, _duration?: number): void;
     // (undocumented)
     setLightSettings(settings: LightSettings): void;
@@ -12615,6 +12635,7 @@ export abstract class ViewState extends ElementState {
     abstract isDrawingView(): this is DrawingViewState;
     // (undocumented)
     isPrivate?: boolean;
+    isSheetView(): this is SheetViewState;
     abstract isSpatialView(): this is SpatialViewState;
     // @internal (undocumented)
     isSubCategoryVisible(id: Id64String): boolean;
