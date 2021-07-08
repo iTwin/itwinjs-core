@@ -149,14 +149,14 @@ export class AuxChannel {
   }
 
   /** The minimum and maximum displacements, if [[dataType]] is [[AuxChannelDataType.Vector]]; or else a null range. */
-  public computeDisplacementRange(result?: Range3d): Range3d {
+  public computeDisplacementRange(scale = 1, result?: Range3d): Range3d {
     result = Range3d.createNull(result);
 
     if (AuxChannelDataType.Vector === this.dataType) {
       for (const data of this.data) {
         const v = data.values;
         for (let i = 0; i < v.length; i += 3)
-          result.extendXYZ(v[i], v[i + 1], v[i + 2]);
+          result.extendXYZ(v[i] * scale, v[i + 1] * scale, v[i + 2] * scale);
       }
     }
 
@@ -270,11 +270,11 @@ export class PolyfaceAuxData {
   }
 
   /** Compute the minimum and maximum displacements from all channels of [[AuxChannelDataType.Vector]]. */
-  public computeDisplacementRange(result?: Range3d): Range3d {
+  public computeDisplacementRange(scale = 1, result?: Range3d): Range3d {
     result = Range3d.createNull(result);
     const channelRange = Range3d.createNull();
     for (const channel of this.channels)
-      result.extendRange(channel.computeDisplacementRange(channelRange));
+      result.extendRange(channel.computeDisplacementRange(scale, channelRange));
 
     return result;
   }

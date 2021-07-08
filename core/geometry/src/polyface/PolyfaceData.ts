@@ -353,10 +353,10 @@ export class PolyfaceData {
    * @param result Caller-allocated destination.
    * @returns The full range of the point array computed based on the supplied options.
    */
-  public computeRange(options?: { transform?: Transform, includeDisplacements?: boolean }, result?: Range3d): Range3d {
+  public computeRange(options?: { transform?: Transform, includeDisplacements?: boolean, displacementScale?: number }, result?: Range3d): Range3d {
     let displacementRange;
     if (options?.includeDisplacements)
-      displacementRange = this.auxData?.computeDisplacementRange();
+      displacementRange = this.auxData?.computeDisplacementRange(options?.displacementScale);
 
     if (!displacementRange || displacementRange.isNull)
       return this.range(result, options?.transform);
