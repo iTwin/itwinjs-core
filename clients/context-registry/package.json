@@ -1,6 +1,6 @@
 {
   "name": "@bentley/context-registry-client",
-  "version": "2.19.0-dev.8",
+  "version": "2.19.0-dev.9",
   "description": "iModel.js Context Registry Client",
   "main": "lib/context-registry-client.js",
   "typings": "lib/context-registry-client",
@@ -39,8 +39,8 @@
     "deep-assign": "^2.0.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.8",
-    "@bentley/itwin-client": "workspace:^2.19.0-dev.8"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.9",
+    "@bentley/itwin-client": "workspace:^2.19.0-dev.9"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
