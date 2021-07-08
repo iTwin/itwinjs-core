@@ -35,7 +35,12 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public constructor(system: RenderSystem, options: GraphicBuilderOptions, accumulatorTransform = Transform.identity) {
     super(options);
-    this.accum = new GeometryAccumulator(this.iModel, system, undefined, accumulatorTransform);
+    this.accum = new GeometryAccumulator({
+      iModel: this.iModel,
+      system,
+      transform: accumulatorTransform,
+      analysisStyleDisplacementScale: this.viewport.displayStyle.settings.analysisStyle?.displacement?.scale,
+    });
   }
 
   public finish(): RenderGraphic {
@@ -120,8 +125,11 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   }
 
   public addPolyface(meshData: Polyface): void {
-    this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.placement);
-    this.addRangeBox((meshData as IndexedPolyface).data.computeRange({ displacementScale: 100, includeDisplacements: true }));
+    if (!(meshData instanceof IndexedPolyface))
+      throw new Error("GraphicBuilder.addPolyface expected an IndexedPolyface.");
+
+    this.accum.addPolyface(meshData, this.getMeshDisplayParams(), this.placement);
+    this.addRangeBox(meshData.data.computeRange({ displacementScale: this.accum.analysisStyleDisplacementScale, includeDisplacements: true }));
   }
 
   public addSolidPrimitive(primitive: SolidPrimitive): void {

@@ -18,6 +18,7 @@ import { MeshGraphicArgs, MeshList } from "../mesh/MeshPrimitives";
 import { GeometryOptions } from "../Primitives";
 import { GeometryList } from "./GeometryList";
 import { Geometry, PrimitiveGeometryType } from "./GeometryPrimitives";
+import { IModelApp } from "../../../IModelApp";
 
 /** @internal */
 export class GeometryAccumulator {
@@ -29,24 +30,34 @@ export class GeometryAccumulator {
   public readonly checkGlyphBoxes: boolean = false; // #TODO: obviously update when checkGlyphBoxes needs to be mutable
   public readonly iModel: IModelConnection;
   public readonly system: RenderSystem;
+  // ###TODO Mark private after removing debug range box from GeometryListBuilder.addPolyface
+  public readonly analysisStyleDisplacementScale?: number;
 
   public get surfacesOnly(): boolean { return this._surfacesOnly; }
   public get transform(): Transform { return this._transform; }
   public get isEmpty(): boolean { return this.geometries.isEmpty; }
   public get haveTransform(): boolean { return !this._transform.isIdentity; }
 
-  public constructor(iModel: IModelConnection, system: RenderSystem, surfacesOnly: boolean = false, transform: Transform = Transform.createIdentity(), tileRange: Range3d = Range3d.createNull()) {
-    this._surfacesOnly = surfacesOnly;
-    this._transform = transform;
-    this.iModel = iModel;
-    this.system = system;
-    this.tileRange = tileRange;
+  public constructor(options: {
+    iModel: IModelConnection,
+    system?: RenderSystem,
+    surfacesOnly?: boolean,
+    transform?: Transform,
+    tileRange?: Range3d,
+    analysisStyleDisplacementScale?: number,
+  }) {
+    this.iModel = options.iModel;
+    this.system = options.system ?? IModelApp.renderSystem;
+    this._surfacesOnly = true === options.surfacesOnly;
+    this._transform = options.transform ?? Transform.createIdentity();
+    this.tileRange = options.tileRange ?? Range3d.createNull();
+    this.analysisStyleDisplacementScale = options.analysisStyleDisplacementScale;
   }
 
   private getPrimitiveRange(geom: PrimitiveGeometryType): Range3d | undefined {
     const range = new Range3d();
     if (geom instanceof IndexedPolyface)
-      geom.data.computeRange({ includeDisplacements: true, displacementScale: 100 }, range);
+      geom.data.computeRange({ includeDisplacements: true, displacementScale: this.analysisStyleDisplacementScale }, range);
     else
       geom.range(undefined, range);
 
