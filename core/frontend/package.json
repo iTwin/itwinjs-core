@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "2.17.1",
+  "version": "2.17.2",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-frontend.js",
   "typings": "lib/imodeljs-frontend",
@@ -36,20 +36,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.17.1",
-    "@bentley/frontend-authorization-client": "workspace:^2.17.1",
-    "@bentley/geometry-core": "workspace:^2.17.1",
-    "@bentley/imodelhub-client": "workspace:^2.17.1",
-    "@bentley/imodeljs-common": "workspace:^2.17.1",
-    "@bentley/imodeljs-i18n": "workspace:^2.17.1",
-    "@bentley/imodeljs-quantity": "workspace:^2.17.1",
-    "@bentley/itwin-client": "workspace:^2.17.1",
-    "@bentley/orbitgt-core": "workspace:^2.17.1",
-    "@bentley/product-settings-client": "workspace:^2.17.1",
-    "@bentley/rbac-client": "workspace:^2.17.1",
-    "@bentley/telemetry-client": "workspace:^2.17.1",
-    "@bentley/ui-abstract": "workspace:^2.17.1",
-    "@bentley/webgl-compatibility": "workspace:^2.17.1"
+    "@bentley/bentleyjs-core": "workspace:^2.17.2",
+    "@bentley/frontend-authorization-client": "workspace:^2.17.2",
+    "@bentley/geometry-core": "workspace:^2.17.2",
+    "@bentley/imodelhub-client": "workspace:^2.17.2",
+    "@bentley/imodeljs-common": "workspace:^2.17.2",
+    "@bentley/imodeljs-i18n": "workspace:^2.17.2",
+    "@bentley/imodeljs-quantity": "workspace:^2.17.2",
+    "@bentley/itwin-client": "workspace:^2.17.2",
+    "@bentley/orbitgt-core": "workspace:^2.17.2",
+    "@bentley/product-settings-client": "workspace:^2.17.2",
+    "@bentley/rbac-client": "workspace:^2.17.2",
+    "@bentley/telemetry-client": "workspace:^2.17.2",
+    "@bentley/ui-abstract": "workspace:^2.17.2",
+    "@bentley/webgl-compatibility": "workspace:^2.17.2"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
