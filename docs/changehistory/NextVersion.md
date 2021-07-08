@@ -25,6 +25,10 @@ The deprecated method works by creating a range of Change Summaries by starting 
 [ChangeSummaryExtractOptions]($imodeljs-backend) was also deprecated as a consequence of the above changes. [CreateChangeSummaryArgs]($imodeljs-backend) serves a similar purpose with the newer methods.
 ChangeSummaryExtractContext was unused and has been removed.
 
+## Presentation changes
+
+Added [RelatedPropertiesSpecificationNew.skipIfDuplicate]($presentation-common) attribute to allow specification to be overriden by specifications from higher priority content modifiers. Set this attribute to all related properties' specifications in the default BisCore ruleset.
+
 ## UI changes
 
 ### @bentley/ui-abstract package
