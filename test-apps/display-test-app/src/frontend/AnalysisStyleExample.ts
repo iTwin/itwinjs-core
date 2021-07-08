@@ -63,8 +63,11 @@ async function createCantilever(): Promise<Polyface> {
   const polyface = IModelJson.Reader.parse(await response.json()) as Polyface;
   assert(polyface instanceof Polyface);
 
-  const transform = Transform.createScaleAboutPoint(new Point3d(), 30);
-  polyface.tryTransformInPlace(transform);
+  const doTransform = false;
+  if (doTransform) {
+    const transform = Transform.createScaleAboutPoint(new Point3d(), 30);
+    polyface.tryTransformInPlace(transform);
+  }
 
   return polyface;
 }

@@ -121,6 +121,7 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public addPolyface(meshData: Polyface): void {
     this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.placement);
+    this.addRangeBox((meshData as IndexedPolyface).data.computeRange({ includeDisplacements: true }));
   }
 
   public addSolidPrimitive(primitive: SolidPrimitive): void {

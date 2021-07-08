@@ -14,7 +14,7 @@ import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Point3d } from "../geometry3d/Point3dVector3d";
 import { NumberArray } from "../geometry3d/PointHelpers";
 // import { Geometry } from "./Geometry";
-import { Range1d } from "../geometry3d/Range";
+import { Range1d, Range3d } from "../geometry3d/Range";
 
 /** The types of data that can be represented by an [[AuxChannelData]]. Each type of data contributes differently to the
  * animation applied by an [AnalysisStyle]($common) and responds differently when the host [[PolyfaceAuxData]] is transformed.
@@ -147,6 +147,21 @@ export class AuxChannel {
 
     return range;
   }
+
+  /** The minimum and maximum displacements, if [[dataType]] is [[AuxChannelDataType.Vector]]; or else a null range. */
+  public computeDisplacementRange(result?: Range3d): Range3d {
+    result = Range3d.createNull(result);
+
+    if (AuxChannelDataType.Vector === this.dataType) {
+      for (const data of this.data) {
+        const v = data.values;
+        for (let i = 0; i < v.length; i += 3)
+          result.extendXYZ(v[i], v[i + 1], v[i + 2]);
+      }
+    }
+
+    return result;
+  }
 }
 
 /**  The `PolyfaceAuxData` structure contains one or more analytical data channels for each vertex of a [[Polyface]], allowing the polyface to be styled
@@ -252,6 +267,16 @@ export class PolyfaceAuxData {
     }
 
     return true;
+  }
+
+  /** Compute the minimum and maximum displacements from all channels of [[AuxChannelDataType.Vector]]. */
+  public computeDisplacementRange(result?: Range3d): Range3d {
+    result = Range3d.createNull(result);
+    const channelRange = Range3d.createNull();
+    for (const channel of this.channels)
+      result.extendRange(channel.computeDisplacementRange(channelRange));
+
+    return result;
   }
 }
 

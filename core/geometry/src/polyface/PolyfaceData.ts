@@ -338,12 +338,48 @@ export class PolyfaceData {
       }
     }
   }
+
   /** Return the range of the point array (optionally transformed) */
   public range(result?: Range3d, transform?: Transform): Range3d {
     result = result ? result : Range3d.createNull();
     result.extendArray(this.point, transform);
     return result;
   }
+
+  /** Compute the range of the point array, optionally transformed and/or including displacement applied by [[AuxChannel]]s.
+   * @param options Options controlling how the range is computed
+   *  - transform If supplied, a transform to apply to the computed range.
+   *  - includeDisplacements If true, the range will be expanded to account for the maximum displacements applied by [[auxData]].
+   * @param result Caller-allocated destination.
+   * @returns The full range of the point array computed based on the supplied options.
+   */
+  public computeRange(options?: { transform?: Transform, includeDisplacements?: boolean }, result?: Range3d): Range3d {
+    let displacementRange;
+    if (options?.includeDisplacements)
+      displacementRange = this.auxData?.computeDisplacementRange();
+
+    if (!displacementRange || displacementRange.isNull)
+      return this.range(result, options?.transform);
+
+    const range = Range3d.createNull(result);
+    const transform = options?.transform;
+    let extend: (x: number, y: number, z: number) => void;
+    if (transform)
+      extend = (x, y, z) => range.extendTransformedXYZ(transform, x, y, z);
+    else
+      extend = (x, y, z) => range.extendXYZ(x, y, z);
+
+    const pt = new Point3d();
+    for (let i = 0; i < this.point.length; i++) {
+      this.point.getPoint3dAtUncheckedPointIndex(i, pt);
+      extend(pt.x, pt.y, pt.z);
+      extend(pt.x + displacementRange.low.x, pt.y + displacementRange.low.y, pt.z + displacementRange.low.z);
+      extend(pt.x + displacementRange.high.x, pt.y + displacementRange.high.y, pt.z + displacementRange.high.z);
+    }
+
+    return range;
+  }
+
   /** reverse indices facet-by-facet, with the given facetStartIndex array delimiting faces.
    *
    * * facetStartIndex[0] == 0 always -- start of facet zero.

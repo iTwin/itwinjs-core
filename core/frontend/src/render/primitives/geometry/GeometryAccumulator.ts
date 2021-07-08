@@ -43,12 +43,14 @@ export class GeometryAccumulator {
     this.tileRange = tileRange;
   }
 
-  private getPrimitiveRange(pGeom: PrimitiveGeometryType): Range3d | undefined {
-    const pRange: Range3d = new Range3d();
-    pGeom.range(undefined, pRange);
-    if (pRange.isNull)
-      return undefined;
-    return pRange;
+  private getPrimitiveRange(geom: PrimitiveGeometryType): Range3d | undefined {
+    const range = new Range3d();
+    if (geom instanceof IndexedPolyface)
+      geom.data.computeRange({ includeDisplacements: true }, range);
+    else
+      geom.range(undefined, range);
+
+    return range.isNull ? undefined : range;
   }
 
   private calculateTransform(transform: Transform, range: Range3d): void {
@@ -57,7 +59,7 @@ export class GeometryAccumulator {
   }
 
   public addLoop(loop: Loop, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
-    const range: Range3d | undefined = this.getPrimitiveRange(loop);
+    const range = this.getPrimitiveRange(loop);
     if (!range)
       return false;
 
@@ -88,7 +90,7 @@ export class GeometryAccumulator {
   }
 
   public addPath(path: Path, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
-    const range: Range3d | undefined = this.getPrimitiveRange(path);
+    const range = this.getPrimitiveRange(path);
     if (!range)
       return false;
 
@@ -97,7 +99,7 @@ export class GeometryAccumulator {
   }
 
   public addPolyface(ipf: IndexedPolyface, displayParams: DisplayParams, transform: Transform): boolean {
-    const range: Range3d | undefined = this.getPrimitiveRange(ipf);
+    const range = this.getPrimitiveRange(ipf);
     if (undefined === range)
       return false;
 
@@ -131,12 +133,10 @@ export class GeometryAccumulator {
    * @param tolerance should derive from Viewport.getPixelSizeAtPoint
    */
   public toMeshBuilderMap(options: GeometryOptions, tolerance: number, pickableId?: string): MeshBuilderMap {
-    const { geometries } = this; // declare internal dependencies
-
-    const range = geometries.computeRange();
+    const range = this.geometries.computeRange();
     const is2d = !range.isNull && range.isAlmostZeroZ;
 
-    return MeshBuilderMap.createFromGeometries(geometries, tolerance, range, is2d, options, pickableId);
+    return MeshBuilderMap.createFromGeometries(this.geometries, tolerance, range, is2d, options, pickableId);
   }
 
   public toMeshes(options: GeometryOptions, tolerance: number, pickableId?: string): MeshList {
