@@ -46,15 +46,18 @@ import { ProgressRadial } from "@itwin/itwinui-react";
 /* eslint-disable deprecation/deprecation */
 
 /** Type for nodesSelected callback
- * @internal @deprecated
+ * @internal
+ * @deprecated
  */
 export type NodesSelectedCallback = OnItemsSelectedCallback<TreeNodeItem>;
 /** Type for nodesDeselected callback
- * @internal @deprecated
+ * @internal
+ * @deprecated
  */
 export type NodesDeselectedCallback = OnItemsDeselectedCallback<TreeNodeItem>;
 /** Type for node renderer
- * @internal @deprecated
+ * @internal
+ * @deprecated
  */
 export type NodeRenderer = (item: BeInspireTreeNode<TreeNodeItem>, props: TreeNodeProps) => React.ReactNode;
 
@@ -152,7 +155,8 @@ export interface TreeProps extends CommonProps {
 
   /** Contains render overrides for different pieces of the tree component */
   renderOverrides?: {
-    /** Callback to render a node @internal */
+    /** Callback to render a node
+     * @internal */
     renderNode?: NodeRenderer;
     /** Callback to render a node checkbox. When a custom node renderer is used, it's responsible for calling this callback. */
     renderCheckbox?: NodeCheckboxRenderer;
@@ -163,10 +167,12 @@ export interface TreeProps extends CommonProps {
   /** @internal */
   onNodesRender?: () => void;
 
-  /** Properties for node highlighting logic. If not provided, node highlighting is disabled. @internal */
+  /** Properties for node highlighting logic. If not provided, node highlighting is disabled.
+   * @internal */
   nodeHighlightingProps?: HighlightableTreeProps;
 
-  /** Properties for cell editing logic. If not provided, cell editing is disabled. @beta */
+  /** Properties for cell editing logic. If not provided, cell editing is disabled.
+   * @beta */
   cellEditing?: EditableTreeProps;
 
   /**
@@ -203,7 +209,8 @@ export interface TreeProps extends CommonProps {
 }
 
 /** State for the [[DEPRECATED_Tree]] component
- * @internal @deprecated
+ * @internal
+ * @deprecated
  */
 interface TreeState {
   prev: {

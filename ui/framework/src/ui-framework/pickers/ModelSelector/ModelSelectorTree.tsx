@@ -22,7 +22,8 @@ import { CategoryModelTreeProps, CategoryModelTreeState, Groups } from "./ModelS
 
 /**
  * Tree which displays and manages models or categories contained in an iModel.
- * @internal @deprecated
+ * @internal
+ * @deprecated
  */
 // istanbul ignore next
 export class CategoryModelTree extends React.Component<CategoryModelTreeProps, CategoryModelTreeState> {

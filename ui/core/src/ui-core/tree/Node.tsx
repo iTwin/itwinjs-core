@@ -54,7 +54,8 @@ export interface TreeNodeProps extends CommonProps {
   label: React.ReactNode;
   level: number;
   icon?: React.ReactChild;
-  /** Properties for the checkbox. @beta */
+  /** Properties for the checkbox.
+   * @beta */
   checkboxProps?: NodeCheckboxProps;
   isLeaf?: boolean;
   isLoading?: boolean;
@@ -72,7 +73,8 @@ export interface TreeNodeProps extends CommonProps {
 
   /** Contains render overrides for different pieces of the node component. */
   renderOverrides?: {
-    /** Callback to render a checkbox. Only called when checkbox is displayed. @beta */
+    /** Callback to render a checkbox. Only called when checkbox is displayed.
+     * @beta */
     renderCheckbox?: NodeCheckboxRenderer;
   };
   ["data-testid"]?: string;

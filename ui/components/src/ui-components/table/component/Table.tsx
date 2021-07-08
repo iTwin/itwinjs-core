@@ -115,9 +115,11 @@ export interface TableProps extends CommonProps {
   /** Specifies the selection mode. The default is Single. */
   selectionMode?: SelectionMode;
 
-  /** Callback for when properties are being edited @beta */
+  /** Callback for when properties are being edited
+   * @beta */
   onPropertyEditing?: (args: TableCellEditorState) => void;
-  /** Callback for when properties are updated @beta */
+  /** Callback for when properties are updated
+   * @beta */
   onPropertyUpdated?: (propertyArgs: PropertyUpdatedArgs, cellArgs: TableCellUpdatedArgs) => Promise<boolean>;
 
   /** @internal */
@@ -152,7 +154,8 @@ export interface TableProps extends CommonProps {
   /** @internal */
   onApplyFilter?: () => void;
 
-  /** Called to show a context menu when a cell is right-clicked. @beta */
+  /** Called to show a context menu when a cell is right-clicked.
+   * @beta */
   onCellContextMenu?: (args: TableCellContextMenuArgs) => void;
   /** Maximum number of distinct values for filtering */
   maximumDistinctValues?: number;

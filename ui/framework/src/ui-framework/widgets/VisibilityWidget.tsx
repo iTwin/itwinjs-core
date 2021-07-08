@@ -30,7 +30,8 @@ import { Select, SelectOption } from "@itwin/itwinui-react";
 
 /**
  * Types of hierarchies displayed in the `VisibilityComponent`
- * @public @deprecated
+ * @public
+ * @deprecated
  */
 export enum VisibilityComponentHierarchy {
   Models = "models",
@@ -40,7 +41,8 @@ export enum VisibilityComponentHierarchy {
 
 /**
  * Data structure that describes visibility component configuration
- * @beta @deprecated
+ * @beta
+ * @deprecated
  */
 export interface VisibilityComponentConfig {
   modelsTree?: {
@@ -56,7 +58,8 @@ export interface VisibilityComponentConfig {
 
 /**
  * Props for `VisibilityComponent`
- * @beta @deprecated
+ * @beta
+ * @deprecated
  */
 export interface VisibilityComponentProps {
   /** iModel whose data should be displayed in the component */
@@ -81,7 +84,8 @@ interface VisibilityTreeState {
 }
 
 /** VisibilityComponent React component.
- * @beta @deprecated
+ * @beta
+ * @deprecated
  */
 // istanbul ignore next
 export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
@@ -225,12 +229,14 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
 }
 
 /** VisibilityComponent that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
- * @beta @deprecated
+ * @beta
+ * @deprecated
  */
 export const IModelConnectedVisibilityComponent = connectIModelConnection(null, null)(VisibilityComponent); // eslint-disable-line @typescript-eslint/naming-convention
 
 /** VisibilityWidget React component.
- * @beta @deprecated
+ * @beta
+ * @deprecated
  */
 // istanbul ignore next
 export class VisibilityWidget extends WidgetControl {

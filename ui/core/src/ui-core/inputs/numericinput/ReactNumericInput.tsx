@@ -138,7 +138,8 @@ interface ReactNumericInputState {
 }
 /* eslint-enable */
 
-/** @internal @deprecated use [NumberInput]($ui-core) instead */
+/** @internal
+ * @deprecated use [NumberInput]($ui-core) instead */
 // istanbul ignore next
 // eslint-disable-next-line deprecation/deprecation
 export class ReactNumericInput extends React.Component<ReactNumericInputProps, ReactNumericInputState> {
