@@ -79,8 +79,8 @@ export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
     return (Math.abs(this.translationX - other.translationX) < 0.0000001 &&
       Math.abs(this.translationY - other.translationY) < 0.0000001 &&
       Math.abs(this.translationZ - other.translationZ) < 0.0000001 &&
-      this.rotDeg === other.rotDeg &&
-      this.scale === other.scale);
+      Math.abs(this.rotDeg - other.rotDeg) < 0.0000001 &&
+      Math.abs(this.scale - other.scale) < 0.0000001);
   }
 }
 
