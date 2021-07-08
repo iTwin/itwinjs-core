@@ -35,7 +35,7 @@ describe("GeometryAccumulator tests", () => {
   canvas.width = canvas.height = 1000;
   document.body.appendChild(canvas);
 
-  before(async () => {   // Create a ViewState to load into a Viewport
+  before(async () => {
     await IModelApp.startup();
     iModel = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     spatialView = await iModel.views.load("0x34") as SpatialViewState;
