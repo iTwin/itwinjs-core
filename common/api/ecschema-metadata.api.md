@@ -863,6 +863,8 @@ export enum ECObjectsStatus {
     // (undocumented)
     InvalidSchemaItemType = 35065,
     // (undocumented)
+    InvalidSchemaKey = 35079,
+    // (undocumented)
     InvalidSchemaString = 35073,
     // (undocumented)
     InvalidSchemaXML = 35072,
@@ -2368,6 +2370,7 @@ export class Schema implements CustomAttributeContainerProps {
     protected _schemaKey?: SchemaKey;
     // @alpha
     protected setContext(context: SchemaContext): void;
+    setVersion(readVersion?: number, writeVersion?: number, minorVersion?: number): void;
     toJSON(): SchemaProps;
     toXml(schemaXml: Document): Promise<Document>;
     // @alpha
@@ -2499,13 +2502,13 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: DiagnosticType;
     };
     BaseClassDelta: {
-        new (ecClass: AnyClass, messageArgs: [CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined, CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined], category?: DiagnosticCategory): {
+        new (ecClass: AnyClass, messageArgs: [AnyClass | undefined, AnyClass | undefined], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined, CustomAttributeClass | Mixin | EntityClass | RelationshipClass | StructClass | undefined] | undefined;
+            messageArgs?: [AnyClass | undefined, AnyClass | undefined] | undefined;
             category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;

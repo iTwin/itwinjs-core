@@ -128,7 +128,7 @@ export class NullGeometryHandler extends GeometryHandler {
   /** no-action implementation */
   public handleArc3d(_g: Arc3d): any { return undefined; }
   /** no-action implementation */
-  public handleCurveCollection(_g: CurveCollection): any { return undefined; }
+  public override handleCurveCollection(_g: CurveCollection): any { return undefined; }
   /** no-action implementation */
   public handleBSplineCurve3d(_g: BSplineCurve3d): any { return undefined; }
   /** no-action implementation */
@@ -152,15 +152,15 @@ export class NullGeometryHandler extends GeometryHandler {
   public handleTransitionSpiral(_g: TransitionSpiral3d): any { return undefined; }
 
   /** no-action implementation */
-  public handlePath(_g: Path): any { return undefined; }
+  public override handlePath(_g: Path): any { return undefined; }
   /** no-action implementation */
-  public handleLoop(_g: Loop): any { return undefined; }
+  public override handleLoop(_g: Loop): any { return undefined; }
   /** no-action implementation */
-  public handleParityRegion(_g: ParityRegion): any { return undefined; }
+  public override handleParityRegion(_g: ParityRegion): any { return undefined; }
   /** no-action implementation */
-  public handleUnionRegion(_g: UnionRegion): any { return undefined; }
+  public override handleUnionRegion(_g: UnionRegion): any { return undefined; }
   /** no-action implementation */
-  public handleBagOfCurves(_g: BagOfCurves): any { return undefined; }
+  public override handleBagOfCurves(_g: BagOfCurves): any { return undefined; }
 
   /** no-action implementation */
   public handleSphere(_g: Sphere): any { return undefined; }
@@ -224,18 +224,18 @@ export class RecurseToCurvesGeometryHandler extends GeometryHandler {
       }
   }
   /** Recurse to children */
-  public handleCurveCollection(g: CurveCollection): any { return this.handleChildren(g); }
+  public override handleCurveCollection(g: CurveCollection): any { return this.handleChildren(g); }
 
   /** Recurse to children */
-  public handlePath(g: Path): any { return this.handleChildren(g); }
+  public override handlePath(g: Path): any { return this.handleChildren(g); }
   /** Recurse to children */
-  public handleLoop(g: Loop): any { return this.handleChildren(g); }
+  public override handleLoop(g: Loop): any { return this.handleChildren(g); }
   /** Recurse to children */
-  public handleParityRegion(g: ParityRegion): any { return this.handleChildren(g); }
+  public override handleParityRegion(g: ParityRegion): any { return this.handleChildren(g); }
   /** Recurse to children */
-  public handleUnionRegion(g: UnionRegion): any { return this.handleChildren(g); }
+  public override handleUnionRegion(g: UnionRegion): any { return this.handleChildren(g); }
   /** Recurse to children */
-  public handleBagOfCurves(g: BagOfCurves): any { return this.handleChildren(g); }
+  public override handleBagOfCurves(g: BagOfCurves): any { return this.handleChildren(g); }
 
   /** no-action implementation */
   public handleSphere(_g: Sphere): any { return undefined; }

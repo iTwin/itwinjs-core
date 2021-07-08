@@ -28,11 +28,15 @@ beta;IRuleSuppressionSet
 beta;ISuppressionRule
 beta;LoggingDiagnosticReporter 
 beta;class PropertyDiagnostic
+alpha;PropertyEditResults
 beta;class RelationshipConstraintDiagnostic
 beta;SchemaCompareCodes:
 beta;SchemaCompareDiagnostics:
+alpha;SchemaContextEditor
 beta;class SchemaDiagnostic
+alpha;SchemaEditResults
 beta;class SchemaItemDiagnostic
+alpha;SchemaItemEditResults
 beta;SchemaValidater
 beta;SchemaValidationVisitor 
 internal;SchemaWalker
