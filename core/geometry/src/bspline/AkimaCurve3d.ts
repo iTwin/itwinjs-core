@@ -6,7 +6,7 @@
  * @module Bspline
  */
 
-import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
+import { Point3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
 import { Point3dArray } from "../geometry3d/PointHelpers";
 import { ProxyCurve } from "../curve/ProxyCurve";
@@ -34,7 +34,7 @@ import { XYZProps } from "../geometry3d/XYZProps";
  * @public
  */
 export class AkimaCurve3dOptions {
-  fitPoints: Point3d[];
+  public fitPoints: Point3d[];
   /**
    *
    * @param fitPoints points to CAPTURE
@@ -111,13 +111,13 @@ private constructor(properties: AkimaCurve3dOptions, proxyCurve: CurvePrimitive)
     }
     return AkimaCurve3d.createCapture(optionsCopy);
   }
-public static createCapture (options: AkimaCurve3dOptions) : AkimaCurve3d | undefined{
+
+  public static createCapture(options: AkimaCurve3dOptions): AkimaCurve3d | undefined{
     const proxyCurve = BSplineCurve3d.createFromAkimaCurve3dOptions(options);
     if (proxyCurve)
       return new AkimaCurve3d(options, proxyCurve);
     return undefined;
   }
-
 
   /** Return a (copy of) the defining points, packed as a Float64Array */
   public copyFitPointsFloat64Array(): Float64Array {
@@ -178,7 +178,7 @@ public static createCapture (options: AkimaCurve3dOptions) : AkimaCurve3d | unde
 
   public isAlmostEqual(other: GeometryQuery): boolean{
     if (other instanceof AkimaCurve3d) {
-    return AkimaCurve3dOptions.areAlmostEqual (this._options, other._options)
+      return AkimaCurve3dOptions.areAlmostEqual(this._options, other._options);
     }
     return false;
   }

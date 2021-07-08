@@ -17,7 +17,6 @@ import { Transform } from "../geometry3d/Transform";
 import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { XYZProps } from "../geometry3d/XYZProps";
 
-
 /**
  * fitPoints and end condition data for [[InterpolationCurve3d]]
  * * This is a "json compatible" version of the serializer-friendly [[InterpolationCurve3dOptions]]
@@ -60,25 +59,25 @@ export class InterpolationCurve3dOptions {
   }
 
   /** Order of the computed bspline.   (one more than degree) */
- order?: number;
+public order?: number;
  /** true if the bspline construction should be periodic */
- closed?: boolean;
- isChordLenKnots?: number;
- isColinearTangents?: number;
- isChordLenTangent?: number;
- isNaturalTangents?: number;
+public closed?: boolean;
+public isChordLenKnots?: number;
+public isColinearTangents?: number;
+public isChordLenTangent?: number;
+public isNaturalTangents?: number;
  /** optional start tangent.  Use of the tangent magnitude may be indicated by other flags. */
- startTangent?: Vector3d;
+ public startTangent?: Vector3d;
  /** optional end tangent.  Use of the tangent magnitude may be indicated by other flags. */
- endTangent?: Vector3d;
+ public endTangent?: Vector3d;
  /** Points that the curve must pass through */
- fitPoints: Point3d[];
+ public fitPoints: Point3d[];
  /** knots for curve fitting */
-  knots?: number[];
+ public knots?: number[];
 
 /** Clone with strongly typed members reduced to simple json. */
   public cloneAsInterpolationCurve3dProps(): InterpolationCurve3dProps {
-    const props : InterpolationCurve3dProps = {
+    const props: InterpolationCurve3dProps = {
       fitPoints: Point3dArray.cloneDeepJSONNumberArrays(this.fitPoints),
       knots: this.knots?.slice(),
     };
@@ -180,14 +179,15 @@ private constructor(properties: InterpolationCurve3dOptions, proxyCurve: CurvePr
     }
     return InterpolationCurve3d.createCapture(optionsCopy);
   }
-public static createCapture (options: InterpolationCurve3dOptions) : InterpolationCurve3d | undefined{
+/** Create an [[InterpolationCurve3d]]
+ * * The options object is captured into the new curve object (not copied)
+ */
+public static createCapture (options: InterpolationCurve3dOptions): InterpolationCurve3d | undefined{
     const proxyCurve = BSplineCurve3d.createFromInterpolationCurve3dOptions(options);
     if (proxyCurve)
       return new InterpolationCurve3d(options, proxyCurve);
     return undefined;
   }
-
-
   /** Return a (copy of) the defining points, packed as a Float64Array */
   public copyFitPointsFloat64Array(): Float64Array {
     return Point3dArray.cloneXYZPropsAsFloat64Array(this._options.fitPoints);
@@ -249,7 +249,7 @@ public static createCapture (options: InterpolationCurve3dOptions) : Interpolati
   }
   public isAlmostEqual(other: GeometryQuery): boolean{
     if (other instanceof InterpolationCurve3d) {
-    return InterpolationCurve3dOptions.areAlmostEqual (this._options, other._options)
+      return InterpolationCurve3dOptions.areAlmostEqual(this._options, other._options);
     }
     return false;
   }

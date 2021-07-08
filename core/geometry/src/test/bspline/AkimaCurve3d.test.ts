@@ -14,7 +14,7 @@ import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 /* eslint-disable no-console */
 
 describe("AkimaCurve3d", () => {
-  it("HelloWorld", () => {
+  it.only("HelloWorld", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const circlePoints = Sample.createUnitCircle(8);
@@ -23,7 +23,7 @@ describe("AkimaCurve3d", () => {
     const curve = AkimaCurve3d.create({ fitPoints: circlePoints });
     ck.testDefined(curve);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, 0, 0, 0);
-    // testGeometryQueryRoundTrip(ck, curve);
+    testGeometryQueryRoundTrip(ck, curve);
     GeometryCoreTestIO.saveGeometry(allGeometry, "AkimaCurve3d", "HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });
