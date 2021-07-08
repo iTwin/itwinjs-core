@@ -1774,7 +1774,7 @@ describe("iModel", () => {
     assert.isTrue(iModel2.geographicCoordinateSystem!.verticalCRS !== undefined);
     assert.isTrue(iModel2.geographicCoordinateSystem!.verticalCRS!.equals(gcs.verticalCRS!));
     assert.isTrue(iModel2.geographicCoordinateSystem!.additionalTransform !== undefined);
-    assert.isTrue(Geometry.isSameCoordinate(iModel2.geographicCoordinateSystem!.additionalTransform!, gcs.additionalTransform!));
+    assert.isTrue(iModel2.geographicCoordinateSystem!.additionalTransform!.equals(gcs.additionalTransform!));
     assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS !== undefined);
     assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.projection !== undefined);
     assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.projection!.equals(gcs.horizontalCRS!.projection!));
