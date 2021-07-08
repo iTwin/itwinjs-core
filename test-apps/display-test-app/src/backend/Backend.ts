@@ -22,7 +22,7 @@ import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-ed
 
 class DisplayTestAppRpc extends DtaRpcInterface {
 
-  public async readExternalSavedViews(bimFileName: string): Promise<string> {
+  public override async readExternalSavedViews(bimFileName: string): Promise<string> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
@@ -36,7 +36,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return jsonStr ?? "";
   }
 
-  public async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
+  public override async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
@@ -46,7 +46,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return this.writeExternalFile(esvFileName, namedViews);
   }
 
-  public async writeExternalFile(fileName: string, content: string): Promise<void> {
+  public override async writeExternalFile(fileName: string, content: string): Promise<void> {
     const filePath = this.getFilePath(fileName);
     if (!fs.existsSync(filePath))
       this.createFilePath(filePath);
@@ -137,9 +137,6 @@ const setupStandaloneConfiguration = () => {
 
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
-
-  if (undefined !== process.env.SVT_DISABLE_IDLE_WORK)
-    configuration.doIdleWork = false;
 
   if (undefined !== process.env.SVT_DEBUG_SHADERS)
     configuration.debugShaders = true;

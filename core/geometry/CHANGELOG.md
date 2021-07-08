@@ -1,6 +1,11 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:30 GMT
+
+_Version update only_
 
 ## 2.17.0
 Mon, 28 Jun 2021 16:20:11 GMT
@@ -8,6 +13,16 @@ Mon, 28 Jun 2021 16:20:11 GMT
 ### Updates
 
 - TaggedGeometryData to support subdivision surfaces and future variant meshes
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
 
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT

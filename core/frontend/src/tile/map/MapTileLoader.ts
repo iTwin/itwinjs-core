@@ -27,7 +27,7 @@ export class MapTileLoader extends RealityTileLoader {
   public readonly featureTable: FeatureTable;
   // public get heightRange(): Range1d | undefined { return this._heightRange; }
   protected readonly _heightRange: Range1d | undefined;
-  public get isContentUnbounded(): boolean { return true; }
+  public override get isContentUnbounded(): boolean { return true; }
   public isTileAvailable(quadId: QuadId) { return this.terrainProvider.isTileAvailable(quadId); }
   private _requestContext = new ClientRequestContext("");
 
@@ -41,6 +41,7 @@ export class MapTileLoader extends RealityTileLoader {
   }
 
   public get maxDepth(): number { return this._terrainProvider.maxDepth; }
+  public get minDepth(): number { return 0;}
   public get terrainProvider(): TerrainMeshProvider { return this._terrainProvider; }
 
   public getRequestChannel(_tile: Tile) {
@@ -68,10 +69,10 @@ export class MapTileLoader extends RealityTileLoader {
     }
   }
 
-  public forceTileLoad(tile: Tile): boolean {
+  public override forceTileLoad(tile: Tile): boolean {
     return this._terrainProvider.forceTileLoad(tile);
   }
-  public async loadTileContent(tile: MapTile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TerrainTileContent> {
+  public override async loadTileContent(tile: MapTile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TerrainTileContent> {
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
 

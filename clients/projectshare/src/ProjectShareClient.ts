@@ -302,7 +302,7 @@ export class ProjectShareClient extends WsgClient {
    * @param excludeApiVersion Pass true to optionally exclude the API version from the URL.
    * @returns URL for the service
    */
-  public async getUrl(requestContext: AuthorizedClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
+  public override async getUrl(requestContext: AuthorizedClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
     requestContext.enter();
     if (this._url)
       return this._url;

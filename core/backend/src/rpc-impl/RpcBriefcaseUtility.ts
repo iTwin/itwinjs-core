@@ -75,7 +75,7 @@ export class RpcBriefcaseUtility {
     const request: RequestNewBriefcaseProps = {
       contextId: tokenProps.contextId!,
       iModelId,
-      briefcaseId: myBriefcaseIds.length > 0 ? myBriefcaseIds[0] : undefined, // if briefcaseId is undefined, we'll acquire a new one.
+      briefcaseId: args.syncMode === SyncMode.PullOnly ? 0 : undefined, // if briefcaseId is undefined, we'll acquire a new one.
     };
 
     const props = await BriefcaseManager.downloadBriefcase(requestContext, request);

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/rpcinterface-full-stack-tests",
-  "version": "2.18.0-dev.20",
+  "version": "2.19.0-dev.9",
   "description": "Test the full iModel.js stack (frontend and backend) using standard RPC interfaces",
   "license": "MIT",
   "scripts": {
@@ -71,13 +71,13 @@
     "@types/node": "10.14.1",
     "@types/puppeteer": "2.0.1",
     "cpx": "^1.5.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "internal-tools": "workspace:*",
     "npm-run-all": "^4.1.5",
     "null-loader": "^0.1.1",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~4.1.0",
+    "typescript": "~4.3.0",
     "webpack": "4.42.0",
     "webpack-cli": "^3.1.0"
   },

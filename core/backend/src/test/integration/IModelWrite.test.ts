@@ -3,21 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as semver from "semver";
 import { DbOpcode, DbResult, GuidString, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { CodeState, HubCode, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
 import { CodeScopeSpec, CodeSpec, IModel, IModelError, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { WsgError } from "@bentley/itwin-client";
+import { assert, expect } from "chai";
+import * as semver from "semver";
+import { LockScope } from "../../BackendHubAccess";
 import { IModelHubBackend } from "../../IModelHubBackend";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, LockProps,
-  SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, LockProps, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType, Timer } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { LockScope } from "../../BackendHubAccess";
 
 export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
@@ -1068,8 +1067,6 @@ describe("IModelWriteTest (#integration)", () => {
     schemaLock = await IModelHost.hubAccess.querySchemaLock({ requestContext: superRequestContext, briefcase: superBriefcaseProps });
     assert.isFalse(schemaLock); // Validate no schema locks held by the hub
 
-    /* Cleanup after test */
     await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, contextId: projectId, iModelId });
   });
-
 });

@@ -1848,7 +1848,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set thematic(thematic: ThematicDisplay);
     // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
-    // @internal
+    // @internal (undocumented)
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps;
 }
 
@@ -5030,6 +5030,8 @@ export interface MaterialProps {
 // @internal (undocumented)
 export class MeshEdge {
     constructor(index0?: number, index1?: number);
+    // (undocumented)
+    compareTo(other: MeshEdge): number;
     // (undocumented)
     indices: number[];
 }
@@ -8885,7 +8887,6 @@ export class ViewFlags {
     dimensions: boolean;
     // @internal
     edgeMask: number;
-    // @internal (undocumented)
     edgesRequired(): boolean;
     // (undocumented)
     equals(other: ViewFlags): boolean;
