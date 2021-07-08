@@ -6,10 +6,10 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { Angle, AuxChannel, AuxChannelData, AuxChannelDataType, IModelJson, Point3d, Polyface, PolyfaceAuxData, PolyfaceBuilder, StrokeOptions, Transform } from "@bentley/geometry-core";
 import {
-  AnalysisStyle, AnalysisStyleProps, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettingsProps,
+  AnalysisStyle, AnalysisStyleProps, ColorByName, ColorDef, RenderMode, ThematicGradientColorScheme, ThematicGradientMode, ThematicGradientSettingsProps,
 } from "@bentley/imodeljs-common";
 import {
-  DecorateContext, GraphicType, IModelApp, RenderGraphicOwner, Viewport,
+  DecorateContext, GraphicType, IModelApp, RenderGraphicOwner, StandardViewId, Viewport,
 } from "@bentley/imodeljs-frontend";
 import { Viewer } from "./Viewer";
 
@@ -26,6 +26,7 @@ function populateAnalysisStyles(mesh: AnalysisMesh, displacementScale: number): 
   if (!auxdata)
     return;
 
+  mesh.styles.set("None", undefined);
   for (const channel of auxdata.channels) {
     if (undefined === channel.name || !channel.isScalar)
       continue;
@@ -55,8 +56,6 @@ function populateAnalysisStyles(mesh: AnalysisMesh, displacementScale: number): 
 
     mesh.styles.set(name, AnalysisStyle.fromJSON(props));
   }
-
-  mesh.styles.set("None", undefined);
 }
 
 async function createCantilever(): Promise<Polyface> {
@@ -211,17 +210,19 @@ class AnalysisDecorator {
       return;
 
     if (!this._graphic) {
-      const builder = context.createGraphicBuilder(GraphicType.WorldDecoration, undefined, this._id);
+      const builder = context.createGraphicBuilder(GraphicType.Scene, undefined, this._id);
+      const color = ColorDef.fromTbgr(ColorByName.darkSlateBlue);
+      builder.setSymbology(color, color, 1);
       builder.addPolyface(this.mesh.polyface, false);
       this._graphic = IModelApp.renderSystem.createGraphicOwner(builder.finish());
     }
 
-    context.addDecoration(GraphicType.WorldDecoration, this._graphic);
+    context.addDecoration(GraphicType.Scene, this._graphic);
   }
 }
 
 export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
-  const meshes = await Promise.all([createMesh("Flat with waves"), createMesh("Cantilever", 100)]);
+  const meshes = await Promise.all([createMesh("Cantilever", 100), createMesh("Flat with waves")]);
   let decorator = new AnalysisDecorator(viewer.viewport, meshes[0]);
 
   const meshPicker = document.createElement("select");
@@ -255,18 +256,31 @@ export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
     while (stylePicker.firstChild)
       stylePicker.removeChild(stylePicker.firstChild);
 
-    let style;
     for (const name of decorator.mesh.styles.keys()) {
-      if (!style)
-        style = decorator.mesh.styles.get(name);
-
       const option = document.createElement("option");
       option.innerText = option.value = name;
       stylePicker.appendChild(option);
     }
 
-    viewer.viewport.displayStyle.settings.analysisStyle = style;
+    viewer.viewport.displayStyle.settings.analysisStyle = undefined;
   }
 
   populateStylePicker();
+
+  assert(viewer.viewport.view.is3d());
+  viewer.viewport.setStandardRotation(StandardViewId.Iso);
+  viewer.viewport.zoomToVolume(viewer.viewport.iModel.projectExtents);
+
+  const viewFlags = viewer.viewport.viewFlags.clone();
+  viewFlags.renderMode = RenderMode.SolidFill;
+  viewer.viewport.viewFlags = viewFlags;
+
+  viewer.viewport.view.getDisplayStyle3d().settings.environment = {
+    sky: {
+      display: true,
+      twoColor: true,
+      nadirColor: 0xdfefff,
+      zenithColor: 0xffefdf,
+    },
+  };
 }

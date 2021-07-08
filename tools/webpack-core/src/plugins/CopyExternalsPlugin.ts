@@ -5,7 +5,7 @@
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Compiler } from "webpack";
-import { getAppRelativePath } from "../utils/paths";
+import { getAppRelativePath, getSourcePosition } from "../utils/paths";
 const { resolveRecurse } = require("../utils/resolve-recurse/resolve");
 import { Dependency } from "../utils/resolve-recurse/resolve";
 /* eslint-disable @typescript-eslint/no-var-requires, @typescript-eslint/naming-convention */
@@ -21,7 +21,7 @@ export class CopyExternalsPlugin {
       this._logger = compilation.getLogger("CopyExternalsPlugin");
       compilation.hooks.buildModule.tap("CopyExternalsPlugin", (currentModule: any) => {
         if (currentModule.external) {
-          this._promises.push(this.handleModule(currentModule, compiler.outputPath));
+          this._promises.push(this.handleModule(currentModule, compiler.outputPath, compilation));
         }
       });
     });
@@ -31,12 +31,30 @@ export class CopyExternalsPlugin {
     });
   }
 
-  public async handleModule(currentModule: any, outputDir: string) {
+  public async handleModule(currentModule: any, outputDir: string, compilation: any) {
     const pkgName = this.pathToPackageName(currentModule.request);
     if (pkgName === "electron" || builtinModules.includes(pkgName) || this._copiedPackages.has(pkgName))
       return;
 
-    const packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [currentModule.issuer.context] });
+    let packageJsonPath = "";
+    try {
+      packageJsonPath = require.resolve(`${pkgName}/package.json`, { paths: [currentModule.issuer.context] });
+    } catch (error) {
+      // Always _log_ missing externals as a warning, but don't add it as a compilation warning if it's an "optional" dependency.
+      const warning = `Can't copy external package "${pkgName}" - it is not installed.`;
+      this._logger.warn(warning);
+      for (const reason of currentModule.reasons) {
+        if (!reason.module || !reason.dependency)
+          continue;
+
+        const location = getSourcePosition(reason.module, reason.dependency.loc);
+        this._logger.log(`"${pkgName}" included at ${location}`);
+        if (!reason.dependency.optional)
+          compilation.warnings.push(`${location}\n${warning}\nTo fix this, either npm install ${pkgName} or wrap the import in a try/catch.`);
+      }
+      return;
+    }
+
     await this.copyPackage(pkgName, outputDir, path.dirname(packageJsonPath));
     if (!packageJsonPath)
       return;

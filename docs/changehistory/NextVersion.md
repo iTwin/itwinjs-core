@@ -3,116 +3,38 @@ publish: false
 ---
 # NextVersion
 
-## Scientific visualization
+## Decoration graphics enhancements
 
-The [AnalysisStyle]($common) APIs have been cleaned up and promoted to `@public`. An AnalysisStyle is used to animate a mesh that has been supplemented with [PolyfaceAuxData]($geometry-core), by recoloring and/or deforming its vertices over time. This enables visualization of the effects of computed, changing variables like stress and temperature.
+### Visible edges
 
-## Section-cut element graphics
+Graphics produced by a [GraphicBuilder]($frontend) can now produce edges for surfaces. By default, edges are only produced for graphics of type [GraphicType.Scene]($frontend), and only if the [Viewport]($frontend)'s [ViewFlags]($common) specify that edges should be displayed. To generate edges for other types of graphics, or to prevent them from being generated, override [GraphicBuilderOptions.generateEdges]($frontend) or [GraphicBuilder.wantEdges]($frontend) when creating the graphic. Note that surfaces will z-fight with their edges to a degree unless the graphic is also pickable - see [GraphicBuilderOptions.pickable]($frontend).
 
-[TileAdmin.requestElementGraphics]($frontend) can now produce section-cut graphics if [GraphicsRequestProps.sectionCut]($common) is supplied. The temporary element graphics produced during interactive editing will automatically include section-cut graphics based on the viewport's [CutStyle]($common).
+### Solid primitives in decorations
 
-## Change summary API changes
-
-[ChangeSummaryManager.extractChangeSummaries]($imodeljs-backend) has now been deprecated, and replaced with two methods - [ChangeSummaryManager.createChangeSummaries]($imodeljs-backend) and [ChangeSummaryManager.createChangeSummary]($imodeljs-backend).
-
-The deprecated method works by creating a range of Change Summaries by starting with the end version, reversing Changesets one by one until the specified start version. Since Changesets containing schema changes cannot be reversed, the method may fail to create some Change Summaries. The new replacement instead walks the versions in the forward direction.
-
-- [ChangeSummaryManager.createChangeSummaries]($imodeljs-backend) creates Change Summaries for a range of Changesets by walking the versions in a forward direction starting with the specified first version.
-- [ChangeSummaryManager.createChangeSummary]($imodeljs-backend) creates a single Change Summary for the current version of the iModel, i.e., the last applied Changeset.
-
-[ChangeSummaryManager.detachChangeCache]($imodeljs-backend)  can now be used to detach the cache after querying the change summary to continue change summary creation if necessary.
-
-[ChangeSummaryExtractOptions]($imodeljs-backend) was also deprecated as a consequence of the above changes. [CreateChangeSummaryArgs]($imodeljs-backend) serves a similar purpose with the newer methods.
-ChangeSummaryExtractContext was unused and has been removed.
+Decoration graphics can now be produced from [SolidPrimitive]($geometry-core)s - e.g., spheres, cones, slabs, swept surfaces, and so on - using [GraphicBuilder.addSolidPrimitive]($frontend).
 
 ## Presentation changes
 
 Added [RelatedPropertiesSpecificationNew.skipIfDuplicate]($presentation-common) attribute to allow specification to be overriden by specifications from higher priority content modifiers. Set this attribute to all related properties' specifications in the default BisCore ruleset.
 
-## UI changes
+## Dictionary enhancements
 
-### @bentley/ui-abstract package
+[Dictionary.keys]($bentleyjs-core) and [Dictionary.values]($bentleyjs-core) enable iteration of the dictionary's keys and values in the same manner as a standard Map.
 
-Added ability for [UiItemsProvider]($ui-abstract) to provide widgets to [AbstractZoneLocation]($ui-abstract) locations when running is AppUi version 1. Prior to this a widget could only be targeted to a [StagePanelLocation]($ui-abstract) location.
+[Dictionary.findOrInsert]($bentleyjs-core) returns the existing value associated with a key, or - if none yet exists - inserts a new value with that key. It also returns a flag indicating whether or not a new value was inserted. This allows the following code that requires two lookups of the key:
 
-#### Example UiItemsProvider
+```ts
+let value = dictionary.get(key);
+let inserted = undefined !== value;
+if (undefined === value)
+  inserted = dictionary.insert(key, value = newValue);
 
-The example below, shows how to add a widget to a [StagePanelLocation]($ui-abstract) if UiFramework.uiVersion === "2" and to the "BottomRight" [AbstractZoneLocation]($ui-abstract) if UiFramework.uiVersion === "1".  See [UiItemsProvider.provideWidgets]($ui-abstract) for new `zoneLocation` argument.
-
-```tsx
-export class ExtensionUiItemsProvider implements UiItemsProvider {
-  public readonly id = "ExtensionUiItemsProvider";
-  public static i18n: I18N;
-  private _backstageItems?: BackstageItem[];
-
-  public constructor(i18n: I18N) {
-    ExtensionUiItemsProvider.i18n = i18n;
-  }
-
-  /** provideWidgets() is called for each registered UI provider to allow the provider to add widgets to a specific section of a stage panel.
-   *  items to the StatusBar.
-   */
-  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
-    const widgets: AbstractWidgetProps[] = [];
-    // section will be undefined if uiVersion === "1" and in that case we can add widgets to the specified zoneLocation
-    if ((undefined === section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.BottomRight) ||
-      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End && "1" !== UiFramework.uiVersion)) {
-      {
-        widgets.push({
-          id: PresentationPropertyGridWidgetControl.id,
-          icon: PresentationPropertyGridWidgetControl.iconSpec,  // icon required if uiVersion === "1"
-          label: PresentationPropertyGridWidgetControl.label,
-          defaultState: WidgetState.Open,
-          getWidgetContent: () => <PresentationPropertyGridWidget />, // eslint-disable-line react/display-name
-          canPopout: true,  // canPopout ignore if uiVersion === "1"
-        });
-      }
-    }
-    return widgets;
-  }
-}
+alert(`${value} was ${inserted ? "inserted" : "already present"}`);
 ```
 
-### @bentley/ui-framework package
+To be replaced with a more efficient version that requires only one lookup:
 
-- The need for an IModelApp to explicitly call [ConfigurableUiManager.initialize]($ui-framework) has been removed. This call is now made when processing [UiFramework.initialize]($ui-framework). This will not break any existing applications as subsequent calls to `ConfigurableUiManager.initialize()` are ignored.
-
-- If an application calls [UiFramework.setIModelConnection]($ui-framework) it will no longer need to explicitly call [SyncUiEventDispatcher.initializeConnectionEvents]($ui-framework) as `UiFramework.setIModelConnection` will call that method as it update the redux store.
-
-- The `version` prop passed to [FrameworkVersion]($ui-framework) component will update the [UiFramework.uiVersion] if necessary keeping the redux state matching the value defined by the prop.
-
-- The [ScheduleAnimationTimelineDataProvider]($ui-framework) is published for use by AppUi apps. Specifying this data provider to a [TimelineComponent]($ui-components) allows animation of the [RenderSchedule.Script]($common) if one exists for the view. A component that automatically detects a schedule script and attaches the data provider to its TimelineComponent can be found in the [DefaultViewOverlay]($ui-framework).
-
-- The [AnalysisAnimationTimelineDataProvider]($ui-framework) is published for use by AppUi apps. Specifying this data provider to a TimelineComponent allows animation of the information in the AnalysisDisplayProperties if the view's [DisplayStyleState]($frontend) contains one. A component that automatically detects analysis data and attaches the data provider to its TimelineComponent can be found in the [DefaultViewOverlay]($ui-framework).
-
-### @bentley/ui-components package
-
-- Added component [QuantityNumberInput]($ui-components) which accepts input for quantity values. The quantity value is shown as a single numeric value and the quantity "display" unit is shown next to the input control. The "display" unit is determined by the active unit system as defined by the [QuantityFormatter]($frontend). The control also provides buttons to increment and decrement the "displayed" value. The value reported by via the onChange function is in "persistence" units that can be stored in the iModel.
-
-- Apps that use the [TimelineComponent]($ui-components) can now customize their own playback speeds by providing an array of [TimelineMenuItemProps]($ui-components) to the component. These can either be appended to or prefix the standard items, or they can replace them entirely. An option has also been added to the [TimelineComponentProps]($ui-components) to allow the app to turn on/off the Repeat menu item in the context menu.
-
-### Quantity package
-
-The Format class now provides the method [Format.clone]($quantity) to clone an existing Format. [CloneOptions]($quantity) may be optionally passed into the clone method to adjust the format.
-
-## [@bentley/ecschema-metadata](https://www.itwinjs.org/reference/ecschema-metadata/) changes
-
-To reduce the size and limit the scope of the APIs available in the ecschema-metadata package, all APIs associated with EC Schema editing and validation have been moved to the [@bentley/ecschema-editing](https://www.itwinjs.org/reference/ecschema-editing/) package. This includes all source code under the [Validation](https://www.itwinjs.org/reference/ecschema-metadata/) and [Editing](https://www.itwinjs.org/reference/ecschema-metadata/editing/) folders. All corresponding @beta types defined in the ecschema-metadata package have been deprecated.  All @alpha types have been removed from the ecschema-metadata package. The source code move is the first step of a larger proposal for Schema editing and validation enhancements for connectors and editing applications. You may read and provide feedback on this initial proposal via this [github discussion](https://github.com/imodeljs/imodeljs/discussions/1525).
-
-### Deprecated @beta types (moved to ecschema-editing)
-
-- IDiagnostic, BaseDiagnostic (including all sub-classes), DiagnosticType, DiagnosticCategory, DiagnosticCodes, Diagnostics
-- IDiagnosticReporter, SuppressionDiagnosticReporter, FormatDiagnosticReporter, LoggingDiagnosticReporter
-- IRuleSet, ECRuleSet
-- ISuppressionRule, BaseSuppressionRule, IRuleSuppressionMap, BaseRuleSuppressionMap, IRuleSuppressionSet
-- SchemaCompareCodes, SchemaCompareDiagnostics
-- SchemaValidater, SchemaValidationVisitor
-
-### Removed @alpha types (moved to ecschema-editing)
-
-- SchemaEditResults, SchemaItemEditResults, PropertyEditResults,
-SchemaContextEditor
-- Editors namespace, which includes all editor classes (ie. ECClasses, Entities, Mixins, etc.)
-- ISchemaChange, ISchemaChanges, ChangeType
-- BaseSchemaChange, BaseSchemaChanges (including all sub-classes)
-- ISchemaComparer, SchemaComparer, SchemaCompareDirection, ISchemaCompareReporter
+```ts
+const result = dictionary.findOrInsert(key, value);
+alert(`${result.value} was ${result.inserted ? "inserted" : "already present"}`);
+```

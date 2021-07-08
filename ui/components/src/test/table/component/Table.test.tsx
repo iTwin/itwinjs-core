@@ -8,7 +8,7 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
-import { fireEvent, render } from "@testing-library/react";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import * as moq from "typemoq";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
@@ -22,11 +22,46 @@ import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTabl
 import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
 import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
+import { createDOMRect } from "../../Utils";
+let columnIndex = 0;
+let useSmallWidth = false;
 
 describe("Table", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+    cleanup();
+  });
 
   before(async () => {
     await TestUtils.initializeUiComponents();
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
+  });
+
+  beforeEach(() => {
+    sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+      if (this.classList.contains("react-grid-Container")) {
+        const totalTableWidth = useSmallWidth ? 160 : 250;
+        return createDOMRect({ width: totalTableWidth, height: 500 });
+      } else if (this.classList.contains("react-grid-Cell") || this.classList.contains("react-grid-HeaderCell")) {
+        columnIndex = columnIndex + 1;
+        switch (columnIndex) {
+          case 1:
+            return createDOMRect({ width: 80 });
+          case 2:
+            return createDOMRect({ width: 90 });
+          case 3:
+            return createDOMRect({ width: 80 });
+          default:
+            return createDOMRect({ width: 80 });
+        }
+      }
+      return createDOMRect();
+    });
   });
 
   const rowClassName = "div.components-table-row";
@@ -324,19 +359,10 @@ describe("Table", () => {
 
     });
 
-    describe("without cell styles", () => {
-      let boundingClientStub: sinon.SinonStub<[], DOMRect>;
-      const widthGetter = sinon.stub();
-      widthGetter
-        .onFirstCall().returns({ width: 80 })
-        .onSecondCall().returns({ width: 90 })
-        .onThirdCall().returns({ width: 80 });
-      widthGetter.returns({ width: 80 });
+    describe("without cell styles (three column)", () => {
 
       beforeEach(async () => {
-        boundingClientStub = sinon.stub(HTMLElement.prototype, "getBoundingClientRect");
-        boundingClientStub.get(() => widthGetter);
-
+        columnIndex = 0;
         rowData = [{
           key: "no_overrides",
           cells: [
@@ -366,12 +392,13 @@ describe("Table", () => {
       });
 
       afterEach(() => {
-        boundingClientStub.reset();
+        columnIndex = 0;
       });
 
       const cellWidth = (cellContainer: enzyme.ReactWrapper<enzyme.HTMLAttributes, any, React.Component<{}, {}, any>>, index: number) => (cellContainer.at(index).prop("style")?.width as number);
 
       it("renders cells which have mergedCells specified", async () => {
+        useSmallWidth = false;
         const rows = table.find(rowClassName);
         expect(rows.length).to.eq(1);
 
@@ -389,8 +416,49 @@ describe("Table", () => {
         expect(cells.at(1).prop("title")).to.be.eq("empty-cell");
         expect(cells.at(2).prop("title")).to.be.eq("empty-cell");
       });
+    });
+
+    describe("without cell styles (two column)", () => {
+
+      beforeEach(async () => {
+        useSmallWidth = true;
+        columnIndex = 0;
+        rowData = [{
+          key: "no_overrides",
+          cells: [
+            { key: "1", record: testRecord(), mergedCellsCount: 3 },
+            { key: "2", record: testRecord() },
+            { key: "3", record: testRecord() }],
+        }];
+        const onColumnsChanged = new TableDataChangeEvent();
+        const onRowsChanged = new TableDataChangeEvent();
+        const dataProvider: TableDataProvider = {
+          getColumns: async (): Promise<ColumnDescription[]> => [
+            { key: "1", label: "Column1" },
+            { key: "2", label: "Column2", width: 90, resizable: true },
+            { key: "3", label: "Column3" }],
+          getRowsCount: async () => rowData.length,
+          getRow: async (index: number) => rowData[index],
+          sort: async () => { },
+          onColumnsChanged,
+          onRowsChanged,
+        };
+        table = enzyme.mount(<Table
+          dataProvider={dataProvider}
+          onRowsLoaded={onRowsLoaded}
+        />);
+        await waitForSpy(onRowsLoaded);
+        table.update();
+      });
+
+      afterEach(() => {
+        columnIndex = 0;
+      });
+
+      const cellWidth = (cellContainer: enzyme.ReactWrapper<enzyme.HTMLAttributes, any, React.Component<{}, {}, any>>, index: number) => (cellContainer.at(index).prop("style")?.width as number);
 
       it("renders cells which have mergedCells specified and doesn't count cells, which are hidden", async () => {
+
         table.setState({ hiddenColumns: ["2"] });
 
         const rows = table.find(rowClassName);

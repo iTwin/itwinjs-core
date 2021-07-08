@@ -59,13 +59,13 @@ export class GraphicOwner extends Graphic {
   public addCommands(commands: RenderCommands): void {
     this._graphic.addCommands(commands);
   }
-  public get isPickable(): boolean {
+  public override get isPickable(): boolean {
     return this._graphic.isPickable;
   }
-  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     this._graphic.addHiliteCommands(commands, pass);
   }
-  public toPrimitive(): Primitive | undefined {
+  public override toPrimitive(): Primitive | undefined {
     return this._graphic.toPrimitive();
   }
 }
@@ -123,7 +123,7 @@ export class Batch extends Graphic {
     this.graphic = graphic;
     this.featureTable = features;
     this.range = range;
-    this._options = options ?? { };
+    this._options = options ?? {};
   }
 
   private _isDisposed = false;
@@ -160,7 +160,7 @@ export class Batch extends Graphic {
     commands.addBatch(this);
   }
 
-  public get isPickable(): boolean {
+  public override get isPickable(): boolean {
     return true;
   }
 
@@ -259,6 +259,10 @@ export class Branch extends Graphic {
     this.branch.dispose();
   }
 
+  public override get isPickable(): boolean {
+    return this.branch.entries.some((gf) => (gf as Graphic).isPickable);
+  }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.branch.collectStatistics(stats);
   }
@@ -267,7 +271,7 @@ export class Branch extends Graphic {
     commands.addBranch(this);
   }
 
-  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     commands.addHiliteBranch(this, pass);
   }
 }
@@ -307,7 +311,7 @@ export class GraphicsArray extends Graphic {
     }
   }
 
-  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     for (const graphic of this.graphics) {
       (graphic as Graphic).addHiliteCommands(commands, pass);
     }

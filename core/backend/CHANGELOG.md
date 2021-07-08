@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.17.10
 
 ## 2.17.0
 Mon, 28 Jun 2021 16:20:11 GMT
@@ -27,6 +34,18 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - fix schema-import occurring potentially out of order
 - dont reimport schemas that already exist by default during transformations
 - Use ecef location calculated for projected iModels
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+### Updates
+
+- Do not reuse briefcase ids in ReadWrite workflows when using the RPC interfaces (if the briefcase was not found in the local file system)
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
 
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT

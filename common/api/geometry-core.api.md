@@ -4162,7 +4162,7 @@ export class PolyfaceData {
     getEdgeVisible(i: number): boolean;
     getNormal(i: number): Vector3d | undefined;
     getParam(i: number): Point2d | undefined;
-    getPoint(i: number): Point3d | undefined;
+    getPoint(i: number, out?: Point3d): Point3d | undefined;
     get indexCount(): number;
     isAlmostEqual(other: PolyfaceData): boolean;
     isAlmostEqualParamIndexUV(index: number, u: number, v: number): boolean;

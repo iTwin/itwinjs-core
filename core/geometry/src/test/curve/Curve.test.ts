@@ -63,11 +63,11 @@ class StrokeCountSearch extends NullGeometryHandler {
       return this.emitPackedStrokeCountMap(g.strokeData);
     return undefined;
   }
-  public handleLineString3d(g: LineString3d) { return { numLineString3d: this.emitCountData(g) }; }
-  public handleArc3d(g: Arc3d) { return { numArc3d: this.emitCountData(g) }; }
-  public handleLineSegment3d(g: LineSegment3d) { return { numLineSegment3d: this.emitCountData(g) }; }
-  public handleBSplineCurve3d(g: BSplineCurve3d) { return { numBSplineCurve3d: this.emitCountData(g) }; }
-  public handleBSplineCurve3dH(g: BSplineCurve3dH) { return { numBSplineCurve3dH: this.emitCountData(g) }; }
+  public override handleLineString3d(g: LineString3d) { return { numLineString3d: this.emitCountData(g) }; }
+  public override handleArc3d(g: Arc3d) { return { numArc3d: this.emitCountData(g) }; }
+  public override handleLineSegment3d(g: LineSegment3d) { return { numLineSegment3d: this.emitCountData(g) }; }
+  public override handleBSplineCurve3d(g: BSplineCurve3d) { return { numBSplineCurve3d: this.emitCountData(g) }; }
+  public override handleBSplineCurve3dH(g: BSplineCurve3dH) { return { numBSplineCurve3dH: this.emitCountData(g) }; }
   public handleLBezierCurve3d(g: BezierCurve3d) { return { numBezierCurve3d: this.emitCountData(g) }; }
   public handleLBezierCurve3dH(g: BezierCurve3dH) { return { numBezierCurve3dH: this.emitCountData(g) }; }
   public handleCurveChainWithDistanceIndex(g: CurveChainWithDistanceIndex) {
@@ -80,7 +80,7 @@ class StrokeCountSearch extends NullGeometryHandler {
       }
     }
   }
-  public handlePath(g: Path) {
+  public override handlePath(g: Path) {
     const childData = [];
     const children = g.children;
     if (children) {
