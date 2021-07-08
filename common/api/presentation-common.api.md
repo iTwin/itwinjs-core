@@ -1679,6 +1679,9 @@ export interface NodeArtifactsRule extends RuleBase, ConditionContainer {
 
 // @public
 export interface NodeDeletionInfo {
+    parent?: NodeKey;
+    position: number;
+    // @deprecated
     target: NodeKey;
     // (undocumented)
     type: "Delete";
@@ -1686,7 +1689,9 @@ export interface NodeDeletionInfo {
 
 // @public
 export interface NodeDeletionInfoJSON {
-    // (undocumented)
+    parent?: NodeKeyJSON;
+    position: number;
+    // @deprecated
     target: NodeKeyJSON;
     // (undocumented)
     type: "Delete";
