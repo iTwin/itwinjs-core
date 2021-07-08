@@ -2512,7 +2512,7 @@ export namespace IModelJson {
         static parseIndexedMesh(data?: any): IndexedPolyface | undefined;
         static parseLinearSweep(json?: any): LinearSweep | undefined;
         static parsePointArray(json?: any[]): Point3d[];
-        static parsePolyfaceAuxData(data?: any): PolyfaceAuxData | undefined;
+        static parsePolyfaceAuxData(data?: any, numPerFace?: number): PolyfaceAuxData | undefined;
         static parseRotationalSweep(json?: RotationalSweepProps): RotationalSweep | undefined;
         static parseRuledSweep(json?: RuledSweepProps): RuledSweep | undefined;
         static parseSphere(json?: SphereProps): Sphere | undefined;
