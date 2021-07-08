@@ -76,9 +76,9 @@ export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
    * It is useful for tests purposes only.
    *  @internal */
   public equals(other: Helmert2DWithZOffset): boolean {
-    return (this.translationX === other.translationX &&
-      this.translationY === other.translationY &&
-      this.translationZ === other.translationZ &&
+    return (Math.abs(this.translationX - other.translationX) < 0.0000001 &&
+      Math.abs(this.translationY - other.translationY) < 0.0000001 &&
+      Math.abs(this.translationZ - other.translationZ) < 0.0000001 &&
       this.rotDeg === other.rotDeg &&
       this.scale === other.scale);
   }
