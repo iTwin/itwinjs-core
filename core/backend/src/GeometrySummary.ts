@@ -14,6 +14,7 @@ import {
   BRepEntity, GeometricElement3dProps, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
   IModelError, TextStringPrimitive,
 } from "@bentley/imodeljs-common";
+import { AkimaCurve3d } from "../../geometry/lib/bspline/AkimaCurve3d";
 import { Element, GeometricElement, GeometryPart } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -373,12 +374,18 @@ class ResponseGenerator {
         return summary;
       case "interpolationCurve":
         const interpolationCurve: InterpolationCurve3d = curve as InterpolationCurve3d;
-        const interpolationProperties = interpolationCurve.cloneProperties();
+        const interpolationProps = interpolationCurve.cloneProps();
         summary = `${summary}'
-        ' curveOrder: ${interpolationProperties.order}'
-        ' controlPointsCount: ${interpolationProperties.fitPoints.length}`;
+        ' curveOrder: ${interpolationProps.order}'
+        ' controlPointsCount: ${interpolationProps.fitPoints.length}`;
         return summary;
-      case "bezierCurve":
+        case "akimaCurve":
+          const akimaCurve: AkimaCurve3d = curve as AkimaCurve3d;
+          const akimaProps = akimaCurve.cloneProps();
+          summary = `${summary}'
+          ' controlPointsCount: ${akimaProps.fitPoints.length}`;
+          return summary;
+        case "bezierCurve":
         const bezierCurve: BezierCurveBase = curve as BezierCurveBase;
         summary = `${summary}'
         ' curveOrder: ${bezierCurve.order}'
