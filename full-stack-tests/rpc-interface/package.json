@@ -52,6 +52,7 @@
     "@bentley/presentation-common": "workspace:*",
     "@bentley/presentation-frontend": "workspace:*",
     "@bentley/rbac-client": "workspace:*",
+    "@bentley/telemetry-client": "workspace:*",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
     "dotenv": "^8.2.0",
