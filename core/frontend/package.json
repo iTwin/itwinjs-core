@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "2.18.0-dev.21",
+  "version": "2.18.0-dev.22",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-frontend.js",
   "typings": "lib/imodeljs-frontend",
@@ -36,20 +36,20 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.21",
-    "@bentley/frontend-authorization-client": "workspace:^2.18.0-dev.21",
-    "@bentley/geometry-core": "workspace:^2.18.0-dev.21",
-    "@bentley/imodelhub-client": "workspace:^2.18.0-dev.21",
-    "@bentley/imodeljs-common": "workspace:^2.18.0-dev.21",
-    "@bentley/imodeljs-i18n": "workspace:^2.18.0-dev.21",
-    "@bentley/imodeljs-quantity": "workspace:^2.18.0-dev.21",
-    "@bentley/itwin-client": "workspace:^2.18.0-dev.21",
-    "@bentley/orbitgt-core": "workspace:^2.18.0-dev.21",
-    "@bentley/product-settings-client": "workspace:^2.18.0-dev.21",
-    "@bentley/rbac-client": "workspace:^2.18.0-dev.21",
-    "@bentley/telemetry-client": "workspace:^2.18.0-dev.21",
-    "@bentley/ui-abstract": "workspace:^2.18.0-dev.21",
-    "@bentley/webgl-compatibility": "workspace:^2.18.0-dev.21"
+    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.22",
+    "@bentley/frontend-authorization-client": "workspace:^2.18.0-dev.22",
+    "@bentley/geometry-core": "workspace:^2.18.0-dev.22",
+    "@bentley/imodelhub-client": "workspace:^2.18.0-dev.22",
+    "@bentley/imodeljs-common": "workspace:^2.18.0-dev.22",
+    "@bentley/imodeljs-i18n": "workspace:^2.18.0-dev.22",
+    "@bentley/imodeljs-quantity": "workspace:^2.18.0-dev.22",
+    "@bentley/itwin-client": "workspace:^2.18.0-dev.22",
+    "@bentley/orbitgt-core": "workspace:^2.18.0-dev.22",
+    "@bentley/product-settings-client": "workspace:^2.18.0-dev.22",
+    "@bentley/rbac-client": "workspace:^2.18.0-dev.22",
+    "@bentley/telemetry-client": "workspace:^2.18.0-dev.22",
+    "@bentley/ui-abstract": "workspace:^2.18.0-dev.22",
+    "@bentley/webgl-compatibility": "workspace:^2.18.0-dev.22"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
