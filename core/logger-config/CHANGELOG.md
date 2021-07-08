@@ -1,6 +1,11 @@
 # Change Log - @bentley/logger-config
 
-This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:31 GMT
@@ -501,7 +506,7 @@ Mon, 13 May 2019 15:52:05 GMT
 
 ### Updates
 
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

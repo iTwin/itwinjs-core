@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.17.2",
+      "tag": "@bentley/imodeljs-backend_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Do not reuse briefcase ids in ReadWrite workflows when using the RPC interfaces (if the briefcase was not found in the local file system)"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.17.1",
       "tag": "@bentley/imodeljs-backend_v2.17.1",
       "date": "Fri, 02 Jul 2021 15:38:31 GMT",
