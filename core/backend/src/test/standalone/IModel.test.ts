@@ -10,7 +10,7 @@ import {
   ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
 } from "@bentley/bentleyjs-core";
 import {
-  GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
+  Geometry, GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
@@ -1146,7 +1146,7 @@ describe("iModel", () => {
     assert.isTrue(imodel5.isGeoLocated);
     const center = { x: 289095, y: 3803860, z: 10 }; // near center of project extents, 10 meters above ground.
     const ecefPt = imodel5.spatialToEcef(center);
-    const pt = {x: -3575156.3661052254, y: 3873432.0891543664, z: 3578996.012643183};
+    const pt = { x: -3575156.3661052254, y: 3873432.0891543664, z: 3578996.012643183 };
     assert.isTrue(ecefPt.isAlmostEqual(pt), "spatialToEcef");
 
     const z2 = imodel5.ecefToSpatial(ecefPt);
@@ -1774,7 +1774,7 @@ describe("iModel", () => {
     assert.isTrue(iModel2.geographicCoordinateSystem!.verticalCRS !== undefined);
     assert.isTrue(iModel2.geographicCoordinateSystem!.verticalCRS!.equals(gcs.verticalCRS!));
     assert.isTrue(iModel2.geographicCoordinateSystem!.additionalTransform !== undefined);
-    assert.isTrue(iModel2.geographicCoordinateSystem!.additionalTransform!.equals(gcs.additionalTransform!));
+    assert.isTrue(Geometry.isSameCoordinate(iModel2.geographicCoordinateSystem!.additionalTransform!, gcs.additionalTransform!));
     assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS !== undefined);
     assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.projection !== undefined);
     assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.projection!.equals(gcs.horizontalCRS!.projection!));
