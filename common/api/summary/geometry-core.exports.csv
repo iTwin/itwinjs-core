@@ -1,6 +1,9 @@
 sep=;
 Release Tag;API Item
 internal;class AbstractNewtonIterator
+public;AkimaCurve3d 
+public;AkimaCurve3dOptions
+public;AkimaCurve3dProps
 internal;AnalyticRoots
 public;Angle 
 public;AngleProps =
@@ -97,7 +100,7 @@ public;CurveLocationDetailArrayPair
 public;CurveLocationDetailPair
 public;class CurvePrimitive 
 public;CurvePrimitiveMutator = (primitiveA: CurvePrimitive, primitiveB: CurvePrimitive) => CurvePrimitive | undefined
-public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolationCurve"
+public;CurvePrimitiveType = "arc" | "lineSegment" | "lineString" | "bsplineCurve" | "bezierCurve" | "transitionSpiral" | "curveChainWithDistanceIndex" | "interpolationCurve" | "akimaCurve"
 public;CurveSearchStatus
 internal;CutLoop
 internal;CutLoopMergeContext
@@ -147,6 +150,7 @@ public;IntegratedSpiral3d
 public;IntegratedSpiralTypeName = "clothoid" | "bloss" | "biquadratic" | "cosine" | "sine"
 internal;interpolateColor(color0: number, fraction: number, color1: number): number
 public;InterpolationCurve3d 
+public;InterpolationCurve3dOptions
 public;InterpolationCurve3dProps
 public;InverseMatrixState
 public;IStrokeHandler
