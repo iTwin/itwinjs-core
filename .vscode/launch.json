@@ -1655,7 +1655,10 @@
       "cwd": "${workspaceFolder}/tools/eslint-plugin",
       "type": "pwa-node",
       "request": "launch",
-      "program": "${workspaceFolder}/tools/eslint-plugin/tests/no-internal-barrel-imports.js",
+      "program": "${workspaceFolder}/tools/eslint-plugin/node_modules/mocha/bin/_mocha",
+      "args": [
+        "${workspaceFolder}/tools/eslint-plugin/tests/no-internal-barrel-imports.js"
+      ],
       "console": "integratedTerminal",
     }
   ],

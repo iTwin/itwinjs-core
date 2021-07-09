@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 "use strict";
 
@@ -50,7 +50,8 @@ const ruleTester = new ESLintTester({
     ecmaVersion: 6,
     sourceType: "module",
     tsconfigRootDir: fixtureDir,
-    project: path.join(fixtureDir, "./tsconfig.test.json"),
+    shouldCreateDefaultProgram: true,
+    project: path.join(fixtureDir, "tsconfig.test.json"),
   },
 });
 
