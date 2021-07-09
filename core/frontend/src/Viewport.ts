@@ -62,6 +62,7 @@ import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
+import {AnalysisStyle} from "@bentley/imodeljs-common";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -2561,6 +2562,31 @@ export abstract class Viewport implements IDisposable {
    */
   public removeScreenSpaceEffects(): void {
     this.screenSpaceEffects = [];
+  }
+
+  public addOnAnalysisStyleChangedListener(listener: (newStyle: AnalysisStyle | undefined) => void): () => void {
+    const addSettingsListener = (style: DisplayStyleState) => style.settings.onAnalysisStyleChanged.addListener(listener);
+    let removeSettingsListener = addSettingsListener(this.displayStyle);
+
+    const addStyleListener = (view: ViewState) => view.onDisplayStyleChanged.addListener((style) => {
+      listener(style.settings.analysisStyle);
+      removeSettingsListener();
+      removeSettingsListener = addSettingsListener(view.displayStyle);
+    });
+
+    let removeStyleListener = addStyleListener(this.view);
+
+    const removeViewListener = this.onChangeView.addListener((vp) => {
+      listener(vp.view.displayStyle.settings.analysisStyle);
+      removeStyleListener();
+      addStyleListener(vp.view);
+    });
+
+    return () => {
+      removeSettingsListener();
+      removeStyleListener();
+      removeViewListener();
+    };
   }
 }
 

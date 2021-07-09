@@ -29,6 +29,10 @@ abstract class GraphicWrapper extends Graphic {
     return this.graphic.isDisposed;
   }
 
+  public override get isPickable(): boolean {
+    return this.graphic.isPickable;
+  }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.graphic.collectStatistics(stats);
   }
