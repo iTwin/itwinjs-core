@@ -16,7 +16,7 @@ import {
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation,
   isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d, Placement3d, PlacementProps,
   SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
@@ -62,7 +62,6 @@ import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
-import { AnalysisStyle } from "@bentley/imodeljs-common";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -2582,7 +2581,7 @@ export abstract class Viewport implements IDisposable {
       removeSettingsListener = addSettingsListener(view.displayStyle);
     });
 
-    let removeStyleListener = addStyleListener(this.view);
+    const removeStyleListener = addStyleListener(this.view);
 
     const removeViewListener = this.onChangeView.addListener((vp) => {
       listener(vp.view.displayStyle.settings.analysisStyle);

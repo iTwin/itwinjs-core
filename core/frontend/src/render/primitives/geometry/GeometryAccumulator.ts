@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { AuxChannelDataType, IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@bentley/geometry-core";
+import { IndexedPolyface, Loop, Path, Point3d, Range3d, SolidPrimitive, Transform } from "@bentley/geometry-core";
 import { AnalysisStyleDisplacement } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../../IModelConnection";
 import { GraphicBranch } from "../../GraphicBranch";
@@ -38,12 +38,12 @@ export class GeometryAccumulator {
   public get haveTransform(): boolean { return !this._transform.isIdentity; }
 
   public constructor(options: {
-    iModel: IModelConnection,
-    system?: RenderSystem,
-    surfacesOnly?: boolean,
-    transform?: Transform,
-    tileRange?: Range3d,
-    analysisStyleDisplacement?: AnalysisStyleDisplacement,
+    iModel: IModelConnection;
+    system?: RenderSystem;
+    surfacesOnly?: boolean;
+    transform?: Transform;
+    tileRange?: Range3d;
+    analysisStyleDisplacement?: AnalysisStyleDisplacement;
   }) {
     this.iModel = options.iModel;
     this.system = options.system ?? IModelApp.renderSystem;
