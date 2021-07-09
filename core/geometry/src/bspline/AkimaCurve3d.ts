@@ -18,7 +18,7 @@ import { GeometryHandler } from "../geometry3d/GeometryHandler";
 import { XYZProps } from "../geometry3d/XYZProps";
 
 /**
- * fitPoints and end condition data for [[AkimaCurve3d]]
+ * fitPoints  [[AkimaCurve3d]]
  * * This is a "json compatible" version of the serializer-friendly [[AkimaCurve3dOptions]]
  * @public
  */
@@ -94,7 +94,7 @@ private constructor(properties: AkimaCurve3dOptions, proxyCurve: CurvePrimitive)
     super(proxyCurve);
   this._options = properties;
   }
-  public dispatchToGeometryHandler(handler: GeometryHandler) {
+  public override dispatchToGeometryHandler(handler: GeometryHandler) {
     return handler.handleAkimaCurve3d(this);
   }
 /**
@@ -169,14 +169,14 @@ private constructor(properties: AkimaCurve3dOptions, proxyCurve: CurvePrimitive)
   public clone(): GeometryQuery | undefined {
     const proxyClone = this._proxyCurve.clone();
     if (proxyClone) {
-      return new AkimaCurve3d(this.toJSON(), proxyClone as CurvePrimitive);
+      return new AkimaCurve3d(this._options.clone (), proxyClone as CurvePrimitive);
     }
     return undefined;
   }
 /** Test if `other` is also an [[AkimaCurve3d]] */
   public isSameGeometryClass(other: GeometryQuery): boolean { return other instanceof AkimaCurve3d; }
 
-  public isAlmostEqual(other: GeometryQuery): boolean{
+  public override isAlmostEqual(other: GeometryQuery): boolean{
     if (other instanceof AkimaCurve3d) {
       return AkimaCurve3dOptions.areAlmostEqual(this._options, other._options);
     }

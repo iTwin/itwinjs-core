@@ -44,6 +44,7 @@ import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
 import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../bspline/InterpolationCurve3d";
 import { NumberArray, Point3dArray } from "../geometry3d/PointHelpers";
+import { AkimaCurve3d, AkimaCurve3dOptions } from "../bspline/AkimaCurve3d";
 
 /** * Context to write to a flatbuffer blob.
  *  * This class is internal.
@@ -130,20 +131,34 @@ export class BGFBReader {
     if (xyzArray instanceof Float64Array){
     const knots = header.knotsArray();
       const options = new InterpolationCurve3dOptions(Point3dArray.clonePoint3dArray(xyzArray), knots ? NumberArray.create(knots) : undefined);
-      options.order = header.order();
-      options.closed = header.closed();
-      options.isChordLenKnots = header.isChordLenKnots();
-      options.isColinearTangents = header.isColinearTangents();
-      options.isChordLenTangent = header.isChordLenTangents();
       const startTangent = header.startTangent();
-      options.startTangent = startTangent !== null ? Vector3d.create(startTangent.x(), startTangent.y(), startTangent.z()) : undefined;
       const endTangent = header.startTangent();
-      options.startTangent = endTangent !== null ? Vector3d.create(endTangent.x(), endTangent.y(), endTangent.z()) : undefined;
+      options.captureOptionalProps(
+        header.order(),
+        header.closed(),
+        header.isChordLenKnots(),
+        header.isColinearTangents(),
+        header.isChordLenTangents(),
+        header.isNaturalTangents (),
+        startTangent !== null ? Vector3d.create(startTangent.x(), startTangent.y(), startTangent.z()) : undefined,
+        endTangent !== null ? Vector3d.create(endTangent.x(), endTangent.y(), endTangent.z()) : undefined);
       return InterpolationCurve3d.createCapture(options);
     }
   return undefined;
 }
 
+/**
+ * Extract an akima curve
+ * @param variant read position in the flat buffer.
+ */
+ public readAkimaCurve3d(header: BGFBAccessors.AkimaCurve): AkimaCurve3d | undefined {
+  const xyzArray = header.pointsArray();
+  if (xyzArray instanceof Float64Array){
+    const options = new AkimaCurve3dOptions(Point3dArray.clonePoint3dArray(xyzArray));
+    return AkimaCurve3d.createCapture(options);
+  }
+return undefined;
+}
 /**
    * Extract a bspline curve
    * @param variant read position in the flat buffer.
@@ -249,9 +264,13 @@ export class BGFBReader {
     } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve) {
         const offsetToInterpolationCurveTable = variant.geometry(new BGFBAccessors.InterpolationCurve());
         if (offsetToInterpolationCurveTable !== null)
-          return this.readInterpolationCurve3d(offsetToInterpolationCurveTable);
-      }
-      return undefined;
+        return this.readInterpolationCurve3d(offsetToInterpolationCurveTable);
+    } else if (geometryType === BGFBAccessors.VariantGeometryUnion.tagAkimaCurve) {
+          const offsetToAkimaCurveTable = variant.geometry(new BGFBAccessors.AkimaCurve());
+          if (offsetToAkimaCurveTable !== null)
+            return this.readAkimaCurve3d(offsetToAkimaCurveTable);
+    }
+    return undefined;
   }
   /**
    * Extract a curve primitive
@@ -568,6 +587,7 @@ export class BGFBReader {
       case BGFBAccessors.VariantGeometryUnion.tagBsplineCurve:
       case BGFBAccessors.VariantGeometryUnion.tagTransitionSpiral:
       case BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve:
+        case BGFBAccessors.VariantGeometryUnion.tagAkimaCurve:
           {
           return this.readCurvePrimitiveFromVariant(variant);
         }

@@ -763,7 +763,7 @@ export class Point3dArray {
       if (p instanceof Point3d){
       result[i++] = p.x;
       result[i++] = p.y;
-        result[i++] = p.y;
+        result[i++] = p.z;
       } else if (Array.isArray (p)){
         result[i++] = p[0];
         result[i++] = p[1];

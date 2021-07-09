@@ -39,6 +39,7 @@ import { DgnSpiralTypeQueries } from "./BGFBReader";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
 import { InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
+import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
 
 /**
  * Context to write to a flatbuffer blob.
@@ -180,6 +181,14 @@ export class BGFBWriter {
     return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagInterpolationCurve, headerOffset, 0);
     }
 
+  public writeAkimaCurve3dAsFBVariantGeometry(curve: AkimaCurve3d): number | undefined {
+    const fitPointsOffset = this.writeDoubleArray(curve.copyFitPointsFloat64Array());
+    BGFBAccessors.AkimaCurve.startAkimaCurve(this.builder);
+    BGFBAccessors.AkimaCurve.addPoints(this.builder, fitPointsOffset);
+    const headerOffset = BGFBAccessors.AkimaCurve.endAkimaCurve(this.builder);
+    return BGFBAccessors.VariantGeometry.createVariantGeometry(this.builder, BGFBAccessors.VariantGeometryUnion.tagAkimaCurve, headerOffset, 0);
+    }
+
   public writeBsplineCurve3dAsFBVariantGeometry(bcurve: BSplineCurve3d): number | undefined {
     const order = bcurve.order;
     const closed = false;   // typescript bcurves are not closed.  There is API to impose wrapping . . .
@@ -261,6 +270,8 @@ export class BGFBWriter {
       return this.writeBsplineCurve3dAHsFBVariantGeometry(curvePrimitive);
     } else if (curvePrimitive instanceof InterpolationCurve3d) {
       return this.writeInterpolationCurve3dAsFBVariantGeometry(curvePrimitive);
+    } else if (curvePrimitive instanceof AkimaCurve3d) {
+      return this.writeAkimaCurve3dAsFBVariantGeometry(curvePrimitive);
     } else if (curvePrimitive instanceof IntegratedSpiral3d) {
       const placement = curvePrimitive.localToWorld;
       const typeCode = DgnSpiralTypeQueries.stringToTypeCode(curvePrimitive.spiralType, true)!;

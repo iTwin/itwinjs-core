@@ -608,6 +608,15 @@ export class Geometry {
   public static resolveNumber(value: number | undefined, defaultValue: number = 0): number {
     return value !== undefined ? value : defaultValue;
   }
+  /** If given a value, return it.   If given undefined, return `defaultValue`. */
+  public static resolveValue<T>(value: T | undefined, defaultValue: T): T {
+    return value !== undefined ? value : defaultValue;
+  }
+/** If given value matches a target, return undefined.   Otherwise return the value. */
+public static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | undefined {
+  return value === targetValue ? undefined : value;
+}
+
   /** simple interpolation between values, but choosing (based on fraction) a or b as starting point for maximum accuracy. */
   public static interpolate(a: number, f: number, b: number): number {
     return f <= 0.5 ? a + f * (b - a) : b - (1.0 - f) * (b - a);
@@ -865,6 +874,7 @@ return false;
       return a === b;
     return false;
   }
+
   /** clone an array whose members have a clone method.
    * * undefined return from clone is forced into the output array.
   */

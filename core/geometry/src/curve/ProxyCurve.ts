@@ -67,7 +67,7 @@ public extendRange(rangeToExtend: Range3d, transform?: Transform): void{
   }
 
 /** Implement by proxyCurve */
-public range(transform?: Transform, result?: Range3d): Range3d {
+public override range(transform?: Transform, result?: Range3d): Range3d {
     return this._proxyCurve.range(transform, result);
   }
 /** Implement by proxyCurve */

@@ -14,7 +14,7 @@ import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
 /* eslint-disable no-console */
 
 describe("AkimaCurve3d", () => {
-  it.only("HelloWorld", () => {
+  it("HelloWorld", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const circlePoints = Sample.createUnitCircle(8);
