@@ -708,6 +708,9 @@ export class DisplayStyleSettings {
    */
   public get analysisStyle(): AnalysisStyle | undefined { return this._analysisStyle; }
   public set analysisStyle(style: AnalysisStyle | undefined) {
+    if (style === this.analysisStyle)
+      return;
+
     this.onAnalysisStyleChanged.raiseEvent(style);
     this._analysisStyle = style;
     if (style)
