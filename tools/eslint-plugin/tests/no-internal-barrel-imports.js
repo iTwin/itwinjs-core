@@ -16,7 +16,7 @@ const NoInternalBarrelImportsESLintRule =
  */
 function makeTest(strings) {
   const codeLines = strings[0].split("\n");
-  if (codeLines.length <= 1) return strings;
+  if (codeLines.length <= 1) return strings[0];
   const leftPadding = codeLines[1].match(/\s+/)[0];
   return codeLines.map((l) => l.substr(leftPadding.length)).join("\n");
 }
@@ -60,45 +60,13 @@ ruleTester.run(
   NoInternalBarrelImportsESLintRule,
   supportSkippedAndOnlyInTests({
     valid: [
-      {
-        code: makeTest`
-        class C {
-          async goodMethod(reqCtx: ClientRequestContext) {
-            reqCtx.enter();
-            await Promise.resolve(5);
-            reqCtx.enter();
-          }
-        }
-      `,
-      },
+      { code: makeTest`import * as A from "./a";` },
+      { code: makeTest`import {b} from "./b";` },
     ],
     invalid: [
       {
-        only: true,
-        code: makeTest`
-        async function awaitInIf(reqCtx: ClientRequestContext) {
-          reqCtx.enter();
-          if (await someFunc()) {
-            return 10;
-          }
-          return 5;
-        }
-      `,
-        errors: [
-          {
-            messageId: "noEnterOnAwaitResume",
-            data: { reqCtxArgName: "reqCtx" },
-          },
-        ],
-        output: makeTest`
-        async function awaitInIf(reqCtx: ClientRequestContext) {
-          reqCtx.enter();
-          if (await someFunc()) {reqCtx.enter();
-            return 10;
-          }
-          return 5;
-        }
-      `,
+        code: makeTest`import {b} from "./barrel";`,
+        errors: [ { messageId: "noInternalBarrelImports" } ],
       },
     ],
   })
