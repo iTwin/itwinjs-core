@@ -93,7 +93,7 @@
   ],
   "dependencies": {
     "@itwin/itwinui-css": "^0.22.0",
-    "@itwin/itwinui-react": "^1.10.0",
+    "@itwin/itwinui-react": "^1.11.0",
     "classnames": "^2.3.1",
     "immer": "^9.0.1",
     "svg-sprite-loader": "4.2.1",
