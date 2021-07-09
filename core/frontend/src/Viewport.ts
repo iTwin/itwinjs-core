@@ -62,7 +62,7 @@ import { ModelDisplayTransformProvider, ViewState } from "./ViewState";
 import { ViewStatus } from "./ViewStatus";
 import { queryVisibleFeatures, QueryVisibleFeaturesCallback, QueryVisibleFeaturesOptions } from "./render/VisibleFeature";
 import { FlashSettings } from "./FlashSettings";
-import {AnalysisStyle} from "@bentley/imodeljs-common";
+import { AnalysisStyle } from "@bentley/imodeljs-common";
 
 // cSpell:Ignore rect's ovrs subcat subcats unmounting UI's
 
@@ -2564,6 +2564,14 @@ export abstract class Viewport implements IDisposable {
     this.screenSpaceEffects = [];
   }
 
+  /** Add an event listener to be invoked whenever the [AnalysisStyle]($common) associated with this viewport changes.
+   * The analysis style may change for any of several reasons:
+   *  - When the viewport's associated [DisplayStyleSettings.analysisStyle]($common).
+   *  - When the viewport's associated [[ViewState.displayStyle]] changes.
+   *  - When the viewport's associated [[ViewState]] changes via [[changeView]].
+   * @param listener Callback accepting the new analysis style, or undefined if there is no analysis style.
+   * @returns A function that can be invoked to remove the event listener.
+   */
   public addOnAnalysisStyleChangedListener(listener: (newStyle: AnalysisStyle | undefined) => void): () => void {
     const addSettingsListener = (style: DisplayStyleState) => style.settings.onAnalysisStyleChanged.addListener(listener);
     let removeSettingsListener = addSettingsListener(this.displayStyle);

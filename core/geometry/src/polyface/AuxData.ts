@@ -148,7 +148,11 @@ export class AuxChannel {
     return range;
   }
 
-  /** Compute the minimum and maximum displacements, if [[dataType]] is [[AuxChannelDataType.Vector]]; or else a null range. */
+  /** Compute the range of this channel's displacement values, if [[dataType]] is [[AuxChannelDataType.Vector]].
+   * @param scale Scale by which to multiply each displacement.
+   * @param result Preallocated object in which to store result.
+   * @returns The range encompassing all this channel's displacements scaled by `scale`; or a null range if this channel does not contain displacements.
+   */
   public computeDisplacementRange(scale = 1, result?: Range3d): Range3d {
     result = Range3d.createNull(result);
 
