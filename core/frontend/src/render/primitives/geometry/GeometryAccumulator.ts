@@ -56,7 +56,7 @@ export class GeometryAccumulator {
 
   private getPrimitiveRange(geom: PrimitiveGeometryType): Range3d | undefined {
     const range = new Range3d();
-    if (geom instanceof IndexedPolyface)
+    if (geom instanceof IndexedPolyface && undefined !== this.analysisStyleDisplacementScale)
       geom.data.computeRange({ includeDisplacements: true, displacementScale: this.analysisStyleDisplacementScale }, range);
     else
       geom.range(undefined, range);
