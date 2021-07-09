@@ -1,6 +1,13 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+### Updates
+
+- Do not initialize UpdatesTracker if IPC host is not available. Fixes a problem of presentation manager trying to use IPC after changes to the iModel are made.
 
 ## 2.17.0
 Mon, 28 Jun 2021 16:20:11 GMT
@@ -9,6 +16,16 @@ Mon, 28 Jun 2021 16:20:11 GMT
 
 - Fix previous `RulesetVariable` values not being deserialized when comparing hierarchies
 - Add ability to unset a ruleset variable value
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
 
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT

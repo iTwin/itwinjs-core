@@ -298,6 +298,7 @@ export class BGFBReader {
         const twoSided = polyfaceHeader.twoSided();
         const expectedClosure = polyfaceHeader.expectedClosure();
         const meshStyle = polyfaceHeader.meshStyle();
+        const numPerFace = polyfaceHeader.numPerFace();
 
         const pointF64 = nullToUndefined<Float64Array>(polyfaceHeader.pointArray());
         const paramF64 = nullToUndefined<Float64Array>(polyfaceHeader.paramArray());
@@ -327,31 +328,42 @@ export class BGFBReader {
             for (const c of intColorU32)
               polyface.data.color!.push(c);
           }
-          // The flatbuffer data is one based, zero terminated.
-          // polyface data needs zero based with counts in the IndexedPolyface.
-          let i0 = 0;
+          // The flatbuffer data is one based.
+          // If numPerFace is less than 2, facets are variable size and zero terminated
+          // If numPerFace is 2 or more, indices are blocked
           const numIndex = pointIndexI32.length;
-          for (let i1 = i0; i1 < numIndex; i1++) {
-            if (pointIndexI32[i1] === 0) {
-              if (i1 > i0) {
-                for (let i = i0; i < i1; i++) {
-                  const q = pointIndexI32[i];
-                  polyface.addPointIndex(Math.abs(q) - 1, q > 0);
-                  if (normalF64 && normalIndexI32) {
-                    polyface.addNormalIndex(Math.abs(normalIndexI32[i]) - 1);
-                  }
-                  if (paramF64 && paramIndexI32) {
-                    polyface.addParamIndex(Math.abs(paramIndexI32[i]) - 1);
-                  }
-                  if (intColorU32 && colorIndexI32) {
-                    polyface.addColorIndex(Math.abs(colorIndexI32[i]) - 1);
-                  }
+          const addIndicesInBlock = (k0: number, k1: number) => {
+            for (let k = k0; k < k1; k++) {
+              const q = pointIndexI32[k];
+              polyface.addPointIndex(Math.abs(q) - 1, q > 0);
+              if (normalF64 && normalIndexI32) {
+                polyface.addNormalIndex(Math.abs(normalIndexI32[k]) - 1);
+              }
+              if (paramF64 && paramIndexI32) {
+                polyface.addParamIndex(Math.abs(paramIndexI32[k]) - 1);
+              }
+              if (intColorU32 && colorIndexI32) {
+                polyface.addColorIndex(Math.abs(colorIndexI32[k]) - 1);
+              }
+            }
+          };
+
+          if (numPerFace > 1) {
+            for (let i0 = 0; i0 + numPerFace <= numIndex; i0 += numPerFace){
+              addIndicesInBlock(i0, i0 + numPerFace);
+              polyface.terminateFacet(true);
+            }
+          } else {
+            let i0 = 0;
+            for (let i1 = i0; i1 < numIndex; i1++) {
+              if (pointIndexI32[i1] === 0) {
+                addIndicesInBlock(i0, i1);
+                polyface.terminateFacet(true);
+                i0 = i1 + 1;
                 }
               }
-              polyface.terminateFacet(true);
-              i0 = i1 + 1;
             }
-          }
+
           polyface.data.auxData = this.readPolyfaceAuxData(polyfaceHeader.auxData());
           if (taggedNumericDataOffset) {
               const taggedNumericDataAccessor = nullToUndefined<BGFBAccessors.TaggedNumericData>(taggedNumericDataOffset);

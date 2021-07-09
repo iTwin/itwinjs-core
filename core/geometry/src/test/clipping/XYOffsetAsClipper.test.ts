@@ -53,7 +53,7 @@ describe("OffsetByClip", () => {
         for (const rightOffset of [0.2, 0.3, 0.4, 0.8, -0.2]) {
           GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0);
           const offsetClipper = ClipUtilities.createXYOffsetClipFromLineString(points, leftSign * rightOffset, rightOffset, -0.1, -0.02);
-          if (ck.testType<UnionOfConvexClipPlaneSets>(offsetClipper)) {
+          if (ck.testType(offsetClipper, UnionOfConvexClipPlaneSets)) {
             for (const c of offsetClipper.convexSets) {
               ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(c, range,
                 (loopPoints: GrowableXYZArray) => {
@@ -104,7 +104,7 @@ describe("OffsetByClip", () => {
       for (const leftOffset of [10]) {
         GeometryCoreTestIO.captureGeometry(allGeometry, LineString3d.create(points), x0, y0);
         const offsetClipper = ClipUtilities.createXYOffsetClipFromLineString(points, leftOffset, 0, -9999, 9999);
-        if (ck.testType<UnionOfConvexClipPlaneSets>(offsetClipper)) {
+        if (ck.testType(offsetClipper, UnionOfConvexClipPlaneSets)) {
           for (const c of offsetClipper.convexSets) {
             ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(c, range,
               (loopPoints: GrowableXYZArray) => {
@@ -153,7 +153,7 @@ describe("OffsetByClip", () => {
       if (shape instanceof CurveChain) {
         const points = shape.getPackedStrokes()!;
         const offsetClipper = ClipUtilities.createXYOffsetClipFromLineString(points, offsetDistance, offsetDistance, range.low.z - 0.1, range.low.z - 0.02);
-        if (ck.testType<UnionOfConvexClipPlaneSets>(offsetClipper)) {
+        if (ck.testType(offsetClipper, UnionOfConvexClipPlaneSets)) {
           for (const c of offsetClipper.convexSets) {
             ClipUtilities.announceLoopsOfConvexClipPlaneSetIntersectRange(c, clipRange,
               (loopPoints: GrowableXYZArray) => {
