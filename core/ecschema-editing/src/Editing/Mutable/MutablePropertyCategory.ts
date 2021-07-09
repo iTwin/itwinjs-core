@@ -9,6 +9,6 @@ import { PropertyCategory } from "@bentley/ecschema-metadata";
  * An abstract class used for schema editing.
  */
 export abstract class MutablePropertyCategory extends PropertyCategory {
-  public abstract setPriority(priority: number): void;
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override setPriority(priority: number): void;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }

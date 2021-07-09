@@ -9,7 +9,7 @@ import { Format, InvertedUnit, KindOfQuantity, OverrideFormat, Unit } from "@ben
  * An abstract class used for schema editing.
  */
 export abstract class MutableKindOfQuantity extends KindOfQuantity {
-  public abstract addPresentationFormat(format: Format | OverrideFormat, isDefault: boolean): void;
-  public abstract createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat;
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override addPresentationFormat(format: Format | OverrideFormat, isDefault: boolean): void;
+  public abstract override createFormatOverride(parent: Format, precision?: number, unitLabelOverrides?: Array<[Unit | InvertedUnit, string | undefined]>): OverrideFormat;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }
