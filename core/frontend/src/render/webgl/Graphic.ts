@@ -31,7 +31,7 @@ import { ThematicSensors } from "./ThematicSensors";
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
   public abstract addCommands(_commands: RenderCommands): void;
   public abstract get isDisposed(): boolean;
-  public get isPickable(): boolean { return false; }
+  public abstract get isPickable(): boolean;
   public addHiliteCommands(_commands: RenderCommands, _pass: RenderPass): void { assert(false); }
   public toPrimitive(): Primitive | undefined { return undefined; }
 }
@@ -298,6 +298,10 @@ export class GraphicsArray extends Graphic {
   constructor(public graphics: RenderGraphic[]) { super(); }
 
   public get isDisposed(): boolean { return 0 === this.graphics.length; }
+
+  public override get isPickable(): boolean {
+    return this.graphics.some((x) => (x as Graphic).isPickable);
+  }
 
   public dispose() {
     for (const graphic of this.graphics)

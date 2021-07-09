@@ -16,7 +16,7 @@ import {
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation,
   isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d, Placement3d, PlacementProps,
   SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
@@ -2561,6 +2561,39 @@ export abstract class Viewport implements IDisposable {
    */
   public removeScreenSpaceEffects(): void {
     this.screenSpaceEffects = [];
+  }
+
+  /** Add an event listener to be invoked whenever the [AnalysisStyle]($common) associated with this viewport changes.
+   * The analysis style may change for any of several reasons:
+   *  - When the viewport's associated [DisplayStyleSettings.analysisStyle]($common).
+   *  - When the viewport's associated [[ViewState.displayStyle]] changes.
+   *  - When the viewport's associated [[ViewState]] changes via [[changeView]].
+   * @param listener Callback accepting the new analysis style, or undefined if there is no analysis style.
+   * @returns A function that can be invoked to remove the event listener.
+   */
+  public addOnAnalysisStyleChangedListener(listener: (newStyle: AnalysisStyle | undefined) => void): () => void {
+    const addSettingsListener = (style: DisplayStyleState) => style.settings.onAnalysisStyleChanged.addListener(listener);
+    let removeSettingsListener = addSettingsListener(this.displayStyle);
+
+    const addStyleListener = (view: ViewState) => view.onDisplayStyleChanged.addListener((style) => {
+      listener(style.settings.analysisStyle);
+      removeSettingsListener();
+      removeSettingsListener = addSettingsListener(view.displayStyle);
+    });
+
+    const removeStyleListener = addStyleListener(this.view);
+
+    const removeViewListener = this.onChangeView.addListener((vp) => {
+      listener(vp.view.displayStyle.settings.analysisStyle);
+      removeStyleListener();
+      addStyleListener(vp.view);
+    });
+
+    return () => {
+      removeSettingsListener();
+      removeStyleListener();
+      removeViewListener();
+    };
   }
 }
 

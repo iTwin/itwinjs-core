@@ -35,7 +35,12 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public constructor(system: RenderSystem, options: GraphicBuilderOptions, accumulatorTransform = Transform.identity) {
     super(options);
-    this.accum = new GeometryAccumulator(this.iModel, system, undefined, accumulatorTransform);
+    this.accum = new GeometryAccumulator({
+      iModel: this.iModel,
+      system,
+      transform: accumulatorTransform,
+      analysisStyleDisplacement: options.viewport.displayStyle.settings.analysisStyle?.displacement,
+    });
   }
 
   public finish(): RenderGraphic {
@@ -152,6 +157,9 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   }
 }
 
+// Set to true to add a range box to every graphic produced by PrimitiveBuilder.
+let addDebugRangeBox = false;
+
 /** @internal */
 export class PrimitiveBuilder extends GeometryListBuilder {
   public primitives: RenderGraphic[] = [];
@@ -178,6 +186,14 @@ export class PrimitiveBuilder extends GeometryListBuilder {
       const batchRange = range ?? new Range3d();
       const batchOptions = this._options.pickable;
       graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), batchRange, batchOptions);
+    }
+
+    if (addDebugRangeBox && range) {
+      addDebugRangeBox = false;
+      const builder = this.accum.system.createGraphic({ ...this._options });
+      builder.addRangeBox(range);
+      graphic = this.accum.system.createGraphicList([graphic, builder.finish()]);
+      addDebugRangeBox = true;
     }
 
     return graphic;
