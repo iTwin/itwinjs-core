@@ -136,7 +136,7 @@
     },
     {
       "name": "@bentley/imodeljs-i18n",
-      "allowedCategories": [ "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-markup",
@@ -248,7 +248,7 @@
     },
     {
       "name": "@bentley/units-schema",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/usage-logging-client",
@@ -308,7 +308,7 @@
     },
     {
       "name": "almost-equal",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "applicationinsights",
@@ -336,7 +336,7 @@
     },
     {
       "name": "benchmark",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "body-parser",
@@ -608,7 +608,7 @@
     },
     {
       "name": "i18next-node-fs-backend",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "i18next-xhr-backend",
@@ -936,7 +936,7 @@
     },
     {
       "name": "sass",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "sass-loader",
@@ -1128,7 +1128,7 @@
     },
     {
       "name": "xmlhttprequest",
-      "allowedCategories": [ "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
     },
     {
       "name": "xpath",

@@ -1,6 +1,43 @@
 # Change Log - @bentley/presentation-frontend
 
-This log was last generated on Wed, 23 Jun 2021 17:09:07 GMT and should not be manually modified.
+This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Add ability to unset a ruleset variable value
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+_Version update only_
 
 ## 2.16.4
 Wed, 23 Jun 2021 17:09:07 GMT
@@ -103,7 +140,7 @@ Tue, 09 Mar 2021 20:28:13 GMT
 ### Updates
 
 - Fixed broken double angle bracket link syntax
-- Changed 'compareHierarchy' to build result in pages for massive result sets. 
+- Changed 'compareHierarchy' to build result in pages for massive result sets.
 - HiliteSetProvider: return geometric elements grouped by BisCore.GroupInformationElement
 - Updated to use TypeScript 4.1
 - begin rename project from iModel.js to iTwin.js
@@ -546,7 +583,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Do not include transient element IDs when syncing with logical selection
 - Always compute selection when syncing tool selection with logical selection - that's necessary to determine concrete element class names. Without that, we're adding keys with "BisCore:Element" class to selection and then our keys compare fails (presentation components like the table always have concrete class names). This can cause rows / nodes not to be highlighted in components.
 - Remove IModelApp subclasses
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

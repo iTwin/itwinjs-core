@@ -423,6 +423,8 @@ export class BackgroundMapSettings {
     readonly mapType: BackgroundMapType;
     // @beta
     readonly planarClipMask: PlanarClipMaskSettings;
+    // @internal (undocumented)
+    static providerFromMapLayer(props: MapLayerProps): BackgroundMapProps | undefined;
     readonly providerName: BackgroundMapProviderName;
     readonly terrainSettings: TerrainSettings;
     // (undocumented)
@@ -1785,7 +1787,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set thematic(thematic: ThematicDisplay);
     // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
-    // @internal
+    // @internal (undocumented)
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps;
 }
 
@@ -3576,6 +3578,7 @@ export interface GraphicsRequestProps {
     readonly id: string;
     readonly location?: TransformProps;
     readonly omitEdges?: boolean;
+    readonly sectionCut?: string;
     readonly toleranceLog10: number;
     // @alpha
     readonly treeFlags?: TreeFlags;
@@ -4771,7 +4774,6 @@ export interface MapImageryProps {
 
 // @beta
 export class MapImagerySettings {
-    // (undocumented)
     get backgroundBase(): BaseLayerSettings;
     set backgroundBase(base: BaseLayerSettings);
     // (undocumented)
@@ -4957,6 +4959,8 @@ export interface MaterialProps {
 // @internal (undocumented)
 export class MeshEdge {
     constructor(index0?: number, index1?: number);
+    // (undocumented)
+    compareTo(other: MeshEdge): number;
     // (undocumented)
     indices: number[];
 }
@@ -8208,6 +8212,11 @@ export interface TileOptions {
     readonly useProjectExtents: boolean;
 }
 
+// @internal (undocumented)
+export namespace TileOptions {
+    export function fromTreeIdAndContentId(treeId: string, contentId: string): TileOptions;
+}
+
 // @internal
 export interface TileProps {
     contentId: string;
@@ -8807,7 +8816,6 @@ export class ViewFlags {
     dimensions: boolean;
     // @internal
     edgeMask: number;
-    // @internal (undocumented)
     edgesRequired(): boolean;
     // (undocumented)
     equals(other: ViewFlags): boolean;

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/eslint-plugin",
-  "version": "2.18.0-dev.15",
+  "version": "2.19.0-dev.10",
   "description": "ESLint plugin with default configuration and custom rules for iModel.js projects",
   "license": "MIT",
   "keywords": [
@@ -39,10 +39,13 @@
     "eslint-plugin-prefer-arrow": "1.2.3",
     "eslint-plugin-react": "7.24.0",
     "eslint-plugin-react-hooks": "4.2.0",
-    "require-dir": "^1.2.0",
-    "typescript": "~4.1.0"
+    "require-dir": "^1.2.0"
+  },
+  "devDependencies": {
+    "typescript": "~4.3.0"
   },
   "peerDependencies": {
-    "eslint": "^6.8.0 || ^7.0.0"
+    "eslint": "^6.8.0 || ^7.0.0",
+    "typescript": "^3.7.0 || ^4.0.0"
   }
 }
