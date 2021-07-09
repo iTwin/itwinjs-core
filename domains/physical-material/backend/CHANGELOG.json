@@ -2,6 +2,12 @@
   "name": "@bentley/physical-material-backend",
   "entries": [
     {
+      "version": "2.18.0",
+      "tag": "@bentley/physical-material-backend_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.17.1",
       "tag": "@bentley/physical-material-backend_v2.17.1",
       "date": "Fri, 02 Jul 2021 15:38:31 GMT",

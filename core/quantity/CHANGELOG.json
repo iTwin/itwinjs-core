@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-quantity",
   "entries": [
     {
+      "version": "2.18.0",
+      "tag": "@bentley/imodeljs-quantity_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add ability to clone Format and to add property setters. This allows a user to synchronously tweak a format in the frontend."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.17.1",
       "tag": "@bentley/imodeljs-quantity_v2.17.1",
       "date": "Fri, 02 Jul 2021 15:38:31 GMT",

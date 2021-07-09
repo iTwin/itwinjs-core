@@ -1,6 +1,13 @@
 # Change Log - @bentley/imodeljs-editor-frontend
 
-This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+This log was last generated on Fri, 09 Jul 2021 18:11:24 GMT and should not be manually modified.
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- Create circle, ellipse, and rectangle tools.
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:31 GMT

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/build-tools",
-  "version": "2.18.0-dev.22",
+  "version": "2.18.0",
   "description": "Bentley build tools",
   "license": "MIT",
   "repository": {
