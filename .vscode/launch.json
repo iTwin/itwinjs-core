@@ -1646,6 +1646,17 @@
       "request": "launch",
       "program": "${workspaceFolder}/tools/eslint-plugin/tests/request-context.js",
       "console": "integratedTerminal",
+    },
+    {
+      "name": "eslint rule test @bentley/no-internal-barrel-imports",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/tools/eslint-plugin",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/eslint-plugin/tests/no-internal-barrel-imports.js",
+      "console": "integratedTerminal",
     }
   ],
   "compounds": [
