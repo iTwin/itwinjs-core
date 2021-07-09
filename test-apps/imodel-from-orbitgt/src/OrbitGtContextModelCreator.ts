@@ -15,7 +15,7 @@ import {
 import { DownloaderNode } from "@bentley/orbitgt-core/lib/system/runtime/DownloaderNode";
 
 interface OrbitGtPointCloudProps {
-  rdsUrl: string;
+  rdsUrl?: string;
   accountName: string;
   sasToken: string;
   containerName: string;
