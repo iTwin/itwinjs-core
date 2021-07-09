@@ -185,12 +185,29 @@ class AnalysisDecorator {
   private readonly _viewport: Viewport;
   private readonly _id: string;
   private _graphic?: RenderGraphicOwner;
+  private _displacementScale?: number;
   private _dispose?: () => void;
 
   public constructor(viewport: Viewport, mesh: AnalysisMesh) {
     this._viewport = viewport;
     this.mesh = mesh;
-    this._dispose = viewport.onDisposed.addOnce(() => this.dispose());
+    this._displacementScale = viewport.displayStyle.settings.analysisStyle?.displacement?.scale;
+
+    const removeDisposalListener = viewport.onDisposed.addOnce(() => this.dispose());
+    const removeAnalysisStyleListener = viewport.addOnAnalysisStyleChangedListener((newStyle) => {
+      const newScale = newStyle?.displacement?.scale;
+      if (newScale !== this._displacementScale) {
+        this._graphic?.disposeGraphic();
+        this._graphic = undefined;
+        this._displacementScale = newScale;
+      }
+    });
+
+    this._dispose = () => {
+      removeAnalysisStyleListener();
+      removeDisposalListener();
+    };
+
     this._id = viewport.iModel.transientIds.next;
     IModelApp.viewManager.addDecorator(this);
   }
