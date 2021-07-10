@@ -9,8 +9,9 @@
 import * as bunyan from "bunyan";
 import * as domain from "domain";
 import { Writable } from "stream";
-import { request } from "@bentley/itwin-client";
-import { ClientRequestContext } from "@bentley/bentleyjs-core";
+
+// eslint-disable-next-line @typescript-eslint/no-var-requires
+const post = require("request-promise");
 
 /** @beta */
 export interface GenericPost {
@@ -50,9 +51,8 @@ export class PostFluentd implements GenericPost {
     };
   }
   public async postasync(config: any, jsonbody: any): Promise<number> {
-    const options = this.generateOptions(config, jsonbody);
-    const response = await request(new ClientRequestContext(), options.url, options);
-    return response.status || -1;
+    const response = await post(this.generateOptions(config, jsonbody));
+    return response.statusCode || -1;
   }
 }
 
