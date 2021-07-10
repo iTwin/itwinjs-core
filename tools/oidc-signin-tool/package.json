@@ -1,6 +1,6 @@
 {
   "name": "@bentley/oidc-signin-tool",
-  "version": "2.18.0-dev.12",
+  "version": "2.19.0-dev.11",
   "description": "OIDC Signin Helper",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -49,11 +49,11 @@
     "@types/puppeteer": "2.0.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "internal-tools": "workspace:*",
     "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
-    "typescript": "~4.1.0"
+    "typescript": "~4.3.0"
   },
   "eslintConfig": {
     "plugins": [

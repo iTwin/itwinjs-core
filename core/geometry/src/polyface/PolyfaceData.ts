@@ -172,7 +172,9 @@ export class PolyfaceData {
   public get faceCount() { return this.face.length; }
 
   /** return indexed point. This is a copy of the coordinates, not a reference. */
-  public getPoint(i: number): Point3d | undefined { return this.point.getPoint3dAtCheckedPointIndex(i); }
+  public getPoint(i: number, out?: Point3d): Point3d | undefined {
+    return this.point.getPoint3dAtCheckedPointIndex(i, out);
+  }
   /** return indexed normal. This is the COPY to the normal, not a reference. */
   public getNormal(i: number): Vector3d | undefined { return this.normal ? this.normal.getVector3dAtCheckedVectorIndex(i) : undefined; }
   /** return indexed param. This is the COPY of the coordinates, not a reference. */
@@ -271,9 +273,9 @@ export class PolyfaceData {
             const thisData = thisChannel.data[iData];
             const otherData = otherChannel.data[iData];
             for (let i = 0; i < numEdge; i++)
-              thisData.copyValues(otherData, i, index0 + i, blockSize);
+              thisData.copyValues(otherData, i, other.auxData.indices[index0 + i], blockSize);
             for (let i = 0; i < numWrap; i++)
-              thisData.copyValues(thisData, numEdge + i, i, blockSize);
+              thisData.copyValues(thisData, other.auxData.indices[numEdge + i], i, blockSize);
           }
         }
       }
@@ -384,17 +386,17 @@ export class PolyfaceData {
     if (this.normal)
       this.normal.scaleInPlace(-1.0);
   }
-  /** Apply `transform` to point and normal arrays.
+  /** Apply `transform` to point and normal arrays and to auxData.
    * * IMPORTANT This base class is just a data carrier.  It does not know if the index order and normal directions have special meaning.
    * * i.e. caller must separately reverse index order and normal direction if needed.
    */
-  public tryTransformInPlace(
-    transform: Transform): boolean {
+  public tryTransformInPlace(transform: Transform): boolean {
     this.point.multiplyTransformInPlace(transform);
 
     if (this.normal && !transform.matrix.isIdentity)
       this.normal.multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(transform.matrix);
-    return true;
+
+    return undefined === this.auxData || this.auxData.tryTransformInPlace(transform);
   }
   /**
    * * Search for duplication of coordinates within points, normals, and params.

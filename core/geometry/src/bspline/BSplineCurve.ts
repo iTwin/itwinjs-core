@@ -151,11 +151,11 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
   /**
    * Return the start point of the curve.
    */
-  public startPoint(): Point3d { return this.evaluatePointInSpan(0, 0.0); }
+  public override startPoint(): Point3d { return this.evaluatePointInSpan(0, 0.0); }
   /**
    * Return the end point of the curve
    */
-  public endPoint(): Point3d { return this.evaluatePointInSpan(this.numSpan - 1, 1.0); }
+  public override endPoint(): Point3d { return this.evaluatePointInSpan(this.numSpan - 1, 1.0); }
   /** Reverse the curve in place.
    * * Poles are reversed
    * * knot values are mirrored around the middle of the
@@ -211,7 +211,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
    * @param extend true to extend the curve (if possible)
    * @returns Returns a CurveLocationDetail structure that holds the details of the close point.
    */
-  public closestPoint(spacePoint: Point3d, _extend: boolean): CurveLocationDetail | undefined {
+  public override closestPoint(spacePoint: Point3d, _extend: boolean): CurveLocationDetail | undefined {
     const point = this.fractionToPoint(0);
     const result = CurveLocationDetail.createCurveFractionPointDistance(this, 0.0, point, point.distance(spacePoint));
     this.fractionToPoint(1.0, point);
@@ -238,7 +238,7 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
    * @param result growing array of plane intersections
    * @return number of intersections appended to the array.
   */
-  public appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
+  public override appendPlaneIntersectionPoints(plane: PlaneAltitudeEvaluator, result: CurveLocationDetail[]): number {
     const numPole = this.numPoles;
     const order = this.order;
     const allCoffs = new Float64Array(numPole);
@@ -342,7 +342,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
    * return a simple array form of the knots.  optionally replicate the first and last
    * in classic over-clamped manner
    */
-  public copyKnots(includeExtraEndKnot: boolean): number[] { return this._bcurve.knots.copyKnots(includeExtraEndKnot); }
+  public override copyKnots(includeExtraEndKnot: boolean): number[] { return this._bcurve.knots.copyKnots(includeExtraEndKnot); }
 
   /** Create a bspline with uniform knots. */
   public static createUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined {
@@ -486,12 +486,12 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       this._bcurve.poleBuffer2[0], this._bcurve.poleBuffer2[1], this._bcurve.poleBuffer2[2], result);
   }
   /** Evaluate the curve point at a fractional of the entire knot range. */
-  public fractionToPoint(fraction: number, result?: Point3d): Point3d {
+  public override fractionToPoint(fraction: number, result?: Point3d): Point3d {
     return this.knotToPoint(this._bcurve.knots.fractionToKnot(fraction), result);
   }
 
   /** Evaluate the curve point at a fractional of the entire knot range. */
-  public fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
+  public override fractionToPointAndDerivative(fraction: number, result?: Ray3d): Ray3d {
     const knot = this._bcurve.knots.fractionToKnot(fraction);
     result = this.knotToPointAndDerivative(knot, result);
     result.direction.scaleInPlace(this._bcurve.knots.knotLength01);
@@ -504,7 +504,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
    * * y axis is the second derivative, i.e. in the plane and on the center side of the tangent.
    * If the arc is circular, the second derivative is directly towards the center
    */
-  public fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
+  public override fractionToPointAnd2Derivatives(fraction: number, result?: Plane3dByOriginAndVectors): Plane3dByOriginAndVectors {
     const knot = this._bcurve.knots.fractionToKnot(fraction);
     result = this.knotToPointAnd2Derivatives(knot, result);
     const a = this._bcurve.knots.knotLength01;
@@ -513,7 +513,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     return result;
   }
   /** test if almost the same curve as `other` */
-  public isAlmostEqual(other: any): boolean {
+  public override isAlmostEqual(other: any): boolean {
     if (other instanceof BSplineCurve3d) {
       return this._bcurve.knots.isAlmostEqual(other._bcurve.knots)
         && Point3dArray.isAlmostEqual(this._bcurve.packedData, other._bcurve.packedData);
@@ -572,7 +572,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
    * @param parentStrokeMap evolving parent map.
    * @alpha
    */
-  public computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap) {
+  public override computeAndAttachRecursiveStrokeCounts(options?: StrokeOptions, parentStrokeMap?: StrokeCountMap) {
     const workBezier = this.initializeWorkBezier();
     const numSpan = this.numSpan;
     const myData = StrokeCountMap.createWithCurvePrimitiveAndOptionalParent(this, parentStrokeMap, []);
@@ -663,7 +663,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
   /**
    * Set the flag indicating the bspline might be suitable for having wrapped "closed" interpretation.
    */
-  public setWrappable(value: BSplineWrapMode) {
+  public override setWrappable(value: BSplineWrapMode) {
     this._bcurve.knots.wrappable = value;
   }
   /** Second step of double dispatch:  call `handler.handleBSplineCurve3d(this)` */

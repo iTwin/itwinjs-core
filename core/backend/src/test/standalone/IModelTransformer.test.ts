@@ -718,13 +718,13 @@ describe("IModelTransformer", () => {
         this.iModelExporter = new IModelExporter(iModelDb);
         this.iModelExporter.registerHandler(this);
       }
-      protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
+      protected override onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
         ++this.modelCount;
       }
-      protected onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
+      protected override onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
         assert.fail("Should not visit element when visitElements=false");
       }
-      protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
+      protected override onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
         assert.fail("Should not visit relationship when visitRelationship=false");
       }
     }
@@ -924,7 +924,7 @@ describe("IModelTransformer", () => {
     sourceDb.saveChanges();
 
     class OrderedExporter extends IModelExporter {
-      public async exportSchemas() {
+      public override async exportSchemas() {
         const schemaLoader = new IModelSchemaLoader(this.sourceDb);
         const schema1 = schemaLoader.getSchema("TestSchema1");
         const schema2 = schemaLoader.getSchema("TestSchema2");

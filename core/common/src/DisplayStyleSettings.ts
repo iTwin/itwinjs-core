@@ -100,13 +100,9 @@ export interface DisplayStyleSettingsProps {
   monochromeColor?: ColorDefProps;
   /** The style in which the monochrome color is applied. Default: [[MonochromeMode.Scaled]]. */
   monochromeMode?: MonochromeMode;
-  /** Settings controlling display of analytical models.
-   * @alpha
-   */
+  /** Settings controlling display of analytical models. */
   analysisStyle?: AnalysisStyleProps;
-  /** A floating point value in [0..1] representing the animation state of this style's [[analysisStyle]]. Default: 0.0.
-   * @alpha
-   */
+  /** A floating point value in [0..1] representing the animation state of this style's [[analysisStyle]]. Default: 0.0. */
   analysisFraction?: number;
   /** A schedule script embedded into the display style settings. This is how schedule scripts were stored prior to the introduction of
    * [RenderTimeline]($backend) elements. It should no longer be used - instead, set [[renderTimeline]] to the Id of the RenderTimeline element
@@ -336,7 +332,7 @@ type OverridesArrayKey = "subCategoryOvr" | "modelOvr" | "planarClipOvr";
  */
 class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
   // This is required for mock framework used by ui libraries, which otherwise try to clone this as a standard Map.
-  public get [Symbol.toStringTag]() { return "OverridesMap"; }
+  public override get [Symbol.toStringTag]() { return "OverridesMap"; }
 
   public constructor(
     private readonly _json: DisplayStyleSettingsProps,
@@ -349,7 +345,7 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
     this.populate();
   }
 
-  public set(id: Id64String, override: Override): this {
+  public override set(id: Id64String, override: Override): this {
     this._event.raiseEvent(id, override);
     super.set(id, override);
 
@@ -361,7 +357,7 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
     return this;
   }
 
-  public delete(id: Id64String): boolean {
+  public override delete(id: Id64String): boolean {
     this._event.raiseEvent(id, undefined);
     if (!super.delete(id))
       return false;
@@ -375,7 +371,7 @@ class OverridesMap<OverrideProps, Override> extends Map<Id64String, Override> {
     return true;
   }
 
-  public clear(): void {
+  public override clear(): void {
     for (const id of this.keys())
       this.delete(id);
 
@@ -500,13 +496,9 @@ export class DisplayStyleSettings {
   public readonly onRenderTimelineChanged = new BeEvent<(newRenderTimeline: Id64String | undefined) => void>();
   /** Event raised just prior to assignment to the [[timePoint]] property. */
   public readonly onTimePointChanged = new BeEvent<(newTimePoint: number | undefined) => void>();
-  /** Event raised just prior to assignment to the [[analysisStyle]] property.
-   * @alpha
-   */
+  /** Event raised just prior to assignment to the [[analysisStyle]] property. */
   public readonly onAnalysisStyleChanged = new BeEvent<(newStyle: Readonly<AnalysisStyle> | undefined) => void>();
-  /** Event raised just prior to assignment to the [[analysisFraction]] property.
-   * @alpha
-   */
+  /** Event raised just prior to assignment to the [[analysisFraction]] property. */
   public readonly onAnalysisFractionChanged = new BeEvent<(newFraction: number) => void>();
   /** Event raised when the contents of [[excludedElementIds]] changes. */
   public readonly onExcludedElementsChanged = new BeEvent<() => void>();
@@ -712,23 +704,24 @@ export class DisplayStyleSettings {
   }
 
   /** Settings controlling the display of analytical models.
-   * @note Do not modify this object directly. Instead, create a clone and pass it to the setter.
-   * @alpha
+   * @see [[analysisFraction]] to control playback of the animation.
    */
   public get analysisStyle(): AnalysisStyle | undefined { return this._analysisStyle; }
   public set analysisStyle(style: AnalysisStyle | undefined) {
-    this.onAnalysisStyleChanged.raiseEvent(style);
-    if (!style) {
-      this._json.analysisStyle = undefined;
-      this._analysisStyle = undefined;
+    if (style === this.analysisStyle)
       return;
-    }
 
-    this._analysisStyle = style.clone(this._analysisStyle);
-    this._json.analysisStyle = style.toJSON();
+    this.onAnalysisStyleChanged.raiseEvent(style);
+    this._analysisStyle = style;
+    if (style)
+      this._json.analysisStyle = style.toJSON();
+    else
+      delete this._json.analysisStyle;
   }
 
-  /** @alpha */
+  /** A value in [0..1] indicating the current point in animation of the [[analysisStyle]], where 0 corresponds to the beginning of
+   * the animation and 1 to the end.
+   */
   public get analysisFraction(): number {
     const fraction = this._json.analysisFraction ?? 0;
     return Math.max(0, Math.min(1, fraction));
@@ -1043,7 +1036,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
 
   private get _json3d(): DisplayStyle3dSettingsProps { return this._json as DisplayStyle3dSettingsProps; }
 
-  public is3d(): this is DisplayStyle3dSettings {
+  public override is3d(): this is DisplayStyle3dSettings {
     return true;
   }
 
@@ -1092,12 +1085,12 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
   }
 
   /** @internal */
-  public toJSON(): DisplayStyle3dSettingsProps {
+  public override toJSON(): DisplayStyle3dSettingsProps {
     return this._json3d;
   }
 
-  /** @internal override */
-  public toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps {
+  /** @internal */
+  public override toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps {
     const props = super.toOverrides(options) as DisplayStyle3dSettingsProps;
     if (options?.includeAll)
       return props;
@@ -1144,7 +1137,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
    * @see [[toOverrides]] to produce overrides from an existing DisplayStyleSettings.
    * @internal override
    */
-  public applyOverrides(overrides: DisplayStyle3dSettingsProps): void {
+  public override applyOverrides(overrides: DisplayStyle3dSettingsProps): void {
     super._applyOverrides(overrides);
 
     if (overrides.environment)
@@ -1275,7 +1268,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     if (this.lights.solar.timePoint === undefined)
       return;
 
-    const solar = this.lights.solar.toJSON() ?? { };
+    const solar = this.lights.solar.toJSON() ?? {};
     solar.timePoint = undefined;
     this.lights = this.lights.clone({ solar });
   }

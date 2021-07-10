@@ -24,7 +24,7 @@ import TestUtils from "../../TestUtils";
 import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
 import { ModelsTreeNodeType, ModelsVisibilityHandler } from "../../../ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
 import { ModelsTree, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS } from "../../../ui-framework/imodel-components/models-tree/ModelsTree";
-import { createCategoryNode, createElementClassGroupingNode, createElementNode, createKey, createModelNode, createSubjectNode } from "./Common";
+import { createCategoryNode, createElementClassGroupingNode, createElementNode, createKey, createModelNode, createSubjectNode } from "../Common";
 
 describe("ModelsTree", () => {
 

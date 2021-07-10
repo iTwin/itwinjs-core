@@ -14,6 +14,7 @@ import { LoggingDiagnosticReporter } from "../../Validation/LoggingDiagnosticRep
 
 import sinon = require("sinon");
 
+/* eslint-disable deprecation/deprecation */
 class TestDiagnosticReporter extends FormatDiagnosticReporter {
   constructor(suppressions?: Map<string, string[]>) {
     super(suppressions);

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/extension-webpack-tools",
-  "version": "2.18.0-dev.12",
+  "version": "2.19.0-dev.11",
   "description": "Configuration and scripts for iModel.js Extensions.",
   "license": "MIT",
   "repository": {
@@ -39,7 +39,7 @@
     "file-loader": "^4.2.0",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.2",
-    "mini-css-extract-plugin": "0.8.0",
+    "mini-css-extract-plugin": "0.11.3",
     "nodemon": "^2.0.4",
     "null-loader": "^0.1.1",
     "postcss-flexbugs-fixes": "4.1.0",
@@ -57,7 +57,7 @@
     "svg-sprite-loader": "4.2.1",
     "terser-webpack-plugin": "3.0.7",
     "ts-loader": "^6.0.4",
-    "typescript": "~4.1.0",
+    "typescript": "~4.3.0",
     "url-loader": "^1.0.1",
     "webpack": "4.42.0",
     "webpack-sources": "^1.4.3",

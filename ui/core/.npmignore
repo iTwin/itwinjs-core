@@ -7,5 +7,6 @@
 !lib/**/*.*css
 !lib/**/*.svg
 !lib/public/**/*
+lib/public/locales/en-PSEUDO
 lib/test
 !*.md

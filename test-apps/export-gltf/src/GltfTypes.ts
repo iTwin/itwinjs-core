@@ -18,6 +18,7 @@ interface Gltf {
   meshes: GltfMesh[];
   nodes: GltfNode[];
   scenes: GltfScene[];
+  scene: number;
 }
 
 const enum AccessorComponentType {

@@ -1,6 +1,49 @@
 # Change Log - @bentley/ui-abstract
 
-This log was last generated on Wed, 16 Jun 2021 20:29:32 GMT and should not be manually modified.
+This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Add beta tag to canPopout property.
+- Publish in-use APIs
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+_Version update only_
+
+## 2.16.4
+Wed, 23 Jun 2021 17:09:07 GMT
+
+_Version update only_
 
 ## 2.16.3
 Wed, 16 Jun 2021 20:29:32 GMT
@@ -428,7 +471,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - In source documentation. Some learning docs & API changes.
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Started ui-components Learning doc section
-- Update doc tags for automatic UI creation 
+- Update doc tags for automatic UI creation
 - Refactor to remove duplicate ComponentGenerator instantiation. Rename files and components to remove React reference.
 - Update auto-generated dialog items to work with the Tool Settings Bar.
 - Add ConditionalBoolean support for isHidden and isDisabled properties.

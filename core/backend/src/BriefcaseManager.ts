@@ -206,8 +206,11 @@ export class BriefcaseManager {
   public static async downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps> {
     const briefcaseId = request.briefcaseId ?? await this.acquireNewBriefcaseId(requestContext, request.iModelId);
     const fileName = request.fileName ?? this.getFileName({ briefcaseId, iModelId: request.iModelId });
-    const asOf = request.asOf ?? IModelVersion.latest().toJSON();
 
+    if (IModelJsFs.existsSync(fileName))
+      throw new IModelError(IModelStatus.FileAlreadyExists, `Briefcase "${fileName}" already exists`);
+
+    const asOf = request.asOf ?? IModelVersion.latest().toJSON();
     const args = {
       localFile: fileName,
       checkpoint: {

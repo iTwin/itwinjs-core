@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-abstract",
-  "version": "2.18.0-dev.12",
+  "version": "2.19.0-dev.11",
   "description": "iModel.js UI abstractions",
   "main": "lib/ui-abstract.js",
   "typings": "lib/ui-abstract",
@@ -33,9 +33,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.12",
-    "@bentley/geometry-core": "workspace:^2.18.0-dev.12",
-    "@bentley/imodeljs-i18n": "workspace:^2.18.0-dev.12"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.11",
+    "@bentley/geometry-core": "workspace:^2.19.0-dev.11",
+    "@bentley/imodeljs-i18n": "workspace:^2.19.0-dev.11"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -60,7 +60,7 @@
     "chai-jest-snapshot": "^2.0.0",
     "chai-spies": "1.0.0",
     "cpx": "^1.5.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "ignore-styles": "^5.0.1",
     "jsdom": "^11.12.0",
     "jsdom-global": "3.0.2",
@@ -72,7 +72,7 @@
     "sinon-chai": "^3.2.0",
     "ts-node": "^7.0.1",
     "tsconfig-paths": "^3.3.2",
-    "typescript": "~4.1.0",
+    "typescript": "~4.3.0",
     "xmlhttprequest": "^1.8.0"
   },
   "//dependencies": [
