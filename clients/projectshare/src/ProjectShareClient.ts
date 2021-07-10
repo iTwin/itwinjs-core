@@ -524,7 +524,7 @@ export class ProjectShareClient extends WsgClient {
     try {
       const accessurl = file.accessUrl !== undefined ? file.accessUrl : "";
       await this.uploadBlob(requestContext, accessurl, data);
-      return this.updateFileExistsProperty(requestContext, contextId, file.wsgId);
+      return await this.updateFileExistsProperty(requestContext, contextId, file.wsgId);
     } catch (err) {
       throw err;
     }

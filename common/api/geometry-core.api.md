@@ -349,6 +349,7 @@ export interface ArcVectors {
 export class AuxChannel {
     constructor(data: AuxChannelData[], dataType: AuxChannelDataType, name?: string, inputName?: string);
     clone(): AuxChannel;
+    computeDisplacementRange(scale?: number, result?: Range3d): Range3d;
     data: AuxChannelData[];
     dataType: AuxChannelDataType;
     get entriesPerValue(): number;
