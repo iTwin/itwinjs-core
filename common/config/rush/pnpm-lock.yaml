@@ -2866,6 +2866,7 @@ importers:
       '@bentley/presentation-common': workspace:*
       '@bentley/presentation-frontend': workspace:*
       '@bentley/rbac-client': workspace:*
+      '@bentley/telemetry-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/dotenv': ^6.1.1
@@ -2908,6 +2909,7 @@ importers:
       '@bentley/presentation-common': link:../../presentation/common
       '@bentley/presentation-frontend': link:../../presentation/frontend
       '@bentley/rbac-client': link:../../clients/rbac
+      '@bentley/telemetry-client': link:../../clients/telemetry
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       dotenv: 8.6.0
