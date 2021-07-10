@@ -1,6 +1,6 @@
 {
   "name": "@bentley/hypermodeling-frontend",
-  "version": "2.19.0-dev.7",
+  "version": "2.19.0-dev.11",
   "description": "iModel.js hypermodeling package",
   "main": "lib/hypermodeling-frontend.js",
   "typings": "lib/hypermodeling-frontend",
@@ -35,12 +35,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.7",
-    "@bentley/geometry-core": "workspace:^2.19.0-dev.7",
-    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.7",
-    "@bentley/imodeljs-frontend": "workspace:^2.19.0-dev.7",
-    "@bentley/imodeljs-i18n": "workspace:^2.19.0-dev.7",
-    "@bentley/ui-abstract": "workspace:^2.19.0-dev.7"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.11",
+    "@bentley/geometry-core": "workspace:^2.19.0-dev.11",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.11",
+    "@bentley/imodeljs-frontend": "workspace:^2.19.0-dev.11",
+    "@bentley/imodeljs-i18n": "workspace:^2.19.0-dev.11",
+    "@bentley/ui-abstract": "workspace:^2.19.0-dev.11"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
@@ -63,7 +63,7 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~4.1.0",
+    "typescript": "~4.3.0",
     "webpack": "4.42.0"
   },
   "nyc": {

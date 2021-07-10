@@ -1,6 +1,6 @@
 {
   "name": "@bentley/product-settings-client",
-  "version": "2.19.0-dev.7",
+  "version": "2.19.0-dev.11",
   "description": "iModel.js Product Settings Client",
   "main": "lib/product-settings-client.js",
   "typings": "lib/product-settings-client",
@@ -36,8 +36,8 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.7",
-    "@bentley/itwin-client": "workspace:^2.19.0-dev.7"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.11",
+    "@bentley/itwin-client": "workspace:^2.19.0-dev.11"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
@@ -59,7 +59,7 @@
     "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~4.1.0",
+    "typescript": "~4.3.0",
     "webpack": "4.42.0"
   },
   "eslintConfig": {
