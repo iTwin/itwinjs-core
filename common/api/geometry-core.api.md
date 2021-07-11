@@ -311,6 +311,7 @@ export interface ArcVectors {
 export class AuxChannel {
     constructor(data: AuxChannelData[], dataType: AuxChannelDataType, name?: string, inputName?: string);
     clone(): AuxChannel;
+    computeDisplacementRange(scale?: number, result?: Range3d): Range3d;
     data: AuxChannelData[];
     dataType: AuxChannelDataType;
     get entriesPerValue(): number;
@@ -2512,7 +2513,7 @@ export namespace IModelJson {
         static parseIndexedMesh(data?: any): IndexedPolyface | undefined;
         static parseLinearSweep(json?: any): LinearSweep | undefined;
         static parsePointArray(json?: any[]): Point3d[];
-        static parsePolyfaceAuxData(data?: any): PolyfaceAuxData | undefined;
+        static parsePolyfaceAuxData(data?: any, numPerFace?: number): PolyfaceAuxData | undefined;
         static parseRotationalSweep(json?: RotationalSweepProps): RotationalSweep | undefined;
         static parseRuledSweep(json?: RuledSweepProps): RuledSweep | undefined;
         static parseSphere(json?: SphereProps): Sphere | undefined;

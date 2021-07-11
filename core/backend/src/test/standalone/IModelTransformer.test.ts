@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
+import * as sinon from "sinon";
 import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
@@ -718,13 +719,13 @@ describe("IModelTransformer", () => {
         this.iModelExporter = new IModelExporter(iModelDb);
         this.iModelExporter.registerHandler(this);
       }
-      protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
+      protected override onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
         ++this.modelCount;
       }
-      protected onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
+      protected override onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
         assert.fail("Should not visit element when visitElements=false");
       }
-      protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
+      protected override onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
         assert.fail("Should not visit relationship when visitRelationship=false");
       }
     }
@@ -924,7 +925,7 @@ describe("IModelTransformer", () => {
     sourceDb.saveChanges();
 
     class OrderedExporter extends IModelExporter {
-      public async exportSchemas() {
+      public override async exportSchemas() {
         const schemaLoader = new IModelSchemaLoader(this.sourceDb);
         const schema1 = schemaLoader.getSchema("TestSchema1");
         const schema2 = schemaLoader.getSchema("TestSchema2");
@@ -954,6 +955,39 @@ describe("IModelTransformer", () => {
     const schema2InTarget = targetImportedSchemasLoader.getSchema("TestSchema2");
     assert.isDefined(schema2InTarget);
 
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("processSchemas should wait for the schema import to finish to delete the export directory", async () => {
+    const reqCtx = new BackendRequestContext();
+    const cloneTestSchema100 = path.join(KnownTestLocations.assetsDir, "CloneTest.01.00.00.ecschema.xml");
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "FinallyFirstTest.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "FinallyFirstTest" } });
+    await sourceDb.importSchemas(reqCtx, [cloneTestSchema100]);
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "FinallyFirstTestOut.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "FinallyFirstTest" } });
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+
+    const importSchemasResolved = sinon.spy();
+    let importSchemasPromise: Promise<void>;
+
+    sinon.replace(targetDb, "importSchemas", sinon.fake(async () => {
+      importSchemasPromise = new Promise((resolve) => setImmediate(() => {
+        importSchemasResolved();
+        resolve(undefined);
+      }));
+      return importSchemasPromise;
+    }));
+
+    const removeSyncSpy = sinon.spy(IModelJsFs, "removeSync");
+
+    await transformer.processSchemas(reqCtx);
+    assert(removeSyncSpy.calledAfter(importSchemasResolved));
+
+    sinon.restore();
     sourceDb.close();
     targetDb.close();
   });
