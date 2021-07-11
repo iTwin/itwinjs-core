@@ -5,7 +5,7 @@
 
 import { Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import {
-  AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive, IModelJson,
+  AkimaCurve3d, AnyGeometryQuery, Arc3d, BezierCurveBase, Box, BSplineCurve3d, Cone, CurveChainWithDistanceIndex, CurveCollection, CurvePrimitive, IModelJson,
   InterpolationCurve3d,
   LinearSweep, LineSegment3d, LineString3d, Loop, Path, Range3d, RotationalSweep, RuledSweep, SolidPrimitive, Sphere, TorusPipe, Transform,
   TransitionSpiral3d, UVSelect,
@@ -14,7 +14,6 @@ import {
   BRepEntity, GeometricElement3dProps, GeometryParams, GeometryStreamIterator, GeometrySummaryRequestProps, GeometrySummaryVerbosity, ImagePrimitive,
   IModelError, TextStringPrimitive,
 } from "@bentley/imodeljs-common";
-import { AkimaCurve3d } from "../../geometry/lib/bspline/AkimaCurve3d";
 import { Element, GeometricElement, GeometryPart } from "./Element";
 import { IModelDb } from "./IModelDb";
 
@@ -379,13 +378,13 @@ class ResponseGenerator {
         ' curveOrder: ${interpolationProps.order}'
         ' controlPointsCount: ${interpolationProps.fitPoints.length}`;
         return summary;
-        case "akimaCurve":
-          const akimaCurve: AkimaCurve3d = curve as AkimaCurve3d;
-          const akimaProps = akimaCurve.cloneProps();
-          summary = `${summary}'
+      case "akimaCurve":
+        const akimaCurve: AkimaCurve3d = curve as AkimaCurve3d;
+        const akimaProps = akimaCurve.cloneProps();
+        summary = `${summary}'
           ' controlPointsCount: ${akimaProps.fitPoints.length}`;
-          return summary;
-        case "bezierCurve":
+        return summary;
+      case "bezierCurve":
         const bezierCurve: BezierCurveBase = curve as BezierCurveBase;
         summary = `${summary}'
         ' curveOrder: ${bezierCurve.order}'
