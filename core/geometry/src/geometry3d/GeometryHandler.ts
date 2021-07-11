@@ -57,9 +57,9 @@ export abstract class GeometryHandler {
   public handleCurveCollection(_g: CurveCollection): any { }
   /** handle strongly typed  [[BSplineCurve3d]]  */
   public abstract handleBSplineCurve3d(g: BSplineCurve3d): any;
-  /** handle strongly typed  [[InterpolatingCurve3d]]  */
+  /** handle strongly typed  [[InterpolationCurve3d]]  */
   public abstract handleInterpolationCurve3d(g: InterpolationCurve3d): any;
-  /** handle strongly typed  [[InterpolatingCurve3d]]  */
+  /** handle strongly typed  [[AkimaCurve3d]]  */
   public abstract handleAkimaCurve3d(g: AkimaCurve3d): any;
   /** handle strongly typed  [[BSplineCurve3dH]]  */
   public abstract handleBSplineCurve3dH(g: BSplineCurve3dH): any;
