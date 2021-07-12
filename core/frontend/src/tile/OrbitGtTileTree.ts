@@ -360,7 +360,7 @@ export namespace OrbitGtTileTree {
   async function initializeBlobStorage(_props: OrbitGtBlobProps, iModel: IModelConnection, _modelId: Id64String) {
 
     // rdsUrl must be defined and not null to be resolved
-    if(_props.rdsUrl == null)
+    if(!_props.rdsUrl)
       return false;
 
     const accessToken: AccessToken | undefined = await getAccessTokenRDS();
