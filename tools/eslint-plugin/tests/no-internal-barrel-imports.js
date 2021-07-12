@@ -64,28 +64,39 @@ ruleTester.run(
       { code: makeTest`import DefaultB, {b} from "./b";` },
       {
         code: makeTest`import {b} from "./barrel";`,
-        options: [{"ignored-barrel-modules": ["./barrel.ts"]}],
+        options: [{ "ignored-barrel-modules": ["./barrel.ts"] }],
       },
       {
         code: makeTest`import {b} from "./far-barrel/barrel";`,
-        options: [{"ignored-barrel-modules": ["./far-barrel/barrel.ts"]}],
+        options: [{ "ignored-barrel-modules": ["./far-barrel/barrel.ts"] }],
       },
       { code: makeTest`import { barreled } from "barrel-pkg";` },
     ],
     invalid: [
       {
+        only: true,
         code: makeTest`import {b} from "./barrel";`,
-        errors: [ { messageId: "noInternalBarrelImports" } ],
+        errors: [
+          {
+            messageId: "noInternalBarrelImports",
+            suggestions: [
+              {
+                messageId: "tryImportingDirectly",
+                output: makeTest`import {b} from "./b";`,
+              },
+            ],
+          },
+        ],
       },
       {
         code: makeTest`import {a as notA} from "./barrel";`,
-        errors: [ { messageId: "noInternalBarrelImports" } ],
+        errors: [{ messageId: "noInternalBarrelImports" }],
       },
       {
         code: makeTest`
           import {a as notA} from "./barrel";
         `,
-        errors: [ { messageId: "noInternalBarrelImports" } ],
+        errors: [{ messageId: "noInternalBarrelImports" }],
       },
     ],
   })

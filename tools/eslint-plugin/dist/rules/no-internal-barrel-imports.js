@@ -35,6 +35,7 @@ const OPTION_IGNORED_BARREL_MODULES = "ignored-barrel-modules";
 
 const messages = {
   noInternalBarrelImports: `You may not use barrel imports internally`,
+  tryImportingDirectly: `Try importing the barreled export directly`,
 };
 
 /** @type {typeof messages} */
@@ -80,27 +81,43 @@ const rule = {
     const parserServices = getParserServices(context);
     /** @type {ts.Program} */
     const program = parserServices.program;
-    const extraOpts = context.options[0];
+    const checker = program.getTypeChecker();
     const maybeTsConfig = program.getCompilerOptions().configFilePath;
+
+    const extraOpts = context.options[0];
     const ignoredBarrelModules = (
-      (maybeTsConfig && extraOpts && extraOpts[OPTION_IGNORED_BARREL_MODULES]) ||
+      (maybeTsConfig &&
+        extraOpts &&
+        extraOpts[OPTION_IGNORED_BARREL_MODULES]) ||
       []
     ).map((p) => {
       /** @type {string} earlier check means it is definitely a string */
       const tsConfig = maybeTsConfig;
-      return path.resolve(path.dirname(tsConfig), p)
+      return path.resolve(path.dirname(tsConfig), p);
     });
 
     return {
       ImportDeclaration(node) {
+        /** @param {ts.Symbol | undefined} symbol */
+        function getRelativeImportForExportedSymbol(symbol) {
+          if (symbol === undefined) return "";
+          const fileOfExport = symbol.valueDeclaration.getSourceFile();
+          return path.relative(
+            path.dirname(thisModule.resolvedPath),
+            fileOfExport.resolvedPath
+          );
+        }
+
         if (typeof node.source.value !== "string")
           throw Error("Invalid input source");
 
+        /** @type{ts.ImportDeclaration} */
         const importNodeTs = parserServices.esTreeNodeToTSNodeMap.get(node);
         if (!importNodeTs)
           throw Error("equivalent typescript node could not be found");
 
-        if (importNodeTs.importClause.isTypeOnly) return;
+        if (importNodeTs.importClause && importNodeTs.importClause.isTypeOnly)
+          return;
 
         const thisModule = importNodeTs.getSourceFile();
 
@@ -112,8 +129,7 @@ const rule = {
         );
 
         const importIsPackage = importInfo === undefined;
-        if (importIsPackage)
-          return;
+        if (importIsPackage) return;
 
         const importedModule = program.getSourceFileByPath(
           importInfo.resolvedFileName
@@ -127,12 +143,75 @@ const rule = {
         const containsReExport = importedModule.imports.some((imp) =>
           ts.isExportDeclaration(imp.parent)
         );
-        if (containsReExport) {
-          context.report({
-            node,
-            messageId: messageIds.noInternalBarrelImports,
-          });
-        }
+
+        const hasNamespaceImport =
+          importNodeTs.importClause &&
+          importNodeTs.importClause.namedBindings &&
+          importNodeTs.importClause.namedBindings.kind ===
+            ts.SyntaxKind.NamespaceImport;
+
+        // there may be some situations where not reporting this is preferable
+        const isSideEffectImport =
+          !importNodeTs.importClause ||
+          (importNodeTs.importClause.name === undefined &&
+            importNodeTs.importClause.namedBindings);
+
+        // there may be some situations where not reporting this is preferable
+        const hasDefaultImport =
+          importNodeTs.importClause &&
+          importNodeTs.importClause.name !== undefined;
+
+        if (!containsReExport) return;
+
+        // prettier-ignore
+        const importedProps
+          = !importNodeTs.importClause
+            ? []
+          : importNodeTs.importClause.namedBindings !== undefined
+            ? importNodeTs.importClause.namedBindings.kind === ts.SyntaxKind.NamespaceImport
+              ? [importNodeTs.importClause.namedBindings.name]
+            //importNodeTs.importClause.namedBindings.kind === ts.SyntaxKind.NamedImports
+              : importNodeTs.importClause.namedBindings.elements.map((e) => e.name)
+          : importNodeTs.importClause.name !== undefined
+            ? [importNodeTs.importClause.name]
+          : [];
+
+        context.report({
+          node,
+          messageId: messageIds.noInternalBarrelImports,
+          // fixer only supports destructured imports
+          ...(!hasDefaultImport &&
+            !isSideEffectImport &&
+            !hasNamespaceImport &&
+            importedProps.length !== 0 && {
+              suggest: [
+                {
+                  messageId: messageIds.tryImportingDirectly,
+                  fix(fixer) {
+                    return [
+                      fixer.remove(node),
+                      ...importedProps
+                        .map((importedProp) => ({
+                          importedProp,
+                          symbol: checker.getSymbolAtLocation(importedProp),
+                        }))
+                        .filter(({ symbol }) => symbol !== undefined)
+                        .map(({ importedProp, symbol }) =>
+                          fixer.insertTextAfter(
+                            node,
+                            `;import {${
+                              importedProp.escapedText
+                            }} from "${getRelativeImportForExportedSymbol(
+                              checker.getExportSymbolOfSymbol(symbol)
+                            )}";`
+                          )
+                        ),
+                    ];
+                  },
+                },
+              ],
+            }),
+        });
       },
     };
   },
