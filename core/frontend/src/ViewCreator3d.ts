@@ -19,7 +19,8 @@ import { StandardViewId } from "./StandardView";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";
 import { SpatialViewState } from "./SpatialViewState";
-import { Environment, loggerCategory } from "./imodeljs-frontend";
+import { Environment } from "./DisplayStyleState";
+import { loggerCategory } from "./extension/Extension";
 
 /** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
  *  @public

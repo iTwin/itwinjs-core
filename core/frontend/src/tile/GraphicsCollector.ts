@@ -8,7 +8,7 @@
 
 import { Map4d } from "@bentley/geometry-core";
 import { FrustumPlanes } from "@bentley/imodeljs-common";
-import { GraphicBranch } from "../imodeljs-frontend";
+import { GraphicBranch } from "../render/GraphicBranch";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { SceneContext } from "../ViewContext";
 import { TileDrawArgs, TileGraphicType, TileTreeReference } from "./internal";

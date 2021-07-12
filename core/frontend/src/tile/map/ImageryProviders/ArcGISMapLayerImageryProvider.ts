@@ -10,7 +10,11 @@ import { Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
 import { Cartographic, ImageSource, MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
 import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
-import { ArcGisErrorCode, ArcGisTokenClientType, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, NotifyMessageDetails, OutputMessagePriority } from "../../../imodeljs-frontend";
+import { ArcGisErrorCode } from "../ArcGisUtilities";
+import { ArcGisTokenClientType } from "../ArcGisTokenGenerator";
+import { ImageryMapTile, ImageryMapTileTree } from "../ImageryTileTree";
+import { MapCartoRectangle } from "../MapCartoRectangle";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../../NotificationManager";
 import { ScreenViewport } from "../../../Viewport";
 import { ArcGisTokenManager, ArcGisUtilities, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId } from "../../internal";
 

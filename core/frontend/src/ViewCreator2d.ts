@@ -20,7 +20,8 @@ import { IModelConnection } from "./IModelConnection";
 import { ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { SheetViewState } from "./SheetViewState";
-import { EntityState, loggerCategory } from "./imodeljs-frontend";
+import { EntityState } from "./EntityState";
+import { loggerCategory } from "./extension/Extension";
 
 /** Options for creating a [[ViewState2d]] via [[ViewCreator2d]].
  *  @public
