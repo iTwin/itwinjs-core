@@ -267,12 +267,19 @@ export class Branch extends Graphic {
     this.branch.collectStatistics(stats);
   }
 
+  private shouldAddCommands(commands: RenderCommands): boolean {
+    const nodeId = commands.target.getAnimationTransformNodeId(this.branch.animationId);
+    return undefined === nodeId || nodeId === commands.target.currentAnimationTransformNodeId;
+  }
+
   public addCommands(commands: RenderCommands): void {
-    commands.addBranch(this);
+    if (this.shouldAddCommands(commands))
+      commands.addBranch(this);
   }
 
   public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
-    commands.addHiliteBranch(this, pass);
+    if (this.shouldAddCommands(commands))
+      commands.addHiliteBranch(this, pass);
   }
 }
 
