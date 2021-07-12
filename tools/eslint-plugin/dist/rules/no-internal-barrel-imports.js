@@ -103,9 +103,18 @@ const rule = {
         if (importNodeTs.importClause.isTypeOnly) return;
 
         const thisModule = importNodeTs.getSourceFile();
+
+        if (!thisModule.resolvedModules.has(importNodeTs.moduleSpecifier.text))
+          throw Error("module did not have this import");
+
         const importInfo = thisModule.resolvedModules.get(
           importNodeTs.moduleSpecifier.text
         );
+
+        const importIsPackage = importInfo === undefined;
+        if (importIsPackage)
+          return;
+
         const importedModule = program.getSourceFileByPath(
           importInfo.resolvedFileName
         );

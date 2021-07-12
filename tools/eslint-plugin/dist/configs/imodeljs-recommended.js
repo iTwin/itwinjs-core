@@ -372,7 +372,16 @@ module.exports = {
     "@bentley/prefer-get": "error",
     "@bentley/react-set-state-usage": ["error", { "updater-only": false, "allow-object": true }],
     "@bentley/require-basic-rpc-values": "off",
+    "@bentley/no-internal-barrel-imports": "error",
   },
+  overrides: [
+    {
+      files: ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
+      rules: {
+        "@bentley/no-internal-barrel-imports": "off",
+      }
+    }
+  ],
   settings: {
     "react": {
       "version": "16.8"
