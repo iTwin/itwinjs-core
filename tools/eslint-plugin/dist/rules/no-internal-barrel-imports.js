@@ -47,7 +47,6 @@ const OPTION_IGNORED_BARREL_MODULES = "ignored-barrel-modules";
 
 const messages = {
   noInternalBarrelImports: `Do not consume barrel imports within the same package`,
-  tryImportingDirectly: `Try importing the barreled export directly`,
 };
 
 /** @type {typeof messages} */
@@ -115,10 +114,15 @@ const rule = {
           if (symbol === undefined) return "";
           const declaration = symbol.valueDeclaration || symbol.declarations[0];
           const fileOfExport = declaration.getSourceFile();
-          return './' + withoutExt(path.relative(
-            path.dirname(thisModule.fileName),
-            fileOfExport.fileName
-          ));
+          return (
+            "./" +
+            withoutExt(
+              path.relative(
+                path.dirname(thisModule.fileName),
+                fileOfExport.fileName
+              )
+            )
+          );
         }
 
         if (typeof node.source.value !== "string")
@@ -153,8 +157,8 @@ const rule = {
 
         if (importInfo.isExternalLibraryImport) return;
 
-        const containsReExport = importedModule.imports.some((imp) =>
-          ts.isExportDeclaration(imp.parent) && !imp.parent.isTypeOnly
+        const containsReExport = importedModule.imports.some(
+          (imp) => ts.isExportDeclaration(imp.parent) && !imp.parent.isTypeOnly
         );
 
         const hasNamespaceImport =
@@ -176,53 +180,44 @@ const rule = {
 
         if (!containsReExport) return;
 
-        // prettier-ignore
-        const importedProps
-          = !importNodeTs.importClause
-            ? []
-          : importNodeTs.importClause.namedBindings !== undefined
-            ? importNodeTs.importClause.namedBindings.kind === ts.SyntaxKind.NamespaceImport
-              ? [importNodeTs.importClause.namedBindings.name]
-            //importNodeTs.importClause.namedBindings.kind === ts.SyntaxKind.NamedImports
-              : importNodeTs.importClause.namedBindings.elements.map((e) => e.name)
-          : importNodeTs.importClause.name !== undefined
-            ? [importNodeTs.importClause.name]
-          : [];
+        const importedProps =
+          importNodeTs.importClause &&
+          importNodeTs.importClause.namedBindings &&
+          ts.isNamedImports(importNodeTs.importClause.namedBindings)
+            ? importNodeTs.importClause.namedBindings.elements
+            : [];
 
         context.report({
           node,
           messageId: messageIds.noInternalBarrelImports,
-          // fixer only supports destructured imports
+          // fixer only supports property imports
           ...(!hasDefaultImport &&
             !isSideEffectImport &&
             !hasNamespaceImport &&
             importedProps.length !== 0 && {
-              suggest: [
-                {
-                  messageId: messageIds.tryImportingDirectly,
-                  fix(fixer) {
-                    return [
-                      fixer.remove(node),
-                      ...importedProps
-                        .map((importedProp) => ({
-                          importedProp,
-                          symbol: checker.getSymbolAtLocation(importedProp),
-                        }))
-                        .filter(({ symbol }) => symbol !== undefined)
-                        .map(({ importedProp, symbol }) =>
-                          fixer.insertTextAfter(
-                            node,
-                            `;import {${
-                              importedProp.escapedText
-                            }} from "${getRelativeImportForExportedSymbol(
-                              checker.getAliasedSymbol(symbol)
-                            )}";`
-                          )
-                        ),
-                    ];
-                  },
-                },
-              ],
+              fix(fixer) {
+                return [
+                  fixer.remove(node),
+                  ...importedProps
+                    .map((importedProp) => ({
+                      importedProp,
+                      symbol: checker.getSymbolAtLocation(importedProp.name),
+                    }))
+                    .filter(({ symbol }) => symbol !== undefined)
+                    .map(({ importedProp, symbol }) =>
+                      fixer.insertTextAfter(
+                        node,
+                        `;import {${
+                          importedProp.propertyName !== undefined
+                            ? `${importedProp.propertyName.escapedText} as ${importedProp.name.escapedText}`
+                            : importedProp.name.escapedText
+                        }} from "${getRelativeImportForExportedSymbol(
+                          checker.getAliasedSymbol(symbol)
+                        )}";`
+                      )
+                    ),
+                ];
+              },
             }),
         });
       },
@@ -236,7 +231,10 @@ const rule = {
  * @returns {string}
  */
 function withoutExt(inPath) {
-  return path.join(path.dirname(inPath), path.basename(inPath).replace(/\.[^.]+$/, ''));
+  return path.join(
+    path.dirname(inPath),
+    path.basename(inPath).replace(/\.[^.]+$/, "")
+  );
 }
 
 module.exports = rule;

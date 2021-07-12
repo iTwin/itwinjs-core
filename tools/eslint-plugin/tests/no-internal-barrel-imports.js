@@ -76,57 +76,24 @@ ruleTester.run(
     invalid: [
       {
         code: makeTest`import {b} from "./barrel";`,
-        errors: [
-          {
-            messageId: "noInternalBarrelImports",
-            suggestions: [
-              {
-                messageId: "tryImportingDirectly",
-                output: makeTest`;import {b} from "./b";`,
-              },
-            ],
-          },
-        ],
+        errors: [{ messageId: "noInternalBarrelImports" }],
+        output: makeTest`;import {b} from "./b";`,
       },
       {
         code: makeTest`import {a, b} from "./barrel";`,
-        errors: [
-          {
-            messageId: "noInternalBarrelImports",
-            suggestions: [
-              {
-                messageId: "tryImportingDirectly",
-                // extra semicolons will be taken out by eslint's other rules
-                output: makeTest`;import {a} from "./a";;import {b} from "./b";`,
-              },
-            ],
-          },
-        ],
+        errors: [{ messageId: "noInternalBarrelImports" }],
+        // extra semicolons will be taken out by eslint's other rules
+        output: makeTest`;import {a} from "./a";;import {b} from "./b";`,
       },
       {
         code: makeTest`import {a as notA} from "./barrel";`,
         errors: [{ messageId: "noInternalBarrelImports" }],
-      },
-      {
-        code: makeTest`
-          import {a as notA} from "./barrel";
-        `,
-        errors: [{ messageId: "noInternalBarrelImports" }],
+        output: makeTest`;import {a as notA} from "./a";`,
       },
       {
         code: makeTest`import {c} from "./far/barrel";`,
-        errors: [
-          {
-            messageId: "noInternalBarrelImports",
-            suggestions: [
-              {
-                messageId: "tryImportingDirectly",
-                // extra semicolons will be taken out by eslint's other rules
-                output: makeTest`;import {c} from "./far/c";`,
-              },
-            ],
-          },
-        ],
+        errors: [{ messageId: "noInternalBarrelImports" }],
+        output: makeTest`;import {c} from "./far/c";`,
       },
     ],
   })
