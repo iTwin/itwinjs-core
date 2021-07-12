@@ -62,10 +62,22 @@ ruleTester.run(
     valid: [
       { code: makeTest`import * as A from "./a";` },
       { code: makeTest`import {b} from "./b";` },
+      { code: makeTest`import DefaultB from "./b";` },
+      { code: makeTest`import DefaultB, {b} from "./b";` },
     ],
     invalid: [
       {
         code: makeTest`import {b} from "./barrel";`,
+        errors: [ { messageId: "noInternalBarrelImports" } ],
+      },
+      {
+        code: makeTest`import {a as notA} from "./barrel";`,
+        errors: [ { messageId: "noInternalBarrelImports" } ],
+      },
+      {
+        code: makeTest`
+          import {a as notA} from "./barrel";
+        `,
         errors: [ { messageId: "noInternalBarrelImports" } ],
       },
     ],

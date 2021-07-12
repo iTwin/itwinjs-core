@@ -7,12 +7,12 @@
 Within a package, you can create cyclic dependencies by doing the following:
 
 // file A.ts
+export * from "B";
+export * from "C";
+// the following style of barrel import is *not currently supported*
 import * as b from "B";
 import * as c from "C";
 export {a, b};
-// or
-export * from "B";
-export * from "C";
 
 // file B.ts
 export default function b() { return 2; }
@@ -31,6 +31,8 @@ const { getParserServices } = require("./utils/parser");
 const { AST_NODE_TYPES } = require("@typescript-eslint/experimental-utils");
 const TSESTreeModule = require("@typescript-eslint/typescript-estree");
 const { TSESTree } = require("@typescript-eslint/typescript-estree");
+const ts = require("typescript");
+const path = require("path");
 
 const OPTION_IGNORED_BARREL_MODULES = "ignored-barrel-modules";
 
@@ -96,9 +98,16 @@ const rule = {
 
   create(context) {
     const parserServices = getParserServices(context);
-    const checker = parserServices.program.getTypeChecker();
+    /** @type {ts.Program} */
+    const program = parserServices.program;
+    const checker = program.getTypeChecker();
     const extraOpts = context.options[0];
-    const ignoredBarrelModules = extraOpts && extraOpts[OPTION_IGNORED_BARREL_MODULES] || [];
+    const ignoredBarrelModules = (extraOpts && extraOpts[OPTION_IGNORED_BARREL_MODULES] || []).map(p => path.resolve(program.getCurrentDirectory(), p));
+    parserServices
+    program.getProjectReferences()
+    program.getFilesByNameMap();
+
+    program.getRootFileNames()
 
     return {
       /** @param {TSESTree.ImportDeclaration} node */
@@ -106,16 +115,34 @@ const rule = {
         if (typeof node.source.value !== "string")
           throw Error("Invalid input source");
 
-        // XXX: have the ts parser determine if the modules are equivalent...
-        if (ignoredBarrelModules.includes(node.source.value))
-          return;
-
-        const tsNode = parserServices.esTreeNodeToTSNodeMap.get(node);
-        if (!tsNode)
+        const importNodeTs = parserServices.esTreeNodeToTSNodeMap.get(node);
+        if (!importNodeTs)
           throw Error("equivalent typescript node could not be found");
 
-        for (const specifier of node.specifiers) {
-          const signature = checker.getSignatureFromDeclaration(specifier);
+        const thisModule = importNodeTs.getSourceFile();
+        const importInfo = thisModule.resolvedModules.get(importNodeTs.moduleSpecifier.text)
+        const importedModule = program.getSourceFileByPath(importInfo.resolvedFileName);
+        if (!importedModule)
+          throw Error("couldn't find imported module");
+
+        if (ignoredBarrelModules.includes(importedModule.resolvedPath))
+          return;
+
+        if (!importInfo.isExternalLibraryImport) {
+          for (const importedProp of importNodeTs.importClause.namedBindings.elements) {
+            for (const exported of checker.getExportsOfModule(importedModule.symbol)) {
+              if (exported.escapedName === importedProp.name.escapedText) {
+                const declaration = exported.valueDeclaration || exported.declarations[0];
+                const isReExport = declaration.getSourceFile().resolvedPath !== importedModule.resolvePath;
+                if (isReExport) {
+                  context.report({
+                    node,
+                    messageId: messageIds.noInternalBarrelImports,
+                  })
+                }
+              }
+            }
+          }
         }
       },
     };

@@ -3,3 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 export function b() {}
+export default b2() {}
+const b3 = {};
+export {b3};
