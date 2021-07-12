@@ -341,7 +341,7 @@ export class RenderCommands implements Iterable<DrawCommands> {
 
   private getAnimationBranchState(branch: Branch): AnimationBranchState | undefined {
     const animId = branch.branch.animationId;
-    return undefined !== animId ? this.target.animationBranches?.get(animId) : undefined;
+    return undefined !== animId ? this.target.animationBranches?.branchStates.get(animId) : undefined;
   }
 
   private pushAndPopBranchForPass(pass: RenderPass, branch: Branch, func: () => void): void {

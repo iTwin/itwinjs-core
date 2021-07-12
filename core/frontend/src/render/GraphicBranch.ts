@@ -135,4 +135,9 @@ export interface AnimationBranchState {
 /** Mapping from node/branch IDs to animation branch state
  * @internal
  */
-export type AnimationBranchStates = Map<string, AnimationBranchState>;
+export interface AnimationBranchStates {
+  /** Maps node Id to branch state. */
+  readonly branchStates: Map<string, AnimationBranchState>;
+  /** Ids of nodes that apply a transform. */
+  readonly transformNodeIds: ReadonlySet<string>;
+}

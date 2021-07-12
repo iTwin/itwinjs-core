@@ -20,7 +20,7 @@ function formatBranchId(modelId: Id64String, branchId: number): string {
   return `${modelId}_Node_${branchId.toString()}`;
 }
 
-function addAnimationBranch(modelId: Id64String, timeline: RenderSchedule.Timeline, branchId: number, branches: AnimationBranchStates, time: number): void {
+function addAnimationBranch(modelId: Id64String, timeline: RenderSchedule.Timeline, branchId: number, branches: Map<string, AnimationBranchState>, time: number): void {
   const clipVector = timeline.getClipVector(time);
   const clip = clipVector ? IModelApp.renderSystem.createClipVolume(clipVector) : undefined;
   if (clip)
@@ -55,7 +55,10 @@ export class RenderScheduleState extends RenderSchedule.ScriptReference {
       }
     }
 
-    return branches;
+    return {
+      branchStates: branches,
+      transformNodeIds: this.script.transformBatchIds,
+    };
   }
 
   public getTransformNodeIds(modelId: Id64String): ReadonlyArray<number> | undefined {

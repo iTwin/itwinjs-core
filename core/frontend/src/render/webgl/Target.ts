@@ -1042,11 +1042,10 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
    * that should be used to filter the branch's graphics for display, or undefined if no filtering should be applied.
    */
   public getAnimationTransformNodeId(animationNodeId: string | undefined): string | undefined {
-    if (undefined === this.currentAnimationTransformNodeId || undefined === animationNodeId)
+    if (undefined === this.animationBranches || undefined === this.currentAnimationTransformNodeId || undefined === animationNodeId)
       return undefined;
 
-    // ###TODO Look up animationNodeId to see if it's associated with a transform node; if not, return 0xffffffff
-    return animationNodeId;
+    return this.animationBranches.transformNodeIds.has(animationNodeId) ? animationNodeId : "0xffffffff";
   }
 
   protected abstract _assignDC(): boolean;

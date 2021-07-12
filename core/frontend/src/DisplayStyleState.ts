@@ -251,11 +251,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
     this.settings.scheduleScriptProps = state?.script.toJSON();
   }
 
-  /** @internal */
-  public getAnimationBranches(scheduleTime: number): AnimationBranchStates | undefined {
-    return this.scheduleState?.getAnimationBranches(scheduleTime);
-  }
-
   /** Attach a [ContextRealityModel]($common) to this display style.
    * @see [DisplayStyleSettings.contextRealityModels]($common).
    * @see [ContextRealityModels.add]($common)
