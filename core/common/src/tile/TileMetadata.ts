@@ -22,7 +22,6 @@ namespace Constants {
   export const tileScreenSize = 512;
   export const minToleranceRatioMultiplier = 2;
   export const minToleranceRatio = tileScreenSize * minToleranceRatioMultiplier;
-  export const untransformedNodeValue = 0xffffffff;
 }
 
 /** Describes an iModel tile tree.
@@ -170,9 +169,11 @@ export interface PrimaryTileTreeId {
   type: BatchType.Primary;
   /** Whether to include edges in tile content. */
   edgesRequired: boolean;
-  /** Id of the [DisplayStyle]($backend) holding the [[RenderSchedule]] script to be applied to the tiles. */
+  /** Id of the [DisplayStyle]($backend) or [RenderTimeline]($backend) element holding the [[RenderSchedule]] script to be applied to the tiles. */
   animationId?: Id64String;
-  /** Id of the transform node within the [[RenderSchedule]] script to be applied to the tiles. */
+  /** Id of the transform node within the [[RenderSchedule]] script to be applied to the tiles.
+   * The value 0xffffffff refers to all nodes that do *not* apply a transform.
+   */
   animationTransformNodeId?: number;
   /** If true, meshes within the tiles will be grouped into nodes based on the display priority associated with their subcategories,
    * for ensuring the graphics display with correct priority.
@@ -196,10 +197,8 @@ export interface ClassifierTileTreeId {
 }
 
 function animationIdToString(animationId: Id64String, nodeId: number | undefined): string {
-  if (undefined === nodeId)
-    nodeId = Constants.untransformedNodeValue;
-
-  return `A:${animationId}_#${nodeId.toString(16)}_`;
+  const suffix = undefined !== nodeId ? `_#${nodeId.toString(16)}` : "";
+  return `A:${animationId}${suffix}_`;
 }
 
 /** Describes the Id of an iModel tile tree.

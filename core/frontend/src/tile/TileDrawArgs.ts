@@ -53,6 +53,11 @@ export interface TileDrawArgParams {
   hiddenLineSettings?: HiddenLine.Settings;
   /** If defined, tiles should be culled if they do not intersect this clip. */
   intersectionClip?: ClipVector;
+  /** If defined, the Id of a node in the scene's [RenderSchedule.Script]($common) that applies a transform to the graphics;
+   * or "0xffffffff" for any node that does *not* apply a transform.
+   * @internal
+   */
+  animationTransformNodeId?: string;
 }
 /**
  * Provides context used when selecting and drawing [[Tile]]s.
@@ -101,6 +106,8 @@ export class TileDrawArgs {
   public intersectionClip?: ClipVector;
   /** @internal */
   public readonly pixelSizeScaleFactor;
+  /** @internal */
+  public readonly animationTransformNodeId?: string;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {
@@ -242,6 +249,7 @@ export class TileDrawArgs {
     this.now = now;
     this._appearanceProvider = params.appearanceProvider;
     this.hiddenLineSettings = params.hiddenLineSettings;
+    this.animationTransformNodeId = params.animationTransformNodeId;
 
     // Do not cull tiles based on clip volume if tiles outside clip are supposed to be drawn but in a different color.
     if (undefined !== clipVolume && !context.viewport.view.displayStyle.settings.clipStyle.outsideColor)
@@ -328,7 +336,11 @@ export class TileDrawArgs {
       hline: this.hiddenLineSettings,
     };
 
-    return this.context.createGraphicBranch(graphics, this.location, opts);
+    let graphic = this.context.createGraphicBranch(graphics, this.location, opts);
+    if (undefined !== this.animationTransformNodeId)
+      graphic = this.context.renderSystem.createAnimationTransformNode(graphic, this.animationTransformNodeId);
+
+    return graphic;
   }
 
   /** Output graphics for all accumulated tiles. */
