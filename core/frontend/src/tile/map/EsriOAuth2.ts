@@ -4,14 +4,21 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { request } from "@bentley/itwin-client";
+import { MapLayerTokenEndpoint} from "../internal";
 import { FrontendRequestContext } from "../../imodeljs-frontend";
 import { ArcGisTokenManager } from "./ArcGisTokenManager";
 
 export enum EsriOAuth2EndpointType {Authorize,Token}
+export class EsriOAuth2Endpoint implements MapLayerTokenEndpoint {
+  private _url: string;
+  private _isArcgisOnline: boolean;
+  constructor(url: string, isArcgisOnline: boolean) {
+    this._url = url;
+    this._isArcgisOnline = isArcgisOnline;
+  }
+  public getUrl() {return this._url;}
+  public get isArcgisOnline() {return this._isArcgisOnline;}
 
-export interface EsriOAuth2Endpoint {
-  endpoint: string;
-  isArcgisOnline: boolean;
 }
 
 export class EsriOAuth2 {
@@ -70,33 +77,92 @@ export class EsriOAuth2 {
   }
 
   // Returns the url for OAuth2 endpoint, otherwise undefined if service is not available.
-  public static getOAuth2EndpointFromRestUrl(url: string, endpoint: EsriOAuth2EndpointType): EsriOAuth2Endpoint|undefined {
+  public static async getOAuth2EndpointFromRestUrl(url: string, endpoint: EsriOAuth2EndpointType): Promise<EsriOAuth2Endpoint|undefined> {
     const endpointStr = (endpoint === EsriOAuth2EndpointType.Authorize ? "authorize" : "token");
     const urlObj = new URL(url);
     if (urlObj.hostname.toLowerCase().endsWith("arcgis.com")) {
       // ArcGIS Online (fixed)
       // Doc: https://developers.arcgis.com/documentation/mapping-apis-and-services/security/oauth-2.0/
-      return {isArcgisOnline: true, endpoint:`https://www.arcgis.com/sharing/rest/oauth2/${endpointStr}`};
+      return new EsriOAuth2Endpoint(`https://www.arcgis.com/sharing/rest/oauth2/${endpointStr}`, true);
     } else {
-      // ArcGIS Enterprise
-      // Format https://<host>:<port>/<subdirectory>/sharing/rest/oauth2/authorize
+      const getRestUrl = (url2: string) => {
+        const searchStr = "/rest/";
+        const restPos = url2.indexOf(searchStr);
+        return (restPos === -1 ? undefined : url2.substr(0, restPos+searchStr.length));
+      };
+      const restUrl = getRestUrl(url);
+      if (restUrl === undefined) {
+        return undefined;
+      }
+
+      // First attempt: derive the Oauth2 token URL from the 'tokenServicesUrl', exposed by the 'info request'
+      const infoUrl = `${restUrl}info?f=json`;
+      let data;
+      try {
+        data = await request(new FrontendRequestContext(""), infoUrl, {method: "GET",responseType: "json"});
+      } catch {}
+
+      const tokenServicesUrl = data?.body?.authInfo?.tokenServicesUrl;
+      if (tokenServicesUrl === undefined ) {
+        return undefined;
+      }
+      const restUrlFromTokenService = getRestUrl(tokenServicesUrl);
+      if (restUrlFromTokenService === undefined) {
+        return undefined;
+      }
+
+      // Check the URL we just composed
+      try {
+        const oauth2Url = `${restUrlFromTokenService}oauth2/${endpointStr}`;
+        if (await EsriOAuth2.validateOAuth2Endpoint(oauth2Url)) {
+          return new EsriOAuth2Endpoint(oauth2Url, false);
+        }
+      } catch {}
+
+      // If reach this point, that means we could not derive the token endpoint from 'tokenServicesUrl'
+      // lets use another approach.
+      // ArcGIS Enterprise Format https://<host>:<port>/<subdirectory>/sharing/rest/oauth2/authorize
       const regExMatch =  url.match(new RegExp(/([^&\/]+)\/rest\/services\/.*/, "i"));
       if (regExMatch !== null && regExMatch.length >= 2 ) {
         const subdirectory = regExMatch[1];
         const port = (urlObj.port !== "80" && urlObj.port !=="443") ? `:${urlObj.port}` : "";
         const newUrlObj = new URL(`${urlObj.protocol}//${urlObj.hostname}${port}/${subdirectory}/sharing/rest/oauth2/${endpointStr}`);
-        return ;
-        return {isArcgisOnline: false, endpoint:newUrlObj.toString()};
+
+        // Check again the URL we just composed
+        try {
+          const newUrl = newUrlObj.toString();
+          if (await EsriOAuth2.validateOAuth2Endpoint(newUrl)) {
+            return new EsriOAuth2Endpoint(newUrl, false);
+          }
+        } catch {}
       }
+
     }
-    return undefined;
+    return undefined;   // we could not find any valid oauth2 endpoint
   }
 
   // Test if Oauth2 endpoint is accessible.
-  public static async validateOAuth2Endpoint(url: string): Promise<boolean> {
-    const data = await request(new FrontendRequestContext(""), url, { method: "GET"});
-
-    // Oauth2 API returns 400 (Bad Request) when there are missing parameters
-    return data.status === 400;
+  /*
+  public static async validateOAuth2Endpoint(endpoint: EsriOAuth2Endpoint): Promise<boolean> {
+    let status: number|undefined;
+    try {
+      const data = await request(new FrontendRequestContext(""), endpoint.getUrl(), { method: "GET"});
+      status = data.status;
+    } catch (error) {
+      status = error.status;
+    }
+    return status === 400;    // Oauth2 API returns 400 (Bad Request) when there are missing parameters
   }
+  */
+  public static async validateOAuth2Endpoint(endpointUrl: string): Promise<boolean> {
+    let status: number|undefined;
+    try {
+      const data = await request(new FrontendRequestContext(""), endpointUrl, { method: "GET"});
+      status = data.status;
+    } catch (error) {
+      status = error.status;
+    }
+    return status === 400;    // Oauth2 API returns 400 (Bad Request) when there are missing parameters
+  }
+
 }

@@ -5,10 +5,10 @@
 /** @module Views */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { MapLayerAuthType, MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
+import { MapLayerKey, MapLayerSettings, MapSubLayerProps } from "@bentley/imodeljs-common";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
+import { ImageryMapLayerTreeReference, internalMapLayerImageryFormats, MapLayerAuthentificationInfo, MapLayerImageryProvider, MapLayerSourceStatus, MapLayerTileTreeReference } from "../internal";
 import { RequestBasicCredentials } from "@bentley/itwin-client";
 
 /** @internal */
@@ -30,7 +30,7 @@ export type MapLayerFormatType = typeof MapLayerFormat;
 export interface MapLayerSourceValidation {
   status: MapLayerSourceStatus;
   subLayers?: MapSubLayerProps[];
-  authMethod?: MapLayerAuthType;
+  authInfo?: MapLayerAuthentificationInfo;
 }
 
 /**

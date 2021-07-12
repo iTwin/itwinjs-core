@@ -30,7 +30,7 @@
     "ErrorRetrieveSharedModel": "Could not get shared Map Layers by model: {{errorMessage}}",
     "ErrorRetrieveSharedProject": "Could not get shared Map Layers by project: {{errorMessage}}",
     "ExternalLoginFailed": "External login process failed.",
-    "ExternalLoginSucceeded": "External login process succeed !",
+    "ExternalLoginSucceeded": "External login process succeeded.",
     "ExternalLoginTryAgain": "Try Again",
     "ExternalLoginWaiting": "Waiting for external login process to complete...",
     "InvalidCredentials": "Invalid credentials provided",

@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Angle } from "@bentley/geometry-core";
-import { MapLayerAuthType, MapSubLayerProps } from "@bentley/imodeljs-common";
+import { MapSubLayerProps } from "@bentley/imodeljs-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
-import { FrontendRequestContext } from "../../imodeljs-frontend";
-import { MapLayerSourceValidation } from "../internal";
+import { EsriOAuth2Endpoint, FrontendRequestContext } from "../../imodeljs-frontend";
+import { MapLayerAuthType, MapLayerSourceValidation} from "../internal";
 import { MapCartoRectangle } from "./MapCartoRectangle";
 import { MapLayerSource, MapLayerSourceStatus } from "./MapLayerSources";
 import { ArcGisTokenClientType } from "./ArcGisTokenGenerator";
@@ -125,24 +125,27 @@ export class ArcGisUtilities {
   public static async validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
 
     let authMethod: MapLayerAuthType = MapLayerAuthType.None;
+    let tokenEndpoint: EsriOAuth2Endpoint|undefined;
     const json = await this.getServiceJson(url, credentials, ignoreCache);
     if (json === undefined) {
       return { status: MapLayerSourceStatus.InvalidUrl };
     } else if (json.error !== undefined) {
+
+      // If we got a 'Token Required' error, lets check what authentification methods this ESRI service offers
+      // and return information needed to initiate the authentification process... the end-user
+      // will have to provide his credentials before we can fully validate this source.
       if (json.error.code === ArcGisErrorCode.TokenRequired) {
-        authMethod = MapLayerAuthType.EsriToken;
-        const oauth2Endpoint = EsriOAuth2.getOAuth2EndpointFromRestUrl(url, EsriOAuth2EndpointType.Authorize);
-        if (oauth2Endpoint) {
-          if (oauth2Endpoint.isArcgisOnline) {
+        authMethod = MapLayerAuthType.EsriToken; // In case we failed to get the Oauth2 token endpoint, fall back to the legacy ESRI token method
+        try {
+          tokenEndpoint = await EsriOAuth2.getOAuth2EndpointFromRestUrl(url, EsriOAuth2EndpointType.Authorize);
+          if (tokenEndpoint) {
             authMethod = MapLayerAuthType.EsriOAuth2;
-          } else {
-            // This is not ArcGis online, we need to make sure OAuth2 is enabled on the enterprise server.
-            authMethod = await EsriOAuth2.validateOAuth2Endpoint(oauth2Endpoint.endpoint) ? MapLayerAuthType.EsriOAuth2 : authMethod = MapLayerAuthType.EsriToken;
           }
-        }
-        return { status: MapLayerSourceStatus.RequireAuth, authMethod };
+        } catch {}
+
+        return { status: MapLayerSourceStatus.RequireAuth, authInfo:{authMethod, tokenEndpoint} };
       } else if (json.error.code === ArcGisErrorCode.InvalidCredentials)
-        return { status: MapLayerSourceStatus.InvalidCredentials, authMethod: MapLayerAuthType.EsriToken};
+        return { status: MapLayerSourceStatus.InvalidCredentials, authInfo:{authMethod: MapLayerAuthType.EsriToken} };
     }
 
     let subLayers;

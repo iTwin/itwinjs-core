@@ -10,10 +10,10 @@ import { ModalDialogManager } from "@bentley/ui-framework";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions } from "../Interfaces";
 import {
-  EsriOAuth2, IModelApp, MapLayerImageryProviderStatus, MapLayerSettingsService, MapLayerSource,
+  EsriOAuth2, IModelApp, MapLayerAuthType, MapLayerImageryProviderStatus, MapLayerSettingsService,MapLayerSource,
   MapLayerSourceStatus, MapLayerSourceValidation, NotifyMessageDetails, OutputMessagePriority, ScreenViewport,
 } from "@bentley/imodeljs-frontend";
-import { MapLayerAuthType, MapLayerProps } from "@bentley/imodeljs-common";
+import { MapLayerProps } from "@bentley/imodeljs-common";
 import "./MapUrlDialog.scss";
 import { SpecialKey } from "@bentley/ui-abstract";
 import useEsriOAuth2Popup from "../hooks/useEsriOAuth2Popup";
@@ -100,6 +100,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [layerAuthMethod, setLayerAuthMethod] = React.useState(MapLayerAuthType.None);
   const [esriOAuth2Succeeded, setEsriOAuth2Succeeded] = React.useState<undefined|boolean>(undefined);
   const [showEsriOauth2Popup, setShowEsriOauth2Popup] = React.useState(false);
+  const [authTokenUrl, setAuthTokenUrl] = React.useState<string|undefined>();
 
   const [mapType, setMapType] = React.useState(getFormatFromProps() ?? MAP_TYPES.arcGis);
 
@@ -191,8 +192,29 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const updateAuthState = React.useCallback((sourceValidation: MapLayerSourceValidation) => {
     const sourceRequireAuth = (sourceValidation.status === MapLayerSourceStatus.RequireAuth);
     const invalidCredentials = (sourceValidation.status === MapLayerSourceStatus.InvalidCredentials);
-    if (sourceRequireAuth && sourceValidation.authMethod !== undefined) {
-      setLayerAuthMethod(sourceValidation.authMethod);
+    if (sourceRequireAuth && sourceValidation.authInfo?.authMethod !== undefined) {
+      if (sourceValidation.authInfo?.authMethod === MapLayerAuthType.EsriOAuth2) {
+        const endPointUrl = sourceValidation.authInfo.tokenEndpoint?.getUrl();
+        if (endPointUrl !== undefined) {
+          const urlObj = new URL(endPointUrl);
+          urlObj.searchParams.set("client_id", EsriOAuth2.arcGisOnlineClientId);
+          urlObj.searchParams.set("response_type", "token");
+          if (EsriOAuth2.expiration !== undefined) {
+            urlObj.searchParams.set("expiration", `${EsriOAuth2.expiration}`);
+          }
+
+          urlObj.searchParams.set("redirect_uri", EsriOAuth2.redirectUri);
+
+          // const oauthState = encodeURIComponent(mapUrl);
+          urlObj.searchParams.set("state", mapUrl);
+
+          // const arcgisUrl = `https://www.arcgis.com/sharing/rest/oauth2/authorize?client_id=${EsriOAuth2.arcGisOnlineClientId}&response_type=token&expiration=${EsriOAuth2.expiration}&redirect_uri=${EsriOAuth2.redirectUri}&state=${oauthState}`;
+          setAuthTokenUrl(urlObj.toString());
+        }
+
+      }
+
+      setLayerAuthMethod(sourceValidation.authInfo?.authMethod);
     }
     if (invalidCredentials) {
       setInvalidCredentialsProvided(true);
@@ -201,7 +223,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }
 
     return sourceRequireAuth || invalidCredentials;
-  }, [invalidCredentialsProvided]);
+  }, [invalidCredentialsProvided, mapUrl]);
 
   const updateAttachedLayer = React.useCallback(async (source: MapLayerSource, validation: MapLayerSourceValidation) => {
     const vp = props?.activeViewport;
@@ -421,6 +443,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   // EsriOAuth2Callback events handler
   React.useEffect(() => {
     const handleEsriOAuth2Callback = (success: boolean, _state: string ) => {
+      setLayerAuthPending(false);
       if (success) {
         setEsriOAuth2Succeeded(true);
         setShowEsriOauth2Popup(false);
@@ -443,7 +466,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   React.useEffect(() => {
     setServerRequireCredentials(layerAuthMethod === MapLayerAuthType.Basic || layerAuthMethod === MapLayerAuthType.EsriToken);
 
-    if (esriOAuth2Succeeded !== false && layerAuthMethod === MapLayerAuthType.EsriOAuth2) {
+    if (esriOAuth2Succeeded === undefined && layerAuthMethod === MapLayerAuthType.EsriOAuth2) {
       handleArcGisLogin();
     }
   }, [esriOAuth2Succeeded, handleArcGisLogin, layerAuthMethod]);
@@ -497,7 +520,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
   // Use a hook to display the popup.
   // The display of the popup is controlled by the 'showEsriOauth2Popup' state variable.
-  useEsriOAuth2Popup(showEsriOauth2Popup, mapUrl, handleEsriOAuth2PopupClose);
+  useEsriOAuth2Popup(showEsriOauth2Popup, authTokenUrl, "External login", handleEsriOAuth2PopupClose);
   return (
     <div ref={dialogContainer}>
       <Dialog
