@@ -1,16 +1,14 @@
 # Change Log - @bentley/map-layers
 
-<<<<<<< HEAD
 This log was last generated on Fri, 09 Jul 2021 18:11:24 GMT and should not be manually modified.
 
 ## 2.18.0
 Fri, 09 Jul 2021 18:11:24 GMT
-=======
-This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
+
+_Version update only_
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
->>>>>>> b9013a73ea (2.17.2 changelogs (#1844))
 
 _Version update only_
 
@@ -80,7 +78,7 @@ Mon, 24 May 2021 15:58:39 GMT
 
 ### Updates
 
-- Fix 'npm run cover' that would never complete. 
+- Fix 'npm run cover' that would never complete.
 - Exposed the map masking option in the map layers settings UI.
 - Move map tile trees to Viewport to handle synching correctly
 - Update to latest classnames package
@@ -155,7 +153,7 @@ Tue, 09 Mar 2021 20:28:13 GMT
 
 ### Updates
 
-- Restored base layer visibility button in map manager. 
+- Restored base layer visibility button in map manager.
 - Updated to use TypeScript 4.1
 - begin rename project from iModel.js to iTwin.js
 
@@ -180,7 +178,7 @@ Thu, 18 Feb 2021 22:10:13 GMT
 ### Updates
 
 - Provide default props to map-layers widget when used as an extension.
-- ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted. 
+- ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted.
 
 ## 2.11.2
 Thu, 18 Feb 2021 02:50:59 GMT

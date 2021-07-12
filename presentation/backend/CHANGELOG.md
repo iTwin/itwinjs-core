@@ -1,6 +1,5 @@
 # Change Log - @bentley/presentation-backend
 
-<<<<<<< HEAD
 This log was last generated on Fri, 09 Jul 2021 18:11:24 GMT and should not be manually modified.
 
 ## 2.18.0
@@ -10,14 +9,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 
 - Add `PresentationManager.getElementProperties` to get properties for a single element in a simplified way.
 - Add `PresentationRpcInterface.getElementProperties` and related APIs
-=======
-This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
 
 _Version update only_
->>>>>>> b9013a73ea (2.17.2 changelogs (#1844))
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:31 GMT
@@ -626,7 +622,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Fixed `PresentationRpcImpl.computeSelection` for "model", "category" and "element" scope to return specific class names instead of "BisCore:Model", "BisCore:Category" or "BisCore:Element"
 - Allow requesting content with descriptor overrides instead of descriptor. This allows to competely avoid a descriptor request when content customization requirements are the same for all kinds of content
 - Do not attempt to handle transient element ids when computing selection based on scope
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

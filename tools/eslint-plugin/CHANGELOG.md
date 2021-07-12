@@ -1,6 +1,5 @@
 # Change Log - @bentley/eslint-plugin
 
-<<<<<<< HEAD
 This log was last generated on Fri, 09 Jul 2021 18:11:24 GMT and should not be manually modified.
 
 ## 2.18.0
@@ -9,14 +8,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 ### Updates
 
 - Typescript is now a peer-dependency
-=======
-This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
 
 _Version update only_
->>>>>>> b9013a73ea (2.17.2 changelogs (#1844))
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:30 GMT

@@ -1,16 +1,14 @@
 # Change Log - @bentley/certa
 
-<<<<<<< HEAD
 This log was last generated on Fri, 09 Jul 2021 18:11:24 GMT and should not be manually modified.
 
 ## 2.18.0
 Fri, 09 Jul 2021 18:11:24 GMT
-=======
-This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
+
+_Version update only_
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
->>>>>>> b9013a73ea (2.17.2 changelogs (#1844))
 
 _Version update only_
 
@@ -198,7 +196,7 @@ Fri, 18 Dec 2020 18:24:01 GMT
 ### Updates
 
 - Fix occasional hang in Electron when a timeout occurs loading the app
-- Upgraded electron version. 
+- Upgraded electron version.
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT

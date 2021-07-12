@@ -1,6 +1,5 @@
 # Change Log - @bentley/rbac-client
 
-<<<<<<< HEAD
 This log was last generated on Fri, 09 Jul 2021 18:11:24 GMT and should not be manually modified.
 
 ## 2.18.0
@@ -9,14 +8,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 ### Updates
 
 - Update expected RbaClient.test to 10 per Caleb.
-=======
-This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
 
 _Version update only_
->>>>>>> b9013a73ea (2.17.2 changelogs (#1844))
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:31 GMT
@@ -429,7 +425,7 @@ Wed, 06 May 2020 13:17:49 GMT
 ### Updates
 
 - react to renaming of imodeljs-clients
-- Re-enabled RbacClient integration tests. 
+- Re-enabled RbacClient integration tests.
 - Updated docs
 - create new package from imodeljs-clients
 - Upgrade to Rush 5.23.2

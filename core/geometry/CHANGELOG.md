@@ -1,6 +1,5 @@
 # Change Log - @bentley/geometry-core
 
-<<<<<<< HEAD
 This log was last generated on Fri, 09 Jul 2021 18:11:24 GMT and should not be manually modified.
 
 ## 2.18.0
@@ -12,14 +11,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 - Use ZXY axis order in Arc3d.createCenterNormalRadius().
 - Range equality functions accept Readonly<Range>. Add XYZ.toArray.
 - PolyfaceData.tryTransformInPlace now also transforms PolyfaceAuxData.
-=======
-This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
 
 _Version update only_
->>>>>>> b9013a73ea (2.17.2 changelogs (#1844))
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:30 GMT
@@ -575,7 +571,7 @@ Fri, 22 Nov 2019 14:03:34 GMT
 
 ### Updates
 
-- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal 
+- PolyfaceQuery services: PolyfaceQuery.markAllEdgeVisibility PolyfaceQuery.markPairedEdgesInvisible PolyfaceQuery.setSingleEdgeVisibility PolyfaceQuery.computeFacetUnitNormal
 - Correct sectioning of meshes with (a) nonconvex facets and (b) multicomponent plane intersections
 - Intersect Ray with Sphere
 - Spherical patch range; optional result in range3d.corners()
@@ -706,7 +702,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Triangulation bug (multiple holes not linked correctly)
 - Fix broken links
 - Put sourcemap in npm package.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - New code for regularizing a single face.
 - Upgrade TypeDoc dependency to 0.14.2
 

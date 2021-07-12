@@ -1,6 +1,5 @@
 # Change Log - @bentley/ui-abstract
 
-<<<<<<< HEAD
 This log was last generated on Fri, 09 Jul 2021 18:11:24 GMT and should not be manually modified.
 
 ## 2.18.0
@@ -10,14 +9,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 
 - Add new helper method PropertyDescriptionHelper.buildLockPropertyDescription.
 - Add ability to provide widgets to zones via UiItemsProvider when using AppUI version 1.
-=======
-This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
 
 _Version update only_
->>>>>>> b9013a73ea (2.17.2 changelogs (#1844))
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:31 GMT
@@ -488,7 +484,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - In source documentation. Some learning docs & API changes.
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Started ui-components Learning doc section
-- Update doc tags for automatic UI creation 
+- Update doc tags for automatic UI creation
 - Refactor to remove duplicate ComponentGenerator instantiation. Rename files and components to remove React reference.
 - Update auto-generated dialog items to work with the Tool Settings Bar.
 - Add ConditionalBoolean support for isHidden and isDisabled properties.
