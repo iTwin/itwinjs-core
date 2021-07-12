@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
+import * as sinon from "sinon";
 import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
@@ -954,6 +955,39 @@ describe("IModelTransformer", () => {
     const schema2InTarget = targetImportedSchemasLoader.getSchema("TestSchema2");
     assert.isDefined(schema2InTarget);
 
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("processSchemas should wait for the schema import to finish to delete the export directory", async () => {
+    const reqCtx = new BackendRequestContext();
+    const cloneTestSchema100 = path.join(KnownTestLocations.assetsDir, "CloneTest.01.00.00.ecschema.xml");
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "FinallyFirstTest.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "FinallyFirstTest" } });
+    await sourceDb.importSchemas(reqCtx, [cloneTestSchema100]);
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "FinallyFirstTestOut.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "FinallyFirstTest" } });
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+
+    const importSchemasResolved = sinon.spy();
+    let importSchemasPromise: Promise<void>;
+
+    sinon.replace(targetDb, "importSchemas", sinon.fake(async () => {
+      importSchemasPromise = new Promise((resolve) => setImmediate(() => {
+        importSchemasResolved();
+        resolve(undefined);
+      }));
+      return importSchemasPromise;
+    }));
+
+    const removeSyncSpy = sinon.spy(IModelJsFs, "removeSync");
+
+    await transformer.processSchemas(reqCtx);
+    assert(removeSyncSpy.calledAfter(importSchemasResolved));
+
+    sinon.restore();
     sourceDb.close();
     targetDb.close();
   });
