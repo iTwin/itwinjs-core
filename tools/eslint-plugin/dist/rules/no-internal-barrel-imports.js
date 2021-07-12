@@ -119,6 +119,9 @@ const rule = {
         if (!importNodeTs)
           throw Error("equivalent typescript node could not be found");
 
+        if (importNodeTs.importClause.isTypeOnly)
+          return;
+
         const thisModule = importNodeTs.getSourceFile();
         const importInfo = thisModule.resolvedModules.get(importNodeTs.moduleSpecifier.text)
         const importedModule = program.getSourceFileByPath(importInfo.resolvedFileName);
@@ -128,21 +131,15 @@ const rule = {
         if (ignoredBarrelModules.includes(importedModule.resolvedPath))
           return;
 
-        if (!importInfo.isExternalLibraryImport) {
-          for (const importedProp of importNodeTs.importClause.namedBindings.elements) {
-            for (const exported of checker.getExportsOfModule(importedModule.symbol)) {
-              if (exported.escapedName === importedProp.name.escapedText) {
-                const declaration = exported.valueDeclaration || exported.declarations[0];
-                const isReExport = declaration.getSourceFile().resolvedPath !== importedModule.resolvePath;
-                if (isReExport) {
-                  context.report({
-                    node,
-                    messageId: messageIds.noInternalBarrelImports,
-                  })
-                }
-              }
-            }
-          }
+        if (importInfo.isExternalLibraryImport)
+          return;
+
+        const containsReExport = importedModule.imports.some(imp => ts.isExportDeclaration(imp.parent));
+        if (containsReExport) {
+          context.report({
+            node,
+            messageId: messageIds.noInternalBarrelImports,
+          });
         }
       },
     };
