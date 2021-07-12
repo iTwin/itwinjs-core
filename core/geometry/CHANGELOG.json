@@ -2,6 +2,7 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+<<<<<<< HEAD
       "version": "2.18.0",
       "tag": "@bentley/geometry-core_v2.18.0",
       "date": "Fri, 09 Jul 2021 18:11:24 GMT",
@@ -21,6 +22,12 @@
           }
         ]
       }
+=======
+      "version": "2.17.2",
+      "tag": "@bentley/geometry-core_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+>>>>>>> b9013a73ea (2.17.2 changelogs (#1844))
     },
     {
       "version": "2.17.1",
