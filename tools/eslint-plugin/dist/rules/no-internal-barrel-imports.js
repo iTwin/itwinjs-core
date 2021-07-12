@@ -6,23 +6,35 @@
 /*
 Within a package, you can create cyclic dependencies by doing the following:
 
+```ts
 // file A.ts
 export * from "B";
 export * from "C";
-// the following style of barrel import is *not currently supported*
-import * as b from "B";
-import * as c from "C";
-export {a, b};
+```
 
+```ts
 // file B.ts
 export default function b() { return 2; }
+```
 
+```ts
 // file C.ts
 import {b} from "A";
 import * as A from "A";
 export default function c() { return 1 + b() + A.b(); }
+```
 
 This rule reports uses of re-exports, in order to prevent such cyclic dependency issues.
+It considers any file containing a `re-export` (e.g. `export ... from ...`) to be a barrel file,
+excluding typed re-exports (e.g. `export type {MyType} from "./SomeModule"`).
+
+It does not currently report general re-exporting such as the following:
+
+```ts
+import {a} from "A";
+import {b} from "B";
+export {a, b};
+```
 */
 
 "use strict";
@@ -34,7 +46,7 @@ const path = require("path");
 const OPTION_IGNORED_BARREL_MODULES = "ignored-barrel-modules";
 
 const messages = {
-  noInternalBarrelImports: `You may not use barrel imports internally`,
+  noInternalBarrelImports: `Do not consume barrel imports within the same package`,
   tryImportingDirectly: `Try importing the barreled export directly`,
 };
 
@@ -142,7 +154,7 @@ const rule = {
         if (importInfo.isExternalLibraryImport) return;
 
         const containsReExport = importedModule.imports.some((imp) =>
-          ts.isExportDeclaration(imp.parent)
+          ts.isExportDeclaration(imp.parent) && !imp.parent.isTypeOnly
         );
 
         const hasNamespaceImport =

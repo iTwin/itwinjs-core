@@ -71,6 +71,7 @@ ruleTester.run(
         options: [{ "ignored-barrel-modules": ["./far/barrel.ts"] }],
       },
       { code: makeTest`import { barreled } from "barrel-pkg";` },
+      { code: makeTest`import {A} from "./typebarrel";` },
     ],
     invalid: [
       {
