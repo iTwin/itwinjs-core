@@ -67,8 +67,8 @@ ruleTester.run(
         options: [{ "ignored-barrel-modules": ["./barrel.ts"] }],
       },
       {
-        code: makeTest`import {b} from "./far-barrel/barrel";`,
-        options: [{ "ignored-barrel-modules": ["./far-barrel/barrel.ts"] }],
+        code: makeTest`import {b} from "./far/barrel";`,
+        options: [{ "ignored-barrel-modules": ["./far/barrel.ts"] }],
       },
       { code: makeTest`import { barreled } from "barrel-pkg";` },
     ],
@@ -111,6 +111,21 @@ ruleTester.run(
           import {a as notA} from "./barrel";
         `,
         errors: [{ messageId: "noInternalBarrelImports" }],
+      },
+      {
+        code: makeTest`import {c} from "./far/barrel";`,
+        errors: [
+          {
+            messageId: "noInternalBarrelImports",
+            suggestions: [
+              {
+                messageId: "tryImportingDirectly",
+                // extra semicolons will be taken out by eslint's other rules
+                output: makeTest`;import {c} from "./far/c";`,
+              },
+            ],
+          },
+        ],
       },
     ],
   })
