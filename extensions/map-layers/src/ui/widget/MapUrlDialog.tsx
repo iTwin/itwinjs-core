@@ -193,25 +193,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     const sourceRequireAuth = (sourceValidation.status === MapLayerSourceStatus.RequireAuth);
     const invalidCredentials = (sourceValidation.status === MapLayerSourceStatus.InvalidCredentials);
     if (sourceRequireAuth && sourceValidation.authInfo?.authMethod !== undefined) {
-      if (sourceValidation.authInfo?.authMethod === MapLayerAuthType.EsriOAuth2) {
-        const endPointUrl = sourceValidation.authInfo.tokenEndpoint?.getUrl();
-        if (endPointUrl !== undefined) {
-          const urlObj = new URL(endPointUrl);
-          urlObj.searchParams.set("client_id", EsriOAuth2.arcGisOnlineClientId);
-          urlObj.searchParams.set("response_type", "token");
-          if (EsriOAuth2.expiration !== undefined) {
-            urlObj.searchParams.set("expiration", `${EsriOAuth2.expiration}`);
-          }
-
-          urlObj.searchParams.set("redirect_uri", EsriOAuth2.redirectUri);
-
-          // const oauthState = encodeURIComponent(mapUrl);
-          urlObj.searchParams.set("state", mapUrl);
-
-          // const arcgisUrl = `https://www.arcgis.com/sharing/rest/oauth2/authorize?client_id=${EsriOAuth2.arcGisOnlineClientId}&response_type=token&expiration=${EsriOAuth2.expiration}&redirect_uri=${EsriOAuth2.redirectUri}&state=${oauthState}`;
-          setAuthTokenUrl(urlObj.toString());
-        }
-
+      if (sourceValidation.authInfo.tokenEndpoint && sourceValidation.authInfo?.authMethod === MapLayerAuthType.EsriOAuth2) {
+        setAuthTokenUrl(sourceValidation.authInfo.tokenEndpoint.getTokenGenerationUrl(mapUrl));
       }
 
       setLayerAuthMethod(sourceValidation.authInfo?.authMethod);
@@ -229,7 +212,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     const vp = props?.activeViewport;
     if (vp === undefined || source === undefined || layerRequiringCredentialsIdx === undefined)   {
       const error = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttachMissingViewOrSource");
-      const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", { error, sourceUrl: source.url });
+      const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.MapLayerAttachError", { error, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       return true;
     }
@@ -260,7 +243,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     const vp = props?.activeViewport;
     if (vp === undefined || source === undefined) {
       const error = IModelApp.i18n.translate("mapLayers:Messages.MapLayerAttachMissingViewOrSource");
-      const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", { error, sourceUrl: source.url });
+      const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.MapLayerAttachError", { error, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       return true;
     }
@@ -278,7 +261,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
     } else {
       const msgError = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.MapLayerLayerSettingsConversionError");
-      const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", { error: msgError, sourceUrl: source.url });
+      const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.MapLayerAttachError", { error: msgError, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
     }
 
@@ -308,7 +291,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       }
       return false;
     } catch (error) {
-      const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", { error, sourceUrl: source.url });
+      const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.MapLayerAttachError", { error, sourceUrl: source.url });
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
       return true;
     }
@@ -349,7 +332,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       if (source === undefined) {
         // Close the dialog and inform end user something went wrong.
         const msgError = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.MapLayerLayerSourceCreationFailed");
-        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MapLayerAttachError", { error: msgError, sourceUrl: mapUrl });
+        const msg = MapLayersUiItemsProvider.i18n.translate("mapLayers:Messages.MapLayerAttachError", { error: msgError, sourceUrl: mapUrl });
         IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, msg));
         return;
       }
