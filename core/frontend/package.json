@@ -116,6 +116,9 @@
     "plugins": [
       "@bentley"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@bentley/imodeljs-recommended",
+    "rules": {
+      "@bentley/no-internal-barrel-imports": ["error", {"ignored-barrel-modules": ["./src/tile/internal.ts"]}]
+    }
   }
 }
