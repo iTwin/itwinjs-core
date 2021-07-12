@@ -64,6 +64,10 @@ ruleTester.run(
       { code: makeTest`import {b} from "./b";` },
       { code: makeTest`import DefaultB from "./b";` },
       { code: makeTest`import DefaultB, {b} from "./b";` },
+      {
+        code: makeTest`import {b} from "./barrel";`,
+        options: [{"ignored-barrel-modules": ["./barrel.ts"]}],
+      },
     ],
     invalid: [
       {

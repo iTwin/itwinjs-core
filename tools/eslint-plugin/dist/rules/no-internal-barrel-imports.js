@@ -28,9 +28,6 @@ This rule reports uses of re-exports, in order to prevent such cyclic dependency
 "use strict";
 
 const { getParserServices } = require("./utils/parser");
-const { AST_NODE_TYPES } = require("@typescript-eslint/experimental-utils");
-const TSESTreeModule = require("@typescript-eslint/typescript-estree");
-const { TSESTree } = require("@typescript-eslint/typescript-estree");
 const ts = require("typescript");
 const path = require("path");
 
@@ -41,35 +38,18 @@ const messages = {
 };
 
 /** @type {typeof messages} */
-const messageIds = Object.keys(messages).reduce((obj, key) => {obj[key] = key; return obj;}, {});
-
-/** @typedef {import("@typescript-eslint/typescript-estree")} TSESTreeModule */
-
-/** Check if a range is a superset of another
- * @param {TSESTree.Range} a
- * @param {TSESTree.Range} b
- * @returns {boolean}
- */
-function isSuperSet([aLow, aHigh], [bLow, bHigh]) {
-  return aLow <= bLow && aHigh >= bHigh;
-}
-
-// TODO: check if range operations already exist in eslint's libs
-/** Check if a range is a superset of another
- * @param {TSESTree.Node} a
- * @param {TSESTree.Node} b
- * @returns {boolean}
- */
-const nodeContains = (a, b) => isSuperSet(a.range, b.range);
-
-class ASTPreconditionViolated extends Error {}
+const messageIds = Object.keys(messages).reduce((obj, key) => {
+  obj[key] = key;
+  return obj;
+}, {});
 
 /** @type {import("eslint").Rule.RuleModule} */
 const rule = {
   meta: {
     type: "problem",
     docs: {
-      description: "Reports uses of re-exports within a package, in order to prevent such cyclic dependencies.",
+      description:
+        "Reports uses of re-exports within a package, in order to prevent such cyclic dependencies.",
       category: "TypeScript",
     },
     schema: [
@@ -85,7 +65,7 @@ const rule = {
            * file will not need to import sibling modules from the barrel.
            */
           [OPTION_IGNORED_BARREL_MODULES]: {
-            type: "boolean",
+            type: "array",
             description: "Usage of re-exports from these paths are ignored.",
             default: [],
           },
@@ -100,17 +80,18 @@ const rule = {
     const parserServices = getParserServices(context);
     /** @type {ts.Program} */
     const program = parserServices.program;
-    const checker = program.getTypeChecker();
     const extraOpts = context.options[0];
-    const ignoredBarrelModules = (extraOpts && extraOpts[OPTION_IGNORED_BARREL_MODULES] || []).map(p => path.resolve(program.getCurrentDirectory(), p));
-    parserServices
-    program.getProjectReferences()
-    program.getFilesByNameMap();
-
-    program.getRootFileNames()
+    const maybeTsConfig = program.getCompilerOptions().configFilePath;
+    const ignoredBarrelModules = (
+      (maybeTsConfig && extraOpts && extraOpts[OPTION_IGNORED_BARREL_MODULES]) ||
+      []
+    ).map((p) => {
+      /** @type {string} earlier check means it is definitely a string */
+      const tsConfig = maybeTsConfig;
+      return path.resolve(path.dirname(tsConfig), p)
+    });
 
     return {
-      /** @param {TSESTree.ImportDeclaration} node */
       ImportDeclaration(node) {
         if (typeof node.source.value !== "string")
           throw Error("Invalid input source");
@@ -119,22 +100,24 @@ const rule = {
         if (!importNodeTs)
           throw Error("equivalent typescript node could not be found");
 
-        if (importNodeTs.importClause.isTypeOnly)
-          return;
+        if (importNodeTs.importClause.isTypeOnly) return;
 
         const thisModule = importNodeTs.getSourceFile();
-        const importInfo = thisModule.resolvedModules.get(importNodeTs.moduleSpecifier.text)
-        const importedModule = program.getSourceFileByPath(importInfo.resolvedFileName);
-        if (!importedModule)
-          throw Error("couldn't find imported module");
+        const importInfo = thisModule.resolvedModules.get(
+          importNodeTs.moduleSpecifier.text
+        );
+        const importedModule = program.getSourceFileByPath(
+          importInfo.resolvedFileName
+        );
+        if (!importedModule) throw Error("couldn't find imported module");
 
-        if (ignoredBarrelModules.includes(importedModule.resolvedPath))
-          return;
+        if (ignoredBarrelModules.includes(importedModule.resolvedPath)) return;
 
-        if (importInfo.isExternalLibraryImport)
-          return;
+        if (importInfo.isExternalLibraryImport) return;
 
-        const containsReExport = importedModule.imports.some(imp => ts.isExportDeclaration(imp.parent));
+        const containsReExport = importedModule.imports.some((imp) =>
+          ts.isExportDeclaration(imp.parent)
+        );
         if (containsReExport) {
           context.report({
             node,
