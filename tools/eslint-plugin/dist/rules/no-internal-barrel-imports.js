@@ -104,7 +104,7 @@ const rule = {
     ).map((p) => {
       /** @type {string} earlier check means it is definitely a string */
       const tsConfig = maybeTsConfig;
-      return path.resolve(path.dirname(tsConfig), p);
+      return path.normalize(path.resolve(path.dirname(tsConfig), p));
     });
 
     return {
