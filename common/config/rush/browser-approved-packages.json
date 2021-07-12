@@ -295,10 +295,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "@typescript-eslint/experimental-utils",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "@typescript-eslint/parser",
       "allowedCategories": [ "tools" ]
     },

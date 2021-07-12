@@ -372,19 +372,10 @@ module.exports = {
     "@bentley/prefer-get": "error",
     "@bentley/react-set-state-usage": ["error", { "updater-only": false, "allow-object": true }],
     "@bentley/require-basic-rpc-values": "off",
-    "@bentley/request-context": ["error"],
   },
   settings: {
     "react": {
       "version": "16.8"
     }
   },
-  overrides: [
-    {
-      files: ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
-      rules: {
-        "@bentley/request-context": ["off"],
-      }
-    }
-  ]
 }

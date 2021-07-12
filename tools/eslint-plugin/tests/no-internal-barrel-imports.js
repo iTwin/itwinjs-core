@@ -11,9 +11,7 @@ const BentleyESLintPlugin = require("../dist");
 const NoInternalBarrelImportsESLintRule =
   BentleyESLintPlugin.rules["no-internal-barrel-imports"];
 
-/** mostly stolen from eslint-plugin-react-hooks's test
- *  @param {string[]} strings
- */
+/** @param {string[]} strings */
 function makeTest(strings) {
   const codeLines = strings[0].split("\n");
   if (codeLines.length <= 1) return strings[0];

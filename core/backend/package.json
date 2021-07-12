@@ -20,7 +20,6 @@
     "cover:integration": "nyc npm run test:integration",
     "extract-api": "betools extract-api --entry=imodeljs-backend",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
-    "lint:fix": "eslint --fix -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pretest": "cpx ./src/test/logging.config.json ./lib/test",
     "test": "betools test --offline=\"mock\" --grep=\"#integration|#WebGLPerformance\" --invert",
     "azurite:setup": "mkdirp ./lib/test/azuriteStorage && azurite --silent --location ./lib/test/azuriteStorage",
