@@ -9,21 +9,20 @@ import * as path from "path";
 import { ECVersion, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
 import { SchemaJsonFileLocater } from "../src/SchemaJsonFileLocater";
 
-describe("Concurrent schema accesses", () => {
-  let context1: SchemaContext;
-  let context2: SchemaContext;
-  let schemaKeys: SchemaKey[];
+describe("Concurrent schema deserialization", () => {
+  let schemaKeys: SchemaKey[] = [];
+  let context: SchemaContext;
+  let contextSync: SchemaContext;
+  let syncSchemas: Array<Schema | undefined> = [];
 
-  beforeEach(() => {
-    context1 = new SchemaContext();
-    context2 = new SchemaContext();
-    schemaKeys = [];
-    const schemaFolder = path.join(__dirname, "assets", "JSON");
-    const locater = new SchemaJsonFileLocater();
+  const schemaFolder = path.join(__dirname, "assets", "JSON");
+  const locater = new SchemaJsonFileLocater();
 
+  before(() => {
+    // Deserialize schemas synchronously/serially as standard to compare to
+    contextSync = new SchemaContext();
     locater.addSchemaSearchPath(schemaFolder);
-    context1.addLocater(locater);
-    context2.addLocater(locater);
+    contextSync.addLocater(locater);
 
     const schemaFiles = fs.readdirSync(schemaFolder);
     schemaFiles.forEach((fileName) => {
@@ -35,27 +34,62 @@ describe("Concurrent schema accesses", () => {
       const key = new SchemaKey(schemaName.toString(), ECVersion.fromString(schemaVersion.toString()));
       schemaKeys.push(key);
     });
+
+    syncSchemas = schemaKeys.map((key): Schema | undefined => {
+      if (!key)
+        return undefined;
+
+      const schema = contextSync.getSchemaSync(key, SchemaMatchType.Latest);
+      return schema;
+    });
+  })
+
+  beforeEach(() => {
+    context = new SchemaContext();
+    context.addLocater(locater);
   });
 
-  it("should correctly deserialize schemas concurrently", async () => {
-    // Asynchronous
+  it.only("should match schemas deserialized concurrently with schemas deserialized serially", async () => {
     const schemaPromises = schemaKeys.map(async (key): Promise<Schema | undefined> => {
       if (!key)
         return undefined;
 
-      const schema = await context1.getSchema(key, SchemaMatchType.Latest);
+      const schema = await context.getSchema(key, SchemaMatchType.Latest);
       return schema;
     });
     const asyncSchemas = await Promise.all(schemaPromises);
 
-    // Synchronous
-    const syncSchemas = schemaKeys.map((key): Schema | undefined => {
-      if (!key)
-        return undefined;
+    for (let i = 0; i < schemaKeys.length; i++) {
+      const syncSchema = syncSchemas[i];
+      expect(syncSchema).not.to.be.undefined;
+      const syncJSON = syncSchema!.toJSON();
 
-      const schema = context2.getSchemaSync(key, SchemaMatchType.Latest);
-      return schema;
+      const asyncSchema = asyncSchemas.find(asyncSchema => asyncSchema!.schemaKey.matches(syncSchema!.schemaKey));
+      expect(asyncSchema).not.to.be.undefined;
+      const asyncJSON = asyncSchema!.toJSON();
+      expect(asyncJSON).to.deep.equal(syncJSON);
+    }
+  });
+
+  it("should be able to mix getSchema and getSchemaSync", async () => {
+    const schemaPromises = schemaKeys.map(async (key, index): Promise<Schema | undefined> => {
+      if (index % 2 === 0) {
+        // Use getSchema() for even indices
+        if (!key)
+          return undefined;
+
+        const schema = await context.getSchema(key, SchemaMatchType.Latest);
+        return schema;
+      } else {
+        // Use getSchemaSync() for odd indices
+        if (!key)
+          return undefined;
+
+        const schema = context.getSchemaSync(key, SchemaMatchType.Latest);
+        return schema;
+      }
     });
+    const asyncSchemas = await Promise.all(schemaPromises);
 
     for (let i = 0; i < schemaKeys.length; i++) {
       const syncSchema = syncSchemas[i];
@@ -76,7 +110,7 @@ describe("Concurrent schema accesses", () => {
     await Promise.all(schemaKeys.map(async (key) => {
       if (!key)
         return;
-      const schema = await context1.getSchema(key, SchemaMatchType.Latest);
+      const schema = await context.getSchema(key, SchemaMatchType.Latest);
       if (!schema)
         return;
       asyncSchemas.push(schema);
@@ -93,7 +127,7 @@ describe("Concurrent schema accesses", () => {
     const getSchema = async (key: SchemaKey) => {
       if (!key)
         return;
-      const schema = await context2.getSchema(key, SchemaMatchType.Latest);
+      const schema = await context.getSchema(key, SchemaMatchType.Latest);
       if (!schema)
         return;
       syncSchemas.push(schema);

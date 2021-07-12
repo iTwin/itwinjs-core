@@ -33,9 +33,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    if (!await this.findCachedSchemaText(key)) {
-      await this.addSchemaText(key, this.readSchemaText(schemaPath));
-    }
+    await this.addSchemaText(key, this.readSchemaText(schemaPath));
 
     const schemaText = await this.getSchemaText(key);
     if (undefined === schemaText)
@@ -87,6 +85,13 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     return schema as T;
   }
 
+   /**
+   * Attempts to retrieve a partially-loaded Schema with the given SchemaKey by using the configured search paths
+   * to locate the XML Schema file from the file system.
+   * @param key The SchemaKey of the Schema to retrieve.
+   * @param matchType The SchemaMatchType.
+   * @param context The SchemaContext that will control the lifetime of the schema.
+   */
   public async getLoadingSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
 
@@ -97,9 +102,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    if (!await this.findCachedSchemaText(key)) {
-      await this.addSchemaText(key, this.readSchemaText(schemaPath));
-    }
+    await this.addSchemaText(key, this.readSchemaText(schemaPath));
 
     const schemaText = await this.getSchemaText(key);
     if (undefined === schemaText)
@@ -115,6 +118,13 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     return schema as T;
   }
 
+   /**
+   * Attempts to retrieve a partially-loaded Schema with the given SchemaKey by using the configured search paths
+   * to locate the XML Schema file from the file system.
+   * @param key The SchemaKey of the Schema to retrieve.
+   * @param matchType The SchemaMatchType.
+   * @param context The SchemaContext that will control the lifetime of the schema.
+   */
   public getLoadingSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
 

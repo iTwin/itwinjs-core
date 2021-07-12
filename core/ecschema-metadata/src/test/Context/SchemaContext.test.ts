@@ -5,7 +5,7 @@
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { SchemaCache, SchemaContext } from "../../Context";
+import { LoadSchema, SchemaCache, SchemaContext } from "../../Context";
 import { SchemaMatchType } from "../../ECObjects";
 import { ECObjectsError } from "../../Exception";
 import { Schema } from "../../Metadata/Schema";
@@ -47,6 +47,15 @@ describe("Schema Context", () => {
 
     await context.addSchema(schema);
     await expect(context.addSchema(schema2)).to.be.rejectedWith(ECObjectsError);
+
+    const schema3 = new Schema(context, "TestSchema2", "ts2", 1, 0, 5);
+    const schema4 = new Schema(context, "TestSchema2", "ts2", 1, 0, 5);
+    const mockFunc = async (schema: Schema): Promise<Schema> => {
+      return schema;
+    }
+
+    await context.addSchema(schema3, new LoadSchema(async () => mockFunc(schema3)));
+    await expect(context.addSchema(schema4, new LoadSchema(async () => mockFunc(schema4)))).to.be.rejectedWith(ECObjectsError);
   });
 
   it("schema added, getCachedSchema returns the schema", async () => {
@@ -59,6 +68,25 @@ describe("Schema Context", () => {
     const loadedSchema = await context.getCachedSchema(testKey);
 
     expect(loadedSchema).to.equal(schema);
+  });
+
+  it("loading schema added, getCachedSchema returns the loaded schema", async () => {
+    const context = new SchemaContext();
+    const schema = new Schema(context, "TestSchema", "ts", 1, 5, 9);
+
+    let counter = 0;
+    const mockFunc = async (schema: Schema): Promise<Schema> => {
+      counter++;
+      return schema;
+    }
+    await context.addSchema(schema, new LoadSchema(async () => mockFunc(schema)));
+
+    const testKey = new SchemaKey("TestSchema", 1, 5, 9);
+    const loadedSchema = await context.getCachedSchema(testKey);
+
+    expect(loadedSchema).to.equal(schema);
+    // Awaited getCachedSchema mockFunc's promise, so counter should be 1
+    assert.strictEqual(counter, 1);
   });
 
   it("schema not added, getCachedSchema returns undefined", async () => {
@@ -105,6 +133,45 @@ describe("Schema Context", () => {
     expect(loadedSchema).to.equal(schema);
   });
 
+  it("loading schema added, getCachedLoadedOrLoadingSchema returns the loading schema", async () => {
+    const context = new SchemaContext();
+    const schema = new Schema(context, "TestSchema", "ts", 1, 5, 9);
+
+    let counter = 0;
+    const mockFunc = async (schema: Schema): Promise<Schema> => {
+      counter++;
+      return schema;
+    }
+    await context.addSchema(schema, new LoadSchema(async () => mockFunc(schema)));
+
+    const testKey = new SchemaKey("TestSchema", 1, 5, 9);
+    const loadingSchema = await context.getCachedLoadedOrLoadingSchema(testKey);
+
+    expect(loadingSchema).to.equal(schema);
+    // Did not await mockFunc's promise, so counter should be 0
+    assert.strictEqual(counter, 0);
+  });
+
+  it("loading schema added and is loaded, getCachedLoadedOrLoadingSchema returns the loaded schema", async () => {
+    const context = new SchemaContext();
+    const schema = new Schema(context, "TestSchema", "ts", 1, 5, 9);
+
+    let counter = 0;
+    const mockFunc = async (schema: Schema): Promise<Schema> => {
+      counter++;
+      return schema;
+    }
+    await context.addSchema(schema, new LoadSchema(async () => mockFunc(schema)));
+
+    const testKey = new SchemaKey("TestSchema", 1, 5, 9);
+    await context.getCachedSchema(testKey);
+    const loadedSchema = await context.getCachedLoadedOrLoadingSchema(testKey);
+
+    expect(loadedSchema).to.equal(schema);
+    // Awaited mockFunc's promise in getCachedSchema, so counter should be 1
+    assert.strictEqual(counter, 1);
+  });
+
   it("successfully finds schema from added locater", async () => {
     const context = new SchemaContext();
 
@@ -125,5 +192,46 @@ describe("Schema Context", () => {
 
     // We should still get TestSchema 1.0.5 for SchemaMatchType.Latest, since cache was added _before_ cache2
     expect(await context.getSchema(schema2.schemaKey)).to.equal(schema);
+  });
+
+  it("adds schema to locater, getLoadingSchema returns the loading schema and getSchema returns the loaded schema", async () => {
+    const context = new SchemaContext();
+    const cache = new SchemaCache();
+    const schema = new Schema(context, "TestSchema", "ts", 1, 0, 5);
+    context.addLocater(cache);
+
+    const cache2 = new SchemaCache();
+    context.addLocater(cache2);
+
+    let counter = 0;
+    const mockFunc = async (schema: Schema): Promise<Schema> => {
+      counter++;
+      return schema;
+    }
+    await cache2.addSchema(schema, new LoadSchema(async () => mockFunc(schema)));
+
+    // Should find loading schema in cache2
+    expect(await context.getLoadingSchema(schema.schemaKey, SchemaMatchType.Exact)).to.equal(schema);
+    assert.strictEqual(cache2.loadingSchemasCount, 1);
+    assert.strictEqual(cache2.loadedSchemasCount, 0);
+    // Did not await mockFunc's promise in getLoadingSchema, so counter should be 0
+    assert.strictEqual(counter, 0);
+
+    // There shouldn't be anything in context's cache unless locater's getLoadingSchema adds it to cache
+    expect(await context.getCachedLoadedOrLoadingSchema(schema.schemaKey, SchemaMatchType.Exact)).to.be.undefined;
+
+    // Should load the schema in cache2
+    expect(await context.getSchema(schema.schemaKey, SchemaMatchType.Exact)).to.equal(schema);
+    assert.strictEqual(cache2.loadingSchemasCount, 0);
+    assert.strictEqual(cache2.loadedSchemasCount, 1);
+    // Awaited mockFunc's promise in getLoadingSchema, so counter should be 1
+    assert.strictEqual(counter, 1);
+
+    // Schema is loaded, so shouldn't find it as loading schema anymore
+    expect(await context.getLoadingSchema(schema.schemaKey, SchemaMatchType.Exact)).to.equal(undefined);
+
+    // LoadSchema promise is already resolved, so counter should still be 1
+    expect(await context.getSchema(schema.schemaKey, SchemaMatchType.Exact)).to.equal(schema);
+    assert.strictEqual(counter, 1);
   });
 });

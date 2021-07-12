@@ -56,9 +56,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    if (!await this.findCachedSchemaText(schemaKey)) {
-      await this.addSchemaText(schemaKey, this.readSchemaText(schemaPath));
-    }
+    await this.addSchemaText(schemaKey, this.readSchemaText(schemaPath));
 
     const schemaText = await this.getSchemaText(schemaKey);
     if (!schemaText)
@@ -99,6 +97,13 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     return schema as T;
   }
 
+  /**
+   * Attempts to retrieve a partially-loaded Schema with the given SchemaKey by using the configured
+   * search paths to locate the JSON schema file from the file system.
+   * @param key The SchemaKey of the Schema to retrieve.
+   * @param matchType The SchemaMatchType
+   * @param context The SchemaContext that will control the lifetime of the schema.
+   */
   public async getLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
     // Grab all schema files that match the schema key
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
@@ -109,9 +114,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    if (!await this.findCachedSchemaText(schemaKey)) {
-      await this.addSchemaText(schemaKey, this.readSchemaText(schemaPath));
-    }
+    await this.addSchemaText(schemaKey, this.readSchemaText(schemaPath));
 
     const schemaText = await this.getSchemaText(schemaKey);
     if (!schemaText)
@@ -121,6 +124,13 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     return schema as T;
   }
 
+  /**
+   * Attempts to retrieve a partially-loaded Schema with the given SchemaKey by using the configured
+   * search paths to locate the JSON schema file from the file system.
+   * @param key The SchemaKey of the Schema to retrieve.
+   * @param matchType The SchemaMatchType
+   * @param context The SchemaContext that will control the lifetime of the schema.
+   */
   public getLoadingSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
     // Grab all schema files that match the schema key
     const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");

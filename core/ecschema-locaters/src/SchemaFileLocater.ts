@@ -57,12 +57,13 @@ export class FileSchemaKey extends SchemaKey {
   }
 }
 
+/* Pair of schema key and promise to read schema's text */
 interface SchemaText {
   schemaKey: SchemaKey;
   readSchemaText: Promise<string | undefined>;
 }
 
-export class SchemaTexts extends Array<SchemaText> { }
+export class SchemaTextsCache extends Array<SchemaText> { }
 
 /**
  * Abstract class to hold common/overlapping functionality between SchemaJsonFileLocater and SchemaXmlFileLocater
@@ -70,37 +71,29 @@ export class SchemaTexts extends Array<SchemaText> { }
  */
 export abstract class SchemaFileLocater {
   public searchPaths: string[];
-  private _schemaTexts = new SchemaTexts();
+  /* Schema texts cache to hold read schema texts promises; Ensures that schema texts are only read once with promises */
+  private _schemaTexts = new SchemaTextsCache();
 
   constructor() {
     this.searchPaths = [];
   }
 
-  protected async addSchemaText(schemaKey: SchemaKey, readSchemaText: Promise<string | undefined>) {
+  public get schemaTextsCount() { return this._schemaTexts.length }
+
+  public async addSchemaText(schemaKey: SchemaKey, readSchemaText: Promise<string | undefined>) {
     this.addSchemaTextSync(schemaKey, readSchemaText);
   }
 
-  protected addSchemaTextSync(schemaKey: SchemaKey, readSchemaText: Promise<string | undefined>) {
-    this._schemaTexts.push({ schemaKey, readSchemaText });
+  public addSchemaTextSync(schemaKey: SchemaKey, readSchemaText: Promise<string | undefined>) {
+    if (undefined === this.findCachedSchemaTextSync(schemaKey, SchemaMatchType.Exact))
+      this._schemaTexts.push({ schemaKey, readSchemaText });
   }
 
-  protected async findCachedSchemaText(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<SchemaText | undefined> {
-    return this.findCachedSchemaTextSync(schemaKey, matchType);
-  }
-
-  protected findCachedSchemaTextSync(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): SchemaText | undefined {
-    const findSchemaText = (schemaText: SchemaText) => {
-      return schemaText.schemaKey.matches(schemaKey, matchType);
-    };
-
-    return this._schemaTexts.find(findSchemaText);
-  }
-
-  protected async getSchemaText(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<string | undefined> {
+  public async getSchemaText(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<string | undefined> {
     return this.getSchemaTextSync(schemaKey, matchType);
   }
 
-  protected getSchemaTextSync(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<string | undefined> | undefined {
+  public getSchemaTextSync(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<string | undefined> | undefined {
     const foundSchemaText = this.findCachedSchemaTextSync(schemaKey, matchType);
     if (foundSchemaText)
       return foundSchemaText.readSchemaText;
@@ -108,6 +101,18 @@ export abstract class SchemaFileLocater {
     return undefined;
   }
 
+  private findCachedSchemaTextSync(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): SchemaText | undefined {
+    const findSchemaText = (schemaText: SchemaText) => {
+      return schemaText.schemaKey.matches(schemaKey, matchType);
+    };
+
+    return this._schemaTexts.find(findSchemaText);
+  }
+
+  /**
+   * Promise to read a schema and return a string of its contents if successful
+   * @param schemaPath Schema file path that matched the schema key
+   */
   public async readSchemaText(schemaPath: string): Promise<string | undefined> {
     // Load the file
     if (!await this.fileExists(schemaPath))

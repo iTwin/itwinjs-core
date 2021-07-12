@@ -66,7 +66,7 @@ export interface ISchemaLocater {
   getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined;
 
   /**
-   * Attempts to get a partial/loading schema from the locater (could be loaded or loading if locater is schema cache). Yields undefined if no matching schema is found.
+   * Attempts to get a partial/loading schema from the locater (schema could be loaded or loading if locater is schema cache). Yields undefined if no matching schema is found.
    * For schemas that may have references, construct and call through a SchemaContext instead.
    * @param schemaKey key to look up
    * @param matchType how to match key against candidate schemas
@@ -75,7 +75,7 @@ export interface ISchemaLocater {
   getLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined>;
 
   /**
-   * Attempts to get a partial/loading schema from the locater (could be loaded or loading if locater is schema cache). Yields undefined if no matching schema is found.
+   * Attempts to get a partial/loading schema from the locater (schema could be loaded or loading if locater is schema cache). Yields undefined if no matching schema is found.
    * For schemas that may have references, construct and call through a SchemaContext instead.
    * @param schemaKey key to look up
    * @param matchType how to match key against candidate schemas
@@ -132,7 +132,7 @@ export class SchemaCache implements ISchemaLocater {
   }
 
   /**
-   * Gets the schema which matches the provided SchemaKey. If the matched schema is loading, wait for it to finish loading and return the loaded schema.
+   * Gets the schema which matches the provided SchemaKey. If the matched schema is loading, finish loading the schema and return it.
    * @param schemaKey The SchemaKey describing the schema to get from the cache.
    * @param matchType The match type to use when locating the schema
    */
@@ -192,7 +192,7 @@ export class SchemaCache implements ISchemaLocater {
   }
 
   /**
-   * Gets only the loaded schema which matches the provided SchemaKey.
+   * Gets the loaded schema which matches the provided SchemaKey.
    * @param schemaKey The SchemaKey describing the schema to get from the cache.
    * @param matchType The match type to use when locating the schema
    */
@@ -201,7 +201,7 @@ export class SchemaCache implements ISchemaLocater {
   }
 
   /**
-   * Gets only the loaded schema which matches the provided SchemaKey.
+   * Gets the loaded schema which matches the provided SchemaKey.
    * @param schemaKey The SchemaKey describing the schema to get from the cache.
    * @param matchType The match type to use when locating the schema
    */
@@ -221,7 +221,7 @@ export class SchemaCache implements ISchemaLocater {
   }
 
   /**
-   * Gets only the loading schema which matches the provided SchemaKey.
+   * Gets the loading schema which matches the provided SchemaKey.
    * @param schemaKey The SchemaKey describing the schema to get from the cache.
    * @param matchType The match type to use when locating the schema
    */
@@ -230,7 +230,7 @@ export class SchemaCache implements ISchemaLocater {
   }
 
   /**
-   * Gets only the loading schema which matches the provided SchemaKey.
+   * Gets the loading schema which matches the provided SchemaKey.
    * @param schemaKey The SchemaKey describing the schema to get from the cache.
    * @param matchType The match type to use when locating the schema
    */
@@ -342,7 +342,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   }
 
   /**
-   * Locate a loading schema (could be loaded or loading if it's in schema cache) that can be found via one of the registered schema locaters.
+   * Locate a loading schema (schema could be loaded or loading if it's in schema cache) that can be found via one of the registered schema locaters.
    * @param schemaKey The SchemaKey which describes the schema to be located
    * @param matchType Controls how the schema versions in the schemaKey and the schemas being located are compared. Defaults to [[SchemaMatchType.Latest]].
    */
@@ -362,7 +362,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
   }
 
   /**
-   * Locate a loading schema (could be loaded or loading if it's in schema cache) that can be found via one of the registered schema locaters.
+   * Locate a loading schema (schema could be loaded or loading if it's in schema cache) that can be found via one of the registered schema locaters.
    * @param schemaKey The SchemaKey which describes the schema to be located
    * @param matchType Controls how the schema versions in the schemaKey and the schemas being located are compared. Defaults to [[SchemaMatchType.Latest]].
    */
