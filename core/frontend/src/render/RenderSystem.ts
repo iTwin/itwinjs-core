@@ -386,6 +386,16 @@ export abstract class RenderSystem implements IDisposable {
   /** Create a graphic from a [[GraphicBranch]]. */
   public abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
 
+  /** Create a node in the scene graph corresponding to a transform node in the scene's schedule script.
+   * Nodes under this branch will only be drawn if they belong to the specified transform node.
+   * This allows the graphics in a single Tile to be efficiently drawn with different transforms applied by different nodes.
+   * The node Id is either the Id of a single transform node in the script, of 0xffffffff to indicate all nodes that have no transform applied to them.
+   * @internal
+   */
+  public createAnimationTransformNode(graphic: RenderGraphic, _nodeId: string): RenderGraphic {
+    return graphic;
+  }
+
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @internal
    */

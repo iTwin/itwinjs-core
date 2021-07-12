@@ -277,6 +277,47 @@ export class Branch extends Graphic {
 }
 
 /** @internal */
+export class AnimationTransformBranch extends Graphic {
+  public readonly nodeId: string;
+  public readonly graphic: Graphic;
+
+  public constructor(graphic: RenderGraphic, nodeId: string) {
+    super();
+    assert(graphic instanceof Graphic);
+    this.graphic = graphic;
+    this.nodeId = nodeId;
+  }
+
+  public override dispose() {
+    this.graphic.dispose();
+  }
+
+  public override get isDisposed() {
+    return this.graphic.isDisposed;
+  }
+
+  public override get isPickable() {
+    return this.graphic.isPickable;
+  }
+
+  public override collectStatistics(stats: RenderMemory.Statistics) {
+    this.graphic.collectStatistics(stats);
+  }
+
+  public override addCommands(commands: RenderCommands) {
+    commands.target.currentAnimationTransformNodeId = this.nodeId;
+    this.graphic.addCommands(commands);
+    commands.target.currentAnimationTransformNodeId = undefined;
+  }
+
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass) {
+    commands.target.currentAnimationTransformNodeId = this.nodeId;
+    this.graphic.addHiliteCommands(commands, pass);
+    commands.target.currentAnimationTransformNodeId = undefined;
+  }
+}
+
+/** @internal */
 export class WorldDecorations extends Branch {
   public constructor(viewFlags: ViewFlags) {
     super(new GraphicBranch(), Transform.identity, viewFlags);

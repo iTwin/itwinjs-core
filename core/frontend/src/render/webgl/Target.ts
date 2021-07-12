@@ -127,6 +127,7 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public activeVolumeClassifierTexture?: WebGLTexture;
   public activeVolumeClassifierProps?: SpatialClassifier;
   public activeVolumeClassifierModelId?: Id64String;
+  private _currentAnimationTransformNodeId?: string;
 
   // RenderTargetDebugControl
   public vcSupportIntersectingVolumes: boolean = false;
@@ -1027,6 +1028,25 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public get screenSpaceEffectContext(): ScreenSpaceEffectContext {
     assert(undefined !== this._viewport);
     return { viewport: this._viewport };
+  }
+
+  public get currentAnimationTransformNodeId(): string | undefined {
+    return this._currentAnimationTransformNodeId;
+  }
+  public set currentAnimationTransformNodeId(id: string | undefined) {
+    assert(undefined === this._currentAnimationTransformNodeId || undefined === id);
+    this._currentAnimationTransformNodeId = id;
+  }
+
+  /** Given GraphicBranch.animationId identifying *any* node in the scene's schedule script, return the transform node Id
+   * that should be used to filter the branch's graphics for display, or undefined if no filtering should be applied.
+   */
+  public getAnimationTransformNodeId(animationNodeId: string | undefined): string | undefined {
+    if (undefined === this.currentAnimationTransformNodeId || undefined === animationNodeId)
+      return undefined;
+
+    // ###TODO Look up animationNodeId to see if it's associated with a transform node; if not, return 0xffffffff
+    return animationNodeId;
   }
 
   protected abstract _assignDC(): boolean;
