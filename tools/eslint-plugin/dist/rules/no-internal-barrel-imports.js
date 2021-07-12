@@ -98,14 +98,15 @@ const rule = {
 
     return {
       ImportDeclaration(node) {
-        /** @param {ts.Symbol | undefined} symbol */
+        /** @param {ts.Symbol} symbol */
         function getRelativeImportForExportedSymbol(symbol) {
           if (symbol === undefined) return "";
-          const fileOfExport = symbol.valueDeclaration.getSourceFile();
-          return path.relative(
-            path.dirname(thisModule.resolvedPath),
-            fileOfExport.resolvedPath
-          );
+          const declaration = symbol.valueDeclaration || symbol.declarations[0];
+          const fileOfExport = declaration.getSourceFile();
+          return './' + withoutExt(path.relative(
+            path.dirname(thisModule.fileName),
+            fileOfExport.fileName
+          ));
         }
 
         if (typeof node.source.value !== "string")
@@ -136,7 +137,7 @@ const rule = {
         );
         if (!importedModule) throw Error("couldn't find imported module");
 
-        if (ignoredBarrelModules.includes(importedModule.resolvedPath)) return;
+        if (ignoredBarrelModules.includes(importedModule.fileName)) return;
 
         if (importInfo.isExternalLibraryImport) return;
 
@@ -154,7 +155,7 @@ const rule = {
         const isSideEffectImport =
           !importNodeTs.importClause ||
           (importNodeTs.importClause.name === undefined &&
-            importNodeTs.importClause.namedBindings);
+            importNodeTs.importClause.namedBindings === undefined);
 
         // there may be some situations where not reporting this is preferable
         const hasDefaultImport =
@@ -202,7 +203,7 @@ const rule = {
                             `;import {${
                               importedProp.escapedText
                             }} from "${getRelativeImportForExportedSymbol(
-                              checker.getExportSymbolOfSymbol(symbol)
+                              checker.getAliasedSymbol(symbol)
                             )}";`
                           )
                         ),
@@ -216,5 +217,14 @@ const rule = {
     };
   },
 };
+
+/**
+ * return a filename without its extension (e.g.) "path/blah.ts" => "path/blah"
+ * @param {string} inPath
+ * @returns {string}
+ */
+function withoutExt(inPath) {
+  return path.join(path.dirname(inPath), path.basename(inPath).replace(/\.[^.]+$/, ''));
+}
 
 module.exports = rule;

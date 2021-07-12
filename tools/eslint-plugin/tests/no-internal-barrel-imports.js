@@ -74,7 +74,6 @@ ruleTester.run(
     ],
     invalid: [
       {
-        only: true,
         code: makeTest`import {b} from "./barrel";`,
         errors: [
           {
@@ -82,7 +81,22 @@ ruleTester.run(
             suggestions: [
               {
                 messageId: "tryImportingDirectly",
-                output: makeTest`import {b} from "./b";`,
+                output: makeTest`;import {b} from "./b";`,
+              },
+            ],
+          },
+        ],
+      },
+      {
+        code: makeTest`import {a, b} from "./barrel";`,
+        errors: [
+          {
+            messageId: "noInternalBarrelImports",
+            suggestions: [
+              {
+                messageId: "tryImportingDirectly",
+                // extra semicolons will be taken out by eslint's other rules
+                output: makeTest`;import {a} from "./a";;import {b} from "./b";`,
               },
             ],
           },
