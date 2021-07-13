@@ -283,6 +283,7 @@ describe("SchemaXmlFileLocater tests:", () => {
     const mockPromise = new Promise<string | undefined>((resolve) => {
        resolve("");
     });
+
     await locater.addSchemaText(schemaPath, new ReadSchemaText(async () => mockPromise));
     assert.strictEqual(locater.schemaTextsCount, 1);
 
@@ -298,18 +299,18 @@ describe("SchemaXmlFileLocater tests:", () => {
   it("get schema text from cache", async () => {
     let counter = 0;
     // Counter should increment whenever a new promise is executed
-    const readSchemaText = async (schemaPath: string): Promise<string | undefined> => {
+    const readSchemaText = async (currSchemaPath: string): Promise<string | undefined> => {
       counter++;
-      if (!await locater.fileExists(schemaPath))
+      if (!await locater.fileExists(currSchemaPath))
         return undefined;
 
-      const schemaText = await locater.readUtf8FileToString(schemaPath);
+      const schemaText = await locater.readUtf8FileToString(currSchemaPath);
       if (!schemaText)
         return undefined;
 
-      locater.addSchemaSearchPaths([path.dirname(schemaPath)]);
+      locater.addSchemaSearchPaths([path.dirname(currSchemaPath)]);
       return schemaText;
-    }
+    };
 
     // Should not have any schemaText in locater
     let schemaPath = path.join(__dirname, "assets", "SchemaA.ecschema.xml");
@@ -344,17 +345,17 @@ describe("SchemaXmlFileLocater tests:", () => {
   });
 
   it("should get undefined if schema text has not been added or reading it fails", async () => {
-    const readSchemaText = async (schemaPath: string): Promise<string | undefined> => {
-      if (!await locater.fileExists(schemaPath))
+    const readSchemaText = async (currSchemaPath: string): Promise<string | undefined> => {
+      if (!await locater.fileExists(currSchemaPath))
         return undefined;
 
-      const schemaText = await locater.readUtf8FileToString(schemaPath);
+      const schemaText = await locater.readUtf8FileToString(currSchemaPath);
       if (!schemaText)
         return undefined;
 
-      locater.addSchemaSearchPaths([path.dirname(schemaPath)]);
+      locater.addSchemaSearchPaths([path.dirname(currSchemaPath)]);
       return schemaText;
-    }
+    };
 
     const schemaPath = path.join(__dirname, "assets", "DoesNotExist.xml");
     let schemaText = await locater.getSchemaText(schemaPath);

@@ -53,7 +53,7 @@ describe("Schema Cache", () => {
     const schema2 = new Schema(context, new SchemaKey("TestSchema2"), "ts2");
     const mockFunc = async (schema: Schema): Promise<Schema> => {
       return schema;
-    }
+    };
 
     await cache.addSchema(schema1, new LoadSchema(async () => mockFunc(schema1)));
     assert.strictEqual(cache.loadingSchemasCount, 1);
@@ -77,14 +77,13 @@ describe("Schema Cache", () => {
     assert.strictEqual(cache.count, 2);
   });
 
-
   it("should not be able to add multiple schemas that match using SchemaMatchType Latest (passing LoadSchema)", async () => {
     const cache = new SchemaCache();
     const context = new SchemaContext();
 
     const mockFunc = async (schema: Schema): Promise<Schema> => {
       return schema;
-    }
+    };
 
     const schema1 = new Schema(context, new SchemaKey("TestSchema"), "ts");
     await cache.addSchema(schema1, new LoadSchema(async () => mockFunc(schema1)));
@@ -114,10 +113,11 @@ describe("Schema Cache", () => {
     const cache = new SchemaCache();
 
     let counter = 0;
-    const mockFunc = async (schema: Schema): Promise<Schema> => {
+    const mockFunc = async (currSchema: Schema): Promise<Schema> => {
       counter++;
-      return schema;
-    }
+      return currSchema;
+    };
+
     const schema = new Schema(context, new SchemaKey("TestSchema"), "ts");
     await cache.addSchema(schema, new LoadSchema(async () => mockFunc(schema)));
 
@@ -154,7 +154,7 @@ describe("Schema Cache", () => {
     const mockFunc = async (schema: Schema): Promise<Schema> => {
       counter++;
       return schema;
-    }
+    };
 
     await cache.addSchema(schema1, new LoadSchema(async () => mockFunc(schema1)));
 

@@ -70,16 +70,16 @@ interface SchemaText {
    This ensures the promise doesn't run until readSchemaText() is called, and there's only one readSchemaText promise per schema path.
 */
 export class ReadSchemaText {
-  private readSchemaTextPromise: Promise<string | undefined> | undefined;
+  private _readSchemaTextPromise: Promise<string | undefined> | undefined;
 
-  constructor(private readSchemaTextFunc: () => Promise<string | undefined>) {}
+  constructor(private _readSchemaTextFunc: () => Promise<string | undefined>) {}
 
-  async readSchemaText(): Promise<string | undefined> {
-    if (this.readSchemaTextPromise)
-      return this.readSchemaTextPromise;
+  public async readSchemaText(): Promise<string | undefined> {
+    if (this._readSchemaTextPromise)
+      return this._readSchemaTextPromise;
 
-    this.readSchemaTextPromise = this.readSchemaTextFunc();
-    return this.readSchemaTextPromise;
+    this._readSchemaTextPromise = this._readSchemaTextFunc();
+    return this._readSchemaTextPromise;
   }
 }
 
@@ -98,7 +98,7 @@ export abstract class SchemaFileLocater {
     this.searchPaths = [];
   }
 
-  public get schemaTextsCount() { return this._schemaTexts.length }
+  public get schemaTextsCount() { return this._schemaTexts.length; }
 
   public async addSchemaText(schemaPath: string, readSchemaText: ReadSchemaText) {
     this.addSchemaTextSync(schemaPath, readSchemaText);
@@ -206,13 +206,13 @@ export abstract class SchemaFileLocater {
    * @param matchType The SchemaMatchType to use when comparing the desiredKey and the keys found during the search.
    * @param format The type of file that the schema key refers to. json or xml
    */
-   private async addCandidateNoExtSchemaKey(foundFiles: FileSchemaKey[], schemaPath: string, schemaName: string, desiredKey: SchemaKey, matchType: SchemaMatchType, format: string) {
+  private async addCandidateNoExtSchemaKey(foundFiles: FileSchemaKey[], schemaPath: string, schemaName: string, desiredKey: SchemaKey, matchType: SchemaMatchType, format: string) {
     const fullPath = path.join(schemaPath, `${schemaName}.ecschema.${format}`);
 
     await this.addSchemaText(fullPath, new ReadSchemaText(async () => this.readSchemaText(fullPath)));
     const schemaText = await this.getSchemaText(fullPath);
     if (!schemaText)
-      return
+      return;
 
     // Get the schema key
     const key = this.getSchemaKey(schemaText);
@@ -222,7 +222,7 @@ export abstract class SchemaFileLocater {
       foundFiles.push(new FileSchemaKey(key, fullPath, schemaText));
   }
 
-   /**
+  /**
    * Adds SchemaKeys to the provided foundFiles collection that match the desired SchemaKey. This method
    * only attempts to find schema files that have no version in the file name.
    * @param foundFiles The collection of SchemaKeys found in the given directory.
@@ -232,23 +232,23 @@ export abstract class SchemaFileLocater {
    * @param matchType The SchemaMatchType to use when comparing the desiredKey and the keys found during the search.
    * @param format The type of file that the schema key refers to. json or xml
    */
-    private addCandidateNoExtSchemaKeySync(foundFiles: FileSchemaKey[], schemaPath: string, schemaName: string, desiredKey: SchemaKey, matchType: SchemaMatchType, format: string) {
-      const fullPath = path.join(schemaPath, `${schemaName}.ecschema.${format}`);
+  private addCandidateNoExtSchemaKeySync(foundFiles: FileSchemaKey[], schemaPath: string, schemaName: string, desiredKey: SchemaKey, matchType: SchemaMatchType, format: string) {
+    const fullPath = path.join(schemaPath, `${schemaName}.ecschema.${format}`);
 
-      // If the file does not exist, end
-      if (!fs.existsSync(fullPath)) return;
+    // If the file does not exist, end
+    if (!fs.existsSync(fullPath)) return;
 
-      // Read the file
-      const file = fs.readFileSync(fullPath);
-      if (!file) return;
+    // Read the file
+    const file = fs.readFileSync(fullPath);
+    if (!file) return;
 
-      // Get the schema key
-      const key = this.getSchemaKey(file.toString());
+    // Get the schema key
+    const key = this.getSchemaKey(file.toString());
 
-      // If the key matches, put it in foundFiles
-      if (key.matches(desiredKey, matchType))
-        foundFiles.push(new FileSchemaKey(key, fullPath, file.toString()));
-    }
+    // If the key matches, put it in foundFiles
+    if (key.matches(desiredKey, matchType))
+      foundFiles.push(new FileSchemaKey(key, fullPath, file.toString()));
+  }
 
   /**
    * Adds SchemaKeys to the provided foundFiles collection that match the desired SchemaKey
@@ -366,7 +366,7 @@ export abstract class SchemaFileLocater {
    * @param matchType The SchemaMatchType.
    * @param format The type of file that the schema key refers to. json or xml
    */
-   protected findEligibleSchemaKeysSync(desiredKey: SchemaKey, matchType: SchemaMatchType, format: string): FileSchemaKey[] {
+  protected findEligibleSchemaKeysSync(desiredKey: SchemaKey, matchType: SchemaMatchType, format: string): FileSchemaKey[] {
     const foundFiles = new Array<FileSchemaKey>();
 
     let twoVersionSuffix: string;

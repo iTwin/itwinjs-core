@@ -50,9 +50,9 @@ describe("Schema Context", () => {
 
     const schema3 = new Schema(context, "TestSchema2", "ts2", 1, 0, 5);
     const schema4 = new Schema(context, "TestSchema2", "ts2", 1, 0, 5);
-    const mockFunc = async (schema: Schema): Promise<Schema> => {
-      return schema;
-    }
+    const mockFunc = async (currSchema: Schema): Promise<Schema> => {
+      return currSchema;
+    };
 
     await context.addSchema(schema3, new LoadSchema(async () => mockFunc(schema3)));
     await expect(context.addSchema(schema4, new LoadSchema(async () => mockFunc(schema4)))).to.be.rejectedWith(ECObjectsError);
@@ -75,10 +75,11 @@ describe("Schema Context", () => {
     const schema = new Schema(context, "TestSchema", "ts", 1, 5, 9);
 
     let counter = 0;
-    const mockFunc = async (schema: Schema): Promise<Schema> => {
+    const mockFunc = async (currSchema: Schema): Promise<Schema> => {
       counter++;
-      return schema;
-    }
+      return currSchema;
+    };
+
     await context.addSchema(schema, new LoadSchema(async () => mockFunc(schema)));
 
     const testKey = new SchemaKey("TestSchema", 1, 5, 9);
@@ -138,10 +139,11 @@ describe("Schema Context", () => {
     const schema = new Schema(context, "TestSchema", "ts", 1, 5, 9);
 
     let counter = 0;
-    const mockFunc = async (schema: Schema): Promise<Schema> => {
+    const mockFunc = async (currSchema: Schema): Promise<Schema> => {
       counter++;
-      return schema;
-    }
+      return currSchema;
+    };
+
     await context.addSchema(schema, new LoadSchema(async () => mockFunc(schema)));
 
     const testKey = new SchemaKey("TestSchema", 1, 5, 9);
@@ -157,10 +159,11 @@ describe("Schema Context", () => {
     const schema = new Schema(context, "TestSchema", "ts", 1, 5, 9);
 
     let counter = 0;
-    const mockFunc = async (schema: Schema): Promise<Schema> => {
+    const mockFunc = async (currSchema: Schema): Promise<Schema> => {
       counter++;
-      return schema;
-    }
+      return currSchema;
+    };
+
     await context.addSchema(schema, new LoadSchema(async () => mockFunc(schema)));
 
     const testKey = new SchemaKey("TestSchema", 1, 5, 9);
@@ -204,10 +207,11 @@ describe("Schema Context", () => {
     context.addLocater(cache2);
 
     let counter = 0;
-    const mockFunc = async (schema: Schema): Promise<Schema> => {
+    const mockFunc = async (currSchema: Schema): Promise<Schema> => {
       counter++;
-      return schema;
-    }
+      return currSchema;
+    };
+
     await cache2.addSchema(schema, new LoadSchema(async () => mockFunc(schema)));
 
     // Should find loading schema in cache2

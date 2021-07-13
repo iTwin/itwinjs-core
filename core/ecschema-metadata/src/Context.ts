@@ -28,16 +28,16 @@ export class LoadingSchemas extends Array<LoadingSchema> { }
    This ensures the promise doesn't run until loadSchema() is called, and there's only one loadSchema promise per schema.
 */
 export class LoadSchema {
-  private loadSchemaPromise: Promise<Schema> | undefined;
+  private _loadSchemaPromise: Promise<Schema> | undefined;
 
-  constructor(private loadSchemaFunc: () => Promise<Schema>) {}
+  constructor(private _loadSchemaFunc: () => Promise<Schema>) {}
 
-  async loadSchema(): Promise<Schema> {
-    if (this.loadSchemaPromise)
-      return this.loadSchemaPromise;
+  public async loadSchema(): Promise<Schema> {
+    if (this._loadSchemaPromise)
+      return this._loadSchemaPromise;
 
-    this.loadSchemaPromise = this.loadSchemaFunc();
-    return this.loadSchemaPromise;
+    this._loadSchemaPromise = this._loadSchemaFunc();
+    return this._loadSchemaPromise;
   }
 }
 
@@ -95,8 +95,8 @@ export class SchemaCache implements ISchemaLocater {
   }
 
   public get count() { return this._loadedSchemas.length + this._loadingSchemas.length; }
-  public get loadedSchemasCount() { return this._loadedSchemas.length }
-  public get loadingSchemasCount() { return this._loadingSchemas.length }
+  public get loadedSchemasCount() { return this._loadedSchemas.length; }
+  public get loadingSchemasCount() { return this._loadingSchemas.length; }
 
   /**
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
@@ -335,9 +335,9 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
 
     for (let i = 1; i < this._locaters.length; i++) {
       if (this._locaters[i].getLoadingSchema) {
-        const schema = await this._locaters[i].getLoadingSchema!<T>(schemaKey, matchType, this);
-        if (undefined !== schema)
-          return schema;
+        const loadingSchema = await this._locaters[i].getLoadingSchema!<T>(schemaKey, matchType, this);
+        if (undefined !== loadingSchema)
+          return loadingSchema;
       }
     }
 

@@ -85,7 +85,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     return schema as T;
   }
 
-   /**
+  /**
    * Attempts to retrieve a partially-loaded Schema with the given SchemaKey by using the configured search paths
    * to locate the XML Schema file from the file system.
    * @param key The SchemaKey of the Schema to retrieve.
