@@ -236,13 +236,13 @@ const rule = {
                       fixer.insertTextAfter(
                         node,
                         `${i === 0 ? "" : "\n" /* separate all imported modules with a new line*/
-                        }import {${namedImports
+                        }import { ${namedImports
                           .map(({namedImport}) =>
                             namedImport.propertyName !== undefined
                               ? `${namedImport.propertyName.escapedText} as ${namedImport.name.escapedText}`
                               : namedImport.name.escapedText
                           )
-                          .join(", ")}} from "${importPath}";`
+                          .join(", ")} } from "${importPath}";`
                       )
                     ),
                 ];

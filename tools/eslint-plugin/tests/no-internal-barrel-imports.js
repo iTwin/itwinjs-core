@@ -78,33 +78,33 @@ ruleTester.run(
       {
         code: `import {b} from "./barrel";`,
         errors: [{ messageId: "noInternalBarrelImports" }],
-        output: `import {b} from "./b";`,
+        output: `import { b } from "./b";`,
       },
       {
         code: `import {a, b} from "./barrel";`,
         errors: [{ messageId: "noInternalBarrelImports" }],
         output: dedent`
-          import {a} from "./a";
-          import {b} from "./b";
+          import { a } from "./a";
+          import { b } from "./b";
         `,
       },
       {
         code: `import {a as notA} from "./barrel";`,
         errors: [{ messageId: "noInternalBarrelImports" }],
-        output: `import {a as notA} from "./a";`,
+        output: `import { a as notA } from "./a";`,
       },
       {
         code: `import {c} from "./far/barrel";`,
         errors: [{ messageId: "noInternalBarrelImports" }],
-        output: `import {c} from "./far/c";`,
+        output: `import { c } from "./far/c";`,
       },
       {
-        code: `import {b3, b, c, a} from "./far/barrel";`,
+        code: `import { b3, b, c, a } from "./far/barrel";`,
         errors: [{ messageId: "noInternalBarrelImports" }],
         output: dedent`
-          import {a} from "./a";
-          import {b, b3} from "./b";
-          import {c} from "./far/c";
+          import { a } from "./a";
+          import { b, b3 } from "./b";
+          import { c } from "./far/c";
         `,
       },
     ],
