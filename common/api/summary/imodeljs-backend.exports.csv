@@ -40,17 +40,7 @@ public;CategoryOwnsSubCategories
 public;CategorySelector 
 internal;ChangedElementsDb 
 internal;ChangesetArg 
-<<<<<<< HEAD
 internal;ChangesetIndexArg 
-=======
-internal;ChangesetFileProps 
-internal;ChangesetId = string
-beta;ChangesetIndex = number
-internal;ChangesetIndexArg 
-internal;ChangesetIndexOrId =
-internal;ChangesetProps
-beta;ChangesetRange
->>>>>>> origin/imodel02
 internal;ChangesetRangeArg 
 beta;ChangeSummary
 beta;ChangeSummaryExtractOptions

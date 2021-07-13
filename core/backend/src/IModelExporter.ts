@@ -267,7 +267,7 @@ export class IModelExporter {
       return;
     }
     if (undefined === startChangesetId) {
-      startChangesetId = this.sourceDb.changeSetId;
+      startChangesetId = this.sourceDb.changeset.id;
     }
     this._sourceDbChanges = await ChangedInstanceIds.initialize(requestContext, this.sourceDb, startChangesetId);
     requestContext.enter();
@@ -757,7 +757,7 @@ class ChangedInstanceIds {
 
     const iModelId = iModel.iModelId;
     const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangesetId }, requestContext })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: iModel.changeSetId }, requestContext })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: iModel.changeset.id }, requestContext })).index;
     const changesets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
     requestContext.enter();
