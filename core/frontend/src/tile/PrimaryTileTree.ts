@@ -13,6 +13,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
+import { AnimationNodeId } from "../imodeljs-frontend";
 import { GeometricModel3dState, GeometricModelState } from "../ModelState";
 import { RenderClipVolume } from "../render/RenderClipVolume";
 import { RenderScheduleState } from "../RenderScheduleState";
@@ -133,11 +134,13 @@ class PrimaryTreeReference extends TileTreeReference {
   private readonly _sectionClip?: StringifiedClipVector;
   private readonly _sectionCutAppearanceProvider?: FeatureAppearanceProvider;
   private _forceNoInstancing: boolean;
+  protected readonly _animationTransformNodeId?: number;
 
-  public constructor(view: ViewState, model: GeometricModelState, planProjection: boolean, transformNodeId?: number, sectionClip?: StringifiedClipVector) {
+  public constructor(view: ViewState, model: GeometricModelState, planProjection: boolean, transformNodeId: number | undefined, sectionClip?: StringifiedClipVector) {
     super();
     this.view = view;
     this.model = model;
+    this._animationTransformNodeId = transformNodeId;
 
     this._sectionClip = sectionClip;
     this._viewFlagOverrides = ViewFlagOverrides.fromJSON(model.jsonProperties.viewFlagOverrides);
@@ -159,7 +162,7 @@ class PrimaryTreeReference extends TileTreeReference {
     this._id = {
       modelId: model.id,
       is3d: model.is3d,
-      treeId: this.createTreeId(view, model.id, transformNodeId),
+      treeId: this.createTreeId(view, model.id),
       isPlanProjection: planProjection,
       forceNoInstancing: this._forceNoInstancing,
     };
@@ -178,6 +181,10 @@ class PrimaryTreeReference extends TileTreeReference {
       if (Math.abs(sx - sy) > Geometry.smallMetricDistance || Math.abs(sx - sz) > Geometry.smallMetricDistance)
         this._forceNoInstancing = true;
     }
+  }
+
+  protected override getAnimationTransformNodeId() {
+    return this._animationTransformNodeId ?? AnimationNodeId.Untransformed;
   }
 
   protected override getViewFlagOverrides(_tree: TileTree) {
@@ -217,7 +224,7 @@ class PrimaryTreeReference extends TileTreeReference {
   }
 
   public get treeOwner(): TileTreeOwner {
-    const newId = this.createTreeId(this.view, this._id.modelId, this._id.treeId.animationTransformNodeId);
+    const newId = this.createTreeId(this.view, this._id.modelId);
     if (0 !== compareIModelTileTreeIds(newId, this._id.treeId) || this._forceNoInstancing !== this._id.forceNoInstancing) {
       this._id = {
         modelId: this._id.modelId,
@@ -233,7 +240,7 @@ class PrimaryTreeReference extends TileTreeReference {
     return this._owner;
   }
 
-  protected createTreeId(view: ViewState, modelId: Id64String, animationTransformNodeId: number | undefined): PrimaryTileTreeId {
+  protected createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
     if (this._sectionClip) {
       // We do this each time in case the ClipStyle's overrides are modified.
       // ###TODO: can we avoid that? Event listeners maybe?
@@ -251,7 +258,7 @@ class PrimaryTreeReference extends TileTreeReference {
     const animationId = undefined !== script ? script.getModelAnimationId(modelId) : undefined;
     const edgesRequired = true === IModelApp.tileAdmin.alwaysRequestEdges || this._viewFlagOverrides.edgesRequired(view.viewFlags);
     const sectionCut = this._sectionClip?.clipString;
-    return { type: BatchType.Primary, edgesRequired, animationId, animationTransformNodeId, sectionCut };
+    return { type: BatchType.Primary, edgesRequired, animationId, sectionCut };
   }
 
   protected computeBaseTransform(tree: TileTree): Transform {
@@ -270,11 +277,11 @@ export class AnimatedTreeReference extends PrimaryTreeReference {
     const tf = super.computeBaseTransform(tree);
     const style = this.view.displayStyle;
     const script = style.scheduleScript;
-    if (undefined === script || undefined === this._id.treeId.animationTransformNodeId)
+    if (undefined === script || undefined === this._animationTransformNodeId)
       return tf;
 
     const timePoint = style.settings.timePoint ?? script.duration.low;
-    const animTf = script.getTransform(this._id.modelId, this._id.treeId.animationTransformNodeId, timePoint);
+    const animTf = script.getTransform(this._id.modelId, this._animationTransformNodeId, timePoint);
     if (animTf)
       animTf.multiplyTransformTransform(tf, tf);
 
@@ -352,7 +359,7 @@ class PlanProjectionTreeReference extends PrimaryTreeReference {
   }
 
   protected override createTreeId(view: ViewState, modelId: Id64String): PrimaryTileTreeId {
-    const id = super.createTreeId(view, modelId, undefined);
+    const id = super.createTreeId(view, modelId);
     const settings = this.getSettings();
     if (undefined !== settings && settings.enforceDisplayPriority)
       id.enforceDisplayPriority = true;
