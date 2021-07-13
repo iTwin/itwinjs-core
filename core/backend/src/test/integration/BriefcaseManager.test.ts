@@ -256,7 +256,7 @@ describe("BriefcaseManager (#integration)", () => {
     HubMock.startup("briefcaseIdsReopen");
     const iModelId = await HubUtility.createIModel(requestContext, testContextId, "imodel1");
 
-    const args = { requestContext, contextId: testContextId, iModelId, deleteFirst: true };
+    const args = { requestContext, contextId: testContextId, iModelId, deleteFirst: false };
     const iModel1 = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const briefcaseId1 = iModel1.briefcaseId;
     iModel1.close(); // Keeps the briefcase by default

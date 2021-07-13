@@ -1,6 +1,11 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Fri, 02 Jul 2021 15:38:31 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:31 GMT
@@ -16,6 +21,16 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - `usePresentationTreeNodeLoader`: Fix change in props not being properly reflected when hierarchy auto-update is enabled.
 - Updated table/DataProvider so that it would find sameInstance nested properties and extract their values/fields when needed.
 - `usePropertyDataProviderWithUnifiedSelection`: Add selected element count to the return value.
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
 
 ## 2.16.7
 Mon, 28 Jun 2021 18:13:04 GMT

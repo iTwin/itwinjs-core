@@ -13,19 +13,15 @@ import { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
 import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
-import { SpatialViewState } from "../../SpatialViewState";
 import { MeshParams, SurfaceType } from "./../../render/primitives/VertexTable";
 import { MeshArgs } from "./../../render/primitives/mesh/MeshPrimitives";
 import { MeshGraphic } from "../../render/webgl/Mesh";
 import { InstancedGraphicParams } from "../../render/InstancedGraphicParams";
+import { openBlankViewport } from "../openBlankViewport";
 
 describe("GraphicBuilder", () => {
   let imodel: IModelConnection;
   let viewport: ScreenViewport;
-
-  const viewDiv = document.createElement("div");
-  viewDiv.style.width = viewDiv.style.height = "1000px";
-  document.body.appendChild(viewDiv);
 
   before(async () => {
     await IModelApp.startup();
@@ -33,8 +29,7 @@ describe("GraphicBuilder", () => {
   });
 
   beforeEach(() => {
-    const spatialView = SpatialViewState.createBlank(imodel, { x: 0, y: 0, z: 0 }, { x: 1, y: 1, z: 1 });
-    viewport = ScreenViewport.create(viewDiv, spatialView);
+    viewport = openBlankViewport();
   });
 
   afterEach(() => viewport.dispose());
@@ -181,11 +176,10 @@ describe("GraphicBuilder", () => {
 
     it("should preserve polyface normals", () => {
       const test = (wantNormals: boolean, requestNormals: boolean) => {
-        // Currently there's no API for generating normals for a Polyface.
         // If normals are present and wanted, use them.
         // If present and unwanted, ignore them.
-        // If wanted but not present, no normals until such an API is provided.
-        injectNormalsCheck(wantNormals && requestNormals);
+        // If wanted but not present, generate them.
+        injectNormalsCheck(requestNormals);
         expect(createMeshInvoked).to.be.false;
 
         const options = StrokeOptions.createForFacets();
