@@ -4408,6 +4408,7 @@ importers:
     specifiers:
       '@types/eslint': ~7.2.13
       '@types/estree': ~0.0.48
+      '@types/node': 10.14.1
       '@typescript-eslint/eslint-plugin': 4.26.0
       '@typescript-eslint/parser': 4.26.0
       '@typescript-eslint/typescript-estree': ~4.26.0
@@ -4442,6 +4443,7 @@ importers:
     devDependencies:
       '@types/eslint': 7.2.13
       '@types/estree': 0.0.48
+      '@types/node': 10.14.1
       '@typescript-eslint/typescript-estree': 4.26.1_typescript@4.3.5
       eslint: 7.28.0
       mocha: 8.4.0

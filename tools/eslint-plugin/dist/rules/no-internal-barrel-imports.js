@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 /*
 Within a package, you can create cyclic dependencies by doing the following:
@@ -43,7 +43,10 @@ fixing is currently restricted to named exports only.
 
 const { getParserServices } = require("./utils/parser");
 const ts = require("typescript");
-const path = require("path");
+/** for dealing with paths on the current os */
+const OsPaths = require("path");
+/** for dealing with paths in typescript import specifiers */
+const TsImportPaths = OsPaths.posix;
 
 const OPTION_IGNORED_BARREL_MODULES = "ignored-barrel-modules";
 
@@ -106,7 +109,7 @@ const rule = {
     ).map((p) => {
       /** @type {string} earlier check means it is definitely a string */
       const tsConfig = maybeTsConfig;
-      return path.normalize(path.resolve(path.dirname(tsConfig), p));
+      return OsPaths.normalize(OsPaths.resolve(OsPaths.dirname(tsConfig), p));
     });
 
     return {
@@ -116,17 +119,18 @@ const rule = {
           if (symbol === undefined) return "";
           const declaration = symbol.valueDeclaration || symbol.declarations[0];
           const fileOfExport = declaration.getSourceFile();
-          return (
-            path.normalize(
-              "./" +
-              withoutExt(
-                path.relative(
-                  path.dirname(thisModule.fileName),
-                  fileOfExport.fileName
-                )
+          const path = TsImportPaths.normalize(
+            withoutExt(
+              TsImportPaths.relative(
+                TsImportPaths.dirname(thisModule.fileName),
+                fileOfExport.fileName
               )
             )
           );
+          // a path unprefixed by "./" is interpretted as from node_modules
+          const ensurePrefixed = (path) =>
+            path[0] === "." ? path : `./${path}`;
+          return ensurePrefixed(path);
         }
 
         if (typeof node.source.value !== "string")
@@ -149,7 +153,8 @@ const rule = {
           importNodeTs.moduleSpecifier.text
         );
 
-        const importIsPackage = importInfo === undefined || importInfo.isExternalLibraryImport;
+        const importIsPackage =
+          importInfo === undefined || importInfo.isExternalLibraryImport;
         if (importIsPackage) return;
 
         const importedModule = program.getSourceFileByPath(
@@ -157,19 +162,25 @@ const rule = {
         );
         if (!importedModule) throw Error("couldn't find imported module");
 
-        if (ignoredBarrelModules.includes(importedModule.fileName)) return;
+        // prettier-ignore
+        if (ignoredBarrelModules.includes(OsPaths.normalize(importedModule.fileName)))
+          return;
 
         /** @type {ts.ImportDeclaration["moduleSpecifier"][]} */
         const imports = importedModule.imports;
-        const containsReExport = imports.some(
-          (importSpecifier) => {
-            const isNonTypeOnlyReExport = ts.isExportDeclaration(importSpecifier.parent) && !importSpecifier.parent.isTypeOnly;
-            if (!isNonTypeOnlyReExport) return false;
-            const transitiveImportInfo = importedModule.resolvedModules.get(importSpecifier.text);
-            const reExportsExternalPackage = transitiveImportInfo === undefined || transitiveImportInfo.isExternalLibraryImport;
-            return !reExportsExternalPackage;
-          }
-        );
+        const containsReExport = imports.some((importSpecifier) => {
+          const isNonTypeOnlyReExport =
+            ts.isExportDeclaration(importSpecifier.parent) &&
+            !importSpecifier.parent.isTypeOnly;
+          if (!isNonTypeOnlyReExport) return false;
+          const transitiveImportInfo = importedModule.resolvedModules.get(
+            importSpecifier.text
+          );
+          const reExportsExternalPackage =
+            transitiveImportInfo === undefined ||
+            transitiveImportInfo.isExternalLibraryImport;
+          return !reExportsExternalPackage;
+        });
 
         const hasNamespaceImport =
           importNodeTs.importClause &&
@@ -243,9 +254,10 @@ const rule = {
                     .map(([importPath, namedImports], i) =>
                       fixer.insertTextAfter(
                         node,
-                        `${i === 0 ? "" : "\n" /* separate all imported modules with a new line*/
+                        // prettier-ignore
+                        `${ i === 0 ? "" : "\n" /* separate all imported modules with a new line*/
                         }import { ${namedImports
-                          .map(({namedImport}) =>
+                          .map(({ namedImport }) =>
                             namedImport.propertyName !== undefined
                               ? `${namedImport.propertyName.escapedText} as ${namedImport.name.escapedText}`
                               : namedImport.name.escapedText
@@ -268,9 +280,9 @@ const rule = {
  * @returns {string}
  */
 function withoutExt(inPath) {
-  return path.join(
-    path.dirname(inPath),
-    path.basename(inPath).replace(/\.[^.]+$/, "")
+  return TsImportPaths.join(
+    TsImportPaths.dirname(inPath),
+    TsImportPaths.basename(inPath).replace(/\.[^.]+$/, "")
   );
 }
 

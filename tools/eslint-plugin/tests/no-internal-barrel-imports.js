@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 "use strict";
 
@@ -17,7 +17,10 @@ function dedent(strings) {
   const codeLines = textAssumingNoInterpolations.split("\n");
   if (codeLines.length <= 1) return textAssumingNoInterpolations;
   const leftPadding = codeLines[1].match(/[\t ]+/)[0];
-  return codeLines.slice(1, -1).map((l) => l.substr(leftPadding.length)).join("\n");
+  return codeLines
+    .slice(1, -1)
+    .map((l) => l.substr(leftPadding.length))
+    .join("\n");
 }
 
 /** allow specifying `only` and `skip` properties for easier debugging */

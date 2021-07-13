@@ -48,6 +48,7 @@
   "devDependencies": {
     "@types/eslint": "~7.2.13",
     "@types/estree": "~0.0.48",
+    "@types/node": "10.14.1",
     "@typescript-eslint/typescript-estree": "~4.26.0",
     "eslint": "^7.11.0",
     "mocha": "^8.3.2",
