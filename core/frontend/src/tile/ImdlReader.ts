@@ -702,7 +702,8 @@ export class ImdlReader extends GltfReader {
           if (needBranchForRootNode) {
             readBranch(primitives, AnimationNodeId.Untransformed, undefined);
           } else {
-            for (const primitive of primitives) { const graphic = this.readMeshGraphic(primitive);
+            for (const primitive of primitives) {
+              const graphic = this.readMeshGraphic(primitive);
               if (undefined !== graphic)
                 graphics.push(graphic);
             }

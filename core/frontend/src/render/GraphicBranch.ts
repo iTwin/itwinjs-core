@@ -31,7 +31,7 @@ import { RenderTextureDrape } from "./RenderSystem";
  * All other values refer to an [ElementTimeline.batchId]($common) that applies a transform to the graphics in the branch.
  * @internal
  */
-export const enum AnimationNodeId {
+export enum AnimationNodeId {
   Untransformed = 0xffffffff,
 }
 
