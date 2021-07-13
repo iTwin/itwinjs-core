@@ -25,7 +25,7 @@ export class LoadingSchemas extends Array<LoadingSchema> { }
    Construct through a function that returns a promise to load the schema.
    When loadSchema() is called the first time, it will execute the function to actually begin the promise.
    When loadSchema() is called after the first time, it will just return the promise.
-   This ensures the promise doesn't run until loadSchema() is called, and there's only one loadsSchema promise per schema.
+   This ensures the promise doesn't run until loadSchema() is called, and there's only one loadSchema promise per schema.
 */
 export class LoadSchema {
   private loadSchemaPromise: Promise<Schema> | undefined;
@@ -72,7 +72,7 @@ export interface ISchemaLocater {
    * @param matchType how to match key against candidate schemas
    * @param context optional context for loading schema references
    */
-  getLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined>;
+  getLoadingSchema?<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined>;
 
   /**
    * Attempts to get a partial/loading schema from the locater (schema could be loaded or loading if locater is schema cache). Yields undefined if no matching schema is found.
@@ -81,7 +81,7 @@ export interface ISchemaLocater {
    * @param matchType how to match key against candidate schemas
    * @param context optional context for loading schema references
    */
-  getLoadingSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined;
+  getLoadingSchemaSync?<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined;
 }
 
 /**
@@ -353,9 +353,11 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
       return schema;
 
     for (let i = 1; i < this._locaters.length; i++) {
-      const schema = await this._locaters[i].getLoadingSchema<T>(schemaKey, matchType, this);
-      if (undefined !== schema)
-        return schema;
+      if (this._locaters[i].getLoadingSchema) {
+        const schema = await this._locaters[i].getLoadingSchema!<T>(schemaKey, matchType, this);
+        if (undefined !== schema)
+          return schema;
+      }
     }
 
     return undefined;
@@ -373,9 +375,11 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
       return schema;
 
     for (let i = 1; i < this._locaters.length; i++) {
-      const schema = this._locaters[i].getLoadingSchemaSync<T>(schemaKey, matchType, this);
-      if (undefined !== schema)
-        return schema;
+      if (this._locaters[i].getLoadingSchemaSync) {
+        const schema = this._locaters[i].getLoadingSchemaSync!<T>(schemaKey, matchType, this);
+        if (undefined !== schema)
+          return schema;
+      }
     }
 
     return undefined;

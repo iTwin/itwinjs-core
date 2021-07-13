@@ -64,7 +64,7 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
   public getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeysSync(key, matchType, "xml");
 
     if (!candidates || candidates.length === 0)
       return undefined;
@@ -76,14 +76,6 @@ export class StubSchemaXmlFileLocater extends SchemaFileLocater implements ISche
 
     this.addSchemaReferences(schema, context, SchemaMatchType.LatestWriteCompatible);
     return schema;
-  }
-
-  public async getLoadingSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    return this.getSchemaSync(key, matchType, context) as T;
-  }
-
-  public getLoadingSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
-    return this.getSchemaSync(key, matchType, context) as T;
   }
 
   /**

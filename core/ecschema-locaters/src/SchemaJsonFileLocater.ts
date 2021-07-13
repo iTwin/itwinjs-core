@@ -8,7 +8,7 @@ import * as path from "path";
 import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType,
 } from "@bentley/ecschema-metadata";
-import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
+import { FileSchemaKey, ReadSchemaText, SchemaFileLocater } from "./SchemaFileLocater";
 
 /**
  * A SchemaLocator implementation for locating JSON Schema files
@@ -48,7 +48,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
    */
   public async getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
     // Grab all schema files that match the schema key
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
+    const candidates: FileSchemaKey[] = await this.findEligibleSchemaKeys(schemaKey, matchType, "json");
     if (!candidates || candidates.length === 0)
       return undefined;
 
@@ -56,11 +56,13 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    await this.addSchemaText(schemaKey, this.readSchemaText(schemaPath));
+    await this.addSchemaText(schemaPath, new ReadSchemaText(async () => this.readSchemaText(schemaPath)));
 
-    const schemaText = await this.getSchemaText(schemaKey);
+    const schemaText = await this.getSchemaText(schemaPath);
     if (!schemaText)
       return undefined;
+
+    this.addSchemaSearchPaths([path.dirname(schemaPath)]);
 
     const schema = await Schema.fromJson(schemaText, context);
     return schema as T;
@@ -75,7 +77,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
    */
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
     // Grab all schema files that match the schema key
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeysSync(schemaKey, matchType, "json");
     if (!candidates || candidates.length === 0)
       return undefined;
 
@@ -106,7 +108,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
    */
   public async getLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
     // Grab all schema files that match the schema key
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
+    const candidates: FileSchemaKey[] = await this.findEligibleSchemaKeys(schemaKey, matchType, "json");
     if (!candidates || candidates.length === 0)
       return undefined;
 
@@ -114,11 +116,13 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    await this.addSchemaText(schemaKey, this.readSchemaText(schemaPath));
+    await this.addSchemaText(schemaPath, new ReadSchemaText(async () => this.readSchemaText(schemaPath)));
 
-    const schemaText = await this.getSchemaText(schemaKey);
+    const schemaText = await this.getSchemaText(schemaPath);
     if (!schemaText)
       return undefined;
+
+    this.addSchemaSearchPaths([path.dirname(schemaPath)]);
 
     const schema = await Schema.fromJsonLoadingSchema(schemaText, context);
     return schema as T;
@@ -133,7 +137,7 @@ export class SchemaJsonFileLocater extends SchemaFileLocater implements ISchemaL
    */
   public getLoadingSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
     // Grab all schema files that match the schema key
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(schemaKey, matchType, "json");
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeysSync(schemaKey, matchType, "json");
     if (!candidates || candidates.length === 0)
       return undefined;
 

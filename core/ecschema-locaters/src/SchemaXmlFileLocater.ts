@@ -8,7 +8,7 @@ import { DOMParser } from "xmldom";
 import {
   ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, SchemaContext, SchemaKey, SchemaMatchType, SchemaReadHelper, XmlParser,
 } from "@bentley/ecschema-metadata";
-import { FileSchemaKey, SchemaFileLocater } from "./SchemaFileLocater";
+import { FileSchemaKey, ReadSchemaText, SchemaFileLocater } from "./SchemaFileLocater";
 
 /**
  * A SchemaLocater implementation for locating XML Schema files
@@ -24,7 +24,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
   public async getSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
+    const candidates: FileSchemaKey[] = await this.findEligibleSchemaKeys(key, matchType, "xml");
 
     if (0 === candidates.length)
       return undefined;
@@ -33,9 +33,9 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    await this.addSchemaText(key, this.readSchemaText(schemaPath));
+    await this.addSchemaText(schemaPath, new ReadSchemaText(async () => this.readSchemaText(schemaPath)));
 
-    const schemaText = await this.getSchemaText(key);
+    const schemaText = await this.getSchemaText(schemaPath);
     if (undefined === schemaText)
       return undefined;
 
@@ -57,7 +57,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
   public getSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeysSync(key, matchType, "xml");
 
     if (!candidates || candidates.length === 0)
       return undefined;
@@ -93,7 +93,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
   public async getLoadingSchema<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
+    const candidates: FileSchemaKey[] = await this.findEligibleSchemaKeys(key, matchType, "xml");
 
     if (0 === candidates.length)
       return undefined;
@@ -102,9 +102,9 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
     const schemaPath = maxCandidate.fileName;
 
-    await this.addSchemaText(key, this.readSchemaText(schemaPath));
+    await this.addSchemaText(schemaPath, new ReadSchemaText(async () => this.readSchemaText(schemaPath)));
 
-    const schemaText = await this.getSchemaText(key);
+    const schemaText = await this.getSchemaText(schemaPath);
     if (undefined === schemaText)
       return undefined;
 
@@ -126,7 +126,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
    * @param context The SchemaContext that will control the lifetime of the schema.
    */
   public getLoadingSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeysSync(key, matchType, "xml");
 
     if (!candidates || candidates.length === 0)
       return undefined;
