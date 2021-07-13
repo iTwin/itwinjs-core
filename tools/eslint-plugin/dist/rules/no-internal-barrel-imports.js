@@ -159,8 +159,16 @@ const rule = {
 
         if (importInfo.isExternalLibraryImport) return;
 
-        const containsReExport = importedModule.imports.some(
-          (imp) => ts.isExportDeclaration(imp.parent) && !imp.parent.isTypeOnly
+        /** @type {ts.ImportDeclaration["moduleSpecifier"][]} */
+        const imports = importedModule.imports;
+        const containsReExport = imports.some(
+          (importSpecifier) => {
+            const isNonTypeOnlyReExport = ts.isExportDeclaration(importSpecifier.parent) && !importSpecifier.parent.isTypeOnly;
+            if (!importedModule.resolvedModules.has(importSpecifier.text))
+              throw Error("module did not have this import");
+            const thisImportImportsPackage = importedModule.resolvedModules.get(importSpecifier.text) === undefined;
+            return isNonTypeOnlyReExport && !thisImportImportsPackage;
+          }
         );
 
         const hasNamespaceImport =
