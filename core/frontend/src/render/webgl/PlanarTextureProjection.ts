@@ -14,8 +14,7 @@ import {
 import { Frustum, FrustumPlanes, Npc, RenderMode } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { SceneContext } from "../../ViewContext";
-import { Tile } from "../../tile/Tile";
-import { TileTreeReference } from "../../tile/internal";
+import { Tile, TileTreeReference } from "../../tile/internal";
 import { ViewState3d } from "../../ViewState";
 import { RenderState } from "./RenderState";
 import { Target } from "./Target";
