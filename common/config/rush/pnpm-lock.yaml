@@ -624,7 +624,7 @@ importers:
       source-map-support: ^0.5.6
       typescript: ~4.3.0
       webpack: 4.42.0
-      ws: ^7.2.0
+      ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
@@ -1586,7 +1586,7 @@ importers:
       mocha: ^8.3.2
       rimraf: ^3.0.2
       typescript: ~4.3.0
-      ws: ^7.2.0
+      ws: ^7.5.3
     devDependencies:
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
