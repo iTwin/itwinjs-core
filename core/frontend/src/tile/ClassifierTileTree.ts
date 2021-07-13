@@ -38,6 +38,7 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     loadTree: async () => undefined,
     iModel: undefined as unknown as IModelConnection,
   };
+
   public compareTileTreeIds(lhs: ClassifierTreeId, rhs: ClassifierTreeId): number {
     return compareIds(lhs, rhs);
   }
@@ -59,11 +60,22 @@ class ClassifierTreeSupplier implements TileTreeSupplier {
     };
 
     const params = iModelTileTreeParamsFromJSON(props, iModel, id.modelId, options);
-    return new IModelTileTree(params);
+    return new IModelTileTree(params, id);
   }
 
   public getOwner(id: ClassifierTreeId, iModel: IModelConnection): TileTreeOwner {
     return Id64.isValid(id.modelId) ? iModel.tiles.getTileTreeOwner(id, this) : this._nonexistentTreeOwner;
+  }
+
+  public addModelsAnimatedByScript(modelIds: Set<Id64String>, scriptSourceId: Id64String, trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner }>): void {
+    for (const tree of trees)
+      if (tree.id.animationId === scriptSourceId)
+        modelIds.add(tree.id.modelId);
+  }
+
+  public addSpatialModels(modelIds: Set<Id64String>, trees: Iterable<{ id: ClassifierTreeId, owner: TileTreeOwner }>): void {
+    for (const tree of trees)
+      modelIds.add(tree.id.modelId);
   }
 }
 
@@ -98,7 +110,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   public get classifiers(): SpatialClassifiers { return this._classifiers; }
   public get activeClassifier(): SpatialClassifier | undefined { return this.classifiers.active; }
 
-  public get castsShadows() {
+  public override get castsShadows() {
     return false;
   }
 
@@ -112,7 +124,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
     return this._owner;
   }
 
-  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
+  public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     // NB: We do NOT call super because we don't use our tree if no classifier is active.
     trees.disclose(this._classifiedTree);
 
@@ -124,7 +136,7 @@ class ClassifierTreeReference extends SpatialClassifierTileTreeReference {
   public get isPlanar() { return BatchType.PlanarClassifier === this._id.type; }
 
   // Add volume classifiers to scene (planar classifiers are added seperately.)
-  public addToScene(context: SceneContext): void {
+  public override addToScene(context: SceneContext): void {
     if (this.isPlanar)
       return;
 

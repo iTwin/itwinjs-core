@@ -7,12 +7,7 @@ import { expect } from "chai";
 import { Point3d, Range3d } from "@bentley/geometry-core";
 import { BatchType } from "../FeatureTable";
 import {
-  computeTileChordTolerance,
-  defaultTileOptions,
-  IModelTileTreeId,
-  iModelTileTreeIdToString,
-  TileMetadata,
-  TreeFlags,
+  computeTileChordTolerance, defaultTileOptions, IModelTileTreeId, iModelTileTreeIdToString, TileMetadata, TileOptions, TreeFlags,
 } from "../tile/TileMetadata";
 
 describe("TileMetadata", () => {
@@ -222,5 +217,53 @@ describe("TileMetadata", () => {
       const expected = `${options.maximumMajorTileFormatVersion.toString(16)}_${test.flags.toString(16)}-${test.baseId}${modelId}`;
       expect(actual).to.equal(expected);
     }
+  });
+
+  it("computes TileOptions from tree and content Ids", () => {
+    interface Options {
+      version: number;
+      instancing?: boolean;
+      elision?: boolean;
+      noPatterns?: boolean;
+      externalTextures?: boolean;
+      projectExtents?: boolean;
+    }
+
+    function test(treeId: string, contentId: string, expected: Options | "content" | "tree"): void {
+      if (typeof expected === "string") {
+        expect(() => TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.throw(`Invalid ${expected} Id`);
+      } else {
+        const options: TileOptions = {
+          maximumMajorTileFormatVersion: expected.version,
+          enableInstancing: true === expected.instancing,
+          enableImprovedElision: true === expected.elision,
+          ignoreAreaPatterns: true === expected.noPatterns,
+          enableExternalTextures: true === expected.externalTextures,
+          useProjectExtents: true === expected.projectExtents,
+          disableMagnification: false,
+          alwaysSubdivideIncompleteTiles: false,
+        };
+
+        expect(TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.deep.equal(options);
+      }
+    }
+
+    test("", "", "tree");
+    test("4_1-0x1c", "", "content");
+    test("", "-0-1-2-3-4-5", "tree");
+
+    test("blah", "blah", "tree");
+    test("4_0-0x1c", "blah", "content");
+    test("4-1_0x1c", "-0-1-2-3-4-5", "tree");
+    test("4_1-0x1c", "0-1-2-3-4-5", "content");
+
+    test("4_0-0x1c", "-0-0", { version: 4 });
+    test("Ad_1", "-0-0", { version: 0xad, projectExtents: true });
+    test("f_2", "-0-0", { version: 15 });
+    test("f_3", "-0-0", { version: 15, projectExtents: true });
+
+    test("4_0", "-3-0", { version: 4, elision: true, instancing: true });
+    test("4_0", "-c-5", { version: 4, noPatterns: true, externalTextures: true });
+    test("a_1", "-F-2", { version: 10, projectExtents: true, noPatterns: true, externalTextures: true, instancing: true, elision: true });
   });
 });

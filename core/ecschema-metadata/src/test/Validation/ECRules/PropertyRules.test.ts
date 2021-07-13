@@ -19,6 +19,7 @@ import * as Rules from "../../../Validation/ECRules";
 import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
 
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable deprecation/deprecation */
 
 describe("PropertyRule tests", () => {
   let schema: Schema;

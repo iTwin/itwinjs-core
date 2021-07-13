@@ -256,7 +256,7 @@ describe("BriefcaseManager (#integration)", () => {
     HubMock.startup("briefcaseIdsReopen");
     const iModelId = await HubUtility.createIModel(requestContext, testContextId, "imodel1");
 
-    const args = { requestContext, contextId: testContextId, iModelId, deleteFirst: true };
+    const args = { requestContext, contextId: testContextId, iModelId, deleteFirst: false };
     const iModel1 = await IModelTestUtils.openBriefcaseUsingRpc(args);
     const briefcaseId1 = iModel1.briefcaseId;
     iModel1.close(); // Keeps the briefcase by default
@@ -486,6 +486,8 @@ describe("BriefcaseManager (#integration)", () => {
     // eslint-disable-next-line no-console
     console.log(`download took ${watch.elapsedSeconds} seconds`);
     const iModel = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
+
+    await expect(BriefcaseManager.downloadBriefcase(requestContext, args)).to.be.rejectedWith(IModelError, "already exists", "should not be able to download a briefcase if a file with that name already exists");
 
     await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
     assert.isAbove(numProgressCalls, 0, "download progress called");

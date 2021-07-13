@@ -385,6 +385,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/ecschema-editing",
+      "projectFolder": "core/ecschema-editing",
+      "reviewCategory": "backend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/webpack-tools-core",
       "projectFolder": "tools/webpack-core",
       "reviewCategory": "tools",
@@ -517,12 +524,6 @@
     {
       "packageName": "export-gltf",
       "projectFolder": "test-apps/export-gltf",
-      "reviewCategory": "internal",
-      "shouldPublish": false
-    },
-    {
-      "packageName": "export-obj",
-      "projectFolder": "test-apps/export-obj",
       "reviewCategory": "internal",
       "shouldPublish": false
     },

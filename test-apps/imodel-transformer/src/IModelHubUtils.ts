@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 // cspell:words buddi urlps
 
-import { assert, Config, GuidString } from "@bentley/bentleyjs-core";
+import { Config, GuidString } from "@bentley/bentleyjs-core";
 import { ElectronAuthorizationBackend } from "@bentley/electron-manager/lib/ElectronBackend";
-import { BriefcaseQuery, Version } from "@bentley/imodelhub-client";
+import { Version } from "@bentley/imodelhub-client";
 import {
-  BriefcaseDb, BriefcaseManager, ChangesetProps, IModelHost, IModelHubBackend, IModelJsFs, NativeHost, RequestNewBriefcaseArg,
+  BriefcaseDb, BriefcaseManager, ChangesetId, ChangesetIndex, ChangesetProps, IModelHost, IModelHubBackend, NativeHost, RequestNewBriefcaseArg,
 } from "@bentley/imodeljs-backend";
-import { BriefcaseIdValue, IModelVersion } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 export namespace IModelHubUtils {
@@ -53,11 +53,25 @@ export namespace IModelHubUtils {
     return IModelHost.hubAccess.queryIModelByName({ requestContext, contextId, iModelName });
   }
 
-  /** Call the specified function for each changeSet of the specified iModel. */
-  export async function forEachChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, func: (c: ChangesetProps) => void): Promise<void> {
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId });
-    for (const changeSet of changeSets) {
-      func(changeSet);
+  /** Temporarily needed to convert from the now preferred ChangesetIndex to the legacy ChangesetId.
+   * @note This function should be removed when full support for ChangesetIndex is in place.
+   */
+  export async function queryChangesetId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changesetIndex: ChangesetIndex): Promise<ChangesetId> {
+    return (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId, changeset: { index: changesetIndex } })).id;
+  }
+
+  /** Temporarily needed to convert from the legacy ChangesetId to the now preferred ChangeSetIndex.
+   * @note This function should be removed when full support for ChangesetIndex is in place.
+   */
+  export async function queryChangesetIndex(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, changesetId: ChangesetId): Promise<ChangesetIndex> {
+    return (await IModelHost.hubAccess.queryChangeset({ requestContext, iModelId, changeset: { id: changesetId } })).index;
+  }
+
+  /** Call the specified function for each changeset of the specified iModel. */
+  export async function forEachChangeset(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, func: (c: ChangesetProps) => void): Promise<void> {
+    const changesets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId });
+    for (const changeset of changesets) {
+      func(changeset);
     }
   }
 
@@ -70,41 +84,10 @@ export namespace IModelHubUtils {
   }
 
   export async function downloadAndOpenBriefcase(requestContext: AuthorizedClientRequestContext, briefcaseArg: RequestNewBriefcaseArg): Promise<BriefcaseDb> {
-    let briefcaseQuery = new BriefcaseQuery().ownedByMe();
-    if (briefcaseArg.briefcaseId) {
-      briefcaseQuery = briefcaseQuery.filter(`BriefcaseId+eq+${briefcaseArg.briefcaseId}`);
-    }
-    const briefcases = await IModelHubBackend.iModelClient.briefcases.get(requestContext, briefcaseArg.iModelId, briefcaseQuery);
-    if (0 === briefcases.length) {
-      const briefcaseProps = await BriefcaseManager.downloadBriefcase(requestContext, briefcaseArg);
-      return BriefcaseDb.open(requestContext, {
-        fileName: briefcaseProps.fileName,
-        readonly: briefcaseArg.briefcaseId ? briefcaseArg.briefcaseId === BriefcaseIdValue.Unassigned : false,
-      });
-    }
-
-    let briefcaseFileName: string | undefined;
-    for (const briefcase of briefcases) {
-      assert(briefcase.briefcaseId !== undefined);
-      briefcaseFileName = BriefcaseManager.getFileName({
-        iModelId: briefcaseArg.iModelId,
-        briefcaseId: briefcase.briefcaseId,
-      });
-      if (IModelJsFs.existsSync(briefcaseFileName)) {
-        break;
-      }
-    }
-
-    if (undefined === briefcaseFileName) {
-      throw new Error();
-    }
-
-    const briefcaseDb = await BriefcaseDb.open(requestContext, {
-      fileName: briefcaseFileName,
-      readonly: briefcaseArg.briefcaseId ? briefcaseArg.briefcaseId === BriefcaseIdValue.Unassigned : undefined,
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase(requestContext, briefcaseArg);
+    return BriefcaseDb.open(requestContext, {
+      fileName: briefcaseProps.fileName,
+      readonly: briefcaseArg.briefcaseId ? briefcaseArg.briefcaseId === BriefcaseIdValue.Unassigned : false,
     });
-    const asOf = briefcaseArg.asOf?.afterChangeSetId ? IModelVersion.asOfChangeSet(briefcaseArg.asOf.afterChangeSetId) : IModelVersion.latest();
-    await briefcaseDb.pullAndMergeChanges(requestContext, asOf);
-    return briefcaseDb;
   }
 }

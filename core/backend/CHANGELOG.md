@@ -1,6 +1,73 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 23 Jun 2021 17:09:07 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+### Updates
+
+- Do not reuse briefcase ids in ReadWrite workflows when using the RPC interfaces (if the briefcase was not found in the local file system)
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+### Updates
+
+- Update to @bentley/imodeljs-native@2.17.10 
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Promote APIs to public.
+- Include ECClass Ids in TxnChangedEntities.
+- Changes in BriefcaseHandling and ConcurrencyControl to support recovery after deleted changeset
+- download V2 checkpoints asynchronously
+- Deprecate IModelExporter.excludeElementCategory in favor of excludeElementsInCategory
+- make IModelExporter.onExportSchema async
+- Notify frontend via Ipc when IModelDb properties change.
+- added IModelHost.hubAccess api for mocking IModelHub for tests
+- all Element.onInsert and Element.onUpdate methods to modify properties
+- Add "first synchronization" optimizations to IModelTransformer
+- Don't allow undo of changes to project extents or geolocation.
+- promote BriefcaseManager to public
+- make IpcHost and NativeHost @public
+- Deprecate useless Texture properties.
+- added TxnManager.restartSession
+- Fixed removal of schema locks if upgrading schemas is a no-op.
+- Tests for iModel.UpdateIModelProps()
+- fix schema-import occurring potentially out of order
+- dont reimport schemas that already exist by default during transformations
+- Use ecef location calculated for projected iModels
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+### Updates
+
+- Do not reuse briefcase ids in ReadWrite workflows when using the RPC interfaces (if the briefcase was not found in the local file system)
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+_Version update only_
 
 ## 2.16.4
 Wed, 23 Jun 2021 17:09:07 GMT

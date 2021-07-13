@@ -12,7 +12,7 @@ import {
 } from "@bentley/imodeljs-quantity";
 import { IModelApp } from "../IModelApp";
 import { BasicUnitsProvider } from "./BasicUnitsProvider";
-import { IModelConnection } from "../imodeljs-frontend";
+import { IModelConnection } from "../IModelConnection";
 
 // cSpell:ignore FORMATPROPS FORMATKEY ussurvey uscustomary USCUSTOM
 

@@ -11,7 +11,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
-  BatchType, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
+  BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
 } from "@bentley/imodeljs-common";
 import { RenderSystem } from "../render/RenderSystem";
 import { Viewport } from "../Viewport";
@@ -328,7 +328,7 @@ class GraphicsTile extends Tile {
     this.tolerance = 10 ** toleranceLog10;
   }
 
-  public computeLoadPriority(_viewports: Iterable<Viewport>): number {
+  public override computeLoadPriority(_viewports: Iterable<Viewport>): number {
     // We want the element's graphics to be updated as soon as possible
     return 0;
   }
@@ -353,7 +353,7 @@ class GraphicsTile extends Tile {
     assert(this.tree instanceof IModelTileTree);
     const idProvider = this.tree.contentIdProvider;
 
-    const props = {
+    const props: ElementGraphicsRequestProps = {
       id: requestId.value.toString(16),
       elementId: this.parent.contentId,
       toleranceLog10: this.toleranceLog10,
@@ -362,6 +362,7 @@ class GraphicsTile extends Tile {
       contentFlags: idProvider.contentFlags,
       omitEdges: !this.tree.hasEdges,
       clipToProjectExtents: true,
+      sectionCut: this.tree.stringifiedSectionClip,
     };
 
     return IModelApp.tileAdmin.requestElementGraphics(this.tree.iModel, props);

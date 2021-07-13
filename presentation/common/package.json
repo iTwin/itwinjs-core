@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-common",
-  "version": "2.18.0-dev.16",
+  "version": "2.19.0-dev.14",
   "description": "Common pieces for iModel.js presentation packages",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
@@ -43,9 +43,9 @@
     "test:watch": "npm test -- --reporter min --watch-extensions ts --watch"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.16",
-    "@bentley/imodeljs-common": "workspace:^2.18.0-dev.16",
-    "@bentley/imodeljs-quantity": "workspace:^2.18.0-dev.16"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.14",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.14",
+    "@bentley/imodeljs-quantity": "workspace:^2.19.0-dev.14"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
@@ -70,7 +70,7 @@
     "cpx": "^1.5.0",
     "cross-env": "^5.1.4",
     "deep-equal": "^1",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "faker": "^4.1.0",
     "json-schema-faker": "0.5.0-rc16",
     "mocha": "^8.3.2",
@@ -79,7 +79,7 @@
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
     "typemoq": "^2.1.0",
-    "typescript": "~4.1.0",
+    "typescript": "~4.3.0",
     "typescript-json-schema": "^0.43.0",
     "yargs": "^16.0.0"
   },
