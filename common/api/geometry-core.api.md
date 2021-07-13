@@ -2908,6 +2908,7 @@ export class InterpolationCurve3d extends ProxyCurve {
     // (undocumented)
     isAlmostEqual(other: GeometryQuery): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
+    get options(): InterpolationCurve3dOptions;
     reverseInPlace(): void;
     toJSON(): any;
     tryTransformInPlace(transform: Transform): boolean;

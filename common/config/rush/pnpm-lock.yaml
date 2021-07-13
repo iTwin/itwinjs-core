@@ -624,7 +624,7 @@ importers:
       source-map-support: ^0.5.6
       typescript: ~4.3.0
       webpack: 4.42.0
-      ws: ^7.2.0
+      ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
@@ -637,7 +637,7 @@ importers:
       js-base64: 2.6.4
       multiparty: 4.2.2
       semver: 5.7.1
-      ws: 7.5.2
+      ws: 7.5.3
     devDependencies:
       '@bentley/backend-itwin-client': link:../backend-itwin-client
       '@bentley/bentleyjs-core': link:../bentley
@@ -1586,7 +1586,7 @@ importers:
       mocha: ^8.3.2
       rimraf: ^3.0.2
       typescript: ~4.3.0
-      ws: ^7.2.0
+      ws: ^7.5.3
     devDependencies:
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
@@ -1612,7 +1612,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       typescript: 4.3.5
-      ws: 7.5.2
+      ws: 7.5.3
 
   ../../core/orbitgt:
     specifiers:
@@ -18507,7 +18507,7 @@ packages:
       whatwg-encoding: 1.0.5
       whatwg-mimetype: 2.3.0
       whatwg-url: 8.7.0
-      ws: 7.5.2
+      ws: 7.5.3
       xml-name-validator: 3.0.0
     transitivePeerDependencies:
       - bufferutil
@@ -21602,7 +21602,7 @@ packages:
       rimraf: 3.0.2
       tar-fs: 2.1.1
       unbzip2-stream: 1.4.3
-      ws: 7.5.2
+      ws: 7.5.3
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -25817,8 +25817,8 @@ packages:
       async-limiter: 1.0.1
     dev: true
 
-  /ws/7.5.2:
-    resolution: {integrity: sha512-lkF7AWRicoB9mAgjeKbGqVUekLnSNO4VjKVnuPHpQeOxZOErX6BPXwJk70nFslRCEEA8EVW7ZjKwXaP9N+1sKQ==}
+  /ws/7.5.3:
+    resolution: {integrity: sha512-kQ/dHIzuLrS6Je9+uv81ueZomEwH0qVYstcAQ4/Z93K8zeko9gtAbttJWzoC5ukqXY1PpoouV3+VSOqEAFt5wg==}
     engines: {node: '>=8.3.0'}
     peerDependencies:
       bufferutil: ^4.0.1
