@@ -171,10 +171,6 @@ export interface PrimaryTileTreeId {
   edgesRequired: boolean;
   /** Id of the [DisplayStyle]($backend) or [RenderTimeline]($backend) element holding the [[RenderSchedule]] script to be applied to the tiles. */
   animationId?: Id64String;
-  /** Id of the transform node within the [[RenderSchedule]] script to be applied to the tiles.
-   * The value 0xffffffff refers to all nodes that do *not* apply a transform.
-   */
-  animationTransformNodeId?: number;
   /** If true, meshes within the tiles will be grouped into nodes based on the display priority associated with their subcategories,
    * for ensuring the graphics display with correct priority.
    */
@@ -193,12 +189,10 @@ export interface ClassifierTileTreeId {
   type: BatchType.VolumeClassifier | BatchType.PlanarClassifier;
   expansion: number;
   animationId?: Id64String;
-  animationTransformNodeId?: number;
 }
 
-function animationIdToString(animationId: Id64String, nodeId: number | undefined): string {
-  const suffix = undefined !== nodeId ? `_#${nodeId.toString(16)}` : "";
-  return `A:${animationId}${suffix}_`;
+function animationIdToString(animationId: Id64String): string {
+  return `A:${animationId}_`;
 }
 
 /** Describes the Id of an iModel tile tree.
@@ -215,7 +209,7 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
 
   if (BatchType.Primary === treeId.type) {
     if (undefined !== treeId.animationId)
-      idStr = `${idStr}${animationIdToString(treeId.animationId, treeId.animationTransformNodeId)}`;
+      idStr = `${idStr}${animationIdToString(treeId.animationId)}`;
     else if (treeId.enforceDisplayPriority) // animation and priority are currently mutually exclusive
       flags |= TreeFlags.EnforceDisplayPriority;
 
@@ -230,7 +224,7 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
       flags |= TreeFlags.UseProjectExtents;
 
     if (undefined !== treeId.animationId)
-      idStr = `${idStr}${animationIdToString(treeId.animationId, treeId.animationTransformNodeId)}`;
+      idStr = `${idStr}${animationIdToString(treeId.animationId)}`;
   }
 
   const version = getMaximumMajorTileFormatVersion(options.maximumMajorTileFormatVersion);
@@ -247,11 +241,8 @@ export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTile
  */
 export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileTreeId): number {
   let cmp = compareNumbers(lhs.type, rhs.type);
-  if (0 === cmp) {
+  if (0 === cmp)
     cmp = compareStringsOrUndefined(lhs.animationId, rhs.animationId);
-    if (0 === cmp)
-      cmp = compareNumbersOrUndefined(lhs.animationTransformNodeId, rhs.animationTransformNodeId);
-  }
 
   if (0 !== cmp)
     return cmp;

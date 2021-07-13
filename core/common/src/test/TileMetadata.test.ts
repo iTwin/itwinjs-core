@@ -58,23 +58,21 @@ describe("TileMetadata", () => {
   });
 
   it("stringifies tree Ids", () => {
-    const primaryId = (edgesRequired = true, enforceDisplayPriority = false, sectionCut?: string, anim?: { id: string, node?: number }): IModelTileTreeId => {
+    const primaryId = (edgesRequired = true, enforceDisplayPriority = false, sectionCut?: string, animationId?: string): IModelTileTreeId => {
       return {
         type: BatchType.Primary,
         edgesRequired,
-        animationId: anim?.id,
-        animationTransformNodeId: anim?.node,
+        animationId,
         enforceDisplayPriority,
         sectionCut,
       };
     };
 
-    const classifierId = (expansion = 1, planar = true, anim?: { id: string, node: number }): IModelTileTreeId => {
+    const classifierId = (expansion = 1, planar = true, animationId?: string): IModelTileTreeId => {
       return {
         type: planar ? BatchType.PlanarClassifier : BatchType.VolumeClassifier,
         expansion,
-        animationId: anim?.id,
-        animationTransformNodeId: anim?.node,
+        animationId,
       };
     };
 
@@ -138,25 +136,25 @@ describe("TileMetadata", () => {
         flags: kAll,
       },
       {
-        id: primaryId(true, false, undefined, { id: "0x123", node: 0x5a }),
-        baseId: "A:0x123_#5a_",
+        id: primaryId(true, false, undefined, "0x123"),
+        baseId: "A:0x123_",
         flags: kExtents,
       },
       {
-        id: primaryId(false, false, undefined, { id: "0xfde" }),
+        id: primaryId(false, false, undefined, "0xfde"),
         ignoreProjectExtents: true,
-        baseId: "A:0xfde_#ffffffff_E:0_",
+        baseId: "A:0xfde_E:0_",
         flags: kNone,
       },
       {
-        id: primaryId(false, false, "clippy", { id: "0x5c", node: 32 }),
-        baseId: "A:0x5c_#20_E:0_Sclippys",
+        id: primaryId(false, false, "clippy", "0x5c"),
+        baseId: "A:0x5c_E:0_Sclippys",
         flags: kExtents,
       },
       // Animation and display priority are incompatible - animation wins
       {
-        id: primaryId(true, true, undefined, { id: "0x1a", node: 5 }),
-        baseId: "A:0x1a_#5_",
+        id: primaryId(true, true, undefined, "0x1a"),
+        baseId: "A:0x1a_",
         flags: kExtents,
       },
 
@@ -176,8 +174,8 @@ describe("TileMetadata", () => {
         flags: kExtents,
       },
       {
-        id: classifierId(3, false, { id: "0xabc", node: 0xfe }),
-        baseId: "C:3.000000_A:0xabc_#fe_",
+        id: classifierId(3, false, "0xabc"),
+        baseId: "C:3.000000_A:0xabc_",
         flags: kExtents,
       },
       {
