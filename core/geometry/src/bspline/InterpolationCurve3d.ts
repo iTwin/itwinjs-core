@@ -255,10 +255,13 @@ public static createCapture(options: InterpolationCurve3dOptions): Interpolation
   public toJSON(): any {
     return this._options.cloneAsInterpolationCurve3dProps();
   }
-  /** Clone the [[InterpolationCurve3dProps]] object in this [[InterpolationCurve3dProps]] */
+  /** Clone the [[InterpolationCurve3dProps]] object in this [[InterpolationCurve3d]] */
   public cloneProps(): InterpolationCurve3dProps {
     return this._options.cloneAsInterpolationCurve3dProps();
   }
+
+  /** return the options pointer */
+  public get options(): InterpolationCurve3dOptions { return this._options; }
 
   /**
    * Reverse the curve direction.
