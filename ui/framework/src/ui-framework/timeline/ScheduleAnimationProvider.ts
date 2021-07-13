@@ -9,7 +9,7 @@
 import { ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
 import { BaseTimelineDataProvider, PlaybackSettings } from "@bentley/ui-components";
 
-/** ScheduleAnimation Timeline Data Provider - handles View that define 'scheduleScript' data.
+/** ScheduleAnimation Timeline Data Provider - allows a TimelineComponent to animate the data found in a ScheduleScript in a ViewState.
  * @public
  */
 // No access to scheduleScript to even mock in test
@@ -26,7 +26,7 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     }
   }
 
-  public async loadTimelineData(): Promise<boolean> {
+  public override async loadTimelineData(): Promise<boolean> {
     const script = this._viewState.scheduleScript;
     if (this.supportsTimelineAnimation && script) {
       // for now just initial settings
@@ -52,7 +52,7 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     return false;
   }
 
-  public onAnimationFractionChanged = (animationFraction: number) => {
+  public override onAnimationFractionChanged = (animationFraction: number) => {
     this.animationFraction = animationFraction;
     if (this._viewport) {
       const script = this._viewport.displayStyle.scheduleScript;
@@ -61,7 +61,7 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     }
   };
 
-  public onPlaybackSettingChanged = (settings: PlaybackSettings) => {
+  public override onPlaybackSettingChanged = (settings: PlaybackSettings) => {
     this.updateSettings(settings);
   };
 }

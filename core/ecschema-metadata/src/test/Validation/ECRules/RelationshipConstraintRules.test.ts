@@ -12,6 +12,7 @@ import * as Rules from "../../../Validation/ECRules";
 import { createSchemaJsonWithItems } from "../../TestUtils/DeserializationHelpers";
 
 /* eslint-disable @typescript-eslint/naming-convention */
+/* eslint-disable deprecation/deprecation */
 
 describe("RelationshipConstraintRule tests", () => {
   let schema: Schema;

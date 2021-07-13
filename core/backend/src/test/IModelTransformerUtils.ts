@@ -19,13 +19,13 @@ import {
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
   AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d,
-  DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingModel, DrawingViewDefinition, ECSqlStatement,
-  Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
+  DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element,
+  ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
   ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GeometricElement3d,
   GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement,
   InformationRecordModel, LinkElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject,
   PhysicalPartition, Platform, Relationship, RelationshipProps, RenderMaterialElement, RepositoryLink, SnapshotDb, SpatialCategory,
-  SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, TemplateRecipe2d, TemplateRecipe3d, Texture, ViewDefinition,
+  SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture, ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -942,71 +942,6 @@ export namespace IModelTransformerUtils {
     });
   }
 
-  export function createComponentLibrary(outputDir: string): SnapshotDb {
-    const iModelName: string = "ComponentLibrary";
-    const iModelFile: string = path.join(outputDir, `${iModelName}.bim`);
-    if (IModelJsFs.existsSync(iModelFile)) {
-      IModelJsFs.removeSync(iModelFile);
-    }
-    const iModelDb: SnapshotDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: iModelName }, createClassViews: true });
-    const componentCategoryId = insertSpatialCategory(iModelDb, IModel.dictionaryId, "Components", ColorDef.green);
-    const drawingComponentCategoryId = DrawingCategory.insert(iModelDb, IModel.dictionaryId, "Components", new SubCategoryAppearance());
-    const definitionModelId = DefinitionModel.insert(iModelDb, IModel.rootSubjectId, "Components");
-    // Cylinder component
-    const cylinderTemplateId = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Cylinder");
-    const cylinderTemplateModel = iModelDb.models.getModel<PhysicalModel>(cylinderTemplateId, PhysicalModel);
-    assert.isTrue(cylinderTemplateModel.isTemplate);
-    const cylinderProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: cylinderTemplateId,
-      category: componentCategoryId,
-      code: Code.createEmpty(),
-      userLabel: "Cylinder",
-      placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
-      geom: createCylinder(1),
-    };
-    iModelDb.elements.insertElement(cylinderProps);
-    // Assembly component
-    const assemblyTemplateId = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Assembly");
-    assert.exists(iModelDb.models.getModel<PhysicalModel>(assemblyTemplateId));
-    const assemblyHeadProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: assemblyTemplateId,
-      category: componentCategoryId,
-      code: Code.createEmpty(),
-      userLabel: "Assembly Head",
-      placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
-      geom: createCylinder(1),
-    };
-    const assemblyHeadId: Id64String = iModelDb.elements.insertElement(assemblyHeadProps);
-    const childBoxProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: assemblyTemplateId,
-      category: componentCategoryId,
-      parent: new ElementOwnsChildElements(assemblyHeadId),
-      code: Code.createEmpty(),
-      userLabel: "Child",
-      placement: { origin: Point3d.create(2, 0, 0), angles: { yaw: 0, pitch: 0, roll: 0 } },
-      geom: createBox(Point3d.create(1, 1, 1)),
-    };
-    iModelDb.elements.insertElement(childBoxProps);
-    // 2d component
-    const drawingGraphicTemplateId = TemplateRecipe2d.insert(iModelDb, definitionModelId, "DrawingGraphic");
-    const drawingGraphicTemplateModel = iModelDb.models.getModel<DrawingModel>(drawingGraphicTemplateId, DrawingModel);
-    assert.isTrue(drawingGraphicTemplateModel.isTemplate);
-    const drawingGraphicProps: GeometricElement2dProps = {
-      classFullName: DrawingGraphic.classFullName,
-      model: drawingGraphicTemplateId,
-      category: drawingComponentCategoryId,
-      code: Code.createEmpty(),
-      userLabel: "DrawingGraphic",
-      placement: { origin: Point2d.createZero(), angle: 0 },
-      geom: createRectangle(Point2d.create(1, 1)),
-    };
-    iModelDb.elements.insertElement(drawingGraphicProps);
-    return iModelDb;
-  }
-
   export function querySubjectId(iModelDb: IModelDb, subjectCodeValue: string): Id64String {
     const subjectId: Id64String = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, subjectCodeValue))!;
     assert.isTrue(Id64.isValidId64(subjectId));
@@ -1123,7 +1058,7 @@ export namespace IModelTransformerUtils {
     return geometryStreamBuilder.geometryStream;
   }
 
-  function createCylinder(radius: number): GeometryStreamProps {
+  export function createCylinder(radius: number): GeometryStreamProps {
     const pointA = Point3d.create(0, 0, 0);
     const pointB = Point3d.create(0, 0, 2 * radius);
     const cylinder = Cone.createBaseAndTarget(pointA, pointB, Vector3d.unitX(), Vector3d.unitY(), radius, radius, true);
@@ -1132,7 +1067,7 @@ export namespace IModelTransformerUtils {
     return geometryStreamBuilder.geometryStream;
   }
 
-  function createRectangle(size: Point2d): GeometryStreamProps {
+  export function createRectangle(size: Point2d): GeometryStreamProps {
     const geometryStreamBuilder = new GeometryStreamBuilder();
     geometryStreamBuilder.appendGeometry(LineString3d.createPoints([
       new Point3d(0, 0),
@@ -1251,7 +1186,7 @@ export class IModelTransformer3d extends IModelTransformer {
     this._transform3d = transform3d;
   }
   /** Override transformElement to apply a 3d transform to all GeometricElement3d instances. */
-  protected onTransformElement(sourceElement: Element): ElementProps {
+  protected override onTransformElement(sourceElement: Element): ElementProps {
     const targetElementProps: ElementProps = super.onTransformElement(sourceElement);
     if (sourceElement instanceof GeometricElement3d) { // can check the sourceElement since this IModelTransformer does not remap classes
       const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
@@ -1275,7 +1210,7 @@ export class PhysicalModelConsolidator extends IModelTransformer {
     this.importer.doNotUpdateElementIds.add(targetModelId);
   }
   /** Override shouldExportElement to remap PhysicalPartition instances. */
-  protected shouldExportElement(sourceElement: Element): boolean {
+  protected override shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
       this.context.remapElement(sourceElement.id, this._targetModelId);
       // NOTE: must allow export to continue so the PhysicalModel sub-modeling the PhysicalPartition is processed
@@ -1316,7 +1251,7 @@ export class FilterByViewTransformer extends IModelTransformer {
     });
   }
   /** Override of IModelTransformer.shouldExportElement that excludes other ViewDefinition-related elements that are not associated with the *export* ViewDefinition. */
-  protected shouldExportElement(sourceElement: Element): boolean {
+  protected override shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
       return this._exportModelIds.has(sourceElement.id);
     } else if (sourceElement instanceof SpatialViewDefinition) {
@@ -1394,12 +1329,12 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override shouldExportElement to exclude all elements from the Functional schema. */
-  public shouldExportElement(sourceElement: Element): boolean {
+  public override shouldExportElement(sourceElement: Element): boolean {
     return sourceElement.classFullName.startsWith(FunctionalSchema.schemaName) ? false : super.shouldExportElement(sourceElement);
   }
 
   /** Override transformElement to make sure that all target Elements have a FederationGuid */
-  protected onTransformElement(sourceElement: Element): ElementProps {
+  protected override onTransformElement(sourceElement: Element): ElementProps {
     const targetElementProps: any = super.onTransformElement(sourceElement);
     if (!targetElementProps.federationGuid) {
       targetElementProps.federationGuid = Guid.createValue();
@@ -1419,7 +1354,7 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override transformElementAspect to remap Source*Aspect --> Target*Aspect */
-  protected onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
+  protected override onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
     const targetElementAspectProps: any = super.onTransformElementAspect(sourceElementAspect, targetElementId);
     if ("TestTransformerSource:SourceUniqueAspect" === sourceElementAspect.classFullName) {
       targetElementAspectProps.classFullName = "TestTransformerTarget:TargetUniqueAspect";
@@ -1446,7 +1381,7 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override transformRelationship to remap SourceRelWithProps --> TargetRelWithProps */
-  protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps {
+  protected override onTransformRelationship(sourceRelationship: Relationship): RelationshipProps {
     const targetRelationshipProps: any = super.onTransformRelationship(sourceRelationship);
     if ("TestTransformerSource:SourceRelWithProps" === sourceRelationship.classFullName) {
       targetRelationshipProps.classFullName = "TestTransformerTarget:TargetRelWithProps";
@@ -1478,43 +1413,43 @@ export class CountingIModelImporter extends IModelImporter {
   public constructor(targetDb: IModelDb) {
     super(targetDb);
   }
-  protected onInsertModel(modelProps: ModelProps): Id64String {
+  protected override onInsertModel(modelProps: ModelProps): Id64String {
     this.numModelsInserted++;
     return super.onInsertModel(modelProps);
   }
-  protected onUpdateModel(modelProps: ModelProps): void {
+  protected override onUpdateModel(modelProps: ModelProps): void {
     this.numModelsUpdated++;
     super.onUpdateModel(modelProps);
   }
-  protected onInsertElement(elementProps: ElementProps): Id64String {
+  protected override onInsertElement(elementProps: ElementProps): Id64String {
     this.numElementsInserted++;
     return super.onInsertElement(elementProps);
   }
-  protected onUpdateElement(elementProps: ElementProps): void {
+  protected override onUpdateElement(elementProps: ElementProps): void {
     this.numElementsUpdated++;
     super.onUpdateElement(elementProps);
   }
-  protected onDeleteElement(elementId: Id64String): void {
+  protected override onDeleteElement(elementId: Id64String): void {
     this.numElementsDeleted++;
     super.onDeleteElement(elementId);
   }
-  protected onInsertElementAspect(aspectProps: ElementAspectProps): void {
+  protected override onInsertElementAspect(aspectProps: ElementAspectProps): void {
     this.numElementAspectsInserted++;
     super.onInsertElementAspect(aspectProps);
   }
-  protected onUpdateElementAspect(aspectProps: ElementAspectProps): void {
+  protected override onUpdateElementAspect(aspectProps: ElementAspectProps): void {
     this.numElementAspectsUpdated++;
     super.onUpdateElementAspect(aspectProps);
   }
-  protected onInsertRelationship(relationshipProps: RelationshipProps): Id64String {
+  protected override onInsertRelationship(relationshipProps: RelationshipProps): Id64String {
     this.numRelationshipsInserted++;
     return super.onInsertRelationship(relationshipProps);
   }
-  protected onUpdateRelationship(relationshipProps: RelationshipProps): void {
+  protected override onUpdateRelationship(relationshipProps: RelationshipProps): void {
     this.numRelationshipsUpdated++;
     super.onUpdateRelationship(relationshipProps);
   }
-  protected onDeleteRelationship(relationshipProps: RelationshipProps): void {
+  protected override onDeleteRelationship(relationshipProps: RelationshipProps): void {
     this.numRelationshipsDeleted++;
     super.onDeleteRelationship(relationshipProps);
   }
@@ -1525,7 +1460,7 @@ export class RecordingIModelImporter extends CountingIModelImporter {
   public constructor(targetDb: IModelDb) {
     super(targetDb);
   }
-  protected onInsertModel(modelProps: ModelProps): Id64String {
+  protected override onInsertModel(modelProps: ModelProps): Id64String {
     const modelId: Id64String = super.onInsertModel(modelProps);
     const model: Model = this.targetDb.models.getModel(modelId);
     if (model instanceof PhysicalModel) {
@@ -1542,7 +1477,7 @@ export class RecordingIModelImporter extends CountingIModelImporter {
     }
     return modelId;
   }
-  protected onInsertElement(elementProps: ElementProps): Id64String {
+  protected override onInsertElement(elementProps: ElementProps): Id64String {
     const elementId: Id64String = super.onInsertElement(elementProps);
     const element: Element = this.targetDb.elements.getElement(elementId);
     if (element instanceof PhysicalElement) {
@@ -1553,7 +1488,7 @@ export class RecordingIModelImporter extends CountingIModelImporter {
     }
     return elementId;
   }
-  protected onUpdateElement(elementProps: ElementProps): void {
+  protected override onUpdateElement(elementProps: ElementProps): void {
     super.onUpdateElement(elementProps);
     const element: Element = this.targetDb.elements.getElement(elementProps.id!);
     if (element instanceof PhysicalElement) {
@@ -1563,7 +1498,7 @@ export class RecordingIModelImporter extends CountingIModelImporter {
       }
     }
   }
-  protected onDeleteElement(elementId: Id64String): void {
+  protected override onDeleteElement(elementId: Id64String): void {
     const element: Element = this.targetDb.elements.getElement(elementId);
     if (element instanceof PhysicalElement) {
       const recordPartitionId: Id64String = this.getRecordPartitionId(element.model);
@@ -1650,15 +1585,15 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     const element: Element = this.exporter.sourceDb.elements.getElement(aspect.element.id);
     return 1 + this.getIndentLevelForElement(element);
   }
-  protected async onExportSchema(schema: Schema): Promise<void> {
+  protected override async onExportSchema(schema: Schema): Promise<void> {
     this.writeLine(`[Schema] ${schema.name}`);
     return super.onExportSchema(schema);
   }
-  protected onExportCodeSpec(codeSpec: CodeSpec, isUpdate: boolean | undefined): void {
+  protected override onExportCodeSpec(codeSpec: CodeSpec, isUpdate: boolean | undefined): void {
     this.writeLine(`[CodeSpec] ${codeSpec.id}, ${codeSpec.name}${this.formatOperationName(isUpdate)}`);
     super.onExportCodeSpec(codeSpec, isUpdate);
   }
-  protected onExportFont(font: FontProps, isUpdate: boolean | undefined): void {
+  protected override onExportFont(font: FontProps, isUpdate: boolean | undefined): void {
     if (this._firstFont) {
       this.writeSeparator();
       this._firstFont = false;
@@ -1666,33 +1601,33 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.writeLine(`[Font] ${font.id}, ${font.name}`);
     super.onExportFont(font, isUpdate);
   }
-  protected onExportModel(model: Model, isUpdate: boolean | undefined): void {
+  protected override onExportModel(model: Model, isUpdate: boolean | undefined): void {
     this.writeSeparator();
     this.writeLine(`[Model] ${model.classFullName}, ${model.id}, ${model.name}${this.formatOperationName(isUpdate)}`);
     super.onExportModel(model, isUpdate);
   }
-  protected onExportElement(element: Element, isUpdate: boolean | undefined): void {
+  protected override onExportElement(element: Element, isUpdate: boolean | undefined): void {
     const indentLevel: number = this.getIndentLevelForElement(element);
     this.writeLine(`[Element] ${element.classFullName}, ${element.id}, ${element.getDisplayLabel()}${this.formatOperationName(isUpdate)}`, indentLevel);
     super.onExportElement(element, isUpdate);
   }
-  protected onDeleteElement(elementId: Id64String): void {
+  protected override onDeleteElement(elementId: Id64String): void {
     this.writeLine(`[Element] ${elementId}, DELETE`);
     super.onDeleteElement(elementId);
   }
-  protected onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
+  protected override onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
     const indentLevel: number = this.getIndentLevelForElementAspect(aspect);
     this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}${this.formatOperationName(isUpdate)}`, indentLevel);
     super.onExportElementUniqueAspect(aspect, isUpdate);
   }
-  protected onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
+  protected override onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
     const indentLevel: number = this.getIndentLevelForElementAspect(aspects[0]);
     for (const aspect of aspects) {
       this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}`, indentLevel);
     }
     super.onExportElementMultiAspects(aspects);
   }
-  protected onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
+  protected override onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
     if (this._firstRelationship) {
       this.writeSeparator();
       this._firstRelationship = false;
@@ -1700,7 +1635,7 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.writeLine(`[Relationship] ${relationship.classFullName}, ${relationship.id}${this.formatOperationName(isUpdate)}`);
     super.onExportRelationship(relationship, isUpdate);
   }
-  protected onDeleteRelationship(relInstanceId: Id64String): void {
+  protected override onDeleteRelationship(relInstanceId: Id64String): void {
     this.writeLine(`[Relationship] ${relInstanceId}, DELETE`);
     super.onDeleteRelationship(relInstanceId);
   }
@@ -1755,25 +1690,25 @@ export class ClassCounter extends IModelExportHandler {
     });
     IModelJsFs.appendFileSync(this.outputFileName, `\n`);
   }
-  protected onExportModel(model: Model, isUpdate: boolean | undefined): void {
+  protected override onExportModel(model: Model, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._modelClassCounts, model.classFullName);
     super.onExportModel(model, isUpdate);
   }
-  protected onExportElement(element: Element, isUpdate: boolean | undefined): void {
+  protected override onExportElement(element: Element, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._elementClassCounts, element.classFullName);
     super.onExportElement(element, isUpdate);
   }
-  protected onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
+  protected override onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._aspectClassCounts, aspect.classFullName);
     super.onExportElementUniqueAspect(aspect, isUpdate);
   }
-  protected onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
+  protected override onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
     for (const aspect of aspects) {
       this.incrementClassCount(this._aspectClassCounts, aspect.classFullName);
     }
     super.onExportElementMultiAspects(aspects);
   }
-  protected onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
+  protected override onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._relationshipClassCounts, relationship.classFullName);
     super.onExportRelationship(relationship, isUpdate);
   }

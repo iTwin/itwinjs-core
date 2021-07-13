@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { ArcGisGenerateTokenOptions, ArcGisToken, ArcGisTokenGenerator } from "../../imodeljs-frontend";
+import { ArcGisGenerateTokenOptions, ArcGisToken, ArcGisTokenGenerator } from "./ArcGisTokenGenerator";
 
 /** @internal */
 export class ArcGisTokenManager {

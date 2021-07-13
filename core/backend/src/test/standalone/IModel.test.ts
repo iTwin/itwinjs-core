@@ -36,6 +36,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
 import { IModelHubBackend } from "../../IModelHubBackend";
+import { V2CheckpointManager } from "../../CheckpointManager";
 
 // spell-checker: disable
 
@@ -1145,16 +1146,16 @@ describe("iModel", () => {
     assert.isTrue(imodel5.isGeoLocated);
     const center = { x: 289095, y: 3803860, z: 10 }; // near center of project extents, 10 meters above ground.
     const ecefPt = imodel5.spatialToEcef(center);
-    const pt = { x: -3575157.057023252, y: 3873432.7966756118, z: 3578994.5664978377 };
+    const pt = {x: -3575156.3661052254, y: 3873432.0891543664, z: 3578996.012643183};
     assert.isTrue(ecefPt.isAlmostEqual(pt), "spatialToEcef");
 
     const z2 = imodel5.ecefToSpatial(ecefPt);
     assert.isTrue(z2.isAlmostEqual(center), "ecefToSpatial");
 
     const carto = imodel5.spatialToCartographicFromEcef(center);
-    assert.approximately(carto.longitudeDegrees, 132.70599650539427, .1); // this data is in Japan
-    assert.approximately(carto.latitudeDegrees, 34.35461328445589, .1);
-    const c2 = { longitude: 2.316156576159219, latitude: 0.5996011150631385, height: 10 };
+    assert.approximately(carto.longitudeDegrees, 132.70683882277805, .1); // this data is in Japan
+    assert.approximately(carto.latitudeDegrees, 34.35462768786055, .1);
+    const c2 = { longitude: 2.3161712773709127, latitude: 0.5996013664499733, height: 10 };
     assert.isTrue(carto.equalsEpsilon(c2, .001), "spatialToCartographic");
 
     imodel5.cartographicToSpatialFromEcef(carto, z2);
@@ -2013,11 +2014,12 @@ describe("iModel", () => {
     expectIModelError(IModelStatus.NotFound, error);
   });
 
-  it("should throw when attempting to re-attach a non-checkpoint snapshot", async () => {
+  it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(imodel1.reattachDaemon(ctx));
-    expectIModelError(IModelStatus.WrongIModel, error);
+    const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
+    await imodel1.reattachDaemon(ctx);
+    assert.isTrue(attachMock.notCalled);
   });
 
   function hasClassView(db: IModelDb, name: string): boolean {

@@ -141,7 +141,7 @@ export class V2CheckpointManager {
     }
   }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<string> {
+  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: string, expiryTimestamp: number }> {
     const args = await this.getCommandArgs(checkpoint);
     if (undefined === args.daemonDir || args.daemonDir === "")
       throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
@@ -155,7 +155,9 @@ export class V2CheckpointManager {
 
       throw new IModelError(attachResult.result, error);
     }
-    return BlobDaemon.getDbFileName(args);
+    const sasTokenExpiry = new URLSearchParams(args.auth).get("se");
+
+    return { filePath: BlobDaemon.getDbFileName(args), expiryTimestamp: sasTokenExpiry ? Date.parse(sasTokenExpiry) : 0 };
   }
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
@@ -262,7 +264,7 @@ export class CheckpointManager {
         CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
         // Apply change sets if necessary
         if (nativeDb.getParentChangeSetId() !== checkpoint.changeSetId)
-          await BriefcaseManager.processChangesets(checkpoint.requestContext, db, checkpoint.changeSetId);
+          await BriefcaseManager.processChangesets(checkpoint.requestContext, db, { id: checkpoint.changeSetId });
       } finally {
         db.saveChanges();
         db.close();
@@ -317,7 +319,7 @@ export class CheckpointManager {
 
     const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
     if (dbContextGuid !== Guid.normalize(checkpoint.contextId))
-      throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly setup in the checkpoint", Logger.logError, loggerCategory, () => ({ ...traceInfo, dbContextGuid }));
+      throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly set up in the checkpoint");
   }
 
   /** @returns true if the file is the checkpoint requested */

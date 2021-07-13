@@ -16,7 +16,7 @@ import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage3 extends FrontstageProvider {
 

@@ -60,7 +60,7 @@ export class RpcBriefcaseUtility {
               throw new Error(); // causes delete below
             const db = await BriefcaseDb.open(requestContext, { fileName });
             if (db.changeSetId !== tokenProps.changeSetId)
-              await BriefcaseManager.processChangesets(requestContext, db, tokenProps.changeSetId!);
+              await BriefcaseManager.processChangesets(requestContext, db, { id: tokenProps.changeSetId! });
             return db;
           } catch (error) {
             if (!(error instanceof IModelError && error.errorNumber === IModelStatus.AlreadyOpen))
@@ -75,7 +75,7 @@ export class RpcBriefcaseUtility {
     const request: RequestNewBriefcaseProps = {
       contextId: tokenProps.contextId!,
       iModelId,
-      briefcaseId: myBriefcaseIds.length > 0 ? myBriefcaseIds[0] : undefined, // if briefcaseId is undefined, we'll acquire a new one.
+      briefcaseId: args.syncMode === SyncMode.PullOnly ? 0 : undefined, // if briefcaseId is undefined, we'll acquire a new one.
     };
 
     const props = await BriefcaseManager.downloadBriefcase(requestContext, request);
@@ -93,6 +93,16 @@ export class RpcBriefcaseUtility {
     } finally {
       this._briefcasePromise = undefined;  // the download and open is now done
     }
+  }
+
+  public static async findOrOpen(requestContext: AuthorizedClientRequestContext, iModel: IModelRpcProps, syncMode: SyncMode): Promise<IModelDb> {
+    const iModelDb = IModelDb.tryFindByKey(iModel.key);
+    if (undefined === iModelDb) {
+      return this.open({ requestContext, tokenProps: iModel, syncMode, timeout: 1000 });
+    }
+    await iModelDb.reattachDaemon(requestContext);
+    requestContext.enter();
+    return iModelDb;
   }
 
   /**

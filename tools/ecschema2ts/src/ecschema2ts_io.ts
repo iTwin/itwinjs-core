@@ -82,7 +82,7 @@ class SchemaBackendFileLocater extends SchemaFileLocater implements ISchemaLocat
    */
   private getSchemaRecursively<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext, localPath: Set<string>): T | undefined {
     // load the schema file
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeys(key, matchType, "xml");
+    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeysSync(key, matchType, "xml");
     if (0 === candidates.length)
       return undefined;
 
