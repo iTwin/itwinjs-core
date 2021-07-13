@@ -12,11 +12,12 @@ const NoInternalBarrelImportsESLintRule =
   BentleyESLintPlugin.rules["no-internal-barrel-imports"];
 
 /** @param {string[]} strings */
-function makeTest(strings) {
-  const codeLines = strings[0].split("\n");
-  if (codeLines.length <= 1) return strings[0];
-  const leftPadding = codeLines[1].match(/\s+/)[0];
-  return codeLines.map((l) => l.substr(leftPadding.length)).join("\n");
+function dedent(strings) {
+  const textAssumingNoInterpolations = strings[0];
+  const codeLines = textAssumingNoInterpolations.split("\n");
+  if (codeLines.length <= 1) return textAssumingNoInterpolations;
+  const leftPadding = codeLines[1].match(/[\t ]+/)[0];
+  return codeLines.slice(1, -1).map((l) => l.substr(leftPadding.length)).join("\n");
 }
 
 /** allow specifying `only` and `skip` properties for easier debugging */
@@ -58,42 +59,53 @@ ruleTester.run(
   NoInternalBarrelImportsESLintRule,
   supportSkippedAndOnlyInTests({
     valid: [
-      { code: makeTest`import * as A from "./a";` },
-      { code: makeTest`import {b} from "./b";` },
-      { code: makeTest`import DefaultB from "./b";` },
-      { code: makeTest`import DefaultB, {b} from "./b";` },
+      { code: `import * as A from "./a";` },
+      { code: `import {b} from "./b";` },
+      { code: `import DefaultB from "./b";` },
+      { code: `import DefaultB, {b} from "./b";` },
       {
-        code: makeTest`import {b} from "./barrel";`,
+        code: `import {b} from "./barrel";`,
         options: [{ "ignored-barrel-modules": ["./barrel.ts"] }],
       },
       {
-        code: makeTest`import {b} from "./far/barrel";`,
+        code: `import {b} from "./far/barrel";`,
         options: [{ "ignored-barrel-modules": ["./far/barrel.ts"] }],
       },
-      { code: makeTest`import { barreled } from "barrel-pkg";` },
-      { code: makeTest`import {A} from "./typebarrel";` },
+      { code: `import { barreled } from "barrel-pkg";` },
+      { code: `import {A} from "./typebarrel";` },
     ],
     invalid: [
       {
-        code: makeTest`import {b} from "./barrel";`,
+        code: `import {b} from "./barrel";`,
         errors: [{ messageId: "noInternalBarrelImports" }],
-        output: makeTest`;import {b} from "./b";`,
+        output: `import {b} from "./b";`,
       },
       {
-        code: makeTest`import {a, b} from "./barrel";`,
+        code: `import {a, b} from "./barrel";`,
         errors: [{ messageId: "noInternalBarrelImports" }],
-        // extra semicolons will be taken out by eslint's other rules
-        output: makeTest`;import {a} from "./a";;import {b} from "./b";`,
+        output: dedent`
+          import {a} from "./a";
+          import {b} from "./b";
+        `,
       },
       {
-        code: makeTest`import {a as notA} from "./barrel";`,
+        code: `import {a as notA} from "./barrel";`,
         errors: [{ messageId: "noInternalBarrelImports" }],
-        output: makeTest`;import {a as notA} from "./a";`,
+        output: `import {a as notA} from "./a";`,
       },
       {
-        code: makeTest`import {c} from "./far/barrel";`,
+        code: `import {c} from "./far/barrel";`,
         errors: [{ messageId: "noInternalBarrelImports" }],
-        output: makeTest`;import {c} from "./far/c";`,
+        output: `import {c} from "./far/c";`,
+      },
+      {
+        code: `import {b3, b, c, a} from "./far/barrel";`,
+        errors: [{ messageId: "noInternalBarrelImports" }],
+        output: dedent`
+          import {a} from "./a";
+          import {b, b3} from "./b";
+          import {c} from "./far/c";
+        `,
       },
     ],
   })

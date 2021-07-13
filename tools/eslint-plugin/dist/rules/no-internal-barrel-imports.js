@@ -35,6 +35,8 @@ import {a} from "A";
 import {b} from "B";
 export {a, b};
 ```
+
+fixing is currently restricted to named exports only.
 */
 
 "use strict";
@@ -109,8 +111,8 @@ const rule = {
 
     return {
       ImportDeclaration(node) {
-        /** @param {ts.Symbol} symbol */
-        function getRelativeImportForExportedSymbol(symbol) {
+        /** @param {ts.Symbol | undefined} symbol */
+        function getRelativeImportPathForExportedSymbol(symbol) {
           if (symbol === undefined) return "";
           const declaration = symbol.valueDeclaration || symbol.declarations[0];
           const fileOfExport = declaration.getSourceFile();
@@ -180,7 +182,7 @@ const rule = {
 
         if (!containsReExport) return;
 
-        const importedProps =
+        const namedImports =
           importNodeTs.importClause &&
           importNodeTs.importClause.namedBindings &&
           ts.isNamedImports(importNodeTs.importClause.namedBindings)
@@ -194,26 +196,53 @@ const rule = {
           ...(!hasDefaultImport &&
             !isSideEffectImport &&
             !hasNamespaceImport &&
-            importedProps.length !== 0 && {
+            namedImports.length !== 0 && {
               fix(fixer) {
                 return [
                   fixer.remove(node),
-                  ...importedProps
-                    .map((importedProp) => ({
-                      importedProp,
-                      symbol: checker.getSymbolAtLocation(importedProp.name),
-                    }))
-                    .filter(({ symbol }) => symbol !== undefined)
-                    .map(({ importedProp, symbol }) =>
+                  // first get key value pairs of a Map<ModulePaths, ImportPropsFromModule>
+                  ...Array.from(
+                    namedImports
+                      .map((namedImport) => {
+                        const symbol = checker.getSymbolAtLocation(
+                          namedImport.name
+                        );
+                        return {
+                          namedImport,
+                          importPath:
+                            symbol &&
+                            getRelativeImportPathForExportedSymbol(
+                              checker.getAliasedSymbol(symbol)
+                            ),
+                        };
+                      })
+                      .filter(({ importPath }) => importPath !== undefined)
+                      .reduce((result, cur) => {
+                        if (!result.has(cur.importPath))
+                          result.set(cur.importPath, [cur]);
+                        else result.get(cur.importPath).push(cur);
+                        return result;
+                      }, new Map())
+                  )
+                    // sort the modules (map keys)
+                    .sort((a, b) => (a[0] > b[0] ? 1 : -1))
+                    // sort their imported properties (map value lists)
+                    .map((import_) => {
+                      // prettier-ignore
+                      import_[1].sort((a, b) => a.namedImport.name.escapedText > b.namedImport.name.escapedText ? 1 : -1);
+                      return import_;
+                    })
+                    .map(([importPath, namedImports], i) =>
                       fixer.insertTextAfter(
                         node,
-                        `;import {${
-                          importedProp.propertyName !== undefined
-                            ? `${importedProp.propertyName.escapedText} as ${importedProp.name.escapedText}`
-                            : importedProp.name.escapedText
-                        }} from "${getRelativeImportForExportedSymbol(
-                          checker.getAliasedSymbol(symbol)
-                        )}";`
+                        `${i === 0 ? "" : "\n" /* separate all imported modules with a new line*/
+                        }import {${namedImports
+                          .map(({namedImport}) =>
+                            namedImport.propertyName !== undefined
+                              ? `${namedImport.propertyName.escapedText} as ${namedImport.name.escapedText}`
+                              : namedImport.name.escapedText
+                          )
+                          .join(", ")}} from "${importPath}";`
                       )
                     ),
                 ];
