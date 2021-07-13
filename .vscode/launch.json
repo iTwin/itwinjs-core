@@ -1646,7 +1646,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/tools/eslint-plugin/node_modules/mocha/bin/_mocha",
       "args": [
-        "${workspaceFolder}/tools/eslint-plugin/tests/no-internal-barrel-imports.js"
+        "${workspaceFolder}/tools/eslint-plugin/tests/no-internal-barrel-imports.js",
+        "--timeout 50000" // for easier debugging
       ],
       "console": "integratedTerminal",
     }
