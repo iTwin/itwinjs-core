@@ -27,9 +27,13 @@ export interface InterpolationCurve3dProps {
   order?: number;
   /** true if the bspline construction should be periodic */
   closed?: boolean;
+  /** if closed and no knots: true = compute chord length knots, false = uniform */
   isChordLenKnots?: number;
+  /** if !closed but first and last fitPoints are equal, pivot computed start/end tangent(s) so that they are colinear */
   isColinearTangents?: number;
+  /** if !closed and start/endTangent is given, set its magnitude to the chord length (true) or Bessel (false) end condition */
   isChordLenTangent?: number;
+  /** if !closed and start/endTangent is absent, compute it by natural (true) or Bessel (false) end condition */
   isNaturalTangents?: number;
   /** optional start tangent.  Use of the tangent magnitude may be indicated by other flags. */
   startTangent?: XYZProps;
@@ -37,7 +41,7 @@ export interface InterpolationCurve3dProps {
   endTangent?: XYZProps;
   /** Points that the curve must pass through */
   fitPoints: XYZProps[];
-  /** knots for curve fitting */
+  /** parameters for curve fitting, one per fitPoint */
   knots?: number[];
 }
 
@@ -141,13 +145,13 @@ export class InterpolationCurve3dOptions {
       props.closed = this._closed;
     if (this._isChordLenKnots !== undefined)
       props.isChordLenKnots = this._isChordLenKnots;
-    if (this._isColinearTangents)
+    if (this._isColinearTangents !== undefined)
       props.isColinearTangents = this._isColinearTangents;
     if (this._isChordLenTangent !== undefined)
       props.isChordLenTangent = this._isChordLenTangent;
-    if (this._isNaturalTangents)
+    if (this._isNaturalTangents !== undefined)
       props.isNaturalTangents = this._isNaturalTangents;
-    if (this._startTangent)
+    if (this._startTangent !== undefined)
       props.startTangent = this._startTangent?.toArray();
     if (this._endTangent !== undefined)
       props.endTangent = this._endTangent?.toArray();
@@ -284,7 +288,8 @@ export class InterpolationCurve3d extends ProxyCurve {
   public tryTransformInPlace(transform: Transform): boolean {
     const proxyOk = this._proxyCurve.tryTransformInPlace(transform);
     if (proxyOk) {
-      transform.multiplyPoint3dArray(this._options.fitPoints);
+      transform.multiplyPoint3dArrayInPlace(this._options.fitPoints);
+      // START HERE: transform start/endTangent
     }
     return proxyOk;
   }

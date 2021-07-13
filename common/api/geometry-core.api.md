@@ -768,8 +768,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined;
     // (undocumented)
     static createFromInterpolationCurve3dOptions(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined;
-    // (undocumented)
-    static createThroughPoints(points: IndexedXYZCollection | Point3d[], order: number): BSplineCurve3d | undefined;
     static createUniformKnots(poles: Point3d[] | Float64Array | GrowableXYZArray, order: number): BSplineCurve3d | undefined;
     dispatchToGeometryHandler(handler: GeometryHandler): any;
     emitStrokableParts(handler: IStrokeHandler, options?: StrokeOptions): void;
@@ -2951,13 +2949,9 @@ export interface InterpolationCurve3dProps {
     closed?: boolean;
     endTangent?: XYZProps;
     fitPoints: XYZProps[];
-    // (undocumented)
     isChordLenKnots?: number;
-    // (undocumented)
     isChordLenTangent?: number;
-    // (undocumented)
     isColinearTangents?: number;
-    // (undocumented)
     isNaturalTangents?: number;
     knots?: number[];
     order?: number;

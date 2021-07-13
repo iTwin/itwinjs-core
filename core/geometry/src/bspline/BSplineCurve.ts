@@ -15,7 +15,6 @@ import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
-import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
@@ -25,7 +24,6 @@ import { Range1d, Range3d } from "../geometry3d/Range";
 import { Ray3d } from "../geometry3d/Ray3d";
 import { Transform } from "../geometry3d/Transform";
 import { Point4d } from "../geometry4d/Point4d";
-import { BandedSystem } from "../numerics/BandedSystem";
 import { UnivariateBezier } from "../numerics/BezierPolynomials";
 import { AkimaCurve3dOptions } from "./AkimaCurve3d";
 import { Bezier1dNd } from "./Bezier1dNd";
@@ -33,6 +31,7 @@ import { BezierCurve3d } from "./BezierCurve3d";
 import { BezierCurve3dH } from "./BezierCurve3dH";
 import { BezierCurveBase } from "./BezierCurveBase";
 import { BSpline1dNd } from "./BSpline1dNd";
+import { BSplineCurveOps } from "./BSplineCurveOps";
 import { InterpolationCurve3dOptions } from "./InterpolationCurve3d";
 import { BSplineWrapMode, KnotVector } from "./KnotVector";
 
@@ -367,67 +366,22 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     }
     return curve;
   }
-  /**
-   *
-   * @param points pass-through points.
-   * @param order bspline order (1 more than degree)
-   */
-  public static createThroughPoints(points: IndexedXYZCollection | Point3d[], order: number): BSplineCurve3d | undefined {
-    const numPoints = points.length;
-    if (order > numPoints || order < 2)
-      return undefined;
-    const degree = order - 1;
-    const bw = 1 + 2 * degree;    // probably less than that . . just zeros at fringe.
-    const matrix = new Float64Array(bw * numPoints);
-    const basisFunctions = new Float64Array(order);
-    const rhs = new GrowableXYZArray();
-    const knots = KnotVector.createUniformClamped(numPoints, order - 1, 0.0, 1.0);
-    const xyz = Point3d.create();
-    for (let basePointIndex = 0; basePointIndex < numPoints; basePointIndex++) {
-      const u = knots.grevilleKnot(basePointIndex);
-      const spanIndex = knots.knotToLeftKnotIndex(u);
-      knots.evaluateBasisFunctions(spanIndex, u, basisFunctions);
-      // puzzlement .. how do the max points shift within the order spots?
-      let maxIndex = 0;
-      for (let i = 1; i < order; i++)
-        if (basisFunctions[i] > basisFunctions[maxIndex])
-          maxIndex = i;
-      const basisFunctionStartWithinRow = degree - maxIndex;
-      const rowStart = basePointIndex * bw;
-      for (let i = 0; i < order; i++) {
-        const realColumn = basePointIndex - degree + basisFunctionStartWithinRow + i;
-        if (rowStart + realColumn >= 0 && realColumn < numPoints)
-          matrix[rowStart + basisFunctionStartWithinRow + i] = basisFunctions[i];
-      }
-      if (points instanceof IndexedXYZCollection) {
-        rhs.push(points.getPoint3dAtUncheckedPointIndex(basePointIndex, xyz));
-      } else {
-        rhs.push(points[basePointIndex]);
-      }
-    }
-    const poles = BandedSystem.solveBandedSystemMultipleRHS(numPoints, bw, matrix, 3, rhs.float64Data());
-    if (poles) {
-      return BSplineCurve3d.create(poles, knots.knots, order);
-    }
-    return undefined;
-  }
+
   /**
    *
    * @param options collection of point, knot and end condition data.
    */
   public static createFromInterpolationCurve3dOptions(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined {
-     return this.createThroughPoints (options.fitPoints, options.order? options.order : 4);
-    return undefined;
+    return BSplineCurveOps.createThroughPoints (options.fitPoints, options.order? options.order : 4); // temporary
   }
 
   /**
    *
    * @param options collection of point, knot and end condition data.
    */
-   public static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined {
-    return this.createThroughPoints (options.fitPoints, 4);
-   return undefined;
- }
+  public static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined {
+    return BSplineCurveOps.createThroughPoints (options.fitPoints, 4);  // temporary
+  }
 
   /** Create a bspline with given knots.
    *

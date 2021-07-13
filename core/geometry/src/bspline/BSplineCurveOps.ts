@@ -121,11 +121,6 @@ export class BSplineCurveOps {
     return undefined;
   }
 
-  /**
-   * @param options collection of point, knot and end condition data.
-   */
-  public static createFromInterpolationCurve3dProps(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined {
-    return this.createThroughPointsC2Cubic(options);
-  }
+  // START HERE: when done, change BSplineCurve3d::createFromInterpolationCurve3dOptions to call C2Cubic variant
 
 }
