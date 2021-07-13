@@ -3,12 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { SchemaContext } from "./../Context";
-import { Constant } from "./../Metadata/Constant";
-import { Schema } from "./../Metadata/Schema";
-import { SchemaItem } from "./../Metadata/SchemaItem";
-import { Unit } from "./../Metadata/Unit";
-import { SchemaItemKey, SchemaKey } from "./../SchemaKey";
+import { SchemaContext } from "../Context";
+import { Constant } from "../Metadata/Constant";
+import { Schema } from "../Metadata/Schema";
+import { SchemaItem } from "../Metadata/SchemaItem";
+import { Unit } from "../Metadata/Unit";
+import { SchemaItemKey, SchemaKey } from "../SchemaKey";
 import { SchemaItemType } from "../ECObjects";
 import { UnitConversion } from "./UnitConversion";
 import { DefinitionFragment, parseDefinition } from "./Parser";

@@ -14,13 +14,13 @@ import { ScreenViewport } from "../../../Viewport";
 import { StandardViewId } from "../../../StandardView";
 import { createBlankConnection } from "../../createBlankConnection";
 import { FakeDisplayParams } from "./Fake";
-import { DisplayParams } from "./../../../render/primitives/DisplayParams";
-import { GenerateEdges, GeometryOptions, PreserveOrder, SurfacesOnly, ToleranceRatio } from "./../../../render/primitives/Primitives";
-import { GeometryList } from "./../../../render/primitives/geometry/GeometryList";
-import { PrimitiveBuilder } from "./../../../render/primitives/geometry/GeometryListBuilder";
-import { Geometry } from "./../../../render/primitives/geometry/GeometryPrimitives";
-import { MeshBuilderMap } from "./../../../render/primitives/mesh/MeshBuilderMap";
-import { Mesh } from "./../../../render/primitives/mesh/MeshPrimitives";
+import { DisplayParams } from "../../../render/primitives/DisplayParams";
+import { GenerateEdges, GeometryOptions, PreserveOrder, SurfacesOnly, ToleranceRatio } from "../../../render/primitives/Primitives";
+import { GeometryList } from "../../../render/primitives/geometry/GeometryList";
+import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
+import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
+import { MeshBuilderMap } from "../../../render/primitives/mesh/MeshBuilderMap";
+import { Mesh } from "../../../render/primitives/mesh/MeshPrimitives";
 
 describe("MeshBuilderMap Tests", () => {
   let imodel: IModelConnection;

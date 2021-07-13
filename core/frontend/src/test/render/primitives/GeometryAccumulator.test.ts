@@ -13,10 +13,10 @@ import { SpatialViewState } from "../../../SpatialViewState";
 import { Branch } from "../../../render/webgl/Graphic";
 import { createBlankConnection } from "../../createBlankConnection";
 import { FakeGeometry } from "./Fake";
-import { DisplayParams } from "./../../../render/primitives/DisplayParams";
-import { GenerateEdges, GeometryOptions } from "./../../../render/primitives/Primitives";
-import { GeometryAccumulator } from "./../../../render/primitives/geometry/GeometryAccumulator";
-import { Geometry } from "./../../../render/primitives/geometry/GeometryPrimitives";
+import { DisplayParams } from "../../../render/primitives/DisplayParams";
+import { GenerateEdges, GeometryOptions } from "../../../render/primitives/Primitives";
+import { GeometryAccumulator } from "../../../render/primitives/geometry/GeometryAccumulator";
+import { Geometry } from "../../../render/primitives/geometry/GeometryPrimitives";
 
 describe("GeometryAccumulator tests", () => {
   let iModel: IModelConnection;

@@ -117,11 +117,13 @@ const rule = {
           const declaration = symbol.valueDeclaration || symbol.declarations[0];
           const fileOfExport = declaration.getSourceFile();
           return (
-            "./" +
-            withoutExt(
-              path.relative(
-                path.dirname(thisModule.fileName),
-                fileOfExport.fileName
+            path.normalize(
+              "./" +
+              withoutExt(
+                path.relative(
+                  path.dirname(thisModule.fileName),
+                  fileOfExport.fileName
+                )
               )
             )
           );

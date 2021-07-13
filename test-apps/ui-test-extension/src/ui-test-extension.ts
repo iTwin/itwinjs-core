@@ -5,15 +5,15 @@
 
 import { Extension, IModelApp } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
-import { ExtensionUiItemsProvider } from "./ui/ExtensionUiItemsProvider";
-import { TraceUiItemsProvider } from "./ui/NetworkTraceUIProvider";
+import { ExtensionUiItemsProvider } from "../ExtensionUiItemsProvider";
+import { TraceUiItemsProvider } from "../NetworkTraceUIProvider";
 import { UiItemsManager } from "@bentley/ui-abstract";
-import { SampleTool } from "./ui/tools/SampleTool";
+import { SampleTool } from "../tools/SampleTool";
 import { ConfigurableUiManager } from "@bentley/ui-framework";
-import { ExtensionFrontstage } from "./ui/Frontstage";
-import { SampleContentControl } from "./ui/content/SampleContentControl";
-import { GenericTool } from "./ui/tools/GenericTool";
-import { OpenTraceDialogTool } from "./ui/tools/OpenTraceDialogTool";
+import { ExtensionFrontstage } from "../Frontstage";
+import { SampleContentControl } from "../content/SampleContentControl";
+import { GenericTool } from "../tools/GenericTool";
+import { OpenTraceDialogTool } from "../tools/OpenTraceDialogTool";
 
 /** UiTestExtension is an iModel.js Extension that adds some user interface to the iModel.js app into which its loaded.
  * Included in the sample are: 1) a Sample Tool (SampleTool.ts), showing how implement a tool with a variety to tool settings items.

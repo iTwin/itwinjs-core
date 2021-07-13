@@ -45,16 +45,16 @@ export * from "./tools/TileRequestDecoration";
 export * from "./tools/TileTreeBoundsDecoration";
 export * from "./tools/ViewportTools";
 
-export * from "./ui/Button";
-export * from "./ui/CheckBox";
-export * from "./ui/ColorInput";
-export * from "./ui/ComboBox";
-export * from "./ui/DataList";
-export * from "./ui/NestedMenu";
-export * from "./ui/NumericInput";
-export * from "./ui/RadioBox";
-export * from "./ui/Slider";
-export * from "./ui/TextBox";
+export * from "../Button";
+export * from "../CheckBox";
+export * from "../ColorInput";
+export * from "../ComboBox";
+export * from "../DataList";
+export * from "../NestedMenu";
+export * from "../NumericInput";
+export * from "../RadioBox";
+export * from "../Slider";
+export * from "../TextBox";
 
 export * from "./widgets/DiagnosticsPanel";
 export * from "./widgets/FpsTracker";

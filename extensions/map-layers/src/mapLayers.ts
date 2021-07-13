@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { Extension, IModelApp } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
-import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "./ui/MapLayersUiItemsProvider";
+import { MapLayersUiItemsProvider, MapLayersWidgetControl } from "../MapLayersUiItemsProvider";
 import { UiItemsManager } from "@bentley/ui-abstract";
 import { ConfigurableUiManager } from "@bentley/ui-framework";
 

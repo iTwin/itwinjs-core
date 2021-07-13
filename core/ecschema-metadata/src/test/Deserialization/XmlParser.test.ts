@@ -12,9 +12,9 @@ import {
   SchemaReferenceProps, StructArrayPropertyProps,
 } from "../../Deserialization/JsonProps";
 import { XmlParser } from "../../Deserialization/XmlParser";
-import { SchemaContext } from "./../../Context";
-import { CustomAttributeClass } from "./../../Metadata/CustomAttributeClass";
-import { Schema } from "./../../Metadata/Schema";
+import { SchemaContext } from "../../Context";
+import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
+import { Schema } from "../../Metadata/Schema";
 import { ECObjectsError } from "../../Exception";
 import { createSchemaJsonWithItems, createSchemaXmlWithItems } from "../TestUtils/DeserializationHelpers";
 

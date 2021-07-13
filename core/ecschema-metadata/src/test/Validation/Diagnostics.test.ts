@@ -5,10 +5,10 @@
 
 import { expect } from "chai";
 import { SchemaContext } from "../../Context";
-import { RelationshipEnd } from "./../../ECObjects";
-import { EntityClass } from "./../../Metadata/EntityClass";
-import { PrimitiveProperty } from "./../../Metadata/Property";
-import { RelationshipClass, RelationshipConstraint } from "./../../Metadata/RelationshipClass";
+import { RelationshipEnd } from "../../ECObjects";
+import { EntityClass } from "../../Metadata/EntityClass";
+import { PrimitiveProperty } from "../../Metadata/Property";
+import { RelationshipClass, RelationshipConstraint } from "../../Metadata/RelationshipClass";
 import { Schema } from "../../Metadata/Schema";
 import * as Diagnostics from "../../Validation/Diagnostic";
 

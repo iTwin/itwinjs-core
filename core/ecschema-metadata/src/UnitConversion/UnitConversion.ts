@@ -3,8 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as almostEqual from "almost-equal";
-import { Constant } from "./../Metadata/Constant";
-import { Unit } from "./../Metadata/Unit";
+import { Constant } from "../Metadata/Constant";
+import { Unit } from "../Metadata/Unit";
 import { SchemaItemType } from "../ECObjects";
 
 /**

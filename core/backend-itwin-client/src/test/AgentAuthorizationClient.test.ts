@@ -9,7 +9,7 @@ import * as path from "path";
 import { BeDuration, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
-import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "./../oidc/AgentAuthorizationClient";
+import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));

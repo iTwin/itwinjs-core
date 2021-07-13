@@ -6,7 +6,7 @@
 import * as ws from "ws";
 import { BentleyStatus, IModelError } from "@bentley/imodeljs-common";
 import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol";
-import { MobileRpcConfiguration } from "./../common/MobileRpcManager";
+import { MobileRpcConfiguration } from "../common/MobileRpcManager";
 import { MobileHost } from "./MobileHost";
 
 export class MobileRpcServer {

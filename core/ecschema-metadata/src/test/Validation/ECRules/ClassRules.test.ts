@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { SchemaContext } from "./../../../Context";
-import { DelayedPromiseWithProps } from "./../../../DelayedPromise";
-import { ECClassModifier, schemaItemTypeToString } from "./../../../ECObjects";
-import { RelationshipClass } from "./../../../Metadata/RelationshipClass";
+import { SchemaContext } from "../../../Context";
+import { DelayedPromiseWithProps } from "../../../DelayedPromise";
+import { ECClassModifier, schemaItemTypeToString } from "../../../ECObjects";
+import { RelationshipClass } from "../../../Metadata/RelationshipClass";
 import { EntityClass } from "../../../Metadata/EntityClass";
 import { Schema } from "../../../Metadata/Schema";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
