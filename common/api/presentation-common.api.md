@@ -128,6 +128,9 @@ export interface CategoryDescriptionJSON {
 }
 
 // @public
+export type CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier;
+
+// @public
 export interface CheckBoxRule extends RuleBase, ConditionContainer {
     condition?: string;
     defaultValue?: boolean;
@@ -1143,6 +1146,12 @@ export interface Id64sRulesetVariableJSON extends RulesetVariableBaseJSON {
 }
 
 // @public
+export interface IdCategoryIdentifier {
+    categoryId: string;
+    type: "Id";
+}
+
+// @public
 export interface ImageIdOverride extends RuleBase, ConditionContainer {
     condition?: string;
     imageIdExpression: string;
@@ -1632,6 +1641,11 @@ export interface NestedContentValueJSON {
 }
 
 // @public
+export interface NoCategoryIdentifier {
+    type: "None";
+}
+
+// @public
 export interface Node {
     backColor?: string;
     description?: string;
@@ -1865,6 +1879,11 @@ export interface PagedResponse<T> {
 export interface PageOptions {
     size?: number;
     start?: number;
+}
+
+// @public
+export interface ParentCategoryIdentifier {
+    type: "DefaultParent";
 }
 
 // @public
@@ -2126,7 +2145,7 @@ export interface PropertyCategorySpecification {
     description?: string;
     id: string;
     label: string;
-    parentId?: string;
+    parentId?: string | CategoryIdentifier | NoCategoryIdentifier;
     priority?: number;
     renderer?: CustomRendererSpecification;
 }
@@ -2244,7 +2263,7 @@ export interface PropertyJSON {
 
 // @public
 export interface PropertyOverrides {
-    categoryId?: string;
+    categoryId?: string | CategoryIdentifier;
     doNotHideOtherPropertiesOnDisplayOverride?: boolean;
     editor?: PropertyEditorSpecification;
     isDisplayed?: boolean;
@@ -2473,6 +2492,11 @@ export interface RequiredSchemaSpecification {
     maxVersion?: string;
     minVersion?: string;
     name: string;
+}
+
+// @public
+export interface RootCategoryIdentifier {
+    type: "Root";
 }
 
 // @public

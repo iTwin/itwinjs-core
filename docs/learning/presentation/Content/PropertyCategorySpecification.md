@@ -9,14 +9,14 @@ See [property categorization page](./PropertyCategorization.md) for more details
 
 ## Attributes
 
-Name | Required? | Type | Default | Meaning
--|-|-|-|-
-`id` | Yes | `string` | | Category identifier which has to be unique at the scope of it's definition.
-`parentId` | No | `string` | `""` | Identifier of a parent category. The parent category has to be available in the scope of this category definition.
-`label` | Yes | `string` | | Display label of the category. May be [localized](../Localization.md).
-`description` | No | `string` | `""` | Extensive description of the category.
-`priority` | No | `number` | `1000` | Priority of the category. Higher priority categories are displayed on top.
-`autoExpand` | No | `boolean` | `false` | Should this category be auto-expanded.
+| Name          | Required? | Type                          | Default | Meaning
+| ------------- | --------- | ----------------------------- | ------- | -------
+| `id`          | Yes       | `string`                      |         | Category identifier which has to be unique at the scope of it's definition.
+| `parentId`    | No        | `string | CategoryIdentifier` |         | Identifier of a parent category. When specifying the he parent category by ID, it has to be available in the scope of this category definition.
+| `label`       | Yes       | `string`                      |         | Display label of the category. May be [localized](../Localization.md).
+| `description` | No        | `string`                      | `""`    | Extensive description of the category.
+| `priority`    | No        | `number`                      | `1000`  | Priority of the category. Higher priority categories are displayed on top.
+| `autoExpand`  | No        | `boolean`                     | `false` | Should this category be auto-expanded.
 
 ## Examples
 
@@ -34,15 +34,22 @@ Name | Required? | Type | Default | Meaning
   }],
   "propertyOverrides": [{
     "name": "MyProperty1",
-    "categoryId": "my_custom_root_category"
+    "categoryId": {
+      "type": "Id",
+      "id": "my_custom_root_category"
+    }
   }],
   "relatedProperties": [{
-    "relationships": {"schemaName": "BisCore", "classNames": ["SomeRelationship"]},
-    "relatedClasses": {"schemaName": "BisCore", "classNames": ["SomeRelatedElementClass"]},
-    "requiredDirection": "Forward",
+    "propertiesSource": {
+      "relationship": {"schemaName": "BisCore", "className": "SomeRelationship"},
+      "direction": "Forward",
+    },
     "properties": [{
       "name": "RelatedProperty2",
-      "categoryId": "my_custom_child_category"
+      "categoryId": {
+        "type": "Id",
+        "id": "my_custom_child_category"
+      }
     }]
   }]
 }

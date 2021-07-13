@@ -13,6 +13,7 @@ public;CalculatedPropertiesSpecification
 public;CategoryDescription
 public;CategoryDescription
 public;CategoryDescriptionJSON
+public;CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier
 public;CheckBoxRule 
 public;ChildNodeRule 
 public;ChildNodeSpecificationBase
@@ -163,6 +164,7 @@ public;Id64RulesetVariable
 public;Id64RulesetVariableJSON 
 public;Id64sRulesetVariable 
 public;Id64sRulesetVariableJSON 
+public;IdCategoryIdentifier
 public;ImageIdOverride 
 public;InstanceId = Id64String
 public;InstanceKey
@@ -227,6 +229,7 @@ public;NestedContentFieldJSON
 public;NestedContentValue
 public;NestedContentValue
 public;NestedContentValueJSON
+public;NoCategoryIdentifier
 public;Node
 public;Node
 internal;fromPartialJSON(json: PartialNodeJSON): PartialNode
@@ -259,6 +262,7 @@ public;Omit
 public;Paged
 public;PagedResponse
 public;PageOptions
+public;ParentCategoryIdentifier
 public;PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo
 public;PartialHierarchyModification
 public;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
@@ -337,6 +341,7 @@ public;RequestOptions
 public;RequestOptionsWithRuleset
 public;RequestPriority
 beta;RequiredSchemaSpecification
+public;RootCategoryIdentifier
 public;RootNodeRule 
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps
