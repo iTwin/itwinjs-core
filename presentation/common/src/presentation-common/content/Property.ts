@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { CompressedPropertyInfoJSON, CompressedRelationshipPathJSON, PropertyInfo, PropertyInfoJSON, RelationshipPath, RelationshipPathJSON } from "../EC";
+import { ClassInfoJSON, PropertyInfo, PropertyInfoJSON, RelationshipPath, RelationshipPathJSON } from "../EC";
 
 /**
  * Data structure that describes one step of property
@@ -69,18 +69,8 @@ export namespace Property {
  * JSON representation of [[Property]]
  * @public
  */
-export interface PropertyJSON {
-  property: PropertyInfoJSON;
+export interface PropertyJSON<TClassInfoJSON = ClassInfoJSON> {
+  property: PropertyInfoJSON<TClassInfoJSON>;
   /** @deprecated See [[Property.relatedClassPath]] */
-  relatedClassPath: RelationshipPathJSON;
-}
-
-/**
- * JSON representation of [[CompressedProperty]]
- * @beta
- */
-export interface CompressedPropertyJSON {
-  property: CompressedPropertyInfoJSON;
-  /** @deprecated See [[Property.relatedClassPath]] */
-  relatedClassPath: CompressedRelationshipPathJSON;
+  relatedClassPath: RelationshipPathJSON<TClassInfoJSON>;
 }

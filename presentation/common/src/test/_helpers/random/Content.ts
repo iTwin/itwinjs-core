@@ -5,12 +5,12 @@
 /* eslint-disable deprecation/deprecation */
 import * as faker from "faker";
 import {
-  CategoryDescription, CategoryDescriptionJSON, CompressedClassInfoJSON, CompressedPropertyInfoJSON, CompressedRelatedClassInfoJSON, Content, Descriptor, EditorDescription, Field, NestedContentField, PrimitiveTypeDescription,
+  CategoryDescription, CategoryDescriptionJSON, CompressedClassInfoJSON, Content, Descriptor, EditorDescription, Field, NestedContentField, PrimitiveTypeDescription,
   PropertiesField, PropertyInfoJSON, PropertyValueFormat, RelatedClassInfoJSON, StructTypeDescription, TypeDescription,
 } from "../../../presentation-common";
-import { CompressedDescriptorJSON, CompressedSelectClassInfoJSON, DescriptorJSON, SelectClassInfoJSON } from "../../../presentation-common/content/Descriptor";
-import { BaseFieldJSON, CompressedFieldJSON, CompressedPropertiesFieldJSON, FieldJSON, isNestedContentField, isPropertiesField, NestedContentFieldJSON, PropertiesFieldJSON } from "../../../presentation-common/content/Fields";
-import { CompressedPropertyJSON, PropertyJSON } from "../../../presentation-common/content/Property";
+import { CompressedDescriptorJSON, DescriptorJSON, SelectClassInfoJSON } from "../../../presentation-common/content/Descriptor";
+import { BaseFieldJSON, FieldJSON, isNestedContentField, isPropertiesField, NestedContentFieldJSON, PropertiesFieldJSON } from "../../../presentation-common/content/Fields";
+import { PropertyJSON } from "../../../presentation-common/content/Property";
 import { createRandomECClassInfoJSON, createRandomPropertyInfoJSON, createRandomRelatedClassInfoJSON, createRandomRelationshipPathJSON } from "./EC";
 import { nullable } from "./Misc";
 
@@ -136,12 +136,13 @@ export const createRandomDescriptorJSON = (displayType?: string, fields?: FieldJ
 
 export const compressDescriptorJSON = (json: DescriptorJSON): CompressedDescriptorJSON => {
   const classesMap: { [id: string]: CompressedClassInfoJSON } = {};
-  const selectClasses: CompressedSelectClassInfoJSON[] = json.selectClasses.map((selectClass) => {
-    classesMap[selectClass.selectClassInfo.id] = { ...selectClass.selectClassInfo };
+  const selectClasses: SelectClassInfoJSON<string>[] = json.selectClasses.map((selectClass) => {
+    const { id, ...leftOverInfo } = selectClass.selectClassInfo;
+    classesMap[id] = leftOverInfo;
 
     return {
       ...selectClass,
-      selectClassInfo: selectClass.selectClassInfo.id,
+      selectClassInfo: id,
       relatedInstanceClasses: selectClass.relatedInstanceClasses.map((instanceClass) => compressRelatedClassInfoJSON(instanceClass, classesMap)),
       navigationPropertyClasses: selectClass.navigationPropertyClasses.map((propertyClass) => compressRelatedClassInfoJSON(propertyClass, classesMap)),
       pathToPrimaryClass: selectClass.pathToPrimaryClass.map((relatedClass) => compressRelatedClassInfoJSON(relatedClass, classesMap)),
@@ -149,7 +150,7 @@ export const compressDescriptorJSON = (json: DescriptorJSON): CompressedDescript
     };
   });
 
-  const fields: CompressedFieldJSON[] = json.fields.map((field) => {
+  const fields: FieldJSON<string>[] = json.fields.map((field) => {
     if (isPropertiesField(field))
       return {
         ...field,
@@ -157,10 +158,11 @@ export const compressDescriptorJSON = (json: DescriptorJSON): CompressedDescript
       };
 
     if (isNestedContentField(field)) {
-      classesMap[field.contentClassInfo.id] = { ...field.contentClassInfo };
+      const { id, ...leftOverInfo } = field.contentClassInfo;
+      classesMap[id] = leftOverInfo;
       return {
         ...field,
-        contentClassInfo: field.contentClassInfo.id,
+        contentClassInfo: id,
         pathToPrimaryClass: field.pathToPrimaryClass.map((classInfoJSON) => compressRelatedClassInfoJSON(classInfoJSON, classesMap)),
       };
     }
@@ -176,15 +178,16 @@ export const compressDescriptorJSON = (json: DescriptorJSON): CompressedDescript
   };
 };
 
-const compressPropertyJSON = (json: PropertyJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): CompressedPropertyJSON => {
+const compressPropertyJSON = (json: PropertyJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyJSON<string> => {
   return {
     property: compressPropertyInfoJSON(json.property, classesMap),
     relatedClassPath: json.relatedClassPath.map((classInfoJSON) => compressRelatedClassInfoJSON(classInfoJSON, classesMap)),
   };
 };
 
-const compressPropertyInfoJSON = (json: PropertyInfoJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): CompressedPropertyInfoJSON => {
-  classesMap[json.classInfo.id] = { ...json.classInfo };
+const compressPropertyInfoJSON = (json: PropertyInfoJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfoJSON<string> => {
+  const { id, ...leftOverInfo } = json.classInfo;
+  classesMap[id] = leftOverInfo;
 
   return {
     ...json,
@@ -192,16 +195,20 @@ const compressPropertyInfoJSON = (json: PropertyInfoJSON, classesMap: { [id: str
   };
 };
 
-const compressRelatedClassInfoJSON = (json: RelatedClassInfoJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): CompressedRelatedClassInfoJSON => {
-  classesMap[json.sourceClassInfo.id] = { ...json.sourceClassInfo };
-  classesMap[json.targetClassInfo.id] = { ...json.targetClassInfo };
-  classesMap[json.relationshipInfo.id] = { ...json.relationshipInfo };
+const compressRelatedClassInfoJSON = (json: RelatedClassInfoJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON<string> => {
+  const { id: sourceId, ...sourceLeftOverInfo } = json.sourceClassInfo;
+  const { id: targetId, ...targetLeftOverInfo } = json.targetClassInfo;
+  const { id: relationshipId, ...relationshipLeftOverInfo } = json.relationshipInfo;
+
+  classesMap[sourceId] = { ...sourceLeftOverInfo };
+  classesMap[targetId] = { ...targetLeftOverInfo };
+  classesMap[relationshipId] = { ...relationshipLeftOverInfo };
 
   return {
     ...json,
-    sourceClassInfo: json.sourceClassInfo.id,
-    targetClassInfo: json.targetClassInfo.id,
-    relationshipInfo: json.relationshipInfo.id,
+    sourceClassInfo: sourceId,
+    targetClassInfo: targetId,
+    relationshipInfo: relationshipId,
   };
 };
 

@@ -6,10 +6,9 @@
  * @module Content
  */
 
-import { JsonUtils } from "@bentley/bentleyjs-core";
-import { ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, CompressedRelatedClassInfoJSON, CompressedRelationshipPathJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON } from "../EC";
+import { ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON } from "../EC";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
-import { CompressedFieldJSON, Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
+import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
 
 /**
  * Data structure that describes an ECClass in content [[Descriptor]].
@@ -34,22 +33,13 @@ export interface SelectClassInfo {
  * Serialized [[SelectClassInfo]] JSON representation
  * @public
  */
-export interface SelectClassInfoJSON {
-  selectClassInfo: ClassInfoJSON;
+export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+  selectClassInfo: TClassInfoJSON;
   isSelectPolymorphic: boolean;
-  pathToPrimaryClass: RelationshipPathJSON;
-  relatedPropertyPaths: RelationshipPathJSON[];
-  navigationPropertyClasses: RelatedClassInfoJSON[];
-  relatedInstanceClasses: RelatedClassInfoJSON[];
-}
-
-export interface CompressedSelectClassInfoJSON {
-  selectClassInfo: string;
-  isSelectPolymorphic: boolean;
-  pathToPrimaryClass: CompressedRelationshipPathJSON;
-  relatedPropertyPaths: CompressedRelationshipPathJSON[];
-  navigationPropertyClasses: CompressedRelatedClassInfoJSON[];
-  relatedInstanceClasses: CompressedRelatedClassInfoJSON[];
+  pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
+  relatedPropertyPaths: RelationshipPathJSON<TClassInfoJSON>[];
+  navigationPropertyClasses: RelatedClassInfoJSON<TClassInfoJSON>[];
+  relatedInstanceClasses: RelatedClassInfoJSON<TClassInfoJSON>[];
 }
 
 /** @public */
@@ -66,23 +56,14 @@ export namespace SelectClassInfo {
     };
   }
 
-  export function decompressSelectClassInfoJSON(compressedSelectClass: CompressedSelectClassInfoJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfoJSON {
+  export function fromCompressedSelectClassInfoJSON(compressedSelectClass: SelectClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfoJSON {
     return {
       ...compressedSelectClass,
       selectClassInfo: {id: compressedSelectClass.selectClassInfo, ...classesMap[compressedSelectClass.selectClassInfo]},
-      navigationPropertyClasses: compressedSelectClass.navigationPropertyClasses.map((compressedInfoJSON) => decompressRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
-      relatedInstanceClasses: compressedSelectClass.relatedInstanceClasses.map((compressedInfoJSON) => decompressRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
-      pathToPrimaryClass: compressedSelectClass.pathToPrimaryClass.map((compressedInfoJSON) => decompressRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
-      relatedPropertyPaths: compressedSelectClass.relatedPropertyPaths.map((path) => path.map((compressedInfoJSON) => decompressRelatedClassInfoJSON(compressedInfoJSON, classesMap))),
-    };
-  }
-
-  export function decompressRelatedClassInfoJSON(compressedInfoJSON: CompressedRelatedClassInfoJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON {
-    return {
-      ...compressedInfoJSON,
-      sourceClassInfo: {id: compressedInfoJSON.sourceClassInfo, ...classesMap[compressedInfoJSON.sourceClassInfo]},
-      targetClassInfo: {id: compressedInfoJSON.targetClassInfo, ...classesMap[compressedInfoJSON.targetClassInfo]},
-      relationshipInfo: {id: compressedInfoJSON.relationshipInfo, ...classesMap[compressedInfoJSON.relationshipInfo]},
+      navigationPropertyClasses: compressedSelectClass.navigationPropertyClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
+      relatedInstanceClasses: compressedSelectClass.relatedInstanceClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
+      pathToPrimaryClass: compressedSelectClass.pathToPrimaryClass.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
+      relatedPropertyPaths: compressedSelectClass.relatedPropertyPaths.map((path) => path.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedRelatedClassInfoJSON(compressedInfoJSON, classesMap))),
     };
   }
 }
@@ -164,21 +145,11 @@ export interface DescriptorJSON {
  * Serialized [[Descriptor]] JSON representation.
  * @beta
  */
-export interface CompressedDescriptorJSON {
-  connectionId: string;
-  inputKeysHash: string;
-  contentOptions: any;
-  selectionInfo?: SelectionInfo;
-  displayType: string;
-  selectClasses: CompressedSelectClassInfoJSON[];
-  categories?: CategoryDescriptionJSON[]; // TODO: make required in 3.0
-  fields: CompressedFieldJSON[];
-  sortingFieldName?: string;
-  sortDirection?: SortDirection;
-  contentFlags: number;
-  filterExpression?: string;
+export type CompressedDescriptorJSON = Omit<DescriptorJSON, "selectClasses" | "fields"> & {
+  selectClasses: SelectClassInfoJSON<string>[];
   classesMap: { [id: string]: CompressedClassInfoJSON };
-}
+  fields: FieldJSON<string>[];
+};
 
 function isCompressedDescriptorJSON(descriptorJSON: DescriptorJSON | CompressedDescriptorJSON): descriptorJSON is CompressedDescriptorJSON {
   return (descriptorJSON as CompressedDescriptorJSON).classesMap !== undefined;
@@ -321,25 +292,10 @@ export class Descriptor implements DescriptorSource {
     if (typeof json === "string")
       return JSON.parse(json, Descriptor.reviver);
     if (isCompressedDescriptorJSON(json))
-      json = this.decompressJSON(json);
+      json = Descriptor.fromCompressedJSON(json);
     return json.categories
       ? this.fromJSONWithCategories(json as DescriptorJSON & { categories: CategoryDescriptionJSON[] })
       : this.fromJSONWithoutCategories(json as DescriptorJSON & { categories: undefined });
-  }
-
-  private static decompressJSON(json: CompressedDescriptorJSON): DescriptorJSON {
-    const { classesMap, ...leftOverJson } = json;
-
-    const decompressedSelectClasses = json.selectClasses.map((compressedSelectClass) => SelectClassInfo.decompressSelectClassInfoJSON(compressedSelectClass, classesMap));
-    const decompressedFieldJSON: FieldJSON[] = json.fields.map((compressedFieldJSON) => Field.decompressFieldJSON(compressedFieldJSON, classesMap)).filter((decompressedJson): decompressedJson is FieldJSON => !!decompressedJson);
-
-    const descriptorJSON: DescriptorJSON = {
-      ...leftOverJson,
-      selectClasses: decompressedSelectClasses,
-      fields: decompressedFieldJSON,
-    };
-
-    return descriptorJSON;
   }
 
   private static fromJSONWithCategories(json: DescriptorJSON & { categories: CategoryDescriptionJSON[] }): Descriptor {
@@ -430,5 +386,24 @@ export class Descriptor implements DescriptorSource {
     if (this.sortingField)
       overrides.sorting = { field: this.sortingField.getFieldDescriptor(), direction: this.sortDirection ?? SortDirection.Ascending };
     return overrides;
+  }
+}
+
+/** @alpha */
+export namespace Descriptor {
+  /** Deserialize compressed [[Descriptor]] from JSON */
+  export function fromCompressedJSON(json: CompressedDescriptorJSON): DescriptorJSON {
+    const { classesMap, ...leftOverJson } = json;
+
+    const decompressedSelectClasses = json.selectClasses.map((compressedSelectClass) => SelectClassInfo.fromCompressedSelectClassInfoJSON(compressedSelectClass, classesMap));
+    const decompressedFieldJSON: FieldJSON[] = json.fields.map((compressedFieldJSON) => Field.fromCompressedFieldJSON(compressedFieldJSON, classesMap)).filter((decompressedJson): decompressedJson is FieldJSON => !!decompressedJson);
+
+    const descriptorJSON: DescriptorJSON = {
+      ...leftOverJson,
+      selectClasses: decompressedSelectClasses,
+      fields: decompressedFieldJSON,
+    };
+
+    return descriptorJSON;
   }
 }

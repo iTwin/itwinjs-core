@@ -7,13 +7,12 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, CompressedPropertyInfoJSON, CompressedRelationshipPathJSON, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON, StrippedRelationshipPath } from "../EC";
+import { ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON, StrippedRelationshipPath } from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
 import { RelationshipMeaning } from "../rules/content/modifiers/RelatedPropertiesSpecification";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
-import { SelectClassInfo } from "./Descriptor";
 import { EditorDescription } from "./Editor";
-import { CompressedPropertyJSON, Property, PropertyJSON } from "./Property";
+import { Property, PropertyJSON } from "./Property";
 import { RendererDescription } from "./Renderer";
 import { TypeDescription } from "./TypeDescription";
 
@@ -36,67 +35,38 @@ export interface BaseFieldJSON {
  * Data structure for a [[PropertiesField]] serialized to JSON.
  * @public
  */
-export interface PropertiesFieldJSON extends BaseFieldJSON {
-  properties: PropertyJSON[];
-}
-
-/**
- * Data structure for a [[CompressedProperty]] serialized to JSON.
- * @beta
- */
-export interface CompressedPropertiesFieldJSON extends BaseFieldJSON {
-  properties: CompressedPropertyJSON[];
+export interface PropertiesFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
+  properties: PropertyJSON<TClassInfoJSON>[];
 }
 
 /**
  * Data structure for a [[NestedContentField]] serialized to JSON.
  * @public
  */
-export interface NestedContentFieldJSON extends BaseFieldJSON {
-  contentClassInfo: ClassInfoJSON;
-  pathToPrimaryClass: RelationshipPathJSON;
+export interface NestedContentFieldJSON <TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
+  contentClassInfo: TClassInfoJSON;
+  pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
   /** @alpha */
   relationshipMeaning?: RelationshipMeaning;
   /** @alpha */
   actualPrimaryClassIds?: Id64String[];
   autoExpand?: boolean;
-  nestedFields: FieldJSON[];
-}
-
-/**
- * Data structure for a [[CompressedNestedContentField]] serialized to JSON.
- * @beta
- */
-export interface CompressedNestedContentFieldJSON extends BaseFieldJSON {
-  contentClassInfo: string;
-  pathToPrimaryClass: CompressedRelationshipPathJSON;
-  /** @alpha */
-  relationshipMeaning?: RelationshipMeaning;
-  /** @alpha */
-  actualPrimaryClassIds?: Id64String[];
-  autoExpand?: boolean;
-  nestedFields: CompressedFieldJSON[];
+  nestedFields: FieldJSON<TClassInfoJSON>[];
 }
 
 /**
  * JSON representation of a [[Field]]
  * @public
  */
-export type FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentFieldJSON;
-
-/**
- * JSON representation of a [[CompressedField]]
- * @beta
- */
-export type CompressedFieldJSON = BaseFieldJSON | CompressedPropertiesFieldJSON | CompressedNestedContentFieldJSON;
+export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
 
 /** Is supplied field a properties field. */
-export const isPropertiesField = (field: FieldJSON | Field): field is CompressedPropertiesFieldJSON | PropertiesFieldJSON | PropertiesField => {
+export const isPropertiesField = (field: FieldJSON | Field): field is PropertiesFieldJSON | PropertiesFieldJSON<string> | PropertiesField => {
   return !!(field as any).properties;
 };
 
 /** Is supplied field a nested content field. */
-export const isNestedContentField = (field: FieldJSON | Field): field is CompressedNestedContentFieldJSON | NestedContentFieldJSON | NestedContentField => {
+export const isNestedContentField = (field: FieldJSON | Field): field is NestedContentFieldJSON | NestedContentFieldJSON<string> | NestedContentField => {
   return !!(field as any).nestedFields;
 };
 
@@ -217,45 +187,14 @@ export class Field {
     });
   }
 
-  public static decompressFieldJSON(json: CompressedFieldJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): FieldJSON | undefined {
+  public static fromCompressedFieldJSON(json: FieldJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): FieldJSON | undefined {
     if (isPropertiesField(json))
-      return this.decompressPropertiesFieldJSON(json, classesMap);
+      return fromCompressedPropertiesFieldJSON(json, classesMap);
 
     if (isNestedContentField(json))
-      return this.decompressNestedContentFieldJSON(json, classesMap);
+      return fromCompressedNestedContentFieldJSON(json, classesMap);
 
     return json;
-  }
-
-  private static decompressNestedContentFieldJSON(compressedNestedContentFieldJSON: CompressedNestedContentFieldJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): NestedContentFieldJSON {
-    return {
-      ...compressedNestedContentFieldJSON,
-      contentClassInfo: { id: compressedNestedContentFieldJSON.contentClassInfo, ...classesMap[compressedNestedContentFieldJSON.contentClassInfo] },
-      nestedFields: compressedNestedContentFieldJSON.nestedFields.map((compressedFieldJSON) => this.decompressFieldJSON(compressedFieldJSON, classesMap)).filter((decompressedJson): decompressedJson is FieldJSON => !!decompressedJson),
-      pathToPrimaryClass: compressedNestedContentFieldJSON.pathToPrimaryClass.map((compressedInfoJSON) => SelectClassInfo.decompressRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
-    };
-  }
-
-  private static decompressPropertiesFieldJSON(compressedPropertiesFieldJSON: CompressedPropertiesFieldJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertiesFieldJSON {
-    return {
-      ...compressedPropertiesFieldJSON,
-      properties: compressedPropertiesFieldJSON.properties.map((compressedPropertyJSON) => Field.decompressPropertyJSON(compressedPropertyJSON, classesMap)),
-    };
-  }
-
-  private static decompressPropertyJSON(compressedPropertyJSON: CompressedPropertyJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyJSON {
-    return {
-      property: Field.decompressPropertyInfoJSON(compressedPropertyJSON.property, classesMap),
-      // eslint-disable-next-line deprecation/deprecation
-      relatedClassPath: compressedPropertyJSON.relatedClassPath.map((compressedInfoJSON) => SelectClassInfo.decompressRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
-    };
-  }
-
-  private static decompressPropertyInfoJSON(compressedPropertyJSON: CompressedPropertyInfoJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfoJSON {
-    return {
-      ...compressedPropertyJSON,
-      classInfo: {id: compressedPropertyJSON.classInfo, ...classesMap[compressedPropertyJSON.classInfo]},
-    };
   }
 
   protected static getCategoryFromFieldJson(fieldJson: FieldJSON, categories?: CategoryDescription[]): CategoryDescription {
@@ -627,4 +566,35 @@ export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
   propertyClass?: string;
   /** @deprecated Use [[properties]] array */
   propertyName?: string;
+}
+
+function fromCompressedNestedContentFieldJSON(compressedNestedContentFieldJSON: NestedContentFieldJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): NestedContentFieldJSON {
+  return {
+    ...compressedNestedContentFieldJSON,
+    contentClassInfo: { id: compressedNestedContentFieldJSON.contentClassInfo, ...classesMap[compressedNestedContentFieldJSON.contentClassInfo] },
+    nestedFields: compressedNestedContentFieldJSON.nestedFields.map((compressedFieldJSON) => Field.fromCompressedFieldJSON(compressedFieldJSON, classesMap)).filter((fromCompressededJson): fromCompressededJson is FieldJSON => !!fromCompressededJson),
+    pathToPrimaryClass: compressedNestedContentFieldJSON.pathToPrimaryClass.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
+  };
+}
+
+function fromCompressedPropertiesFieldJSON(compressedPropertiesFieldJSON: PropertiesFieldJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertiesFieldJSON {
+  return {
+    ...compressedPropertiesFieldJSON,
+    properties: compressedPropertiesFieldJSON.properties.map((compressedPropertyJSON) => fromCompressedPropertyJSON(compressedPropertyJSON, classesMap)),
+  };
+}
+
+function fromCompressedPropertyJSON(compressedPropertyJSON: PropertyJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyJSON {
+  return {
+    property: fromCompressedPropertyInfoJSON(compressedPropertyJSON.property, classesMap),
+    // eslint-disable-next-line deprecation/deprecation
+    relatedClassPath: compressedPropertyJSON.relatedClassPath.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
+  };
+}
+
+function fromCompressedPropertyInfoJSON(compressedPropertyJSON: PropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfoJSON {
+  return {
+    ...compressedPropertyJSON,
+    classInfo: {id: compressedPropertyJSON.classInfo, ...classesMap[compressedPropertyJSON.classInfo]},
+  };
 }

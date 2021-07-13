@@ -185,24 +185,8 @@ export namespace PropertyInfo {
   }
 }
 
-/**
- * A serialized version of [[PropertyInfo]]
- * @public
- */
-export interface PropertyInfoJSON {
-  classInfo: ClassInfoJSON;
-  name: string;
-  type: string;
-  enumerationInfo?: EnumerationInfo;
-  kindOfQuantity?: KindOfQuantityInfo;
-}
-
-/**
- * A serialized and compressed version of [[PropertyInfo]]
- * @public
- */
-export interface CompressedPropertyInfoJSON {
-  classInfo: string;
+export interface PropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+  classInfo: TClassInfoJSON;
   name: string;
   type: string;
   enumerationInfo?: EnumerationInfo;
@@ -257,6 +241,16 @@ export namespace RelatedClassInfo {
     };
   }
 
+  /** Deserialize compressed [[RelatedClassInfo]] from JSON */
+  export function fromCompressedRelatedClassInfoJSON(compressedInfoJSON: RelatedClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON {
+    return {
+      ...compressedInfoJSON,
+      sourceClassInfo: { id: compressedInfoJSON.sourceClassInfo, ...classesMap[compressedInfoJSON.sourceClassInfo] },
+      targetClassInfo: { id: compressedInfoJSON.targetClassInfo, ...classesMap[compressedInfoJSON.targetClassInfo] },
+      relationshipInfo: { id: compressedInfoJSON.relationshipInfo, ...classesMap[compressedInfoJSON.relationshipInfo] },
+    };
+  }
+
   /** Check two [[RelatedClassInfo]] or [[StrippedRelatedClassInfo]] for equality */
   export function equals(lhs: RelatedClassInfo | StrippedRelatedClassInfo, rhs: RelatedClassInfo | StrippedRelatedClassInfo): boolean {
     return lhs.isForwardRelationship === rhs.isForwardRelationship
@@ -293,24 +287,11 @@ export namespace RelatedClassInfo {
  * A serialized version of [[RelatedClassInfo]]
  * @public
  */
-export interface RelatedClassInfoJSON {
-  sourceClassInfo: ClassInfoJSON;
-  targetClassInfo: ClassInfoJSON;
+export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+  sourceClassInfo: TClassInfoJSON;
+  targetClassInfo: TClassInfoJSON;
   isPolymorphicTargetClass?: boolean;
-  relationshipInfo: ClassInfoJSON;
-  isForwardRelationship: boolean;
-  isPolymorphicRelationship?: boolean;
-}
-
-/**
- * A serialized and compressed version of [[RelatedClassInfo]]
- * @beta
- */
-export interface CompressedRelatedClassInfoJSON {
-  sourceClassInfo: string;
-  targetClassInfo: string;
-  isPolymorphicTargetClass?: boolean;
-  relationshipInfo: string;
+  relationshipInfo: TClassInfoJSON;
   isForwardRelationship: boolean;
   isPolymorphicRelationship?: boolean;
 }
@@ -325,13 +306,7 @@ export type RelationshipPath = RelatedClassInfo[];
  * Serialized [[RelationshipPath]]
  * @public
  */
-export type RelationshipPathJSON = RelatedClassInfoJSON[];
-
-/**
- * Serialized and compressed [[RelationshipPath]]
- * @beta
- */
-export type CompressedRelationshipPathJSON = CompressedRelatedClassInfoJSON[];
+export type RelationshipPathJSON<TClassInfoJSON = ClassInfoJSON> = RelatedClassInfoJSON<TClassInfoJSON>[];
 
 /** @public */
 export namespace RelationshipPath { // eslint-disable-line @typescript-eslint/no-redeclare
