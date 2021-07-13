@@ -157,10 +157,10 @@ const rule = {
           importInfo === undefined || importInfo.isExternalLibraryImport;
         if (importIsPackage) return;
 
-        // the path in the ts program's map is all lower case on windows,
-        // but not the path generated from the cased import specifier
+        // path case can be different between the cased import specifier, and the resolved system path
+        // use lower case on OSs known to use lower cased file systems (e.g. windows and mac but not linux)
         const targetFilePathOfThisImportStmt =
-          process.platform === "win32"
+          process.platform === "win32" || process.platform === "darwin"
             ? importInfo.resolvedFileName.toLowerCase()
             : importInfo.resolvedFileName;
 
