@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { BSplineCurve3d } from "../../bspline/BSplineCurve";
 import { BSplineCurveOps } from "../../bspline/BSplineCurveOps";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { AngleSweep } from "../../geometry3d/AngleSweep";

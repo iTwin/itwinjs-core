@@ -147,7 +147,7 @@ export abstract class IndexedXYZCollection {
 
   /**
    * For each run of points with indices i+1 to i+n within distance tolerance of points[i], return the indices i+1, ..., i+n.
-   * @return array of 0-based indices of duplicate points
+   * @return ordered array of 0-based indices of duplicate points
    */
   public findOrderedDuplicates(tolerance: number = Geometry.smallMetricDistance): number[] {
     const tol2 = tolerance * tolerance;

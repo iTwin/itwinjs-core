@@ -2821,6 +2821,7 @@ export abstract class IndexedXYZCollection {
     cyclicIndex(i: number): number;
     abstract distanceIndexIndex(index0: number, index1: number): number | undefined;
     abstract distanceSquaredIndexIndex(index0: number, index1: number): number | undefined;
+    findOrderedDuplicates(tolerance?: number): number[];
     getArray(): Point3d[];
     abstract getPoint3dAtCheckedPointIndex(index: number, result?: Point3d): Point3d | undefined;
     abstract getPoint3dAtUncheckedPointIndex(index: number, result?: Point3d): Point3d;
@@ -2923,17 +2924,26 @@ export class InterpolationCurve3dOptions {
     clone(): InterpolationCurve3dOptions;
     cloneAsInterpolationCurve3dProps(): InterpolationCurve3dProps;
     get closed(): boolean;
+    set closed(val: boolean);
     static create(source: InterpolationCurve3dProps): InterpolationCurve3dOptions;
     get endTangent(): Vector3d | undefined;
+    set endTangent(val: Vector3d | undefined);
     get fitPoints(): Point3d[];
+    set fitPoints(val: Point3d[]);
     get isChordLenKnots(): number;
+    set isChordLenKnots(val: number);
     get isChordLenTangent(): number;
+    set isChordLenTangent(val: number);
     get isColinearTangents(): number;
+    set isColinearTangents(val: number);
     get isNaturalTangents(): number;
+    set isNaturalTangents(val: number);
     get knots(): number[] | undefined;
+    set knots(val: number[] | undefined);
     get order(): number;
     reverseInPlace(): void;
     get startTangent(): Vector3d | undefined;
+    set startTangent(val: Vector3d | undefined);
     }
 
 // @public

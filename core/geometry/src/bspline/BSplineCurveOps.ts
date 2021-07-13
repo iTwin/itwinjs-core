@@ -100,7 +100,8 @@ export class BSplineCurveOps {
       options.knots = newKnots;
     }
 
-    // START HERE: num fit pts validation, if necessary append first fitpt if closed
+    // START HERE: num fit pts validation, if necessary append first fit point if closed
+    // TODO: validate start/end tangent directions? Do they point away from curve, into curve, or in parameterization direction?
 
   }
 
@@ -111,7 +112,6 @@ export class BSplineCurveOps {
   public static createThroughPointsC2Cubic(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined {
     if (undefined === this.c2CubicValidateProps(options))
       return undefined;
-
 
     // TODO: construct as per native code, forcing order = 4, ignoring weights
     // TODO: remove first/last (wraparound) knot per new convention
