@@ -54,6 +54,18 @@ export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConne
   return result.graphic;
 }
 
+const nodeIdRegex = /Node_(.*)/;
+function extractNodeId(nodeName: string): number {
+  const match = nodeName.match(nodeIdRegex);
+  assert(!!match && match.length === 2);
+  if (!match || match.length !== 2)
+    return 0;
+
+  const nodeId = Number.parseInt(match[1], 10);
+  assert(!Number.isNaN(nodeId));
+  return Number.isNaN(nodeId) ? 0 : nodeId;
+}
+
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
  */
@@ -675,6 +687,7 @@ export class ImdlReader extends GltfReader {
         } else if (undefined === layerId) {
           const branch = new GraphicBranch(true);
           branch.animationId = `${this._modelId}_${nodeKey}`;
+          branch.animationNodeId = extractNodeId(nodeKey);
           for (const primitive of primitives) {
             const graphic = this.readMeshGraphic(primitive);
             if (undefined !== graphic)

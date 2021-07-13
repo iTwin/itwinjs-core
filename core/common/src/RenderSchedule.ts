@@ -810,15 +810,14 @@ export namespace RenderSchedule {
     public readonly containsFeatureOverrides: boolean;
     /** The total time period over which this script animates. */
     public readonly duration: Range1d;
-    /** The Ids of all nodes in all timelines that apply a transform.
-     * It's a set of strings instead of numbers because that's how the node Ids are represented in the tiles/graphics...
+    /** The batchIds of all nodes in all timelines that apply a transform.
      * @internal
      */
-    public readonly transformBatchIds: ReadonlySet<string>;
+    public readonly transformBatchIds: ReadonlySet<number>;
 
     protected constructor(props: Readonly<ScriptProps>) {
       this.duration = Range1d.createNull();
-      const transformBatchIds = new Set<string>();
+      const transformBatchIds = new Set<number>();
 
       const modelTimelines: ModelTimeline[] = [];
       let containsModelClipping = false;
@@ -838,7 +837,7 @@ export namespace RenderSchedule {
         containsFeatureOverrides ||= model.containsFeatureOverrides;
 
         for (const batchId of model.transformBatchIds)
-          transformBatchIds.add(batchId.toString());
+          transformBatchIds.add(batchId);
       }
 
       this.modelTimelines = modelTimelines;

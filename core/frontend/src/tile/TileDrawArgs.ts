@@ -57,7 +57,7 @@ export interface TileDrawArgParams {
    * or "0xffffffff" for any node that does *not* apply a transform.
    * @internal
    */
-  animationTransformNodeId?: string;
+  animationTransformNodeId?: number;
 }
 /**
  * Provides context used when selecting and drawing [[Tile]]s.
@@ -107,7 +107,7 @@ export class TileDrawArgs {
   /** @internal */
   public readonly pixelSizeScaleFactor;
   /** @internal */
-  public readonly animationTransformNodeId?: string;
+  public readonly animationTransformNodeId?: number;
 
   /** Compute the size in pixels of the specified tile at the point on its bounding sphere closest to the camera. */
   public getPixelSize(tile: Tile): number {

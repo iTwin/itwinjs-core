@@ -268,7 +268,7 @@ export class Branch extends Graphic {
   }
 
   private shouldAddCommands(commands: RenderCommands): boolean {
-    const nodeId = commands.target.getAnimationTransformNodeId(this.branch.animationId);
+    const nodeId = commands.target.getAnimationTransformNodeId(this.branch.animationNodeId);
     return undefined === nodeId || nodeId === commands.target.currentAnimationTransformNodeId;
   }
 
@@ -285,10 +285,10 @@ export class Branch extends Graphic {
 
 /** @internal */
 export class AnimationTransformBranch extends Graphic {
-  public readonly nodeId: string;
+  public readonly nodeId: number;
   public readonly graphic: Graphic;
 
-  public constructor(graphic: RenderGraphic, nodeId: string) {
+  public constructor(graphic: RenderGraphic, nodeId: number) {
     super();
     assert(graphic instanceof Graphic);
     this.graphic = graphic;

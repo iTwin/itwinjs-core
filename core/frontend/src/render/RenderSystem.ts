@@ -392,7 +392,7 @@ export abstract class RenderSystem implements IDisposable {
    * The node Id is either the Id of a single transform node in the script, of 0xffffffff to indicate all nodes that have no transform applied to them.
    * @internal
    */
-  public createAnimationTransformNode(graphic: RenderGraphic, _nodeId: string): RenderGraphic {
+  public createAnimationTransformNode(graphic: RenderGraphic, _nodeId: number): RenderGraphic {
     return graphic;
   }
 

@@ -138,7 +138,7 @@ export abstract class TileTreeReference /* implements RenderMemory.Consumer */ {
   }
 
   /** @internal */
-  protected getAnimationTransformNodeId(tree: TileTree): string | undefined {
+  protected getAnimationTransformNodeId(_tree: TileTree): number | undefined {
     return undefined;
   }
 

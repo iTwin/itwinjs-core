@@ -559,7 +559,7 @@ export class System extends RenderSystem implements RenderSystemDebugControl, Re
     return new Branch(branch, transform, undefined, options);
   }
 
-  public override createAnimationTransformNode(graphic: RenderGraphic, nodeId: string): RenderGraphic {
+  public override createAnimationTransformNode(graphic: RenderGraphic, nodeId: number): RenderGraphic {
     return new AnimationTransformBranch(graphic, nodeId);
   }
 
