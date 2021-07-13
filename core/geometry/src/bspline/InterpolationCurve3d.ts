@@ -95,6 +95,27 @@ public get startTangent(): Vector3d | undefined { return this._startTangent; }
 /** access POSSIBLY UNDEFINED end tangent. */
   public get endTangent(): Vector3d | undefined { return this._endTangent; }
 
+  /** NOTE: there is no setter for order. It is always 4. */
+
+  /** set closed flag */
+  public set closed(val: boolean) { this._closed = val; }
+  /** set chord length knots flag */
+  public set isChordLenKnots(val: number) { this._isChordLenKnots = val; }
+  /** set colinear tangents flag */
+  public set isColinearTangents(val: number) { this._isColinearTangents = val; }
+  /** set chord length tangent flag */
+  public set isChordLenTangent(val: number) { this._isChordLenTangent = val; }
+  /** set natural tangents flag */
+  public set isNaturalTangents(val: number) { this._isNaturalTangents = val; }
+  /** CAPTURE start tangent */
+  public set startTangent(val: Vector3d | undefined) { this._startTangent = val; }
+  /** CAPTURE end tangent */
+  public set endTangent(val: Vector3d | undefined) { this._endTangent = val; }
+  /** CAPTURE fit points */
+  public set fitPoints(val: Point3d[]) { this._fitPoints = val; }
+  /** CAPTURE knots */
+  public set knots(val: number[] | undefined) { this._knots = val; }
+
   /** One step setup of properties not named in constructor.
    * * CAPTURE pointers to tangents.
    * * OPTIONALLY downgrade "0" values to undefined.
