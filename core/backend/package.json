@@ -130,7 +130,7 @@
     "js-base64": "^2.4.5",
     "multiparty": "^4.2.1",
     "semver": "^5.5.0",
-    "ws": "^7.2.0"
+    "ws": "7.5.2"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc"
