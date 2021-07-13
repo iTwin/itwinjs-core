@@ -66,7 +66,7 @@ export const isPropertiesField = (field: FieldJSON | Field): field is Properties
 };
 
 /** Is supplied field a nested content field. */
-export const isNestedContentField = (field: FieldJSON | Field): field is NestedContentFieldJSON | NestedContentFieldJSON<string> | NestedContentField => {
+export const isNestedContentField = (field: FieldJSON | Field): field is NestedContentFieldJSON<any> | NestedContentField => {
   return !!(field as any).nestedFields;
 };
 
