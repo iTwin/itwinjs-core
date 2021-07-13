@@ -15,7 +15,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
-import { GraphicBranch } from "../render/GraphicBranch";
+import { AnimationNodeId, GraphicBranch } from "../render/GraphicBranch";
 import { InstancedGraphicParams } from "../render/InstancedGraphicParams";
 import { AuxChannelTable, AuxChannelTableProps } from "../render/primitives/AuxChannelTable";
 import { DisplayParams } from "../render/primitives/DisplayParams";
@@ -670,7 +670,27 @@ export class ImdlReader extends GltfReader {
         }
       }
     } else {
-      for (const nodeKey of Object.keys(this._nodes)) {
+      const readBranch = (primitives: any[], nodeId: number, animationId: string | undefined) => {
+        const branch = new GraphicBranch(true);
+        branch.animationId = animationId;
+        branch.animationNodeId = nodeId;
+
+        for (const primitive of primitives) {
+          const graphic = this.readMeshGraphic(primitive);
+          if (graphic)
+            branch.add(graphic);
+        }
+
+        if (!branch.isEmpty)
+          graphics.push(this._system.createBranch(branch, Transform.createIdentity()));
+      };
+
+      // If more than one node exists, then we need to create a branch for Node_Root so that elements not associated with
+      // any node in the schedule script can be grouped together.
+      const nodeKeys = Object.keys(this._nodes);
+      const needBranchForRootNode = nodeKeys.length > 0;
+
+      for (const nodeKey of nodeKeys) {
         const meshValue = this._meshes[this._nodes[nodeKey]];
         const primitives = JsonUtils.asArray(meshValue?.primitives);
         if (undefined === primitives)
@@ -679,23 +699,16 @@ export class ImdlReader extends GltfReader {
         const layerId = meshValue.layer as string | undefined;
 
         if ("Node_Root" === nodeKey) {
-          for (const primitive of primitives) {
-            const graphic = this.readMeshGraphic(primitive);
-            if (undefined !== graphic)
-              graphics.push(graphic);
+          if (needBranchForRootNode) {
+            readBranch(primitives, AnimationNodeId.Untransformed, undefined);
+          } else {
+            for (const primitive of primitives) { const graphic = this.readMeshGraphic(primitive);
+              if (undefined !== graphic)
+                graphics.push(graphic);
+            }
           }
         } else if (undefined === layerId) {
-          const branch = new GraphicBranch(true);
-          branch.animationId = `${this._modelId}_${nodeKey}`;
-          branch.animationNodeId = extractNodeId(nodeKey);
-          for (const primitive of primitives) {
-            const graphic = this.readMeshGraphic(primitive);
-            if (undefined !== graphic)
-              branch.add(graphic);
-          }
-
-          if (!branch.isEmpty)
-            graphics.push(this._system.createBranch(branch, Transform.createIdentity()));
+          readBranch(primitives, extractNodeId(nodeKey), `${this._modelId}_${nodeKey}`);
         } else {
           const layerGraphics: RenderGraphic[] = [];
           for (const primitive of primitives) {
