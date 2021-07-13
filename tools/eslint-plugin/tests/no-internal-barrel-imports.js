@@ -73,6 +73,7 @@ ruleTester.run(
       },
       { code: `import { barreled } from "barrel-pkg";` },
       { code: `import {A} from "./typebarrel";` },
+      { code: `import {y, x} from "./external-reexports";` },
     ],
     invalid: [
       {

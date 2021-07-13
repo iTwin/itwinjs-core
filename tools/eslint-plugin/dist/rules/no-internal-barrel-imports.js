@@ -147,7 +147,7 @@ const rule = {
           importNodeTs.moduleSpecifier.text
         );
 
-        const importIsPackage = importInfo === undefined;
+        const importIsPackage = importInfo === undefined || importInfo.isExternalLibraryImport;
         if (importIsPackage) return;
 
         const importedModule = program.getSourceFileByPath(
@@ -157,17 +157,15 @@ const rule = {
 
         if (ignoredBarrelModules.includes(importedModule.fileName)) return;
 
-        if (importInfo.isExternalLibraryImport) return;
-
         /** @type {ts.ImportDeclaration["moduleSpecifier"][]} */
         const imports = importedModule.imports;
         const containsReExport = imports.some(
           (importSpecifier) => {
             const isNonTypeOnlyReExport = ts.isExportDeclaration(importSpecifier.parent) && !importSpecifier.parent.isTypeOnly;
-            if (!importedModule.resolvedModules.has(importSpecifier.text))
-              throw Error("module did not have this import");
-            const thisImportImportsPackage = importedModule.resolvedModules.get(importSpecifier.text) === undefined;
-            return isNonTypeOnlyReExport && !thisImportImportsPackage;
+            if (!isNonTypeOnlyReExport) return false;
+            const transitiveImportInfo = importedModule.resolvedModules.get(importSpecifier.text);
+            const reExportsExternalPackage = transitiveImportInfo === undefined || transitiveImportInfo.isExternalLibraryImport;
+            return !reExportsExternalPackage;
           }
         );
 
