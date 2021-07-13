@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/eslint-plugin",
+      "comment": "add and recommend no-internal-barrel-imports rule",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/eslint-plugin",
+  "email": "MichaelBelousov@users.noreply.github.com"
+}
