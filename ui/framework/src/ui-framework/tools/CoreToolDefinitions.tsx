@@ -16,7 +16,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { ConditionalBooleanValue, ConditionalStringValue } from "@bentley/ui-abstract";
 import { ToolbarPopupContext } from "@bentley/ui-components";
-import { PopupButton, PopupButtonChildrenRenderPropArgs } from "./../toolbar/PopupButton";
+import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../toolbar/PopupButton";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { KeyinBrowser } from "../keyinbrowser/KeyinBrowser";
 import { getIsHiddenIfSelectionNotActive, getSelectionContextSyncEventIds, selectionContextStateFunc } from "../selection/SelectionContextItemDef";

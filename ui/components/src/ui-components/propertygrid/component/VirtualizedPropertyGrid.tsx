@@ -15,9 +15,9 @@ import { areEqual, ListChildComponentProps, VariableSizeList } from "react-windo
 import { assert } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
-import { FilteredType } from "./../dataproviders/filterers/PropertyDataFiltererBase";
-import { MutableCategorizedPrimitiveProperty } from "./../internal/flat-items/MutableCategorizedPrimitiveProperty";
-import { MutableGridCategory } from "./../internal/flat-items/MutableGridCategory";
+import { FilteredType } from "../dataproviders/filterers/PropertyDataFiltererBase";
+import { MutableCategorizedPrimitiveProperty } from "../internal/flat-items/MutableCategorizedPrimitiveProperty";
+import { MutableGridCategory } from "../internal/flat-items/MutableGridCategory";
 import { ConditionalAutoSizer } from "../../common/ConditionalAutoSizer";
 import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { createContextWithMandatoryProvider } from "../../common/UseContextWithMandatoryProvider";

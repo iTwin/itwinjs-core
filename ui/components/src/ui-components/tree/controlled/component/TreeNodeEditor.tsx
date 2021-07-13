@@ -8,8 +8,8 @@
 
 import * as React from "react";
 import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
-import { EditorContainer, PropertyUpdatedArgs } from "./../../../editors/EditorContainer";
-import { TreeModelNode } from "./../TreeModel";
+import { EditorContainer, PropertyUpdatedArgs } from "../../../editors/EditorContainer";
+import { TreeModelNode } from "../TreeModel";
 
 /** Properties for [[TreeNodeEditor]] component
  * @beta

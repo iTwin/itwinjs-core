@@ -13,7 +13,7 @@ import { viewWithUnifiedSelection } from "@bentley/presentation-components";
 import { ViewportComponent, ViewStateProp } from "@bentley/ui-components";
 import { FillCentered } from "@bentley/ui-core";
 
-import { FrontstageManager } from "./../frontstage/FrontstageManager";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { connectIModelConnectionAndViewState } from "../redux/connectIModel";

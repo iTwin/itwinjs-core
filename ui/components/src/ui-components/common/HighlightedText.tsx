@@ -8,7 +8,7 @@
 
 import React from "react";
 import Highlighter from "react-highlight-words";
-import { HighlightingEngine } from "./../tree/HighlightingEngine";
+import { HighlightingEngine } from "../tree/HighlightingEngine";
 
 /**
  * Properties of [[HighlightedText]]
