@@ -992,4 +992,35 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
+  it("should merge two iModels", async () => {
+    // first source iModel
+    const sourceDbFile1: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "Merge-Source1.bim");
+    const sourceDb1 = SnapshotDb.createEmpty(sourceDbFile1, { rootSubject: { name: "Merge-Source1" } });
+    await IModelTransformerUtils.prepareSourceDb(sourceDb1);
+    IModelTransformerUtils.populateSourceDb(sourceDb1);
+    sourceDb1.saveChanges();
+
+    // second source iModel
+    const sourceDbFile2: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "Merge-Source2.bim");
+    const sourceDb2 = SnapshotDb.createEmpty(sourceDbFile2, { rootSubject: { name: "Merge-Source2" } });
+    await IModelTransformerUtils.prepareSourceDb(sourceDb2);
+    IModelTransformerUtils.populateSourceDb(sourceDb2);
+    sourceDb2.saveChanges();
+
+    // Target IModelDb
+    const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "Merge-Target.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "Merge-Target" } });
+    await IModelTransformerUtils.prepareTargetDb(targetDb);
+    targetDb.saveChanges();
+
+    const firstTransformer = new IModelTransformer(sourceDb1, targetDb);
+    const secondTransformer = new IModelTransformer(sourceDb1, targetDb);
+    await firstTransformer.processAll();
+    await secondTransformer.processAll();
+
+    sourceDb1.close();
+    sourceDb2.close();
+    targetDb.close();
+  });
+
 });

@@ -1635,6 +1635,21 @@
         "[NODE] Certa Test Runner for Full Stack RPC Interface Tests",
         "[BACKEND] Local Backend for Full Stack RPC Interface Tests"
       ]
+    },
+    {
+      "name": "transformer specific test",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/core/backend",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/build/scripts/test.js",
+      "args": [
+        "--grep", "merge two",
+        "--offline", "mock"
+      ],
+      "console": "integratedTerminal",
     }
   ],
   "compounds": [
