@@ -10,6 +10,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 - Promote `PresentationUnitSystem` to @beta
 - Expose helper APIs to traverse presentation content.
 
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
+
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:31 GMT
 

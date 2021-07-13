@@ -7,6 +7,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 
 _Version update only_
 
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
+
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:30 GMT
 
@@ -107,7 +112,7 @@ Fri, 30 Apr 2021 12:36:58 GMT
 ### Updates
 
 - allow authConfig to be supplied from backend
-- Fixes to desktop and iOS apps. 
+- Fixes to desktop and iOS apps.
 - Saving & restoring Electron main window size, position & maximized state
 
 ## 2.14.4
@@ -314,7 +319,7 @@ Fri, 02 Oct 2020 18:03:32 GMT
 
 ### Updates
 
-- Fixed desktop authorization after recent changes. 
+- Fixed desktop authorization after recent changes.
 
 ## 2.6.5
 Sat, 26 Sep 2020 16:06:34 GMT
@@ -438,9 +443,9 @@ Wed, 06 May 2020 13:17:49 GMT
 
 - Update to Electron 8
 - react to changes in imodeljs-clients
-- FrontendAuthorizationClient does not extend IDisposable. 
+- FrontendAuthorizationClient does not extend IDisposable.
 - Update minimum Node version to 10.16.0
-- Renamed OIDC constructs for consistency; Removed SAML support. 
+- Renamed OIDC constructs for consistency; Removed SAML support.
 - order imports.
 - Upgrade to Rush 5.23.2
 - Update electron version to ^8.2.1
@@ -466,7 +471,7 @@ Wed, 12 Feb 2020 17:45:50 GMT
 
 ### Updates
 
-- Setup oidc client for backend use in electron applications. 
+- Setup oidc client for backend use in electron applications.
 
 ## 1.11.0
 Wed, 22 Jan 2020 19:24:12 GMT
@@ -548,7 +553,7 @@ Mon, 13 May 2019 15:52:05 GMT
 
 - Adds parameter for api-extractor to validate missing release tags
 - Fix broken links
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

@@ -8,6 +8,12 @@
       "comments": {}
     },
     {
+      "version": "2.17.2",
+      "tag": "@bentley/imodeljs-editor-common_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.17.1",
       "tag": "@bentley/imodeljs-editor-common_v2.17.1",
       "date": "Fri, 02 Jul 2021 15:38:31 GMT",

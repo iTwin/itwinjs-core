@@ -9,6 +9,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 
 - Allow DefinitionElements to be safely deleted. Definition Elements are now deleted by a special call "imodel.elements.deleteDefinitionElements" provided by IModelDb.
 
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
+
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:30 GMT
 
@@ -178,7 +183,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 ### Updates
 
 - Add option to disable automatic element deletion
-- Separated out API to upgrade iModels. 
+- Separated out API to upgrade iModels.
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT
@@ -411,7 +416,7 @@ Fri, 10 Jul 2020 17:23:14 GMT
 ### Updates
 
 - First working version
-- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades. 
+- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades.
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT
