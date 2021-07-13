@@ -30,7 +30,7 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
     }
     let argOutputPath: string | undefined;
     process.argv.forEach((arg, index) => {
-      if (index >= 2 && arg !== "chrome" && arg !== "edge" && arg !== "firefox" && arg !== "safari" && arg !== "headless" && arg.split(".").pop() !== "json") {
+      if (index >= 2 && arg !== "chrome" && arg !== "edge" && arg !== "firefox" && arg !== "safari" && arg !== "headless" && arg !== "no_debug" && arg.split(".").pop() !== "json") {
         while (arg.endsWith("\\") || arg.endsWith("\/"))
           arg = arg.slice(0, -1);
         argOutputPath = `"argOutputPath": "${arg}",`;
