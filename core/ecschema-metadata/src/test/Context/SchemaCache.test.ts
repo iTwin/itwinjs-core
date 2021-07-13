@@ -21,6 +21,7 @@ describe("Schema Cache", () => {
     const schema = new Schema(new SchemaContext(), new SchemaKey("TestSchema"), "ts");
     await cache.addSchema(schema);
 
+    assert.strictEqual(cache.loadedSchemasCount, 1);
     assert.strictEqual(cache.count, 1);
   });
 
@@ -73,6 +74,7 @@ describe("Schema Cache", () => {
     await cache.getSchema(new SchemaKey("TestSchema2"));
     assert.strictEqual(cache.loadingSchemasCount, 0);
     assert.strictEqual(cache.loadedSchemasCount, 2);
+    assert.strictEqual(cache.count, 2);
   });
 
 
@@ -118,6 +120,9 @@ describe("Schema Cache", () => {
     }
     const schema = new Schema(context, new SchemaKey("TestSchema"), "ts");
     await cache.addSchema(schema, new LoadSchema(async () => mockFunc(schema)));
+
+    // Should not find loaded schema since it is loading
+    expect(await cache.getLoadedSchema(schema.schemaKey)).to.be.undefined;
 
     // Should find loading schema in cache
     expect(await cache.getLoadingSchema(schema.schemaKey)).to.equal(schema);

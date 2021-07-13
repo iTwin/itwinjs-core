@@ -220,6 +220,12 @@ describe("Schema Context", () => {
     // There shouldn't be anything in context's cache unless locater's getLoadingSchema adds it to cache
     expect(await context.getCachedLoadedOrLoadingSchema(schema.schemaKey, SchemaMatchType.Exact)).to.be.undefined;
 
+    // Calling getLoadingSchema again should not have any effect
+    expect(await context.getLoadingSchema(schema.schemaKey, SchemaMatchType.Exact)).to.equal(schema);
+    assert.strictEqual(cache2.loadingSchemasCount, 1);
+    assert.strictEqual(cache2.loadedSchemasCount, 0);
+    assert.strictEqual(counter, 0);
+
     // Should load the schema in cache2
     expect(await context.getSchema(schema.schemaKey, SchemaMatchType.Exact)).to.equal(schema);
     assert.strictEqual(cache2.loadingSchemasCount, 0);

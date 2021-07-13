@@ -604,16 +604,6 @@ export class Schema implements CustomAttributeContainerProps {
     return schema;
   }
 
-  public static fromJsonLoadingSchemaSync(jsonObj: object | string, context: SchemaContext): Schema {
-    let schema: Schema = new Schema(context);
-
-    const reader = new SchemaReadHelper(JsonParser, context);
-    const rawSchema = typeof jsonObj === "string" ? JSON.parse(jsonObj) : jsonObj;
-    schema = reader.readLoadingSchemaSync(schema, rawSchema);
-
-    return schema;
-  }
-
   /**
    * @internal
    */

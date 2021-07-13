@@ -26,21 +26,11 @@ describe("SchemaXmlFileLocater tests:", () => {
     assert.isDefined(schema);
     assert.strictEqual(schema!.schemaKey.name, "SchemaA");
     assert.strictEqual(schema!.schemaKey.version.toString(), "01.01.01");
-
-    schema = await context.getLoadingSchema(schemaKey, SchemaMatchType.Exact);
-    assert.isDefined(schema);
-    assert.strictEqual(schema!.schemaKey.name, "SchemaA");
-    assert.strictEqual(schema!.schemaKey.version.toString(), "01.01.01");
   });
 
   it("locate valid schema with multiple references synchronously", () => {
     const schemaKey = new SchemaKey("SchemaA", 1, 1, 1);
     let schema = context.getSchemaSync(schemaKey, SchemaMatchType.Exact);
-    assert.isDefined(schema);
-    assert.strictEqual(schema!.schemaKey.name, "SchemaA");
-    assert.strictEqual(schema!.schemaKey.version.toString(), "01.01.01");
-
-    schema = context.getLoadingSchemaSync(schemaKey, SchemaMatchType.Exact);
     assert.isDefined(schema);
     assert.strictEqual(schema!.schemaKey.name, "SchemaA");
     assert.strictEqual(schema!.schemaKey.version.toString(), "01.01.01");
@@ -245,11 +235,6 @@ describe("SchemaXmlFileLocater tests:", () => {
 
   it("sync - should ignore commented out schema references", () => {
     let stub = context.getSchemaSync(new SchemaKey("RefCommentedOut", 1, 1, 1), SchemaMatchType.LatestReadCompatible);
-    assert.isDefined(stub);
-    assert.strictEqual(stub!.schemaKey.name, "RefCommentedOut");
-    assert.strictEqual(stub!.schemaKey.version.toString(), "01.01.01");
-
-    stub = context.getLoadingSchemaSync(new SchemaKey("RefCommentedOut", 1, 1, 1), SchemaMatchType.LatestReadCompatible);
     assert.isDefined(stub);
     assert.strictEqual(stub!.schemaKey.name, "RefCommentedOut");
     assert.strictEqual(stub!.schemaKey.version.toString(), "01.01.01");

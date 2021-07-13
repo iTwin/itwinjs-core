@@ -69,17 +69,6 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
 
     return undefined;
   }
-
-  public getLoadingSchemaSync<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): T | undefined {
-    if (this._schemaList.has(schemaKey.name)) {
-      const schemaBody = this._schemaList.get(schemaKey.name);
-      const schema = this._loadingSchemaParser(schemaBody, context);
-
-      return schema as T;
-    }
-
-    return undefined;
-  }
 }
 
 export async function deserializeXml(schemaXml: string, context: SchemaContext) {
@@ -101,13 +90,6 @@ export async function deserializeXmlLoadingSchema(schemaXml: string, context: Sc
   const document = parser.parseFromString(schemaXml);
   const reader = new SchemaReadHelper(XmlParser, context);
   return reader.readLoadingSchema(new Schema(context), document);
-}
-
-export function deserializeXmlLoadingSchemaSync(schemaXml: string, context: SchemaContext) {
-  const parser = new DOMParser();
-  const document = parser.parseFromString(schemaXml);
-  const reader = new SchemaReadHelper(XmlParser, context);
-  return reader.readLoadingSchemaSync(new Schema(context), document);
 }
 
 export function createSchemaXmlWithItems(itemsXml: string | Element, ec32: boolean = false): Document {

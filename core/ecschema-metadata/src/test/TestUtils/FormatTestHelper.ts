@@ -33,13 +33,6 @@ export class TestSchemaLocater implements ISchemaLocater {
 
     return (await Schema.fromJsonLoadingSchema(testFormatSchema, context)) as T;
   }
-
-  public getLoadingSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
-    if (!schemaKey.matches(formatsKey, matchType))
-      return undefined;
-
-    return Schema.fromJsonLoadingSchemaSync(testFormatSchema, context) as T;
-  }
 }
 
 const testFormatSchema = {

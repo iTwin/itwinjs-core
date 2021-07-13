@@ -43,12 +43,6 @@ describe("SchemaJsonFileLocater tests: ", () => {
     assert.isDefined(schema);
     assert.strictEqual(schema!.schemaKey.name, "SchemaA");
     assert.strictEqual(schema!.schemaKey.version.toString(), "01.01.01");
-
-    schema = context.getLoadingSchemaSync(schemaKey, EC.SchemaMatchType.Exact);
-
-    assert.isDefined(schema);
-    assert.strictEqual(schema!.schemaKey.name, "SchemaA");
-    assert.strictEqual(schema!.schemaKey.version.toString(), "01.01.01");
   });
 
   it("getSchema called multiple times for same schema", async () => {
@@ -82,16 +76,6 @@ describe("SchemaJsonFileLocater tests: ", () => {
     let locater2 = locater.getSchemaSync(schemaKey, EC.SchemaMatchType.Exact, new EC.SchemaContext());
     let context1 = context.getSchemaSync(schemaKey, EC.SchemaMatchType.Exact);
     let context2 = context.getSchemaSync(schemaKey, EC.SchemaMatchType.Exact);
-
-    // locater should not cache, but context should cache
-    assert.notEqual(locater1, locater2);
-    assert.notEqual(locater1, context1);
-    assert.strictEqual(context1, context2);
-
-    locater1 = locater.getLoadingSchemaSync(schemaKey, EC.SchemaMatchType.Exact, new EC.SchemaContext());
-    locater2 = locater.getLoadingSchemaSync(schemaKey, EC.SchemaMatchType.Exact, new EC.SchemaContext());
-    context1 = context.getLoadingSchemaSync(schemaKey, EC.SchemaMatchType.Exact);
-    context2 = context.getLoadingSchemaSync(schemaKey, EC.SchemaMatchType.Exact);
 
     // locater should not cache, but context should cache
     assert.notEqual(locater1, locater2);

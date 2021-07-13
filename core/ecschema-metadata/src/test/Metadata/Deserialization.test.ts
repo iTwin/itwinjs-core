@@ -16,7 +16,7 @@ import { NavigationProperty } from "../../Metadata/Property";
 import { Schema } from "../../Metadata/Schema";
 import { ISchemaPartVisitor } from "../../SchemaPartVisitorDelegate";
 import { XmlParser } from "../../Deserialization/XmlParser";
-import { deserializeXml, deserializeXmlLoadingSchema, deserializeXmlLoadingSchemaSync, deserializeXmlSync, ReferenceSchemaLocater } from "../TestUtils/DeserializationHelpers";
+import { deserializeXml, deserializeXmlLoadingSchema, deserializeXmlSync, ReferenceSchemaLocater } from "../TestUtils/DeserializationHelpers";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
@@ -206,7 +206,7 @@ describe("Full Schema Deserialization", () => {
           },
         ],
       };
-      const locater = new ReferenceSchemaLocater(Schema.fromJsonSync, Schema.fromJsonLoadingSchemaSync);
+      const locater = new ReferenceSchemaLocater(Schema.fromJsonSync, Schema.fromJsonSync);
       locater.addSchema("RefSchemaA", schemaAJson);
       locater.addSchema("RefSchemaB", schemaBJson);
 
@@ -414,7 +414,7 @@ describe("Full Schema Deserialization", () => {
         <ECSchemaReference name="TestSchema" version="01.02.03" alias="test"/>
       </ECSchema>`;
 
-      const locater = new ReferenceSchemaLocater(deserializeXmlSync, deserializeXmlLoadingSchemaSync);
+      const locater = new ReferenceSchemaLocater(deserializeXmlSync, deserializeXmlSync);
       locater.addSchema("RefSchemaA", schemaAXml);
       locater.addSchema("RefSchemaB", schemaBXml);
 
@@ -483,7 +483,7 @@ describe("Full Schema Deserialization", () => {
         <ECSchemaReference name="RefSchemaC" version="01.00.00" alias="c"/>
       </ECSchema>`;
 
-      const locater2 = new ReferenceSchemaLocater(deserializeXmlSync, deserializeXmlLoadingSchemaSync);
+      const locater2 = new ReferenceSchemaLocater(deserializeXml, deserializeXmlLoadingSchema);
       locater2.addSchema("RefSchemaC", schemaCXml);
       locater2.addSchema("RefSchemaD", schemaDXml);
       locater2.addSchema("RefSchemaE", schemaEXml);

@@ -190,25 +190,6 @@ export class SchemaReadHelper<T = unknown> {
   }
 
   /**
-   * Partially populates the given Schema from a serialized representation. Partially-loaded schemas are needed in loadSchemaReference for validating schema references do not contain a cycle first before fully loading the schemas.
-   * @param schema The Schema to populate
-   * @param rawSchema The serialized data to use to populate the Schema.
-   */
-  public readLoadingSchemaSync<U extends Schema>(schema: U, rawSchema: T): U {
-    this._parser = new this._parserType(rawSchema);
-
-    // Loads all of the properties on the Schema object
-    schema.fromJSONSync(this._parser.parseSchema());
-
-    this._schema = schema;
-
-    if (undefined === this._context.getCachedLoadedOrLoadingSchemaSync(schema.schemaKey))
-      this._context.addSchemaSync(schema, new LoadSchema(async () => this.loadSchema(schema)));
-
-    return this._context.getCachedLoadedOrLoadingSchemaSync<U>(schema.schemaKey)!;
-  }
-
-  /**
    * Ensures that the schema references can be located and adds them to the schema.
    * @param ref The object to read the SchemaReference's props from.
    */

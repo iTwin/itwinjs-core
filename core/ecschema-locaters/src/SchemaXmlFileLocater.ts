@@ -118,42 +118,6 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     return schema as T;
   }
 
-   /**
-   * Attempts to retrieve a partially-loaded Schema with the given SchemaKey by using the configured search paths
-   * to locate the XML Schema file from the file system.
-   * @param key The SchemaKey of the Schema to retrieve.
-   * @param matchType The SchemaMatchType.
-   * @param context The SchemaContext that will control the lifetime of the schema.
-   */
-  public getLoadingSchemaSync<T extends Schema>(key: SchemaKey, matchType: SchemaMatchType, context: SchemaContext): T | undefined {
-    const candidates: FileSchemaKey[] = this.findEligibleSchemaKeysSync(key, matchType, "xml");
-
-    if (!candidates || candidates.length === 0)
-      return undefined;
-
-    // eslint-disable-next-line @typescript-eslint/unbound-method
-    const maxCandidate = candidates.sort(this.compareSchemaKeyByVersion)[candidates.length - 1];
-    const schemaPath = maxCandidate.fileName;
-
-    // Load the file
-    if (!this.fileExistsSync(schemaPath))
-      return undefined;
-
-    const schemaText = this.readUtf8FileToStringSync(schemaPath);
-    if (!schemaText)
-      return undefined;
-
-    const parser = new DOMParser();
-    const document = parser.parseFromString(schemaText);
-
-    this.addSchemaSearchPaths([path.dirname(schemaPath)]);
-    const reader = new SchemaReadHelper(XmlParser, context);
-    let schema: Schema = new Schema(context);
-    schema = reader.readLoadingSchemaSync(schema, document);
-
-    return schema as T;
-  }
-
   /**
    * Constructs a SchemaKey based on the information in the Schema XML.
    * @param data The Schema XML as a string.

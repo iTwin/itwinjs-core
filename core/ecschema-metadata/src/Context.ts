@@ -73,15 +73,6 @@ export interface ISchemaLocater {
    * @param context optional context for loading schema references
    */
   getLoadingSchema?<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined>;
-
-  /**
-   * Attempts to get a partial/loading schema from the locater (schema could be loaded or loading if locater is schema cache). Yields undefined if no matching schema is found.
-   * For schemas that may have references, construct and call through a SchemaContext instead.
-   * @param schemaKey key to look up
-   * @param matchType how to match key against candidate schemas
-   * @param context optional context for loading schema references
-   */
-  getLoadingSchemaSync?<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined;
 }
 
 /**
@@ -118,6 +109,7 @@ export class SchemaCache implements ISchemaLocater {
 
   /**
    * Adds a schema to the cache. Does not allow for duplicate schemas, checks using SchemaMatchType.Latest.
+   * Schema should be fully loaded if loadSchema argument is not passed in.
    * @param schema The schema to add to the cache. Schema should be fully loaded if loadSchema argument is not passed in.
    * @param loadSchema LoadSchema wrapper that takes a function returning a promise to fully load the schema
    */
@@ -176,7 +168,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param matchType The match type to use when locating the schema
    */
   public getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
-    if (this.count === 0)
+    if (this.loadedSchemasCount === 0)
       return undefined;
 
     const findLoadedSchema = (schema: Schema) => {
@@ -206,18 +198,7 @@ export class SchemaCache implements ISchemaLocater {
    * @param matchType The match type to use when locating the schema
    */
   public getLoadedSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
-    if (this.loadedSchemasCount === 0)
-      return undefined;
-
-    const findLoadedSchema = (schema: Schema) => {
-      return schema.schemaKey.matches(schemaKey, matchType);
-    };
-
-    const loadedSchema = this._loadedSchemas.find(findLoadedSchema);
-    if (loadedSchema)
-      return loadedSchema as T;
-
-    return undefined;
+    return this.getSchemaSync(schemaKey, matchType);
   }
 
   /**
@@ -355,28 +336,6 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     for (let i = 1; i < this._locaters.length; i++) {
       if (this._locaters[i].getLoadingSchema) {
         const schema = await this._locaters[i].getLoadingSchema!<T>(schemaKey, matchType, this);
-        if (undefined !== schema)
-          return schema;
-      }
-    }
-
-    return undefined;
-  }
-
-  /**
-   * Locate a loading schema (schema could be loaded or loading if it's in schema cache) that can be found via one of the registered schema locaters.
-   * @param schemaKey The SchemaKey which describes the schema to be located
-   * @param matchType Controls how the schema versions in the schemaKey and the schemas being located are compared. Defaults to [[SchemaMatchType.Latest]].
-   */
-  public getLoadingSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): T | undefined {
-    // Check if schema is already loaded or loading in cache first
-    const schema = this.getCachedLoadedOrLoadingSchemaSync<T>(schemaKey, matchType);
-    if (undefined !== schema)
-      return schema;
-
-    for (let i = 1; i < this._locaters.length; i++) {
-      if (this._locaters[i].getLoadingSchemaSync) {
-        const schema = this._locaters[i].getLoadingSchemaSync!<T>(schemaKey, matchType, this);
         if (undefined !== schema)
           return schema;
       }
