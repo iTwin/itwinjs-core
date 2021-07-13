@@ -25,6 +25,8 @@ export class DefaultRequestOptionsProvider {
     this._defaultOptions = {
       method: "GET",
       useCorsProxy: false,
+      timeout: RequestGlobalOptions.timeout,
+      retries: RequestGlobalOptions.maxRetries,
     };
   }
 
