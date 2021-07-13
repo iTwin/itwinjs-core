@@ -70,7 +70,8 @@ export const SchemaCompareCodes = {
 /* eslint-disable no-duplicate-imports, @typescript-eslint/no-unused-vars */
 import { DiagnosticCategory, DiagnosticType } from "./Diagnostic";
 import { StructClass } from "../Metadata/Class";
-import { AnyProperty, RelationshipConstraint } from "../ecschema-metadata";
+import { AnyProperty } from "./../Metadata/Property";
+import { RelationshipConstraint } from "./../Metadata/RelationshipClass";
 import { CustomAttributeContainerProps } from "../Metadata/CustomAttribute";
 /* eslint-enable no-duplicate-imports, @typescript-eslint/no-unused-vars */
 

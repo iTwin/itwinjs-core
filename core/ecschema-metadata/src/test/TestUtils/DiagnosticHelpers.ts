@@ -4,7 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as sinon from "sinon";
-import { CustomAttributeClass, EntityClass, IRuleSuppressionSet, Mixin, StructClass } from "../../ecschema-metadata";
+import { StructClass } from "./../../Metadata/Class";
+import { CustomAttributeClass } from "./../../Metadata/CustomAttributeClass";
+import { EntityClass } from "./../../Metadata/EntityClass";
+import { Mixin } from "./../../Metadata/Mixin";
+import { IRuleSuppressionSet } from "./../../Validation/RuleSuppressionSet";
 import { AnyClass } from "../../Interfaces";
 import { Constant } from "../../Metadata/Constant";
 import { CustomAttribute, CustomAttributeContainerProps } from "../../Metadata/CustomAttribute";

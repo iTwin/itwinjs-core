@@ -14,7 +14,7 @@ import {
 } from "@bentley/ui-abstract";
 import { CommonProps, Icon, useRefs, useResizeObserver } from "@bentley/ui-core";
 import { eqlOverflown, FooterIndicator } from "@bentley/ui-ninezone";
-import { SyncUiEventArgs, SyncUiEventDispatcher } from "../../ui-framework";
+import { SyncUiEventArgs, SyncUiEventDispatcher } from "./../syncui/SyncUiEventDispatcher";
 import { Indicator } from "../statusfields/Indicator";
 import { StatusBarOverflow } from "./Overflow";
 import { StatusBarOverflowPanel } from "./OverflowPanel";

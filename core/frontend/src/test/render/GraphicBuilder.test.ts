@@ -14,7 +14,8 @@ import { createBlankConnection } from "../createBlankConnection";
 import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
 import { SpatialViewState } from "../../SpatialViewState";
-import { MeshArgs, MeshParams, SurfaceType } from "../../render-primitives";
+import { MeshParams, SurfaceType } from "./../../render/primitives/VertexTable";
+import { MeshArgs } from "./../../render/primitives/mesh/MeshPrimitives";
 import { MeshGraphic } from "../../render/webgl/Mesh";
 import { InstancedGraphicParams } from "../../render/InstancedGraphicParams";
 

@@ -8,7 +8,7 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { StandardTypeNames } from "@bentley/ui-abstract";
-import { StringOperatorProcessor } from "../../../ui-components";
+import { StringOperatorProcessor } from "./../../converters/StringTypeConverter";
 import { BooleanTypeConverter } from "../../converters/BooleanTypeConverter";
 import { LessGreaterOperatorProcessor, NullableOperatorProcessor } from "../../converters/TypeConverter";
 import { TypeConverterManager } from "../../converters/TypeConverterManager";

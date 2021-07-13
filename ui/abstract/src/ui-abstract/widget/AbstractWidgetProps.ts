@@ -6,7 +6,7 @@
  * @module Widget
  */
 
-import { ConditionalStringValue } from "../../ui-abstract";
+import { ConditionalStringValue } from "./../items/ConditionalStringValue";
 import { BadgeType } from "../items/BadgeType";
 import { ProvidedItem } from "../items/ProvidedItem";
 import { WidgetState } from "./WidgetState";

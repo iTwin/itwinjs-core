@@ -8,9 +8,8 @@ import * as path from "path";
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
 import { AccessToken, SamlAccessToken } from "@bentley/itwin-client";
-import {
-  AgentAuthorizationClient, AgentAuthorizationClientConfiguration, DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration,
-} from "../backend-itwin-client";
+import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "./../oidc/AgentAuthorizationClient";
+import { DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration } from "./../oidc/DelegationAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));

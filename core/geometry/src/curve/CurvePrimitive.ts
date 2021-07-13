@@ -8,7 +8,11 @@
 import { Clipper } from "../clipping/ClipUtils";
 import { StrokeCountMap } from "../curve/Query/StrokeCountMap";
 import { AxisOrder, Geometry, PlaneAltitudeEvaluator } from "../Geometry";
-import { BezierCurve3d, BSplineCurve3d, CurveChainWithDistanceIndex, DirectSpiral3d, IntegratedSpiral3d } from "../geometry-core";
+import { BSplineCurve3d } from "./../bspline/BSplineCurve";
+import { BezierCurve3d } from "./../bspline/BezierCurve3d";
+import { CurveChainWithDistanceIndex } from "./CurveChainWithDistanceIndex";
+import { DirectSpiral3d } from "./spiral/DirectSpiral3d";
+import { IntegratedSpiral3d } from "./spiral/IntegratedSpiral3d";
 import { IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { Matrix3d } from "../geometry3d/Matrix3d";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";

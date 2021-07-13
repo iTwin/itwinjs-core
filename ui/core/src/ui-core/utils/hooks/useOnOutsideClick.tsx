@@ -7,7 +7,8 @@
  */
 
 import * as React from "react";
-import { hasPointerEventsSupport, Timer } from "../../../ui-core";
+import { hasPointerEventsSupport } from "./../../base/PointerEvents";
+import { Timer } from "./../Timer";
 
 /** @public */
 export type OutsideClickEvent = PointerEvent | MouseEvent | TouchEvent;

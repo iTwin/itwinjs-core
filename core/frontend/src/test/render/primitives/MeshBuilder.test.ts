@@ -17,9 +17,10 @@ import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primit
 import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
 import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
 import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
-import { IModelConnection } from "../../../imodeljs-frontend";
+import { IModelConnection } from "./../../../IModelConnection";
 import { createBlankConnection } from "../../createBlankConnection";
-import { MeshBuilder, MeshEdgeCreationOptions, MeshParams } from "../../../render-primitives";
+import { MeshParams } from "./../../../render/primitives/VertexTable";
+import { MeshBuilder, MeshEdgeCreationOptions } from "./../../../render/primitives/mesh/MeshBuilder";
 
 class FakeDisplayParams extends DisplayParams {
   public constructor() {
