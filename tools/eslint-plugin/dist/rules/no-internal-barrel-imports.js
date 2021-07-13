@@ -157,9 +157,17 @@ const rule = {
           importInfo === undefined || importInfo.isExternalLibraryImport;
         if (importIsPackage) return;
 
+        // the path in the ts program's map is all lower case on windows,
+        // but not the path generated from the cased import specifier
+        const targetFilePathOfThisImportStmt =
+          process.platform === "win32"
+            ? importInfo.resolvedFileName.toLowerCase()
+            : importInfo.resolvedFileName;
+
         const importedModule = program.getSourceFileByPath(
-          importInfo.resolvedFileName
+          targetFilePathOfThisImportStmt
         );
+
         if (!importedModule) throw Error("couldn't find imported module");
 
         // prettier-ignore
