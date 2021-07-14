@@ -911,6 +911,11 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(iModel.getRpcProps(), params) : [];
     }
 
+    /** Obtain the [Placement]($common)s of a set of [GeometricElement]($backend)s.
+     * @param elementIds The Ids of the elements whose placements are to be queried.
+     * @returns an array of placements, each having an additional `elementId` property identifying the element from which the placement was obtained.
+     * @note Any Id that does not identify a geometric element with a valid bounding box and origin is omitted from the returned array.
+     */
     public async getPlacements(elementIds: Iterable<Id64String>): Promise<Array<Placement & { elementId: Id64String }>> {
       let ids: Id64String[];
       if (typeof elementIds === "string")
