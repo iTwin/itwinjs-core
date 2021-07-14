@@ -312,15 +312,15 @@ export class Descriptor implements DescriptorSource {
       this.sortDirection !== undefined && { sortDirection: this.sortDirection },
       this.filterExpression !== undefined && { filterExpression: this.filterExpression },
       this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo }, {
-      connectionId: this.connectionId,
-      inputKeysHash: this.inputKeysHash,
-      contentOptions: this.contentOptions,
-      displayType: this.displayType,
-      contentFlags: this.contentFlags,
-      categories: this.categories.map(CategoryDescription.toJSON),
-      fields,
-      selectClasses,
-      classesMap,
+        connectionId: this.connectionId,
+        inputKeysHash: this.inputKeysHash,
+        contentOptions: this.contentOptions,
+        displayType: this.displayType,
+        contentFlags: this.contentFlags,
+        categories: this.categories.map(CategoryDescription.toJSON),
+        fields,
+        selectClasses,
+        classesMap,
       }
     );
   }
