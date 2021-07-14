@@ -45,3 +45,23 @@ A changeset represents the delta (i.e. the "set of changes") between two points 
 
 Much of the `iTwin.js` api that refers to changesets takes a `ChangesetId` as an argument. That is unfortunate, since `ChangesetIndex` is often required to determine order of changesets. Obtaining the `ChangesetIndex` from a `ChangesetId` requires a round-trip to iModelHub. This version begins the process of reworking the api to prefer `ChangesetIndex` as the identifier for changesets. However, for backwards compatibility, the new types [ChangesetIndexAndId]($common) (both values are known) and [ChangesetIdWithIndex]($common) (Id is known, index may be undefined) are used many places. Ultimately only `ChangesetIndex` will be used to identify changesets, and you should prefer it in any new api that identifies changesets.
 
+### Breaking change
+
+ The return type of the methods [BriefcaseDb.pullAndMergeChanges]($backend) and [BriefcaseDb.pushChanges]($backend) was changed from a string `ChangesetId` to [ChangesetIndexAndId]($common).
+
+## FederationGuid Policy Change
+
+In previous versions, if you inserted an element with `undefined` for `federationGuid` in [ElementProps]($backend), its value would be `NULL` in the inserted element. In this version, if `federationGuid === undefined`, a new valid Guid will be created for the new element. This is to better facilitate tracking element identity across iModels in `IModelTransformer`.
+
+> Note: if `federationGuid` is a valid Guid, its value will be perserved.
+
+To insert an element with a `NULL` federationGuid, set it to an illegal value (e.g. `Guid.empty`).
+
+```ts
+   const elementId = imodel1.elements.insertElement( {
+      classFullName: SpatialCategory.classFullName,
+      model: IModel.dictionaryId,
+      federationGuid: Guid.empty,
+      code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategory")
+   });
+```
