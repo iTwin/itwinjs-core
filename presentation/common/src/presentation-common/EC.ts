@@ -185,6 +185,10 @@ export namespace PropertyInfo {
   }
 }
 
+/**
+ * A serialized version of [[PropertyInfo]]
+ * @public
+ */
 export interface PropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   classInfo: TClassInfoJSON;
   name: string;
@@ -241,8 +245,8 @@ export namespace RelatedClassInfo {
     };
   }
 
-  /** Deserialize compressed [[RelatedClassInfo]] from JSON */
-  export function fromCompressedRelatedClassInfoJSON(compressedInfoJSON: RelatedClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON {
+  /** Deserialize [[RelatedClassInfo]] from compressed JSON */
+  export function fromCompressedJSON(compressedInfoJSON: RelatedClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON {
     return {
       ...compressedInfoJSON,
       sourceClassInfo: { id: compressedInfoJSON.sourceClassInfo, ...classesMap[compressedInfoJSON.sourceClassInfo] },

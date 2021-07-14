@@ -89,7 +89,7 @@ describe("Descriptor", () => {
     });
 
     it("creates valid Descriptor from CompressedDescriptorJSON", () => {
-      const categories = [createRandomCategoryJSON(), createRandomCategoryJSON(), createRandomCategoryJSON(), createRandomCategoryJSON()];
+      const testCategory = createRandomCategoryJSON();
       const ids = ["0x1", "0x2", "0x3", "0x4"];
       const testRelatedClassInfo: RelatedClassInfoJSON<string> = {
         sourceClassInfo: ids[1],
@@ -97,33 +97,32 @@ describe("Descriptor", () => {
         relationshipInfo: ids[3],
         isForwardRelationship: true,
       };
-      const fields: FieldJSON<string>[] = [
-        createRandomPrimitiveFieldJSON(categories[0]), {
-          ...createRandomPrimitiveFieldJSON(categories[1]),
-          properties: [{
-            property: {
-              classInfo: ids[0],
-              name: faker.lorem.words(),
-              type: faker.lorem.words(),
-            },
-            relatedClassPath: [testRelatedClassInfo],
+      const fields: FieldJSON<string>[] = [{
+        ...createRandomPrimitiveFieldJSON(testCategory),
+        properties: [{
+          property: {
+            classInfo: ids[0],
+            name: faker.lorem.words(),
+            type: faker.lorem.words(),
+          },
+          relatedClassPath: [testRelatedClassInfo],
+        }],
+      } as PropertiesFieldJSON<string>, {
+        ...createRandomPrimitiveFieldJSON(testCategory),
+        type: {
+          valueFormat: PropertyValueFormat.Struct,
+          typeName: faker.random.word(),
+          members: [{
+            type: createRandomPrimitiveTypeDescription(),
+            name: faker.random.word(),
+            label: faker.random.word(),
           }],
-        } as PropertiesFieldJSON<string>, {
-          ...createRandomPrimitiveFieldJSON(categories[2]),
-          type: {
-            valueFormat: PropertyValueFormat.Struct,
-            typeName: faker.random.word(),
-            members: [{
-              type: createRandomPrimitiveTypeDescription(),
-              name: faker.random.word(),
-              label: faker.random.word(),
-            }],
-          } as StructTypeDescription,
-          contentClassInfo: ids[1],
-          pathToPrimaryClass: [testRelatedClassInfo],
-          nestedFields: [createRandomPrimitiveFieldJSON(categories[3])],
-          autoExpand: false,
-        } as NestedContentFieldJSON<string>];
+        } as StructTypeDescription,
+        contentClassInfo: ids[1],
+        pathToPrimaryClass: [testRelatedClassInfo],
+        nestedFields: [createRandomPrimitiveFieldJSON(testCategory)],
+        autoExpand: false,
+      } as NestedContentFieldJSON<string>];
 
       const testCompressedDescriptorJSON: CompressedDescriptorJSON = {
         connectionId: faker.random.uuid(),
@@ -138,7 +137,7 @@ describe("Descriptor", () => {
           navigationPropertyClasses: [testRelatedClassInfo],
           relatedInstanceClasses: [testRelatedClassInfo],
         }],
-        categories,
+        categories: [testCategory],
         fields,
         contentFlags: 0,
         classesMap: {

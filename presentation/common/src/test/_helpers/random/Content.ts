@@ -200,16 +200,21 @@ const compressRelatedClassInfoJSON = (json: RelatedClassInfoJSON, classesMap: { 
   const { id: targetId, ...targetLeftOverInfo } = json.targetClassInfo;
   const { id: relationshipId, ...relationshipLeftOverInfo } = json.relationshipInfo;
 
-  classesMap[sourceId] = { ...sourceLeftOverInfo };
-  classesMap[targetId] = { ...targetLeftOverInfo };
-  classesMap[relationshipId] = { ...relationshipLeftOverInfo };
+  classesMap[sourceId] = sourceLeftOverInfo;
+  classesMap[targetId] = targetLeftOverInfo;
+  classesMap[relationshipId] = relationshipLeftOverInfo;
 
-  return {
-    ...json,
+  const compressedJSON = {
+    isForwardRelationship: json.isForwardRelationship,
     sourceClassInfo: sourceId,
     targetClassInfo: targetId,
     relationshipInfo: relationshipId,
   };
+
+  return Object.assign(compressedJSON,
+    json.isPolymorphicRelationship !== undefined && { isPolymorphicRelationship: json.isPolymorphicRelationship },
+    json.isPolymorphicTargetClass !== undefined && { isPolymorphicTargetClass: json.isPolymorphicTargetClass },
+  );
 };
 
 export const createRandomDescriptor = (displayType?: string, fields?: Field[], categories?: CategoryDescription[]): Descriptor => {

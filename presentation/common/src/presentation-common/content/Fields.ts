@@ -187,7 +187,8 @@ export class Field {
     });
   }
 
-  public static fromCompressedFieldJSON(json: FieldJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): FieldJSON | undefined {
+  /** Deserialize [[Field]] from compressed JSON */
+  public static fromCompressedJSON(json: FieldJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): FieldJSON | undefined {
     if (isPropertiesField(json))
       return fromCompressedPropertiesFieldJSON(json, classesMap);
 
@@ -572,8 +573,8 @@ function fromCompressedNestedContentFieldJSON(compressedNestedContentFieldJSON: 
   return {
     ...compressedNestedContentFieldJSON,
     contentClassInfo: { id: compressedNestedContentFieldJSON.contentClassInfo, ...classesMap[compressedNestedContentFieldJSON.contentClassInfo] },
-    nestedFields: compressedNestedContentFieldJSON.nestedFields.map((compressedFieldJSON) => Field.fromCompressedFieldJSON(compressedFieldJSON, classesMap)).filter((fromCompressededJson): fromCompressededJson is FieldJSON => !!fromCompressededJson),
-    pathToPrimaryClass: compressedNestedContentFieldJSON.pathToPrimaryClass.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
+    nestedFields: compressedNestedContentFieldJSON.nestedFields.map((compressedFieldJSON) => Field.fromCompressedJSON(compressedFieldJSON, classesMap)).filter((fromCompressededJson): fromCompressededJson is FieldJSON => !!fromCompressededJson),
+    pathToPrimaryClass: compressedNestedContentFieldJSON.pathToPrimaryClass.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
   };
 }
 
@@ -588,7 +589,7 @@ function fromCompressedPropertyJSON(compressedPropertyJSON: PropertyJSON<string>
   return {
     property: fromCompressedPropertyInfoJSON(compressedPropertyJSON.property, classesMap),
     // eslint-disable-next-line deprecation/deprecation
-    relatedClassPath: compressedPropertyJSON.relatedClassPath.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
+    relatedClassPath: compressedPropertyJSON.relatedClassPath.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
   };
 }
 

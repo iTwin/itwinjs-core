@@ -305,8 +305,6 @@ Object {
           "relatedClassPath": Array [
             Object {
               "isForwardRelationship": true,
-              "isPolymorphicRelationship": undefined,
-              "isPolymorphicTargetClass": undefined,
               "relationshipInfo": "0xdb080000008f31",
               "sourceClassInfo": "0x55130000009733",
               "targetClassInfo": "0x7a1000000112ab",
@@ -322,7 +320,6 @@ Object {
           "relatedClassPath": Array [
             Object {
               "isForwardRelationship": true,
-              "isPolymorphicRelationship": undefined,
               "isPolymorphicTargetClass": true,
               "relationshipInfo": "0xe91f00000001f9",
               "sourceClassInfo": "0x7ec70000002383",
@@ -357,8 +354,6 @@ Object {
       "pathToPrimaryClass": Array [
         Object {
           "isForwardRelationship": true,
-          "isPolymorphicRelationship": undefined,
-          "isPolymorphicTargetClass": undefined,
           "relationshipInfo": "0x113010000002885",
           "sourceClassInfo": "0x17d28000000d35f",
           "targetClassInfo": "0xbc36000000cc5f",
@@ -366,7 +361,6 @@ Object {
         Object {
           "isForwardRelationship": false,
           "isPolymorphicRelationship": true,
-          "isPolymorphicTargetClass": undefined,
           "relationshipInfo": "0x171ea0000010f19",
           "sourceClassInfo": "0x17c29000000158e",
           "targetClassInfo": "0x84fb000000852d",
@@ -376,7 +370,6 @@ Object {
         Object {
           "isForwardRelationship": false,
           "isPolymorphicRelationship": true,
-          "isPolymorphicTargetClass": undefined,
           "relationshipInfo": "0x6f27000000e29d",
           "sourceClassInfo": "0x16bd20000017eca",
           "targetClassInfo": "0xe2e40000000939",
@@ -397,7 +390,6 @@ Object {
           Object {
             "isForwardRelationship": false,
             "isPolymorphicRelationship": true,
-            "isPolymorphicTargetClass": undefined,
             "relationshipInfo": "0x7a070000004b76",
             "sourceClassInfo": "0x758d000000d2de",
             "targetClassInfo": "0x1494a000000d3c8",
@@ -412,7 +404,6 @@ Object {
         Object {
           "isForwardRelationship": false,
           "isPolymorphicRelationship": true,
-          "isPolymorphicTargetClass": undefined,
           "relationshipInfo": "0x10c60000000fc1d",
           "sourceClassInfo": "0x235700000086c4",
           "targetClassInfo": "0x10dab000000eac8",
@@ -421,7 +412,6 @@ Object {
       "pathToPrimaryClass": Array [
         Object {
           "isForwardRelationship": false,
-          "isPolymorphicRelationship": undefined,
           "isPolymorphicTargetClass": false,
           "relationshipInfo": "0xaf4000000180d3",
           "sourceClassInfo": "0x164980000011c8a",
@@ -429,7 +419,6 @@ Object {
         },
         Object {
           "isForwardRelationship": true,
-          "isPolymorphicRelationship": undefined,
           "isPolymorphicTargetClass": true,
           "relationshipInfo": "0x6d510000001a03",
           "sourceClassInfo": "0xddde000000cddb",
@@ -440,7 +429,6 @@ Object {
         Object {
           "isForwardRelationship": true,
           "isPolymorphicRelationship": true,
-          "isPolymorphicTargetClass": undefined,
           "relationshipInfo": "0x900000095ae",
           "sourceClassInfo": "0xaf0a00000047a4",
           "targetClassInfo": "0x43ad0000002dab",
@@ -450,7 +438,6 @@ Object {
         Array [
           Object {
             "isForwardRelationship": false,
-            "isPolymorphicRelationship": undefined,
             "isPolymorphicTargetClass": false,
             "relationshipInfo": "0x113ca00000003f1",
             "sourceClassInfo": "0x1357300000117a1",
@@ -460,7 +447,6 @@ Object {
         Array [
           Object {
             "isForwardRelationship": true,
-            "isPolymorphicRelationship": undefined,
             "isPolymorphicTargetClass": false,
             "relationshipInfo": "0xfe2e0000008099",
             "sourceClassInfo": "0x1749300000052da",
@@ -485,35 +471,11 @@ Object {
       "parent": undefined,
       "priority": 62935,
     },
-    Object {
-      "description": "Voluptatum voluptate perspiciatis similique neque ut.",
-      "expand": true,
-      "label": "Garden indigo Keyboard",
-      "name": "Future",
-      "parent": undefined,
-      "priority": 56729,
-    },
-    Object {
-      "description": "Natus enim suscipit.",
-      "expand": false,
-      "label": "Berkshire Arkansas",
-      "name": "Investment Account",
-      "parent": undefined,
-      "priority": 99454,
-    },
-    Object {
-      "description": "Quis earum occaecati vitae illum.",
-      "expand": false,
-      "label": "Principal Avon Connecticut",
-      "name": "Arkansas",
-      "parent": undefined,
-      "priority": 83986,
-    },
   ],
-  "connectionId": "ab86d635-0c1e-4fbf-a70d-bbb27a1e9819",
+  "connectionId": "d32fd189-d419-4acc-8164-c4be307f496f",
   "contentFlags": 0,
   "contentOptions": "car",
-  "displayType": "nostrum placeat corrupti",
+  "displayType": "et eligendi non",
   "fields": Array [
     Object {
       "category": Object {
@@ -525,34 +487,10 @@ Object {
         "priority": 62935,
       },
       "editor": undefined,
-      "isReadonly": true,
-      "label": "Awesome Utah attitude-oriented",
-      "name": "Frozen",
-      "priority": 75765,
-      "renderer": Object {
-        "name": "custom_renderer",
-      },
-      "type": Object {
-        "typeName": "real",
-        "valueFormat": "Primitive",
-      },
-    },
-    Object {
-      "category": Object {
-        "description": "Voluptatum voluptate perspiciatis similique neque ut.",
-        "expand": true,
-        "label": "Garden indigo Keyboard",
-        "name": "Future",
-        "parent": undefined,
-        "priority": 56729,
-      },
-      "editor": Object {
-        "name": "Engineer",
-      },
       "isReadonly": false,
-      "label": "process improvement next generation",
-      "name": "Cross-group",
-      "priority": 1311,
+      "label": "Garden indigo Keyboard",
+      "name": "Future",
+      "priority": 40839,
       "properties": Array [
         Object {
           "property": Object {
@@ -561,17 +499,38 @@ Object {
               "label": "label1",
               "name": "name1",
             },
-            "name": "mollitia molestiae itaque",
-            "type": "sed doloribus dolorem",
+            "name": "similique neque ut",
+            "type": "similique in laborum",
           },
-          "relatedClassPath": Array [],
+          "relatedClassPath": Array [
+            Object {
+              "isForwardRelationship": true,
+              "isPolymorphicRelationship": false,
+              "isPolymorphicTargetClass": false,
+              "relationshipInfo": Object {
+                "id": "0x4",
+                "label": "label4",
+                "name": "name4",
+              },
+              "sourceClassInfo": Object {
+                "id": "0x2",
+                "label": "label2",
+                "name": "name2",
+              },
+              "targetClassInfo": Object {
+                "id": "0x3",
+                "label": "label3",
+                "name": "name3",
+              },
+            },
+          ],
         },
       ],
       "renderer": Object {
         "name": "custom_renderer",
       },
       "type": Object {
-        "typeName": "set",
+        "typeName": "mediumint",
         "valueFormat": "Primitive",
       },
     },
@@ -579,44 +538,42 @@ Object {
       "actualPrimaryClassIds": Array [],
       "autoExpand": false,
       "category": Object {
-        "description": "Natus enim suscipit.",
+        "description": "Voluptas fuga cum vitae praesentium sunt numquam omnis molestiae.",
         "expand": false,
-        "label": "Berkshire Arkansas",
-        "name": "Investment Account",
+        "label": "Facilitator Agent solution-oriented",
+        "name": "engineer",
         "parent": undefined,
-        "priority": 99454,
+        "priority": 62935,
       },
       "contentClassInfo": Object {
         "id": "0x2",
         "label": "label2",
         "name": "name2",
       },
-      "editor": Object {
-        "name": "Cloned",
-      },
+      "editor": undefined,
       "isReadonly": false,
-      "label": "transmitter Sausages",
-      "name": "Avon",
+      "label": "Borders Small",
+      "name": "grow",
       "nestedFields": Array [
         Object {
           "category": Object {
-            "description": "Quis earum occaecati vitae illum.",
+            "description": "Voluptas fuga cum vitae praesentium sunt numquam omnis molestiae.",
             "expand": false,
-            "label": "Principal Avon Connecticut",
-            "name": "Arkansas",
+            "label": "Facilitator Agent solution-oriented",
+            "name": "engineer",
             "parent": undefined,
-            "priority": 83986,
+            "priority": 62935,
           },
           "editor": undefined,
           "isReadonly": true,
-          "label": "Associate",
-          "name": "workforce",
-          "priority": 84083,
+          "label": "dynamic",
+          "name": "Rubber",
+          "priority": 8302,
           "renderer": Object {
             "name": "custom_renderer",
           },
           "type": Object {
-            "typeName": "tinyint",
+            "typeName": "geometry",
             "valueFormat": "Primitive",
           },
         },
@@ -643,7 +600,7 @@ Object {
           },
         },
       ],
-      "priority": 10804,
+      "priority": 33586,
       "relationshipMeaning": "RelatedInstance",
       "renderer": Object {
         "name": "custom_renderer",
@@ -651,20 +608,20 @@ Object {
       "type": Object {
         "members": Array [
           Object {
-            "label": "Sports",
-            "name": "Awesome",
+            "label": "Analyst",
+            "name": "Agent",
             "type": Object {
-              "typeName": "double",
+              "typeName": "varchar",
               "valueFormat": "Primitive",
             },
           },
         ],
-        "typeName": "Consultant",
+        "typeName": "incubate",
         "valueFormat": "Struct",
       },
     },
   ],
-  "inputKeysHash": "e192aded-73ed-495a-b95b-4bfd1968d858",
+  "inputKeysHash": "1f281abd-2ff5-4143-9fc9-190d5f0f03ad",
   "selectClasses": Array [
     Object {
       "isSelectPolymorphic": true,
@@ -2239,197 +2196,6 @@ Object {
         "id": "0x7bfb000000051a",
         "label": "Texas",
         "name": "Cheese",
-      },
-    },
-  ],
-  "sortingField": undefined,
-}
-`;
-
-exports[`Descriptor fromJSON creates valid descriptorJSON from CompressedDescriptorJSON 1`] = `
-Object {
-  "categories": Array [
-    Object {
-      "description": "Est et quae.",
-      "expand": false,
-      "label": "fresh-thinking Tools Customer",
-      "name": "Crossing",
-      "parent": undefined,
-      "priority": 605,
-    },
-    Object {
-      "description": "Similique voluptate ut tempore sed amet labore facere.",
-      "expand": false,
-      "label": "Producer withdrawal",
-      "name": "empower",
-      "parent": undefined,
-      "priority": 22393,
-    },
-  ],
-  "connectionId": "182f011c-7027-47bf-a496-7226d6819e0e",
-  "contentFlags": 0,
-  "contentOptions": "car",
-  "displayType": "rerum fugit dolores",
-  "fields": Array [
-    Object {
-      "category": Object {
-        "description": "Est et quae.",
-        "expand": false,
-        "label": "fresh-thinking Tools Customer",
-        "name": "Crossing",
-        "parent": undefined,
-        "priority": 605,
-      },
-      "editor": undefined,
-      "isReadonly": true,
-      "label": "programming",
-      "name": "Checking Account",
-      "priority": 20570,
-      "renderer": Object {
-        "name": "custom_renderer",
-      },
-      "type": Object {
-        "typeName": "float",
-        "valueFormat": "Primitive",
-      },
-    },
-    Object {
-      "category": Object {
-        "description": "Similique voluptate ut tempore sed amet labore facere.",
-        "expand": false,
-        "label": "Producer withdrawal",
-        "name": "empower",
-        "parent": undefined,
-        "priority": 22393,
-      },
-      "editor": Object {
-        "name": "Research",
-      },
-      "isReadonly": true,
-      "label": "Bedfordshire Lesotho Som",
-      "name": "generating",
-      "priority": 67867,
-      "properties": Array [
-        Object {
-          "property": Object {
-            "classInfo": Object {
-              "id": "0",
-              "label": "label0",
-              "name": "name0",
-            },
-            "name": "doloremque incidunt eum",
-            "type": "et tempore blanditiis",
-          },
-          "relatedClassPath": Array [],
-        },
-      ],
-      "renderer": Object {
-        "name": "custom_renderer",
-      },
-      "type": Object {
-        "typeName": "varchar",
-        "valueFormat": "Primitive",
-      },
-    },
-  ],
-  "inputKeysHash": "3b22c162-eef4-4d9f-89f3-23105d075c12",
-  "selectClasses": Array [
-    Object {
-      "isSelectPolymorphic": true,
-      "navigationPropertyClasses": Array [
-        Object {
-          "isForwardRelationship": true,
-          "isPolymorphicRelationship": false,
-          "isPolymorphicTargetClass": false,
-          "relationshipInfo": Object {
-            "id": "0x3",
-            "label": "label3",
-            "name": "name3",
-          },
-          "sourceClassInfo": Object {
-            "id": "0x1",
-            "label": "label1",
-            "name": "name1",
-          },
-          "targetClassInfo": Object {
-            "id": "0x2",
-            "label": "label2",
-            "name": "name2",
-          },
-        },
-      ],
-      "pathToPrimaryClass": Array [
-        Object {
-          "isForwardRelationship": true,
-          "isPolymorphicRelationship": false,
-          "isPolymorphicTargetClass": false,
-          "relationshipInfo": Object {
-            "id": "0x3",
-            "label": "label3",
-            "name": "name3",
-          },
-          "sourceClassInfo": Object {
-            "id": "0x1",
-            "label": "label1",
-            "name": "name1",
-          },
-          "targetClassInfo": Object {
-            "id": "0x2",
-            "label": "label2",
-            "name": "name2",
-          },
-        },
-      ],
-      "relatedInstanceClasses": Array [
-        Object {
-          "isForwardRelationship": true,
-          "isPolymorphicRelationship": false,
-          "isPolymorphicTargetClass": false,
-          "relationshipInfo": Object {
-            "id": "0x3",
-            "label": "label3",
-            "name": "name3",
-          },
-          "sourceClassInfo": Object {
-            "id": "0x1",
-            "label": "label1",
-            "name": "name1",
-          },
-          "targetClassInfo": Object {
-            "id": "0x2",
-            "label": "label2",
-            "name": "name2",
-          },
-        },
-      ],
-      "relatedPropertyPaths": Array [
-        Array [
-          Object {
-            "isForwardRelationship": true,
-            "isPolymorphicRelationship": false,
-            "isPolymorphicTargetClass": false,
-            "relationshipInfo": Object {
-              "id": "0x3",
-              "label": "label3",
-              "name": "name3",
-            },
-            "sourceClassInfo": Object {
-              "id": "0x1",
-              "label": "label1",
-              "name": "name1",
-            },
-            "targetClassInfo": Object {
-              "id": "0x2",
-              "label": "label2",
-              "name": "name2",
-            },
-          },
-        ],
-      ],
-      "selectClassInfo": Object {
-        "id": "0",
-        "label": "label0",
-        "name": "name0",
       },
     },
   ],

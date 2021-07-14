@@ -56,14 +56,14 @@ export namespace SelectClassInfo {
     };
   }
 
-  export function fromCompressedSelectClassInfoJSON(compressedSelectClass: SelectClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfoJSON {
+  export function fromCompressedJSON(compressedSelectClass: SelectClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfoJSON {
     return {
       ...compressedSelectClass,
       selectClassInfo: {id: compressedSelectClass.selectClassInfo, ...classesMap[compressedSelectClass.selectClassInfo]},
-      navigationPropertyClasses: compressedSelectClass.navigationPropertyClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
-      relatedInstanceClasses: compressedSelectClass.relatedInstanceClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
-      pathToPrimaryClass: compressedSelectClass.pathToPrimaryClass.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedRelatedClassInfoJSON(compressedInfoJSON, classesMap)),
-      relatedPropertyPaths: compressedSelectClass.relatedPropertyPaths.map((path) => path.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedRelatedClassInfoJSON(compressedInfoJSON, classesMap))),
+      navigationPropertyClasses: compressedSelectClass.navigationPropertyClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
+      relatedInstanceClasses: compressedSelectClass.relatedInstanceClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
+      pathToPrimaryClass: compressedSelectClass.pathToPrimaryClass.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
+      relatedPropertyPaths: compressedSelectClass.relatedPropertyPaths.map((path) => path.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap))),
     };
   }
 }
@@ -143,7 +143,7 @@ export interface DescriptorJSON {
 
 /**
  * Serialized [[Descriptor]] JSON representation.
- * @beta
+ * @public
  */
 export type CompressedDescriptorJSON = Omit<DescriptorJSON, "selectClasses" | "fields"> & {
   selectClasses: SelectClassInfoJSON<string>[];
@@ -323,6 +323,21 @@ export class Descriptor implements DescriptorSource {
     });
   }
 
+  private static fromCompressedJSON(json: CompressedDescriptorJSON): DescriptorJSON {
+    const { classesMap, ...leftOverJson } = json;
+
+    const decompressedSelectClasses = json.selectClasses.map((compressedSelectClass) => SelectClassInfo.fromCompressedJSON(compressedSelectClass, classesMap));
+    const decompressedFieldJSON: FieldJSON[] = json.fields.map((compressedFieldJSON) => Field.fromCompressedJSON(compressedFieldJSON, classesMap)).filter((decompressedJson): decompressedJson is FieldJSON => !!decompressedJson);
+
+    const descriptorJSON: DescriptorJSON = {
+      ...leftOverJson,
+      selectClasses: decompressedSelectClasses,
+      fields: decompressedFieldJSON,
+    };
+
+    return descriptorJSON;
+  }
+
   private static getFieldsFromJSON(json: FieldJSON[], factory: (json: FieldJSON) => Field | undefined): Field[] {
     return json.map((fieldJson: FieldJSON) => {
       const field = factory(fieldJson);
@@ -386,24 +401,5 @@ export class Descriptor implements DescriptorSource {
     if (this.sortingField)
       overrides.sorting = { field: this.sortingField.getFieldDescriptor(), direction: this.sortDirection ?? SortDirection.Ascending };
     return overrides;
-  }
-}
-
-/** @alpha */
-export namespace Descriptor {
-  /** Deserialize compressed [[Descriptor]] from JSON */
-  export function fromCompressedJSON(json: CompressedDescriptorJSON): DescriptorJSON {
-    const { classesMap, ...leftOverJson } = json;
-
-    const decompressedSelectClasses = json.selectClasses.map((compressedSelectClass) => SelectClassInfo.fromCompressedSelectClassInfoJSON(compressedSelectClass, classesMap));
-    const decompressedFieldJSON: FieldJSON[] = json.fields.map((compressedFieldJSON) => Field.fromCompressedFieldJSON(compressedFieldJSON, classesMap)).filter((decompressedJson): decompressedJson is FieldJSON => !!decompressedJson);
-
-    const descriptorJSON: DescriptorJSON = {
-      ...leftOverJson,
-      selectClasses: decompressedSelectClasses,
-      fields: decompressedFieldJSON,
-    };
-
-    return descriptorJSON;
   }
 }
