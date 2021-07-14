@@ -34,6 +34,7 @@ import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
 import { TableExampleContent } from "../../contentviews/TableExampleContent";
+import { ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
 
 function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
@@ -121,6 +122,7 @@ async function provideFormatSpec(formatProps: FormatProps, persistenceUnit: Unit
 }
 
 function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persistenceUnitName: string, initialMagnitude: number }) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialFormatProps: FormatProps = {
     formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes"],
     precision: 4,
@@ -165,7 +167,7 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
 
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
-      { (formatterSpec && formattedValue) &&
+      {(formatterSpec && formattedValue) &&
         <>
           <span>{formattedValue}</span>
           <FormatPopupButton initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={handleFormatChange}
@@ -1190,7 +1192,9 @@ export class ComponentExamplesProvider {
     return {
       title: "Deprecated Components",
       examples: [
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
       ],
     };
@@ -1218,6 +1222,19 @@ export class ComponentExamplesProvider {
     };
   }
 
+  private static get timelineSamples(): ComponentExampleCategory {
+    const examples = [];
+    examples.push(
+      createComponentExample("TimelineComponent", "With appended menu items", <ItemsAppendedSampleTimeline/> ),
+      createComponentExample("TimelineComponent", "With prefixed menu items", <ItemsPrefixedSampleTimeline/> ),
+      createComponentExample("TimelineComponent", "With menu items replaced", <ItemsReplacedSampleTimeline/> ),
+      createComponentExample("TimelineComponent", "With no repeat option", <NoRepeatSampleTimeline/> ),
+    );
+    return {
+      title: "Timelines",
+      examples,
+    };
+  }
   public static get categories(): ComponentExampleCategory[] {
     return [
       ComponentExamplesProvider.badgeSamples,
@@ -1242,6 +1259,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.tabsSamples,
       ComponentExamplesProvider.textSamples,
       ComponentExamplesProvider.tileSamples,
+      ComponentExamplesProvider.timelineSamples,
       ComponentExamplesProvider.toggleSamples,
       ComponentExamplesProvider.weightSamples,
       ComponentExamplesProvider.quantityFormatting,

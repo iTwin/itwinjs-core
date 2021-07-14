@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { BeTimePoint, Dictionary, dispose, Id64Array, IModelStatus } from "@bentley/bentleyjs-core";
+import { BeTimePoint, Dictionary, dispose, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
@@ -91,6 +91,12 @@ export class Tiles {
           this.dropSupplier(supplier);
       }
     });
+
+    // When project extents change, purge tile trees for spatial models.
+    iModel.onProjectExtentsChanged.addListener(async () => {
+      if (!iModel.isBriefcaseConnection() || !iModel.editingScope)
+        await this.purgeModelTrees(this.getSpatialModels());
+    });
   }
 
   /** @internal */
@@ -112,6 +118,44 @@ export class Tiles {
   /** @internal */
   public async purgeTileTrees(modelIds: Id64Array | undefined): Promise<void> {
     return IModelApp.tileAdmin.purgeTileTrees(this._iModel, modelIds);
+  }
+
+  private getModelsAnimatedByScheduleScript(scriptSourceElementId: Id64String): Set<Id64String> {
+    const modelIds = new Set<Id64String>();
+    for (const supplier of this._treesBySupplier.keys())
+      if (supplier.addModelsAnimatedByScript)
+        supplier.addModelsAnimatedByScript(modelIds, scriptSourceElementId, this.getTreeOwnersForSupplier(supplier));
+
+    return modelIds;
+  }
+
+  /** Update the [[Tile]]s for any [[TileTree]]s that use the [RenderSchedule.Script]($common) hosted by the specified
+   * [RenderTimeline]($backend) or [DisplayStyle]($backend) element. This method should be invoked after
+   * the host element is updated in the database with a new script, so that any [[Viewport]]s displaying tiles produced
+   * based on the previous version of the script are updated to use the new version of the script.
+   * @param scriptSourceElementId The Id of the RenderTimeline or DisplayStyle element that hosts the script.
+   * @public
+   */
+  public async updateForScheduleScript(scriptSourceElementId: Id64String): Promise<void> {
+    return this.purgeModelTrees(this.getModelsAnimatedByScheduleScript(scriptSourceElementId));
+  }
+
+  private async purgeModelTrees(modelIds: Set<Id64String>): Promise<void> {
+    if (0 === modelIds.size)
+      return;
+
+    const ids = Array.from(modelIds);
+    await this.purgeTileTrees(ids);
+    IModelApp.viewManager.refreshForModifiedModels(ids);
+  }
+
+  private getSpatialModels(): Set<Id64String> {
+    const modelIds = new Set<Id64String>();
+    for (const supplier of this._treesBySupplier.keys())
+      if (supplier.addSpatialModels)
+        supplier.addSpatialModels(modelIds, this.getTreeOwnersForSupplier(supplier));
+
+    return modelIds;
   }
 
   /** Obtain the owner of a TileTree.

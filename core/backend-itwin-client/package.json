@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-itwin-client",
-  "version": "2.18.0-dev.8",
+  "version": "2.19.0-dev.9",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/backend-itwin-client.js",
   "browser": {
@@ -38,14 +38,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.8",
-    "@bentley/frontend-authorization-client": "workspace:^2.18.0-dev.8",
-    "@bentley/geometry-core": "workspace:^2.18.0-dev.8",
-    "@bentley/imodelhub-client": "workspace:^2.18.0-dev.8",
-    "@bentley/imodeljs-common": "workspace:^2.18.0-dev.8",
-    "@bentley/itwin-client": "workspace:^2.18.0-dev.8",
-    "@bentley/rbac-client": "workspace:^2.18.0-dev.8",
-    "@bentley/telemetry-client": "workspace:^2.18.0-dev.8"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.9",
+    "@bentley/frontend-authorization-client": "workspace:^2.19.0-dev.9",
+    "@bentley/geometry-core": "workspace:^2.19.0-dev.9",
+    "@bentley/imodelhub-client": "workspace:^2.19.0-dev.9",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.9",
+    "@bentley/itwin-client": "workspace:^2.19.0-dev.9",
+    "@bentley/rbac-client": "workspace:^2.19.0-dev.9",
+    "@bentley/telemetry-client": "workspace:^2.19.0-dev.9"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -78,7 +78,7 @@
     "@types/proper-lockfile": "^4.1.1",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "internal-tools": "workspace:*",
     "mocha": "^8.3.2",
     "nock": "^12.0.3",
@@ -87,7 +87,7 @@
     "sinon": "^9.0.2",
     "source-map-support": "^0.5.6",
     "stream-buffers": "~3.0.2",
-    "typescript": "~4.1.0"
+    "typescript": "~4.3.0"
   },
   "dependencies": {
     "@bentley/usage-logging-client": "workspace:*",
@@ -102,7 +102,7 @@
     "openid-client": "^3.15.3",
     "semver": "^5.5.0",
     "agentkeepalive": "^4.1.4",
-    "proper-lockfile":"^4.1.2"
+    "proper-lockfile": "^4.1.2"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc"

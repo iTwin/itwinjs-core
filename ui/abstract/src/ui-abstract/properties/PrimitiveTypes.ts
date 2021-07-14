@@ -59,5 +59,6 @@ export namespace Primitives {
     id: Id64String;
   }
 
+  /** Raw value */
   export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite | InstanceKey;
 }

@@ -8,7 +8,7 @@
 
 import { PropertyDescription } from "../properties/Description";
 
-/** [[DialogItemValue]] Interface of PrimitiveValue types that have type editor support for use in dialogs
+/** [[DialogItemValue]] Interface of PrimitiveValue types that have type editor support for use in dialogs.
  * @public
  */
 export interface DialogItemValue {
@@ -37,7 +37,8 @@ export interface BaseDialogItem {
   readonly property: PropertyDescription;
   readonly isDisabled?: boolean;
 }
-/** [[DialogItem]] is the specification that the display engine turns into a UI item
+/** [[DialogItem]] is the specification that the display engine turns into a UI item.
+ * @see See learning documentation [DialogItem]($docs/learning/ui/abstract/dialogitem.md)
  * @public
  */
 export interface DialogItem extends BaseDialogItem {
@@ -114,6 +115,10 @@ export class DialogProperty<T> {
   public get syncItem(): DialogPropertySyncItem {
     const isDisabled = this._isDisabled;
     return { propertyName: this.name, value: this.dialogItemValue, isDisabled };
+  }
+
+  public get item(): DialogPropertyItem {
+    return { propertyName: this.name, value: this.dialogItemValue };
   }
 
   public toDialogItem(editorPosition: EditorPosition, lockProperty?: DialogItem): DialogItem {

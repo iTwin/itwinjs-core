@@ -12,6 +12,8 @@ import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { SchemaValidater } from "../../Validation/SchemaValidater";
 import { TestRuleSet } from "../TestUtils/DiagnosticHelpers";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("SchemaValidater tests", () => {
   let schema: Schema;
 

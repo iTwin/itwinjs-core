@@ -45,7 +45,7 @@ for (let i = 0; i < numBaseTestCases; i++) {
 
 export class FakeGMState extends GeometricModelState {
   public get is3d(): boolean { return true; }
-  public get is2d(): boolean { return !this.is3d; }
+  public override get is2d(): boolean { return !this.is3d; }
   public constructor(props: ModelProps, iModel: IModelConnection) { super(props, iModel); }
 }
 
@@ -562,13 +562,13 @@ describe("mirukuru TileTree", () => {
   let imodel: IModelConnection;
 
   class TestTarget extends MockRender.OnScreenTarget {
-    public setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
+    public override setRenderToScreen(toScreen: boolean): HTMLCanvasElement | undefined {
       return toScreen ? document.createElement("canvas") : undefined;
     }
   }
 
   class TestSystem extends MockRender.System {
-    public createTarget(canvas: HTMLCanvasElement): TestTarget { return new TestTarget(this, canvas); }
+    public override createTarget(canvas: HTMLCanvasElement): TestTarget { return new TestTarget(this, canvas); }
   }
 
   before(async () => {
@@ -610,7 +610,7 @@ describe("mirukuru TileTree", () => {
 
     const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: true, allowInstancing: true };
     const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
-    const tree = new IModelTileTree(params);
+    const tree = new IModelTileTree(params, { edgesRequired: true, type: BatchType.Primary });
 
     const response: TileRequest.Response = await tree.staticBranch.requestContent();
     expect(response).not.to.be.undefined;
@@ -669,7 +669,7 @@ describe("mirukuru TileTree", () => {
     const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: false, allowInstancing: false };
     const params = iModelTileTreeParamsFromJSON(v3Props, imodel, "0x1c", options);
 
-    const v3Tree = new IModelTileTree(params);
+    const v3Tree = new IModelTileTree(params, { edgesRequired: false, type: BatchType.Primary });
     await test(v3Tree, 0x00030000, "_3_0_0_0_0_0_1");
   });
 
@@ -878,7 +878,7 @@ describe.skip("TileAdmin", () => {
 
         const options = { is3d: true, batchType: BatchType.Primary, edgesRequired: true, allowInstancing: true };
         const params = iModelTileTreeParamsFromJSON(treeProps, imodel, "0x1c", options);
-        const tree = new IModelTileTree(params);
+        const tree = new IModelTileTree(params, { edgesRequired: true, type: BatchType.Primary });
 
         const intfc = IModelTileRpcInterface.getClient();
         const generateTileContent = intfc.generateTileContent;

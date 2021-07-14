@@ -14,7 +14,7 @@ import { PropertyRecord } from "@bentley/ui-abstract";
 import { isPromiseLike } from "@bentley/ui-core";
 import { ModelsVisibilityHandler, ModelsVisibilityHandlerProps } from "../../../ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
 import { TestUtils } from "../../TestUtils";
-import { createCategoryNode, createElementClassGroupingNode, createElementNode, createModelNode, createSubjectNode } from "./Common";
+import { createCategoryNode, createElementClassGroupingNode, createElementNode, createModelNode, createSubjectNode } from "../Common";
 import { IModelHierarchyChangeEventArgs, Presentation, PresentationManager } from "@bentley/presentation-frontend";
 
 describe("ModelsVisibilityHandler", () => {

@@ -50,7 +50,7 @@ import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 import { OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/UiProviderTool";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static stageId = "ViewsFrontstage";

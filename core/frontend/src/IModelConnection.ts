@@ -9,7 +9,7 @@
 import {
   assert, BeEvent, GeoServiceStatus, GuidString, Id64, Id64Arg, Id64Set, Id64String, Logger, OneAtATimeAction, OpenMode, TransientIdSequence,
 } from "@bentley/bentleyjs-core";
-import { Point3d, Range3d, Range3dProps, XYAndZ, XYZProps } from "@bentley/geometry-core";
+import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams, FontMap, FontMapProps,
   GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
@@ -17,17 +17,17 @@ import {
   ModelProps, ModelQueryParams, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
   SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
-import { BackgroundMapLocation } from "./BackgroundMapGeometry";
 import { BriefcaseConnection } from "./BriefcaseConnection";
+import { CheckpointConnection, RemoteBriefcaseConnection } from "./CheckpointConnection";
 import { EntityState } from "./EntityState";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { GeoServices } from "./GeoServices";
 import { IModelApp } from "./IModelApp";
 import { IModelRoutingContext } from "./IModelRoutingContext";
 import { ModelState } from "./ModelState";
-import { CheckpointConnection, RemoteBriefcaseConnection } from "./CheckpointConnection";
 import { HiliteSet, SelectionSet } from "./SelectionSet";
 import { SubCategoriesCache } from "./SubCategoriesCache";
+import { BingElevationProvider } from "./tile/map/BingElevation";
 import { Tiles } from "./Tiles";
 import { ViewState } from "./ViewState";
 
@@ -73,10 +73,6 @@ export abstract class IModelConnection extends IModel {
   public readonly subcategories: SubCategoriesCache;
   /** Generator for unique Ids of transient graphics for this IModelConnection. */
   public readonly transientIds = new TransientIdSequence();
-  /** The map location.
-   * @internal
-   */
-  public readonly backgroundMapLocation = new BackgroundMapLocation();
   /** The Geographic location services available for this iModelConnection
    * @internal
    */
@@ -229,10 +225,6 @@ export abstract class IModelConnection extends IModel {
     this.geoServices = new GeoServices(this);
     this.displayedExtents = Range3d.fromJSON(this.projectExtents);
 
-    this.onEcefLocationChanged.addListener(() => {
-      this.backgroundMapLocation.onEcefChanged(this.ecefLocation);
-    });
-
     this.onProjectExtentsChanged.addListener(() => {
       // Compute new displayed extents as the union of the ranges we previously expanded by with the new project extents.
       this.expandDisplayedExtents(this._extentsExpansion);
@@ -242,7 +234,7 @@ export abstract class IModelConnection extends IModel {
   /** Called prior to connection closing. Raises close events and calls tiles.dispose.
    * @internal
    */
-  protected beforeClose() {
+  protected beforeClose(): void {
     this.onClose.raiseEvent(this); // event for this connection
     IModelConnection.onClose.raiseEvent(this); // event for all connections
     this.tiles.dispose();
@@ -557,6 +549,62 @@ export abstract class IModelConnection extends IModel {
         vp.invalidateController();
     }
   }
+
+  /** @internal */
+  public getMapEcefToDb(bimElevationBias: number): Transform {
+    if (!this.ecefLocation)
+      return Transform.createIdentity();
+
+    const mapEcefToDb = this.ecefLocation.getTransform().inverse();
+    if (!mapEcefToDb) {
+      assert(false);
+      return Transform.createIdentity();
+    }
+    mapEcefToDb.origin.z += bimElevationBias;
+
+    return mapEcefToDb;
+  }
+  private _geodeticToSeaLevel?: number | Promise<number>;
+  private _projectCenterAltitude?: number | Promise<number>;
+
+  /** Event called immediately after map elevation request is completed.  This occurs only in the case where background map terrain is displayed
+   * with either geiod or ground offset.   These require a query to BingElevation and therefore synching the view may be required
+   * when the request is completed.
+   * @internal
+   */
+  public readonly onMapElevationLoaded = new BeEvent<(_imodel: IModelConnection) => void>();
+
+  /** The offset between sea level and the geodetic ellipsoid.  This will return undefined only if the request for the offset to Bing Elevation
+   * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
+   * @internal
+   */
+  public get geodeticToSeaLevel(): number | undefined {
+    if (undefined === this._geodeticToSeaLevel) {
+      const elevationProvider = new BingElevationProvider();
+      this._geodeticToSeaLevel = elevationProvider.getGeodeticToSeaLevelOffset(this.projectExtents.center, this);
+      this._geodeticToSeaLevel.then((geodeticToSeaLevel) => {
+        this._geodeticToSeaLevel = geodeticToSeaLevel;
+        this.onMapElevationLoaded.raiseEvent(this);
+      }).catch((_error) => this._geodeticToSeaLevel = 0.0);
+    }
+    return ("number" === typeof this._geodeticToSeaLevel) ? this._geodeticToSeaLevel : undefined;
+  }
+
+  /** The altitude (geodetic) at the project center.  This will return undefined only if the request for the offset to Bing Elevation
+   * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
+   * @internal
+   */
+  public get projectCenterAltitude(): number | undefined {
+    if (undefined === this._projectCenterAltitude) {
+      const elevationProvider = new BingElevationProvider();
+      this._projectCenterAltitude =  elevationProvider.getHeightValue(this.projectExtents.center, this);
+      this._projectCenterAltitude.then((projectCenterAltitude) => {
+        this._projectCenterAltitude = projectCenterAltitude;
+        this.onMapElevationLoaded.raiseEvent(this);
+      }).catch((_error) => this._projectCenterAltitude = 0.0);
+    }
+    return  ("number" === typeof this._projectCenterAltitude) ? this._projectCenterAltitude : undefined;
+  }
 }
 
 /** A connection that exists without an iModel. Useful for connecting to Reality Data services.
@@ -564,15 +612,15 @@ export abstract class IModelConnection extends IModel {
  * @public
  */
 export class BlankConnection extends IModelConnection {
-  public isBlankConnection(): this is BlankConnection { return true; }
+  public override isBlankConnection(): this is BlankConnection { return true; }
 
   /** The Guid that identifies the *context* for this BlankConnection.
    * @note This can also be set via the [[create]] method using [[BlankConnectionProps.contextId]].
    */
-  public get contextId(): GuidString | undefined { return this._contextId; }
-  public set contextId(contextId: GuidString | undefined) { this._contextId = contextId; }
+  public override get contextId(): GuidString | undefined { return this._contextId; }
+  public override set contextId(contextId: GuidString | undefined) { this._contextId = contextId; }
   /** A BlankConnection does not have an associated iModel, so its `iModelId` is alway `undefined`. */
-  public get iModelId(): undefined { return undefined; } // GuidString | undefined for the superclass, but always undefined for BlankConnection
+  public override get iModelId(): undefined { return undefined; } // GuidString | undefined for the superclass, but always undefined for BlankConnection
 
   /** A BlankConnection is always considered closed because it does not have a specific backend nor associated iModel.
    * @returns `true` is always returned since RPC operations and iModel queries are not valid.
@@ -601,6 +649,11 @@ export class BlankConnection extends IModelConnection {
   public async close(): Promise<void> {
     this.beforeClose();
   }
+
+  /** @internal */
+  public closeSync(): void {
+    this.beforeClose();
+  }
 }
 
 /** A connection to a [SnapshotDb]($backend) hosted on a backend.
@@ -608,10 +661,10 @@ export class BlankConnection extends IModelConnection {
  */
 export class SnapshotConnection extends IModelConnection {
   /** Type guard for instanceof [[SnapshotConnection]] */
-  public isSnapshotConnection(): this is SnapshotConnection { return true; }
+  public override isSnapshotConnection(): this is SnapshotConnection { return true; }
 
   /** The Guid that identifies this iModel. */
-  public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for SnapshotConnection
+  public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for SnapshotConnection
 
   /** Returns `true` if [[close]] has already been called. */
   public get isClosed(): boolean { return this._isClosed ? true : false; }
@@ -979,8 +1032,6 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       if (undefined === ctor)
         throw new IModelError(IModelStatus.WrongClass, "Invalid ViewState class", Logger.logError, loggerCategory, () => viewProps);
 
-      await this._iModel.backgroundMapLocation.initialize(this._iModel);
-
       const viewState = ctor.createFromProps(viewProps, this._iModel)!;
       await viewState.load(); // loads models for ModelSelector
 
@@ -1015,7 +1066,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       const high32 = Id64.getUpperUint32(viewId);
       new Uint32Array(val.buffer, 16, 2).set([low32, high32]); // viewId is 8 bytes starting at offset 16
       val.set(thumbnail.image, 24); // image data at offset 24
-      return IModelWriteRpcInterface.getClientForRouting(this._iModel.routingContext.token).saveThumbnail(this._iModel.getRpcProps(), val);
+      return IModelWriteRpcInterface.getClientForRouting(this._iModel.routingContext.token).saveThumbnail(this._iModel.getRpcProps(), val); // eslint-disable-line deprecation/deprecation
     }
   }
 }

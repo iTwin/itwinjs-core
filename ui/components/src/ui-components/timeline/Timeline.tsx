@@ -99,7 +99,7 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     }
   };
 
-  public render() {
+  public override render() {
     const { value, percent } = this.state;
     const { activeHandleID, getRailProps } = this.props;
 
@@ -180,7 +180,7 @@ class Handle extends React.Component<HandleProps, HandleState> {
   };
 
   // istanbul ignore next - WIP
-  public render() {
+  public override render() {
     const {
       domain: [min, max],
       handle: { id, value, percent },
@@ -317,7 +317,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
     return handles;
   };
 
-  public render() {
+  public override render() {
     const { startDate, endDate, selectedDate, milestones, onChange, onUpdate } = this.props;
     const domain = [startDate.getTime(), endDate.getTime()];
 
@@ -333,12 +333,14 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
           values={this._milestones()}
         >
           <Rail>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             {(railProps) => <TooltipRail {...railProps} />}
           </Rail>
           <Handles>
             {({ handles, activeHandleID, getHandleProps }) => (
               <div className="slider-handles">
                 {handles.map((handle: SliderItem, index: number) => (
+                  // eslint-disable-next-line deprecation/deprecation
                   <Handle
                     key={handle.id}
                     handle={handle}
@@ -364,6 +366,7 @@ export class Timeline extends React.Component<TimelineProps, TimelineState> {
               </div>
             )}
           </Ticks>
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <Needle startDate={startDate} endDate={endDate} selectedDate={selectedDate} />
         </Slider>
       </div>

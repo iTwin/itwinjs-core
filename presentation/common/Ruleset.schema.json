@@ -1453,6 +1453,10 @@
             "Forward"
           ],
           "type": "string"
+        },
+        "skipIfDuplicate": {
+          "description": "Should this related properties specification be ignored if it duplicates another higher priority specification for the same relationship.",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -1665,6 +1669,28 @@
         "class",
         "groups",
         "ruleType"
+      ],
+      "type": "object"
+    },
+    "IdCategoryIdentifier": {
+      "additionalProperties": false,
+      "description": "Identifier of a category specified through `PropertyCategorySpecification` in this scope.",
+      "properties": {
+        "categoryId": {
+          "description": "ID of the category pointed to by this identifier",
+          "type": "string"
+        },
+        "type": {
+          "description": "Type of the identifier",
+          "enum": [
+            "Id"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "categoryId",
+        "type"
       ],
       "type": "object"
     },
@@ -2181,6 +2207,23 @@
       ],
       "type": "object"
     },
+    "NoCategoryIdentifier": {
+      "additionalProperties": false,
+      "description": "Identifier for no category. Used to make category displayed at root level by using\nthis identifier for `PropertyCategorySpecification.parentId`.",
+      "properties": {
+        "type": {
+          "description": "Type of the identifier",
+          "enum": [
+            "None"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
     "NodeArtifactsRule": {
       "additionalProperties": false,
       "description": "Rule used to create and assign artifacts to specific nodes. The artifacts can be\naccessed when evaluating parent node's `hideExpression` to decide whether it should\nbe hidden or not.\n\nA typical use case:\n- The hierarchy consists of *Subject* nodes and each *Subject* may or may not have child *Model* nodes. There are 2 types\nof *Models*: *A* & *B*, we want *ModelA* nodes to be visible and *ModelB* ones to be hidden. We want *Subject* node to be\nvisible only if it has a *Model* (either *A* or *B*). In this case we can't use `hideIfNoChildren` flag on *Subjects*, because\na *Subject* node may only have a related *ModelB* which means *Subject* doesn't have children and should be displayed as a leaf node.\nThe solution is to use `NodeArtifacts` on the *ModelB* nodes and a `hideExpression` on *Subject* nodes. The expression can access\nartifacts created by child *ModelB* nodes: `NOT ThisNode.HasChildren AND NOT ThisNode.ChildrenArtifacts.AnyMatches(x => x.IsModelB)`",
@@ -2225,6 +2268,23 @@
       ],
       "type": "object"
     },
+    "ParentCategoryIdentifier": {
+      "additionalProperties": false,
+      "description": "Identifier of the default parent category.\n\nFor direct properties it's the default category. See `DefaultPropertyCategoryOverride` for overriding the default category.\n\nFor related properties it's the category made up from the related ECClass defined by the last\n`RelatedPropertiesSpecification` with `RelationshipMeaning.RelatedInstance`. If there's no such specification,\nthe default category is used.",
+      "properties": {
+        "type": {
+          "description": "Type of the identifier",
+          "enum": [
+            "DefaultParent"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
+      ],
+      "type": "object"
+    },
     "PropertyCategorySpecification": {
       "additionalProperties": false,
       "description": "Specification to define a custom property category.",
@@ -2246,8 +2306,24 @@
           "type": "string"
         },
         "parentId": {
-          "description": "Identifier of a parent category.",
-          "type": "string"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/NoCategoryIdentifier"
+            },
+            {
+              "$ref": "#/definitions/ParentCategoryIdentifier"
+            },
+            {
+              "$ref": "#/definitions/RootCategoryIdentifier"
+            },
+            {
+              "$ref": "#/definitions/IdCategoryIdentifier"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Identifier of a parent category. When specified as a `string`,\nthe value acts as an `IdCategoryIdentifier`. Defaults to `ParentCategoryIdentifier`."
         },
         "priority": {
           "description": "Priority of the category. Higher priority categories are displayed on top. Defaults to `1000`.",
@@ -2551,8 +2627,21 @@
       "description": "Specification of an ECProperty and its overrides",
       "properties": {
         "categoryId": {
-          "description": "ID of a category specified through `PropertyCategorySpecification` in this scope.",
-          "type": "string"
+          "anyOf": [
+            {
+              "$ref": "#/definitions/ParentCategoryIdentifier"
+            },
+            {
+              "$ref": "#/definitions/RootCategoryIdentifier"
+            },
+            {
+              "$ref": "#/definitions/IdCategoryIdentifier"
+            },
+            {
+              "type": "string"
+            }
+          ],
+          "description": "Identifier of a category that should be used for the property."
         },
         "doNotHideOtherPropertiesOnDisplayOverride": {
           "description": "Flag to control behavior of `isDisplayed` override when it's set to `true`.\nBy default, forcing property display hides all other properties.\nSetting `doNotHideOtherPropertiesOnDisplayOverride` to `true` disables that behavior and\nprevents forcing property display of one property from hiding other properties.",
@@ -2780,6 +2869,10 @@
             "SameInstance"
           ],
           "type": "string"
+        },
+        "skipIfDuplicate": {
+          "description": "Should this related properties specification be ignored if it duplicates another higher priority specification for the same relationship.",
+          "type": "boolean"
         }
       },
       "required": [
@@ -2876,6 +2969,23 @@
       },
       "required": [
         "name"
+      ],
+      "type": "object"
+    },
+    "RootCategoryIdentifier": {
+      "additionalProperties": false,
+      "description": "Identifier of the root category.\n\nFor direct properties it's the default category. See `DefaultPropertyCategoryOverride` for overriding the default category.\n\nFor related properties it's the category made up from the related ECClass defined by the first\n`RelatedPropertiesSpecification` with `RelationshipMeaning.RelatedInstance`. If there's no such specification,\nthe default category is used.",
+      "properties": {
+        "type": {
+          "description": "Type of the identifier",
+          "enum": [
+            "Root"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "type"
       ],
       "type": "object"
     },

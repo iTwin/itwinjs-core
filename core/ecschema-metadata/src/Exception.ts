@@ -38,11 +38,12 @@ export enum ECObjectsStatus {
   DifferentSchemaContexts = ECOBJECTS_ERROR_BASE + 24,
   InvalidSchemaComparisonArgument = ECOBJECTS_ERROR_BASE + 25,
   InvalidSchemaAlias = ECOBJECTS_ERROR_BASE + 26,
+  InvalidSchemaKey = ECOBJECTS_ERROR_BASE + 27,
 }
 
 /** @internal */
 export class ECObjectsError extends BentleyError {
-  public constructor(public readonly errorNumber: number, message?: string) {
+  public constructor(public override readonly errorNumber: number, message?: string) {
     super(errorNumber, message);
     assert(errorNumber !== ECObjectsStatus.Success, message);
   }
