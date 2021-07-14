@@ -77,10 +77,10 @@ describe("Elements", () => {
 
   it("queries individual placements", async () => {
     async function test(dim: "2d" | "3d"): Promise<void> {
-      let ids = Array.from(await imodel.elements.queryIds({ from: `bis.GeometricElement${dim}`, limit: 1 }));
+      const ids = Array.from(await imodel.elements.queryIds({ from: `bis.GeometricElement${dim}`, limit: 1 }));
       expect(ids.length).to.equal(1);
 
-      let placements = await imodel.elements.getPlacements(ids);
+      const placements = await imodel.elements.getPlacements(ids);
       expect(placements.length).to.equal(1);
       expect(placements[0].elementId).to.equal(ids[0]);
 
