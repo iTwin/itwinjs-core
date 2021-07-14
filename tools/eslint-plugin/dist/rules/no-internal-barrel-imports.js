@@ -51,7 +51,7 @@ const TsImportPaths = OsPaths.posix;
 const OPTION_IGNORED_BARREL_MODULES = "ignored-barrel-modules";
 
 const messages = {
-  noInternalBarrelImports: `Do not consume barrel imports within the same package`,
+  noInternalBarrelImports: "Do not consume barrel imports within the same package",
 };
 
 /** @type {typeof messages} */
@@ -146,12 +146,7 @@ const rule = {
 
         const thisModule = importNodeTs.getSourceFile();
 
-        if (!thisModule.resolvedModules.has(importNodeTs.moduleSpecifier.text))
-          throw Error("module did not have this import");
-
-        const importInfo = thisModule.resolvedModules.get(
-          importNodeTs.moduleSpecifier.text
-        );
+        const importInfo = ts.getResolvedModule(thisModule, importNodeTs.moduleSpecifier.text);
 
         const importIsPackage =
           importInfo === undefined || importInfo.isExternalLibraryImport;
@@ -181,9 +176,7 @@ const rule = {
             ts.isExportDeclaration(importSpecifier.parent) &&
             !importSpecifier.parent.isTypeOnly;
           if (!isNonTypeOnlyReExport) return false;
-          const transitiveImportInfo = importedModule.resolvedModules.get(
-            importSpecifier.text
-          );
+          const transitiveImportInfo = ts.getResolvedModule(importedModule, importSpecifier.text);
           const reExportsExternalPackage =
             transitiveImportInfo === undefined ||
             transitiveImportInfo.isExternalLibraryImport;
@@ -216,66 +209,72 @@ const rule = {
             ? importNodeTs.importClause.namedBindings.elements
             : [];
 
+        /** @param {import("eslint").Rule.RuleFixer} fixer */
+        function fix(fixer) {
+          const x = 5;
+          const modulesToImportStmtsMap =
+            namedImports
+              .map((namedImport) => {
+                const symbol = checker.getSymbolAtLocation(
+                  namedImport.name
+                );
+                return {
+                  namedImport,
+                  importPath:
+                    symbol &&
+                    getRelativeImportPathForExportedSymbol(
+                      checker.getAliasedSymbol(symbol)
+                    ),
+                };
+              })
+              .filter(({ importPath }) => importPath !== undefined)
+              .reduce((result, cur) => {
+                if (!result.has(cur.importPath))
+                  result.set(cur.importPath, [cur]);
+                else result.get(cur.importPath).push(cur);
+                return result;
+              }, new Map());
+
+          const addReplacementImportTextFixers =
+              [...modulesToImportStmtsMap]
+              // sort the modules (get keys in the map as a list and sort)
+              .sort((a, b) => (a[0] > b[0] ? 1 : -1))
+              // for each one, sort their named imports (sort each value of the map)
+              .map((import_) => {
+                // prettier-ignore
+                import_[1].sort((a, b) => a.namedImport.name.escapedText > b.namedImport.name.escapedText ? 1 : -1);
+                return import_;
+              })
+              .map(([importPath, namedImports], i) =>
+                fixer.insertTextAfter(
+                  node,
+                  // prettier-ignore
+                  `${ i === 0 ? "" : "\n" /* separate all imported modules with a new line*/
+                  }import { ${namedImports
+                    .map(({ namedImport }) =>
+                      namedImport.propertyName !== undefined
+                        ? `${namedImport.propertyName.escapedText} as ${namedImport.name.escapedText}`
+                        : namedImport.name.escapedText
+                    )
+                    .join(", ")} } from "${importPath}";`
+                )
+              );
+          return [
+            fixer.remove(node),
+            ...addReplacementImportTextFixers
+          ];
+        };
+
+        const canFix = !hasDefaultImport &&
+          !isSideEffectImport &&
+          !hasNamespaceImport &&
+          namedImports.length !== 0;
+
         context.report({
           node,
           messageId: messageIds.noInternalBarrelImports,
-          // fixer only supports property imports
-          ...(!hasDefaultImport &&
-            !isSideEffectImport &&
-            !hasNamespaceImport &&
-            namedImports.length !== 0 && {
-              fix(fixer) {
-                return [
-                  fixer.remove(node),
-                  // first get key value pairs of a Map<ModulePaths, ImportPropsFromModule>
-                  ...Array.from(
-                    namedImports
-                      .map((namedImport) => {
-                        const symbol = checker.getSymbolAtLocation(
-                          namedImport.name
-                        );
-                        return {
-                          namedImport,
-                          importPath:
-                            symbol &&
-                            getRelativeImportPathForExportedSymbol(
-                              checker.getAliasedSymbol(symbol)
-                            ),
-                        };
-                      })
-                      .filter(({ importPath }) => importPath !== undefined)
-                      .reduce((result, cur) => {
-                        if (!result.has(cur.importPath))
-                          result.set(cur.importPath, [cur]);
-                        else result.get(cur.importPath).push(cur);
-                        return result;
-                      }, new Map())
-                  )
-                    // sort the modules (map keys)
-                    .sort((a, b) => (a[0] > b[0] ? 1 : -1))
-                    // sort their imported properties (map value lists)
-                    .map((import_) => {
-                      // prettier-ignore
-                      import_[1].sort((a, b) => a.namedImport.name.escapedText > b.namedImport.name.escapedText ? 1 : -1);
-                      return import_;
-                    })
-                    .map(([importPath, namedImports], i) =>
-                      fixer.insertTextAfter(
-                        node,
-                        // prettier-ignore
-                        `${ i === 0 ? "" : "\n" /* separate all imported modules with a new line*/
-                        }import { ${namedImports
-                          .map(({ namedImport }) =>
-                            namedImport.propertyName !== undefined
-                              ? `${namedImport.propertyName.escapedText} as ${namedImport.name.escapedText}`
-                              : namedImport.name.escapedText
-                          )
-                          .join(", ")} } from "${importPath}";`
-                      )
-                    ),
-                ];
-              },
-            }),
+          // only offer a fix if canFix is true
+          ...(canFix ? {fix} : undefined),
         });
       },
     };
