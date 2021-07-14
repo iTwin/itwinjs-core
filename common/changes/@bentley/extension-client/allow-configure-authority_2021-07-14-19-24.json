@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/extension-client",
+      "comment": "Allow configuring OAuth authority",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/extension-client",
+  "email": "laurynasr@users.noreply.github.com"
+}

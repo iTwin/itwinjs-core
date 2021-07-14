@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/usage-logging-client",
+      "comment": "Allow configuring OAuth authority",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/usage-logging-client",
+  "email": "laurynasr@users.noreply.github.com"
+}
