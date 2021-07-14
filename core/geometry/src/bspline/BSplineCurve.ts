@@ -27,11 +27,13 @@ import { Transform } from "../geometry3d/Transform";
 import { Point4d } from "../geometry4d/Point4d";
 import { BandedSystem } from "../numerics/BandedSystem";
 import { UnivariateBezier } from "../numerics/BezierPolynomials";
+import { AkimaCurve3dOptions } from "./AkimaCurve3d";
 import { Bezier1dNd } from "./Bezier1dNd";
 import { BezierCurve3d } from "./BezierCurve3d";
 import { BezierCurve3dH } from "./BezierCurve3dH";
 import { BezierCurveBase } from "./BezierCurveBase";
 import { BSpline1dNd } from "./BSpline1dNd";
+import { InterpolationCurve3dOptions } from "./InterpolationCurve3d";
 import { BSplineWrapMode, KnotVector } from "./KnotVector";
 
 /**
@@ -85,6 +87,9 @@ export abstract class BSplineCurve3dBase extends CurvePrimitive {
 
   /** The underlying blocked-pole spline, with simple x,y,z poles */
   protected _bcurve: BSpline1dNd;
+  private _definitionData?: any;
+  public set definitionData(data: any) { this._definitionData = data; }
+  public get definitionData(): any { return this._definitionData;}
   protected constructor(poleDimension: number, numPoles: number, order: number, knots: KnotVector) {
     super();
     this._bcurve = BSpline1dNd.create(numPoles, poleDimension, order, knots) as BSpline1dNd;
@@ -367,7 +372,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
    * @param points pass-through points.
    * @param order bspline order (1 more than degree)
    */
-  public static createThroughPoints(points: IndexedXYZCollection, order: number): BSplineCurve3d | undefined {
+  public static createThroughPoints(points: IndexedXYZCollection | Point3d[], order: number): BSplineCurve3d | undefined {
     const numPoints = points.length;
     if (order > numPoints || order < 2)
       return undefined;
@@ -382,7 +387,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       const u = knots.grevilleKnot(basePointIndex);
       const spanIndex = knots.knotToLeftKnotIndex(u);
       knots.evaluateBasisFunctions(spanIndex, u, basisFunctions);
-      // hmph .. how do the max points shift within the order spots?
+      // puzzlement .. how do the max points shift within the order spots?
       let maxIndex = 0;
       for (let i = 1; i < order; i++)
         if (basisFunctions[i] > basisFunctions[maxIndex])
@@ -394,7 +399,11 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
         if (rowStart + realColumn >= 0 && realColumn < numPoints)
           matrix[rowStart + basisFunctionStartWithinRow + i] = basisFunctions[i];
       }
-      rhs.push(points.getPoint3dAtUncheckedPointIndex(basePointIndex, xyz));
+      if (points instanceof IndexedXYZCollection) {
+        rhs.push(points.getPoint3dAtUncheckedPointIndex(basePointIndex, xyz));
+      } else {
+        rhs.push(points[basePointIndex]);
+      }
     }
     const poles = BandedSystem.solveBandedSystemMultipleRHS(numPoints, bw, matrix, 3, rhs.float64Data());
     if (poles) {
@@ -402,6 +411,23 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     }
     return undefined;
   }
+  /**
+   *
+   * @param options collection of point, knot and end condition data.
+   */
+  public static createFromInterpolationCurve3dOptions(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined {
+     return this.createThroughPoints (options.fitPoints, options.order? options.order : 4);
+    return undefined;
+  }
+
+  /**
+   *
+   * @param options collection of point, knot and end condition data.
+   */
+   public static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined {
+    return this.createThroughPoints (options.fitPoints, 4);
+   return undefined;
+ }
 
   /** Create a bspline with given knots.
    *
