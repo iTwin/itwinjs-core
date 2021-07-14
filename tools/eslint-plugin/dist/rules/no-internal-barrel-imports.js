@@ -268,12 +268,15 @@ const rule = {
           !hasNamespaceImport &&
           namedImports.length !== 0;
 
-        context.report({
+        /** @type {import("eslint").Rule.ReportDescriptor} */
+        const reportDesc = {
           node,
           messageId: messageIds.noInternalBarrelImports,
-          // only offer a fix if canFix is true
-          ...(canFix ? {fix} : undefined),
-        });
+        };
+
+        if (canFix) reportDesc.fix = fix;
+
+        context.report(reportDesc);
       },
     };
   },
