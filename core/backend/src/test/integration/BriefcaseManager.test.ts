@@ -106,8 +106,8 @@ describe("BriefcaseManager (#integration)", () => {
   });
 
   it("should open iModels of specific versions from the Hub", async () => {
-    const path = BriefcaseManager.getIModelPath(readOnlyTestIModelId);
-    IModelJsFs.purgeDirSync(path);
+    const dirToPurge = BriefcaseManager.getIModelPath(readOnlyTestIModelId);
+    IModelJsFs.purgeDirSync(dirToPurge);
 
     const iModelFirstVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.first().toJSON(), deleteFirst: true });
     assert.exists(iModelFirstVersion);
