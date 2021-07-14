@@ -17,6 +17,7 @@ describe("UlasClient - OIDC Token (#integration)", () => {
 
   before(async () => {
     const oidcConfig: TestBrowserAuthorizationClientConfiguration = {
+      authority: Config.App.getString("imjs_oidc_ulas_test_authority"),
       clientId: Config.App.getString("imjs_oidc_ulas_test_client_id"),
       redirectUri: Config.App.getString("imjs_oidc_ulas_test_redirect_uri"),
       scope: Config.App.getString("imjs_oidc_ulas_test_scopes"),

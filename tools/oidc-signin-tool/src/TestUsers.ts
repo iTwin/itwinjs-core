@@ -21,6 +21,7 @@ export interface TestUserCredentials {
  * @internal
  */
 export interface TestBrowserAuthorizationClientConfiguration {
+  authority: string;
   clientId: string;
   redirectUri: string;
   scope: string;
@@ -72,6 +73,7 @@ export class TestUsers {
    */
   public static getTestBrowserAuthorizationClientConfiguration(): TestBrowserAuthorizationClientConfiguration {
     return {
+      authority: Config.App.getString("imjs_oidc_browser_test_authority"),
       clientId: Config.App.getString("imjs_oidc_browser_test_client_id"),
       redirectUri: Config.App.getString("imjs_oidc_browser_test_redirect_uri"),
       scope: Config.App.getString("imjs_oidc_browser_test_scopes"),

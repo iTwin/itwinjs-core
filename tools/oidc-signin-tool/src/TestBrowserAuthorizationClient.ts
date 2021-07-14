@@ -55,7 +55,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
     this._imsUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSProfile.RP", this._deploymentRegion);
 
-    const oidcUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSOpenID", this._deploymentRegion);
+    const oidcUrl = Config.App.query("imjs_itwin_platform_authority") ?? await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSOpenID", this._deploymentRegion);
 
     // Due to issues with a timeout or failed request to the authorization service increasing the standard timeout and adding retries.
     // Docs for this option here, https://github.com/panva/node-openid-client/tree/master/docs#customizing-http-requests

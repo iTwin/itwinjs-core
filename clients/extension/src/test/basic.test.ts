@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { ExtensionStatus, Guid, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Config, ExtensionStatus, Guid, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
@@ -29,6 +29,7 @@ describe("ExtensionClient (#integration)", () => {
     extensionClient = new ExtensionClient();
 
     const readonlyConfig = {
+      authority: Config.App.get("imjs_internal_authority"),
       clientId: "imodeljs-extension-publisher",
       redirectUri: "http://localhost:5001/signin-oidc",
       scope: "openid imodel-extension-service-api context-registry-service:read-only",
