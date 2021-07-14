@@ -169,18 +169,17 @@ const rule = {
         if (ignoredBarrelModules.includes(OsPaths.normalize(importedModule.fileName)))
           return;
 
-        /** @type {ts.ImportDeclaration["moduleSpecifier"][]} */
-        const imports = importedModule.imports;
-        const containsReExport = imports.some((importSpecifier) => {
-          const isNonTypeOnlyReExport =
-            ts.isExportDeclaration(importSpecifier.parent) &&
-            !importSpecifier.parent.isTypeOnly;
-          if (!isNonTypeOnlyReExport) return false;
-          const transitiveImportInfo = ts.getResolvedModule(importedModule, importSpecifier.text);
+        let containsReExport = false;
+        ts.forEachChild(importedModule, (child) => {
+          const potentialReExport = (ts.isExportDeclaration(child) && child.moduleSpecifier !== undefined && !child.isTypeOnly);
+          if (!potentialReExport)
+            return;
+          const transitiveImportInfo = ts.getResolvedModule(importedModule, child.moduleSpecifier.text);
           const reExportsExternalPackage =
             transitiveImportInfo === undefined ||
             transitiveImportInfo.isExternalLibraryImport;
-          return !reExportsExternalPackage;
+          const isReExport = potentialReExport && !reExportsExternalPackage;
+          containsReExport = isReExport;
         });
 
         const hasNamespaceImport =
