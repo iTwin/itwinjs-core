@@ -953,7 +953,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       `;
 
       const placements = new Array<Placement & { elementId: Id64String}>();
-      for await (let row of this._iModel.query(ecsql)) {
+      for await (const row of this._iModel.query(ecsql)) {
         const origin =  [row.x, row.y, row.z];
         const bbox = {
           low: { x: row.lx, y: row.ly, z: row.lz },

@@ -1915,7 +1915,7 @@ export abstract class Viewport implements IDisposable {
     const frust = new Frustum();
     const viewRange = new Range3d();
     for (const placement of placements)
-        viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
+      viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
 
     const ignoreError: ViewChangeOptions = {
       ...options,
