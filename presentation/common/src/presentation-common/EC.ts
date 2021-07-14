@@ -279,7 +279,7 @@ export namespace RelatedClassInfo {
     };
   }
 
-  /** Deserialize compressed [[RelatedClassInfo]] from JSON */
+  /** Deserialize [[RelatedClassInfo]] from compressed JSON */
   export function fromCompressedJSON(compressedInfoJSON: RelatedClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON {
     return {
       ...compressedInfoJSON,
