@@ -99,6 +99,15 @@ export interface ClassInfoJSON {
 }
 
 /**
+ * A serialized and compressed version of [[ClassInfo]]
+ * @public
+ */
+export interface CompressedClassInfoJSON {
+  name: string;
+  label: string;
+}
+
+/**
  * A single choice in enumeration
  * @public
  */
@@ -170,6 +179,17 @@ export namespace PropertyInfo {
     return { ...info, classInfo: ClassInfo.toJSON(info.classInfo) };
   }
 
+  /** Serialize [[PropertyInfo]] to compressed JSON */
+  export function toCompressedJSON(propertyInfo: PropertyInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfoJSON<string> {
+    const { id, ...leftOverInfo } = propertyInfo.classInfo;
+    classesMap[id] = leftOverInfo;
+
+    return {
+      ...propertyInfo,
+      classInfo: propertyInfo.classInfo.id,
+    };
+  }
+
   /** Deserialize [[PropertyInfo]] from JSON */
   export function fromJSON(json: PropertyInfoJSON): PropertyInfo {
     return { ...json, classInfo: ClassInfo.fromJSON(json.classInfo) };
@@ -180,8 +200,8 @@ export namespace PropertyInfo {
  * A serialized version of [[PropertyInfo]]
  * @public
  */
-export interface PropertyInfoJSON {
-  classInfo: ClassInfoJSON;
+export interface PropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+  classInfo: TClassInfoJSON;
   name: string;
   type: string;
   enumerationInfo?: EnumerationInfo;
@@ -224,6 +244,24 @@ export namespace RelatedClassInfo {
     };
   }
 
+  /** Serialize [[RelatedClassInfo]] to compressed JSON */
+  export function toCompressedJSON(classInfo: RelatedClassInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON<string> {
+    const { id: sourceId, ...sourceLeftOverInfo } = classInfo.sourceClassInfo;
+    const { id: targetId, ...targetLeftOverInfo } = classInfo.targetClassInfo;
+    const { id: relationshipId, ...relationshipLeftOverInfo } = classInfo.relationshipInfo;
+
+    classesMap[sourceId] = sourceLeftOverInfo;
+    classesMap[targetId] = targetLeftOverInfo;
+    classesMap[relationshipId] = relationshipLeftOverInfo;
+
+    return {
+      ...classInfo,
+      sourceClassInfo: sourceId,
+      targetClassInfo: targetId,
+      relationshipInfo: relationshipId,
+    };
+  }
+
   /** Deserialize [[RelatedClassInfo]] from JSON */
   export function fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo {
     return {
@@ -233,6 +271,16 @@ export namespace RelatedClassInfo {
       isPolymorphicTargetClass: json.isPolymorphicTargetClass ?? false,
       relationshipInfo: ClassInfo.fromJSON(json.relationshipInfo),
       isPolymorphicRelationship: json.isPolymorphicRelationship ?? false,
+    };
+  }
+
+  /** Deserialize [[RelatedClassInfo]] from compressed JSON */
+  export function fromCompressedJSON(compressedInfoJSON: RelatedClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON {
+    return {
+      ...compressedInfoJSON,
+      sourceClassInfo: { id: compressedInfoJSON.sourceClassInfo, ...classesMap[compressedInfoJSON.sourceClassInfo] },
+      targetClassInfo: { id: compressedInfoJSON.targetClassInfo, ...classesMap[compressedInfoJSON.targetClassInfo] },
+      relationshipInfo: { id: compressedInfoJSON.relationshipInfo, ...classesMap[compressedInfoJSON.relationshipInfo] },
     };
   }
 
@@ -272,11 +320,11 @@ export namespace RelatedClassInfo {
  * A serialized version of [[RelatedClassInfo]]
  * @public
  */
-export interface RelatedClassInfoJSON {
-  sourceClassInfo: ClassInfoJSON;
-  targetClassInfo: ClassInfoJSON;
+export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
+  sourceClassInfo: TClassInfoJSON;
+  targetClassInfo: TClassInfoJSON;
   isPolymorphicTargetClass?: boolean;
-  relationshipInfo: ClassInfoJSON;
+  relationshipInfo: TClassInfoJSON;
   isForwardRelationship: boolean;
   isPolymorphicRelationship?: boolean;
 }
@@ -291,7 +339,7 @@ export type RelationshipPath = RelatedClassInfo[];
  * Serialized [[RelationshipPath]]
  * @public
  */
-export type RelationshipPathJSON = RelatedClassInfoJSON[];
+export type RelationshipPathJSON<TClassInfoJSON = ClassInfoJSON> = RelatedClassInfoJSON<TClassInfoJSON>[];
 
 /** @public */
 export namespace RelationshipPath { // eslint-disable-line @typescript-eslint/no-redeclare

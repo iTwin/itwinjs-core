@@ -222,6 +222,23 @@ export interface CommonIpcParams {
 }
 
 // @public
+export interface CompressedClassInfoJSON {
+    // (undocumented)
+    label: string;
+    // (undocumented)
+    name: string;
+}
+
+// @public
+export type CompressedDescriptorJSON = Omit<DescriptorJSON, "selectClasses" | "fields"> & {
+    selectClasses: SelectClassInfoJSON<string>[];
+    classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    };
+    fields: FieldJSON<string>[];
+};
+
+// @public
 export type ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise<string>;
 
 // @public
@@ -481,7 +498,7 @@ export class Descriptor implements DescriptorSource {
     readonly displayType: string;
     readonly fields: Field[];
     filterExpression?: string;
-    static fromJSON(json: DescriptorJSON | string | undefined): Descriptor | undefined;
+    static fromJSON(json: DescriptorJSON | CompressedDescriptorJSON | string | undefined): Descriptor | undefined;
     getFieldByName(name: string, recurse?: boolean): Field | undefined;
     readonly inputKeysHash: string;
     // @internal
@@ -490,6 +507,7 @@ export class Descriptor implements DescriptorSource {
     readonly selectionInfo?: SelectionInfo;
     sortDirection?: SortDirection;
     sortingField?: Field;
+    toCompressedJSON(): CompressedDescriptorJSON;
     toJSON(): DescriptorJSON;
 }
 
@@ -886,6 +904,9 @@ export class Field {
     // (undocumented)
     clone(): Field;
     editor?: EditorDescription;
+    static fromCompressedJSON(json: FieldJSON<string>, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): FieldJSON | undefined;
     static fromJSON(json: FieldJSON | undefined, categories: CategoryDescription[]): Field | undefined;
     // @deprecated
     static fromJSON(json: FieldJSON | string | undefined): Field | undefined;
@@ -906,6 +927,10 @@ export class Field {
     resetParentship(): void;
     // @internal @deprecated
     static reviver(key: string, value: any): any;
+    // (undocumented)
+    toCompressedJSON(classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): FieldJSON<string>;
     toJSON(): FieldJSON;
     type: TypeDescription;
 }
@@ -945,7 +970,7 @@ export interface FieldHierarchy {
 }
 
 // @public
-export type FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentFieldJSON;
+export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
 
 // @internal (undocumented)
 export const getFieldByName: (fields: Field[], name: string, recurse?: boolean | undefined) => Field | undefined;
@@ -1599,17 +1624,17 @@ export class NestedContentField extends Field {
 }
 
 // @public
-export interface NestedContentFieldJSON extends BaseFieldJSON {
+export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
     // @alpha (undocumented)
     actualPrimaryClassIds?: Id64String[];
     // (undocumented)
     autoExpand?: boolean;
     // (undocumented)
-    contentClassInfo: ClassInfoJSON;
+    contentClassInfo: TClassInfoJSON;
     // (undocumented)
-    nestedFields: FieldJSON[];
+    nestedFields: FieldJSON<TClassInfoJSON>[];
     // (undocumented)
-    pathToPrimaryClass: RelationshipPathJSON;
+    pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
     // @alpha (undocumented)
     relationshipMeaning?: RelationshipMeaning;
 }
@@ -2112,9 +2137,9 @@ export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
 }
 
 // @public
-export interface PropertiesFieldJSON extends BaseFieldJSON {
+export interface PropertiesFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
     // (undocumented)
-    properties: PropertyJSON[];
+    properties: PropertyJSON<TClassInfoJSON>[];
 }
 
 // @public
@@ -2127,6 +2152,9 @@ export interface Property {
 // @public (undocumented)
 export namespace Property {
     export function fromJSON(json: PropertyJSON): Property;
+    export function toCompressedJSON(prop: Property, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): PropertyJSON<string>;
     export function toJSON(prop: Property): PropertyJSON;
 }
 
@@ -2236,13 +2264,16 @@ export interface PropertyInfo {
 // @public (undocumented)
 export namespace PropertyInfo {
     export function fromJSON(json: PropertyInfoJSON): PropertyInfo;
+    export function toCompressedJSON(json: PropertyInfoJSON, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): PropertyInfoJSON<string>;
     export function toJSON(info: PropertyInfo): PropertyInfoJSON;
 }
 
 // @public
-export interface PropertyInfoJSON {
+export interface PropertyInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     // (undocumented)
-    classInfo: ClassInfoJSON;
+    classInfo: TClassInfoJSON;
     // (undocumented)
     enumerationInfo?: EnumerationInfo;
     // (undocumented)
@@ -2254,11 +2285,11 @@ export interface PropertyInfoJSON {
 }
 
 // @public
-export interface PropertyJSON {
+export interface PropertyJSON<TClassInfoJSON = ClassInfoJSON> {
     // (undocumented)
-    property: PropertyInfoJSON;
+    property: PropertyInfoJSON<TClassInfoJSON>;
     // @deprecated (undocumented)
-    relatedClassPath: RelationshipPathJSON;
+    relatedClassPath: RelationshipPathJSON<TClassInfoJSON>;
 }
 
 // @public
@@ -2352,13 +2383,19 @@ export interface RelatedClassInfo {
 // @public (undocumented)
 export namespace RelatedClassInfo {
     export function equals(lhs: RelatedClassInfo | StrippedRelatedClassInfo, rhs: RelatedClassInfo | StrippedRelatedClassInfo): boolean;
+    export function fromCompressedJSON(compressedInfoJSON: RelatedClassInfoJSON<string>, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): RelatedClassInfoJSON;
     export function fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo;
     export function strip(full: RelatedClassInfo): StrippedRelatedClassInfo;
+    export function toCompressedJSON(classInfo: RelatedClassInfo, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): RelatedClassInfoJSON<string>;
     export function toJSON(info: RelatedClassInfo): RelatedClassInfoJSON;
 }
 
 // @public
-export interface RelatedClassInfoJSON {
+export interface RelatedClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     // (undocumented)
     isForwardRelationship: boolean;
     // (undocumented)
@@ -2366,11 +2403,11 @@ export interface RelatedClassInfoJSON {
     // (undocumented)
     isPolymorphicTargetClass?: boolean;
     // (undocumented)
-    relationshipInfo: ClassInfoJSON;
+    relationshipInfo: TClassInfoJSON;
     // (undocumented)
-    sourceClassInfo: ClassInfoJSON;
+    sourceClassInfo: TClassInfoJSON;
     // (undocumented)
-    targetClassInfo: ClassInfoJSON;
+    targetClassInfo: TClassInfoJSON;
 }
 
 // @public
@@ -2438,7 +2475,7 @@ export namespace RelationshipPath {
 }
 
 // @public
-export type RelationshipPathJSON = RelatedClassInfoJSON[];
+export type RelationshipPathJSON<TClassInfoJSON = ClassInfoJSON> = RelatedClassInfoJSON<TClassInfoJSON>[];
 
 // @public
 export type RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[];
@@ -2684,23 +2721,30 @@ export interface SelectClassInfo {
 
 // @public (undocumented)
 export namespace SelectClassInfo {
+    export function fromCompressedJSON(compressedSelectClass: SelectClassInfoJSON<string>, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): SelectClassInfoJSON;
     export function fromJSON(json: SelectClassInfoJSON): SelectClassInfo;
+    // (undocumented)
+    export function toCompressedJSON(selectClass: SelectClassInfo, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): SelectClassInfoJSON<string>;
 }
 
 // @public
-export interface SelectClassInfoJSON {
+export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     // (undocumented)
     isSelectPolymorphic: boolean;
     // (undocumented)
-    navigationPropertyClasses: RelatedClassInfoJSON[];
+    navigationPropertyClasses: RelatedClassInfoJSON<TClassInfoJSON>[];
     // (undocumented)
-    pathToPrimaryClass: RelationshipPathJSON;
+    pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
     // (undocumented)
-    relatedInstanceClasses: RelatedClassInfoJSON[];
+    relatedInstanceClasses: RelatedClassInfoJSON<TClassInfoJSON>[];
     // (undocumented)
-    relatedPropertyPaths: RelationshipPathJSON[];
+    relatedPropertyPaths: RelationshipPathJSON<TClassInfoJSON>[];
     // (undocumented)
-    selectClassInfo: ClassInfoJSON;
+    selectClassInfo: TClassInfoJSON;
 }
 
 // @public

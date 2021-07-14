@@ -214,7 +214,28 @@ Object {
         "name": "Brand",
         "type": "binary",
       },
-      "relatedClassPath": Array [],
+      "relatedClassPath": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": Object {
+            "id": "0x117dc0000000b22",
+            "label": "Wooden stable",
+            "name": "service-desk",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x3b01000000711f",
+            "label": "Chips hack",
+            "name": "panel",
+          },
+          "targetClassInfo": Object {
+            "id": "0x10040000006bba",
+            "label": "plum Refined Steel Shoes",
+            "name": "program",
+          },
+        },
+      ],
     },
   ],
   "renderer": Object {
@@ -697,7 +718,28 @@ Object {
         "name": "SQL",
         "type": "mediumint",
       },
-      "relatedClassPath": Array [],
+      "relatedClassPath": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": Object {
+            "id": "0xd42c0000001da9",
+            "label": "system Cotton Centralized",
+            "name": "SCSI",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x17efb000000da5f",
+            "label": "online",
+            "name": "Indiana",
+          },
+          "targetClassInfo": Object {
+            "id": "0x1220e000000b42b",
+            "label": "Iraqi Dinar Mexican Peso Mexican Unidad de Inversion (UDI) Tasty",
+            "name": "Small",
+          },
+        },
+      ],
     },
   ],
   "renderer": Object {
@@ -738,7 +780,28 @@ Object {
         "name": "Rubber",
         "type": "timestamp",
       },
-      "relatedClassPath": Array [],
+      "relatedClassPath": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": Object {
+            "id": "0x12b9200000087d6",
+            "label": "Steel focus group digital",
+            "name": "card",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x6ca60000012eb1",
+            "label": "magenta Implementation",
+            "name": "calculating",
+          },
+          "targetClassInfo": Object {
+            "id": "0x2a2d000000f771",
+            "label": "Madagascar copying",
+            "name": "Investment Account",
+          },
+        },
+      ],
     },
   ],
   "renderer": Object {
@@ -779,7 +842,28 @@ Object {
         "name": "Cambridgeshire",
         "type": "double",
       },
-      "relatedClassPath": Array [],
+      "relatedClassPath": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": Object {
+            "id": "0xe1540000009046",
+            "label": "dot-com",
+            "name": "Checking Account",
+          },
+          "sourceClassInfo": Object {
+            "id": "0xce2800000043fa",
+            "label": "Central",
+            "name": "haptic",
+          },
+          "targetClassInfo": Object {
+            "id": "0xf9330000009885",
+            "label": "Handmade",
+            "name": "Health",
+          },
+        },
+      ],
     },
   ],
   "renderer": Object {
