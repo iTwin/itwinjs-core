@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-metadata",
+      "comment": "Schema Cache is split into LoadedSchemas and LoadingSchemas. Should validate and then load schema's references before loading current schema.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "Ivan.Kok@bentley.com"
+}
