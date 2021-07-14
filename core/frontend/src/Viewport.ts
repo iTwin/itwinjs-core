@@ -1880,16 +1880,19 @@ export abstract class Viewport implements IDisposable {
     return ViewStatus.Success;
   }
 
-  /** Zoom the view to a show the tightest box around a given set of PlacementProps. Optionally, change view rotation.
-   * @param props array of PlacementProps. Will zoom to the union of the placements.
-   * @param options options that control how the view change works and whether to change view rotation.
-   * @note any invalid placements are ignored. If no valid placements are supplied, this function does nothing.
-   */
+  /** @see [[zoomToPlacements]]. */
   public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void {
     const placements = placementProps.map((props) => isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props));
     this.zoomToPlacements(placements, options);
   }
 
+  /** Zoom the view in or out to a fit to the tightest volume enclosing a given set of placements, optionally also changing the view rotation.
+   * @param placements The array of placements. The view will zoom to fit the union of the placements.
+   * @param options Options controlling how the view change works and whether to change view rotation.
+   * @note any invalid placements are ignored. If no valid placements are supplied, this function does nothing.
+   * @see [[zoomToElements]] to zoom to a set of elements.
+   * @see [[IModelConnection.Elements.getPlacements]] to obtain the placements for a set of elements.
+   */
   public zoomToPlacements(placements: Placement[], options?: ViewChangeOptions & ZoomToOptions): void {
     placements = placements.filter((x) => x.isValid);
     if (placements.length === 0)
