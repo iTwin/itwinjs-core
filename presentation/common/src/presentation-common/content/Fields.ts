@@ -61,12 +61,12 @@ export interface NestedContentFieldJSON <TClassInfoJSON = ClassInfoJSON> extends
 export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
 
 /** Is supplied field a properties field. */
-export const isPropertiesField = (field: FieldJSON | Field): field is PropertiesFieldJSON | PropertiesFieldJSON<string> | PropertiesField => {
+export const isPropertiesField = (field: FieldJSON | Field): field is PropertiesFieldJSON<any> | PropertiesField => {
   return !!(field as any).properties;
 };
 
 /** Is supplied field a nested content field. */
-export const isNestedContentField = (field: FieldJSON | Field): field is NestedContentFieldJSON | NestedContentFieldJSON<string> | NestedContentField => {
+export const isNestedContentField = (field: FieldJSON | Field): field is NestedContentFieldJSON<any> | NestedContentField => {
   return !!(field as any).nestedFields;
 };
 
