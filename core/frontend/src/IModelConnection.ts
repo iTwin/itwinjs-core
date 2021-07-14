@@ -14,7 +14,7 @@ import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams, FontMap, FontMapProps,
   GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, IModelStatus, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelProps, ModelQueryParams, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
+  ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
   SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -727,6 +727,18 @@ export class SnapshotConnection extends IModelConnection {
   }
 }
 
+function concatenateIds(elementIds: Iterable<Id64String>): string | undefined {
+  let ids: Id64String[];
+  if (typeof elementIds === "string")
+    ids = [elementIds];
+  else if (!Array.isArray(elementIds))
+    ids = Array.from(elementIds);
+  else
+    ids = elementIds;
+
+  return ids.length > 0 ? ids.join(",") : undefined;
+}
+
 /** @public */
 export namespace IModelConnection { // eslint-disable-line no-redeclare
 
@@ -877,7 +889,10 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** Get a set of element ids that satisfy a query */
     public async queryIds(params: EntityQueryParams): Promise<Id64Set> { return this._iModel.queryEntityIds(params); }
 
-    /** Get an array of [[ElementProps]] given one or more element ids. */
+    /** Get an array of [[ElementProps]] given one or more element ids.
+     * @note This method returns **all** of the properties of the element (excluding GeometryStream), which may be a very large amount of data - consider using
+     * [[IModelConnection.query]] to select only those properties of interest to limit the amount of data returned.
+     */
     public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
       const iModel = this._iModel;
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getElementProps(this._iModel.getRpcProps(), [...Id64.toIdSet(arg)]) : [];
@@ -906,6 +921,62 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
       const iModel = this._iModel;
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(iModel.getRpcProps(), params) : [];
+    }
+
+    public async getPlacements(elementIds: Iterable<Id64String>): Promise<Array<Placement & { elementId: Id64String }>> {
+      let ids: Id64String[];
+      if (typeof elementIds === "string")
+        ids = [elementIds];
+      else if (!Array.isArray(elementIds))
+        ids = Array.from(elementIds);
+      else
+        ids = elementIds;
+
+      if (ids.length === 0)
+        return [];
+
+      const ecsql = `
+        SELECT
+          ECInstanceId,
+          Origin.x as x, Origin.y as y, Origin.z as z,
+          BBoxLow.x as lx, BBoxLow.y as ly, BBoxLow.z as lz,
+          BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
+          Yaw, Pitch, Roll,
+          NULL as Rotation
+        FROM bis.GeometricElement3d WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
+        UNION ALL
+        SELECT * FROM (
+          SELECT
+            ECInstanceId,
+            Origin.x, Origin.y, NULL,
+            BBoxLow.x, BBoxLow.y, NULL,
+            BBoxHigh.x, BBoxHigh.y, NULL,
+            NULL, NULL, NULL,
+            Rotation
+          FROM bis.GeometricElement2d WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL)
+        WHERE ECInstanceId IN (${ids.join(",")})
+      `;
+
+      const placements = new Array<Placement & { elementId: Id64String}>();
+      for await (let row of this._iModel.query(ecsql)) {
+        const origin =  [row.x, row.y, row.z];
+        const bbox = {
+          low: { x: row.lx, y: row.ly, z: row.lz },
+          high: { x: row.hx, y: row.hy, z: row.hz },
+        };
+
+        let placement;
+        if (undefined === row.lz)
+          placement = Placement2d.fromJSON({ bbox, origin, angle: row.rotation });
+        else
+          placement = Placement3d.fromJSON({ bbox, origin, angles: { yaw: row.yaw, pitch: row.pitch, roll: row.roll } });
+
+        const placementWithId = (placement as Placement & { elementId: Id64String });
+        placementWithId.elementId = row.id;
+        placements.push(placementWithId);
+      }
+
+      return placements;
     }
   }
 
