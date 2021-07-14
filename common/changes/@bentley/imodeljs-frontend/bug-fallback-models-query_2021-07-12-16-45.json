@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Handle failures in models query when isNotSpatiallyLocated property does not exist in the schema",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "6283674+kckst8@users.noreply.github.com"
+}

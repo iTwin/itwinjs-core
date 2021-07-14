@@ -1,6 +1,11 @@
 # Change Log - @bentley/extension-cli
 
-This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:30 GMT

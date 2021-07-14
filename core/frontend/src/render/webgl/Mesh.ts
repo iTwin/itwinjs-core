@@ -152,6 +152,7 @@ export class MeshGraphic extends Graphic {
   }
 
   public get isDisposed(): boolean { return this.meshData.isDisposed && 0 === this._primitives.length; }
+  public get isPickable() { return false; }
 
   public dispose() {
     dispose(this.meshData);
