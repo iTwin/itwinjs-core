@@ -727,18 +727,6 @@ export class SnapshotConnection extends IModelConnection {
   }
 }
 
-function concatenateIds(elementIds: Iterable<Id64String>): string | undefined {
-  let ids: Id64String[];
-  if (typeof elementIds === "string")
-    ids = [elementIds];
-  else if (!Array.isArray(elementIds))
-    ids = Array.from(elementIds);
-  else
-    ids = elementIds;
-
-  return ids.length > 0 ? ids.join(",") : undefined;
-}
-
 /** @public */
 export namespace IModelConnection { // eslint-disable-line no-redeclare
 
@@ -935,6 +923,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       if (ids.length === 0)
         return [];
 
+      const idCriterion = `ECInstanceId IN (${ids.join(",")})`;
       const ecsql = `
         SELECT
           ECInstanceId,
@@ -943,18 +932,18 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
           BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
           Yaw, Pitch, Roll,
           NULL as Rotation
-        FROM bis.GeometricElement3d WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
+        FROM bis.GeometricElement3d
+        WHERE ${idCriterion} AND Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
         UNION ALL
-        SELECT * FROM (
-          SELECT
-            ECInstanceId,
-            Origin.x, Origin.y, NULL,
-            BBoxLow.x, BBoxLow.y, NULL,
-            BBoxHigh.x, BBoxHigh.y, NULL,
-            NULL, NULL, NULL,
-            Rotation
-          FROM bis.GeometricElement2d WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL)
-        WHERE ECInstanceId IN (${ids.join(",")})
+        SELECT
+          ECInstanceId,
+          Origin.x, Origin.y, NULL,
+          BBoxLow.x, BBoxLow.y, NULL,
+          BBoxHigh.x, BBoxHigh.y, NULL,
+          NULL, NULL, NULL,
+          Rotation
+        FROM bis.GeometricElement2d
+        WHERE ${idCriterion} AND Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
       `;
 
       const placements = new Array<Placement & { elementId: Id64String}>();
