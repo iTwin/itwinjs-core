@@ -155,7 +155,8 @@ describe("Descriptor", () => {
       testDescriptorJSON.categories!.push(createRandomCategoryJSON());
       testDescriptorJSON.fields.push(createRandomPropertiesFieldJSON(testDescriptorJSON.categories![1], 2));
 
-      const compressedDescriptorJSON = Descriptor.toCompressedJSON(testDescriptorJSON);
+      const descriptor = Descriptor.fromJSON(JSON.stringify(testDescriptorJSON))!;
+      const compressedDescriptorJSON = descriptor.toCompressedJSON();
       expect(compressedDescriptorJSON).to.matchSnapshot();
     });
 

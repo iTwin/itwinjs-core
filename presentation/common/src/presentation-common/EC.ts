@@ -244,27 +244,22 @@ export namespace RelatedClassInfo {
     };
   }
 
-  /** Serialize [[RelatedClassInfoJSON]] to compressed JSON */
-  export function toCompressedJSON(json: RelatedClassInfoJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON<string> {
-    const { id: sourceId, ...sourceLeftOverInfo } = json.sourceClassInfo;
-    const { id: targetId, ...targetLeftOverInfo } = json.targetClassInfo;
-    const { id: relationshipId, ...relationshipLeftOverInfo } = json.relationshipInfo;
+  /** Serialize [[RelatedClassInfo]] to compressed JSON */
+  export function toCompressedJSON(classInfo: RelatedClassInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON<string> {
+    const { id: sourceId, ...sourceLeftOverInfo } = classInfo.sourceClassInfo;
+    const { id: targetId, ...targetLeftOverInfo } = classInfo.targetClassInfo;
+    const { id: relationshipId, ...relationshipLeftOverInfo } = classInfo.relationshipInfo;
 
     classesMap[sourceId] = sourceLeftOverInfo;
     classesMap[targetId] = targetLeftOverInfo;
     classesMap[relationshipId] = relationshipLeftOverInfo;
 
-    const compressedJSON = {
-      isForwardRelationship: json.isForwardRelationship,
+    return {
+      ...classInfo,
       sourceClassInfo: sourceId,
       targetClassInfo: targetId,
       relationshipInfo: relationshipId,
     };
-
-    return Object.assign(compressedJSON,
-      json.isPolymorphicRelationship !== undefined && { isPolymorphicRelationship: json.isPolymorphicRelationship },
-      json.isPolymorphicTargetClass !== undefined && { isPolymorphicTargetClass: json.isPolymorphicTargetClass },
-    );
   }
 
   /** Deserialize [[RelatedClassInfo]] from JSON */

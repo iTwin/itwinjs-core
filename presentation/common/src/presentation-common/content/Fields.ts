@@ -163,24 +163,25 @@ export class Field {
     };
   }
 
-  public static toCompressedJSON(field: FieldJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): FieldJSON<string> {
-    if (isPropertiesField(field))
+  /** Serialize this object to compressed JSON */
+  public toCompressedJSON(classesMap: { [id: string]: CompressedClassInfoJSON }): FieldJSON<string> {
+    if (this.isPropertiesField())
       return {
-        ...field,
-        properties: field.properties.map((property) => Property.toCompressedJSON(property, classesMap)),
+        ...this.toJSON(),
+        properties: this.properties.map((property) => Property.toCompressedJSON(property, classesMap)),
       };
 
-    if (isNestedContentField(field)) {
-      const { id, ...leftOverInfo } = field.contentClassInfo;
+    if (this.isNestedContentField()) {
+      const { id, ...leftOverInfo } = this.contentClassInfo;
       classesMap[id] = leftOverInfo;
       return {
-        ...field,
+        ...this.toJSON(),
         contentClassInfo: id,
-        pathToPrimaryClass: field.pathToPrimaryClass.map((classInfoJSON) => RelatedClassInfo.toCompressedJSON(classInfoJSON, classesMap)),
+        pathToPrimaryClass: this.pathToPrimaryClass.map((classInfo) => RelatedClassInfo.toCompressedJSON(classInfo, classesMap)),
       };
     }
 
-    return field;
+    return this.toJSON();
   }
 
   /** Deserialize [[Field]] from JSON */

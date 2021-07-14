@@ -305,6 +305,8 @@ Object {
           "relatedClassPath": Array [
             Object {
               "isForwardRelationship": true,
+              "isPolymorphicRelationship": false,
+              "isPolymorphicTargetClass": false,
               "relationshipInfo": "0xdb080000008f31",
               "sourceClassInfo": "0x55130000009733",
               "targetClassInfo": "0x7a1000000112ab",
@@ -320,6 +322,7 @@ Object {
           "relatedClassPath": Array [
             Object {
               "isForwardRelationship": true,
+              "isPolymorphicRelationship": false,
               "isPolymorphicTargetClass": true,
               "relationshipInfo": "0xe91f00000001f9",
               "sourceClassInfo": "0x7ec70000002383",
@@ -354,6 +357,8 @@ Object {
       "pathToPrimaryClass": Array [
         Object {
           "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
           "relationshipInfo": "0x113010000002885",
           "sourceClassInfo": "0x17d28000000d35f",
           "targetClassInfo": "0xbc36000000cc5f",
@@ -361,6 +366,7 @@ Object {
         Object {
           "isForwardRelationship": false,
           "isPolymorphicRelationship": true,
+          "isPolymorphicTargetClass": false,
           "relationshipInfo": "0x171ea0000010f19",
           "sourceClassInfo": "0x17c29000000158e",
           "targetClassInfo": "0x84fb000000852d",
@@ -370,6 +376,7 @@ Object {
         Object {
           "isForwardRelationship": false,
           "isPolymorphicRelationship": true,
+          "isPolymorphicTargetClass": false,
           "relationshipInfo": "0x6f27000000e29d",
           "sourceClassInfo": "0x16bd20000017eca",
           "targetClassInfo": "0xe2e40000000939",
@@ -390,6 +397,7 @@ Object {
           Object {
             "isForwardRelationship": false,
             "isPolymorphicRelationship": true,
+            "isPolymorphicTargetClass": false,
             "relationshipInfo": "0x7a070000004b76",
             "sourceClassInfo": "0x758d000000d2de",
             "targetClassInfo": "0x1494a000000d3c8",
@@ -404,6 +412,7 @@ Object {
         Object {
           "isForwardRelationship": false,
           "isPolymorphicRelationship": true,
+          "isPolymorphicTargetClass": false,
           "relationshipInfo": "0x10c60000000fc1d",
           "sourceClassInfo": "0x235700000086c4",
           "targetClassInfo": "0x10dab000000eac8",
@@ -412,6 +421,7 @@ Object {
       "pathToPrimaryClass": Array [
         Object {
           "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
           "isPolymorphicTargetClass": false,
           "relationshipInfo": "0xaf4000000180d3",
           "sourceClassInfo": "0x164980000011c8a",
@@ -419,6 +429,7 @@ Object {
         },
         Object {
           "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
           "isPolymorphicTargetClass": true,
           "relationshipInfo": "0x6d510000001a03",
           "sourceClassInfo": "0xddde000000cddb",
@@ -429,6 +440,7 @@ Object {
         Object {
           "isForwardRelationship": true,
           "isPolymorphicRelationship": true,
+          "isPolymorphicTargetClass": false,
           "relationshipInfo": "0x900000095ae",
           "sourceClassInfo": "0xaf0a00000047a4",
           "targetClassInfo": "0x43ad0000002dab",
@@ -438,6 +450,7 @@ Object {
         Array [
           Object {
             "isForwardRelationship": false,
+            "isPolymorphicRelationship": false,
             "isPolymorphicTargetClass": false,
             "relationshipInfo": "0x113ca00000003f1",
             "sourceClassInfo": "0x1357300000117a1",
@@ -447,6 +460,7 @@ Object {
         Array [
           Object {
             "isForwardRelationship": true,
+            "isPolymorphicRelationship": false,
             "isPolymorphicTargetClass": false,
             "relationshipInfo": "0xfe2e0000008099",
             "sourceClassInfo": "0x1749300000052da",

@@ -57,12 +57,12 @@ export namespace Property {
     };
   }
 
-  /** Serialize [[PropertyJSON]] to compressed JSON */
-  export function toCompressedJSON(json: PropertyJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyJSON<string> {
+  /** Serialize [[Property]] to compressed JSON */
+  export function toCompressedJSON(prop: Property, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyJSON<string> {
     return {
-      property: PropertyInfo.toCompressedJSON(json.property, classesMap),
+      property: PropertyInfo.toCompressedJSON(prop.property, classesMap),
       // eslint-disable-next-line deprecation/deprecation
-      relatedClassPath: json.relatedClassPath.map((classInfoJSON) => RelatedClassInfo.toCompressedJSON(classInfoJSON, classesMap)),
+      relatedClassPath: prop.relatedClassPath.map((classInfo) => RelatedClassInfo.toCompressedJSON(classInfo, classesMap)),
     };
   }
 

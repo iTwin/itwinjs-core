@@ -67,6 +67,21 @@ export namespace SelectClassInfo {
       relatedPropertyPaths: compressedSelectClass.relatedPropertyPaths.map((path) => path.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap))),
     };
   }
+
+  /** Serialize [[SelectClassInfo]] to compressed JSON */
+  export function toCompressedJSON(selectClass: SelectClassInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfoJSON<string> {
+    const { id, ...leftOverInfo } = selectClass.selectClassInfo;
+    classesMap[id] = leftOverInfo;
+
+    return {
+      ...selectClass,
+      selectClassInfo: id,
+      relatedInstanceClasses: selectClass.relatedInstanceClasses.map((instanceClass) => RelatedClassInfo.toCompressedJSON(instanceClass, classesMap)),
+      navigationPropertyClasses: selectClass.navigationPropertyClasses.map((propertyClass) => RelatedClassInfo.toCompressedJSON(propertyClass, classesMap)),
+      pathToPrimaryClass: selectClass.pathToPrimaryClass.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap)),
+      relatedPropertyPaths: selectClass.relatedPropertyPaths.map((path) => path.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap))),
+    };
+  }
 }
 
 /**
@@ -286,31 +301,28 @@ export class Descriptor implements DescriptorSource {
     };
   }
 
-  /** Serialize [[DescriptorJSON]] to compressed JSON */
-  public static toCompressedJSON(json: DescriptorJSON): CompressedDescriptorJSON {
+  /** Serialize [[Descriptor]] to compressed JSON */
+  public toCompressedJSON(): CompressedDescriptorJSON {
     const classesMap: { [id: string]: CompressedClassInfoJSON } = {};
-    const selectClasses: SelectClassInfoJSON<string>[] = json.selectClasses.map((selectClass) => {
-      const { id, ...leftOverInfo } = selectClass.selectClassInfo;
-      classesMap[id] = leftOverInfo;
+    const selectClasses: SelectClassInfoJSON<string>[] = this.selectClasses.map((selectClass) => SelectClassInfo.toCompressedJSON(selectClass, classesMap));
+    const fields: FieldJSON<string>[] = this.fields.map((field) => field.toCompressedJSON(classesMap));
 
-      return {
-        ...selectClass,
-        selectClassInfo: id,
-        relatedInstanceClasses: selectClass.relatedInstanceClasses.map((instanceClass) => RelatedClassInfo.toCompressedJSON(instanceClass, classesMap)),
-        navigationPropertyClasses: selectClass.navigationPropertyClasses.map((propertyClass) => RelatedClassInfo.toCompressedJSON(propertyClass, classesMap)),
-        pathToPrimaryClass: selectClass.pathToPrimaryClass.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap)),
-        relatedPropertyPaths: selectClass.relatedPropertyPaths.map((path) => path.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap))),
-      };
-    });
-
-    const fields: FieldJSON<string>[] = json.fields.map((field) => Field.toCompressedJSON(field, classesMap));
-
-    return {
-      ...json,
+    return Object.assign({},
+      this.sortingField !== undefined && { sortingField: this.sortingField },
+      this.sortDirection !== undefined && { sortDirection: this.sortDirection },
+      this.filterExpression !== undefined && { filterExpression: this.filterExpression },
+      this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo }, {
+      connectionId: this.connectionId,
+      inputKeysHash: this.inputKeysHash,
+      contentOptions: this.contentOptions,
+      displayType: this.displayType,
+      contentFlags: this.contentFlags,
+      categories: this.categories.map(CategoryDescription.toJSON),
       fields,
       selectClasses,
       classesMap,
-    };
+      }
+    );
   }
 
   /** Deserialize [[Descriptor]] from JSON */

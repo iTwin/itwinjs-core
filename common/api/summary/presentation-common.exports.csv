@@ -23,6 +23,8 @@ public;ClassInfo
 public;ClassInfo
 public;ClassInfoJSON
 internal;CommonIpcParams
+public;CompressedClassInfoJSON
+public;CompressedDescriptorJSON = Omit
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
 public;ConditionContainer
 public;Content
@@ -134,7 +136,7 @@ public;FieldDescriptor
 public;FieldDescriptorBase
 public;FieldDescriptorType
 alpha;FieldHierarchy
-public;FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentFieldJSON
+public;FieldJSON
 internal;getFieldByName: (fields: Field[], name: string, recurse?: boolean | undefined) => Field | undefined
 public;getInstancesCount: (keys: Readonly
 internal;getLocalesDirectory: (assetsDirectory: string) => string
@@ -223,7 +225,7 @@ public;NamedFieldDescriptor
 public;NavigationRule = RootNodeRule | ChildNodeRule
 public;NavigationRuleBase 
 public;NestedContentField 
-public;NestedContentFieldJSON 
+public;NestedContentFieldJSON
 public;NestedContentValue
 public;NestedContentValue
 public;NestedContentValueJSON
@@ -282,7 +284,7 @@ alpha;ProcessMergedValueProps
 alpha;ProcessPrimitiveValueProps
 public;PropertiesField 
 public;PropertiesFieldDescriptor 
-public;PropertiesFieldJSON 
+public;PropertiesFieldJSON
 public;Property
 public;Property
 public;PropertyAccessor
@@ -327,7 +329,7 @@ public;RelationshipDirection
 public;RelationshipMeaning
 public;RelationshipPath = RelatedClassInfo[]
 public;RelationshipPath
-public;RelationshipPathJSON = RelatedClassInfoJSON[]
+public;RelationshipPathJSON
 public;RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[]
 public;RelationshipStepSpecification
 public;RendererDescription
