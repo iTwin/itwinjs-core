@@ -923,27 +923,28 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       if (ids.length === 0)
         return [];
 
-      const idCriterion = `ECInstanceId IN (${ids.join(",")})`;
       const ecsql = `
-        SELECT
-          ECInstanceId,
-          Origin.x as x, Origin.y as y, Origin.z as z,
-          BBoxLow.x as lx, BBoxLow.y as ly, BBoxLow.z as lz,
-          BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
-          Yaw, Pitch, Roll,
-          NULL as Rotation
-        FROM bis.GeometricElement3d
-        WHERE ${idCriterion} AND Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
-        UNION ALL
-        SELECT
-          ECInstanceId,
-          Origin.x, Origin.y, NULL,
-          BBoxLow.x, BBoxLow.y, NULL,
-          BBoxHigh.x, BBoxHigh.y, NULL,
-          NULL, NULL, NULL,
-          Rotation
-        FROM bis.GeometricElement2d
-        WHERE ${idCriterion} AND Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
+        SELECT * FROM (
+          SELECT
+            ECInstanceId,
+            Origin.x as x, Origin.y as y, Origin.z as z,
+            BBoxLow.x as lx, BBoxLow.y as ly, BBoxLow.z as lz,
+            BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
+            Yaw, Pitch, Roll,
+            NULL as Rotation
+          FROM bis.GeometricElement3d
+          WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
+          UNION ALL
+          SELECT
+            ECInstanceId,
+            Origin.x, Origin.y, NULL,
+            BBoxLow.x, BBoxLow.y, NULL,
+            BBoxHigh.x, BBoxHigh.y, NULL,
+            NULL, NULL, NULL,
+            Rotation
+          FROM bis.GeometricElement2d
+          WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
+        ) WHERE ECInstanceId IN (${ids.join(",")})
       `;
 
       const placements = new Array<Placement & { elementId: Id64String}>();
