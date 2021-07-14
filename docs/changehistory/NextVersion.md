@@ -53,7 +53,7 @@ Much of the `iTwin.js` api that refers to changesets takes a `ChangesetId` as an
 
 In previous versions, if you inserted an element with `undefined` for [ElementProps.federationGuid]($backend), its value would be `NULL` in the inserted element. In this version, if `federationGuid === undefined`, a new valid Guid will be created for the new element. This is to better facilitate tracking element identity across iModels in `IModelTransformer`.
 
-> Note: if `federationGuid` is a valid Guid, its value will be perserved.
+> Note: if `federationGuid` is a valid Guid, its value will be preserved.
 
 To insert an element with a `NULL` federationGuid, set it to an illegal value (e.g. `Guid.empty`).
 
