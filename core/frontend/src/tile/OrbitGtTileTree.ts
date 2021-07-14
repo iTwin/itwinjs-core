@@ -351,7 +351,7 @@ export namespace OrbitGtTileTree {
       return undefined; // Not signed in
 
     try {
-      return IModelApp.authorizationClient.getAccessToken();
+      return await IModelApp.authorizationClient.getAccessToken();
     } catch (_) {
       return undefined;
     }

@@ -114,35 +114,44 @@ export abstract class GeometricModelState extends ModelState implements Geometri
   public createTileTreeReference(view: ViewState): TileTreeReference {
     // If this is a reality model, its tile tree is obtained from reality data service URL.
 
-    const url = this.jsonProperties.tilesetUrl;
-    if (undefined !== url) {
+    const orbitGtBlob = this.jsonProperties.orbitGtBlob;
+
+    // If this is an OrbitGt reality model, create it's reference
+    if(orbitGtBlob) {
+
       const spatialModel = this.asSpatialModel;
 
-      if (url.orbitGtBlob === undefined) {
-        return createRealityTileTreeReference({
-          url,
-          iModel: this.iModel,
-          source: view,
-          modelId: this.id,
-          tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
-          classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
-        });
-      }
-
       let orbitGtName = "";
-      if (url.orbitGtBlob.blobFileName !== "") {
-        if (url.orbitGtBlob.blobFileName[0] === "/")
-          orbitGtName = url.orbitGtBlob.blobFileName.substring(1);
+      if (orbitGtBlob.blobFileName !== "") {
+        if (orbitGtBlob.blobFileName[0] === "/")
+          orbitGtName = orbitGtBlob.blobFileName.substring(1);
         else
-          orbitGtName = url.orbitGtBlob.blobFileName;
+          orbitGtName = orbitGtBlob.blobFileName;
       }
 
       return createOrbitGtTileTreeReference({
         iModel: this.iModel,
         source: view,
         modelId: this.id,
-        orbitGtBlob: url.orbitGtBlob,
+        orbitGtBlob,
         name: orbitGtName,
+        classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+      });
+    }
+
+    // If this is a TileTree reality model, create it's reference
+    const tilesetUrl = this.jsonProperties.tilesetUrl;
+
+    if(tilesetUrl) {
+
+      const spatialModel = this.asSpatialModel;
+
+      return createRealityTileTreeReference({
+        url : tilesetUrl,
+        iModel: this.iModel,
+        source: view,
+        modelId: this.id,
+        tilesetToDbTransform: this.jsonProperties.tilesetToDbTransform,
         classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
       });
     }
