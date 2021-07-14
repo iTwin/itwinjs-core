@@ -336,6 +336,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     // TODO Each step below needs a retry loop
 
     await this._imodel.concurrencyControl.request(this._requestContext);
+    this._imodel.saveChanges();
     await this._imodel.pullAndMergeChanges(this._requestContext);
     this._imodel.saveChanges();
     await this._pushChanges(comment, changesType);
