@@ -608,7 +608,10 @@ export class Schema implements CustomAttributeContainerProps {
     return schema;
   }
 
-  /* Reads and returns a partially loaded schema */
+  /**
+   * Reads and returns a partially loaded schema
+   * @internal
+   */
   public static async fromJsonLoadingSchema(jsonObj: object | string, context: SchemaContext): Promise<Schema> {
     let schema: Schema = new Schema(context);
 

@@ -57,18 +57,22 @@ export class FileSchemaKey extends SchemaKey {
   }
 }
 
-/* Pair of schema key and promise to read schema's text */
+/**
+ * Holds schemaPath and corresponding ReadSchemaText that has the promise to read schema text found there
+ * @alpha
+ */
 interface SchemaText {
   schemaPath: string;
   readSchemaText: ReadSchemaText;
 }
 
-/*
-   Construct through a function that returns a promise to read the schema.
-   When readSchemaText() is called the first time, it will execute the function to actually begin the promise.
-   When readSchemaText() is called after the first time, it will just return the promise.
-   This ensures the promise doesn't run until readSchemaText() is called, and there's only one readSchemaText promise per schema path.
-*/
+/**
+ * Construct through a function that returns a promise to read the schema.
+ * When readSchemaText() is called the first time, it will execute the function to actually begin the promise.
+ * When readSchemaText() is called after the first time, it will just return the promise.
+ * This ensures the promise doesn't run until readSchemaText() is called, and there's only one readSchemaText promise per schema path.
+ * @alpha
+ */
 export class ReadSchemaText {
   private _readSchemaTextPromise: Promise<string | undefined> | undefined;
 
@@ -83,6 +87,9 @@ export class ReadSchemaText {
   }
 }
 
+/**
+ * @alpha
+ */
 export class SchemaTextsCache extends Array<SchemaText> { }
 
 /**

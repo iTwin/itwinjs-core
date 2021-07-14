@@ -9,24 +9,30 @@ import { MutableSchema, Schema } from "./Metadata/Schema";
 import { SchemaItem } from "./Metadata/SchemaItem";
 import { SchemaItemKey, SchemaKey } from "./SchemaKey";
 
-/* Holds partially-loaded schema and corresponding LoadSchema that has the promise to fully load the schema */
+/**
+ * Holds partially-loaded schema and corresponding LoadSchema that has the promise to fully load the schema
+ * @alpha
+ */
 interface LoadingSchema {
   schema: Schema;
   loadSchema: LoadSchema;
 }
-
 /**
- * @beta
+ * @alpha
  */
 export class LoadedSchemas extends Array<Schema> { }
+/**
+ * @alpha
+ */
 export class LoadingSchemas extends Array<LoadingSchema> { }
 
-/*
-   Construct through a function that returns a promise to load the schema.
-   When loadSchema() is called the first time, it will execute the function to actually begin the promise.
-   When loadSchema() is called after the first time, it will just return the promise.
-   This ensures the promise doesn't run until loadSchema() is called, and there's only one loadSchema promise per schema.
-*/
+/**
+ * Construct through a function that returns a promise to read the schema.
+ * When loadSchema() is called the first time, it will execute the function to actually begin the promise.
+ * When loadSchema() is called after the first time, it will just return the promise.
+ * This ensures the promise doesn't run until loadSchema() is called, and there's only one loadSchema promise per schema path.
+ * @alpha
+ */
 export class LoadSchema {
   private _loadSchemaPromise: Promise<Schema> | undefined;
 
@@ -71,6 +77,7 @@ export interface ISchemaLocater {
    * @param schemaKey key to look up
    * @param matchType how to match key against candidate schemas
    * @param context optional context for loading schema references
+   * @internal
    */
   getLoadingSchema?<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined>;
 }
@@ -83,7 +90,7 @@ export interface ISchemaItemLocater {
 }
 
 /**
- * @beta
+ * @alpha
  */
 export class SchemaCache implements ISchemaLocater {
   private _loadedSchemas: LoadedSchemas;
@@ -263,6 +270,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * Adds the schema to this context
    * @param schema The schema to add to the cache. Schema should be fully loaded if loadSchema argument is not passed in.
    * @param loadSchema LoadSchema wrapper that takes a function returning a promise to fully load the schema
+   * @alpha
    */
   public async addSchema(schema: Schema, loadSchema?: LoadSchema) {
     await this._knownSchemas.addSchema(schema, loadSchema);
@@ -272,6 +280,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * Adds the schema to this context
    * @param schema The schema to add to the cache. Schema should be fully loaded if loadSchema argument is not passed in.
    * @param loadSchema LoadSchema wrapper that takes a function returning a promise to fully load the schema
+   * @alpha
    */
   public addSchemaSync(schema: Schema, loadSchema?: LoadSchema) {
     this._knownSchemas.addSchemaSync(schema, loadSchema);
@@ -326,6 +335,7 @@ export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
    * Locate a loading schema (schema could be loaded or loading if it's in schema cache) that can be found via one of the registered schema locaters.
    * @param schemaKey The SchemaKey which describes the schema to be located
    * @param matchType Controls how the schema versions in the schemaKey and the schemas being located are compared. Defaults to [[SchemaMatchType.Latest]].
+   * @internal
    */
   public async getLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType = SchemaMatchType.Latest): Promise<T | undefined> {
     // Check if schema is already loaded or loading in _knownSchemas/cache first

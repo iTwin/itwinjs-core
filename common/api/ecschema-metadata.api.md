@@ -420,7 +420,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         code: string;
         diagnosticType: DiagnosticType;
@@ -433,7 +437,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [string, string, string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         code: string;
         diagnosticType: DiagnosticType;
@@ -446,7 +454,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         code: string;
         diagnosticType: DiagnosticType;
@@ -459,7 +471,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         diagnosticType: DiagnosticType;
     };
@@ -471,7 +487,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         diagnosticType: DiagnosticType;
     };
@@ -483,7 +503,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         diagnosticType: DiagnosticType;
     };
@@ -495,7 +519,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
     };
     CustomAttributeSchemaMustBeReferenced: {
@@ -506,7 +534,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
     };
     CustomAttributeClassNotFound: {
@@ -517,7 +549,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
     };
     EnumerationTypeUnsupported: {
@@ -528,7 +564,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         diagnosticType: DiagnosticType;
     };
@@ -540,7 +580,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: EntityClass;
             messageArgs?: [string, string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         diagnosticType: DiagnosticType;
     };
@@ -552,7 +596,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         code: string;
     };
@@ -564,7 +612,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         code: string;
     };
@@ -576,7 +628,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string, string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         code: string;
     };
@@ -588,7 +644,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         code: string;
     };
@@ -600,7 +660,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         code: string;
     };
@@ -612,7 +676,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         code: string;
     };
@@ -624,7 +692,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         code: string;
     };
@@ -636,7 +708,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         diagnosticType: DiagnosticType;
     };
@@ -648,7 +724,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         diagnosticType: DiagnosticType;
     };
@@ -660,7 +740,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
         diagnosticType: DiagnosticType;
     };
@@ -672,7 +756,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
     };
     AbstractConstraintMustExistWithMultipleConstraints: {
@@ -683,7 +771,11 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory;
+            category: DiagnosticCategory; /**
+             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
+             * @beta
+             * @deprecated Moved to the ecschema-editing package.
+             */
         };
     };
 };
@@ -1433,6 +1525,8 @@ export interface ISchemaItemLocater {
 
 // @beta
 export interface ISchemaLocater {
+    // @internal
+    getLoadingSchema?<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined>;
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): Promise<T | undefined>;
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType: SchemaMatchType, context?: SchemaContext): T | undefined;
 }
@@ -1578,6 +1672,21 @@ export type LazyLoadedUnit = LazyLoadedSchemaItem<Unit>;
 
 // @beta (undocumented)
 export type LazyLoadedUnitSystem = LazyLoadedSchemaItem<UnitSystem>;
+
+// @alpha (undocumented)
+export class LoadedSchemas extends Array<Schema> {
+}
+
+// @alpha (undocumented)
+export class LoadingSchemas extends Array<LoadingSchema> {
+}
+
+// @alpha
+export class LoadSchema {
+    constructor(_loadSchemaFunc: () => Promise<Schema>);
+    // (undocumented)
+    loadSchema(): Promise<Schema>;
+    }
 
 // @beta @deprecated
 export class LoggingDiagnosticReporter extends FormatDiagnosticReporter {
@@ -2329,6 +2438,8 @@ export class Schema implements CustomAttributeContainerProps {
     fromJSON(schemaProps: SchemaProps): Promise<void>;
     // (undocumented)
     static fromJson(jsonObj: object | string, context: SchemaContext): Promise<Schema>;
+    // @internal
+    static fromJsonLoadingSchema(jsonObj: object | string, context: SchemaContext): Promise<Schema>;
     // (undocumented)
     fromJSONSync(schemaProps: SchemaProps): void;
     // (undocumented)
@@ -2379,17 +2490,24 @@ export class Schema implements CustomAttributeContainerProps {
     get writeVersion(): number;
 }
 
-// @beta (undocumented)
+// @alpha (undocumented)
 export class SchemaCache implements ISchemaLocater {
     constructor();
-    addSchema<T extends Schema>(schema: T, loadSchema?: Promise<T>): Promise<void>;
-    addSchemaSync<T extends Schema>(schema: T): void;
+    addSchema<T extends Schema>(schema: T, loadSchema?: LoadSchema): Promise<void>;
+    addSchemaSync<T extends Schema>(schema: T, loadSchema?: LoadSchema): void;
     // (undocumented)
     get count(): number;
+    getLoadedSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
+    getLoadedSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
+    getLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
+    getLoadingSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
-    // (undocumented)
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
-    }
+    // (undocumented)
+    get loadedSchemasCount(): number;
+    // (undocumented)
+    get loadingSchemasCount(): number;
+}
 
 // @beta @deprecated
 export const SchemaCompareCodes: {
@@ -2779,22 +2897,26 @@ export const SchemaCompareDiagnostics: {
 // @beta
 export class SchemaContext implements ISchemaLocater, ISchemaItemLocater {
     constructor();
-    // (undocumented)
     addLocater(locater: ISchemaLocater): void;
-    addSchema(schema: Schema, loadSchema?: Promise<Schema>): Promise<void>;
+    // @alpha
+    addSchema(schema: Schema, loadSchema?: LoadSchema): Promise<void>;
+    // @deprecated
     addSchemaItem(schemaItem: SchemaItem): Promise<void>;
-    addSchemaSync(schema: Schema): void;
+    // @alpha
+    addSchemaSync(schema: Schema, loadSchema?: LoadSchema): void;
+    // @internal
+    getCachedLoadedOrLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
+    // @internal
+    getCachedLoadedOrLoadingSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
     // @internal
     getCachedSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
     // @internal
-    getCachedSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Schema | undefined;
-    // (undocumented)
+    getCachedSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
+    // @internal
+    getLoadingSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
     getSchema<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): Promise<T | undefined>;
-    // (undocumented)
     getSchemaItem<T extends SchemaItem>(schemaItemKey: SchemaItemKey): Promise<T | undefined>;
-    // (undocumented)
     getSchemaItemSync<T extends SchemaItem>(schemaItemKey: SchemaItemKey): T | undefined;
-    // (undocumented)
     getSchemaSync<T extends Schema>(schemaKey: SchemaKey, matchType?: SchemaMatchType): T | undefined;
     }
 
@@ -2980,10 +3102,6 @@ export interface SchemaKeyProps {
     readonly write: number;
 }
 
-// @beta (undocumented)
-export class SchemaMap extends Array<SchemaInfo> {
-}
-
 // @beta
 export enum SchemaMatchType {
     // (undocumented)
@@ -3036,6 +3154,7 @@ export interface SchemaProps {
 // @internal
 export class SchemaReadHelper<T = unknown> {
     constructor(parserType: AbstractParserConstructor<T>, context?: SchemaContext, visitor?: ISchemaPartVisitor);
+    readLoadingSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U>;
     readSchema<U extends Schema>(schema: U, rawSchema: T): Promise<U>;
     readSchemaSync<U extends Schema>(schema: U, rawSchema: T): U;
     }
