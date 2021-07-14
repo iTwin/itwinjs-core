@@ -28,8 +28,8 @@ describe("ApplyChangesets (#integration)", () => {
 
   const testOpen = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: string) => {
     const iModelDb = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: projectId, iModelId });
-    requestContext.enter();
-    assert(!!iModelDb);
+    assert.isDefined(iModelDb);
+    iModelDb.close();
   };
 
   const testAllOperations = async (requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString) => {
