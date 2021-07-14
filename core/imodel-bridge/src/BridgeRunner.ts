@@ -299,7 +299,7 @@ abstract class IModelDbBuilder {
     // TODO: Report outliers and then change the options to true
   }
 
-  public async enterRepositoryChannel(lockRoot: boolean = true) { 
+  public async enterRepositoryChannel(lockRoot: boolean = true) {
     return this._enterChannel(IModelDb.repositoryModelId, lockRoot);
   }
 
