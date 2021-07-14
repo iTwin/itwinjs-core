@@ -50,6 +50,8 @@ import { Sphere } from "../solid/Sphere";
 import { TorusPipe } from "../solid/TorusPipe";
 import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
+import { InterpolationCurve3d as InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
+import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
 // cspell:word bagof
 /* eslint-disable no-console*/
 /**
@@ -879,6 +881,20 @@ export namespace IModelJson {
       return undefined;
     }
 
+    /** Parse `bcurve` content (right side)to  BSplineCurve3d or BSplineCurve3dH object. */
+    public static parseInterpolationCurve(data?: any): InterpolationCurve3d | undefined {
+      if (data === undefined)
+        return undefined;
+      return InterpolationCurve3d.create(data);
+    }
+
+    /** Parse `bcurve` content (right side)to an Akima curve object. */
+    public static parseAkimaCurve3d(data?: any): AkimaCurve3d | undefined {
+      if (data === undefined)
+        return undefined;
+      return AkimaCurve3d.create(data);
+    }
+
     /** Parse array of json objects to array of instances. */
     public static parseArray(data?: any): any[] | undefined {
       if (Array.isArray(data)) {
@@ -895,16 +911,24 @@ export namespace IModelJson {
     }
 
     // For each nonzero index, Announce Math.abs (value) -1
-    private static addZeroBasedIndicesFromSignedOneBased(data: any, f: (x: number) => any): void {
+    private static addZeroBasedIndicesFromSignedOneBased(data: any, numPerFace: number, f: (x: number) => any): void {
       if (data && Geometry.isNumberArray(data)) {
-        for (const value of data) {
-          if (value !== 0)
+        if (numPerFace > 1) {
+          // all indices are used ...
+          for (const value of data) {
             f(Math.abs(value) - 1);
+          }
+        } else {
+          // ignore separator zeros ...
+          for (const value of data) {
+            if (value !== 0)
+              f(Math.abs(value) - 1);
+          }
         }
       }
     }
     /** parse polyface aux data content to PolyfaceAuxData instance */
-    public static parsePolyfaceAuxData(data?: any): PolyfaceAuxData | undefined {
+    public static parsePolyfaceAuxData(data: any = undefined, numPerFace: number = 0): PolyfaceAuxData | undefined {
 
       if (!Array.isArray(data.channels) || !Array.isArray(data.indices))
         return undefined;
@@ -922,7 +946,7 @@ export namespace IModelJson {
       }
 
       const auxData = new PolyfaceAuxData(outChannels, []);
-      Reader.addZeroBasedIndicesFromSignedOneBased(data.indices, (x: number) => { auxData.indices.push(x); });
+      Reader.addZeroBasedIndicesFromSignedOneBased(data.indices, numPerFace, (x: number) => { auxData.indices.push(x); });
 
       return auxData;
     }
@@ -949,6 +973,7 @@ export namespace IModelJson {
             polyface.twoSided = q;
           }
         }
+        const numPerFace = data.hasOwnProperty("numPerFace") ? data.numPerFace : 0;
         if (data.hasOwnProperty("expectedClosure")) {
           const q = data.expectedClosure;
           if (Number.isFinite(q)) {
@@ -969,30 +994,41 @@ export namespace IModelJson {
 
         for (const p of data.point) polyface.addPointXYZ(p[0], p[1], p[2]);
 
-        for (const p of data.pointIndex) {
-          if (p === 0)
-            polyface.terminateFacet(false); // we are responsible for index checking !!!
-          else {
+        if (numPerFace > 1) {
+          for (let i = 0; i < data.pointIndex.length; i++) {
+            const p = data.pointIndex[i];
             const p0 = Math.abs(p) - 1;
             polyface.addPointIndex(p0, p > 0);
+            if ((i + 1) % numPerFace === 0)
+              polyface.terminateFacet(false);
+          }
+
+        } else {
+          for (const p of data.pointIndex) {
+            if (p === 0)
+              polyface.terminateFacet(false); // we are responsible for index checking !!!
+            else {
+              const p0 = Math.abs(p) - 1;
+              polyface.addPointIndex(p0, p > 0);
+            }
           }
         }
 
         if (data.hasOwnProperty("normalIndex")) {
-          Reader.addZeroBasedIndicesFromSignedOneBased(data.normalIndex,
+          Reader.addZeroBasedIndicesFromSignedOneBased(data.normalIndex, numPerFace,
             (x: number) => { polyface.addNormalIndex(x); });
         }
         if (data.hasOwnProperty("paramIndex")) {
-          Reader.addZeroBasedIndicesFromSignedOneBased(data.paramIndex,
+          Reader.addZeroBasedIndicesFromSignedOneBased(data.paramIndex, numPerFace,
             (x: number) => { polyface.addParamIndex(x); });
         }
 
         if (data.hasOwnProperty("colorIndex")) {
-          Reader.addZeroBasedIndicesFromSignedOneBased(data.colorIndex,
+          Reader.addZeroBasedIndicesFromSignedOneBased(data.colorIndex, numPerFace,
             (x: number) => { polyface.addColorIndex(x); });
         }
         if (data.hasOwnProperty("auxData"))
-          polyface.data.auxData = Reader.parsePolyfaceAuxData(data.auxData);
+          polyface.data.auxData = Reader.parsePolyfaceAuxData(data.auxData, numPerFace);
 
         if (data.hasOwnProperty("tags")) {
           polyface.data.taggedNumericData = Reader.parseTaggedNumericProps(data.tags);
@@ -1242,6 +1278,10 @@ export namespace IModelJson {
 
         } else if (json.hasOwnProperty("bcurve")) {
           return Reader.parseBcurve(json.bcurve);
+        } else if (json.hasOwnProperty("interpolationCurve")) {
+          return Reader.parseInterpolationCurve(json.interpolationCurve);
+        } else if (json.hasOwnProperty("akimaCurve")) {
+          return Reader.parseAkimaCurve3d(json.akimaCurve);
         } else if (json.hasOwnProperty("path")) {
           return Reader.parseCurveCollectionMembers(new Path(), json.path);
         } else if (json.hasOwnProperty("loop")) {
@@ -1853,6 +1893,15 @@ export namespace IModelJson {
           },
         };
       }
+    }
+
+    /** Convert strongly typed instance to tagged json */
+    public handleInterpolationCurve3d(curve: InterpolationCurve3d): any {
+      return { interpolationCurve: curve.cloneProps()};
+    }
+    /** Convert strongly typed instance to tagged json */
+    public handleAkimaCurve3d(curve: AkimaCurve3d): any {
+      return { akimaCurve: curve.cloneProps()};
     }
 
     /** Convert strongly typed instance to tagged json */

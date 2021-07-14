@@ -901,6 +901,7 @@ describe("MiscAngles", () => {
   it("Angle.fromJSON", () => {
     const ck = new Checker();
     // verify that numeric tests with NaN return false ...
+    // cspell:word isnan
     ck.testFalse(Number.NaN > 0, "NaN > 0"); // eslint-disable-line use-isnan
     ck.testFalse(Number.NaN < 0, "NaN < 0"); // eslint-disable-line use-isnan
     ck.testFalse(Number.NaN === 0, "NaN === 0"); // eslint-disable-line use-isnan
