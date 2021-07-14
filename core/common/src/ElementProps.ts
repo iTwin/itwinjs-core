@@ -42,7 +42,10 @@ export interface ElementProps extends EntityProps {
   code: CodeProps;
   /** The Parent of this element, if defined. */
   parent?: RelatedElementProps;
-  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
+  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element.
+   * @note  On insert, if this is a valid Guid, the value is preserved. If it is undefined, a new Guid is created. If it is an invalid Guid (e.g. Guid.empty), the
+   * resultant element will have a `null` federationGuid.
+   */
   federationGuid?: GuidString;
   /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
   userLabel?: string;
