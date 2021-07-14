@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
- * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
- * See LICENSE.md in the project root for license terms and full copyright notice.
- *--------------------------------------------------------------------------------------------*/
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
 
 /*
 Within a package, you can create cyclic dependencies by doing the following:
@@ -210,7 +210,6 @@ const rule = {
 
         /** @param {import("eslint").Rule.RuleFixer} fixer */
         function fix(fixer) {
-          const x = 5;
           const modulesToImportStmtsMap =
             namedImports
               .map((namedImport) => {
