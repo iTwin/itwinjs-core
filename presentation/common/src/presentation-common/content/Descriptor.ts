@@ -56,6 +56,7 @@ export namespace SelectClassInfo {
     };
   }
 
+  /** Deserialize [[SelectClassInfo]] from compressed JSON */
   export function fromCompressedJSON(compressedSelectClass: SelectClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfoJSON {
     return {
       ...compressedSelectClass,
@@ -282,6 +283,33 @@ export class Descriptor implements DescriptorSource {
       ...this,
       categories: this.categories.map(CategoryDescription.toJSON),
       fields: this.fields.map((field: Field) => field.toJSON()),
+    };
+  }
+
+  /** Serialize [[DescriptorJSON]] to compressed JSON */
+  public static toCompressedJSON(json: DescriptorJSON): CompressedDescriptorJSON {
+    const classesMap: { [id: string]: CompressedClassInfoJSON } = {};
+    const selectClasses: SelectClassInfoJSON<string>[] = json.selectClasses.map((selectClass) => {
+      const { id, ...leftOverInfo } = selectClass.selectClassInfo;
+      classesMap[id] = leftOverInfo;
+
+      return {
+        ...selectClass,
+        selectClassInfo: id,
+        relatedInstanceClasses: selectClass.relatedInstanceClasses.map((instanceClass) => RelatedClassInfo.toCompressedJSON(instanceClass, classesMap)),
+        navigationPropertyClasses: selectClass.navigationPropertyClasses.map((propertyClass) => RelatedClassInfo.toCompressedJSON(propertyClass, classesMap)),
+        pathToPrimaryClass: selectClass.pathToPrimaryClass.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap)),
+        relatedPropertyPaths: selectClass.relatedPropertyPaths.map((path) => path.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap))),
+      };
+    });
+
+    const fields: FieldJSON<string>[] = json.fields.map((field) => Field.toCompressedJSON(field, classesMap));
+
+    return {
+      ...json,
+      fields,
+      selectClasses,
+      classesMap,
     };
   }
 

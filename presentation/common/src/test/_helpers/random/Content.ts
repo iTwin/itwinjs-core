@@ -5,11 +5,11 @@
 /* eslint-disable deprecation/deprecation */
 import * as faker from "faker";
 import {
-  CategoryDescription, CategoryDescriptionJSON, CompressedClassInfoJSON, Content, Descriptor, EditorDescription, Field, NestedContentField, PrimitiveTypeDescription,
-  PropertiesField, PropertyInfoJSON, PropertyValueFormat, RelatedClassInfoJSON, StructTypeDescription, TypeDescription,
+  CategoryDescription, CategoryDescriptionJSON, Content, Descriptor, EditorDescription, Field, NestedContentField, PrimitiveTypeDescription,
+  PropertiesField, PropertyValueFormat, StructTypeDescription, TypeDescription,
 } from "../../../presentation-common";
-import { CompressedDescriptorJSON, DescriptorJSON, SelectClassInfoJSON } from "../../../presentation-common/content/Descriptor";
-import { BaseFieldJSON, FieldJSON, isNestedContentField, isPropertiesField, NestedContentFieldJSON, PropertiesFieldJSON } from "../../../presentation-common/content/Fields";
+import { SelectClassInfoJSON } from "../../../presentation-common/content/Descriptor";
+import { BaseFieldJSON, FieldJSON, NestedContentFieldJSON, PropertiesFieldJSON } from "../../../presentation-common/content/Fields";
 import { PropertyJSON } from "../../../presentation-common/content/Property";
 import { createRandomECClassInfoJSON, createRandomPropertyInfoJSON, createRandomRelatedClassInfoJSON, createRandomRelationshipPathJSON } from "./EC";
 import { nullable } from "./Misc";
@@ -132,89 +132,6 @@ export const createRandomDescriptorJSON = (displayType?: string, fields?: FieldJ
     fields,
     contentFlags: 0,
   };
-};
-
-export const compressDescriptorJSON = (json: DescriptorJSON): CompressedDescriptorJSON => {
-  const classesMap: { [id: string]: CompressedClassInfoJSON } = {};
-  const selectClasses: SelectClassInfoJSON<string>[] = json.selectClasses.map((selectClass) => {
-    const { id, ...leftOverInfo } = selectClass.selectClassInfo;
-    classesMap[id] = leftOverInfo;
-
-    return {
-      ...selectClass,
-      selectClassInfo: id,
-      relatedInstanceClasses: selectClass.relatedInstanceClasses.map((instanceClass) => compressRelatedClassInfoJSON(instanceClass, classesMap)),
-      navigationPropertyClasses: selectClass.navigationPropertyClasses.map((propertyClass) => compressRelatedClassInfoJSON(propertyClass, classesMap)),
-      pathToPrimaryClass: selectClass.pathToPrimaryClass.map((relatedClass) => compressRelatedClassInfoJSON(relatedClass, classesMap)),
-      relatedPropertyPaths: selectClass.relatedPropertyPaths.map((path) => path.map((relatedClass) => compressRelatedClassInfoJSON(relatedClass, classesMap))),
-    };
-  });
-
-  const fields: FieldJSON<string>[] = json.fields.map((field) => {
-    if (isPropertiesField(field))
-      return {
-        ...field,
-        properties: field.properties.map((property) => compressPropertyJSON(property, classesMap)),
-      };
-
-    if (isNestedContentField(field)) {
-      const { id, ...leftOverInfo } = field.contentClassInfo;
-      classesMap[id] = leftOverInfo;
-      return {
-        ...field,
-        contentClassInfo: id,
-        pathToPrimaryClass: field.pathToPrimaryClass.map((classInfoJSON) => compressRelatedClassInfoJSON(classInfoJSON, classesMap)),
-      };
-    }
-
-    return field;
-  });
-
-  return {
-    ...json,
-    fields,
-    selectClasses,
-    classesMap,
-  };
-};
-
-const compressPropertyJSON = (json: PropertyJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyJSON<string> => {
-  return {
-    property: compressPropertyInfoJSON(json.property, classesMap),
-    relatedClassPath: json.relatedClassPath.map((classInfoJSON) => compressRelatedClassInfoJSON(classInfoJSON, classesMap)),
-  };
-};
-
-const compressPropertyInfoJSON = (json: PropertyInfoJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfoJSON<string> => {
-  const { id, ...leftOverInfo } = json.classInfo;
-  classesMap[id] = leftOverInfo;
-
-  return {
-    ...json,
-    classInfo: json.classInfo.id,
-  };
-};
-
-const compressRelatedClassInfoJSON = (json: RelatedClassInfoJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON<string> => {
-  const { id: sourceId, ...sourceLeftOverInfo } = json.sourceClassInfo;
-  const { id: targetId, ...targetLeftOverInfo } = json.targetClassInfo;
-  const { id: relationshipId, ...relationshipLeftOverInfo } = json.relationshipInfo;
-
-  classesMap[sourceId] = sourceLeftOverInfo;
-  classesMap[targetId] = targetLeftOverInfo;
-  classesMap[relationshipId] = relationshipLeftOverInfo;
-
-  const compressedJSON = {
-    isForwardRelationship: json.isForwardRelationship,
-    sourceClassInfo: sourceId,
-    targetClassInfo: targetId,
-    relationshipInfo: relationshipId,
-  };
-
-  return Object.assign(compressedJSON,
-    json.isPolymorphicRelationship !== undefined && { isPolymorphicRelationship: json.isPolymorphicRelationship },
-    json.isPolymorphicTargetClass !== undefined && { isPolymorphicTargetClass: json.isPolymorphicTargetClass },
-  );
 };
 
 export const createRandomDescriptor = (displayType?: string, fields?: Field[], categories?: CategoryDescription[]): Descriptor => {

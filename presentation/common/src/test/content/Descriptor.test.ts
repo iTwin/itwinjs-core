@@ -9,7 +9,6 @@ import { CompressedDescriptorJSON, DescriptorJSON, DescriptorSource, SortDirecti
 import { FieldDescriptorType, FieldJSON, NestedContentFieldJSON, PropertiesFieldJSON } from "../../presentation-common/content/Fields";
 import { RelatedClassInfoJSON } from "../../presentation-common/EC";
 import {
-  compressDescriptorJSON,
   createRandomCategory, createRandomCategoryJSON, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfo,
   createRandomNestedFieldJSON, createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomPrimitiveTypeDescription, createRandomPropertiesFieldJSON, createRandomRelationshipPath,
 } from "../_helpers/random";
@@ -156,7 +155,7 @@ describe("Descriptor", () => {
       testDescriptorJSON.categories!.push(createRandomCategoryJSON());
       testDescriptorJSON.fields.push(createRandomPropertiesFieldJSON(testDescriptorJSON.categories![1], 2));
 
-      const compressedDescriptorJSON = compressDescriptorJSON(testDescriptorJSON);
+      const compressedDescriptorJSON = Descriptor.toCompressedJSON(testDescriptorJSON);
       expect(compressedDescriptorJSON).to.matchSnapshot();
     });
 

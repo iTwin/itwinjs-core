@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { ClassInfoJSON, PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON } from "../EC";
+import { ClassInfoJSON, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON } from "../EC";
 
 /**
  * Data structure that describes one step of property
@@ -54,6 +54,15 @@ export namespace Property {
       property: PropertyInfo.toJSON(prop.property),
       // eslint-disable-next-line deprecation/deprecation
       relatedClassPath: prop.relatedClassPath.map((classInfo) => RelatedClassInfo.toJSON(classInfo)),
+    };
+  }
+
+  /** Serialize [[PropertyJSON]] to compressed JSON */
+  export function toCompressedJSON(json: PropertyJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyJSON<string> {
+    return {
+      property: PropertyInfo.toCompressedJSON(json.property, classesMap),
+      // eslint-disable-next-line deprecation/deprecation
+      relatedClassPath: json.relatedClassPath.map((classInfoJSON) => RelatedClassInfo.toCompressedJSON(classInfoJSON, classesMap)),
     };
   }
 

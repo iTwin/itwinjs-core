@@ -179,6 +179,17 @@ export namespace PropertyInfo {
     return { ...info, classInfo: ClassInfo.toJSON(info.classInfo) };
   }
 
+  /** Serialize [[PropertyInfoJSON]] to compressed JSON */
+  export function toCompressedJSON(json: PropertyInfoJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfoJSON<string> {
+    const { id, ...leftOverInfo } = json.classInfo;
+    classesMap[id] = leftOverInfo;
+
+    return {
+      ...json,
+      classInfo: json.classInfo.id,
+    };
+  }
+
   /** Deserialize [[PropertyInfo]] from JSON */
   export function fromJSON(json: PropertyInfoJSON): PropertyInfo {
     return { ...json, classInfo: ClassInfo.fromJSON(json.classInfo) };
@@ -233,6 +244,29 @@ export namespace RelatedClassInfo {
     };
   }
 
+  /** Serialize [[RelatedClassInfoJSON]] to compressed JSON */
+  export function toCompressedJSON(json: RelatedClassInfoJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON<string> {
+    const { id: sourceId, ...sourceLeftOverInfo } = json.sourceClassInfo;
+    const { id: targetId, ...targetLeftOverInfo } = json.targetClassInfo;
+    const { id: relationshipId, ...relationshipLeftOverInfo } = json.relationshipInfo;
+
+    classesMap[sourceId] = sourceLeftOverInfo;
+    classesMap[targetId] = targetLeftOverInfo;
+    classesMap[relationshipId] = relationshipLeftOverInfo;
+
+    const compressedJSON = {
+      isForwardRelationship: json.isForwardRelationship,
+      sourceClassInfo: sourceId,
+      targetClassInfo: targetId,
+      relationshipInfo: relationshipId,
+    };
+
+    return Object.assign(compressedJSON,
+      json.isPolymorphicRelationship !== undefined && { isPolymorphicRelationship: json.isPolymorphicRelationship },
+      json.isPolymorphicTargetClass !== undefined && { isPolymorphicTargetClass: json.isPolymorphicTargetClass },
+    );
+  }
+
   /** Deserialize [[RelatedClassInfo]] from JSON */
   export function fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo {
     return {
@@ -245,7 +279,7 @@ export namespace RelatedClassInfo {
     };
   }
 
-  /** Deserialize [[RelatedClassInfo]] from compressed JSON */
+  /** Deserialize compressed [[RelatedClassInfo]] from JSON */
   export function fromCompressedJSON(compressedInfoJSON: RelatedClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON {
     return {
       ...compressedInfoJSON,

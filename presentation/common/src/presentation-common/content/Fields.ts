@@ -61,12 +61,12 @@ export interface NestedContentFieldJSON <TClassInfoJSON = ClassInfoJSON> extends
 export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
 
 /** Is supplied field a properties field. */
-export const isPropertiesField = (field: FieldJSON | Field): field is PropertiesFieldJSON<any> | PropertiesField => {
+const isPropertiesField = (field: FieldJSON | Field): field is PropertiesFieldJSON<any> | PropertiesField => {
   return !!(field as any).properties;
 };
 
 /** Is supplied field a nested content field. */
-export const isNestedContentField = (field: FieldJSON | Field): field is NestedContentFieldJSON<any> | NestedContentField => {
+const isNestedContentField = (field: FieldJSON | Field): field is NestedContentFieldJSON<any> | NestedContentField => {
   return !!(field as any).nestedFields;
 };
 
@@ -161,6 +161,26 @@ export class Field {
       renderer: this.renderer,
       editor: this.editor,
     };
+  }
+
+  public static toCompressedJSON(field: FieldJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): FieldJSON<string> {
+    if (isPropertiesField(field))
+      return {
+        ...field,
+        properties: field.properties.map((property) => Property.toCompressedJSON(property, classesMap)),
+      };
+
+    if (isNestedContentField(field)) {
+      const { id, ...leftOverInfo } = field.contentClassInfo;
+      classesMap[id] = leftOverInfo;
+      return {
+        ...field,
+        contentClassInfo: id,
+        pathToPrimaryClass: field.pathToPrimaryClass.map((classInfoJSON) => RelatedClassInfo.toCompressedJSON(classInfoJSON, classesMap)),
+      };
+    }
+
+    return field;
   }
 
   /** Deserialize [[Field]] from JSON */
