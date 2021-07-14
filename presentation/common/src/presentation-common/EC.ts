@@ -179,14 +179,14 @@ export namespace PropertyInfo {
     return { ...info, classInfo: ClassInfo.toJSON(info.classInfo) };
   }
 
-  /** Serialize [[PropertyInfoJSON]] to compressed JSON */
-  export function toCompressedJSON(json: PropertyInfoJSON, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfoJSON<string> {
-    const { id, ...leftOverInfo } = json.classInfo;
+  /** Serialize [[PropertyInfo]] to compressed JSON */
+  export function toCompressedJSON(propertyInfo: PropertyInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfoJSON<string> {
+    const { id, ...leftOverInfo } = propertyInfo.classInfo;
     classesMap[id] = leftOverInfo;
 
     return {
-      ...json,
-      classInfo: json.classInfo.id,
+      ...propertyInfo,
+      classInfo: propertyInfo.classInfo.id,
     };
   }
 
