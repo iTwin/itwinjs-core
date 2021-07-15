@@ -137,7 +137,7 @@ export class ArcGisUtilities {
       if (json.error.code === ArcGisErrorCode.TokenRequired) {
         authMethod = MapLayerAuthType.EsriToken; // In case we failed to get the Oauth2 token endpoint, fall back to the legacy ESRI token method
         try {
-          tokenEndpoint = await EsriOAuth2.getOAuth2EndpointFromRestUrl(url, EsriOAuth2EndpointType.Authorize);
+          tokenEndpoint = await EsriOAuth2.getOAuth2EndpointFromMapLayerUrl(url, EsriOAuth2EndpointType.Authorize);
           if (tokenEndpoint) {
             authMethod = MapLayerAuthType.EsriOAuth2;
           }

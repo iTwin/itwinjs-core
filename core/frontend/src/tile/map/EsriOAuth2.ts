@@ -102,9 +102,10 @@ export class EsriOAuth2 {
     return true;
   }
 
-  public static async getOAuthTokenForMapLayerUrl(maplayerSourceUrl: string): Promise<ArcGisToken|undefined> {
+  //
+  public static async getOAuthTokenForMapLayerUrl(mapLayerUrl: string): Promise<ArcGisToken|undefined> {
     try {
-      const oauthEndpoint = await EsriOAuth2.getOAuth2EndpointFromRestUrl(maplayerSourceUrl, EsriOAuth2EndpointType.Authorize);
+      const oauthEndpoint = await EsriOAuth2.getOAuth2EndpointFromMapLayerUrl(mapLayerUrl, EsriOAuth2EndpointType.Authorize);
       if (oauthEndpoint !== undefined) {
         const oauthEndpointUrl = new URL(oauthEndpoint.getUrl());
         return ArcGisTokenManager.getOAuth2Token(oauthEndpointUrl.origin);
@@ -142,7 +143,7 @@ export class EsriOAuth2 {
   // Test if Oauth2 endpoint is accessible and has an associated appId
   public static async validateOAuth2Endpoint(endpointUrl: string): Promise<boolean> {
 
-    // Check if we got a matching apppId for that endpoint, otherwise its not worth going further
+    // Check if we got a matching appId for that endpoint, otherwise its not worth going further
     if (undefined === EsriOAuth2.getMatchingEnterpriseAppId(endpointUrl) ) {
       return false;
     }
@@ -157,10 +158,12 @@ export class EsriOAuth2 {
     return status === 400;    // Oauth2 API returns 400 (Bad Request) when there are missing parameters
   }
 
-  // Returns the url for OAuth2 endpoint from any rest service URL (i.e. MapServer)
+  // Derive the Oauth URL from a typical MapLayerURL
+  // i.e. 	  https://hostname/server/rest/services/NewYork/NewYork3857/MapServer
+  //      =>  https://hostname/portal/sharing/oauth2/authorize
   private static _oauthAuthorizeEndPointsCache = new Map<string, any>();
   private static _oauthTokenEndPointsCache = new Map<string, any>();
-  public static async getOAuth2EndpointFromRestUrl(url: string, endpoint: EsriOAuth2EndpointType): Promise<EsriOAuth2Endpoint|undefined> {
+  public static async getOAuth2EndpointFromMapLayerUrl(url: string, endpoint: EsriOAuth2EndpointType): Promise<EsriOAuth2Endpoint|undefined> {
 
     // Return from cache if available
     const cachedEndpoint = (endpoint === EsriOAuth2EndpointType.Authorize ? this._oauthAuthorizeEndPointsCache.get(url) : this._oauthTokenEndPointsCache.get(url));
