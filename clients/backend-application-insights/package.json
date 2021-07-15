@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-application-insights-client",
-  "version": "2.19.0-dev.14",
+  "version": "2.19.0-dev.16",
   "description": "iModel.js Backend Application Insights Client",
   "main": "lib/backend-application-insights-client.js",
   "typings": "lib/backend-application-insights-client",
@@ -35,7 +35,7 @@
     "applicationinsights": "^1.7.5"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^2.19.0-dev.14"
+    "@bentley/itwin-client": "workspace:^2.19.0-dev.16"
   },
   "devDependencies": {
     "@bentley/build-tools": "workspace:*",

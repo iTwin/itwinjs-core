@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-common",
-  "version": "2.19.0-dev.14",
+  "version": "2.19.0-dev.16",
   "description": "iModel.js editing properties common to frontend and backend",
   "main": "lib/imodeljs-editor-common.js",
   "typings": "lib/imodeljs-editor-common",
@@ -32,9 +32,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.14",
-    "@bentley/geometry-core": "workspace:^2.19.0-dev.14",
-    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.14"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.16",
+    "@bentley/geometry-core": "workspace:^2.19.0-dev.16",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.16"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",

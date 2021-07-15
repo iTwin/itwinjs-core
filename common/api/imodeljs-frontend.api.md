@@ -41,6 +41,7 @@ import { Cartographic } from '@bentley/imodeljs-common';
 import { CartographicRange } from '@bentley/imodeljs-common';
 import { CategorySelectorProps } from '@bentley/imodeljs-common';
 import { ChangedEntities } from '@bentley/imodeljs-common';
+import { ChangesetIndexAndId } from '@bentley/imodeljs-common';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipPlane } from '@bentley/geometry-core';
 import { ClipShape } from '@bentley/geometry-core';
@@ -199,6 +200,7 @@ import { PackedFeatureTable } from '@bentley/imodeljs-common';
 import { ParseResults } from '@bentley/ui-abstract';
 import { ParserSpec } from '@bentley/imodeljs-quantity';
 import { Path } from '@bentley/geometry-core';
+import { Placement } from '@bentley/imodeljs-common';
 import { PlacementProps } from '@bentley/imodeljs-common';
 import { PlanarClipMaskProps } from '@bentley/imodeljs-common';
 import { PlanarClipMaskSettings } from '@bentley/imodeljs-common';
@@ -1640,7 +1642,7 @@ export class BriefcaseConnection extends IModelConnection {
     static openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection>;
     static openStandalone(filePath: string, openMode?: OpenMode, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection>;
     pullAndMergeChanges(version?: IModelVersionProps): Promise<void>;
-    pushChanges(description: string): Promise<string>;
+    pushChanges(description: string): Promise<ChangesetIndexAndId>;
     saveChanges(description?: string): Promise<void>;
     supportsGraphicalEditing(): Promise<boolean>;
     readonly txns: BriefcaseTxns;
@@ -1695,16 +1697,16 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     // @internal (undocumented)
     notifyProjectExtentsChanged(range: Range3dProps): void;
     // @internal (undocumented)
-    notifyPulledChanges(parentChangeSetId: string): void;
+    notifyPulledChanges(parentChangeset: ChangesetIndexAndId): void;
     // @internal (undocumented)
-    notifyPushedChanges(parentChangeSetId: string): void;
+    notifyPushedChanges(parentChangeset: ChangesetIndexAndId): void;
     // @internal (undocumented)
     notifyRootSubjectChanged(subject: RootSubjectProps): void;
     readonly onAfterUndoRedo: BeEvent<(isUndo: boolean) => void>;
     readonly onBeforeUndoRedo: BeEvent<(isUndo: boolean) => void>;
     readonly onChangesApplied: BeEvent<() => void>;
-    readonly onChangesPulled: BeEvent<(parentChangeSetId: string) => void>;
-    readonly onChangesPushed: BeEvent<(parentChangeSetId: string) => void>;
+    readonly onChangesPulled: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
+    readonly onChangesPushed: BeEvent<(parentChangeset: ChangesetIndexAndId) => void>;
     readonly onCommit: BeEvent<() => void>;
     readonly onCommitted: BeEvent<(hasPendingTxns: boolean, time: number) => void>;
     readonly onElementsChanged: BeEvent<(changes: Readonly<ChangedEntities>) => void>;
@@ -4618,6 +4620,9 @@ export namespace IModelConnection {
     export class Elements {
         // @internal
         constructor(_iModel: IModelConnection);
+        getPlacements(elementIds: Iterable<Id64String>): Promise<Array<Placement & {
+            elementId: Id64String;
+        }>>;
         getProps(arg: Id64Arg): Promise<ElementProps[]>;
         loadProps(identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<ElementProps | undefined>;
         queryIds(params: EntityQueryParams): Promise<Id64Set>;
@@ -7488,6 +7493,8 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 // @internal
 export class RealityModelTileClient {
     constructor(url: string, accessToken?: AccessToken, contextId?: string);
+    // (undocumented)
+    getBlobAccessData(): Promise<URL | undefined>;
     getRealityDataType(): Promise<string | undefined>;
     // (undocumented)
     getRootDocument(url: string): Promise<any>;
@@ -12389,6 +12396,7 @@ export abstract class Viewport implements IDisposable {
     zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
     zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void>;
     zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
+    zoomToPlacements(placements: Placement[], options?: ViewChangeOptions & ZoomToOptions): void;
     zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions): void;
 }
 

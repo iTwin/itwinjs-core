@@ -8,11 +8,14 @@ import { BeEvent, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { FilteringInput, SelectableContent, SelectionMode } from "@bentley/ui-components";
-import { WebFontIcon } from "@bentley/ui-core";
+import { Button, ButtonType, Icon, WebFontIcon } from "@bentley/ui-core";
 import {
-  CategoryTree, ClassGroupingOption, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories, WidgetControl,
+  CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories, WidgetControl,
 } from "@bentley/ui-framework";
 import { SampleAppIModelApp } from "../..";
+
+import filterIconSvg from "../icons/filter.svg?sprite";
+import cancelFilterIconSvg from "../icons/filter-outlined.svg?sprite";
 
 export class VisibilityWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -87,8 +90,18 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
   return (
     <>
       <Toolbar
-        searchOptions={searchOptions}
-      />
+        searchOptions={searchOptions} >
+        {[
+          <Button buttonType={ButtonType.Hollow}
+            key="activate-filter-btn"
+            onClick={() => IModelApp.tools.run(TriggerFilterHierarchyByVisibleElementIdsTool.toolId)}>
+            <Icon iconSpec={`svg:${filterIconSvg}`} />
+          </Button>,
+          <Button buttonType={ButtonType.Hollow} key="cancel-filter-btn" onClick={() => IModelApp.tools.run(CancelFilterHierarchyByVisibleElementIdsTool.toolId)}>
+            <Icon iconSpec={`svg:${cancelFilterIconSvg}`} />
+          </Button>,
+        ]}
+      </Toolbar>
       <ModelsTree
         {...props}
         enableElementsClassGrouping={ClassGroupingOption.YesWithCounts}
@@ -132,12 +145,12 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
         searchOptions={searchOptions}
       >
         {[
-          <button key="show-all-btn" onClick={showAll}>
+          <Button buttonType={ButtonType.Hollow} key="show-all-btn" onClick={showAll}>
             <WebFontIcon iconName="icon-visibility" />
-          </button>,
-          <button key="hide-all-btn" onClick={hideAll}>
+          </Button>,
+          <Button buttonType={ButtonType.Hollow} key="hide-all-btn" onClick={hideAll}>
             <WebFontIcon iconName="icon-visibility-hide-2" />
-          </button>,
+          </Button>,
         ]}
       </Toolbar>
       <CategoryTree
@@ -286,6 +299,15 @@ export class TriggerFilterHierarchyByVisibleElementIdsTool extends Tool {
   public static override get englishKeyin(): string {
     return this.keyin;
   }
+
+  public static getCommandItemDef() {
+    return new CommandItemDef({
+      iconSpec: `svg:${filterIconSvg}`,
+      commandId: "TriggerFilterHierarchyByVisibleElementIds",
+      label: "Enable filter tree by visible elements",
+      execute: () => { IModelApp.tools.run(TriggerFilterHierarchyByVisibleElementIdsTool.toolId); },
+    });
+  }
 }
 
 export class CancelFilterHierarchyByVisibleElementIdsTool extends Tool {
@@ -299,5 +321,14 @@ export class CancelFilterHierarchyByVisibleElementIdsTool extends Tool {
   }
   public static override get englishKeyin(): string {
     return this.keyin;
+  }
+
+  public static getCommandItemDef() {
+    return new CommandItemDef({
+      iconSpec: `svg:${cancelFilterIconSvg}`,
+      commandId: "CancelFilterHierarchyByVisibleElementIds",
+      label: "Cancel filter tree by visible elements",
+      execute: () => { IModelApp.tools.run(CancelFilterHierarchyByVisibleElementIdsTool.toolId); },
+    });
   }
 }

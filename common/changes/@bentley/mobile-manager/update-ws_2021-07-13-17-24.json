@@ -1,11 +1,11 @@
 {
   "changes": [
     {
-      "packageName": "@bentley/webpack-tools-core",
+      "packageName": "@bentley/mobile-manager",
       "comment": "",
       "type": "none"
     }
   ],
-  "packageName": "@bentley/webpack-tools-core",
+  "packageName": "@bentley/mobile-manager",
   "email": "33036725+wgoehrig@users.noreply.github.com"
 }
