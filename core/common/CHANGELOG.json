@@ -2,6 +2,36 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.18.0",
+      "tag": "@bentley/imodeljs-common_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Accomodated the inability to reverse Changesets when creating change summaries. "
+          },
+          {
+            "comment": "Use ecef location calculated for projected models.  "
+          },
+          {
+            "comment": "Clean up and promote AnalysisStyle APIs."
+          },
+          {
+            "comment": "Added support for section clip to ElementGraphicsRequestProps."
+          },
+          {
+            "comment": "Add internal API for reconstructing TileOptions from tree and content Ids."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@bentley/imodeljs-common_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.17.1",
       "tag": "@bentley/imodeljs-common_v2.17.1",
       "date": "Fri, 02 Jul 2021 15:38:31 GMT",

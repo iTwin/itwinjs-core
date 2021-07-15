@@ -1,6 +1,25 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+This log was last generated on Fri, 09 Jul 2021 18:11:24 GMT and should not be manually modified.
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- Update component to pass HtmlDivElement to ElementResizeObserver.
+- Update ToolSettings documentation.
+- Improved `onVisibilityChange` event to allow passing new visibility status.
+- Refactor DefaultViewOverlay to be more reliable.
+- Turn off lint rule for deprecated components.
+- Ensure redux stays in sync with FrameworkVersion context and convenience updates that take UI initialization burden off IModelApp.
+- Models Tree: Add a way to filter the hierarchy by element IDs
+- Add ability to provide widgets to zones via UiItemsProvider when using AppUI version 1.
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:31 GMT
