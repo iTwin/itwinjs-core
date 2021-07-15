@@ -172,7 +172,9 @@ export class PolyfaceData {
   public get faceCount() { return this.face.length; }
 
   /** return indexed point. This is a copy of the coordinates, not a reference. */
-  public getPoint(i: number): Point3d | undefined { return this.point.getPoint3dAtCheckedPointIndex(i); }
+  public getPoint(i: number, out?: Point3d): Point3d | undefined {
+    return this.point.getPoint3dAtCheckedPointIndex(i, out);
+  }
   /** return indexed normal. This is the COPY to the normal, not a reference. */
   public getNormal(i: number): Vector3d | undefined { return this.normal ? this.normal.getVector3dAtCheckedVectorIndex(i) : undefined; }
   /** return indexed param. This is the COPY of the coordinates, not a reference. */

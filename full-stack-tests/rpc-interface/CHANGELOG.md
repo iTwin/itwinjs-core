@@ -1,9 +1,41 @@
 # Change Log - @bentley/rpcinterface-full-stack-tests
 
-This log was last generated on Mon, 28 Jun 2021 16:20:11 GMT and should not be manually modified.
+This log was last generated on Fri, 09 Jul 2021 18:11:24 GMT and should not be manually modified.
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- Add basic test using client credentials OIDC workflow
+- Add a test for `PresentationRpcInterface.getElementProperties`
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+### Updates
+
+- Add missing telemetry-client dependency
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+### Updates
+
+- Add basic test using client credentials OIDC workflow
 
 ## 2.17.0
 Mon, 28 Jun 2021 16:20:11 GMT
+
+_Version update only_
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
 
 _Version update only_
 

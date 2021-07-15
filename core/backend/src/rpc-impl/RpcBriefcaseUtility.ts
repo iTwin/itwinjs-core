@@ -59,7 +59,7 @@ export class RpcBriefcaseUtility {
             if (args.forceDownload)
               throw new Error(); // causes delete below
             const db = await BriefcaseDb.open(requestContext, { fileName });
-            if (db.changeSetId !== tokenProps.changeSetId)
+            if (db.changeset.id !== tokenProps.changeSetId)
               await BriefcaseManager.processChangesets(requestContext, db, { id: tokenProps.changeSetId! });
             return db;
           } catch (error) {
@@ -75,7 +75,7 @@ export class RpcBriefcaseUtility {
     const request: RequestNewBriefcaseProps = {
       contextId: tokenProps.contextId!,
       iModelId,
-      briefcaseId: myBriefcaseIds.length > 0 ? myBriefcaseIds[0] : undefined, // if briefcaseId is undefined, we'll acquire a new one.
+      briefcaseId: args.syncMode === SyncMode.PullOnly ? 0 : undefined, // if briefcaseId is undefined, we'll acquire a new one.
     };
 
     const props = await BriefcaseManager.downloadBriefcase(requestContext, request);
@@ -131,6 +131,7 @@ export class RpcBriefcaseUtility {
       iModelId: tokenProps.iModelId!,
       contextId: tokenProps.contextId!,
       changeSetId: tokenProps.changeSetId!,
+      changesetIndex: tokenProps.changesetIndex,
       requestContext,
     };
 

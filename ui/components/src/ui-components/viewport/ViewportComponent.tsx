@@ -78,7 +78,24 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     };
   }
 
-  public async componentDidMount() {
+  private _handleDisconnectFromViewManager = () => {
+    const screenViewport = this._vp;
+    const parentDiv = this._viewportDiv.current;
+
+    if (screenViewport) {
+      const viewManager = IModelApp.viewManager;
+      viewManager.dropViewport(screenViewport, true);
+      screenViewport.onViewChanged.removeListener(this._handleViewChanged);
+      this._vp = undefined;
+    }
+    // istanbul ignore else
+    if (parentDiv) {
+      const parentWindow = parentDiv.ownerDocument.defaultView as Window;
+      parentWindow.removeEventListener("beforeunload", this._handleDisconnectFromViewManager, false);
+    }
+  };
+
+  public override async componentDidMount() {
     this._mounted = true;
 
     // istanbul ignore next
@@ -98,9 +115,14 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       return;
 
     const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
-    const screenViewport = this.props.screenViewportOverride ? this.props.screenViewportOverride : /* istanbul ignore next */ ScreenViewport;
-    this._vp = screenViewport.create(this._viewportDiv.current, viewState);
+    const screenViewportFactory = this.props.screenViewportOverride ? this.props.screenViewportOverride : /* istanbul ignore next */ ScreenViewport;
+    const parentDiv = this._viewportDiv.current;
+    const screenViewport = screenViewportFactory.create(parentDiv, viewState);
+    this._vp = screenViewport;
     viewManager.addViewport(this._vp);
+
+    const parentWindow = parentDiv.ownerDocument.defaultView as Window;
+    parentWindow.addEventListener("beforeunload", this._handleDisconnectFromViewManager, false);
 
     ViewportComponentEvents.initialize();
     ViewportComponentEvents.onDrawingViewportChangeEvent.addListener(this._handleDrawingViewportChangeEvent);
@@ -116,22 +138,15 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
       this.props.viewportRef(this._vp);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._mounted = false;
-
-    /* istanbul ignore else */
-    if (this._vp) {
-      const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
-      viewManager.dropViewport(this._vp, true);
-      this._vp.onViewChanged.removeListener(this._handleViewChanged);
-    }
-
+    this._handleDisconnectFromViewManager();
     ViewportComponentEvents.onDrawingViewportChangeEvent.removeListener(this._handleDrawingViewportChangeEvent);
     ViewportComponentEvents.onCubeRotationChangeEvent.removeListener(this._handleCubeRotationChangeEvent);
     ViewportComponentEvents.onStandardRotationChangeEvent.removeListener(this._handleStandardRotationChangeEvent);
   }
 
-  public async componentDidUpdate(prevProps: ViewportProps) {
+  public override async componentDidUpdate(prevProps: ViewportProps) {
     if (this.props.imodel === prevProps.imodel &&
       this.props.viewState === prevProps.viewState &&
       this.props.viewDefinitionId === prevProps.viewDefinitionId)
@@ -279,7 +294,7 @@ export class ViewportComponent extends React.Component<ViewportProps, ViewportSt
     return false;
   };
 
-  public render() {
+  public override render() {
     const viewOverlay = this._vp && this.props.getViewOverlay ? this.props.getViewOverlay(this._vp) : null;
 
     const parentDivStyle: React.CSSProperties = {

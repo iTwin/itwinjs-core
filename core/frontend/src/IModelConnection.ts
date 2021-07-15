@@ -14,7 +14,7 @@ import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams, FontMap, FontMapProps,
   GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
   IModelReadRpcInterface, IModelStatus, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
-  ModelProps, ModelQueryParams, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
+  ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
   SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -234,7 +234,7 @@ export abstract class IModelConnection extends IModel {
   /** Called prior to connection closing. Raises close events and calls tiles.dispose.
    * @internal
    */
-  protected beforeClose() {
+  protected beforeClose(): void {
     this.onClose.raiseEvent(this); // event for this connection
     IModelConnection.onClose.raiseEvent(this); // event for all connections
     this.tiles.dispose();
@@ -612,15 +612,15 @@ export abstract class IModelConnection extends IModel {
  * @public
  */
 export class BlankConnection extends IModelConnection {
-  public isBlankConnection(): this is BlankConnection { return true; }
+  public override isBlankConnection(): this is BlankConnection { return true; }
 
   /** The Guid that identifies the *context* for this BlankConnection.
    * @note This can also be set via the [[create]] method using [[BlankConnectionProps.contextId]].
    */
-  public get contextId(): GuidString | undefined { return this._contextId; }
-  public set contextId(contextId: GuidString | undefined) { this._contextId = contextId; }
+  public override get contextId(): GuidString | undefined { return this._contextId; }
+  public override set contextId(contextId: GuidString | undefined) { this._contextId = contextId; }
   /** A BlankConnection does not have an associated iModel, so its `iModelId` is alway `undefined`. */
-  public get iModelId(): undefined { return undefined; } // GuidString | undefined for the superclass, but always undefined for BlankConnection
+  public override get iModelId(): undefined { return undefined; } // GuidString | undefined for the superclass, but always undefined for BlankConnection
 
   /** A BlankConnection is always considered closed because it does not have a specific backend nor associated iModel.
    * @returns `true` is always returned since RPC operations and iModel queries are not valid.
@@ -649,6 +649,11 @@ export class BlankConnection extends IModelConnection {
   public async close(): Promise<void> {
     this.beforeClose();
   }
+
+  /** @internal */
+  public closeSync(): void {
+    this.beforeClose();
+  }
 }
 
 /** A connection to a [SnapshotDb]($backend) hosted on a backend.
@@ -656,10 +661,10 @@ export class BlankConnection extends IModelConnection {
  */
 export class SnapshotConnection extends IModelConnection {
   /** Type guard for instanceof [[SnapshotConnection]] */
-  public isSnapshotConnection(): this is SnapshotConnection { return true; }
+  public override isSnapshotConnection(): this is SnapshotConnection { return true; }
 
   /** The Guid that identifies this iModel. */
-  public get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for SnapshotConnection
+  public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for the superclass, but required for SnapshotConnection
 
   /** Returns `true` if [[close]] has already been called. */
   public get isClosed(): boolean { return this._isClosed ? true : false; }
@@ -872,7 +877,10 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     /** Get a set of element ids that satisfy a query */
     public async queryIds(params: EntityQueryParams): Promise<Id64Set> { return this._iModel.queryEntityIds(params); }
 
-    /** Get an array of [[ElementProps]] given one or more element ids. */
+    /** Get an array of [[ElementProps]] given one or more element ids.
+     * @note This method returns **all** of the properties of the element (excluding GeometryStream), which may be a very large amount of data - consider using
+     * [[IModelConnection.query]] to select only those properties of interest to limit the amount of data returned.
+     */
     public async getProps(arg: Id64Arg): Promise<ElementProps[]> {
       const iModel = this._iModel;
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).getElementProps(this._iModel.getRpcProps(), [...Id64.toIdSet(arg)]) : [];
@@ -901,6 +909,69 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     public async queryProps(params: EntityQueryParams): Promise<ElementProps[]> {
       const iModel = this._iModel;
       return iModel.isOpen ? IModelReadRpcInterface.getClientForRouting(iModel.routingContext.token).queryElementProps(iModel.getRpcProps(), params) : [];
+    }
+
+    /** Obtain the [Placement]($common)s of a set of [GeometricElement]($backend)s.
+     * @param elementIds The Ids of the elements whose placements are to be queried.
+     * @returns an array of placements, each having an additional `elementId` property identifying the element from which the placement was obtained.
+     * @note Any Id that does not identify a geometric element with a valid bounding box and origin is omitted from the returned array.
+     */
+    public async getPlacements(elementIds: Iterable<Id64String>): Promise<Array<Placement & { elementId: Id64String }>> {
+      let ids: Id64String[];
+      if (typeof elementIds === "string")
+        ids = [elementIds];
+      else if (!Array.isArray(elementIds))
+        ids = Array.from(elementIds);
+      else
+        ids = elementIds;
+
+      if (ids.length === 0)
+        return [];
+
+      const ecsql = `
+        SELECT * FROM (
+          SELECT
+            ECInstanceId,
+            Origin.x as x, Origin.y as y, Origin.z as z,
+            BBoxLow.x as lx, BBoxLow.y as ly, BBoxLow.z as lz,
+            BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
+            Yaw, Pitch, Roll,
+            NULL as Rotation
+          FROM bis.GeometricElement3d
+          WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
+          UNION ALL
+          SELECT
+            ECInstanceId,
+            Origin.x, Origin.y, NULL,
+            BBoxLow.x, BBoxLow.y, NULL,
+            BBoxHigh.x, BBoxHigh.y, NULL,
+            NULL, NULL, NULL,
+            Rotation
+          FROM bis.GeometricElement2d
+          WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
+        ) WHERE ECInstanceId IN (${ids.join(",")})
+      `;
+
+      const placements = new Array<Placement & { elementId: Id64String}>();
+      for await (const row of this._iModel.query(ecsql)) {
+        const origin =  [row.x, row.y, row.z];
+        const bbox = {
+          low: { x: row.lx, y: row.ly, z: row.lz },
+          high: { x: row.hx, y: row.hy, z: row.hz },
+        };
+
+        let placement;
+        if (undefined === row.lz)
+          placement = Placement2d.fromJSON({ bbox, origin, angle: row.rotation });
+        else
+          placement = Placement3d.fromJSON({ bbox, origin, angles: { yaw: row.yaw, pitch: row.pitch, roll: row.roll } });
+
+        const placementWithId = (placement as Placement & { elementId: Id64String });
+        placementWithId.elementId = row.id;
+        placements.push(placementWithId);
+      }
+
+      return placements;
     }
   }
 
@@ -1061,7 +1132,7 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       const high32 = Id64.getUpperUint32(viewId);
       new Uint32Array(val.buffer, 16, 2).set([low32, high32]); // viewId is 8 bytes starting at offset 16
       val.set(thumbnail.image, 24); // image data at offset 24
-      return IModelWriteRpcInterface.getClientForRouting(this._iModel.routingContext.token).saveThumbnail(this._iModel.getRpcProps(), val);
+      return IModelWriteRpcInterface.getClientForRouting(this._iModel.routingContext.token).saveThumbnail(this._iModel.getRpcProps(), val); // eslint-disable-line deprecation/deprecation
     }
   }
 }

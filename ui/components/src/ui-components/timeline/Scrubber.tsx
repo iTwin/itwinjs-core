@@ -64,11 +64,11 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     this.state = { value: null, percent: null };
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
     document.removeEventListener("mousemove", this._onMouseMove);
   }
@@ -98,7 +98,7 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
   };
 
   // istanbul ignore next - WIP
-  public render() {
+  public override render() {
     const { value, percent } = this.state;
     const { activeHandleID, getRailProps, isPlaying, startDate, endDate, showTime, timeZoneOffset } = this.props;
     let toolTip = "";
@@ -175,7 +175,7 @@ class Handle extends React.Component<HandleProps, HandleState> {
   };
 
   // istanbul ignore next - WIP
-  public render() {
+  public override render() {
     const {
       domain: [min, max],
       handle: { id, value, percent },
@@ -263,7 +263,7 @@ export interface ScrubberProps extends CommonProps {
  */
 export class Scrubber extends React.Component<ScrubberProps> {
 
-  public render() {
+  public override render() {
     const { currentDuration, totalDuration, onChange, onUpdate, onSlideStart, isPlaying, inMiniMode, startDate, endDate, showTime, timeZoneOffset } = this.props;
     const domain = [0, totalDuration];
     const showTooltip = isPlaying && inMiniMode;

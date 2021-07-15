@@ -2,6 +2,72 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.18.0",
+      "tag": "@bentley/imodeljs-frontend_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add GraphicBuilder.addCurvePrimitive."
+          },
+          {
+            "comment": "Add Tiles.updateForScheduleScript to refresh tiles after modifying schedule script.\""
+          },
+          {
+            "comment": "Update Toolsettings set-up in SetCameraTool to fix enable/disable setting of input field."
+          },
+          {
+            "comment": "Add Viewport.flashedId property and corresponding onFlashedIdChanged event."
+          },
+          {
+            "comment": "Added support for ESRI MapServer exposing a minimum LOD."
+          },
+          {
+            "comment": "Fix the Nadir color for 2 colors skybox in the context of background map."
+          },
+          {
+            "comment": "Add ability to clone Format and to add property setters. This allows a user to synchronously tweak a format in the frontend."
+          },
+          {
+            "comment": "Fix issue with TouchCursor unexpectedly disappearing when disabling snap/locate."
+          },
+          {
+            "comment": "pickable decoration enhancement"
+          },
+          {
+            "comment": "Update tile trees when project extents change."
+          },
+          {
+            "comment": "Remove BackgroundMapLocation use EcefLocation directly."
+          },
+          {
+            "comment": "Clean up and promote AnalysisStyle APIs."
+          },
+          {
+            "comment": "TileAdmin.requestElementGraphics can now produce section-cut graphics."
+          },
+          {
+            "comment": "Update tooltips of RealityData with its type"
+          },
+          {
+            "comment": "Add API to wait until all pending external textures have finished loading."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@bentley/imodeljs-frontend_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.1",
+      "tag": "@bentley/imodeljs-frontend_v2.17.1",
+      "date": "Fri, 02 Jul 2021 15:38:31 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.17.0",
       "tag": "@bentley/imodeljs-frontend_v2.17.0",
       "date": "Mon, 28 Jun 2021 16:20:11 GMT",
@@ -72,6 +138,18 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.16.9",
+      "tag": "@bentley/imodeljs-frontend_v2.16.9",
+      "date": "Tue, 06 Jul 2021 22:08:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.8",
+      "tag": "@bentley/imodeljs-frontend_v2.16.8",
+      "date": "Fri, 02 Jul 2021 17:40:46 GMT",
+      "comments": {}
     },
     {
       "version": "2.16.7",
