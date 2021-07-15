@@ -22,6 +22,9 @@ export interface ArcGisOAuth2Token {
 
   // Username associated with this token
   userName: string;
+
+  // A Binary value that, if true, implies that the user had checked "Keep me signed in"
+  persist?: boolean;
 }
 
 export interface ArcGisToken {

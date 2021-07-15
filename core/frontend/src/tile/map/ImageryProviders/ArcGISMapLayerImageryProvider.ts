@@ -10,7 +10,7 @@ import { Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
 import { Cartographic, ImageSource, MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
 import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
-import { ArcGisErrorCode, ArcGisTokenClientType, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, NotifyMessageDetails, OutputMessagePriority } from "../../../imodeljs-frontend";
+import { ArcGisErrorCode, ArcGisToken, ArcGisTokenClientType, EsriOAuth2, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, NotifyMessageDetails, OutputMessagePriority } from "../../../imodeljs-frontend";
 import { ScreenViewport } from "../../../Viewport";
 import { ArcGisTokenManager, ArcGisUtilities, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId } from "../../internal";
 
@@ -268,7 +268,10 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   // construct the Url from the desired Tile
   private async appendSecurityToken(url: string): Promise<string> {
     // Append security token if required
-    const oauth2Token = ArcGisTokenManager.getOAuth2Token(this._settings.url);
+    let oauth2Token: ArcGisToken|undefined;
+    try {
+      oauth2Token = await EsriOAuth2.getOAuthTokenForMapLayerUrl(this._settings.url);
+    } catch {}
     const hasCredentials = (this._settings.userName && this._settings.password);
     if (oauth2Token || hasCredentials) {
       try {
@@ -276,7 +279,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
         if (token?.token) {
           const urlObj = new URL(url);
           urlObj.searchParams.append("token", token.token);
-          return urlObj.href;
+          return urlObj.toString();
         }
       } catch {
       }

@@ -15,7 +15,8 @@ export enum MapLayerAuthType {
 }
 /** @internal */
 export interface MapLayerTokenEndpoint {
-  getTokenGenerationUrl(stateData?: string): string|undefined;
+  getLoginUrl(stateData?: string): string|undefined;
+  getUrl(): string;
 }
 
 /** @internal */

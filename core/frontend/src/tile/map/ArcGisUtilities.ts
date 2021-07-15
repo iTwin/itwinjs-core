@@ -5,7 +5,7 @@
 import { Angle } from "@bentley/geometry-core";
 import { MapSubLayerProps } from "@bentley/imodeljs-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
-import { EsriOAuth2Endpoint, FrontendRequestContext } from "../../imodeljs-frontend";
+import { ArcGisToken, EsriOAuth2Endpoint, FrontendRequestContext } from "../../imodeljs-frontend";
 import { MapLayerAuthType, MapLayerSourceValidation} from "../internal";
 import { MapCartoRectangle } from "./MapCartoRectangle";
 import { MapLayerSource, MapLayerSourceStatus } from "./MapLayerSources";
@@ -163,6 +163,7 @@ export class ArcGisUtilities {
   }
 
   private static _serviceCache = new Map<string, any>();
+
   public static async getServiceJson(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<any> {
     if (!ignoreCache) {
       const cached = ArcGisUtilities._serviceCache.get(url);
@@ -176,7 +177,12 @@ export class ArcGisUtilities {
         responseType: "json",
       };
       let tokenParam = "";
-      const oauth2Token = ArcGisTokenManager.getOAuth2Token(url);
+
+      let oauth2Token: ArcGisToken|undefined;
+      try {
+        oauth2Token = await EsriOAuth2.getOAuthTokenForMapLayerUrl(url);
+      } catch {}
+
       if (credentials || oauth2Token !== undefined) {
         const token = (credentials ? await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer }) : oauth2Token);
         if (token?.token) {
@@ -208,7 +214,11 @@ export class ArcGisUtilities {
 
     try {
       let tokenParam = "";
-      const oauth2Token = ArcGisTokenManager.getOAuth2Token(url);
+      let oauth2Token: ArcGisToken|undefined;
+      try {
+        oauth2Token = await EsriOAuth2.getOAuthTokenForMapLayerUrl(url);
+      } catch {}
+
       if (credentials || oauth2Token) {
         const token = (credentials ? await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer }) : oauth2Token);
         if (token?.token)
@@ -222,4 +232,36 @@ export class ArcGisUtilities {
       return undefined;
     }
   }
+
+  private static extractRestBaseUrl(url: string) {
+    const searchStr = "/rest/";
+    const restPos = url.indexOf(searchStr);
+    return (restPos === -1 ? undefined : url.substr(0, restPos+searchStr.length));
+
+  }
+
+  public static async requestGetJson(url: string) {
+    return request(new FrontendRequestContext(""), url, {method: "GET", responseType: "json"});
+  }
+
+  public static async getRestUrlFromGenerateTokenUrl(url: string): Promise<string|undefined> {
+    const restUrl = ArcGisUtilities.extractRestBaseUrl(url);
+    if (restUrl === undefined) {
+      return undefined;
+    }
+
+    // First attempt: derive the Oauth2 token URL from the 'tokenServicesUrl', exposed by the 'info request'
+    const infoUrl = `${restUrl}info?f=json`;
+    let data;
+    try {
+      data = await this.requestGetJson(infoUrl);
+    } catch {}
+
+    const tokenServicesUrl = data?.body?.authInfo?.tokenServicesUrl;
+    if (tokenServicesUrl === undefined ) {
+      return undefined;
+    }
+    return ArcGisUtilities.extractRestBaseUrl(tokenServicesUrl);
+  }
+
 }

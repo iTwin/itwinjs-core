@@ -12,18 +12,27 @@ export function EsriOAuth2Callback() {
   const startLogin = () => {
     let success = false;
     if (window.opener !== undefined) {
-      const opener = (window.opener );
+      const opener = (window.opener);
       assert(opener?.esriOAuth2Callback);
       if (opener?.esriOAuth2Callback) {
-        const hashMatch = window.location.hash.match(new RegExp(/#access_token=([^&]+)&expires_in=([^&]+)&username=([^&]+)&ssl=([^&]+)&state=([^&]+)/, "i"));
-        if (hashMatch !== null &&  hashMatch.length === 6 )
-          opener.esriOAuth2Callback(true, hashMatch[1], hashMatch[2], hashMatch[3], hashMatch[4], hashMatch[5]);
-        success = true;
-      }
-    }
+        if (window.location.hash.length > 0) {
+          const hashParams = new URLSearchParams(window.location.hash.substr(1));
+          const token = hashParams.get("access_token") ?? undefined;
+          const expiresIn = hashParams.get("expires_in") ?? undefined;
+          const username = hashParams.get("username") ?? undefined;
+          const ssl = hashParams.get("ssl") ?? undefined;
+          const state = hashParams.get("state") ?? undefined;
+          const persist = hashParams.get("persist") ?? undefined;
 
-    if (success === false) {
-      opener.esriOAuth2Callback(false);
+          if (token !== undefined && expiresIn !== undefined && state !== undefined ) {
+            success = true;
+            opener.esriOAuth2Callback(true, token, Number(expiresIn), username, (ssl ? ssl === "true" : ssl), state, (persist ? persist === "true" : persist));
+          }
+        }
+        if (!success) {
+          opener.esriOAuth2Callback(false);
+        }
+      }
     }
   };
 

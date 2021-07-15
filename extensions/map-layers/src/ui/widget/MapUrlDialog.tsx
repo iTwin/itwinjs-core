@@ -194,7 +194,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     const invalidCredentials = (sourceValidation.status === MapLayerSourceStatus.InvalidCredentials);
     if (sourceRequireAuth && sourceValidation.authInfo?.authMethod !== undefined) {
       if (sourceValidation.authInfo.tokenEndpoint && sourceValidation.authInfo?.authMethod === MapLayerAuthType.EsriOAuth2) {
-        setAuthTokenUrl(sourceValidation.authInfo.tokenEndpoint.getTokenGenerationUrl(mapUrl));
+        const stateData = new URL(sourceValidation.authInfo.tokenEndpoint.getUrl()).origin;
+        setAuthTokenUrl(sourceValidation.authInfo.tokenEndpoint.getLoginUrl(stateData));
       }
 
       setLayerAuthMethod(sourceValidation.authInfo?.authMethod);
