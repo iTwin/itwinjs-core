@@ -239,8 +239,8 @@ export class HorizontalCRS implements HorizontalCRSProps {
     return data;
   }
 
-  /** Compares two horizontal CRS. It is a strict compare operation not an equivalence test.
-   * It takes into account descriptive properties not only mathematical definition properties.
+  /** Compares two horizontal CRS. It is not an equivalence test as descriptive properties are also compared
+   * but number compares are applied a minuscule tolerance.
    * It is useful for tests purposes only.
    *  @internal */
   public equals(other: HorizontalCRS): boolean {
@@ -319,8 +319,7 @@ export class VerticalCRS implements VerticalCRSProps {
     return { id: this.id };
   }
 
-  /** Compares two vertical CRS. It is a strict compare operation not an equivalence test.
-   * It takes into account descriptive properties not only mathematical definition properties.
+  /** Compares two vertical CRS.
    * It is useful for tests purposes only.
    *  @internal */
   public equals(other: VerticalCRS): boolean {
@@ -403,10 +402,10 @@ export class GeographicCRS implements GeographicCRSProps {
     return data;
   }
 
-  /** Compares two Geographic CRS. It is a strict compare operation not an equivalence test.
+  /** Compares two Geographic CRS. It is a strict compare operation not an equivalence test though
+   * number compares are applied a minuscule tolerance.
    * It takes into account descriptive properties not only mathematical definition properties.
    * It is useful for tests purposes only.
-  /** Compares two Geographic CRS for exact equality, comparing both mathematical and descriptive properties.
    * @public
    */
   public equals(other: GeographicCRS): boolean {
