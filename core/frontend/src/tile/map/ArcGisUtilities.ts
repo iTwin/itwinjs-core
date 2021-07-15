@@ -5,7 +5,7 @@
 import { Angle } from "@bentley/geometry-core";
 import { MapSubLayerProps } from "@bentley/imodeljs-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
-import { ArcGisToken, EsriOAuth2Endpoint, FrontendRequestContext } from "../../imodeljs-frontend";
+import { ArcGisBaseToken, ArcGisOAuth2Token, EsriOAuth2Endpoint, FrontendRequestContext } from "../../imodeljs-frontend";
 import { MapLayerAuthType, MapLayerSourceValidation} from "../internal";
 import { MapCartoRectangle } from "./MapCartoRectangle";
 import { MapLayerSource, MapLayerSourceStatus } from "./MapLayerSources";
@@ -178,7 +178,7 @@ export class ArcGisUtilities {
       };
       let tokenParam = "";
 
-      let oauth2Token: ArcGisToken|undefined;
+      let oauth2Token: ArcGisOAuth2Token|undefined;
       try {
         oauth2Token = await EsriOAuth2.getOAuthTokenForMapLayerUrl(url);
       } catch {}
@@ -214,13 +214,13 @@ export class ArcGisUtilities {
 
     try {
       let tokenParam = "";
-      let oauth2Token: ArcGisToken|undefined;
+      let oauth2Token: ArcGisOAuth2Token|undefined;
       try {
         oauth2Token = await EsriOAuth2.getOAuthTokenForMapLayerUrl(url);
       } catch {}
 
       if (credentials || oauth2Token) {
-        const token = (credentials ? await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer }) : oauth2Token);
+        const token: ArcGisBaseToken = (credentials ? await ArcGisTokenManager.getToken(url, credentials.user, credentials.password, { client: ArcGisTokenClientType.referer }) : oauth2Token);
         if (token?.token)
           tokenParam = `&token=${token.token}`;
       }

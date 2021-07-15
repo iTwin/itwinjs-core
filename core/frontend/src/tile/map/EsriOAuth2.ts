@@ -5,6 +5,7 @@
 import { assert, BeEvent } from "@bentley/bentleyjs-core";
 import { request } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "../../FrontendRequestContext";
+import { ArcGisOAuth2Token } from "../../imodeljs-frontend";
 import { ArcGisToken, ArcGisTokenManager, ArcGisUtilities, MapLayerTokenEndpoint} from "../internal";
 
 /** @internal */
@@ -83,15 +84,23 @@ export class EsriOAuth2 {
     EsriOAuth2._arcGisOnlineClientId = arcGisOnlineClientId;
     EsriOAuth2._expiration = tokenExpiration;
 
-    // Define a global callback function that will be used by the redirect URL to pass the generated token
-    (window as any).esriOAuth2Callback = (success: boolean, token?: string, expires?: number, userName?: string, ssl?: boolean, state?: string, persist?: boolean) => {
+    /** Define a *global* callback function that will be used by the redirect URL to pass the generated token
+   * @param success A binary value that, if true, implies the login process was successful.
+   * @param token Generated access token
+   * @param expiresIn Token expiration in seconds from now.
+   * @param ssl A binary value that, if true, implies that the user belongs to an SSL-only organization
+   * @param state An opaque value used by applications to maintain state between authorization requests and responses.
+   * @param persist A binary value that, if true, implies that the user had checked "Keep me signed in" when signing.
+   */
+    (window as any).esriOAuth2Callback = (success: boolean, token?: string, expiresIn?: number, userName?: string, ssl?: boolean, state?: string, persist?: boolean) => {
       let decodedState;
       let eventSuccess = success;
       if (success) {
-        if ( token !== undefined && expires !== undefined && userName !== undefined && ssl !== undefined && state !== undefined) {
+        if ( token !== undefined && expiresIn !== undefined && userName !== undefined && ssl !== undefined && state !== undefined) {
           decodedState = decodeURIComponent(state);
           const stateUrl = new URL(decodedState);
-          ArcGisTokenManager.setOAuth2Token(stateUrl.origin, {token, expires, ssl, userName, persist});
+          const expiresAt = (expiresIn * 1000) + (+new Date());
+          ArcGisTokenManager.setOAuth2Token(stateUrl.origin, {token, expiresAt, ssl, userName, persist});
         } else {
           eventSuccess = false;
         }
@@ -103,7 +112,7 @@ export class EsriOAuth2 {
   }
 
   //
-  public static async getOAuthTokenForMapLayerUrl(mapLayerUrl: string): Promise<ArcGisToken|undefined> {
+  public static async getOAuthTokenForMapLayerUrl(mapLayerUrl: string): Promise<ArcGisOAuth2Token|undefined> {
     try {
       const oauthEndpoint = await EsriOAuth2.getOAuth2EndpointFromMapLayerUrl(mapLayerUrl, EsriOAuth2EndpointType.Authorize);
       if (oauthEndpoint !== undefined) {

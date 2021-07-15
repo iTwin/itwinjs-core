@@ -8,9 +8,11 @@
 
 import { ArcGisGenerateTokenOptions, ArcGisOAuth2Token, ArcGisToken, ArcGisTokenGenerator } from "../../imodeljs-frontend";
 
+/** @internal */
 interface ArcGisTokenProps {
   [hostname: string]: ArcGisOAuth2Token;
 }
+
 /** @internal */
 export class ArcGisTokenManager {
   private static readonly tokenExpiryThreshold = 300000;  // 5 minutes in milliseconds
@@ -47,12 +49,29 @@ export class ArcGisTokenManager {
     return ArcGisTokenManager._cache.delete(tokenCacheKey);
   }
 
-  public static getOAuth2Token(key: string): ArcGisToken|undefined {
+  public static getOAuth2Token(key: string): ArcGisOAuth2Token|undefined {
     if (ArcGisTokenManager._oauth2Cache === undefined) {
       ArcGisTokenManager._oauth2Cache = new Map<string, ArcGisOAuth2Token>();
       ArcGisTokenManager.loadFromBrowserStorage();
     }
-    return ArcGisTokenManager._oauth2Cache.get(key);
+
+    const cachedToken = ArcGisTokenManager._oauth2Cache.get(key);
+
+    // If cached token has expired (or about to expire), invalidate don't return it.
+    if (cachedToken !== undefined && (cachedToken.expiresAt - (+new Date()) < ArcGisTokenManager.tokenExpiryThreshold)) {
+      ArcGisTokenManager._oauth2Cache.delete(key);
+      return undefined;
+    }
+
+    return cachedToken;
+  }
+
+  public static invalidateOAuth2Token(key: string) {
+    if (ArcGisTokenManager._oauth2Cache !== undefined) {
+      return ArcGisTokenManager._oauth2Cache.delete(key);
+    }
+
+    return false;
   }
 
   public static setOAuth2Token(key: string, token: ArcGisOAuth2Token) {

@@ -10,12 +10,15 @@ import { FrontendRequestContext } from "../../imodeljs-frontend";
  */
 
 /** @internal */
-export interface ArcGisOAuth2Token {
+export interface ArcGisBaseToken {
   // The generated token.
   token: string;
+}
 
-  // The expiration time of the token in milliseconds
-  expires: number;
+export interface ArcGisOAuth2Token extends ArcGisBaseToken {
+
+  // The expiration time of the token in milliseconds (UNIX time)
+  expiresAt: number;
 
   // This property will show as true if the token must always pass over ssl.
   ssl: boolean;
@@ -27,10 +30,7 @@ export interface ArcGisOAuth2Token {
   persist?: boolean;
 }
 
-export interface ArcGisToken {
-  // The generated token.
-  token: string;
-
+export interface ArcGisToken extends ArcGisBaseToken {
   // The expiration time of the token in milliseconds since January 1, 1970 (UTC).
   expires: number;
 

@@ -10,7 +10,7 @@ import { Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
 import { Cartographic, ImageSource, MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
 import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
-import { ArcGisErrorCode, ArcGisToken, ArcGisTokenClientType, EsriOAuth2, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, NotifyMessageDetails, OutputMessagePriority } from "../../../imodeljs-frontend";
+import { ArcGisBaseToken, ArcGisErrorCode, ArcGisOAuth2Token, ArcGisToken, ArcGisTokenClientType, EsriOAuth2, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, NotifyMessageDetails, OutputMessagePriority } from "../../../imodeljs-frontend";
 import { ScreenViewport } from "../../../Viewport";
 import { ArcGisTokenManager, ArcGisUtilities, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId } from "../../internal";
 
@@ -69,6 +69,10 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
           tileResponse = await this.fetchTile(row, column, zoomLevel);
           if (tileResponse === undefined)
             return undefined;
+        } else {
+          // If there is a token error and we dont have credentials set,
+          // layer might be using Oauth, so make sure previous token is not used again.
+          ArcGisTokenManager.invalidateOAuth2Token(this._settings.url);
         }
 
         // OK at this point, if response still contain a token error, we assume end-user will
@@ -219,6 +223,10 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       if (this._settings.userName && this._settings.userName.length > 0) {
         ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
         json = await getJson(this._requestContext, url);
+      } else {
+        // If there is a token error and we dont have credentials set,
+        // layer might be using Oauth, so make sure previous token is not used again.
+        ArcGisTokenManager.invalidateOAuth2Token(this._settings.url);
       }
 
       // OK at this point, if response still contain a token error, we assume end-user will
@@ -268,14 +276,14 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   // construct the Url from the desired Tile
   private async appendSecurityToken(url: string): Promise<string> {
     // Append security token if required
-    let oauth2Token: ArcGisToken|undefined;
+    let oauth2Token: ArcGisOAuth2Token|undefined;
     try {
       oauth2Token = await EsriOAuth2.getOAuthTokenForMapLayerUrl(this._settings.url);
     } catch {}
     const hasCredentials = (this._settings.userName && this._settings.password);
     if (oauth2Token || hasCredentials) {
       try {
-        const token = (hasCredentials ? await ArcGisTokenManager.getToken(url, this._settings.userName!, this._settings.password!, { client: ArcGisTokenClientType.referer }) : oauth2Token);
+        const token: ArcGisBaseToken = (hasCredentials ? await ArcGisTokenManager.getToken(url, this._settings.userName!, this._settings.password!, { client: ArcGisTokenClientType.referer }) : oauth2Token);
         if (token?.token) {
           const urlObj = new URL(url);
           urlObj.searchParams.append("token", token.token);
