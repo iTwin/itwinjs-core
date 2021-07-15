@@ -296,6 +296,16 @@ describe("SyncUiEventDispatcher", () => {
       SyncUiEventDispatcher.clearConnectionEvents(imodelMock.object);
     });
 
+    it("initializeConnectionEvents with blank iModelConnection", () => {
+      imodelMock.setup((x) => x.isBlankConnection()).returns(() => true);
+      SyncUiEventDispatcher.initializeConnectionEvents(imodelMock.object);
+    });
+
+    it("initializeConnectionEvents with blank iModelConnection and an undefined iModelId", () => {
+      imodelMock.setup((x) => x.iModelId).returns(() => undefined);
+      imodelMock.setup((x) => x.isBlankConnection()).returns(() => true);
+      SyncUiEventDispatcher.initializeConnectionEvents(imodelMock.object);
+    });
   });
 
   describe("SelectedViewportChanged", () => {
