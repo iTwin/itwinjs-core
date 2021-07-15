@@ -54,8 +54,7 @@ export class XyzRotation implements XyzRotationProps {
   }
 
   /** Compares two geodetic rotations. It applies a minuscule angular tolerance
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: XyzRotation): boolean {
     return (Math.abs(this.x - other.x) < Geometry.smallAngleSeconds &&
       Math.abs(this.y - other.y) < Geometry.smallAngleSeconds &&
@@ -106,8 +105,7 @@ export class GeocentricTransform implements GeocentricTransformProps {
   }
 
   /** Compares two geodetic transforms. It applies a minuscule tolerance.
-   *  It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: GeocentricTransform): boolean {
     return (Math.abs(this.delta.x - other.delta.x) < Geometry.smallMetricDistance &&
       Math.abs(this.delta.y - other.delta.y) < Geometry.smallMetricDistance &&
@@ -168,9 +166,8 @@ export class PositionalVectorTransform implements PositionalVectorTransformProps
     };
   }
 
-  /** Compares two Positional Vector Transforms. It applies a minuscule tolerance to floating-point compares.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two Positional Vector Transforms. It applies a minuscule tolerance to number compares.
+   *  @public */
   public equals(other: PositionalVectorTransform): boolean {
     if (Math.abs(this.delta.x - other.delta.x) > Geometry.smallMetricDistance ||
       Math.abs(this.delta.y - other.delta.y) > Geometry.smallMetricDistance ||
@@ -258,8 +255,7 @@ export class GridFileDefinition implements GridFileDefinitionProps {
   }
 
   /** Compares two grid file definition. It is a strict compare operation not an equivalence test.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: GridFileDefinition): boolean {
     return (this.fileName === other.fileName && this.direction === other.direction && this.format === other.format);
   }
@@ -317,8 +313,7 @@ export class GridFileTransform implements GridFileTransformProps {
   }
 
   /** Compares two Grid File Transforms. It is a strict compare operation not an equivalence test.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: GridFileTransform): boolean {
     if (this.files.length !== other.files.length)
       return false;
@@ -415,8 +410,7 @@ export class GeodeticTransform implements GeodeticTransformProps {
 
   /** Compares two geodetic Transforms. It is not an equivalence test since
    * descriptive information is strictly compared. A minuscule tolerance is applied to number compares.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: GeodeticTransform): boolean {
     if (this.method !== other.method)
       return false;
@@ -571,8 +565,7 @@ export class GeodeticDatum implements GeodeticDatumProps {
 
   /** Compares two Geodetic Datums. It is a strict compare operation not an equivalence test.
    * It takes into account descriptive properties not only mathematical definition properties.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: GeodeticDatum): boolean {
     if (this.id !== other.id ||
       this.description !== other.description ||

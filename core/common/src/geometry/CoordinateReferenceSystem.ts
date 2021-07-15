@@ -67,9 +67,8 @@ export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
     return { southWest: this.southWest.toJSON(), northEast: this.northEast.toJSON() };
   }
 
-  /** Compares two Extents. It is a strict compare operation.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two Extents. It applies a minuscule tolerance to comparing numbers.
+   *  @public */
   public equals(other: HorizontalCRSExtent): boolean {
     return this.southWest.equals(other.southWest) && this.northEast.equals(other.northEast);
   }
@@ -241,8 +240,7 @@ export class HorizontalCRS implements HorizontalCRSProps {
 
   /** Compares two horizontal CRS. It is not an equivalence test as descriptive properties are also compared
    * but number compares are applied a minuscule tolerance.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: HorizontalCRS): boolean {
     if (this.id !== other.id ||
       this.description !== other.description ||
@@ -320,8 +318,7 @@ export class VerticalCRS implements VerticalCRSProps {
   }
 
   /** Compares two vertical CRS.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: VerticalCRS): boolean {
     return (this.id === other.id);
   }
@@ -405,7 +402,6 @@ export class GeographicCRS implements GeographicCRSProps {
   /** Compares two Geographic CRS. It is a strict compare operation not an equivalence test though
    * number compares are applied a minuscule tolerance.
    * It takes into account descriptive properties not only mathematical definition properties.
-   * It is useful for tests purposes only.
    * @public
    */
   public equals(other: GeographicCRS): boolean {

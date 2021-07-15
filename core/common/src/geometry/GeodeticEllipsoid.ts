@@ -102,8 +102,7 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
   /** Compares two Geodetic Ellipsoid. It is a strict compare operation not an equivalence test
    * but it applies a minuscule tolerance for floating point compares.
    * It takes into account descriptive properties not only mathematical definition properties.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: GeodeticEllipsoid): boolean {
     return this.id === other.id &&
       this.description === other.description &&

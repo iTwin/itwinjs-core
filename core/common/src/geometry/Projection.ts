@@ -132,8 +132,7 @@ export class AffineTransform implements AffineTransformProps {
   }
 
   /** Compares two Affine Transforms. It applies a minuscule tolerance for number compares
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: AffineTransform): boolean {
     return (Math.abs(this.translationX - other.translationX) < Geometry.smallMetricDistance &&
       Math.abs(this.translationY - other.translationY) < Geometry.smallMetricDistance &&
@@ -355,8 +354,7 @@ export class Projection implements ProjectionProps {
 
   /** Compares two projections. It is a strict compare operation as descriptive data is compared
    * but a minuscule tolerance is applied to number compares.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: Projection): boolean {
     if (this.method !== other.method ||
       this.zoneNumber !== other.zoneNumber ||
@@ -444,8 +442,7 @@ export class Carto2DDegrees implements Carto2DDegreesProps {
   }
 
   /** Compares two Carto2DDegrees object. It applies a minuscule tolerance to compares.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: Carto2DDegrees): boolean {
     return (Math.abs(this.latitude - other.latitude) < Geometry.smallAngleDegrees &&
       Math.abs(this.longitude - other.longitude) < Geometry.smallAngleDegrees);

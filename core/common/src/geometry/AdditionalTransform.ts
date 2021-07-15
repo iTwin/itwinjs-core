@@ -75,8 +75,7 @@ export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
   }
 
   /** Compares two Helmert2DWithZOffset objects applying a minuscule tolerance.
-   * It is useful for tests purposes only.
-   *  @internal */
+   *  @public */
   public equals(other: Helmert2DWithZOffset): boolean {
     return (Math.abs(this.translationX - other.translationX) < Geometry.smallMetricDistance &&
       Math.abs(this.translationY - other.translationY) < Geometry.smallMetricDistance &&
@@ -122,9 +121,8 @@ export class AdditionalTransform implements AdditionalTransformProps {
     return { helmert2DWithZOffset: this.helmert2DWithZOffset };
   }
 
-  /** Compares two additional transforms. It is a strict compare operation.
-   * It is useful for tests purposes only.
-   *  @internal */
+  /** Compares two additional transforms applying a minuscule tolerance to comparing numbers.
+   *  @public */
   public equals(other: AdditionalTransform): boolean {
     if ((this.helmert2DWithZOffset === undefined) !== (other.helmert2DWithZOffset === undefined))
       return false;
