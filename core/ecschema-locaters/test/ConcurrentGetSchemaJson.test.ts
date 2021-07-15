@@ -9,7 +9,7 @@ import * as path from "path";
 import { ECVersion, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
 import { SchemaJsonFileLocater } from "../src/SchemaJsonFileLocater";
 
-describe("Concurrent schema deserialization", () => {
+describe("Concurrent schema JSON deserialization", () => {
   let schemaKeys: SchemaKey[] = [];
   let context: SchemaContext;
   let contextSync: SchemaContext;
