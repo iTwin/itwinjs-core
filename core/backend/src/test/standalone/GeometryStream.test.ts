@@ -2270,6 +2270,28 @@ describe("BRepGeometry", () => {
     }
   });
 
+  it("offset surfaces test", async () => {
+    const builder = new ElementGeometry.Builder();
+    builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 5, 0), Point3d.create(5, 5, 0), Point3d.create(5, 0, 0), Point3d.create(0, 0, 0)]));
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
+      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
+    };
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Offset,
+      entryArray: builder.entries,
+      onResult,
+      parameters: { distance: 0.25 },
+    };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+  });
+
   it("hollow solids test", async () => {
     const builder = new ElementGeometry.Builder();
     builder.appendGeometryQuery(Box.createRange(Range3d.create(Point3d.createZero(), Point3d.create(5, 5, 2)), true)!);
@@ -2281,6 +2303,28 @@ describe("BRepGeometry", () => {
 
     const createProps: BRepGeometryCreate = {
       operation: BRepGeometryOperation.Hollow,
+      entryArray: builder.entries,
+      onResult,
+      parameters: { distance: 0.25 },
+    };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+  });
+
+  it("offset solids test", async () => {
+    const builder = new ElementGeometry.Builder();
+    builder.appendGeometryQuery(Box.createRange(Range3d.create(Point3d.createZero(), Point3d.create(5, 5, 2)), true)!);
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      assert.isTrue(undefined !== info.entryArray && 1 === info.entryArray.length && ElementGeometryOpcode.BRep === info.entryArray[0].opcode);
+      // assert.isTrue(DbResult.BE_SQLITE_OK === createGeometricElemFromSeed(imodel, "0x1d", info.entryArray));
+    };
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Offset,
       entryArray: builder.entries,
       onResult,
       parameters: { distance: 0.25 },
