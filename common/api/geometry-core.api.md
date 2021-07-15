@@ -2015,6 +2015,7 @@ export class Geometry {
     static inverseMetricDistance(a: number): number | undefined;
     static inverseMetricDistanceSquared(a: number): number | undefined;
     static isAlmostEqualNumber(a: number, b: number): boolean;
+    static isAlmostEqualOptional(a: number | undefined, b: number | undefined, tolerance: number): boolean;
     static isAlmostEqualXAndY(a: XAndY, b: XAndY): boolean;
     static isArrayOfNumberArray(json: any, numNumberArray: number, minEntries?: number): boolean;
     static isDistanceWithinTol(distance: number, tol?: number): boolean;
@@ -2055,8 +2056,10 @@ export class Geometry {
     static resolveValue<T>(value: T | undefined, defaultValue: T): T;
     static restrictToInterval(x: number, a: number, b: number): number;
     static safeDivideFraction(numerator: number, denominator: number, defaultResult: number): number;
+    static readonly smallAngleDegrees = 5.7e-11;
     static readonly smallAngleRadians = 1e-12;
     static readonly smallAngleRadiansSquared = 1e-24;
+    static readonly smallAngleSeconds = 2e-7;
     static readonly smallFraction = 1e-10;
     static readonly smallMetricDistance = 0.000001;
     static readonly smallMetricDistanceSquared = 1e-12;
