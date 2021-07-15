@@ -42,6 +42,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     const parser = new DOMParser();
     const document = parser.parseFromString(schemaText);
 
+    this.addSchemaSearchPaths([path.dirname(schemaPath)]);
     const reader = new SchemaReadHelper(XmlParser, context);
     let schema: Schema = new Schema(context);
     schema = await reader.readSchema(schema, document);
@@ -111,6 +112,7 @@ export class SchemaXmlFileLocater extends SchemaFileLocater implements ISchemaLo
     const parser = new DOMParser();
     const document = parser.parseFromString(schemaText);
 
+    this.addSchemaSearchPaths([path.dirname(schemaPath)]);
     const reader = new SchemaReadHelper(XmlParser, context);
     let schema: Schema = new Schema(context);
     schema = await reader.readLoadingSchema(schema, document);

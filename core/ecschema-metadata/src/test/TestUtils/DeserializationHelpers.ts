@@ -25,9 +25,9 @@ export function createSchemaJsonWithItems(itemsJson: any, referenceJson?: any): 
 export class ReferenceSchemaLocater implements ISchemaLocater {
   private readonly _schemaList: Map<string, Object>;
   private readonly _parser: (schemaContent: any, context: SchemaContext) => Schema | Promise<Schema>;
-  private readonly _loadingSchemaParser: (schemaContent: any, context: SchemaContext) => Schema | Promise<Schema>;
+  private readonly _loadingSchemaParser: ((schemaContent: any, context: SchemaContext) => Promise<Schema>) | undefined;
 
-  constructor(parser: (schemaContent: any, context: SchemaContext) => Schema | Promise<Schema>, loadingSchemaParser: (schemaContent: any, context: SchemaContext) => Schema | Promise<Schema>) {
+  constructor(parser: (schemaContent: any, context: SchemaContext) => Schema | Promise<Schema>, loadingSchemaParser?: (schemaContent: any, context: SchemaContext) => Promise<Schema>) {
     this._schemaList = new Map();
     this._parser = parser;
     this._loadingSchemaParser = loadingSchemaParser;
@@ -62,9 +62,10 @@ export class ReferenceSchemaLocater implements ISchemaLocater {
   public async getLoadingSchema<T extends Schema>(schemaKey: SchemaKey, _matchType: SchemaMatchType, context: SchemaContext): Promise<T | undefined> {
     if (this._schemaList.has(schemaKey.name)) {
       const schemaBody = this._schemaList.get(schemaKey.name);
-      const schema = await this._loadingSchemaParser(schemaBody, context);
-
-      return schema as T;
+      if (this._loadingSchemaParser) {
+        const schema = await this._loadingSchemaParser(schemaBody, context);
+        return schema as T;
+      }
     }
 
     return undefined;

@@ -6,17 +6,19 @@
 import { expect } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { ECVersion, Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
-import { SchemaJsonFileLocater } from "../src/SchemaJsonFileLocater";
+import { Schema, SchemaContext, SchemaKey, SchemaMatchType } from "@bentley/ecschema-metadata";
+import { SchemaXmlFileLocater } from "../src/SchemaXmlFileLocater";
+import { StubSchemaXmlFileLocater } from "../src/StubSchemaXmlFileLocater";
 
-describe("Concurrent schema JSON deserialization", () => {
+describe("Concurrent XML schema deserialization", () => {
   let schemaKeys: SchemaKey[] = [];
   let context: SchemaContext;
   let contextSync: SchemaContext;
   let syncSchemas: Array<Schema | undefined> = [];
 
-  const schemaFolder = path.join(__dirname, "assets", "JSON");
-  const locater = new SchemaJsonFileLocater();
+  const schemaFolder = path.join(__dirname, "assets", "XML");
+  const locater = new SchemaXmlFileLocater();
+  const helperLocater = new StubSchemaXmlFileLocater();
 
   before(() => {
     // Deserialize schemas synchronously/serially as standard to compare to
@@ -27,11 +29,8 @@ describe("Concurrent schema JSON deserialization", () => {
     const schemaFiles = fs.readdirSync(schemaFolder);
     schemaFiles.forEach((fileName) => {
       const schemaFile = path.join(schemaFolder, fileName);
-      const schemaJson = JSON.parse(fs.readFileSync(schemaFile, "utf-8"));
-      const schemaName = schemaJson.name;
-      const schemaVersion = schemaJson.version;
+      const key = helperLocater.getSchemaKey(fs.readFileSync(schemaFile, "utf-8"));
 
-      const key = new SchemaKey(schemaName.toString(), ECVersion.fromString(schemaVersion.toString()));
       schemaKeys.push(key);
     });
 
@@ -59,15 +58,16 @@ describe("Concurrent schema JSON deserialization", () => {
     });
     const asyncSchemas = await Promise.all(schemaPromises);
 
+
     for (let i = 0; i < schemaKeys.length; i++) {
       const syncSchema = syncSchemas[i];
       expect(syncSchema).not.to.be.undefined;
-      const syncJSON = syncSchema!.toJSON();
+      const syncXML = await syncSchema!.toXmlString();
 
       const asyncSchema = asyncSchemas[i];
       expect(asyncSchema).not.to.be.undefined;
-      const asyncJSON = asyncSchema!.toJSON();
-      expect(asyncJSON).to.deep.equal(syncJSON);
+      const asyncXML = await asyncSchema!.toXmlString();
+      expect(asyncXML).to.deep.equal(syncXML);
     }
   });
 
@@ -89,53 +89,17 @@ describe("Concurrent schema JSON deserialization", () => {
         return schema;
       }
     });
-    const schemas = await Promise.all(schemaPromises);
+    const asyncSchemas = await Promise.all(schemaPromises);
 
     for (let i = 0; i < schemaKeys.length; i++) {
       const syncSchema = syncSchemas[i];
       expect(syncSchema).not.to.be.undefined;
-      const syncJSON = syncSchema!.toJSON();
+      const syncXML = await syncSchema!.toXmlString();
 
-      const schema = schemas[i];
-      expect(schema).not.to.be.undefined;
-      const schemaJSON = schema!.toJSON();
-      expect(schemaJSON).to.deep.equal(syncJSON);
+      const asyncSchema = asyncSchemas[i];
+      expect(asyncSchema).not.to.be.undefined;
+      const asyncXML = await asyncSchema!.toXmlString();
+      expect(asyncXML).to.deep.equal(syncXML);
     }
-  });
-
-  /* Run these tests below one at a time. Running them together doesn't get accurate performance likely bc of disk access caching */
-  it.skip("should measure regular deserialization performance", async () => {
-    const startTime = new Date().getTime();
-    const schemaPromises = schemaKeys.map(async (key): Promise<Schema | undefined> => {
-      if (!key)
-        return undefined;
-
-      const schema = await context.getSchema(key, SchemaMatchType.Latest);
-      return schema;
-    });
-
-    for (const promise of schemaPromises) {
-      await promise;
-    }
-
-    expect(schemaPromises.length).to.equal(schemaKeys.length);
-    const endTime = new Date().getTime();
-    console.log(`Async deserialization took ~${endTime - startTime}ms`);
-  });
-
-  it.skip("should measure concurrent deserialization performance", async () => {
-    const startTime = new Date().getTime();
-    const schemaPromises = schemaKeys.map(async (key): Promise<Schema | undefined> => {
-      if (!key)
-        return undefined;
-
-      const schema = await context.getSchema(key, SchemaMatchType.Latest);
-      return schema;
-    });
-    const asyncSchemas = await Promise.all(schemaPromises);
-
-    expect(asyncSchemas.length).to.equal(schemaKeys.length);
-    const endTime = new Date().getTime();
-    console.log(`Concurrent async deserialization took ~${endTime - startTime}ms`);
   });
 });

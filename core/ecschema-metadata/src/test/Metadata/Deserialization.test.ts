@@ -206,7 +206,7 @@ describe("Full Schema Deserialization", () => {
           },
         ],
       };
-      const locater = new ReferenceSchemaLocater(Schema.fromJsonSync, Schema.fromJsonSync);
+      const locater = new ReferenceSchemaLocater(Schema.fromJsonSync);
       locater.addSchema("RefSchemaA", schemaAJson);
       locater.addSchema("RefSchemaB", schemaBJson);
 
@@ -414,7 +414,7 @@ describe("Full Schema Deserialization", () => {
         <ECSchemaReference name="TestSchema" version="01.02.03" alias="test"/>
       </ECSchema>`;
 
-      const locater = new ReferenceSchemaLocater(deserializeXmlSync, deserializeXmlSync);
+      const locater = new ReferenceSchemaLocater(deserializeXmlSync);
       locater.addSchema("RefSchemaA", schemaAXml);
       locater.addSchema("RefSchemaB", schemaBXml);
 
