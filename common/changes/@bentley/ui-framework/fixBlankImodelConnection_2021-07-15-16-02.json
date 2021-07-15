@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Add test for the iModelConnection being blank to avoid asserts when setting up for new iModel.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}
