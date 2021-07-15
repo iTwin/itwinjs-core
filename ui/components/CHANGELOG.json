@@ -2,6 +2,36 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.18.0",
+      "tag": "@bentley/ui-components_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update table to pass HtmlDivElement to ElementResizeObserver."
+          },
+          {
+            "comment": "Add QuantityNumberInput that looks like NumberInput but works with Quantities and active unit system."
+          },
+          {
+            "comment": "`TreeRenderer`: Add ability to explicitly specify component's width and height."
+          },
+          {
+            "comment": "`VirtualizedPropertyGrid`: Add ability to explicitly specify component's width and height."
+          },
+          {
+            "comment": "`ControlledTree`: Accept and forward size props to `TreeRenderer`."
+          },
+          {
+            "comment": "Clean up timeline and fix test coverage."
+          },
+          {
+            "comment": "Add props to the TimelineComponent that will allow apps to pass a set of items to be prefixed, appended, or to replace the context menu entries."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.17.2",
       "tag": "@bentley/ui-components_v2.17.2",
       "date": "Thu, 08 Jul 2021 15:23:00 GMT",

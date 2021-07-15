@@ -5486,6 +5486,8 @@ export interface OrbitGtBlobProps {
     // (undocumented)
     containerName: string;
     // (undocumented)
+    rdsUrl?: string;
+    // (undocumented)
     sasToken: string;
 }
 
