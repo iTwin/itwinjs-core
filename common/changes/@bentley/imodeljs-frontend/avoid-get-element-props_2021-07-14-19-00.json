@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/imodeljs-frontend",
-      "comment": "Add Viewport.flashedId property and corresponding onFlashedIdChanged event.",
+      "comment": "Add IModelConnection.Elements.getPlacements and update Viewport and ViewClipByElementTool to use it.",
       "type": "none"
     }
   ],
