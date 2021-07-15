@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-application-insights-client",
-  "version": "2.19.0-dev.15",
+  "version": "2.19.0-dev.16",
   "description": "iModel.js Frontend Application Insights Client",
   "main": "lib/frontend-application-insights-client.js",
   "typings": "lib/frontend-application-insights-client",
@@ -36,7 +36,7 @@
     "@microsoft/applicationinsights-web": "^2.5.5"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^2.19.0-dev.15"
+    "@bentley/itwin-client": "workspace:^2.19.0-dev.16"
   },
   "devDependencies": {
     "@bentley/build-tools": "workspace:*",

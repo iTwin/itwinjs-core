@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-framework",
-      "comment": "Update component to pass HtmlDivElement to ElementResizeObserver.",
+      "comment": "Add test for the iModelConnection being blank to avoid asserts when setting up for new iModel.",
       "type": "none"
     }
   ],
