@@ -2,6 +2,18 @@
   "name": "@bentley/ui-framework",
   "entries": [
     {
+      "version": "2.18.1",
+      "tag": "@bentley/ui-framework_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add test for the iModelConnection being blank to avoid asserts when setting up for new iModel."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.0",
       "tag": "@bentley/ui-framework_v2.18.0",
       "date": "Fri, 09 Jul 2021 18:11:24 GMT",
