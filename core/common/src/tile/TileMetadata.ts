@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, Id64String,
+  assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, Id64, Id64String,
 } from "@bentley/bentleyjs-core";
 import { Range3d, Vector3d } from "@bentley/geometry-core";
 import { BatchType } from "../FeatureTable";
@@ -87,6 +87,170 @@ export namespace TileOptions {
       alwaysSubdivideIncompleteTiles: false,
     };
   }
+}
+
+export function parseTileTreeIdAndContentId(treeId: string, contentId: string): { modelId: Id64String, treeId: IModelTileTreeId, contentId: ContentIdSpec, options: TileOptions } {
+  let idx = 0;
+  let type: BatchType,
+    expansion: number | undefined,
+    animationId: string | undefined,
+    nodeId: number | undefined,
+    edgesRequired: boolean | undefined,
+    sectionCut: string | undefined;
+
+  // Skip version and flags, they're handled by TileOptions.fromTreeIdAndContentId
+  while (idx < treeId.length && treeId[idx] !== "-")
+    idx++;
+  idx++; // -
+  if (idx >= treeId.length)
+    throw new Error("Invalid tree Id");
+
+  if (treeId[idx] === "C") {
+    // PlanarClassifier or VolumeClassifier
+    ({ idx, type, expansion } = parseClassifier(idx, treeId, expansion));
+  } else {
+    type = BatchType.Primary;
+  }
+
+  // Animation
+  // eslint-disable-next-line prefer-const
+  ({ idx, animationId, nodeId } = parseAnimation(idx, treeId, animationId, nodeId));
+
+  if (type === BatchType.Primary) {
+    ({ idx, edgesRequired, sectionCut } = parsePrimary(idx, treeId, edgesRequired, sectionCut));
+  }
+
+  const modelId = treeId.substr(idx);
+  if (!Id64.isId64(modelId))
+    throw new Error("Invalid tree Id");
+
+  const { flags: treeFlags } = treeFlagsAndFormatVersionFromId(treeId);
+  const parsedTreeId = getTreeId(type, edgesRequired, sectionCut, animationId, nodeId, expansion, (treeFlags & TreeFlags.EnforceDisplayPriority) !== 0 ? true : undefined);
+  const options = TileOptions.fromTreeIdAndContentId(treeId, contentId);
+
+  let parsedContentId: ContentIdSpec;
+  try {
+    parsedContentId = ContentIdProvider.create(true, options).specFromId(contentId);
+  } catch (e) {
+    throw new Error("Invalid content Id");
+  }
+
+  if (Object.keys(parsedContentId).some((key) => parsedContentId.hasOwnProperty(key) && typeof parsedContentId[key as keyof ContentIdSpec] === "number" && !Number.isFinite(parsedContentId[key as keyof ContentIdSpec])))
+    throw new Error("Invalid content Id");
+
+  return {
+    contentId: parsedContentId,
+    modelId,
+    options,
+    treeId: parsedTreeId,
+  };
+}
+
+function getTreeId(type: BatchType, edgesRequired?: boolean, sectionCut?: string, animationId?: string, nodeId?: number, expansion?: number, enforceDisplayPriority?: boolean): IModelTileTreeId {
+  if (type === BatchType.Primary)
+    return {
+      type,
+      edgesRequired,
+      sectionCut,
+      animationId,
+      animationTransformNodeId: nodeId,
+      enforceDisplayPriority,
+    } as PrimaryTileTreeId;
+  else
+    return {
+      type,
+      expansion,
+      animationId,
+      animationTransformNodeId: nodeId,
+    } as ClassifierTileTreeId;
+}
+
+function parsePrimary(idx: number, treeId: string, edgesRequired: boolean | undefined, sectionCut: string | undefined) {
+  // Edges
+  const edgesStr = "E:0_";
+  if (idx < treeId.length && treeId.startsWith(edgesStr, idx)) {
+    edgesRequired = false;
+    idx += edgesStr.length;
+  } else {
+    edgesRequired = true;
+  }
+
+  // Section cut
+  if (idx + 1 < treeId.length && treeId[idx] === "S") {
+    idx++; // S
+    sectionCut = "";
+    while (idx < treeId.length && treeId[idx] !== "s") {
+      sectionCut += treeId[idx++];
+    }
+    if (idx === treeId.length)
+      throw new Error("Invalid tree Id");
+    idx++; // s
+  }
+  return { idx, edgesRequired, sectionCut };
+}
+
+function parseClassifier(idx: number, treeId: string, expansion: number | undefined) {
+  let type: BatchType;
+  idx++; // C
+  if (idx + 1 < treeId.length && treeId[idx] === "P" && treeId[idx + 1] === ":") {
+    type = BatchType.PlanarClassifier;
+    idx += 2; // P:
+  } else if (idx < treeId.length && treeId[idx] === ":") {
+    type = BatchType.VolumeClassifier;
+    idx++; // :
+  } else {
+    throw new Error("Invalid tree Id");
+  }
+
+  // C: or CP: is always followed by {expansion}_
+  let expansionStr = "";
+  while (idx < treeId.length && (treeId[idx] >= "0" && treeId[idx] <= "9" || treeId[idx] === ".")) {
+    expansionStr += treeId[idx++];
+  }
+
+  if (idx === treeId.length || treeId[idx] !== "_")
+    throw new Error("Invalid tree Id");
+  idx++; // _
+
+  expansion = Number.parseFloat(expansionStr);
+  return { idx, type, expansion };
+}
+
+function parseAnimation(idx: number, treeId: string, animationId: string | undefined, nodeId: number | undefined) {
+  if (idx < treeId.length && treeId[idx] === "A") {
+    if (idx + 1 < treeId.length && treeId[idx + 1] !== ":")
+      throw new Error("Invalid tree Id");
+    idx += 2;
+
+    // Parse animation id
+    animationId = "";
+    while (idx < treeId.length && treeId[idx] !== "_") {
+      animationId += treeId[idx++];
+    }
+
+    if (!Id64.isId64(animationId) || idx === treeId.length)
+      throw new Error("Invalid tree Id");
+    idx++; // _
+
+    if (idx === treeId.length || treeId[idx] !== "#")
+      throw new Error("Invalid tree Id");
+    idx++; // #
+
+    // Parse animation node id
+    let nodeIdStr = "";
+    while (idx < treeId.length && treeId[idx] !== "_") {
+      nodeIdStr += treeId[idx++];
+    }
+
+    nodeId = Number.parseInt(nodeIdStr, 16);
+    if (idx === treeId.length || !Number.isFinite(nodeId) || nodeId.toString(16) !== nodeIdStr) // if toString doesn't round-trip, that means there were invalid characters in the string
+      throw new Error("Invalid tree Id");
+    idx++; // _
+
+    if (nodeId === Constants.untransformedNodeValue)
+      nodeId = undefined;
+  }
+  return { idx, animationId, nodeId };
 }
 
 /** @internal */

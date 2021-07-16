@@ -3,11 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { expect } from "chai";
+import { Id64String } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d } from "@bentley/geometry-core";
+import { expect } from "chai";
 import { BatchType } from "../FeatureTable";
 import {
-  computeTileChordTolerance, defaultTileOptions, IModelTileTreeId, iModelTileTreeIdToString, TileMetadata, TileOptions, TreeFlags,
+  ClassifierTileTreeId,
+  computeTileChordTolerance, ContentIdProvider, defaultTileOptions, IModelTileTreeId, iModelTileTreeIdToString, parseTileTreeIdAndContentId, PrimaryTileTreeId, TileMetadata, TileOptions, TreeFlags,
 } from "../tile/TileMetadata";
 
 describe("TileMetadata", () => {
@@ -265,5 +267,127 @@ describe("TileMetadata", () => {
     test("4_0", "-3-0", { version: 4, elision: true, instancing: true });
     test("4_0", "-c-5", { version: 4, noPatterns: true, externalTextures: true });
     test("a_1", "-F-2", { version: 10, projectExtents: true, noPatterns: true, externalTextures: true, instancing: true, elision: true });
+  });
+
+  it.only("parseTileTreeIdAndContentId round trips", () => {
+    function test(modelId: Id64String, treeId: IModelTileTreeId, contentId: ReturnType<typeof ContentIdProvider.prototype.specFromId>, tileOptions: TileOptions) {
+      const treeIdStr = iModelTileTreeIdToString(modelId, treeId, tileOptions);
+      const contentIdStr = ContentIdProvider.create(true, tileOptions).idFromSpec(contentId);
+      const parsed = parseTileTreeIdAndContentId(treeIdStr, contentIdStr);
+
+      expect(parsed.modelId).to.equal(modelId);
+      expect(parsed.options).to.deep.equal(tileOptions);
+
+      // Sometimes ContentIdSpec and IModelTileTreeId will be slightly different due to "undefined" properties being included. However, this has no effect on further processing.
+      // Strings are compared here because the parsed values will typically be used to generate them.
+      expect(iModelTileTreeIdToString(parsed.modelId, parsed.treeId, parsed.options)).to.equal(treeIdStr);
+      expect(ContentIdProvider.create(true, parsed.options).idFromSpec(parsed.contentId)).to.equal(contentIdStr);
+    }
+
+    test("0x1c", { type: BatchType.Primary, edgesRequired: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, defaultTileOptions);
+    test("0x1c", { type: BatchType.Primary, edgesRequired: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableInstancing: false });
+    test("0x1c", { type: BatchType.Primary, edgesRequired: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableImprovedElision: false });
+    test("0x1c", { type: BatchType.Primary, edgesRequired: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, ignoreAreaPatterns: true });
+    test("0x1c", { type: BatchType.Primary, edgesRequired: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableExternalTextures: false });
+    test("0x1c", { type: BatchType.Primary, edgesRequired: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, useProjectExtents: false });
+    // disableMagnification and alwaysSubdivideIncompleteTiles intentionally left out - they're not included in tileTreeId and contentId strings
+    test("0x1c", { type: BatchType.Primary, edgesRequired: false } as PrimaryTileTreeId, { depth: 2, i: 5, j: 400, k: 16, multiplier: 8 }, { ...defaultTileOptions, enableInstancing: false, enableImprovedElision: false, ignoreAreaPatterns: true, enableExternalTextures: false, useProjectExtents: false });
+
+    test("0x1d", { type: BatchType.Primary, edgesRequired: true } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+    test("0x1d", { type: BatchType.Primary, edgesRequired: true, enforceDisplayPriority: true } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+    test("0x1d", { type: BatchType.Primary, edgesRequired: true, animationId: "0x105" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+    test("0x1000000d", { type: BatchType.Primary, edgesRequired: false, animationId: "0x105", animationTransformNodeId: 50 } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+
+    test("0x1d", { type: BatchType.Primary, edgesRequired: true, sectionCut: "010_1_0_-5_30_0_-1_5e-11____" } as PrimaryTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+
+    test("0x1d", { type: BatchType.VolumeClassifier, expansion: 50 } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+    test("0x1000000d", { type: BatchType.VolumeClassifier, expansion: 50, animationId: "0x50000001" } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+    test("0x1000000d", { type: BatchType.VolumeClassifier, expansion: 50, animationId: "0x50000001", animationTransformNodeId: 500 } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+
+    test("0x1d", { type: BatchType.PlanarClassifier, expansion: 50 } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+    test("0x1000000d", { type: BatchType.PlanarClassifier, expansion: 50, animationId: "0x50000001" } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+    test("0x1000000d", { type: BatchType.PlanarClassifier, expansion: 50, animationId: "0x50000001", animationTransformNodeId: 500 } as ClassifierTileTreeId, { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 }, defaultTileOptions);
+
+  });
+
+  it.only("parses TileTreeId and ContentId strings", () => {
+    interface Options {
+      modelId: Id64String;
+      treeId: IModelTileTreeId;
+      contentId: ReturnType<typeof ContentIdProvider.prototype.specFromId>;
+      tileOptions: {
+        version: number;
+        instancing?: boolean;
+        elision?: boolean;
+        noPatterns?: boolean;
+        externalTextures?: boolean;
+        projectExtents?: boolean;
+      };
+    }
+
+    function test(treeId: string, contentId: string, expected: Options | string) {
+      if (typeof expected === "string") {
+        expect(() => parseTileTreeIdAndContentId(treeId, contentId)).to.throw(`Invalid ${expected} Id`);
+      } else {
+        const options: TileOptions = {
+          maximumMajorTileFormatVersion: expected.tileOptions.version,
+          enableInstancing: true === expected.tileOptions.instancing,
+          enableImprovedElision: true === expected.tileOptions.elision,
+          ignoreAreaPatterns: true === expected.tileOptions.noPatterns,
+          enableExternalTextures: true === expected.tileOptions.externalTextures,
+          useProjectExtents: true === expected.tileOptions.projectExtents,
+          disableMagnification: false,
+          alwaysSubdivideIncompleteTiles: false,
+        };
+        const parsed = parseTileTreeIdAndContentId(treeId, contentId);
+
+        expect(parsed.options).to.deep.equal(options);
+        expect(parsed.modelId).to.equal(expected.modelId);
+        expect(parsed.contentId).to.deep.equal(expected.contentId);
+        expect(parsed.treeId).to.deep.equal(expected.treeId);
+      }
+    }
+
+    test("", "", "tree");
+    test("4_1-0x1c", "", "content");
+    test("", "-0-1-2-3-4-5", "tree");
+
+    test("blah", "blah", "tree");
+    test("4_0-0x1c", "blah", "content");
+
+    test("4_0-0x00a", "-0-1-2-3-4-5", "tree");
+    test("4_0-0x1c", "-0-1-2-3", "content");
+    test("4_0-0x1c", "0-1-2-3-4", "content");
+
+    test("19_1-S010_1_0_-5_30_0_-1_5e-11____s0x1d", "-b-14-32-4-1-1", {
+      tileOptions: {
+        elision: true,
+        instancing: true,
+        noPatterns: false,
+        version: 25,
+        projectExtents: true,
+        externalTextures: true,
+      },
+      modelId: "0x1d",
+      treeId: {
+        type: BatchType.Primary,
+        edgesRequired: true,
+        sectionCut: "010_1_0_-5_30_0_-1_5e-11____",
+        animationId: undefined,
+        animationTransformNodeId: undefined,
+        enforceDisplayPriority: undefined,
+      },
+      contentId: { depth: 20, i: 50, j: 4, k: 1, multiplier: 1 },
+    });
+
+    test("19_1-S010_1_0_-5_30_0_-1_5e-11____0x1d", "-b-14-32-4-1-1", "tree"); // removed 's' after sectionCut
+    test("19_1-C50.000000_A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // removed ':' after C (VolumeClassifier)
+    test("19_1-C:50.000000-A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // replaced '_' with '-'
+    test("19_1-C:50.000000A:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // removed '_'
+    test("19_1-C:50.000000_AB:0x50000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // added 'B'
+    test("19_1-C:50.000000_A:0x050000001_#1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // invalid Id64
+    test("19_1-C:50.000000_A:0x50000001_1f4_0x1000000d", "-b-14-32-4-1-1", "tree"); // removed '#'
+    test("19_1-C:50.000000_A:0x50000001_#1fg4_0x1000000d", "-b-14-32-4-1-1", "tree"); // invalid hexadecimal number (1fg4)
+    test("19_1-C:50.000000_A:0x50000001_#ggg_0x1000000d", "-b-14-32-4-1-1", "tree"); // invalid hexadecimal number (ggg)
   });
 });
