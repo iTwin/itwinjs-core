@@ -185,14 +185,26 @@ describe("MapUrlDialog", () => {
     await testAddAuthLayer(MapLayerAuthType.EsriToken);
   });
 
-  it("attach a layer requiring EsriOauth and check popup opens", async () => {
-    const esriOAuth2InitStatus = EsriOAuth2.initialize("http://localhost:3000/esri-oauth2-callback",
-      "fake",
-      [{serviceBaseUrl:"https://test.com/authorize", appId:"fake"}],
-      3600);
+  it("attach a layer requiring EsriOauth and check popup opens with right URL", async () => {
+    const authorizeUrl = "https://test.com/authorize";
+    const redirectUrl = "http://localhost:3000/esri-oauth2-callback";
+    const fakeClientId = "fake";
+    const expire = 3600;
+    const esriOAuth2InitStatus = EsriOAuth2.initialize(redirectUrl,
+      fakeClientId,
+      [{serviceBaseUrl:authorizeUrl, appId:fakeClientId}],
+      expire);
     expect(esriOAuth2InitStatus).to.true;
     const openStub = sinon.stub((global as any).window, "open");
     await testAddAuthLayer(MapLayerAuthType.EsriOAuth2);
     expect(openStub.calledOnce).to.true;
+    const firstCall = openStub.getCall(0);
+    const url = new URL(authorizeUrl);
+    url.searchParams.append("client_id", fakeClientId);
+    url.searchParams.append("response_type", "token");
+    url.searchParams.append("expiration", expire.toString(10));
+    url.searchParams.append("redirect_uri", redirectUrl);
+    url.searchParams.append("state", url.origin);
+    expect(firstCall.firstArg).to.equals(url.toString());
   });
 });
