@@ -89,6 +89,7 @@ export namespace TileOptions {
   }
 }
 
+/** @internal */
 export function parseTileTreeIdAndContentId(treeId: string, contentId: string): { modelId: Id64String, treeId: IModelTileTreeId, contentId: ContentIdSpec, options: TileOptions } {
   let idx = 0;
   let type: BatchType,
@@ -243,7 +244,7 @@ function parseAnimation(idx: number, treeId: string, animationId: string | undef
     }
 
     nodeId = Number.parseInt(nodeIdStr, 16);
-    if (idx === treeId.length || !Number.isFinite(nodeId) || nodeId.toString(16) !== nodeIdStr) // if toString doesn't round-trip, that means there were invalid characters in the string
+    if (idx === treeId.length || !Number.isFinite(nodeId) || nodeId.toString(16).toUpperCase() !== nodeIdStr.toUpperCase()) // if toString doesn't round-trip, that means there were invalid characters in the string
       throw new Error("Invalid tree Id");
     idx++; // _
 

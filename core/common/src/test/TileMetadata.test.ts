@@ -269,7 +269,7 @@ describe("TileMetadata", () => {
     test("a_1", "-F-2", { version: 10, projectExtents: true, noPatterns: true, externalTextures: true, instancing: true, elision: true });
   });
 
-  it.only("parseTileTreeIdAndContentId round trips", () => {
+  it("parseTileTreeIdAndContentId round trips", () => {
     function test(modelId: Id64String, treeId: IModelTileTreeId, contentId: ReturnType<typeof ContentIdProvider.prototype.specFromId>, tileOptions: TileOptions) {
       const treeIdStr = iModelTileTreeIdToString(modelId, treeId, tileOptions);
       const contentIdStr = ContentIdProvider.create(true, tileOptions).idFromSpec(contentId);
@@ -310,7 +310,7 @@ describe("TileMetadata", () => {
 
   });
 
-  it.only("parses TileTreeId and ContentId strings", () => {
+  it("parses TileTreeId and ContentId strings", () => {
     interface Options {
       modelId: Id64String;
       treeId: IModelTileTreeId;
