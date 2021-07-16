@@ -1,6 +1,11 @@
 # Change Log - @bentley/backend-itwin-client
 
-This log was last generated on Fri, 09 Jul 2021 18:11:24 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+_Version update only_
 
 ## 2.18.0
 Fri, 09 Jul 2021 18:11:24 GMT
@@ -302,8 +307,8 @@ Fri, 02 Oct 2020 18:03:32 GMT
 
 ### Updates
 
-- Fixed desktop authorization after recent changes.
-- Fixed lint warnings.
+- Fixed desktop authorization after recent changes. 
+- Fixed lint warnings. 
 
 ## 2.6.5
 Sat, 26 Sep 2020 16:06:34 GMT
@@ -434,12 +439,12 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
 - Changed ChangeSets download API
 - Added unlink for file handler
 - Changeset get sas url just before starting download
 - update imodelbank authorization clients to implement FrontendAuthorizationClient
-- Logging fixes, separated open/download of briefcases a little more.
+- Logging fixes, separated open/download of briefcases a little more. 
 - Throw exception if sas url is expired
 - order imports.
 - Upgrade to Rush 5.23.2
@@ -455,7 +460,7 @@ Tue, 31 Mar 2020 15:44:19 GMT
 
 ### Updates
 
-- Fixed downloading of files using https/streaming to resolve when the filestream is closed instead of when the input stream is exhausted.
+- Fixed downloading of files using https/streaming to resolve when the filestream is closed instead of when the input stream is exhausted. 
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -492,7 +497,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 ### Updates
 
-- Setup OidcDesktopClient for Electron use cases.
+- Setup OidcDesktopClient for Electron use cases. 
 - Switched to electron version 6.1.5 from 7.1.2
 
 ## 1.8.0
@@ -525,7 +530,7 @@ Mon, 30 Sep 2019 22:28:48 GMT
 ### Updates
 
 - Setup OidcAgentClient to implement IAuthorizationClient
-- Bug 173765: Fixed the iModelHub client to properly dispose a file handle after upload to the iModelHub.
+- Bug 173765: Fixed the iModelHub client to properly dispose a file handle after upload to the iModelHub. 
 - upgrade to TypeScript 3.6.2
 
 ## 1.4.0
@@ -564,8 +569,8 @@ Mon, 03 Jun 2019 18:09:39 GMT
 
 ### Updates
 
-- Migrated agent applications to the newer client
-- Updated release tags.
+- Migrated agent applications to the newer client 
+- Updated release tags. 
 - Added an error for seed file initialization timeout
 - Switched from iModelHub Project API to Context API
 - Updated tests to use new ownedByMe option when quering briefcases
@@ -581,7 +586,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Adds parameter for api-extractor to validate missing release tags
 - added azcopy support
 - Changed download buffering code to do less memory allocations, changed default download buffer size from 1MB to 20MB to improve download performance to File Shares, added automatic enabling of the 20MB buffer when downloading to File Shares using UNC path, otherwise using no buffer for better SSD download performance.
-- Allowed setup of global Request timeouts.
+- Allowed setup of global Request timeouts. 
 - Added initial iModelHub Checkpoint API.
 - Introduce LoggerCategory enum to advertise logger categories used by this package.
 - Fix broken links
@@ -589,9 +594,9 @@ Mon, 13 May 2019 15:52:05 GMT
 - add support for imodelbank in imodelhub integration tests
 - Increased timeout in tests when iModel is created from seed file.
 - Reinstated old version of OidcAgentClient
-- Fixes to OidcBrowserClient.
+- Fixes to OidcBrowserClient. 
 - Reallocate azcopy log to temp
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0
@@ -602,22 +607,22 @@ Thu, 14 Mar 2019 14:26:49 GMT
 - Add missing peerDependencies on @bentley/geometry-core and @bentley/imodeljs-clients
 - Allow mobile webpack to skip node dependent module
 - Replaced OidcAgentClient with OidcAgentClientV2.
-- Reverted changes to OidcAgentClient.
+- Reverted changes to OidcAgentClient. 
 
 ## 0.189.0
 Wed, 06 Mar 2019 15:41:22 GMT
 
 ### Updates
 
-- Added OidcAgentClientV2. This will replace OidcAgentClient after some fixes from IMS+Connect.
-- ChangeSet and Briefcase downloads are atomic (i.e., will not be partially downloaded) and can simultaneously happen in multiple machines.
+- Added OidcAgentClientV2. This will replace OidcAgentClient after some fixes from IMS+Connect. 
+- ChangeSet and Briefcase downloads are atomic (i.e., will not be partially downloaded) and can simultaneously happen in multiple machines. 
 - Changes package.json to include api-extractor and adds api-extractor.json
 - Use new buildIModelJsBuild script
-- Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package.
-- Fixes to OidcDelegationClient-s.
+- Moved AzureFileHandler, IOSAzureFileHandler, UrlFileHandler and the iModelHub tests to the imodeljs-clients-backend package. This removes the dependency of imodeljs-clients on the "fs" module, and turns it into a browser only package. 
+- Fixes to OidcDelegationClient-s. 
 - Remove unneeded typedoc plugin dependency
 - Create iModel from empty template if seed file path not defined.
-- Removed RBAC client - the RBAC service is considered internal.
+- Removed RBAC client - the RBAC service is considered internal. 
 - upgrade to TypeScript 3.2.2
 
 ## 0.188.0
@@ -630,15 +635,15 @@ Tue, 15 Jan 2019 15:18:59 GMT
 
 ### Updates
 
-- Fixed https-proxy-agent dependency.
+- Fixed https-proxy-agent dependency. 
 
 ## 0.186.0
 Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- More logging of HTTP requests, and enabled use of fiddler for backend diagnostics.
-- Renamed RequestProxy->RequestHost. Allowed applications to configure proxy server with HTTPS_PROXY env.
+- More logging of HTTP requests, and enabled use of fiddler for backend diagnostics. 
+- Renamed RequestProxy->RequestHost. Allowed applications to configure proxy server with HTTPS_PROXY env. 
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT

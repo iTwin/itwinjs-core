@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "2.18.0",
+  "version": "2.18.1",
   "description": "iModel.js UI core components",
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
@@ -35,10 +35,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0",
-    "@bentley/geometry-core": "workspace:^2.18.0",
-    "@bentley/imodeljs-i18n": "workspace:^2.18.0",
-    "@bentley/ui-abstract": "workspace:^2.18.0",
+    "@bentley/bentleyjs-core": "workspace:^2.18.1",
+    "@bentley/geometry-core": "workspace:^2.18.1",
+    "@bentley/imodeljs-i18n": "workspace:^2.18.1",
+    "@bentley/ui-abstract": "workspace:^2.18.1",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },

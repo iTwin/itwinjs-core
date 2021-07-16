@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.18.1",
+      "tag": "@bentley/imodeljs-frontend_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add IModelConnection.Elements.getPlacements and update Viewport and ViewClipByElementTool to use it."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.0",
       "tag": "@bentley/imodeljs-frontend_v2.18.0",
       "date": "Fri, 09 Jul 2021 18:11:24 GMT",
