@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DisplayStyle3dState, IModelApp, IModelConnection, MapLayerSource, MapLayerSourceStatus, MockRender, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
+import { DisplayStyle3dState, EsriOAuth2, EsriOAuth2Endpoint, IModelApp, IModelConnection, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MockRender, NotifyMessageDetails, OutputMessagePriority, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
 import { assert, expect } from "chai";
 import * as enzyme from "enzyme";
 import * as React from "react";
@@ -20,7 +20,8 @@ describe("MapUrlDialog", () => {
   const displayStyleMock = moq.Mock.ofType<DisplayStyle3dState>();
   const imodelMock = moq.Mock.ofType<IModelConnection>();
 
-  const sampleWmsSubLayers: MapSubLayerProps[] = [{name: "subLayer1"}, {name: "subLayer1"}];
+  const sampleWmsSubLayers: MapSubLayerProps[] = [{name: "subLayer1"}, {name: "subLayer2"}];
+
   const sampleWmsLayerSettings = MapLayerSettings.fromJSON({
     formatId: "WMS",
     name: "Test Map",
@@ -35,10 +36,75 @@ describe("MapUrlDialog", () => {
   const sampleWmsLayerSettingsCred = sampleWmsLayerSettings?.clone({});
   sampleWmsLayerSettingsCred?.setCredentials("testUser", "TestPassword");
 
+  const testAddAuthLayer = async (authMethod: MapLayerAuthType) => {
+    const spyMessage = sandbox.spy(IModelApp.notifications, "outputMessage");
+    let endPoint: EsriOAuth2Endpoint|undefined;
+    if (authMethod === MapLayerAuthType.EsriOAuth2) {
+      endPoint = new EsriOAuth2Endpoint("https://test.com/authorize", false);
+    }
+    const validateSourceStub = sandbox.stub(MapLayerSource.prototype, "validateSource").callsFake(async function (_ignoreCache?: boolean) {
+      return Promise.resolve({
+        status: MapLayerSourceStatus.RequireAuth,
+        authInfo: {authMethod, tokenEndpoint:endPoint} });
+    });
+
+    const component = enzyme.mount(<MapUrlDialog isOverlay={false}  activeViewport={viewportMock.object} onOkResult={mockModalUrlDialogOk} />);
+    const layerTypeSelect = component.find("select");
+    await (layerTypeSelect.props()as any).onChange({ preventDefault: () => {}, target: { value: "WMS"  }} as any);
+
+    // First, lets fill the 'Name' and 'URL' fields
+    const allInputs = component.find("input");
+    expect(allInputs.length).to.equals(2);
+    allInputs.at(0).simulate("change", {target: { value: sampleWmsLayerSettingsCred?.name} });
+    allInputs.at(1).simulate("change", {target: { value: sampleWmsLayerSettingsCred?.url } });
+
+    // We need to click the 'Ok' button a first time to trigger the layer source
+    // validation and make the credentials fields appear
+    let okButton = component.find(".core-dialog-buttons").childAt(0);
+    expect(okButton.length).to.equals(1);
+    okButton.simulate("click");
+
+    await TestUtils.flushAsyncOperations();
+
+    component.update();
+    if (authMethod !== MapLayerAuthType.EsriOAuth2) {
+      const allInputs2 = component.find("input");
+      expect(allInputs2.length).to.equals(4);
+
+      // Fill the credentials fields
+      allInputs2.at(2).simulate("change", {target: { value: sampleWmsLayerSettingsCred?.userName} });
+      allInputs2.at(3).simulate("change", {target: { value: sampleWmsLayerSettingsCred?.password } });
+    }
+    // We need to fake 'valideSource' again, this time we want to simulate a successfully validation
+    validateSourceStub.restore();
+    sandbox.stub(MapLayerSource.prototype, "validateSource").callsFake(async function (_ignoreCache?: boolean) {
+      return Promise.resolve({
+        status: MapLayerSourceStatus.Valid,
+        subLayers:sampleWmsSubLayers });
+    });
+
+    // By cliking the 'ok' button we expect the layer to be added to the display style
+    okButton = component.find(".core-dialog-buttons").childAt(0);
+    expect(okButton.length).to.equals(1);
+    okButton.simulate("click");
+
+    await TestUtils.flushAsyncOperations();
+
+    if(!sampleWmsLayerSettings)
+      assert.fail("Invalid layer settings");
+
+    if (authMethod !== MapLayerAuthType.EsriOAuth2) {
+      displayStyleMock.verify((x) => x.attachMapLayerSettings(sampleWmsLayerSettingsCred!, false, undefined), moq.Times.once());
+
+      spyMessage.calledWithExactly(new NotifyMessageDetails(OutputMessagePriority.Info, "Messages.MapLayerAttached"));
+    }
+    component.unmount();
+  };
+
   before(async () => {
     await TestUtils.initialize();
-
     await MockRender.App.startup({});
+
   });
 
   after(async () => {
@@ -63,9 +129,8 @@ describe("MapUrlDialog", () => {
   const mockModalUrlDialogOk = () => {
   };
 
-  it.only("renders",  () => {
+  it("renders",  () => {
     const component = enzyme.mount(<MapUrlDialog activeViewport={viewportMock.object} isOverlay={false} onOkResult={mockModalUrlDialogOk} />);
-    console.log(component.html());
     const allInputs = component.find("input");
 
     expect(allInputs.length).to.equals(2);
@@ -79,7 +144,7 @@ describe("MapUrlDialog", () => {
     component.unmount();
   });
 
-  it.only("attach a valid WMS layer (with sublayers) to display style", async () => {
+  it("attach a valid WMS layer (with sublayers)", async () => {
 
     const spyMessage = sandbox.spy(IModelApp.notifications, "outputMessage");
 
@@ -96,108 +161,38 @@ describe("MapUrlDialog", () => {
     allInputs.at(0).simulate("change", {target: { value: sampleWmsLayerSettings?.name} });
     allInputs.at(1).simulate("change", {target: { value: sampleWmsLayerSettings?.url } });
 
-    const allButtons = component.find("button");
-    expect(allButtons.length).to.equals(3);
-    allButtons.at(1).simulate("click");
+    const okButton = component.find(".core-dialog-buttons").childAt(0);
+    expect(okButton.length).to.equals(1);
+    okButton.simulate("click");
 
     await TestUtils.flushAsyncOperations();
 
     if(!sampleWmsLayerSettings)
-      assert.fail("Invalid layer  settings");
+      assert.fail("Invalid layer settings");
+
     displayStyleMock.verify((x) => x.attachMapLayerSettings(sampleWmsLayerSettings, false, undefined), moq.Times.once());
 
     spyMessage.calledWithExactly(new NotifyMessageDetails(OutputMessagePriority.Info, "Messages.MapLayerAttached"));
 
     component.unmount();
   });
-  /*
-  it("attach a valid WMS layer (with sublayers) to display style", async () => {
 
-    const spyMessage = sandbox.spy(IModelApp.notifications, "outputMessage");
-
-    sandbox.stub(MapLayerSource.prototype, "validateSource").callsFake(async function (_ignoreCache?: boolean) {
-      return Promise.resolve({ status: MapLayerSourceStatus.Valid, subLayers:sampleWmsSubLayers });
-    });
-
-    const component = enzyme.mount(<MapUrlDialog isOverlay={false}  activeViewport={viewportMock.object} onOkResult={mockModalUrlDialogOk} />);
-    const layerTypeSelect = component.find("select");
-    await (layerTypeSelect.props()as any).onChange({ preventDefault: () => {}, target: { value: "WMS"  }} as any);
-
-    const allInputs = component.find("input");
-    expect(allInputs.length).to.equals(4);
-    allInputs.at(0).simulate("change", {target: { value: sampleWmsLayerSettings?.name} });
-    allInputs.at(1).simulate("change", {target: { value: sampleWmsLayerSettings?.url } });
-    allInputs.at(2).simulate("change", {target: { value: sampleWmsLayerSettings?.userName } });
-    allInputs.at(3).simulate("change", {target: { value: sampleWmsLayerSettings?.password } });
-
-    const allButtons = component.find("button");
-    expect(allButtons.length).to.equals(3);
-    allButtons.at(1).simulate("click");
-
-    await TestUtils.flushAsyncOperations();
-
-    if(!sampleWmsLayerSettings)
-      assert.fail("Invalid layer  settings");
-    displayStyleMock.verify((x) => x.attachMapLayerSettings(sampleWmsLayerSettings, false, undefined), moq.Times.once());
-
-    spyMessage.calledWithExactly(new NotifyMessageDetails(OutputMessagePriority.Info, "Messages.MapLayerAttached"));
-
-    component.unmount();
-  });
-  */
-
-  it("attempt to attach a WMS layer requiring credentials", async () => {
-
-    sandbox.stub(IModelApp.notifications, "outputMessage");
-
-    const validateSourceStub = sandbox.stub(MapLayerSource.prototype, "validateSource").callsFake(async function (_ignoreCache?: boolean) {
-      return Promise.resolve({ status: MapLayerSourceStatus.RequireAuth });
-    });
-
-    const component = enzyme.mount(<MapUrlDialog
-      isOverlay={false}
-      activeViewport={viewportMock.object}
-      mapTypesOptions= {{supportTileUrl: false, supportWmsAuthentication:true}}
-      onOkResult={mockModalUrlDialogOk} />);
-    const layerTypeSelect = component.find("select");
-    await (layerTypeSelect.props()as any).onChange({ preventDefault: () => {}, target: { value: "WMS"  }} as any);
-    await TestUtils.flushAsyncOperations();
-
-    let allInputs = component.find("input");
-    expect(allInputs.length).to.equals(4);
-    allInputs.at(0).simulate("change", {target: { value: sampleWmsLayerSettings?.name} });
-    allInputs.at(1).simulate("change", {target: { value: sampleWmsLayerSettings?.url } });
-
-    let allButtons = component.find("button");
-    expect(allButtons.length).to.equals(3);
-
-    // Click the OK button
-    allButtons.at(1).simulate("click");
-    await TestUtils.flushAsyncOperations();
-    let warnMessage= component.find("div.map-layer-source-warnMessage");
-    expect(warnMessage.html().includes("CustomAttach.MissingCredentials")).to.be.true;
-
-    // Make validateSource returns validateSource returns InvalidCredentials now
-    validateSourceStub.restore();
-    sandbox.stub(MapLayerSource.prototype, "validateSource").callsFake(async function (_ignoreCache?: boolean) {
-      return Promise.resolve({ status: MapLayerSourceStatus.InvalidCredentials });
-    });
-
-    // Set username/password
-    allInputs = component.find("input");
-    expect(allInputs.length).to.equals(4);
-    allInputs.at(2).simulate("change", {target: { value: sampleWmsLayerSettings?.userName } });
-    allInputs.at(3).simulate("change", {target: { value: sampleWmsLayerSettings?.password } });
-
-    // Click again the same button
-    allButtons = component.find("button");
-    expect(allButtons.length).to.equals(3);
-    allButtons.at(1).simulate("click");
-    await TestUtils.flushAsyncOperations();
-    warnMessage = component.find("div.map-layer-source-warnMessage");
-    expect(warnMessage.html().includes("CustomAttach.InvalidCredentials")).to.be.true;
-
-    component.unmount();
+  it("attach a WMS layer requiring basic auth to display style", async () => {
+    await testAddAuthLayer(MapLayerAuthType.Basic);
   });
 
+  it("attach a layer requiring EsriToken", async () => {
+    await testAddAuthLayer(MapLayerAuthType.EsriToken);
+  });
+
+  it("attach a layer requiring EsriOauth and check popup opens", async () => {
+    const esriOAuth2InitStatus = EsriOAuth2.initialize("http://localhost:3000/esri-oauth2-callback",
+      "fake",
+      [{serviceBaseUrl:"https://test.com/authorize", appId:"fake"}],
+      3600);
+    expect(esriOAuth2InitStatus).to.true;
+    const openStub = sinon.stub((global as any).window, "open");
+    await testAddAuthLayer(MapLayerAuthType.EsriOAuth2);
+    expect(openStub.calledOnce).to.true;
+  });
 });

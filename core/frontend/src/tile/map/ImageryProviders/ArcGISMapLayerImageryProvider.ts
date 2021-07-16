@@ -224,7 +224,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
         ArcGisTokenManager.invalidateToken(this._settings.url, this._settings.userName);
         json = await getJson(this._requestContext, url);
       } else {
-        // If there is a token error and we dont have credentials set,
+        // If there is a token error and we don't have credentials set,
         // layer might be using Oauth, so make sure previous token is not used again.
         ArcGisTokenManager.invalidateOAuth2Token(this._settings.url);
       }

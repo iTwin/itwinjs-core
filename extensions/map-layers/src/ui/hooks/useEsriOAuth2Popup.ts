@@ -57,7 +57,7 @@ export function useEsriOAuth2Popup(visible: boolean, url: string|undefined, titl
       const popup = window.open(arcgisUrl, "ArcGIS login", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=450,height=450");
      */
       const popup = window.open(savedUrl.current, savedTitle.current, "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=450,height=450");
-      if (popup !== null) {
+      if (popup) {
         popup.focus();
         popupWindow.current = popup;
 

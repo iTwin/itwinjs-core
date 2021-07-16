@@ -207,7 +207,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     }
 
     return sourceRequireAuth || invalidCredentials;
-  }, [invalidCredentialsProvided, mapUrl]);
+  }, [invalidCredentialsProvided]);
 
   const updateAttachedLayer = React.useCallback(async (source: MapLayerSource, validation: MapLayerSourceValidation) => {
     const vp = props?.activeViewport;
@@ -318,8 +318,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         url: mapUrl,
         name: mapName,
         formatId: mapType,
-        userName,
-        password});
+        userName: userName||undefined,  // When there is no value, empty string is always returned, in this case force it to undefined,
+        password: password||undefined});
     }
     return source;
   }, [mapName, mapType, mapUrl, password, userName]);
