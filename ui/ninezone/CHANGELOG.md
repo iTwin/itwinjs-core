@@ -1,6 +1,11 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Fri, 09 Jul 2021 18:11:24 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+_Version update only_
 
 ## 2.18.0
 Fri, 09 Jul 2021 18:11:24 GMT
@@ -83,7 +88,7 @@ Mon, 24 May 2021 15:58:39 GMT
 
 - Update unit tests for resizeObserver fix.
 - Update test to account for different number of calls to getBoundingClientRect.
-- Update to latest classnames package
+- Update to latest classnames package 
 
 ## 2.15.6
 Wed, 26 May 2021 15:55:19 GMT
@@ -414,7 +419,7 @@ Thu, 20 Aug 2020 20:57:10 GMT
 - lock down @types/react version at 16.9.43 to prevent build error from csstype dependency
 - Added Table component keyboard row selection. Miscellaneous a11y fixes.
 - Switch to ESLint
-- Add drop shadow to toolsettings overflow popup.
+- Add drop shadow to toolsettings overflow popup.  
 - Close widget overflow popup when tab is clicked.
 - Add corner resize handles to floating widgets.
 - Add preferredPanelWidgetSize to TabState.
@@ -521,7 +526,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Ability to drag docked tool settings to widget mode.
 - Support for floating widget targets.
-- Fix safe area insets for bottom zones w/o footer.
+- Fix safe area insets for bottom zones w/o footer. 
 - Keep active tab visible.
 - Reparent widget content when dragging widget around.
 - Floating widget stacking order.
