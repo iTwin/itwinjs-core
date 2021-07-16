@@ -161,17 +161,17 @@ export class RealityModelTileUtils {
       const maxAngle = Math.max(Math.abs(maxLatitude - minLatitude), Math.abs(maxLongitude - minLongitude));
 
       if (maxAngle < Math.PI / 8) {
-        corners = new Array<Point3d>();
+        corners = new Array<Point3d>(8);
         const chordTolerance = (1 - Math.cos(maxAngle / 2)) * Constant.earthRadiusWGS84.polar;
-        const addEllipsoidCorner = ((long: number, lat: number) => {
+        const addEllipsoidCorner = ((long: number, lat: number, index: number) => {
           const ray = earthEllipsoid.radiansToUnitNormalRay(long, lat, scratchRay)!;
-          corners!.push(ray.fractionToPoint(minHeight - chordTolerance));
-          corners!.push(ray.fractionToPoint(maxHeight + chordTolerance));
+          corners![index] = ray.fractionToPoint(minHeight - chordTolerance);
+          corners![index + 4] = ray.fractionToPoint(maxHeight + chordTolerance);
         });
-        addEllipsoidCorner(minLongitude, minLatitude);
-        addEllipsoidCorner(minLongitude, maxLatitude);
-        addEllipsoidCorner(maxLongitude, minLatitude);
-        addEllipsoidCorner(maxLongitude, maxLatitude);
+        addEllipsoidCorner(minLongitude, minLatitude, 0);
+        addEllipsoidCorner(minLongitude, maxLatitude, 1);
+        addEllipsoidCorner(maxLongitude, minLatitude, 2);
+        addEllipsoidCorner(maxLongitude, maxLatitude, 3);
         range = Range3d.createArray(corners);
       } else {
         const minEq = Constant.earthRadiusWGS84.equator + minHeight, maxEq = Constant.earthRadiusWGS84.equator + maxHeight;

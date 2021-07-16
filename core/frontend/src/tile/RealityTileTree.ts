@@ -18,9 +18,7 @@ import { SceneContext } from "../ViewContext";
 import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
 
 // eslint-disable-next-line prefer-const
-let skipReprojection = false;
-// eslint-disable-next-line prefer-const
-let doSquare = false;
+let skipReprojection = false, skipInteresectionTest = true;
 
 /** @internal */
 export class TraversalDetails {
@@ -114,7 +112,7 @@ const scratchFrustumPlanes = new FrustumPlanes();
 const scratchPoint = Point3d.createZero();
 const scratchCarto = new Cartographic();
 const scratchTransform = Transform.createIdentity();
-const scratchRange = Range3d.createNull(), scratchIntersectRange = Range3d.createNull();
+const scratchRange = Range3d.createNull();
 
 interface ChildReprojection {
   child: RealityTile;
@@ -267,24 +265,12 @@ export class RealityTileTree extends TileTree {
     if (skipReprojection || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
       return false;
 
+    if (skipInteresectionTest)
+      return true;
+
     const tileRange = this.iModelTransform.isIdentity ? tile.range : this.iModelTransform.multiplyRange(tile.range, scratchRange);
 
     return this.cartesianRange.intersectsRange(tileRange);
-  }
-
-  public transformFromAxes(axes: Point3d[]): Transform {
-    const origin = axes[0].clone();
-    let matrix;
-
-    if (doSquare) {
-      const xVector = Vector3d.createStartEnd(origin, axes[1]);
-      const yVector = Vector3d.createStartEnd(origin, axes[2]);
-      const zVector = xVector.unitCrossProduct(yVector);
-      matrix = Matrix3d.createColumns(xVector, yVector, zVector!);
-    } else {
-      matrix = Matrix3d.createColumns (Vector3d.createStartEnd(origin, axes[1]), Vector3d.createStartEnd(origin, axes[2]), Vector3d.createStartEnd(origin, axes[3]));
-    }
-    return Transform.createRefs(origin, matrix);
   }
 
   private async calculateChildReprojections(reprojections: ChildReprojection[]): Promise<void> {
@@ -353,17 +339,13 @@ export class RealityTileTree extends TileTree {
     const ecefToDb = this._ecefToDb!;       // Tested for undefined in doReprojectChildren
     const rootToDb = this.iModelTransform;
     const dbToEcef = ecefToDb.inverse()!;
-    const projectRange = this.iModel.projectExtents;
     const reprojectChildren = new Array<ChildReprojection>();
     for (const child of children) {
       const realityChild = child as RealityTile;
       const childRange  = realityChild.rangeCorners ? Range3d.createTransformedArray(rootToDb, realityChild.rangeCorners) : rootToDb.multiplyRange(realityChild.contentRange, scratchRange);
-      const intersectRange = projectRange.intersect(childRange, scratchIntersectRange);
-      if (!intersectRange.isNull) {
-        const dbCenter = intersectRange.center;
-        const ecefCenter = dbToEcef.multiplyPoint3d(dbCenter);
-        reprojectChildren.push({child: realityChild, ecefCenter, dbCenter});
-      }
+      const dbCenter = childRange.center; // intersectRange.center;
+      const ecefCenter = dbToEcef.multiplyPoint3d(dbCenter);
+      reprojectChildren.push({child: realityChild, ecefCenter, dbCenter});
     }
     if (reprojectChildren.length === 0)
       resolve(children);
@@ -446,7 +428,7 @@ export class RealityTileTree extends TileTree {
         const loadableTile = tile.loadableTile;
 
         loadableTile.markUsed(args);
-        args.insertMissing(tile.loadableTile);
+        args.insertMissing(loadableTile);
       }
 
     if (debugControl && debugControl.logRealityTiles) {
@@ -493,7 +475,7 @@ export class RealityTileTree extends TileTree {
   protected logTiles(label: string, tiles: IterableIterator<Tile>) {
     let depthString = "";
     let min = 10000, max = -10000;
-    let count = 0;
+    let count = 0, stepChildCount = 0;
     const depthMap = new Map<number, number>();
     for (const tile of tiles) {
       count++;
@@ -502,9 +484,10 @@ export class RealityTileTree extends TileTree {
       max = Math.max(max, tile.depth);
       const found = depthMap.get(depth);
       depthMap.set(depth, found === undefined ? 1 : found + 1);
+      if (tile instanceof RealityTile && tile.isStepChild) stepChildCount++;
     }
 
     depthMap.forEach((key, value) => depthString += `${key}-${value}, `);
-    console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString);    // eslint-disable-line
+    console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString, "StepChildren: " + stepChildCount);    // eslint-disable-line
   }
 }

@@ -6,10 +6,13 @@
  * @module Tiles
  */
 
-import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Transform } from "@bentley/geometry-core";
+import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
+import { IModelApp } from "../IModelApp";
+import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
+import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
@@ -27,6 +30,11 @@ export interface RealityTileParams extends TileParams {
 
 const scratchLoadedChildren = new Array<RealityTile>();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
+const cornerReorder = [0, 1, 3, 2];
+
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
+// eslint-disable-next-line prefer-const
+let debugMaxDepth: number, debugMinDepth = 0;
 
 /**
  * A specialization of tiles that represent reality tiles.  3D Tilesets and maps use this class and have their own optimized traversal and lifetime management.
@@ -96,6 +104,9 @@ export class RealityTile extends Tile {
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
     this.realityRoot.loader.loadChildren(this).then((children: Tile[] | undefined) => {
+      if (this.additiveRefinement && this.isDisplayable && this.realityRoot.doReprojectChildren(this))
+        this.loadAdditiveRefinementChildren((stepChildren: Tile[]) =>  { children = children ? children?.concat(stepChildren) : stepChildren; });
+
       if (children)
         this.realityRoot.reprojectAndResolveChildren(this, children, resolve);
     }).catch((err) => {
@@ -136,6 +147,8 @@ export class RealityTile extends Tile {
   }
 
   protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
+    if (debugMaxDepth !== undefined && this.depth > debugMaxDepth)
+      return;
     const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
     if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
       args.markChildrenLoading();
@@ -155,6 +168,42 @@ export class RealityTile extends Tile {
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
     builder.setSymbology(color, color, 3);
     builder.addRangeBoxFromCorners(this.rangeCorners ? this.rangeCorners : this.range.corners());
+    /*
+    const corners = this.rangeCorners;
+    if (!corners)
+      return;
+
+    const origin = corners[0];
+    const xVector = Vector3d.createStartEnd(origin, corners[1]);
+    const yVector = Vector3d.createStartEnd(origin, corners[2]);
+    const zVector = Vector3d.createStartEnd(origin, corners[4]);
+    const xHalf = xVector.magnitude() / 2;
+    const yHalf = yVector.magnitude() / 2;
+    const clipTransform = Transform.createOriginAndMatrixColumns(origin, xVector.normalize()!, yVector.normalize()!, zVector.normalize()!);
+    if (!clipTransform) {
+      assert(false);
+      return;
+    }
+    builder.setSymbology(ColorDef.red, ColorDef.red, 5);
+
+    for (let i = 0, x = 0; i < 2; i++, x += xHalf) {
+      for (let j = 0, y = 0; j < 2; j++, y += yHalf) {
+        const clipPolygon = new Array<Point3d>();
+
+        clipPolygon.push(Point3d.create(x, y, 0));
+        clipPolygon.push(Point3d.create(x + xHalf, y, 0));
+        clipPolygon.push(Point3d.create(x + xHalf, y + yHalf, 0));
+        clipPolygon.push(Point3d.create(x, y + yHalf, 0));
+
+        const rangeCorners = new Array<Point3d>();
+        for (let k = 0; k < 4; k++) {
+          const thisCorner = clipTransform.multiplyPoint3d(clipPolygon[cornerReorder[k]]);
+          rangeCorners.push(thisCorner);
+          rangeCorners.push(thisCorner.plus(zVector));
+        }
+        builder.addRangeBoxFromCorners(rangeCorners);
+      }
+    } */
   }
 
   public allChildrenIncluded(tiles: Tile[]) {
@@ -193,7 +242,7 @@ export class RealityTile extends Tile {
     if (visibility >= 1 && this.noContentButTerminateOnSelection)
       return;
 
-    if (this.isDisplayable && (visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile() || context.selectionCountExceeded)) {
+    if (this.isDisplayable && this.depth > debugMinDepth && (visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile() || context.selectionCountExceeded)) {
       if (!this.isOccluded(args.viewingSpace)) {
         context.selectOrQueue(this, args, traversalDetails);
 
@@ -204,8 +253,10 @@ export class RealityTile extends Tile {
         }
       }
     } else {
-      if (this.additiveRefinement && this.isDisplayable)
-        context.selectOrQueue(this, args, traversalDetails);
+      if (this.additiveRefinement && this.isDisplayable) {
+        if (!this.realityRoot.doReprojectChildren(this))
+          context.selectOrQueue(this, args, traversalDetails);
+      }
 
       this.selectRealityChildren(context, args, traversalDetails);
       if (this.isReady && (traversalDetails.childrenLoading || 0 !== traversalDetails.queuedChildren.length)) {
@@ -276,5 +327,111 @@ export class RealityTile extends Tile {
 
     // For global tiles (as in OSM buildings) return the range corners - this allows an algorithm that uses the area of the projected corners to attenuate horizon tiles.
     return this.range.corners(scratchCorners);
+  }
+
+  public get isStepChild() { return false; }
+
+  protected loadAdditiveRefinementChildren(resolve: (children: Tile[]) => void): void {
+    const corners = this.rangeCorners;
+    if (!corners)
+      return;
+
+    const origin = corners[0];
+    const xVector = Vector3d.createStartEnd(origin, corners[1]);
+    const yVector = Vector3d.createStartEnd(origin, corners[2]);
+    const zVector = Vector3d.createStartEnd(origin, corners[4]);
+    const xHalf = xVector.magnitude() / 2;
+    const yHalf = yVector.magnitude() / 2;
+    const maximumSize = this.maximumSize;
+    const isLeaf = this.depth > 14;
+    const localTransform = Transform.createOriginAndMatrixColumns(origin, xVector.normalize()!, yVector.normalize()!, zVector.normalize()!);
+    if (!localTransform) {
+      assert(false);
+      return;
+    }
+
+    const stepChildren = new Array<StepChildRealityTile>();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const allRange = Range3d.createNull(), cornersRange = Range3d.createArray(corners);
+    const clipTransform = this.tree.iModelTransform.multiplyTransformTransform(localTransform);
+
+    for (let i = 0, x = 0; i < 2; i++, x += xHalf) {
+      for (let j = 0, y = 0; j < 2; j++, y += yHalf) {
+        const clipPolygon = new Array<Point3d>();
+
+        clipPolygon.push(Point3d.create(x, y, 0));
+        clipPolygon.push(Point3d.create(x + xHalf, y, 0));
+        clipPolygon.push(Point3d.create(x + xHalf, y + yHalf, 0));
+        clipPolygon.push(Point3d.create(x, y + yHalf, 0));
+
+        const clipShape = ClipShape.createShape(clipPolygon, undefined, undefined, clipTransform);
+        const rangeCorners = new Array<Point3d>();
+        for (let k = 0; k < 4; k++) {
+          const thisCorner = localTransform.multiplyPoint3d(clipPolygon[cornerReorder[k]]);
+          rangeCorners.push(thisCorner);
+          rangeCorners.push(thisCorner.plus(zVector));
+        }
+
+        const contentId = `${this.contentId}_Step${i}`;
+        const range = Range3d.createArray(rangeCorners);
+        allRange.extendArray(rangeCorners);
+        const childParams: RealityTileParams = { rangeCorners, contentId, range, maximumSize, parent: this, additiveRefinement: false, isLeaf };
+
+        stepChildren.push(new StepChildRealityTile(childParams, this.realityRoot, ClipVector.create([clipShape!])));
+      }
+    }
+    resolve(stepChildren);
+  }
+}
+
+// eslint-disable-next-line prefer-const
+let debugStep: number = 0; /** 1 - display nothing, 2 omit clip */
+
+class StepChildRealityTile  extends RealityTile {
+  public get isStepChild() { return true; }
+  private _loadableTile: RealityTile;
+
+  public constructor(props: RealityTileParams, tree: RealityTileTree, private _boundingClip: ClipVector) {
+    super(props, tree);
+    this._loadableTile = this.realityParent;
+    for (; this._loadableTile && this._loadableTile.isStepChild; this._loadableTile = this._loadableTile.realityParent)
+      ;
+  }
+  public get loadableTile(): RealityTile {
+    return this._loadableTile;
+  }
+  public get isLoading(): boolean { return this._loadableTile.isLoading; }
+  public get isQueued(): boolean { return this._loadableTile.isQueued; }
+  public get isNotFound(): boolean { return this._loadableTile.isNotFound; }
+  public get isReady(): boolean { return this._loadableTile.isReady; }
+  public get isLoaded(): boolean { return this._loadableTile.isLoaded; }
+  public get isEmpty() { return false; }
+  public produceGraphics(): RenderGraphic | undefined {
+    const parentGraphics = this._loadableTile.produceGraphics();
+
+    if (1 === debugStep)
+      return undefined;
+
+    if (!parentGraphics)
+      return undefined;
+
+    const branch = new GraphicBranch(false);
+    branch.add(parentGraphics);
+    const renderSystem =  IModelApp.renderSystem;
+    const clipVolume = debugStep === 2 ? undefined : renderSystem.createClipVolume(this._boundingClip);
+    return  renderSystem.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume });
+  }
+  public addBoundingGraphic(builder: GraphicBuilder, _color: ColorDef) {
+    super.addBoundingGraphic(builder, ColorDef.red);
+  }
+  public markUsed(args: TileDrawArgs): void {
+    args.markUsed(this);
+    args.markUsed(this._loadableTile);
+  }
+  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+    this.loadAdditiveRefinementChildren((stepChildren: Tile[]) =>  {
+      if (stepChildren)
+        this.realityRoot.reprojectAndResolveChildren(this, stepChildren, resolve);
+    });
   }
 }

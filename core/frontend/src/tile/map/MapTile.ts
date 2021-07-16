@@ -629,7 +629,6 @@ export class MapTile extends RealityTile {
 
 /** @internal */
 export class UpsampledMapTile extends MapTile {
-  public get isLoadable() { return false; }
   public get isUpsampled() { return true; }
   public get isEmpty() { return false; }
   public get loadableTile(): RealityTile {
@@ -666,4 +665,8 @@ export class UpsampledMapTile extends MapTile {
   public get isQueued(): boolean { return this.loadableTile.isQueued; }
   public get isNotFound(): boolean { return this.loadableTile.isNotFound; }
   public get isReady(): boolean { return (this._geometry !== undefined || this.loadableTile.loadStatus === TileLoadStatus.Ready) && this.baseImageryIsReady; }
+  public markUsed(args: TileDrawArgs): void {
+    args.markUsed(this);
+    args.markUsed(this.loadableTile);
+  }
 }
