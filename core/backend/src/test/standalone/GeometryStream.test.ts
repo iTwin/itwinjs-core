@@ -2111,6 +2111,28 @@ describe("BRepGeometry", () => {
     }
   });
 
+  it("subtract consumes target test", async () => {
+    const builder = new ElementGeometry.Builder();
+    builder.appendGeometryQuery(Box.createRange(Range3d.create(Point3d.create(1, 1, 1), Point3d.create(4, 4, 4)), true)!);
+    builder.appendGeometryQuery(Box.createRange(Range3d.create(Point3d.create(0, 0, 0), Point3d.create(5, 5, 5)), true)!);
+
+    const onResult: BRepGeometryFunction = (info: BRepGeometryInfo): void => {
+      // Successful operation w/empty result...
+      assert.isTrue(undefined !== info.entryArray && 0 === info.entryArray.length);
+    };
+
+    const createProps: BRepGeometryCreate = {
+      operation: BRepGeometryOperation.Subtract,
+      entryArray: builder.entries,
+      onResult,
+    };
+    try {
+      assert(DbResult.BE_SQLITE_OK === imodel.createBRepGeometry(createProps));
+    } catch (error) {
+      assert(false, error.message);
+    }
+  });
+
   it("sew sheets test", async () => {
     const builder = new ElementGeometry.Builder();
     builder.appendGeometryQuery(Loop.createPolygon([Point3d.create(0, 0, 0), Point3d.create(0, 2, 0), Point3d.create(1, 2, 0), Point3d.create(1, 0, 0), Point3d.create(0, 0, 0)]));
