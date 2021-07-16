@@ -8,7 +8,7 @@ process.env.NODE_ENV = "prod";
 
 const paths = require("./config/paths");
 const path = require("path");
-const cpx = require("cpx");
+const cpx = require("cpx2");
 const fs = require("fs");
 const { spawn, handleInterrupts } = require("./utils/simpleSpawn");
 const { validateTags } = require("./utils/validateTags");
