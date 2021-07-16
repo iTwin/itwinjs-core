@@ -4,48 +4,48 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-    KindOfQuantity, KindOfQuantityProps, SchemaContext, SchemaItemKey, SchemaKey,
+  KindOfQuantity, KindOfQuantityProps, SchemaContext, SchemaItemKey, SchemaKey,
 } from "@bentley/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
 describe("KindOfQuantities tests", () => {
-    // let testFormatKey: SchemaItemKey;
-    let testEditor: SchemaContextEditor;
-    let testKey: SchemaKey;
-    let context: SchemaContext;
-    let phenomenonKey: SchemaItemKey;
-    let unitSystemKey: SchemaItemKey;
-    let unitKey: SchemaItemKey;
-    
-    beforeEach(async () => {
-      context = new SchemaContext();
-      testEditor = new SchemaContextEditor(context);
-      const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
-      testKey = result.schemaKey!;
+  // let testFormatKey: SchemaItemKey;
+  let testEditor: SchemaContextEditor;
+  let testKey: SchemaKey;
+  let context: SchemaContext;
+  let phenomenonKey: SchemaItemKey;
+  let unitSystemKey: SchemaItemKey;
+  let unitKey: SchemaItemKey;
 
-      const phenomRes = await testEditor.phenomenons.create(testKey, "testPhenomenon", "testDefinition");
-      const unitSystemRes = await testEditor.unitSystems.create(testKey, "testUnitSystem");
-      phenomenonKey = phenomRes.itemKey!;
-      unitSystemKey = unitSystemRes.itemKey!;
-      const unitRes = await testEditor.units.create(testKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey);
-      unitKey = unitRes.itemKey!;
-    });
+  beforeEach(async () => {
+    context = new SchemaContext();
+    testEditor = new SchemaContextEditor(context);
+    const result = await testEditor.createSchema("testSchema", "test", 1, 0, 0);
+    testKey = result.schemaKey!;
 
-    it("should create a valid KindOfQuantity from KindOfQuantityProps", async () => {
-      // TODO: further develop presentationUnits tests
-      const koqProps: KindOfQuantityProps = {
-        name: "testKoQ",
-        relativeError: 2,
-        persistenceUnit: "testSchema.testUnit",
-        // presentationUnits: [
-        //   "Formats.IN",
-        //   "Formats.DefaultReal",
-        // ],
-      };
+    const phenomRes = await testEditor.phenomenons.create(testKey, "testPhenomenon", "testDefinition");
+    const unitSystemRes = await testEditor.unitSystems.create(testKey, "testUnitSystem");
+    phenomenonKey = phenomRes.itemKey!;
+    unitSystemKey = unitSystemRes.itemKey!;
+    const unitRes = await testEditor.units.create(testKey, "testUnit", "testDefinition", phenomenonKey, unitSystemKey);
+    unitKey = unitRes.itemKey!;
+  });
 
-      const result = await testEditor.kindOfQuantities.createFromProps(testKey, koqProps);
-      const kindOfQuantity = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as KindOfQuantity;
-      expect(kindOfQuantity.fullName).to.eql("testSchema.testKoQ");
-      expect(await kindOfQuantity.persistenceUnit).to.eql(await testEditor.schemaContext.getSchemaItem(unitKey));
-    });
+  it("should create a valid KindOfQuantity from KindOfQuantityProps", async () => {
+    // TODO: further develop presentationUnits tests
+    const koqProps: KindOfQuantityProps = {
+      name: "testKoQ",
+      relativeError: 2,
+      persistenceUnit: "testSchema.testUnit",
+      // presentationUnits: [
+      //   "Formats.IN",
+      //   "Formats.DefaultReal",
+      // ],
+    };
+
+    const result = await testEditor.kindOfQuantities.createFromProps(testKey, koqProps);
+    const kindOfQuantity = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as KindOfQuantity;
+    expect(kindOfQuantity.fullName).to.eql("testSchema.testKoQ");
+    expect(await kindOfQuantity.persistenceUnit).to.eql(await testEditor.schemaContext.getSchemaItem(unitKey));
+  });
 });
