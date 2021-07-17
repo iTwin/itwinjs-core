@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-editor-frontend",
+      "comment": "Create open pole based bcurve. Move decoration pick and construction curves to base class.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-editor-frontend",
+  "email": "65233531+bbastings@users.noreply.github.com"
+}
