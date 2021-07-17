@@ -5549,6 +5549,14 @@ export class PackedFeatureTable {
     unpack(): FeatureTable;
 }
 
+// @internal (undocumented)
+export function parseTileTreeIdAndContentId(treeId: string, contentId: string): {
+    modelId: Id64String;
+    treeId: IModelTileTreeId;
+    contentId: ContentIdSpec;
+    options: TileOptions;
+};
+
 // @public
 export interface PartReference {
     // (undocumented)
