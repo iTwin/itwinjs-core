@@ -185,4 +185,36 @@ describe("Property creation tests", () => {
     expect(property.minOccurs).to.eql(20);
     expect(property.maxOccurs).to.eql(32);
   });
+
+  it("should successfully add property type double to class", async () => {
+    const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.Double);
+    const property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
+    expect(property.name).to.eql("prefix_TestProperty");
+    expect(property.propertyType).to.eql(PrimitiveType.Double);
+  });
+
+  it("should successfully add property type string to class", async () => {
+    const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.String);
+    const property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
+    expect(property.name).to.eql("prefix_TestProperty");
+    expect(property.propertyType).to.eql(PrimitiveType.String);
+  });
+
+  it("should successfully add property type date time to class", async () => {
+    const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.DateTime);
+    const property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
+    expect(property.name).to.eql("prefix_TestProperty");
+    expect(property.propertyType).to.eql(PrimitiveType.DateTime);
+  });
+
+  it("should successfully add property type integer to class", async () => {
+    const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.Integer);
+    const property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
+    expect(property.name).to.eql("prefix_TestProperty");
+    expect(property.propertyType).to.eql(PrimitiveType.Integer);
+  });
 });
