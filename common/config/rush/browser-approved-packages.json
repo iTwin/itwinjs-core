@@ -304,7 +304,7 @@
     },
     {
       "name": "@wojtekmaj/enzyme-adapter-react-17",
-      "allowedCategories": [ "frontend" ]
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "agentkeepalive",
@@ -472,10 +472,6 @@
     },
     {
       "name": "enzyme",
-      "allowedCategories": [ "extensions", "frontend" ]
-    },
-    {
-      "name": "enzyme-adapter-react-16",
       "allowedCategories": [ "extensions", "frontend" ]
     },
     {

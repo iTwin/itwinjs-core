@@ -69,7 +69,7 @@
     "chai-spies": "1.0.0",
     "cpx": "^1.5.0",
     "enzyme": "^3.4.0",
-    "@wojtekmaj/enzyme-adapter-react-17": "^0.4.1",
+    "@wojtekmaj/enzyme-adapter-react-17": "^0.6.3",
     "enzyme-to-json": "^3.3.4",
     "eslint": "^7.11.0",
     "ignore-styles": "^5.0.1",
