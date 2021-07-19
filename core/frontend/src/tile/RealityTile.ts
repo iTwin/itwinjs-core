@@ -6,7 +6,7 @@
  * @module Tiles
  */
 
-import { assert, BeTimePoint } from "@bentley/bentleyjs-core";
+import { assert, BeTimePoint, dispose } from "@bentley/bentleyjs-core";
 import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
@@ -48,6 +48,7 @@ export class RealityTile extends Tile {
   public readonly rangeCorners?: Point3d[];
   private _everDisplayed = false;
   public reprojectionTransform?: Transform;
+  private _reprojectedGraphic?: RenderGraphic;
 
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
     super(props, tree);
@@ -386,17 +387,23 @@ export class RealityTile extends Tile {
     resolve(stepChildren);
   }
   public produceGraphics(): RenderGraphic | undefined {
-    const graphics = super.produceGraphics();
+    if (undefined === this.reprojectionTransform)
+      return super.produceGraphics();
 
-    if (!graphics || !this.reprojectionTransform)
-      return graphics;
-
-    const branch = new GraphicBranch(false);
-    branch.add(graphics);
-    return  IModelApp.renderSystem.createGraphicBranch(branch, this.reprojectionTransform);
+    if (undefined === this._reprojectedGraphic && undefined !== this._graphic) {
+      const branch = new GraphicBranch(false);
+      branch.add(this._graphic);
+      this._reprojectedGraphic = IModelApp.renderSystem.createGraphicBranch(branch, this.reprojectionTransform);
+    }
+    return this._reprojectedGraphic;
   }
-  public produceUnreprojectedGraphics(): RenderGraphic | undefined {
-    return super.produceGraphics();
+
+  public get unprojectedGraphic(): RenderGraphic | undefined {
+    return this._graphic;
+  }
+  public disposeContents(): void {
+    super.disposeContents();
+    this._reprojectedGraphic = dispose(this._reprojectedGraphic);
   }
 }
 
@@ -420,16 +427,19 @@ class StepChildRealityTile  extends RealityTile {
   public get isLoaded(): boolean { return this._loadableTile.isLoaded; }
   public get isEmpty() { return false; }
   public produceGraphics(): RenderGraphic | undefined {
-    const parentGraphics = this._loadableTile.produceUnreprojectedGraphics();
+    if (undefined === this._graphic) {
+      const parentGraphics = this._loadableTile.unprojectedGraphic;
 
-    if (!parentGraphics || !this.reprojectionTransform)
-      return undefined;
+      if (!parentGraphics || !this.reprojectionTransform)
+        return undefined;
 
-    const branch = new GraphicBranch(false);
-    branch.add(parentGraphics);
-    const renderSystem =  IModelApp.renderSystem;
-    const clipVolume = renderSystem.createClipVolume(this._boundingClip);
-    return  renderSystem.createGraphicBranch(branch, this.reprojectionTransform, { clipVolume });
+      const branch = new GraphicBranch(false);
+      branch.add(parentGraphics);
+      const renderSystem =  IModelApp.renderSystem;
+      const clipVolume = renderSystem.createClipVolume(this._boundingClip);
+      this._graphic = renderSystem.createGraphicBranch(branch, this.reprojectionTransform, { clipVolume });
+    }
+    return this._graphic;
   }
   public addBoundingGraphic(builder: GraphicBuilder, _color: ColorDef) {
     super.addBoundingGraphic(builder, ColorDef.red);
