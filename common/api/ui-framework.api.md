@@ -6807,6 +6807,9 @@ export function useActiveIModelConnection(): IModelConnection | undefined;
 export function useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined;
 
 // @public
+export function useActiveStageId(): string;
+
+// @public
 export function useActiveViewport(): ScreenViewport | undefined;
 
 // @public

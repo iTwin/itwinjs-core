@@ -577,7 +577,7 @@ importers:
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
-      '@bentley/imodeljs-native': 2.19.0
+      '@bentley/imodeljs-native': 2.19.2
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/perf-tools': workspace:*
@@ -624,11 +624,11 @@ importers:
       source-map-support: ^0.5.6
       typescript: ~4.3.0
       webpack: 4.42.0
-      ws: ^7.2.0
+      ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/imodeljs-native': 2.19.0
+      '@bentley/imodeljs-native': 2.19.2
       '@bentley/usage-logging-client': link:../../clients/usage-logging
       deep-assign: 2.0.0
       form-data: 2.5.1
@@ -637,7 +637,7 @@ importers:
       js-base64: 2.6.4
       multiparty: 4.2.2
       semver: 5.7.1
-      ws: 7.4.6
+      ws: 7.5.3
     devDependencies:
       '@bentley/backend-itwin-client': link:../backend-itwin-client
       '@bentley/bentleyjs-core': link:../bentley
@@ -1586,7 +1586,7 @@ importers:
       mocha: ^8.3.2
       rimraf: ^3.0.2
       typescript: ~4.3.0
-      ws: ^7.2.0
+      ws: ^7.5.3
     devDependencies:
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
@@ -1612,7 +1612,7 @@ importers:
       mocha: 8.4.0
       rimraf: 3.0.2
       typescript: 4.3.5
-      ws: 7.4.6
+      ws: 7.5.3
 
   ../../core/orbitgt:
     specifiers:
@@ -9246,8 +9246,8 @@ packages:
     resolution: {integrity: sha512-IIs1wDcY2oZ8tJ3EZRw0U51M+0ZL3MvwoDYYmhUXaa9/UZqpFoOyLBGaxjirQteWXqTIMm3mFvmC+Nbn1ok4Iw==}
     dev: false
 
-  /@bentley/imodeljs-native/2.19.0:
-    resolution: {integrity: sha512-WctZ1Uvt6N1iflkGLA3VYPDIx7iLTbXkmw65tVnaAYvWNapcKDEiK3nhCcw1Fsl3qzdmRff0214aMgoAUHebVg==}
+  /@bentley/imodeljs-native/2.19.2:
+    resolution: {integrity: sha512-D3GeIsFjIzJzFdktfde1CZ90vLUKtIqQdGseTXd23LPtr2sfxuGqYn9TtnvcyoYGrLCQ7rSqrsVMf2mQeg1u7A==}
     requiresBuild: true
     dev: false
 
@@ -19019,7 +19019,7 @@ packages:
       whatwg-encoding: 1.0.5
       whatwg-mimetype: 2.3.0
       whatwg-url: 8.7.0
-      ws: 7.4.6
+      ws: 7.5.3
       xml-name-validator: 3.0.0
     transitivePeerDependencies:
       - bufferutil
@@ -22116,7 +22116,7 @@ packages:
       rimraf: 3.0.2
       tar-fs: 2.1.1
       unbzip2-stream: 1.4.3
-      ws: 7.4.6
+      ws: 7.5.3
     transitivePeerDependencies:
       - bufferutil
       - supports-color
@@ -26331,8 +26331,8 @@ packages:
       async-limiter: 1.0.1
     dev: true
 
-  /ws/7.4.6:
-    resolution: {integrity: sha512-YmhHDO4MzaDLB+M9ym/mDA5z0naX8j7SIlT8f8z+I0VtzsRbekxEutHSme7NPS2qE8StCYQNUnfWdXta/Yu85A==}
+  /ws/7.5.3:
+    resolution: {integrity: sha512-kQ/dHIzuLrS6Je9+uv81ueZomEwH0qVYstcAQ4/Z93K8zeko9gtAbttJWzoC5ukqXY1PpoouV3+VSOqEAFt5wg==}
     engines: {node: '>=8.3.0'}
     peerDependencies:
       bufferutil: ^4.0.1

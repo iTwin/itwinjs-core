@@ -23,9 +23,10 @@ import { ColorSwatch } from "../color/Swatch";
 import { SolarDataProvider } from "./interfaces";
 import { PlayButton } from "./PlayerButton";
 import { SpeedTimeline } from "./SpeedTimeline";
-import { adjustDateToTimezone, DatePicker } from "../datepicker/DatePicker";
+import { DatePicker } from "../datepicker/DatePicker";
 import { TimeField, TimeSpec } from "../datepicker/TimeField";
 import { Tooltip } from "@itwin/itwinui-react";
+import { adjustDateToTimezone } from "../common/DateUtils";
 
 // cSpell:ignore millisec solarsettings showticks shadowcolor solartimeline datepicker millisecs
 

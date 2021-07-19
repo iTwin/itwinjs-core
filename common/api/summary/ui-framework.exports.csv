@@ -660,6 +660,7 @@ internal;useActiveFrontstageDef(): FrontstageDef | undefined
 beta;useActiveFrontstageId: () => string
 public;useActiveIModelConnection(): IModelConnection | undefined
 internal;useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined
+public;useActiveStageId(): string
 public;useActiveViewport(): ScreenViewport | undefined
 public;useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined): AnalysisAnimationTimelineDataProvider | undefined
 internal;useAvailableUiItemsProviders(): readonly string[]
