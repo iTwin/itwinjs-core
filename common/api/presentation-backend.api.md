@@ -15,6 +15,8 @@ import { DisplayLabelRequestOptions } from '@bentley/presentation-common';
 import { DisplayLabelsRequestOptions } from '@bentley/presentation-common';
 import { DisplayValueGroup } from '@bentley/presentation-common';
 import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
+import { ElementProperties } from '@bentley/presentation-common';
+import { ElementPropertiesRequestOptions } from '@bentley/presentation-common';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { FormatProps } from '@bentley/imodeljs-quantity';
@@ -100,7 +102,7 @@ export class Presentation {
     static getManager(clientId?: string): PresentationManager;
     static getRequestTimeout(): number;
     static initialize(props?: PresentationProps): void;
-    static get initProps(): PresentationPropsDeprecated | PresentationPropsNew | undefined;
+    static get initProps(): PresentationProps | undefined;
     static terminate(): void;
 }
 
@@ -184,6 +186,8 @@ export class PresentationManager {
     getDisplayLabelDefinitions(requestOptions: WithClientRequestContext<Paged<DisplayLabelsRequestOptions<IModelDb, InstanceKey>>>): Promise<LabelDefinition[]>;
     // @deprecated
     getDistinctValues(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptor: Descriptor | DescriptorOverrides, keys: KeySet, fieldName: string, maximumValueCount?: number): Promise<string[]>;
+    // @beta
+    getElementProperties(requestOptions: WithClientRequestContext<ElementPropertiesRequestOptions<IModelDb>>): Promise<ElementProperties | undefined>;
     // @deprecated
     getFilteredNodePaths(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>, filterText: string): Promise<NodePathElement[]>;
     getFilteredNodePaths(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb> & {
@@ -335,6 +339,7 @@ export interface RulesetVariablesManager {
     setInts(variableId: string, value: number[]): void;
     setString(variableId: string, value: string): void;
     setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
+    unset(variableId: string): void;
 }
 
 // @internal
@@ -360,6 +365,8 @@ export class RulesetVariablesManagerImpl implements RulesetVariablesManager {
     setValue(variableId: string, type: VariableValueTypes, value: VariableValue): void;
     // (undocumented)
     setValueInternal(variableId: string, type: VariableValueTypes, value: VariableValue): void;
+    // (undocumented)
+    unset(variableId: string): void;
 }
 
 // @alpha

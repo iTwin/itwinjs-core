@@ -13,13 +13,13 @@
 
 .github/workflows @calebmshafer @wgoehrig @ColinKerr
 
-.gitattributes  @calebmshafer @scsewall
-.gitignore      @calebmshafer @scsewall
-rush.json       @calebmshafer @scsewall
+.gitattributes  @calebmshafer @wgoehrig
+.gitignore      @calebmshafer @wgoehrig
+rush.json       @calebmshafer @pmconne @wgoehrig
 
 /clients                        @calebmshafer @ramanujam-raman
 /clients/extension              @calebmshafer @paulius-valiunas
-/clients/imodelhub            @amikoliunas @Animagne
+/clients/imodelhub              @amikoliunas @Animagne
 
 # The syntax used below tries to cover both files and folders in the common folder that operate per=package
 # Due to syntax requirements, both can't be covered in a single line
@@ -29,8 +29,8 @@ rush.json       @calebmshafer @scsewall
 #   1. /common/api/summary/{packageName}.exports.csv
 #   1. /common/changes/@bentley/{packageName}/*.json
 
-/common/**/analytical-backend.*                   @diegoalexdiaz @scsewall
-/common/**/analytical-backend/                    @diegoalexdiaz @scsewall
+/common/**/analytical-backend.*                   @calebmshafer @diegoalexdiaz
+/common/**/analytical-backend/                    @calebmshafer @diegoalexdiaz
 /common/**/backend-webpack-tools/                 @calebmshafer @wgoehrig
 /common/**/bentleyjs-core.*                       @imodeljs/admins
 /common/**/bentleyjs-core/                        @imodeljs/admins
@@ -53,19 +53,20 @@ rush.json       @calebmshafer @scsewall
 /common/**/ecschema-locaters/                     @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema-metadata.*                    @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema-metadata/                     @calebmshafer @ColinKerr @wgoehrig
+/common/**/ecschema-rpcinterface-tests/           @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts.*                          @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts/                           @calebmshafer @ColinKerr @wgoehrig
 /common/**/electron-manager.*                     @wgoehrig @ramanujam-raman
 /common/**/electron-manager/                      @wgoehrig @ramanujam-raman
 /common/**/eslint-plugin/                         @calebmshafer @paulius-valiunas
-/common/**/express-server.*                       @wgoehrig @calebmshafer
-/common/**/express-server/                        @wgoehrig @calebmshafer
+/common/**/express-server.*                       @calebmshafer @wgoehrig
+/common/**/express-server/                        @calebmshafer @wgoehrig
 /common/**/extension-cli/                         @calebmshafer @paulius-valiunas
 /common/**/extension-webpack-tools/               @calebmshafer @wgoehrig
 /common/**/frontend-devtools.*                    @imodeljs/display @Ellord207
 /common/**/frontend-devtools/                     @imodeljs/display @Ellord207
-/common/**/geometry-core.*                        @EarlinLutz @mgooding @RBBentley @bbastings
-/common/**/geometry-core/                         @EarlinLutz @mgooding @RBBentley @bbastings
+/common/**/geometry-core.*                        @bbastings @EarlinLutz @mgooding @RBBentley
+/common/**/geometry-core/                         @bbastings @EarlinLutz @mgooding @RBBentley
 /common/**/hypermodeling-frontend.*               @imodeljs/display @bbastings
 /common/**/hypermodeling-frontend/                @imodeljs/display @bbastings
 /common/**/imodel-bridge.*                        @imodeljs/connectors
@@ -84,20 +85,20 @@ rush.json       @calebmshafer @scsewall
 /common/**/imodeljs-markup/                       @kabentley @pmconne @bbastings
 /common/**/imodeljs-quantity.*                    @bsteinbk @calebmshafer
 /common/**/imodeljs-quantity/                     @bsteinbk @calebmshafer
-/common/**/linear-referencing-backend.*           @diegoalexdiaz @scsewall
-/common/**/linear-referencing-backend/            @diegoalexdiaz @scsewall
-/common/**/linear-referencing-common.*            @diegoalexdiaz @scsewall
-/common/**/linear-referencing-common/             @diegoalexdiaz @scsewall
-/common/**/logger-config.*                        @swwilson-bsi @scsewall
-/common/**/logger-config/                         @swwilson-bsi @scsewall
+/common/**/linear-referencing-backend.*           @calebmshafer @diegoalexdiaz
+/common/**/linear-referencing-backend/            @calebmshafer @diegoalexdiaz
+/common/**/linear-referencing-common.*            @calebmshafer @diegoalexdiaz
+/common/**/linear-referencing-common/             @calebmshafer @diegoalexdiaz
+/common/**/logger-config.*                        @calebmshafer @swwilson-bsi @wgoehrig
+/common/**/logger-config/                         @calebmshafer @swwilson-bsi @wgoehrig
 /common/**/map-layers/                            @bsteinbk @mdastous-bentley
 /common/**/oidc-signin-tool/                      @calebmshafer @wgoehrig
 /common/**/orbitgt-core.*                         @imodeljs/display
 /common/**/orbitgt-core/                          @imodeljs/display
 /common/**/perf-tools.*                           @calebmshafer @wgoehrig
 /common/**/perf-tools/                            @calebmshafer @wgoehrig
-/common/**/physical-material-backend.*            @scsewall
-/common/**/physical-material-backend/             @scsewall
+/common/**/physical-material-backend.*            @bbastings @jchick-bentley
+/common/**/physical-material-backend/             @bbastings @jchick-bentley
 /common/**/presentation-*.*                       @imodeljs/presentation
 /common/**/presentation-*/                        @imodeljs/presentation
 /common/**/rpcinterface-full-stack-tests/         @calebmshafer @wgoehrig
@@ -126,7 +127,7 @@ rush.json       @calebmshafer @scsewall
 /core/hypermodeling             @bbastings @imodeljs/display
 /core/i18n                      @wgoehrig @calebmshafer
 /core/imodel-bridge             @imodeljs/connectors
-/core/logger-config             @swwilson-bsi @scsewall
+/core/logger-config             @calebmshafer @swwilson-bsi @wgoehrig
 /core/markup                    @kabentley @pmconne @bbastings
 /core/orbitgt                   @imodeljs/display
 /core/quantity                  @bsteinbk @calebmshafer
@@ -137,18 +138,20 @@ rush.json       @calebmshafer @scsewall
 /docs/learning/presentation @imodeljs/presentation
 
 # These domains should be split up a bit more
-/domains      @scsewall
-/domains/analytical @diegoalexdiaz @scsewall
-/domains/linear-referencing @diegoalexdiaz @scsewall
+/domains                      @imodeljs/admins
+/domains/analytical           @calebmshafer @diegoalexdiaz
+/domains/linear-referencing   @calebmshafer @diegoalexdiaz
+/domains/physical-material    @bbastings @jchick-bentley
 
 /editor                               @bbastings @kabentley @pmconne
 
-/example-code                         @scsewall @swwilson-bsi
+/example-code                         @calebmshafer @swwilson-bsi
 
 /extensions                           @bsteinbk @calebmshafer
 /extensions/map-layers                @bsteinbk @mdastous-bentley
 
 /full-stack-tests/core                @imodeljs/admins
+/full-stack-tests/ecschema-rpc-interface @calebmshafer @ColinKerr @wgoehrig
 /full-stack-tests/imodelhub-client    @amikoliunas @Animagne
 /full-stack-tests/native-app    @calebmshafer @khanaffan @ramanujam-raman
 /full-stack-tests/presentation  @imodeljs/presentation
@@ -158,16 +161,15 @@ rush.json       @calebmshafer @scsewall
 /presentation                   @imodeljs/presentation
 /presentation/common/src/presentation-common/PresentationRpcInterface.ts @grigasp
 
-/test-apps/analysis-importer                @RBBentley @pmconne
 /test-apps/display-performance-test-app     @imodeljs/display @hnn0003
 /test-apps/display-test-app                 @bbastings @kabentley @imodeljs/display
-/test-apps/export-gltf                      @mgooding @pmconne
-/test-apps/export-obj                       @mgooding @pmconne
+/test-apps/export-gltf                      @mgooding @MichaelBelousov
+/test-apps/export-obj                       @mgooding @MichaelBelousov
 /test-apps/imjs-importer                    @EarlinLutz
 /test-apps/imodel-from-geojson              @mgooding @pmconne
 /test-apps/imodel-from-orbitgt              @imodeljs/display
 /test-apps/imodel-from-reality-model        @imodeljs/display
-/test-apps/imodel-transformer               @scsewall @mgooding
+/test-apps/imodel-transformer               @MichaelBelousov @mgooding
 /test-apps/ninezone-test-app                @imodeljs/ui
 /test-apps/presentation-test-app            @imodeljs/presentation
 /test-apps/synchro-schedule-importer        @RBBentley @pmconne

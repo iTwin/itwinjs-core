@@ -1,0 +1,26 @@
+{
+  "name": "@bentley/ecschema-editing",
+  "entries": [
+    {
+      "version": "2.18.1",
+      "tag": "@bentley/ecschema-editing_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.0",
+      "tag": "@bentley/ecschema-editing_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "ECSchema validation and editing APIs moved from the ecschema-metadata package to the  ecschema-editing package."
+          },
+          {
+            "comment": "Added ability to increment minor version number via the schema editing API."
+          }
+        ]
+      }
+    }
+  ]
+}

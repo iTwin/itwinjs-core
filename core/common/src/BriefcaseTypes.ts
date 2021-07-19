@@ -7,6 +7,7 @@
  */
 
 import { GuidString } from "@bentley/bentleyjs-core";
+import { ChangesetId, ChangesetIndex } from "./ChangesetProps";
 import { IModelEncryptionProps, OpenDbKey } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
 
@@ -115,7 +116,9 @@ export interface LocalBriefcaseProps {
   /** The current changeSetId.
    * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
    */
-  changeSetId: string;
+  changeSetId: ChangesetId;
+
+  changesetIndex?: ChangesetIndex;
 
   /** Size of the briefcase file in bytes  */
   fileSize: number;
@@ -137,7 +140,11 @@ export interface RequestNewBriefcaseProps {
    */
   fileName?: string;
 
-  /** The BriefcaseId of the newly downloaded briefcase. If undefined, a new BriefcaseId will be acquired from iModelHub before the download, and is returned in this member.
+  /**
+   * The BriefcaseId for the new briefcase. If undefined, a new BriefcaseId will be acquired from iModelHub before the download, and is returned in this member.
+   * @note To download a briefcase that can accept but not create new changesets (sometimes referred to as "pull only" briefcases), set this value to [[BriefcaseIdValue.Unassigned]].
+   * After downloading, you can merely delete unassigned briefcase files when they are no longer needed. Assigned BriefcaseIds should be released (via [BriefcaseManager.releaseBriefcase]($backend) )
+   * when you are done with them.
    * @note this member is both an input and an output.
    *
    */

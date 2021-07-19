@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./index.scss";
-// Mobx demo
-import { configure as mobxConfigure } from "mobx";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
@@ -102,7 +100,7 @@ export const SampleAppActions = {
 };
 
 class SampleAppAccuSnap extends AccuSnap {
-  public getActiveSnapModes(): SnapMode[] {
+  public override getActiveSnapModes(): SnapMode[] {
     const snaps: SnapMode[] = [];
     if (SampleAppIModelApp.store.getState().frameworkState) {
       const snapMode = SampleAppIModelApp.store.getState().frameworkState.configurableUiState.snapMode;
@@ -205,9 +203,6 @@ export class SampleAppIModelApp {
     // register core commands not automatically registered
     ViewClipByPlaneTool.register();
 
-    // Mobx configuration
-    mobxConfigure({ enforceActions: "observed" });
-
     if (SampleAppIModelApp.testAppConfiguration?.reactAxeConsole) {
       if (process.env.NODE_ENV !== "production") {
         await reactAxe(React, ReactDOM, 1000);
@@ -249,7 +244,7 @@ export class SampleAppIModelApp {
 
     await MarkupApp.initialize();
     await FrontendDevTools.initialize();
-    await EditTools.initialize({ registerUndoRedoTools: true, registerBasicManipulationTools: true, registerSketchTools: true });
+    await EditTools.initialize({ registerAllTools: true });
 
     // Favorite Properties Support
     SampleAppIModelApp._selectionSetListener.initialize();
@@ -338,8 +333,6 @@ export class SampleAppIModelApp {
     });
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `openViews: ${viewIdsParam}`);
 
-    SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
-
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
     const viewStates: ViewState[] = [];
@@ -426,8 +419,6 @@ export class SampleAppIModelApp {
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
-
-      SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
 
       // store the IModelConnection in the sample app store
       UiFramework.setIModelConnection(iModelConnection, true);
@@ -611,7 +602,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Modal Frontstage close: title=${args.modalFrontstage.title} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
     if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
@@ -619,7 +610,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     FrontstageManager.onModalFrontstageClosedEvent.addListener(this._handleModalFrontstageClosedEvent);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     const oidcClient = IModelApp.authorizationClient;
     if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
@@ -627,10 +618,11 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     FrontstageManager.onModalFrontstageClosedEvent.removeListener(this._handleModalFrontstageClosedEvent);
   }
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     return (
       <Provider store={SampleAppIModelApp.store} >
         <ThemeManager>
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <BeDragDropContext>
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
               <AppDragInteraction>
@@ -644,6 +636,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
                 </AppFrameworkVersion>
               </AppDragInteraction>
             </SafeAreaContext.Provider>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <DragDropLayerRenderer />
           </BeDragDropContext>
         </ThemeManager>

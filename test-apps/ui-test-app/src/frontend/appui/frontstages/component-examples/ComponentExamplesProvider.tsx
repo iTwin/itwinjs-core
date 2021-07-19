@@ -14,7 +14,7 @@ import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvi
 import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import {
   adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
-  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, Table, TableDataChangeEvent, TableDataProvider, WeightPickerButton,
+  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, QuantityNumberInput, Table, TableDataChangeEvent, TableDataProvider, WeightPickerButton,
 } from "@bentley/ui-components";
 import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
@@ -34,6 +34,7 @@ import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
 import { FormatPopupButton } from "./FormatPopupButton";
 import { AccudrawSettingsPageComponent } from "../Settings";
 import { TableExampleContent } from "../../contentviews/TableExampleContent";
+import { ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
 
 function MySettingsPage() {
   const tabs: SettingsTabEntry[] = [
@@ -121,6 +122,7 @@ async function provideFormatSpec(formatProps: FormatProps, persistenceUnit: Unit
 }
 
 function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persistenceUnitName: string, initialMagnitude: number }) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const initialFormatProps: FormatProps = {
     formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes"],
     precision: 4,
@@ -165,7 +167,7 @@ function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persist
 
   return (
     <div style={{ display: "flex", alignItems: "center" }}>
-      { (formatterSpec && formattedValue) &&
+      {(formatterSpec && formattedValue) &&
         <>
           <span>{formattedValue}</span>
           <FormatPopupButton initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={handleFormatChange}
@@ -893,6 +895,14 @@ export class ComponentExamplesProvider {
           <QuantityInput initialValue={initialVolume} quantityType={QuantityType.Volume} onQuantityChange={onVolumeChange} />),
         createComponentExample("Temperature (Custom)", undefined,
           <ParsedInput onChange={onTemperatureChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />),
+        createComponentExample("Quantity Number Input", "QuantityType.Length",
+          <QuantityNumberInput style={{ width: "140px" }} persistenceValue={initialLength} step={0.25} snap quantityType={QuantityType.Length} onChange={onLengthChange} />),
+        createComponentExample("Quantity Number Input", "QuantityType.LengthEngineering",
+          <QuantityNumberInput style={{ width: "140px" }} placeholder={"Specify Length"} step={0.25} snap quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} />),
+        createComponentExample("Quantity Number Input", "QuantityType.Angle",
+          <QuantityNumberInput style={{ width: "140px" }} persistenceValue={initialAngle} step={0.5} snap quantityType={QuantityType.Angle} onChange={onAngleChange} />),
+        createComponentExample("Quantity Number Input", "QuantityType.Volume",
+          <QuantityNumberInput showTouchButtons persistenceValue={initialVolume} step={0.5} snap quantityType={QuantityType.Volume} onChange={onVolumeChange} />),
       ],
     };
   }
@@ -1182,7 +1192,9 @@ export class ComponentExamplesProvider {
     return {
       title: "Deprecated Components",
       examples: [
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
       ],
     };
@@ -1210,6 +1222,21 @@ export class ComponentExamplesProvider {
     };
   }
 
+  private static get timelineSamples(): ComponentExampleCategory {
+    const examples = [];
+    examples.push(
+      createComponentExample("TimelineComponent", "With appended menu items", <ItemsAppendedSampleTimeline />),
+      createComponentExample("TimelineComponent", "With prefixed menu items", <ItemsPrefixedSampleTimeline />),
+      createComponentExample("TimelineComponent", "With menu items replaced", <ItemsReplacedSampleTimeline />),
+      createComponentExample("TimelineComponent", "With no repeat option", <NoRepeatSampleTimeline />),
+      createComponentExample("TimelineComponent", "With timezone offset of 0", <NoLocalizedTimeSampleTimeline />),
+      createComponentExample("TimelineComponent", "With no timezone offset specified", <LocalizedTimeSampleTimeline />),
+    );
+    return {
+      title: "Timelines",
+      examples,
+    };
+  }
   public static get categories(): ComponentExampleCategory[] {
     return [
       ComponentExamplesProvider.badgeSamples,
@@ -1234,6 +1261,7 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.tabsSamples,
       ComponentExamplesProvider.textSamples,
       ComponentExamplesProvider.tileSamples,
+      ComponentExamplesProvider.timelineSamples,
       ComponentExamplesProvider.toggleSamples,
       ComponentExamplesProvider.weightSamples,
       ComponentExamplesProvider.quantityFormatting,

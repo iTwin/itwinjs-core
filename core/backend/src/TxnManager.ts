@@ -6,8 +6,10 @@
  * @module iModels
  */
 
-import { BeEvent, CompressedId64Set, DbResult, Id64String, IModelStatus, Logger, OrderedId64Array } from "@bentley/bentleyjs-core";
-import { ChangedEntities, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
+import {
+  assert, BeEvent, compareStrings, CompressedId64Set, DbResult, Id64Array, Id64String, IModelStatus, IndexMap, Logger, OrderedId64Array,
+} from "@bentley/bentleyjs-core";
+import { ChangedEntities, EntityIdAndClassIdIterable, ModelGeometryChangesProps, ModelIdAndGeometryGuid } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseDb, StandaloneDb } from "./IModelDb";
 import { IpcHost } from "./IpcHost";
@@ -37,12 +39,25 @@ export interface ValidationError {
  * @public
  */
 export interface TxnChangedEntities {
-  /** Ids of entities that were inserted by the transaction. */
+  /** Ids of entities that were inserted by the transaction.
+   * @deprecated use [[inserts]].
+   */
   inserted: OrderedId64Array;
-  /** Ids of entities that were deleted by the transaction. */
+  /** Ids of entities that were deleted by the transaction.
+   * @deprecated use [[deletes]].
+   */
   deleted: OrderedId64Array;
-  /** Ids of elements that were modified by the transaction. */
+  /** Ids of entities that were modified by the transaction.
+   * @deprecated use [[updates]].
+   */
   updated: OrderedId64Array;
+
+  /** The entities that were inserted by the transaction. */
+  readonly inserts: EntityIdAndClassIdIterable;
+  /** The entities that were deleted by the transaction. */
+  readonly deletes: EntityIdAndClassIdIterable;
+  /** The entities that were modified by the transaction, including any [[Element]]s for which one of their [[ElementAspect]]s was changed. */
+  readonly updates: EntityIdAndClassIdIterable;
 }
 
 type EntitiesChangedEvent = BeEvent<(changes: TxnChangedEntities) => void>;
@@ -54,29 +69,66 @@ export function setMaxEntitiesPerEvent(max: number): number {
   return prevMax;
 }
 
-class ChangedEntitiesProc implements TxnChangedEntities {
-  public static maxPerEvent = 1000;
+/** Maintains an ordered array of entity Ids and a parallel array containing the index of the corresponding entity's class Id. */
+class ChangedEntitiesArray {
+  public readonly entityIds = new OrderedId64Array();
+  private readonly _classIndices: number[] = [];
+  private readonly _classIds: IndexMap<Id64String>;
 
-  public inserted = new OrderedId64Array();
-  public deleted = new OrderedId64Array();
-  public updated = new OrderedId64Array();
+  public constructor(classIds: IndexMap<Id64String>) {
+    this._classIds = classIds;
+  }
+
+  public insert(entityId: Id64String, classId: Id64String): void {
+    const entityIndex = this.entityIds.insert(entityId);
+    const classIndex = this._classIds.insert(classId);
+    assert(classIndex >= 0);
+    if (this.entityIds.length !== this._classIndices.length) {
+      // New entity - insert corresponding class index entry.
+      this._classIndices.splice(entityIndex, 0, classIndex);
+    } else {
+      // Existing entity - update corresponding class index enty.
+      // (We do this because apparently connectors can (very rarely) change the class Id of an existing element).
+      this._classIndices[entityIndex] = classIndex;
+    }
+
+    assert(this.entityIds.length === this._classIndices.length);
+  }
+
+  public clear(): void {
+    this.entityIds.clear();
+    this._classIndices.length = 0;
+  }
+
+  public addToChangedEntities(entities: ChangedEntities, type: "deleted" | "inserted" | "updated"): void {
+    if (this.entityIds.length > 0)
+      entities[type] = CompressedId64Set.compressIds(this.entityIds);
+  }
+
+  public iterable(classIds: Id64Array): EntityIdAndClassIdIterable {
+    function* iterator(entityIds: ReadonlyArray<Id64String>, classIndices: number[]) {
+      const entity = { id: "", classId: "" };
+      for (let i = 0; i < entityIds.length; i++) {
+        entity.id = entityIds[i];
+        entity.classId = classIds[classIndices[i]];
+        yield entity;
+      }
+    }
+
+    return {
+      [Symbol.iterator]: () => iterator(this.entityIds.array, this._classIndices),
+    };
+  }
+}
+
+class ChangedEntitiesProc {
+  private readonly _classIds = new IndexMap<Id64String>((lhs, rhs) => compareStrings(lhs, rhs));
+  private readonly _inserted = new ChangedEntitiesArray(this._classIds);
+  private readonly _deleted = new ChangedEntitiesArray(this._classIds);
+  private readonly _updated = new ChangedEntitiesArray(this._classIds);
   private _currSize = 0;
 
-  private compressIds(): ChangedEntities {
-    const toCompressedIds = (idArray: OrderedId64Array) => idArray.isEmpty ? undefined : CompressedId64Set.compressIds(idArray);
-    return { inserted: toCompressedIds(this.inserted), deleted: toCompressedIds(this.deleted), updated: toCompressedIds(this.updated) };
-  }
-
-  private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
-    if (this._currSize > 0) {
-      evt.raiseEvent(this); // send to backend listeners
-      IpcHost.notifyTxns(iModel, evtName, this.compressIds()); // now notify frontend listeners
-      this.inserted.clear();
-      this.deleted.clear();
-      this.updated.clear();
-      this._currSize = 0;
-    }
-  }
+  public static maxPerEvent = 1000;
 
   public static process(iModel: BriefcaseDb | StandaloneDb, mgr: TxnManager): void {
     if (mgr.isDisposed) {
@@ -88,26 +140,59 @@ class ChangedEntitiesProc implements TxnChangedEntities {
     this.processChanges(iModel, mgr.onModelsChanged, "notifyModelsChanged");
   }
 
+  private sendEvent(iModel: BriefcaseDb | StandaloneDb, evt: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
+    if (this._currSize === 0)
+      return;
+
+    const classIds = this._classIds.toArray();
+
+    // Notify backend listeners.
+    const txnEntities: TxnChangedEntities = {
+      inserted: this._inserted.entityIds,
+      deleted: this._deleted.entityIds,
+      updated: this._updated.entityIds,
+      inserts: this._inserted.iterable(classIds),
+      deletes: this._deleted.iterable(classIds),
+      updates: this._updated.iterable(classIds),
+    };
+    evt.raiseEvent(txnEntities);
+
+    // Notify frontend listeners.
+    const entities: ChangedEntities = { };
+    this._inserted.addToChangedEntities(entities, "inserted");
+    this._deleted.addToChangedEntities(entities, "deleted");
+    this._updated.addToChangedEntities(entities, "updated");
+    IpcHost.notifyTxns(iModel, evtName, entities);
+
+    // Reset state.
+    this._inserted.clear();
+    this._deleted.clear();
+    this._updated.clear();
+    this._classIds.clear();
+    this._currSize = 0;
+  }
+
   private static processChanges(iModel: BriefcaseDb | StandaloneDb, changedEvent: EntitiesChangedEvent, evtName: "notifyElementsChanged" | "notifyModelsChanged") {
     try {
       const maxSize = this.maxPerEvent;
       const changes = new ChangedEntitiesProc();
       const select = "notifyElementsChanged" === evtName
-        ? "SELECT ElementId, ChangeType FROM temp.txn_Elements"
-        : "SELECT ModelId, ChangeType FROM temp.txn_Models";
+        ? "SELECT ElementId, ChangeType, ECClassId FROM temp.txn_Elements"
+        : "SELECT ModelId, ChangeType, ECClassId FROM temp.txn_Models";
       iModel.withPreparedSqliteStatement(select, (sql: SqliteStatement) => {
         const stmt = sql.stmt!;
         while (sql.step() === DbResult.BE_SQLITE_ROW) {
           const id = stmt.getValueId(0);
+          const classId = stmt.getValueId(2);
           switch (stmt.getValueInteger(1)) {
             case 0:
-              changes.inserted.insert(id);
+              changes._inserted.insert(id, classId);
               break;
             case 1:
-              changes.updated.insert(id);
+              changes._updated.insert(id, classId);
               break;
             case 2:
-              changes.deleted.insert(id);
+              changes._deleted.insert(id, classId);
               break;
           }
 
@@ -268,10 +353,21 @@ export class TxnManager {
    */
   public readonly onAfterUndoRedo = new BeEvent<(isUndo: boolean) => void>();
 
-  /** Determine whether undo is possible, optionally permitting undoing txns from previous sessions.
-   * @param allowCrossSessions if true, allow undoing from previous sessions.
+  /**
+   * Restart the current TxnManager session. This causes all Txns in the current session to no longer be undoable (as if the file was closed
+   * and reopened.)
+   * @note This can be quite disconcerting to the user expecting to be able to undo previously made changes. It should only be used
+   * under extreme circumstances where damage to the file or session could happen if the currently committed are reversed. Use sparingly and with care.
+   * Probably a good idea to alert the user it happened.
    */
-  public checkUndoPossible(allowCrossSessions?: boolean) { return this._nativeDb.isUndoPossible(allowCrossSessions); }
+  public restartSession() {
+    this._nativeDb.restartTxnSession();
+  }
+
+  /** Determine whether undo is possible
+   * @deprecated - use [[isUndoPossible]]
+   */
+  public checkUndoPossible() { return this._nativeDb.isUndoPossible(); }
 
   /** Determine if there are currently any reversible (undoable) changes from this editing session. */
   public get isUndoPossible(): boolean { return this._nativeDb.isUndoPossible(); }
@@ -281,9 +377,8 @@ export class TxnManager {
 
   /** Get the description of the operation that would be reversed by calling reverseTxns(1).
    * This is useful for showing the operation that would be undone, for example in a menu.
-   * @param allowCrossSessions if true, allow undo from previous sessions.
    */
-  public getUndoString(allowCrossSessions?: boolean): string { return this._nativeDb.getUndoString(allowCrossSessions); }
+  public getUndoString(): string { return this._nativeDb.getUndoString(); }
 
   /** Get a description of the operation that would be reinstated by calling reinstateTxn.
    * This is useful for showing the operation that would be redone, in a pull-down menu for example.
@@ -307,14 +402,13 @@ export class TxnManager {
   /** Reverse (undo) the most recent operation(s) to this IModelDb.
    * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
    *  be reinstated together when/if ReinstateTxn is called.
-   * @param allowCrossSessions if true, allow undo from previous sessions.
    * @note If there are any outstanding uncommitted changes, they are reversed.
    * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [[beginMultiTxnOperation]]. So,
    * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
    * @note If numOperations is too large only the operations are reversible are reversed.
    */
-  public reverseTxns(numOperations: number, allowCrossSessions?: boolean): IModelStatus {
-    return this._iModel.reverseTxns(numOperations, allowCrossSessions);
+  public reverseTxns(numOperations: number): IModelStatus {
+    return this._iModel.reverseTxns(numOperations);
   }
 
   /** Reverse the most recent operation. */
@@ -325,18 +419,16 @@ export class TxnManager {
 
   /** Reverse all changes back to a previously saved TxnId.
    * @param txnId a TxnId obtained from a previous call to GetCurrentTxnId.
-   * @param allowCrossSessions if true, allow undo from previous sessions.
    * @returns Success if the transactions were reversed, error status otherwise.
    * @see  [[getCurrentTxnId]] [[cancelTo]]
    */
-  public reverseTo(txnId: TxnIdString, allowCrossSessions?: boolean): IModelStatus { return this._nativeDb.reverseTo(txnId, allowCrossSessions); }
+  public reverseTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.reverseTo(txnId); }
 
   /** Reverse and then cancel (make non-reinstatable) all changes back to a previous TxnId.
    * @param txnId a TxnId obtained from a previous call to [[getCurrentTxnId]]
-   * @param allowCrossSessions if true, allow undo from previous sessions.
    * @returns Success if the transactions were reversed and cleared, error status otherwise.
    */
-  public cancelTo(txnId: TxnIdString, allowCrossSessions?: boolean): IModelStatus { return this._nativeDb.cancelTo(txnId, allowCrossSessions); }
+  public cancelTo(txnId: TxnIdString): IModelStatus { return this._nativeDb.cancelTo(txnId); }
 
   /** Reinstate the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.
@@ -346,9 +438,8 @@ export class TxnManager {
   public reinstateTxn(): IModelStatus { return this._iModel.reinstateTxn(); }
 
   /** Get the Id of the first transaction, if any.
-   * @param allowCrossSessions if true, allow undo from previous sessions.
    */
-  public queryFirstTxnId(allowCrossSessions?: boolean): TxnIdString { return this._nativeDb.queryFirstTxnId(allowCrossSessions); }
+  public queryFirstTxnId(): TxnIdString { return this._nativeDb.queryFirstTxnId(); }
 
   /** Get the successor of the specified TxnId */
   public queryNextTxnId(txnId: TxnIdString): TxnIdString { return this._nativeDb.queryNextTxnId(txnId); }

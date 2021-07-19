@@ -12,7 +12,7 @@ export function EsriOAuth2Callback() {
   const startLogin = () => {
     let success = false;
     if (window.opener !== undefined) {
-      const opener = (window.opener);
+      const opener = (window.opener as any);
       assert(opener?.esriOAuth2Callback);
       if (opener?.esriOAuth2Callback) {
         if (window.location.hash.length > 0) {

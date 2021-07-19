@@ -8,6 +8,7 @@
 
 import { ClientRequestContext, IModelStatus, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import {
+  ChangesetIndexAndId,
   EditingScopeNotifications, IModelConnectionProps, IModelError, IModelRpcProps, IModelVersion, IModelVersionProps,
   IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketBackend, iTwinChannel, OpenBriefcaseProps,
   RemoveFunction, StandaloneOpenOptions, TileTreeContentIds, TxnNotifications,
@@ -207,23 +208,22 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
   public async isRedoPossible(key: string): Promise<boolean> {
     return IModelDb.findByKey(key).nativeDb.isRedoPossible();
   }
-  public async getUndoString(key: string, allowCrossSessions?: boolean): Promise<string> {
-    return IModelDb.findByKey(key).nativeDb.getUndoString(allowCrossSessions);
+  public async getUndoString(key: string): Promise<string> {
+    return IModelDb.findByKey(key).nativeDb.getUndoString();
   }
   public async getRedoString(key: string): Promise<string> {
     return IModelDb.findByKey(key).nativeDb.getUndoString();
   }
 
-  public async pullAndMergeChanges(key: string, version?: IModelVersionProps): Promise<string> {
+  public async pullAndMergeChanges(key: string, version?: IModelVersionProps): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
     const requestContext = await IModelHost.getAuthorizedContext();
     return iModelDb.pullAndMergeChanges(requestContext, version ? IModelVersion.fromJSON(version) : undefined);
   }
-  public async pushChanges(key: string, description: string): Promise<string> {
+  public async pushChanges(key: string, description: string): Promise<ChangesetIndexAndId> {
     const iModelDb = BriefcaseDb.findByKey(key);
     const requestContext = await IModelHost.getAuthorizedContext();
-    await iModelDb.pushChanges(requestContext, description);
-    return iModelDb.changeSetId;
+    return iModelDb.pushChanges(requestContext, description);
   }
 
   public async toggleGraphicalEditingScope(key: string, startSession: boolean): Promise<boolean> {
@@ -237,14 +237,17 @@ class IpcAppHandler extends IpcHandler implements IpcAppFunctions {
     return IModelDb.findByKey(key).nativeDb.isGeometricModelTrackingSupported();
   }
 
-  public async reverseTxns(key: string, numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus> {
-    return IModelDb.findByKey(key).nativeDb.reverseTxns(numOperations, allowCrossSessions);
+  public async reverseTxns(key: string, numOperations: number): Promise<IModelStatus> {
+    return IModelDb.findByKey(key).nativeDb.reverseTxns(numOperations);
   }
   public async reverseAllTxn(key: string): Promise<IModelStatus> {
     return IModelDb.findByKey(key).nativeDb.reverseAll();
   }
   public async reinstateTxn(key: string): Promise<IModelStatus> {
     return IModelDb.findByKey(key).nativeDb.reinstateTxn();
+  }
+  public async restartTxnSession(key: string): Promise<void> {
+    return IModelDb.findByKey(key).nativeDb.restartTxnSession();
   }
 
   public async queryConcurrency(pool: "io" | "cpu"): Promise<number> {

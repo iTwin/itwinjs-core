@@ -172,7 +172,9 @@ export class ByteStream {
 export enum ChangeSetApplyOption {
     Merge = 1,
     None = 0,
+    // @deprecated
     Reinstate = 3,
+    // @deprecated
     Reverse = 2
 }
 
@@ -465,10 +467,15 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
         key: K;
         value: V;
     }>;
+    findOrInsert(key: K, value: V): {
+        value: V;
+        inserted: boolean;
+    };
     forEach(func: (key: K, value: V) => void): void;
     get(key: K): V | undefined;
     has(key: K): boolean;
     insert(key: K, value: V): boolean;
+    keys(): Iterable<K>;
     // (undocumented)
     protected _keys: K[];
     protected lowerBound(key: K): {
@@ -477,6 +484,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
     };
     set(key: K, value: V): void;
     get size(): number;
+    values(): Iterable<V>;
     // (undocumented)
     protected _values: V[];
 }
@@ -1007,6 +1015,7 @@ export class IndexMap<T> {
     };
     // (undocumented)
     protected readonly _maximumSize: number;
+    toArray(): T[];
 }
 
 // @internal @deprecated
@@ -1178,7 +1187,7 @@ export class ObservableSet<T> extends Set<T> {
 
 // @beta
 export class OneAtATimeAction<T> {
-    constructor(run: (...args: any[]) => Promise<T>);
+    constructor(run: (...args: any[]) => Promise<T>, msg?: string);
     // (undocumented)
     msg: string;
     request(...args: any[]): Promise<T>;
@@ -1198,6 +1207,7 @@ export type OrderedComparator<T, U = T> = (lhs: T, rhs: U) => number;
 // @public
 export class OrderedId64Array extends SortedArray<Id64String> {
     constructor();
+    get array(): ReadonlyArray<Id64String>;
     get ids(): OrderedId64Iterable;
 }
 

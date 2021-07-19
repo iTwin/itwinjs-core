@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { request, RequestOptions } from "@bentley/itwin-client";
-import { FrontendRequestContext } from "../../imodeljs-frontend";
+import { FrontendRequestContext } from "../../FrontendRequestContext";
 
 /** @packageDocumentation
  * @module Tiles

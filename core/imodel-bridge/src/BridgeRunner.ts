@@ -9,10 +9,10 @@ import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logg
 /** @packageDocumentation
  * @module Framework
  */
-import { ChangesType, LockLevel } from "@bentley/imodelhub-client";
+import { ChangesType } from "@bentley/imodelhub-client";
 import {
   BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative,
-  SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
+  LockScope, SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
 } from "@bentley/imodeljs-backend";
 import { IModel, IModelError, LocalBriefcaseProps, OpenBriefcaseProps, SubjectProps } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -299,7 +299,10 @@ abstract class IModelDbBuilder {
     // TODO: Report outliers and then change the options to true
   }
 
-  public async enterRepositoryChannel(lockRoot: boolean = true) { return this._enterChannel(IModelDb.repositoryModelId, lockRoot); }
+  public async enterRepositoryChannel(lockRoot: boolean = true) {
+    return this._enterChannel(IModelDb.repositoryModelId, lockRoot);
+  }
+
   public async enterBridgeChannel(lockRoot: boolean = true) {
     assert(this._jobSubject !== undefined);
     return this._enterChannel(this._jobSubject.id, lockRoot);
@@ -329,19 +332,20 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     this._activityId = Guid.createValue();
   }
 
-  protected async _saveAndPushChanges(comment: string, changesType: ChangesType): Promise<void> {
+  protected async _saveAndPushChanges(pushComments: string, changeType: ChangesType): Promise<void> {
     assert(this._requestContext !== undefined);
     assert(this._imodel instanceof BriefcaseDb);
-
-    // TODO Each step below needs a retry loop
+    assert(this._imodel.txns !== undefined);
 
     await this._imodel.concurrencyControl.request(this._requestContext);
+    this._imodel.saveChanges();
     await this._imodel.pullAndMergeChanges(this._requestContext);
     this._imodel.saveChanges();
-    await this._pushChanges(comment, changesType);
+    const comment = this.getRevisionComment(pushComments);
+    await this._imodel.pushChanges(this._requestContext, comment, changeType);
   }
 
-  protected _onChangeChannel(newParentId: Id64String) {
+  protected override _onChangeChannel(newParentId: Id64String) {
     super._onChangeChannel(newParentId);
     assert(this._imodel instanceof BriefcaseDb);
     assert(!this._imodel.concurrencyControl.hasPendingRequests);
@@ -350,7 +354,7 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     assert(!this._imodel.concurrencyControl.locks.hasCodeSpecsLock, "bridgeRunner must release all locks before switching channels");
     const currentRoot = this._imodel.concurrencyControl.channel.channelRoot;
     if (currentRoot !== undefined)
-      assert(!this._imodel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(currentRoot, LockLevel.Exclusive)), "bridgeRunner must release channel locks before switching channels");
+      assert(!this._imodel.concurrencyControl.locks.holdsLock(ConcurrencyControl.Request.getElementLock(currentRoot, LockScope.Exclusive)), "bridgeRunner must release channel locks before switching channels");
   }
 
   protected async _enterChannel(channelRootId: Id64String, lockRoot: boolean = true) {
@@ -455,21 +459,6 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     return this._saveAndPushChanges(dataChangesDescription, ChangesType.Regular);
   }
 
-  /** Pushes any pending transactions to the hub. */
-  private async _pushChanges(pushComments: string, type: ChangesType) {
-    assert(this._requestContext !== undefined);
-    assert(this._imodel instanceof BriefcaseDb);
-    assert(this._imodel.txns !== undefined);
-
-    await this._imodel.pullAndMergeChanges(this._requestContext); // in case there are recent changes
-
-    // NB We must call BriefcaseDb.pushChanges to let it clear the locks, even if there are no pending changes.
-    //    Also, we must not bypass that and call the BriefcaseManager API directly.
-
-    const comment = this.getRevisionComment(pushComments);
-    return this._imodel.pushChanges(this._requestContext, comment, type);
-  }
-
   public async initialize() {
     if (undefined === this._serverArgs.getToken) {
       throw new IModelError(IModelStatus.BadArg, "getToken() undefined", Logger.logError, loggerCategory);
@@ -504,13 +493,13 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new Error("Must initialize IModelId before using");
     let props: LocalBriefcaseProps;
     if (this._bridgeArgs.argsJson && this._bridgeArgs.argsJson.briefcaseId) {
-      props = await BriefcaseManager.downloadBriefcase(this._requestContext, {briefcaseId: this._bridgeArgs.argsJson.briefcaseId, contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
+      props = await BriefcaseManager.downloadBriefcase(this._requestContext, { briefcaseId: this._bridgeArgs.argsJson.briefcaseId, contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId });
     } else {
-      props = await BriefcaseManager.downloadBriefcase(this._requestContext, {contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId});
-      if(this._bridgeArgs.argsJson) {
+      props = await BriefcaseManager.downloadBriefcase(this._requestContext, { contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId });
+      if (this._bridgeArgs.argsJson) {
         this._bridgeArgs.argsJson.briefcaseId = props.briefcaseId; // don't overwrite other arguments if anything is passed in
       } else {
-        this._bridgeArgs.argsJson= {briefcaseId: props.briefcaseId};
+        this._bridgeArgs.argsJson = { briefcaseId: props.briefcaseId };
       }
     }
     let briefcaseDb: BriefcaseDb | undefined;

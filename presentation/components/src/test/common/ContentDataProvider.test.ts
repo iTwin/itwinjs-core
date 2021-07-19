@@ -10,8 +10,8 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, ContentDescriptorRequestOptions, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, Item, KeySet, NestedContentField,
-  Paged, RegisteredRuleset, SelectionInfo,
+  Content, ContentDescriptorRequestOptions, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, FIELD_NAMES_SEPARATOR, Item,
+  KeySet, NestedContentField, Paged, RegisteredRuleset, SelectionInfo,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -21,7 +21,6 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
-import { FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 
@@ -33,13 +32,13 @@ class Provider extends ContentDataProvider {
   constructor(props: ContentDataProviderProps) {
     super(props);
   }
-  public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
-  public configureContentDescriptor(descriptor: Readonly<Descriptor>) { return super.configureContentDescriptor(descriptor); } // eslint-disable-line deprecation/deprecation
-  public shouldExcludeFromDescriptor(field: Field) { return super.shouldExcludeFromDescriptor(field); } // eslint-disable-line deprecation/deprecation
-  public shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); } // eslint-disable-line deprecation/deprecation
-  public shouldRequestContentForEmptyKeyset() { return super.shouldRequestContentForEmptyKeyset(); }
-  public getDescriptorOverrides() { return super.getDescriptorOverrides(); }
-  public isFieldHidden(field: Field) { return super.isFieldHidden(field); } // eslint-disable-line deprecation/deprecation
+  public override invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
+  public override configureContentDescriptor(descriptor: Readonly<Descriptor>) { return super.configureContentDescriptor(descriptor); } // eslint-disable-line deprecation/deprecation
+  public override shouldExcludeFromDescriptor(field: Field) { return super.shouldExcludeFromDescriptor(field); } // eslint-disable-line deprecation/deprecation
+  public override shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); } // eslint-disable-line deprecation/deprecation
+  public override shouldRequestContentForEmptyKeyset() { return super.shouldRequestContentForEmptyKeyset(); }
+  public override getDescriptorOverrides() { return super.getDescriptorOverrides(); }
+  public override isFieldHidden(field: Field) { return super.isFieldHidden(field); } // eslint-disable-line deprecation/deprecation
 }
 
 describe("ContentDataProvider", () => {
@@ -234,7 +233,7 @@ describe("ContentDataProvider", () => {
     it("excludes fields from result descriptor", () => {
       const source = createRandomDescriptor();
       provider.shouldExcludeFromDescriptor = () => true;
-      const result = provider.configureContentDescriptor(source);
+      const result = provider.configureContentDescriptor(source); // eslint-disable-line deprecation/deprecation
       expect(source.fields.length).to.be.greaterThan(0);
       expect(result.fields.length).to.eq(0);
     });

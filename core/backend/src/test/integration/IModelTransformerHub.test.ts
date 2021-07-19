@@ -8,19 +8,18 @@ import { join } from "path";
 import * as semver from "semver";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { ChangesType } from "@bentley/imodelhub-client";
-import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { ChangesetType, Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  BackendLoggerCategory, BisCoreSchema, BriefcaseDb, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements, ExternalSourceAspect,
-  GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelJsNative, IModelTransformer, NativeLoggerCategory, PhysicalModel,
-  PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
+  BackendLoggerCategory, BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements,
+  ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelJsNative, IModelTransformer, NativeLoggerCategory,
+  PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 describe("IModelTransformerHub (#integration)", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
@@ -376,7 +375,7 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.equal(masterDb.contextId, projectId);
     assert.equal(masterDb.iModelId, masterIModelId);
     assertPhysicalObjects(masterDb, state0);
-    const changeSetMasterState0 = masterDb.changeSetId;
+    const changeSetMasterState0 = masterDb.changeset.id;
 
     // create Branch1 iModel using Master as a template
     const branchIModelName1 = "Branch1";
@@ -387,7 +386,7 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(branchDb1.isBriefcaseDb());
     assert.equal(branchDb1.contextId, projectId);
     assertPhysicalObjects(branchDb1, state0);
-    const changeSetBranch1First = branchDb1.changeSetId;
+    const changeSetBranch1First = branchDb1.changeset.id;
 
     // create Branch2 iModel using Master as a template
     const branchIModelName2 = "Branch2";
@@ -397,7 +396,7 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(branchDb2.isBriefcaseDb());
     assert.equal(branchDb2.contextId, projectId);
     assertPhysicalObjects(branchDb2, state0);
-    const changeSetBranch2First = branchDb2.changeSetId;
+    const changeSetBranch2First = branchDb2.changeset.id;
 
     // create empty iModel meant to contain replayed master history
     const replayedIModelName = "Replayed";
@@ -427,8 +426,8 @@ describe("IModelTransformerHub (#integration)", () => {
       // push Branch1 and Branch2 provenance changes
       await saveAndPushChanges(branchDb1, "State0");
       await saveAndPushChanges(branchDb2, "State0");
-      const changeSetBranch1State0 = branchDb1.changeSetId;
-      const changeSetBranch2State0 = branchDb2.changeSetId;
+      const changeSetBranch1State0 = branchDb1.changeset.id;
+      const changeSetBranch2State0 = branchDb2.changeset.id;
       assert.notEqual(changeSetBranch1State0, changeSetBranch1First);
       assert.notEqual(changeSetBranch2State0, changeSetBranch2First);
 
@@ -438,7 +437,7 @@ describe("IModelTransformerHub (#integration)", () => {
       maintainPhysicalObjects(branchDb1, delta01);
       assertPhysicalObjects(branchDb1, state1);
       await saveAndPushChanges(branchDb1, "State0 -> State1");
-      const changeSetBranch1State1 = branchDb1.changeSetId;
+      const changeSetBranch1State1 = branchDb1.changeset.id;
       assert.notEqual(changeSetBranch1State1, changeSetBranch1State0);
 
       // push Branch1 State2
@@ -447,7 +446,7 @@ describe("IModelTransformerHub (#integration)", () => {
       maintainPhysicalObjects(branchDb1, delta12);
       assertPhysicalObjects(branchDb1, state2);
       await saveAndPushChanges(branchDb1, "State1 -> State2");
-      const changeSetBranch1State2 = branchDb1.changeSetId;
+      const changeSetBranch1State2 = branchDb1.changeset.id;
       assert.notEqual(changeSetBranch1State2, changeSetBranch1State1);
 
       // merge changes made on Branch1 back to Master
@@ -461,7 +460,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assertPhysicalObjectUpdated(masterDb, 2);
       assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
       await saveAndPushChanges(masterDb, "State0 -> State2"); // a squash of 2 branch changes into 1 in the masterDb change ledger
-      const changeSetMasterState2 = masterDb.changeSetId;
+      const changeSetMasterState2 = masterDb.changeset.id;
       assert.notEqual(changeSetMasterState2, changeSetMasterState0);
       branchDb1.saveChanges(); // saves provenance locally in case of re-merge
 
@@ -471,7 +470,7 @@ describe("IModelTransformerHub (#integration)", () => {
       masterToBranch2.dispose();
       assertPhysicalObjects(branchDb2, state2);
       await saveAndPushChanges(branchDb2, "State0 -> State2");
-      const changeSetBranch2State2 = branchDb2.changeSetId;
+      const changeSetBranch2State2 = branchDb2.changeset.id;
       assert.notEqual(changeSetBranch2State2, changeSetBranch2State0);
 
       // make changes to Branch2
@@ -480,7 +479,7 @@ describe("IModelTransformerHub (#integration)", () => {
       maintainPhysicalObjects(branchDb2, delta23);
       assertPhysicalObjects(branchDb2, state3);
       await saveAndPushChanges(branchDb2, "State2 -> State3");
-      const changeSetBranch2State3 = branchDb2.changeSetId;
+      const changeSetBranch2State3 = branchDb2.changeset.id;
       assert.notEqual(changeSetBranch2State3, changeSetBranch2State2);
 
       // merge changes made on Branch2 back to Master
@@ -492,7 +491,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assertPhysicalObjects(masterDb, state3);
       assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
       await saveAndPushChanges(masterDb, "State2 -> State3");
-      const changeSetMasterState3 = masterDb.changeSetId;
+      const changeSetMasterState3 = masterDb.changeset.id;
       assert.notEqual(changeSetMasterState3, changeSetMasterState2);
       branchDb2.saveChanges(); // saves provenance locally in case of re-merge
 
@@ -502,7 +501,7 @@ describe("IModelTransformerHub (#integration)", () => {
       maintainPhysicalObjects(masterDb, delta34);
       assertPhysicalObjects(masterDb, state4);
       await saveAndPushChanges(masterDb, "State3 -> State4");
-      const changeSetMasterState4 = masterDb.changeSetId;
+      const changeSetMasterState4 = masterDb.changeset.id;
       assert.notEqual(changeSetMasterState4, changeSetMasterState3);
 
       // merge Master to Branch1
@@ -512,10 +511,10 @@ describe("IModelTransformerHub (#integration)", () => {
       assertPhysicalObjects(branchDb1, state4);
       assertPhysicalObjectUpdated(branchDb1, 6);
       await saveAndPushChanges(branchDb1, "State2 -> State4");
-      const changeSetBranch1State4 = branchDb1.changeSetId;
+      const changeSetBranch1State4 = branchDb1.changeset.id;
       assert.notEqual(changeSetBranch1State4, changeSetBranch1State2);
 
-      const masterDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: masterIModelId, range: { after: "", end: masterDb.changeSetId } });
+      const masterDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: masterIModelId, targetDir: BriefcaseManager.getChangeSetsPath(masterIModelId) });
       assert.equal(masterDbChangeSets.length, 3);
       const masterDeletedElementIds = new Set<Id64String>();
       for (const masterDbChangeSet of masterDbChangeSets) {
@@ -546,7 +545,7 @@ describe("IModelTransformerHub (#integration)", () => {
       await saveAndPushChanges(replayedDb, "changes from source seed");
       for (const masterDbChangeSet of masterDbChangeSets) {
         await sourceDb.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(masterDbChangeSet.id));
-        await replayTransformer.processChanges(requestContext, sourceDb.changeSetId);
+        await replayTransformer.processChanges(requestContext, sourceDb.changeset.id);
         await saveAndPushChanges(replayedDb, masterDbChangeSet.description ?? "", masterDbChangeSet.changesType);
       }
       replayTransformer.dispose();
@@ -554,7 +553,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assertPhysicalObjects(replayedDb, state4); // should have same ending state as masterDb
 
       // make sure there are no deletes in the replay history (all elements that were eventually deleted from masterDb were excluded)
-      const replayedDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: replayedIModelId, range: { after: "", end: replayedDb.changeSetId } });
+      const replayedDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: replayedIModelId, targetDir: BriefcaseManager.getChangeSetsPath(replayedIModelId) });
       assert.isAtLeast(replayedDbChangeSets.length, masterDbChangeSets.length); // replayedDb will have more changeSets when seed contains elements
       const replayedDeletedElementIds = new Set<Id64String>();
       for (const replayedDbChangeSet of replayedDbChangeSets) {
@@ -590,10 +589,10 @@ describe("IModelTransformerHub (#integration)", () => {
     });
   }
 
-  async function saveAndPushChanges(briefcaseDb: BriefcaseDb, description: string, changesType?: ChangesType): Promise<void> {
+  async function saveAndPushChanges(briefcaseDb: BriefcaseDb, description: string, changesType?: ChangesetType): Promise<void> {
     await briefcaseDb.concurrencyControl.request(requestContext);
     briefcaseDb.saveChanges(description);
-    return briefcaseDb.pushChanges(requestContext, description, changesType);
+    await briefcaseDb.pushChanges(requestContext, description, changesType as number);
   }
 
   function populateMaster(iModelDb: IModelDb, numbers: number[]): void {

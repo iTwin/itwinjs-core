@@ -45,10 +45,15 @@ export class OctEncodedNormal {
 
   /** Compute the encoded 16-bit value of the supplied normalized vector. */
   public static encode(vec: XYAndZ): number {
-    const denom = Math.abs(vec.x) + Math.abs(vec.y) + Math.abs(vec.z);
-    let rx = vec.x / denom;
-    let ry = vec.y / denom;
-    if (vec.z < 0) {
+    return this.encodeXYZ(vec.x, vec.y, vec.z);
+  }
+
+  /** Compute the encoded 16-bit value of the supplied normalized vector components. */
+  public static encodeXYZ(nx: number, ny: number, nz: number): number {
+    const denom = Math.abs(nx) + Math.abs(ny) + Math.abs(nz);
+    let rx = nx / denom;
+    let ry = ny / denom;
+    if (nz < 0) {
       const x = rx;
       const y = ry;
       rx = (1 - Math.abs(y)) * signNotZero(x);

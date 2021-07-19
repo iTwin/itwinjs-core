@@ -2,19 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert } from "chai";
+import { assert, expect } from "chai";
 import * as path from "path";
+import * as sinon from "sinon";
 import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { Angle, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, Code, ColorDef, CreateIModelProps, ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement2d, Placement3d,
+  AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d,
 } from "@bentley/imodeljs-common";
 import {
-  BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionPartition, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory,
-  ECSqlStatement, Element, ElementMultiAspect, ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect,
-  IModelCloneContext, IModelDb, IModelExporter, IModelExportHandler, IModelJsFs, IModelTransformer, InformationRecordModel,
-  InformationRecordPartition, LinkElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition,
-  PhysicalType, Relationship, RepositoryLink, SnapshotDb, SpatialCategory, Subject, TemplateModelCloner, TemplateRecipe2d, TemplateRecipe3d,
+  BackendLoggerCategory, BackendRequestContext, CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementMultiAspect,
+  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, IModelCloneContext, IModelDb, IModelExporter,
+  IModelExportHandler, IModelJsFs, IModelSchemaLoader, IModelTransformer, InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector,
+  OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, SnapshotDb,
+  SpatialCategory, Subject,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import {
@@ -243,84 +244,6 @@ describe("IModelTransformer", () => {
     });
   }
 
-  it("should clone from a component library", async () => {
-    const componentLibraryDb: SnapshotDb = IModelTransformerUtils.createComponentLibrary(outputDir);
-    const sourceLibraryModelId = componentLibraryDb.elements.queryElementIdByCode(DefinitionPartition.createCode(componentLibraryDb, IModel.rootSubjectId, "Components"))!;
-    assert.isTrue(Id64.isValidId64(sourceLibraryModelId));
-    const sourceSpatialCategoryId = componentLibraryDb.elements.queryElementIdByCode(SpatialCategory.createCode(componentLibraryDb, IModel.dictionaryId, "Components"))!;
-    assert.isTrue(Id64.isValidId64(sourceSpatialCategoryId));
-    const sourceDrawingCategoryId = componentLibraryDb.elements.queryElementIdByCode(DrawingCategory.createCode(componentLibraryDb, IModel.dictionaryId, "Components"))!;
-    assert.isTrue(Id64.isValidId64(sourceDrawingCategoryId));
-    const cylinderTemplateId = componentLibraryDb.elements.queryElementIdByCode(TemplateRecipe3d.createCode(componentLibraryDb, sourceLibraryModelId, "Cylinder"))!;
-    assert.isTrue(Id64.isValidId64(cylinderTemplateId));
-    const assemblyTemplateId = componentLibraryDb.elements.queryElementIdByCode(TemplateRecipe3d.createCode(componentLibraryDb, sourceLibraryModelId, "Assembly"))!;
-    assert.isTrue(Id64.isValidId64(assemblyTemplateId));
-    const drawingGraphicTemplateId = componentLibraryDb.elements.queryElementIdByCode(TemplateRecipe2d.createCode(componentLibraryDb, sourceLibraryModelId, "DrawingGraphic"))!;
-    assert.isTrue(Id64.isValidId64(drawingGraphicTemplateId));
-    const targetTeamName = "Target";
-    const targetDb: SnapshotDb = IModelTransformerUtils.createTeamIModel(outputDir, targetTeamName, Point3d.createZero(), ColorDef.green);
-    const targetPhysicalModelId = targetDb.elements.queryElementIdByCode(PhysicalPartition.createCode(targetDb, IModel.rootSubjectId, `Physical${targetTeamName}`))!;
-    assert.isTrue(Id64.isValidId64(targetPhysicalModelId));
-    const targetDefinitionModelId = targetDb.elements.queryElementIdByCode(DefinitionPartition.createCode(targetDb, IModel.rootSubjectId, `Definition${targetTeamName}`))!;
-    assert.isTrue(Id64.isValidId64(targetDefinitionModelId));
-    const targetSpatialCategoryId = targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, targetDefinitionModelId, `SpatialCategory${targetTeamName}`))!;
-    assert.isTrue(Id64.isValidId64(targetSpatialCategoryId));
-    const targetDrawingCategoryId = targetDb.elements.queryElementIdByCode(DrawingCategory.createCode(targetDb, IModel.dictionaryId, "DrawingCategoryShared"))!;
-    assert.isTrue(Id64.isValidId64(targetDrawingCategoryId));
-    const targetDrawingListModelId = DocumentListModel.insert(targetDb, IModel.rootSubjectId, "Drawings");
-    const targetDrawingId = Drawing.insert(targetDb, targetDrawingListModelId, "Drawing1");
-    const cloner = new TemplateModelCloner(componentLibraryDb, targetDb);
-    try {
-      await cloner.placeTemplate3d(cylinderTemplateId, targetPhysicalModelId, Placement3d.fromJSON());
-      assert.fail("Expected error to be thrown since category not remapped");
-    } catch (error) {
-    }
-    cloner.context.remapElement(sourceSpatialCategoryId, targetSpatialCategoryId);
-    const cylinderLocations: Point3d[] = [
-      Point3d.create(10, 10), Point3d.create(20, 10), Point3d.create(30, 10),
-      Point3d.create(10, 20), Point3d.create(20, 20), Point3d.create(30, 20),
-      Point3d.create(10, 30), Point3d.create(20, 30), Point3d.create(30, 30),
-    ];
-    for (const location of cylinderLocations) {
-      const placement = new Placement3d(location, new YawPitchRollAngles(), new Range3d());
-      const sourceIdToTargetIdMap = await cloner.placeTemplate3d(cylinderTemplateId, targetPhysicalModelId, placement);
-      for (const sourceElementId of sourceIdToTargetIdMap.keys()) {
-        const sourceElement = componentLibraryDb.elements.getElement(sourceElementId);
-        const targetElement = targetDb.elements.getElement(sourceIdToTargetIdMap.get(sourceElementId)!);
-        assert.equal(sourceElement.classFullName, targetElement.classFullName);
-      }
-    }
-    const assemblyLocations: Point3d[] = [Point3d.create(-10, 0), Point3d.create(-20, 0), Point3d.create(-30, 0)];
-    for (const location of assemblyLocations) {
-      const placement = new Placement3d(location, new YawPitchRollAngles(), new Range3d());
-      const sourceIdToTargetIdMap = await cloner.placeTemplate3d(assemblyTemplateId, targetPhysicalModelId, placement);
-      for (const sourceElementId of sourceIdToTargetIdMap.keys()) {
-        const sourceElement = componentLibraryDb.elements.getElement(sourceElementId);
-        const targetElement = targetDb.elements.getElement(sourceIdToTargetIdMap.get(sourceElementId)!);
-        assert.equal(sourceElement.classFullName, targetElement.classFullName);
-        assert.equal(sourceElement.parent?.id ? true : false, targetElement.parent?.id ? true : false);
-      }
-    }
-    try {
-      await cloner.placeTemplate2d(drawingGraphicTemplateId, targetDrawingId, Placement2d.fromJSON());
-      assert.fail("Expected error to be thrown since category not remapped");
-    } catch (error) {
-    }
-    cloner.context.remapElement(sourceDrawingCategoryId, targetDrawingCategoryId);
-    const drawingGraphicLocations: Point2d[] = [
-      Point2d.create(10, 10), Point2d.create(20, 10), Point2d.create(30, 10),
-      Point2d.create(10, 20), Point2d.create(20, 20), Point2d.create(30, 20),
-      Point2d.create(10, 30), Point2d.create(20, 30), Point2d.create(30, 30),
-    ];
-    for (const location of drawingGraphicLocations) {
-      const placement = new Placement2d(location, Angle.zero(), new Range2d());
-      await cloner.placeTemplate2d(drawingGraphicTemplateId, targetDrawingId, placement);
-    }
-    cloner.dispose();
-    componentLibraryDb.close();
-    targetDb.close();
-  });
-
   it("should import everything below a Subject", async () => {
     // Source IModelDb
     const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "SourceImportSubject.bim");
@@ -352,7 +275,6 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  // WIP: Using IModelTransformer within the same iModel is not yet supported
   it.skip("should clone Model within same iModel", async () => {
     // Set up the IModelDb with a populated source Subject and an "empty" target Subject
     const iModelFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "CloneModel.bim");
@@ -797,13 +719,13 @@ describe("IModelTransformer", () => {
         this.iModelExporter = new IModelExporter(iModelDb);
         this.iModelExporter.registerHandler(this);
       }
-      protected onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
+      protected override onExportModel(_model: Model, _isUpdate: boolean | undefined): void {
         ++this.modelCount;
       }
-      protected onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
+      protected override onExportElement(_element: Element, _isUpdate: boolean | undefined): void {
         assert.fail("Should not visit element when visitElements=false");
       }
-      protected onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
+      protected override onExportRelationship(_relationship: Relationship, _isUpdate: boolean | undefined): void {
         assert.fail("Should not visit relationship when visitRelationship=false");
       }
     }
@@ -970,4 +892,242 @@ describe("IModelTransformer", () => {
     IModelTransformerUtils.dumpIModelInfo(mergedDb);
     mergedDb.close();
   });
+
+  it("processSchemas should handle out-of-order exported schemas", async () => {
+    const testSchema1Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
+    IModelJsFs.writeFileSync(testSchema1Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema1" alias="ts1" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
+          <ECEntityClass typeName="TestElement1">
+            <BaseClass>bis:PhysicalElement</BaseClass>
+            <ECProperty propertyName="MyProp1" typeName="string"/>
+          </ECEntityClass>
+      </ECSchema>`
+    );
+
+    const testSchema2Path = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema2.ecschema.xml");
+    IModelJsFs.writeFileSync(testSchema2Path, `<?xml version="1.0" encoding="UTF-8"?>
+      <ECSchema schemaName="TestSchema2" alias="ts2" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
+          <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+          <ECSchemaReference name="TestSchema1" version="01.00.00" alias="ts1"/>
+          <ECEntityClass typeName="TestElement2">
+            <BaseClass>ts1:TestElement1</BaseClass>
+            <ECProperty propertyName="MyProp2" typeName="string"/>
+          </ECEntityClass>
+      </ECSchema>`
+    );
+
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "OrderTestSource.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "Order Test" } });
+
+    const requestContext = new BackendRequestContext();
+    await sourceDb.importSchemas(requestContext, [testSchema1Path, testSchema2Path]);
+    sourceDb.saveChanges();
+
+    class OrderedExporter extends IModelExporter {
+      public override async exportSchemas() {
+        const schemaLoader = new IModelSchemaLoader(this.sourceDb);
+        const schema1 = schemaLoader.getSchema("TestSchema1");
+        const schema2 = schemaLoader.getSchema("TestSchema2");
+        // by importing schema2 (which references schema1) first, we
+        // prove that the import order in processSchemas does not matter
+        await this.handler.callProtected.onExportSchema(schema2);
+        await this.handler.callProtected.onExportSchema(schema1);
+      }
+    }
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "OrderTestTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "Order Test" } });
+    const transformer = new IModelTransformer(new OrderedExporter(sourceDb), targetDb);
+
+    let error: any;
+    try {
+      await transformer.processSchemas(new BackendRequestContext());
+    } catch (_error) {
+      error = _error;
+    }
+    assert.isUndefined(error);
+
+    targetDb.saveChanges();
+    const targetImportedSchemasLoader = new IModelSchemaLoader(targetDb);
+    const schema1InTarget = targetImportedSchemasLoader.getSchema("TestSchema1");
+    assert.isDefined(schema1InTarget);
+    const schema2InTarget = targetImportedSchemasLoader.getSchema("TestSchema2");
+    assert.isDefined(schema2InTarget);
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("processSchemas should wait for the schema import to finish to delete the export directory", async () => {
+    const reqCtx = new BackendRequestContext();
+    const cloneTestSchema100 = path.join(KnownTestLocations.assetsDir, "CloneTest.01.00.00.ecschema.xml");
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "FinallyFirstTest.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "FinallyFirstTest" } });
+    await sourceDb.importSchemas(reqCtx, [cloneTestSchema100]);
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "FinallyFirstTestOut.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "FinallyFirstTest" } });
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+
+    const importSchemasResolved = sinon.spy();
+    let importSchemasPromise: Promise<void>;
+
+    sinon.replace(targetDb, "importSchemas", sinon.fake(async () => {
+      importSchemasPromise = new Promise((resolve) => setImmediate(() => {
+        importSchemasResolved();
+        resolve(undefined);
+      }));
+      return importSchemasPromise;
+    }));
+
+    const removeSyncSpy = sinon.spy(IModelJsFs, "removeSync");
+
+    await transformer.processSchemas(reqCtx);
+    assert(removeSyncSpy.calledAfter(importSchemasResolved));
+
+    sinon.restore();
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("handles definition element scoped by non-definitional element", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "BadPredecessorsExampleSource.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "BadPredecessorExampleSource" } });
+    const requestContext = new BackendRequestContext();
+
+    // create a document partition in our iModel's root
+    const documentListModelId = DocumentListModel.insert(sourceDb, IModelDb.rootSubjectId, "DocumentList");
+
+    // add a drawing to the document partition's model
+    const drawingId = sourceDb.elements.insertElement({
+      classFullName: Drawing.classFullName,
+      model: documentListModelId,
+      code: Drawing.createCode(sourceDb, documentListModelId, "Drawing"),
+    });
+    expect(Id64.isValidId64(drawingId)).to.be.true;
+
+    // submodel our drawing with a DrawingModel
+    const model = sourceDb.models.createModel({
+      classFullName: DrawingModel.classFullName,
+      modeledElement: { id: drawingId },
+    });
+    sourceDb.models.insertModel(model);
+
+    const myCodeSpecId = sourceDb.codeSpecs.insert(CodeSpec.create(sourceDb, "MyCodeSpec", CodeScopeSpec.Type.RelatedElement));
+
+    // insert a definition element which is scoped by a non-definition element (the drawing)
+    const _physicalMaterialId = sourceDb.elements.insertElement({
+      classFullName: GenericPhysicalMaterial.classFullName,
+      model: IModel.dictionaryId,
+      code: new Code({spec: myCodeSpecId, scope: drawingId, value: "physical material"}),
+    } as DefinitionElementProps);
+
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "BadPredecessorExampleTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: sourceDb.rootSubject.name } });
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+
+    await expect(transformer.processSchemas(requestContext)).to.eventually.be.fulfilled;
+    await expect(transformer.processAll()).to.eventually.be.fulfilled;
+
+    // check if target imodel has the elements that source imodel had
+    expect(targetDb.codeSpecs.hasName("MyCodeSpec")).to.be.true;
+    const drawingIdTarget = targetDb.elements.queryElementIdByCode(Drawing.createCode(targetDb, documentListModelId, "Drawing"));
+    expect(drawingIdTarget).to.not.be.undefined;
+    expect(Id64.isValidId64((drawingIdTarget as string))).to.be.true;
+    const physicalMaterialIdTarget = targetDb.elements.queryElementIdByCode(new Code({spec: myCodeSpecId, scope: drawingId, value: "physical material"}));
+    expect(physicalMaterialIdTarget).to.not.be.undefined;
+    expect(Id64.isValidId64((physicalMaterialIdTarget as string))).to.be.true;
+
+    sourceDb.close();
+    targetDb.close();
+  });
+
+  it("handle backwards related-instance code in model", async () => {
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "BadPredecessorsExampleSource.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "BadPredecessorExampleSource" } });
+    const requestContext = new BackendRequestContext();
+
+    // create a document partition in our iModel's root
+    const documentListModelId = DocumentListModel.insert(sourceDb, IModelDb.rootSubjectId, "DocumentList");
+
+    // add a drawing to the document partition's model
+    const drawing1Id = sourceDb.elements.insertElement({
+      classFullName: Drawing.classFullName,
+      model: documentListModelId,
+      code: Drawing.createCode(sourceDb, documentListModelId, "Drawing1"),
+    });
+
+    const drawing2Id = sourceDb.elements.insertElement({
+      classFullName: Drawing.classFullName,
+      model: documentListModelId,
+      code: Drawing.createCode(sourceDb, documentListModelId, "Drawing2"),
+    });
+
+    const drawingModel1 = sourceDb.models.createModel({
+      classFullName: DrawingModel.classFullName,
+      modeledElement: { id: drawing1Id },
+    });
+    const drawingModel1Id = sourceDb.models.insertModel(drawingModel1);
+
+    const drawingModel2 = sourceDb.models.createModel({
+      classFullName: DrawingModel.classFullName,
+      modeledElement: { id: drawing2Id },
+    });
+    const drawingModel2Id = sourceDb.models.insertModel(drawingModel2);
+
+    const modelCodeSpec = sourceDb.codeSpecs.insert(CodeSpec.create(sourceDb, "ModelCodeSpec", CodeScopeSpec.Type.Model));
+    const relatedCodeSpecId = sourceDb.codeSpecs.insert(CodeSpec.create(sourceDb, "RelatedCodeSpec", CodeScopeSpec.Type.RelatedElement));
+
+    const categoryId = DrawingCategory.insert(sourceDb, IModel.dictionaryId, "DrawingCategory", { color: ColorDef.green.toJSON() });
+
+    // we make drawingGraphic2 in drawingModel2 first
+    const drawingGraphic2Id = new DrawingGraphic({
+      classFullName: DrawingGraphic.classFullName,
+      model: drawingModel2Id,
+      code: new Code({spec: modelCodeSpec, scope: drawingModel2Id, value: "drawing graphic 2"}),
+      category: categoryId,
+    }, sourceDb).insert();
+
+    const _drawingGraphic1Id = new DrawingGraphic({
+      classFullName: DrawingGraphic.classFullName,
+      model: drawingModel1Id,
+      code: new Code({spec: relatedCodeSpecId, scope: drawingGraphic2Id, value: "drawing graphic 1"}),
+      category: categoryId,
+    }, sourceDb).insert();
+
+    sourceDb.saveChanges();
+
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "BadPredecessorExampleTarget.bim");
+    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: sourceDb.rootSubject.name } });
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+
+    await expect(transformer.processSchemas(requestContext)).to.eventually.be.fulfilled;
+    await expect(transformer.processAll()).to.eventually.be.fulfilled;
+
+    // check if target imodel has the elements that source imodel had
+    expect(targetDb.codeSpecs.hasName("ModelCodeSpec")).to.be.true;
+    expect(targetDb.codeSpecs.hasName("RelatedCodeSpec")).to.be.true;
+    const drawingIdTarget1 = targetDb.elements.queryElementIdByCode(Drawing.createCode(targetDb, documentListModelId, "Drawing1"));
+    expect(drawingIdTarget1).to.not.be.undefined;
+    expect(Id64.isValidId64((drawingIdTarget1 as string))).to.be.true;
+
+    const drawingIdTarget2 = targetDb.elements.queryElementIdByCode(Drawing.createCode(targetDb, documentListModelId, "Drawing2"));
+    expect(drawingIdTarget2).to.not.be.undefined;
+    expect(Id64.isValidId64((drawingIdTarget2 as string))).to.be.true;
+
+    const drawingGraphicIdTarget2Props = targetDb.elements.getElementProps(drawingGraphic2Id);
+    expect(targetDb.elements.queryElementIdByCode(new Code(drawingGraphicIdTarget2Props.code))).to.not.be.undefined;
+    expect(Id64.isValidId64((targetDb.elements.queryElementIdByCode(new Code(drawingGraphicIdTarget2Props.code)) as string))).to.be.true;
+
+    const drawingGraphicIdTarget1Props = targetDb.elements.getElementProps(_drawingGraphic1Id);
+    expect(targetDb.elements.queryElementIdByCode(new Code(drawingGraphicIdTarget1Props.code))).to.not.be.undefined;
+    expect(Id64.isValidId64((targetDb.elements.queryElementIdByCode(new Code(drawingGraphicIdTarget1Props.code)) as string))).to.be.true;
+    sourceDb.close();
+    targetDb.close();
+  });
+
 });

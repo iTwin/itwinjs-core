@@ -10,9 +10,12 @@ import { Dictionary, IModelStatus } from "@bentley/bentleyjs-core";
 import { Cartographic, ImageSource, MapLayerSettings, ServerError } from "@bentley/imodeljs-common";
 import { getJson, request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../../IModelApp";
-import { ArcGisBaseToken, ArcGisErrorCode, ArcGisOAuth2Token, ArcGisToken, ArcGisTokenClientType, EsriOAuth2, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, NotifyMessageDetails, OutputMessagePriority } from "../../../imodeljs-frontend";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../../imodeljs-frontend";
 import { ScreenViewport } from "../../../Viewport";
-import { ArcGisTokenManager, ArcGisUtilities, MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId } from "../../internal";
+import {
+  ArcGisErrorCode, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
+  MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId, ArcGisBaseToken, ArcGisOAuth2Token, EsriOAuth2,
+} from "../../internal";
 
 // eslint-disable-next-line prefer-const
 let doToolTips = true;
@@ -21,6 +24,7 @@ const scratchQuadId = new QuadId(0, 0, 0);
 /** @internal */
 export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
   private _maxDepthFromLod = 0;
+  private _minDepthFromLod = 0;
   private _copyrightText = "Copyright";
   private _querySupported = false;
   private _tileMapSupported = false;
@@ -30,8 +34,10 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     super(settings, false);
   }
 
-  protected get _filterByCartoRange() { return false; }      // Can't trust footprint ranges (USGS Hydro)
-  public get maximumZoomLevel() { return this._maxDepthFromLod > 0 ? this._maxDepthFromLod : super.maximumZoomLevel; }
+  protected override get _filterByCartoRange() { return false; }      // Can't trust footprint ranges (USGS Hydro)
+
+  public override get minimumZoomLevel() { return Math.max(super.minimumZoomLevel, this._minDepthFromLod); }
+  public override get maximumZoomLevel() { return this._maxDepthFromLod > 0 ? this._maxDepthFromLod : super.maximumZoomLevel; }
 
   public uintToString(uintArray: any) {
     return Buffer.from(uintArray).toJSON();
@@ -48,7 +54,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     return request(this._requestContext, tileUrl, tileRequestOptions);
   }
 
-  public async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
+  public override async loadTile(row: number, column: number, zoomLevel: number): Promise<ImageSource | undefined> {
 
     if ((this.status === MapLayerImageryProviderStatus.RequireAuth)) {
       return undefined;
@@ -106,9 +112,8 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       return undefined;
     }
   }
-
-  protected _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) {
-    if (!this._tileMapSupported || tile.quadId.level < 4) {
+  protected override _testChildAvailability(tile: ImageryMapTile, resolveChildren: () => void) {
+    if (!this._tileMapSupported || tile.quadId.level < Math.max(4, this.minimumZoomLevel)) {
       resolveChildren();
       return;
     }
@@ -152,6 +157,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
       resolveChildren();
     });
   }
+
   private isEpsg3857Compatible(tileInfo: any) {
     if (tileInfo.spatialReference?.latestWkid !== 3857 || !Array.isArray(tileInfo.lods))
       return false;
@@ -160,7 +166,7 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
     return zeroLod.level === 0 && Math.abs(zeroLod.resolution - 156543.03392800014) < .001;
   }
 
-  public async initialize(): Promise<void> {
+  public override async initialize(): Promise<void> {
     const json = await ArcGisUtilities.getServiceJson(this._settings.url, this.getRequestAuthorization());
     if (json === undefined)
       throw new ServerError(IModelStatus.ValidationFailed, "");
@@ -195,14 +201,22 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
           }
         }
       }
+
+      // Read minLOD if available
+      if (json.minLOD !== undefined) {
+        const minLod = parseInt(json.minLOD, 10);
+        if (!Number.isNaN(minLod)) {
+          this._minDepthFromLod = minLod;
+        }
+      }
     }
   }
 
-  public getLogo(_vp: ScreenViewport) {
+  public override getLogo(_vp: ScreenViewport) {
     return IModelApp.makeLogoCard({ heading: "ArcGIS", notice: this._copyrightText });
   }
 
-  public async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
+  public override async getToolTip(strings: string[], quadId: QuadId, carto: Cartographic, tree: ImageryMapTileTree): Promise<void> {
     await super.getToolTip(strings, quadId, carto, tree);
     if (!doToolTips)
       return;

@@ -82,9 +82,13 @@ export * from "./ui-framework/frontstage/ModalFrontstage";
 export * from "./ui-framework/frontstage/ModalSettingsStage";
 
 export * from "./ui-framework/hooks/useActiveIModelConnection";
+export * from "./ui-framework/hooks/useActiveStageId";
 export * from "./ui-framework/hooks/useActiveViewport";
 export * from "./ui-framework/hooks/useAvailableUiItemsProviders";
+export * from "./ui-framework/hooks/useAnalysisAnimationDataProvider";
 export * from "./ui-framework/hooks/useFrameworkVersion";
+export * from "./ui-framework/hooks/useScheduleAnimationDataProvider";
+export * from "./ui-framework/hooks/useSolarDataProvider";
 
 export * from "./ui-framework/imodel-components/spatial-tree/SpatialContainmentTree";
 export * from "./ui-framework/imodel-components/category-tree/CategoriesTree";
@@ -387,7 +391,7 @@ export * from "./ui-framework/zones/ZoneDef";
  */
 /**
  * @docs-group-description ToolSettings
- * Classes for working Tool Settings
+ * Classes for working Tool Settings.  See learning documentation [Tool Settings]($docs/learning/ui/framework/toolsettings.md).
  */
 /**
  * @docs-group-description UiProvider

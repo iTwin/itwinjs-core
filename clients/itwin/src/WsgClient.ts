@@ -13,6 +13,7 @@ import { ECJsonTypeMap, WsgInstance } from "./ECJsonTypeMap";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
 import { request, RequestOptions, RequestQueryOptions, RequestTimeoutOptions, Response, ResponseError } from "./Request";
 import { ChunkedQueryContext } from "./ChunkedQueryContext";
+import { once } from "lodash";
 
 const loggerCategory: string = ITwinClientLoggerCategory.Clients;
 
@@ -30,7 +31,7 @@ export class WsgError extends ResponseError {
    * @param response Response from the server.
    * @returns Parsed error.
    */
-  public static parse(response: any, log = true): ResponseError {
+  public static override parse(response: any, log = true): ResponseError {
     const responseError = ResponseError.parse(response, false);
     const wsgError = new WsgError(WSStatus.Unknown);
     deepAssign(wsgError, responseError);
@@ -66,7 +67,7 @@ export class WsgError extends ResponseError {
    * @param error Error
    * @param response Response
    */
-  public static shouldRetry(error: any, response: any): boolean {
+  public static override shouldRetry(error: any, response: any): boolean {
     if (response === undefined || response === null) {
       return super.shouldRetry(error, response);
     }
@@ -167,7 +168,7 @@ export class WsgError extends ResponseError {
   /**
    * Logs this error
    */
-  public log(): void {
+  public override log(): void {
     Logger.logError(loggerCategory, this.logMessage(), this.getMetaData());
   }
 }
@@ -214,7 +215,7 @@ export abstract class WsgClient extends Client {
   public static readonly configHostRelyingPartyUri = "imjs_default_relying_party_uri";
   public static readonly configUseHostRelyingPartyUriAsFallback = "imjs_use_default_relying_party_uri_as_fallback";
   private static _defaultWsgRequestOptionsProvider: DefaultWsgRequestOptionsProvider;
-  protected _url?: string;
+  protected override _url?: string;
 
   /**
    * Creates an instance of Client.
@@ -231,7 +232,7 @@ export abstract class WsgClient extends Client {
    * @param options Options the caller wants to augment with the defaults.
    * @returns Promise resolves after the defaults are setup.
    */
-  protected async setupOptionDefaults(options: RequestOptions): Promise<void> {
+  protected override async setupOptionDefaults(options: RequestOptions): Promise<void> {
     if (!WsgClient._defaultWsgRequestOptionsProvider)
       WsgClient._defaultWsgRequestOptionsProvider = new DefaultWsgRequestOptionsProvider();
     return WsgClient._defaultWsgRequestOptionsProvider.assignOptions(options);
@@ -252,18 +253,18 @@ export abstract class WsgClient extends Client {
    * @param excludeApiVersion Pass true to optionally exclude the API version from the URL.
    * @returns URL for the service
    */
-  public async getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
-    if (this._url) {
-      return this._url;
-    }
+  public override async getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string> {
+    return this._getUrlHelper(requestContext, excludeApiVersion);
+  }
 
+  private _getUrlHelper = once(async (requestContext: ClientRequestContext, excludeApiVersion?: boolean) => {
     const url = await super.getUrl(requestContext);
     this._url = url;
     if (!excludeApiVersion) {
       this._url = `${this._url}/${this.apiVersion}`;
     }
     return this._url; // TODO: On the server this really needs a lifetime!!
-  }
+  });
 
   /** used by clients to delete strongly typed instances through the standard WSG REST API */
   protected async deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void> {

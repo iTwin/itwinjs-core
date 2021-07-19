@@ -9,7 +9,7 @@
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Range3dProps, XYZProps } from "@bentley/geometry-core";
 import {
-  ChangedEntities, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, IpcAppChannel, ModelIdAndGeometryGuid,
+  ChangedEntities, ChangesetIndexAndId, EcefLocation, EcefLocationProps, GeographicCRS, GeographicCRSProps, IModelStatus, IpcAppChannel, ModelIdAndGeometryGuid,
   RemoveFunction, RootSubjectProps, TxnNotifications,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection } from "./BriefcaseConnection";
@@ -89,12 +89,12 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   /** Event raised after changes are pulled and merged into the briefcase.
    * @see [[BriefcaseConnection.pullAndMergeChanges]].
    */
-  public readonly onChangesPulled = new BeEvent<(parentChangeSetId: string) => void>();
+  public readonly onChangesPulled = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
 
   /** Event raised after the briefcase's local changes are pushed.
    * @see [[BriefcaseConnection.pushChanges]].
    */
-  public readonly onChangesPushed = new BeEvent<(parentChangeSetId: string) => void>();
+  public readonly onChangesPushed = new BeEvent<(parentChangeset: ChangesetIndexAndId) => void>();
 
   /** @internal */
   public constructor(iModel: BriefcaseConnection) {
@@ -143,10 +143,9 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
 
   /** Get the description of the operation that would be reversed by calling [[reverseTxns]]`(1)`.
    * This is useful for showing the operation that would be undone, for example in a menu.
-   * @param allowCrossSessions if true, allow undo from previous sessions.
    */
-  public async getUndoString(allowCrossSessions?: boolean): Promise<string> {
-    return IpcApp.callIpcHost("getUndoString", this._iModel.key, allowCrossSessions);
+  public async getUndoString(): Promise<string> {
+    return IpcApp.callIpcHost("getUndoString", this._iModel.key);
   }
 
   /** Get a description of the operation that would be reinstated by calling [[reinstateTxn]].
@@ -165,17 +164,16 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
     return this.reverseTxns(1);
   }
 
-  /** Reverse (undo) the most recent operation(s) to the briefcase.
+  /** Reverse (undo) the most recent operation(s) to the briefcase in the current session.
    * @param numOperations the number of operations to reverse. If this is greater than 1, the entire set of operations will
    *  be reinstated together when/if [[reinstateTxn]] is called.
-   * @param allowCrossSessions if true, allow undo from previous sessions.
    * @note If there are any outstanding uncommitted changes, they are reversed.
    * @note The term "operation" is used rather than Txn, since multiple Txns can be grouped together via [TxnManager.beginMultiTxnOperation]($backend). So,
    * even if numOperations is 1, multiple Txns may be reversed if they were grouped together when they were made.
    * @note If numOperations is too large only the number of reversible operations are reversed.
    */
-  public async reverseTxns(numOperations: number, allowCrossSessions?: boolean): Promise<IModelStatus> {
-    return IpcApp.callIpcHost("reverseTxns", this._iModel.key, numOperations, allowCrossSessions);
+  public async reverseTxns(numOperations: number): Promise<IModelStatus> {
+    return IpcApp.callIpcHost("reverseTxns", this._iModel.key, numOperations);
   }
 
   /** Reverse (undo) all changes back to the beginning of the session.
@@ -190,12 +188,22 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   /** Reinstate (redo) the most recently reversed transaction. Since at any time multiple transactions can be reversed, it
    * may take multiple calls to this method to reinstate all reversed operations.
    * @returns Success if a reversed transaction was reinstated, error status otherwise.
-   * @note If there are any outstanding uncommited changes, they are canceled before the Txn is reinstated.
+   * @note If there are any outstanding uncommitted changes, they are canceled before the Txn is reinstated.
    * @see [[isRedoPossible]] to determine if any reinstatable operations exist.
    * @see [[reverseSingleTxn]] or [[reverseAll]] to undo changes.
    */
   public async reinstateTxn(): Promise<IModelStatus> {
     return IpcApp.callIpcHost("reinstateTxn", this._iModel.key);
+  }
+
+  /** Restart the current TxnManager session. This causes all Txns in the current session to no longer be undoable (as if the file was closed
+   * and reopened.)
+   * @note This can be quite disconcerting to the user expecting to be able to undo previously made changes. It should only be used
+   * under extreme circumstances where damage to the file or session could happen if the currently committed are reversed. Use sparingly and with care.
+   * Probably a good idea to alert the user it happened.
+   */
+  public async restartTxnSession(): Promise<void> {
+    await IpcApp.callIpcHost("restartTxnSession", this._iModel.key);
   }
 
   /** @internal */
@@ -239,13 +247,13 @@ export class BriefcaseTxns extends BriefcaseNotificationHandler implements TxnNo
   }
 
   /** @internal */
-  public notifyPulledChanges(parentChangeSetId: string) {
-    this.onChangesPulled.raiseEvent(parentChangeSetId);
+  public notifyPulledChanges(parentChangeset: ChangesetIndexAndId) {
+    this.onChangesPulled.raiseEvent(parentChangeset);
   }
 
   /** @internal */
-  public notifyPushedChanges(parentChangeSetId: string) {
-    this.onChangesPushed.raiseEvent(parentChangeSetId);
+  public notifyPushedChanges(parentChangeset: ChangesetIndexAndId) {
+    this.onChangesPushed.raiseEvent(parentChangeset);
   }
 
   /** @internal */

@@ -11,14 +11,15 @@ import memoize from "micro-memoize";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, InstanceKey, Item, NestedContentField,
-  NestedContentValue, PresentationError, PropertyValueFormat as PresentationPropertyValueFormat, PresentationStatus, RelationshipMeaning, Ruleset,
+  addFieldHierarchy, CategoryDescription, ContentFlags, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldHierarchy,
+  InstanceKey, NestedContentValue, PropertyValueFormat as PresentationPropertyValueFormat, ProcessFieldHierarchiesProps, ProcessPrimitiveValueProps,
+  RelationshipMeaning, Ruleset, StartArrayProps, StartCategoryProps, StartContentProps, StartStructProps, traverseContentItem, traverseFieldHierarchy,
   Value, ValuesMap,
 } from "@bentley/presentation-common";
 import { FavoritePropertiesScope, Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PropertyRecord, PropertyValueFormat as UiPropertyValueFormat } from "@bentley/ui-abstract";
 import { IPropertyDataProvider, PropertyCategory, PropertyData, PropertyDataChangeEvent } from "@bentley/ui-components";
-import { ContentBuilder, FieldRecord } from "../common/ContentBuilder";
+import { FieldHierarchyRecord, IPropertiesAppender, PropertyRecordsBuilder } from "../common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, IContentDataProvider } from "../common/ContentDataProvider";
 import { DiagnosticsProps } from "../common/Diagnostics";
 import { createLabelRecord, findField } from "../common/Utils";
@@ -100,7 +101,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   /**
    * Dispose the presentation property data provider.
    */
-  public dispose() {
+  public override dispose() {
     super.dispose();
     this._onFavoritesChangedRemoveListener();
   }
@@ -108,7 +109,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   /**
    * Invalidates cached content and clears categorized data.
    */
-  protected invalidateCache(props: CacheInvalidationProps): void {
+  protected override invalidateCache(props: CacheInvalidationProps): void {
     super.invalidateCache(props);
     if (this.getMemoizedData) {
       this.getMemoizedData.cache.keys.length = 0;
@@ -122,12 +123,12 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
    * Tells the data provider to _not_ request descriptor and instead configure
    * content using `getDescriptorOverrides()` call
    */
-  protected shouldConfigureContentDescriptor(): boolean { return false; }
+  protected override shouldConfigureContentDescriptor(): boolean { return false; }
 
   /**
    * Provides content configuration for the property grid
    */
-  protected getDescriptorOverrides(): DescriptorOverrides {
+  protected override getDescriptorOverrides(): DescriptorOverrides {
     return {
       ...super.getDescriptorOverrides(),
       contentFlags: ContentFlags.ShowLabels | ContentFlags.MergeResults,
@@ -137,7 +138,7 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
   /**
    * Hides the computed display label field from the list of properties
    */
-  protected isFieldHidden(field: Field) {
+  protected override isFieldHidden(field: Field) {
     return field.name === "/DisplayLabel/";
   }
 
@@ -226,14 +227,13 @@ export class PresentationPropertyDataProvider extends ContentDataProvider implem
       sortFields: this.sortFields,
     };
     const builder = new PropertyDataBuilder({
-      descriptor: content.descriptor,
-      item: contentItem,
       includeWithNoValues: this.includeFieldsWithNoValues,
       includeWithCompositeValues: this.includeFieldsWithCompositeValues,
       wantNestedCategories: this._isNestedPropertyCategoryGroupingEnabled,
       callbacks,
     });
-    return builder.buildPropertyData();
+    traverseContentItem(builder, content.descriptor, contentItem);
+    return builder.getPropertyData();
   });
 
   /**
@@ -296,323 +296,119 @@ interface PropertyPaneCallbacks {
   sortCategories(categories: CategoryDescription[]): void;
   sortFields: (category: CategoryDescription, fields: Field[]) => void;
 }
-
-interface StrictFieldHierarchy {
-  field: Field;
-  childFields: StrictFieldHierarchy[];
+interface PropertyDataBuilderProps {
+  includeWithNoValues: boolean;
+  includeWithCompositeValues: boolean;
+  callbacks: PropertyPaneCallbacks;
+  wantNestedCategories: boolean;
 }
+class PropertyDataBuilder extends PropertyRecordsBuilder {
+  private _props: PropertyDataBuilderProps;
+  private _result: PropertyData | undefined;
+  private _categoriesCache: PropertyCategoriesCache;
+  private _categorizedRecords = new Map<string, FieldHierarchyRecord[]>();
+  private _favoriteFieldHierarchies: FieldHierarchy[] = [];
+  private _categoriesStack: CategoryDescription[] = [];
 
-interface CategorizedFields {
-  categories: CategoryDescription[];
-  fields: {
-    [categoryName: string]: StrictFieldHierarchy[];
-  };
-}
-
-interface CategorizedRecords {
-  categories: PropertyCategory[];
-  records: {
-    [categoryName: string]: PropertyRecord[];
-  };
-}
-
-type FieldHierarchyRecord = FieldRecord & {
-  fieldHierarchy: StrictFieldHierarchy;
-};
-
-class PropertyDataBuilder {
-  private _descriptor: Descriptor;
-  private _contentItem: Item;
-  private _includeWithNoValues: boolean;
-  private _includeWithCompositeValues: boolean;
-  private _wantNestedCategories: boolean;
-  private _callbacks: PropertyPaneCallbacks;
-
-  constructor(props: {
-    descriptor: Descriptor;
-    item: Item;
-    includeWithNoValues: boolean;
-    includeWithCompositeValues: boolean;
-    callbacks: PropertyPaneCallbacks;
-    wantNestedCategories: boolean;
-  }) {
-    this._descriptor = props.descriptor;
-    this._contentItem = props.item;
-    this._includeWithNoValues = props.includeWithNoValues;
-    this._includeWithCompositeValues = props.includeWithCompositeValues;
-    this._wantNestedCategories = props.wantNestedCategories;
-    this._callbacks = props.callbacks;
+  constructor(props: PropertyDataBuilderProps) {
+    super();
+    this._props = props;
+    this._categoriesCache = new PropertyCategoriesCache(props.wantNestedCategories);
   }
 
-  public buildPropertyData(): PropertyData {
-    const records = this._wantNestedCategories ? this.createNestedCategorizedRecords() : this.createCategorizedRecords(this.createCategorizedFieldsWithFlatCategories());
+  public getPropertyData(): PropertyData {
+    assert(this._result !== undefined);
+    return this._result;
+  }
+
+  protected createRootPropertiesAppender(): IPropertiesAppender {
     return {
-      ...records,
-      label: createLabelRecord(this._contentItem.label, "label"),
-      description: this._contentItem.classInfo ? this._contentItem.classInfo.label : undefined,
+      append: (record: FieldHierarchyRecord): void => {
+        // Note: usually the last category on the stack should be what we want, but in some cases,
+        // when record's parent is merged, we need another category. In any case it's always expected
+        // to be on the stack.
+        const category = this._categoriesStack.find((c) => c.name === record.fieldHierarchy.field.category.name);
+        assert(category !== undefined);
+
+        let records = this._categorizedRecords.get(category.name);
+        if (!records) {
+          records = [];
+          this._categorizedRecords.set(category.name, records);
+        }
+        records.push(record);
+      },
+    };
+  }
+
+  public override startContent(props: StartContentProps): boolean {
+    this._categoriesCache.initFromDescriptor(props.descriptor);
+    return super.startContent(props);
+  }
+
+  public override finishItem(): void {
+    assert(this._result === undefined);
+    const categorizedRecords: { [categoryName: string]: PropertyRecord[] } = {};
+    this._categorizedRecords.forEach((recs, categoryName) => {
+      destructureRecords(recs);
+      if (recs.length) {
+        const sortedFields = recs.map((r) => r.fieldHierarchy.field);
+        this._props.callbacks.sortFields(this._categoriesCache.getEntry(categoryName)!, sortedFields);
+        categorizedRecords[categoryName] = sortedFields.map((field) => recs.find((r) => r.fieldHierarchy.field === field)!.record);
+      }
+    });
+    const item = this.currentPropertiesAppender.item;
+    assert(item !== undefined);
+    this._result = {
+      label: createLabelRecord(item.label, "label"),
+      description: item.classInfo ? item.classInfo.label : undefined,
+      categories: this.createPropertyCategories()
+        .filter(({ categoryHasParent }) => !categoryHasParent)
+        .map(({ category }) => category),
+      records: categorizedRecords,
       reusePropertyDataState: true,
-    } as PropertyData;
-  }
-
-  private createCategorizedFieldsWithFlatCategories(): CategorizedFields {
-    const favoritesCategory = getFavoritesCategory();
-    const categories = new Array<CategoryDescription>();
-    const categoryFields: {
-      [categoryName: string]: StrictFieldHierarchy[];
-    } = {};
-
-    const buildFieldsHierarchy = (fields: Field[]): StrictFieldHierarchy[] => {
-      return fields.map((field) => {
-        const childFields = field.isNestedContentField() ? buildFieldsHierarchy(field.nestedFields) : [];
-        return { field, childFields };
-      });
-    };
-    const includeField = (category: CategoryDescription, fieldHierarchy: StrictFieldHierarchy) => {
-      if (!categoryFields.hasOwnProperty(category.name)) {
-        categories.push(category);
-        categoryFields[category.name] = [];
-      }
-      categoryFields[category.name].push(fieldHierarchy);
-      return fieldHierarchy;
-    };
-    const visitField = (category: CategoryDescription, field: Field, parentField: Field | undefined): StrictFieldHierarchy | undefined => {
-      let childFields: StrictFieldHierarchy[] = [];
-      if (field.isNestedContentField()) {
-        if (category === favoritesCategory) {
-          childFields = buildFieldsHierarchy(field.nestedFields);
-        } else {
-          childFields = visitFields(field.nestedFields, field);
-        }
-        if (0 === childFields.length)
-          return undefined;
-      }
-      if (field.type.valueFormat !== PresentationPropertyValueFormat.Primitive && !this._includeWithCompositeValues) {
-        // skip composite fields if requested
-        return undefined;
-      }
-      const fieldHierarchy = { field, childFields };
-      if (category === parentField?.category) {
-        // if categories of this field and its parent field match - return the field hierarchy without
-        // including it as a top level field
-        return fieldHierarchy;
-      }
-      if (!tryGroupingWithRelatedFields(categoryFields[category.name] ?? [], fieldHierarchy)) {
-        includeField(category, fieldHierarchy);
-      }
-      return undefined;
-    };
-    const visitFields = (fields: Field[], parentField: NestedContentField | undefined) => {
-      const includedFields: StrictFieldHierarchy[] = [];
-      fields.forEach((field) => {
-        if (favoritesCategory.name !== field.category.name && this._callbacks.isFavorite(field)) {
-          // if the field is not already in favorites group and we want to make it favorite, visit it
-          // with the favorites category
-          visitField(favoritesCategory, field, undefined);
-        }
-        const visitedField = visitField(field.category, field, parentField);
-        if (visitedField)
-          includedFields.push(visitedField);
-      });
-      return includedFields;
-    };
-    visitFields(this._descriptor.fields, undefined);
-
-    // sort categories
-    this._callbacks.sortCategories(categories);
-
-    // sort fields
-    const sortFieldHierarchies = (category: CategoryDescription, fieldHierarchies: StrictFieldHierarchy[]) => {
-      const sortedFields = fieldHierarchies.map((fh) => fh.field);
-      this._callbacks.sortFields(category, sortedFields);
-      fieldHierarchies.sort((lhs, rhs) => {
-        const lhsIndex = sortedFields.indexOf(lhs.field);
-        const rhsIndex = sortedFields.indexOf(rhs.field);
-        return lhsIndex - rhsIndex;
-      });
-      fieldHierarchies.forEach((fh) => sortFieldHierarchies(category, fh.childFields));
-    };
-    categories.forEach((category) => sortFieldHierarchies(category, categoryFields[category.name]));
-
-    return {
-      categories,
-      fields: categoryFields,
     };
   }
 
-  private createCategorizedRecords(fields: CategorizedFields): CategorizedRecords {
-    const favoritesCategory = getFavoritesCategory();
-    const result: CategorizedRecords = {
-      categories: [],
-      records: {},
-    };
-    for (const category of fields.categories) {
-      const records = new Array<FieldHierarchyRecord>();
-      const addRecord = (entry: FieldHierarchyRecord) => {
-        if (category.name === favoritesCategory.name) {
-          records.push(entry);
-          return;
-        }
-
-        if (this._callbacks.isHidden(entry.fieldHierarchy.field))
-          return;
-
-        if (!this._includeWithNoValues && !entry.record.isMerged && isValueEmpty(entry.record.value))
-          return;
-
-        records.push(entry);
-      };
-
-      // create/add records for each field
-      for (const fieldHierarchy of fields.fields[category.name]) {
-        const recordEntry = ContentBuilder.createPropertyRecord(fieldHierarchy, this._contentItem);
-        addRecord({ ...recordEntry, fieldHierarchy });
-      }
-
-      destructureRecords(records);
-
-      if (records.length === 0) {
-        // don't create the category if it has no records
-        continue;
-      }
-
-      result.categories.push({
-        name: category.name,
-        label: category.label,
-        expand: category.expand,
-      });
-      result.records[category.name] = records.map((r) => r.record);
-    }
-    return result;
-  }
-
-  private createFieldsHierarchy(fields: Field[]) {
-    const hierarchies = new Array<StrictFieldHierarchy>();
-    const visitField = (category: CategoryDescription, field: Field, parentField: Field | undefined): StrictFieldHierarchy | undefined => {
-      let childFields: StrictFieldHierarchy[] = [];
-      if (field.isNestedContentField()) {
-        // visit all nested fields
-        childFields = visitFields(field.nestedFields, field);
-        if (0 === childFields.length)
-          return undefined;
-      }
-      if (field.type.valueFormat !== PresentationPropertyValueFormat.Primitive && !this._includeWithCompositeValues) {
-        // skip composite fields if requested
-        return undefined;
-      }
-      const fieldHierarchy = { field, childFields };
-      if (category === parentField?.category) {
-        // if categories of this field and its parent field match - return the field hierarchy without
-        // including it as a top level field
-        return fieldHierarchy;
-      }
-      if (!tryGroupingWithRelatedFields(hierarchies, fieldHierarchy)) {
-        hierarchies.push(fieldHierarchy);
-      }
-      return undefined;
-    };
-    const visitFields = (visitedFields: Field[], parentField: NestedContentField | undefined) => {
-      const includedFields: StrictFieldHierarchy[] = [];
-      visitedFields.forEach((field) => {
-        const visitedField = visitField(field.category, field, parentField);
-        if (visitedField)
-          includedFields.push(visitedField);
-      });
-      return includedFields;
-    };
-    visitFields(fields, undefined);
-    return hierarchies;
-  }
-
-  private createFavoriteFieldsList(fieldHierarchies: StrictFieldHierarchy[]): StrictFieldHierarchy[] {
-    const favorites: StrictFieldHierarchy[] = [];
-    fieldHierarchies.forEach((fh) => traverseFieldHierarchy(fh, (hierarchy) => {
-      if (!this._callbacks.isFavorite(hierarchy.field))
-        return true;
-
-      if (!tryGroupingWithRelatedFields(favorites, hierarchy))
-        favorites.push(hierarchy);
-
-      return false;
-    }));
-    return favorites;
-  }
-
-  private createNestedCategorizedRecords(): CategorizedRecords {
-    const categoriesCache = new PropertyCategoriesCache(this._descriptor);
-    const includedFields = this.createFieldsHierarchy(this._descriptor.fields);
-    const favoriteFields = this.createFavoriteFieldsList(includedFields);
-
-    // create records for each field
-    const categorizedRecords = new Map<string, FieldHierarchyRecord[]>();
-    const addRecord = (category: CategoryDescription, entry: FieldHierarchyRecord) => {
-      let records = categorizedRecords.get(category.name);
-      if (!records) {
-        records = [];
-        categorizedRecords.set(category.name, records);
-      }
-      records.push(entry);
-    };
-    const addFieldHierarchy = (fieldHierarchy: StrictFieldHierarchy, isFavorite: boolean, forceShow: boolean) => {
-      const recordEntry = ContentBuilder.createPropertyRecord(fieldHierarchy, this._contentItem);
-
-      const isHidden = !forceShow && this._callbacks.isHidden(fieldHierarchy.field) || (fieldHierarchy.field !== recordEntry.field) && this._callbacks.isHidden(recordEntry.field);
-      if (isHidden)
-        return;
-
-      if (!forceShow && !this._includeWithNoValues && !recordEntry.record.isMerged && isValueEmpty(recordEntry.record.value))
-        return;
-
-      const category = isFavorite ? categoriesCache.getFavoriteCategory(recordEntry.field.category) : recordEntry.field.category;
-      addRecord(category, { ...recordEntry, fieldHierarchy });
-    };
-    includedFields.forEach((fieldHierarchy) => addFieldHierarchy(fieldHierarchy, false, false));
-    favoriteFields.forEach((fieldHierarchy) => addFieldHierarchy(fieldHierarchy, true, true));
-
-    categorizedRecords.forEach((records) => destructureRecords(records));
-
+  private createPropertyCategories(): Array<{ category: PropertyCategory, source: CategoryDescription, categoryHasParent: boolean }> {
     // determine which categories are actually used
     const usedCategoryNames = new Set();
-    categorizedRecords.forEach((records, categoryName) => {
+    this._categorizedRecords.forEach((records, categoryName) => {
       if (records.length === 0)
         return;
-      let category = categoriesCache.getEntry(categoryName);
+
+      let category = this._categoriesCache.getEntry(categoryName);
       while (category) {
         usedCategoryNames.add(category.name);
-        category = category.parent ? categoriesCache.getEntry(category.parent.name) : undefined;
+
+        if (!this._props.wantNestedCategories)
+          break;
+
+        category = category.parent ? this._categoriesCache.getEntry(category.parent.name) : undefined;
       }
     });
 
     // set up categories hierarchy
     const categoriesHierarchy = new Map<CategoryDescription | undefined, CategoryDescription[]>();
-    categoriesCache.getEntries().forEach((category) => {
+    this._categoriesCache.getEntries().forEach((category) => {
       if (!usedCategoryNames.has(category.name)) {
         // skip unused categories
         return;
       }
 
-      let childCategories = categoriesHierarchy.get(category.parent);
+      const parentCategory = this._props.wantNestedCategories ? category.parent : undefined;
+      let childCategories = categoriesHierarchy.get(parentCategory);
       if (!childCategories) {
         childCategories = [];
-        categoriesHierarchy.set(category.parent, childCategories);
+        categoriesHierarchy.set(parentCategory, childCategories);
       }
       childCategories.push(category);
     });
 
-    // sort categories and fields/records
+    // sort categories
     const nestedSortCategory = (category: CategoryDescription | undefined) => {
       const childCategories = categoriesHierarchy.get(category);
       if (childCategories && childCategories.length > 1)
-        this._callbacks.sortCategories(childCategories);
-
-      if (category) {
-        const records = categorizedRecords.get(category.name);
-        if (records) {
-          const sortedFields = records.map((r) => r.fieldHierarchy.field);
-          this._callbacks.sortFields(category, sortedFields);
-          const sortedRecords = sortedFields.map((field) => records.find((r) => r.fieldHierarchy.field === field)!);
-          records.splice(0, records.length, ...sortedRecords);
-        }
-      }
+        this._props.callbacks.sortCategories(childCategories);
 
       if (childCategories)
         childCategories.forEach(nestedSortCategory);
@@ -632,45 +428,114 @@ class PropertyDataBuilder {
           name: categoryDescr.name,
           label: categoryDescr.label,
           expand: categoryDescr.expand,
-          renderer: categoryDescr.renderer,
         };
+        if (categoryDescr.renderer)
+          category.renderer = categoryDescr.renderer;
         return { category, source: categoryDescr, categoryHasParent: parentDescr !== undefined };
       });
       propertyCategories.push(...childPropertyCategories);
       for (const categoryInfo of childPropertyCategories) {
-        categoryInfo.category.childCategories = pushPropertyCategories(categoryInfo.source);
+        const childCategories = pushPropertyCategories(categoryInfo.source);
+        if (childCategories.length)
+          categoryInfo.category.childCategories = childCategories;
       }
       return childPropertyCategories.map((categoryInfo) => categoryInfo.category);
     };
     pushPropertyCategories(undefined);
+    return propertyCategories;
+  }
 
-    // put everything in return format
-    const result: CategorizedRecords = {
-      categories: propertyCategories
-        .filter(({ categoryHasParent }) => !categoryHasParent)
-        .map(({ category }) => category),
-      records: {},
+  private buildFavoriteFieldAncestors(field: Field) {
+    let parentField = field.parent;
+    while (parentField) {
+      parentField = parentField.clone();
+      parentField.nestedFields = [field];
+      parentField.category = this._categoriesCache.getFavoriteCategory(parentField.category);
+      field = parentField;
+      parentField = parentField.parent;
+    }
+    field.rebuildParentship();
+  }
+  private createFavoriteFieldsHierarchy(hierarchy: FieldHierarchy): FieldHierarchy {
+    const favoriteField = hierarchy.field.clone();
+    favoriteField.category = this._categoriesCache.getFavoriteCategory(hierarchy.field.category);
+    this.buildFavoriteFieldAncestors(favoriteField);
+    return {
+      field: favoriteField,
+      childFields: hierarchy.childFields.map((c) => this.createFavoriteFieldsHierarchy(c)),
     };
-    categorizedRecords.forEach((recs, categoryName) => {
-      if (recs.length)
-        result.records[categoryName] = recs.map((r) => r.record);
-    });
-    return result;
+  }
+  private createFavoriteFieldsList(fieldHierarchies: FieldHierarchy[]): FieldHierarchy[] {
+    const favorites: FieldHierarchy[] = [];
+    fieldHierarchies.forEach((fh) => traverseFieldHierarchy(fh, (hierarchy) => {
+      if (!this._props.callbacks.isFavorite(hierarchy.field))
+        return true;
+
+      addFieldHierarchy(favorites, this.createFavoriteFieldsHierarchy(hierarchy));
+      return false;
+    }));
+    return favorites;
+  }
+  public override processFieldHierarchies(props: ProcessFieldHierarchiesProps): void {
+    super.processFieldHierarchies(props);
+    this._favoriteFieldHierarchies = this.createFavoriteFieldsList(props.hierarchies);
+    props.hierarchies.push(...this._favoriteFieldHierarchies);
+  }
+
+  public override startCategory(props: StartCategoryProps): boolean {
+    this._categoriesStack.push(props.category);
+    return true;
+  }
+  public override finishCategory(): void { this._categoriesStack.pop(); }
+
+  public override startStruct(props: StartStructProps): boolean {
+    if (this.shouldSkipField(props.hierarchy.field, () => !Object.keys(props.rawValues).length))
+      return false;
+
+    return super.startStruct(props);
+  }
+
+  public override startArray(props: StartArrayProps): boolean {
+    if (this.shouldSkipField(props.hierarchy.field, () => !props.rawValues.length))
+      return false;
+
+    return super.startArray(props);
+  }
+
+  public override processPrimitiveValue(props: ProcessPrimitiveValueProps): void {
+    if (this.shouldSkipField(props.field, () => (null === props.rawValue || undefined === props.rawValue || "" === props.rawValue)))
+      return;
+
+    super.processPrimitiveValue(props);
+  }
+
+  private shouldSkipField(field: Field, isValueEmpty: () => boolean): boolean {
+    const isFieldFavorite = this._favoriteFieldHierarchies.find((h) => h.field.name === field.name) !== undefined;
+
+    // skip values of hidden fields
+    if (!isFieldFavorite && this._props.callbacks.isHidden(field))
+      return true;
+
+    // skip empty values
+    if (!isFieldFavorite && !this._props.includeWithNoValues && isValueEmpty())
+      return true;
+
+    if (field.type.valueFormat !== PresentationPropertyValueFormat.Primitive && !this._props.includeWithCompositeValues) {
+      // skip composite fields if requested
+      return true;
+    }
+
+    return false;
   }
 }
 
 class PropertyCategoriesCache {
   private _byName = new Map<string, CategoryDescription>();
 
-  constructor(descriptor: Descriptor) {
-    this.initFromFields(descriptor.fields);
+  constructor(private _enableCategoryNesting: boolean) { }
 
-    // add parent categories that have no fields of their own
-    [...this._byName.values()].forEach((entry) => {
-      let curr: CategoryDescription | undefined = entry;
-      while (curr)
-        curr = curr.parent ? this.cache(curr.parent) : undefined;
-    });
+  public initFromDescriptor(descriptor: Descriptor) {
+    this.initFromFields(descriptor.fields);
   }
 
   private initFromFields(fields: Field[]) {
@@ -680,6 +545,13 @@ class PropertyCategoriesCache {
       } else {
         this.cache(field.category);
       }
+    });
+
+    // add parent categories that have no fields of their own
+    [...this._byName.values()].forEach((entry) => {
+      let curr: CategoryDescription | undefined = entry;
+      while (curr)
+        curr = curr.parent ? this.cache(curr.parent) : undefined;
     });
   }
 
@@ -701,6 +573,9 @@ class PropertyCategoriesCache {
   }
 
   public getFavoriteCategory(sourceCategory: CategoryDescription): CategoryDescription {
+    if (!this._enableCategoryNesting)
+      return this.getRootFavoritesCategory();
+
     const fieldCategoryRenameStatus = this.getRenamedCategory(`${FAVORITES_CATEGORY_NAME}-${sourceCategory.name}`, sourceCategory);
     let curr = fieldCategoryRenameStatus;
     while (!curr.fromCache && curr.category.parent) {
@@ -732,19 +607,6 @@ class PropertyCategoriesCache {
   }
 }
 
-const isValueEmpty = (v: PropertyValue): boolean => {
-  switch (v.valueFormat) {
-    case PropertyValueFormat.Primitive:
-      return (null === v.value || undefined === v.value || "" === v.value);
-    case PropertyValueFormat.Array:
-      return 0 === v.items.length;
-    case PropertyValueFormat.Struct:
-      return 0 === Object.keys(v.members).length;
-  }
-  /* istanbul ignore next */
-  throw new PresentationError(PresentationStatus.InvalidArgument, "Unknown property value format");
-};
-
 function shouldDestructureArrayField(field: Field) {
   // destructure arrays if they're based on nested content field or nested under a nested content field
   return field.isNestedContentField() || field.parent;
@@ -757,9 +619,9 @@ function shouldDestructureStructField(field: Field, totalRecordsCount: number | 
   return field.isNestedContentField() && (field.relationshipMeaning === RelationshipMeaning.SameInstance || totalRecordsCount === 1);
 }
 
-function destructureStructMember(member: FieldRecord & { fieldHierarchy: StrictFieldHierarchy }): Array<FieldRecord & { fieldHierarchy: StrictFieldHierarchy }> {
+function destructureStructMember(member: FieldHierarchyRecord): Array<FieldHierarchyRecord> {
   // only destructure array member items
-  if (member.record.value.valueFormat !== PropertyValueFormat.Array || !shouldDestructureArrayField(member.field) || !shouldDestructureStructField(member.field, undefined))
+  if (member.record.value.valueFormat !== UiPropertyValueFormat.Array || !shouldDestructureArrayField(member.fieldHierarchy.field) || !shouldDestructureStructField(member.fieldHierarchy.field, undefined))
     return [member];
 
   // don't want to include struct arrays without items - just return empty array
@@ -772,7 +634,7 @@ function destructureStructMember(member: FieldRecord & { fieldHierarchy: StrictF
 
   // the single item should be a struct
   const item = member.record.value.items[0];
-  assert(item.value.valueFormat === PropertyValueFormat.Struct);
+  assert(item.value.valueFormat === UiPropertyValueFormat.Struct);
 
   // if all above checks pass, destructure the struct item
   const recs = [{ ...member, record: item }];
@@ -780,25 +642,24 @@ function destructureStructMember(member: FieldRecord & { fieldHierarchy: StrictF
   return recs;
 }
 
-function destructureStructArrayItems(items: PropertyRecord[], fieldHierarchy: StrictFieldHierarchy) {
-  const destructuredFields: StrictFieldHierarchy[] = [];
+function destructureStructArrayItems(items: PropertyRecord[], fieldHierarchy: FieldHierarchy) {
+  const destructuredFields: FieldHierarchy[] = [];
   fieldHierarchy.childFields.forEach((nestedFieldHierarchy) => {
     items.forEach((item, index) => {
-      assert(item.value.valueFormat === PropertyValueFormat.Struct);
+      assert(item.value.valueFormat === UiPropertyValueFormat.Struct);
       assert(item.value.members[nestedFieldHierarchy.field.name] !== undefined);
 
       // destructure a single struct array item member
       const destructuredMembers = destructureStructMember({
         fieldHierarchy: nestedFieldHierarchy,
-        field: nestedFieldHierarchy.field,
         record: item.value.members[nestedFieldHierarchy.field.name],
       });
 
       // remove the old member and insert all destructured new members
       delete item.value.members[nestedFieldHierarchy.field.name];
       destructuredMembers.forEach((destructuredMember) => {
-        assert(item.value.valueFormat === PropertyValueFormat.Struct);
-        item.value.members[destructuredMember.field.name] = destructuredMember.record;
+        assert(item.value.valueFormat === UiPropertyValueFormat.Struct);
+        item.value.members[destructuredMember.fieldHierarchy.field.name] = destructuredMember.record;
       });
 
       // store new members. all items are expected to have the same members, so only need to do this once
@@ -813,13 +674,13 @@ function destructureStructArrayItems(items: PropertyRecord[], fieldHierarchy: St
     fieldHierarchy.childFields = destructuredFields;
 }
 
-function destructureRecords(records: Array<FieldRecord & { fieldHierarchy: StrictFieldHierarchy }>) {
+function destructureRecords(records: FieldHierarchyRecord[]) {
   let i = 0;
   while (i < records.length) {
     const entry = records[i];
 
-    if (entry.record.value.valueFormat === PropertyValueFormat.Array && shouldDestructureArrayField(entry.field)) {
-      if (shouldDestructureStructField(entry.field, 1)) {
+    if (entry.record.value.valueFormat === UiPropertyValueFormat.Array && shouldDestructureArrayField(entry.fieldHierarchy.field)) {
+      if (shouldDestructureStructField(entry.fieldHierarchy.field, 1)) {
         // destructure individual array items
         destructureStructArrayItems(entry.record.value.items, entry.fieldHierarchy);
       }
@@ -835,10 +696,10 @@ function destructureRecords(records: Array<FieldRecord & { fieldHierarchy: Stric
       }
     }
 
-    if (entry.record.value.valueFormat === PropertyValueFormat.Struct && shouldDestructureStructField(entry.field, records.length)) {
+    if (entry.record.value.valueFormat === UiPropertyValueFormat.Struct && shouldDestructureStructField(entry.fieldHierarchy.field, records.length)) {
       // destructure structs by replacing them with their member records
       const members = entry.fieldHierarchy.childFields.reduce((list, nestedFieldHierarchy) => {
-        assert(entry.record.value.valueFormat === PropertyValueFormat.Struct);
+        assert(entry.record.value.valueFormat === UiPropertyValueFormat.Struct);
         assert(entry.record.value.members[nestedFieldHierarchy.field.name] !== undefined);
         const member = {
           fieldHierarchy: nestedFieldHierarchy,
@@ -847,7 +708,7 @@ function destructureRecords(records: Array<FieldRecord & { fieldHierarchy: Stric
         };
         list.push(...destructureStructMember(member));
         return list;
-      }, new Array<FieldRecord & { fieldHierarchy: StrictFieldHierarchy }>());
+      }, new Array<FieldHierarchyRecord>());
       records.splice(i, 1, ...members);
       continue;
     }
@@ -857,93 +718,7 @@ function destructureRecords(records: Array<FieldRecord & { fieldHierarchy: Stric
 
   // lastly, when there's only one record in the list and it's an array that we want destructured, set the `hideCompositePropertyLabel`
   // attribute so only the items are rendered
-  if (records.length === 1 && records[0].record.value.valueFormat === PropertyValueFormat.Array && shouldDestructureArrayField(records[0].field)) {
+  if (records.length === 1 && records[0].record.value.valueFormat === UiPropertyValueFormat.Array && shouldDestructureArrayField(records[0].fieldHierarchy.field)) {
     records[0].record.property.hideCompositePropertyLabel = true;
   }
-}
-
-function findRelatedFields(rootFields: StrictFieldHierarchy[], hierarchy: StrictFieldHierarchy) {
-  // build a list of parent fields in hierarchy
-  const fields: Field[] = [];
-  let currField: Field | undefined = hierarchy.field;
-  while (currField) {
-    fields.push(currField);
-    currField = currField.parent;
-  }
-
-  for (let rootIndex = 0; rootIndex < rootFields.length; ++rootIndex) {
-    const rootFieldHierarchy = rootFields[rootIndex];
-    if (rootFieldHierarchy.field.category !== hierarchy.field.category) {
-      // only interested in fields with the same category
-      continue;
-    }
-
-    let first = true;
-    currField = rootFieldHierarchy.field;
-    while (currField) {
-      const index = fields.findIndex((f) => f.name === currField!.name);
-      if (-1 !== index) {
-        return {
-          existing: {
-            field: currField,
-            hierarchy: first ? rootFieldHierarchy : undefined,
-            index: rootIndex,
-          },
-          matchingField: fields[index]!,
-        };
-      }
-      currField = currField.parent;
-      first = false;
-    }
-  }
-
-  return undefined;
-}
-
-function buildParentHierarchy(hierarchy: StrictFieldHierarchy, parentField: Field) {
-  // note: parentField is found by walking up the parentship relationship
-  // from hierarchy.field, so we expect to always find it here
-  while (hierarchy.field !== parentField) {
-    const hierarchyParent = hierarchy.field.parent;
-    assert(hierarchyParent !== undefined);
-    hierarchy = { field: hierarchyParent, childFields: [hierarchy] };
-  }
-  return hierarchy;
-}
-
-function mergeHierarchies(lhs: StrictFieldHierarchy, rhs: StrictFieldHierarchy) {
-  assert(lhs.field.name === rhs.field.name);
-  const result: StrictFieldHierarchy = {
-    field: lhs.field.clone(),
-    childFields: [...lhs.childFields],
-  };
-  rhs.childFields.forEach((rhsChildHierarchy) => {
-    const indexInResult = result.childFields.findIndex((resultHierarchy) => resultHierarchy.field.name === rhsChildHierarchy.field.name);
-    if (indexInResult !== -1)
-      result.childFields[indexInResult] = mergeHierarchies(result.childFields[indexInResult], rhsChildHierarchy);
-    else
-      result.childFields.push(rhsChildHierarchy);
-  });
-  return result;
-}
-
-function tryGroupingWithRelatedFields(rootHierarchies: StrictFieldHierarchy[], hierarchy: StrictFieldHierarchy): boolean {
-  const match = findRelatedFields(rootHierarchies, hierarchy);
-  if (!match)
-    return false;
-
-  const targetHierarchy = rootHierarchies[match.existing.index];
-  const existingHierarchy = match.existing.hierarchy ?? buildParentHierarchy(targetHierarchy, match.existing.field);
-  const insertHierarchy = buildParentHierarchy(hierarchy, match.matchingField);
-  const mergedHierarchy = mergeHierarchies(existingHierarchy, insertHierarchy);
-  mergedHierarchy.field.category = hierarchy.field.category;
-  if (mergedHierarchy.field.category.expand && mergedHierarchy.field.isNestedContentField())
-    mergedHierarchy.field.autoExpand = true;
-  rootHierarchies[match.existing.index] = mergedHierarchy;
-  return true;
-}
-
-function traverseFieldHierarchy(hierarchy: StrictFieldHierarchy, cb: (h: StrictFieldHierarchy) => boolean) {
-  if (cb(hierarchy))
-    hierarchy.childFields.forEach((childHierarchy) => traverseFieldHierarchy(childHierarchy, cb));
 }

@@ -64,7 +64,7 @@ const testMapLayer4 = { name: "TestName", url: "www.bentley.com", formatId: "WMS
 const testMapLayer6 = { name: "TestName", url: "www.bentley.com", formatId: "WMS", visible: false };
 const legacyMapLayer = MapLayerSettings.fromMapSettings(BackgroundMapSettings.fromJSON({ providerName: "BingProvider", providerData: { mapType: BackgroundMapType.Hybrid } }));
 
-describe.only("MapLayerSettings", () => {
+describe("MapLayerSettings", () => {
   const expectMatches = (output: MapLayerProps, expected: MapLayerProps) => {
     expect(output.name).to.equal(expected.name);
     expect(output.visible).to.equal(expected.visible);

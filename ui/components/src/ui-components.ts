@@ -25,6 +25,7 @@ export * from "./ui-components/common/showhide/ShowHideMenu";
 export * from "./ui-components/common/StandardTypeNames";
 export * from "./ui-components/common/UseAsyncValue";
 export * from "./ui-components/common/UseDebouncedAsyncValue";
+export * from "./ui-components/common/DateUtils";
 
 export * from "./ui-components/converters/TypeConverter";
 export * from "./ui-components/converters/TypeConverterManager";
@@ -183,6 +184,7 @@ export * from "./ui-components/favorite/FavoritePropertyList";
 
 export * from "./ui-components/inputs/QuantityInput";
 export * from "./ui-components/inputs/ParsedInput";
+export * from "./ui-components/inputs/QuantityNumberInput";
 
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/SimpleTreeDataProvider";

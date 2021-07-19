@@ -10,7 +10,7 @@ import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Cartographic, ImageSource, ImageSourceFormat, MapLayerSettings } from "@bentley/imodeljs-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
-import { NotifyMessageDetails, OutputMessagePriority } from "../../imodeljs-frontend";
+import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
 import { ScreenViewport } from "../../Viewport";
 
 import { ImageryMapTile, ImageryMapTileTree, MapCartoRectangle, QuadId } from "../internal";
@@ -33,7 +33,7 @@ export abstract class MapLayerImageryProvider {
 
   public get tileSize(): number { return this._usesCachedTiles ? tileImageSize : untiledImageSize; }
   public get maximumScreenSize() { return 2 * this.tileSize; }
-  public get minimumZoomLevel(): number { return 4; }
+  public get minimumZoomLevel(): number { return 0; }
   public get maximumZoomLevel(): number { return 22; }
   public get usesCachedTiles() { return this._usesCachedTiles; }
   public get mutualExclusiveSubLayer(): boolean { return false; }

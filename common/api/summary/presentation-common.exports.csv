@@ -1,5 +1,7 @@
 sep=;
 Release Tag;API Item
+alpha;addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void
+internal;applyOptionalPrefix(str: string, prefix?: string): string
 public;ArrayTypeDescription 
 internal;AsyncTasksTracker
 public;BaseFieldJSON
@@ -100,6 +102,21 @@ public;ECInstancesNodeKeyJSON
 public;ECPropertyGroupingNodeKey 
 public;ECPropertyValueQuerySpecification 
 public;EditorDescription
+beta;ElementProperties
+beta;ElementPropertiesArrayPropertyItem = ElementPropertiesPrimitiveArrayPropertyItem | ElementPropertiesStructArrayPropertyItem
+beta;ElementPropertiesArrayPropertyItemBase 
+beta;ElementPropertiesCategoryItem 
+beta;ElementPropertiesItem = ElementPropertiesCategoryItem | ElementPropertiesPropertyItem
+beta;ElementPropertiesItemBase
+beta;ElementPropertiesPrimitiveArrayPropertyItem 
+beta;ElementPropertiesPrimitivePropertyItem 
+beta;ElementPropertiesPropertyItem = ElementPropertiesPrimitivePropertyItem | ElementPropertiesArrayPropertyItem | ElementPropertiesStructPropertyItem
+beta;ElementPropertiesPropertyItemBase 
+beta;ElementPropertiesPropertyValueType = "primitive" | "array" | "struct"
+beta;ElementPropertiesRequestOptions
+beta;ElementPropertiesRpcRequestOptions = PresentationRpcRequestOptions
+beta;ElementPropertiesStructArrayPropertyItem 
+beta;ElementPropertiesStructPropertyItem 
 public;EnumerationChoice
 public;EnumerationInfo
 alpha;ExpandedNodeUpdateRecord
@@ -111,10 +128,12 @@ public;ExtendedDataRule
 public;ExtendedHierarchyRequestOptions
 public;ExtendedHierarchyRpcRequestOptions = PresentationRpcRequestOptions
 public;Field
+internal;FIELD_NAMES_SEPARATOR = "$"
 public;FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor
 public;FieldDescriptor
 public;FieldDescriptorBase
 public;FieldDescriptorType
+alpha;FieldHierarchy
 public;FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentFieldJSON
 internal;getFieldByName: (fields: Field[], name: string, recurse?: boolean | undefined) => Field | undefined
 public;getInstancesCount: (keys: Readonly
@@ -139,6 +158,7 @@ alpha;HierarchyUpdateInfoJSON = typeof UPDATE_FULL | HierarchyUpdateRecordJSON[]
 alpha;HierarchyUpdateRecord
 alpha;HierarchyUpdateRecord
 alpha;HierarchyUpdateRecordJSON
+alpha;IContentVisitor
 public;Id64RulesetVariable 
 public;Id64RulesetVariableJSON 
 public;Id64sRulesetVariable 
@@ -254,9 +274,12 @@ internal;PresentationIpcInterface
 public;PresentationRpcInterface 
 public;PresentationRpcRequestOptions
 public;PresentationStatus
-alpha;PresentationUnitSystem
+beta;PresentationUnitSystem
 public;PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined
 public;PrimitiveTypeDescription 
+alpha;ProcessFieldHierarchiesProps
+alpha;ProcessMergedValueProps
+alpha;ProcessPrimitiveValueProps
 public;PropertiesField 
 public;PropertiesFieldDescriptor 
 public;PropertiesFieldJSON 
@@ -344,6 +367,12 @@ public;SortDirection
 public;SortingRule = PropertySortingRule | DisabledSortingRule
 public;SortingRuleBase 
 public;StandardNodeTypes
+alpha;StartArrayProps
+alpha;StartCategoryProps
+alpha;StartContentProps
+alpha;StartFieldProps
+alpha;StartItemProps
+alpha;StartStructProps
 public;StringQuerySpecification 
 public;StringRulesetVariable 
 public;StringRulesetVariableJSON 
@@ -355,7 +384,11 @@ public;StyleOverride
 public;SubCondition 
 public;Subtract
 public;SupplementationInfo
+alpha;traverseContent(visitor: IContentVisitor, content: Content): void
+alpha;traverseContentItem(visitor: IContentVisitor, descriptor: Descriptor, item: Item): void
+internal;traverseFieldHierarchy(hierarchy: FieldHierarchy, cb: (h: FieldHierarchy) => boolean): void
 public;TypeDescription = PrimitiveTypeDescription | ArrayTypeDescription | StructTypeDescription
+internal;UnsetRulesetVariableParams 
 alpha;UPDATE_FULL = "FULL"
 internal;UpdateHierarchyStateParams
 alpha;UpdateInfo

@@ -78,20 +78,20 @@ export enum SyncUiEventId {
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
  * @public
- */
+ */
 export interface SyncUiEventArgs {
   eventIds: Set<string>;
 }
 
 /** SyncUi Event class.
  * @public
- */
+ */
 export class SyncUiEvent extends UiEvent<SyncUiEventArgs> { }
 
 /** This class is used to send eventIds to interested UI components so the component can determine if it needs
  * to refresh its display by calling setState on itself.
  * @public
- */
+ */
 export class SyncUiEventDispatcher {
   private static _syncEventTimerId: number | undefined;
   private static _eventIds: Set<string>;
@@ -225,7 +225,7 @@ export class SyncUiEventDispatcher {
   /** Initializes the Monitoring of Events that trigger dispatching sync events */
   public static initialize() {
     // clear any registered listeners - this should only be encountered in unit test scenarios
-    this._unregisterListenerFuncs.forEach((unregisterListenerFunc)=>unregisterListenerFunc());
+    this._unregisterListenerFuncs.forEach((unregisterListenerFunc) => unregisterListenerFunc());
 
     this._unregisterListenerFuncs.push(FrontstageManager.onContentControlActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentControlActivated);
@@ -304,20 +304,25 @@ export class SyncUiEventDispatcher {
   /** This should be called by IModelApp when the active IModelConnection is closed. */
   public static clearConnectionEvents(iModelConnection: IModelConnection) {
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
-
-    if (SyncUiEventDispatcher._unregisterListenerFunc)
-      SyncUiEventDispatcher._unregisterListenerFunc();
-
+    SyncUiEventDispatcher._unregisterListenerFunc && SyncUiEventDispatcher._unregisterListenerFunc();
     UiFramework.setActiveIModelId("");
   }
 
   /** This should be called by IModelApp when the active IModelConnection is established. */
   public static initializeConnectionEvents(iModelConnection: IModelConnection) {
+    if (SyncUiEventDispatcher._unregisterListenerFunc)
+      SyncUiEventDispatcher._unregisterListenerFunc();
+
+    if (iModelConnection.isBlankConnection()) {
+      iModelConnection && UiFramework.setActiveIModelId(iModelConnection.iModelId ?? "");
+      UiFramework.dispatchActionToStore(SessionStateActionId.SetAvailableSelectionScopes, []);
+      UiFramework.dispatchActionToStore(SessionStateActionId.SetNumItemsSelected, 0);
+      return;
+    }
+
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
     iModelConnection.selectionSet.onChanged.addListener(SyncUiEventDispatcher.selectionChangedHandler);
     (iModelConnection.iModelId) ? UiFramework.setActiveIModelId(iModelConnection.iModelId) : /* istanbul ignore next */ "";
-    if (SyncUiEventDispatcher._unregisterListenerFunc)
-      SyncUiEventDispatcher._unregisterListenerFunc();
 
     // listen for changes from presentation rules selection manager (this is done once an iModelConnection is available to ensure Presentation.selection is valid)
     SyncUiEventDispatcher._unregisterListenerFunc = Presentation.selection.selectionChange.addListener((args: SelectionChangeEventArgs, provider: ISelectionProvider) => {
