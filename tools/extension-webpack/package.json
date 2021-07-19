@@ -1,6 +1,6 @@
 {
   "name": "@bentley/extension-webpack-tools",
-  "version": "2.19.0-dev.17",
+  "version": "2.19.0-dev.20",
   "description": "Configuration and scripts for iModel.js Extensions.",
   "license": "MIT",
   "repository": {

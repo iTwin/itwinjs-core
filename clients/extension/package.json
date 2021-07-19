@@ -1,6 +1,6 @@
 {
   "name": "@bentley/extension-client",
-  "version": "2.19.0-dev.17",
+  "version": "2.19.0-dev.20",
   "description": "IModel.js Extension Client",
   "main": "lib/extension-client.js",
   "typings": "lib/extension-client",
