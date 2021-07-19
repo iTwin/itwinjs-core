@@ -1822,8 +1822,7 @@ describe("iModel", () => {
     iModel2.close();
   });
 
-  // Deactivated since change was (temporarily) reverted
-  it.skip("presence of a GCS imposes the ecef value", async () => {
+  it("presence of a GCS imposes the ecef value", async () => {
     const args = {
       rootSubject: { name: "TestSubject", description: "test project" },
       client: "ABC Engineering",
