@@ -6,10 +6,10 @@ import { assert, BeEvent } from "@bentley/bentleyjs-core";
 import { ArcGisOAuth2Token } from "../../imodeljs-frontend";
 import { ArcGisTokenManager, ArcGisUtilities, MapLayerTokenEndpoint} from "../internal";
 
-/** @internal */
+/** @beta */
 export enum EsriOAuth2EndpointType {Authorize,Token}
 
-/** @internal */
+/** @beta */
 export class EsriOAuth2Endpoint implements MapLayerTokenEndpoint {
   private _url: string;
   private _isArcgisOnline: boolean;
@@ -67,7 +67,7 @@ export class EsriOAuth2 {
    * @param redirectUri URI where the user is going redirected with the token
    * @param arcGisOnlineClientId Application ID that should be used to access ArcGIS Online
    * @param arcgisEnterpriseClientIds A dictionary of Application ID for each ArcGIS Enterprise service that Oauth2 should be supported
-   * @param tokenExpiration Optional expiration after which the token will expire. Defined in minutes with a maximum of two weeks (20160 minutes).
+   * @param tokenExpiration Optional expiration after which the token will expire, defined in minutes.  The default value is 2 hours (120 minutes). The maximum value is two weeks (20160 minutes).
    * @returns true if the initialized was successful otherwise false.
    */
   public static initialize(redirectUri: string, arcGisOnlineClientId?: string, arcGisEnterpriseClientIds?: {serviceBaseUrl: string, appId: string}[], tokenExpiration?: number): boolean {
@@ -83,24 +83,28 @@ export class EsriOAuth2 {
     EsriOAuth2._expiration = tokenExpiration;
 
     /** Define a *global* callback function that will be used by the redirect URL to pass the generated token
-   * @param success A binary value that, if true, implies the login process was successful.
-   * @param token Generated access token
-   * @param expiresIn Token expiration in seconds from now.
-   * @param ssl A binary value that, if true, implies that the user belongs to an SSL-only organization
-   * @param state An opaque value used by applications to maintain state between authorization requests and responses.
-   * @param persist A binary value that, if true, implies that the user had checked "Keep me signed in" when signing.
+   * @param redirectLocation Unmodified value of 'window.location' from the redirect_uri page.
    */
-    (window as any).esriOAuth2Callback = (success: boolean, token?: string, expiresIn?: number, userName?: string, ssl?: boolean, state?: string, persist?: boolean) => {
+    (window as any).esriOAuth2Callback = (redirectLocation?:Location) => {
+      let eventSuccess = false;
       let decodedState;
-      let eventSuccess = success;
-      if (success) {
-        if ( token !== undefined && expiresIn !== undefined && userName !== undefined && ssl !== undefined && state !== undefined) {
+
+      if (redirectLocation && redirectLocation.hash.length > 0) {
+        const locationHash = redirectLocation.hash;
+        const hashParams = new URLSearchParams(locationHash.substr(1));
+        const token = hashParams.get("access_token") ?? undefined;
+        const expiresInStr = hashParams.get("expires_in") ?? undefined;
+        const userName = hashParams.get("username") ?? undefined;
+        const ssl = hashParams.get("ssl") === "true";
+        const state = hashParams.get("state") ?? undefined;
+        const persist = hashParams.get("persist") === "true";
+        if ( token !== undefined && expiresInStr !== undefined && userName !== undefined && ssl !== undefined && state !== undefined) {
           decodedState = decodeURIComponent(state);
           const stateUrl = new URL(decodedState);
-          const expiresAt = (expiresIn * 1000) + (+new Date());
+          const expiresIn = Number(expiresInStr);
+          const expiresAt = (expiresIn * 1000) + (+new Date());   // Converts the token expiration delay (seconds) into a timestamp (UNIX time)
           ArcGisTokenManager.setOAuth2Token(stateUrl.origin, {token, expiresAt, ssl, userName, persist});
-        } else {
-          eventSuccess = false;
+          eventSuccess = true;
         }
       }
       this.onEsriOAuth2Callback.raiseEvent(eventSuccess, decodedState);
