@@ -2,13 +2,19 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Hooks
+ */
+
 import * as React from "react";
 import useInterval from "./useInterval";
 
-// Hook that will show a popup window
-export function usePopup(visible: boolean, url: string|undefined, title: string, width: number, height: number, onClose: () => void) {
+/** Hook that will show a popup window
+ * @beta
+ */
+export function usePopup(visible: boolean, url: string | undefined, title: string, width: number, height: number, onClose: () => void) {
 
-  const [checkPopupAliveDelay, setCheckPopupAliveDelay] = React.useState<number|undefined>();
+  const [checkPopupAliveDelay, setCheckPopupAliveDelay] = React.useState<number | undefined>();
 
   // ONLY re-render the popup when visibility changes, any other changes get differed until next visibility change
   // hence the massive use of 'useRef'
@@ -19,15 +25,15 @@ export function usePopup(visible: boolean, url: string|undefined, title: string,
   const savedHeight = React.useRef(height);
   const savedOnClose = React.useRef(onClose);
 
-  React.useEffect(() => {savedUrl.current = url;}, [url]);
-  React.useEffect(() => {savedTitle.current = title;}, [title]);
-  React.useEffect(() => {savedWidth.current = width;}, [width]);
-  React.useEffect(() => {savedHeight.current = height;}, [height]);
-  React.useEffect(() => {savedOnClose.current = onClose;}, [onClose]);
+  React.useEffect(() => { savedUrl.current = url; }, [url]);
+  React.useEffect(() => { savedTitle.current = title; }, [title]);
+  React.useEffect(() => { savedWidth.current = width; }, [width]);
+  React.useEffect(() => { savedHeight.current = height; }, [height]);
+  React.useEffect(() => { savedOnClose.current = onClose; }, [onClose]);
 
   // Cleanup method after a popup closure.  Also calls the OnClose callback.
   const handleClosedPopup = React.useCallback(() => {
-    if (popupWindow.current?.closed ) {
+    if (popupWindow.current?.closed) {
       savedOnClose.current();
       setCheckPopupAliveDelay(undefined);
       popupWindow.current = undefined;
@@ -41,7 +47,7 @@ export function usePopup(visible: boolean, url: string|undefined, title: string,
   // Reference: https://stackoverflow.com/questions/9388380/capture-the-close-event-of-popup-window-in-javascript/48240128#48240128
   React.useEffect(() => {
     return () => {
-      if (popupWindow.current !== undefined ) {
+      if (popupWindow.current !== undefined) {
         popupWindow.current.close();
         handleClosedPopup();
       }
@@ -67,12 +73,12 @@ export function usePopup(visible: boolean, url: string|undefined, title: string,
     }
 
     // If not visible but a previous popup window is still open, close it.
-    if (!visible && popupWindow.current !== undefined ) {
+    if (!visible && popupWindow.current !== undefined) {
       popupWindow.current.close();
       handleClosedPopup();
     }
 
-  },  [handleClosedPopup, visible]);
+  }, [handleClosedPopup, visible]);
 }
 
 export default usePopup;

@@ -6,7 +6,7 @@
 
 import * as React from "react";
 import { Button, Dialog, DialogButtonType, Icon, Input, InputStatus, LabeledInput, ProgressBar, Radio, Select } from "@bentley/ui-core";
-import { ModalDialogManager } from "@bentley/ui-framework";
+import { ModalDialogManager, usePopup } from "@bentley/ui-framework";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions } from "../Interfaces";
 import {
@@ -16,7 +16,6 @@ import {
 import { MapLayerProps } from "@bentley/imodeljs-common";
 import "./MapUrlDialog.scss";
 import { SpecialKey } from "@bentley/ui-abstract";
-import usePopup from "../hooks/usePopup";
 
 export const MAP_TYPES = {
   wms: "WMS",
