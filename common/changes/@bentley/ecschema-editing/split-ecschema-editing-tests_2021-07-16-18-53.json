@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-editing",
+      "comment": "Split editing tests into different test files",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-editing",
+  "email": "Ivan.Kok@bentley.com"
+}
