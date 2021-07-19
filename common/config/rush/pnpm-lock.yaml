@@ -3982,6 +3982,8 @@ importers:
       '@bentley/ui-core': workspace:*
       '@bentley/ui-framework': workspace:*
       '@bentley/ui-ninezone': workspace:*
+      '@itwin/itwinui-css': 0.22.1
+      '@itwin/itwinui-react': 1.11.0
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 10.14.1
       '@types/react': 16.9.43
@@ -3989,6 +3991,7 @@ importers:
       '@types/react-dom': ^16.8.0
       '@types/react-redux': ^7.0.1
       '@types/react-select': 3.0.26
+      '@types/react-table': ^7.0.18
       '@types/semver': ^5.5.0
       classnames: ^2.3.1
       cpx: ^1.5.0
@@ -4008,6 +4011,7 @@ importers:
       react-dom: ^16.8.0
       react-redux: ^7.2.0
       react-select: 3.1.0
+      react-table: ^7.1.0
       redux: ^4.0.3
       request: ^2.88.0
       request-promise: ^4.2.0
@@ -4053,6 +4057,8 @@ importers:
       '@bentley/ui-core': link:../../ui/core
       '@bentley/ui-framework': link:../../ui/framework
       '@bentley/ui-ninezone': link:../../ui/ninezone
+      '@itwin/itwinui-css': 0.22.1
+      '@itwin/itwinui-react': 1.11.0_react-dom@16.14.0+react@16.14.0
       classnames: 2.3.1
       lorem-ipsum: 2.0.3
       react: 16.14.0
@@ -4061,6 +4067,7 @@ importers:
       react-dom: 16.14.0_react@16.14.0
       react-redux: 7.2.4_react-dom@16.14.0+react@16.14.0
       react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
+      react-table: 7.7.0_react@16.14.0
       redux: 4.1.0
       request: 2.88.2
       request-promise: 4.2.6_request@2.88.2
@@ -4079,6 +4086,7 @@ importers:
       '@types/react-dom': 16.9.14
       '@types/react-redux': 7.1.17
       '@types/react-select': 3.0.26
+      '@types/react-table': 7.7.2
       '@types/semver': 5.5.0
       cpx: 1.5.0
       cross-env: 5.2.1
@@ -9207,6 +9215,48 @@ packages:
     resolution: {integrity: sha512-ZXRY4jNvVgSVQ8DL3LTcakaAtXwTVUxE81hslsyD2AtoXW/wVob10HkOJ1X/pAlcI7D+2YoZKg5do8G/w6RYgA==}
     engines: {node: '>=8'}
 
+  /@itwin/itwinui-css/0.22.1:
+    resolution: {integrity: sha512-PMRtv7dFyrLlL+RnlICj2OlQSDyzv+HdlfianSXlfFuOkb833fKJ5wM3fKvdyHGCkNrnkpgwM/CYZ41Zjt4FvA==}
+    dev: false
+
+  /@itwin/itwinui-icons-react/1.2.0_react-dom@16.14.0+react@16.14.0:
+    resolution: {integrity: sha512-yeBIJPWli/iLKaTLmhsd7ZOn9bMRouN3dGHggJjBjAsgJNNtahbfB/NfOS17DcN6Ejt4Z70VAzMdpwzJ/34CKA==}
+    peerDependencies:
+      react: ^16.8.6 || ^17.0.0
+      react-dom: ^16.8.6 || ^17.0.0
+    dependencies:
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
+    dev: false
+
+  /@itwin/itwinui-illustrations-react/1.0.2_react-dom@16.14.0+react@16.14.0:
+    resolution: {integrity: sha512-sgBmBBOGOLNPuT/G700iQqlPB/QRBBWczSkVZJ7mpCZaktMfJxX2SH1NhUUpJ4emf20dsLEeAo62Gz7ek7DMkA==}
+    peerDependencies:
+      react: ^16.8.6 || ^17.0.0
+      react-dom: ^16.8.6 || ^17.0.0
+    dependencies:
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
+    dev: false
+
+  /@itwin/itwinui-react/1.11.0_react-dom@16.14.0+react@16.14.0:
+    resolution: {integrity: sha512-vVDwDwE1SsZTLw7cx3qA8D9D6alQp7+//qR4z95KP7ns+vKr4sAnTFZfhg8q2vWmHYtrC2QK5f6hQQvhl/+Zmg==}
+    peerDependencies:
+      react: ^16.8.6 || ^17.0.0
+      react-dom: ^16.8.6 || ^17.0.0
+    dependencies:
+      '@itwin/itwinui-css': 0.22.1
+      '@itwin/itwinui-icons-react': 1.2.0_react-dom@16.14.0+react@16.14.0
+      '@itwin/itwinui-illustrations-react': 1.0.2_react-dom@16.14.0+react@16.14.0
+      '@tippyjs/react': 4.2.5_react-dom@16.14.0+react@16.14.0
+      '@types/react-table': 7.7.2
+      classnames: 2.3.1
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
+      react-table: 7.7.0_react@16.14.0
+      react-transition-group: 4.4.2_react-dom@16.14.0+react@16.14.0
+    dev: false
+
   /@jest/console/26.6.2:
     resolution: {integrity: sha512-IY1R2i2aLsLr7Id3S6p2BA82GNWryt4oSvEXLAKc+L2zdi89dSkE8xC1C+0kpATG4JhBJREnQOH7/zmccM2B0g==}
     engines: {node: '>= 10.14.2'}
@@ -9681,6 +9731,10 @@ packages:
       webpack-dev-server: 3.11.1_webpack@4.44.2
     dev: true
 
+  /@popperjs/core/2.9.2:
+    resolution: {integrity: sha512-VZMYa7+fXHdwIq1TDhSXoVmSPEGM/aa+6Aiq3nVVJ9bXr24zScr+NlKFKC3iPljA7ho/GAZr+d2jOf5GIRC30Q==}
+    dev: false
+
   /@react-dnd/asap/4.0.0:
     resolution: {integrity: sha512-0XhqJSc6pPoNnf8DhdsPHtUhRzZALVzYMTzRwV4VI6DJNJ/5xxfL9OQUwb8IH5/2x7lSf7nAZrnzUD+16VyOVQ==}
 
@@ -10073,6 +10127,17 @@ packages:
       '@testing-library/dom': 5.6.1
       react: 16.14.0
     dev: true
+
+  /@tippyjs/react/4.2.5_react-dom@16.14.0+react@16.14.0:
+    resolution: {integrity: sha512-YBLgy+1zznBNbx4JOoOdFXWMLXjBh9hLPwRtq3s8RRdrez2l3tPBRt2m2909wZd9S1KUeKjOOYYsnitccI9I3A==}
+    peerDependencies:
+      react: '>=16.8'
+      react-dom: '>=16.8'
+    dependencies:
+      react: 16.14.0
+      react-dom: 16.14.0_react@16.14.0
+      tippy.js: 6.3.1
+    dev: false
 
   /@tootallnate/once/1.1.2:
     resolution: {integrity: sha512-RbzJvlNzmRq5c3O09UipeuXno4tA1FE6ikOjxZK0tuxVv3412l64l5t1W5pj4+rJq9vpkm/kwiR07aZXnsKPxw==}
@@ -10589,6 +10654,11 @@ packages:
       '@types/react-dom': 16.9.14
       '@types/react-transition-group': 4.4.2
     dev: true
+
+  /@types/react-table/7.7.2:
+    resolution: {integrity: sha512-NwB78t3YV5pZ1NK3m2vylb/d0DKVyWH4y4GMCtlE4tg2n5ENM4ejzKnT46YKuqG2cPjWc+PIxuRVMd5OYX1z4A==}
+    dependencies:
+      '@types/react': 16.9.43
 
   /@types/react-test-renderer/17.0.1:
     resolution: {integrity: sha512-3Fi2O6Zzq/f3QR9dRnlnHso9bMl7weKCviFmfF6B4LS1Uat6Hkm15k0ZAQuDz+UBq6B3+g+NM6IT2nr5QgPzCw==}
@@ -22101,6 +22171,14 @@ packages:
       prop-types: 15.7.2
     dev: false
 
+  /react-table/7.7.0_react@16.14.0:
+    resolution: {integrity: sha512-jBlj70iBwOTvvImsU9t01LjFjy4sXEtclBovl3mTiqjz23Reu0DKnRza4zlLtOPACx6j2/7MrQIthIK1Wi+LIA==}
+    peerDependencies:
+      react: ^16.8.3 || ^17.0.0-0
+    dependencies:
+      react: 16.14.0
+    dev: false
+
   /react-test-renderer/16.14.0_react@16.14.0:
     resolution: {integrity: sha512-L8yPjqPE5CZO6rKsKXRO/rVPiaCOy0tQQJbC+UjPNlobl5mad59lvPjwFsQHTvL03caVDIVr9x9/OSgDe6I5Eg==}
     peerDependencies:
@@ -24308,6 +24386,12 @@ packages:
 
   /tiny-warning/1.0.3:
     resolution: {integrity: sha512-lBN9zLN/oAf68o3zNXYrdCt1kP8WsiGW8Oo2ka41b2IM5JL/S1CTyX1rW0mb/zSuJun0ZUrDxx4sqvYS2FWzPA==}
+    dev: false
+
+  /tippy.js/6.3.1:
+    resolution: {integrity: sha512-JnFncCq+rF1dTURupoJ4yPie5Cof978inW6/4S6kmWV7LL9YOSEVMifED3KdrVPEG+Z/TFH2CDNJcQEfaeuQww==}
+    dependencies:
+      '@popperjs/core': 2.9.2
     dev: false
 
   /tmpl/1.0.4:

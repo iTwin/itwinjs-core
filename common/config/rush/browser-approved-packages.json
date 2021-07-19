@@ -263,6 +263,14 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "@itwin/itwinui-css",
+      "allowedCategories": [ "internal" ]
+    },
+    {
+      "name": "@itwin/itwinui-react",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@microsoft/api-extractor",
       "allowedCategories": [ "tools" ]
     },
@@ -869,6 +877,10 @@
     {
       "name": "react-split-pane",
       "allowedCategories": [ "frontend" ]
+    },
+    {
+      "name": "react-table",
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "react-test-renderer",
