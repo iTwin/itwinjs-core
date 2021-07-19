@@ -16,7 +16,7 @@ import {
 import { MapLayerProps } from "@bentley/imodeljs-common";
 import "./MapUrlDialog.scss";
 import { SpecialKey } from "@bentley/ui-abstract";
-import useEsriOAuth2Popup from "../hooks/useEsriOAuth2Popup";
+import usePopup from "../hooks/usePopup";
 
 export const MAP_TYPES = {
   wms: "WMS",
@@ -79,6 +79,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   const [modelSettingsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.StoreOnModelSettings"));
   const [missingCredentialsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.MissingCredentials"));
   const [invalidCredentialsLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.InvalidCredentials"));
+  const [externalLoginTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.ExternalLogin"));
   const [externalLoginFailedMsg] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.ExternalLoginFailed"));
   const [externalLoginSucceededMsg] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.ExternalLoginSucceeded"));
   const [externalLoginWaitingMsg] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:CustomAttach.ExternalLoginWaiting"));
@@ -504,7 +505,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
   // Use a hook to display the popup.
   // The display of the popup is controlled by the 'showEsriOauth2Popup' state variable.
-  useEsriOAuth2Popup(showEsriOauth2Popup, authTokenUrl, "External login", handleEsriOAuth2PopupClose);
+  usePopup(showEsriOauth2Popup, authTokenUrl, externalLoginTitle, 450, 450, handleEsriOAuth2PopupClose);
   return (
     <div ref={dialogContainer}>
       <Dialog

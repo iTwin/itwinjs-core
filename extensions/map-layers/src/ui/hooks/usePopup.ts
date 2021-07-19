@@ -6,7 +6,7 @@ import * as React from "react";
 import useInterval from "./useInterval";
 
 // Hook that will show a popup window
-export function useEsriOAuth2Popup(visible: boolean, url: string|undefined, title: string, onClose: () => void) {
+export function usePopup(visible: boolean, url: string|undefined, title: string, width: number, height: number, onClose: () => void) {
 
   const [checkPopupAliveDelay, setCheckPopupAliveDelay] = React.useState<number|undefined>();
 
@@ -15,10 +15,15 @@ export function useEsriOAuth2Popup(visible: boolean, url: string|undefined, titl
   const popupWindow = React.useRef<Window>();
   const savedUrl = React.useRef(url);
   const savedTitle = React.useRef(title);
+  const savedWidth = React.useRef(width);
+  const savedHeight = React.useRef(height);
   const savedOnClose = React.useRef(onClose);
-  React.useEffect(() => {savedOnClose.current = onClose;}, [onClose]);
+
   React.useEffect(() => {savedUrl.current = url;}, [url]);
   React.useEffect(() => {savedTitle.current = title;}, [title]);
+  React.useEffect(() => {savedWidth.current = width;}, [width]);
+  React.useEffect(() => {savedHeight.current = height;}, [height]);
+  React.useEffect(() => {savedOnClose.current = onClose;}, [onClose]);
 
   // Cleanup method after a popup closure.  Also calls the OnClose callback.
   const handleClosedPopup = React.useCallback(() => {
@@ -51,12 +56,7 @@ export function useEsriOAuth2Popup(visible: boolean, url: string|undefined, titl
   React.useEffect(() => {
     // If visible and a popup window is not already open, open a new popup window
     if (visible && popupWindow.current === undefined) {
-      /*
-      const oauthState = encodeURIComponent(savedContextUrl.current);
-      const arcgisUrl = `https://www.arcgis.com/sharing/rest/oauth2/authorize?client_id=${EsriOAuth2.arcGisOnlineClientId}&response_type=token&expiration=${EsriOAuth2.expiration}&redirect_uri=${EsriOAuth2.redirectUri}&state=${oauthState}`;
-      const popup = window.open(arcgisUrl, "ArcGIS login", "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=450,height=450");
-     */
-      const popup = window.open(savedUrl.current, savedTitle.current, "directories=no,titlebar=no,toolbar=no,location=no,status=no,menubar=no,scrollbars=no,resizable=no,width=450,height=450");
+      const popup = window.open(savedUrl.current, savedTitle.current, `width=${savedWidth.current},height=${savedHeight.current}`);
       if (popup) {
         popup.focus();
         popupWindow.current = popup;
@@ -69,15 +69,10 @@ export function useEsriOAuth2Popup(visible: boolean, url: string|undefined, titl
     // If not visible but a previous popup window is still open, close it.
     if (!visible && popupWindow.current !== undefined ) {
       popupWindow.current.close();
-      /*
-      popupWindow.current = undefined;
-      setCheckPopupAliveDelay(undefined);
-      savedOnClose.current();
-      */
       handleClosedPopup();
     }
 
   },  [handleClosedPopup, visible]);
 }
 
-export default useEsriOAuth2Popup;
+export default usePopup;

@@ -539,6 +539,27 @@
       ]
     },
     {
+      "name": "[UI] Tests: map-layers",
+      "presentation": {
+        "group": "4_UI"
+      },
+      "cwd": "${workspaceFolder}/extensions/map-layers",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/extensions/map-layers/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--no-timeouts",
+        "lib/test/**/*.test.js"
+      ],
+      "skipFiles": [
+        "<node_internals>/**/*.js",
+        "node_modules/rxjs/**/*"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,ui,extensions}/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "[UI] Tests: Components",
       "presentation": {
         "group": "4_UI"
