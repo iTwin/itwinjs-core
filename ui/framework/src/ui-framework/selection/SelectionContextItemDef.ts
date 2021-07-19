@@ -77,6 +77,21 @@ export function getIsHiddenIfSelectionNotActive(): ConditionalBooleanValue {
  * @beta
  */
 // istanbul ignore next
+export function featureOverridesActiveStateFunc(state: Readonly<BaseItemState>): BaseItemState {
+  const activeContentControl = ContentViewManager.getActiveContentControl();
+  let isVisible = false;
+
+  // istanbul ignore next
+  if (activeContentControl && activeContentControl.viewport)
+    isVisible = UiFramework.hideIsolateEmphasizeActionHandler.areFeatureOverridesActive(activeContentControl.viewport);
+
+  return { ...state, isVisible };
+}
+
+/** return state with isVisible set to true is SectionSet is active.
+ * @beta
+ */
+// istanbul ignore next
 export function selectionContextStateFunc(state: Readonly<BaseItemState>): BaseItemState {
   const activeContentControl = ContentViewManager.getActiveContentControl();
   let isVisible = false;
@@ -91,7 +106,7 @@ export function selectionContextStateFunc(state: Readonly<BaseItemState>): BaseI
 }
 
 /** Utility Class that provides definitions for tools dependent on current selection. These definitions can be used to populate toolbars.
- * @beta
+ * @public
  */
 // istanbul ignore next
 export class SelectionContextToolDefinitions {
@@ -200,7 +215,8 @@ export class SelectionContextToolDefinitions {
       iconSpec: "icon-visibility",
       labelKey: "UiFramework:tools.clearVisibility",
       isHidden: getIsHiddenIfFeatureOverridesActive(),
-      stateFunc: selectionContextStateFunc,
+      stateSyncIds: getFeatureOverrideSyncEventIds(),
+      stateFunc: featureOverridesActiveStateFunc,
       execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processClearEmphasize(),
     });
   }

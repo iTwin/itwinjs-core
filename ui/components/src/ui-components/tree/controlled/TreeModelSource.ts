@@ -12,7 +12,7 @@ import { MutableTreeModel, TreeModel, VisibleTreeNodes } from "./TreeModel";
 
 /**
  * Data structure that describes changes which happened to the tree model
- * @beta
+ * @public
  */
 export interface TreeModelChanges {
   addedNodeIds: string[];
@@ -23,16 +23,15 @@ export interface TreeModelChanges {
 /**
  * Controls tree model and visible tree nodes.
  * It is used to modify model and inform when tree model changes.
- * @beta
+ * @public
  */
 export class TreeModelSource {
-  private _model = new MutableTreeModel();
   private _visibleNodes?: VisibleTreeNodes;
 
   /** Event that is emitted every time tree model is changed. */
   public onModelChanged = new BeUiEvent<[TreeModel, TreeModelChanges]>();
 
-  constructor() {
+  constructor(private _model: MutableTreeModel = new MutableTreeModel()) {
     this.onModelChanged.addListener(() => this._visibleNodes = undefined);
   }
 
@@ -63,22 +62,35 @@ export class TreeModelSource {
 
   private collectModelChanges(modelPatches: Patch[]): TreeModelChanges {
     const addedNodeIds: string[] = [];
-    const modifiedNodeIds: string[] = [];
+    const modifiedNodeIds = new Set<string>();
     const removedNodeIds: string[] = [];
     for (const patch of modelPatches) {
-      if (patch.path[0] === "_tree" && patch.path[1] === "_idToNode") {
+      if (patch.path.length >= 3 && patch.path[0] === "_tree" && patch.path[1] === "_idToNode") {
         const nodeId = patch.path[2] as string;
+
+        if (patch.path.length > 3) {
+          // Modification occured somewhere inside a node
+          modifiedNodeIds.add(nodeId);
+          continue;
+        }
+
+        // Modification occured directly on _idToNode object
         switch (patch.op) {
-          case "add": addedNodeIds.push(nodeId); break;
-          case "remove": removedNodeIds.push(nodeId); break;
-          case "replace": {
-            if (modifiedNodeIds.indexOf(nodeId) === -1)
-              modifiedNodeIds.push(nodeId);
+          case "add":
+            addedNodeIds.push(nodeId);
             break;
-          }
+
+          case "remove":
+            removedNodeIds.push(nodeId);
+            break;
+
+          case "replace":
+            modifiedNodeIds.add(nodeId);
+            break;
         }
       }
     }
-    return { addedNodeIds, modifiedNodeIds, removedNodeIds };
+
+    return { addedNodeIds, modifiedNodeIds: [...modifiedNodeIds], removedNodeIds };
   }
 }

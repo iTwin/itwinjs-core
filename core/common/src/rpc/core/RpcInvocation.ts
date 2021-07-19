@@ -130,6 +130,8 @@ export class RpcInvocation {
       (impl as any)[CURRENT_INVOCATION] = this;
       const op = this.lookupOperationFunction(impl);
 
+      // @typescript-eslint/return-await doesn't agree with awaiting values that *might* be a promise
+      // eslint-disable-next-line @typescript-eslint/return-await
       return await op.call(impl, ...parameters);
     } catch (error) {
       return this.reject(error);
@@ -163,7 +165,7 @@ export class RpcInvocation {
     return a.key === b.key &&
       a.contextId === b.contextId &&
       a.iModelId === b.iModelId &&
-      a.changeSetId === b.changeSetId &&
+      (undefined === a.changeSetId || (a.changeSetId === b.changeSetId)) &&
       a.openMode === b.openMode;
   }
 
@@ -226,6 +228,13 @@ export class RpcInvocation {
       id: this.request.id,
       interfaceName: (typeof (this.operation) === "undefined") ? "" : this.operation.interfaceDefinition.interfaceName,
     };
+
+    try {
+      const impl = RpcRegistry.instance.getImplForInterface(this.operation.interfaceDefinition) as any;
+      if (impl[CURRENT_INVOCATION] === this) {
+        impl[CURRENT_INVOCATION] = undefined;
+      }
+    } catch (_err) { }
 
     return fulfillment;
   }

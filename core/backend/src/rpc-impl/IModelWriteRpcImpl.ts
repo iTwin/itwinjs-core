@@ -5,19 +5,24 @@
 /** @packageDocumentation
  * @module RpcInterface
  */
-import { assert, ClientRequestContext, DbOpcode, GuidString, Id64, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext, DbOpcode, Id64, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { LockLevel, LockType } from "@bentley/imodelhub-client";
+import { LockLevel } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3dProps, Code, CodeProps, ElementProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelRpcProps, IModelWriteRpcInterface,
-  RelatedElement, RpcInterface, RpcManager, SubCategoryAppearance, SyncMode, ThumbnailProps,
+  AxisAlignedBox3dProps, ChangesetId, Code, CodeProps, ElementProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelRpcProps,
+  IModelWriteRpcInterface, RelatedElement, RpcInterface, RpcManager, SubCategoryAppearance, SyncMode, ThumbnailProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BriefcaseDb, IModelDb } from "../IModelDb";
-import {
-  AuthorizedBackendRequestContext, ConcurrencyControl, Element, PhysicalModel, PhysicalPartition, SpatialCategory, SubjectOwnsPartitionElements,
-} from "../imodeljs-backend";
+import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
+import { SpatialCategory } from "../Category";
+import { ConcurrencyControl } from "../ConcurrencyControl";
+import { PhysicalPartition } from "../Element";
+import { BriefcaseDb, IModelDb, StandaloneDb } from "../IModelDb";
+import { PhysicalModel } from "../Model";
+import { SubjectOwnsPartitionElements } from "../NavigationRelationship";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
+
+/* eslint-disable deprecation/deprecation */
 
 class EditingFunctions {
   public static async createAndInsertPartition(rqctx: AuthorizedBackendRequestContext, iModelDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
@@ -28,7 +33,7 @@ class EditingFunctions {
       model: IModel.repositoryModelId,
       code: newModelCode,
     };
-    const modeledElement: Element = iModelDb.elements.createElement(modeledElementProps);
+    const modeledElement = iModelDb.elements.createElement(modeledElementProps);
     if (iModelDb.isBriefcaseDb() && !iModelDb.concurrencyControl.isBulkMode) {
       await iModelDb.concurrencyControl.requestResources(rqctx, [{ element: modeledElement, opcode: DbOpcode.Insert }]);
       rqctx.enter();
@@ -70,6 +75,7 @@ class EditingFunctions {
 /**
  * The backend implementation of IModelWriteRpcInterface.
  * @internal
+ * @deprecated
  */
 export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcInterface {
   public static register() { RpcManager.registerImpl(IModelWriteRpcInterface, IModelWriteRpcImpl); }
@@ -84,15 +90,15 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   }
 
   public async hasUnsavedChanges(tokenProps: IModelRpcProps): Promise<boolean> {
-    return IModelDb.findByKey(tokenProps.key).txns.hasUnsavedChanges;
+    return IModelDb.findByKey(tokenProps.key).nativeDb.hasUnsavedChanges();
   }
 
   public async hasPendingTxns(tokenProps: IModelRpcProps): Promise<boolean> {
-    return IModelDb.findByKey(tokenProps.key).txns.hasPendingTxns;
+    return IModelDb.findByKey(tokenProps.key).nativeDb.hasPendingTxns();
   }
 
-  public async getParentChangeset(tokenProps: IModelRpcProps): Promise<string> {
-    return BriefcaseDb.findByKey(tokenProps.key).changeSetId;
+  public async getParentChangeset(tokenProps: IModelRpcProps): Promise<ChangesetId> {
+    return BriefcaseDb.findByKey(tokenProps.key).changeset.id;
   }
 
   public async updateProjectExtents(tokenProps: IModelRpcProps, newExtents: AxisAlignedBox3dProps): Promise<void> {
@@ -114,7 +120,7 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const request = new ConcurrencyControl.Request();
-    request.addLocks([{ type: LockType.Model, objectId: modelId, level }]);
+    request.addLocks([{ entityId: modelId, scope: level as number }]);
     return iModelDb.concurrencyControl.request(requestContext, request);
   }
 
@@ -124,15 +130,14 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     return iModelDb.concurrencyControl.syncCache(requestContext);
   }
 
-  public async pullMergePush(tokenProps: IModelRpcProps, comment: string, doPush: boolean): Promise<GuidString> {
+  public async pullMergePush(tokenProps: IModelRpcProps, comment: string, doPush: boolean): Promise<ChangesetId> {
     const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     await iModelDb.pullAndMergeChanges(requestContext);
     requestContext.enter();
-    const parentChangeSetId = iModelDb.changeSetId;
     if (doPush)
       await iModelDb.pushChanges(requestContext, comment);
-    return parentChangeSetId;
+    return iModelDb.changeset.id;
   }
 
   public async pullAndMergeChanges(tokenProps: IModelRpcProps): Promise<IModelConnectionProps> {
@@ -156,9 +161,8 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
     return iModelDb.concurrencyControl.request(rqctx);
   }
 
-  public async getModelsAffectedByWrites(tokenProps: IModelRpcProps): Promise<Id64String[]> {
-    const iModelDb = BriefcaseDb.findByKey(tokenProps.key);
-    return iModelDb.concurrencyControl.modelsAffectedByWrites;
+  public async getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]> {
+    return [];
   }
 
   public async deleteElements(tokenProps: IModelRpcProps, ids: Id64Array) {
@@ -186,7 +190,9 @@ export class IModelWriteRpcImpl extends RpcInterface implements IModelWriteRpcIn
   }
 
   public async undoRedo(rpc: IModelRpcProps, undo: boolean): Promise<IModelStatus> {
-    const txns = IModelDb.findByKey(rpc.key).txns;
-    return undo ? txns.reverseSingleTxn() : txns.reinstateTxn();
+    const db = IModelDb.findByKey(rpc.key);
+    if (db instanceof BriefcaseDb || db instanceof StandaloneDb)
+      return undo ? db.txns.reverseSingleTxn() : db.txns.reinstateTxn();
+    return IModelStatus.WrongIModel;
   }
 }

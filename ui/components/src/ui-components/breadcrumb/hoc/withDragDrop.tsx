@@ -99,7 +99,7 @@ export function withBreadcrumbDragDrop<P extends BreadcrumbProps, DragDropObject
       const DDBreadcrumbNode = DragDropBreadcrumbNode<DragDropObject>(); // eslint-disable-line @typescript-eslint/naming-convention
       return (
         <DDBreadcrumbNode
-          key={(node && node.id) || "root"}
+          key={(node && /* istanbul ignore next */ node.id) || "root"}
           dragProps={this.createNodeDragProps(node, parent)}
           dropProps={this.createNodeDropProps(node)}>
           {baseNode}
@@ -107,7 +107,7 @@ export function withBreadcrumbDragDrop<P extends BreadcrumbProps, DragDropObject
       );
     };
 
-    public render() {
+    public override render() {
       const { dragProps, dropProps, renderNode, ...treeProps } = this.props as any; // eslint-disable-line @typescript-eslint/no-unused-vars
       return (
         <BreadcrumbComponent {...treeProps}

@@ -2,7 +2,7 @@
 
 A "channel" is a tree of elements. The root of the tree is called the channel "root" element. The tree includes the root and all of its child elements and sub-models, recursively. Channels do not nest.
 
-To be a channel root, an element must have a [ChannelRootAspect]($backend). (Legacy iModel bridges/connectors mark their channel roots with a special JSON property.)
+To be a channel root, an element must have a [ChannelRootAspect]($backend). (Legacy iModel connectors mark their channel roots with a special JSON property.)
 
 To help visualize what a channel is, imagine an iModel with the following breakdown:
 
@@ -70,7 +70,7 @@ The rules of locking are slightly different for channels:
 
 ## Connectors and Channels
 
-A connector always works in a channel. A connector does not create channels or change the channel. A supervisor calls some connector methods in the repository channel and others in the bridge's own private channel. The channel is locked by the supervisor.
+A connector always works in a channel. A connector does not create channels or change the channel. A supervisor calls some connector methods in the repository channel and others in the connector's own private channel. The channel is locked by the supervisor.
 
 ## Non-Connector Apps and Channels
 
@@ -93,7 +93,7 @@ imodel1.concurrencyControl.startBulkMode();
 // Create the channel root. Note that, initially, we are in the repository channel.
 const channel3 = imodel1.elements.insertElement(Subject.create(imodel1, imodel1.elements.getRootSubject().id, "channel3"));
 const channel3Info = "this is channel3"; // could be an object or anything you like
-ChannelRootAspect.insert(imodel1, channel3, channel3Info); // Create one of the channels using the new aspect in the way iModel.js apps would set them up.
+ChannelRootAspect.insert(imodel1, channel3, channel3Info); // Create one of the channels using the new aspect in the way iTwin.js apps would set them up.
 
 // Push the change to the repository channel.
 await imodel1.concurrencyControl.request(requestContext);

@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { Tree } from "../../ui-core/tree/Tree";
+import { Tree } from "../../ui-core";
 
 /* eslint-disable @typescript-eslint/unbound-method */
 

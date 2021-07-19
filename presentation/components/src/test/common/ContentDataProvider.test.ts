@@ -10,8 +10,8 @@ import * as faker from "faker";
 import * as sinon from "sinon";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, ContentDescriptorRequestOptions, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, Item, KeySet, NestedContentField,
-  Paged, RegisteredRuleset, Ruleset, SelectionInfo,
+  Content, ContentDescriptorRequestOptions, Descriptor, DescriptorOverrides, ExtendedContentRequestOptions, Field, FIELD_NAMES_SEPARATOR, Item,
+  KeySet, NestedContentField, Paged, RegisteredRuleset, SelectionInfo,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import { PromiseContainer, ResolvablePromise } from "@bentley/presentation-common/lib/test/_helpers/Promises";
@@ -21,7 +21,6 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { Presentation, PresentationManager, RulesetManager } from "@bentley/presentation-frontend";
 import { PrimitiveValue, PropertyDescription, PropertyRecord } from "@bentley/ui-abstract";
-import { FIELD_NAMES_SEPARATOR } from "../../presentation-components/common/ContentBuilder";
 import { CacheInvalidationProps, ContentDataProvider, ContentDataProviderProps } from "../../presentation-components/common/ContentDataProvider";
 import { mockPresentationManager } from "../_helpers/UiComponents";
 
@@ -33,13 +32,13 @@ class Provider extends ContentDataProvider {
   constructor(props: ContentDataProviderProps) {
     super(props);
   }
-  public invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
-  public configureContentDescriptor(descriptor: Readonly<Descriptor>) { return super.configureContentDescriptor(descriptor); } // eslint-disable-line deprecation/deprecation
-  public shouldExcludeFromDescriptor(field: Field) { return super.shouldExcludeFromDescriptor(field); } // eslint-disable-line deprecation/deprecation
-  public shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); } // eslint-disable-line deprecation/deprecation
-  public shouldRequestContentForEmptyKeyset() { return super.shouldRequestContentForEmptyKeyset(); }
-  public getDescriptorOverrides() { return super.getDescriptorOverrides(); }
-  public isFieldHidden(field: Field) { return super.isFieldHidden(field); } // eslint-disable-line deprecation/deprecation
+  public override invalidateCache(props: CacheInvalidationProps) { super.invalidateCache(props); }
+  public override configureContentDescriptor(descriptor: Readonly<Descriptor>) { return super.configureContentDescriptor(descriptor); } // eslint-disable-line deprecation/deprecation
+  public override shouldExcludeFromDescriptor(field: Field) { return super.shouldExcludeFromDescriptor(field); } // eslint-disable-line deprecation/deprecation
+  public override shouldConfigureContentDescriptor() { return super.shouldConfigureContentDescriptor(); } // eslint-disable-line deprecation/deprecation
+  public override shouldRequestContentForEmptyKeyset() { return super.shouldRequestContentForEmptyKeyset(); }
+  public override getDescriptorOverrides() { return super.getDescriptorOverrides(); }
+  public override isFieldHidden(field: Field) { return super.isFieldHidden(field); } // eslint-disable-line deprecation/deprecation
 }
 
 describe("ContentDataProvider", () => {
@@ -51,6 +50,7 @@ describe("ContentDataProvider", () => {
   let presentationManagerMock: moq.IMock<PresentationManager>;
   let rulesetsManagerMock: moq.IMock<RulesetManager>;
   const imodelMock = moq.Mock.ofType<IModelConnection>();
+  const imodelKey = "test-imodel-Key";
 
   before(() => {
     rulesetId = faker.random.word();
@@ -62,6 +62,9 @@ describe("ContentDataProvider", () => {
     rulesetsManagerMock = mocks.rulesetsManager;
     presentationManagerMock = mocks.presentationManager;
     Presentation.setPresentationManager(presentationManagerMock.object);
+
+    imodelMock.reset();
+    imodelMock.setup((x) => x.key).returns(() => imodelKey);
 
     provider = new Provider({ imodel: imodelMock.object, ruleset: rulesetId, displayType, enableContentAutoUpdate: true });
     invalidateCacheSpy = sinon.spy(provider, "invalidateCache");
@@ -230,7 +233,7 @@ describe("ContentDataProvider", () => {
     it("excludes fields from result descriptor", () => {
       const source = createRandomDescriptor();
       provider.shouldExcludeFromDescriptor = () => true;
-      const result = provider.configureContentDescriptor(source);
+      const result = provider.configureContentDescriptor(source); // eslint-disable-line deprecation/deprecation
       expect(source.fields.length).to.be.greaterThan(0);
       expect(result.fields.length).to.eq(0);
     });
@@ -639,14 +642,17 @@ describe("ContentDataProvider", () => {
   describe("reacting to updates", () => {
 
     it("doesn't react to imodel content updates to unrelated rulesets", () => {
-      const ruleset: Ruleset = { id: "unrelated", rules: [] };
-      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ ruleset, updateInfo: "FULL" });
+      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ rulesetId: "unrelated", updateInfo: "FULL", imodelKey });
+      expect(invalidateCacheSpy).to.not.be.called;
+    });
+
+    it("doesn't react to imodel content updates to unrelated imodels", () => {
+      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: "FULL", imodelKey: "unrelated" });
       expect(invalidateCacheSpy).to.not.be.called;
     });
 
     it("invalidates cache when imodel content change happens to related ruleset", () => {
-      const ruleset: Ruleset = { id: rulesetId, rules: [] };
-      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ ruleset, updateInfo: "FULL" });
+      presentationManagerMock.object.onIModelContentChanged.raiseEvent({ rulesetId, updateInfo: "FULL", imodelKey });
       expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
     });
 
@@ -665,6 +671,34 @@ describe("ContentDataProvider", () => {
     it("invalidates cache when related ruleset variables change", () => {
       presentationManagerMock.object.vars("").onVariableChanged.raiseEvent("var_id", "prev", "curr");
       expect(invalidateCacheSpy).to.be.calledOnceWith(CacheInvalidationProps.full());
+    });
+
+  });
+
+  describe("diagnostics", () => {
+
+    it("passes diagnostics options to presentation manager", async () => {
+      const diagnosticsHandler = sinon.stub();
+
+      provider.dispose();
+      provider = new Provider({
+        imodel: imodelMock.object,
+        ruleset: rulesetId,
+        displayType,
+        ruleDiagnostics: { severity: "error", handler: diagnosticsHandler },
+      });
+      sinon.stub(provider, "shouldRequestContentForEmptyKeyset").returns(true);
+
+      const descriptor = createRandomDescriptor();
+      const content = new Content(descriptor, [new Item([], "1", "", undefined, {}, {}, [])]);
+      presentationManagerMock.setup((x) => x.getContentDescriptor(moq.It.isObjectWith<Paged<ContentDescriptorRequestOptions<IModelConnection, KeySet>>>({ diagnostics: { editor: "error", handler: diagnosticsHandler } })))
+        .returns(async () => descriptor)
+        .verifiable(moq.Times.once());
+      presentationManagerMock.setup((x) => x.getContent(moq.It.isObjectWith<Paged<ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet>>>({ diagnostics: { editor: "error", handler: diagnosticsHandler } })))
+        .returns(async () => content)
+        .verifiable(moq.Times.once());
+      await provider.getContentSetSize();
+      presentationManagerMock.verifyAll();
     });
 
   });

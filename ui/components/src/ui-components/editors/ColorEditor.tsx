@@ -34,7 +34,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
   private _buttonElement: React.RefObject<HTMLButtonElement> = React.createRef();
 
   /** @internal */
-  public readonly state: Readonly<ColorEditorState> = {
+  public override readonly state: Readonly<ColorEditorState> = {
     colorValue: 0,
     readonly: false,
     numColumns: 4,
@@ -55,6 +55,14 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
     }
 
     return propertyValue;
+  }
+
+  public get htmlElement(): HTMLElement | null {
+    return this._buttonElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    return document.activeElement === this._buttonElement.current;
   }
 
   private setFocus(): void {
@@ -82,12 +90,12 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -101,8 +109,8 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
       const colorValue = record.value.value as number;
       let numColumns = 4;
       const availableColors = new Array<ColorDef>();
-      const readonly = record && undefined !== record.isReadonly ? record.isReadonly : false;
-      const isDisabled = record ? record.isDisabled : undefined;
+      const readonly = record && undefined !== record.isReadonly ? record.isReadonly : /* istanbul ignore next */ false;
+      const isDisabled = record ? record.isDisabled : /* istanbul ignore next */ undefined;
 
       if (record.property.editor && record.property.editor.params) {
         const colorParams = record.property.editor.params.find((param: PropertyEditorParams) => param.type === PropertyEditorParamTypes.ColorData) as ColorEditorParams;
@@ -128,7 +136,7 @@ export class ColorEditor extends React.PureComponent<PropertyEditorProps, ColorE
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     const colorDef = ColorDef.create(this.state.colorValue);
     return (
       <div className={classnames("components-color-editor", this.props.className)} style={this.props.style}>

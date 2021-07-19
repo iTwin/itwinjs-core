@@ -195,13 +195,14 @@ class ParticleSystem {
   }
 }
 
-/** A temporary effect used for testing [ParticleCollectionBuilder]($frontend), to be replaced by a more useful/interesting example later.
- * @alpha
+/** This tool applies an explosion particle effect used for testing [ParticleCollectionBuilder]($frontend).
+ * @beta
  */
 export class ExplosionEffect extends Tool {
-  public static toolId = "ExplosionEffect";
+  public static override toolId = "ExplosionEffect";
 
-  public run(): boolean {
+  /** This method runs the tool, applying an explosion particle effect. */
+  public override run(): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
       ParticleSystem.addDecorator(vp.iModel); // eslint-disable-line @typescript-eslint/no-floating-promises

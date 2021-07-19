@@ -19,7 +19,7 @@ import { Outline } from "./Outline";
 
 /** Properties for the [[FrameworkZone]] component.
  * @internal
- */
+ */
 export interface FrameworkZoneProps extends CommonProps {
   activeTabIndex: number;
   disabledResizeHandles: DisabledResizeHandles | undefined;
@@ -41,9 +41,9 @@ export interface FrameworkZoneProps extends CommonProps {
 
 /** FrameworkZone React component.
  * @internal
- */
+ */
 export class FrameworkZone extends React.PureComponent<FrameworkZoneProps> {
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const zIndexStyle = getFloatingZoneStyle(this.props.zone);
     const floatingBounds = getFloatingZoneBounds(this.props.zone);
     return (
@@ -119,6 +119,6 @@ export const getFloatingZoneBounds = (props: ZoneManagerProps) => {
 export const getFloatingZoneStyle = (props: ZoneManagerProps) => {
   return props.floating ? {
     zIndex: props.floating.stackId,
-    position: "relative" as "relative",
+    position: "relative" as const,
   } : undefined;
 };

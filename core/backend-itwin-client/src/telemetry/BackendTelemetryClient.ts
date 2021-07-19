@@ -35,7 +35,7 @@ export class BackendTelemetryEvent extends ClientTelemetryEvent {
   /**
    * Returns all known and defined properties as a new object
    */
-  public getProperties(): { [key: string]: any } {
+  public override getProperties(): { [key: string]: any } {
     const properties = super.getProperties();
 
     properties.backendMachineName = this.backendMachineName;
@@ -74,5 +74,5 @@ export abstract class BackendTelemetryClient implements TelemetryClient {
     await this._postTelemetry(requestContext, backendTelemetryEvent);
   }
 
-  protected abstract async _postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: BackendTelemetryEvent): Promise<void>;
+  protected abstract _postTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: BackendTelemetryEvent): Promise<void>;
 }

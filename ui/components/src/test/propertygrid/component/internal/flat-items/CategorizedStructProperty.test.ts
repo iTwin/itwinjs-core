@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import TestUtils from "../../../../TestUtils";
-import { FlatGridItemType } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableFlatGridItem";
-import { FlatGridTestUtils as GridUtils } from "./FlatGridTestUtils";
 import sinon from "sinon";
-import { MutableCategorizedStructProperty } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCategorizedStructProperty";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { MutableCategorizedStructProperty } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCategorizedStructProperty";
+import { FlatGridItemType } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableFlatGridItem";
 import { MutableGridItemFactory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
+import TestUtils from "../../../../TestUtils";
+import { FlatGridTestUtils as GridUtils } from "./FlatGridTestUtils";
 
 describe("CategorizedStructProperty", () => {
   let factoryStub: sinon.SinonStubbedInstance<MutableGridItemFactory>;
@@ -169,19 +169,30 @@ describe("CategorizedStructProperty", () => {
     });
 
     describe("getDescendantsAndSelf", () => {
-      it("Should return self when getDescendantsAndSelf called on array property with no children", () => {
+      it("Should return self when getDescendantsAndSelf called on struct property with no children", () => {
         const propertyRecord = TestUtils.createStructProperty("Prop", {});
-
         GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
         const property = new MutableCategorizedStructProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
-
         const descendants = property.getDescendantsAndSelf();
-
         expect(descendants).to.deep.equal([property]);
       });
 
-      it("Should return descendants when getDescendantsAndSelf called on array property with children", () => {
+      it("Should return descendants when getDescendantsAndSelf called on struct property with children", () => {
         const propertyRecord = TestUtils.createStructProperty("CADID1", structChildren);
+        const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
+        const { expectedDescendants } = GridUtils.setupExpectedDescendants(expectedChildren, [
+          { type: FlatGridItemType.Struct, isVisible: true },
+          { type: FlatGridItemType.Array, isVisible: false },
+          { type: FlatGridItemType.Primitive, isVisible: false },
+          { type: FlatGridItemType.Primitive, isVisible: true },
+        ]);
+        const property = new MutableCategorizedStructProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
+        expect(property.getDescendantsAndSelf()).to.deep.equal([property, ...expectedDescendants]);
+      });
+
+      it("Should not include self when `PropertyRecord.property.hideCompositePropertyLabel`", () => {
+        const propertyRecord = TestUtils.createStructProperty("CADID1", structChildren);
+        propertyRecord.property.hideCompositePropertyLabel = true;
 
         const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
         const { expectedDescendants } = GridUtils.setupExpectedDescendants(expectedChildren, [
@@ -190,15 +201,12 @@ describe("CategorizedStructProperty", () => {
           { type: FlatGridItemType.Primitive, isVisible: false },
           { type: FlatGridItemType.Primitive, isVisible: true },
         ]);
-
         const property = new MutableCategorizedStructProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
-
-        expect(property.getDescendantsAndSelf()).to.deep.equal([property, ...expectedDescendants]);
+        expect(property.getDescendantsAndSelf()).to.deep.equal(expectedDescendants);
       });
 
       it("Should not depend on isExpanded", () => {
         const propertyRecord = TestUtils.createStructProperty("CADID1", structChildren);
-
         const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
         const { expectedDescendants } = GridUtils.setupExpectedDescendants(expectedChildren, [
           { type: FlatGridItemType.Struct, isVisible: true },
@@ -208,7 +216,6 @@ describe("CategorizedStructProperty", () => {
         ]);
 
         const property = new MutableCategorizedStructProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
-
         property.isExpanded = false;
         expect(property.getDescendantsAndSelf()).to.deep.equal([property, ...expectedDescendants]);
 
@@ -217,10 +224,23 @@ describe("CategorizedStructProperty", () => {
       });
     });
 
-    describe("getVisibleDescendantsAndSelf", () => {
-      it("Should return self when called on array property with no children", () => {
-        const propertyRecord = TestUtils.createStructProperty("Prop", {});
+    describe("getVisibleDescendants", () => {
+      it("Should return children even when not expanded when `PropertyRecord.property.hideCompositePropertyLabel` is set", () => {
+        const propertyRecord = TestUtils.createStructProperty("CADID1", structChildren);
+        propertyRecord.property.hideCompositePropertyLabel = true;
 
+        const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
+        const { expectedDescendants } = GridUtils.setupExpectedDescendants(expectedChildren, []);
+
+        const property = new MutableCategorizedStructProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
+        property.isExpanded = false;
+        expect(property.getVisibleDescendants()).to.deep.equal(expectedDescendants);
+      });
+    });
+
+    describe("getVisibleDescendantsAndSelf", () => {
+      it("Should return self when called on struct property with no children", () => {
+        const propertyRecord = TestUtils.createStructProperty("Prop", {});
         GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
         const property = new MutableCategorizedStructProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
 
@@ -233,7 +253,6 @@ describe("CategorizedStructProperty", () => {
 
       it("Should return self when not expanded and has children", () => {
         const propertyRecord = TestUtils.createStructProperty("Prop", structChildren);
-
         const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
         GridUtils.setupExpectedDescendants(expectedChildren, [
           { type: FlatGridItemType.Struct, isVisible: true },
@@ -242,26 +261,22 @@ describe("CategorizedStructProperty", () => {
         ]);
 
         const property = new MutableCategorizedStructProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
-
         property.isExpanded = false;
         expect(property.getVisibleDescendantsAndSelf()).to.deep.equal([property]);
       });
 
       it("Should return visible descendants when expanded and has children without descendants", () => {
         const propertyRecord = TestUtils.createStructProperty("Prop", structChildren);
-
         const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
         const { expectedVisibleDescendants } = GridUtils.setupExpectedDescendants(expectedChildren, []);
 
         const property = new MutableCategorizedStructProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
-
         property.isExpanded = true;
         expect(property.getVisibleDescendantsAndSelf()).to.deep.equal([property, ...expectedVisibleDescendants]);
       });
 
       it("Should return visible descendants when expanded and has children with descendants", () => {
         const propertyRecord = TestUtils.createStructProperty("Prop", structChildren);
-
         const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
         const { expectedVisibleDescendants } = GridUtils.setupExpectedDescendants(expectedChildren, [
           { type: FlatGridItemType.Struct, isVisible: true },
@@ -270,14 +285,28 @@ describe("CategorizedStructProperty", () => {
         ]);
 
         const property = new MutableCategorizedStructProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
-
         property.isExpanded = true;
         expect(property.getVisibleDescendantsAndSelf()).to.deep.equal([property, ...expectedVisibleDescendants]);
+      });
+
+      it("Should not include self when `PropertyRecord.property.hideCompositePropertyLabel`", () => {
+        const propertyRecord = TestUtils.createStructProperty("CADID1", structChildren);
+        propertyRecord.property.hideCompositePropertyLabel = true;
+
+        const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
+        const { expectedVisibleDescendants } = GridUtils.setupExpectedDescendants(expectedChildren, [
+          { type: FlatGridItemType.Struct, isVisible: true },
+          { type: FlatGridItemType.Array, isVisible: true },
+          { type: FlatGridItemType.Primitive, isVisible: false },
+        ]);
+        const property = new MutableCategorizedStructProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
+        property.isExpanded = true;
+        expect(property.getVisibleDescendantsAndSelf()).to.deep.equal(expectedVisibleDescendants);
       });
     });
 
     describe("getLastVisibleDescendantOrSelf", () => {
-      it("Should return self when called on array property with no children", () => {
+      it("Should return self when called on struct property with no children", () => {
         const propertyRecord = TestUtils.createStructProperty("Prop", {});
 
         GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);

@@ -3,16 +3,17 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { WidgetState } from "@bentley/ui-abstract";
 import {
   ActionItemButton, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, NavigationWidget,
-  NestedFrontstage, ToolButton, ToolWidget, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
+  NestedFrontstage, ToolButton, ToolWidget, Widget, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class NestedFrontstage2 extends FrontstageProvider {
 
@@ -106,7 +107,7 @@ class FrontstageToolWidget extends React.Component {
     />
   );
 
-  public render() {
+  public override render() {
     return (
       <ToolWidget
         appButton={NestedFrontstage.backToPreviousFrontstageCommand}
@@ -145,7 +146,7 @@ class FrontstageNavigationWidget extends React.Component {
     />
   );
 
-  public render() {
+  public override render() {
     return (
       <NavigationWidget
         navigationAidId="StandardRotationNavigationAid"

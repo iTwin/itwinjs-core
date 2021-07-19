@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { ClientRequestContext, isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, ProcessDetector } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient, isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { SignIn as SignInBase } from "@bentley/ui-components";
@@ -43,7 +43,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
     super(props);
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
     // istanbul ignore if
     if (isFrontendAuthorizationClient(oidcClient))
@@ -63,7 +63,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
       this.props.onSignedIn();
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     // istanbul ignore next
     if (this._oidcClient)
       this._oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
@@ -79,7 +79,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
       this.props.onStartSignIn();
   };
 
-  public render() {
+  public override render() {
 
     /*
      * Note: In the case of electron, the signin happens in a disconnected web browser. We therefore show
@@ -90,7 +90,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
     let disableSignInOnClick = true;
     let signingInMessage: string | undefined;
     // istanbul ignore next
-    if (isElectronRenderer) {
+    if (ProcessDetector.isElectronAppFrontend) {
       disableSignInOnClick = false;
       const signingInMessageStringId = `UiFramework:signIn.signingInMessage`;
       signingInMessage = UiFramework.i18n.translate(signingInMessageStringId);

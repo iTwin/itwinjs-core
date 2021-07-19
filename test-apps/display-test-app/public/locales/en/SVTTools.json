@@ -10,6 +10,9 @@
         "keyin": "dta classifyclip selected"
       }
     },
+    "GridSettings": {
+      "keyin": "dta grid settings"
+    },
     "Markup": {
       "keyin": "dta markup",
       "TestSelect": {
@@ -70,6 +73,9 @@
     "ToggleShadowMapTiles": {
       "keyin": "dta shadow tiles"
     },
+    "FrameStats": {
+      "keyin": "dta framestats"
+    },
     "PurgeTileTrees": {
       "keyin": "dta purge tiletrees"
     },
@@ -106,23 +112,17 @@
     "ApplyModelTransform": {
       "keyin": "dta model transform"
     },
+    "ApplyModelDisplayScale": {
+      "keyin": "dta model scale"
+    },
     "EditingSession": {
       "keyin": "dta edit"
-    },
-    "DeleteElements": {
-      "keyin": "dta delete elements"
-    },
-    "MoveElements": {
-      "keyin": "dta move elements"
     },
     "PlaceLineString": {
       "keyin": "dta place line string"
     },
-    "DtaUndo": {
-      "keyin": "dta undo"
-    },
-    "DtaRedo": {
-      "keyin": "dta redo"
+    "SyncViewports": {
+      "keyin": "dta viewport sync"
     }
   }
 }

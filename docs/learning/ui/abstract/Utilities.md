@@ -17,4 +17,4 @@ throw new UiError("my-package.MyClass", "This is my error");
 
 ## API Reference
 
-* [Utilities]($ui-abstract:Utilities)
+- [Utilities]($ui-abstract:Utilities)

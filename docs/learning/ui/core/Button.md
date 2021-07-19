@@ -95,4 +95,4 @@ The `onClick` event handler is run when the Button is clicked or touched.
 
 ## API Reference
 
-* [Button]($ui-core:Button)
+- [Button]($ui-core:Button)

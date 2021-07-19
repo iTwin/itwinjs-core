@@ -3,30 +3,184 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import moreSvg from "@bentley/icons-generic/icons/more-circular.svg?sprite";
 import moreVerticalSvg from "@bentley/icons-generic/icons/more-vertical-circular.svg?sprite";
-import { DateFormatter, IconSpecUtilities, ParseResults, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
-import {
-  BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
-  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
-  LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus, MinimalFeaturedTile, MinimalTile, MutedText,
-  NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage, SearchBox, Select, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea,
-  ThemedSelect, Tile, Title, Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
-} from "@bentley/ui-core";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import {
-  adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, DatePickerPopupButton, DatePickerPopupButtonProps,
-  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, WeightPickerButton,
+  ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType,
+} from "@bentley/imodeljs-frontend";
+import { Format, FormatProps, FormatterSpec, FormatTraits, UnitProps, UnitsProvider } from "@bentley/imodeljs-quantity";
+import { DateFormatter, IconSpecUtilities, ParseResults, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
+import {
+  adjustDateToTimezone, ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorSwatch, ColumnDescription, DatePickerPopupButton, DatePickerPopupButtonProps,
+  IntlFormatter, LineWeightSwatch, ParsedInput, QuantityInput, QuantityNumberInput, Table, TableDataChangeEvent, TableDataProvider, WeightPickerButton,
 } from "@bentley/ui-components";
-import { MessageManager, ModalDialogManager, ReactNotifyMessageDetails } from "@bentley/ui-framework";
-import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType, QuantityType } from "@bentley/imodeljs-frontend";
+import {
+  BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
+  DisabledText, ExpandableBlock, ExpandableList, FeaturedTile, Headline, HorizontalAlignment, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
+  LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus,
+  MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
+  SearchBox, Select, SettingsContainer, SettingsTabEntry, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
+  Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
+} from "@bentley/ui-core";
+import { MessageManager, ModalDialogManager, QuantityFormatSettingsPage, ReactNotifyMessageDetails, UiFramework } from "@bentley/ui-framework";
+import { SampleAppIModelApp } from "../../..";
 import { ComponentExampleCategory, ComponentExampleProps } from "./ComponentExamples";
 import { SampleContextMenu } from "./SampleContextMenu";
 import { SampleExpandableBlock } from "./SampleExpandableBlock";
 import { SampleImageCheckBox } from "./SampleImageCheckBox";
-import { SampleAppIModelApp } from "../../..";
-import { BeDuration, Logger } from "@bentley/bentleyjs-core";
 import { SamplePopupContextMenu } from "./SamplePopupContextMenu";
+import { FormatPopupButton } from "./FormatPopupButton";
+import { AccudrawSettingsPageComponent } from "../Settings";
+import { TableExampleContent } from "../../contentviews/TableExampleContent";
+import { ItemsAppendedSampleTimeline, ItemsPrefixedSampleTimeline, ItemsReplacedSampleTimeline, LocalizedTimeSampleTimeline, NoLocalizedTimeSampleTimeline, NoRepeatSampleTimeline } from "./SampleTimelineComponent";
+
+function MySettingsPage() {
+  const tabs: SettingsTabEntry[] = [
+    {
+      itemPriority: 10, tabId: "Quantity", pageWillHandleCloseRequest: true, label: "Quantity", tooltip: "Quantity Format Settings", icon: "icon-measure",
+      page: <QuantityFormatSettingsPage initialQuantityType={QuantityType.Length} availableUnitSystems={new Set(["metric", "imperial", "usCustomary", "usSurvey"])} />,
+    },
+    {
+      itemPriority: 20, tabId: "Accudraw", label: "Accudraw", tooltip: "Accudraw Settings", icon: "icon-paintbrush",
+      page: <AccudrawSettingsPageComponent />,
+    },
+    { itemPriority: 30, tabId: "page3", label: "page3", page: <div>Page 3</div> },
+    { itemPriority: 40, tabId: "page4", label: "page4", subLabel: "disabled page4", isDisabled: true, page: <div>Page 4</div> },
+  ];
+
+  return (
+    <div style={{ display: "flex", width: "100%", height: "100%" }}>
+      <SettingsContainer tabs={tabs} settingsManager={UiFramework.settingsManager} />
+    </div>
+  );
+}
+
+function setFormatTrait(formatProps: FormatProps, trait: FormatTraits, setActive: boolean) {
+  const traitStr = Format.getTraitString(trait);
+  if (undefined === traitStr)
+    return;
+  let formatTraits: string[] | undefined;
+  if (setActive) {
+    // setting trait
+    if (!formatProps.formatTraits) {
+      formatTraits = [traitStr];
+    } else {
+      const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+      if (!traits.find((traitEntry) => traitStr === traitEntry)) {
+        formatTraits = [...traits, traitStr];
+      }
+    }
+  } else {
+    // clearing trait
+    if (!formatProps.formatTraits)
+      return;
+    const traits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+    formatTraits = traits.filter((traitEntry) => traitEntry !== traitStr);
+  }
+  return { ...formatProps, formatTraits };
+}
+
+function provideSecondaryChildren(formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
+  const inProps = formatProps;
+  const onChange = fireFormatChange;
+  const handleUseThousandsSeparatorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newProps = setFormatTrait(inProps, FormatTraits.Use1000Separator, e.target.checked);
+    if (newProps)
+      onChange(newProps);
+  };
+
+  return (
+    <>
+      <span className={"uicore-label"}>Secondary (1000 sep)</span>
+      <Checkbox checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
+    </>
+  );
+}
+
+function providePrimaryChildren(formatProps: FormatProps, fireFormatChange: (newProps: FormatProps) => void) {
+  const inProps = formatProps;
+  const onChange = fireFormatChange;
+  const handleUseThousandsSeparatorChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const newProps = setFormatTrait(inProps, FormatTraits.Use1000Separator, e.target.checked);
+    if (newProps)
+      onChange(newProps);
+  };
+
+  return (
+    <>
+      <span className={"uicore-label"}>Primary (1000 sep)</span>
+      <Checkbox checked={Format.isFormatTraitSetInProps(formatProps, FormatTraits.Use1000Separator)} onChange={handleUseThousandsSeparatorChange} />
+    </>
+  );
+}
+
+async function provideFormatSpec(formatProps: FormatProps, persistenceUnit: UnitProps, unitsProvider: UnitsProvider, formatName?: string) {
+  const actualFormat = await Format.createFromJSON(formatName ?? "custom", unitsProvider, formatProps);
+  return FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, persistenceUnit);
+}
+
+function NumericFormatPopup({ persistenceUnitName, initialMagnitude }: { persistenceUnitName: string, initialMagnitude: number }) {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  const initialFormatProps: FormatProps = {
+    formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel", "trailZeroes"],
+    precision: 4,
+    type: "Decimal",
+    uomSeparator: " ",
+    decimalSeparator: ".",
+  };
+
+  const [formatterSpec, setFormatterSpec] = React.useState<FormatterSpec>();
+  const [formattedValue, setFormattedValue] = React.useState<string>();
+  const handleFormatChange = React.useCallback((inProps: FormatProps) => {
+    async function fetchFormatSpec(formatProps: FormatProps) {
+      const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
+      if (formatterSpec) {
+        const pu = formatterSpec.persistenceUnit;
+        if (pu) {
+          const actualFormat = await Format.createFromJSON("custom", unitsProvider, formatProps);
+          await actualFormat.fromJSON(unitsProvider, formatProps);
+          const newSpec = await FormatterSpec.create(actualFormat.name, actualFormat, unitsProvider, pu);
+          setFormattedValue(newSpec.applyFormatting(initialMagnitude));
+          setFormatterSpec(newSpec);
+        }
+      }
+    }
+    fetchFormatSpec(inProps); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }, [formatterSpec, initialMagnitude]);
+
+  React.useEffect(() => {
+    async function fetchInitialFormatSpec() {
+      const unitsProvider = IModelApp.quantityFormatter.unitsProvider;
+      const pu = await unitsProvider.findUnitByName(persistenceUnitName);
+      if (pu) {
+        const newSpec = await provideFormatSpec(initialFormatProps, pu, unitsProvider);
+        setFormattedValue(newSpec.applyFormatting(initialMagnitude));
+        setFormatterSpec(newSpec);
+      }
+    }
+
+    if (undefined === formatterSpec)
+      fetchInitialFormatSpec(); // eslint-disable-line @typescript-eslint/no-floating-promises
+  }, [formatterSpec, persistenceUnitName, initialMagnitude, initialFormatProps]);
+
+  return (
+    <div style={{ display: "flex", alignItems: "center" }}>
+      {(formatterSpec && formattedValue) &&
+        <>
+          <span>{formattedValue}</span>
+          <FormatPopupButton initialFormat={formatterSpec.format.toJSON()} showSample={true} onFormatChange={handleFormatChange}
+            initialMagnitude={initialMagnitude} unitsProvider={IModelApp.quantityFormatter.unitsProvider} persistenceUnit={formatterSpec.persistenceUnit}
+            provideFormatSpec={provideFormatSpec}
+            providePrimaryChildren={providePrimaryChildren}
+            provideSecondaryChildren={provideSecondaryChildren}
+          />
+        </>
+      }
+    </div>
+  );
+}
 
 function WrappedSelect() {
   const [currentValue, setCurrentValue] = React.useState(3);
@@ -52,7 +206,6 @@ function WrappedSelect() {
       <button onClick={() => handleValueChange(3)}>3</button>
     </div>
   );
-
 }
 
 function NestedPopup({ closeOnNestedPopupOutsideClick }: { closeOnNestedPopupOutsideClick?: boolean }) {
@@ -208,7 +361,7 @@ export function WeightPickerHost(props: { activeWeight: number, onLineWeightPick
   }, [onLineWeightPick]);
 
   return (
-    <WeightPickerButton activeWeight={currentWeight} onLineWeightPick={handleWeightPick} />
+    <WeightPickerButton style={{ width: "max-content" }} activeWeight={currentWeight} onLineWeightPick={handleWeightPick} />
   );
 }
 
@@ -376,6 +529,24 @@ export class ComponentExamplesProvider {
   private static get datePickerSample(): ComponentExampleCategory {
     const londonDate = adjustDateToTimezone(new Date(), 1 * 60);
     const laDate = adjustDateToTimezone(new Date(), -7 * 60);
+    // example showing converting to UTC time and using that to format.
+    const msPerHour = 60 * 60 * 1000;
+    const tzOffset = -4; // this should be similar to Math.floor(.5 + location.longitudeDegrees / 15.0);
+    const tzOffsetMs = tzOffset * msPerHour; // offset to project
+    const projectSunrise = new Date(Date.UTC(1999, 3, 15, 7, 30) + tzOffsetMs); // this should be same as time returned from calculateSunriseOrSunset
+    const projectSunset = new Date(Date.UTC(1999, 3, 15, 20, 30) + tzOffsetMs); // this should be same as time returned from calculateSunriseOrSunset
+    const projectSunriseMs = projectSunrise.getTime();
+    const projectSunsetMs = projectSunset.getTime();
+    const projectSunTimeMs = Date.UTC(1999, 3, 15, 9, 30) + tzOffsetMs;  // this should be same as displayStyle.settings.sunTime
+    const dateFormatter = new Intl.DateTimeFormat("default", { month: "numeric", day: "numeric", timeZone: "UTC" } as any);
+    const timeFormatter = new Intl.DateTimeFormat("default", { timeStyle: "short", timeZone: "UTC" } as any);
+    const monthLetterFormatter = new Intl.DateTimeFormat("default", { month: "narrow", timeZone: "UTC" } as any);
+    const projectDate = dateFormatter.format(new Date(projectSunriseMs - tzOffsetMs));
+    const projectSunriseTime = timeFormatter.format(new Date(projectSunriseMs - tzOffsetMs));
+    const projectSunsetTime = timeFormatter.format(new Date(projectSunsetMs - tzOffsetMs));
+    const projectSunTime = timeFormatter.format(new Date(projectSunTimeMs - tzOffsetMs));
+    const month = monthLetterFormatter.format(new Date(projectSunriseMs - tzOffsetMs));
+
     return {
       title: "DatePicker",
       examples: [
@@ -388,6 +559,14 @@ export class ComponentExamplesProvider {
         createComponentExample("Date Picker Popup w/custom formatter", undefined, <DatePickerHost selected={new Date()} displayEditField={true} dateFormatter={new IntlFormatter(customDayFormatter)} />),
         createComponentExample("Date Picker Popup w/IntlFormatter", undefined, <DatePickerHost fieldStyle={{ width: "16em" }} selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} dateFormatter={new IntlFormatter()} />),
         createComponentExample("Date Picker Popup w/MDY Formatter", undefined, <DatePickerHost selected={new Date()} displayEditField={true} timeDisplay={TimeDisplay.H12MSC} dateFormatter={new MdyFormatter()} />),
+        createComponentExample("Date Formatting", undefined,
+          <div className="component-examples-date-sample">
+            <span>{`date: ${projectDate}`}</span>
+            <span>{`monthLetter: ${month}`}</span>
+            <span>{`sunrise: ${projectSunriseTime}`}</span>
+            <span>{`sun time: ${projectSunTime}`}</span>
+            <span>{`sunset: ${projectSunsetTime}`}</span>
+          </div>),
       ],
     };
   }
@@ -436,6 +615,73 @@ export class ComponentExamplesProvider {
               Hello World 3
             </ExpandableBlock>
           </ExpandableList>),
+      ],
+    };
+  }
+
+  private static get tableSamples(): ComponentExampleCategory {
+    const testRecord = (valueString: string): PropertyRecord => {
+      const value: PropertyValue = {
+        value: valueString,
+        displayValue: valueString,
+        valueFormat: PropertyValueFormat.Primitive,
+      };
+      const description: PropertyDescription = {
+        name: "1",
+        typename: "text",
+        displayLabel: "column",
+      };
+      return new PropertyRecord(value, description);
+    };
+
+    const rowData = [
+      {
+        key: "row1",
+        cells: [
+          { key: "1", record: testRecord("Cell 1-1 text") },
+          { key: "2", record: testRecord("Cell 1-2 text") },
+          { key: "3", record: testRecord("Cell 1-3 text") },
+          { key: "4", record: testRecord("Cell 1-4 text") }],
+      },
+      {
+        key: "row2",
+        cells: [
+          { key: "1", record: testRecord("Cell 2-1 text") },
+          { key: "2", record: testRecord("Text in the merged cells (2-2, 2-3)"), mergedCellsCount: 2, alignment: HorizontalAlignment.Center },
+          { key: "3", record: testRecord("") },
+          { key: "4", record: testRecord("Cell 2-4 text") }],
+      },
+      {
+        key: "row3",
+        cells: [
+          { key: "1", record: testRecord("Cell 3-1 text") },
+          { key: "2", record: testRecord("Cell 3-2 text") },
+          { key: "3", record: testRecord("Cell 3-3 text") },
+          { key: "4", record: testRecord("Cell 3-4 text") }],
+      },
+    ];
+    const onColumnsChanged = new TableDataChangeEvent();
+    const onRowsChanged = new TableDataChangeEvent();
+    const dataProvider: TableDataProvider = {
+      getColumns: async (): Promise<ColumnDescription[]> => [
+        { key: "1", label: "Column1", resizable: true },
+        { key: "2", label: "Column2", resizable: true },
+        { key: "3", label: "Column3", resizable: true },
+        { key: "4", label: "Column4", resizable: true }],
+      getRowsCount: async () => rowData.length,
+      getRow: async (index: number) => rowData[index],
+      sort: async () => { },
+      onColumnsChanged,
+      onRowsChanged,
+    };
+
+    return {
+      title: "Tables",
+      examples: [
+        createComponentExample("Basic Table", "Table with merged cells",
+          <div style={{ height: "115px", width: "100%" }}> <Table dataProvider={dataProvider} /></div>),
+        createComponentExample("Table w/options", "Table with filters and edit cells",
+          <div style={{ height: "360px", width: "100%" }}><TableExampleContent /></div>),
       ],
     };
   }
@@ -643,10 +889,20 @@ export class ComponentExamplesProvider {
           <QuantityInput initialValue={initialLength} quantityType={QuantityType.Length} onQuantityChange={onLengthChange} />),
         createComponentExample("Angle", undefined,
           <QuantityInput initialValue={initialAngle} quantityType={QuantityType.Angle} onQuantityChange={onAngleChange} />),
+        createComponentExample("Bearing", undefined,
+          <QuantityInput initialValue={initialAngle} quantityType={"Bearing"} onQuantityChange={onAngleChange} />),
         createComponentExample("Volume", undefined,
           <QuantityInput initialValue={initialVolume} quantityType={QuantityType.Volume} onQuantityChange={onVolumeChange} />),
         createComponentExample("Temperature (Custom)", undefined,
           <ParsedInput onChange={onTemperatureChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />),
+        createComponentExample("Quantity Number Input", "QuantityType.Length",
+          <QuantityNumberInput style={{ width: "140px" }} persistenceValue={initialLength} step={0.25} snap quantityType={QuantityType.Length} onChange={onLengthChange} />),
+        createComponentExample("Quantity Number Input", "QuantityType.LengthEngineering",
+          <QuantityNumberInput style={{ width: "140px" }} placeholder={"Specify Length"} step={0.25} snap quantityType={QuantityType.LengthEngineering} onChange={onLengthChange} />),
+        createComponentExample("Quantity Number Input", "QuantityType.Angle",
+          <QuantityNumberInput style={{ width: "140px" }} persistenceValue={initialAngle} step={0.5} snap quantityType={QuantityType.Angle} onChange={onAngleChange} />),
+        createComponentExample("Quantity Number Input", "QuantityType.Volume",
+          <QuantityNumberInput showTouchButtons persistenceValue={initialVolume} step={0.5} snap quantityType={QuantityType.Volume} onChange={onVolumeChange} />),
       ],
     };
   }
@@ -770,6 +1026,8 @@ export class ComponentExamplesProvider {
           <Slider min={0} max={100} values={[50]} step={1} showTooltip tooltipBelow />),
         createComponentExample("Slider w/ min/max", "Slider with showMinMax prop",
           <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax />),
+        createComponentExample("Slider w/ min/max", "Slider with formatMax prop",
+          <Slider min={0} max={1} values={[0.5]} step={0.01} showTooltip showMinMax formatMax={(v: number) => v.toFixed(1)} />),
         createComponentExample("Slider w/ min/max images", "Slider with minImage and maxImage props",
           <Slider min={0} max={100} values={[50]} step={1} showTooltip showMinMax
             minImage={<Icon iconSpec="icon-placeholder" />} maxImage={<Icon iconSpec="icon-placeholder" />} />),
@@ -934,12 +1192,51 @@ export class ComponentExamplesProvider {
     return {
       title: "Deprecated Components",
       examples: [
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
+        // eslint-disable-next-line deprecation/deprecation
         createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
       ],
     };
   }
 
+  private static get quantityFormatting(): ComponentExampleCategory {
+    const examples = [];
+    examples.push(
+      createComponentExample("Meter", "Non-composite Formatting", <NumericFormatPopup persistenceUnitName={"Units.M"} initialMagnitude={1234.56} />),
+    );
+    return {
+      title: "Quantity Formatting Component",
+      examples,
+    };
+  }
+
+  private static get settingPage(): ComponentExampleCategory {
+    const examples = [];
+    examples.push(
+      createComponentExample("Setting Page", undefined, <MySettingsPage />),
+    );
+    return {
+      title: "Setting Page Component",
+      examples,
+    };
+  }
+
+  private static get timelineSamples(): ComponentExampleCategory {
+    const examples = [];
+    examples.push(
+      createComponentExample("TimelineComponent", "With appended menu items", <ItemsAppendedSampleTimeline />),
+      createComponentExample("TimelineComponent", "With prefixed menu items", <ItemsPrefixedSampleTimeline />),
+      createComponentExample("TimelineComponent", "With menu items replaced", <ItemsReplacedSampleTimeline />),
+      createComponentExample("TimelineComponent", "With no repeat option", <NoRepeatSampleTimeline />),
+      createComponentExample("TimelineComponent", "With timezone offset of 0", <NoLocalizedTimeSampleTimeline />),
+      createComponentExample("TimelineComponent", "With no timezone offset specified", <LocalizedTimeSampleTimeline />),
+    );
+    return {
+      title: "Timelines",
+      examples,
+    };
+  }
   public static get categories(): ComponentExampleCategory[] {
     return [
       ComponentExamplesProvider.badgeSamples,
@@ -960,11 +1257,15 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.selectSamples,
       ComponentExamplesProvider.sliderSamples,
       ComponentExamplesProvider.splitButtonSamples,
+      ComponentExamplesProvider.tableSamples,
       ComponentExamplesProvider.tabsSamples,
       ComponentExamplesProvider.textSamples,
       ComponentExamplesProvider.tileSamples,
+      ComponentExamplesProvider.timelineSamples,
       ComponentExamplesProvider.toggleSamples,
       ComponentExamplesProvider.weightSamples,
+      ComponentExamplesProvider.quantityFormatting,
+      ComponentExamplesProvider.settingPage,
       ComponentExamplesProvider.deprecatedComponentSamples,
     ];
   }

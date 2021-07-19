@@ -5,13 +5,13 @@
 import * as React from "react";
 import {
   DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem,
-  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames,
+  PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames, WidgetState,
 } from "@bentley/ui-abstract";
 import {
   CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps,
   FrontstageProvider, GroupButton, ModalDialogManager, ModelessDialogManager,
   NavigationWidget, StagePanel, StagePanelState, ToolButton,
-  ToolWidget, Widget, WidgetState, Zone, ZoneState,
+  ToolWidget, Widget, Zone, ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -35,7 +35,7 @@ import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley
 import { SampleModelessDialog } from "../dialogs/SampleModelessDialog";
 import { SampleModalDialog } from "../dialogs/SampleModalDialog";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
   public currentPageIndex = 0;
@@ -75,12 +75,12 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
   }
 
   // called to apply a single property value change.
-  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+  public override applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
     this.processChangesInUi([updatedValue]);
   };
 
   /** Called by UI to inform data provider of changes.  */
-  public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
+  public override processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
     if (properties.length > 0) {
       for (const prop of properties) {
         if (prop.propertyName === DynamicModalUiDataProvider.userPropertyName) {
@@ -98,7 +98,7 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
   }
 
   /** Used Called by UI to request available properties when UI is manually created. */
-  public supplyDialogItems(): DialogItem[] | undefined {
+  public override supplyDialogItems(): DialogItem[] | undefined {
     const items: DialogItem[] = [];
 
     items.push({ value: this._userValue, property: DynamicModalUiDataProvider._getUserDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } });
@@ -122,7 +122,7 @@ class DynamicModalUiDataProvider extends DialogLayoutDataProvider {
     }
   };
 
-  public supplyButtonData(): DialogButtonDef[] | undefined {
+  public override supplyButtonData(): DialogButtonDef[] | undefined {
     const buttons: DialogButtonDef[] = [];
 
     if (this.currentPageIndex > 0 && this.currentPageIndex < this.numberOfPages)

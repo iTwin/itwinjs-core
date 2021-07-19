@@ -17,7 +17,7 @@ import { DraggedPanelSideContext, DraggedResizeHandleContext, DraggedWidgetIdCon
 import {
   DraggedTabState, FloatingWidgetsState, NineZoneActionTypes, NineZoneState, PanelsState, TabsState, ToolSettingsState, WidgetsState,
 } from "./NineZoneState";
-import { assert } from "./assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { WidgetTab } from "../widget/Tab";
 
 /** @internal future */
@@ -44,6 +44,7 @@ export interface NineZoneLabels {
   sendWidgetHomeTitle?: string;
   toolSettingsHandleTitle?: string;
   unpinPanelTitle?: string;
+  popoutActiveTab?: string;
 }
 
 /** @internal future */
@@ -51,7 +52,7 @@ export function NineZone(props: NineZoneProps) {
   const { children, ...providerProps } = props; // eslint-disable-line @typescript-eslint/no-unused-vars
   const measurerRef = React.useRef<HTMLDivElement>(null);
   const measure = React.useCallback<() => Rectangle>(() => {
-    assert(measurerRef.current);
+    assert(!!measurerRef.current);
     return Rectangle.create(measurerRef.current.getBoundingClientRect());
   }, []);
   return (
@@ -196,6 +197,7 @@ const Measurer = React.forwardRef<HTMLDivElement>(function Measurer(_, ref) { //
   const size = React.useRef<{ height?: number, width?: number }>({});
   const dispatch = React.useContext(NineZoneDispatchContext);
   const handleResize = React.useCallback((width, height) => {
+    // istanbul ignore next
     if (size.current.width === width && size.current.height === height)
       return;
     size.current.height = height;

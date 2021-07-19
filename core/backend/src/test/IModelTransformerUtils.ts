@@ -4,27 +4,28 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { DbResult, Guid, GuidString, Id64, Id64Set, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, GuidString, Id64, Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import { Schema } from "@bentley/ecschema-metadata";
 import {
   Box, Cone, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Transform, Vector3d, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
-  AuxCoordSystem2dProps, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps, ElementProps, FontProps,
-  FontType, GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamIterator,
-  GeometryStreamProps, ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps, Placement3d, PlanProjectionSettings,
-  RelatedElement, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance, SubCategoryOverride, SubjectProps, TextureFlags,
+  AuxCoordSystem2dProps, Base64EncodedString, BisCodeSpec, CategorySelectorProps, Code, CodeScopeSpec, CodeSpec, ColorDef, ElementAspectProps,
+  ElementProps, ExternalSourceProps, FontProps, FontType, GeometricElement2dProps, GeometricElement3dProps, GeometryParams, GeometryPartProps,
+  GeometryStreamBuilder, GeometryStreamIterator, GeometryStreamProps, ImageSourceFormat, IModel, ModelProps, ModelSelectorProps, PhysicalElementProps,
+  Placement3d, PlanProjectionSettings, RelatedElement, RepositoryLinkProps, SkyBoxImageType, SpatialViewDefinitionProps, SubCategoryAppearance,
+  SubCategoryOverride, SubjectProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  AuxCoordSystem, AuxCoordSystem2d, BackendLoggerCategory, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition,
-  DisplayStyle2d, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingModel,
-  DrawingViewDefinition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects,
-  ElementOwnsUniqueAspect, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, FunctionalModel, FunctionalSchema, GeometricElement3d,
+  AuxCoordSystem, AuxCoordSystem2d, BackendRequestContext, CategorySelector, DefinitionModel, DefinitionPartition, DisplayStyle2d, DisplayStyle3d,
+  DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element,
+  ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
+  ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GeometricElement3d,
   GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement,
-  InformationRecordModel, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition,
-  Platform, Relationship, RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition,
-  SubCategory, Subject, TemplateRecipe2d, TemplateRecipe3d, Texture, ViewDefinition,
+  InformationRecordModel, LinkElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject,
+  PhysicalPartition, Platform, Relationship, RelationshipProps, RenderMaterialElement, RepositoryLink, SnapshotDb, SpatialCategory,
+  SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture, ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
 
@@ -35,7 +36,7 @@ export namespace IModelTransformerUtils {
   const federationGuid3: GuidString = Guid.createValue();
 
   export async function prepareSourceDb(sourceDb: IModelDb): Promise<void> {
-    // Import desired target schemas
+    // Import desired schemas
     const requestContext = new BackendRequestContext();
     const sourceSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerSource.ecschema.xml");
     await sourceDb.importSchemas(requestContext, [FunctionalSchema.schemaFilePath, sourceSchemaFileName]);
@@ -230,6 +231,8 @@ export namespace IModelTransformerUtils {
       commonNavigation: { id: sourcePhysicalCategoryId },
       commonString: "Common",
       commonDouble: 7.3,
+      sourceBinary: new Uint8Array([1, 3, 5, 7]),
+      commonBinary: Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])),
       extraString: "Extra",
     } as PhysicalElementProps;
     const sourcePhysicalElementId: Id64String = sourceDb.elements.insertElement(sourcePhysicalElementProps);
@@ -242,6 +245,7 @@ export namespace IModelTransformerUtils {
       commonDouble: 1.1,
       commonString: "Unique",
       commonLong: physicalObjectId1,
+      commonBinary: Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])),
       sourceDouble: 11.1,
       sourceString: "UniqueAspect",
       sourceLong: physicalObjectId1,
@@ -407,21 +411,40 @@ export namespace IModelTransformerUtils {
     sourceMultiAspects[1].asAny.sourceString += "-Updated";
     sourceDb.elements.updateAspect(sourceMultiAspects[1]);
     // clear NavigationProperty of PhysicalElement1
-    const physicalElementId: Id64String = queryByUserLabel(sourceDb, "PhysicalElement1");
-    let physicalElement: PhysicalElement = sourceDb.elements.getElement(physicalElementId);
-    physicalElement.asAny.commonNavigation = RelatedElement.none;
-    physicalElement.update();
-    physicalElement = sourceDb.elements.getElement(physicalElementId);
-    assert.isUndefined(physicalElement.asAny.commonNavigation);
+    const physicalElementId1: Id64String = queryByUserLabel(sourceDb, "PhysicalElement1");
+    let physicalElement1: PhysicalElement = sourceDb.elements.getElement(physicalElementId1);
+    physicalElement1.asAny.commonNavigation = RelatedElement.none;
+    physicalElement1.update();
+    physicalElement1 = sourceDb.elements.getElement(physicalElementId1);
+    assert.isUndefined(physicalElement1.asAny.commonNavigation);
     // delete PhysicalObject3
     const physicalObjectId3: Id64String = queryByUserLabel(sourceDb, "PhysicalObject3");
     assert.isTrue(Id64.isValidId64(physicalObjectId3));
     sourceDb.elements.deleteElement(physicalObjectId3);
     assert.equal(Id64.invalid, queryByUserLabel(sourceDb, "PhysicalObject3"));
+    // Insert PhysicalObject5
+    const physicalObjectProps5: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalElement1.model,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject5",
+      geom: createBox(Point3d.create(1, 1, 1)),
+      placement: {
+        origin: Point3d.create(5, 5, 5),
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+    };
+    const physicalObjectId5: Id64String = sourceDb.elements.insertElement(physicalObjectProps5);
+    assert.isTrue(Id64.isValidId64(physicalObjectId5));
     // delete relationship
+    const drawingGraphicId1: Id64String = queryByUserLabel(sourceDb, "DrawingGraphic1");
     const drawingGraphicId2: Id64String = queryByUserLabel(sourceDb, "DrawingGraphic2");
     const relationship: Relationship = sourceDb.relationships.getInstance(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId2, targetId: physicalObjectId1 });
     relationship.delete();
+    // insert relationships
+    DrawingGraphicRepresentsElement.insert(sourceDb, drawingGraphicId1, physicalObjectId5);
+    DrawingGraphicRepresentsElement.insert(sourceDb, drawingGraphicId2, physicalObjectId5);
     // update InformationRecord2
     const informationRecordCodeSpec: CodeSpec = sourceDb.codeSpecs.getByName("InformationRecords");
     const informationModelId = sourceDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(sourceDb, subjectId, "Information"))!;
@@ -602,6 +625,8 @@ export namespace IModelTransformerUtils {
     assert.equal(physicalElement1.asAny.commonNavigation.id, targetPhysicalCategoryId, "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.asAny.commonString, "Common", "Property should have been automatically remapped (same name)");
     assert.equal(physicalElement1.asAny.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
+    assert.equal(Base64EncodedString.fromUint8Array(physicalElement1.asAny.targetBinary), Base64EncodedString.fromUint8Array(new Uint8Array([1, 3, 5, 7])), "Property should have been remapped by onTransformElement override");
+    assert.equal(Base64EncodedString.fromUint8Array(physicalElement1.asAny.commonBinary), Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])), "Property should have been automatically remapped (same name)");
     assert.notExists(physicalElement1.asAny.extraString, "Property should have been dropped during transformation");
     assert.equal(childObject1A.parent!.id, physicalObjectId1);
     assert.equal(childObject1B.parent!.id, physicalObjectId1);
@@ -611,6 +636,7 @@ export namespace IModelTransformerUtils {
     assert.equal(targetUniqueAspects[0].asAny.commonDouble, 1.1);
     assert.equal(targetUniqueAspects[0].asAny.commonString, "Unique");
     assert.equal(targetUniqueAspects[0].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
+    assert.equal(Base64EncodedString.fromUint8Array(targetUniqueAspects[0].asAny.commonBinary), Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])));
     assert.equal(targetUniqueAspects[0].asAny.targetDouble, 11.1);
     assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect");
     assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
@@ -684,75 +710,93 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Guid.isV4Guid(relWithProps.targetGuid));
   }
 
-  export function assertUpdatesInTargetDb(targetDb: IModelDb): void {
+  export function assertUpdatesInDb(iModelDb: IModelDb, assertDeletes: boolean = true): void {
+    // determine which schema was imported
+    const testSourceSchema = iModelDb.querySchemaVersion("TestTransformerSource") ? true : false;
+    const testTargetSchema = iModelDb.querySchemaVersion("TestTransformerTarget") ? true : false;
+    assert.notEqual(testSourceSchema, testTargetSchema);
     // assert Subject was updated
-    const subjectId = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, "Subject"))!;
+    const subjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(subjectId));
-    const subject: Subject = targetDb.elements.getElement<Subject>(subjectId);
+    const subject: Subject = iModelDb.elements.getElement<Subject>(subjectId);
     assert.equal(subject.description, "Subject description (Updated)");
     // assert SpatialCategory was updated
-    const definitionModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Definition"))!;
+    const definitionModelId = iModelDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(iModelDb, subjectId, "Definition"))!;
     assert.isTrue(Id64.isValidId64(definitionModelId));
-    const spatialCategoryId = targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, definitionModelId, "SpatialCategory"))!;
+    const spatialCategoryId = iModelDb.elements.queryElementIdByCode(SpatialCategory.createCode(iModelDb, definitionModelId, "SpatialCategory"))!;
     assert.isTrue(Id64.isValidId64(spatialCategoryId));
-    const spatialCategory: SpatialCategory = targetDb.elements.getElement<SpatialCategory>(spatialCategoryId);
+    const spatialCategory: SpatialCategory = iModelDb.elements.getElement<SpatialCategory>(spatialCategoryId);
     assert.exists(spatialCategory.federationGuid);
     // assert TargetRelWithProps was updated
-    const spatialCategorySelectorId = targetDb.elements.queryElementIdByCode(CategorySelector.createCode(targetDb, definitionModelId, "SpatialCategories"))!;
+    const spatialCategorySelectorId = iModelDb.elements.queryElementIdByCode(CategorySelector.createCode(iModelDb, definitionModelId, "SpatialCategories"))!;
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
-    const drawingCategorySelectorId = targetDb.elements.queryElementIdByCode(CategorySelector.createCode(targetDb, definitionModelId, "DrawingCategories"))!;
+    const drawingCategorySelectorId = iModelDb.elements.queryElementIdByCode(CategorySelector.createCode(iModelDb, definitionModelId, "DrawingCategories"))!;
     assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
-    const relWithProps: any = targetDb.relationships.getInstanceProps(
-      "TestTransformerTarget:TargetRelWithProps",
+    const relClassFullName = testTargetSchema ? "TestTransformerTarget:TargetRelWithProps" : "TestTransformerSource:SourceRelWithProps";
+    const relWithProps: any = iModelDb.relationships.getInstanceProps(
+      relClassFullName,
       { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
     );
-    assert.equal(relWithProps.targetString, "One-Updated");
-    assert.equal(relWithProps.targetDouble, 1.2);
+    assert.equal(testTargetSchema ? relWithProps.targetString : relWithProps.sourceString, "One-Updated");
+    assert.equal(testTargetSchema ? relWithProps.targetDouble : relWithProps.sourceDouble, 1.2);
     // assert ElementAspect properties
-    const physicalObjectId1: Id64String = queryByUserLabel(targetDb, "PhysicalObject1");
-    const targetUniqueAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetUniqueAspect");
-    assert.equal(targetUniqueAspects.length, 1);
-    assert.equal(targetUniqueAspects[0].asAny.commonDouble, 1.1);
-    assert.equal(targetUniqueAspects[0].asAny.commonString, "Unique-Updated");
-    assert.equal(targetUniqueAspects[0].asAny.commonLong, physicalObjectId1);
-    assert.equal(targetUniqueAspects[0].asAny.targetDouble, 11.1);
-    assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect-Updated");
-    assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1);
-    const targetMultiAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetMultiAspect");
-    assert.equal(targetMultiAspects.length, 2);
-    assert.equal(targetMultiAspects[0].asAny.commonDouble, 2.2);
-    assert.equal(targetMultiAspects[0].asAny.commonString, "Multi");
-    assert.equal(targetMultiAspects[0].asAny.commonLong, physicalObjectId1);
-    assert.equal(targetMultiAspects[0].asAny.targetDouble, 22.2);
-    assert.equal(targetMultiAspects[0].asAny.targetString, "MultiAspect");
-    assert.equal(targetMultiAspects[0].asAny.targetLong, physicalObjectId1);
-    assert.equal(targetMultiAspects[1].asAny.commonDouble, 3.3);
-    assert.equal(targetMultiAspects[1].asAny.commonString, "Multi-Updated");
-    assert.equal(targetMultiAspects[1].asAny.commonLong, physicalObjectId1);
-    assert.equal(targetMultiAspects[1].asAny.targetDouble, 33.3);
-    assert.equal(targetMultiAspects[1].asAny.targetString, "MultiAspect-Updated");
-    assert.equal(targetMultiAspects[1].asAny.targetLong, physicalObjectId1);
+    const physicalObjectId1: Id64String = queryByUserLabel(iModelDb, "PhysicalObject1");
+    const uniqueAspectClassFullName = testTargetSchema ? "TestTransformerTarget:TargetUniqueAspect" : "TestTransformerSource:SourceUniqueAspect";
+    const uniqueAspects: ElementAspect[] = iModelDb.elements.getAspects(physicalObjectId1, uniqueAspectClassFullName);
+    assert.equal(uniqueAspects.length, 1);
+    const uniqueAspect = uniqueAspects[0].asAny;
+    assert.equal(uniqueAspect.commonDouble, 1.1);
+    assert.equal(uniqueAspect.commonString, "Unique-Updated");
+    assert.equal(uniqueAspect.commonLong, physicalObjectId1);
+    assert.equal(testTargetSchema ? uniqueAspect.targetDouble : uniqueAspect.sourceDouble, 11.1);
+    assert.equal(testTargetSchema ? uniqueAspect.targetString : uniqueAspect.sourceString, "UniqueAspect-Updated");
+    assert.equal(testTargetSchema ? uniqueAspect.targetLong : uniqueAspect.sourceLong, physicalObjectId1);
+    const multiAspectClassFullName = testTargetSchema ? "TestTransformerTarget:TargetMultiAspect" : "TestTransformerSource:SourceMultiAspect";
+    const multiAspects: ElementAspect[] = iModelDb.elements.getAspects(physicalObjectId1, multiAspectClassFullName);
+    assert.equal(multiAspects.length, 2);
+    const multiAspect0 = multiAspects[0].asAny;
+    const multiAspect1 = multiAspects[1].asAny;
+    assert.equal(multiAspect0.commonDouble, 2.2);
+    assert.equal(multiAspect0.commonString, "Multi");
+    assert.equal(multiAspect0.commonLong, physicalObjectId1);
+    assert.equal(testTargetSchema ? multiAspect0.targetDouble : multiAspect0.sourceDouble, 22.2);
+    assert.equal(testTargetSchema ? multiAspect0.targetString : multiAspect0.sourceString, "MultiAspect");
+    assert.equal(testTargetSchema ? multiAspect0.targetLong : multiAspect0.sourceLong, physicalObjectId1);
+    assert.equal(multiAspect1.commonDouble, 3.3);
+    assert.equal(multiAspect1.commonString, "Multi-Updated");
+    assert.equal(multiAspect1.commonLong, physicalObjectId1);
+    assert.equal(testTargetSchema ? multiAspect1.targetDouble : multiAspect1.sourceDouble, 33.3);
+    assert.equal(testTargetSchema ? multiAspect1.targetString : multiAspect1.sourceString, "MultiAspect-Updated");
+    assert.equal(testTargetSchema ? multiAspect1.targetLong : multiAspect1.sourceLong, physicalObjectId1);
     // assert NavigationProperty of PhysicalElement1 was cleared
-    const physicalElementId: Id64String = queryByUserLabel(targetDb, "PhysicalElement1");
-    const physicalElement: PhysicalElement = targetDb.elements.getElement(physicalElementId);
+    const physicalElementId: Id64String = queryByUserLabel(iModelDb, "PhysicalElement1");
+    const physicalElement: PhysicalElement = iModelDb.elements.getElement(physicalElementId);
     assert.isUndefined(physicalElement.asAny.commonNavigation);
-    // assert PhysicalObject3 was deleted
-    assert.equal(Id64.invalid, queryByUserLabel(targetDb, "PhysicalObject3"));
-    // assert relationship was deleted
-    const drawingGraphicId2: Id64String = queryByUserLabel(targetDb, "DrawingGraphic2");
-    assert.throws(() => targetDb.relationships.getInstanceProps(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId2, targetId: physicalObjectId1 }));
+    // assert PhysicalObject5 was inserted
+    const physicalObjectId5: Id64String = queryByUserLabel(iModelDb, "PhysicalObject5");
+    assert.isTrue(Id64.isValidId64(physicalObjectId5));
+    // assert relationships were inserted
+    const drawingGraphicId1: Id64String = queryByUserLabel(iModelDb, "DrawingGraphic1");
+    const drawingGraphicId2: Id64String = queryByUserLabel(iModelDb, "DrawingGraphic2");
+    iModelDb.relationships.getInstance(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId1, targetId: physicalObjectId5 });
+    iModelDb.relationships.getInstance(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId2, targetId: physicalObjectId5 });
     // assert InformationRecord2 was updated
-    const informationRecordCodeSpec: CodeSpec = targetDb.codeSpecs.getByName("InformationRecords");
-    const informationModelId: Id64String = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Information"))!;
-    const informationRecordId2 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" }));
+    const informationRecordCodeSpec: CodeSpec = iModelDb.codeSpecs.getByName("InformationRecords");
+    const informationModelId: Id64String = iModelDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(iModelDb, subjectId, "Information"))!;
+    const informationRecordId2 = iModelDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" }));
     assert.isTrue(Id64.isValidId64(informationRecordId2!));
-    const informationRecord2: any = targetDb.elements.getElement(informationRecordId2!);
+    const informationRecord2: any = iModelDb.elements.getElement(informationRecordId2!);
     assert.equal(informationRecord2.commonString, "Common2-Updated");
-    assert.equal(informationRecord2.targetString, "Two-Updated");
+    assert.equal(testTargetSchema ? informationRecord2.targetString : informationRecord2.sourceString, "Two-Updated");
     // assert InformationRecord3 was deleted
-    assert.isDefined(targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord1" })));
-    assert.isDefined(targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" })));
-    assert.isUndefined(targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord3" })));
+    assert.isDefined(iModelDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord1" })));
+    assert.isDefined(iModelDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" })));
+    // detect deletes if possible - cannot detect during processAll when isReverseSynchronization is true
+    if (assertDeletes) {
+      assert.equal(Id64.invalid, queryByUserLabel(iModelDb, "PhysicalObject3"));
+      assert.throws(() => iModelDb.relationships.getInstanceProps(DrawingGraphicRepresentsElement.classFullName, { sourceId: drawingGraphicId2, targetId: physicalObjectId1 }));
+      assert.isUndefined(iModelDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord3" })));
+    }
   }
 
   function assertTargetElement(sourceDb: IModelDb, targetDb: IModelDb, targetElementId: Id64String): void {
@@ -866,7 +910,7 @@ export namespace IModelTransformerUtils {
     const physicalObject1: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId1);
     assert.equal(physicalObject1.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
     assert.equal(physicalObject1.code.scope, IModel.rootSubjectId);
-    assert.isTrue(physicalObject1.code.getValue() === "");
+    assert.isTrue(physicalObject1.code.value === "");
     assert.equal(physicalObject1.category, teamSpatialCategoryId);
     const physicalObjectId2: Id64String = queryPhysicalElementId(iModelDb, physicalPartitionId, sharedSpatialCategoryId, `${teamName}2`);
     const physicalObject2: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId2);
@@ -887,7 +931,7 @@ export namespace IModelTransformerUtils {
       const physicalObject1: PhysicalElement = iModelDb.elements.getElement<PhysicalElement>(physicalObjectId1);
       assert.equal(physicalObject1.code.spec, iModelDb.codeSpecs.getByName(BisCodeSpec.nullCodeSpec).id);
       assert.equal(physicalObject1.code.scope, IModel.rootSubjectId);
-      assert.isTrue(physicalObject1.code.getValue() === "");
+      assert.isTrue(physicalObject1.code.value === "");
       assert.equal(physicalObject1.category, teamSpatialCategoryId);
       assert.equal(1, iModelDb.elements.getAspects(physicalObjectId1, ExternalSourceAspect.classFullName).length);
       assert.equal(1, iModelDb.elements.getAspects(teamSpatialCategoryId, ExternalSourceAspect.classFullName).length);
@@ -896,71 +940,6 @@ export namespace IModelTransformerUtils {
       assert.equal(physicalObject2.category, sharedSpatialCategoryId);
       assert.equal(1, iModelDb.elements.getAspects(physicalObjectId2, ExternalSourceAspect.classFullName).length);
     });
-  }
-
-  export function createComponentLibrary(outputDir: string): SnapshotDb {
-    const iModelName: string = "ComponentLibrary";
-    const iModelFile: string = path.join(outputDir, `${iModelName}.bim`);
-    if (IModelJsFs.existsSync(iModelFile)) {
-      IModelJsFs.removeSync(iModelFile);
-    }
-    const iModelDb: SnapshotDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: iModelName }, createClassViews: true });
-    const componentCategoryId = insertSpatialCategory(iModelDb, IModel.dictionaryId, "Components", ColorDef.green);
-    const drawingComponentCategoryId = DrawingCategory.insert(iModelDb, IModel.dictionaryId, "Components", new SubCategoryAppearance());
-    const definitionModelId = DefinitionModel.insert(iModelDb, IModel.rootSubjectId, "Components");
-    // Cylinder component
-    const cylinderTemplateId = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Cylinder");
-    const cylinderTemplateModel = iModelDb.models.getModel<PhysicalModel>(cylinderTemplateId, PhysicalModel);
-    assert.isTrue(cylinderTemplateModel.isTemplate);
-    const cylinderProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: cylinderTemplateId,
-      category: componentCategoryId,
-      code: Code.createEmpty(),
-      userLabel: "Cylinder",
-      placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
-      geom: createCylinder(1),
-    };
-    iModelDb.elements.insertElement(cylinderProps);
-    // Assembly component
-    const assemblyTemplateId = TemplateRecipe3d.insert(iModelDb, definitionModelId, "Assembly");
-    assert.exists(iModelDb.models.getModel<PhysicalModel>(assemblyTemplateId));
-    const assemblyHeadProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: assemblyTemplateId,
-      category: componentCategoryId,
-      code: Code.createEmpty(),
-      userLabel: "Assembly Head",
-      placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
-      geom: createCylinder(1),
-    };
-    const assemblyHeadId: Id64String = iModelDb.elements.insertElement(assemblyHeadProps);
-    const childBoxProps: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model: assemblyTemplateId,
-      category: componentCategoryId,
-      parent: new ElementOwnsChildElements(assemblyHeadId),
-      code: Code.createEmpty(),
-      userLabel: "Child",
-      placement: { origin: Point3d.create(2, 0, 0), angles: { yaw: 0, pitch: 0, roll: 0 } },
-      geom: createBox(Point3d.create(1, 1, 1)),
-    };
-    iModelDb.elements.insertElement(childBoxProps);
-    // 2d component
-    const drawingGraphicTemplateId = TemplateRecipe2d.insert(iModelDb, definitionModelId, "DrawingGraphic");
-    const drawingGraphicTemplateModel = iModelDb.models.getModel<DrawingModel>(drawingGraphicTemplateId, DrawingModel);
-    assert.isTrue(drawingGraphicTemplateModel.isTemplate);
-    const drawingGraphicProps: GeometricElement2dProps = {
-      classFullName: DrawingGraphic.classFullName,
-      model: drawingGraphicTemplateId,
-      category: drawingComponentCategoryId,
-      code: Code.createEmpty(),
-      userLabel: "DrawingGraphic",
-      placement: { origin: Point2d.createZero(), angle: 0 },
-      geom: createRectangle(Point2d.create(1, 1)),
-    };
-    iModelDb.elements.insertElement(drawingGraphicProps);
-    return iModelDb;
   }
 
   export function querySubjectId(iModelDb: IModelDb, subjectCodeValue: string): Id64String {
@@ -1079,7 +1058,7 @@ export namespace IModelTransformerUtils {
     return geometryStreamBuilder.geometryStream;
   }
 
-  function createCylinder(radius: number): GeometryStreamProps {
+  export function createCylinder(radius: number): GeometryStreamProps {
     const pointA = Point3d.create(0, 0, 0);
     const pointB = Point3d.create(0, 0, 2 * radius);
     const cylinder = Cone.createBaseAndTarget(pointA, pointB, Vector3d.unitX(), Vector3d.unitY(), radius, radius, true);
@@ -1088,7 +1067,7 @@ export namespace IModelTransformerUtils {
     return geometryStreamBuilder.geometryStream;
   }
 
-  function createRectangle(size: Point2d): GeometryStreamProps {
+  export function createRectangle(size: Point2d): GeometryStreamProps {
     const geometryStreamBuilder = new GeometryStreamBuilder();
     geometryStreamBuilder.appendGeometry(LineString3d.createPoints([
       new Point3d(0, 0),
@@ -1104,9 +1083,7 @@ export namespace IModelTransformerUtils {
     // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in bottom right pixel. The rest of the square is red.
     const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
     const textureData = Base64.btoa(String.fromCharCode(...pngData));
-    const textureWidth = 3;
-    const textureHeight = 3;
-    return Texture.insert(iModelDb, modelId, textureName, ImageSourceFormat.Png, textureData, textureWidth, textureHeight, `Description for ${textureName}`, TextureFlags.None);
+    return Texture.insertTexture(iModelDb, modelId, textureName, ImageSourceFormat.Png, textureData, `Description for ${textureName}`);
   }
 
   export function queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
@@ -1114,6 +1091,30 @@ export namespace IModelTransformerUtils {
       statement.bindString("userLabel", userLabel);
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
     });
+  }
+
+  export function insertRepositoryLink(iModelDb: IModelDb, codeValue: string, url: string, format: string): Id64String {
+    const repositoryLinkProps: RepositoryLinkProps = {
+      classFullName: RepositoryLink.classFullName,
+      model: IModel.repositoryModelId,
+      code: LinkElement.createCode(iModelDb, IModel.repositoryModelId, codeValue),
+      url,
+      format,
+    };
+    return iModelDb.elements.insertElement(repositoryLinkProps);
+  }
+
+  export function insertExternalSource(iModelDb: IModelDb, repositoryId: Id64String, userLabel: string): Id64String {
+    const externalSourceProps: ExternalSourceProps = {
+      classFullName: ExternalSource.classFullName,
+      model: IModel.repositoryModelId,
+      code: Code.createEmpty(),
+      userLabel,
+      repository: new ExternalSourceIsInRepository(repositoryId),
+      connectorName: "Connector",
+      connectorVersion: "0.0.1",
+    };
+    return iModelDb.elements.insertElement(externalSourceProps);
   }
 
   export function dumpIModelInfo(iModelDb: IModelDb): void {
@@ -1150,7 +1151,7 @@ export namespace IModelTransformerUtils {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const viewDefinitionId: Id64String = statement.getValue(0).getId();
         const viewDefinition: ViewDefinition = iModelDb.elements.getElement<ViewDefinition>(viewDefinitionId);
-        IModelJsFs.appendFileSync(outputFileName, `${viewDefinitionId}, ${viewDefinition.code.getValue()}, ${viewDefinition.classFullName}\n`);
+        IModelJsFs.appendFileSync(outputFileName, `${viewDefinitionId}, ${viewDefinition.code.value}, ${viewDefinition.classFullName}\n`);
       }
     });
     IModelJsFs.appendFileSync(outputFileName, "\n=== Elements ===\n");
@@ -1185,7 +1186,7 @@ export class IModelTransformer3d extends IModelTransformer {
     this._transform3d = transform3d;
   }
   /** Override transformElement to apply a 3d transform to all GeometricElement3d instances. */
-  protected onTransformElement(sourceElement: Element): ElementProps {
+  protected override onTransformElement(sourceElement: Element): ElementProps {
     const targetElementProps: ElementProps = super.onTransformElement(sourceElement);
     if (sourceElement instanceof GeometricElement3d) { // can check the sourceElement since this IModelTransformer does not remap classes
       const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
@@ -1209,60 +1210,60 @@ export class PhysicalModelConsolidator extends IModelTransformer {
     this.importer.doNotUpdateElementIds.add(targetModelId);
   }
   /** Override shouldExportElement to remap PhysicalPartition instances. */
-  protected shouldExportElement(sourceElement: Element): boolean {
+  protected override shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
       this.context.remapElement(sourceElement.id, this._targetModelId);
+      // NOTE: must allow export to continue so the PhysicalModel sub-modeling the PhysicalPartition is processed
     }
     return super.shouldExportElement(sourceElement);
   }
 }
 
-/** Test IModelTransformer that uses a ViewDefinition to filter the iModel contents. */
+/** Test IModelTransformer that uses a SpatialViewDefinition to filter the iModel contents. */
 export class FilterByViewTransformer extends IModelTransformer {
   private readonly _exportViewDefinitionId: Id64String;
+  private readonly _exportModelSelectorId: Id64String;
+  private readonly _exportCategorySelectorId: Id64String;
+  private readonly _exportDisplayStyleId: Id64String;
   private readonly _exportModelIds: Id64Set;
   public constructor(sourceDb: IModelDb, targetDb: IModelDb, exportViewDefinitionId: Id64String) {
     super(sourceDb, targetDb);
     this._exportViewDefinitionId = exportViewDefinitionId;
     const exportViewDefinition = sourceDb.elements.getElement<SpatialViewDefinition>(exportViewDefinitionId, SpatialViewDefinition);
+    this._exportCategorySelectorId = exportViewDefinition.categorySelectorId;
+    this._exportModelSelectorId = exportViewDefinition.modelSelectorId;
+    this._exportDisplayStyleId = exportViewDefinition.displayStyleId;
     const exportCategorySelector = sourceDb.elements.getElement<CategorySelector>(exportViewDefinition.categorySelectorId, CategorySelector);
-    this.excludeCategories(Id64.toIdSet(exportCategorySelector.categories));
+    this.excludeCategoriesExcept(Id64.toIdSet(exportCategorySelector.categories));
     const exportModelSelector = sourceDb.elements.getElement<ModelSelector>(exportViewDefinition.modelSelectorId, ModelSelector);
     this._exportModelIds = Id64.toIdSet(exportModelSelector.models);
   }
   /** Excludes categories not referenced by the export view's CategorySelector */
-  private excludeCategories(exportCategoryIds: Id64Set): void {
+  private excludeCategoriesExcept(exportCategoryIds: Id64Set): void {
     const sql = `SELECT ECInstanceId FROM ${SpatialCategory.classFullName}`;
     this.sourceDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
         const categoryId = statement.getValue(0).getId();
         if (!exportCategoryIds.has(categoryId)) {
-          this.exporter.excludeElementCategory(categoryId);
+          this.exporter.excludeElementsInCategory(categoryId);
         }
       }
     });
   }
-  /** Override of IModelTransformer.shouldExportElement that excludes PhysicalPartitions/Models not referenced by the export view's ModelSelector */
-  protected shouldExportElement(sourceElement: Element): boolean {
+  /** Override of IModelTransformer.shouldExportElement that excludes other ViewDefinition-related elements that are not associated with the *export* ViewDefinition. */
+  protected override shouldExportElement(sourceElement: Element): boolean {
     if (sourceElement instanceof PhysicalPartition) {
-      if (!this._exportModelIds.has(sourceElement.id)) {
-        return false;
-      }
+      return this._exportModelIds.has(sourceElement.id);
     } else if (sourceElement instanceof SpatialViewDefinition) {
-      if (sourceElement.id !== this._exportViewDefinitionId) {
-        return false;
-      }
+      return sourceElement.id === this._exportViewDefinitionId;
+    } else if (sourceElement instanceof CategorySelector) {
+      return sourceElement.id === this._exportCategorySelectorId;
+    } else if (sourceElement instanceof ModelSelector) {
+      return sourceElement.id === this._exportModelSelectorId;
+    } else if (sourceElement instanceof DisplayStyle3d) {
+      return sourceElement.id === this._exportDisplayStyleId;
     }
     return super.shouldExportElement(sourceElement);
-  }
-  /** Override of IModelTransformer.processAll that does additional logging after completion. */
-  public processAll(): void {
-    super.processAll();
-    Logger.logInfo(BackendLoggerCategory.IModelTransformer, `processAll complete with ${this._deferredElementIds.size} deferred elements remaining`);
-  }
-  /** Override of IModelTransformer.processDeferredElements that catches all exceptions and keeps going. */
-  public processDeferredElements(numRetries: number = 3): void {
-    try { super.processDeferredElements(numRetries); } catch (error) { }
   }
 }
 
@@ -1328,12 +1329,12 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override shouldExportElement to exclude all elements from the Functional schema. */
-  public shouldExportElement(sourceElement: Element): boolean {
+  public override shouldExportElement(sourceElement: Element): boolean {
     return sourceElement.classFullName.startsWith(FunctionalSchema.schemaName) ? false : super.shouldExportElement(sourceElement);
   }
 
   /** Override transformElement to make sure that all target Elements have a FederationGuid */
-  protected onTransformElement(sourceElement: Element): ElementProps {
+  protected override onTransformElement(sourceElement: Element): ElementProps {
     const targetElementProps: any = super.onTransformElement(sourceElement);
     if (!targetElementProps.federationGuid) {
       targetElementProps.federationGuid = Guid.createValue();
@@ -1341,6 +1342,7 @@ export class TestIModelTransformer extends IModelTransformer {
     if ("TestTransformerSource:SourcePhysicalElement" === sourceElement.classFullName) {
       targetElementProps.targetString = sourceElement.asAny.sourceString;
       targetElementProps.targetDouble = sourceElement.asAny.sourceDouble;
+      targetElementProps.targetBinary = sourceElement.asAny.sourceBinary;
       targetElementProps.targetNavigation = {
         id: this.context.findTargetElementId(sourceElement.asAny.sourceNavigation.id),
         relClassName: "TestTransformerTarget:TargetPhysicalElementUsesTargetDefinition",
@@ -1352,7 +1354,7 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override transformElementAspect to remap Source*Aspect --> Target*Aspect */
-  protected onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
+  protected override onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
     const targetElementAspectProps: any = super.onTransformElementAspect(sourceElementAspect, targetElementId);
     if ("TestTransformerSource:SourceUniqueAspect" === sourceElementAspect.classFullName) {
       targetElementAspectProps.classFullName = "TestTransformerTarget:TargetUniqueAspect";
@@ -1379,7 +1381,7 @@ export class TestIModelTransformer extends IModelTransformer {
   }
 
   /** Override transformRelationship to remap SourceRelWithProps --> TargetRelWithProps */
-  protected onTransformRelationship(sourceRelationship: Relationship): RelationshipProps {
+  protected override onTransformRelationship(sourceRelationship: Relationship): RelationshipProps {
     const targetRelationshipProps: any = super.onTransformRelationship(sourceRelationship);
     if ("TestTransformerSource:SourceRelWithProps" === sourceRelationship.classFullName) {
       targetRelationshipProps.classFullName = "TestTransformerTarget:TargetRelWithProps";
@@ -1411,43 +1413,43 @@ export class CountingIModelImporter extends IModelImporter {
   public constructor(targetDb: IModelDb) {
     super(targetDb);
   }
-  protected onInsertModel(modelProps: ModelProps): Id64String {
+  protected override onInsertModel(modelProps: ModelProps): Id64String {
     this.numModelsInserted++;
     return super.onInsertModel(modelProps);
   }
-  protected onUpdateModel(modelProps: ModelProps): void {
+  protected override onUpdateModel(modelProps: ModelProps): void {
     this.numModelsUpdated++;
     super.onUpdateModel(modelProps);
   }
-  protected onInsertElement(elementProps: ElementProps): Id64String {
+  protected override onInsertElement(elementProps: ElementProps): Id64String {
     this.numElementsInserted++;
     return super.onInsertElement(elementProps);
   }
-  protected onUpdateElement(elementProps: ElementProps): void {
+  protected override onUpdateElement(elementProps: ElementProps): void {
     this.numElementsUpdated++;
     super.onUpdateElement(elementProps);
   }
-  protected onDeleteElement(elementId: Id64String): void {
+  protected override onDeleteElement(elementId: Id64String): void {
     this.numElementsDeleted++;
     super.onDeleteElement(elementId);
   }
-  protected onInsertElementAspect(aspectProps: ElementAspectProps): void {
+  protected override onInsertElementAspect(aspectProps: ElementAspectProps): void {
     this.numElementAspectsInserted++;
     super.onInsertElementAspect(aspectProps);
   }
-  protected onUpdateElementAspect(aspectProps: ElementAspectProps): void {
+  protected override onUpdateElementAspect(aspectProps: ElementAspectProps): void {
     this.numElementAspectsUpdated++;
     super.onUpdateElementAspect(aspectProps);
   }
-  protected onInsertRelationship(relationshipProps: RelationshipProps): Id64String {
+  protected override onInsertRelationship(relationshipProps: RelationshipProps): Id64String {
     this.numRelationshipsInserted++;
     return super.onInsertRelationship(relationshipProps);
   }
-  protected onUpdateRelationship(relationshipProps: RelationshipProps): void {
+  protected override onUpdateRelationship(relationshipProps: RelationshipProps): void {
     this.numRelationshipsUpdated++;
     super.onUpdateRelationship(relationshipProps);
   }
-  protected onDeleteRelationship(relationshipProps: RelationshipProps): void {
+  protected override onDeleteRelationship(relationshipProps: RelationshipProps): void {
     this.numRelationshipsDeleted++;
     super.onDeleteRelationship(relationshipProps);
   }
@@ -1458,7 +1460,7 @@ export class RecordingIModelImporter extends CountingIModelImporter {
   public constructor(targetDb: IModelDb) {
     super(targetDb);
   }
-  protected onInsertModel(modelProps: ModelProps): Id64String {
+  protected override onInsertModel(modelProps: ModelProps): Id64String {
     const modelId: Id64String = super.onInsertModel(modelProps);
     const model: Model = this.targetDb.models.getModel(modelId);
     if (model instanceof PhysicalModel) {
@@ -1475,7 +1477,7 @@ export class RecordingIModelImporter extends CountingIModelImporter {
     }
     return modelId;
   }
-  protected onInsertElement(elementProps: ElementProps): Id64String {
+  protected override onInsertElement(elementProps: ElementProps): Id64String {
     const elementId: Id64String = super.onInsertElement(elementProps);
     const element: Element = this.targetDb.elements.getElement(elementId);
     if (element instanceof PhysicalElement) {
@@ -1486,7 +1488,7 @@ export class RecordingIModelImporter extends CountingIModelImporter {
     }
     return elementId;
   }
-  protected onUpdateElement(elementProps: ElementProps): void {
+  protected override onUpdateElement(elementProps: ElementProps): void {
     super.onUpdateElement(elementProps);
     const element: Element = this.targetDb.elements.getElement(elementProps.id!);
     if (element instanceof PhysicalElement) {
@@ -1496,7 +1498,7 @@ export class RecordingIModelImporter extends CountingIModelImporter {
       }
     }
   }
-  protected onDeleteElement(elementId: Id64String): void {
+  protected override onDeleteElement(elementId: Id64String): void {
     const element: Element = this.targetDb.elements.getElement(elementId);
     if (element instanceof PhysicalElement) {
       const recordPartitionId: Id64String = this.getRecordPartitionId(element.model);
@@ -1540,13 +1542,13 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.exporter.registerHandler(this);
     this.exporter.wantGeometry = false;
   }
-  public export(): void {
+  public async export(): Promise<void> {
     this._shouldIndent = true;
-    this.exporter.exportSchemas();
+    await this.exporter.exportSchemas();
     this.writeSeparator();
-    this.exporter.exportAll();
+    await this.exporter.exportAll();
   }
-  public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: GuidString): Promise<void> {
+  public async exportChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void> {
     this._shouldIndent = false;
     return this.exporter.exportChanges(requestContext, startChangeSetId);
   }
@@ -1583,15 +1585,15 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     const element: Element = this.exporter.sourceDb.elements.getElement(aspect.element.id);
     return 1 + this.getIndentLevelForElement(element);
   }
-  protected onExportSchema(schema: Schema): void {
+  protected override async onExportSchema(schema: Schema): Promise<void> {
     this.writeLine(`[Schema] ${schema.name}`);
-    super.onExportSchema(schema);
+    return super.onExportSchema(schema);
   }
-  protected onExportCodeSpec(codeSpec: CodeSpec, isUpdate: boolean | undefined): void {
+  protected override onExportCodeSpec(codeSpec: CodeSpec, isUpdate: boolean | undefined): void {
     this.writeLine(`[CodeSpec] ${codeSpec.id}, ${codeSpec.name}${this.formatOperationName(isUpdate)}`);
     super.onExportCodeSpec(codeSpec, isUpdate);
   }
-  protected onExportFont(font: FontProps, isUpdate: boolean | undefined): void {
+  protected override onExportFont(font: FontProps, isUpdate: boolean | undefined): void {
     if (this._firstFont) {
       this.writeSeparator();
       this._firstFont = false;
@@ -1599,33 +1601,33 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.writeLine(`[Font] ${font.id}, ${font.name}`);
     super.onExportFont(font, isUpdate);
   }
-  protected onExportModel(model: Model, isUpdate: boolean | undefined): void {
+  protected override onExportModel(model: Model, isUpdate: boolean | undefined): void {
     this.writeSeparator();
     this.writeLine(`[Model] ${model.classFullName}, ${model.id}, ${model.name}${this.formatOperationName(isUpdate)}`);
     super.onExportModel(model, isUpdate);
   }
-  protected onExportElement(element: Element, isUpdate: boolean | undefined): void {
+  protected override onExportElement(element: Element, isUpdate: boolean | undefined): void {
     const indentLevel: number = this.getIndentLevelForElement(element);
     this.writeLine(`[Element] ${element.classFullName}, ${element.id}, ${element.getDisplayLabel()}${this.formatOperationName(isUpdate)}`, indentLevel);
     super.onExportElement(element, isUpdate);
   }
-  protected onDeleteElement(elementId: Id64String): void {
+  protected override onDeleteElement(elementId: Id64String): void {
     this.writeLine(`[Element] ${elementId}, DELETE`);
     super.onDeleteElement(elementId);
   }
-  protected onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
+  protected override onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
     const indentLevel: number = this.getIndentLevelForElementAspect(aspect);
     this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}${this.formatOperationName(isUpdate)}`, indentLevel);
     super.onExportElementUniqueAspect(aspect, isUpdate);
   }
-  protected onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
+  protected override onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
     const indentLevel: number = this.getIndentLevelForElementAspect(aspects[0]);
     for (const aspect of aspects) {
       this.writeLine(`[Aspect] ${aspect.classFullName}, ${aspect.id}`, indentLevel);
     }
     super.onExportElementMultiAspects(aspects);
   }
-  protected onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
+  protected override onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
     if (this._firstRelationship) {
       this.writeSeparator();
       this._firstRelationship = false;
@@ -1633,7 +1635,7 @@ export class IModelToTextFileExporter extends IModelExportHandler {
     this.writeLine(`[Relationship] ${relationship.classFullName}, ${relationship.id}${this.formatOperationName(isUpdate)}`);
     super.onExportRelationship(relationship, isUpdate);
   }
-  protected onDeleteRelationship(relInstanceId: Id64String): void {
+  protected override onDeleteRelationship(relInstanceId: Id64String): void {
     this.writeLine(`[Relationship] ${relInstanceId}, DELETE`);
     super.onDeleteRelationship(relInstanceId);
   }
@@ -1654,8 +1656,8 @@ export class ClassCounter extends IModelExportHandler {
     this.exporter.registerHandler(this);
     this.exporter.wantGeometry = false;
   }
-  public count(): void {
-    this.exporter.exportAll();
+  public async count(): Promise<void> {
+    await this.exporter.exportAll();
     this.outputAllClassCounts();
   }
   private incrementClassCount(map: Map<string, number>, classFullName: string): void {
@@ -1688,25 +1690,25 @@ export class ClassCounter extends IModelExportHandler {
     });
     IModelJsFs.appendFileSync(this.outputFileName, `\n`);
   }
-  protected onExportModel(model: Model, isUpdate: boolean | undefined): void {
+  protected override onExportModel(model: Model, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._modelClassCounts, model.classFullName);
     super.onExportModel(model, isUpdate);
   }
-  protected onExportElement(element: Element, isUpdate: boolean | undefined): void {
+  protected override onExportElement(element: Element, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._elementClassCounts, element.classFullName);
     super.onExportElement(element, isUpdate);
   }
-  protected onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
+  protected override onExportElementUniqueAspect(aspect: ElementUniqueAspect, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._aspectClassCounts, aspect.classFullName);
     super.onExportElementUniqueAspect(aspect, isUpdate);
   }
-  protected onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
+  protected override onExportElementMultiAspects(aspects: ElementMultiAspect[]): void {
     for (const aspect of aspects) {
       this.incrementClassCount(this._aspectClassCounts, aspect.classFullName);
     }
     super.onExportElementMultiAspects(aspects);
   }
-  protected onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
+  protected override onExportRelationship(relationship: Relationship, isUpdate: boolean | undefined): void {
     this.incrementClassCount(this._relationshipClassCounts, relationship.classFullName);
     super.onExportRelationship(relationship, isUpdate);
   }

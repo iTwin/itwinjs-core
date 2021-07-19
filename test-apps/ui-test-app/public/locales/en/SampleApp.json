@@ -28,22 +28,13 @@
     "loading": "Loading..."
   },
   "settingsStage": {
-    "settings": "Settings",
-    "light": "Light",
+    "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
+    "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes",
     "dark": "Dark",
-    "systemPreferred": "System preferred",
-    "themeTitle": "Theme",
-    "themeDescription": "Toggle the theme between light and dark",
-    "autoHideTitle": "Auto-Hide UI",
-    "autoHideDescription": "Toggle the auto-hide of UI after inactivity",
-    "dragInteractionTitle": "Drag Interaction",
-    "dragInteractionDescription": "Toggle the toolbar interaction between click and drag",
-    "newUiTitle": "Use 2.0 Ui",
-    "newUiDescription": "Use new 2.0 UI layout",
-    "useProximityOpacityTitle": "Change Toolbar Opacity",
-    "useProximityOpacityDescription": "Change the toolbar opacity as the mouse gets closer or farther away",
-    "snapWidgetOpacityTitle": "Snap Widget Opacity",
-    "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close"
+    "light": "Light"
+  },
+  "QuantityFormatModalFrontstage": {
+    "QuantityFormatStage": "Quantity Format Overrides"
   },
   "backstage": {
     "command": "Command",
@@ -55,7 +46,7 @@
     "testFrontstage5": "Test 5 Frontstage",
     "viewIModel": "View iModel",
     "editIModel": "Edit iModel",
-    "testFrontstage6": "Settings",
+    "quantityFormat": "Quantity Formats",
     "iModelStage": "Review iModel",
     "editStage": "Edit and Modify iModel",
     "task1": "Test 1 Frontstage via Task",
@@ -165,7 +156,7 @@
     "stopCursorPopup": "Stop Cursor Popup",
     "cmdKeyinDialog": "Command Key-in",
     "opencmdKeyinDialog": "Open command key-in dialog",
-    "accuDrawSubMenu": "AccuDraw",
+    "accuDrawSubMenu": "AccuDraw Tests",
     "accuDrawLocks": "AccuDraw Locks",
     "accuDrawRotate": "AccuDraw Rotate",
     "addMenuButton": "Add Menu Button",
@@ -181,7 +172,12 @@
     "clearMessages": "Clear Messages",
     "toggleTimelinePlay": "Toggle Timeline Pause/Play",
     "sampleModelessDialog": "Sample Modeless Dialog",
-    "sampleModalDialog": "Sample Modal Dialog"
+    "sampleModalDialog": "Sample Modal Dialog",
+    "misc": "Miscellaneous",
+    "accuDrawDialogVertical": "AccuDraw Dialog - Vertical",
+    "accuDrawDialogHorizontal": "AccuDraw Dialog - Horizontal",
+    "bumpToolSettingToggle": "Bump Tool Setting Toggle",
+    "sketch": "Sketch New Geometry"
   },
   "tools": {
     "ToolWithSettings": {
@@ -201,7 +197,8 @@
         "Coordinate": "Coordinate",
         "Length": "Length",
         "Angle": "Angle",
-        "ImageCheckBox": "Image Check Box"
+        "ImageCheckBox": "Image Check Box",
+        "Number": "Number"
       },
       "Options": {
         "Red": "Red",
@@ -303,10 +300,13 @@
         "stop": "Stop"
       }
     },
+    "EditingSession": {
+      "keyin": "test edit"
+    },
     "PlaceBlock": {
-      "keyin": "place block",
-      "description": "Place block",
-      "flyover": "Place block",
+      "keyin": "test place block",
+      "description": "Place Block",
+      "flyover": "Place Block",
       "prompts": {
         "firstPoint": "First point",
         "nextPoint": "Next point (Ctrl for polygon)",
@@ -315,21 +315,6 @@
       "ToolSettings": {
         "heigh": "Height"
       }
-    },
-    "DeleteElement": {
-      "keyin": "Test DeleteElementTool",
-      "description": "Delete element tool",
-      "flyover": "Delete Element"
-    },
-    "MoveElement": {
-      "keyin": "Test MoveElementTool",
-      "description": "Move element tool",
-      "flyover": "Move Element"
-    },
-    "PlaceLineString": {
-      "keyin": "Test PlaceLineString Tool",
-      "description": "Place Line-string tool",
-      "flyover": "Place Line-string"
     }
   },
   "widgets": {
@@ -391,5 +376,17 @@
   },
   "property-grid": {
     "too-many-elements-selected": "Too many elements selected"
+  },
+  "BearingQuantityType": {
+    "label": "Bearing",
+    "description": "Bearing",
+    "bearingGap": {
+      "label": "Add Direction Gap"
+    },
+    "bearingAngleDirection": {
+      "label": "Angle Direction",
+      "clockwise": "Clockwise",
+      "counter-clockwise": "Counter-Clockwise"
+    }
   }
 }

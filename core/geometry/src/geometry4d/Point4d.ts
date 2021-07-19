@@ -9,9 +9,10 @@
 import { BeJSONFunctions, Geometry } from "../Geometry";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
+import { Point2d } from "../geometry3d/Point2dVector2d";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Ray3d } from "../geometry3d/Ray3d";
-import { XYAndZ } from "../geometry3d/XYZProps";
+import { XAndY, XYAndZ } from "../geometry3d/XYZProps";
 
 /**
  * 4d point packed in an array of 4 numbers.
@@ -222,6 +223,36 @@ export class Point4d implements BeJSONFunctions {
   /** Create a `Point4d` with x,y,z from an `XYAndZ` input, and w from a separate number. */
   public static createFromPointAndWeight(xyz: XYAndZ, w: number): Point4d {
     return new Point4d(xyz.x, xyz.y, xyz.z, w);
+  }
+/** Create a `Point4d` from
+ * * Point2d, Point3d, or Point4d
+ * * other structure with members x,y and optional z,w
+ * * array of numbers
+ * * default z is 0.0
+ * * default 2 is 1.0  (array[3] can replace)
+ */
+
+  public static createFromPoint(point: XAndY | XYAndZ | Point4d | number[]): Point4d {
+    if (point instanceof Point2d)
+      return new Point4d(point.x, point.y, 0, 1);
+    if (point instanceof Point3d)
+      return new Point4d(point.x, point.y, point.z, 1);
+    if (point instanceof Point4d)
+      return point.clone();
+    // hm ... some flavor of x,y,z subset ...
+    if (Array.isArray(point)) {
+      const x1 = point.length > 0 ? point[0] : 0.0;
+      const y1 = point.length > 1 ? point[1] : 0.0;
+      const z1 = point.length > 2 ? point[2] : 0.0;
+      const w1 = point.length > 3 ? point[3] : 1.0;
+      return new Point4d(x1, y1, z1, w1);
+    }
+    const x = point.hasOwnProperty ("x") ? point.x : 0.0;
+    const y = point.hasOwnProperty ("y") ? point.y : 0.0;
+    const z = point.hasOwnProperty ("z") ? (point as any).z : 0.0;
+    const w = point.hasOwnProperty("w") ? (point as any).w : 0.0;
+    return new Point4d(x, y, z, w);
+
   }
   /** Return `point + vector * scalar` */
   public plusScaled(vector: Point4d, scaleFactor: number, result?: Point4d): Point4d {

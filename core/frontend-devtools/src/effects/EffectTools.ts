@@ -11,13 +11,6 @@ import {
   IModelApp, ScreenSpaceEffectBuilder, ScreenSpaceEffectSource, Tool,
 } from "@bentley/imodeljs-frontend";
 
-/** Requests that the selected viewport redraw on the next frame. Useful after changing the configuration of a screen-space effect.
- * @beta
- */
-export function redrawSelectedView(): void {
-  IModelApp.viewManager.selectedView?.requestRedraw();
-}
-
 /** Adds a screen-space effect to the selected viewport.
  * @beta
  */
@@ -33,7 +26,7 @@ export abstract class AddEffectTool extends Tool {
   /** Add uniforms, varyings, etc. */
   protected abstract defineEffect(builder: ScreenSpaceEffectBuilder): void;
 
-  public run(): boolean {
+  public override run(): boolean {
     // Avoid conflicts with the names of other registered screen-space effects.
     const name = `fdt ${this.effectName}`;
     if (!AddEffectTool._registeredEffects.has(name)) {
@@ -63,12 +56,27 @@ export abstract class AddEffectTool extends Tool {
  * @beta
  */
 export class ClearEffectsTool extends Tool {
-  public static toolId = "ClearEffects";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 0; }
+  public static override toolId = "ClearEffects";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
 
-  public run(): boolean {
+  public override run(): boolean {
     IModelApp.viewManager.selectedView?.removeScreenSpaceEffects();
     return true;
+  }
+}
+
+/** Requests that any viewport to which the specified effect has been applied redraw its contents.
+ * Used by tools like [[VignetteConfig]] to update the view after the effect parameters are modified.
+ * @beta
+ */
+export function refreshViewportsForEffect(effectName: string): void {
+  for (const vp of IModelApp.viewManager) {
+    for (const vpEffectName of vp.screenSpaceEffects) {
+      if (vpEffectName === effectName) {
+        vp.requestRedraw();
+        break;
+      }
+    }
   }
 }

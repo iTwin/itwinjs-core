@@ -9,6 +9,8 @@ export * from "./CheckpointManager";
 export * from "./ClassRegistry";
 export * from "./CodeSpecs";
 export * from "./ConcurrencyControl";
+export * from "./Deprecated";
+export * from "./DisplayStyle";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";
 export * from "./ECSqlStatement";
@@ -16,9 +18,12 @@ export * from "./Element";
 export * from "./ElementAspect";
 export * from "./Entity";
 export * from "./ExportGraphics";
+export * from "./ExternalSource";
 export * from "./IModelJsFs";
+export * from "./BackendHubAccess";
 export * from "./Relationship";
 export * from "./Texture";
+export * from "./TxnManager";
 export * from "./LineStyle";
 export * from "./BackendLoggerCategory";
 export * from "./Material";
@@ -29,27 +34,29 @@ export * from "./SqliteStatement";
 export * from "./ViewDefinition";
 export * from "./BisCoreSchema";
 export * from "./ChangedElementsDb";
-export * from "./EventSink";
 export * from "./domains/FunctionalSchema";
 export * from "./domains/FunctionalElements";
 export * from "./domains/GenericSchema";
 export * from "./domains/GenericElements";
 export { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-export * from "./IModelCloneContext";
-export * from "./IModelHost";
-export * from "./NativeAppBackend";
-export * from "./IModelExporter";
-export * from "./IModelImporter";
-export * from "./IModelTransformer";
-export * from "./IModelSchemaLoader";
 export * from "./AutoPush";
 export * from "./BackendRequestContext";
+export * from "./IModelCloneContext";
+export * from "./IModelExporter";
+export * from "./IModelHost";
+export * from "./IModelHubBackend";
+export * from "./IModelImporter";
+export * from "./IModelSchemaLoader";
+export * from "./IModelTransformer";
+export * from "./IpcHost";
+export * from "./NativeAppStorage";
+export * from "./NativeHost";
 export * from "./CloudStorageBackend";
 export * from "./AliCloudStorageService";
 export * from "./DevTools";
-export * from "./oidc/DesktopAuthorizationClient";
-export * from "./oidc/MobileAuthorizationClient";
 export * from "./usage-logging/UsageLoggingUtilities";
+export * from "./LocalhostIpcHost";
+export * from "./ElementGraphics";
 export * from "./IModelDb"; // must be last
 
 /** @docs-package-description
@@ -113,12 +120,20 @@ export * from "./IModelDb"; // must be last
  * Classes for working with ECDb.
  */
 /**
+ * @docs-group-description SQLiteDb
+ * Classes for working with SQLiteDb.
+ */
+/**
  * @docs-group-description NativeApp
  * Classes for working with Mobile/Desktop Application.
  */
 /**
  * @docs-group-description ECSQL
  * Classes for working with [ECSQL]($docs/learning/ECSQL.md)
+ */
+/**
+ * @docs-group-description SQLite
+ * Classes for working directly with SQLite
  */
 /**
  * @docs-group-description Portability
@@ -147,4 +162,12 @@ export * from "./IModelDb"; // must be last
 /**
  * @docs-group-description Authentication
  * Classes for working with Authentication.
+ */
+/**
+ * @docs-group-description Tiles
+ * APIs for working with tile graphics.
+ */
+/**
+ * @docs-group-description HubAccess
+ * APIs for working with IModelHub
  */

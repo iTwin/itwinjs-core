@@ -21,16 +21,29 @@ import "./tooluiproviders/Tool2UiProvider";
 import "./statusbars/AppStatusBar";
 import "./navigationaids/CubeExampleNavigationAid";
 import * as React from "react";
-import { AccuDrawField, BadgeType, FunctionKey, StagePanelLocation, StageUsage } from "@bentley/ui-abstract";
+import { BadgeType, FunctionKey, StagePanelLocation, StageUsage, WidgetState } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
-  AccuDrawCommandItems, CommandItemDef, ConfigurableUiManager, ContentGroupProps, ContentLayoutProps, FrontstageManager,
-  KeyboardShortcutManager, KeyboardShortcutProps, StagePanelSection, TaskPropsList, UiFramework, WidgetDef, WidgetProvider, WidgetState, WorkflowProps,
+  AccuDrawCommandItems,
+  AccuDrawKeyboardShortcuts,
+  AccuDrawUiSettings,
+  CommandItemDef,
+  ConfigurableUiManager,
+  ContentGroupProps,
+  ContentLayoutProps,
+  FrameworkAccuDraw,
+  FrontstageManager,
+  KeyboardShortcutManager,
+  KeyboardShortcutProps,
+  StagePanelSection,
+  TaskPropsList,
+  UiFramework,
+  WidgetDef,
+  WidgetProvider,
+  WorkflowProps,
   WorkflowPropsList,
   ZoneLocation,
 } from "@bentley/ui-framework";
-// import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
-// import { AppTools } from "../tools/ToolSpecifications";
 import { IModelViewportControl } from "./contentviews/IModelViewport";
 import { Frontstage1 } from "./frontstages/Frontstage1";
 import { Frontstage2 } from "./frontstages/Frontstage2";
@@ -41,7 +54,10 @@ import { IModelIndexFrontstage } from "./frontstages/IModelIndexFrontstage";
 import { IModelOpenFrontstage } from "./frontstages/IModelOpenFrontstage";
 import { ScheduleAnimationFrontstage } from "./frontstages/ScheduleAnimationFrontstage";
 import { SignInFrontstage } from "./frontstages/SignInFrontstage";
+import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
+import { AppTools } from "../tools/ToolSpecifications";
 import { IModelApp } from "@bentley/imodeljs-frontend";
+import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 
 // cSpell:ignore uitestapp
 
@@ -50,15 +66,16 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 export class AppUi {
 
   public static initialize() {
-    ConfigurableUiManager.initialize();
-
     AppUi.defineFrontstages();
     AppUi.defineContentGroups();
     AppUi.defineContentLayouts();
     AppUi.defineTasksAndWorkflows();
     AppUi.defineKeyboardShortcuts();
 
+    // use to test WidgetProvider API - Note: this is different from UiItemsProvider
     AppUi.defineDynamicWidgets();
+
+    // AppUi.setAccuDrawUiSettings();
   }
 
   /** Define Frontstages
@@ -343,167 +360,47 @@ export class AppUi {
   private static defineKeyboardShortcuts() {
     const keyboardShortcutList: KeyboardShortcutProps[] = [
       {
-        key: "a",
+        key: "f",
+        item: AppTools.setLengthFormatImperialCommand,
+      },
+      {
+        key: "m",
         labelKey: "SampleApp:buttons.accuDrawSubMenu",
         shortcuts: [
           {
-            key: "s",
-            item: AccuDrawCommandItems.lockSmart,
+            key: "b",
+            item: AccuDrawPopupTools.addMenuButton,
           },
           {
-            key: "r",
-            item: AccuDrawCommandItems.setOrigin,
+            key: "h",
+            item: AccuDrawPopupTools.hideMenuButton,
+          },
+          {
+            key: "c",
+            item: AccuDrawPopupTools.showCalculator,
+          },
+          {
+            key: "m",
+            item: AccuDrawPopupTools.showContextMenu,
           },
           {
             key: "t",
-            item: AccuDrawCommandItems.changeCompassMode,
-          },
-        ],
-      },
-      {
-        key: "l",
-        labelKey: "SampleApp:buttons.accuDrawLocks",
-        shortcuts: [
-          {
-            key: "x",
-            item: AccuDrawCommandItems.lockX,
+            item: AccuDrawPopupTools.showToolbar,
           },
           {
-            key: "y",
-            item: AccuDrawCommandItems.lockY,
+            key: "l",
+            item: AccuDrawPopupTools.showHTMLElement,
           },
           {
-            key: "z",
-            item: AccuDrawCommandItems.lockZ,
-          },
-          {
-            key: "a",
-            item: AccuDrawCommandItems.lockAngle,
-          },
-          {
-            key: "d",
-            item: AccuDrawCommandItems.lockDistance,
-          },
-        ],
-      },
-      {
-        key: "r",
-        labelKey: "SampleApp:buttons.accuDrawRotate",
-        shortcuts: [
-          {
-            key: "t",
-            item: AccuDrawCommandItems.rotateTop,
-          },
-          {
-            key: "s",
-            item: AccuDrawCommandItems.rotateSide,
+            key: "n",
+            item: AppUi._bumpToolSettingToggle,
           },
           {
             key: "f",
-            item: AccuDrawCommandItems.rotateFront,
-          },
-          {
-            key: "v",
-            item: AccuDrawCommandItems.rotateView,
+            item: AccuDrawCommandItems.focusToolSetting,
           },
         ],
       },
-      {
-        key: "v",
-        label: "AccuDraw Value Tests",
-        shortcuts: [
-          {
-            key: "x",
-            item: AppUi._setValueX,
-          },
-          {
-            key: "y",
-            item: AppUi._setValueY,
-          },
-          {
-            key: "z",
-            item: AppUi._setValueZ,
-          },
-          {
-            key: "a",
-            item: AppUi._setValueAngle,
-          },
-          {
-            key: "d",
-            item: AppUi._setValueDistance,
-          },
-        ],
-      },
-      // {
-      //   key: "r",
-      //   item: AppUi._toggleZonesCommand,
-      // },
-      // {
-      //   key: "p",
-      //   labelKey: "SampleApp:buttons.shortcutsSubMenu",
-      //   shortcuts: [
-      //     {
-      //       key: "n",
-      //       item: AppTools.verticalPropertyGridOpenCommand,
-      //     },
-      //     {
-      //       key: "f",
-      //       item: AppTools.verticalPropertyGridOffCommand,
-      //     },
-      //   ],
-      // },
-      // {
-      //   key: "d",
-      //   labelKey: "SampleApp:buttons.shortcutsSubMenu",
-      //   shortcuts: [
-      //     {
-      //       key: "1",
-      //       item: AppTools.tool1,
-      //     },
-      //     {
-      //       key: "2",
-      //       item: AppTools.tool2,
-      //     },
-      //     {
-      //       key: "s",
-      //       item: CoreTools.selectElementCommand,
-      //     },
-      //   ],
-      // },
-      // {
-      //   key: "f",
-      //   item: AppTools.setLengthFormatImperialCommand,
-      // },
-      // {
-      //   key: "m",
-      //   labelKey: "SampleApp:buttons.accudrawSubMenu",
-      //   shortcuts: [
-      //     {
-      //       key: "a",
-      //       item: AccuDrawPopupTools.addMenuButton,
-      //     },
-      //     {
-      //       key: "h",
-      //       item: AccuDrawPopupTools.hideMenuButton,
-      //     },
-      //     {
-      //       key: "c",
-      //       item: AccuDrawPopupTools.showCalculator,
-      //     },
-      //     {
-      //       key: "m",
-      //       item: AccuDrawPopupTools.showContextMenu,
-      //     },
-      //     {
-      //       key: "t",
-      //       item: AccuDrawPopupTools.showToolbar,
-      //     },
-      //     {
-      //       key: "l",
-      //       item: AccuDrawPopupTools.showHTMLElement,
-      //     },
-      //   ],
-      // },
       {
         key: FunctionKey.F7,
         item: AppUi._showShortcutsMenuCommand,
@@ -511,6 +408,16 @@ export class AppUi {
     ];
 
     ConfigurableUiManager.loadKeyboardShortcuts(keyboardShortcutList);
+
+    ConfigurableUiManager.loadKeyboardShortcuts(AccuDrawKeyboardShortcuts.getDefaultShortcuts());
+  }
+
+  private static get _bumpToolSettingToggle() {
+    return new CommandItemDef({
+      commandId: "bumpToolSettingToggle",
+      labelKey: "SampleApp:buttons.bumpToolSettingToggle",
+      execute: async () => IModelApp.toolAdmin.bumpToolSetting(2),  // Works with ToolWithSettings
+    });
   }
 
   private static get _showShortcutsMenuCommand() {
@@ -521,57 +428,6 @@ export class AppUi {
       execute: () => {
         KeyboardShortcutManager.displayShortcutsMenu();
       },
-    });
-  }
-
-  private static get _toggleZonesCommand() {
-    return new CommandItemDef({
-      commandId: "toggleZones",
-      labelKey: "SampleApp:buttons.showhideZones",
-      execute: () => {
-        const isVisible = UiFramework.getIsUiVisible();
-        UiFramework.setIsUiVisible(!isVisible);
-      },
-    });
-  }
-
-  private static get _setValueX() {
-    return new CommandItemDef({
-      commandId: "setValueX",
-      label: "Set Value X",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.X, 123.456),
-    });
-  }
-
-  private static get _setValueY() {
-    return new CommandItemDef({
-      commandId: "setValueY",
-      label: "Set Value Y",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Y, 234.567),
-    });
-  }
-
-  private static get _setValueZ() {
-    return new CommandItemDef({
-      commandId: "setValueZ",
-      label: "Set Value Z",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Z, 345.678),
-    });
-  }
-
-  private static get _setValueAngle() {
-    return new CommandItemDef({
-      commandId: "setValueAngle",
-      label: "Set Value Angle",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Angle, 12.34),
-    });
-  }
-
-  private static get _setValueDistance() {
-    return new CommandItemDef({
-      commandId: "setValueDistance",
-      label: "Set Value Distance",
-      execute: () => IModelApp.uiAdmin.accuDrawUi.setFieldValueToUi(AccuDrawField.Distance, 56.78),
     });
   }
 
@@ -613,5 +469,23 @@ export class AppUi {
       },
     };
     UiFramework.widgetManager.addWidgetProvider(provider);
+  }
+
+  private static setAccuDrawUiSettings() {
+    const iconTest = "icon-placeholder";
+
+    const appSettings: AccuDrawUiSettings = {
+      xBackgroundColor: "var(--buic-background-control)",
+      xForegroundColor: "var(--buic-foreground-body)",
+      xLabel: "-X-",
+      xIcon: iconTest,
+    };
+
+    const userSettings: AccuDrawUiSettings = {
+      yBackgroundColor: ColorDef.create(ColorByName.darkBrown),
+      yLabel: "-Y-",
+    };
+
+    FrameworkAccuDraw.uiSettings = { ...appSettings, ...userSettings };
   }
 }

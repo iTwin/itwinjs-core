@@ -11,7 +11,6 @@
 import "./CustomNumberEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
-import * as ReactDOM from "react-dom";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import {
@@ -37,9 +36,10 @@ interface CustomNumberEditorState {
 export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps, CustomNumberEditorState> implements TypeEditor {
   private _isMounted = false;
   private _formatParams: CustomFormattedNumberParams | undefined;
+  private _inputElement = React.createRef<HTMLInputElement>();
 
   /** @internal */
-  public readonly state: Readonly<CustomNumberEditorState> = {
+  public override readonly state: Readonly<CustomNumberEditorState> = {
     inputValue: "",
   };
 
@@ -71,12 +71,12 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
           this.setState({ inputValue: newDisplayValue });
         }
       } else {
-        const msg = new NotifyMessageDetails(OutputMessagePriority.Error, parseResults.parseError ? parseResults.parseError : UiComponents.translate("errors.unable-to-parse-quantity"));
-        msg.setInputFieldTypeDetails(ReactDOM.findDOMNode(this) as HTMLElement); // eslint-disable-line react/no-find-dom-node
+        const msg = new NotifyMessageDetails(OutputMessagePriority.Error, parseResults.parseError ? parseResults.parseError : /* istanbul ignore next */ UiComponents.translate("errors.unable-to-parse-quantity"));
+        this.htmlElement && msg.setInputFieldTypeDetails(this.htmlElement);
         // istanbul ignore next
         if (IModelApp.notifications)
           IModelApp.notifications.outputMessage(msg);
-        const displayValue = (record.value.displayValue && record.value.displayValue.length > 0) ? record.value.displayValue : (this._formatParams as CustomFormattedNumberParams).formatFunction(record.value.value as number);
+        const displayValue = (record.value.displayValue && record.value.displayValue.length > 0) ? record.value.displayValue : /* istanbul ignore next */ (this._formatParams as CustomFormattedNumberParams).formatFunction(record.value.value as number);
         propertyValue = {
           valueFormat: PropertyValueFormat.Primitive,
           value: record.value.value,
@@ -85,6 +85,14 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       }
     }
     return propertyValue;
+  }
+
+  public get htmlElement(): HTMLElement | null {
+    return this._inputElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    return document.activeElement === this._inputElement.current;
   }
 
   private shouldSetFocus(): boolean {
@@ -118,21 +126,42 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
+  }
+
+  private _getInitialDisplayValue(): string {
+    const record = this.props.propertyRecord;
+    let initialDisplayValue = "";
+    let numberValue = 0;
+    // istanbul ignore else
+    if (record) {
+      // istanbul ignore else
+      if (record.value.valueFormat === PropertyValueFormat.Primitive) {
+        const primitiveValue = record.value;
+        numberValue = (undefined !== primitiveValue.value) ? primitiveValue.value as number : /* istanbul ignore next */ 0;
+        // istanbul ignore else
+        if (primitiveValue.displayValue)
+          initialDisplayValue = primitiveValue.displayValue;
+        else
+          initialDisplayValue = (this._formatParams as CustomFormattedNumberParams).formatFunction(numberValue);
+      }
+    }
+
+    return initialDisplayValue;
   }
 
   private async setStateFromProps() {
@@ -156,19 +185,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       return;
     }
 
-    let initialDisplayValue = "";
-    let numberValue = 0;
-
-    // istanbul ignore else
-    if (record.value.valueFormat === PropertyValueFormat.Primitive) {
-      const primitiveValue = record.value;
-      numberValue = (undefined !== primitiveValue.value) ? primitiveValue.value as number : 0;
-      if (primitiveValue.displayValue)
-        initialDisplayValue = primitiveValue.displayValue;
-      else
-        initialDisplayValue = this._formatParams.formatFunction(numberValue);
-    }
-
+    const initialDisplayValue = this._getInitialDisplayValue();
     let size: number | undefined;
     let maxLength: number | undefined;
     let iconSpec: string | undefined;
@@ -198,21 +215,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   }
 
   private _resetToOriginalValue() {
-    const record = this.props.propertyRecord;
-    let initialDisplayValue = "";
-    let numberValue = 0;
-    // istanbul ignore else
-    if (record) {
-      // istanbul ignore else
-      if (record.value.valueFormat === PropertyValueFormat.Primitive) {
-        const primitiveValue = record.value;
-        numberValue = (undefined !== primitiveValue.value) ? primitiveValue.value as number : 0;
-        if (primitiveValue.displayValue)
-          initialDisplayValue = primitiveValue.displayValue;
-        else
-          initialDisplayValue = (this._formatParams as CustomFormattedNumberParams).formatFunction(numberValue);
-      }
-    }
+    const initialDisplayValue = this._getInitialDisplayValue();
 
     this.setState({ inputValue: initialDisplayValue });
   }
@@ -220,9 +223,16 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   private _onKeyPress = (e: KeyboardEvent) => {
     // istanbul ignore else
     if (e.key === SpecialKey.Escape) {
-      e.preventDefault();
-      e.stopPropagation();
-      this._resetToOriginalValue();
+      const initialDisplayValue = this._getInitialDisplayValue();
+      if (initialDisplayValue !== this.state.inputValue) {
+        e.preventDefault();
+        e.stopPropagation();
+        this._resetToOriginalValue();
+      } else {
+        // istanbul ignore else
+        if (this.props.onCancel)
+          this.props.onCancel();
+      }
     }
 
     // istanbul ignore else
@@ -233,12 +243,13 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     }
   };
 
+  // istanbul ignore next
   private _onFocus = (e: React.FocusEvent<HTMLInputElement>) => {
     e.target.select();
   };
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const minSize = this.state.size ? this.state.size : 8;
     const minWidthStyle: React.CSSProperties = {
       minWidth: `${minSize * 0.75}em`,
@@ -265,6 +276,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       onFocus: this._onFocus,
       setFocus: this.shouldSetFocus(),
       nativeKeyHandler: this._onKeyPress,
+      ref: this._inputElement,
     };
 
     let reactNode: React.ReactNode;
@@ -289,7 +301,6 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
     return reactNode;
   }
 }
-// onKeyPress={this._onKeyPress}
 
 /** Custom Property Editor registered for the "number" type name and the "number-custom" editor name.
  * It uses the [[CustomNumberEditor]] React component.
@@ -298,6 +309,9 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 export class CustomNumberPropertyEditor extends PropertyEditorBase {
   public get reactNode(): React.ReactNode {
     return <CustomNumberEditor />;
+  }
+  public override get containerHandlesEscape(): boolean {
+    return false;
   }
 }
 PropertyEditorManager.registerEditor(StandardTypeNames.Number, CustomNumberPropertyEditor, StandardEditorNames.NumberCustom);

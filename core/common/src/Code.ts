@@ -29,21 +29,27 @@ export interface CodeProps {
 export class Code implements CodeProps {
   /** The id of the [CodeSpec]($docs/bis/intro/codes.md#codespec) of the Element */
   public spec: Id64String;
-  /** the [CodeScope]($docs/bis/intro/codes.md#codescope-property) of the Element */
+  /** The [CodeScope]($docs/bis/intro/codes.md#codescope-property) of the Element */
   public scope: string;
-  /** the [CodeValue]($docs/bis/intro/codes.md#codevalue-property) of the Element */
-  public value?: string;
+  /** The [CodeValue]($docs/bis/intro/codes.md#codevalue-property) of the Element
+   * @note Leading and trailing whitespace is invalid so is automatically trimmed.
+   */
+  public get value() { return this._value ?? ""; }
+  public set value(val: string) { this._value = val?.trim(); }
+  private _value?: string;
 
-  constructor(val: CodeProps) {
-    this.spec = Id64.fromJSON(val.spec);
-    this.scope = JsonUtils.asString(val.scope, "");
-    this.value = JsonUtils.asString(val.value);
+  constructor(codeProps: CodeProps) {
+    this.spec = Id64.fromJSON(codeProps.spec);
+    this.scope = JsonUtils.asString(codeProps.scope);
+    this.value = JsonUtils.asString(codeProps.value);
   }
 
   /** Create an empty, non-unique code with no special meaning. */
   public static createEmpty(): Code { const id: Id64String = Id64.fromLocalAndBriefcaseIds(1, 0); return new Code({ spec: id, scope: id }); }
   public static fromJSON(json?: any): Code { return json ? new Code(json) : Code.createEmpty(); }
-  public getValue(): string { return this.value ? this.value : ""; }
+  public toJSON(): CodeProps { return { spec: this.spec, scope: this.scope, value: this.value }; }
+  /** @deprecated Use the [[value]] property instead. */
+  public getValue(): string { return this.value; }
   public equals(other: Code): boolean { return Code.equalCodes(this, other); }
   /** @internal */
   public static equalCodes(c1: CodeProps, c2: CodeProps): boolean {
@@ -58,38 +64,132 @@ export class Code implements CodeProps {
 /** Names of the internal BIS CodeSpecs. These names match those specified by the native library.
  * For other domains, the best practice is to include the domain name or alias as part of the CodeSpec name to ensure global uniqueness.
  * @public
+ * @see [CodeSpec]($docs/bis/intro/codes.md#codespec)
  */
 export enum BisCodeSpec {
+  /** The name of the standard [[CodeSpec]] used when creating *empty* codes.
+   * @see [[Code.createEmpty]]
+   */
   nullCodeSpec = "bis:NullCodeSpec",
+  /** @internal */
   annotationFrameStyle = "bis:AnnotationFrameStyle",
+  /** @internal */
   annotationLeaderStyle = "bis:AnnotationLeaderStyle",
+  /** @internal */
   annotationTextStyle = "bis:AnnotationTextStyle",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [AuxCoordSystem2d]($backend) elements.
+   * @see [AuxCoordSystem2d.createCode]($backend)
+   */
   auxCoordSystem2d = "bis:AuxCoordSystem2d",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [AuxCoordSystem3d]($backend) elements.
+   * @see [AuxCoordSystem3d.createCode]($backend)
+   */
   auxCoordSystem3d = "bis:AuxCoordSystem3d",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [AuxCoordSystemSpatial]($backend) elements.
+   * @see [AuxCoordSystemSpatial.createCode]($backend)
+   */
   auxCoordSystemSpatial = "bis:AuxCoordSystemSpatial",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [CategorySelector]($backend) elements.
+   * @see [CategorySelector.createCode]($backend)
+   */
   categorySelector = "bis:CategorySelector",
+  /** @internal */
   colorBook = "bis:ColorBook",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [DisplayStyle]($backend) elements.
+   * @see [DisplayStyle.createCode]($backend)
+   */
   displayStyle = "bis:DisplayStyle",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [Drawing]($backend) elements.
+   * @see [Drawing.createCode]($backend)
+   */
   drawing = "bis:Drawing",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [DrawingCategory]($backend) elements.
+   * @see [DrawingCategory.createCode]($backend)
+   */
   drawingCategory = "bis:DrawingCategory",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [ExternalSource]($backend) elements.
+   * @note This CodeSpec is not automatically created, so use [ExternalSource.ensureCodeSpec]($backend) to make sure that it exists.
+   * @see [ExternalSource.createCode]($backend)
+   */
+  externalSource = "bis:ExternalSource",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [ExternalSourceAttachment]($backend) elements.
+   * @note This CodeSpec is not automatically created, so use [ExternalSourceAttachment.ensureCodeSpec]($backend) to make sure that it exists.
+   * @see [ExternalSource.createCode]($backend)
+   */
+  externalSourceAttachment = "bis:ExternalSourceAttachment",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [GeometryPart]($backend) elements.
+   * @see [GeometryPart.createCode]($backend)
+   */
   geometryPart = "bis:GeometryPart",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [GraphicalType2d]($backend) elements.
+   * @see [GraphicalType2d.createCode]($backend)
+   */
   graphicalType2d = "bis:GraphicalType2d",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [LineStyle]($backend) elements.
+   * @see [LineStyle.createCode]($backend)
+   */
   lineStyle = "bis:LineStyle",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [LinkElement]($backend) elements.
+   * @see [LinkElement.createCode]($backend)
+   */
   linkElement = "bis:LinkElement",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [ModelSelector]($backend) elements.
+   * @see [ModelSelector.createCode]($backend)
+   */
   modelSelector = "bis:ModelSelector",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [PhysicalMaterial]($backend) elements.
+   * @see [PhysicalMaterial.createCode]($backend)
+   */
   physicalMaterial = "bis:PhysicalMaterial",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [PhysicalType]($backend) elements.
+   * @see [PhysicalType.createCode]($backend)
+   */
   physicalType = "bis:PhysicalType",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [InformationPartitionElement]($backend) elements.
+   * @see [InformationPartitionElement.createCode]($backend)
+   */
   informationPartitionElement = "bis:InformationPartitionElement",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [RenderMaterialElement]($backend) elements.
+   * @see [RenderMaterialElement.createCode]($backend)
+   */
   renderMaterial = "bis:RenderMaterial",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [Sheet]($backend) elements.
+   * @see [Sheet.createCode]($backend)
+   */
   sheet = "bis:Sheet",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [SpatialCategory]($backend) elements.
+   * @see [SpatialCategory.createCode]($backend)
+   */
   spatialCategory = "bis:SpatialCategory",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [SpatialLocationType]($backend) elements.
+   * @see [SpatialLocationType.createCode]($backend)
+   */
   spatialLocationType = "bis:SpatialLocationType",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [SubCategory]($backend) elements.
+   * @see [SubCategory.createCode]($backend)
+   */
   subCategory = "bis:SubCategory",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [Subject]($backend) elements.
+   * @see [Subject.createCode]($backend)
+   */
   subject = "bis:Subject",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [TemplateRecipe2d]($backend) elements.
+   * @see [TemplateRecipe2d.createCode]($backend)
+   */
   templateRecipe2d = "bis:TemplateRecipe2d",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [TemplateRecipe3d]($backend) elements.
+   * @see [TemplateRecipe3d.createCode]($backend)
+   */
   templateRecipe3d = "bis:TemplateRecipe3d",
+  /** @internal */
   textAnnotationSeed = "bis:TextAnnotationSeed",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [Texture]($backend) elements.
+   * @see [Texture.createCode]($backend)
+   */
   texture = "bis:Texture",
+  /** The name of the standard [[CodeSpec]] used when creating codes for [ViewDefinition]($backend) elements.
+   * @see [ViewDefinition.createCode]($backend)
+   */
   viewDefinition = "bis:ViewDefinition",
 }
 

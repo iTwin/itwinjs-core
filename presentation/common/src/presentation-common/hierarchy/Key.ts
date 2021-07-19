@@ -25,7 +25,7 @@ export enum StandardNodeTypes {
  */
 export type NodeKey = BaseNodeKey | ECInstancesNodeKey | ECClassGroupingNodeKey | ECPropertyGroupingNodeKey | LabelGroupingNodeKey;
 /** @public */
-export namespace NodeKey {
+export namespace NodeKey { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Serialize given [[NodeKey]] to JSON */
   export function toJSON(key: NodeKey): NodeKeyJSON {
     if (isInstancesNodeKey(key))

@@ -9,9 +9,9 @@
 import { ClientRequestContext, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelDb, IModelHost, IModelJsNative } from "@bentley/imodeljs-backend";
 import {
-  DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValueJSON, VariableValueTypes,
+  DiagnosticsScopeLogs, PresentationError, PresentationStatus, UpdateInfoJSON, VariableValue, VariableValueJSON, VariableValueTypes,
 } from "@bentley/presentation-common";
-import { HierarchyCacheMode, PresentationManagerMode } from "./PresentationManager";
+import { HierarchyCacheMode, PresentationManagerMode, UnitSystemFormat } from "./PresentationManager";
 
 /** @internal */
 export enum NativePlatformRequestTypes {
@@ -53,10 +53,12 @@ export interface NativePlatformDefinition extends IDisposable {
 
   handleRequest(db: any, options: string): Promise<NativePlatformResponse<string>>;
 
-  getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): NativePlatformResponse<VariableValueJSON>;
-  setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON): NativePlatformResponse<void>;
+  getRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes): NativePlatformResponse<VariableValue>;
+  setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValue): NativePlatformResponse<void>;
+  unsetRulesetVariableValue(rulesetId: string, variableId: string): NativePlatformResponse<void>;
 
   getUpdateInfo(): NativePlatformResponse<UpdateInfoJSON | undefined>;
+  updateHierarchyState(db: any, rulesetId: string, changeType: "nodesExpanded" | "nodesCollapsed", serializedKeys: string): NativePlatformResponse<void>;
 }
 
 /** @internal */
@@ -68,6 +70,8 @@ export interface DefaultNativePlatformProps {
   isChangeTrackingEnabled: boolean;
   cacheConfig?: IModelJsNative.ECPresentationHierarchyCacheConfig;
   contentCacheSize?: number;
+  defaultFormats?: { [phenomenon: string]: UnitSystemFormat };
+  useMmap?: boolean | number;
 }
 
 /** @internal */
@@ -79,7 +83,8 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public constructor() {
       const mode = (props.mode === PresentationManagerMode.ReadOnly) ? IModelJsNative.ECPresentationManagerMode.ReadOnly : IModelJsNative.ECPresentationManagerMode.ReadWrite;
       const cacheConfig = props.cacheConfig ?? { mode: HierarchyCacheMode.Disk, directory: "" };
-      this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, mode, cacheConfig });
+      const defaultFormats = props.defaultFormats ? this.getSerializedDefaultFormatsMap(props.defaultFormats) : {};
+      this._nativeAddon = new IModelHost.platform.ECPresentationManager({ ...props, mode, cacheConfig, defaultFormats });
     }
     private getStatus(responseStatus: IModelJsNative.ECPresentationStatus): PresentationStatus {
       switch (responseStatus) {
@@ -88,6 +93,20 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
         default: return PresentationStatus.Error;
       }
     }
+    private getSerializedDefaultFormatsMap(defaultMap: { [phenomenon: string]: UnitSystemFormat }) {
+      const res: {
+        [phenomenon: string]: {
+          unitSystems: string[];
+          serializedFormat: string;
+        };
+      } = {};
+      Object.keys(defaultMap).forEach((key) => {
+        const value = defaultMap[key];
+        res[key] = { unitSystems: value.unitSystems, serializedFormat: JSON.stringify(value.format) };
+      });
+
+      return res;
+    }
     private createSuccessResponse<T>(response: IModelJsNative.ECPresentationManagerResponse<T>): NativePlatformResponse<T> {
       const retValue: NativePlatformResponse<T> = { result: response.result! };
       if (response.diagnostics)
@@ -95,15 +114,11 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
       return retValue;
     }
     private handleResult<T>(response: IModelJsNative.ECPresentationManagerResponse<T>): NativePlatformResponse<T> {
-      if (!response)
-        throw new PresentationError(PresentationStatus.InvalidResponse);
       if (response.error)
         throw new PresentationError(this.getStatus(response.error.status), response.error.message);
       return this.createSuccessResponse(response);
     }
     private handleVoidResult(response: IModelJsNative.ECPresentationManagerResponse<void>): NativePlatformResponse<void> {
-      if (!response)
-        throw new PresentationError(PresentationStatus.InvalidResponse);
       if (response.error)
         throw new PresentationError(this.getStatus(response.error.status), response.error.message);
       return this.createSuccessResponse(response);
@@ -171,8 +186,14 @@ export const createDefaultNativePlatform = (props: DefaultNativePlatformProps): 
     public setRulesetVariableValue(rulesetId: string, variableId: string, type: VariableValueTypes, value: VariableValueJSON) {
       return this.handleVoidResult(this._nativeAddon.setRulesetVariableValue(rulesetId, variableId, type, value));
     }
+    public unsetRulesetVariableValue(rulesetId: string, variableId: string) {
+      return this.handleVoidResult(this._nativeAddon.unsetRulesetVariableValue(rulesetId, variableId));
+    }
     public getUpdateInfo() {
       return this.handleResult(this._nativeAddon.getUpdateInfo());
+    }
+    public updateHierarchyState(db: any, rulesetId: string, changeType: "nodesExpanded" | "nodesCollapsed", serializedKeys: string) {
+      return this.handleResult(this._nativeAddon.updateHierarchyState(db, rulesetId, changeType, serializedKeys));
     }
   };
 };

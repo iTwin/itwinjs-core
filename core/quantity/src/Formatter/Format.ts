@@ -2,17 +2,21 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Quantity
+ */
+
 import { QuantityConstants } from "../Constants";
 import { QuantityError, QuantityStatus } from "../Exception";
 import { UnitProps, UnitsProvider } from "../Interfaces";
 import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision, ScientificType, ShowSignOption } from "./FormatEnums";
-import { FormatProps } from "./Interfaces";
+import { CloneOptions, CustomFormatProps, FormatProps, isCustomFormatProps } from "./Interfaces";
 
 // cSpell:ignore ZERONORMALIZED, nosign, onlynegative, signalways, negativeparentheses
 // cSpell:ignore trailzeroes, keepsinglezero, zeroempty, keepdecimalpoint, applyrounding, fractiondash, showunitlabel, prependunitlabel, exponentonlynegative
 
-/** A class used to both define the specifications for formatting a quantity values and the methods to do the formatting.
- * @alpha
+/** A class used to define the specifications for formatting quantity values. This class is typically loaded by reading [[FormatProps]].
+ * @beta
  */
 export class Format {
   private _name = "";
@@ -31,6 +35,7 @@ export class Format {
   protected _spacer: string = " "; // optional; default is " "
   protected _includeZero: boolean = true; // optional; default is true
   protected _units?: Array<[UnitProps, string | undefined]>;
+  protected _customProps?: any;  // used by custom formatters and parsers
 
   /** Constructor
    *  @param name     The name of a format specification. TODO: make optional or remove
@@ -52,10 +57,11 @@ export class Format {
   public get stationSeparator(): string { return this._stationSeparator; }
   public get stationOffsetSize(): number | undefined { return this._stationOffsetSize; }
   public get formatTraits(): FormatTraits { return this._formatTraits; }
-  public get spacer(): string | undefined { return this._spacer; }
-  public get includeZero(): boolean | undefined { return this._includeZero; }
+  public get spacer(): string { return this._spacer; }
+  public get includeZero(): boolean { return this._includeZero; }
   public get units(): Array<[UnitProps, string | undefined]> | undefined { return this._units; }
   public get hasUnits(): boolean { return this._units !== undefined && this._units.length > 0; }
+  public get customProps(): any { return this._customProps; }
 
   // parse and toString methods
   public static scientificTypeToString(scientificType: ScientificType): string {
@@ -67,7 +73,7 @@ export class Format {
 
   /** This method parses input string that is typically extracted for persisted JSON data and validates that the string is a valid ScientificType. Throws exception if not valid. */
   public static parseScientificType(scientificType: string, formatName: string): ScientificType {
-    switch (scientificType) {
+    switch (scientificType.toLowerCase()) {
       case "normalized":
         return ScientificType.Normalized;
       case "zeronormalized":
@@ -107,19 +113,55 @@ export class Format {
     }
   }
 
+  public static isFormatTraitSetInProps(formatProps: FormatProps, trait: FormatTraits) {
+    if (!formatProps.formatTraits)
+      return false;
+    const formatTraits = Array.isArray(formatProps.formatTraits) ? formatProps.formatTraits : formatProps.formatTraits.split(/,|;|\|/);
+    const traitStr = Format.getTraitString(trait);
+    return formatTraits.find((traitEntry) => traitStr === traitEntry) ? true : false;
+  }
+
+  /** Get string used in FormatProps  */
+  public static getTraitString(trait: FormatTraits) {
+    switch (trait) {
+      case FormatTraits.TrailZeroes:
+        return "trailZeroes";
+      case FormatTraits.KeepSingleZero:
+        return "keepSingleZero";
+      case FormatTraits.ZeroEmpty:
+        return "zeroEmpty";
+      case FormatTraits.KeepDecimalPoint:
+        return "keepDecimalPoint";
+      case FormatTraits.ApplyRounding:
+        return "applyRounding";
+      case FormatTraits.FractionDash:
+        return "fractionDash";
+      case FormatTraits.ShowUnitLabel:
+        return "showUnitLabel";
+      case FormatTraits.PrependUnitLabel:
+        return "prependUnitLabel";
+      case FormatTraits.Use1000Separator:
+        return "use1000Separator";
+      case FormatTraits.ExponentOnlyNegative:
+      default:
+        return "exponentOnlyNegative";
+    }
+  }
+
   /** Method used when generating a JSON object that represents this Format. */
   public static formatTraitsToArray(currentFormatTrait: FormatTraits): string[] {
     const formatTraitsArr = Array<string>();
-    if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes) formatTraitsArr.push("trailZeroes");
-    if ((currentFormatTrait & FormatTraits.KeepSingleZero) === FormatTraits.KeepSingleZero) formatTraitsArr.push("keepSingleZero");
-    if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty) formatTraitsArr.push("zeroEmpty");
-    if ((currentFormatTrait & FormatTraits.KeepDecimalPoint) === FormatTraits.KeepDecimalPoint) formatTraitsArr.push("keepDecimalPoint");
-    if ((currentFormatTrait & FormatTraits.ApplyRounding) === FormatTraits.ApplyRounding) formatTraitsArr.push("applyRounding");
-    if ((currentFormatTrait & FormatTraits.FractionDash) === FormatTraits.FractionDash) formatTraitsArr.push("fractionDash");
-    if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel) formatTraitsArr.push("showUnitLabel");
-    if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel) formatTraitsArr.push("prependUnitLabel");
-    if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator) formatTraitsArr.push("use1000Separator");
-    if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative) formatTraitsArr.push("exponentOnlyNegative");
+    if ((currentFormatTrait & FormatTraits.TrailZeroes) === FormatTraits.TrailZeroes) formatTraitsArr.push(Format.getTraitString(FormatTraits.TrailZeroes));
+    if ((currentFormatTrait & FormatTraits.KeepSingleZero) === FormatTraits.KeepSingleZero) formatTraitsArr.push(Format.getTraitString(FormatTraits.KeepSingleZero));
+    if ((currentFormatTrait & FormatTraits.ZeroEmpty) === FormatTraits.ZeroEmpty) formatTraitsArr.push(Format.getTraitString(FormatTraits.ZeroEmpty));
+    if ((currentFormatTrait & FormatTraits.KeepDecimalPoint) === FormatTraits.KeepDecimalPoint) formatTraitsArr.push(Format.getTraitString(FormatTraits.KeepDecimalPoint));
+    if ((currentFormatTrait & FormatTraits.ApplyRounding) === FormatTraits.ApplyRounding) formatTraitsArr.push(Format.getTraitString(FormatTraits.ApplyRounding));
+    if ((currentFormatTrait & FormatTraits.FractionDash) === FormatTraits.FractionDash) formatTraitsArr.push(Format.getTraitString(FormatTraits.FractionDash));
+    if ((currentFormatTrait & FormatTraits.ShowUnitLabel) === FormatTraits.ShowUnitLabel) formatTraitsArr.push(Format.getTraitString(FormatTraits.ShowUnitLabel));
+    if ((currentFormatTrait & FormatTraits.PrependUnitLabel) === FormatTraits.PrependUnitLabel) formatTraitsArr.push(Format.getTraitString(FormatTraits.PrependUnitLabel));
+    if ((currentFormatTrait & FormatTraits.Use1000Separator) === FormatTraits.Use1000Separator) formatTraitsArr.push(Format.getTraitString(FormatTraits.Use1000Separator));
+    // NOTE: the formatter does not current use trait ExponentOnlyNegative
+    if ((currentFormatTrait & FormatTraits.ExponentOnlyNegative) === FormatTraits.ExponentOnlyNegative) formatTraitsArr.push(Format.getTraitString(FormatTraits.ExponentOnlyNegative));
 
     return formatTraitsArr;
   }
@@ -130,11 +172,11 @@ export class Format {
       case "trailzeroes":
         return currentFormatTrait | FormatTraits.TrailZeroes;
       case "keepsinglezero":
-        return currentFormatTrait | FormatTraits.KeepSingleZero;
+        return currentFormatTrait | FormatTraits.KeepSingleZero; // keep single when format type is Decimal
       case "zeroempty":
         return currentFormatTrait | FormatTraits.ZeroEmpty;
       case "keepdecimalpoint":
-        return currentFormatTrait | FormatTraits.KeepDecimalPoint;
+        return currentFormatTrait | FormatTraits.KeepDecimalPoint; // add decimal point when no fractional part and format type is Decimal
       case "applyrounding":
         return currentFormatTrait | FormatTraits.ApplyRounding;
       case "fractiondash":
@@ -150,6 +192,22 @@ export class Format {
       default:
         throw new QuantityError(QuantityStatus.InvalidJson, `Format has an invalid 'formatTraits' option.`);
     }
+  }
+
+  /** Get FormatTrait from entry in FormatProps */
+  public static parseFormatTraits(formatTraitsFromJson: string | string[] | undefined) {
+    if (!formatTraitsFromJson)
+      return undefined;
+
+    const formatTraits = Array.isArray(formatTraitsFromJson) ? formatTraitsFromJson : formatTraitsFromJson.split(/,|;|\|/);
+    let traits = 0;
+    for (const traitStr of formatTraits) {
+      traits = Format.parseFormatTrait(traitStr, traits);
+    }
+    if (0 === traits)
+      return undefined;
+
+    return traits as FormatTraits;
   }
 
   /** Method used when generating a JSON object that represents this Format. */
@@ -274,13 +332,70 @@ export class Format {
       if (unitObj.toLowerCase() === name.toLowerCase()) // duplicate names are not allowed
         throw new QuantityError(QuantityStatus.InvalidJson, `The unit ${unitObj} has a duplicate name.`);
     }
-    const newUnit: UnitProps = await unitsProvider.findUnit(name);
+    const newUnit: UnitProps = await unitsProvider.findUnitByName(name);
     if (!newUnit || !newUnit.isValid)
       throw new QuantityError(QuantityStatus.InvalidJson, `Invalid unit name '${name}'.`);
     this.units!.push([newUnit, label]);
   }
 
+  /**
+   *  Clone Format
+   */
+  public clone(options?: CloneOptions): Format {
+    const newFormat = new Format(this.name);
+    newFormat._roundFactor = this._roundFactor;
+    newFormat._type = this._type;
+    newFormat._precision = this._precision;
+    newFormat._minWidth = this._minWidth;
+    newFormat._scientificType = this._scientificType;
+    newFormat._showSignOption = this._showSignOption;
+    newFormat._decimalSeparator = this._decimalSeparator;
+    newFormat._thousandSeparator = this._thousandSeparator;
+    newFormat._uomSeparator = this._uomSeparator;
+    newFormat._stationSeparator = this._stationSeparator;
+    newFormat._stationOffsetSize = this._stationOffsetSize;
+    newFormat._formatTraits = this._formatTraits;
+    newFormat._spacer = this._spacer;
+    newFormat._includeZero = this._includeZero;
+    newFormat._customProps = this._customProps;
+    this._units && (newFormat._units = [...this._units]);
+
+    if (newFormat._units) {
+      if (options?.showOnlyPrimaryUnit) {
+        if (newFormat._units.length > 1)
+          newFormat._units.length = 1;
+      }
+    }
+
+    if (undefined !== options?.traits)
+      newFormat._formatTraits = options?.traits;
+
+    if (undefined !== options?.type)
+      newFormat._type = options.type;
+
+    if (undefined !== options?.precision) {
+      // ensure specified precision is valid
+      const precision = Format.parsePrecision(options?.precision, "clone", newFormat._type);
+      newFormat._precision = precision;
+    }
+
+    if (undefined !== options?.primaryUnit) {
+      if (options.primaryUnit.unit) {
+        const newUnits = new Array<[UnitProps, string | undefined]>();
+        newUnits.push([options.primaryUnit.unit, options.primaryUnit.label]);
+        newFormat._units = newUnits;
+      } else if (options.primaryUnit.label && newFormat._units?.length) {
+        // update label only
+        newFormat._units[0][1] = options.primaryUnit.label;
+      }
+    }
+    return newFormat;
+  }
+
   private loadFormatProperties(jsonObj: FormatProps) {
+    if (isCustomFormatProps(jsonObj))
+      this._customProps = jsonObj.custom;
+
     if (undefined === jsonObj.type) // type is required
       throw new QuantityError(QuantityStatus.InvalidJson, `The Format ${this.name} does not have the required 'type' attribute.`);
     if (typeof (jsonObj.type) !== "string")
@@ -415,6 +530,13 @@ export class Format {
     }
   }
 
+  /** Create a Format from FormatProps */
+  public static async createFromJSON(name: string, unitsProvider: UnitsProvider, formatProps: FormatProps) {
+    const actualFormat = new Format(name);
+    await actualFormat.fromJSON(unitsProvider, formatProps);
+    return actualFormat;
+  }
+
   /**
    * Returns a JSON object that contain the specification for this Format.
    */
@@ -435,7 +557,25 @@ export class Format {
       };
     }
 
-    const schemaJson: FormatProps = {
+    if (this.customProps)
+      return {
+        type: Format.formatTypeToString(this.type),
+        precision: this.precision,
+        roundFactor: this.roundFactor,
+        minWidth: this.minWidth,
+        showSignOption: Format.showSignOptionToString(this.showSignOption),
+        formatTraits: Format.formatTraitsToArray(this.formatTraits),
+        decimalSeparator: this.decimalSeparator,
+        thousandSeparator: this.thousandSeparator,
+        uomSeparator: this.uomSeparator,
+        scientificType: this.scientificType ? Format.scientificTypeToString(this.scientificType) : undefined,
+        stationOffsetSize: this.stationOffsetSize,
+        stationSeparator: this.stationSeparator,
+        composite,
+        custom: this.customProps,
+      } as CustomFormatProps;
+
+    return {
       type: Format.formatTypeToString(this.type),
       precision: this.precision,
       roundFactor: this.roundFactor,
@@ -450,6 +590,5 @@ export class Format {
       stationSeparator: this.stationSeparator,
       composite,
     };
-    return schemaJson;
   }
 }

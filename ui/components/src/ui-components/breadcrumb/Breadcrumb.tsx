@@ -113,7 +113,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   };
 
   /** @internal */
-  public readonly state: Readonly<BreadcrumbState>;
+  public override readonly state: Readonly<BreadcrumbState>;
 
   /** @internal */
   constructor(props: BreadcrumbProps) {
@@ -164,7 +164,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._mounted = true;
     this.assignModelListeners(this.state.model);
     this.assignDataProviderListeners(this.props.dataProvider);
@@ -180,7 +180,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     if (this.props.path)
       this.props.path.BreadcrumbUpdateEvent.removeListener(this._handleUpdate);
     this.dropModelListeners(this.state.model);
@@ -189,7 +189,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 
   /** @internal */
-  public shouldComponentUpdate(nextProps: BreadcrumbProps, nextState: BreadcrumbState): boolean {
+  public override shouldComponentUpdate(nextProps: BreadcrumbProps, nextState: BreadcrumbState): boolean {
     if (this.state.modelReady !== nextState.modelReady || this.state.model !== nextState.model) {
       // always render when modelReady or model changes
       return true;
@@ -214,7 +214,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: BreadcrumbProps, prevState: BreadcrumbState) {
+  public override componentDidUpdate(prevProps: BreadcrumbProps, prevState: BreadcrumbState) {
     if (this.state.model !== prevState.model) {
       this.dropModelListeners(prevState.model);
       this.assignModelListeners(this.state.model);
@@ -236,6 +236,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
     model.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
     model.ready.then(() => {
+      // istanbul ignore else
       if (model === this.state.model)
         this._onModelReady();
     });
@@ -325,7 +326,7 @@ export class Breadcrumb extends React.Component<BreadcrumbProps, BreadcrumbState
   }
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const classNames = classnames("components-breadcrumb", this.props.background && "background", this.props.className);
 
     if (!this.state.modelReady) {
@@ -411,7 +412,7 @@ export interface InputSwitchProps {
 
 /** @internal */
 export class InputSwitchComponent extends React.PureComponent<InputSwitchProps> {
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { currentMode, tree, node, onInputStart, onInputCancel, onNodeChange, renderNode, width, showUpDir, delimiter, expandedNode } = this.props;
     switch (currentMode) {
       case BreadcrumbMode.Dropdown:
@@ -457,13 +458,13 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   private _mounted: boolean = false;
 
   /** @internal */
-  public readonly state: Readonly<BreadcrumbInputState> = {
+  public override readonly state: Readonly<BreadcrumbInputState> = {
     autocompleting: false,
     autocompleteList: [],
     messageBoxOpened: false,
   };
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     return (
       <div className="components-breadcrumb-input-root" data-testid="components-breadcrumb-input-root">
         <input
@@ -535,19 +536,24 @@ export class BreadcrumbInput extends React.Component<BreadcrumbInputProps, Bread
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._mounted = true;
-    window.addEventListener("click", this._handleClick);
     // istanbul ignore else
     if (this._inputElement) {
+      const activeWindow = this._inputElement.ownerDocument.defaultView;
+      activeWindow && activeWindow.addEventListener("click", this._handleClick);
       this._inputElement.value = this.props.pathString;
       this._inputElement.focus();
     }
   }
 
   /** @internal */
-  public componentWillUnmount() {
-    window.removeEventListener("click", this._handleClick);
+  public override componentWillUnmount() {
+    // istanbul ignore else
+    if (this._inputElement) {
+      const activeWindow = this._inputElement.ownerDocument.defaultView;
+      activeWindow && activeWindow.removeEventListener("click", this._handleClick);
+    }
     this._mounted = false;
   }
 
@@ -710,13 +716,13 @@ interface BreadcrumbDropdownProps {
 class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this.props.tree.on(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     this.props.tree.on(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this.props.tree.removeListener(BeInspireTreeEvent.ChildrenLoaded, this._onChildrenLoaded);
     this.props.tree.removeListener(BeInspireTreeEvent.ModelLoaded, this._onModelLoaded);
   }
@@ -730,17 +736,17 @@ class BreadcrumbDropdown extends React.Component<BreadcrumbDropdownProps> {
   };
 
   /** @internal */
-  public shouldComponentUpdate(nextProps: BreadcrumbDropdownProps) {
+  public override shouldComponentUpdate(nextProps: BreadcrumbDropdownProps) {
     return this.props.tree !== nextProps.tree ||
       this.props.node !== nextProps.node ||
-      (nextProps.node && nextProps.node.isDirty()) ||
+      (nextProps.node && /* istanbul ignore next */ nextProps.node.isDirty()) ||
       this.props.onInputStart !== nextProps.onInputStart ||
       this.props.delimiter !== nextProps.delimiter ||
       this.props.width !== nextProps.width ||
       this.props.renderNode !== nextProps.renderNode;
   }
 
-  public render(): JSX.Element | null {
+  public override render(): JSX.Element | null {
     const node = this.props.node;
     let nodes: BeInspireTreeNodes<TreeNodeItem> | undefined;
     if (node) {
@@ -832,7 +838,7 @@ class BreadcrumbDropdownNode extends React.Component<BreadcrumbDropdownNodeProps
     super(props);
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { node } = this.props;
     let nodeChildren: Array<BeInspireTreeNode<TreeNodeItem>> = this.props.tree.nodes();
     if (node)
@@ -915,18 +921,18 @@ export class BreadcrumbNode extends React.Component<BreadcrumbNodeProps> {
     super(props);
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { icon, label } = this.props;
     return <span data-testid="components-breadcrumb-node"><span className={classnames("icon", icon)} />{PropertyValueRendererManager.defaultManager.render(label)}</span>;
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     // istanbul ignore next
     if (this.props.onRender)
       this.props.onRender();
   }
 
-  public componentDidUpdate() {
+  public override componentDidUpdate() {
     // istanbul ignore next
     if (this.props.onRender)
       this.props.onRender();

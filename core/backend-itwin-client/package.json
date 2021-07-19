@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-itwin-client",
-  "version": "2.12.0-dev.15",
+  "version": "2.19.0-dev.20",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/backend-itwin-client.js",
   "browser": {
@@ -9,7 +9,7 @@
   "typings": "lib/backend-itwin-client",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <13.0"
+    "node": ">=10.17.0 <15.0"
   },
   "scripts": {
     "compile": "npm run build",
@@ -22,8 +22,9 @@
     "extract-api": "betools extract-api --entry=backend-itwin-client",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "pretest": "npm run copy:test-assets",
-    "test": "",
-    "test:integration": "npm run pretest && betools test --grep=\"#integration\""
+    "test": "betools test --grep=\"#integration\" --invert",
+    "test:integration": "npm run pretest && betools test --grep=\"#integration\"",
+    "copy:config": "internal-tools copy-config"
   },
   "repository": {
     "type": "git",
@@ -37,67 +38,74 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.12.0-dev.15",
-    "@bentley/frontend-authorization-client": "^2.12.0-dev.15",
-    "@bentley/geometry-core": "^2.12.0-dev.15",
-    "@bentley/imodelhub-client": "^2.12.0-dev.15",
-    "@bentley/imodeljs-common": "^2.12.0-dev.15",
-    "@bentley/itwin-client": "^2.12.0-dev.15",
-    "@bentley/rbac-client": "^2.12.0-dev.15",
-    "@bentley/telemetry-client": "^2.12.0-dev.15"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.20",
+    "@bentley/frontend-authorization-client": "workspace:^2.19.0-dev.20",
+    "@bentley/geometry-core": "workspace:^2.19.0-dev.20",
+    "@bentley/imodelhub-client": "workspace:^2.19.0-dev.20",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.20",
+    "@bentley/itwin-client": "workspace:^2.19.0-dev.20",
+    "@bentley/rbac-client": "workspace:^2.19.0-dev.20",
+    "@bentley/telemetry-client": "workspace:^2.19.0-dev.20"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
     "NOTE: All tools used by scripts in this package must be listed as devDependencies"
   ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.12.0-dev.15",
-    "@bentley/build-tools": "2.12.0-dev.15",
-    "@bentley/config-loader": "2.12.0-dev.15",
-    "@bentley/context-registry-client": "2.12.0-dev.15",
-    "@bentley/eslint-plugin": "2.12.0-dev.15",
-    "@bentley/frontend-authorization-client": "2.12.0-dev.15",
-    "@bentley/geometry-core": "2.12.0-dev.15",
-    "@bentley/imodelhub-client": "2.12.0-dev.15",
-    "@bentley/imodeljs-common": "2.12.0-dev.15",
-    "@bentley/itwin-client": "2.12.0-dev.15",
-    "@bentley/oidc-signin-tool": "2.12.0-dev.15",
-    "@bentley/rbac-client": "2.12.0-dev.15",
-    "@bentley/telemetry-client": "2.12.0-dev.15",
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/config-loader": "workspace:*",
+    "@bentley/context-registry-client": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/frontend-authorization-client": "workspace:*",
+    "@bentley/geometry-core": "workspace:*",
+    "@bentley/imodelhub-client": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
+    "@bentley/oidc-signin-tool": "workspace:*",
+    "@bentley/rbac-client": "workspace:*",
+    "@bentley/telemetry-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",
     "@types/js-base64": "^2.3.1",
     "@types/jsonwebtoken": "^8.5.0",
-    "@types/mocha": "^5.2.5",
-    "@types/nock": "^9.1.2",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
+    "@types/sinon": "^9.0.0",
+    "@types/stream-buffers": "~3.0.2",
+    "@types/proper-lockfile": "^4.1.1",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
-    "eslint": "^6.8.0",
-    "mocha": "^5.2.0",
-    "nock": "^9.2.3",
-    "nyc": "^14.0.0",
+    "eslint": "^7.11.0",
+    "internal-tools": "workspace:*",
+    "mocha": "^8.3.2",
+    "nock": "^12.0.3",
+    "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
+    "sinon": "^9.0.2",
     "source-map-support": "^0.5.6",
-    "ts-node": "^7.0.1",
-    "typescript": "~3.7.4"
+    "stream-buffers": "~3.0.2",
+    "typescript": "~4.3.0"
   },
   "dependencies": {
-    "@bentley/usage-logging-client": "2.12.0-dev.15",
+    "@bentley/usage-logging-client": "workspace:*",
     "applicationinsights": "^1.7.5",
     "deep-assign": "^2.0.0",
     "fs-extra": "^8.1.0",
     "fs-write-stream-atomic": "^1.0.10",
-    "https-proxy-agent": "^3.0.0",
+    "got": "~11.8.2",
+    "https-proxy-agent": "^5.0.0",
     "js-base64": "^2.4.5",
     "jsonwebtoken": "^8.5.0",
     "openid-client": "^3.15.3",
-    "semver": "^5.5.0"
+    "semver": "^5.5.0",
+    "agentkeepalive": "^4.1.4",
+    "proper-lockfile": "^4.1.2"
   },
   "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "extends": "./node_modules/@bentley/build-tools/.nycrc"
   },
   "eslintConfig": {
     "plugins": [

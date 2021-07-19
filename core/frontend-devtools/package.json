@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-devtools",
-  "version": "2.12.0-dev.15",
+  "version": "2.19.0-dev.20",
   "description": "Debug menu and supporting UI widgets",
   "main": "lib/frontend-devtools.js",
   "imodeljsSharedLibrary": true,
@@ -33,29 +33,25 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.12.0-dev.15",
-    "@bentley/context-registry-client": "2.12.0-dev.15",
-    "@bentley/geometry-core": "2.12.0-dev.15",
-    "@bentley/imodeljs-common": "2.12.0-dev.15",
-    "@bentley/imodeljs-frontend": "2.12.0-dev.15",
-    "@bentley/imodeljs-i18n": "2.12.0-dev.15",
-    "@bentley/itwin-client": "2.12.0-dev.15",
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/context-registry-client": "workspace:*",
+    "@bentley/geometry-core": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
+    "@bentley/imodeljs-frontend": "workspace:*",
+    "@bentley/imodeljs-i18n": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
     "file-saver": "^2.0.2"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.12.0-dev.15",
-    "@bentley/eslint-plugin": "2.12.0-dev.15",
-    "@bentley/extension-webpack-tools": "2.12.0-dev.15",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/extension-webpack-tools": "workspace:*",
     "@types/file-saver": "^2.0.1",
     "@types/node": "10.14.1",
     "cpx": "^1.5.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
-    "typescript": "~3.7.4"
-  },
-  "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
-    "all": true
+    "typescript": "~4.3.0"
   },
   "eslintConfig": {
     "plugins": [

@@ -81,8 +81,8 @@ export interface IPropertyDataFilterer {
 export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer {
   public onFilterChanged: PropertyFilterChangeEvent = new PropertyFilterChangeEvent();
   public abstract get isActive(): boolean;
-  public abstract async recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
-  public abstract async categoryMatchesFilter(node: PropertyCategory, parents: PropertyCategory[]): Promise<PropertyDataFilterResult>;
+  public abstract recordMatchesFilter(node: PropertyRecord, parents: PropertyRecord[]): Promise<PropertyDataFilterResult>;
+  public abstract categoryMatchesFilter(node: PropertyCategory, parents: PropertyCategory[]): Promise<PropertyDataFilterResult>;
 }
 /**
  * PropertyDataFilter base which is suited for only Category filtering
@@ -91,7 +91,7 @@ export abstract class PropertyDataFiltererBase implements IPropertyDataFilterer 
 export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFiltererBase {
   public async recordMatchesFilter(): Promise<PropertyDataFilterResult> {
     return { matchesFilter: !this.isActive };
-  };
+  }
 }
 /**
  * PropertyDataFilter base which is suited for only Record filtering
@@ -100,5 +100,5 @@ export abstract class PropertyCategoryDataFiltererBase extends PropertyDataFilte
 export abstract class PropertyRecordDataFiltererBase extends PropertyDataFiltererBase {
   public async categoryMatchesFilter(): Promise<PropertyDataFilterResult> {
     return { matchesFilter: !this.isActive };
-  };
+  }
 }

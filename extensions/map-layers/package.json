@@ -1,6 +1,6 @@
 {
   "name": "@bentley/map-layers",
-  "version": "2.12.0-dev.15",
+  "version": "2.19.0-dev.20",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/map-layers.js",
   "typings": "lib/map-layers",
@@ -8,15 +8,15 @@
   "scripts": {
     "compile": "npm run build",
     "prebuild": "npm run pseudolocalize && npm run copy:assets",
-    "build": "npm run prebuild && tsc 1>&2 && npm run build:extension",
+    "build": "tsc 1>&2 && npm run prebuild && npm run build:extension",
     "build:extension": "extension-webpack-tools build -s ./src/map-layers.ts -o ./lib/extension --sourceMap",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/locales/**/*\" ./lib/extension/locales/",
-    "cover": "",
+    "copy:assets": "cpx \"./src/**/*.{*css,json,svg}\" \"./lib\" && cpx \"./src/public/locales/**/*\" ./lib/extension/locales/ && cpx \"./lib/extension/locales/en-PSEUDO/*\" ./lib/public/locales/en-PSEUDO/",
+    "cover": "nyc npm test",
     "docs": "",
     "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
     "pseudolocalize": "betools pseudolocalize --englishDir=./src/public/locales/en --out=./lib/extension/locales/en-PSEUDO",
-    "test": ""
+    "test": "mocha \"./lib/test/**/*.test.js\""
   },
   "repository": {
     "type": "git",
@@ -33,56 +33,107 @@
     "url": "http://www.bentley.com"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.12.0-dev.15",
-    "@bentley/build-tools": "2.12.0-dev.15",
-    "@bentley/eslint-plugin": "2.12.0-dev.15",
-    "@bentley/extension-webpack-tools": "2.12.0-dev.15",
-    "@bentley/geometry-core": "2.12.0-dev.15",
-    "@bentley/imodeljs-common": "2.12.0-dev.15",
-    "@bentley/imodeljs-frontend": "2.12.0-dev.15",
-    "@bentley/imodeljs-i18n": "2.12.0-dev.15",
-    "@bentley/imodeljs-quantity": "2.12.0-dev.15",
-    "@bentley/itwin-client": "2.12.0-dev.15",
-    "@bentley/ui-abstract": "2.12.0-dev.15",
-    "@bentley/ui-components": "2.12.0-dev.15",
-    "@bentley/ui-core": "2.12.0-dev.15",
-    "@bentley/ui-framework": "2.12.0-dev.15",
-    "@bentley/ui-ninezone": "2.12.0-dev.15",
-    "@types/classnames": "^2.2.3",
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/extension-webpack-tools": "workspace:*",
+    "@bentley/geometry-core": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
+    "@bentley/imodeljs-frontend": "workspace:*",
+    "@bentley/imodeljs-i18n": "workspace:*",
+    "@bentley/imodeljs-quantity": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
+    "@bentley/presentation-common": "workspace:*",
+    "@bentley/react-scripts": "4.0.3",
+    "@bentley/ui-abstract": "workspace:*",
+    "@bentley/ui-components": "workspace:*",
+    "@bentley/ui-core": "workspace:*",
+    "@bentley/ui-framework": "workspace:*",
+    "@bentley/ui-ninezone": "workspace:*",
+    "@testing-library/react": "^11.2.3",
+    "@testing-library/react-hooks": "^5.0.3",
+    "@types/chai": "^4.1.4",
+    "@types/enzyme": "3.9.3",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "10.14.1",
     "@types/react": "^17.0.0",
     "@types/react-beautiful-dnd": "^12.1.2",
     "@types/react-select": "3.0.26",
+    "@types/sinon": "^9.0.0",
+    "@types/sinon-chai": "^3.2.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "chai-jest-snapshot": "^2.0.0",
+    "chai-spies": "1.0.0",
     "cpx": "^1.5.0",
-    "eslint": "^6.8.0",
+    "enzyme": "^3.4.0",
+    "enzyme-adapter-react-16": "^1.15.5",
+    "enzyme-to-json": "^3.3.4",
+    "eslint": "^7.11.0",
+    "jsdom": "^11.12.0",
+    "jsdom-global": "3.0.2",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
+    "react": "^17.0.0",
     "rimraf": "^3.0.2",
-    "typescript": "~3.7.4"
+    "sinon": "^9.0.2",
+    "sinon-chai": "^3.2.0",
+    "typescript": "~4.3.0",
+    "xmlhttprequest": "^1.8.0"
   },
   "dependencies": {
-    "classnames": "^2.2.5",
+    "classnames": "^2.3.1",
     "react-beautiful-dnd": "^13.0.0",
     "react-compound-slider": "^2.5.0",
     "react-select": "3.1.0"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "2.12.0-dev.15",
-    "@bentley/geometry-core": "2.12.0-dev.15",
-    "@bentley/imodeljs-common": "2.12.0-dev.15",
-    "@bentley/imodeljs-frontend": "2.12.0-dev.15",
-    "@bentley/imodeljs-i18n": "2.12.0-dev.15",
-    "@bentley/imodeljs-quantity": "2.12.0-dev.15",
-    "@bentley/itwin-client": "2.12.0-dev.15",
-    "@bentley/ui-abstract": "2.12.0-dev.15",
-    "@bentley/ui-components": "2.12.0-dev.15",
-    "@bentley/ui-core": "2.12.0-dev.15",
-    "@bentley/ui-framework": "2.12.0-dev.15",
-    "@bentley/ui-ninezone": "2.12.0-dev.15",
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/geometry-core": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
+    "@bentley/imodeljs-frontend": "workspace:*",
+    "@bentley/imodeljs-i18n": "workspace:*",
+    "@bentley/imodeljs-quantity": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
+    "@bentley/ui-abstract": "workspace:*",
+    "@bentley/ui-components": "workspace:*",
+    "@bentley/ui-core": "workspace:*",
+    "@bentley/ui-framework": "workspace:*",
+    "@bentley/ui-ninezone": "workspace:*",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
+  },
+  "nyc": {
+    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "check-coverage": false
   },
   "eslintConfig": {
     "plugins": [
       "@bentley"
     ],
     "extends": "plugin:@bentley/imodeljs-recommended"
+  },
+  "mocha": {
+    "require": [
+      "scripts/copy-test-setup.js",
+      "raf/polyfill",
+      "source-map-support/register",
+      "jsdom-global/register",
+      "ignore-styles"
+    ],
+    "checkLeaks": true,
+    "timeout": 60000,
+    "file": [
+      "lib/test/setup.js"
+    ],
+    "exclude": [
+      "lib/test/coverage/**/*"
+    ],
+    "reporter": [
+      "node_modules/@bentley/build-tools/mocha-reporter"
+    ],
+    "reporterOptions": [
+      "mochaFile=lib/test/junit_results.xml"
+    ]
   }
 }

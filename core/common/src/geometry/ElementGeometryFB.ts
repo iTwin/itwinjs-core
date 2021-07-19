@@ -26,7 +26,7 @@ export namespace EGFBAccessors {
     Spherical = 4,
     Hemispherical = 5,
     Thematic = 6
-  };
+  }
 
   /**
    * @enum {number}
@@ -35,7 +35,7 @@ export namespace EGFBAccessors {
     None = 0,
     Open = 1,
     Closed = 2
-  };
+  }
 
   /**
    * @enum {number}
@@ -45,7 +45,7 @@ export namespace EGFBAccessors {
     ByView = 1,
     Always = 2,
     Blanking = 3
-  };
+  }
 
   /**
    * @enum {number}
@@ -55,7 +55,7 @@ export namespace EGFBAccessors {
     Construction = 1,
     Dimension = 2,
     Pattern = 3
-  };
+  }
 
   /**
    * @enum {number}
@@ -64,7 +64,7 @@ export namespace EGFBAccessors {
     Solid = 0,
     Sheet = 1,
     Wire = 2
-  };
+  }
 
   /**
    * @constructor
@@ -82,28 +82,28 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @returns number
      */
     x(): number {
       return this.bb!.readFloat64(this.bb_pos);
-    };
+    }
 
     /**
      * @returns number
      */
     y(): number {
       return this.bb!.readFloat64(this.bb_pos + 8);
-    };
+    }
 
     /**
      * @returns number
      */
     z(): number {
       return this.bb!.readFloat64(this.bb_pos + 16);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -118,7 +118,7 @@ export namespace EGFBAccessors {
       builder.writeFloat64(y);
       builder.writeFloat64(x);
       return builder.offset();
-    };
+    }
 
   }
 
@@ -138,21 +138,21 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @returns number
      */
     x(): number {
       return this.bb!.readFloat64(this.bb_pos);
-    };
+    }
 
     /**
      * @returns number
      */
     y(): number {
       return this.bb!.readFloat64(this.bb_pos + 8);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -165,7 +165,7 @@ export namespace EGFBAccessors {
       builder.writeFloat64(y);
       builder.writeFloat64(x);
       return builder.offset();
-    };
+    }
 
   }
 
@@ -185,28 +185,28 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @returns number
      */
     x(): number {
       return this.bb!.readFloat64(this.bb_pos);
-    };
+    }
 
     /**
      * @returns number
      */
     y(): number {
       return this.bb!.readFloat64(this.bb_pos + 8);
-    };
+    }
 
     /**
      * @returns number
      */
     z(): number {
       return this.bb!.readFloat64(this.bb_pos + 16);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -221,7 +221,7 @@ export namespace EGFBAccessors {
       builder.writeFloat64(y);
       builder.writeFloat64(x);
       return builder.offset();
-    };
+    }
 
   }
 
@@ -241,70 +241,70 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @returns number
      */
     x00(): number {
       return this.bb!.readFloat64(this.bb_pos);
-    };
+    }
 
     /**
      * @returns number
      */
     x01(): number {
       return this.bb!.readFloat64(this.bb_pos + 8);
-    };
+    }
 
     /**
      * @returns number
      */
     x02(): number {
       return this.bb!.readFloat64(this.bb_pos + 16);
-    };
+    }
 
     /**
      * @returns number
      */
     x10(): number {
       return this.bb!.readFloat64(this.bb_pos + 24);
-    };
+    }
 
     /**
      * @returns number
      */
     x11(): number {
       return this.bb!.readFloat64(this.bb_pos + 32);
-    };
+    }
 
     /**
      * @returns number
      */
     x12(): number {
       return this.bb!.readFloat64(this.bb_pos + 40);
-    };
+    }
 
     /**
      * @returns number
      */
     x20(): number {
       return this.bb!.readFloat64(this.bb_pos + 48);
-    };
+    }
 
     /**
      * @returns number
      */
     x21(): number {
       return this.bb!.readFloat64(this.bb_pos + 56);
-    };
+    }
 
     /**
      * @returns number
      */
     x22(): number {
       return this.bb!.readFloat64(this.bb_pos + 64);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -331,7 +331,7 @@ export namespace EGFBAccessors {
       builder.writeFloat64(x01);
       builder.writeFloat64(x00);
       return builder.offset();
-    };
+    }
 
   }
 
@@ -351,91 +351,91 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @returns number
      */
     x00(): number {
       return this.bb!.readFloat64(this.bb_pos);
-    };
+    }
 
     /**
      * @returns number
      */
     x01(): number {
       return this.bb!.readFloat64(this.bb_pos + 8);
-    };
+    }
 
     /**
      * @returns number
      */
     x02(): number {
       return this.bb!.readFloat64(this.bb_pos + 16);
-    };
+    }
 
     /**
      * @returns number
      */
     tx(): number {
       return this.bb!.readFloat64(this.bb_pos + 24);
-    };
+    }
 
     /**
      * @returns number
      */
     x10(): number {
       return this.bb!.readFloat64(this.bb_pos + 32);
-    };
+    }
 
     /**
      * @returns number
      */
     x11(): number {
       return this.bb!.readFloat64(this.bb_pos + 40);
-    };
+    }
 
     /**
      * @returns number
      */
     x12(): number {
       return this.bb!.readFloat64(this.bb_pos + 48);
-    };
+    }
 
     /**
      * @returns number
      */
     ty(): number {
       return this.bb!.readFloat64(this.bb_pos + 56);
-    };
+    }
 
     /**
      * @returns number
      */
     x20(): number {
       return this.bb!.readFloat64(this.bb_pos + 64);
-    };
+    }
 
     /**
      * @returns number
      */
     x21(): number {
       return this.bb!.readFloat64(this.bb_pos + 72);
-    };
+    }
 
     /**
      * @returns number
      */
     x22(): number {
       return this.bb!.readFloat64(this.bb_pos + 80);
-    };
+    }
 
     /**
      * @returns number
      */
     tz(): number {
       return this.bb!.readFloat64(this.bb_pos + 88);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -468,7 +468,7 @@ export namespace EGFBAccessors {
       builder.writeFloat64(x01);
       builder.writeFloat64(x00);
       return builder.offset();
-    };
+    }
 
   }
 
@@ -488,49 +488,49 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @returns number
      */
     x00(): number {
       return this.bb!.readFloat64(this.bb_pos);
-    };
+    }
 
     /**
      * @returns number
      */
     x01(): number {
       return this.bb!.readFloat64(this.bb_pos + 8);
-    };
+    }
 
     /**
      * @returns number
      */
     tx(): number {
       return this.bb!.readFloat64(this.bb_pos + 16);
-    };
+    }
 
     /**
      * @returns number
      */
     y00(): number {
       return this.bb!.readFloat64(this.bb_pos + 24);
-    };
+    }
 
     /**
      * @returns number
      */
     y01(): number {
       return this.bb!.readFloat64(this.bb_pos + 32);
-    };
+    }
 
     /**
      * @returns number
      */
     ty(): number {
       return this.bb!.readFloat64(this.bb_pos + 40);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -551,7 +551,7 @@ export namespace EGFBAccessors {
       builder.writeFloat64(x01);
       builder.writeFloat64(x00);
       return builder.offset();
-    };
+    }
 
   }
 
@@ -571,42 +571,42 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @returns number
      */
     useColor(): number {
       return this.bb!.readUint8(this.bb_pos);
-    };
+    }
 
     /**
      * @returns number
      */
     useMaterial(): number {
       return this.bb!.readUint8(this.bb_pos + 1);
-    };
+    }
 
     /**
      * @returns number
      */
     color(): number {
       return this.bb!.readUint32(this.bb_pos + 4);
-    };
+    }
 
     /**
      * @returns flatbuffers.Long
      */
     materialId(): flatbuffers.Long {
       return this.bb!.readInt64(this.bb_pos + 8);
-    };
+    }
 
     /**
      * @returns number
      */
     transparency(): number {
       return this.bb!.readFloat64(this.bb_pos + 16);
-    };
+    }
 
     /**
      * @param DPoint2d= obj
@@ -614,7 +614,7 @@ export namespace EGFBAccessors {
      */
     uv(obj?: DPoint2d): DPoint2d | null {
       return (obj || new DPoint2d()).__init(this.bb_pos + 24, this.bb!);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -639,7 +639,7 @@ export namespace EGFBAccessors {
       builder.writeInt8(useMaterial);
       builder.writeInt8(useColor);
       return builder.offset();
-    };
+    }
 
   }
 
@@ -659,21 +659,21 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @returns number
      */
     faceIndex(): number {
       return this.bb!.readUint32(this.bb_pos);
-    };
+    }
 
     /**
      * @returns number
      */
     symbIndex(): number {
       return this.bb!.readUint32(this.bb_pos + 4);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -686,7 +686,7 @@ export namespace EGFBAccessors {
       builder.writeInt32(symbIndex);
       builder.writeInt32(faceIndex);
       return builder.offset();
-    };
+    }
 
   }
 
@@ -706,21 +706,21 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @returns number
      */
     low(): number {
       return this.bb!.readFloat64(this.bb_pos);
-    };
+    }
 
     /**
      * @returns number
      */
     high(): number {
       return this.bb!.readFloat64(this.bb_pos + 8);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -733,7 +733,7 @@ export namespace EGFBAccessors {
       builder.writeFloat64(high);
       builder.writeFloat64(low);
       return builder.offset();
-    };
+    }
 
   }
 
@@ -753,7 +753,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -762,7 +762,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsPointPrimitive(bb: flatbuffers.ByteBuffer, obj?: PointPrimitive): PointPrimitive {
       return (obj || new PointPrimitive()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -772,7 +772,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsPointPrimitive(bb: flatbuffers.ByteBuffer, obj?: PointPrimitive): PointPrimitive {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new PointPrimitive()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param number index
@@ -782,7 +782,7 @@ export namespace EGFBAccessors {
     coords(index: number, obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? (obj || new DPoint3d()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 24, this.bb!) : null;
-    };
+    }
 
     /**
      * @returns number
@@ -790,7 +790,7 @@ export namespace EGFBAccessors {
     coordsLength(): number {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns BoundaryType
@@ -798,14 +798,14 @@ export namespace EGFBAccessors {
     boundary(): BoundaryType {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : BoundaryType.None;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startPointPrimitive(builder: flatbuffers.Builder) {
       builder.startObject(2);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -813,7 +813,7 @@ export namespace EGFBAccessors {
      */
     static addCoords(builder: flatbuffers.Builder, coordsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, coordsOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -821,7 +821,7 @@ export namespace EGFBAccessors {
      */
     static startCoordsVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(24, numElems, 8);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -829,7 +829,7 @@ export namespace EGFBAccessors {
      */
     static addBoundary(builder: flatbuffers.Builder, boundary: BoundaryType) {
       builder.addFieldInt8(1, boundary, BoundaryType.None);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -838,7 +838,7 @@ export namespace EGFBAccessors {
     static endPointPrimitive(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createPointPrimitive(builder: flatbuffers.Builder, coordsOffset: flatbuffers.Offset, boundary: BoundaryType): flatbuffers.Offset {
       PointPrimitive.startPointPrimitive(builder);
@@ -864,7 +864,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -873,7 +873,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsPointPrimitive2d(bb: flatbuffers.ByteBuffer, obj?: PointPrimitive2d): PointPrimitive2d {
       return (obj || new PointPrimitive2d()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -883,7 +883,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsPointPrimitive2d(bb: flatbuffers.ByteBuffer, obj?: PointPrimitive2d): PointPrimitive2d {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new PointPrimitive2d()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param number index
@@ -893,7 +893,7 @@ export namespace EGFBAccessors {
     coords(index: number, obj?: DPoint2d): DPoint2d | null {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? (obj || new DPoint2d()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 16, this.bb!) : null;
-    };
+    }
 
     /**
      * @returns number
@@ -901,7 +901,7 @@ export namespace EGFBAccessors {
     coordsLength(): number {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns BoundaryType
@@ -909,14 +909,14 @@ export namespace EGFBAccessors {
     boundary(): BoundaryType {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : BoundaryType.None;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startPointPrimitive2d(builder: flatbuffers.Builder) {
       builder.startObject(2);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -924,7 +924,7 @@ export namespace EGFBAccessors {
      */
     static addCoords(builder: flatbuffers.Builder, coordsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(0, coordsOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -932,7 +932,7 @@ export namespace EGFBAccessors {
      */
     static startCoordsVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(16, numElems, 8);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -940,7 +940,7 @@ export namespace EGFBAccessors {
      */
     static addBoundary(builder: flatbuffers.Builder, boundary: BoundaryType) {
       builder.addFieldInt8(1, boundary, BoundaryType.None);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -949,7 +949,7 @@ export namespace EGFBAccessors {
     static endPointPrimitive2d(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createPointPrimitive2d(builder: flatbuffers.Builder, coordsOffset: flatbuffers.Offset, boundary: BoundaryType): flatbuffers.Offset {
       PointPrimitive2d.startPointPrimitive2d(builder);
@@ -975,7 +975,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -984,7 +984,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsArcPrimitive(bb: flatbuffers.ByteBuffer, obj?: ArcPrimitive): ArcPrimitive {
       return (obj || new ArcPrimitive()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -994,7 +994,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsArcPrimitive(bb: flatbuffers.ByteBuffer, obj?: ArcPrimitive): ArcPrimitive {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new ArcPrimitive()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param DPoint3d= obj
@@ -1003,7 +1003,7 @@ export namespace EGFBAccessors {
     center(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @param DVec3d= obj
@@ -1012,7 +1012,7 @@ export namespace EGFBAccessors {
     vector0(obj?: DVec3d): DVec3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? (obj || new DVec3d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @param DVec3d= obj
@@ -1021,7 +1021,7 @@ export namespace EGFBAccessors {
     vector90(obj?: DVec3d): DVec3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? (obj || new DVec3d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @returns number
@@ -1029,7 +1029,7 @@ export namespace EGFBAccessors {
     start(): number {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -1037,7 +1037,7 @@ export namespace EGFBAccessors {
     sweep(): number {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns BoundaryType
@@ -1045,14 +1045,14 @@ export namespace EGFBAccessors {
     boundary(): BoundaryType {
       var offset = this.bb!.__offset(this.bb_pos, 14);
       return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : BoundaryType.None;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startArcPrimitive(builder: flatbuffers.Builder) {
       builder.startObject(6);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1060,7 +1060,7 @@ export namespace EGFBAccessors {
      */
     static addCenter(builder: flatbuffers.Builder, centerOffset: flatbuffers.Offset) {
       builder.addFieldStruct(0, centerOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1068,7 +1068,7 @@ export namespace EGFBAccessors {
      */
     static addVector0(builder: flatbuffers.Builder, vector0Offset: flatbuffers.Offset) {
       builder.addFieldStruct(1, vector0Offset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1076,7 +1076,7 @@ export namespace EGFBAccessors {
      */
     static addVector90(builder: flatbuffers.Builder, vector90Offset: flatbuffers.Offset) {
       builder.addFieldStruct(2, vector90Offset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1084,7 +1084,7 @@ export namespace EGFBAccessors {
      */
     static addStart(builder: flatbuffers.Builder, start: number) {
       builder.addFieldFloat64(3, start, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1092,7 +1092,7 @@ export namespace EGFBAccessors {
      */
     static addSweep(builder: flatbuffers.Builder, sweep: number) {
       builder.addFieldFloat64(4, sweep, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1100,7 +1100,7 @@ export namespace EGFBAccessors {
      */
     static addBoundary(builder: flatbuffers.Builder, boundary: BoundaryType) {
       builder.addFieldInt8(5, boundary, BoundaryType.None);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1109,7 +1109,7 @@ export namespace EGFBAccessors {
     static endArcPrimitive(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createArcPrimitive(builder: flatbuffers.Builder, centerOffset: flatbuffers.Offset, vector0Offset: flatbuffers.Offset, vector90Offset: flatbuffers.Offset, start: number, sweep: number, boundary: BoundaryType): flatbuffers.Offset {
       ArcPrimitive.startArcPrimitive(builder);
@@ -1139,7 +1139,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -1148,7 +1148,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsBRepData(bb: flatbuffers.ByteBuffer, obj?: BRepData): BRepData {
       return (obj || new BRepData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -1158,7 +1158,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsBRepData(bb: flatbuffers.ByteBuffer, obj?: BRepData): BRepData {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new BRepData()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param Transform= obj
@@ -1167,7 +1167,7 @@ export namespace EGFBAccessors {
     entityTransform(obj?: Transform): Transform | null {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? (obj || new Transform()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @returns BRepType
@@ -1175,7 +1175,7 @@ export namespace EGFBAccessors {
     brepType(): BRepType {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : BRepType.Solid;
-    };
+    }
 
     /**
      * @param number index
@@ -1184,7 +1184,7 @@ export namespace EGFBAccessors {
     entityData(index: number): number | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -1192,7 +1192,7 @@ export namespace EGFBAccessors {
     entityDataLength(): number {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns Uint8Array
@@ -1200,7 +1200,7 @@ export namespace EGFBAccessors {
     entityDataArray(): Uint8Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? new Uint8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-    };
+    }
 
     /**
      * @param number index
@@ -1210,7 +1210,7 @@ export namespace EGFBAccessors {
     symbology(index: number, obj?: FaceSymbology): FaceSymbology | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? (obj || new FaceSymbology()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 40, this.bb!) : null;
-    };
+    }
 
     /**
      * @returns number
@@ -1218,7 +1218,7 @@ export namespace EGFBAccessors {
     symbologyLength(): number {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @param number index
@@ -1228,7 +1228,7 @@ export namespace EGFBAccessors {
     symbologyIndex(index: number, obj?: FaceSymbologyIndex): FaceSymbologyIndex | null {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset ? (obj || new FaceSymbologyIndex()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 8, this.bb!) : null;
-    };
+    }
 
     /**
      * @returns number
@@ -1236,14 +1236,14 @@ export namespace EGFBAccessors {
     symbologyIndexLength(): number {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startBRepData(builder: flatbuffers.Builder) {
       builder.startObject(5);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1251,7 +1251,7 @@ export namespace EGFBAccessors {
      */
     static addEntityTransform(builder: flatbuffers.Builder, entityTransformOffset: flatbuffers.Offset) {
       builder.addFieldStruct(0, entityTransformOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1259,7 +1259,7 @@ export namespace EGFBAccessors {
      */
     static addBrepType(builder: flatbuffers.Builder, brepType: BRepType) {
       builder.addFieldInt8(1, brepType, BRepType.Solid);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1267,7 +1267,7 @@ export namespace EGFBAccessors {
      */
     static addEntityData(builder: flatbuffers.Builder, entityDataOffset: flatbuffers.Offset) {
       builder.addFieldOffset(2, entityDataOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1280,7 +1280,7 @@ export namespace EGFBAccessors {
         builder.addInt8(data[i]);
       }
       return builder.endVector();
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1288,7 +1288,7 @@ export namespace EGFBAccessors {
      */
     static startEntityDataVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(1, numElems, 1);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1296,7 +1296,7 @@ export namespace EGFBAccessors {
      */
     static addSymbology(builder: flatbuffers.Builder, symbologyOffset: flatbuffers.Offset) {
       builder.addFieldOffset(3, symbologyOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1304,7 +1304,7 @@ export namespace EGFBAccessors {
      */
     static startSymbologyVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(40, numElems, 8);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1312,7 +1312,7 @@ export namespace EGFBAccessors {
      */
     static addSymbologyIndex(builder: flatbuffers.Builder, symbologyIndexOffset: flatbuffers.Offset) {
       builder.addFieldOffset(4, symbologyIndexOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1320,7 +1320,7 @@ export namespace EGFBAccessors {
      */
     static startSymbologyIndexVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(8, numElems, 4);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1329,7 +1329,7 @@ export namespace EGFBAccessors {
     static endBRepData(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createBRepData(builder: flatbuffers.Builder, entityTransformOffset: flatbuffers.Offset, brepType: BRepType, entityDataOffset: flatbuffers.Offset, symbologyOffset: flatbuffers.Offset, symbologyIndexOffset: flatbuffers.Offset): flatbuffers.Offset {
       BRepData.startBRepData(builder);
@@ -1358,7 +1358,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -1367,7 +1367,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsImage(bb: flatbuffers.ByteBuffer, obj?: Image): Image {
       return (obj || new Image()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -1377,7 +1377,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsImage(bb: flatbuffers.ByteBuffer, obj?: Image): Image {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new Image()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @returns number
@@ -1385,7 +1385,7 @@ export namespace EGFBAccessors {
     drawBorder(): number {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -1393,7 +1393,7 @@ export namespace EGFBAccessors {
     useFillTint(): number {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @param DPoint3d= obj
@@ -1402,7 +1402,7 @@ export namespace EGFBAccessors {
     tileCorner0(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @param DPoint3d= obj
@@ -1411,7 +1411,7 @@ export namespace EGFBAccessors {
     tileCorner1(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @param DPoint3d= obj
@@ -1420,7 +1420,7 @@ export namespace EGFBAccessors {
     tileCorner2(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @param DPoint3d= obj
@@ -1429,7 +1429,7 @@ export namespace EGFBAccessors {
     tileCorner3(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 14);
       return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @returns number
@@ -1437,7 +1437,7 @@ export namespace EGFBAccessors {
     width(): number {
       var offset = this.bb!.__offset(this.bb_pos, 16);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -1445,7 +1445,7 @@ export namespace EGFBAccessors {
     height(): number {
       var offset = this.bb!.__offset(this.bb_pos, 18);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -1453,7 +1453,7 @@ export namespace EGFBAccessors {
     format(): number {
       var offset = this.bb!.__offset(this.bb_pos, 20);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @param number index
@@ -1462,7 +1462,7 @@ export namespace EGFBAccessors {
     byteData(index: number): number | null {
       var offset = this.bb!.__offset(this.bb_pos, 22);
       return offset ? this.bb!.readUint8(this.bb!.__vector(this.bb_pos + offset) + index) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -1470,7 +1470,7 @@ export namespace EGFBAccessors {
     byteDataLength(): number {
       var offset = this.bb!.__offset(this.bb_pos, 22);
       return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns Uint8Array
@@ -1478,7 +1478,7 @@ export namespace EGFBAccessors {
     byteDataArray(): Uint8Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 22);
       return offset ? new Uint8Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-    };
+    }
 
     /**
      * @returns flatbuffers.Long
@@ -1486,14 +1486,14 @@ export namespace EGFBAccessors {
     textureId(): flatbuffers.Long {
       var offset = this.bb!.__offset(this.bb_pos, 24);
       return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startImage(builder: flatbuffers.Builder) {
       builder.startObject(11);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1501,7 +1501,7 @@ export namespace EGFBAccessors {
      */
     static addDrawBorder(builder: flatbuffers.Builder, drawBorder: number) {
       builder.addFieldInt8(0, drawBorder, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1509,7 +1509,7 @@ export namespace EGFBAccessors {
      */
     static addUseFillTint(builder: flatbuffers.Builder, useFillTint: number) {
       builder.addFieldInt8(1, useFillTint, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1517,7 +1517,7 @@ export namespace EGFBAccessors {
      */
     static addTileCorner0(builder: flatbuffers.Builder, tileCorner0Offset: flatbuffers.Offset) {
       builder.addFieldStruct(2, tileCorner0Offset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1525,7 +1525,7 @@ export namespace EGFBAccessors {
      */
     static addTileCorner1(builder: flatbuffers.Builder, tileCorner1Offset: flatbuffers.Offset) {
       builder.addFieldStruct(3, tileCorner1Offset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1533,7 +1533,7 @@ export namespace EGFBAccessors {
      */
     static addTileCorner2(builder: flatbuffers.Builder, tileCorner2Offset: flatbuffers.Offset) {
       builder.addFieldStruct(4, tileCorner2Offset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1541,7 +1541,7 @@ export namespace EGFBAccessors {
      */
     static addTileCorner3(builder: flatbuffers.Builder, tileCorner3Offset: flatbuffers.Offset) {
       builder.addFieldStruct(5, tileCorner3Offset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1549,7 +1549,7 @@ export namespace EGFBAccessors {
      */
     static addWidth(builder: flatbuffers.Builder, width: number) {
       builder.addFieldInt32(6, width, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1557,7 +1557,7 @@ export namespace EGFBAccessors {
      */
     static addHeight(builder: flatbuffers.Builder, height: number) {
       builder.addFieldInt32(7, height, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1565,7 +1565,7 @@ export namespace EGFBAccessors {
      */
     static addFormat(builder: flatbuffers.Builder, format: number) {
       builder.addFieldInt32(8, format, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1573,7 +1573,7 @@ export namespace EGFBAccessors {
      */
     static addByteData(builder: flatbuffers.Builder, byteDataOffset: flatbuffers.Offset) {
       builder.addFieldOffset(9, byteDataOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1586,7 +1586,7 @@ export namespace EGFBAccessors {
         builder.addInt8(data[i]);
       }
       return builder.endVector();
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1594,7 +1594,7 @@ export namespace EGFBAccessors {
      */
     static startByteDataVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(1, numElems, 1);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1602,7 +1602,7 @@ export namespace EGFBAccessors {
      */
     static addTextureId(builder: flatbuffers.Builder, textureId: flatbuffers.Long) {
       builder.addFieldInt64(10, textureId, builder.createLong(0, 0));
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1611,7 +1611,7 @@ export namespace EGFBAccessors {
     static endImage(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createImage(builder: flatbuffers.Builder, drawBorder: number, useFillTint: number, tileCorner0Offset: flatbuffers.Offset, tileCorner1Offset: flatbuffers.Offset, tileCorner2Offset: flatbuffers.Offset, tileCorner3Offset: flatbuffers.Offset, width: number, height: number, format: number, byteDataOffset: flatbuffers.Offset, textureId: flatbuffers.Long): flatbuffers.Offset {
       Image.startImage(builder);
@@ -1646,7 +1646,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -1655,7 +1655,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsGeometryPart(bb: flatbuffers.ByteBuffer, obj?: GeometryPart): GeometryPart {
       return (obj || new GeometryPart()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -1665,7 +1665,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsGeometryPart(bb: flatbuffers.ByteBuffer, obj?: GeometryPart): GeometryPart {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new GeometryPart()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @returns flatbuffers.Long
@@ -1673,7 +1673,7 @@ export namespace EGFBAccessors {
     geomPartId(): flatbuffers.Long {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
-    };
+    }
 
     /**
      * @param DPoint3d= obj
@@ -1682,7 +1682,7 @@ export namespace EGFBAccessors {
     origin(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @returns number
@@ -1690,7 +1690,7 @@ export namespace EGFBAccessors {
     yaw(): number {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -1698,7 +1698,7 @@ export namespace EGFBAccessors {
     pitch(): number {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -1706,7 +1706,7 @@ export namespace EGFBAccessors {
     roll(): number {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -1714,14 +1714,14 @@ export namespace EGFBAccessors {
     scale(): number {
       var offset = this.bb!.__offset(this.bb_pos, 14);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 1.0;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startGeometryPart(builder: flatbuffers.Builder) {
       builder.startObject(6);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1729,7 +1729,7 @@ export namespace EGFBAccessors {
      */
     static addGeomPartId(builder: flatbuffers.Builder, geomPartId: flatbuffers.Long) {
       builder.addFieldInt64(0, geomPartId, builder.createLong(0, 0));
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1737,7 +1737,7 @@ export namespace EGFBAccessors {
      */
     static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
       builder.addFieldStruct(1, originOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1745,7 +1745,7 @@ export namespace EGFBAccessors {
      */
     static addYaw(builder: flatbuffers.Builder, yaw: number) {
       builder.addFieldFloat64(2, yaw, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1753,7 +1753,7 @@ export namespace EGFBAccessors {
      */
     static addPitch(builder: flatbuffers.Builder, pitch: number) {
       builder.addFieldFloat64(3, pitch, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1761,7 +1761,7 @@ export namespace EGFBAccessors {
      */
     static addRoll(builder: flatbuffers.Builder, roll: number) {
       builder.addFieldFloat64(4, roll, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1769,7 +1769,7 @@ export namespace EGFBAccessors {
      */
     static addScale(builder: flatbuffers.Builder, scale: number) {
       builder.addFieldFloat64(5, scale, 1.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1778,7 +1778,7 @@ export namespace EGFBAccessors {
     static endGeometryPart(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createGeometryPart(builder: flatbuffers.Builder, geomPartId: flatbuffers.Long, originOffset: flatbuffers.Offset, yaw: number, pitch: number, roll: number, scale: number): flatbuffers.Offset {
       GeometryPart.startGeometryPart(builder);
@@ -1808,7 +1808,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -1817,7 +1817,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsBasicSymbology(bb: flatbuffers.ByteBuffer, obj?: BasicSymbology): BasicSymbology {
       return (obj || new BasicSymbology()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -1827,7 +1827,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsBasicSymbology(bb: flatbuffers.ByteBuffer, obj?: BasicSymbology): BasicSymbology {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new BasicSymbology()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @returns flatbuffers.Long
@@ -1835,7 +1835,7 @@ export namespace EGFBAccessors {
     subCategoryId(): flatbuffers.Long {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
-    };
+    }
 
     /**
      * @returns number
@@ -1843,7 +1843,7 @@ export namespace EGFBAccessors {
     color(): number {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -1851,7 +1851,7 @@ export namespace EGFBAccessors {
     weight(): number {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns flatbuffers.Long
@@ -1859,7 +1859,7 @@ export namespace EGFBAccessors {
     lineStyleId(): flatbuffers.Long {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
-    };
+    }
 
     /**
      * @returns number
@@ -1867,7 +1867,7 @@ export namespace EGFBAccessors {
     transparency(): number {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -1875,7 +1875,7 @@ export namespace EGFBAccessors {
     displayPriority(): number {
       var offset = this.bb!.__offset(this.bb_pos, 14);
       return offset ? this.bb!.readInt32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns GeometryClass
@@ -1883,7 +1883,7 @@ export namespace EGFBAccessors {
     geomClass(): GeometryClass {
       var offset = this.bb!.__offset(this.bb_pos, 16);
       return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : GeometryClass.Primary;
-    };
+    }
 
     /**
      * @returns number
@@ -1891,7 +1891,7 @@ export namespace EGFBAccessors {
     useColor(): number {
       var offset = this.bb!.__offset(this.bb_pos, 18);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -1899,7 +1899,7 @@ export namespace EGFBAccessors {
     useWeight(): number {
       var offset = this.bb!.__offset(this.bb_pos, 20);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -1907,14 +1907,14 @@ export namespace EGFBAccessors {
     useStyle(): number {
       var offset = this.bb!.__offset(this.bb_pos, 22);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startBasicSymbology(builder: flatbuffers.Builder) {
       builder.startObject(10);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1922,7 +1922,7 @@ export namespace EGFBAccessors {
      */
     static addSubCategoryId(builder: flatbuffers.Builder, subCategoryId: flatbuffers.Long) {
       builder.addFieldInt64(0, subCategoryId, builder.createLong(0, 0));
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1930,7 +1930,7 @@ export namespace EGFBAccessors {
      */
     static addColor(builder: flatbuffers.Builder, color: number) {
       builder.addFieldInt32(1, color, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1938,7 +1938,7 @@ export namespace EGFBAccessors {
      */
     static addWeight(builder: flatbuffers.Builder, weight: number) {
       builder.addFieldInt32(2, weight, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1946,7 +1946,7 @@ export namespace EGFBAccessors {
      */
     static addLineStyleId(builder: flatbuffers.Builder, lineStyleId: flatbuffers.Long) {
       builder.addFieldInt64(3, lineStyleId, builder.createLong(0, 0));
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1954,7 +1954,7 @@ export namespace EGFBAccessors {
      */
     static addTransparency(builder: flatbuffers.Builder, transparency: number) {
       builder.addFieldFloat64(4, transparency, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1962,7 +1962,7 @@ export namespace EGFBAccessors {
      */
     static addDisplayPriority(builder: flatbuffers.Builder, displayPriority: number) {
       builder.addFieldInt32(5, displayPriority, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1970,7 +1970,7 @@ export namespace EGFBAccessors {
      */
     static addGeomClass(builder: flatbuffers.Builder, geomClass: GeometryClass) {
       builder.addFieldInt8(6, geomClass, GeometryClass.Primary);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1978,7 +1978,7 @@ export namespace EGFBAccessors {
      */
     static addUseColor(builder: flatbuffers.Builder, useColor: number) {
       builder.addFieldInt8(7, useColor, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1986,7 +1986,7 @@ export namespace EGFBAccessors {
      */
     static addUseWeight(builder: flatbuffers.Builder, useWeight: number) {
       builder.addFieldInt8(8, useWeight, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -1994,7 +1994,7 @@ export namespace EGFBAccessors {
      */
     static addUseStyle(builder: flatbuffers.Builder, useStyle: number) {
       builder.addFieldInt8(9, useStyle, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2003,7 +2003,7 @@ export namespace EGFBAccessors {
     static endBasicSymbology(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createBasicSymbology(builder: flatbuffers.Builder, subCategoryId: flatbuffers.Long, color: number, weight: number, lineStyleId: flatbuffers.Long, transparency: number, displayPriority: number, geomClass: GeometryClass, useColor: number, useWeight: number, useStyle: number): flatbuffers.Offset {
       BasicSymbology.startBasicSymbology(builder);
@@ -2037,7 +2037,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -2046,7 +2046,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsLineStyleModifiers(bb: flatbuffers.ByteBuffer, obj?: LineStyleModifiers): LineStyleModifiers {
       return (obj || new LineStyleModifiers()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -2056,7 +2056,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsLineStyleModifiers(bb: flatbuffers.ByteBuffer, obj?: LineStyleModifiers): LineStyleModifiers {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new LineStyleModifiers()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @returns number
@@ -2064,7 +2064,7 @@ export namespace EGFBAccessors {
     modifiers(): number {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -2072,7 +2072,7 @@ export namespace EGFBAccessors {
     scale(): number {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -2080,7 +2080,7 @@ export namespace EGFBAccessors {
     dashScale(): number {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -2088,7 +2088,7 @@ export namespace EGFBAccessors {
     gapScale(): number {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -2096,7 +2096,7 @@ export namespace EGFBAccessors {
     startWidth(): number {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -2104,7 +2104,7 @@ export namespace EGFBAccessors {
     endWidth(): number {
       var offset = this.bb!.__offset(this.bb_pos, 14);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -2112,7 +2112,7 @@ export namespace EGFBAccessors {
     distPhase(): number {
       var offset = this.bb!.__offset(this.bb_pos, 16);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -2120,7 +2120,7 @@ export namespace EGFBAccessors {
     fractPhase(): number {
       var offset = this.bb!.__offset(this.bb_pos, 18);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @param DPoint3d= obj
@@ -2129,7 +2129,7 @@ export namespace EGFBAccessors {
     normal(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 20);
       return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @returns number
@@ -2137,7 +2137,7 @@ export namespace EGFBAccessors {
     yaw(): number {
       var offset = this.bb!.__offset(this.bb_pos, 22);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -2145,7 +2145,7 @@ export namespace EGFBAccessors {
     pitch(): number {
       var offset = this.bb!.__offset(this.bb_pos, 24);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -2153,14 +2153,14 @@ export namespace EGFBAccessors {
     roll(): number {
       var offset = this.bb!.__offset(this.bb_pos, 26);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startLineStyleModifiers(builder: flatbuffers.Builder) {
       builder.startObject(12);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2168,7 +2168,7 @@ export namespace EGFBAccessors {
      */
     static addModifiers(builder: flatbuffers.Builder, modifiers: number) {
       builder.addFieldInt32(0, modifiers, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2176,7 +2176,7 @@ export namespace EGFBAccessors {
      */
     static addScale(builder: flatbuffers.Builder, scale: number) {
       builder.addFieldFloat64(1, scale, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2184,7 +2184,7 @@ export namespace EGFBAccessors {
      */
     static addDashScale(builder: flatbuffers.Builder, dashScale: number) {
       builder.addFieldFloat64(2, dashScale, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2192,7 +2192,7 @@ export namespace EGFBAccessors {
      */
     static addGapScale(builder: flatbuffers.Builder, gapScale: number) {
       builder.addFieldFloat64(3, gapScale, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2200,7 +2200,7 @@ export namespace EGFBAccessors {
      */
     static addStartWidth(builder: flatbuffers.Builder, startWidth: number) {
       builder.addFieldFloat64(4, startWidth, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2208,7 +2208,7 @@ export namespace EGFBAccessors {
      */
     static addEndWidth(builder: flatbuffers.Builder, endWidth: number) {
       builder.addFieldFloat64(5, endWidth, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2216,7 +2216,7 @@ export namespace EGFBAccessors {
      */
     static addDistPhase(builder: flatbuffers.Builder, distPhase: number) {
       builder.addFieldFloat64(6, distPhase, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2224,7 +2224,7 @@ export namespace EGFBAccessors {
      */
     static addFractPhase(builder: flatbuffers.Builder, fractPhase: number) {
       builder.addFieldFloat64(7, fractPhase, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2232,7 +2232,7 @@ export namespace EGFBAccessors {
      */
     static addNormal(builder: flatbuffers.Builder, normalOffset: flatbuffers.Offset) {
       builder.addFieldStruct(8, normalOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2240,7 +2240,7 @@ export namespace EGFBAccessors {
      */
     static addYaw(builder: flatbuffers.Builder, yaw: number) {
       builder.addFieldFloat64(9, yaw, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2248,7 +2248,7 @@ export namespace EGFBAccessors {
      */
     static addPitch(builder: flatbuffers.Builder, pitch: number) {
       builder.addFieldFloat64(10, pitch, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2256,7 +2256,7 @@ export namespace EGFBAccessors {
      */
     static addRoll(builder: flatbuffers.Builder, roll: number) {
       builder.addFieldFloat64(11, roll, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2265,7 +2265,7 @@ export namespace EGFBAccessors {
     static endLineStyleModifiers(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createLineStyleModifiers(builder: flatbuffers.Builder, modifiers: number, scale: number, dashScale: number, gapScale: number, startWidth: number, endWidth: number, distPhase: number, fractPhase: number, normalOffset: flatbuffers.Offset, yaw: number, pitch: number, roll: number): flatbuffers.Offset {
       LineStyleModifiers.startLineStyleModifiers(builder);
@@ -2301,7 +2301,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -2310,7 +2310,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsMaterial(bb: flatbuffers.ByteBuffer, obj?: Material): Material {
       return (obj || new Material()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -2320,7 +2320,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsMaterial(bb: flatbuffers.ByteBuffer, obj?: Material): Material {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new Material()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @returns number
@@ -2328,7 +2328,7 @@ export namespace EGFBAccessors {
     useMaterial(): number {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns flatbuffers.Long
@@ -2336,7 +2336,7 @@ export namespace EGFBAccessors {
     materialId(): flatbuffers.Long {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
-    };
+    }
 
     /**
      * @param DPoint3d= obj
@@ -2345,7 +2345,7 @@ export namespace EGFBAccessors {
     origin(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @param DPoint3d= obj
@@ -2354,7 +2354,7 @@ export namespace EGFBAccessors {
     size(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @returns number
@@ -2362,7 +2362,7 @@ export namespace EGFBAccessors {
     yaw(): number {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -2370,7 +2370,7 @@ export namespace EGFBAccessors {
     pitch(): number {
       var offset = this.bb!.__offset(this.bb_pos, 14);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -2378,7 +2378,7 @@ export namespace EGFBAccessors {
     roll(): number {
       var offset = this.bb!.__offset(this.bb_pos, 16);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @param Trans2x3= obj
@@ -2387,14 +2387,14 @@ export namespace EGFBAccessors {
     trans2x3(obj?: Trans2x3): Trans2x3 | null {
       var offset = this.bb!.__offset(this.bb_pos, 18);
       return offset ? (obj || new Trans2x3()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startMaterial(builder: flatbuffers.Builder) {
       builder.startObject(8);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2402,7 +2402,7 @@ export namespace EGFBAccessors {
      */
     static addUseMaterial(builder: flatbuffers.Builder, useMaterial: number) {
       builder.addFieldInt8(0, useMaterial, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2410,7 +2410,7 @@ export namespace EGFBAccessors {
      */
     static addMaterialId(builder: flatbuffers.Builder, materialId: flatbuffers.Long) {
       builder.addFieldInt64(1, materialId, builder.createLong(0, 0));
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2418,7 +2418,7 @@ export namespace EGFBAccessors {
      */
     static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
       builder.addFieldStruct(2, originOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2426,7 +2426,7 @@ export namespace EGFBAccessors {
      */
     static addSize(builder: flatbuffers.Builder, sizeOffset: flatbuffers.Offset) {
       builder.addFieldStruct(3, sizeOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2434,7 +2434,7 @@ export namespace EGFBAccessors {
      */
     static addYaw(builder: flatbuffers.Builder, yaw: number) {
       builder.addFieldFloat64(4, yaw, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2442,7 +2442,7 @@ export namespace EGFBAccessors {
      */
     static addPitch(builder: flatbuffers.Builder, pitch: number) {
       builder.addFieldFloat64(5, pitch, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2450,7 +2450,7 @@ export namespace EGFBAccessors {
      */
     static addRoll(builder: flatbuffers.Builder, roll: number) {
       builder.addFieldFloat64(6, roll, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2458,7 +2458,7 @@ export namespace EGFBAccessors {
      */
     static addTrans2x3(builder: flatbuffers.Builder, trans2x3Offset: flatbuffers.Offset) {
       builder.addFieldStruct(7, trans2x3Offset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2467,7 +2467,7 @@ export namespace EGFBAccessors {
     static endMaterial(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createMaterial(builder: flatbuffers.Builder, useMaterial: number, materialId: flatbuffers.Long, originOffset: flatbuffers.Offset, sizeOffset: flatbuffers.Offset, yaw: number, pitch: number, roll: number, trans2x3Offset: flatbuffers.Offset): flatbuffers.Offset {
       Material.startMaterial(builder);
@@ -2499,7 +2499,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -2508,7 +2508,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsThematicSettings(bb: flatbuffers.ByteBuffer, obj?: ThematicSettings): ThematicSettings {
       return (obj || new ThematicSettings()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -2518,7 +2518,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsThematicSettings(bb: flatbuffers.ByteBuffer, obj?: ThematicSettings): ThematicSettings {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new ThematicSettings()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @returns number
@@ -2526,7 +2526,7 @@ export namespace EGFBAccessors {
     stepCount(): number {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -2534,7 +2534,7 @@ export namespace EGFBAccessors {
     margin(): number {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -2542,7 +2542,7 @@ export namespace EGFBAccessors {
     marginColor(): number {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -2550,7 +2550,7 @@ export namespace EGFBAccessors {
     mode(): number {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -2558,7 +2558,7 @@ export namespace EGFBAccessors {
     colorScheme(): number {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @param DRange1d= obj
@@ -2567,14 +2567,14 @@ export namespace EGFBAccessors {
     range(obj?: DRange1d): DRange1d | null {
       var offset = this.bb!.__offset(this.bb_pos, 14);
       return offset ? (obj || new DRange1d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startThematicSettings(builder: flatbuffers.Builder) {
       builder.startObject(6);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2582,7 +2582,7 @@ export namespace EGFBAccessors {
      */
     static addStepCount(builder: flatbuffers.Builder, stepCount: number) {
       builder.addFieldInt32(0, stepCount, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2590,7 +2590,7 @@ export namespace EGFBAccessors {
      */
     static addMargin(builder: flatbuffers.Builder, margin: number) {
       builder.addFieldFloat64(1, margin, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2598,7 +2598,7 @@ export namespace EGFBAccessors {
      */
     static addMarginColor(builder: flatbuffers.Builder, marginColor: number) {
       builder.addFieldInt32(2, marginColor, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2606,7 +2606,7 @@ export namespace EGFBAccessors {
      */
     static addMode(builder: flatbuffers.Builder, mode: number) {
       builder.addFieldInt32(3, mode, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2614,7 +2614,7 @@ export namespace EGFBAccessors {
      */
     static addColorScheme(builder: flatbuffers.Builder, colorScheme: number) {
       builder.addFieldInt32(4, colorScheme, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2622,7 +2622,7 @@ export namespace EGFBAccessors {
      */
     static addRange(builder: flatbuffers.Builder, rangeOffset: flatbuffers.Offset) {
       builder.addFieldStruct(5, rangeOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2631,7 +2631,7 @@ export namespace EGFBAccessors {
     static endThematicSettings(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createThematicSettings(builder: flatbuffers.Builder, stepCount: number, margin: number, marginColor: number, mode: number, colorScheme: number, rangeOffset: flatbuffers.Offset): flatbuffers.Offset {
       ThematicSettings.startThematicSettings(builder);
@@ -2661,7 +2661,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -2670,7 +2670,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsAreaFill(bb: flatbuffers.ByteBuffer, obj?: AreaFill): AreaFill {
       return (obj || new AreaFill()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -2680,7 +2680,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsAreaFill(bb: flatbuffers.ByteBuffer, obj?: AreaFill): AreaFill {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new AreaFill()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @returns FillDisplay
@@ -2688,7 +2688,7 @@ export namespace EGFBAccessors {
     fill(): FillDisplay {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : FillDisplay.None;
-    };
+    }
 
     /**
      * @returns number
@@ -2696,7 +2696,7 @@ export namespace EGFBAccessors {
     color(): number {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -2704,7 +2704,7 @@ export namespace EGFBAccessors {
     useColor(): number {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -2712,7 +2712,7 @@ export namespace EGFBAccessors {
     backgroundFill(): number {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -2720,7 +2720,7 @@ export namespace EGFBAccessors {
     transparency(): number {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns GradientMode
@@ -2728,7 +2728,7 @@ export namespace EGFBAccessors {
     mode(): GradientMode {
       var offset = this.bb!.__offset(this.bb_pos, 14);
       return offset ? /**  */ (this.bb!.readInt8(this.bb_pos + offset)) : GradientMode.None;
-    };
+    }
 
     /**
      * @returns number
@@ -2736,7 +2736,7 @@ export namespace EGFBAccessors {
     flags(): number {
       var offset = this.bb!.__offset(this.bb_pos, 16);
       return offset ? this.bb!.readUint16(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -2744,7 +2744,7 @@ export namespace EGFBAccessors {
     angle(): number {
       var offset = this.bb!.__offset(this.bb_pos, 18);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -2752,7 +2752,7 @@ export namespace EGFBAccessors {
     tint(): number {
       var offset = this.bb!.__offset(this.bb_pos, 20);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -2760,7 +2760,7 @@ export namespace EGFBAccessors {
     shift(): number {
       var offset = this.bb!.__offset(this.bb_pos, 22);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @param number index
@@ -2769,7 +2769,7 @@ export namespace EGFBAccessors {
     colors(index: number): number | null {
       var offset = this.bb!.__offset(this.bb_pos, 24);
       return offset ? this.bb!.readUint32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -2777,7 +2777,7 @@ export namespace EGFBAccessors {
     colorsLength(): number {
       var offset = this.bb!.__offset(this.bb_pos, 24);
       return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns Uint32Array
@@ -2785,7 +2785,7 @@ export namespace EGFBAccessors {
     colorsArray(): Uint32Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 24);
       return offset ? new Uint32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-    };
+    }
 
     /**
      * @param number index
@@ -2794,7 +2794,7 @@ export namespace EGFBAccessors {
     values(index: number): number | null {
       var offset = this.bb!.__offset(this.bb_pos, 26);
       return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -2802,7 +2802,7 @@ export namespace EGFBAccessors {
     valuesLength(): number {
       var offset = this.bb!.__offset(this.bb_pos, 26);
       return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns Float64Array
@@ -2810,7 +2810,7 @@ export namespace EGFBAccessors {
     valuesArray(): Float64Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 26);
       return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-    };
+    }
 
     /**
      * @param ThematicSettings= obj
@@ -2819,14 +2819,14 @@ export namespace EGFBAccessors {
     thematicSettings(obj?: ThematicSettings): ThematicSettings | null {
       var offset = this.bb!.__offset(this.bb_pos, 28);
       return offset ? (obj || new ThematicSettings()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startAreaFill(builder: flatbuffers.Builder) {
       builder.startObject(13);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2834,7 +2834,7 @@ export namespace EGFBAccessors {
      */
     static addFill(builder: flatbuffers.Builder, fill: FillDisplay) {
       builder.addFieldInt8(0, fill, FillDisplay.None);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2842,7 +2842,7 @@ export namespace EGFBAccessors {
      */
     static addColor(builder: flatbuffers.Builder, color: number) {
       builder.addFieldInt32(1, color, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2850,7 +2850,7 @@ export namespace EGFBAccessors {
      */
     static addUseColor(builder: flatbuffers.Builder, useColor: number) {
       builder.addFieldInt8(2, useColor, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2858,7 +2858,7 @@ export namespace EGFBAccessors {
      */
     static addBackgroundFill(builder: flatbuffers.Builder, backgroundFill: number) {
       builder.addFieldInt8(3, backgroundFill, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2866,7 +2866,7 @@ export namespace EGFBAccessors {
      */
     static addTransparency(builder: flatbuffers.Builder, transparency: number) {
       builder.addFieldFloat64(4, transparency, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2874,7 +2874,7 @@ export namespace EGFBAccessors {
      */
     static addMode(builder: flatbuffers.Builder, mode: GradientMode) {
       builder.addFieldInt8(5, mode, GradientMode.None);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2882,7 +2882,7 @@ export namespace EGFBAccessors {
      */
     static addFlags(builder: flatbuffers.Builder, flags: number) {
       builder.addFieldInt16(6, flags, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2890,7 +2890,7 @@ export namespace EGFBAccessors {
      */
     static addAngle(builder: flatbuffers.Builder, angle: number) {
       builder.addFieldFloat64(7, angle, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2898,7 +2898,7 @@ export namespace EGFBAccessors {
      */
     static addTint(builder: flatbuffers.Builder, tint: number) {
       builder.addFieldFloat64(8, tint, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2906,7 +2906,7 @@ export namespace EGFBAccessors {
      */
     static addShift(builder: flatbuffers.Builder, shift: number) {
       builder.addFieldFloat64(9, shift, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2914,7 +2914,7 @@ export namespace EGFBAccessors {
      */
     static addColors(builder: flatbuffers.Builder, colorsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(10, colorsOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2927,7 +2927,7 @@ export namespace EGFBAccessors {
         builder.addInt32(data[i]);
       }
       return builder.endVector();
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2935,7 +2935,7 @@ export namespace EGFBAccessors {
      */
     static startColorsVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(4, numElems, 4);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2943,7 +2943,7 @@ export namespace EGFBAccessors {
      */
     static addValues(builder: flatbuffers.Builder, valuesOffset: flatbuffers.Offset) {
       builder.addFieldOffset(11, valuesOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2956,7 +2956,7 @@ export namespace EGFBAccessors {
         builder.addFloat64(data[i]);
       }
       return builder.endVector();
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2964,7 +2964,7 @@ export namespace EGFBAccessors {
      */
     static startValuesVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(8, numElems, 8);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2972,7 +2972,7 @@ export namespace EGFBAccessors {
      */
     static addThematicSettings(builder: flatbuffers.Builder, thematicSettingsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(12, thematicSettingsOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -2981,7 +2981,7 @@ export namespace EGFBAccessors {
     static endAreaFill(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createAreaFill(builder: flatbuffers.Builder, fill: FillDisplay, color: number, useColor: number, backgroundFill: number, transparency: number, mode: GradientMode, flags: number, angle: number, tint: number, shift: number, colorsOffset: flatbuffers.Offset, valuesOffset: flatbuffers.Offset, thematicSettingsOffset: flatbuffers.Offset): flatbuffers.Offset {
       AreaFill.startAreaFill(builder);
@@ -3018,7 +3018,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -3027,7 +3027,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsDwgHatchDefLine(bb: flatbuffers.ByteBuffer, obj?: DwgHatchDefLine): DwgHatchDefLine {
       return (obj || new DwgHatchDefLine()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -3037,7 +3037,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsDwgHatchDefLine(bb: flatbuffers.ByteBuffer, obj?: DwgHatchDefLine): DwgHatchDefLine {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new DwgHatchDefLine()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @returns number
@@ -3045,7 +3045,7 @@ export namespace EGFBAccessors {
     angle(): number {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @param DPoint2d= obj
@@ -3054,7 +3054,7 @@ export namespace EGFBAccessors {
     through(obj?: DPoint2d): DPoint2d | null {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? (obj || new DPoint2d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @param DPoint2d= obj
@@ -3063,7 +3063,7 @@ export namespace EGFBAccessors {
     offset(obj?: DPoint2d): DPoint2d | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? (obj || new DPoint2d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @param number index
@@ -3072,7 +3072,7 @@ export namespace EGFBAccessors {
     dashes(index: number): number | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? this.bb!.readFloat64(this.bb!.__vector(this.bb_pos + offset) + index * 8) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -3080,7 +3080,7 @@ export namespace EGFBAccessors {
     dashesLength(): number {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns Float64Array
@@ -3088,14 +3088,14 @@ export namespace EGFBAccessors {
     dashesArray(): Float64Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? new Float64Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startDwgHatchDefLine(builder: flatbuffers.Builder) {
       builder.startObject(4);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3103,7 +3103,7 @@ export namespace EGFBAccessors {
      */
     static addAngle(builder: flatbuffers.Builder, angle: number) {
       builder.addFieldFloat64(0, angle, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3111,7 +3111,7 @@ export namespace EGFBAccessors {
      */
     static addThrough(builder: flatbuffers.Builder, throughOffset: flatbuffers.Offset) {
       builder.addFieldStruct(1, throughOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3119,7 +3119,7 @@ export namespace EGFBAccessors {
      */
     static addOffset(builder: flatbuffers.Builder, offsetOffset: flatbuffers.Offset) {
       builder.addFieldStruct(2, offsetOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3127,7 +3127,7 @@ export namespace EGFBAccessors {
      */
     static addDashes(builder: flatbuffers.Builder, dashesOffset: flatbuffers.Offset) {
       builder.addFieldOffset(3, dashesOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3140,7 +3140,7 @@ export namespace EGFBAccessors {
         builder.addFloat64(data[i]);
       }
       return builder.endVector();
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3148,7 +3148,7 @@ export namespace EGFBAccessors {
      */
     static startDashesVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(8, numElems, 8);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3157,7 +3157,7 @@ export namespace EGFBAccessors {
     static endDwgHatchDefLine(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createDwgHatchDefLine(builder: flatbuffers.Builder, angle: number, throughOffset: flatbuffers.Offset, offsetOffset: flatbuffers.Offset, dashesOffset: flatbuffers.Offset): flatbuffers.Offset {
       DwgHatchDefLine.startDwgHatchDefLine(builder);
@@ -3185,7 +3185,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -3194,7 +3194,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsAreaPattern(bb: flatbuffers.ByteBuffer, obj?: AreaPattern): AreaPattern {
       return (obj || new AreaPattern()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -3204,7 +3204,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsAreaPattern(bb: flatbuffers.ByteBuffer, obj?: AreaPattern): AreaPattern {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new AreaPattern()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param DPoint3d= obj
@@ -3213,7 +3213,7 @@ export namespace EGFBAccessors {
     origin(obj?: DPoint3d): DPoint3d | null {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? (obj || new DPoint3d()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @param RotMatrix= obj
@@ -3222,7 +3222,7 @@ export namespace EGFBAccessors {
     rotation(obj?: RotMatrix): RotMatrix | null {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? (obj || new RotMatrix()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @returns number
@@ -3230,7 +3230,7 @@ export namespace EGFBAccessors {
     space1(): number {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -3238,7 +3238,7 @@ export namespace EGFBAccessors {
     space2(): number {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -3246,7 +3246,7 @@ export namespace EGFBAccessors {
     angle1(): number {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -3254,7 +3254,7 @@ export namespace EGFBAccessors {
     angle2(): number {
       var offset = this.bb!.__offset(this.bb_pos, 14);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -3262,7 +3262,7 @@ export namespace EGFBAccessors {
     scale(): number {
       var offset = this.bb!.__offset(this.bb_pos, 16);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -3270,7 +3270,7 @@ export namespace EGFBAccessors {
     color(): number {
       var offset = this.bb!.__offset(this.bb_pos, 18);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -3278,7 +3278,7 @@ export namespace EGFBAccessors {
     weight(): number {
       var offset = this.bb!.__offset(this.bb_pos, 20);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -3286,7 +3286,7 @@ export namespace EGFBAccessors {
     useColor(): number {
       var offset = this.bb!.__offset(this.bb_pos, 22);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -3294,7 +3294,7 @@ export namespace EGFBAccessors {
     useWeight(): number {
       var offset = this.bb!.__offset(this.bb_pos, 24);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -3302,7 +3302,7 @@ export namespace EGFBAccessors {
     invisibleBoundary(): number {
       var offset = this.bb!.__offset(this.bb_pos, 26);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -3310,7 +3310,7 @@ export namespace EGFBAccessors {
     snappable(): number {
       var offset = this.bb!.__offset(this.bb_pos, 28);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns flatbuffers.Long
@@ -3318,7 +3318,7 @@ export namespace EGFBAccessors {
     symbolId(): flatbuffers.Long {
       var offset = this.bb!.__offset(this.bb_pos, 30);
       return offset ? this.bb!.readInt64(this.bb_pos + offset) : this.bb!.createLong(0, 0);
-    };
+    }
 
     /**
      * @param number index
@@ -3328,7 +3328,7 @@ export namespace EGFBAccessors {
     defLine(index: number, obj?: DwgHatchDefLine): DwgHatchDefLine | null {
       var offset = this.bb!.__offset(this.bb_pos, 32);
       return offset ? (obj || new DwgHatchDefLine()).__init(this.bb!.__indirect(this.bb!.__vector(this.bb_pos + offset) + index * 4), this.bb!) : null;
-    };
+    }
 
     /**
      * @returns number
@@ -3336,14 +3336,14 @@ export namespace EGFBAccessors {
     defLineLength(): number {
       var offset = this.bb!.__offset(this.bb_pos, 32);
       return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startAreaPattern(builder: flatbuffers.Builder) {
       builder.startObject(15);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3351,7 +3351,7 @@ export namespace EGFBAccessors {
      */
     static addOrigin(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset) {
       builder.addFieldStruct(0, originOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3359,7 +3359,7 @@ export namespace EGFBAccessors {
      */
     static addRotation(builder: flatbuffers.Builder, rotationOffset: flatbuffers.Offset) {
       builder.addFieldStruct(1, rotationOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3367,7 +3367,7 @@ export namespace EGFBAccessors {
      */
     static addSpace1(builder: flatbuffers.Builder, space1: number) {
       builder.addFieldFloat64(2, space1, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3375,7 +3375,7 @@ export namespace EGFBAccessors {
      */
     static addSpace2(builder: flatbuffers.Builder, space2: number) {
       builder.addFieldFloat64(3, space2, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3383,7 +3383,7 @@ export namespace EGFBAccessors {
      */
     static addAngle1(builder: flatbuffers.Builder, angle1: number) {
       builder.addFieldFloat64(4, angle1, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3391,7 +3391,7 @@ export namespace EGFBAccessors {
      */
     static addAngle2(builder: flatbuffers.Builder, angle2: number) {
       builder.addFieldFloat64(5, angle2, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3399,7 +3399,7 @@ export namespace EGFBAccessors {
      */
     static addScale(builder: flatbuffers.Builder, scale: number) {
       builder.addFieldFloat64(6, scale, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3407,7 +3407,7 @@ export namespace EGFBAccessors {
      */
     static addColor(builder: flatbuffers.Builder, color: number) {
       builder.addFieldInt32(7, color, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3415,7 +3415,7 @@ export namespace EGFBAccessors {
      */
     static addWeight(builder: flatbuffers.Builder, weight: number) {
       builder.addFieldInt32(8, weight, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3423,7 +3423,7 @@ export namespace EGFBAccessors {
      */
     static addUseColor(builder: flatbuffers.Builder, useColor: number) {
       builder.addFieldInt8(9, useColor, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3431,7 +3431,7 @@ export namespace EGFBAccessors {
      */
     static addUseWeight(builder: flatbuffers.Builder, useWeight: number) {
       builder.addFieldInt8(10, useWeight, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3439,7 +3439,7 @@ export namespace EGFBAccessors {
      */
     static addInvisibleBoundary(builder: flatbuffers.Builder, invisibleBoundary: number) {
       builder.addFieldInt8(11, invisibleBoundary, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3447,7 +3447,7 @@ export namespace EGFBAccessors {
      */
     static addSnappable(builder: flatbuffers.Builder, snappable: number) {
       builder.addFieldInt8(12, snappable, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3455,7 +3455,7 @@ export namespace EGFBAccessors {
      */
     static addSymbolId(builder: flatbuffers.Builder, symbolId: flatbuffers.Long) {
       builder.addFieldInt64(13, symbolId, builder.createLong(0, 0));
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3463,7 +3463,7 @@ export namespace EGFBAccessors {
      */
     static addDefLine(builder: flatbuffers.Builder, defLineOffset: flatbuffers.Offset) {
       builder.addFieldOffset(14, defLineOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3476,7 +3476,7 @@ export namespace EGFBAccessors {
         builder.addOffset(data[i]);
       }
       return builder.endVector();
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3484,7 +3484,7 @@ export namespace EGFBAccessors {
      */
     static startDefLineVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(4, numElems, 4);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3493,7 +3493,7 @@ export namespace EGFBAccessors {
     static endAreaPattern(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createAreaPattern(builder: flatbuffers.Builder, originOffset: flatbuffers.Offset, rotationOffset: flatbuffers.Offset, space1: number, space2: number, angle1: number, angle2: number, scale: number, color: number, weight: number, useColor: number, useWeight: number, invisibleBoundary: number, snappable: number, symbolId: flatbuffers.Long, defLineOffset: flatbuffers.Offset): flatbuffers.Offset {
       AreaPattern.startAreaPattern(builder);
@@ -3532,91 +3532,91 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @returns number
      */
     form3d00(): number {
       return this.bb!.readFloat64(this.bb_pos);
-    };
+    }
 
     /**
      * @returns number
      */
     form3d01(): number {
       return this.bb!.readFloat64(this.bb_pos + 8);
-    };
+    }
 
     /**
      * @returns number
      */
     form3d02(): number {
       return this.bb!.readFloat64(this.bb_pos + 16);
-    };
+    }
 
     /**
      * @returns number
      */
     form3d03(): number {
       return this.bb!.readFloat64(this.bb_pos + 24);
-    };
+    }
 
     /**
      * @returns number
      */
     form3d10(): number {
       return this.bb!.readFloat64(this.bb_pos + 32);
-    };
+    }
 
     /**
      * @returns number
      */
     form3d11(): number {
       return this.bb!.readFloat64(this.bb_pos + 40);
-    };
+    }
 
     /**
      * @returns number
      */
     form3d12(): number {
       return this.bb!.readFloat64(this.bb_pos + 48);
-    };
+    }
 
     /**
      * @returns number
      */
     form3d13(): number {
       return this.bb!.readFloat64(this.bb_pos + 56);
-    };
+    }
 
     /**
      * @returns number
      */
     form3d20(): number {
       return this.bb!.readFloat64(this.bb_pos + 64);
-    };
+    }
 
     /**
      * @returns number
      */
     form3d21(): number {
       return this.bb!.readFloat64(this.bb_pos + 72);
-    };
+    }
 
     /**
      * @returns number
      */
     form3d22(): number {
       return this.bb!.readFloat64(this.bb_pos + 80);
-    };
+    }
 
     /**
      * @returns number
      */
     form3d23(): number {
       return this.bb!.readFloat64(this.bb_pos + 88);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3649,7 +3649,7 @@ export namespace EGFBAccessors {
       builder.writeFloat64(form3d01);
       builder.writeFloat64(form3d00);
       return builder.offset();
-    };
+    }
 
   }
 
@@ -3669,35 +3669,35 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @returns number
      */
     lowx(): number {
       return this.bb!.readFloat64(this.bb_pos);
-    };
+    }
 
     /**
      * @returns number
      */
     lowy(): number {
       return this.bb!.readFloat64(this.bb_pos + 8);
-    };
+    }
 
     /**
      * @returns number
      */
     highx(): number {
       return this.bb!.readFloat64(this.bb_pos + 16);
-    };
+    }
 
     /**
      * @returns number
      */
     highy(): number {
       return this.bb!.readFloat64(this.bb_pos + 24);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3714,7 +3714,7 @@ export namespace EGFBAccessors {
       builder.writeFloat64(lowy);
       builder.writeFloat64(lowx);
       return builder.offset();
-    };
+    }
 
   }
 
@@ -3734,21 +3734,21 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @returns number
      */
     x(): number {
       return this.bb!.readFloat64(this.bb_pos);
-    };
+    }
 
     /**
      * @returns number
      */
     y(): number {
       return this.bb!.readFloat64(this.bb_pos + 8);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3761,7 +3761,7 @@ export namespace EGFBAccessors {
       builder.writeFloat64(y);
       builder.writeFloat64(x);
       return builder.offset();
-    };
+    }
 
   }
 
@@ -3781,7 +3781,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -3790,7 +3790,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsTextStringStyle(bb: flatbuffers.ByteBuffer, obj?: TextStringStyle): TextStringStyle {
       return (obj || new TextStringStyle()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -3800,7 +3800,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsTextStringStyle(bb: flatbuffers.ByteBuffer, obj?: TextStringStyle): TextStringStyle {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new TextStringStyle()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @returns number
@@ -3808,7 +3808,7 @@ export namespace EGFBAccessors {
     majorVersion(): number {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -3816,7 +3816,7 @@ export namespace EGFBAccessors {
     minorVersion(): number {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -3824,7 +3824,7 @@ export namespace EGFBAccessors {
     fontId(): number {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? this.bb!.readUint32(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns boolean
@@ -3832,7 +3832,7 @@ export namespace EGFBAccessors {
     isBold(): boolean {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
-    };
+    }
 
     /**
      * @returns boolean
@@ -3840,7 +3840,7 @@ export namespace EGFBAccessors {
     isItalic(): boolean {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
-    };
+    }
 
     /**
      * @returns boolean
@@ -3848,7 +3848,7 @@ export namespace EGFBAccessors {
     isUnderlined(): boolean {
       var offset = this.bb!.__offset(this.bb_pos, 14);
       return offset ? !!this.bb!.readInt8(this.bb_pos + offset) : false;
-    };
+    }
 
     /**
      * @returns number
@@ -3856,7 +3856,7 @@ export namespace EGFBAccessors {
     height(): number {
       var offset = this.bb!.__offset(this.bb_pos, 16);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @returns number
@@ -3864,14 +3864,14 @@ export namespace EGFBAccessors {
     widthFactor(): number {
       var offset = this.bb!.__offset(this.bb_pos, 18);
       return offset ? this.bb!.readFloat64(this.bb_pos + offset) : 0.0;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startTextStringStyle(builder: flatbuffers.Builder) {
       builder.startObject(8);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3879,7 +3879,7 @@ export namespace EGFBAccessors {
      */
     static addMajorVersion(builder: flatbuffers.Builder, majorVersion: number) {
       builder.addFieldInt8(0, majorVersion, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3887,7 +3887,7 @@ export namespace EGFBAccessors {
      */
     static addMinorVersion(builder: flatbuffers.Builder, minorVersion: number) {
       builder.addFieldInt8(1, minorVersion, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3895,7 +3895,7 @@ export namespace EGFBAccessors {
      */
     static addFontId(builder: flatbuffers.Builder, fontId: number) {
       builder.addFieldInt32(2, fontId, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3903,7 +3903,7 @@ export namespace EGFBAccessors {
      */
     static addIsBold(builder: flatbuffers.Builder, isBold: boolean) {
       builder.addFieldInt8(3, +isBold, +false);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3911,7 +3911,7 @@ export namespace EGFBAccessors {
      */
     static addIsItalic(builder: flatbuffers.Builder, isItalic: boolean) {
       builder.addFieldInt8(4, +isItalic, +false);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3919,7 +3919,7 @@ export namespace EGFBAccessors {
      */
     static addIsUnderlined(builder: flatbuffers.Builder, isUnderlined: boolean) {
       builder.addFieldInt8(5, +isUnderlined, +false);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3927,7 +3927,7 @@ export namespace EGFBAccessors {
      */
     static addHeight(builder: flatbuffers.Builder, height: number) {
       builder.addFieldFloat64(6, height, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3935,7 +3935,7 @@ export namespace EGFBAccessors {
      */
     static addWidthFactor(builder: flatbuffers.Builder, widthFactor: number) {
       builder.addFieldFloat64(7, widthFactor, 0.0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -3944,7 +3944,7 @@ export namespace EGFBAccessors {
     static endTextStringStyle(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createTextStringStyle(builder: flatbuffers.Builder, majorVersion: number, minorVersion: number, fontId: number, isBold: boolean, isItalic: boolean, isUnderlined: boolean, height: number, widthFactor: number): flatbuffers.Offset {
       TextStringStyle.startTextStringStyle(builder);
@@ -3976,7 +3976,7 @@ export namespace EGFBAccessors {
       this.bb_pos = i;
       this.bb = bb;
       return this;
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -3985,7 +3985,7 @@ export namespace EGFBAccessors {
      */
     static getRootAsTextString(bb: flatbuffers.ByteBuffer, obj?: TextString): TextString {
       return (obj || new TextString()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @param flatbuffers.ByteBuffer bb
@@ -3995,7 +3995,7 @@ export namespace EGFBAccessors {
     static getSizePrefixedRootAsTextString(bb: flatbuffers.ByteBuffer, obj?: TextString): TextString {
       bb.setPosition(bb.position() + flatbuffers.SIZE_PREFIX_LENGTH);
       return (obj || new TextString()).__init(bb.readInt32(bb.position()) + bb.position(), bb);
-    };
+    }
 
     /**
      * @returns number
@@ -4003,7 +4003,7 @@ export namespace EGFBAccessors {
     majorVersion(): number {
       var offset = this.bb!.__offset(this.bb_pos, 4);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -4011,7 +4011,7 @@ export namespace EGFBAccessors {
     minorVersion(): number {
       var offset = this.bb!.__offset(this.bb_pos, 6);
       return offset ? this.bb!.readUint8(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @param flatbuffers.Encoding= optionalEncoding
@@ -4022,7 +4022,7 @@ export namespace EGFBAccessors {
     text(optionalEncoding?: any): string | Uint8Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 8);
       return offset ? this.bb!.__string(this.bb_pos + offset, optionalEncoding) : null;
-    };
+    }
 
     /**
      * @param TextStringStyle= obj
@@ -4031,7 +4031,7 @@ export namespace EGFBAccessors {
     style(obj?: TextStringStyle): TextStringStyle | null {
       var offset = this.bb!.__offset(this.bb_pos, 10);
       return offset ? (obj || new TextStringStyle()).__init(this.bb!.__indirect(this.bb_pos + offset), this.bb!) : null;
-    };
+    }
 
     /**
      * @param TextStringTransform= obj
@@ -4040,7 +4040,7 @@ export namespace EGFBAccessors {
     transform(obj?: TextStringTransform): TextStringTransform | null {
       var offset = this.bb!.__offset(this.bb_pos, 12);
       return offset ? (obj || new TextStringTransform()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @param TextStringRange= obj
@@ -4049,7 +4049,7 @@ export namespace EGFBAccessors {
     range(obj?: TextStringRange): TextStringRange | null {
       var offset = this.bb!.__offset(this.bb_pos, 14);
       return offset ? (obj || new TextStringRange()).__init(this.bb_pos + offset, this.bb!) : null;
-    };
+    }
 
     /**
      * @param number index
@@ -4058,7 +4058,7 @@ export namespace EGFBAccessors {
     glyphIds(index: number): number | null {
       var offset = this.bb!.__offset(this.bb_pos, 16);
       return offset ? this.bb!.readUint32(this.bb!.__vector(this.bb_pos + offset) + index * 4) : 0;
-    };
+    }
 
     /**
      * @returns number
@@ -4066,7 +4066,7 @@ export namespace EGFBAccessors {
     glyphIdsLength(): number {
       var offset = this.bb!.__offset(this.bb_pos, 16);
       return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @returns Uint32Array
@@ -4074,7 +4074,7 @@ export namespace EGFBAccessors {
     glyphIdsArray(): Uint32Array | null {
       var offset = this.bb!.__offset(this.bb_pos, 16);
       return offset ? new Uint32Array(this.bb!.bytes().buffer, this.bb!.bytes().byteOffset + this.bb!.__vector(this.bb_pos + offset), this.bb!.__vector_len(this.bb_pos + offset)) : null;
-    };
+    }
 
     /**
      * @param number index
@@ -4084,7 +4084,7 @@ export namespace EGFBAccessors {
     glyphOrigins(index: number, obj?: TextStringGlyphOrigin): TextStringGlyphOrigin | null {
       var offset = this.bb!.__offset(this.bb_pos, 18);
       return offset ? (obj || new TextStringGlyphOrigin()).__init(this.bb!.__vector(this.bb_pos + offset) + index * 16, this.bb!) : null;
-    };
+    }
 
     /**
      * @returns number
@@ -4092,14 +4092,14 @@ export namespace EGFBAccessors {
     glyphOriginsLength(): number {
       var offset = this.bb!.__offset(this.bb_pos, 18);
       return offset ? this.bb!.__vector_len(this.bb_pos + offset) : 0;
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
      */
     static startTextString(builder: flatbuffers.Builder) {
       builder.startObject(8);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -4107,7 +4107,7 @@ export namespace EGFBAccessors {
      */
     static addMajorVersion(builder: flatbuffers.Builder, majorVersion: number) {
       builder.addFieldInt8(0, majorVersion, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -4115,7 +4115,7 @@ export namespace EGFBAccessors {
      */
     static addMinorVersion(builder: flatbuffers.Builder, minorVersion: number) {
       builder.addFieldInt8(1, minorVersion, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -4123,7 +4123,7 @@ export namespace EGFBAccessors {
      */
     static addText(builder: flatbuffers.Builder, textOffset: flatbuffers.Offset) {
       builder.addFieldOffset(2, textOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -4131,7 +4131,7 @@ export namespace EGFBAccessors {
      */
     static addStyle(builder: flatbuffers.Builder, styleOffset: flatbuffers.Offset) {
       builder.addFieldOffset(3, styleOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -4139,7 +4139,7 @@ export namespace EGFBAccessors {
      */
     static addTransform(builder: flatbuffers.Builder, transformOffset: flatbuffers.Offset) {
       builder.addFieldStruct(4, transformOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -4147,7 +4147,7 @@ export namespace EGFBAccessors {
      */
     static addRange(builder: flatbuffers.Builder, rangeOffset: flatbuffers.Offset) {
       builder.addFieldStruct(5, rangeOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -4155,7 +4155,7 @@ export namespace EGFBAccessors {
      */
     static addGlyphIds(builder: flatbuffers.Builder, glyphIdsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(6, glyphIdsOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -4168,7 +4168,7 @@ export namespace EGFBAccessors {
         builder.addInt32(data[i]);
       }
       return builder.endVector();
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -4176,7 +4176,7 @@ export namespace EGFBAccessors {
      */
     static startGlyphIdsVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(4, numElems, 4);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -4184,7 +4184,7 @@ export namespace EGFBAccessors {
      */
     static addGlyphOrigins(builder: flatbuffers.Builder, glyphOriginsOffset: flatbuffers.Offset) {
       builder.addFieldOffset(7, glyphOriginsOffset, 0);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -4192,7 +4192,7 @@ export namespace EGFBAccessors {
      */
     static startGlyphOriginsVector(builder: flatbuffers.Builder, numElems: number) {
       builder.startVector(16, numElems, 8);
-    };
+    }
 
     /**
      * @param flatbuffers.Builder builder
@@ -4201,7 +4201,7 @@ export namespace EGFBAccessors {
     static endTextString(builder: flatbuffers.Builder): flatbuffers.Offset {
       var offset = builder.endObject();
       return offset;
-    };
+    }
 
     static createTextString(builder: flatbuffers.Builder, majorVersion: number, minorVersion: number, textOffset: flatbuffers.Offset, styleOffset: flatbuffers.Offset, transformOffset: flatbuffers.Offset, rangeOffset: flatbuffers.Offset, glyphIdsOffset: flatbuffers.Offset, glyphOriginsOffset: flatbuffers.Offset): flatbuffers.Offset {
       TextString.startTextString(builder);

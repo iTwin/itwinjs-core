@@ -110,7 +110,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
 
     // istanbul ignore else
     if (this.props.stateSyncIds && this.props.stateSyncIds.length > 0) // eslint-disable-line deprecation/deprecation
-      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // eslint-disable-line deprecation/deprecation
+      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase())); // eslint-disable-line deprecation/deprecation
 
     // istanbul ignore else
     if (refreshState) {
@@ -125,13 +125,13 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
     }
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
     this._componentUnmounting = true;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
@@ -153,7 +153,7 @@ export class PopupButton extends React.Component<PopupButtonProps, BaseItemState
   };
 
   /** Renders PopupButton */
-  public render() {
+  public override render() {
     if (!this.state.isVisible)
       return null;
 

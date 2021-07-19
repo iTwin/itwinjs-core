@@ -6,6 +6,8 @@
  * @module ContentView
  */
 
+// cSpell:ignore contentlayout
+
 import "./ContentLayout.scss";
 import classnames from "classnames";
 import * as React from "react";
@@ -31,11 +33,11 @@ interface ContentWrapperState {
 }
 
 /** ContentWrapper React component.
- */
+ */
 class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapperState> {
 
   /** @internal */
-  public readonly state: Readonly<ContentWrapperState>;
+  public override readonly state: Readonly<ContentWrapperState>;
 
   constructor(props: ContentWrapperProps) {
     super(props);
@@ -46,7 +48,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
     };
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const overlayClassName = classnames(
       "uifw-contentlayout-overlay-div",
       this.state.isActive ? "uifw-contentlayout-overlay-active" : "uifw-contentlayout-overlay-inactive",
@@ -68,11 +70,11 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
     ContentViewManager.setActiveContent(this.state.content);
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     ContentViewManager.onActiveContentChangedEvent.addListener(this._handleActiveContentChanged);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     ContentViewManager.onActiveContentChangedEvent.removeListener(this._handleActiveContentChanged);
   }
 
@@ -84,7 +86,7 @@ class ContentWrapper extends React.Component<ContentWrapperProps, ContentWrapper
   };
 
   // istanbul ignore next
-  public componentDidUpdate(prevProps: ContentWrapperProps, _prevState: ContentWrapperState) {
+  public override componentDidUpdate(prevProps: ContentWrapperProps, _prevState: ContentWrapperState) {
     if (this.props.content !== prevProps.content) {
       this.setState((_, props) => ({ content: props.content, isActive: props.content === ContentViewManager.getActiveContent() }));
     }
@@ -106,7 +108,7 @@ interface SplitContainerProps extends CommonProps {
 }
 
 /** Split Container class.
- */
+ */
 class SplitContainer extends React.Component<SplitContainerProps> {
   private _containerDiv: HTMLDivElement | null = null;
 
@@ -137,7 +139,7 @@ class SplitContainer extends React.Component<SplitContainerProps> {
     }
   };
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const orientation = (this.props.orientation === Orientation.Horizontal) ? "horizontal" : "vertical";
     const defaultSize = `${(this.props.percentage * 100).toString()}%`;
     const minSizeTopLeft = this.props.minSizeTopLeft;
@@ -167,10 +169,10 @@ interface SingleContentProps extends CommonProps {
 }
 
 /** Single Content Container class.
- */
+ */
 class SingleContentContainer extends React.Component<SingleContentProps> {
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
 
     return (
       <div className={classnames("uifw-contentlayout-full-size", this.props.className)} style={this.props.style} data-testid="single-content-container"
@@ -194,7 +196,7 @@ export interface LayoutSplit {
 const MIN_SPLIT_SIZE = 6;
 
 /** Base Split class.
- */
+ */
 class BaseSplit {
   public defaultPercentage: number;
   public stateId: string = "";
@@ -212,7 +214,7 @@ class BaseSplit {
 }
 
 /** Horizontal Split class.
- */
+ */
 class HorizontalSplit extends BaseSplit implements LayoutSplit {
   private _topIndex: number = -1;
   private _bottomIndex: number = -1;
@@ -278,7 +280,7 @@ class HorizontalSplit extends BaseSplit implements LayoutSplit {
 }
 
 /** Vertical Split class.
- */
+ */
 class VerticalSplit extends BaseSplit implements LayoutSplit {
   private _leftIndex: number = -1;
   private _rightIndex: number = -1;
@@ -345,7 +347,7 @@ class VerticalSplit extends BaseSplit implements LayoutSplit {
 
 /** Content Layout Definition class.
  * @public
- */
+ */
 export class ContentLayoutDef {
   private static _sId = 0;
   private _layoutProps: ContentLayoutProps;
@@ -474,7 +476,7 @@ export class ContentLayoutDef {
 
 /** Content Layout Activated Event Args class.
  * @public
- */
+ */
 export interface ContentLayoutActivatedEventArgs {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
@@ -482,11 +484,11 @@ export interface ContentLayoutActivatedEventArgs {
 
 /** Content Layout Activated Event class.
  * @public
- */
+ */
 export class ContentLayoutActivatedEvent extends UiEvent<ContentLayoutActivatedEventArgs> { }
 
 /** State for the [[ContentLayout]].
- */
+ */
 interface ContentLayoutState {
   contentLayoutDef: ContentLayoutDef;
   contentContainer?: React.ReactNode;
@@ -494,7 +496,7 @@ interface ContentLayoutState {
 
 /** Properties for the [[ContentLayout]] React component.
  * @public
- */
+ */
 export interface ContentLayoutComponentProps extends CommonProps {
   contentLayout: ContentLayoutDef;
   contentGroup: ContentGroup;
@@ -503,11 +505,11 @@ export interface ContentLayoutComponentProps extends CommonProps {
 
 /** Content Layout React component.
  * @public
- */
+ */
 export class ContentLayout extends React.Component<ContentLayoutComponentProps, ContentLayoutState> {
 
   /** @internal */
-  public readonly state: Readonly<ContentLayoutState>;
+  public override readonly state: Readonly<ContentLayoutState>;
 
   constructor(props: ContentLayoutComponentProps) {
     super(props);
@@ -524,11 +526,11 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
     };
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     FrontstageManager.onContentLayoutActivatedEvent.addListener(this._handleContentLayoutActivated);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     FrontstageManager.onContentLayoutActivatedEvent.removeListener(this._handleContentLayoutActivated);
   }
 
@@ -545,7 +547,7 @@ export class ContentLayout extends React.Component<ContentLayoutComponentProps, 
     });
   };
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     if (this.state.contentContainer) {
       return (
         <div id="uifw-contentlayout-div" className={this.props.className} style={this.props.style} key={this.state.contentLayoutDef.id}

@@ -7,12 +7,12 @@ exports[`CategoryTree <CategoryTree /> should match snapshot 1`] = `
       class="ui-fw-categories-tree"
     >
       <div
-        class="core-tree components-controlledTree"
-        role="tree"
-        tabindex="-1"
+        style="overflow: visible; height: 0px; width: 0px;"
       >
         <div
-          style="overflow: visible; height: 0px; width: 0px;"
+          class="core-tree components-controlledTree"
+          role="tree"
+          tabindex="-1"
         >
           <div
             class="ReactWindow__VariableSizeList"
@@ -66,20 +66,20 @@ exports[`CategoryTree <CategoryTree /> should match snapshot 1`] = `
             </div>
           </div>
         </div>
+      </div>
+      <div
+        class="resize-triggers"
+      >
         <div
-          class="resize-triggers"
+          class="expand-trigger"
         >
           <div
-            class="expand-trigger"
-          >
-            <div
-              style="width: 201px; height: 201px;"
-            />
-          </div>
-          <div
-            class="contract-trigger"
+            style="width: 201px; height: 201px;"
           />
         </div>
+        <div
+          class="contract-trigger"
+        />
       </div>
     </div>
   </div>

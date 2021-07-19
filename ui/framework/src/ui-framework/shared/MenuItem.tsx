@@ -15,7 +15,7 @@ import { CommandItemDef } from "./CommandItemDef";
 import { ItemDefBase } from "./ItemDefBase";
 
 /** Menu Item Properties
- * @beta
+ * @public
  */
 export type MenuItemProps = AbstractMenuItemProps;
 

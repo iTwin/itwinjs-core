@@ -13,7 +13,7 @@ Formal discussion of this is found in
 * https://en.wikipedia.org/wiki/Euler_angles
 * https://en.wikipedia.org/wiki/Rotation_formalisms_in_three_dimensions
 
-## In iModel.js, the preferred "angle to matrix" construction is the YawPitchRollAngles class
+## In iTwin.js, the preferred "angle to matrix" construction is the YawPitchRollAngles class
 
 The YawPitchRollAngles class implements the "ship" or "airplane" view of rotations.  The coordinate system is:
 
@@ -59,6 +59,6 @@ If you settle on a particular order of application, both directions of conversio
 
 For even more confusion, some software packages treat points and vectors as "row" data and other software packages treat them as "column" data.   This affects matrix construction -- the matrix required for some effect on row data is the _transpose_ of the matrix required for the same effect on column data.
 
-## In iModel.js, points and vectors are viewed as _columns_
+## In iTwin.js, points and vectors are viewed as _columns_
 
-## In iModel.js, you can work with (a) other rotation orders and (b) "vectors as rows" via OrderedRotationAngles class.
+## In iTwin.js, you can work with (a) other rotation orders and (b) "vectors as rows" via OrderedRotationAngles class.

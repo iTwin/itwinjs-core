@@ -27,6 +27,7 @@ import { TreeComponentTestId } from "../../../../ui-components/tree/TreeComponen
 import { ResolvablePromise, waitForUpdate } from "../../../test-helpers/misc";
 import TestUtils from "../../../TestUtils";
 import { TestTreeDataProvider } from "../../TestDataFactories";
+import { PropertyValueRendererManager } from "../../../../ui-components/properties/ValueRendererManager";
 
 /* eslint-disable deprecation/deprecation */
 
@@ -141,6 +142,7 @@ describe("Tree", () => {
         onNodesSelected: nodesSelectedCallbackMock.object,
         onNodesDeselected: nodesDeselectedCallbackMock.object,
         selectionMode: SelectionMode.SingleAllowDeselect,
+        propertyValueRendererManager: PropertyValueRendererManager.defaultManager,
       };
     });
 

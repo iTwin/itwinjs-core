@@ -7,22 +7,21 @@
  */
 
 import * as fs from "fs";
-import * as http from "http";
 import * as https from "https";
 import * as os from "os";
 import * as path from "path";
-import { PassThrough, Transform, TransformCallback } from "stream";
+import { Transform, TransformCallback } from "stream";
 import * as urllib from "url";
-import { BriefcaseStatus, Config, Logger } from "@bentley/bentleyjs-core";
+import { Config, Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
-  AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, ResponseError,
-  SasUrlExpired, UserCancelledError,
+  AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
+  UserCancelledError,
 } from "@bentley/itwin-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import { AzCopy, InitEventArgs, ProgressEventArgs, StringEventArgs } from "../util/AzCopy";
+import { BlobDownloader, ConfigData, ProgressData } from "./BlobDownloader";
 
-import WriteStreamAtomic = require("fs-write-stream-atomic");
 const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 
 /**
@@ -51,7 +50,7 @@ export class BufferedStream extends Transform {
    * @param encoding Encoding type of chunk if chunk is string.
    * @param callback A callback function (optionally with an error argument and data) to be called after the supplied chunk has been processed.
    */
-  public _transform(chunk: any, encoding: string, callback: TransformCallback): void {   // eslint-disable-line
+  public override _transform(chunk: any, encoding: string, callback: TransformCallback): void {   // eslint-disable-line
     if (encoding !== "buffer" && encoding !== "binary")
       throw new TypeError(`Encoding '${encoding}' is not supported.`);
 
@@ -96,7 +95,7 @@ export class BufferedStream extends Transform {
    * This will be called when there is no more written data to be consumed, but before the 'end' event is emitted signaling the end of the Readable stream.
    * @param callback A callback function (optionally with an error argument and data) to be called when remaining data has been flushed.
    */
-  public _flush(callback: TransformCallback): void {   // eslint-disable-line
+  public override _flush(callback: TransformCallback): void {   // eslint-disable-line
     if (!this._buffer) {
       callback();
       return;
@@ -116,15 +115,16 @@ export class AzureFileHandler implements FileHandler {
   public agent?: https.Agent;
   private _threshold: number;
   private _useDownloadBuffer: boolean | undefined;
-
+  private _config: ConfigData | undefined;
   /**
    * Constructor for AzureFileHandler.
    * @param useDownloadBuffer Should Buffering be used when downloading files. If undefined, buffering is enabled only for Azure File Shares mounted with a UNC path.
    * @param threshold Minimum chunk size in bytes for a single file write.
    */
-  constructor(useDownloadBuffer?: boolean, threshold = 1024 * 1024 * 20) {
+  constructor(useDownloadBuffer?: boolean, threshold = 1024 * 1024 * 20, config?: ConfigData) {
     this._threshold = threshold;
     this._useDownloadBuffer = useDownloadBuffer;
+    this._config = config;
   }
 
   /** Check if using Azure File Share with UNC path. This is a temporary optimization for Design Review, until they move to using SSD disks. */
@@ -142,13 +142,12 @@ export class AzureFileHandler implements FileHandler {
       return;
 
     AzureFileHandler.makeDirectoryRecursive(path.dirname(dirPath));
-
     fs.mkdirSync(dirPath);
   }
 
-  private async downloadFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback): Promise<void> {
+  private async transferFileUsingAzCopy(requestContext: AuthorizedClientRequestContext, source: string, target: string, progressCallback?: ProgressCallback): Promise<void> {
     requestContext.enter();
-    Logger.logTrace(loggerCategory, `Using AzCopy with verison ${AzCopy.getVersion()} located at ${AzCopy.execPath}`);
+    Logger.logTrace(loggerCategory, `Using AzCopy with version ${AzCopy.getVersion()} located at ${AzCopy.execPath}`);
 
     // setup log dir so we can delete it. It seem there is no way of disable it.
     const azLogDir = path.join(os.tmpdir(), "bentley", "log", "azcopy");
@@ -180,88 +179,31 @@ export class AzureFileHandler implements FileHandler {
       Logger.logInfo(loggerCategory, `AzCopy runtime error: ${args}`);
     });
     // start download by spawning in a azcopy process
-    const rc = await azcopy.copy(downloadUrl, downloadToPathname);
+    const rc = await azcopy.copy(source, target);
     if (rc !== 0) {
       throw new Error(`AzCopy failed with return code: ${rc}`);
     }
   }
 
-  private async downloadFileUsingHttps(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
-
-    let bufferedStream: Transform;
-    if (this.useBufferedDownload(downloadToPathname)) {
-      bufferedStream = new BufferedStream(this._threshold);
-    } else {
-      bufferedStream = new PassThrough();
+  private async downloadFileUsingHttps(_requestContext: AuthorizedClientRequestContext, downloadUrl: string, downloadToPathname: string, _fileSize?: number, progressCallback?: ProgressCallback, cancelRequest?: CancelRequest): Promise<void> {
+    let lastProgressStat: ProgressData;
+    const onProgress = (data: ProgressData) => {
+      if (progressCallback)
+        progressCallback({ percent: data.percentage, loaded: data.bytesDone, total: data.bytesTotal });
+      lastProgressStat = data;
+    };
+    await BlobDownloader.downloadFile(downloadUrl, downloadToPathname, this._config, onProgress, cancelRequest);
+    if (!fs.existsSync(downloadToPathname)) {
+      throw new Error("file not found");
     }
-
-    const fileStream = new WriteStreamAtomic(downloadToPathname, { encoding: "binary" });
-    let bytesWritten: number = 0;
-    let cancelled: boolean = false;
-
-    if (progressCallback) {
-      fileStream.on("drain", () => {
-        if (!cancelled)
-          progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? 100 * bytesWritten / fileSize : 0 });
-      });
-      fileStream.on("finish", () => {
-        if (!cancelled)
-          progressCallback({ loaded: bytesWritten, total: fileSize, percent: fileSize ? 100 * bytesWritten / fileSize : 0 });
-      });
-    }
-
-    const promise = new Promise<void>((resolve, reject) => {
-      const downloadCallback = ((res: http.IncomingMessage) => {
-        if (res.statusCode && (res.statusCode <= 0 || res.statusCode >= 400)) {
-          reject(new DownloadFailed(res.statusCode, res.statusMessage ? res.statusMessage : "Download failed"));
-          return;
-        }
-        res.pipe(bufferedStream)
-          .on("data", (chunk: any) => {
-            bytesWritten += chunk.length;
-          })
-          .pipe(fileStream)
-          .on("error", (error: any) => {
-            if (cancelRequest !== undefined)
-              cancelRequest.cancel = () => false;
-            if (error instanceof UserCancelledError) {
-              reject(error);
-              return;
-            }
-            const parsedError = ResponseError.parse(error);
-            reject(parsedError);
-          })
-          .on("finish", () => {
-            if (cancelRequest !== undefined)
-              cancelRequest.cancel = () => false;
-            resolve();
-          });
-
-        if (cancelRequest !== undefined) {
-          cancelRequest.cancel = () => {
-            cancelled = true;
-            res.destroy(new UserCancelledError(BriefcaseStatus.DownloadCancelled, "User cancelled download", Logger.logWarning));
-            return true;
-          };
-        }
-      });
-      const clientRequest = downloadUrl.startsWith("https:") ?
-        https.get(downloadUrl, downloadCallback) : http.get(downloadUrl, downloadCallback);
-
-      clientRequest.on("error", (error: any) => {
-        if (cancelRequest !== undefined)
-          cancelRequest.cancel = () => false;
-        if (error instanceof UserCancelledError) {
-          reject(error);
-          return;
-        }
-        const parsedError = ResponseError.parse(error);
-        reject(parsedError);
-      });
-
+    Logger.logInfo(loggerCategory, `BlobDownloader finished`, () => {
+      return {
+        file: downloadToPathname,
+        overallSpeed: BlobDownloader.formatRate(lastProgressStat.downloadRateBytesPerSec),
+        lastTwoSecSpeed: BlobDownloader.formatRate(lastProgressStat.windowRateBytesPerSec),
+        blobSize: BlobDownloader.formatBytes(lastProgressStat.bytesTotal),
+      };
     });
-
-    return promise;
   }
 
   /**
@@ -298,6 +240,23 @@ export class AzureFileHandler implements FileHandler {
   }
 
   /**
+   * Determine if azcopy should be used for file transfer
+   * @param fileSize size of the transferred file in bytes
+   */
+  private useAzCopyForFileTransfer(fileSize?: number): boolean {
+    let useAzcopy = AzCopy.isAvailable;
+
+    // suppress azcopy for smaller file as it take longer to spawn and exit then it take Http downloader to download it.
+    if (useAzcopy && fileSize) {
+      const minFileSize = Config.App.getNumber("imjs_az_min_filesize_threshold", 500 * 1024 * 1024 /** 500 Mb */);
+      if (fileSize < minFileSize)
+        useAzcopy = false;
+    }
+
+    return useAzcopy;
+  }
+
+  /**
    * Download a file from AzureBlobStorage for iModelHub. Creates the directory containing the file if necessary. If there is an error in the operation, incomplete file is deleted from disk.
    * @param requestContext The client request context
    * @param downloadUrl URL to download file from.
@@ -323,15 +282,8 @@ export class AzureFileHandler implements FileHandler {
 
     AzureFileHandler.makeDirectoryRecursive(path.dirname(downloadToPathname));
     try {
-      // suppress azcopy for smaller file as it take longer to spawn and exit then it take Http downloader to download it.
-      let useAzcopy = AzCopy.isAvailable;
-      if (useAzcopy && fileSize) {
-        const minFileSize = Config.App.getNumber("imjs_az_min_filesize_threshold", 500 * 1024 * 1024 /** 500 Mb */);
-        if (fileSize < minFileSize)
-          useAzcopy = false;
-      }
-      if (useAzcopy) {
-        await this.downloadFileUsingAzCopy(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback);
+      if (this.useAzCopyForFileTransfer(fileSize)) {
+        await this.transferFileUsingAzCopy(requestContext, downloadUrl, downloadToPathname, progressCallback);
       } else {
         await this.downloadFileUsingHttps(requestContext, downloadUrl, downloadToPathname, fileSize, progressCallback, cancelRequest);
       }
@@ -403,9 +355,16 @@ export class AzureFileHandler implements FileHandler {
     ArgumentCheck.defined("uploadFromPathname", uploadFromPathname);
 
     const fileSize = this.getFileSize(uploadFromPathname);
+    if (this.useAzCopyForFileTransfer(fileSize)) {
+      await this.transferFileUsingAzCopy(requestContext, uploadFromPathname, uploadUrlString, progressCallback);
+    } else {
+      await this.uploadFileUsingHttps(requestContext, uploadUrlString, uploadFromPathname, fileSize, progressCallback);
+    }
+  }
+
+  private async uploadFileUsingHttps(requestContext: AuthorizedClientRequestContext, uploadUrlString: string, uploadFromPathname: string, fileSize: number, progressCallback?: ProgressCallback): Promise<void> {
     const file = fs.openSync(uploadFromPathname, "r");
     const chunkSize = 4 * 1024 * 1024;
-
     try {
       let blockList = '<?xml version=\"1.0\" encoding=\"utf-8\"?><BlockList>';
       let i = 0;

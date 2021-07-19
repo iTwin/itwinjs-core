@@ -49,4 +49,4 @@ It uses the `uicore-scrollview` CSS class.
 
 ## API Reference
 
-* [Base]($ui-core:Base)
+- [Base]($ui-core:Base)

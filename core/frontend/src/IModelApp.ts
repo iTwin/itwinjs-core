@@ -12,14 +12,13 @@ import {
   BeDuration, BentleyStatus, ClientRequestContext, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
 } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { addCsrfHeader, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
-import { IModelError, IModelStatus, RpcConfiguration, RpcRequest } from "@bentley/imodeljs-common";
+import { IModelClient } from "@bentley/imodelhub-client";
+import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
+import { IncludePrefix } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
-import { FrontendFeatureUsageTelemetryClient } from "@bentley/usage-logging-client";
 import { queryRenderCompatibility, WebGLRenderCompatibilityInfo } from "@bentley/webgl-compatibility";
 import { AccuDraw } from "./AccuDraw";
 import { AccuSnap } from "./AccuSnap";
@@ -29,15 +28,14 @@ import * as displayStyleState from "./DisplayStyleState";
 import * as drawingViewState from "./DrawingViewState";
 import { ElementLocateManager } from "./ElementLocateManager";
 import { EntityState } from "./EntityState";
-import { EventSource } from "./EventSource";
 import { ExtensionAdmin } from "./extension/ExtensionAdmin";
-import { FeatureToggleClient } from "./FeatureToggleClient";
+import { FrontendHubAccess, IModelHubFrontend } from "./FrontendHubAccess";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { FrontendRequestContext } from "./FrontendRequestContext";
 import * as modelselector from "./ModelSelectorState";
 import * as modelState from "./ModelState";
 import { NotificationManager } from "./NotificationManager";
-import { QuantityFormatter } from "./QuantityFormatter";
+import { QuantityFormatter } from "./quantity-formatting/QuantityFormatter";
 import { RenderSystem } from "./render/RenderSystem";
 import { System } from "./render/webgl/System";
 import * as sheetState from "./SheetViewState";
@@ -94,10 +92,8 @@ export interface IModelAppOptions {
    * @beta
   */
   mapLayerOptions?: MapLayerOptions;
-  /** If present, supplies the [[TileAdmin]] for this session.
-   * @alpha
-   */
-  tileAdmin?: TileAdmin;
+  /** If present, supplies the properties with which to initialize the [[TileAdmin]] for this session. */
+  tileAdmin?: TileAdmin.Props;
   /** If present, supplies the [[NotificationManager]] for this session. */
   notifications?: NotificationManager;
   /** If present, supplies the [[ToolAdmin]] for this session. */
@@ -130,10 +126,7 @@ export interface IModelAppOptions {
   extensionAdmin?: ExtensionAdmin;
   /** If present, supplies the [[UiAdmin]] for this session. */
   uiAdmin?: UiAdmin;
-  /** if present, supplies the [[FeatureToggleClient]] for this session
-   * @internal
-   */
-  featureToggles?: FeatureToggleClient;
+  rpcInterfaces?: RpcInterfaceDefinition[];
 }
 
 /** Options for [[IModelApp.makeModalDiv]]
@@ -183,7 +176,6 @@ export class IModelApp {
   private static _applicationId: string;
   private static _applicationVersion: string;
   private static _i18n: I18N;
-  private static _imodelClient: IModelClient;
   private static _locateManager: ElementLocateManager;
   private static _notifications: NotificationManager;
   private static _extensionAdmin: ExtensionAdmin;
@@ -199,12 +191,12 @@ export class IModelApp {
   private static _animationRequested = false;
   private static _animationInterval: BeDuration | undefined = BeDuration.fromSeconds(1);
   private static _animationIntervalId?: number;
-  private static _featureToggles: FeatureToggleClient;
   private static _securityOptions: FrontendSecurityOptions;
   private static _mapLayerFormatRegistry: MapLayerFormatRegistry;
+  private static _hubAccess: FrontendHubAccess;
 
-  // No instances or subclasses of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
-  private constructor() { }
+  // No instances of IModelApp may be created. All members are static and must be on the singleton object IModelApp.
+  protected constructor() { }
 
   /** Provides authorization information for various frontend APIs */
   public static authorizationClient?: FrontendAuthorizationClient;
@@ -223,9 +215,7 @@ export class IModelApp {
 
   /** The [[NotificationManager]] for this session. */
   public static get notifications(): NotificationManager { return this._notifications; }
-  /** The [[TileAdmin]] for this session.
-   * @alpha
-   */
+  /** The [[TileAdmin]] for this session. */
   public static get tileAdmin(): TileAdmin { return this._tileAdmin; }
   /** The [[QuantityFormatter]] for this session.
    * @alpha
@@ -253,8 +243,19 @@ export class IModelApp {
   public static get applicationVersion(): string { return this._applicationVersion; }
   /** @internal */
   public static get initialized() { return this._initialized; }
-  /** The [[IModelClient]] for this session. */
-  public static get iModelClient(): IModelClient { return this._imodelClient; }
+
+  /**
+   * @deprecated access to IModelHub should generally be through the higher level apis.
+   * For internal methods, use [[hubAccess]].
+   * If you really need to call the IModelClient api directly, use [[IModelHubFrontend.iModelClient]]
+   */
+  public static get iModelClient(): IModelClient { return IModelHubFrontend.iModelClient; }
+
+  /** Provides access to the IModelHub implementation for this IModelApp.
+   * @internal
+   */
+  public static get hubAccess(): FrontendHubAccess { return this._hubAccess; }
+
   /** @internal */
   public static get hasRenderSystem() { return this._renderSystem !== undefined && this._renderSystem.isValid; }
   /** The [[ExtensionAdmin]] for this session.
@@ -269,11 +270,6 @@ export class IModelApp {
    * @internal
    */
   public static readonly telemetry: TelemetryManager = new TelemetryManager();
-
-  /** The [[FeatureToggleClient]] for this session
-   * @internal
-   */
-  public static get featureToggles() { return this._featureToggles; }
 
   /** Map of classFullName to EntityState class */
   private static _entityClasses = new Map<string, typeof EntityState>();
@@ -311,7 +307,6 @@ export class IModelApp {
    * Obtain WebGL rendering compatibility information for the client system.  This information describes whether the client meets the
    * minimum rendering capabilities.  It also describes whether the system lacks any optional capabilities that could improve quality
    * and/or performance.
-   * @beta
    */
   public static queryRenderCompatibility(): WebGLRenderCompatibilityInfo {
     if (undefined === System.instance || undefined === System.instance.options.useWebGL2)
@@ -329,18 +324,16 @@ export class IModelApp {
    * @param opts The options for configuring IModelApp
    */
   public static async startup(opts?: IModelAppOptions): Promise<void> {
-    opts = opts ? opts : {};
-
     if (this._initialized)
-      throw new IModelError(IModelStatus.AlreadyLoaded, "startup may only be called once");
+      return; // we're already initialized, do nothing.
+    this._initialized = true;
 
     // Setup a current context for all requests that originate from this frontend
     const requestContext = new FrontendRequestContext();
     requestContext.enter();
 
+    opts = opts ?? {};
     this._securityOptions = opts.security || {};
-
-    this._initialized = true;
 
     // Make IModelApp globally accessible for debugging purposes. We'll remove it on shutdown.
     (window as IModelAppForDebugger).iModelAppForDebugger = this;
@@ -351,19 +344,8 @@ export class IModelApp {
     this._applicationVersion = (opts.applicationVersion !== undefined) ? opts.applicationVersion : "1.0.0";
     this.authorizationClient = opts.authorizationClient;
 
-    this._imodelClient = (opts.imodelClient !== undefined) ? opts.imodelClient : new IModelHubClient();
-    if (this._securityOptions.csrfProtection?.enabled) {
-      this._imodelClient.use(
-        addCsrfHeader(
-          this._securityOptions.csrfProtection.headerName,
-          this._securityOptions.csrfProtection.cookieName,
-        ));
-    }
-
-    if (this._imodelClient instanceof IModelHubClient) {
-      const featureUsageClient = new FrontendFeatureUsageTelemetryClient();
-      this.telemetry.addClient(featureUsageClient);
-    }
+    this._hubAccess = IModelHubFrontend;
+    IModelHubFrontend.setIModelClient(opts.imodelClient);
 
     this._setupRpcRequestContext();
 
@@ -416,7 +398,7 @@ export class IModelApp {
 
     this._settings = (opts.settings !== undefined) ? opts.settings : new ConnectSettingsClient(this.applicationId);
     this._viewManager = (opts.viewManager !== undefined) ? opts.viewManager : new ViewManager();
-    this._tileAdmin = (opts.tileAdmin !== undefined) ? opts.tileAdmin : TileAdmin.create();
+    this._tileAdmin = await TileAdmin.create(opts.tileAdmin);
     this._notifications = (opts.notifications !== undefined) ? opts.notifications : new NotificationManager();
     this._toolAdmin = (opts.toolAdmin !== undefined) ? opts.toolAdmin : new ToolAdmin();
     this._accuDraw = (opts.accuDraw !== undefined) ? opts.accuDraw : new AccuDraw();
@@ -426,7 +408,6 @@ export class IModelApp {
     this._extensionAdmin = (opts.extensionAdmin !== undefined) ? opts.extensionAdmin : new ExtensionAdmin({});
     this._quantityFormatter = (opts.quantityFormatter !== undefined) ? opts.quantityFormatter : new QuantityFormatter();
     this._uiAdmin = (opts.uiAdmin !== undefined) ? opts.uiAdmin : new UiAdmin();
-    this._featureToggles = (opts.featureToggles !== undefined) ? opts.featureToggles : new FeatureToggleClient();
     this._mapLayerFormatRegistry = new MapLayerFormatRegistry(opts.mapLayerOptions);
 
     [
@@ -461,7 +442,7 @@ export class IModelApp {
     [this.toolAdmin, this.viewManager, this.tileAdmin].forEach((sys) => sys.onShutDown());
     this._renderSystem = dispose(this._renderSystem);
     this._entityClasses.clear();
-    EventSource.clearGlobal();
+    this.authorizationClient = undefined;
     this._initialized = false;
   }
 
@@ -521,6 +502,11 @@ export class IModelApp {
     }
   }
 
+  /** Strictly for tests. @internal */
+  public static stopEventLoop() {
+    this._wantEventLoop = false;
+  }
+
   /** The main event processing loop for Tools and rendering. */
   private static eventLoop() {
     IModelApp._animationRequested = false;
@@ -557,7 +543,7 @@ export class IModelApp {
       if (IModelApp.authorizationClient?.hasSignedIn) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
         try {
-          const accessToken: AccessToken = await IModelApp.authorizationClient.getAccessToken();
+          const accessToken = await IModelApp.authorizationClient.getAccessToken();
           authorization = accessToken.toTokenString(IncludePrefix.Yes);
           const userInfo = accessToken.getUserInfo();
           if (userInfo)
@@ -654,7 +640,7 @@ export class IModelApp {
     if (undefined !== options.width) {
       modal.style.width = `${options.width}px`;
       // allow the dialog to be smaller than the width
-      modal.style.maxWidth = `clamp(0px, calc(100% - (2 * var(--width-border))), ${options.width}px)`;
+      modal.style.maxWidth = `min(100% - (2 * var(--width-border)), ${options.width}px)`;
     }
     if (options.closeBox) {
       const close = IModelApp.makeHTMLElement("p", { parent: modal, className: "imodeljs-modal-close" });
@@ -719,7 +705,7 @@ export class IModelApp {
     return this.makeLogoCard({
       iconSrc: "images/about-imodeljs.svg",
       heading: `<span style="font-weight:normal">${this.i18n.translate("Notices.PoweredBy")}</span>&nbsp;iModel.js`,
-      notice: `${require("../package.json").version}<br>${copyrightNotice}`,
+      notice: `${require("../package.json").version}<br>${copyrightNotice}`, // eslint-disable-line @typescript-eslint/no-var-requires
     });
   }
 

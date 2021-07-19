@@ -57,6 +57,13 @@
           "minLength": 1,
           "type": "string"
         },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
+        },
         "ruleType": {
           "description": "Used for serializing to JSON.",
           "enum": [
@@ -127,6 +134,13 @@
         "priority": {
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
+        },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
@@ -390,6 +404,13 @@
           },
           "type": "array"
         },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
+        },
         "ruleType": {
           "description": "Used for serializing to JSON.",
           "enum": [
@@ -527,6 +548,13 @@
         "priority": {
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
+        },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
@@ -741,6 +769,20 @@
       },
       "required": [
         "specType"
+      ],
+      "type": "object"
+    },
+    "CustomRendererSpecification": {
+      "additionalProperties": false,
+      "description": "Specification for custom content renderer.",
+      "properties": {
+        "rendererName": {
+          "description": "Name of the custom renderer.",
+          "type": "string"
+        }
+      },
+      "required": [
+        "rendererName"
       ],
       "type": "object"
     },
@@ -1411,6 +1453,10 @@
             "Forward"
           ],
           "type": "string"
+        },
+        "skipIfDuplicate": {
+          "description": "Should this related properties specification be ignored if it duplicates another higher priority specification for the same relationship.",
+          "type": "boolean"
         }
       },
       "type": "object"
@@ -1426,6 +1472,13 @@
         "priority": {
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
+        },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
@@ -1468,6 +1521,13 @@
         "priority": {
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
+        },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
@@ -1532,6 +1592,13 @@
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
+        },
         "ruleType": {
           "description": "Used for serializing to JSON.",
           "enum": [
@@ -1583,6 +1650,13 @@
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
+        },
         "ruleType": {
           "description": "Used for serializing to JSON.",
           "enum": [
@@ -1619,6 +1693,13 @@
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
+        },
         "ruleType": {
           "description": "Used for serializing to JSON.",
           "enum": [
@@ -1648,6 +1729,13 @@
         "priority": {
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
+        },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
@@ -1680,6 +1768,9 @@
               },
               {
                 "$ref": "#/definitions/InstanceLabelOverrideStringValueSpecification"
+              },
+              {
+                "$ref": "#/definitions/InstanceLabelOverrideRelatedInstanceLabelSpecification"
               }
             ]
           },
@@ -1782,6 +1873,9 @@
                   },
                   {
                     "$ref": "#/definitions/InstanceLabelOverrideStringValueSpecification"
+                  },
+                  {
+                    "$ref": "#/definitions/InstanceLabelOverrideRelatedInstanceLabelSpecification"
                   }
                 ],
                 "description": "Specification to define how the label for `InstanceLabelOverride` should be created."
@@ -1837,6 +1931,20 @@
           "description": "Name of the property whose value should be used.",
           "type": "string"
         },
+        "propertySource": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RelationshipStepSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/RelationshipStepSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Path from `InstanceLabelOverride.class` to the property class. If omitted,\n`InstanceLabelOverride.class` is used as property class."
+        },
         "specType": {
           "description": "Type of the specification",
           "enum": [
@@ -1847,6 +1955,38 @@
       },
       "required": [
         "propertyName",
+        "specType"
+      ],
+      "type": "object"
+    },
+    "InstanceLabelOverrideRelatedInstanceLabelSpecification": {
+      "additionalProperties": false,
+      "description": "Specification that uses label of a related instance as the label content.",
+      "properties": {
+        "pathToRelatedInstance": {
+          "anyOf": [
+            {
+              "$ref": "#/definitions/RelationshipStepSpecification"
+            },
+            {
+              "items": {
+                "$ref": "#/definitions/RelationshipStepSpecification"
+              },
+              "type": "array"
+            }
+          ],
+          "description": "Path from `InstanceLabelOverride.class` to the class of related instance whose label\nshould be returned."
+        },
+        "specType": {
+          "description": "Type of the specification",
+          "enum": [
+            "RelatedInstanceLabel"
+          ],
+          "type": "string"
+        }
+      },
+      "required": [
+        "pathToRelatedInstance",
         "specType"
       ],
       "type": "object"
@@ -2001,6 +2141,13 @@
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
+        },
         "ruleType": {
           "description": "Used for serializing to JSON.",
           "enum": [
@@ -2061,6 +2208,13 @@
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
+        },
         "ruleType": {
           "description": "Used for serializing to JSON.",
           "enum": [
@@ -2088,16 +2242,24 @@
           "type": "string"
         },
         "id": {
-          "description": "Category identifier which has to be unique at the scope of it's definition",
+          "description": "Category identifier which has to be unique at the scope of it's definition.",
           "type": "string"
         },
         "label": {
           "description": "Display label of the category. May be localized.",
           "type": "string"
         },
+        "parentId": {
+          "description": "Identifier of a parent category.",
+          "type": "string"
+        },
         "priority": {
           "description": "Priority of the category. Higher priority categories are displayed on top. Defaults to `1000`.",
           "type": "integer"
+        },
+        "renderer": {
+          "$ref": "#/definitions/CustomRendererSpecification",
+          "description": "Custom category renderer specification."
         }
       },
       "required": [
@@ -2334,20 +2496,6 @@
       ],
       "type": "object"
     },
-    "PropertyRendererSpecification": {
-      "additionalProperties": false,
-      "description": "Specification for custom property renderer.",
-      "properties": {
-        "rendererName": {
-          "description": "Name of the custom renderer.",
-          "type": "string"
-        }
-      },
-      "required": [
-        "rendererName"
-      ],
-      "type": "object"
-    },
     "PropertySortingRule": {
       "additionalProperties": false,
       "description": "Rule to configure sorting for certain ECInstances in the hierarchy and/or content.\nIt is possible to configure different sorting for different types of ECInstances.\n\nMultiple sorting rules may be applied for the same instances - in this case the\ninstances are first sorted by the highest priority rule and then the lower priority ones.\n\nNote: This rule is not meant to be used to sort grouping nodes, custom nodes or\nother non ECInstance type of nodes.",
@@ -2376,6 +2524,13 @@
           "description": "Name of the property which should be used for sorting",
           "minLength": 1,
           "type": "string"
+        },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
@@ -2428,7 +2583,7 @@
           "type": "number"
         },
         "renderer": {
-          "$ref": "#/definitions/PropertyRendererSpecification",
+          "$ref": "#/definitions/CustomRendererSpecification",
           "description": "Custom property renderer specification."
         }
       },
@@ -2629,6 +2784,10 @@
             "SameInstance"
           ],
           "type": "string"
+        },
+        "skipIfDuplicate": {
+          "description": "Should this related properties specification be ignored if it duplicates another higher priority specification for the same relationship.",
+          "type": "boolean"
         }
       },
       "required": [
@@ -2704,6 +2863,30 @@
       ],
       "type": "object"
     },
+    "RequiredSchemaSpecification": {
+      "additionalProperties": false,
+      "description": "A specification for a schema requirement.",
+      "properties": {
+        "maxVersion": {
+          "description": "Maximum allowed schema version (exclusive).\nFormat: `{read version}.{write version}.{minor version}`, e.g. `2.1.15`.",
+          "pattern": "^[\\d]+\\.[\\d]+\\.[\\d]+$",
+          "type": "string"
+        },
+        "minVersion": {
+          "description": "Minimum required schema version (inclusive).\nFormat: `{read version}.{write version}.{minor version}`, e.g. `2.1.15`.",
+          "pattern": "^[\\d]+\\.[\\d]+\\.[\\d]+$",
+          "type": "string"
+        },
+        "name": {
+          "description": "ECSchema name",
+          "type": "string"
+        }
+      },
+      "required": [
+        "name"
+      ],
+      "type": "object"
+    },
     "RootNodeRule": {
       "additionalProperties": false,
       "description": "Root node rules define the nodes that are displayed\nat the root hierarchy level.",
@@ -2757,6 +2940,13 @@
         "priority": {
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
+        },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
         },
         "ruleType": {
           "description": "Used for serializing to JSON.",
@@ -3041,6 +3231,13 @@
           "description": "Defines the order in which presentation rules will be evaluated and executed. Defaults to `1000`.",
           "type": "integer"
         },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
+        },
         "ruleType": {
           "description": "Used for serializing to JSON.",
           "enum": [
@@ -3061,6 +3258,13 @@
         "condition": {
           "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
           "type": "string"
+        },
+        "requiredSchemas": {
+          "description": "Schema requirements for this rule. The rule is not used if the requirements are not met.",
+          "items": {
+            "$ref": "#/definitions/RequiredSchemaSpecification"
+          },
+          "type": "array"
         },
         "specifications": {
           "description": "Child node specifications which are used if condition is satisfied",
@@ -3185,6 +3389,13 @@
       "minLength": 1,
       "type": "string"
     },
+    "requiredSchemas": {
+      "description": "Schema requirements for this ruleset. The ruleset is not used if the requirements are not met.",
+      "items": {
+        "$ref": "#/definitions/RequiredSchemaSpecification"
+      },
+      "type": "array"
+    },
     "rules": {
       "description": "Presentation rules used to create hierarchies and content",
       "items": {
@@ -3252,6 +3463,11 @@
         "$ref": "#/definitions/VariablesGroup"
       },
       "type": "array"
+    },
+    "version": {
+      "description": "Version of the presentation ruleset in SemVer format: `{major}.{minor}.{patch}`.\n\nSetting the version is optional, but might be useful when ruleset is persisted\nsomewhere and evolves over time. Having a version helps choose persisting\nstrategy (keep all versions or only latest) and find the latest ruleset from a list\nof ruleset with the same id.\n\nDefaults to `0.0.0`.",
+      "pattern": "^[\\d]+\\.[\\d]+\\.[\\d]+$",
+      "type": "string"
     }
   },
   "required": [

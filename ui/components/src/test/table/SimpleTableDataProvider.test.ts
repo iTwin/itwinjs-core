@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as sinon from "sinon";
-import { PrimitiveValue, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyConverterInfo, PropertyValueFormat } from "@bentley/ui-abstract";
 import { SortDirection } from "@bentley/ui-core";
 import { ColumnDescription, RowItem, SimpleTableDataProvider } from "../../ui-components";
 import { TableFilterDescriptorCollection } from "../../ui-components/table/columnfiltering/TableFilterDescriptorCollection";
@@ -36,9 +36,13 @@ const columns: ColumnDescription[] = [
 const createRow = (i: number) => {
   const enumValue = i % 4;
   const row: RowItem = { key: i.toString(), cells: [] };
+  const convertInfo: PropertyConverterInfo = { name: "" };
+
+  const propertyRecord = TestUtils.createPropertyRecord(i, columns[0], "int");
+  propertyRecord.property.converter = convertInfo;
   row.cells.push({
     key: columns[0].key,
-    record: TestUtils.createPropertyRecord(i, columns[0], "int"),
+    record: propertyRecord,
   });
   row.cells.push({
     key: columns[1].key,

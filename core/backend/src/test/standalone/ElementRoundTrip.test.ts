@@ -6,9 +6,10 @@ import { assert, expect } from "chai";
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Arc3d, Cone, IModelJson as GeomJson, Point2d, Point3d } from "@bentley/geometry-core";
 import {
+  BriefcaseIdValue,
   Code, ColorDef, ElementAspectProps, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
-import { BackendRequestContext, BriefcaseIdValue, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
+import { BackendRequestContext, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../../imodeljs-backend";
 import { ElementRefersToElements } from "../../Relationship";
 import { IModelTestUtils } from "../IModelTestUtils";
 
@@ -461,8 +462,7 @@ describe("Element and ElementAspect roundtrip test for all type of properties", 
 
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "RoundTripTest" } });
     await imodel.importSchemas(new BackendRequestContext(), [testSchemaPath]);
-    const result: DbResult = imodel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
-    assert.equal(DbResult.BE_SQLITE_OK, result);
+    imodel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     IModelTestUtils.createAndInsertPhysicalPartitionAndModel(imodel, Code.createEmpty(), true);
     let spatialCategoryId = SpatialCategory.queryCategoryIdByName(imodel, IModel.dictionaryId, categoryName);
     if (undefined === spatialCategoryId)

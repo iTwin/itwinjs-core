@@ -36,9 +36,11 @@ interface NumericInputEditorState {
  */
 export class NumericInputEditor extends React.PureComponent<PropertyEditorProps, NumericInputEditorState> implements TypeEditor {
   private _isMounted = false;
+  private _inputElement: React.RefObject<HTMLInputElement> = React.createRef();
+  public hasFocus = false; // hot used since containerHandlesEnter is false
 
   /** @internal */
-  public readonly state: Readonly<NumericInputEditorState> = {
+  public override readonly state: Readonly<NumericInputEditorState> = {
     value: 0,
     readonly: false,
   };
@@ -59,6 +61,21 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     return propertyValue;
   }
 
+  public get htmlElement(): HTMLElement | null {
+    return this._inputElement.current;
+  }
+
+  private _handleCommit = async (): Promise<void> => {
+    // istanbul ignore else
+    if (this.props.propertyRecord && this.props.onCommit) {
+      const propertyValue = await this.getPropertyValue();
+      // istanbul ignore else
+      if (propertyValue !== undefined) {
+        this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue: propertyValue });
+      }
+    }
+  };
+
   private _updateValue = (value: number | undefined, _stringValue: string): void => {
     const newValue = value !== undefined ? value : /* istanbul ignore next */ 0;
 
@@ -66,22 +83,24 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     if (this._isMounted)
       this.setState({
         value: newValue,
+      }, async ()=>{
+        await this._handleCommit ();
       });
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -132,7 +151,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
   }
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const className = classnames("components-cell-editor", "components-numeric-input-editor", this.props.className);
     const minSize = this.state.size ? this.state.size : 8;
     const style: React.CSSProperties = {
@@ -142,6 +161,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
 
     return (
       <NumberInput
+        ref={this._inputElement}
         className={className}
         style={style}
         value={this.state.value}
@@ -167,6 +187,10 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
 export class NumericInputPropertyEditor extends PropertyEditorBase {
   public get reactNode(): React.ReactNode {
     return <NumericInputEditor />;
+  }
+  // istanbul ignore next
+  public override get containerHandlesEnter(): boolean { // let input editor process enter key
+    return false;
   }
 }
 

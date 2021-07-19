@@ -87,7 +87,8 @@ export abstract class TypeConverter implements SortComparer, OperatorProcessor, 
 
   /** Converts a string with a property record to a property value */
   public async convertFromStringToPropertyValue(value: string, propertyRecord?: PropertyRecord): Promise<PropertyValue> {
-    const stringValue = await this.convertFromStringWithOptions(value, propertyRecord?.property.converter?.options);
+    const converterOptions = (propertyRecord && propertyRecord.property.converter) ? propertyRecord.property.converter.options : undefined;
+    const stringValue = await this.convertFromStringWithOptions(value, converterOptions);
     const propertyValue: PrimitiveValue = {
       valueFormat: PropertyValueFormat.Primitive,
       value: stringValue ? stringValue : "",

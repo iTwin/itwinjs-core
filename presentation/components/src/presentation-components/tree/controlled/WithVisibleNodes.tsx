@@ -38,8 +38,8 @@ export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTr
     const visibleNodes = useVisibleTreeNodes(props.nodeLoader.modelSource);
     return (
       <TreeComponent
-        visibleNodes={visibleNodes}
         {...props as CombinedProps}
+        visibleNodes={visibleNodes}
       />
     );
   };

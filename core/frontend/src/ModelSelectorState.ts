@@ -17,7 +17,7 @@ import { IModelConnection } from "./IModelConnection";
  */
 export class ModelSelectorState extends ElementState {
   /** @internal */
-  public static get className() { return "ModelSelector"; }
+  public static override get className() { return "ModelSelector"; }
 
   private readonly _models = new ObservableSet<string>();
 
@@ -44,9 +44,9 @@ export class ModelSelectorState extends ElementState {
   }
 
   /** The name of this ModelSelector */
-  public get name(): string { return this.code.getValue(); }
+  public get name(): string { return this.code.value; }
 
-  public toJSON(): ModelSelectorProps {
+  public override toJSON(): ModelSelectorProps {
     const val: any = super.toJSON();
     val.models = [];
     this.models.forEach((model) => val.models.push(model));
@@ -72,12 +72,14 @@ export class ModelSelectorState extends ElementState {
 
   /** Add one or more models to this ModelSelectorState */
   public addModels(arg: Id64Arg): void {
-    Id64.forEach(arg, (id) => this.models.add(id));
+    for (const id of Id64.iterable(arg))
+      this.models.add(id);
   }
 
   /** Drop one or more models from this ModelSelectorState */
   public dropModels(arg: Id64Arg): void {
-    Id64.forEach(arg, (id) => this.models.delete(id));
+    for (const id of Id64.iterable(arg))
+      this.models.delete(id);
   }
 
   /** Determine whether this ModelSelectorState includes the specified modelId value */

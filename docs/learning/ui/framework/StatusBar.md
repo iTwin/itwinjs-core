@@ -52,4 +52,4 @@ ConfigurableUiManager.registerControl("AppStatusBar", AppStatusBarWidgetControl)
 
 ## API Reference
 
-* [StatusBar]($ui-framework:StatusBar)
+- [StatusBar]($ui-framework:StatusBar)

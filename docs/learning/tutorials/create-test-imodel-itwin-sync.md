@@ -1,16 +1,16 @@
-# Getting started with iModel.js using your own data via the Free Trial service
-This tutorial will describe steps to get started with iModel.js, using the free trial test environment. We will outline creating a Bentley user account, creating a starter iModel, then loading the starter iModel with data from source files on your desktop. At the end of the tutorial, you should have an iModel containing your own data that you will be able to view either on the web, with in a localhost web application, or with a local Electron app.
+# Getting started with iTwin.js using your own data via the Free Trial service
 
-You should have a basic understanding of [iModels]($docs/learning/imodels.md), [iModelHub]($docs/learning/imodelhub/index.md), [iModel Bridges]($docs/learning/imodel-bridges.md), but don't worry if any of those concepts aren't entirely clear.
+This tutorial will describe steps to get started with iTwin.js, using the free trial test environment. We will outline creating a Bentley user account, creating a starter iModel, then loading the starter iModel with data from source files on your desktop. At the end of the tutorial, you should have an iModel containing your own data that you will be able to view either on the web, with in a localhost web application, or with a local Electron app.
+
+You should have a basic understanding of [iModels]($docs/learning/imodels.md), [iModelHub]($docs/learning/imodelhub/index.md), [iModel Connectors]($docs/learning/imodel-connectors.md), but don't worry if any of those concepts aren't entirely clear.
 
 ## Create iModel
 
-Before you create an iModel, you must first have an iTwin project that will contain the iModel. The [registration dashboard](../../../getting-started/registration-dashboard/?tab=1) provides a way for users to create a iModel for development testing purposes.
+Before you create an iModel, you must first have an iTwin project that will contain the iModel. The "[Create sample iModel](https://developer.bentley.com/create-imodel/)" page provides a way for users to create an iModel for development testing purposes.
 
-- Go to the [registration dashboard](../../../getting-started/registration-dashboard/?tab=1&create=empty)
-- Click the "+ New iModel" button
+- Go to the "[Create sample iModel](https://developer.bentley.com/create-imodel/)" page
 - Give your test iModel a name
-- Select the iTwin Synchronizer radio option
+- Select the iTwin Synchronizer option
   - Add the email addresses of anyone else you would like to grant access to the iModel
   - Any other users will also have to have a Bentley account
 - Click Submit
@@ -36,7 +36,7 @@ Creating a named version is required to view the iModel on iModelHub.
 
 Edit one of the source files with its native design tool, save, and sync the changes with iModelHub using the iTwin Synchronizer. Review the evolving timeline of the iModel. When you get to a point you want others to see, create a new Named Version.
 
-Build and run the [query-agent](https://github.com/imodeljs/imodeljs-samples/tree/master/agent-app/query-agent) which will listen to changesets pushed to iModelHub. Pull the changeset information, and parse useful details contained in them. Take a specific action if the changeset meets certain criteria.
+Build and run the [agent-starter](./develop-agent) which will listen to changesets pushed to iModelHub. Pull the changeset information, and parse useful details contained in them. Take a specific action if the changeset meets certain criteria.
 
 ---
 
@@ -44,7 +44,6 @@ Build and run the [query-agent](https://github.com/imodeljs/imodeljs-samples/tre
 <br/>
 
 > _Note: Test iModels should not be used to host sensitive data. The uploaded data is administered by Bentley and should only be used for the purpose of testing. It is not subject to the same data privacy, security policies, and access controls that apply to Bentley’s iTwin offerings. It is subject to data size and other usage limitations, and will be purged after 90 days, if not renewed._ _If you need help or have questions, please contact us on [Github](https://github.com/imodeljs/imodeljs/issues)._
-
 
 <style>
     a#getting-started---explore-imodel {

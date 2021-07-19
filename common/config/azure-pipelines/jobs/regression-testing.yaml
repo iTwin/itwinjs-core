@@ -9,23 +9,29 @@
 trigger: none
 
 schedules:
-- cron: "0 5 * * *"
-  displayName: Daily midnight build
-  branches:
-    include:
-    - master
-    - release/*
+  - cron: "0 5 * * *"
+    displayName: Daily midnight build
+    branches:
+      include:
+        - master
+        - release/*
 
 jobs:
-- template: ci-core.yaml
-  parameters:
-    name: Node_10_17
-    nodeVersion: 10.17.0
-    pool:
-      demands: Agent.OS -equals $(platform)
-- template: ci-core.yaml
-  parameters:
-    name: Node_10
-    nodeVersion: 10.x
-    pool:
-      demands: Agent.OS -equals $(platform)
+  - template: ci-core.yaml
+    parameters:
+      name: Node_14_x
+      nodeVersion: 14.x
+      pool:
+        demands: Agent.OS -equals $(platform)
+  # - template: ci-core.yaml
+  #   parameters:
+  #     name: Node_12_17
+  #     nodeVersion: 12.17.0
+  #     pool:
+  #       demands: Agent.OS -equals $(platform)
+  - template: ci-core.yaml
+    parameters:
+      name: Node_12
+      nodeVersion: 12.x
+      pool:
+        demands: Agent.OS -equals $(platform)

@@ -9,19 +9,19 @@
 import "./ControlledTree.scss";
 import classnames from "classnames";
 import * as React from "react";
-import AutoSizer, { Size } from "react-virtualized-auto-sizer";
-import { areEqual, ListChildComponentProps, VariableSizeList } from "react-window";
+import { areEqual, ListChildComponentProps, ListOnItemsRenderedProps, VariableSizeList } from "react-window";
 import { concat } from "rxjs/internal/observable/concat";
-import { EMPTY } from "rxjs/internal/observable/empty";
 import { timer } from "rxjs/internal/observable/timer";
+import { ReplaySubject } from "rxjs/internal/ReplaySubject";
+import { Subscription } from "rxjs/internal/Subscription";
 import { assert } from "@bentley/bentleyjs-core";
 import { Tree as CoreTree, TreeNodePlaceholder } from "@bentley/ui-core";
+import { ConditionalAutoSizer } from "../../../common/ConditionalAutoSizer";
 import { createContextWithMandatoryProvider } from "../../../common/UseContextWithMandatoryProvider";
 import { HighlightableTreeProps, HighlightingEngine } from "../../HighlightingEngine";
 import { TreeActions } from "../TreeActions";
 import {
-  isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, TreeModelNode, TreeModelNodePlaceholder,
-  VisibleTreeNodes,
+  isTreeModelNode, isTreeModelNodePlaceholder, isTreeModelRootNode, TreeModelNode, TreeModelNodePlaceholder, VisibleTreeNodes,
 } from "../TreeModel";
 import { ITreeNodeLoader } from "../TreeNodeLoader";
 import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
@@ -29,8 +29,19 @@ import { TreeNodeRenderer, TreeNodeRendererProps } from "./TreeNodeRenderer";
 const NODE_LOAD_DELAY = 500;
 
 /**
+ * Data structure that describes range of rendered items in the tree.
+ * @alpha
+ */
+export interface RenderedItemsRange {
+  overscanStartIndex: number;
+  overscanStopIndex: number;
+  visibleStartIndex: number;
+  visibleStopIndex: number;
+}
+
+/**
  * Properties for [[TreeRenderer]] component.
- * @beta
+ * @public
  */
 export interface TreeRendererProps {
   treeActions: TreeActions;
@@ -49,15 +60,26 @@ export interface TreeRendererProps {
   nodeHighlightingProps?: HighlightableTreeProps;
 
   /**
+   * Callback that is called when rendered items range changes.
+   * @alpha
+   */
+  onItemsRendered?: (renderedItems: RenderedItemsRange) => void;
+
+  /**
    * Callback used when an editor closes
    * @internal
    */
   onNodeEditorClosed?: () => void;
+
+  /** Width of the tree area. */
+  width?: number;
+  /** Height of the tree area. */
+  height?: number;
 }
 
 /**
  * Attributes found on TreeRenderer component
- * @beta
+ * @public
  */
 export interface TreeRendererAttributes {
   /**
@@ -138,21 +160,38 @@ export const [
  * @beta
  */
 export class TreeRenderer extends React.Component<TreeRendererProps> implements TreeRendererAttributes {
-  private treeRendererRef = React.createRef<React.ElementRef<typeof TreeRendererInner>>();
+  private observableScrollToItem = new ReplaySubject<Parameters<TreeRendererAttributes["scrollToNode"]>>(1);
+  private refSubscription: Subscription | undefined = undefined;
 
   /** @inheritdoc */
   public scrollToNode(nodeId: string, alignment?: Alignment) {
-    assert(this.treeRendererRef.current !== null);
-    this.treeRendererRef.current.scrollToNode(nodeId, alignment);
+    this.observableScrollToItem.next([nodeId, alignment]);
   }
 
-  public render() {
-    return <TreeRendererInner ref={this.treeRendererRef} {...this.props} />;
+  private setTreeRendererRef: React.Ref<TreeRendererAttributes> = (ref) => {
+    this.refSubscription?.unsubscribe();
+    this.refSubscription = undefined;
+    if (ref) {
+      this.refSubscription = this.observableScrollToItem.subscribe((args) => ref.scrollToNode(...args));
+    }
+  };
+
+  public override render() {
+    return (
+      <ConditionalAutoSizer width={this.props.width} height={this.props.height}>
+        {(size) => <TreeRendererInner ref={this.setTreeRendererRef} {...this.props} {...size} />}
+      </ConditionalAutoSizer>
+    );
   }
 }
 
+type TreeRendererInnerProps = TreeRendererProps & {
+  width: number;
+  height: number;
+};
+
 // eslint-disable-next-line react/display-name
-const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererProps>((props, ref) => {
+const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererInnerProps>((props, ref) => {
   const variableSizeListRef = React.useRef<VariableSizeList>(null);
   useTreeRendererAttributes(ref, variableSizeListRef, props.visibleNodes);
 
@@ -192,12 +231,10 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
   }), [props, onLabelRendered, highlightingEngine]);
 
   const prevTreeWidth = React.useRef<number>(0);
-  const onTreeSizeChanged = React.useCallback((width: number) => {
-    if (width !== prevTreeWidth.current) {
-      minContainerWidth.current = 0;
-      prevTreeWidth.current = width;
-    }
-  }, []);
+  if (props.width !== prevTreeWidth.current) {
+    minContainerWidth.current = 0;
+    prevTreeWidth.current = props.width;
+  }
 
   const itemKey = React.useCallback(
     (index: number) => getNodeKey(props.visibleNodes.getAtIndex(index)!),
@@ -213,7 +250,7 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
   const { nodeHighlightingProps } = props;
   React.useEffect(() => {
     const highlightedNodeId = getHighlightedNodeId(nodeHighlightingProps);
-    if (!highlightedNodeId || !variableSizeListRef.current)
+    if (!highlightedNodeId)
       return;
 
     let index = 0;
@@ -223,9 +260,12 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
 
       index++;
     }
+
+    assert(variableSizeListRef.current !== null);
     variableSizeListRef.current.scrollToItem(index);
   }, [nodeHighlightingProps]); // eslint-disable-line react-hooks/exhaustive-deps
 
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const innerElementType = React.useCallback(
     // eslint-disable-next-line react/display-name
     React.forwardRef(({ style, ...rest }: ListChildComponentProps, innerRef: React.Ref<HTMLDivElement>) => (
@@ -246,30 +286,29 @@ const TreeRendererInner = React.forwardRef<TreeRendererAttributes, TreeRendererP
     props.treeActions.onTreeKeyUp(e);
   }, [props.treeActions]);
 
+  const onItemsRendered = props.onItemsRendered;
+  const handleRenderedItemsChange = React.useCallback((onItemsRenderedProps: ListOnItemsRenderedProps) => {
+    onItemsRendered && onItemsRendered({ ...onItemsRenderedProps });
+  }, [onItemsRendered]);
+
   return (
     <TreeRendererContextProvider value={rendererContext}>
       <CoreTree ref={coreTreeRef} className="components-controlledTree" onKeyDown={handleKeyDown} onKeyUp={handleKeyUp}>
-        <AutoSizer>
-          {({ width, height }: Size) => {
-            onTreeSizeChanged(width);
-            return (
-              <VariableSizeList
-                ref={variableSizeListRef}
-                className={"ReactWindow__VariableSizeList"}
-                width={width}
-                height={height}
-                itemCount={props.visibleNodes.getNumNodes()}
-                itemSize={itemSize}
-                estimatedItemSize={25}
-                overscanCount={10}
-                itemKey={itemKey}
-                innerElementType={innerElementType}
-              >
-                {Node}
-              </VariableSizeList>
-            );
-          }}
-        </AutoSizer>
+        <VariableSizeList
+          ref={variableSizeListRef}
+          className={"ReactWindow__VariableSizeList"}
+          width={props.width}
+          height={props.height}
+          itemCount={props.visibleNodes.getNumNodes()}
+          itemSize={itemSize}
+          estimatedItemSize={25}
+          overscanCount={10}
+          itemKey={itemKey}
+          innerElementType={innerElementType}
+          onItemsRendered={handleRenderedItemsChange}
+        >
+          {Node}
+        </VariableSizeList>
       </CoreTree>
     </TreeRendererContextProvider>
   );
@@ -286,7 +325,6 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // eslint-disable-li
   (props: ListChildComponentProps) => {
     const { index, style } = props;
 
-    const context = useTreeRendererContext(Node);
     const {
       nodeRenderer,
       visibleNodes,
@@ -296,31 +334,13 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // eslint-disable-li
       highlightingEngine,
       onNodeWidthMeasured,
       onNodeEditorClosed,
-    } = context;
+    } = useTreeRendererContext(Node);
     const node = visibleNodes.getAtIndex(index)!;
+
+    useNodeLoading(node, visibleNodes, nodeLoader);
 
     // Mark selected node's wrapper to make detecting consecutively selected nodes with css selectors possible
     const className = classnames("node-wrapper", { "is-selected": isTreeModelNode(node) && node.isSelected });
-
-    React.useEffect(() => {
-      const loadNode = (parentId: string | undefined, nodeIndex: number) => {
-        const parentNode = parentId ? visibleNodes.getModel().getNode(parentId) : visibleNodes.getModel().getRootNode();
-        if (!isTreeModelNode(parentNode) && !isTreeModelRootNode(parentNode))
-          return EMPTY;
-
-        return nodeLoader.loadNode(parentNode, nodeIndex);
-      };
-
-      if (isTreeModelNodePlaceholder(node)) {
-        const subscription = concat(
-          timer(NODE_LOAD_DELAY),
-          loadNode(node.parentId, node.childIndex),
-        ).subscribe();
-        return () => subscription.unsubscribe();
-      }
-
-      return () => { };
-    }, [node, nodeLoader]); // eslint-disable-line react-hooks/exhaustive-deps
 
     const ref = React.useRef<HTMLDivElement>(null);
     React.useEffect(() => {
@@ -359,6 +379,33 @@ const Node = React.memo<React.FC<ListChildComponentProps>>( // eslint-disable-li
   },
   areEqual,
 );
+
+function useNodeLoading(
+  node: TreeModelNode | TreeModelNodePlaceholder,
+  visibleNodes: VisibleTreeNodes,
+  nodeLoader: ITreeNodeLoader,
+): void {
+  React.useEffect(
+    () => {
+      if (!isTreeModelNodePlaceholder(node)) {
+        return;
+      }
+
+      const treeModel = visibleNodes.getModel();
+      const parentNode = node.parentId ? treeModel.getNode(node.parentId) : treeModel.getRootNode();
+      if (!isTreeModelNode(parentNode) && !isTreeModelRootNode(parentNode)) {
+        return;
+      }
+
+      const subscription = concat(timer(NODE_LOAD_DELAY), nodeLoader.loadNode(parentNode, node.childIndex)).subscribe();
+      return () => subscription.unsubscribe();
+    },
+    // Mounted node component never changes its node key, thus it's safe to run this effect only once for every
+    // nodeLoader change.
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [nodeLoader],
+  );
+}
 
 function useTreeRendererAttributes(
   ref: React.Ref<TreeRendererAttributes>,
@@ -406,6 +453,7 @@ function useScrollToActiveMatch(treeRef: React.RefObject<CoreTree>, highlightabl
 
       scrollToActive.current = false;
       const scrollTo = [...treeRef.current.getElementsByClassName(HighlightingEngine.ACTIVE_CLASS_NAME)];
+      // istanbul ignore else
       if (scrollTo.length > 0 && scrollTo[0].scrollIntoView)
         scrollTo[0].scrollIntoView({ behavior: "auto", block: "nearest", inline: "end" });
     }, [highlightableTreeProps, treeRef]);

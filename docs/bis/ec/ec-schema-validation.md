@@ -26,6 +26,10 @@ A class may not not derive from a sealed base class.
 
 A class may not derive from a base class of a different EC type (i.e. EntityClass => RelationshipClass).
 
+#### EC-102 <a name="EC-102"></a>
+
+A abstract class may not derive from a non-abstract base class.
+
 ### [CustomAttribute Container](./customattribute-container-types.md) Rules
 
 #### EC-500 <a name="EC-500"></a>

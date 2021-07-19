@@ -78,4 +78,4 @@ The `contentStyle` prop specifies CSS properties for the content area.
 
 ## API Reference
 
-* [Dialog]($ui-core:Dialog)
+- [Dialog]($ui-core:Dialog)

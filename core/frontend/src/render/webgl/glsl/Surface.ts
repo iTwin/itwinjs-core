@@ -34,6 +34,7 @@ import { addSolarShadowMap } from "./SolarShadowMapping";
 import { addThematicDisplay, getComputeThematicIndex } from "./Thematic";
 import { addTranslucency } from "./Translucency";
 import { addFeatureAndMaterialLookup, addModelViewMatrix, addNormalMatrix, addProjectionMatrix } from "./Vertex";
+import { wantMaterials } from "../Mesh";
 
 // NB: Textures do not contain pre-multiplied alpha.
 const sampleSurfaceTexture = `
@@ -157,7 +158,7 @@ function addMaterial(builder: ProgramBuilder): void {
   vert.addFunction(decodeMaterialColor);
   vert.addUniform("u_materialColor", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_materialColor", (uniform, params) => {
-      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+      const info = wantMaterials(params.target.currentViewFlags) ? params.geometry.materialInfo : undefined;
       const mat = undefined !== info && !info.isAtlas ? info : Material.default;
       uniform.setUniform4fv(mat.rgba);
     });
@@ -165,7 +166,7 @@ function addMaterial(builder: ProgramBuilder): void {
 
   vert.addUniform("u_materialParams", VariableType.Vec4, (prog) => {
     prog.addGraphicUniform("u_materialParams", (uniform, params) => {
-      const info = params.target.currentViewFlags.materials ? params.geometry.materialInfo : undefined;
+      const info = wantMaterials(params.target.currentViewFlags) ? params.geometry.materialInfo : undefined;
       const mat = undefined !== info && !info.isAtlas ? info : Material.default;
       uniform.setUniform4fv(mat.fragUniforms);
     });
@@ -430,12 +431,26 @@ export function addSurfaceFlags(builder: ProgramBuilder, withFeatureOverrides: b
   });
 }
 
-function addNormal(builder: ProgramBuilder, animated: IsAnimated) {
-  addNormalMatrix(builder.vert);
+function addNormal(builder: ProgramBuilder, instanced: IsInstanced, animated: IsAnimated) {
+  addNormalMatrix(builder.vert, instanced);
 
   builder.vert.addFunction(octDecodeNormal);
   addChooseWithBitFlagFunctions(builder.vert);
   builder.addFunctionComputedVarying("v_n", VariableType.Vec3, "computeLightingNormal", animated ? computeAnimatedNormal : computeNormal);
+
+  // Set to true to colorize surfaces based on normals (in world space).
+  // You must also set checkMaxVarying to false in ProgramBuilder.buildProgram to avoid assertions, if using a non-optimized build.
+  const debugNormals = false;
+  if (debugNormals) {
+    builder.frag.set(FragmentShaderComponent.ApplyDebugColor, "return vec4(vec3(v_normal / 2.0 + 0.5), baseColor.a);");
+    builder.addFunctionComputedVarying("v_normal", VariableType.Vec3, "computeDebugNormal", `
+      vec2 tc = g_vertexBaseCoords;
+      tc.x += 3.0 * g_vert_stepX;
+      vec4 enc = floor(TEXTURE(u_vertLUT, tc) * 255.0 + 0.5);
+      vec2 normal = u_surfaceFlags[kSurfaceBitIndex_HasColorAndNormal] ? enc.xy : g_vertexData2;
+      return u_surfaceFlags[kSurfaceBitIndex_HasNormals] ? normalize(octDecodeNormal(normal)) : vec3(0.0);
+    `);
+  }
 }
 
 /** @internal */
@@ -476,7 +491,7 @@ export function addTexture(builder: ProgramBuilder, animated: IsAnimated, isThem
   });
 }
 
-const discardClassifiedByAlpha = `
+export const discardClassifiedByAlpha = `
   if (u_no_classifier_discard)
     return false;
 
@@ -510,7 +525,7 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   addFeatureSymbology(builder, feat, opts);
   addSurfaceFlags(builder, FeatureMode.Overrides === feat, true);
   addSurfaceDiscard(builder, flags);
-  addNormal(builder, flags.isAnimated);
+  addNormal(builder, flags.isInstanced, flags.isAnimated);
 
   // In HiddenLine mode, we must compute the base color (plus feature overrides etc) in order to get the alpha, then replace with background color (preserving alpha for the transparency threshold test).
   addChooseWithBitFlagFunctions(builder.frag);
@@ -561,26 +576,29 @@ export function createSurfaceBuilder(flags: TechniqueFlags): ProgramBuilder {
   builder.frag.addGlobal("g_surfaceTexel", VariableType.Vec4);
   builder.frag.set(FragmentShaderComponent.ComputeBaseColor, (flags.isThematic === IsThematic.No) ? computeBaseColor : "return getSurfaceColor();");
 
-  if (flags.isClassified) {
-    // For unclassified geometry, we need to render in both the translucent and opaque passes if any feature transparency overrides are applied that would change the default render pass used.
-    // Those shaders compute the transparency in the vertex shader and discard the vertex in one pass or the other.
-    // For classified geometry, the transparency comes from the classifier geometry (when using Display.ElementColor), so even if there are no feature overrides, we may need to draw in both passes.
-    // Since the transparency is not known until the fragment shader, we must perform the discard there instead.
-    addMaxAlpha(builder.frag);
-    addRenderPass(builder.frag);
-
-    // Do not discard transparent classified geometry if we're trying to do a pick...
-    builder.frag.addUniform("u_no_classifier_discard", VariableType.Boolean, (prog) => {
-      prog.addProgramUniform("u_no_classifier_discard", (uniform, params) => {
-        uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
-      });
-    });
-
-    builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardClassifiedByAlpha);
-  }
+  if (flags.isClassified)
+    addClassificationTranslucencyDiscard(builder);
 
   addSurfaceMonochrome(builder.frag);
   addMaterial(builder);
 
   return builder;
+}
+
+export function addClassificationTranslucencyDiscard(builder: ProgramBuilder) {
+  // For unclassified geometry, we need to render in both the translucent and opaque passes if any feature transparency overrides are applied that would change the default render pass used.
+  // Those shaders compute the transparency in the vertex shader and discard the vertex in one pass or the other.
+  // For classified geometry, the transparency comes from the classifier geometry (when using Display.ElementColor), so even if there are no feature overrides, we may need to draw in both passes.
+  // Since the transparency is not known until the fragment shader, we must perform the discard there instead.
+  addMaxAlpha(builder.frag);
+  addRenderPass(builder.frag);
+
+  // Do not discard transparent classified geometry if we're trying to do a pick...
+  builder.frag.addUniform("u_no_classifier_discard", VariableType.Boolean, (prog) => {
+    prog.addProgramUniform("u_no_classifier_discard", (uniform, params) => {
+      uniform.setUniform1i(params.target.isReadPixelsInProgress ? 1 : 0);
+    });
+  });
+
+  builder.frag.set(FragmentShaderComponent.DiscardByAlpha, discardClassifiedByAlpha);
 }

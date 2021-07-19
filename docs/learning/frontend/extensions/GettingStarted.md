@@ -21,23 +21,23 @@ npm init --yes
 Next, add the required dependencies for an Extension,
 
 ```json
-  "devDependencies": {
-    "@bentley/build-tools": "^2.0.0",
-    "@bentley/extension-webpack-tools": "^2.0.0",
-    "typescript": "~3.7.4"
-  },
-  "dependencies": {
-    "@bentley/bentleyjs-core": "^2.0.0",
-    "@bentley/geometry-core": "^2.0.0",
-    "@bentley/imodeljs-common": "^2.0.0",
-    "@bentley/imodeljs-i18n": "^2.0.0",
-    "@bentley/imodeljs-frontend": "^2.0.0",
-    "@bentley/imodeljs-quantity": "^2.0.0",
-    "@bentley/product-settings-client": "^2.0.0",
-    "@bentley/orbitgt-core": "^2.0.0",
-    "@bentley/ui-abstract": "^2.0.0",
-    "@bentley/webgl-compatibility": "^2.0.0"
-  }
+"devDependencies": {
+  "@bentley/build-tools": "^2.0.0",
+  "@bentley/extension-webpack-tools": "^2.0.0",
+  "typescript": "~3.7.4"
+},
+"dependencies": {
+  "@bentley/bentleyjs-core": "^2.0.0",
+  "@bentley/geometry-core": "^2.0.0",
+  "@bentley/imodeljs-common": "^2.0.0",
+  "@bentley/imodeljs-i18n": "^2.0.0",
+  "@bentley/imodeljs-frontend": "^2.0.0",
+  "@bentley/imodeljs-quantity": "^2.0.0",
+  "@bentley/product-settings-client": "^2.0.0",
+  "@bentley/orbitgt-core": "^2.0.0",
+  "@bentley/ui-abstract": "^2.0.0",
+  "@bentley/webgl-compatibility": "^2.0.0"
+}
 ```
 
 Since the Extension will be written using Typescript, a basic tsconfig.json file needs to be setup. Create a new `tsconfig.json` file next to the `package.json` with the following contents, or download the file from [here](https://raw.githubusercontent.com/imodeljs/extension-sample/master/tsconfig.json).
@@ -58,8 +58,8 @@ Since the Extension will be written using Typescript, a basic tsconfig.json file
 The final setup step is to add a basic [npm script](https://docs.npmjs.com/misc/scripts) to build the Extension. The example below is split into two different scripts. One for building the typescript and the second webpack the Extension into the correct bundle.  Copy this into the "scripts" section of the `package.json`,
 
 ```json
-  "build": "tsc 1>&2 && npm run build:extension",
-  "build:extension": "extension-webpack-tools build -s ./src/MyExtension.ts -o ./lib/extension",
+"build": "tsc 1>&2 && npm run build:extension",
+"build:extension": "extension-webpack-tools build -s ./src/MyExtension.ts -o ./lib/extension",
 ```
 
 Great! Now we're setup to start writing the Extension.
@@ -110,5 +110,5 @@ The final step before building and loading the extension is setting up the local
 ## Next Steps
 
 - The [Overview of Building an Extension](./BuildingAnExtension) backs up to to the beginning to explain, in more detail, the steps above and the overall architecture of an Extension.
-- Learn how to [add UI](../../ui/augmentingui) to an iModel.js app from Extension.
-- Explore the full [iModel.js APIs](https://www.imodeljs.org/reference/) to see what else is possible within an Extension.
+- Learn how to [add UI](../../ui/augmentingui) to an iTwin.js app from Extension.
+- Explore the full [iTwin.js APIs](https://www.itwinjs.org/reference/) to see what else is possible within an Extension.

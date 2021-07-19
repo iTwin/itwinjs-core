@@ -1,7 +1,7 @@
 
 # Third-Party Code
 
-The iModel.js library potentially incorporates work from the following third-party code:
+The iTwin.js library potentially incorporates work from the following third-party code:
 
 ## [tslint-react-set-state-usage](https://github.com/sutrkiller/tslint-react-set-state-usage)
 

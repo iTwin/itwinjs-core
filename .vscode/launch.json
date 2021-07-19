@@ -29,11 +29,11 @@
         "test:integration"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+        "${workspaceFolder}/core/backend/lib/**/*.js"
       ]
     },
     {
-      "name": "Backend Tests (Offline)",
+      "name": "Backend Tests (Standalone)",
       "presentation": {
         "group": "0_CoreTests",
         "order": 1
@@ -46,7 +46,7 @@
         "test"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+        "${workspaceFolder}/core/backend/lib/**/*.js"
       ]
     },
     {
@@ -64,6 +64,23 @@
       ],
       "outFiles": [
         "${workspaceFolder}/core/bentley/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "OrbitGT Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/orbitgt/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/core/orbitgt/lib/**/*.js"
       ]
     },
     {
@@ -107,6 +124,23 @@
         "order": 1
       },
       "cwd": "${workspaceFolder}/core/ecschema-locaters",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "EC Schema Editing Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/ecschema-editing",
       "type": "pwa-node",
       "request": "launch",
       "runtimeExecutable": "npm",
@@ -250,6 +284,24 @@
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
+    {
+      "name": "IModelBridgeFwk Tests (integration)",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 6
+      },
+      "cwd": "${workspaceFolder}/core/imodel-bridge",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test:integration"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
     { /* PARTIAL */
       "name": "[NODE] Certa Test Runner for Markup Tests",
       "presentation": {
@@ -265,7 +317,8 @@
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
-        "${workspaceFolder}/ui/abstract/lib/**/*.js"
+        "${workspaceFolder}/ui/abstract/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js",
       ],
       "outputCapture": "std",
       "attachSimplePort": 5858, // NB: This must match ports.debugging in core/markup/certa.json
@@ -479,6 +532,23 @@
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
+    {
+      "name": "Backend iTwin Client Tests (Offline)",
+      "presentation": {
+        "group": "3_ClientsTests",
+        "order": 3
+      },
+      "cwd": "${workspaceFolder}/core/backend-itwin-client",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
     // UI TESTS
     {
       "name": "[UI] Tests: Abstract",
@@ -490,8 +560,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/abstract/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "./mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -513,8 +583,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/components/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -536,8 +606,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/core/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -555,8 +625,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/framework/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -575,8 +645,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/ui/ninezone/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -615,8 +685,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/backend/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -634,8 +704,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/common/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "lib/test/**/*.test.js"
       ],
@@ -653,8 +723,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/components/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "-r",
         "ignore-styles",
@@ -676,8 +746,8 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/frontend/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "../mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
         "-r",
         "jsdom-global/register",
@@ -697,8 +767,6 @@
       "request": "launch",
       "program": "${workspaceFolder}/full-stack-tests/presentation/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "mocha.opts",
         "-r",
         "jsdom-global/register",
         "-r",
@@ -723,9 +791,13 @@
       "request": "launch",
       "program": "${workspaceFolder}/presentation/testing/node_modules/mocha/bin/_mocha",
       "args": [
-        "--opts",
-        "mocha.opts",
+        "--config",
+        "../.mocharc.json",
         "--no-timeouts",
+        "-r",
+        "ignore-styles",
+        "-r",
+        "jsdom-global/register",
         "lib/test/**/*.test.js"
       ],
       "outFiles": [
@@ -820,19 +892,6 @@
       ]
     },
     {
-      "name": "analysis-importer",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/test-apps/analysis-importer/",
-      "type": "pwa-node",
-      "request": "launch",
-      "program": "${workspaceFolder}/test-apps/analysis-importer/lib/Main.js",
-      "outFiles": [
-        "${workspaceFolder}/test-apps/agent-test-app/lib/**/*.js"
-      ]
-    },
-    {
       "name": "Extension CLI Tests (Integration)",
       "presentation": {
         "group": "6_Misc"
@@ -882,6 +941,47 @@
       ]
     },
     {
+      "name": "imodel-transformer (app)",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/test-apps/imodel-transformer",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [ // NOTE: edit these to specify the command line arguments for the debugging session
+        "start",
+        "--",
+        "--hub=qa",
+        "--sourceContextId='ec002f93-f0c1-4ab3-a407-351848eba233'", // iModelJsIntegrationTest
+        "--sourceIModelId='73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a'", // ReadOnlyTest
+        "--targetFile='d:/tmp/test-target.bim'",
+        "--logTransformer",
+        "--logChangesets",
+      ],
+      "outFiles": [
+        "${workspaceFolder}/test-apps/imodel-transformer/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "imodel-transformer (tests)",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/test-apps/imodel-transformer",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/test-apps/imodel-transformer/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "OIDC Signin Tool Tests (Integration)",
       "presentation": {
         "group": "6_Misc"
@@ -915,6 +1015,22 @@
         "--script=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
       ]
     },
+    {
+      "name": "Webpack Plugin Tests",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/tools/webpack-core",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
+      ]
+    },
     // TEST APPS
     { /* PARTIAL */
       "name": "[BACKEND] ui-test-app (electron)",
@@ -930,7 +1046,8 @@
         "--remote-debugging-port=9223"
       ],
       "env": {
-        "SVT_LOG_LEVEL": "TRACE"
+        "SVT_LOG_LEVEL": "TRACE",
+        "NODE_ENV": "development"
       },
       "outFiles": [
         "${workspaceFolder}/test-apps/ui-test-app/lib/**/*.js",
@@ -1109,6 +1226,79 @@
         "[BACKEND] display-performance-test-app (chrome)"
       ]
     },
+    { /* PARTIAL */
+      "name": "[BACKEND] presentation-test-app (chrome)",
+      "presentation": {
+        "hidden": true
+      },
+      "cwd": "${workspaceFolder}/test-apps/presentation-test-app",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/test-apps/presentation-test-app/lib/backend/main.js",
+      "outFiles": [
+        "${workspaceFolder}/test-apps/presentation-test-app/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[FRONTEND] presentation-test-app (chrome)"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[FRONTEND] presentation-test-app (chrome)",
+      "presentation": {
+        "hidden": true
+      },
+      "type": "pwa-chrome",
+      "request": "launch",
+      "url": "http://localhost:3000/",
+      "outFiles": [
+        "${workspaceFolder}/test-apps/presentation-test-app/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[BACKEND] presentation-test-app (chrome)"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[BACKEND] presentation-test-app (electron)",
+      "presentation": {
+        "hidden": true
+      },
+      "cwd": "${workspaceFolder}/test-apps/presentation-test-app/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "${workspaceFolder}/test-apps/presentation-test-app/node_modules/.bin/electron",
+      "runtimeArgs": [
+        "${workspaceFolder}/test-apps/presentation-test-app/lib/backend/main.js",
+        "--remote-debugging-port=9223"
+      ],
+      "env": {
+        "NODE_ENV": "development"
+      },
+      "outFiles": [
+        "${workspaceFolder}/test-apps/presentation-test-app/lib/backend/**/*.js",
+        "${workspaceFolder}/{core,clients,presentation}/*/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[FRONTEND] presentation-test-app (electron)"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[FRONTEND] presentation-test-app (electron)",
+      "presentation": {
+        "hidden": true
+      },
+      "type": "pwa-chrome",
+      "request": "attach",
+      "port": 9223,
+      "outFiles": [
+        "${workspaceFolder}/test-apps/presentation-test-app/lib/**/*.js",
+        "${workspaceFolder}/{core,clients,ui,presentation}/*/lib/**/*.js",
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[BACKEND] presentation-test-app (electron)"
+      ]
+    },
     // FULLSTACK TESTS
     { /* PARTIAL */
       "name": "[BACKEND] Full Stack Core Tests",
@@ -1183,6 +1373,50 @@
       ]
     },
     { /* PARTIAL */
+      "name": "[FRONTEND] Full Stack IModelClient Integration Tests",
+      "presentation": {
+        "hidden": true
+      },
+      "type": "pwa-chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/core/certa.json
+      "timeout": 200000,
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/imodelhub-client/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[BACKEND] Full Stack IModelClient Integration Tests"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[BACKEND] Full Stack IModelClient Integration Tests",
+      "presentation": {
+        "hidden": true
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/native-app/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test:integration:electron",
+        "--",
+        "--debug"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/imodelhub-client/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js"
+      ],
+      "outputCapture": "std",
+      "attachSimplePort": 5858, // NB: This must match ports.debugging in full-stack-tests/native-app/certa.json
+      "cascadeTerminateToConfigurations": [
+        "[FRONTEND] Full Stack IModelClient Integration Tests"
+      ]
+    },
+    { /* PARTIAL */
       "name": "[FRONTEND] Full Stack Core Integration Tests",
       "presentation": {
         "hidden": true
@@ -1245,6 +1479,52 @@
       ],
       "cascadeTerminateToConfigurations": [
         "[BACKEND] Full Stack NativeApp Integration Tests"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[BACKEND] Full Stack NativeApp Tests",
+      "presentation": {
+        "hidden": true
+      },
+      "cwd": "${workspaceFolder}/full-stack-tests/native-app/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test:electron",
+        "--",
+        "--debug"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/native-app/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js"
+      ],
+      "outputCapture": "std",
+      "attachSimplePort": 5858, // NB: This must match ports.debugging in full-stack-tests/native-app/certa.json
+      "cascadeTerminateToConfigurations": [
+        "[FRONTEND] Full Stack NativeApp Tests"
+      ]
+    },
+    { /* PARTIAL */
+      "name": "[FRONTEND] Full Stack NativeApp Tests",
+      "presentation": {
+        "hidden": true
+      },
+      "type": "pwa-chrome",
+      "request": "attach",
+      "port": 9223, // NB: This must match ports.frontendDebugging in full-stack-tests/native-app/certa.json
+      "timeout": 200000,
+      "outFiles": [
+        "${workspaceFolder}/full-stack-tests/native-app/lib/**/*.js",
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/ui/abstract/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js"
+      ],
+      "cascadeTerminateToConfigurations": [
+        "[BACKEND] Full Stack NativeApp Tests"
       ]
     },
     { /* PARTIAL */
@@ -1447,6 +1727,28 @@
       ]
     },
     {
+      "name": "presentation-test-app (chrome)",
+      "presentation": {
+        "group": "1_TestApps",
+        "order": 1
+      },
+      "configurations": [
+        "[BACKEND] presentation-test-app (chrome)",
+        "[FRONTEND] presentation-test-app (chrome)"
+      ]
+    },
+    {
+      "name": "presentation-test-app (electron)",
+      "presentation": {
+        "group": "1_TestApps",
+        "order": 1
+      },
+      "configurations": [
+        "[BACKEND] presentation-test-app (electron)",
+        "[FRONTEND] presentation-test-app (electron)"
+      ]
+    },
+    {
       "name": "Full Stack Core Tests",
       "presentation": {
         "group": "2_FullStackTests",
@@ -1469,6 +1771,17 @@
       ]
     },
     {
+      "name": "Full Stack IModelClient Integration Tests",
+      "presentation": {
+        "group": "2_FullStackTests",
+        "order": 1
+      },
+      "configurations": [
+        "[BACKEND] Full Stack IModelClient Integration Tests",
+        "[FRONTEND] Full Stack IModelClient Integration Tests"
+      ]
+    },
+    {
       "name": "Full Stack NativeApp Integration Tests",
       "presentation": {
         "group": "2_FullStackTests",
@@ -1477,6 +1790,17 @@
       "configurations": [
         "[BACKEND] Full Stack NativeApp Integration Tests",
         "[FRONTEND] Full Stack NativeApp Integration Tests"
+      ]
+    },
+    {
+      "name": "Full Stack NativeApp Tests",
+      "presentation": {
+        "group": "2_FullStackTests",
+        "order": 1
+      },
+      "configurations": [
+        "[BACKEND] Full Stack NativeApp Tests",
+        "[FRONTEND] Full Stack NativeApp Tests"
       ]
     },
     {
@@ -1552,7 +1876,6 @@
       "description": "Select client library to debug",
       "type": "pickString",
       "options": [
-        "forms-data-management",
         "product-settings",
         "projectshare",
         "rbac"

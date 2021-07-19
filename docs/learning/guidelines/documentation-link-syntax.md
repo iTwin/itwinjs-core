@@ -1,6 +1,6 @@
-# iModel.js Documentation Linking Syntax
+# iTwin.js Documentation Linking Syntax
 
-The documentation for the iModel.js website is authored from two sources:
+The documentation for the iTwin.js website is authored from two sources:
 
 1. Markdown (`.md`) files in the `docs` directory
 2. TypeDoc comments in source `.ts` files
@@ -33,8 +33,8 @@ Standard markdown rules apply:
 
 ### Notes on #section
 
-* `#section` is optional if a filename is specified. If not present, the target is the top of the file.
-* must be all lowercase. Use ‘-‘ instead of spaces.
+- `#section` is optional if a filename is specified. If not present, the target is the top of the file.
+- must be all lowercase. Use ‘-‘ instead of spaces.
 
 For example, if the target is:
 
@@ -61,7 +61,6 @@ For example:
  * @see [label]($docs/learning/path/filename.md#section)
  * @see [label]($docs/learning/path/filename.md#section)
  */
-
 ```
 
 ## Linking to external Urls

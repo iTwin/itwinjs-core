@@ -33,6 +33,7 @@ export interface RootState {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export const SampleAppActions = {
+  // eslint-disable-next-line jsdoc/require-jsdoc
   example: () => createAction("SampleApp:EXAMPLE"),
 };
 
@@ -269,7 +270,7 @@ export function stubRaf() {
 
   before(() => {
     window.requestAnimationFrame = (cb: FrameRequestCallback) => {
-      return window.setTimeout(cb, 1);
+      return window.setTimeout(cb, 0);
     };
     window.cancelAnimationFrame = (handle: number) => {
       window.clearTimeout(handle);

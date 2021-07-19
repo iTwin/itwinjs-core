@@ -159,6 +159,8 @@ export interface PropertyInfo {
    * @alpha Still not entirely clear how kind of quantities will be handled and what data we'll need
    */
   kindOfQuantity?: KindOfQuantityInfo;
+  /** Extended type name of the ECProperty if it has one */
+  extendedType?: string;
 }
 
 /** @public */
@@ -292,7 +294,7 @@ export type RelationshipPath = RelatedClassInfo[];
 export type RelationshipPathJSON = RelatedClassInfoJSON[];
 
 /** @public */
-export namespace RelationshipPath {
+export namespace RelationshipPath { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Reverse direction of the given [[RelationshipPath]] */
   export function reverse(path: RelationshipPath): RelationshipPath {
     return [...path].reverse().map((step) => ({

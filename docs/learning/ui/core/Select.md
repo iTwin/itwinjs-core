@@ -41,8 +41,8 @@ The list of options popup below the component, or above if there isn't enough ro
 
 ## ThemedSelect
 
-ThemedSelect is a wrapper for [react-select](https://www.npmjs.com/package/react-select) with iModel.js UI theming applied.
+ThemedSelect is a wrapper for [react-select](https://www.npmjs.com/package/react-select) with iTwin.js UI theming applied.
 
 ## API Reference
 
-* [Select]($ui-core:Select)
+- [Select]($ui-core:Select)

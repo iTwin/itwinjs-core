@@ -46,7 +46,6 @@ export interface GroupToolProps extends CommonProps {
 export function GroupTool(props: GroupToolProps) {
   const ref = React.useRef<HTMLDivElement>(null);
   const targeted = useTargeted(ref);
-  // istanbul ignore next
   const itemClassName = classnames(
     "components-toolbar-item-expandable-group-tool-item",
     props.isActive && "components-active",
@@ -63,7 +62,7 @@ export function GroupTool(props: GroupToolProps) {
   }, [props]);
 
   const handlePointerUp = React.useCallback(() => {
-    // istanbul ignore next
+    // istanbul ignore else
     if (!props.isDisabled && props.onPointerUp)
       props.onPointerUp(props.item);
   }, [props]);

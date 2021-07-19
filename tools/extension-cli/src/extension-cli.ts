@@ -10,14 +10,16 @@ import * as rimraf from "rimraf";
 import * as sha256 from "fast-sha256";
 import * as semver from "semver";
 import * as readline from "readline";
+import fetch from "node-fetch";
 import { ExtensionClient, ExtensionProps } from "@bentley/extension-client";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import { BentleyError, ExtensionStatus } from "@bentley/bentleyjs-core";
+import { BeDuration, BentleyError, ExtensionStatus } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelError } from "@bentley/imodeljs-common";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { prettyPrint, signIn } from "./helpers";
 
+if (!globalThis.fetch) globalThis.fetch = fetch as any; // polyfill fetch for ExtensionClient
 let command: "publish" | "get" | "delete" | "view" | undefined;
 let filePath: string | undefined;
 let json = false;
@@ -170,11 +172,7 @@ const argv = yargs.strict(true)
         process.stdout.write("Uploading extension...\n");
 
         while (true) {
-          await new Promise((resolve) => {
-            setTimeout(() => {
-              resolve();
-            }, 1000);
-          });
+          await BeDuration.wait(1000);
 
           const status: string = (await client.getExtensionProps(requestContext, contextId, argv.extensionName!, argv.extensionVersion!))?.status?.status ?? "";
           if (status === "Valid") {

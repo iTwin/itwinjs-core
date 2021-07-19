@@ -2,6 +2,465 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.18.1",
+      "tag": "@bentley/ui-components_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.0",
+      "tag": "@bentley/ui-components_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update table to pass HtmlDivElement to ElementResizeObserver."
+          },
+          {
+            "comment": "Add QuantityNumberInput that looks like NumberInput but works with Quantities and active unit system."
+          },
+          {
+            "comment": "`TreeRenderer`: Add ability to explicitly specify component's width and height."
+          },
+          {
+            "comment": "`VirtualizedPropertyGrid`: Add ability to explicitly specify component's width and height."
+          },
+          {
+            "comment": "`ControlledTree`: Accept and forward size props to `TreeRenderer`."
+          },
+          {
+            "comment": "Clean up timeline and fix test coverage."
+          },
+          {
+            "comment": "Add props to the TimelineComponent that will allow apps to pass a set of items to be prefixed, appended, or to replace the context menu entries."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@bentley/ui-components_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.1",
+      "tag": "@bentley/ui-components_v2.17.1",
+      "date": "Fri, 02 Jul 2021 15:38:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.0",
+      "tag": "@bentley/ui-components_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow style to be passed to weight picker."
+          },
+          {
+            "comment": "Fix array and struct property contents not being rendered in property grid when the properties have `hideCompositePropertyLabel` flag."
+          },
+          {
+            "comment": "Added `mergedCellsCount` property to `CellItem`. It is used for determining width of the cell."
+          },
+          {
+            "comment": "Added `overflow` property for `react-grid-Cell__value` element. `zIndex` is set in `TableCellContent` style property. These updates are necessary for rendering merged cells in `Table` component."
+          },
+          {
+            "comment": "Updated `Table` component so that it would be possible to merge cells in it"
+          },
+          {
+            "comment": "Update scss to remove use of slash for division to avoid SASS deprecation warnings."
+          },
+          {
+            "comment": "Publis in-use APIs"
+          },
+          {
+            "comment": "Refactor TimelineComponent to remove experimental milestones feature."
+          },
+          {
+            "comment": "`TreeRenderer`: Fix tree nodes being loaded repeatedly in some cases."
+          },
+          {
+            "comment": "`VirtualizedPropertyGrid`: Remove top and bottom padding."
+          },
+          {
+            "comment": "`VirtualizedPropertyGridWithDataProvider`: Fix loading animation overflowing its parent container."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.9",
+      "tag": "@bentley/ui-components_v2.16.9",
+      "date": "Tue, 06 Jul 2021 22:08:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.8",
+      "tag": "@bentley/ui-components_v2.16.8",
+      "date": "Fri, 02 Jul 2021 17:40:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.7",
+      "tag": "@bentley/ui-components_v2.16.7",
+      "date": "Mon, 28 Jun 2021 18:13:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.6",
+      "tag": "@bentley/ui-components_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.5",
+      "tag": "@bentley/ui-components_v2.16.5",
+      "date": "Fri, 25 Jun 2021 16:03:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.4",
+      "tag": "@bentley/ui-components_v2.16.4",
+      "date": "Wed, 23 Jun 2021 17:09:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.3",
+      "tag": "@bentley/ui-components_v2.16.3",
+      "date": "Wed, 16 Jun 2021 20:29:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.2",
+      "tag": "@bentley/ui-components_v2.16.2",
+      "date": "Thu, 03 Jun 2021 18:08:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.1",
+      "tag": "@bentley/ui-components_v2.16.1",
+      "date": "Thu, 27 May 2021 20:04:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.0",
+      "tag": "@bentley/ui-components_v2.16.0",
+      "date": "Mon, 24 May 2021 15:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add support for child popup windows."
+          },
+          {
+            "comment": "Add ability to not render array/struct property label in virtualized property grid"
+          },
+          {
+            "comment": "Add support for custom property category renderers."
+          },
+          {
+            "comment": "Improved Multi-Value column filtering in the Table component"
+          },
+          {
+            "comment": "Move `VirtualizedPropertyGrid` related types from @alpha to @beta."
+          },
+          {
+            "comment": "Fixed getting distinct values when Table rows are updated"
+          },
+          {
+            "comment": "Update to latest classnames package "
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.6",
+      "tag": "@bentley/ui-components_v2.15.6",
+      "date": "Wed, 26 May 2021 15:55:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.5",
+      "tag": "@bentley/ui-components_v2.15.5",
+      "date": "Thu, 20 May 2021 15:06:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed getting distinct values when Table rows are updated"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.4",
+      "tag": "@bentley/ui-components_v2.15.4",
+      "date": "Tue, 18 May 2021 21:59:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.3",
+      "tag": "@bentley/ui-components_v2.15.3",
+      "date": "Mon, 17 May 2021 13:31:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.2",
+      "tag": "@bentley/ui-components_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@bentley/ui-components_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@bentley/ui-components_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update to use UiSettingsStorage."
+          },
+          {
+            "comment": "Fix color picker hue display in DR by removing webkit prefix. Adjust max slider value."
+          },
+          {
+            "comment": "'TreeModel': Fixed 'changeNodeId' to set new id on TreeModelNode"
+          },
+          {
+            "comment": "'TreeNodeLoader': Changed nodes loading to avoid removing subtrees of existing expanded nodes"
+          },
+          {
+            "comment": "Added ability to track rendered nodes in ControlledTree"
+          },
+          {
+            "comment": "Fix number editor so it can process Enter key and call OnCommit processing."
+          },
+          {
+            "comment": "Fix compatibility issue when multiple versions of `rxjs` are in use."
+          },
+          {
+            "comment": "Fix a crash when clicking on a `ControlledTree` node when the tree contains placeholder nodes and using `SelectionMode.Multiple`"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@bentley/ui-components_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@bentley/ui-components_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@bentley/ui-components_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@bentley/ui-components_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@bentley/ui-components_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Lower coverage to 99.98 to avoid CI breaks."
+          },
+          {
+            "comment": "Added handling for windows which don't open."
+          },
+          {
+            "comment": "Added `UrlPropertyValueRenderer` renders values for properties of `StandardTypeNames.URL` type as URLs without looking at the value"
+          },
+          {
+            "comment": "Deprecated `onPropertyLinkClick` prop used by `VirtualizedPropertyGridWithDataProvider` and `PropertyGrid`. Behavior of clicks on `PropertyRecord` links should be customized by assigning the `links` attribute."
+          },
+          {
+            "comment": "update FormatPanel to ensure state was not set on unmounted component."
+          },
+          {
+            "comment": "Fix bug in TimelineComponent's componentDidUpdate method that caused and infinite loop."
+          },
+          {
+            "comment": "Support for AccuDraw Ui Settings"
+          },
+          {
+            "comment": "`TreeModelSource`: Fix `onModelChanged` event sometimes listing same node id multiple times."
+          },
+          {
+            "comment": "Improved ui-components test coverage to 100%"
+          },
+          {
+            "comment": "`TreeModel`: Expose `getChildOffset` method."
+          },
+          {
+            "comment": "`MutableTreeModel`: Add `moveNode` method."
+          },
+          {
+            "comment": "Better support for Escape key to Home position"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.0",
+      "tag": "@bentley/ui-components_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Updates to use new QuantityParserResult"
+          },
+          {
+            "comment": "Upgrade react-resize-detector to avoid lodash security vulnerability"
+          },
+          {
+            "comment": "Fixed broken double angle bracket link syntax"
+          },
+          {
+            "comment": "Fix solar timeline component so that sunTime is properly set for project location."
+          },
+          {
+            "comment": "Add ui-components for displaying and editing FormatProps that are used to Format and Parse Quantities."
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "Add a captureClicks prop to ColorPickerPopup that will stop propagation of click events from the popup."
+          },
+          {
+            "comment": "`MutableTreeModel`: Add `changeNodeId` method."
+          },
+          {
+            "comment": "`MutableTreeModel`: Allow `undefined` child count in `setNumChildren`."
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@bentley/ui-components_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@bentley/ui-components_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.1",
+      "tag": "@bentley/ui-components_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@bentley/ui-components_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "UI 'pickers' that use Popup component with fixed content should set closeOnNestedPopupOutsideClick prop."
+          },
+          {
+            "comment": "Consider string values starting with `pw:\\` or `pw://` to be URLs without checking the rest of the string."
+          },
+          {
+            "comment": "`ControlledTree`: Fix calling `scrollToNode` too early triggering an assertion error."
+          },
+          {
+            "comment": "Update TimelineComponent.tsx to properly respond to changed props."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.2",
+      "tag": "@bentley/ui-components_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@bentley/ui-components_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.0",
+      "tag": "@bentley/ui-components_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update components that support providing refs via React.forwardRef to work better with document generation."
+          },
+          {
+            "comment": "Add 'showCaret' prop to ColorPickers that show a popup. The caret icon will face up or down depending of popup state."
+          },
+          {
+            "comment": "Updates due to quantity unit system changes."
+          },
+          {
+            "comment": "Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fi"
+          },
+          {
+            "comment": "Created new `CategoryPropertyDataFilterer` which allows us to filter `PropertyCategory` and get matches count."
+          },
+          {
+            "comment": "Updated FilteringDataProvider, now it filters not only PropertyRecords, but PropertyCategories also."
+          },
+          {
+            "comment": "Updated `VirtualizedPropertyGrid` to pass through `HighlightedPropertyProps` and highlight `PropertyCategory` matches."
+          },
+          {
+            "comment": "Implemented `CategoryPropertyDataFilterer` in `presentation-test-app` -> `PropertiesWidget`"
+          },
+          {
+            "comment": "Updated filterers to return type of the filtered item, so now `VirtualizedPropertyGrid` can distinguish what types of items need to be highlighted. This feature was implemented in `presentation-test-app` -> `PropertiesWidget`"
+          },
+          {
+            "comment": "Update `NavigationPropertyTypeConverter` to handle navigation properties represented by `InstanceKey`"
+          },
+          {
+            "comment": "Added ui-core learning docs content and added Notification.md, Style.md & Tooltip.md ui-core learning doc files."
+          },
+          {
+            "comment": "Fix test warnings."
+          },
+          {
+            "comment": "Update to latest react-dnd version."
+          },
+          {
+            "comment": "Always clone the ViewState for a ViewportComponent to avoid attaching the same ViewState to multiple viewports."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/ui-components_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",

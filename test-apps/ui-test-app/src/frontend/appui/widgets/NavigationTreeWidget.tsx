@@ -76,7 +76,7 @@ class NavigationTreeWidget extends React.Component<NavigationTreeWidgetProps> {
     );
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     if (this.props.iModelConnection && this.props.rulesetId)
       return <NavigationTree iModelConnection={this.props.iModelConnection} rulesetId={this.props.rulesetId} />;
     else
@@ -91,7 +91,7 @@ interface NavigationTreeProps {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const NavigationTree: React.FC<NavigationTreeProps> = (props: NavigationTreeProps) => {
-  const nodeLoader = usePresentationTreeNodeLoader({
+  const { nodeLoader } = usePresentationTreeNodeLoader({
     imodel: props.iModelConnection,
     ruleset: props.rulesetId,
     pagingSize: 20,

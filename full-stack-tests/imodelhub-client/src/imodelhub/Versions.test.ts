@@ -52,6 +52,7 @@ async function createNamedVersionWithThumbnail(requestContext: AuthorizedClientR
   if (utils.getCloudEnv().isIModelHub) {
     // Wait for large thumbnail.
     for (let i = 0; i < 50; i++) {
+      // eslint-disable-next-line deprecation/deprecation
       const largeThumbnails = (await imodelClient.thumbnails.get(requestContext, imodelId, "Large", new ThumbnailQuery().byVersionId(version.id!)));
       if (largeThumbnails.length > 0)
         break;
@@ -80,7 +81,7 @@ describe("iModelHub VersionHandler", () => {
       response: 100000,
     };
 
-    this.enableTimeouts(false);
+    this.timeout(0);
     if (!TestConfig.enableMocks) {
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DisableGlobalEvents");
       utils.getRequestBehaviorOptionsHandler().disableBehaviorOption("DoNotScheduleRenderThumbnailJob");
@@ -224,32 +225,45 @@ describe("iModelHub VersionHandler", () => {
     let versions: Version[] = await iModelClient.versions.get(requestContext, imodelId2, new VersionQuery().byName(firstVersionName));
     chai.expect(versions.length).to.be.equal(1);
     const firstVersion = versions[0];
+    // eslint-disable-next-line deprecation/deprecation
     chai.expect(firstVersion.smallThumbnailId).to.be.undefined;
+    // eslint-disable-next-line deprecation/deprecation
     chai.expect(firstVersion.largeThumbnailId).to.be.undefined;
 
     const mockedSmallThumbnail = utils.generateThumbnail("Small");
     utils.mockGetThumbnailsByVersionId(imodelId2, "Small", firstVersion.id!, mockedSmallThumbnail);
+    // eslint-disable-next-line deprecation/deprecation
     const smallThumbnail: Thumbnail = (await iModelClient.thumbnails.get(requestContext, imodelId2, "Small", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
 
     const mockedLargeThumbnail = utils.generateThumbnail("Large");
     utils.mockGetThumbnailsByVersionId(imodelId2, "Large", firstVersion.id!, mockedLargeThumbnail);
+    // eslint-disable-next-line deprecation/deprecation
     const largeThumbnail: Thumbnail = (await iModelClient.thumbnails.get(requestContext, imodelId2, "Large", new ThumbnailQuery().byVersionId(firstVersion.id!)))[0];
 
     mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, mockedSmallThumbnail.id, mockedLargeThumbnail.id));
     mockGetVersionsByIdWithThumbnails(imodelId2, firstVersion.id!, ["Small", "Large"], ...mockedVersions);
+    // eslint-disable-next-line deprecation/deprecation
     versions = await iModelClient.versions.get(requestContext, imodelId2, new VersionQuery().byId(firstVersion.id!).selectThumbnailId("Small", "Large"));
     chai.expect(versions.length === 1);
+    // eslint-disable-next-line deprecation/deprecation
     chai.assert(!!versions[0].smallThumbnailId);
+    // eslint-disable-next-line deprecation/deprecation
     chai.expect(versions[0].smallThumbnailId!.toString()).to.be.equal(smallThumbnail.id!.toString());
+    // eslint-disable-next-line deprecation/deprecation
     chai.assert(!!versions[0].largeThumbnailId);
+    // eslint-disable-next-line deprecation/deprecation
     chai.expect(versions[0].largeThumbnailId!.toString()).to.be.equal(largeThumbnail.id!.toString());
 
     mockedVersions = Array(1).fill(0).map(() => utils.generateVersion(undefined, undefined, true, undefined, mockedLargeThumbnail.id));
     mockGetVersionsByNameWithThumbnails(imodelId2, firstVersion.name!, ["Large"], ...mockedVersions);
+    // eslint-disable-next-line deprecation/deprecation
     versions = await iModelClient.versions.get(requestContext, imodelId2, new VersionQuery().byName(firstVersion.name!).selectThumbnailId("Large"));
     chai.expect(versions.length === 1);
+    // eslint-disable-next-line deprecation/deprecation
     chai.expect(versions[0].smallThumbnailId).to.be.undefined;
+    // eslint-disable-next-line deprecation/deprecation
     chai.assert(!!versions[0].largeThumbnailId);
+    // eslint-disable-next-line deprecation/deprecation
     chai.expect(versions[0].largeThumbnailId!.toString()).to.be.equal(largeThumbnail.id!.toString());
 
     chai.expect(smallThumbnail.id!.toString()).to.be.not.equal(largeThumbnail.id!.toString());

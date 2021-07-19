@@ -24,33 +24,45 @@ export class TestWsgClient extends WsgClient {
     return "";
   }
 
-  public async getUrl(): Promise<string> {
+  public override async getUrl(): Promise<string> {
     return Promise.resolve(mockServerUrl);
   }
 
-  public async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void> {
+  public override async delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void> {
     return super.delete(requestContext, relativeUrlPath, httpRequestOptions);
   }
 
-  public async deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void> {
+  public override async deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void> {
     return super.deleteInstance(requestContext, relativeUrlPath, instance, requestOptions, httpRequestOptions);
   }
 
-  public async postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T> {
+  public override async postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T> {
     return super.postInstance(requestContext, typedConstructor, relativeUrlPath, instance, requestOptions, httpRequestOptions);
   }
 
-  public async postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
+  public override async postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
     return super.postInstances(requestContext, typedConstructor, relativeUrlPath, instances, requestOptions, httpRequestOptions);
   }
 
-  public async getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
+  public override async getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
     return super.getInstancesChunk(requestContext, url, chunkedQueryContext, typedConstructor, queryOptions, httpRequestOptions);
   }
 
-  public async postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
+  public override async postQuery<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]> {
     return super.postQuery(requestContext, typedConstructor, relativeUrlPath, queryOptions, httpRequestOptions);
   }
+}
+
+class TestUrlWsgClient extends WsgClient {
+
+  public constructor(apiVersion: string) {
+    super(apiVersion);
+    this.baseUrl = "https://api.bentley.com/testservice";
+  }
+
+  protected getRelyingPartyUrl() { return ""; }
+  protected getUrlSearchKey() { return ""; }
+
 }
 
 @ECJsonTypeMap.classToJson("wsg", "TestClass", { classKeyPropertyName: "className" })
@@ -182,4 +194,37 @@ describe("WsgClient", async () => {
       };
     };
   });
+
+  describe("getUrl method", () => {
+
+    it("should return correct url #1", async () => {
+      // Arrange
+      const wsgClient = new TestUrlWsgClient("2.5");
+
+      // Act
+      const url1 = await wsgClient.getUrl({} as any);
+      const url2 = await wsgClient.getUrl({} as any);
+
+      // Assert
+      expect(url1).to.be.equal("https://api.bentley.com/testservice/2.5");
+      expect(url2).to.be.equal("https://api.bentley.com/testservice/2.5");
+    });
+
+    it("should return correct url #2", async () => {
+      // Arrange
+      const wsgClient = new TestUrlWsgClient("2.5");
+
+      // Act
+      const [url1, url2] = await Promise.all([
+        wsgClient.getUrl({} as any),
+        wsgClient.getUrl({} as any),
+      ]);
+
+      // Assert
+      expect(url1).to.be.equal("https://api.bentley.com/testservice/2.5");
+      expect(url2).to.be.equal("https://api.bentley.com/testservice/2.5");
+    });
+
+  });
+
 });

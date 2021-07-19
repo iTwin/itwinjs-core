@@ -1,6 +1,6 @@
 {
   "name": "@bentley/frontend-authorization-client",
-  "version": "2.12.0-dev.15",
+  "version": "2.19.0-dev.20",
   "description": "iModel.js Frontend Authorization Client",
   "main": "lib/frontend-authorization-client.js",
   "typings": "lib/frontend-authorization-client",
@@ -34,18 +34,18 @@
     "oidc-client": "^1.9.1"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.12.0-dev.15",
-    "@bentley/itwin-client": "^2.12.0-dev.15"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.20",
+    "@bentley/itwin-client": "workspace:^2.19.0-dev.20"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.12.0-dev.15",
-    "@bentley/build-tools": "2.12.0-dev.15",
-    "@bentley/eslint-plugin": "2.12.0-dev.15",
-    "@bentley/itwin-client": "2.12.0-dev.15",
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
     "@types/node": "10.14.1",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
-    "typescript": "~3.7.4"
+    "typescript": "~4.3.0"
   },
   "eslintConfig": {
     "plugins": [

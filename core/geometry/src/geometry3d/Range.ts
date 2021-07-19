@@ -129,7 +129,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   }
 
   /** Returns true if this and other have equal low and high parts, or both are null ranges. */
-  public isAlmostEqual(other: Range3d, tol?: number): boolean {
+  public isAlmostEqual(other: Readonly<Range3d>, tol?: number): boolean {
     return (this.low.isAlmostEqual(other.low, tol) && this.high.isAlmostEqual(other.high, tol))
       || (this.isNull && other.isNull);
   }
@@ -839,7 +839,7 @@ export class Range1d extends RangeBase {
     this.setDirect(low, high);
   }
   /** Returns true if this and other have equal low and high parts, or both are null ranges. */
-  public isAlmostEqual(other: Range1d): boolean {
+  public isAlmostEqual(other: Readonly<Range1d>): boolean {
     return (Geometry.isSameCoordinate(this.low, other.low) && Geometry.isSameCoordinate(this.high, other.high))
       || (this.isNull && other.isNull);
   }
@@ -929,6 +929,21 @@ export class Range1d extends RangeBase {
     return result;
   }
 
+  /**
+   * Set this range to (min(x0,x1), max(x0,x1))
+   * @param x0 first value
+   * @param x1 second value
+   */
+  public setXXUnordered(x0: number, x1: number) {
+    if (x0 <= x1) {
+      this.low = x0; this.high = x1;
+    } else {
+      this.low = x1; this.high = x0;
+    }
+  }
+  public get isExact01(): boolean {
+    return this.low === 0.0 && this.high === 1.0;
+}
   /** Create a box from two values. Values are reversed if needed
    * @param xA first value
    * @param xB second value
@@ -1028,6 +1043,23 @@ export class Range1d extends RangeBase {
   /** Test if there is any intersection with other range */
   public intersectsRange(other: Range1d): boolean {
     return !(this.low > other.high || other.low > this.high);
+  }
+/**
+ * Intersect this range with a range defined by parameters x0 and x1
+ * * For x1 > x0, that range is null, and the intersection is null.
+ * * For x0 <= x1, the input is a non-null range.
+ * * The intersection range replaces the contents of this.
+ *
+ */
+  public intersectRangeXXInPlace(x0: number, x1: number){
+    if (x1 < x0 || x1 < this.low || x0 > this.high) {
+      this.setNull();
+    } else {
+      if (x1 < this.high)
+        this.high = x1;
+      if (x0 > this.low)
+        this.low = x0;
+    }
   }
 
   /** returns 0 if the ranges have any overlap, otherwise the shortest absolute distance from one to the other. */
@@ -1306,6 +1338,14 @@ export class Range2d extends RangeBase implements LowAndHighXY {
     result.setDirect(
       Math.min(xA, xB), Math.min(yA, yB),
       Math.max(xA, xB), Math.max(yA, yB), false);
+    return result;
+  }
+  /** Create a box with 3 pairs of xy candidates. Theses are compared and shuffled as needed for the box. */
+  public static createXYXYXY<T extends Range2d>(xA: number, yA: number, xB: number, yB: number, xC: number, yC: number, result?: T): T {
+    result = result ? result : new this() as T;
+    result.setDirect(
+      Math.min(xA, xB, xC), Math.min(yA, yB, yC),
+      Math.max(xA, xB, xC), Math.max(yA, yB, yC), false);
     return result;
   }
   /** Create a box with 2 pairs of xy candidates. If any direction has order flip, create null. */

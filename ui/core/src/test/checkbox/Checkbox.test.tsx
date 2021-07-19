@@ -17,6 +17,14 @@ describe("Checkbox", () => {
     expect(checkbox.container.querySelector("input[type='checkbox']")).not.to.be.null;
   });
 
+  it("renders with inputRef", () => {
+    const inputRef = React.createRef<HTMLInputElement>();
+    const checkbox = render(<Checkbox inputRef={inputRef} />);
+
+    expect(checkbox.container.querySelector("input[type='checkbox']")).not.to.be.null;
+    expect(inputRef.current).not.to.be.undefined;
+  });
+
   it("renders with id", () => {
     const checkbox = render(<Checkbox id="test" />);
 

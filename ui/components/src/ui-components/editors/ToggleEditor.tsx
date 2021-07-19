@@ -25,9 +25,10 @@ interface ToggleEditorState {
  */
 export class ToggleEditor extends React.PureComponent<PropertyEditorProps, ToggleEditorState> implements TypeEditor {
   private _isMounted = false;
+  private _inputElement = React.createRef<HTMLInputElement>();
 
   /** @internal */
-  public readonly state: Readonly<ToggleEditorState> = {
+  public override readonly state: Readonly<ToggleEditorState> = {
     toggleValue: false,
     isDisabled: false,
   };
@@ -45,6 +46,14 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
       };
     }
     return propertyValue;
+  }
+
+  public get htmlElement(): HTMLElement | null {
+    return this._inputElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    return document.activeElement === this._inputElement.current;
   }
 
   private _updateToggleValue = (toggleValue: boolean): any => {
@@ -67,18 +76,18 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -105,13 +114,14 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     const className = classnames("components-cell-editor", this.props.className);
     const inOn = this.state.toggleValue;
     const isDisabled = !!this.state.isDisabled;
 
     return (
       <Toggle
+        ref={this._inputElement}
         onBlur={this.props.onBlur}
         className={className}
         style={this.props.style}

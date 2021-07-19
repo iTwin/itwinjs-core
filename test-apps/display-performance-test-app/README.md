@@ -1,23 +1,30 @@
 # How to Utilize the Performance Tests
 
-## To run a performance test with electron:
+## To run a performance test with electron
 
-* Run the command "npm run start:electron".
+* Run the command "npm run test:electron".
 
-## To run a performance test on a web browser:
+## To run a performance test on a web browser
 
 * Run the command "npm run start:web" to just run the backend. Then, go to a web browser and go to the site http:\\\\localhost:3000 to start the test.
-* Run the command "npm run test:chrome" to run the backend and automatically bring up a Google Chrome browser window to start the test. This will also automatically kill **ALL** Google Chrome browser windows once the test has completed.
-* Run the command "npm run test:edge" to run the backend and automatically bring up an Edge browser window to start the test. This will also automatically kill **ALL** Edge browser windows once the test has completed.
-* Run the command "npm run test:firefox" to run the backend and automatically bring up a FireFox browser window to start the test. This will also automatically kill **ALL** FireFox browser windows once the test has completed.
+* Run the command "npm run test:chrome" to run the backend and automatically bring up a Google Chrome browser window to start the test. This will also automatically kill the Google Chrome browser windows once the test has completed.
+* Run the command "npm run test:edge" to run the backend and automatically bring up an Edge browser window to start the test.
+* Run the command "npm run test:firefox" to run the backend and automatically bring up a FireFox browser window to start the test.
+* Run the command "npm run test:safari" to run the backend and automatically bring up a Safari browser window to start the test.
 
-## Options available for a performance test run:
+## Options available for a performance test run
 
 These options will work for running with electron or for a browser (though specifying a specific browser when running with electron will have no effect). Always use a double backslash when specifying a file path. All of these options can be specified in any order, and you can use any number of these options.  For example, to specify everything, your command could look like this: "npm run start:web chrome d:\\\\develop\\\\testConfig.json c:\\\\performanceOutput\\\\".
 
 * To specify a json config file that you wish to use, add the full file path to the command. For example, run the command "npm run start:web D:/timingTests.json" or "npm run start:web C:\\\\wireframeTimings.json". If no valid json config file has been specified, the default json config file (DefaultConfig.json) will be used.
 * To specify an output path, simply add the output path to the command. For example, run the command "npm run start:web C:\\\\output\\\\performanceData\\\\" to use this as the base path for where the output will be stored. Keep in mind that any outputPath variable specified in your json config file will be assumed to be a subdirectory of the output path specified when you called your command unless it starts with the name of a drive (i.e. C:\\\\, D:\\\\, etc.).
 * To specify a particular browser that you wish to run in, you can add the option "chrome", "edge", or "firefox" to your command. If you are running intending to use a browser for the frontend, this will cause a new browser window to open to http:\\\\localhost:3000 and begin running the performance test once the backend has finished getting started. However, this option will have no effect if you are running in electron.
+* To specify running headlessly with chrome, you can add the option "headless" to your command. For example, run the command "npm run test:chrome headless". This will cause chrome to run headlessly, so no chrome window will appear while the test is running. However, this option will have no affect if you are running in electron, edge, or firefox.
+* To specify running electron **without** opening the debugger automatically, you can add the option "no_debug" to your command. For example, run the command "npm run test:electron no_debug". This will run dpta without bringing the debugger up automatically when electron starts.
+
+## Performance tests on Mac
+
+Performance tests should automatically operate on Mac the same as on a Windows machine. However, it should be noted that, as Safari does not support the GPU timer we are utilizing, performance results when running with Safari will not produce the following data columns in the csv file: GPU Total, Bound By, Effective Total Time, & Effective FPS.
 
 ## Performance tests on iOS (backend running locally)
 
@@ -55,7 +62,9 @@ When you chose to produce images through an 'image' or 'both' test, the program 
 
 You can specify which saved view you wish to use for each test with the viewName property.  If external saved views exist for the local file you can specify which external saved view to use with the extViewName property (you can also specify external saved views by name using the viewName property if the name does not clash with a normal saved view).  You can also specify a saved view to use via the viewString property.  The viewString property must include the _viewname and _viewStatePropsString properties (and optionally the _selectedElements and/or _overrideElements properties) which you can copy from the external saved view file.
 
-If you wish to specify multiple saved views in the same model, you can use a asterisk wildcard instead of a specific view name to test multiple views matching the given wildcard. This is NOT case-sensitive. For example, to test all views, set viewName to "*". To test all views with the word 'Edge' in them, set viewName to "*edge*". To test views starting with the word edge, use "edge*". Additionally, you can use the savedViewType setting to "external", "internal", or "both" to specify if you only want to test all of the external saved views, local saved views, or both the local and external saved views. If nothing is specified, the savedViewType will default to using both sets of saved views.
+If you wish to specify multiple iModels in the same folder, you can use a asterisk wildcard instead of a specific iModel name to test multiple iModels matching the given wildcard. This is NOT case-sensitive. For example, to test all iModels, set modelName to "*". To test all iModels with the word 'Edge' in them, set modelName to "*edge*". To test iModels starting with the word edge, use "edge*". If no modelName is specified, it will default to testing all iModels in the given iModelLocation. This currently does NOT work when using an iModelHub location with iModelHubProject instead of a local directory with iModelLocation.
+
+If you wish to specify multiple saved views in the same iModel, you can use a asterisk wildcard instead of a specific view name to test multiple views matching the given wildcard. This is NOT case-sensitive. For example, to test all views, set viewName to "*". To test all views with the word 'Edge' in them, set viewName to "*edge*". To test views starting with the word edge, use "edge*". Additionally, you can use the savedViewType setting to "external", "internal", or "both" to specify if you only want to test all of the external saved views, local saved views, or both the local and external saved views. If nothing is specified, the savedViewType will default to using both sets of saved views.
 
 You can specify any view flag that is part of the ViewFlags class. The types of view flags that can be specified include (but are not limited to):
 

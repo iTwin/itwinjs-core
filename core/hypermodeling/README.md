@@ -1,6 +1,6 @@
 # Hypermodeling Extension
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 This package enables a feature called "hyper-modeling". iModels often contain 2d views of spatial model(s) intended to serve as documentation, called "section drawings". These views are produced by applying a section (clip) volume to the spatial geometry and projecting the section cut geometry onto the plane to generate a 2d view. A spatial element called a "section drawing location" is positioned at the section cut plane, with a link to the 2d section view. Hyper-modeling allows the 2d graphics to be displayed in situ with the spatial models at the section drawing location.
 
@@ -37,4 +37,4 @@ The package exposes the following key-in commands:
 
 ## Contributing
 
-[Contributing to iModel.js](https://github.com/imodeljs/imodeljs/blob/master/CONTRIBUTING.md)
+[Contributing to iTwin.js](https://github.com/imodeljs/imodeljs/blob/master/CONTRIBUTING.md)

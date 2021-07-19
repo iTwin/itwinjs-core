@@ -54,11 +54,11 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
     this.state = ({ viewId: undefined, dataProvider: undefined, rangeValue: 0 });
   }
 
-  public async componentDidMount() {
+  public override async componentDidMount() {
     await this._getView();
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
   }
 
   private async _getView() {
@@ -138,7 +138,7 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
     this.setState({ rangeValue: value });
   });
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const divStyle: React.CSSProperties = {
       backgroundColor: "white",
       display: "flex",
@@ -179,8 +179,7 @@ class ScheduleAnimationViewport extends React.Component<ScheduleAnimationViewpor
               endDate={this.state.dataProvider.end}
               initialDuration={this.state.rangeValue}
               totalDuration={this.state.dataProvider.duration}
-              milestones={this.state.dataProvider.getMilestones()}
-              minimized={this.state.dataProvider.getMilestones().length === 0}
+              minimized={true}
               onChange={this._onAnimationFractionChanged}
               showDuration={true} />
           </div>

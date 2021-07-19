@@ -5,6 +5,7 @@
 
 /* eslint-disable no-restricted-syntax */
 
+// eslint-disable-next-line @typescript-eslint/no-unused-vars
 interface Gltf {
   accessors: GltfAccessor[];
   asset: GltfAsset;
@@ -17,6 +18,7 @@ interface Gltf {
   meshes: GltfMesh[];
   nodes: GltfNode[];
   scenes: GltfScene[];
+  scene: number;
 }
 
 const enum AccessorComponentType {

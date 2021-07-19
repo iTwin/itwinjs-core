@@ -15,6 +15,7 @@ import { IModelApp } from "./IModelApp";
 import { CanvasDecoration } from "./render/CanvasDecoration";
 import { IconSprites, Sprite, SpriteLocation } from "./Sprites";
 import { BeButton, BeButtonEvent, BeTouchEvent, InputSource } from "./tools/Tool";
+import { ToolSettings } from "./tools/ToolSettings";
 import { DecorateContext } from "./ViewContext";
 import { Decorator } from "./ViewManager";
 import { ScreenViewport, Viewport } from "./Viewport";
@@ -26,6 +27,7 @@ import { ScreenViewport, Viewport } from "./Viewport";
  */
 export class TouchCursor implements CanvasDecoration {
   public position = new Point3d();
+  public viewport: Viewport;
   protected _offsetPosition = new Point3d();
   protected _size: number;
   protected _yOffset: number;
@@ -36,6 +38,7 @@ export class TouchCursor implements CanvasDecoration {
   protected constructor(vp: ScreenViewport) {
     this._size = vp.pixelsFromInches(0.3);
     this._yOffset = this._size * 1.75;
+    this.viewport = vp;
   }
 
   protected setPosition(vp: Viewport, worldLocation: Point3d): boolean {
@@ -54,6 +57,10 @@ export class TouchCursor implements CanvasDecoration {
 
     this.position.setFrom(viewLocation);
     this._offsetPosition.setFrom(offsetLocation);
+    if (vp !== this.viewport) {
+      this.viewport.invalidateDecorations();
+      this.viewport = vp;
+    }
     vp.invalidateDecorations();
     return true;
   }
@@ -125,6 +132,8 @@ export class TouchCursor implements CanvasDecoration {
   }
 
   public doTouchEnd(ev: BeTouchEvent): void {
+    if (this._isDragging && undefined !== ev.viewport)
+      IModelApp.toolAdmin.currentInputState.fromPoint(ev.viewport, this._offsetPosition, InputSource.Touch); // Current location should reflect virtual cursor offset...
     this._isSelected = this._isDragging = false;
     if (undefined !== ev.viewport)
       ev.viewport.invalidateDecorations();
@@ -504,9 +513,9 @@ export class AccuSnap implements Decorator {
 
   private unFlashViews() {
     this.needFlash.clear();
-    this.areFlashed.forEach((vp) => {
-      vp.setFlashed(undefined, 0.0);
-    });
+    for (const vp of this.areFlashed)
+      vp.flashedId = undefined;
+
     this.areFlashed.clear();
   }
 
@@ -566,7 +575,7 @@ export class AccuSnap implements Decorator {
     this.toolState.enabled = yesNo;
     if (!yesNo) {
       this.clear();
-      if (undefined !== this.touchCursor) {
+      if (undefined !== this.touchCursor && !this.wantVirtualCursor) {
         this.touchCursor = undefined;
         IModelApp.viewManager.invalidateDecorationsAllViews();
       }
@@ -652,13 +661,14 @@ export class AccuSnap implements Decorator {
       geometryClass: thisHit.geometryClass,
     };
 
-    if (!thisHit.isElementHit) {
-      const thisGeom = IModelApp.viewManager.getDecorationGeometry(thisHit);
-      if (undefined === thisGeom) {
-        if (out) out.snapStatus = SnapStatus.NoSnapPossible;
-        return undefined;
-      }
+    const thisGeom = (thisHit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(thisHit) : IModelApp.viewManager.getDecorationGeometry(thisHit));
+
+    if (undefined !== thisGeom) {
       requestProps.decorationGeometry = [{ id: thisHit.sourceId, geometryStream: thisGeom }];
+    } else if (!thisHit.isElementHit) {
+      if (out)
+        out.snapStatus = SnapStatus.NoSnapPossible;
+      return undefined;
     }
 
     if (snapModes.includes(SnapMode.Intersection)) {
@@ -667,14 +677,15 @@ export class AccuSnap implements Decorator {
           if (thisHit.sourceId === hit.sourceId || thisHit.iModel !== hit.iModel)
             continue;
 
-          if (!hit.isElementHit) {
-            const geom = IModelApp.viewManager.getDecorationGeometry(hit);
-            if (undefined === geom)
-              continue;
+          const geom = (hit.isElementHit ? IModelApp.viewManager.overrideElementGeometry(hit) : IModelApp.viewManager.getDecorationGeometry(hit));
+
+          if (undefined !== geom) {
             if (undefined === requestProps.decorationGeometry)
               requestProps.decorationGeometry = [{ id: thisHit.sourceId, geometryStream: geom }];
             else
               requestProps.decorationGeometry.push({ id: thisHit.sourceId, geometryStream: geom });
+          } else if (!hit.isElementHit) {
+            continue;
           }
 
           if (undefined === requestProps.intersectCandidates)
@@ -705,28 +716,39 @@ export class AccuSnap implements Decorator {
     };
 
     // If this hit is from a plan projection model, apply the model's elevation to the snap point for display.
+    // Likewise, if it is a hit on a model with a display transform, apply the model's transform to the snap point.
     let snapPoint = result.snapPoint!;
     const elevation = undefined !== thisHit.modelId ? thisHit.viewport.view.getModelElevation(thisHit.modelId) : 0;
-    if (0 !== elevation) {
+    if (0 !== elevation || undefined !== thisHit.viewport.view.modelDisplayTransformProvider) {
       const adjustedSnapPoint = Point3d.fromJSON(snapPoint);
+      thisHit.viewport.view.transformPointByModelDisplayTransform(thisHit.modelId, adjustedSnapPoint, false);
       adjustedSnapPoint.z += elevation;
       snapPoint = adjustedSnapPoint;
     }
 
     const snap = new SnapDetail(thisHit, result.snapMode, result.heat, snapPoint);
 
-    // Apply model's elevation to curve for display.
+    // Apply model's elevation and display transform to curve for display.
     let transform;
-    if (0 !== elevation)
+    if (undefined !== thisHit.modelId && undefined !== thisHit.viewport.view.modelDisplayTransformProvider) {
+      transform = thisHit.viewport.view.getModelDisplayTransform(thisHit.modelId, Transform.createIdentity());
+      if (0 !== elevation)
+        transform.origin.set(0, 0, elevation);
+    } else if (0 !== elevation) {
       transform = Transform.createTranslationXYZ(0, 0, elevation);
+    }
 
     snap.setCurvePrimitive(parseCurve(result.curve), transform, result.geomType);
     if (undefined !== result.parentGeomType)
       snap.parentGeomType = result.parentGeomType;
-    if (undefined !== result.hitPoint)
+    if (undefined !== result.hitPoint) {
       snap.hitPoint.setFromJSON(result.hitPoint); // Update hitPoint from readPixels with exact point location corrected to surface/edge geometry...
-    if (undefined !== result.normal)
+      thisHit.viewport.view.transformPointByModelDisplayTransform(thisHit.modelId, snap.hitPoint, false);
+    }
+    if (undefined !== result.normal) {
       snap.normal = Vector3d.fromJSON(result.normal);
+      thisHit.viewport.view.transformNormalByModelDisplayTransform(thisHit.modelId, snap.normal);
+    }
 
     if (SnapMode.Intersection !== snap.snapMode)
       return snap;
@@ -944,10 +966,15 @@ export class AccuSnap implements Decorator {
   public onTouchMoveStart(ev: BeTouchEvent, startEv: BeTouchEvent): boolean { return (undefined !== this.touchCursor) ? this.touchCursor.doTouchMoveStart(ev, startEv) : false; }
 
   /** @internal */
+  public get wantVirtualCursor(): boolean {
+    return this._doSnapping || (this.isLocateEnabled && ToolSettings.enableVirtualCursorForLocate);
+  }
+
+  /** @internal */
   public async onTouchTap(ev: BeTouchEvent): Promise<boolean> {
     if (undefined !== this.touchCursor)
       return this.touchCursor.doTouchTap(ev);
-    if (!this._doSnapping)
+    if (!this.wantVirtualCursor)
       return false;
     this.touchCursor = TouchCursor.createFromTouchTap(ev);
     if (undefined === this.touchCursor)
@@ -976,7 +1003,7 @@ export class AccuSnap implements Decorator {
 
   /** @internal */
   public decorate(context: DecorateContext): void {
-    if (undefined !== this.touchCursor)
+    if (undefined !== this.touchCursor && this.touchCursor.viewport === context.viewport)
       context.addCanvasDecoration(this.touchCursor, true);
 
     this.flashElements(context);
@@ -1007,7 +1034,13 @@ export class AccuSnap implements Decorator {
   /** Enable locating elements.
    * @public
    */
-  public enableLocate(yesNo: boolean) { this.toolState.locate = yesNo; }
+  public enableLocate(yesNo: boolean) {
+    this.toolState.locate = yesNo;
+    if (!yesNo && undefined !== this.touchCursor && !this.wantVirtualCursor) {
+      this.touchCursor = undefined;
+      IModelApp.viewManager.invalidateDecorationsAllViews();
+    }
+  }
 
   /** Called whenever a new [[Tool]] is started.
    * @internal

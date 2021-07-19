@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import { Checkbox } from "../../ui-core/checkbox/Checkbox";
 import { CheckBoxState } from "../../ui-core/enums/CheckBoxState";
 import { ExpansionToggle } from "../../ui-core/tree/ExpansionToggle";
-import { TreeNode as Node } from "../../ui-core/tree/Node";
+import { TreeNode as Node } from "../../ui-core";
 
 describe("<Node />", () => {
   it("should render", () => {
@@ -147,6 +147,14 @@ describe("<Node />", () => {
     dataTestIds.indexOf("test").should.not.eq(-1);
     dataTestIds.indexOf("test-expansion-toggle").should.not.eq(-1);
     dataTestIds.indexOf("test-contents").should.not.eq(-1);
+  });
+
+  it("should call onContextMenu callback when node is right-clicked", () => {
+    const callback = sinon.spy();
+    const wrapper = mount(<Node label="a" level={0} onContextMenu={callback} />);
+    const content = wrapper.find("div.contents");
+    content.simulate("contextmenu");
+    expect(callback).to.be.calledOnce;
   });
 
 });

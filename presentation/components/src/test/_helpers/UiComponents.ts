@@ -6,9 +6,9 @@
 import * as faker from "faker";
 import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
-import { ContentUpdateInfo, HierarchyUpdateInfo, NodeKey, RegisteredRuleset, Ruleset, VariableValue } from "@bentley/presentation-common";
+import { NodeKey, RegisteredRuleset, Ruleset, VariableValue } from "@bentley/presentation-common";
 import { createRandomECInstancesNodeKey } from "@bentley/presentation-common/lib/test/_helpers/random";
-import { PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
+import { IModelContentChangeEventArgs, IModelHierarchyChangeEventArgs, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { DelayLoadedTreeNodeItem } from "@bentley/ui-components";
 import { PRESENTATION_TREE_NODE_KEY } from "../../presentation-components/tree/Utils";
@@ -48,8 +48,8 @@ export const mockPresentationManager = () => {
   const rulesetVariablesManagerMock = moq.Mock.ofType<RulesetVariablesManager>();
   rulesetVariablesManagerMock.setup((x) => x.onVariableChanged).returns(() => onRulesetVariableChanged);
 
-  const onIModelHierarchyChanged = new BeEvent<(args: { ruleset: Ruleset, updateInfo: HierarchyUpdateInfo }) => void>();
-  const onIModelContentChanged = new BeEvent<(args: { ruleset: Ruleset, updateInfo: ContentUpdateInfo }) => void>();
+  const onIModelHierarchyChanged = new BeEvent<(args: IModelHierarchyChangeEventArgs) => void>();
+  const onIModelContentChanged = new BeEvent<(args: IModelContentChangeEventArgs) => void>();
   const presentationManagerMock = moq.Mock.ofType<PresentationManager>();
   presentationManagerMock.setup((x) => x.onIModelHierarchyChanged).returns(() => onIModelHierarchyChanged);
   presentationManagerMock.setup((x) => x.onIModelContentChanged).returns(() => onIModelContentChanged);

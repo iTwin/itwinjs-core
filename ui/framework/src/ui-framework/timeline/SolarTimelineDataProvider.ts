@@ -34,27 +34,29 @@ export class SolarTimelineDataProvider extends BaseSolarDataProvider {
     } else {
       this._cartographicCenter = Cartographic.fromDegrees(this.longitude, this.latitude, 0.0);
     }
+
+    this._projectTimeZoneOffset = this.getZone(this._cartographicCenter);
+    this.initializeData(this._projectTimeZoneOffset);
+    this.onTimeChanged(this.timeOfDay);
   }
 
-  public get shouldShowTimeline() {
+  public override get shouldShowTimeline() {
     const style = this._displayStyle3d;
     return undefined !== style && style.viewFlags.shadows;
   }
 
-  public onTimeChanged = (time: Date) => {
-    this.timeOfDay = time;
+  public override onTimeChanged = (time: Date) => {
     if (this._viewport && this._viewport.view.is3d()) {
       this._viewport.view.displayStyle.setSunTime(time.getTime());
-      this._viewport.invalidateScene();
     }
   };
 
-  public get shadowColor(): ColorDef {
+  public override get shadowColor(): ColorDef {
     const style = this._displayStyle3d;
     return style ? style.settings.solarShadows.color.toColorDef() : ColorDef.create(ColorByName.gray);
   }
 
-  public set shadowColor(color: ColorDef) {
+  public override set shadowColor(color: ColorDef) {
     const displayStyle = this._displayStyle3d;
     if (!displayStyle)
       return;

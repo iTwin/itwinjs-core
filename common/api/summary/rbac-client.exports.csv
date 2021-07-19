@@ -1,5 +1,4 @@
 sep=;
 Release Tag;API Item
-internal;IModelHubPermission
 internal;Permission 
 internal;RbacClient 

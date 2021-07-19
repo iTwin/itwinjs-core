@@ -7,22 +7,22 @@ import {
   BaseItemState,
   CommandItemDef,
   ContentGroup, ContentLayoutDef, ContentViewManager, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupItemDef, ItemList, NavigationWidget,
+  SelectionContextToolDefinitions,
   SessionStateActionId,
   SyncUiEventId,
-  ToolWidget, UiFramework, Widget, WidgetState, Zone, ZoneState,
+  ToolWidget, UiFramework, Widget, Zone, ZoneState,
 } from "@bentley/ui-framework";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
-import { MobxDemoWidgetControl } from "../widgets/MobxDemoWidget/MobxDemoWidgetControl";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import {
   HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl,
 } from "../widgets/PropertyGridDemoWidget";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { ConditionalBooleanValue } from "@bentley/ui-abstract";
+import { ConditionalBooleanValue, WidgetState } from "@bentley/ui-abstract";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage2 extends FrontstageProvider {
 
@@ -93,13 +93,6 @@ export class Frontstage2 extends FrontstageProvider {
           <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
             widgets={[
               <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
-            ]}
-          />
-        }
-        bottomLeft={
-          <Zone
-            widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.MobxDemoWidget" control={MobxDemoWidgetControl} fillZone={true} />,
             ]}
           />
         }
@@ -176,7 +169,10 @@ class FrontstageToolWidget extends React.Component {
 
   private get _horizontalToolbarItems(): ItemList {
     const items = new ItemList([
-      this.myClearSelectionItemDef,
+      SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef,
+      SelectionContextToolDefinitions.hideSectionToolGroup,
+      SelectionContextToolDefinitions.isolateSelectionToolGroup,
+      SelectionContextToolDefinitions.emphasizeElementsItemDef,
       AppTools.item1,
       AppTools.item2,
       new GroupItemDef({
@@ -195,7 +191,7 @@ class FrontstageToolWidget extends React.Component {
     return items;
   }
 
-  public render() {
+  public override render() {
     return (
       <ToolWidget
         appButton={AppTools.backstageToggleCommand}
@@ -209,7 +205,7 @@ class FrontstageToolWidget extends React.Component {
 /** Define a NavigationWidget with Buttons to display in the TopRight zone.
  */
 class FrontstageNavigationWidget extends React.Component {
-  public render() {
+  public override render() {
     const horizontalItems = new ItemList([
       CoreTools.fitViewCommand,
       CoreTools.windowAreaCommand,

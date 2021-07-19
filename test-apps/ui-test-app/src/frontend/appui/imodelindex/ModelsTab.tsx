@@ -11,9 +11,8 @@ import { NodeKey, RegisteredRuleset } from "@bentley/presentation-common";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { DelayLoadedTreeNodeItem, DEPRECATED_Tree, TreeNodeItem } from "@bentley/ui-components";
-import { Checkbox, CheckBoxState, LoadingSpinner } from "@bentley/ui-core";
+import { Checkbox, CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@bentley/ui-core";
 import { UiFramework } from "@bentley/ui-framework";
-import { CheckListBox, CheckListBoxItem } from "./CheckListBox";
 
 interface ModelInfo {
   name: string;
@@ -130,7 +129,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   }
 
   /** Load document codes when we mount */
-  public async componentDidMount() {
+  public override async componentDidMount() {
 
     this._isMounted = true;
 
@@ -161,7 +160,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     this.setState((prevState) => ({ initialized: true, models: _models, showToast: !prevState.docCodes }));
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
 
     if (this._ruleset)
@@ -574,7 +573,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     } else {
       return (
         <div className="models-tree-container">
-          {/* eslint-disable-next-line react/jsx-pascal-case */}
+          {/* eslint-disable-next-line react/jsx-pascal-case, deprecation/deprecation */}
           {<DEPRECATED_Tree selectedNodes={this._getSelectedNodes()} dataProvider={this._dataProvider} onCheckboxClick={this._onCheckboxClick} />}
         </div>
       );
@@ -597,7 +596,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     );
   }
 
-  public render() {
+  public override render() {
     return (
       <div className="modelstab-container">
         {this.renderContent()}

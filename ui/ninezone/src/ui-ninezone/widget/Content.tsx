@@ -9,7 +9,7 @@
 import "./Content.scss";
 import * as React from "react";
 import { Point } from "@bentley/ui-core";
-import { assert } from "../base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { useTransientState } from "./ContentRenderer";
 
 /** Properties of [[ScrollableWidgetContent]] component.
@@ -22,15 +22,15 @@ export interface ScrollableWidgetContentProps {
 /** Component that enables widget content scrolling.
  * @internal future
  */
-export const ScrollableWidgetContent = React.memo<ScrollableWidgetContentProps>(function ScrollableWidgetContent(props) { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
+export const ScrollableWidgetContent = React.memo<ScrollableWidgetContentProps>(function ScrollableWidgetContent(props) { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
   const scrollPosition = React.useRef(new Point());
   const ref = React.useRef<HTMLDivElement>(null);
   const onSave = React.useCallback(() => {
-    assert(ref.current);
+    assert(!!ref.current);
     scrollPosition.current = new Point(ref.current.scrollLeft, ref.current.scrollTop);
   }, []);
   const onRestore = React.useCallback(() => {
-    assert(ref.current);
+    assert(!!ref.current);
     ref.current.scrollLeft = scrollPosition.current.x;
     ref.current.scrollTop = scrollPosition.current.y;
   }, []);

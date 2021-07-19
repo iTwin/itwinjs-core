@@ -13,6 +13,7 @@ Name | Required? | Type | Default | Meaning
 `relationshipMeaning` | No | `"SameInstance" \| "RelatedInstance"` | `"RelatedInstance"` | Meaning of the relationship. See [below](#relationship-meaning-attribute) for more details.
 `properties` | No | `Array<string \| PropertySpecification> \| "_none_" \| "*"` | All properties in target class | List of names or definitions of related class properties that should be included in the content. `_none_` means none of the properties should be picked up. `*` means all properties should be picked up and is also allowed to be specified as a member item - see [examples](#examples) section.
 `autoExpand` | No | `boolean` | `false` | Should field containing related properties be automatically expanded. Only takes effect when related properties are displayed as a struct.
+`skipIfDuplicate` | No | `boolean` | `false` | Should this related properties specification be ignored if it duplicates another higher priority specification for the same relationship.
 
 ### Relationship Meaning Attribute
 
@@ -27,6 +28,7 @@ In general, when properties are displayed in a property grid, this attribute pro
 ## Examples
 
 Pick "MyProperty1" and "MyProperty2" properties from all related aspects that have them:
+
 ```JSON
 {
   "propertiesSource": {
@@ -41,6 +43,7 @@ Pick "MyProperty1" and "MyProperty2" properties from all related aspects that ha
 ```
 
 Pick all properties from related model and override label of "UserLabel" property:
+
 ```JSON
 {
   "propertiesSource": {

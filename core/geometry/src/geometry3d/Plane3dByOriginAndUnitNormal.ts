@@ -12,6 +12,7 @@ import { Angle } from "./Angle";
 import { Matrix3d } from "./Matrix3d";
 import { Point3d, Vector3d } from "./Point3dVector3d";
 import { Transform } from "./Transform";
+import { XAndY } from "./XYZProps";
 
 /**
  * A plane defined by
@@ -87,6 +88,16 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
       return result;
     }
     return new Plane3dByOriginAndUnitNormal(Point3d.create(ax, ay, az), Vector3d.create(ux / magU, uy / magU, uz / magU));
+  }
+  /** create a new  Plane3dByOriginAndUnitNormal with unit normal (a) in the xy plane (b) perpendicular to the line defined by xy parts of origin to target.
+   * * origin and normal both have z = 0.
+   * * The inputs are NOT captured.
+   * * Returns undefined if the normal vector is all zeros.
+   */
+  public static createOriginAndTargetXY(origin: XAndY, target: XAndY, result?: Plane3dByOriginAndUnitNormal): Plane3dByOriginAndUnitNormal | undefined {
+    const ux = target.x - origin.x;
+    const uy = target.y - origin.y;
+    return  this.createXYZUVW(origin.x, origin.y, 0.0, uy, -ux, 0.0, result);
   }
 
   /** create a new  Plane3dByOriginAndUnitNormal with xy origin (at z=0) and normal angle in xy plane.
@@ -198,6 +209,10 @@ export class Plane3dByOriginAndUnitNormal implements BeJSONFunctions, PlaneAltit
   }
   /** Return the altitude of spacePoint above or below the plane.  (Below is negative) */
   public altitude(spacePoint: Point3d): number { return this._normal.dotProductStartEnd(this._origin, spacePoint); }
+  /** Return the altitude of point (x,y)  given xy parts using only the xy parts of origin and unit normal */
+  public altitudeXY(x: number, y: number): number {
+    return (x - this._origin.x) * this._normal.x + (y - this._origin.y) * this._normal.y;
+  }
 
   /** Return the altitude of weighted spacePoint above or below the plane.  (Below is negative) */
   public weightedAltitude(spacePoint: Point4d): number {

@@ -6,12 +6,17 @@
 @import "~@bentley/ui-core/lib/ui-core/text/mixins";
 
 .uifw-accudraw-input-label {
+  min-width: 16px;
   margin-right: 4px;
+
+  display: flex;
+  align-items: center;
 
   @include uicore-text( leading-2 );
 
-  justify-self: center;
-  align-self: center;
+  &.uifw-label-centered {
+    justify-content: center;
+  }
 
   .icon {
     width:  16px;
@@ -23,24 +28,27 @@
 }
 
 .uifw-accudraw-input-field {
-  color: $buic-foreground-body;
+  flex: 1;
 }
 
 .uifw-accudraw-lock {
-  justify-self: center;
-  align-self: center;
+  width: 22px;
+  @include uicore-centered;
 }
 
 .uifw-accudraw-x-value {
-  background-color: $buic-foreground-primary;
+  background-color: $buic-accessory-alert;
+  color: $buic-accessory-hollow;
 }
 
 .uifw-accudraw-y-value {
-  background-color: $buic-foreground-success;
+  background-color: $buic-accessory-success;
+  color: $buic-accessory-hollow;
 }
 
 .uifw-accudraw-z-value {
-  background-color: $buic-foreground-error;
+  background-color: $buic-accessory-primary;
+  color: $buic-accessory-hollow;
 }
 
 .uifw-accudraw-angle-value {

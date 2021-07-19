@@ -43,7 +43,7 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
   private _componentUnmounting = false;
 
   /** @internal */
-  public readonly state: BooleanListenerState;
+  public override readonly state: BooleanListenerState;
 
   constructor(props: BooleanListenerProps) {
     super(props);
@@ -58,7 +58,7 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
       return;
 
     /* istanbul ignore else */
-    if (this.props.eventIds.some((value: string): boolean => args.eventIds.has(value))) {
+    if (this.props.eventIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
       const boolValue = this.props.boolFunc();
       /* istanbul ignore else */
       if (this.state.boolValue !== boolValue) {
@@ -67,15 +67,15 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
     }
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     /* istanbul ignore else */
-    if (this.props.boolFunc && this.props.eventIds.length > 0)
+    if ((this.props.boolFunc !== undefined) && this.props.eventIds.length > 0)
       SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleVisibilitySyncUiEvent);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     /* istanbul ignore else */
-    if (this.props.boolFunc && this.props.eventIds.length > 0) {
+    if ((this.props.boolFunc !== undefined) && this.props.eventIds.length > 0) {
       this._componentUnmounting = true;
       SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleVisibilitySyncUiEvent);
     }
@@ -84,7 +84,7 @@ export class BooleanSyncUiListener extends React.Component<BooleanListenerProps,
   // istanbul ignore next
   private _hasNoChildren = (children: any) => React.Children.count(children) === 0;
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const {
       // do not bleed our props
       children, eventIds, boolFunc, defaultValue, // eslint-disable-line @typescript-eslint/no-unused-vars

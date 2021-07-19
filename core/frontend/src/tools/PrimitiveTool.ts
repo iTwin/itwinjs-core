@@ -6,6 +6,7 @@
  * @module Tools
  */
 
+import { assert } from "@bentley/bentleyjs-core";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { NotifyMessageDetails, OutputMessagePriority } from "../NotificationManager";
@@ -18,18 +19,29 @@ import { BeButton, BeButtonEvent, CoordinateLockOverrides, CoreTools, Interactiv
  * @public
  */
 export abstract class PrimitiveTool extends InteractiveTool {
+  /** The viewport within which the tool operates.
+   * @note This property is only initialized if [[run]] returns `true`, causing the tool to be installed.
+   */
   public targetView?: Viewport;
-  public targetModelId?: string;
+  private _targetModelId?: string;
+  public get targetModelId() { return this._targetModelId; }
+  public set targetModelId(v: string | undefined) { this._targetModelId = v; }
   public targetIsLocked: boolean = false; // If target model is known, set this to true in constructor and override getTargetModel.
 
-  /** Get the iModel the tool is operating against. */
-  public get iModel(): IModelConnection { return this.targetView!.view.iModel; }
+  /** Get the iModel on which this tool operates.
+   * @note The iModel is obtained from [[targetView]], so should only be invoked if the tool installed successfully.
+   */
+  public get iModel(): IModelConnection {
+    assert(undefined !== this.targetView);
+    return this.targetView.view.iModel;
+  }
 
   /**
    * Establish this tool as the active PrimitiveTool.
    * @return true if this tool was installed (though it may have exited too)
+   * @note If you override this method you **must** call `super.run` and return false if it returns false.
    */
-  public run(..._args: any[]): boolean {
+  public override run(..._args: any[]): boolean {
     const { toolAdmin, viewManager } = IModelApp;
     if (!this.isCompatibleViewport(viewManager.selectedView, false) || !toolAdmin.onInstallTool(this))
       return false;
@@ -39,18 +51,18 @@ export abstract class PrimitiveTool extends InteractiveTool {
     return true;
   }
 
-  /**
-   * Determine whether the supplied Viewport is compatible with this tool.
+  /** Determine whether the supplied Viewport is compatible with this tool.
    * @param vp the Viewport to check
    */
-  public isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
+  public override isCompatibleViewport(vp: Viewport | undefined, isSelectedViewChange: boolean): boolean {
     if (undefined === vp)
       return false; // No views are open...
 
     const view = vp.view;
     const iModel = view.iModel;
+
     if (this.requireWriteableTarget() && iModel.isReadonly)
-      return false; // Tool can't be used when iModel is read only.
+      return false; // this Tool can't be used when iModel is read only.
 
     if (undefined === this.targetView || (!this.targetIsLocked && isSelectedViewChange))
       this.targetView = vp; // Update target to new view if undefined or still free to change.
@@ -78,7 +90,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * outside the project extents, but it will be sufficient to handle most cases and provide good feedback to the user.
    * @return true if ev is acceptable.
    */
-  public isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean {
+  public override isValidLocation(ev: BeButtonEvent, isButtonEvent: boolean): boolean {
     const vp = ev.viewport;
     if (undefined === vp)
       return false;
@@ -122,7 +134,7 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * @param _previous The previously active view.
    * @param current The new active view.
    */
-  public onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void {
+  public override onSelectedViewportChanged(_previous: Viewport | undefined, current: Viewport | undefined): void {
     if (this.isCompatibleViewport(current, true))
       return;
     this.onRestartTool();
@@ -132,13 +144,18 @@ export abstract class PrimitiveTool extends InteractiveTool {
    * Called when an external event may invalidate the current tool's state.
    * Examples are undo, which may invalidate any references to elements, or an incompatible active view change.
    * The active tool is expected to call installTool with a new instance, or exitTool to start the default tool.
+   * ```ts
+   *   const tool = new MyPrimitiveTool();
+   *   if (!tool.run())
+   *     this.exitTool(); // Don't leave current instance active if new instance rejects install...
+   * ```
    */
   public abstract onRestartTool(): void;
 
   /**
    * Called to reset tool to initial state. PrimitiveTool implements this method to call onRestartTool.
    */
-  public onReinitialize(): void { this.onRestartTool(); }
+  public override onReinitialize(): void { this.onRestartTool(); }
 
   public exitTool(): void { IModelApp.toolAdmin.startDefaultTool(); }
 
@@ -177,9 +194,10 @@ export abstract class PrimitiveTool extends InteractiveTool {
 
     return true;
   }
-  /**
-   * Tools need to call SaveChanges to commit any elements they have added/changes they have made.
-   * This helper method supplies the tool name for the undo string to iModel.saveChanges.
-   */
-  public async saveChanges(): Promise<void> { return this.iModel.saveChanges(this.toolId); }
+
+  /** If this tool is editing a briefcase, commits any elements that the tool has changed, supplying the tool name as the undo string. */
+  public async saveChanges(): Promise<void> {
+    if (this.iModel.isBriefcaseConnection())
+      return this.iModel.saveChanges(this.toolId);
+  }
 }

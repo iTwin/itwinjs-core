@@ -15,7 +15,7 @@ import { RenderSystem } from "../render/RenderSystem";
 import { Viewport } from "../Viewport";
 import {
   B3dmReader, BatchedTileIdMap, createDefaultViewFlagOverrides, GltfReader, I3dmReader, readPointCloudTileContent, RealityTile, Tile, TileContent,
-  TileDrawArgs, TileLoadPriority, TileRequest,
+  TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel,
 } from "./internal";
 
 const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
@@ -41,9 +41,11 @@ export abstract class RealityTileLoader {
     return RealityTileLoader.computeTileClosestToEyePriority(tile, viewports, tile.tree.iModelTransform);
   }
 
-  public abstract async loadChildren(tile: RealityTile): Promise<Tile[] | undefined>;
-  public abstract async requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
+  public abstract loadChildren(tile: RealityTile): Promise<Tile[] | undefined>;
+  public abstract getRequestChannel(tile: Tile): TileRequestChannel;
+  public abstract requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
   public abstract get maxDepth(): number;
+  public abstract get minDepth(): number;
   public abstract get priority(): TileLoadPriority;
   protected get _batchType(): BatchType { return BatchType.Primary; }
   protected get _loadEdges(): boolean { return true; }
@@ -52,7 +54,6 @@ export abstract class RealityTileLoader {
   public get containsPointClouds(): boolean { return this._containsPointClouds; }
   public get parentsAndChildrenExclusive(): boolean { return true; }
   public forceTileLoad(_tile: Tile): boolean { return false; }
-  public onActiveRequestCanceled(_tile: Tile): void { }
 
   public processSelectedTiles(selected: Tile[], _args: TileDrawArgs): Tile[] { return selected; }
 
@@ -77,7 +78,14 @@ export abstract class RealityTileLoader {
     switch (format) {
       case TileFormat.Pnts:
         this._containsPointClouds = true;
-        return { graphic: readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system) };
+        let graphic = readPointCloudTileContent(streamBuffer, iModel, modelId, is3d, tile.contentRange, system);
+        if (graphic && tile.transformToRoot && !tile.transformToRoot.isIdentity) {
+          const transformBranch = new GraphicBranch(true);
+          transformBranch.add(graphic);
+          graphic = system.createBranch(transformBranch, tile.transformToRoot);
+        }
+
+        return { graphic};
 
       case TileFormat.B3dm:
         reader = B3dmReader.create(streamBuffer, iModel, modelId, is3d, tile.contentRange, system, yAxisUp, tile.isLeaf, tile.center, tile.transformToRoot, isCanceled, this.getBatchIdMap());

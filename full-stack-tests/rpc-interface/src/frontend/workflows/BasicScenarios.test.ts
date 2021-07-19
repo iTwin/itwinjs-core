@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
@@ -24,7 +24,7 @@ describe("Basic Scenarios", async () => {
   });
 
   async function openIModelAndQueryPage(contextId: string, iModelId: string, openMode: OpenMode) {
-    const iModel = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode);
+    const iModel = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode); // eslint-disable-line deprecation/deprecation
     expect(iModel).to.exist;
     expect(iModel.elements).to.exist;
 

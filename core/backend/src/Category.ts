@@ -6,7 +6,7 @@
  * @module Categories
  */
 
-import { DbOpcode, Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
+import { Id64, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
   BisCodeSpec, CategoryProps, Code, CodeScopeProps, CodeSpec, ElementProps, Rank, SubCategoryAppearance, SubCategoryProps,
 } from "@bentley/imodeljs-common";
@@ -19,7 +19,7 @@ import { CategoryOwnsSubCategories } from "./NavigationRelationship";
  */
 export class SubCategory extends DefinitionElement {
   /** @internal */
-  public static get className(): string { return "SubCategory"; }
+  public static override get className(): string { return "SubCategory"; }
   /** The Appearance parameters for this SubCategory */
   public appearance: SubCategoryAppearance;
   /** Optional description of this SubCategory. */
@@ -33,7 +33,7 @@ export class SubCategory extends DefinitionElement {
   }
 
   /** @internal */
-  public toJSON(): SubCategoryProps {
+  public override toJSON(): SubCategoryProps {
     const val = super.toJSON() as SubCategoryProps;
     val.appearance = this.appearance.toJSON();
     if (this.description && this.description.length > 0)
@@ -42,7 +42,7 @@ export class SubCategory extends DefinitionElement {
   }
 
   /** Get the SubCategory's name (its Code value). */
-  public getSubCategoryName(): string { return this.code.getValue(); }
+  public getSubCategoryName(): string { return this.code.value; }
   /** Get the Id of the SubCategory. */
   public getSubCategoryId(): Id64String { return this.id; }
   /** Get the Id of this SubCategory's parent Category. */
@@ -102,7 +102,7 @@ export class SubCategory extends DefinitionElement {
  */
 export class Category extends DefinitionElement implements CategoryProps {
   /** @internal */
-  public static get className(): string { return "Category"; }
+  public static override get className(): string { return "Category"; }
   public rank: Rank = Rank.User;
   public description?: string;
 
@@ -114,7 +114,7 @@ export class Category extends DefinitionElement implements CategoryProps {
   }
 
   /** @internal */
-  public toJSON(): CategoryProps {
+  public override toJSON(): CategoryProps {
     const val = super.toJSON() as CategoryProps;
     val.rank = this.rank;
     if (this.description && this.description.length > 0)
@@ -141,7 +141,7 @@ export class Category extends DefinitionElement implements CategoryProps {
  */
 export class DrawingCategory extends Category {
   /** @internal */
-  public static get className(): string { return "DrawingCategory"; }
+  public static override get className(): string { return "DrawingCategory"; }
 
   /** Construct a DrawingCategory
    * @param opts  The properties of the new DrawingCategory
@@ -149,14 +149,6 @@ export class DrawingCategory extends Category {
    * @internal
    */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
-
-  /** Tell monitors about the automatic insertion of my default sub-category */
-  protected static onInserted(props: ElementProps, iModel: IModelDb): void {
-    super.onInserted(props, iModel);
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWritten(this, IModelDb.getDefaultSubCategoryId(props.id!), DbOpcode.Insert);
-    }
-  }
 
   /** Get the name of the CodeSpec that is used by DrawingCategory objects. */
   public static getCodeSpecName(): string { return BisCodeSpec.drawingCategory; }
@@ -217,21 +209,13 @@ export class DrawingCategory extends Category {
  */
 export class SpatialCategory extends Category {
   /** @internal */
-  public static get className(): string { return "SpatialCategory"; }
+  public static override get className(): string { return "SpatialCategory"; }
   /** Construct a SpatialCategory
    * @param opts  The properties of the new SpatialCategory
    * @param iModel The IModelDb where the SpatialCategory may be inserted.
    * @internal
    */
   public constructor(opts: ElementProps, iModel: IModelDb) { super(opts, iModel); }
-
-  /** Tell monitors about the sneaky insertion of my default sub-category */
-  protected static onInserted(props: ElementProps, iModel: IModelDb): void {
-    super.onInserted(props, iModel);
-    if (iModel.isBriefcaseDb()) {
-      iModel.concurrencyControl.onElementWritten(this, IModelDb.getDefaultSubCategoryId(props.id!), DbOpcode.Insert);
-    }
-  }
 
   /** Get the name of the CodeSpec that is used by SpatialCategory objects. */
   public static getCodeSpecName(): string { return BisCodeSpec.spatialCategory; }
@@ -280,8 +264,7 @@ export class SpatialCategory extends Category {
    */
   public static insert(iModelDb: IModelDb, definitionModelId: Id64String, name: string, defaultAppearance: SubCategoryAppearance.Props | SubCategoryAppearance): Id64String {
     const category = this.create(iModelDb, definitionModelId, name);
-    const elements = iModelDb.elements;
-    const categoryId = elements.insertElement(category);
+    const categoryId = iModelDb.elements.insertElement(category);
     category.setDefaultAppearance(defaultAppearance);
     return categoryId;
   }

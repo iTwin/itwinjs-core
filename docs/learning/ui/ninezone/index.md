@@ -6,10 +6,10 @@ The 9-Zone UI Pattern allows applications to work across a range of devices and 
 
 ## Core Principles
 
-* Content is full screen
-* UI appears on a layer above the content
-* The UI layer is divided into zones. Each zone has a specific purpose
-* Widgets not dialogs
+- Content is full screen
+- UI appears on a layer above the content
+- The UI layer is divided into zones. Each zone has a specific purpose
+- Widgets not dialogs
 
 ## Zones
 

@@ -86,26 +86,26 @@ class HilitedIds extends Id64.Uint32Set {
     this._iModel = iModel;
   }
 
-  public add(low: number, high: number) {
+  public override add(low: number, high: number) {
     super.add(low, high);
     this.onChanged();
   }
 
-  public delete(low: number, high: number) {
+  public override delete(low: number, high: number) {
     super.delete(low, high);
     this.onChanged();
   }
 
-  public clear() {
+  public override clear() {
     super.clear();
     this.onChanged();
   }
 
-  public addIds(ids: Id64Arg) {
+  public override addIds(ids: Id64Arg) {
     this.change(() => super.addIds(ids));
   }
 
-  public deleteIds(ids: Id64Arg) {
+  public override deleteIds(ids: Id64Arg) {
     this.change(() => super.deleteIds(ids));
   }
 
@@ -166,20 +166,31 @@ class HilitedElementIds extends HilitedIds {
  * Hilited elements are displayed with a customizable hilite effect within a [[Viewport]].
  * The set exposes 3 types of elements in 3 separate collections: geometric elements, subcategories, and geometric models.
  * @note Typically, elements are hilited by virtue of their presence in the IModelConnection's [[SelectionSet]]. The HiliteSet allows additional
- * elements to be displayed with the hilite effect without adding them to the [[SelectionSet]].
+ * elements to be displayed with the hilite effect without adding them to the [[SelectionSet]]. If you add elements to the HiliteSet directly, you
+ * are also responsible for removing them as appropriate.
+ * @note Support for subcategories and geometric models in the HiliteSet is currently `beta`.
+ * @see [[IModelConnection.hilited]] for the HiliteSet associated with an iModel.
  * @see [Hilite.Settings]($common) for customization of the hilite effect.
- * @beta
+ * @public
  */
 export class HiliteSet {
   private readonly _elements: HilitedElementIds;
 
+  /** The set of hilited subcategories.
+   * @beta
+   */
   public readonly subcategories: Id64.Uint32Set;
+  /** The set of hilited [[GeometricModelState]]s.
+   * @beta
+   */
   public readonly models: Id64.Uint32Set;
+  /** The set of hilited elements. */
   public get elements(): Id64.Uint32Set { return this._elements; }
 
   /** Construct a HiliteSet
    * @param iModel The iModel containing the entities to be hilited.
    * @param syncWithSelectionSet If true, the contents of the `elements` set will be synchronized with those in the `iModel`'s [[SelectionSet]].
+   * @internal
    */
   public constructor(public iModel: IModelConnection, syncWithSelectionSet = true) {
     this._elements = new HilitedElementIds(iModel, syncWithSelectionSet);
@@ -210,10 +221,12 @@ export class HiliteSet {
    * @param onOff True to add the elements to the hilited set, false to remove them.
    */
   public setHilite(arg: Id64Arg, onOff: boolean): void {
-    if (onOff)
-      Id64.forEach(arg, (id) => this.elements.addId(id));
-    else
-      Id64.forEach(arg, (id) => this.elements.deleteId(id));
+    for (const id of Id64.iterable(arg)) {
+      if (onOff)
+        this.elements.addId(id);
+      else
+        this.elements.deleteId(id);
+    }
 
     IModelApp.viewManager.onSelectionSetChanged(this.iModel);
   }
@@ -281,7 +294,9 @@ export class SelectionSet {
 
   private _add(elem: Id64Arg, sendEvent = true): boolean {
     const oldSize = this.elements.size;
-    Id64.forEach(elem, (id) => this.elements.add(id));
+    for (const id of Id64.iterable(elem))
+      this.elements.add(id);
+
     const changed = oldSize !== this.elements.size;
     if (sendEvent && changed)
       this.sendChangedEvent({ type: SelectionSetEventType.Add, set: this, added: elem });
@@ -300,7 +315,9 @@ export class SelectionSet {
 
   private _remove(elem: Id64Arg, sendEvent = true): boolean {
     const oldSize = this.elements.size;
-    Id64.forEach(elem, (id) => this.elements.delete(id));
+    for (const id of Id64.iterable(elem))
+      this.elements.delete(id);
+
     const changed = oldSize !== this.elements.size;
     if (sendEvent && changed)
       this.sendChangedEvent({ type: SelectionSetEventType.Remove, set: this, removed: elem });
@@ -330,12 +347,12 @@ export class SelectionSet {
   public invert(elem: Id64Arg): boolean {
     const elementsToAdd = new Set<string>();
     const elementsToRemove = new Set<string>();
-    Id64.forEach(elem, (id) => {
+    for (const id of Id64.iterable(elem)) {
       if (this.elements.has(id))
         elementsToRemove.add(id);
       else
         elementsToAdd.add(id);
-    });
+    }
 
     return this.addAndRemove(elementsToAdd, elementsToRemove);
   }
@@ -350,10 +367,10 @@ export class SelectionSet {
     this._add(elem, false);
 
     if (0 < removed.size) {
-      Id64.forEach(elem, (id) => {
+      for (const id of Id64.iterable(elem)) {
         if (removed.has(id))
           removed.delete(id);
-      });
+      }
     }
 
     this.sendChangedEvent({ type: SelectionSetEventType.Replace, set: this, added: elem, removed });
@@ -368,5 +385,9 @@ function areEqual(lhs: Set<string>, rhs: Id64Arg): boolean {
   if (lhs.size !== Id64.sizeOf(rhs))
     return false;
 
-  return Id64.iterate(rhs, (id) => lhs.has(id));
+  for (const id of Id64.iterable(rhs))
+    if (!lhs.has(id))
+      return false;
+
+  return true;
 }

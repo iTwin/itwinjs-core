@@ -6,6 +6,7 @@
  * @module Item
  */
 
+import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { BadgeType, ConditionalStringValue, OnItemExecutedFunc, SpecialKey, StringGetter } from "@bentley/ui-abstract";
@@ -26,8 +27,6 @@ import { SyncUiEventArgs, SyncUiEventDispatcher } from "../syncui/SyncUiEventDis
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
-
-import classnames = require("classnames");
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -122,10 +121,10 @@ export class GroupItemDef extends ActionButtonItemDef {
     return this._itemList.items.length;
   }
 
-  public execute(): void {
+  public override execute(): void {
   }
 
-  public toolbarReactNode(index?: number): React.ReactNode {
+  public override toolbarReactNode(index?: number): React.ReactNode {
     this.resolveItems();
     const key = this.getKey(index);
 
@@ -177,7 +176,7 @@ interface GroupItemState extends BaseItemState {
  */
 export class GroupItem extends React.Component<GroupItemComponentProps, GroupItemState> {
   /** @internal */
-  public readonly state: Readonly<GroupItemState>;
+  public override readonly state: Readonly<GroupItemState>;
   private _componentUnmounting = false;
   private _childSyncIds?: Set<string>;
   private _childRefreshRequired = false;
@@ -217,11 +216,11 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     let refreshState = false;
     // istanbul ignore else
     if (this._childSyncIds && this._childSyncIds.size > 0)
-      if ([...this._childSyncIds].some((value: string): boolean => args.eventIds.has(value)))
+      if ([...this._childSyncIds].some((value: string): boolean => args.eventIds.has(value.toLowerCase())))
         this._childRefreshRequired = true;  // this is cleared when render occurs
     let newState: GroupItemState = { ...this.state };
     if (this.props.groupItemDef.stateSyncIds && this.props.groupItemDef.stateSyncIds.length > 0) // eslint-disable-line deprecation/deprecation
-      refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // eslint-disable-line deprecation/deprecation
+      refreshState = this.props.groupItemDef.stateSyncIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase())); // eslint-disable-line deprecation/deprecation
     if (refreshState || this._childRefreshRequired) {
       if (this.props.groupItemDef.stateFunc) // eslint-disable-line deprecation/deprecation
         newState = this.props.groupItemDef.stateFunc(newState) as GroupItemState; // eslint-disable-line deprecation/deprecation
@@ -233,20 +232,20 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     }
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
     FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._componentUnmounting = true;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
     FrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
   }
 
-  public shouldComponentUpdate(nextProps: GroupItemComponentProps, nextState: GroupItemState) {
+  public override shouldComponentUpdate(nextProps: GroupItemComponentProps, nextState: GroupItemState) {
     if (!PropsHelper.isShallowEqual(nextState, this.state))
       return true;
     if (!PropsHelper.isShallowEqual(nextProps, this.props))
@@ -320,7 +319,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     });
   }
 
-  public componentDidUpdate(prevProps: GroupItemComponentProps, _prevState: GroupItemState) {
+  public override componentDidUpdate(prevProps: GroupItemComponentProps, _prevState: GroupItemState) {
     if (this.props !== prevProps) {
       // istanbul ignore next
       if (this.props.groupItemDef !== prevProps.groupItemDef)
@@ -355,7 +354,7 @@ export class GroupItem extends React.Component<GroupItemComponentProps, GroupIte
     }
   };
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     if (!this.state.isVisible)
       return null;
 

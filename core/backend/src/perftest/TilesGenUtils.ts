@@ -65,6 +65,7 @@ export class BackendTileGenerator {
     useProjectExtents: false,
     disableMagnification: false,
     ignoreAreaPatterns: false,
+    enableExternalTextures: false,
     alwaysSubdivideIncompleteTiles: false,
   };
   private readonly _stats: Stats = {
@@ -168,7 +169,7 @@ export class BackendTileGenerator {
     const tileTime = new StopWatch(undefined, true);
     let content;
     try {
-      content = await this._iModel.tiles.requestTileContent(this._requestContext, treeInfo.treeId, tile.contentId);
+      content = (await this._iModel.tiles.requestTileContent(this._requestContext, treeInfo.treeId, tile.contentId)).content;
     } catch (err) {
       throw err;
     }

@@ -15,6 +15,7 @@ import { ModelessDialogManager } from "./ModelessDialogManager";
  */
 export interface ModelessDialogProps extends DialogProps {
   dialogId: string;
+  movable?: boolean;
 }
 
 /** Modeless Dialog React component uses the Dialog component with a modal={false} prop.
@@ -26,7 +27,7 @@ export class ModelessDialog extends React.Component<ModelessDialogProps> {
     super(props);
   }
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     const { dialogId, style, modal, modelessId, onModelessPointerDown, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
 
     return (

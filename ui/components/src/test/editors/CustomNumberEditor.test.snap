@@ -1,0 +1,20 @@
+// Jest Snapshot v1, https://goo.gl/fbAQLP
+
+exports[`<CustomNumberEditor /> renders correctly with style 1`] = `
+<ForwardRef(ForwardRefInput)
+  className="components-cell-editor components-customnumber-editor"
+  data-testid="components-customnumber-editor"
+  disabled={false}
+  nativeKeyHandler={[Function]}
+  onChange={[Function]}
+  onFocus={[Function]}
+  readOnly={false}
+  setFocus={false}
+  style={
+    Object {
+      "color": "red",
+    }
+  }
+  value="3.35"
+/>
+`;

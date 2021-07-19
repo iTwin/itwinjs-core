@@ -10,7 +10,7 @@ import { UiError } from "@bentley/ui-abstract";
 import { UiFramework } from "../UiFramework";
 
 /** NameToReducerMap used by Reducer Registry
- * @beta
+ * @public
  */
 export interface NameToReducerMap {
   [name: string]: (state: any, action: any) => any;

@@ -6,10 +6,12 @@ import { assert, expect } from "chai";
 import { Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
 import { BriefcaseQuery, Briefcase as HubBriefcase } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, IModelHubFrontend, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestContext } from "./setup/TestContext";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("IModel Read/Write Connection", () => {
   let accessToken: AccessToken;
@@ -27,17 +29,17 @@ describe("IModel Read/Write Connection", () => {
 
   after(async function () {
     if (!testContext.settings.runiModelWriteRpcTests)
-      this.skip();
+      return;
 
     const iModelId = testContext.iModelForWrite!.iModelId;
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const briefcases: HubBriefcase[] = await IModelApp.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
+    const briefcases: HubBriefcase[] = await IModelHubFrontend.iModelClient.briefcases.get(requestContext, iModelId, new BriefcaseQuery().ownedByMe());
     if (briefcases.length > 16) {
       Logger.logInfo("TestUtility", `Reached limit of maximum number of briefcases for ${iModelId}. Purging all briefcases.`);
 
       const promises = new Array<Promise<void>>();
       briefcases.forEach((briefcase: HubBriefcase) => {
-        promises.push(IModelApp.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
+        promises.push(IModelHubFrontend.iModelClient.briefcases.delete(requestContext, iModelId, briefcase.briefcaseId!));
       });
       await Promise.all(promises);
     }
@@ -66,7 +68,7 @@ describe("IModel Read/Write Connection", () => {
     const contextId = testContext.iModelForWrite!.contextId;
     const iModelId = testContext.iModelForWrite!.iModelId;
 
-    const iModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
+    const iModel = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 
     const originalExtents = iModel.projectExtents;
     const newExtents = Range3d.create(originalExtents.low, originalExtents.high);
@@ -76,7 +78,7 @@ describe("IModel Read/Write Connection", () => {
 
     await iModel.saveChanges();
 
-    const updatediModel: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
+    const updatediModel = await RemoteBriefcaseConnection.open(contextId, iModelId, OpenMode.ReadWrite);
 
     const updatedExtents = Range3d.fromJSON(updatediModel.projectExtents);
     assert.isTrue(newExtents.isAlmostEqual(updatedExtents), "Project extents successfully updated in database");

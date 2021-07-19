@@ -1,17 +1,17 @@
 ---
 name: Request a feature
-about: New ideas & improvements to iModel.js are always welcome.
+about: New ideas & improvements to iTwin.js are always welcome.
 title: ""
 labels: ""
 assignees: ""
 ---
 
 <!--
-Thanks for helping make iModel.js better!
+Thanks for helping make iTwin.js better!
 
 When suggesting an idea, give examples of the intended use case. Features that benefit the wider community are more likely to be prioritized.
 
-The best way to get your ideas into iModel.js is to help us! We love contributions and are always happy to be provide feedback and advice. Check out the contributor guide to get started:
+The best way to get your ideas into iTwin.js is to help us! We love contributions and are always happy to be provide feedback and advice. Check out the contributor guide to get started:
 
 https://github.com/imodeljs/imodeljs/blob/master/CONTRIBUTING.md
 -->

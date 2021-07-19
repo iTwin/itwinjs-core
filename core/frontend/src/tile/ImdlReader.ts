@@ -26,6 +26,7 @@ import {
 } from "../render/primitives/VertexTable";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
+import { BatchOptions } from "../render/GraphicBuilder";
 import { GltfReader, GltfReaderProps, IModelTileContent, ShouldAbortReadGltf } from "./internal";
 
 /* eslint-disable no-restricted-syntax */
@@ -35,18 +36,36 @@ export interface ImdlReaderResult extends IModelTileContent {
   readStatus: TileReadStatus;
 }
 
+/** Convert the byte array returned by [[TileAdmin.requestElementGraphics]] into a [[RenderGraphic]].
+ * @param bytes The binary graphics data obtained from `requestElementGraphics`.
+ * @param iModel The iModel with which the graphics are associated.
+ * @param modelId The Id of the [[GeometricModelState]] with which the graphics are associated. Can be an invalid Id.
+ * @param is3d True if the graphics are 3d.
+ * @param options Options customizing how [Feature]($common)s within the graphic can be resymbolized.
+ * @public
+ */
+export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConnection, modelId: Id64String, is3d: boolean, options?: BatchOptions): Promise<RenderGraphic | undefined> {
+  const stream = new ByteStream(bytes.buffer);
+  const reader = ImdlReader.create(stream, iModel, modelId, is3d, IModelApp.renderSystem, undefined, undefined, undefined, undefined, options);
+  if (!reader)
+    return undefined;
+
+  const result = await reader.read();
+  return result.graphic;
+}
+
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
  * @internal
  */
 export class ImdlReader extends GltfReader {
   private readonly _sizeMultiplier?: number;
   private readonly _loadEdges: boolean;
-  private readonly _tileId?: string;
+  private readonly _options: BatchOptions;
 
   /** Attempt to initialize an ImdlReader to deserialize iModel tile data beginning at the stream's current position. */
   public static create(stream: ByteStream, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
     type: BatchType = BatchType.Primary, loadEdges: boolean = true, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number,
-    tileId?: string): ImdlReader | undefined {
+    options?: BatchOptions): ImdlReader | undefined {
     const header = new ImdlHeader(stream);
     if (!header.isValid || !header.isReadableVersion)
       return undefined;
@@ -57,7 +76,7 @@ export class ImdlReader extends GltfReader {
 
     // A glTF header follows the feature table
     const props = GltfReaderProps.create(stream, false);
-    return undefined !== props ? new ImdlReader(props, iModel, modelId, is3d, system, type, loadEdges, isCanceled, sizeMultiplier, tileId) : undefined;
+    return undefined !== props ? new ImdlReader(props, iModel, modelId, is3d, system, type, loadEdges, isCanceled, sizeMultiplier, options) : undefined;
   }
 
   /** Attempt to deserialize the tile data */
@@ -85,10 +104,10 @@ export class ImdlReader extends GltfReader {
   }
 
   /** @internal */
-  protected extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }
+  protected override extractReturnToCenter(_extensions: any): number[] | undefined { return undefined; }
 
   /** @internal */
-  protected createDisplayParams(json: any): DisplayParams | undefined {
+  protected override createDisplayParams(json: any): DisplayParams | undefined {
     const type = JsonUtils.asInt(json.type, DisplayParams.Type.Mesh);
     const lineColor = ColorDef.create(JsonUtils.asInt(json.lineColor));
     const fillColor = ColorDef.create(JsonUtils.asInt(json.fillColor));
@@ -223,15 +242,13 @@ export class ImdlReader extends GltfReader {
   }
 
   private async readNamedTexture(namedTex: any, name: string): Promise<RenderTexture | undefined> {
-    const bufferViewId = JsonUtils.asString(namedTex.bufferView);
-    const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
-    if (undefined === bufferViewJson)
-      return undefined;
-
-    const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
-    const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
-    if (0 === byteLength)
-      return undefined;
+    // Reasons a texture could be embedded in the tile content instead of requested separately from the backend:
+    // - external textures are disabled
+    // - the texture name is not a valid Id64 string
+    // - the texture is below a certain backend-hardcoded size threshold
+    // The bufferViewJson being defined signifies any of the above conditions. In that case, the image content
+    // has been embedded in the tile contents. Otherwise, we will attempt to request the image content separately
+    // from the backend.
 
     let textureType = RenderTexture.Type.Normal;
     const isGlyph = JsonUtils.asBool(namedTex.isGlyph);
@@ -246,10 +263,23 @@ export class ImdlReader extends GltfReader {
     const cacheable = !isGlyph && !isTileSection;
     const params = new RenderTexture.Params(cacheable ? name : undefined, textureType);
 
-    const bytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
-    const format = namedTex.format;
-    const imageSource = new ImageSource(bytes, format);
-    return this._system.createTextureFromImageSource(imageSource, this._iModel, params);
+    const bufferViewId = JsonUtils.asString(namedTex.bufferView);
+    const bufferViewJson = 0 !== bufferViewId.length ? this._bufferViews[bufferViewId] : undefined;
+
+    if (undefined !== bufferViewJson) { // presence of bufferViewJson signifies we should read the texture from the tile content
+      const byteOffset = JsonUtils.asInt(bufferViewJson.byteOffset);
+      const byteLength = JsonUtils.asInt(bufferViewJson.byteLength);
+      if (0 === byteLength)
+        return undefined;
+
+      const texBytes = this._binaryData.subarray(byteOffset, byteOffset + byteLength);
+      const format = namedTex.format;
+      const imageSource = new ImageSource(texBytes, format);
+      return this._system.createTextureFromImageSource(imageSource, this._iModel, params);
+    }
+
+    // bufferViewJson was undefined, so attempt to request the texture directly from the backend
+    return this._system.createTextureFromElement(name, this._iModel, params, namedTex.format);
   }
 
   /** @internal */
@@ -297,11 +327,11 @@ export class ImdlReader extends GltfReader {
   }
 
   private constructor(props: GltfReaderProps, iModel: IModelConnection, modelId: Id64String, is3d: boolean, system: RenderSystem,
-    type: BatchType, loadEdges: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, tileId?: string) {
+    type: BatchType, loadEdges: boolean, isCanceled?: ShouldAbortReadGltf, sizeMultiplier?: number, options?: BatchOptions) {
     super(props, iModel, modelId, is3d, system, type, isCanceled);
     this._sizeMultiplier = sizeMultiplier;
     this._loadEdges = loadEdges;
-    this._tileId = tileId;
+    this._options = options ?? {};
   }
 
   private static skipFeatureTable(stream: ByteStream): boolean {
@@ -682,7 +712,7 @@ export class ImdlReader extends GltfReader {
     }
 
     if (undefined !== tileGraphic)
-      tileGraphic = this._system.createBatch(tileGraphic, featureTable, contentRange, this._tileId);
+      tileGraphic = this._system.createBatch(tileGraphic, featureTable, contentRange, this._options);
 
     return {
       readStatus: TileReadStatus.Success,

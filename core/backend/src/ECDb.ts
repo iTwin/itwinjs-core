@@ -6,13 +6,15 @@
  * @module ECDb
  */
 
-import { assert, ClientRequestContext, DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelError, IModelStatus, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus } from "@bentley/imodeljs-common";
+import { ClientRequestContext, DbResult, IDisposable, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import {
+  Base64EncodedString, IModelError, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
+} from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { ECSqlStatement, ECSqlStatementCache } from "./ECSqlStatement";
+import { ECSqlStatement } from "./ECSqlStatement";
 import { IModelHost } from "./IModelHost";
-import { CachedSqliteStatement, SqliteStatement, SqliteStatementCache } from "./SqliteStatement";
+import { SqliteStatement, StatementCache } from "./SqliteStatement";
 
 const loggerCategory: string = BackendLoggerCategory.ECDb;
 
@@ -32,9 +34,17 @@ export enum ECDbOpenMode {
 export class ECDb implements IDisposable {
   private _nativeDb?: IModelJsNative.ECDb;
   private _concurrentQueryInitialized: boolean = false;
-  private readonly _statementCache: ECSqlStatementCache = new ECSqlStatementCache();
-  private readonly _sqliteStatementCache: SqliteStatementCache = new SqliteStatementCache();
+  private readonly _statementCache = new StatementCache<ECSqlStatement>();
+  private _sqliteStatementCache = new StatementCache<SqliteStatement>();
   private _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
+
+  /** only for tests
+   * @internal
+   */
+  public resetSqliteCache(size: number) {
+    this._sqliteStatementCache.clear();
+    this._sqliteStatementCache = new StatementCache<SqliteStatement>(size);
+  }
 
   constructor() {
     this._nativeDb = new IModelHost.platform.ECDb();
@@ -94,7 +104,7 @@ export class ECDb implements IDisposable {
 
   /** @internal use to test statement caching */
   public getCachedStatementCount() {
-    return this._statementCache.getCount();
+    return this._statementCache.size;
   }
 
   /** Commit the outermost transaction, writing changes to the file. Then, restart the transaction.
@@ -130,30 +140,23 @@ export class ECDb implements IDisposable {
     }
   }
 
-  /** Use a prepared ECSQL statement. This function takes care of preparing the statement and then releasing it.
-   *
-   * As preparing statements can be costly, they get cached. When calling this method again with the same ECSQL,
-   * the already prepared statement from the cache will be reused.
-   *
-   * See also:
-   * - [ECSQL Overview]($docs/learning/backend/ExecutingECSQL)
-   * - [Code Examples]($docs/learning/backend/ECSQLCodeExamples)
-   *
-   * @param ecsql The ECSQL statement to execute
-   * @param cb The callback to invoke on the prepared statement
-   * @returns Returns the value returned by cb
+  /**
+   * Use a prepared ECSQL statement, potentially from the statement cache. If the requested statement doesn't exist
+   * in the statement cache, a new statement is prepared. After the callback completes, the statement is reset and saved
+   * in the statement cache so it can be reused in the future. Use this method for ECSQL statements that will be
+   * reused often and are expensive to prepare. The statement cache holds the most recently used statements, discarding
+   * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withStatement]].
+   * @param sql The SQLite SQL statement to execute
+   * @param callback the callback to invoke on the prepared statement
+   * @returns the value returned by `callback`.
+   * @see [[withStatement]]
+   * @public
    */
-  public withPreparedStatement<T>(ecsql: string, cb: (stmt: ECSqlStatement) => T): T {
-    const stmt = this.getPreparedStatement(ecsql);
-    const release = () => {
-      if (stmt.isShared)
-        this._statementCache.release(stmt);
-      else
-        stmt.dispose();
-    };
-
+  public withPreparedStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
+    const stmt = this._statementCache.findAndRemove(ecsql) ?? this.prepareStatement(ecsql);
+    const release = () => this._statementCache.addOrDispose(stmt);
     try {
-      const val: T = cb(stmt);
+      const val = callback(stmt);
       if (val instanceof Promise) {
         val.then(release, release);
       } else {
@@ -162,34 +165,35 @@ export class ECDb implements IDisposable {
       return val;
     } catch (err) {
       release();
-      Logger.logError(loggerCategory, err.toString());
       throw err;
     }
   }
 
-  /** Get a prepared ECSQL statement - may require preparing the statement, if not found in the cache.
-   * @param ecsql The ECSQL statement to prepare
-   * @returns Returns the prepared statement
-   * @throws [IModelError]($common) if the statement cannot be prepared. Normally, prepare fails due to ECSQL syntax errors or
-   * references to tables or properties that do not exist. The error.message property will provide details.
+  /**
+   * Prepared and execute a callback on an ECSQL statement. After the callback completes the statement is disposed.
+   * Use this method for ECSQL statements are either not expected to be reused, or are not expensive to prepare.
+   * For statements that will be reused often, instead use [[withPreparedStatement]].
+   * @param sql The SQLite SQL statement to execute
+   * @param callback the callback to invoke on the prepared statement
+   * @returns the value returned by `callback`.
+   * @see [[withPreparedStatement]]
+   * @public
    */
-  private getPreparedStatement(ecsql: string): ECSqlStatement {
-    const cachedStmt = this._statementCache.find(ecsql);
-    if (!!cachedStmt && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
-      assert(cachedStmt.statement.isShared);
-      assert(cachedStmt.statement.isPrepared);
-      cachedStmt.useCount++;
-      return cachedStmt.statement;
-    }
-
-    this._statementCache.removeUnusedStatementsIfNecessary();
+  public withStatement<T>(ecsql: string, callback: (stmt: ECSqlStatement) => T): T {
     const stmt = this.prepareStatement(ecsql);
-    if (cachedStmt)
-      this._statementCache.replace(ecsql, stmt);
-    else
-      this._statementCache.add(ecsql, stmt);
-
-    return stmt;
+    const release = () => stmt.dispose();
+    try {
+      const val = callback(stmt);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
+      return val;
+    } catch (err) {
+      release();
+      throw err;
+    }
   }
 
   /** Prepare an ECSQL statement.
@@ -202,26 +206,23 @@ export class ECDb implements IDisposable {
     return stmt;
   }
 
-  /** Use a prepared SQLite SQL statement. This function takes care of preparing the statement and then releasing it.
-   *
-   * As preparing statements can be costly, they get cached. When calling this method again with the same SQL,
-   * the already prepared statement from the cache will be reused.
-   *
+  /**
+   * Use a prepared SQL statement, potentially from the statement cache. If the requested statement doesn't exist
+   * in the statement cache, a new statement is prepared. After the callback completes, the statement is reset and saved
+   * in the statement cache so it can be reused in the future. Use this method for SQL statements that will be
+   * reused often and are expensive to prepare. The statement cache holds the most recently used statements, discarding
+   * the oldest statements as it fills. For statements you don't intend to reuse, instead use [[withSqliteStatement]].
    * @param sql The SQLite SQL statement to execute
-   * @param cb The callback to invoke on the prepared statement
-   * @returns Returns the value returned by cb
-   * @internal
+   * @param callback the callback to invoke on the prepared statement
+   * @returns the value returned by `callback`.
+   * @see [[withPreparedStatement]]
+   * @public
    */
-  public withPreparedSqliteStatement<T>(sql: string, cb: (stmt: SqliteStatement) => T): T {
-    const stmt = this.getPreparedSqliteStatement(sql);
-    const release = () => {
-      if (stmt.isShared)
-        this._sqliteStatementCache.release(stmt);
-      else
-        stmt.dispose();
-    };
+  public withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
+    const stmt = this._sqliteStatementCache.findAndRemove(sql) ?? this.prepareSqliteStatement(sql);
+    const release = () => this._sqliteStatementCache.addOrDispose(stmt);
     try {
-      const val: T = cb(stmt);
+      const val: T = callback(stmt);
       if (val instanceof Promise) {
         val.then(release, release);
       } else {
@@ -230,52 +231,52 @@ export class ECDb implements IDisposable {
       return val;
     } catch (err) {
       release();
-      Logger.logError(loggerCategory, err.toString());
       throw err;
     }
   }
 
-  /** Get a prepared SQLite SQL statement - may require preparing the statement, if not found in the cache.
-   * @param sql The SQLite SQL statement to prepare
-   * @returns Returns the prepared statement
-   * @throws [IModelError]($common) if the statement cannot be prepared. Normally, prepare fails due to SQL syntax errors or
-   * references to tables or properties that do not exist. The error.message property will provide details.
+  /**
+   * Prepared and execute a callback on a SQL statement. After the callback completes the statement is disposed.
+   * Use this method for SQL statements are either not expected to be reused, or are not expensive to prepare.
+   * For statements that will be reused often, instead use [[withPreparedSqliteStatement]].
+   * @param sql The SQLite SQL statement to execute
+   * @param callback the callback to invoke on the prepared statement
+   * @returns the value returned by `callback`.
+   * @public
    */
-  private getPreparedSqliteStatement(sql: string): SqliteStatement {
-    const cachedStmt: CachedSqliteStatement | undefined = this._sqliteStatementCache.find(sql);
-    if (!!cachedStmt && cachedStmt.useCount === 0) {  // we can only recycle a previously cached statement if nobody is currently using it.
-      assert(cachedStmt.statement.isShared);
-      assert(cachedStmt.statement.isPrepared);
-      cachedStmt.useCount++;
-      return cachedStmt.statement;
+  public withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T {
+    const stmt = this.prepareSqliteStatement(sql);
+    const release = () => stmt.dispose();
+    try {
+      const val: T = callback(stmt);
+      if (val instanceof Promise) {
+        val.then(release, release);
+      } else {
+        release();
+      }
+      return val;
+    } catch (err) {
+      release();
+      throw err;
     }
-    this._sqliteStatementCache.removeUnusedStatementsIfNecessary();
-    const stmt: SqliteStatement = this.prepareSqliteStatement(sql);
-    if (cachedStmt)
-      this._sqliteStatementCache.replace(sql, stmt);
-    else
-      this._sqliteStatementCache.add(sql, stmt);
-    return stmt;
   }
 
-  /** Prepare an SQLite SQL statement.
+  /** Prepare an SQL statement.
    * @param sql The SQLite SQL statement to prepare
    * @throws [IModelError]($common) if there is a problem preparing the statement.
    * @internal
    */
   public prepareSqliteStatement(sql: string): SqliteStatement {
-    const stmt = new SqliteStatement();
-    stmt.prepare(this.nativeDb, sql);
+    const stmt = new SqliteStatement(sql);
+    stmt.prepare(this.nativeDb);
     return stmt;
   }
 
   /** @internal */
   public get nativeDb(): IModelJsNative.ECDb {
-    if (!this._nativeDb)
-      throw new IModelError(IModelStatus.BadRequest, "ECDb object has already been disposed.");
-
-    return this._nativeDb;
+    return this._nativeDb!;
   }
+
   /** Compute number of rows that would be returned by the ECSQL.
    *
    * See also:
@@ -378,32 +379,13 @@ export class ECDb implements IDisposable {
     if (!limit) limit = {};
     if (!quota) quota = {};
     if (!priority) priority = QueryPriority.Normal;
-    const base64Header = "encoding=base64;";
-    // handle binary type
-    const reviver = (_name: string, value: any) => {
-      if (typeof value === "string") {
-        if (value.length >= base64Header.length && value.startsWith(base64Header)) {
-          const out = value.substr(base64Header.length);
-          const buffer = Buffer.from(out, "base64");
-          return new Uint8Array(buffer);
-        }
-      }
-      return value;
-    };
-    // handle binary type
-    const replacer = (_name: string, value: any) => {
-      if (value && value.constructor === Uint8Array) {
-        const buffer = Buffer.from(value);
-        return base64Header + buffer.toString("base64");
-      }
-      return value;
-    };
+
     return new Promise<QueryResponse>((resolve) => {
       let sessionRestartToken = restartToken ? restartToken.trim() : "";
       if (sessionRestartToken !== "")
         sessionRestartToken = `${ClientRequestContext.current.sessionId}:${sessionRestartToken}`;
 
-      const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
+      const postResult = this.nativeDb.postConcurrentQuery(ecsql, JSON.stringify(bindings, Base64EncodedString.replacer), limit!, quota!, priority!, sessionRestartToken, abbreviateBlobs);
       if (postResult.status !== IModelJsNative.ConcurrentQuery.PostStatus.Done)
         resolve({ status: QueryResponseStatus.PostError, rows: [] });
 
@@ -413,10 +395,10 @@ export class ECDb implements IDisposable {
         } else {
           const pollResult = this.nativeDb.pollConcurrentQuery(postResult.taskId);
           if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Done) {
-            resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollResult.result, reviver) });
+            resolve({ status: QueryResponseStatus.Done, rows: JSON.parse(pollResult.result, Base64EncodedString.reviver) });
           } else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Partial) {
             const returnBeforeStep = pollResult.result.length === 0;
-            resolve({ status: QueryResponseStatus.Partial, rows: returnBeforeStep ? [] : JSON.parse(pollResult.result, reviver) });
+            resolve({ status: QueryResponseStatus.Partial, rows: returnBeforeStep ? [] : JSON.parse(pollResult.result, Base64EncodedString.reviver) });
           } else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Timeout)
             resolve({ status: QueryResponseStatus.Timeout, rows: [] });
           else if (pollResult.status === IModelJsNative.ConcurrentQuery.PollStatus.Pending)

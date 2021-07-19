@@ -1,10 +1,11 @@
 # Unified Selection
 
-The purpose of unified selection is to act as a single source of truth of what is selected in iModel.js application.
+The purpose of unified selection is to act as a single source of truth of what is selected in iTwin.js application.
 
 ![selection storage](./selection-storage.png "Selection storage")
 
 The storage may contain:
+
 - ECInstance keys which represent elements and models
 - Node keys which represent tree nodes
 
@@ -14,5 +15,6 @@ differently - some may only want to show content for current selection while oth
 last selection change event.
 
 See also:
+
 - [Content Components](./ContentComponents.md)
 - [Terminology](./Terminology.md)

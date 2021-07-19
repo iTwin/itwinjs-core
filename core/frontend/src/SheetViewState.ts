@@ -31,7 +31,7 @@ import { CoordSystem } from "./CoordSystem";
 import { OffScreenViewport, Viewport } from "./Viewport";
 import { ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
-import { createDefaultViewFlagOverrides, TileGraphicType, TileTreeSet } from "./tile/internal";
+import { createDefaultViewFlagOverrides, DisclosedTileTreeSet, TileGraphicType } from "./tile/internal";
 import { imageBufferToPngDataUrl, openImageDataUrlInNewWindow } from "./ImageUtil";
 
 // cSpell:ignore ovrs
@@ -217,7 +217,9 @@ class ViewAttachments {
     for (const info of infos) {
       const drawAsRaster = info.jsonProperties?.displayOptions?.drawAsRaster || info.attachedView.isCameraEnabled();
       const ctor = drawAsRaster ? RasterAttachment : OrthographicAttachment;
-      this._attachments.push(new ctor(info.attachedView, info, sheetView));
+      const attachment = new ctor(info.attachedView, info, sheetView);
+      this._attachments.push(attachment);
+      this.maxDepth = Math.max(this.maxDepth, attachment.zDepth);
     }
   }
 
@@ -226,6 +228,10 @@ class ViewAttachments {
       attachment.dispose();
 
     this._attachments.length = 0;
+  }
+
+  public [Symbol.iterator](): Iterator<Attachment> {
+    return this._attachments[Symbol.iterator]();
   }
 
   /** For tests. */
@@ -241,7 +247,7 @@ class ViewAttachments {
     return this._attachments.every((x) => x.areAllTileTreesLoaded);
   }
 
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     for (const attachment of this._attachments)
       trees.disclose(attachment);
   }
@@ -272,9 +278,9 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public static get className() { return "SheetViewDefinition"; }
+  public static override get className() { return "SheetViewDefinition"; }
 
-  public static createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState {
+  public static override createFromProps(viewStateData: ViewStateProps, iModel: IModelConnection): SheetViewState {
     const cat = new CategorySelectorState(viewStateData.categorySelectorProps, iModel);
     const displayStyleState = new DisplayStyle2dState(viewStateData.displayStyleProps, iModel);
 
@@ -282,7 +288,7 @@ export class SheetViewState extends ViewState2d {
     return new this(viewStateData.viewDefinitionProps as ViewDefinition2dProps, iModel, cat, displayStyleState, viewStateData.sheetProps!, viewStateData.sheetAttachments!);
   }
 
-  public toProps(): ViewStateProps {
+  public override toProps(): ViewStateProps {
     const props = super.toProps();
 
     props.sheetAttachments = this._attachmentsInfo.toJSON();
@@ -312,7 +318,9 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public isDrawingView(): this is DrawingViewState { return false; }
+  public override isDrawingView(): this is DrawingViewState { return false; }
+  /** @internal */
+  public override isSheetView(): this is SheetViewState { return true; }
 
   public constructor(props: ViewDefinition2dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle2dState, sheetProps: SheetProps, attachments: Id64Array) {
     super(props, iModel, categories, displayStyle);
@@ -332,7 +340,7 @@ export class SheetViewState extends ViewState2d {
     }
   }
 
-  public getOrigin() {
+  public override getOrigin() {
     const origin = super.getOrigin();
     if (this._attachments)
       origin.z = -this._attachments.maxDepth;
@@ -340,7 +348,7 @@ export class SheetViewState extends ViewState2d {
     return origin;
   }
 
-  public getExtents() {
+  public override getExtents() {
     const extents = super.getExtents();
     if (this._attachments)
       extents.z = this._attachments.maxDepth + Frustum2d.minimumZDistance;
@@ -349,44 +357,63 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** Disclose *all* TileTrees currently in use by this view. This set may include trees not reported by [[forEachTileTreeRef]] - e.g., those used by view attachments, map-draped terrain, etc.
-   * @internal
+   * @internal override
    */
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     if (this._attachments)
       trees.disclose(this._attachments);
   }
 
   /** @internal */
-  public collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void {
+  public override collectNonTileTreeStatistics(stats: RenderMemory.Statistics): void {
     super.collectNonTileTreeStatistics(stats);
     if (this._attachments)
       this._attachments.collectStatistics(stats);
   }
 
   /** @internal */
-  public get defaultExtentLimits() {
+  public override get defaultExtentLimits() {
     return { min: Constant.oneMillimeter, max: this.sheetSize.magnitude() * 10 };
   }
 
   /** @internal */
-  public getViewedExtents(): AxisAlignedBox3d {
+  public override getViewedExtents(): AxisAlignedBox3d {
     return this._viewedExtents;
   }
 
   /** Load the size and attachment for this sheet, as well as any other 2d view state characteristics.
-   * @internal
+   * @internal override
    */
-  public async load(): Promise<void> {
+  public override async load(): Promise<void> {
     await super.load();
     await this._attachmentsInfo.load(this.iModel);
   }
 
   /** @internal */
-  public createScene(context: SceneContext): void {
+  public override createScene(context: SceneContext): void {
     super.createScene(context);
     if (this._attachments)
       this._attachments.addToScene(context);
+  }
+
+  /** @internal */
+  public override get secondaryViewports(): Iterable<Viewport> {
+    const attachments = this._attachments;
+    if (!attachments)
+      return super.secondaryViewports;
+
+    function* iterator() {
+      for (const attachment of attachments!) {
+        const vp = attachment.viewport;
+        if (vp)
+          yield vp;
+      }
+    }
+
+    return {
+      [Symbol.iterator]: () => iterator(),
+    };
   }
 
   /** @internal */
@@ -400,7 +427,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public async changeViewedModel(modelId: Id64String): Promise<void> {
+  public override async changeViewedModel(modelId: Id64String): Promise<void> {
     await super.changeViewedModel(modelId);
     const attachmentIds = await this.queryAttachmentIds();
     this._attachmentsInfo = ViewAttachmentsInfo.fromJSON(attachmentIds);
@@ -409,20 +436,20 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public attachToViewport(): void {
+  public override attachToViewport(): void {
     super.attachToViewport();
     assert(undefined === this._attachments);
     this._attachments = this._attachmentsInfo.createAttachments(this);
   }
 
   /** @internal */
-  public detachFromViewport(): void {
+  public override detachFromViewport(): void {
     super.detachFromViewport();
     this._attachments = dispose(this._attachments);
   }
 
   /** @internal */
-  public get areAllTileTreesLoaded(): boolean {
+  public override get areAllTileTreesLoaded(): boolean {
     return super.areAllTileTreesLoaded && (!this._attachments || this._attachments.areAllTileTreesLoaded);
   }
 
@@ -435,7 +462,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     super.decorate(context);
     if (this.sheetSize !== undefined) {
       const border = this.createBorder(this.sheetSize.x, this.sheetSize.y, context);
@@ -444,7 +471,7 @@ export class SheetViewState extends ViewState2d {
   }
 
   /** @internal */
-  public computeFitRange(): Range3d {
+  public override computeFitRange(): Range3d {
     const size = this.sheetSize;
     if (0 >= size.x || 0 >= size.y)
       return super.computeFitRange();
@@ -465,11 +492,11 @@ class AttachmentTarget extends MockRender.OffScreenTarget {
     this._attachment = attachment;
   }
 
-  public changeScene(scene: Scene): void {
+  public override changeScene(scene: Scene): void {
     this._attachment.scene = scene;
   }
 
-  public overrideFeatureSymbology(ovrs: FeatureSymbology.Overrides): void {
+  public override overrideFeatureSymbology(ovrs: FeatureSymbology.Overrides): void {
     this._attachment.symbologyOverrides = ovrs;
   }
 }
@@ -478,11 +505,12 @@ class AttachmentTarget extends MockRender.OffScreenTarget {
 interface Attachment {
   readonly areAllTileTreesLoaded: boolean;
   addToScene: (context: SceneContext) => void;
-  discloseTileTrees: (trees: TileTreeSet) => void;
+  discloseTileTrees: (trees: DisclosedTileTreeSet) => void;
   readonly zDepth: number;
   collectStatistics: (stats: RenderMemory.Statistics) => void;
   viewAttachmentProps: ViewAttachmentProps;
   dispose(): void;
+  readonly viewport?: Viewport;
 }
 
 /** Draws the contents a 2d or orthographic 3d view directly into a sheet view.
@@ -516,10 +544,14 @@ class OrthographicAttachment {
     return this._props;
   }
 
+  public get viewport(): Viewport {
+    return this._viewport;
+  }
+
   public constructor(view: ViewState, props: ViewAttachmentProps, sheetView: SheetViewState) {
     this.symbologyOverrides = new FeatureSymbology.Overrides(view);
     const target = new AttachmentTarget(this);
-    this._viewport = OffScreenViewport.create(view, this._viewRect, true, target);
+    this._viewport = OffScreenViewport.createViewport(view, target, true);
 
     this._props = props;
     this._sheetModelId = sheetView.baseModelId;
@@ -609,7 +641,7 @@ class OrthographicAttachment {
     this._viewport.dispose();
   }
 
-  public discloseTileTrees(trees: TileTreeSet): void {
+  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
     trees.disclose(this._viewport);
   }
 
@@ -762,14 +794,14 @@ function createRasterAttachmentViewport(_view: ViewState, _rect: ViewRect, _atta
       this.changeView(view);
     }
 
-    public createSceneContext(): SceneContext {
+    public override createSceneContext(): SceneContext {
       assert(!this._isSceneReady);
 
       this._sceneContext = super.createSceneContext();
       return this._sceneContext;
     }
 
-    public renderFrame(): void {
+    public override renderFrame(): void {
       assert(!this._isSceneReady);
 
       this.clearSceneContext();
@@ -788,7 +820,7 @@ function createRasterAttachmentViewport(_view: ViewState, _rect: ViewRect, _atta
       this._sceneContext = undefined;
     }
 
-    public addDecorations(_decorations: Decorations): void {
+    public override addDecorations(_decorations: Decorations): void {
       // ###TODO: skybox, ground plane, possibly grid. DecorateContext requires a ScreenViewport...
     }
   }
@@ -834,8 +866,12 @@ class RasterAttachment {
     return this._props;
   }
 
+  public get viewport(): Viewport | undefined {
+    return this._viewport;
+  }
+
   public get areAllTileTreesLoaded() {
-    return this._viewport?.view.areAllTileTreesLoaded ?? true;
+    return this._viewport?.areAllTileTreesLoaded ?? true;
   }
 
   public addToScene(context: SceneContext): void {
@@ -865,9 +901,11 @@ class RasterAttachment {
     this._viewport.setTileSizeModifier(context.viewport.tileSizeModifier);
 
     this._viewport.renderFrame();
+    if (this._graphics)
+      context.outputGraphic(this._graphics);
   }
 
-  public discloseTileTrees(trees: TileTreeSet) {
+  public discloseTileTrees(trees: DisclosedTileTreeSet) {
     if (this._viewport)
       trees.disclose(this._viewport);
   }

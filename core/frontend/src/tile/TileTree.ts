@@ -9,6 +9,7 @@
 import { BeDuration, BeTimePoint, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { Matrix4d, Range3d, Transform } from "@bentley/geometry-core";
 import { ElementAlignedBox3d, FrustumPlanes, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { calculateEcefToDbTransformAtLocation } from "../BackgroundMapGeometry";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { RenderClipVolume } from "../render/RenderClipVolume";
@@ -16,7 +17,8 @@ import { RenderMemory } from "../render/RenderMemory";
 import { Tile, TileDrawArgs, TileLoadPriority, TileTreeParams } from "./internal";
 
 /** Describes the current state of a [[TileTree]]. TileTrees are loaded asynchronously and may be unloaded after a period of disuse.
- * @beta
+ * @see [[TileTreeOwner]].
+ * @public
  */
 export enum TileTreeLoadStatus {
   /** No attempt to load the tile tree has yet been made. */
@@ -35,9 +37,14 @@ export enum TileTreeLoadStatus {
  *  - A [[DisplayStyleState]]'s map settings or reality models;
  *  - [ViewAttachment]($backend)s in a [[SheetModelState]];
  *  - [[TiledGraphicsProvider]]s associated with a viewport.
+ *
  * The same TileTree can be displayed in any number of viewports using multiple [[TileTreeReference]]s.
  * A TileTree's lifetime is managed by a [[TileTreeOwner]].
- * @beta
+ *
+ * @note Some methods carry a warning that they should **not** be overridden by subclasses; typically a protected method exists that can be
+ * overridden instead to customize the behavior. For example, [[selectTiles]] should not be overridden; instead, override the[[_selectTiles]] method
+ * that it calls.
+ * @public
  */
 export abstract class TileTree {
   private _isDisposed = false;
@@ -50,7 +57,10 @@ export abstract class TileTree {
   public readonly iModelTransform: Transform;
   /** Uniquely identifies this tree among all other tile trees associated with the iModel. */
   public readonly id: string;
-  /** @internal */
+  /** A 64-bit identifier for this tile tree, unique  within the context of its [[IModelConnection]].
+   * For a tile tree associated with a [[GeometricModelState]], this is the Id of the model. Other types of tile trees
+   * typically use a transient Id obtained from [[IModelConnection.transientIds]].
+   */
   public readonly modelId: Id64String;
   /** The length of time after which tiles belonging to this tree are considered elegible for disposal if they are no longer in use. */
   public readonly expirationTime: BeDuration;
@@ -66,10 +76,14 @@ export abstract class TileTree {
   public abstract get is3d(): boolean;
   /** Returns the maximum depth of this tree, if any. */
   public abstract get maxDepth(): number | undefined;
+
   /** The overrides that should be applied to the view's [ViewFlags]($common) when this tile tree is drawn. Can be overridden by individual [[TileTreeReference]]s. */
   public abstract get viewFlagOverrides(): ViewFlagOverrides;
+
   /** True if this tile tree has no bounds - e.g., a tile tree representing a globe is unbounded. */
-  public abstract get isContentUnbounded(): boolean;
+  public get isContentUnbounded(): boolean {
+    return false;
+  }
 
   /** Implement this method to select tiles of appropriate resolution. */
   protected abstract _selectTiles(args: TileDrawArgs): Tile[];
@@ -89,16 +103,12 @@ export abstract class TileTree {
 
   /** The volume of space occupied by this tile tree. */
   public get range(): ElementAlignedBox3d { return this.rootTile.range; }
-  /** @internal */
+  /** The most recent time at which tiles [[selectTiles]] was called. */
   public get lastSelectedTime(): BeTimePoint { return this._lastSelected; }
-  /** @internal */
+  /** True if a tile and its child tiles should not be drawn simultaneously.
+   * Default: true.
+   */
   public get parentsAndChildrenExclusive(): boolean { return true; }
-
-  /** This function will forcibly prune any unused tiles associated with the tree, ignoring any expiration times.
-   * An unused tile is a tile that is not currently in use by any viewport.
-   * @alpha
-   **/
-  public abstract forcePrune(): void;
 
   /** Constructor */
   protected constructor(params: TileTreeParams) {
@@ -136,17 +146,14 @@ export abstract class TileTree {
 
     this._isDisposed = true;
     dispose(this.rootTile);
-    dispose(this.clipVolume);
   }
 
   /** @internal */
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.rootTile.collectStatistics(stats);
-    if (undefined !== this.clipVolume)
-      this.clipVolume.collectStatistics(stats);
   }
 
-  /** Returns the number of [[Tile]]s currently in memory belonging to this tree. */
+  /** Returns the number of [[Tile]]s currently in memory belonging to this tree, primarily for debugging. */
   public countTiles(): number {
     return 1 + this.rootTile.countDescendants();
   }
@@ -155,37 +162,28 @@ export abstract class TileTree {
   public accumulateTransformedRange(range: Range3d, matrix: Matrix4d, location: Transform, frustumPlanes?: FrustumPlanes): void {
     this.rootTile.extendRangeForContent(range, matrix, location, frustumPlanes);
   }
-}
 
-/** Interface adopted by an object that contains references to [[TileTree]]s, to expose those trees.
- * @beta
- */
-export interface TileTreeDiscloser {
-  /** Add all [[TileTree]]s referenced by this object to the set. */
-  discloseTileTrees: (trees: TileTreeSet) => void;
-}
+  /**
+   * Return the transform from the tile tree's coordinate space to [ECEF](https://en.wikipedia.org/wiki/ECEF) (Earth Centered Earth Fixed) coordinates.
+   * If a geographic coordinate system is present then this transform will be calculated at the tile tree center.
+   * @beta
+   */
+  public async getEcefTransform(): Promise<Transform | undefined> {
+    if (!this.iModel.ecefLocation)
+      return undefined;
 
-/** A set of TileTrees, populated by a call to a `discloseTileTrees` function on an object like a [[Viewport]], [[ViewState]], or [[TileTreeReference]].
- * @beta
- */
-export class TileTreeSet {
-  private readonly _processed = new Set<TileTreeDiscloser>();
-  /** The set of tile trees. */
-  public readonly trees = new Set<TileTree>();
-
-  /** Add a tile tree to the set. */
-  public add(tree: TileTree): void {
-    this.trees.add(tree);
-  }
-
-  /** Add all tile trees referenced by `discloser` to the set. */
-  public disclose(discloser: TileTreeDiscloser): void {
-    if (!this._processed.has(discloser)) {
-      this._processed.add(discloser);
-      discloser.discloseTileTrees(this);
+    let dbToEcef: Transform | undefined;
+    const range = this.contentRange ? this.contentRange : this.range;
+    const center = range.localXYZToWorld(.5, .5, .5);
+    if (center) {
+      this.iModelTransform.multiplyPoint3d(center, center);
+      const ecefToDb = await calculateEcefToDbTransformAtLocation(center, this.iModel);
+      dbToEcef = ecefToDb?.inverse();
     }
-  }
+    if (!dbToEcef)
+      dbToEcef = this.iModel.ecefLocation.getTransform();
 
-  /** The number of tile trees in the set. */
-  public get size(): number { return this.trees.size; }
+    return dbToEcef.multiplyTransformTransform(this.iModelTransform);
+  }
 }
+

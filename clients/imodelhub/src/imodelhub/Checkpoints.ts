@@ -23,7 +23,7 @@ const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
  * Checkpoint is a copy of the master file, that is intended to be read-only and reduces amount of merging required to get an iModel to a specific previous state.
  *
  * File properties describe the file that would be downloaded through downloadUrl.
- * @alpha
+ * @internal
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.Checkpoint", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Checkpoint extends WsgInstance {
@@ -62,7 +62,7 @@ export class Checkpoint extends WsgInstance {
 
 /**
  * Query object for getting [[Checkpoint]]s. You can use this to modify the [[CheckpointHandler.get]] results.
- * @alpha
+ * @internal
  */
 export class CheckpointQuery extends WsgQuery {
   /** Query will return closest [[Checkpoint]] to target [[ChangeSet]], based on ChangeSets size.
@@ -103,7 +103,7 @@ export class CheckpointQuery extends WsgQuery {
 /**
  * Handler for managing [[Checkpoint]]s. Use [[IModelClient.checkpoints]] to get an instance of this class.
  * In most cases, you should use [BriefcaseDb]($backend) methods instead.
- * @alpha
+ * @internal
  */
 export class CheckpointHandler {
   private _handler: IModelBaseHandler;
@@ -112,7 +112,7 @@ export class CheckpointHandler {
   /** Constructor for CheckpointHandler. Use [[IModelClient]] instead of directly constructing this.
    * @param handler Handler for WSG requests.
    * @param fileHandler Handler for file system.
-   * @alpha
+   * @internal
    */
   constructor(handler: IModelBaseHandler, fileHandler?: FileHandler) {
     this._handler = handler;
@@ -121,7 +121,7 @@ export class CheckpointHandler {
 
   /** Get relative url for Checkpoint requests.
    * @param iModelId Id of the iModel. See [[HubIModel]].
-   * @alpha
+   * @internal
    */
   private getRelativeUrl(iModelId: GuidString) {
     return `/Repositories/iModel--${iModelId}/iModelScope/Checkpoint/`;

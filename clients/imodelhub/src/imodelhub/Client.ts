@@ -10,11 +10,10 @@ import { FileHandler } from "@bentley/itwin-client";
 import { IModelClient } from "../IModelClient";
 import { IModelBaseHandler } from "./BaseHandler";
 import { PermissionHandler } from "./Permissions";
-import { RbacClient } from "@bentley/rbac-client";
 
 /**
  * Class that allows access to different iModelHub class handlers. Handlers should be accessed through an instance of this class, rather than constructed directly.
- * @beta
+ * @public
  */
 export class IModelHubClient extends IModelClient {
   /**
@@ -31,7 +30,7 @@ export class IModelHubClient extends IModelClient {
    * Get the handler for permissions.
    * @internal
    */
-  public get permissions(): PermissionHandler {
-    return new PermissionHandler(this.iModels, new RbacClient());
+  public override get permissions(): PermissionHandler {
+    return new PermissionHandler(this._handler);
   }
 }

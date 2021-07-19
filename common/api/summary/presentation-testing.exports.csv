@@ -3,6 +3,7 @@ Release Tag;API Item
 public;ContentBuilder
 public;ContentBuilderProps
 public;ContentBuilderResult
+public;defaultNodeMappingFunc: NodeMappingFunc
 public;HierarchyBuilder
 public;HierarchyBuilderProps
 public;HierarchyNode 

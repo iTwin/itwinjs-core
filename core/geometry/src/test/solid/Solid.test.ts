@@ -81,7 +81,7 @@ function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
         ck.testTrue(s1.isSameGeometryClass(s), "Clone class match");
         ck.testTrue(s1.isAlmostEqual(s), "solid clone matches original");
         const s2 = s.cloneTransformed(scaleTransform);
-        if (ck.testPointer(s2) && s2 && s1.tryTransformInPlace(scaleTransform)) {
+        if (ck.testPointer(s2) && s1.tryTransformInPlace(scaleTransform)) {
           ck.testFalse(s2.isAlmostEqual(s), "scaled is different from original");
           ck.testTrue(s1.isAlmostEqual(s2), "clone transform commute");
           const range2A = Range3d.create();
@@ -114,7 +114,10 @@ function exerciseSolids(ck: Checker, solids: GeometryQuery[], _name: string) {
       const sC = s.clone();
       if (sC instanceof SolidPrimitive) {
         sC.capped = !sC.capped;
-        ck.testFalse(s.isAlmostEqual(sC), "isAlmostEqual should detected cap change");
+        if (s instanceof TorusPipe)
+          ck.testBoolean(s.getSweepAngle().isFullCircle, s.isAlmostEqual(sC), "complete TorusPipe cap status is incidental");
+        else
+          ck.testFalse(s.isAlmostEqual(sC), "isAlmostEqual should detected cap change.");
       }
     }
   }

@@ -4,16 +4,17 @@
   "trace-tool-downstream": "Downstream",
   "trace-tool-group": "Network Trace",
   "trace-tool-upstream": "Upstream",
-  "Element is not traceable": "Element is not traceable",
-  "Identify element to run connected tracing": "Identify element to run connected tracing",
-  "Identify element to run downstream tracing": "Identify element to run downstream tracing",
-  "Identify element to run upstream tracing": "Identify element to run upstream tracing",
   "Messages": {
     "Start": "ui-test ExtensionDialog Loaded"
   },
   "Dialog": {
     "Title": "Sample Dialog",
     "Name": "Name"
+  },
+  "Dialogs": {
+    "SampleModal": {
+      "title": "Sample Modal (uiTest)"
+    }
   },
   "backstage": {
     "stageName": "Ui-Test Stage"

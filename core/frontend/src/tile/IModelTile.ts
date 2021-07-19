@@ -16,7 +16,7 @@ import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderSystem } from "../render/RenderSystem";
 import {
   addRangeGraphic, ImdlReader, IModelTileTree, Tile, TileBoundingBoxes, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileRequest,
-  TileTreeLoadStatus, TileVisibility,
+  TileRequestChannel, TileTreeLoadStatus, TileVisibility,
 } from "./internal";
 
 /** Parameters used to construct an [[IModelTile]].
@@ -61,6 +61,10 @@ export interface IModelTileContent extends TileContent {
 export class IModelTile extends Tile {
   private _sizeMultiplier?: number;
   private _emptySubRangeMask?: number;
+  /** True if an attempt to look up this tile's content in the cloud storage tile cache failed.
+   * See CloudStorageCacheChannel.onNoContent and IModelTile.channel
+   */
+  public cacheMiss = false;
 
   public constructor(params: IModelTileParams, tree: IModelTileTree) {
     super(params, tree);
@@ -80,21 +84,18 @@ export class IModelTile extends Tile {
 
   public get sizeMultiplier(): number | undefined { return this._sizeMultiplier; }
   public get hasSizeMultiplier() { return undefined !== this.sizeMultiplier; }
-  public get maximumSize(): number {
+  public override get maximumSize(): number {
     return super.maximumSize * (this.sizeMultiplier ?? 1.0);
   }
 
-  public async requestContent(isCanceled: () => boolean): Promise<TileRequest.Response> {
-    const handleCacheMiss = () => {
-      const cancelMe = isCanceled();
-      if (!cancelMe)
-        IModelApp.tileAdmin.onCacheMiss();
+  public get channel(): TileRequestChannel {
+    const channels = IModelApp.tileAdmin.channels;
+    const cloud = !this.cacheMiss ? channels.cloudStorageCache : undefined;
+    return cloud ?? channels.iModelTileRpc;
+  }
 
-      return cancelMe;
-    };
-
-    const tree = this.iModelTree;
-    return tree.iModel.tiles.getTileContent(tree.id, this.contentId, handleCacheMiss, tree.geometryGuid, tree.contentIdQualifier);
+  public async requestContent(): Promise<TileRequest.Response> {
+    return IModelApp.tileAdmin.generateTileContent(this);
   }
 
   public async readContent(data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<IModelTileContent> {
@@ -115,7 +116,7 @@ export class IModelTile extends Tile {
 
     const tree = this.iModelTree;
     const mult = this.hasSizeMultiplier ? this.sizeMultiplier : undefined;
-    const reader = ImdlReader.create(streamBuffer, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, mult, this.contentId);
+    const reader = ImdlReader.create(streamBuffer, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, mult, { tileId: this.contentId });
     if (undefined !== reader) {
       try {
         content = await reader.read();
@@ -127,7 +128,7 @@ export class IModelTile extends Tile {
     return content;
   }
 
-  public setContent(content: IModelTileContent): void {
+  public override setContent(content: IModelTileContent): void {
     super.setContent(content);
 
     this._emptySubRangeMask = content.emptySubRangeMask;
@@ -165,15 +166,11 @@ export class IModelTile extends Tile {
     }
   }
 
-  public onActiveRequestCanceled(): void {
-    IModelApp.tileAdmin.cancelIModelTileRequest(this);
-  }
-
-  protected get rangeGraphicColor(): ColorDef {
+  protected override get rangeGraphicColor(): ColorDef {
     return this.hasSizeMultiplier ? ColorDef.red : super.rangeGraphicColor;
   }
 
-  protected addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void {
+  protected override addRangeGraphic(builder: GraphicBuilder, type: TileBoundingBoxes): void {
     if (TileBoundingBoxes.ChildVolumes !== type) {
       super.addRangeGraphic(builder, type);
       return;
@@ -262,7 +259,8 @@ export class IModelTile extends Tile {
 
     // This tile is too coarse to draw. Try to draw something more appropriate.
     // If it is not ready to draw, we may want to skip loading in favor of loading its descendants.
-    let canSkipThisTile = this.depth < this.iModelTree.maxInitialTilesToSkip;
+    // If we previously loaded and later unloaded content for this tile to free memory, don't force it to reload its content - proceed to children.
+    let canSkipThisTile = (this._hadGraphics && !this.hasGraphics) || this.depth < this.iModelTree.maxInitialTilesToSkip;
     if (canSkipThisTile) {
       numSkipped = 1;
     } else {

@@ -4,15 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
+import * as path from "path";
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
+import { loadEnv } from "@bentley/config-loader";
 import { AccessToken, SamlAccessToken } from "@bentley/itwin-client";
 import {
   AgentAuthorizationClient, AgentAuthorizationClientConfiguration, DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration,
 } from "../backend-itwin-client";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
-IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
+loadEnv(path.join(__dirname, "..", "..", ".env"));
 
 chai.should();
 

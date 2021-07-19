@@ -1,6 +1,6 @@
 # @bentley/backend-application-insights-client
 
-Copyright © Bentley Systems, Incorporated. All rights reserved.
+Copyright © Bentley Systems, Incorporated. All rights reserved. See LICENSE.md for license terms and full copyright notice.
 
 ## Description
 
@@ -8,4 +8,4 @@ The __@bentley/backend-application-insights-client__ package contains client wra
 
 ## Documentation
 
-See the [iModel.js](https://www.imodeljs.org) documentation for more information.
+See the [iTwin.js](https://www.itwinjs.org) documentation for more information.

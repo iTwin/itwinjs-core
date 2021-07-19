@@ -90,4 +90,4 @@ export class ExampleForm extends React.Component {
 
 ## API Reference
 
-* [Form]($ui-core:Form)
+- [Form]($ui-core:Form)

@@ -7,14 +7,15 @@ import { ByteStream, IDisposable } from "@bentley/bentleyjs-core";
 import { Arc3d, Point3d, Range3d } from "@bentley/geometry-core";
 import { ColorByName, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderTexture } from "@bentley/imodeljs-common";
 import {
-  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, RenderMemory, RenderPlanarClassifier,
-  RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap, TileTreeReference,
+  Decorations, GraphicList, GraphicType, ImdlReader, IModelApp, IModelConnection, OffScreenViewport, PlanarClassifierMap, PlanarClassifierTarget,
+  PlanarClipMaskState, RenderMemory, RenderPlanarClassifier, RenderTextureDrape, SceneContext, ScreenViewport, SnapshotConnection, TextureDrapeMap,
+  TileTreeReference,
 } from "@bentley/imodeljs-frontend";
 import { MeshArgs } from "@bentley/imodeljs-frontend/lib/render-primitives";
 import { Batch, FrameBuffer, OnScreenTarget, Target, TextureHandle, WorldDecorations } from "@bentley/imodeljs-frontend/lib/webgl";
+import { testViewports } from "../../TestViewport";
 import { TILE_DATA_1_1 } from "./data/TileIO.data.1.1";
 import { FakeGMState, FakeModelProps, FakeREProps } from "./TileIO.test";
-import { testViewports } from "../../TestViewport";
 
 let imodel0: IModelConnection;
 let imodel1: IModelConnection;
@@ -128,7 +129,7 @@ function disposedCheck(disposable: any, ignoredAttribs?: string[]): boolean {
 // This test block exists on its own since disposal of System causes system to detach from an imodel's onClose event
 describe("Disposal of System", () => {
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ renderSys: { doIdleWork: false } });
     imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
   });
 
@@ -170,7 +171,7 @@ describe("Disposal of System", () => {
 
 describe("Disposal of WebGL Resources", () => {
   before(async () => {
-    await IModelApp.startup();
+    await IModelApp.startup({ renderSys: { doIdleWork: false } });
 
     imodel0 = await SnapshotConnection.openFile("test.bim"); // relative path resolved by BackendTestAssetResolver
     imodel1 = await SnapshotConnection.openFile("testImodel.bim"); // relative path resolved by BackendTestAssetResolver
@@ -271,7 +272,8 @@ describe("Disposal of WebGL Resources", () => {
   class Classifier extends RenderPlanarClassifier {
     public disposed = false;
     public constructor() { super(); }
-    public collectGraphics(_context: SceneContext, _classified: TileTreeReference, _classifier: TileTreeReference): void { }
+    public collectGraphics(_context: SceneContext, _target: PlanarClassifierTarget): void { }
+    public setSource(_classifierTreeRef?: TileTreeReference, _planarClipMask?: PlanarClipMaskState): void { }
     public dispose(): void {
       expect(this.disposed).to.be.false;
       this.disposed = true;
@@ -417,7 +419,7 @@ describe("Disposal of WebGL Resources", () => {
     // Create a graphic and a texture
     const textureParams = new RenderTexture.Params("-192837465");
     let texture = system.createTextureFromImageBuffer(ImageBuffer.create(getImageBufferData(), ImageBufferFormat.Rgba, 1)!, imodel0, textureParams);
-    const graphicBuilder = target.createGraphicBuilder(GraphicType.Scene, viewport);
+    const graphicBuilder = target.renderSystem.createGraphic({ type: GraphicType.Scene, viewport });
     graphicBuilder.addArc(Arc3d.createCircularStartMiddleEnd(new Point3d(-100, 0, 0), new Point3d(0, 100, 0), new Point3d(100, 0, 0)) as Arc3d, false, false);
     const graphic = graphicBuilder.finish();
 

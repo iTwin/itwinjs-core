@@ -9,7 +9,7 @@
 import { ItemProps } from "./ItemProps";
 
 /** Definition for a Custom item that renders a React component.
- * @beta
+ * @public
  */
 export interface CustomItemProps extends ItemProps {
   customId?: string;

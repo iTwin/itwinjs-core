@@ -6,17 +6,16 @@
 import { IModelJson as GeomJson, LineString3d, Point3d, Vector3d } from "@bentley/geometry-core";
 import { ColorDef, GeometryStreamProps } from "@bentley/imodeljs-common";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp,
-  PrimitiveTool, SnapStatus,
+  AccuDrawHintBuilder, BeButtonEvent, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, PrimitiveTool, SnapStatus,
 } from "@bentley/imodeljs-frontend";
 
 export class DrawingAidTestTool extends PrimitiveTool {
-  public static toolId = "DrawingAidTest.Points";
+  public static override toolId = "DrawingAidTest.Points";
   public readonly points: Point3d[] = [];
   protected _snapGeomId?: string;
 
-  public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
+  public override requireWriteableTarget(): boolean { return false; }
+  public override onPostInstall() { super.onPostInstall(); this.setupAndPromptForNextAction(); }
 
   public setupAndPromptForNextAction(): void {
     IModelApp.accuSnap.enableSnap(true);
@@ -34,9 +33,9 @@ export class DrawingAidTestTool extends PrimitiveTool {
     hints.sendHints();
   }
 
-  public testDecorationHit(id: string): boolean { return id === this._snapGeomId; }
+  public override testDecorationHit(id: string): boolean { return id === this._snapGeomId; }
 
-  public getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined {
+  public override getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined {
     if (this.points.length < 2)
       return undefined;
 
@@ -44,7 +43,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
     return (undefined === geomData ? undefined : [geomData]);
   }
 
-  public decorate(context: DecorateContext): void {
+  public override decorate(context: DecorateContext): void {
     if (this.points.length < 2)
       return;
 
@@ -59,7 +58,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
     context.addDecorationFromBuilder(builder);
   }
 
-  public onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
+  public override onDynamicFrame(ev: BeButtonEvent, context: DynamicsContext): void {
     if (this.points.length < 1)
       return;
 
@@ -71,7 +70,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
     context.addGraphic(builder.finish());
   }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     this.points.push(ev.point.clone());
     this.setupAndPromptForNextAction();
 
@@ -81,7 +80,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     if (undefined !== IModelApp.accuSnap.currHit) {
       const status = await IModelApp.accuSnap.resetButton(); // TESTING ONLY - NOT NORMAL TOOL OPERATION - Exercise AccuSnap hit cycling...only restart when no current hit or not hot snap on next hit...
       if (SnapStatus.Success === status)
@@ -91,7 +90,7 @@ export class DrawingAidTestTool extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public async onUndoPreviousStep(): Promise<boolean> {
+  public override async onUndoPreviousStep(): Promise<boolean> {
     if (0 === this.points.length)
       return false;
 
@@ -101,12 +100,6 @@ export class DrawingAidTestTool extends PrimitiveTool {
     else
       this.setupAndPromptForNextAction();
     return true;
-  }
-
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
-    if (EventHandled.Yes === await super.onKeyTransition(wentDown, keyEvent))
-      return EventHandled.Yes;
-    return (wentDown && AccuDrawShortcuts.processShortcutKey(keyEvent)) ? EventHandled.Yes : EventHandled.No;
   }
 
   public onRestartTool(): void {

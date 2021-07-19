@@ -13,6 +13,7 @@ import { ConfigurableUiManager } from "@bentley/ui-framework";
 import { ExtensionFrontstage } from "./ui/Frontstage";
 import { SampleContentControl } from "./ui/content/SampleContentControl";
 import { GenericTool } from "./ui/tools/GenericTool";
+import { OpenTraceDialogTool } from "./ui/tools/OpenTraceDialogTool";
 
 /** UiTestExtension is an iModel.js Extension that adds some user interface to the iModel.js app into which its loaded.
  * Included in the sample are: 1) a Sample Tool (SampleTool.ts), showing how implement a tool with a variety to tool settings items.
@@ -38,6 +39,7 @@ export class UiTestExtension extends Extension {
   private registerUiComponents(): void {
     SampleTool.register(this._i18NNamespace, this.i18n);
     GenericTool.register(this._i18NNamespace, this.i18n);
+    OpenTraceDialogTool.register(this._i18NNamespace, this.i18n);
 
     ConfigurableUiManager.addFrontstageProvider(new ExtensionFrontstage());
     ConfigurableUiManager.registerControl("SampleExtensionContentControl", SampleContentControl);
@@ -48,7 +50,7 @@ export class UiTestExtension extends Extension {
   }
 
   /** Invoked the first time this extension is loaded. */
-  public async onLoad(_args: string[]): Promise<void> {
+  public override async onLoad(_args: string[]): Promise<void> {
     /** Register the localized strings for this extension
      * We'll pass the i18n member to the rest of the classes in the Extension to allow them to translate strings in the UI they implement.
      */

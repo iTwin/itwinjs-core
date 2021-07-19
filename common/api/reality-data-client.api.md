@@ -12,6 +12,16 @@ import { WsgClient } from '@bentley/itwin-client';
 import { WsgInstance } from '@bentley/itwin-client';
 
 // @internal
+export class DataLocation extends WsgInstance {
+    // (undocumented)
+    id?: string;
+    // (undocumented)
+    location?: string;
+    // (undocumented)
+    provider?: string;
+}
+
+// @internal
 export class FileAccessKey extends WsgInstance {
     // (undocumented)
     permissions?: string;
@@ -45,6 +55,10 @@ export class RealityData extends WsgInstance {
     // (undocumented)
     dataAcquisitionDate?: string;
     // (undocumented)
+    dataAcquisitionEndDate?: string;
+    // (undocumented)
+    dataAcquisitionStartDate?: string;
+    // (undocumented)
     dataLocationGuid?: string;
     // (undocumented)
     dataSet?: string;
@@ -54,6 +68,7 @@ export class RealityData extends WsgInstance {
     footprint?: string;
     getBlobStringUrl(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<string>;
     getBlobUrl(requestContext: AuthorizedClientRequestContext, writeAccess?: boolean): Promise<URL>;
+    // @deprecated
     getModelData(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
     getRootDocumentJson(requestContext: AuthorizedClientRequestContext): Promise<any>;
     getTileContent(requestContext: AuthorizedClientRequestContext, name: string, nameRelativeToRootDocumentPath?: boolean): Promise<any>;
@@ -119,6 +134,7 @@ export class RealityDataClient extends WsgClient {
     createRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;
     deleteRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityDataId: string): Promise<void>;
     deleteRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationshipId: string): Promise<void>;
+    getDataLocation(requestContext: AuthorizedClientRequestContext): Promise<DataLocation[]>;
     getFileAccessKey(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, tilesId: string, writeAccess?: boolean): Promise<FileAccessKey[]>;
     getRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, tilesId: string): Promise<RealityData>;
     getRealityDataIdFromUrl(url: string): string | undefined;
@@ -153,6 +169,20 @@ export interface RealityDataRequestQueryOptions extends RequestQueryOptions {
     action?: string;
     polygon?: string;
     project?: string;
+}
+
+// @internal
+export enum RealityDataType {
+    // (undocumented)
+    CESIUM_3DTILE = "Cesium3DTiles",
+    // (undocumented)
+    OMR = "OMR",
+    // (undocumented)
+    OPC = "OPC",
+    // (undocumented)
+    REALITYMESH3DTILES = "RealityMesh3DTiles",
+    // (undocumented)
+    TERRAIN3DTILE = "Terrain3DTiles"
 }
 
 

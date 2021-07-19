@@ -1,13 +1,19 @@
 # Create a test iModel from a Bentley provided sample via the Free Trial service
+
 The quickest way to get access to a cloud hosted iModel is by creating an iModel seeded with Bentley provided sample data.
 
-- Go to the [registration dashboard](../../../getting-started/registration-dashboard/?tab=1&create=bentleyExample)
-- Click the "+ New iModel" button
+- Go to the "[Create sample iModel](https://developer.bentley.com/create-imodel/)" page
 - Give your test iModel a name
-- Select a dataset from the dropdown
+- Select a template from the dropdown
   - Add the email addresses of anyone else you would like to grant access to the iModel
   - Any other users will also have to have a Bentley account
 - Click Submit
+
+### Metrostation Sample
+
+A metrostation located in Philadelphia. Contains platform, rails, and subway cars.
+
+![stadium]($docs/learning/tutorials/images/metrostation.png)
 
 ### Stadium
 
@@ -26,7 +32,6 @@ Cafe and apartments.
 Simple processing plant. This is the smallest sample iModel.
 
 ![bay-town-process-plant]($docs/learning/tutorials/images/bay-town-process-plant.png)
-
 
 ### House Sample
 

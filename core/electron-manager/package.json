@@ -1,17 +1,17 @@
 {
   "name": "@bentley/electron-manager",
-  "version": "2.12.0-dev.15",
-  "description": "iModel.js electron utilities",
+  "version": "2.19.0-dev.20",
+  "description": "iTwin.js ElectronHost and ElectronApp",
   "license": "MIT",
   "engines": {
-    "node": ">=10.17.0 <13.0"
+    "node": ">=10.17.0 <15.0"
   },
   "scripts": {
     "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./ElectronBackend.ts --onlyJson",
-    "extract-api": "betools extract-api --entry=ElectronBackend",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/electron-manager/file.json --tsIndexFile=./__DOC_ONLY__.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=__DOC_ONLY__",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "cover": ""
@@ -30,27 +30,33 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.12.0-dev.15",
-    "@bentley/imodeljs-common": "^2.12.0-dev.15",
-    "@bentley/imodeljs-backend": "^2.12.0-dev.15",
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.20",
+    "@bentley/imodeljs-backend": "workspace:^2.19.0-dev.20",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.20",
+    "@bentley/imodeljs-frontend": "workspace:^2.19.0-dev.20",
+    "@bentley/itwin-client": "workspace:^2.19.0-dev.20",
+    "@bentley/presentation-common": "workspace:^2.19.0-dev.20",
     "electron": "^11.1.0"
   },
-  "//devDependencies": [
-    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
-    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
-  ],
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.12.0-dev.15",
-    "@bentley/build-tools": "2.12.0-dev.15",
-    "@bentley/eslint-plugin": "2.12.0-dev.15",
-    "@bentley/imodeljs-backend": "2.12.0-dev.15",
-    "@bentley/imodeljs-common": "2.12.0-dev.15",
-    "@bentley/itwin-client": "2.12.0-dev.15",
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/imodeljs-backend": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
+    "@bentley/imodeljs-frontend": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
+    "@bentley/presentation-common": "workspace:*",
     "@types/node": "10.14.1",
     "electron": "^11.1.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "rimraf": "^3.0.2",
-    "typescript": "~3.7.4"
+    "typescript": "~4.3.0"
+  },
+  "dependencies": {
+    "@openid/appauth": "^1.2.6",
+    "open": "^7.0.0",
+    "username": "^5.1.0"
   },
   "eslintConfig": {
     "plugins": [

@@ -171,8 +171,8 @@ const createLoremPropertyRecord = (column: ColumnDescription) => {
   return new PropertyRecord(v, pd);
 };
 
-class TableExampleContent extends React.Component<{}, TableExampleState>  {
-  public readonly state: Readonly<TableExampleState>;
+export class TableExampleContent extends React.Component<{}, TableExampleState>  {
+  public override readonly state: Readonly<TableExampleState>;
 
   private _columns: ColumnDescription[] = [
     {
@@ -201,7 +201,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
       resizable: true,
       editable: true,
       filterable: true,
-      filterRenderer: FilterRenderer.MultiSelect,
+      filterRenderer: FilterRenderer.MultiValue,
     },
     {
       key: "color",
@@ -296,7 +296,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     this.setState({ dataProvider });
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     this.loadData(this.state.useUtc);
   }
 
@@ -385,7 +385,7 @@ class TableExampleContent extends React.Component<{}, TableExampleState>  {
     }
   };
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     return (
       <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
         <div style={{ marginTop: "3px", marginBottom: "4px" }}>
@@ -485,7 +485,7 @@ class MdyFormatter implements DateFormatter {
 class MmDdYyyDateTypeConverter extends TypeConverter implements LessGreaterOperatorProcessor {
   private _formatter = new MdyFormatter();
 
-  public convertToString(value?: Primitives.Value) {
+  public override convertToString(value?: Primitives.Value) {
     if (value === undefined)
       return "";
 
@@ -499,24 +499,24 @@ class MmDdYyyDateTypeConverter extends TypeConverter implements LessGreaterOpera
     return value.toString();
   }
 
-  public convertFromString(value: string) {
+  public override convertFromString(value: string) {
     if (!value)
       return undefined;
 
     return this._formatter.parseDate(value);
   }
 
-  public get isLessGreaterType(): boolean { return true; }
+  public override get isLessGreaterType(): boolean { return true; }
 
   public sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number {
     return valueA.valueOf() - valueB.valueOf();
   }
 
-  public isEqualTo(valueA: Date, valueB: Date): boolean {
+  public override isEqualTo(valueA: Date, valueB: Date): boolean {
     return valueA.valueOf() === valueB.valueOf();
   }
 
-  public isNotEqualTo(valueA: Date, valueB: Date): boolean {
+  public override isNotEqualTo(valueA: Date, valueB: Date): boolean {
     return valueA.valueOf() !== valueB.valueOf();
   }
 

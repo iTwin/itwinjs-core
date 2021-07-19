@@ -124,6 +124,14 @@ describe("TableFilterDescriptor", () => {
       expect(filterDescriptor.isFilterForColumn(columns[0].key)).to.be.true;
       expect(filterDescriptor.isFilterForColumn("")).to.be.false;
     });
+
+    it("should support type converter name", () => {
+      const filterDescriptor = new TableFilterDescriptor(testTable, columns[0].key, columnTypes[0]);
+      expect(filterDescriptor.typeConverterName).to.be.undefined;
+      const name = "test";
+      filterDescriptor.typeConverterName = name;
+      expect(filterDescriptor.typeConverterName).to.eq(name);
+    });
   });
 
   describe("String operators", () => {

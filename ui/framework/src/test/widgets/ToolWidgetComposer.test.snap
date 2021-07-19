@@ -1,6 +1,6 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ToolWidgetComposer ToolWidgetComposer should render correctly 1`] = `
+exports[`FrameworkAccuDraw localStorage Wrapper ToolWidgetComposer ToolWidgetComposer should render correctly 1`] = `
 <ContextProvider
   value={
     Object {
@@ -15,7 +15,7 @@ exports[`ToolWidgetComposer ToolWidgetComposer should render correctly 1`] = `
 </ContextProvider>
 `;
 
-exports[`ToolWidgetComposer ToolWidgetComposer with should render 1`] = `
+exports[`FrameworkAccuDraw localStorage Wrapper ToolWidgetComposer ToolWidgetComposer with should render 1`] = `
 <ContextProvider
   value={
     Object {

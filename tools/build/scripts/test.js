@@ -32,7 +32,7 @@ const options = [
   "--check-leaks",
   "--require", "source-map-support/register",
   "--watch-extensions", "ts",
-  "-u", "tdd",
+  "-u", "bdd",
   "--colors",
   "--timeout", timeout,
   "--reporter", require.resolve("../mocha-reporter"),

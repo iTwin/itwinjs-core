@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { PrimitiveValue } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyConverterInfo } from "@bentley/ui-abstract";
 import { render } from "@testing-library/react";
 import { DoublePropertyValueRenderer } from "../../../../ui-components/properties/renderers/value/DoublePropertyValueRenderer";
 import { PropertyValueRendererContext } from "../../../../ui-components/properties/ValueRendererManager";
@@ -40,10 +40,24 @@ describe("DoublePropertyValueRenderer", () => {
       elementRender.getByText("0.45");
     });
 
+    it("supports PropertyConverterInfo", () => {
+      const renderer = new DoublePropertyValueRenderer();
+      const property = createDoubleProperty(0.45, undefined);
+      const convertInfo: PropertyConverterInfo = { name: "" };
+      property.property.converter = convertInfo;
+
+      const element = renderer.render(property);
+      const elementRender = render(<>{element}</>);
+
+      elementRender.getByText("0.45");
+    });
+
     it("renders double property wrapped in an anchored tag when property record has it", () => {
       const renderer = new DoublePropertyValueRenderer();
       const property = createDoubleProperty(0.45, "zero point forty five meters");
-      property.links = { onClick: sinon.spy() };
+      property.links = {
+        onClick: sinon.spy(),
+      };
 
       const element = renderer.render(property);
       const renderedElement = render(<>{element}</>);

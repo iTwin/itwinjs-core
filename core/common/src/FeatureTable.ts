@@ -9,19 +9,13 @@
 import { assert, compareNumbers, compareStrings, Id64, Id64String, IndexedValue, IndexMap } from "@bentley/bentleyjs-core";
 import { GeometryClass } from "./GeometryParams";
 
-/** Describes a "feature" within a batched [[RenderGraphic]]. A batched [[RenderGraphic]] can
- * contain multiple features. Each feature is associated with a unique combination of
- * attributes (elementId, subcategory, geometry class). This allows geometry to be
- * more efficiently batched on the GPU, while enabling features to be re-symbolized
- * individually.
- *
- * As a simple example, a single mesh primitive may contain geometry for 3 elements,
- * all belonging to the same subcategory and geometry class. The mesh would therefore
- * contain 3 Features. Each vertex within the mesh would be associated with the
- * index of the Feature to which it belongs, where the index is determined by the
- * FeatureTable associated with the primitive.
- *
- * @see [[FeatureSymbology]] for mechanisms for controlling or overriding the symbology of individual features within a [[ViewState]].
+/** Describes a discrete entity within a batched [RenderGraphic]($frontend) that can be
+ * grouped with other such entities in a [[FeatureTable]].
+ * Features roughly correlate to elements: a [Tile]($frontend)'s graphics combines geometry from every
+ * [GeometricElement]($backend) that intersects the tile's volume, so each element produces at least one feature.
+ * However, an element's geometry stream can contain geometry belonging to multiple different combinations of [SubCategory]($backend) and
+ * [[GeometryClass]], so an individual element may produce more than one feature.
+ * @see [[FeatureOverrides]] for customizing the appearance of individual features.
  * @public
  */
 export class Feature {
@@ -91,13 +85,13 @@ export enum BatchType {
   PlanarClassifier,
 }
 
-/** Defines a look-up table for [[Feature]]s within a batched [[RenderGraphic]]. Consecutive 32-bit
- * indices are assigned to each unique Feature. Primitives within the [[RenderGraphic]] can
- * use per-vertex indices to specify the distribution of Features within the primitive.V
- * A FeatureTable can be shared amongst multiple primitives within a single [[RenderGraphic]], and
- * amongst multiple sub-Graphics of a [[RenderGraphic]].
- * @see [[FeatureSymbology]] for mechanisms for resymbolizing features within a [[ViewState]].
- * @beta
+/** Defines a look-up table for [[Feature]]s within a batched [RenderGraphic]($frontend). Consecutive 32-bit
+ * indices are assigned to each unique Feature. Primitives within the RenderGraphic can
+ * use per-vertex indices to specify the distribution of Features within the primitive. The appearance of individual
+ * features can be customized using [[FeatureOverrides]]. Typically a [Tile]($frontend) will contain a feature table
+ * identifying the elements whose geometry appears within that tile.
+ * @see [[FeatureOverrides]] for customizing the appearance of individual features.
+ * @public
  */
 export class FeatureTable extends IndexMap<Feature> {
   public readonly modelId: Id64String;

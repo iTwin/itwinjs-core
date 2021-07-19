@@ -6,13 +6,11 @@
  * @module Rendering
  */
 
-import { Id64String } from "@bentley/bentleyjs-core";
 import {
-  Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, Transform,
+  Arc3d, CurvePrimitive, IndexedPolyface, LineSegment3d, LineString3d, Loop, Path, Point2d, Point3d, Polyface, Range3d, SolidPrimitive, Transform,
 } from "@bentley/geometry-core";
 import { FeatureTable, Gradient, GraphicParams, PackedFeatureTable, RenderTexture } from "@bentley/imodeljs-common";
-import { Viewport } from "../../../Viewport";
-import { GraphicBuilder, GraphicType } from "../../GraphicBuilder";
+import { GraphicBuilder, GraphicBuilderOptions } from "../../GraphicBuilder";
 import { RenderGraphic } from "../../RenderGraphic";
 import { RenderSystem } from "../../RenderSystem";
 import { DisplayParams } from "../DisplayParams";
@@ -32,13 +30,17 @@ function copy2dTo3d(pts2d: Point2d[], depth: number): Point3d[] {
 export abstract class GeometryListBuilder extends GraphicBuilder {
   public accum: GeometryAccumulator;
   public readonly graphicParams: GraphicParams = new GraphicParams();
-  private _wantNormals = false;
 
   public abstract finishGraphic(accum: GeometryAccumulator): RenderGraphic; // Invoked by Finish() to obtain the finished RenderGraphic.
 
-  public constructor(system: RenderSystem, type: GraphicType, viewport: Viewport, placement: Transform = Transform.identity, pickableId?: Id64String, accumulatorTf: Transform = Transform.identity) {
-    super(placement, type, viewport, pickableId);
-    this.accum = new GeometryAccumulator(this.iModel, system, undefined, accumulatorTf);
+  public constructor(system: RenderSystem, options: GraphicBuilderOptions, accumulatorTransform = Transform.identity) {
+    super(options);
+    this.accum = new GeometryAccumulator({
+      iModel: this.iModel,
+      system,
+      transform: accumulatorTransform,
+      analysisStyleDisplacement: options.viewport.displayStyle.settings.analysisStyle?.displacement,
+    });
   }
 
   public finish(): RenderGraphic {
@@ -49,13 +51,6 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
 
   public activateGraphicParams(graphicParams: GraphicParams): void {
     graphicParams.clone(this.graphicParams);
-  }
-
-  public get wantNormals() {
-    return this._wantNormals;
-  }
-  public set wantNormals(want: boolean) {
-    this._wantNormals = want;
   }
 
   public addArc2d(ellipse: Arc3d, isEllipse: boolean, filled: boolean, zDepth: number): void {
@@ -130,13 +125,11 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   }
 
   public addPolyface(meshData: Polyface): void {
-    // Currently there is no API for generating normals for a Polyface; and it would be more efficient for caller to supply them as part of their input Polyface.
-    // ###TODO: When such an API becomes available, remove the following.
-    // It's important that we correctly compute DisplayParams.ignoreLighting so that we don't try to batch this un-lightable Polyface with other lightable geometry.
-    const wantedNormals = this.wantNormals;
-    this.wantNormals = wantedNormals && undefined !== meshData.data.normal && 0 < meshData.data.normal.length;
     this.accum.addPolyface(meshData as IndexedPolyface, this.getMeshDisplayParams(), this.placement);
-    this.wantNormals = wantedNormals;
+  }
+
+  public addSolidPrimitive(primitive: SolidPrimitive): void {
+    this.accum.addSolidPrimitive(primitive, this.getMeshDisplayParams(), this.placement);
   }
 
   public abstract reset(): void;
@@ -164,6 +157,9 @@ export abstract class GeometryListBuilder extends GraphicBuilder {
   }
 }
 
+// Set to true to add a range box to every graphic produced by PrimitiveBuilder.
+let addDebugRangeBox = false;
+
 /** @internal */
 export class PrimitiveBuilder extends GeometryListBuilder {
   public primitives: RenderGraphic[] = [];
@@ -187,7 +183,17 @@ export class PrimitiveBuilder extends GeometryListBuilder {
 
     let graphic = (this.primitives.length !== 1) ? this.accum.system.createGraphicList(this.primitives) : this.primitives.pop() as RenderGraphic;
     if (undefined !== featureTable) {
-      graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), (range !== undefined) ? range : new Range3d());
+      const batchRange = range ?? new Range3d();
+      const batchOptions = this._options.pickable;
+      graphic = this.accum.system.createBatch(graphic, PackedFeatureTable.pack(featureTable), batchRange, batchOptions);
+    }
+
+    if (addDebugRangeBox && range) {
+      addDebugRangeBox = false;
+      const builder = this.accum.system.createGraphic({ ...this._options });
+      builder.addRangeBox(range);
+      graphic = this.accum.system.createGraphicList([graphic, builder.finish()]);
+      addDebugRangeBox = true;
     }
 
     return graphic;

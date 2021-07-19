@@ -11,12 +11,12 @@ import { System } from "./System";
 abstract class DisjointTimerExtension {
   public abstract get isSupported(): boolean;
   public abstract didDisjointEventHappen(): boolean;
-  public abstract createQuery(): WebGLObject;
-  public abstract deleteQuery(q: WebGLObject): void;
-  public abstract beginQuery(q: WebGLObject): void;
+  public abstract createQuery(): WebGLQuery;
+  public abstract deleteQuery(q: WebGLQuery): void;
+  public abstract beginQuery(q: WebGLQuery): void;
   public abstract endQuery(): void;
-  public abstract isResultAvailable(q: WebGLObject): boolean;
-  public abstract getResult(q: WebGLObject): number;
+  public abstract isResultAvailable(q: WebGLQuery): boolean;
+  public abstract getResult(q: WebGLQuery): number;
 }
 
 class DisjointTimerExtensionWebGL1 extends DisjointTimerExtension {
@@ -35,16 +35,16 @@ class DisjointTimerExtensionWebGL1 extends DisjointTimerExtension {
     return this._context.getParameter(this._e.GPU_DISJOINT_EXT);
   }
 
-  public createQuery(): WebGLObject { return this._e.createQueryEXT() as WebGLObject; }
-  public deleteQuery(q: WebGLObject) { this._e.deleteQueryEXT(q); }
+  public createQuery(): WebGLQuery { return this._e.createQueryEXT() as WebGLQuery; }
+  public deleteQuery(q: WebGLQuery) { this._e.deleteQueryEXT(q); }
 
-  public beginQuery(q: WebGLObject) { this._e.beginQueryEXT(this._e.TIME_ELAPSED_EXT, q); }
+  public beginQuery(q: WebGLQuery) { this._e.beginQueryEXT(this._e.TIME_ELAPSED_EXT, q); }
   public endQuery() { this._e.endQueryEXT(this._e.TIME_ELAPSED_EXT); }
 
-  public isResultAvailable(q: WebGLObject): boolean {
+  public isResultAvailable(q: WebGLQuery): boolean {
     return this._e.getQueryObjectEXT(q, this._e.QUERY_RESULT_AVAILABLE_EXT);
   }
-  public getResult(q: WebGLObject): number {
+  public getResult(q: WebGLQuery): number {
     return this._e.getQueryObjectEXT(q, this._e.QUERY_RESULT_EXT);
   }
 }
@@ -54,9 +54,11 @@ class DisjointTimerExtensionWebGL2 extends DisjointTimerExtension {
 
   public constructor(system: System) {
     super();
-    if (system.capabilities.isWebGL2)
+    if (system.capabilities.isWebGL2) {
       this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query_webgl2");
-    else
+      if (this._e === undefined) // If webgl2 timer doesn't work, attempt to use the older disjoint timer
+        this._e = system.capabilities.queryExtensionObject<any>("EXT_disjoint_timer_query");
+    } else
       this._e = undefined;
     this._context = system.context as WebGL2RenderingContext;
   }
@@ -67,23 +69,23 @@ class DisjointTimerExtensionWebGL2 extends DisjointTimerExtension {
     return this._context.getParameter(this._e.GPU_DISJOINT_EXT);
   }
 
-  public createQuery(): WebGLObject { return this._context.createQuery() as WebGLObject; }
-  public deleteQuery(q: WebGLObject) { this._context.deleteQuery(q); }
+  public createQuery(): WebGLQuery { return this._context.createQuery() as WebGLQuery; }
+  public deleteQuery(q: WebGLQuery) { this._context.deleteQuery(q); }
 
-  public beginQuery(q: WebGLObject) { this._context.beginQuery(this._e.TIME_ELAPSED_EXT, q); }
+  public beginQuery(q: WebGLQuery) { this._context.beginQuery(this._e.TIME_ELAPSED_EXT, q); }
   public endQuery() { this._context.endQuery(this._e.TIME_ELAPSED_EXT); }
 
-  public isResultAvailable(q: WebGLObject): boolean {
+  public isResultAvailable(q: WebGLQuery): boolean {
     return this._context.getQueryParameter(q, this._context.QUERY_RESULT_AVAILABLE);
   }
-  public getResult(q: WebGLObject): number {
+  public getResult(q: WebGLQuery): number {
     return this._context.getQueryParameter(q, this._context.QUERY_RESULT);
   }
 }
 
 interface QueryEntry {
   label: string;
-  query: WebGLObject;
+  query: WebGLQuery;
   children?: QueryEntry[];
 }
 

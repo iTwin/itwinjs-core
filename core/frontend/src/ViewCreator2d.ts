@@ -12,7 +12,7 @@ API for creating a 2D view from a given modelId and modelType (classFullName).
 Additional options (such as background color) can be passed during view creation.
 */
 
-import { Id64Array, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { CategorySelectorProps, Code, ColorDef, DisplayStyleProps, IModel, IModelError, ModelSelectorProps, SheetProps, ViewDefinition2dProps, ViewStateProps } from "@bentley/imodeljs-common";
 import { Range3d } from "@bentley/geometry-core";
 import { DrawingModelState, SectionDrawingModelState, SheetModelState } from "./ModelState";
@@ -20,25 +20,30 @@ import { IModelConnection } from "./IModelConnection";
 import { ViewState, ViewState2d } from "./ViewState";
 import { DrawingViewState } from "./DrawingViewState";
 import { SheetViewState } from "./SheetViewState";
-import { loggerCategory } from "./imodeljs-frontend";
+import { EntityState } from "./EntityState";
 
-/** @beta Options for creating a 2d [[ViewState]] via [[ViewCreator2d]] */
+/** Options for creating a [[ViewState2d]] via [[ViewCreator2d]].
+ *  @public
+*/
 export interface ViewCreator2dOptions {
-  /** vpAspect aspect ratio of vp to create fit view. */
+  /** Aspect ratio of [[Viewport]]. Required to fit contents of the model in the initial state of the view. */
   vpAspect?: number;
-  /** background color for view (default is white). */
+  /** Background color of the view (default is white). */
   bgColor?: ColorDef;
-  /** if iModel already has a view for given 2D model, merge in its props */
+  /** Checks to see if there already is a [[ViewDefinition2d]] for the given modelId. If so, use it as the seed view, and merge its props into the final view created. */
   useSeedView?: boolean;
 }
 
-/** @beta API for creating a [[ViewState]] for a 2D model ([[GeometricModel2dState]]).
+/**
+ * API for creating a [[ViewState2d]] for a 2D model ([[GeometricModel2dState]]). @see [[ViewCreator3d]] to create a view for a 3d model.
+ * Example usage:
  * ```ts
  * const viewCreator = new ViewCreator2d(imodel);
  * const models = await imodel.models.queryProps({ from: "BisCore.GeometricModel2d" });
  * if (models.length > 0)
- * const view = await viewCreator.createViewForModel(models[0].id!, models[0].classFullName);
+ *   const view = await viewCreator.createViewForModel(models[0].id!);
  * ```
+ * @public
  */
 export class ViewCreator2d {
 
@@ -47,45 +52,20 @@ export class ViewCreator2d {
   private static _sheetModelClasses = [SheetModelState.classFullName];
 
   /**
-   * Constructs ViewCreator2d with [[iModelConnection]].
-   * @param _imodel [[iModelConnection]] to query for categories and/or models.
+   * Constructs a ViewCreator2d using an [[IModelConnection]].
+   * @param _imodel [[IModelConnection]] to query for categories and/or models.
    */
   constructor(private _imodel: IModelConnection) { }
 
   /**
-   * Checks to see if given model is of [[DrawingModelState]].
-   * @param modelType classFullName of model.
+   * Creates and returns view for the 2D model id passed in.
+   * @param modelId Id of the 2D model for the view.
+   * @param [options] Options for creating the view.
+   * @throws [IModelError]($common) If modelType is not supported.
    */
-  public static isDrawingModelClass(modelType: string) {
-    if (ViewCreator2d._drawingModelClasses.includes(modelType)) {
-      return true;
-    }
-    return false;
-  }
+  public async createViewForModel(modelId: Id64String, options?: ViewCreator2dOptions): Promise<ViewState> {
 
-  /**
-   * Checks to see if given model is of [[SheetModelState]].
-   * @param modelType classFullName of model.
-   */
-  public static isSheetModelClass(modelType: string) {
-    if (ViewCreator2d._sheetModelClasses.includes(modelType)) {
-      return true;
-    }
-    return false;
-  }
-
-  /**
-   * Creates and returns view for given 2D model.
-   * @param modelId of target 2D model.
-   * @param modelType classFullName of target 2D model.
-   * @param options for view creation.
-   * @throws [IModelError]($common) if modelType is not supported.
-   */
-  public async createViewForModel(modelId: Id64String, modelType: string, options?: ViewCreator2dOptions): Promise<ViewState> {
-    const baseClassName = await this._imodel.findClassFor(modelType, undefined);
-
-    if (baseClassName === undefined)
-      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d.getViewForModel: modelType is invalid", Logger.logError, loggerCategory, () => ({ modelType, modelId }));
+    const baseClassName = await this._getModelBaseClassName(modelId);
 
     const viewState = await this._createViewState2d(modelId, baseClassName.classFullName, options);
     try {
@@ -93,6 +73,28 @@ export class ViewCreator2d {
     } catch { }
 
     return viewState;
+  }
+
+  /**
+   * Gets model base class name from id.
+   * @param modelId of target model.
+   * @throws [IModelError]($common) if modelId is invalid.
+   */
+  private async _getModelBaseClassName(modelId: Id64String): Promise<typeof EntityState> {
+
+    let baseClassName;
+
+    const modelProps = await this._imodel.models.getProps(modelId);
+    if (modelProps.length > 0) {
+      const modelType = modelProps[0].classFullName;
+      baseClassName = await this._imodel.findClassFor(modelType, undefined);
+    } else
+      throw new IModelError(IModelStatus.BadModel, "ViewCreator2d._getModelBaseClassName: modelId is invalid");
+
+    if (baseClassName === undefined)
+      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d.getViewForModel: modelType is invalid");
+
+    return baseClassName;
   }
 
   /**
@@ -104,17 +106,39 @@ export class ViewCreator2d {
    */
   private async _createViewState2d(modelId: Id64String, modelType: string, options?: ViewCreator2dOptions): Promise<ViewState2d> {
     let viewState: ViewState2d;
-    if (ViewCreator2d.isDrawingModelClass(modelType)) {
+    if (this._isDrawingModelClass(modelType)) {
       const props = await this._createViewStateProps(modelId, options);
       viewState = DrawingViewState.createFromProps(props, this._imodel);
-    } else if (ViewCreator2d.isSheetModelClass(modelType)) {
+    } else if (this._isSheetModelClass(modelType)) {
       let props = await this._createViewStateProps(modelId, options);
       props = await this._addSheetViewProps(modelId, props);
       viewState = SheetViewState.createFromProps(props, this._imodel);
     } else
-      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d._createViewState2d: modelType not supported", Logger.logError, loggerCategory, () => ({ modelType, modelId }));
+      throw new IModelError(IModelStatus.WrongClass, "ViewCreator2d._createViewState2d: modelType not supported");
 
     return viewState;
+  }
+
+  /**
+   * Checks to see if given model is of [[DrawingModelState]].
+   * @param modelType classFullName of model.
+   */
+  private _isDrawingModelClass(modelType: string) {
+    if (ViewCreator2d._drawingModelClasses.includes(modelType)) {
+      return true;
+    }
+    return false;
+  }
+
+  /**
+   * Checks to see if given model is of [[SheetModelState]].
+   * @param modelType classFullName of model.
+   */
+  private _isSheetModelClass(modelType: string) {
+    if (ViewCreator2d._sheetModelClasses.includes(modelType)) {
+      return true;
+    }
+    return false;
   }
 
   /**

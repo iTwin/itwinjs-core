@@ -3,9 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { WidgetState } from "@bentley/ui-abstract";
 import {
   ActionItemButton, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, IModelViewportControl,
-  NavigationWidget, ToolButton, ToolWidget, UiFramework, Widget, WidgetState, Zone, ZoneLocation, ZoneState,
+  NavigationWidget, ToolButton, ToolWidget, UiFramework, Widget, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -15,7 +16,7 @@ import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class Frontstage3 extends FrontstageProvider {
 
@@ -37,7 +38,7 @@ export class Frontstage3 extends FrontstageProvider {
         contents: [
           {
             classId: IModelViewportControl.id,
-            applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection, disableDefaultViewOverlay: true  },
+            applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection, disableDefaultViewOverlay: true },
           },
           {
             classId: App_IModelViewport.id,

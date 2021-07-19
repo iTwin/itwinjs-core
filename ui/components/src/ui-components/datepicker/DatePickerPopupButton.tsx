@@ -41,26 +41,18 @@ export interface DatePickerPopupButtonProps extends CommonProps {
  * @alpha
  * */
 export function DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter,
-  buttonToolTip, fieldStyle, fieldClassName }: DatePickerPopupButtonProps) {
+  buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps) {
   const [workingDate, setWorkingDate] = React.useState(new Date(selected.getTime()));
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const timeLabelRef = React.useRef(UiComponents.translate("datepicker.time"));
   const toolTipLabelRef = React.useRef(UiComponents.translate("datepicker.selectDate"));
   const toolTipLabel = React.useMemo(() => buttonToolTip ? buttonToolTip : toolTipLabelRef.current, [buttonToolTip]);
-  const initialDateRef = React.useRef(selected);
 
-  // See if new initialDate props have changed since component mounted
+  // See if props have changed since component mounted
   React.useEffect(() => {
-    // istanbul ignore else
-    if (selected.getTime() !== initialDateRef.current.getTime()) {
-      const newWorkingDate = new Date(selected.getTime());
-      // istanbul ignore else
-      if (workingDate.getTime() !== newWorkingDate.getTime()) {
-        setWorkingDate(newWorkingDate);
-      }
-      initialDateRef.current = selected;
-    }
-  }, [selected, workingDate]);
+    const newWorkingDate = new Date(selected.getTime());
+    setWorkingDate(newWorkingDate);
+  }, [selected]);
 
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const togglePopupDisplay = React.useCallback((event: React.MouseEvent<HTMLButtonElement, MouseEvent>) => {
@@ -101,7 +93,7 @@ export function DatePickerPopupButton({ displayEditField, timeDisplay, selected,
   const timeSpec: TimeSpec = { hours: workingDate.getHours(), minutes: workingDate.getMinutes(), seconds: workingDate.getSeconds() };
   return (
     <>
-      <button title={toolTipLabel} className="components-date-picker-calendar-popup-button" onKeyDown={handlePopupKeyDown}
+      <button title={toolTipLabel} style={style} className="components-date-picker-calendar-popup-button" onKeyDown={handlePopupKeyDown}
         data-testid="components-date-picker-calendar-popup-button" onPointerDown={togglePopupDisplay} ref={buttonRef}>
         <div className="datepicker-button">
           <svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 16 16">

@@ -120,12 +120,12 @@ FrontstageManager.setActiveFrontstageDef(frontstageProvider.frontstageDef).then(
 
 ## Related Learning Topics
 
-* [Content Views and Layouts](./ContentViews.md)
-* [Widgets](./Widgets.md)
-* [Status Bar and Fields](./StatusBar.md)
-* [Tool Settings](./ToolSettings.md)
-* [Stage Panels](./StagePanels.md)
+- [Content Views and Layouts](./ContentViews.md)
+- [Widgets](./Widgets.md)
+- [Status Bar and Fields](./StatusBar.md)
+- [Tool Settings](./ToolSettings.md)
+- [Stage Panels](./StagePanels.md)
 
 ## API Reference
 
-* [Zone]($ui-framework:Zone)
+- [Zone]($ui-framework:Zone)

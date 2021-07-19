@@ -35,7 +35,7 @@ describe("ECSql Query", () => {
     let successful = 0;
     let rowCount = 0;
     const cb = async () => {
-      return new Promise(async (resolve, reject) => {
+      return new Promise<void>(async (resolve, reject) => {
         try {
           // eslint-disable-next-line @typescript-eslint/naming-convention
           for await (const _row of imodel1.restartQuery("tag", "SELECT ECInstanceId as Id, Parent.Id as ParentId FROM BisCore.element")) {
@@ -129,11 +129,11 @@ describe("ECSql Query", () => {
     for await (const row of imodel2.query(query1))
       row1 = row;
     assert.isNotEmpty(row1.geometryStream);
-    for await(const row of imodel2.query(query2, [row1.id], undefined, undefined, undefined, false))
+    for await (const row of imodel2.query(query2, [row1.id], undefined, undefined, undefined, false))
       row2 = row;
     assert.isNotEmpty(row2.geometryStream);
     assert.deepEqual(row2.geometryStream, row1.geometryStream);
-    for await(const row of imodel2.query(query2, [row1.id], undefined, undefined, undefined, true))
+    for await (const row of imodel2.query(query2, [row1.id], undefined, undefined, undefined, true))
       row3 = row;
     assert.equal(row3.id, row1.id);
     assert.include(row1.geometryStream, row3.geometryStream);

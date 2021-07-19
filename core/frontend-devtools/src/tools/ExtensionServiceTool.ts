@@ -15,18 +15,33 @@ const loggerCategory = "frontend-devtools.extensionServiceTool";
 
 /**
  * An Immediate Tool that adds an iModel.js Extension Service context Id to an application.
- * @internal
+ * @beta
  */
 export class ExtensionServiceTool extends Tool {
-  public static toolId = "ExtensionService";
-  public static get maxArgs() { return undefined; }
-  public static get minArgs() { return 1; }
+  public static override toolId = "ExtensionService";
+  public static override get maxArgs() { return undefined; }
+  public static override get minArgs() { return 1; }
 
-  public parseAndRun(...args: string[]): boolean {
+  /** Executes this tool's run method.
+   * @param args contains the arguments used by the tool's run method
+   * @see [[run]]
+   * `args` can contain:
+   *   public: adds context Id of 00000000-0000-0000-0000-000000000000
+   *   project | asset <contextName>: runs the extension service tool for either a project or asset with specified context name
+   *   id <contextName>: adds context Id of <contextName>
+   */
+  public override parseAndRun(...args: string[]): boolean {
     return this.run(args);
   }
 
-  public run(args: any[]): boolean {
+  /** This method runs the tool, adding an iModel.js Extension Service context Id to an application.
+   * @param args an array describing what context Id to add
+   * `args` can contain:
+   *   public: adds context Id of 00000000-0000-0000-0000-000000000000
+   *   project | asset <contextName>: runs the extension service tool for either a project or asset with specified context name
+   *   id <contextName>: adds context Id of <contextName>
+   */
+  public override run(args: any[]): boolean {
     if (!args || args.length < 1 || typeof args[0] !== "string") {
       return false;
     }

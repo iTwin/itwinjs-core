@@ -8,16 +8,16 @@
 
 import * as React from "react";
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
-import { ConditionalStringValue, SpecialKey, StringGetter } from "@bentley/ui-abstract";
+import { ConditionalStringValue, StringGetter } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, Icon } from "@bentley/ui-core";
 import { getToolbarItemProps, Item } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { BaseItemState } from "../shared/ItemDefBase";
 import { ToolItemProps } from "../shared/ItemProps";
 import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../syncui/SyncUiEventDispatcher";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
+import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 /** Properties for the [[ToolButton]] React Component.
  * @public
@@ -32,7 +32,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
   private _label: string | StringGetter | ConditionalStringValue = "";
 
   /** @internal */
-  public readonly state: Readonly<BaseItemState>;
+  public override readonly state: Readonly<BaseItemState>;
 
   constructor(props: ToolItemProps) {
     super(props);
@@ -64,7 +64,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
     }
 
     if (!refreshState && this.props.stateSyncIds && this.props.stateSyncIds.length > 0) // eslint-disable-line deprecation/deprecation
-      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value)); // eslint-disable-line deprecation/deprecation
+      refreshState = this.props.stateSyncIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase())); // eslint-disable-line deprecation/deprecation
 
     if (refreshState) {
       if (this.props.stateFunc) // eslint-disable-line deprecation/deprecation
@@ -83,11 +83,11 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
     }
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._componentUnmounting = true;
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
@@ -103,18 +103,11 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
     }
   };
 
-  private _handleKeyDown = (e: React.KeyboardEvent): void => {
-    // istanbul ignore else
-    if (e.key === SpecialKey.Escape) {
-      KeyboardShortcutManager.setFocusToHome();
-    }
-  };
-
   public get label(): string {
     return PropsHelper.getStringFromSpec(this._label);
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     if (!this.state.isVisible)
       return null;
 
@@ -132,7 +125,7 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
         title={this.label}
         key={this.props.toolId}
         onClick={this._execute}
-        onKeyDown={this._handleKeyDown}
+        onKeyDown={onEscapeSetFocusToHome}
         icon={icon}
         badge={badge}
       />

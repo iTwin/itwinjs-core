@@ -13,7 +13,7 @@ import React from "react";
 import { ThemedSelect } from "@bentley/ui-core";
 import { UiComponents } from "../../../UiComponents";
 import { ReactDataGridColumn } from "../../component/TableColumn";
-import { TableDistinctValue } from "../../TableDataProvider";
+import { TableDistinctValue } from "../ColumnFiltering";
 
 // cspell:ignore autosize
 
@@ -34,7 +34,7 @@ interface AutoCompleteFilterState {
 /* istanbul ignore next */
 /** @internal */
 export class AutoCompleteFilter extends React.Component<AutoCompleteFilterProps, AutoCompleteFilterState> {
-  private _placeholder = UiComponents.translate("button.label.search");
+  private _placeholder = UiComponents.translate("button.label.filter");
 
   constructor(props: AutoCompleteFilterProps) {
     super(props);
@@ -44,7 +44,7 @@ export class AutoCompleteFilter extends React.Component<AutoCompleteFilterProps,
     };
   }
 
-  public componentDidUpdate(props: AutoCompleteFilterProps) {
+  public override componentDidUpdate(props: AutoCompleteFilterProps) {
     const options = this._getOptions(props);
     if (!_.isEqual(options, this.state.options))
       this.setState({ options });
@@ -68,7 +68,7 @@ export class AutoCompleteFilter extends React.Component<AutoCompleteFilterProps,
     this.props.onChange({ filterTerm: filters, column: this.props.column });
   };
 
-  public render() {
+  public override render() {
     return (
       <ThemedSelect
         name={`filter-${this.props.column.key}`}

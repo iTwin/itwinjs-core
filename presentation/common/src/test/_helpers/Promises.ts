@@ -2,8 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-export type PromiseResolveFunc<T> = (value?: T | PromiseLike<T>) => void;
-export type PromiseRejectFunc = (reason?: any) => void;
+export type PromiseResolveFunc<T> = (value: T | PromiseLike<T>) => void;
+export type PromiseRejectFunc = (reason: any) => void;
 export class PromiseContainer<T> {
   private _resolve!: PromiseResolveFunc<T>;
   private _reject!: PromiseRejectFunc;
@@ -15,7 +15,7 @@ export class PromiseContainer<T> {
     });
   }
   public get promise(): Promise<T> { return this._internal; }
-  public resolve(value?: T | PromiseLike<T>): void {
+  public resolve(value: T | PromiseLike<T>): void {
     this._resolve(value);
   }
   public reject(reason?: any): void {
@@ -38,13 +38,13 @@ export class ResolvablePromise<T> implements PromiseLike<T> {
   }
   public async resolve(result: T) {
     this._resolve(result);
-    await new Promise((resolve: () => void) => {
+    await new Promise<void>((resolve: () => void) => {
       setImmediate(resolve);
     });
   }
   public async reject(msg?: string) {
     this._reject(msg);
-    await new Promise((resolve: () => void) => {
+    await new Promise<void>((resolve: () => void) => {
       setImmediate(resolve);
     });
   }

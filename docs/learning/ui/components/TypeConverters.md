@@ -10,8 +10,8 @@ The TypeConverter class implements the [SortComparer]($ui-components),
 Type converters may optionally implement one of the following interfaces to provide
 value processing for Table filtering:
 
-* [LessGreaterOperatorProcessor]($ui-components) - numeric types
-* [StringOperatorProcessor]($ui-components) - string types
+- [LessGreaterOperatorProcessor]($ui-components) - numeric types
+- [StringOperatorProcessor]($ui-components) - string types
 
 Each type converter must be registered with the [TypeConverterManager]($ui-components)
 for a given type name
@@ -30,18 +30,18 @@ const typeConverter = TypeConverterManager.TypeConverterManager.getConverter("st
 
 The following is a list of the provided type converters:
 
-* [BooleanTypeConverter]($ui-components)
-* [CompositeTypeConverter]($ui-components)
-* [DateTimeTypeConverter]($ui-components)
-* [EnumTypeConverter]($ui-components)
-* [FloatTypeConverter]($ui-components)
-* [HexadecimalTypeConverter]($ui-components)
-* [IntTypeConverter]($ui-components)
-* [NavigationPropertyTypeConverter]($ui-components)
-* [Point2dTypeConverter]($ui-components)
-* [Point3dTypeConverter]($ui-components)
-* [ShortDateTypeConverter]($ui-components)
-* [StringTypeConverter]($ui-components)
+- [BooleanTypeConverter]($ui-components)
+- [CompositeTypeConverter]($ui-components)
+- [DateTimeTypeConverter]($ui-components)
+- [EnumTypeConverter]($ui-components)
+- [FloatTypeConverter]($ui-components)
+- [HexadecimalTypeConverter]($ui-components)
+- [IntTypeConverter]($ui-components)
+- [NavigationPropertyTypeConverter]($ui-components)
+- [Point2dTypeConverter]($ui-components)
+- [Point3dTypeConverter]($ui-components)
+- [ShortDateTypeConverter]($ui-components)
+- [StringTypeConverter]($ui-components)
 
 **Note**: `TypeConverterManager.registerConverter` is called by the system for these delivered type converters.
 
@@ -52,4 +52,4 @@ This enum contains the type names used when registering the converters listed ab
 
 ## API Reference
 
-* [TypeConverters]($ui-components:TypeConverters)
+- [TypeConverters]($ui-components:TypeConverters)

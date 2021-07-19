@@ -20,13 +20,13 @@ The rules are broken into the different parts of the Schema they are validated a
 
 #### BIS-001 <a name="BIS-001"></a>
 
-A schema must load and pass EC3.1 spec validation. **_XXXX NEED LINK_**
+A schema must load and pass EC3.1 [spec validation](../ec/ec-schema-validation.md).
 
 #### BIS-002 <a name="BIS-002"></a>
 
 A schema's ECXML version must be at least, 3.1.
 
-- http://www.bentley.com/schemas/Bentley.ECXML.3.1
+- `<ECSchema ... xmlns=http://www.bentley.com/schemas/Bentley.ECXML.3.1 />`
 
 #### BIS-003 <a name="BIS-003"></a>
 
@@ -35,8 +35,9 @@ A schema may not reference any EC2 or EC3.0 schemas.
 #### BIS-004 <a name="BIS-004"></a>
 
 A schema must specify a three-part version number
-  - The version number must be in the format RR.WW.mm (that is, Read.Write.Minor).
-  - Each version component must be zero-padded to two digits (e.g. 01.02.00).
+
+- The version number must be in the format RR.WW.mm (that is, Read.Write.Minor).
+- Each version component must be zero-padded to two digits (e.g. 01.02.00).
 
 #### BIS-005 <a name="BIS-005"></a>
 

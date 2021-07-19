@@ -174,12 +174,13 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
   };
 
   /** @internal */
-  public componentDidUpdate(prevProps: FilteringInputProps) {
+  public override componentDidUpdate(prevProps: FilteringInputProps) {
     if (FilteringInput.isDeprecatedProps(prevProps) && FilteringInput.isDeprecatedProps(this.props)) {
       // eslint-disable-next-line deprecation/deprecation
       if (prevProps.filteringInProgress !== this.props.filteringInProgress) {
-        // eslint-disable-next-line deprecation/deprecation
-        this.setState((_state, props) => (FilteringInput.isDeprecatedProps(props) ? { prevFilteringInProgress: props.filteringInProgress } : { prevFilteringInProgress: undefined }));
+        this.setState((_state, props) => (FilteringInput.isDeprecatedProps(props) ?
+          { prevFilteringInProgress: props.filteringInProgress } :  // eslint-disable-line deprecation/deprecation
+          /* istanbul ignore next */ { prevFilteringInProgress: undefined }));
       }
       return;
     }
@@ -214,7 +215,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     return props.status;
   }
 
-  public render() {
+  public override render() {
     const status = this.getStatus(this.props);
 
     return (

@@ -18,7 +18,7 @@ import { getStableWidgetProps, ZoneLocation } from "../zones/Zone";
 import { UiFramework } from "../UiFramework";
 
 /** Enum for StagePanel state.
- * @beta
+ * @public
  */
 export enum StagePanelState {
   Off,
@@ -28,7 +28,7 @@ export enum StagePanelState {
 }
 
 /** Panel State Changed Event Args interface.
- * @beta
+ * @public
  */
 export interface PanelStateChangedEventArgs {
   panelDef: StagePanelDef;
@@ -51,7 +51,7 @@ export class PanelSizeChangedEvent extends UiEvent<PanelSizeChangedEventArgs> { 
 
 /**
  * A StagePanelDef represents each Stage Panel within a Frontstage.
- * @beta
+ * @public
  */
 export class StagePanelDef extends WidgetHost {
   private _panelState = StagePanelState.Open;
@@ -85,8 +85,10 @@ export class StagePanelDef extends WidgetHost {
     if (this._size === size)
       return;
 
+    // istanbul ignore else
     if (UiFramework.uiVersion === "2") {
       const frontstageDef = FrontstageManager.activeFrontstageDef;
+      // istanbul ignore else
       if (frontstageDef && frontstageDef.nineZoneState) {
         const side = toPanelSide(this.location);
         frontstageDef.nineZoneState = setPanelSize(frontstageDef.nineZoneState, side, size);
@@ -200,7 +202,7 @@ export class StagePanelDef extends WidgetHost {
   }
 
   /** Gets the list of Widgets. */
-  public get widgetDefs(): ReadonlyArray<WidgetDef> {
+  public override get widgetDefs(): ReadonlyArray<WidgetDef> {
     const widgetDefs = [...super.widgetDefs];
     for (const [, panelZone] of this.panelZones) {
       widgetDefs.push(...panelZone.widgetDefs);
@@ -216,7 +218,7 @@ export class StagePanelDef extends WidgetHost {
   }
 
   /** @internal */
-  public updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section: StagePanelSection | undefined,
+  public override updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation, _section: StagePanelSection | undefined,
     widgetDefs: WidgetDef[],
   ): void {
     this.panelZones.start.updateDynamicWidgetDefs(stageId, stageUsage, location, StagePanelSection.Start, widgetDefs);

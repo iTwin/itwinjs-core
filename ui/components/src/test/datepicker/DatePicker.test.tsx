@@ -8,8 +8,9 @@ import React from "react";
 import sinon from "sinon";
 import { cleanup, fireEvent, render } from "@testing-library/react";
 import TestUtils from "../TestUtils";
-import { adjustDateToTimezone, DatePicker } from "../../ui-components/datepicker/DatePicker";
+import { DatePicker } from "../../ui-components/datepicker/DatePicker";
 import { SpecialKey } from "@bentley/ui-abstract";
+import { adjustDateToTimezone } from "../../ui-components/common/DateUtils";
 
 describe("<DatePicker />", () => {
   let renderSpy: sinon.SinonSpy;

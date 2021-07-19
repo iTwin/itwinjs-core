@@ -10,7 +10,7 @@ import "./PanelWidget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { useRefs } from "@bentley/ui-core";
-import { assert } from "../base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { PanelsStateContext, TabsStateContext, ToolSettingsStateContext, WidgetsStateContext } from "../base/NineZone";
 import { isHorizontalPanelState, TabsState, WidgetsState, WidgetState } from "../base/NineZoneState";
 import { isHorizontalPanelSide, PanelStateContext } from "../widget-panels/Panel";
@@ -41,7 +41,7 @@ export const PanelWidget = React.memo( // eslint-disable-line react/display-name
       transition,
     }, ref) { // eslint-disable-line @typescript-eslint/naming-convention
       const panel = React.useContext(PanelStateContext);
-      assert(panel);
+      assert(!!panel);
       const widgets = React.useContext(WidgetsStateContext);
       const widget = widgets[widgetId];
       const horizontal = isHorizontalPanelSide(panel.side);
@@ -127,7 +127,7 @@ export function useMode(widgetId: string): "fit" | "fill" | "minimized" {
   const panel = React.useContext(PanelStateContext);
   const widgets = React.useContext(WidgetsStateContext);
   const tabs = React.useContext(TabsStateContext);
-  assert(panel);
+  assert(!!panel);
   const fillWidget = findFillWidget(panel.widgets, widgets, tabs);
 
   // Force `fill` for last panel widget that is not minimized.
@@ -156,7 +156,7 @@ export function useBorders(widgetId: WidgetState["id"]) {
   const panel = React.useContext(PanelStateContext);
   const panels = React.useContext(PanelsStateContext);
   const toolSettings = React.useContext(ToolSettingsStateContext);
-  assert(panel);
+  assert(!!panel);
   let top = true;
   let bottom = true;
   let left = true;

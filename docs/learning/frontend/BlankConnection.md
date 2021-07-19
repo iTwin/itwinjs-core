@@ -4,11 +4,11 @@ A [BlankConnection]($frontend) is an [IModelConnection]($frontend) that is **not
 
 ## Background
 
-Much of the iModel.js frontend package is designed to communicate with a backend serving an iModel through an [IModelConnection]($frontend) via various RPC interfaces (e.g. [IModelReadRpcInterface]($common)). However, there are some cases where it is useful create Viewports *without* an iModel. The [BlankConnection.create]($frontend) method can be used to create a valid `IModelConnection` that is *not* actually associated with an iModel.
+Much of the iTwin.js frontend package is designed to communicate with a backend serving an iModel through an [IModelConnection]($frontend) via various RPC interfaces (e.g. [IModelReadRpcInterface]($common)). However, there are some cases where it is useful create Viewports *without* an iModel. The [BlankConnection.create]($frontend) method can be used to create a valid `IModelConnection` that is *not* actually associated with an iModel.
 
 ## Uses
 
-Many services in the iModel.js frontend package display information from sources other than an iModel. If you wish to open a viewport to show just that type of information, use a blank IModelConnection. For example:
+Many services in the iTwin.js frontend package display information from sources other than an iModel. If you wish to open a viewport to show just that type of information, use a blank IModelConnection. For example:
 
 - reality meshes (e.g. ContextCapture models)
 - point clouds
@@ -27,9 +27,9 @@ You can test whether an IModelConnection is blank, by using [IModelConnection.is
 
 To open a new blank connection, you can do something like this:
 
-  ```ts
-  [[include:BlankConnection.open]]
-  ```
+```ts
+[[include:BlankConnection.open]]
+```
 
 then, to create a blank spatial view to show data from sources other than iModels, do something like this:
 

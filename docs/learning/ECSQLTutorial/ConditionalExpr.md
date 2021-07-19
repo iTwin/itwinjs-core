@@ -76,3 +76,5 @@ SELECT IIF(Length > 1.0, 'Big', 'Small') FROM test.Foo;
 SELECT IIF(Name IS NULL, DisplayLabel, Name) FROM test.Foo;
 
 ```
+
+[**< Previous**](./ClassFilter.md) &nbsp; | &nbsp; [**Next >**](./BuiltInFunctions.md)

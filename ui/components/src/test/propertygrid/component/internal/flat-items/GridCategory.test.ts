@@ -532,7 +532,6 @@ describe("GridCategory", () => {
           ],
         };
 
-        GridUtils.assignParentsToCategories([propertyCategory]);
         const categoryRecords = GridUtils.constructCategoryRecordsDict([propertyCategory]);
 
         const gridCategory = new MutableGridCategory(propertyCategory, categoryRecords, gridItemFactory);
@@ -554,7 +553,6 @@ describe("GridCategory", () => {
           ],
         };
 
-        GridUtils.assignParentsToCategories([propertyCategory]);
         const categoryRecords = GridUtils.constructCategoryRecordsDict([propertyCategory]);
 
         const gridCategory = new MutableGridCategory(propertyCategory, categoryRecords, gridItemFactory);
@@ -593,7 +591,6 @@ describe("GridCategory", () => {
           ],
         };
 
-        GridUtils.assignParentsToCategories([propertyCategory]);
         const categoryRecords = GridUtils.constructCategoryRecordsDict([propertyCategory]);
 
         const gridCategory = new MutableGridCategory(propertyCategory, categoryRecords, gridItemFactory);
@@ -873,7 +870,6 @@ describe("GridCategory", () => {
             { name: "Category1_2", label: "Category 1_2", expand: false },
           ],
         };
-        GridUtils.assignParentsToCategories([propertyCategory]);
         const categoryRecords = GridUtils.constructCategoryRecordsDict([propertyCategory]);
 
         const records = [
@@ -898,7 +894,6 @@ describe("GridCategory", () => {
             { name: "Category1_2", label: "Category 1_2", expand: true },
           ],
         };
-        GridUtils.assignParentsToCategories([propertyCategory]);
         const categoryRecords = GridUtils.constructCategoryRecordsDict([propertyCategory]);
 
         categoryRecords[propertyCategory.name] = [
@@ -1103,7 +1098,6 @@ describe("GridCategory", () => {
             { name: "Category1_2", label: "Category 1_2", expand: false },
           ],
         };
-        GridUtils.assignParentsToCategories([propertyCategory]);
         const categoryRecords = GridUtils.constructCategoryRecordsDict([propertyCategory]);
 
         categoryRecords[propertyCategory.name] = [
@@ -1128,7 +1122,6 @@ describe("GridCategory", () => {
             lastCategory,
           ],
         };
-        GridUtils.assignParentsToCategories([propertyCategory]);
         const categoryRecords = GridUtils.constructCategoryRecordsDict([propertyCategory]);
 
         categoryRecords[propertyCategory.name] = [

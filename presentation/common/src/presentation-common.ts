@@ -21,6 +21,7 @@ export * from "./presentation-common/RulesetVariables";
 export * from "./presentation-common/RulesetsFactory";
 export * from "./presentation-common/Update";
 export * from "./presentation-common/Utils";
+export * from "./presentation-common/PresentationIpcInterface";
 
 /**
  * @module RPC
@@ -31,6 +32,7 @@ export * from "./presentation-common/Utils";
  */
 export * from "./presentation-common/PresentationRpcInterface";
 export * from "./presentation-common/RpcRequestsHandler";
+export * from "./presentation-common/ElementProperties";
 
 /**
  * @module UnifiedSelection
@@ -57,6 +59,7 @@ export * from "./presentation-common/content/Property";
 export * from "./presentation-common/content/Renderer";
 export * from "./presentation-common/content/TypeDescription";
 export * from "./presentation-common/content/Value";
+export * from "./presentation-common/content/ContentTraverser";
 
 /**
  * @module Hierarchies
@@ -107,7 +110,7 @@ export * from "./presentation-common/rules/content/modifiers/ContentModifier";
 export * from "./presentation-common/rules/content/modifiers/PropertiesDisplaySpecification";
 export * from "./presentation-common/rules/content/modifiers/PropertyCategorySpecification";
 export * from "./presentation-common/rules/content/modifiers/PropertyEditorsSpecification";
-export * from "./presentation-common/rules/content/modifiers/PropertyRendererSpecification";
+export * from "./presentation-common/rules/content/modifiers/CustomRendererSpecification";
 export * from "./presentation-common/rules/content/modifiers/RelatedPropertiesSpecification";
 export * from "./presentation-common/rules/ClassSpecifications";
 export * from "./presentation-common/rules/RelatedInstanceSpecification";

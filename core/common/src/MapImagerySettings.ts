@@ -11,7 +11,7 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 import { MapLayerProps, MapLayerSettings } from "./MapLayerSettings";
 
 /** The JSON representation of base layer properties -- these can be represented by either a full map layer or a simple color.
- * @alpha
+ * @beta
  */
 export type BaseLayerProps = MapLayerProps | ColorDefProps;
 
@@ -20,7 +20,7 @@ export type BaseLayerProps = MapLayerProps | ColorDefProps;
  * In earlier versions only a background map was supported as specified by the providerName and mapType members of [[BackgroundMapSettings]] object.
  * In order to provide backward compatibility the original [[BackgroundMapSettings]] are synchronized with the [[MapImagerySettings]] base layer as long as
  * the settings are compatible.
- * @alpha
+ * @beta
  */
 export interface MapImageryProps {
   backgroundBase?: BaseLayerProps;
@@ -29,7 +29,7 @@ export interface MapImageryProps {
 }
 
 /** Normalized representation of base layer properties -- these can be represented by either a full map layer or a simple color.
- * @alpha
+ * @beta
  */
 export type BaseLayerSettings = MapLayerSettings | ColorDef;
 
@@ -37,7 +37,7 @@ export type BaseLayerSettings = MapLayerSettings | ColorDef;
  * In earlier versions only a background map was supported as specified by the providerName and mapType members of [[BackgroundMapSettings]] object.
  * In order to provide backward compatibility the original [[BackgroundMapSettings]] are synchronized with the [[MapImagerySettings]] base layer as long as
  * the settings are compatible.
- * @alpha
+ * @beta
  */
 export class MapImagerySettings {
   private _backgroundBase: BaseLayerSettings;
@@ -62,8 +62,13 @@ export class MapImagerySettings {
       }
     }
   }
+
+  /** The settings for the base layer.
+   *  @note If changing the base provider it is currently necessary to also update the background map settings.
+   */
   public get backgroundBase(): BaseLayerSettings { return this._backgroundBase; }
   public set backgroundBase(base: BaseLayerSettings) { this._backgroundBase = base; }
+
   public get backgroundLayers(): MapLayerSettings[] { return this._backgroundLayers; }
   public get overlayLayers(): MapLayerSettings[] { return this._overlayLayers; }
 

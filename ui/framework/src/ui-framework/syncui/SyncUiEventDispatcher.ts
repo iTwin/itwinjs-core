@@ -23,11 +23,16 @@ import { WorkflowManager } from "../workflow/Workflow";
 // cSpell:ignore elementtooltipchanged, frontstageactivated, inputfieldmessageadded, inputfieldmessageremoved, modalfrontstagechanged, modaldialogchanged
 // cSpell:ignore navigationaidactivated, notificationmessageadded, toolactivated, taskactivated, widgetstatechanged, workflowactivated frontstageactivating
 // cSpell:ignore frontstageready activeviewportchanged selectionsetchanged presentationselectionchanged viewstatechanged
+// cSpell:ignore accudrawcompassmodechanged accudrawfieldlockchanged accudrawrotationchanged uisettingschanged
 
 /** Event Id used to sync UI components. Used to refresh visibility or enable state of control.
  * @public
  */
 export enum SyncUiEventId {
+  /** AccuDraw compass mode has changed. */
+  AccuDrawCompassModeChanged = "accudrawcompassmodechanged",
+  /** AccuDraw rotation has changed. */
+  AccuDrawRotationChanged = "accudrawrotationchanged",
   /** The active content as maintained by the ContentViewManager has changed. */
   ActiveContentChanged = "activecontentchanged",
   /** The active view maintained by the ViewManager has changed. */
@@ -62,28 +67,31 @@ export enum SyncUiEventId {
   WorkflowActivated = "workflowactivated",
   /** The SelectionSet for the active IModelConnection has changed. */
   SelectionSetChanged = "selectionsetchanged",
+  /** The list of settings providers registered with SettingsManager has changed. */
+  SettingsProvidersChanged = "settingsproviderschanged",
   /** The current view state has changed (used by view undo/redo toolbar buttons). */
   ViewStateChanged = "viewstatechanged",
   /** The current object the reads and write UI Settings has changed. */
   UiSettingsChanged = "uisettingschanged",
+  ShowHideManagerSettingChange = "show-hide-setting-change",
 }
 
 /** SyncUi Event arguments. Contains a set of lower case event Ids.
  * @public
- */
+ */
 export interface SyncUiEventArgs {
   eventIds: Set<string>;
 }
 
 /** SyncUi Event class.
  * @public
- */
+ */
 export class SyncUiEvent extends UiEvent<SyncUiEventArgs> { }
 
 /** This class is used to send eventIds to interested UI components so the component can determine if it needs
  * to refresh its display by calling setState on itself.
  * @public
- */
+ */
 export class SyncUiEventDispatcher {
   private static _syncEventTimerId: number | undefined;
   private static _eventIds: Set<string>;
@@ -92,6 +100,8 @@ export class SyncUiEventDispatcher {
   private static _timeoutPeriod = 100;
   private static _secondaryTimeoutPeriod = SyncUiEventDispatcher._timeoutPeriod / 2;
   private static _unregisterListenerFunc?: () => void;
+  private static _unregisterListenerFuncs: Array<() => void> = [];
+  private static initialized = false;
 
   /** @internal - used for testing only */
   /* istanbul ignore next */
@@ -202,7 +212,7 @@ export class SyncUiEventDispatcher {
   /** Checks to see if an eventId of interest is contained in the set of eventIds */
   public static hasEventOfInterest(eventIds: Set<string>, idsOfInterest: string[]) {
     /* istanbul ignore else */
-    if ((idsOfInterest.length > 0) && idsOfInterest.some((value: string): boolean => eventIds.has(value)))
+    if ((idsOfInterest.length > 0) && idsOfInterest.some((value: string): boolean => eventIds.has(value.toLowerCase())))
       return true;
     return false;
   }
@@ -214,58 +224,60 @@ export class SyncUiEventDispatcher {
 
   /** Initializes the Monitoring of Events that trigger dispatching sync events */
   public static initialize() {
+    // clear any registered listeners - this should only be encountered in unit test scenarios
+    this._unregisterListenerFuncs.forEach((unregisterListenerFunc) => unregisterListenerFunc());
 
-    FrontstageManager.onContentControlActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onContentControlActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentControlActivated);
-    });
+    }));
 
-    FrontstageManager.onContentLayoutActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onContentLayoutActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ContentLayoutActivated);
-    });
+    }));
 
-    FrontstageManager.onFrontstageActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onFrontstageActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageActivating);
-    });
+    }));
 
-    FrontstageManager.onFrontstageReadyEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onFrontstageReadyEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.FrontstageReady);
-    });
+    }));
 
-    FrontstageManager.onModalFrontstageChangedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onModalFrontstageChangedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ModalFrontstageChanged);
-    });
+    }));
 
-    FrontstageManager.onNavigationAidActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onNavigationAidActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.NavigationAidActivated);
-    });
+    }));
 
-    FrontstageManager.onToolActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onToolActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ToolActivated);
-    });
+    }));
 
-    FrontstageManager.onWidgetStateChangedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(FrontstageManager.onWidgetStateChangedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WidgetStateChanged);
-    });
+    }));
 
-    Backstage.onBackstageEvent.addListener(() => { // eslint-disable-line deprecation/deprecation
+    this._unregisterListenerFuncs.push(Backstage.onBackstageEvent.addListener(() => { // eslint-disable-line deprecation/deprecation
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.BackstageEvent);
-    });
+    }));
 
-    WorkflowManager.onTaskActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(WorkflowManager.onTaskActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.TaskActivated);
-    });
+    }));
 
-    WorkflowManager.onWorkflowActivatedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(WorkflowManager.onWorkflowActivatedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.WorkflowActivated);
-    });
+    }));
 
-    ContentViewManager.onActiveContentChangedEvent.addListener(() => {
+    this._unregisterListenerFuncs.push(ContentViewManager.onActiveContentChangedEvent.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveContentChanged);
-    });
+    }));
 
     // istanbul ignore else
     if (IModelApp && IModelApp.viewManager) {
-      IModelApp.viewManager.onSelectedViewportChanged.addListener((args: SelectedViewportChangedArgs) => {
+      this._unregisterListenerFuncs.push(IModelApp.viewManager.onSelectedViewportChanged.addListener((args: SelectedViewportChangedArgs) => {
         SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.ActiveViewportChanged);
 
         // if this is the first view being opened up start the default tool so tool admin is happy.
@@ -281,7 +293,7 @@ export class SyncUiEventDispatcher {
           if (args.current.onViewChanged && typeof args.current.onViewChanged.addListener === "function") // not set during unit test
             args.current.onViewChanged.addListener(SyncUiEventDispatcher._dispatchViewChange);
         }
-      });
+      }));
     }
   }
 
@@ -292,20 +304,25 @@ export class SyncUiEventDispatcher {
   /** This should be called by IModelApp when the active IModelConnection is closed. */
   public static clearConnectionEvents(iModelConnection: IModelConnection) {
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
-
-    if (SyncUiEventDispatcher._unregisterListenerFunc)
-      SyncUiEventDispatcher._unregisterListenerFunc();
-
+    SyncUiEventDispatcher._unregisterListenerFunc && SyncUiEventDispatcher._unregisterListenerFunc();
     UiFramework.setActiveIModelId("");
   }
 
   /** This should be called by IModelApp when the active IModelConnection is established. */
   public static initializeConnectionEvents(iModelConnection: IModelConnection) {
+    if (SyncUiEventDispatcher._unregisterListenerFunc)
+      SyncUiEventDispatcher._unregisterListenerFunc();
+
+    if (iModelConnection.isBlankConnection()) {
+      iModelConnection && UiFramework.setActiveIModelId(iModelConnection.iModelId ?? "");
+      UiFramework.dispatchActionToStore(SessionStateActionId.SetAvailableSelectionScopes, []);
+      UiFramework.dispatchActionToStore(SessionStateActionId.SetNumItemsSelected, 0);
+      return;
+    }
+
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
     iModelConnection.selectionSet.onChanged.addListener(SyncUiEventDispatcher.selectionChangedHandler);
     (iModelConnection.iModelId) ? UiFramework.setActiveIModelId(iModelConnection.iModelId) : /* istanbul ignore next */ "";
-    if (SyncUiEventDispatcher._unregisterListenerFunc)
-      SyncUiEventDispatcher._unregisterListenerFunc();
 
     // listen for changes from presentation rules selection manager (this is done once an iModelConnection is available to ensure Presentation.selection is valid)
     SyncUiEventDispatcher._unregisterListenerFunc = Presentation.selection.selectionChange.addListener((args: SelectionChangeEventArgs, provider: ISelectionProvider) => {

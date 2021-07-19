@@ -81,8 +81,7 @@ class DataProvider extends EmptyDataProvider {
     fields: [
       new Field(createCategoryDescription(), "width", "width", createStringTypeDescription(), false, 1),
       new Field(createCategoryDescription(), "title", "title", createStringTypeDescription(), false, 1),
-      new Field(createCategoryDescription(), "weight", "weight", createStringTypeDescription(), false, 1),
-      new Field(createCategoryDescription(), "weight", "weight", createStringTypeDescription(), false, 1), // Repeated so that sort function could be tested
+      new Field(createCategoryDescription(), "radius", "radius", createStringTypeDescription(), false, 1),
     ],
     contentFlags: 1,
   });
@@ -90,8 +89,8 @@ class DataProvider extends EmptyDataProvider {
     { title: "Item", height: 15, width: 16 },
     { title: "Circle", radius: 13 },
   ];
-  public getContentSetSize = async () => this.values.length;
-  public getContent = async () => getContent(this.values, this.descriptor);
+  public override getContentSetSize = async () => this.values.length;
+  public override getContent = async () => getContent(this.values, this.descriptor);
 }
 
 async function getEmptyContent(props: { descriptor: Readonly<Descriptor> }) {

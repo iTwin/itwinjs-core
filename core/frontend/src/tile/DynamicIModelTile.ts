@@ -11,18 +11,18 @@ import {
 } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
-  BatchType, ElementGeometryChange, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
+  BatchType, ElementGeometryChange, ElementGraphicsRequestProps, FeatureAppearance, FeatureAppearanceProvider, FeatureAppearanceSource, GeometryClass, TileFormat,
 } from "@bentley/imodeljs-common";
 import { RenderSystem } from "../render/RenderSystem";
 import { Viewport } from "../Viewport";
 import { IModelApp } from "../IModelApp";
 import {
-  ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileTree,
+  ImdlReader, IModelTileTree, RootIModelTile, Tile, TileContent, TileDrawArgs, TileParams, TileRequest, TileRequestChannel, TileTree,
 } from "./internal";
 
 /** The root tile for the branch of an [[IModelTileTree]] containing graphics for elements that have been modified during the current
  * Not intended for direct consumption - exported for use by [[IModelTileTree]].
- * [[InteractiveEditingSession]].
+ * [[GraphicalEditingScope]].
  * @internal
  */
 export abstract class DynamicIModelTile extends Tile {
@@ -34,7 +34,7 @@ export abstract class DynamicIModelTile extends Tile {
     return new RootTile(root, elements);
   }
 
-  /** Updates the tiles when elements are modified during the editing session. */
+  /** Updates the tiles when elements are modified during the editing scope. */
   public abstract handleGeometryChanges(changes: Iterable<ElementGeometryChange>): void;
 
   /** Overrides symbology of the *static* [[IModelTile]]s to hide elements that have been deleted or modified. */
@@ -150,7 +150,11 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
     resolve(this._elements.array);
   }
 
-  public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
+  public get channel(): TileRequestChannel {
+    throw new Error("Root dynamic tile has no content");
+  }
+
+  public async requestContent(): Promise<TileRequest.Response> {
     assert(false, "Root dynamic tile has no content");
     return undefined;
   }
@@ -171,7 +175,7 @@ class RootTile extends DynamicIModelTile implements FeatureAppearanceProvider {
   }
 }
 
-/** Represents a single element that has been inserted or had its geometric properties modified during the current [[InteractiveEditingSession]].
+/** Represents a single element that has been inserted or had its geometric properties modified during the current [[GraphicalEditingScope]].
  * It has no graphics of its own; it has any number of child tiles, each of which have graphics of a different level of detail.
  * Its contentId is the element's Id.
  */
@@ -192,6 +196,10 @@ class ElementTile extends Tile {
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     // Invoked from constructor. We'll add child tiles later as needed.
     resolve([]);
+  }
+
+  public get channel(): TileRequestChannel {
+    throw new Error("ElementTile has no content");
   }
 
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
@@ -320,13 +328,17 @@ class GraphicsTile extends Tile {
     this.tolerance = 10 ** toleranceLog10;
   }
 
-  public computeLoadPriority(_viewports: Iterable<Viewport>): number {
+  public override computeLoadPriority(_viewports: Iterable<Viewport>): number {
     // We want the element's graphics to be updated as soon as possible
     return 0;
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     resolve(undefined);
+  }
+
+  public get channel(): TileRequestChannel {
+    return IModelApp.tileAdmin.channels.elementGraphicsRpc;
   }
 
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> {
@@ -341,7 +353,7 @@ class GraphicsTile extends Tile {
     assert(this.tree instanceof IModelTileTree);
     const idProvider = this.tree.contentIdProvider;
 
-    const props = {
+    const props: ElementGraphicsRequestProps = {
       id: requestId.value.toString(16),
       elementId: this.parent.contentId,
       toleranceLog10: this.toleranceLog10,
@@ -350,6 +362,7 @@ class GraphicsTile extends Tile {
       contentFlags: idProvider.contentFlags,
       omitEdges: !this.tree.hasEdges,
       clipToProjectExtents: true,
+      sectionCut: this.tree.stringifiedSectionClip,
     };
 
     return IModelApp.tileAdmin.requestElementGraphics(this.tree.iModel, props);
@@ -371,7 +384,7 @@ class GraphicsTile extends Tile {
 
     const tree = this.tree;
     assert(tree instanceof IModelTileTree);
-    const reader = ImdlReader.create(stream, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, undefined, this.contentId);
+    const reader = ImdlReader.create(stream, tree.iModel, tree.modelId, tree.is3d, system, tree.batchType, tree.hasEdges, isCanceled, undefined, { tileId: this.contentId });
 
     let content: TileContent = { isLeaf: true };
     if (reader) {
@@ -383,9 +396,5 @@ class GraphicsTile extends Tile {
     }
 
     return content;
-  }
-
-  public onActiveRequestCanceled(): void {
-    IModelApp.tileAdmin.cancelElementGraphicsRequest(this);
   }
 }

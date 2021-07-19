@@ -76,9 +76,9 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
       isActivityMessageVisible: false,
       toastTarget: null,
     };
-  };
+  }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     let footerSections: React.ReactNode = null;
     const widgetControl = this.props.widgetControl;
 
@@ -117,7 +117,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     );
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     MessageManager.onMessageAddedEvent.addListener(this._handleMessageAddedEvent);
     MessageManager.onActivityMessageUpdatedEvent.addListener(this._handleActivityMessageUpdatedEvent);
     MessageManager.onActivityMessageCancelledEvent.addListener(this._handleActivityMessageCancelledEvent);
@@ -127,7 +127,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     MessageManager.updateMessages();
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     MessageManager.onMessageAddedEvent.removeListener(this._handleMessageAddedEvent);
     MessageManager.onActivityMessageUpdatedEvent.removeListener(this._handleActivityMessageUpdatedEvent);
     MessageManager.onActivityMessageCancelledEvent.removeListener(this._handleActivityMessageCancelledEvent);

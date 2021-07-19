@@ -8,25 +8,60 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import * as moq from "typemoq";
 import { BeDuration } from "@bentley/bentleyjs-core";
-import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
-import { HorizontalAlignment, LocalUiSettings } from "@bentley/ui-core";
+import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
+import { HorizontalAlignment, LocalSettingsStorage } from "@bentley/ui-core";
 import {
-  CellItem, ColumnDescription, PropertyUpdatedArgs, RowItem, SelectionMode, Table, TableDataChangeEvent, TableDataChangesListener,
-  TableDataProvider, TableProps, TableSelectionTarget,
+  CellItem, ColumnDescription, PropertyUpdatedArgs, PropertyValueRendererManager, RowItem, SelectionMode, Table, TableDataChangeEvent,
+  TableDataChangesListener, TableDataProvider, TableProps, TableSelectionTarget,
 } from "../../../ui-components";
 import { DragDropHeaderWrapper } from "../../../ui-components/table/component/DragDropHeaderCell";
 import { SimpleTableDataProvider } from "../../../ui-components/table/SimpleTableDataProvider";
 import { FilterRenderer } from "../../../ui-components/table/TableDataProvider";
 import { ResolvablePromise, waitForSpy } from "../../test-helpers/misc";
 import TestUtils from "../../TestUtils";
-import { fireEvent, render } from "@testing-library/react";
+import { createDOMRect } from "../../Utils";
+let columnIndex = 0;
+let useSmallWidth = false;
 
 describe("Table", () => {
+  const sandbox = sinon.createSandbox();
+
+  afterEach(() => {
+    sandbox.restore();
+    cleanup();
+  });
 
   before(async () => {
     await TestUtils.initializeUiComponents();
+  });
+
+  after(() => {
+    TestUtils.terminateUiComponents();
+  });
+
+  beforeEach(() => {
+    sandbox.stub(Element.prototype, "getBoundingClientRect").callsFake(function (this: HTMLElement) {
+      if (this.classList.contains("react-grid-Container")) {
+        const totalTableWidth = useSmallWidth ? 160 : 250;
+        return createDOMRect({ width: totalTableWidth, height: 500 });
+      } else if (this.classList.contains("react-grid-Cell") || this.classList.contains("react-grid-HeaderCell")) {
+        columnIndex = columnIndex + 1;
+        switch (columnIndex) {
+          case 1:
+            return createDOMRect({ width: 80 });
+          case 2:
+            return createDOMRect({ width: 90 });
+          case 3:
+            return createDOMRect({ width: 80 });
+          default:
+            return createDOMRect({ width: 80 });
+        }
+      }
+      return createDOMRect();
+    });
   });
 
   const rowClassName = "div.components-table-row";
@@ -34,6 +69,7 @@ describe("Table", () => {
   const selectedRowClassName = "div.react-grid-Row.row-selected";
   const cellClassName = "div.components-table-cell";
   const selectedCellClassName = "div.components-table-cell.is-selected";
+  const gridCellClassName = "div.react-grid-Cell";
 
   const borderTopClassName = "border-top";
   const borderRightClassName = "border-right";
@@ -179,25 +215,25 @@ describe("Table", () => {
   });
 
   describe("rendering", () => {
+    const testRecord = (): PropertyRecord => {
+      const value: PropertyValue = {
+        value: 123,
+        displayValue: "123",
+        valueFormat: PropertyValueFormat.Primitive,
+      };
+      const description: PropertyDescription = {
+        name: "1",
+        typename: "int",
+        displayLabel: "column",
+      };
+      return new PropertyRecord(value, description);
+    };
+
+    let rowData: RowItem[];
 
     describe("with cell styles", () => {
 
       const toColor = (hex: string): number => parseInt(hex, 16);
-      const testRecord = (): PropertyRecord => {
-        const value: PropertyValue = {
-          value: 123,
-          displayValue: "123",
-          valueFormat: PropertyValueFormat.Primitive,
-        };
-        const description: PropertyDescription = {
-          name: "1",
-          typename: "int",
-          displayLabel: "column",
-        };
-        return new PropertyRecord(value, description);
-      };
-
-      let rowData: RowItem[];
 
       beforeEach(async () => {
         rowData = [{
@@ -319,6 +355,124 @@ describe("Table", () => {
         expect(withRowAndCellStyling.cell.textAlign).to.eq("justify");
         expect(withRowAndCellStyling.cell.backgroundColor).to.eq("#aa0000");
         expect(withRowAndCellStyling.cell.color).to.eq("#00aa00");
+      });
+
+    });
+
+    describe("without cell styles (three column)", () => {
+
+      beforeEach(async () => {
+        columnIndex = 0;
+        rowData = [{
+          key: "no_overrides",
+          cells: [
+            { key: "1", record: testRecord(), mergedCellsCount: 3 },
+            { key: "2", record: testRecord() },
+            { key: "3", record: testRecord() }],
+        }];
+        const onColumnsChanged = new TableDataChangeEvent();
+        const onRowsChanged = new TableDataChangeEvent();
+        const dataProvider: TableDataProvider = {
+          getColumns: async (): Promise<ColumnDescription[]> => [
+            { key: "1", label: "Column1" },
+            { key: "2", label: "Column2", width: 90, resizable: true },
+            { key: "3", label: "Column3" }],
+          getRowsCount: async () => rowData.length,
+          getRow: async (index: number) => rowData[index],
+          sort: async () => { },
+          onColumnsChanged,
+          onRowsChanged,
+        };
+        table = enzyme.mount(<Table
+          dataProvider={dataProvider}
+          onRowsLoaded={onRowsLoaded}
+        />);
+        await waitForSpy(onRowsLoaded);
+        table.update();
+      });
+
+      afterEach(() => {
+        columnIndex = 0;
+      });
+
+      const cellWidth = (cellContainer: enzyme.ReactWrapper<enzyme.HTMLAttributes, any, React.Component<{}, {}, any>>, index: number) => (cellContainer.at(index).prop("style")?.width as number);
+
+      it("renders cells which have mergedCells specified", async () => {
+        useSmallWidth = false;
+        const rows = table.find(rowClassName);
+        expect(rows.length).to.eq(1);
+
+        const cells = table.find(cellClassName);
+        const gridCells = table.find(gridCellClassName);
+        expect(cells.length).to.eq(3);
+        expect(gridCells.length).to.eq(3);
+
+        expect(cellWidth(gridCells, 0)).to.eq(80);
+        expect(cellWidth(gridCells, 1)).to.eq(90);
+        expect(cellWidth(gridCells, 2)).to.eq(80);
+
+        expect(cellWidth(cells, 0)).to.be.eq(cellWidth(gridCells, 0) + cellWidth(gridCells, 1) + cellWidth(gridCells, 2));
+        expect(cells.at(0).prop("title")).to.be.eq("123");
+        expect(cells.at(1).prop("title")).to.be.eq("empty-cell");
+        expect(cells.at(2).prop("title")).to.be.eq("empty-cell");
+      });
+    });
+
+    describe("without cell styles (two column)", () => {
+
+      beforeEach(async () => {
+        useSmallWidth = true;
+        columnIndex = 0;
+        rowData = [{
+          key: "no_overrides",
+          cells: [
+            { key: "1", record: testRecord(), mergedCellsCount: 3 },
+            { key: "2", record: testRecord() },
+            { key: "3", record: testRecord() }],
+        }];
+        const onColumnsChanged = new TableDataChangeEvent();
+        const onRowsChanged = new TableDataChangeEvent();
+        const dataProvider: TableDataProvider = {
+          getColumns: async (): Promise<ColumnDescription[]> => [
+            { key: "1", label: "Column1" },
+            { key: "2", label: "Column2", width: 90, resizable: true },
+            { key: "3", label: "Column3" }],
+          getRowsCount: async () => rowData.length,
+          getRow: async (index: number) => rowData[index],
+          sort: async () => { },
+          onColumnsChanged,
+          onRowsChanged,
+        };
+        table = enzyme.mount(<Table
+          dataProvider={dataProvider}
+          onRowsLoaded={onRowsLoaded}
+        />);
+        await waitForSpy(onRowsLoaded);
+        table.update();
+      });
+
+      afterEach(() => {
+        columnIndex = 0;
+      });
+
+      const cellWidth = (cellContainer: enzyme.ReactWrapper<enzyme.HTMLAttributes, any, React.Component<{}, {}, any>>, index: number) => (cellContainer.at(index).prop("style")?.width as number);
+
+      it("renders cells which have mergedCells specified and doesn't count cells, which are hidden", async () => {
+
+        table.setState({ hiddenColumns: ["2"] });
+
+        const rows = table.find(rowClassName);
+        expect(rows.length).to.eq(1);
+
+        const cells = table.find(cellClassName);
+        const gridCells = table.find(gridCellClassName);
+        expect(cells.length).to.eq(2);
+        expect(gridCells.length).to.eq(2);
+
+        expect(cellWidth(cells, 0)).to.be.eq(cellWidth(gridCells, 0) + cellWidth(gridCells, 1));
+
+        expect(cells.at(0).prop("title")).to.be.eq("123");
+        expect(cells.at(1).prop("title")).to.be.eq("empty-cell");
       });
 
     });
@@ -1353,7 +1507,7 @@ describe("Table", () => {
         reorderableColumns={true}
         ref={ref}
         settingsIdentifier="test"
-        uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
+        settingsStorage={new LocalSettingsStorage({ localStorage: storageMock() } as Window)}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();
@@ -1376,7 +1530,7 @@ describe("Table", () => {
         onRowsLoaded={onRowsLoaded}
         settingsIdentifier="test"
         showHideColumns={true}
-        uiSettings={new LocalUiSettings({ localStorage: storageMock() } as Window)}
+        settingsStorage={new LocalSettingsStorage({ localStorage: storageMock() } as Window)}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();
@@ -1446,6 +1600,14 @@ describe("Table", () => {
         label: "Lorem",
         filterRenderer: FilterRenderer.Text,
       },
+      {
+        key: "multi-value",
+        label: "Multi-Value",
+        filterable: true,
+        filterRenderer: FilterRenderer.MultiValue,
+        showDistinctValueFilters: true,
+        showFieldFilters: true,
+      },
     ];
 
     // cSpell:disable
@@ -1467,9 +1629,14 @@ describe("Table", () => {
       const row: RowItem = { key: i.toString(), cells: [] };
       const enumValue = i % 4;
       const loremIndex = i % 10;
+      const convertInfo: PropertyConverterInfo = { name: "" };
+
+      const propertyRecord = TestUtils.createPropertyRecord(i, filteringColumns[0], "int");
+      propertyRecord.property.converter = convertInfo;
+
       row.cells.push({
         key: filteringColumns[0].key,
-        record: TestUtils.createPropertyRecord(i, filteringColumns[0], "int"),
+        record: propertyRecord,
       });
       row.cells.push({
         key: filteringColumns[1].key,
@@ -1482,6 +1649,10 @@ describe("Table", () => {
       row.cells.push({
         key: filteringColumns[3].key,
         record: TestUtils.createPropertyRecord(loremIpsum[loremIndex], filteringColumns[3], "text"),
+      });
+      row.cells.push({
+        key: filteringColumns[4].key,
+        record: TestUtils.createPropertyRecord(`Multi-Value ${i}`, filteringColumns[4], "text"),
       });
       return row;
     };
@@ -1519,7 +1690,7 @@ describe("Table", () => {
 
     it("should create two row headers", async () => {
       expect(filterTable.find("div.react-grid-HeaderRow").length).to.eq(2);
-      expect(filterTable.find("div.react-grid-HeaderCell").length).to.eq(8);
+      expect(filterTable.find("div.react-grid-HeaderCell").length).to.eq(10);
       // expect(filterTable.find("input.input-sm").length).to.eq(2);
       // expect(filterTable.find("div.Select").length).to.eq(2);
 
@@ -1553,6 +1724,7 @@ describe("Table", () => {
         onRowsLoaded={onRowsLoaded}
         onCellContextMenu={onCellContextMenuSpy}
         pageAmount={50}
+        propertyValueRendererManager={PropertyValueRendererManager.defaultManager}
       />);
       await waitForSpy(onRowsLoaded);
       table.update();

@@ -8,4 +8,8 @@
   &:hover {
     opacity: 1.00;
   }
+
+  .core-dialog-container .core-dialog-area {
+    flex-grow: unset;
+  }
 }

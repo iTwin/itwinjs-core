@@ -1,17 +1,17 @@
 sep=;
 Release Tag;API Item
-beta;class AbstractTreeNodeLoader 
-beta;class AbstractTreeNodeLoaderWithProvider
+public;class AbstractTreeNodeLoader 
+public;class AbstractTreeNodeLoaderWithProvider
 beta;ActionButtonList 
 beta;ActionButtonListProps
 beta;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNode
 beta;ActionButtonRendererProps
 internal;ActionItem({ item, addGroupSeparator }:
-beta;ActiveMatchInfo
-alpha;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
+public;ActiveMatchInfo
+public;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
 beta;AlphaSlider 
 beta;AlphaSliderProps 
-alpha;AnimationFractionChangeHandler = (animationFraction: number) => void
+public;AnimationFractionChangeHandler = (animationFraction: number) => void
 public;ArrayPropertyValueRenderer 
 beta;AsyncErrorMessage
 beta;AsyncValueProcessingResult
@@ -20,29 +20,47 @@ alpha;BaseSolarDataProvider
 alpha;BaseTimelineDataProvider 
 beta;BasicPropertyEditor 
 beta;BeDragDropContext(props:
+deprecated;BeDragDropContext(props:
 public;BeInspireTree
+deprecated;BeInspireTree
 public;BeInspireTreeDataProvider
+deprecated;BeInspireTreeDataProvider
 public;BeInspireTreeDataProviderInterface
+deprecated;BeInspireTreeDataProviderInterface
 public;BeInspireTreeDataProviderMethod
+deprecated;BeInspireTreeDataProviderMethod
 public;BeInspireTreeDataProviderPromise
+deprecated;BeInspireTreeDataProviderPromise
 public;BeInspireTreeDataProviderRaw
+deprecated;BeInspireTreeDataProviderRaw
 public;BeInspireTreeEvent
+deprecated;BeInspireTreeEvent
 public;BeInspireTreeNode
+deprecated;BeInspireTreeNode
 public;BeInspireTreeNodeConfig
+deprecated;BeInspireTreeNodeConfig
 public;BeInspireTreeNodeITree
+deprecated;BeInspireTreeNodeITree
 public;BeInspireTreeNodePayloadConfig
+deprecated;BeInspireTreeNodePayloadConfig
 public;BeInspireTreeNodes
+deprecated;BeInspireTreeNodes
 public;BeInspireTreeProps
+deprecated;BeInspireTreeProps
 public;BeInspireTreeRenderer
+deprecated;BeInspireTreeRenderer
 beta;BooleanEditor 
 beta;BooleanPropertyEditor 
 public;BooleanTypeConverter 
 beta;Breadcrumb 
 beta;BreadcrumbDetails 
 beta;BreadcrumbDetailsDragDropProps
+deprecated;BreadcrumbDetailsDragDropProps
 beta;BreadcrumbDetailsDragDropType = {} | TreeNodeItem | TableDataProvider
+deprecated;BreadcrumbDetailsDragDropType = {} | TreeNodeItem | TableDataProvider
 beta;BreadcrumbDetailsProps 
 beta;BreadcrumbDragDropProps
+deprecated;BreadcrumbDragDropProps
 internal;BreadcrumbInput 
 internal;BreadcrumbInputProps
 internal;BreadcrumbInputState
@@ -55,14 +73,15 @@ beta;BreadcrumbProps
 beta;BreadcrumbTreeUtils
 beta;BreadcrumbUpdateEvent 
 beta;BreadcrumbUpdateEventArgs
-alpha;CategorizedPropertyItem 
-alpha;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
-alpha;CategoryRecordsDict
+beta;CategorizedPropertyItem 
+beta;CategorizedPropertyTypes = FlatGridItemType.Array | FlatGridItemType.Primitive | FlatGridItemType.Struct
+beta;CategoryRecordsDict
 beta;CellEditingEngine
+deprecated;CellEditingEngine
 public;CellItem
 public;CellProps
-beta;CheckBoxInfo
-beta;CheckboxStateChange
+public;CheckBoxInfo
+public;CheckboxStateChange
 beta;ColorEditor 
 beta;ColorPickerButton: (props: ColorPickerProps) => JSX.Element | null
 beta;ColorPickerDialog({ dialogTitle, color, onOkResult, onCancelResult, colorPresets }: ColorPickerDialogProps): JSX.Element
@@ -76,25 +95,32 @@ beta;ColorPropertyEditor
 beta;ColorSwatch(props: ColorSwatchProps): JSX.Element
 beta;ColorSwatchProps 
 public;ColumnDescription
-beta;ColumnFilterDescriptor 
+public;ColumnFilterDescriptor 
 public;CommonPropertyGridProps 
 public;CompletionObserver
-beta;CompositeFilterDescriptor 
-beta;CompositeFilterDescriptorCollection
+public;CompositeFilterDescriptor 
+public;CompositeFilterDescriptorCollection
 beta;CompositeFilterType
-alpha;CompositePropertyDataFilterer 
+beta;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
 internal;ContextMenu 
+deprecated;ContextMenu 
 internal;ContextMenuItem 
+deprecated;ContextMenuItem 
 internal;ContextMenuProps 
+deprecated;ContextMenuProps 
 beta;ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element
 beta;ControlledSelectableContentProps
-beta;ControlledTree(props: ControlledTreeProps): JSX.Element
-beta;ControlledTreeProps 
+public;ControlledTree(props: ControlledTreeProps): JSX.Element
+public;ControlledTreeProps 
 public;ConvertedPrimitives
+internal;convertPrimitiveRecordToString(record: PropertyRecord): string | Promise
 internal;CubeHover
-beta;CubeNavigationAid 
-beta;CubeNavigationAidProps 
+public;CubeNavigationAid 
+public;CubeNavigationAidProps 
+public;CubeNavigationHitBoxX
+public;CubeNavigationHitBoxY
+public;CubeNavigationHitBoxZ
 public;CubeRotationChangeEvent 
 public;CubeRotationChangeEventArgs
 internal;CustomItem({ item, addGroupSeparator }:
@@ -107,28 +133,36 @@ internal;DataRowItem
 internal;DateField({ initialDate, onDateChange, readOnly, dateFormatter, timeDisplay, style, className }: DateFieldProps): JSX.Element
 internal;DateFieldProps 
 alpha;DatePicker(props: DatePickerProps): JSX.Element
-alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName }: DatePickerPopupButtonProps): JSX.Element
+alpha;DatePickerPopupButton({ displayEditField, timeDisplay, selected, onDateChange, dateFormatter, buttonToolTip, fieldStyle, fieldClassName, style }: DatePickerPopupButtonProps): JSX.Element
 alpha;DatePickerPopupButtonProps 
 alpha;DatePickerProps
 internal;DateTimeEditor 
 internal;DateTimePropertyEditor 
 public;DateTimeTypeConverter 
 public;class DateTimeTypeConverterBase 
+beta;DEFAULT_LINKS_HANDLER: LinkElementsInfo
 public;DelayLoadedTreeNodeItem 
 public;DEPRECATED_FilteringInputProps 
+deprecated;DEPRECATED_FilteringInputProps 
 public;DEPRECATED_Tree 
+deprecated;DEPRECATED_Tree 
 beta;DEPRECATED_withTreeDragDrop
+deprecated;DEPRECATED_withTreeDragDrop
 beta;Direction
 internal;DirectionHelpers
-alpha;DisplayValuePropertyDataFilterer 
-beta;DistinctValueCollection
-beta;DistinctValuesFilterDescriptor 
+beta;DisplayValuePropertyDataFilterer 
+public;DistinctValueCollection
+public;DistinctValuesFilterDescriptor 
 public;DoublePropertyValueRenderer 
 internal;DragAction
 beta;DragDropArguments
+deprecated;DragDropArguments
 beta;DragLayerProps
+deprecated;DragLayerProps
 beta;DragSourceArguments
+deprecated;DragSourceArguments
 beta;DragSourceProps
+deprecated;DragSourceProps
 beta;DrawingNavigationAid 
 beta;DrawingNavigationAidProps 
 internal;DrawingNavigationCanvas 
@@ -136,11 +170,16 @@ internal;DrawingNavigationCanvasProps
 public;DrawingViewportChangeEvent 
 public;DrawingViewportChangeEventArgs
 beta;DropEffects
+deprecated;DropEffects
 beta;DropStatus
+deprecated;DropStatus
 beta;DropTargetArguments
+deprecated;DropTargetArguments
 beta;DropTargetProps
+deprecated;DropTargetProps
 public;EditableTreeDataProvider 
 beta;EditableTreeProps
+deprecated;EditableTreeProps
 beta;EditorContainer 
 beta;EditorContainerProps 
 beta;EnumButtonGroupEditor 
@@ -150,48 +189,67 @@ beta;EnumPropertyEditor
 public;EnumTypeConverter 
 public;ErrorObserver
 public;EventsMuteContext 
+deprecated;EventsMuteContext 
 beta;ExtendedTreeNodeRendererProps 
 internal;FaceCell 
 internal;FaceCellProps 
 beta;FavoritePropertiesRenderer
 alpha;FavoritePropertyList 
 alpha;FavoritePropertyListProps
-beta;FieldFilterDescriptor 
-beta;FilterableColumn
-beta;FilterableTable
-beta;FilterCompositionLogicalOperator
-beta;FilterDescriptor
-beta;FilterDescriptorCollection 
-beta;class FilterDescriptorCollectionBase
+public;FieldFilterDescriptor 
+public;FilterableColumn
+public;FilterableTable
+public;FilterCompositionLogicalOperator
+public;FilterDescriptor
+public;FilterDescriptorCollection 
+public;class FilterDescriptorCollectionBase
 beta;FilteredPropertyData 
 beta;FilteredType
 public;FilteringInput 
 public;FilteringInputProps = DEPRECATED_FilteringInputProps | NEW_FilteringInputProps
 beta;FilteringInputStatus
-alpha;FilteringPropertyDataProvider 
-beta;FilterOperator
-beta;FilterRenderer
-alpha;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
-alpha;FlatGridItemBase
-alpha;FlatGridItemType
+beta;FilteringPropertyDataProvider 
+public;FilterOperator
+public;FilterRenderer
+beta;FlatGridItem = CategorizedPropertyItem | GridCategoryItem
+beta;FlatGridItemBase
+beta;FlatGridItemType
 public;FloatTypeConverter 
 internal;formatInputDate(inputDate: Date, timeDisplay?: TimeDisplay, customFormatter?: DateFormatter, alternateDateFormat?: AlternateDateFormats): string | undefined
+alpha;FormatPanel(props: FormatPanelProps): JSX.Element
+alpha;FormatPanelProps 
+alpha;FormatPrecision(props: FormatPrecisionProps): JSX.Element
+alpha;FormatPrecisionProps 
+alpha;FormatSample(props: FormatSampleProps): JSX.Element
+alpha;FormatSampleProps 
+alpha;FormatTypeOption(props: FormatTypeOptionProps): JSX.Element
+alpha;FormatTypeOptionProps 
+alpha;FormatUnitLabel(props: FormatUnitLabelProps): JSX.Element
+alpha;FormatUnitLabelProps 
+alpha;FormatUnits(props: FormatUnitsProps): JSX.Element
+alpha;FormatUnitsProps 
 public;from
+internal;getCSSColorFromDef(colorDef: ColorDef): string
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
+deprecated;GetCurrentlyEditedNode = () => BeInspireTreeNode
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
-alpha;GridCategoryItem 
+beta;GridCategoryItem 
 internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
 public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
+deprecated;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;HexadecimalTypeConverter 
-beta;HighlightableTreeNodeProps
-beta;HighlightableTreeProps
+public;HighlightableTreeNodeProps
+public;HighlightableTreeProps
 beta;HighlightingEngine
 internal;HitBoxX
+deprecated;HitBoxX
 internal;HitBoxY
+deprecated;HitBoxY
 internal;HitBoxZ
+deprecated;HitBoxZ
 beta;HueSlider({ isHorizontal, onHueChange, hsv, className, style }: HueSliderProps): JSX.Element
 beta;HueSliderProps 
 alpha;IconEditor 
@@ -205,12 +263,12 @@ beta;ImageCheckBoxPropertyEditor
 public;ImageFileFormat = "png" | "jpg" | "jpge"
 public;ImageSourceType = "svg" | "url" | "binary" | "core-icon" | "webfont-icon"
 public;ImmediatelyLoadedTreeNodeItem 
-alpha;IMutableCategorizedPropertyItem 
-alpha;IMutableFlatGridItem = IMutableCategorizedPropertyItem | IMutableGridCategoryItem
-alpha;IMutableFlatPropertyGridItem
-alpha;IMutableGridCategoryItem 
-alpha;IMutableGridItemFactory
-alpha;IMutablePropertyGridModel
+beta;IMutableCategorizedPropertyItem 
+beta;IMutableFlatGridItem = IMutableCategorizedPropertyItem | IMutableGridCategoryItem
+beta;IMutableFlatPropertyGridItem
+beta;IMutableGridCategoryItem 
+beta;IMutableGridItemFactory
+beta;IMutablePropertyGridModel
 internal;InlineEdit 
 internal;InputSwitchComponent 
 internal;InputSwitchProps
@@ -218,53 +276,57 @@ alpha;IntlFormatter
 public;IntTypeConverter 
 beta;IPropertyDataFilterer
 public;IPropertyDataProvider
-alpha;IPropertyGridEventHandler
-alpha;IPropertyGridModel
-alpha;IPropertyGridModelSource
+beta;IPropertyGridEventHandler
+beta;IPropertyGridModel
+beta;IPropertyGridModelSource
 public;IPropertyValueRenderer
 internal;isCustomToolbarItem(item: ToolbarItem): item is CustomToolbarItem
 public;isTreeDataProviderInterface: (provider: TreeDataProvider) => provider is ITreeDataProvider
 public;isTreeDataProviderMethod: (provider: TreeDataProvider) => provider is TreeDataProviderMethod
 public;isTreeDataProviderPromise: (provider: TreeDataProvider) => provider is TreeDataProviderPromise
 public;isTreeDataProviderRaw: (provider: TreeDataProvider) => provider is TreeDataProviderRaw
-beta;isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode
-beta;isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): obj is TreeModelNodePlaceholder
-beta;isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode
+public;isTreeModelNode(obj: TreeModelNodeType | undefined): obj is TreeModelNode
+public;isTreeModelNodePlaceholder(obj: TreeModelNodeType | undefined): obj is TreeModelNodePlaceholder
+public;isTreeModelRootNode(obj: TreeModelNodeType | undefined): obj is TreeModelRootNode
 public;ItemColorOverrides
 public;ItemStyle
 public;ItemStyleProvider:
 public;ITreeDataProvider
 public;ITreeImageLoader 
-beta;ITreeNodeLoader
-beta;ITreeNodeLoaderWithProvider
-alpha;LabelPropertyDataFilterer 
+public;ITreeNodeLoader
+public;ITreeNodeLoaderWithProvider
+beta;LabelPropertyDataFilterer 
 public;LessGreaterOperatorProcessor
 beta;LineWeightSwatch 
 beta;LineWeightSwatchProps 
 public;LoadedBinaryImage 
 public;LoadedImage
-beta;LoadedNodeHierarchy
-beta;LoadedNodeHierarchyItem
+public;LoadedNodeHierarchy
+public;LoadedNodeHierarchyItem
 internal;MapMode
 public;MapPayloadToInspireNodeCallback
-public;matchLinks: (text: string) =>
+deprecated;MapPayloadToInspireNodeCallback
 internal;MenuItem
-alpha;Milestone
-alpha;MilestoneRange
+deprecated;MenuItem
+internal;Milestone
+deprecated;Milestone
+public;MilestoneRange
+alpha;MiscFormatOptions(props: MiscFormatOptionsProps): JSX.Element
+alpha;MiscFormatOptionsProps 
 internal;MultiSelectionHandler
-alpha;MutableCategorizedArrayProperty 
-alpha;MutableCategorizedPrimitiveProperty 
-alpha;class MutableCategorizedProperty 
-alpha;MutableCategorizedStructProperty 
-beta;MutableCheckBoxInfo 
-alpha;class MutableFlatPropertyGridItem 
-alpha;MutableGridCategory 
-alpha;MutableGridItemFactory 
-alpha;MutablePropertyGridModel 
-beta;MutableTableDataProvider 
+beta;MutableCategorizedArrayProperty 
+beta;MutableCategorizedPrimitiveProperty 
+beta;class MutableCategorizedProperty 
+beta;MutableCategorizedStructProperty 
+public;MutableCheckBoxInfo 
+beta;class MutableFlatPropertyGridItem 
+beta;MutableGridCategory 
+beta;MutableGridItemFactory 
+beta;MutablePropertyGridModel 
+public;MutableTableDataProvider 
 beta;MutableTreeDataProvider 
-beta;MutableTreeModel 
-beta;MutableTreeModelNode 
+public;MutableTreeModel 
+public;MutableTreeModelNode 
 internal;NavCubeFace 
 internal;NavCubeFaceProps 
 public;NavigationPropertyTypeConverter 
@@ -273,9 +335,13 @@ public;NEW_FilteringInputProps
 public;NextObserver
 internal;Node
 public;NodeCheckboxProps 
+deprecated;NodeCheckboxProps 
 internal;NodeRenderer = (item: BeInspireTreeNode
+deprecated;NodeRenderer = (item: BeInspireTreeNode
 internal;NodesDeselectedCallback = OnItemsDeselectedCallback
+deprecated;NodesDeselectedCallback = OnItemsDeselectedCallback
 internal;NodesSelectedCallback = OnItemsSelectedCallback
+deprecated;NodesSelectedCallback = OnItemsSelectedCallback
 public;NonPrimitivePropertyLabelRenderer 
 public;NonPrimitivePropertyLabelRendererProps 
 public;NonPrimitivePropertyRenderer 
@@ -290,16 +356,16 @@ public;OnItemsDeselectedCallback
 public;OnItemsSelectedCallback
 public;OnSelectionChanged = (shiftDown?: boolean, ctrlDown?: boolean) => void
 public;OperatorProcessor
-beta;OperatorValueFilterDescriptor 
-beta;OperatorValueFilterDescriptorCollection 
+public;OperatorValueFilterDescriptor 
+public;OperatorValueFilterDescriptorCollection 
 alpha;OrthogonalDirection
 internal;OrthogonalDirectionHelpers
-beta;PagedTreeNodeLoader
+public;PagedTreeNodeLoader
 public;PageOptions
 beta;ParsedInput: (props: ParsedInputProps) => JSX.Element | null
 beta;ParsedInputProps 
-alpha;PlaybackSettings
-alpha;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
+public;PlaybackSettings
+public;PlaybackSettingsChangeHandler = (settingsChange: PlaybackSettings) => void
 internal;PlayButton 
 internal;PlayerButton 
 internal;PlayerButtonProps 
@@ -320,7 +386,10 @@ public;PropertyCategory
 public;PropertyCategoryBlock 
 public;PropertyCategoryBlockProps 
 beta;class PropertyCategoryDataFiltererBase 
-alpha;PropertyCategoryLabelFilterer 
+beta;PropertyCategoryLabelFilterer 
+beta;PropertyCategoryRenderer = (categoryItem: GridCategoryItem) => React.ComponentType
+beta;PropertyCategoryRendererManager
+beta;PropertyCategoryRendererProps
 public;PropertyContainerType
 public;PropertyData
 public;PropertyDataChangeEvent 
@@ -336,15 +405,17 @@ beta;PropertyFilterChangeEvent
 beta;PropertyFilterChangesListener = () => void
 public;PropertyGrid 
 public;PropertyGridCategory
+deprecated;PropertyGridCategory
 internal;PropertyGridCommons
 public;PropertyGridContextMenuArgs
-alpha;PropertyGridEventHandler
+beta;PropertyGridEventHandler
 internal;PropertyGridEventsRelatedProps = Pick
 internal;PropertyGridEventsRelatedPropsSupplier 
-internal;PropertyGridEventsRelatedPropsSupplierProps 
-alpha;PropertyGridModelChangeEvent 
-alpha;PropertyGridModelChangeListener = () => void
-alpha;PropertyGridModelSource 
+internal;PropertyGridEventsRelatedPropsSupplierProps = Pick
+internal;PropertyGridInternalContext
+beta;PropertyGridModelChangeEvent 
+beta;PropertyGridModelChangeListener = () => void
+beta;PropertyGridModelSource 
 public;PropertyGridProps 
 internal;PropertyLabelRenderer 
 public;PropertyLabelRendererProps
@@ -357,9 +428,14 @@ public;PropertyValueRendererContext
 public;PropertyValueRendererManager
 public;PropertyView 
 public;PropertyViewProps 
+alpha;QuantityFormatPanel(props: QuantityFormatPanelProps): JSX.Element
+alpha;QuantityFormatPanelProps 
 beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element
+beta;QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null
+beta;QuantityNumberInputProps 
 beta;QuantityProps 
 public;ReactDataGridColumn 
+alpha;RenderedItemsRange
 public;ResultSelector 
 public;ResultSelectorProps 
 public;RowItem
@@ -375,6 +451,7 @@ internal;SelectionHandler
 public;SelectionMode
 public;SelectionModeFlags
 beta;SetCurrentlyEditedNode = (currentlyEditedNode?: BeInspireTreeNode
+deprecated;SetCurrentlyEditedNode = (currentlyEditedNode?: BeInspireTreeNode
 public;SharedRendererProps
 public;SharedTableNonPrimitiveValueRendererProps
 internal;ShortDateTimePropertyEditor 
@@ -388,7 +465,7 @@ public;ShowHideMenuProps
 public;SignIn 
 public;SignInProps 
 public;SimplePropertyDataProvider 
-beta;SimpleTableDataProvider 
+public;SimpleTableDataProvider 
 public;SimpleTreeDataProvider 
 public;SimpleTreeDataProviderHierarchy = Map
 internal;SingleSelectionHandler
@@ -401,10 +478,14 @@ public;SortComparer
 public;SparseArray
 internal;SparseTree
 beta;StandardEditorNames
+deprecated;StandardEditorNames
 public;StandardRotationChangeEvent 
 public;StandardRotationChangeEventArgs
 beta;StandardTypeConverterTypeNames
+deprecated;StandardTypeConverterTypeNames
 beta;StandardTypeNames
+deprecated;StandardTypeNames
+beta;StepFunctionProp = number | ((direction: string) => number | undefined)
 public;StringOperatorProcessor
 public;StringTypeConverter 
 public;StructPropertyValueRenderer 
@@ -419,10 +500,13 @@ internal;TableColumn
 public;TableDataChangeEvent 
 public;TableDataChangesListener = () => void
 public;TableDataProvider
-beta;TableDistinctValue
+public;TableDistinctValue
 beta;TableDragDropProps
+deprecated;TableDragDropProps
 beta;TableDragDropType = {} | RowItem | TableDataProvider
+deprecated;TableDragDropType = {} | RowItem | TableDataProvider
 beta;TableDropTargetProps
+deprecated;TableDropTargetProps
 public;TableNonPrimitiveValueRenderer 
 public;TableNonPrimitiveValueRendererProps 
 public;TableProps 
@@ -439,13 +523,19 @@ beta;ThemedEnumEditor
 beta;ThemedEnumEditorProps 
 beta;ThemedEnumPropertyEditor 
 internal;Timeline 
-alpha;TimelineComponent 
-alpha;TimelineDataProvider
-alpha;TimelineDateDisplay
-beta;TimelinePausePlayAction
-beta;TimelinePausePlayArgs 
+deprecated;Timeline 
+public;TimelineComponent 
+public;TimelineComponentProps
+public;TimelineDataProvider
+public;TimelineDateDisplay
+public;TimelineMenuItemOption = "replace" | "append" | "prefix"
+public;TimelineMenuItemProps
+public;TimelinePausePlayAction
+public;TimelinePausePlayArgs 
 internal;TimelineProps 
-alpha;TimelineScale
+deprecated;TimelineProps 
+public;TimelineScale
+public;toDateString: (date: Date, timeZoneOffset?: number | undefined) => string
 beta;ToggleEditor 
 beta;TogglePropertyEditor 
 internal;toNode: 
@@ -467,10 +557,13 @@ beta;ToolbarProps
 beta;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
 internal;ToolbarWithOverflowDirectionContext: React.Context
 beta;ToolbarWithOverflowProps 
+internal;toRxjsObservable
+public;toTimeString: (date: Date, timeZoneOffset?: number | undefined) => string
 internal;toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition
-beta;TreeActions
+public;TreeActions
 beta;TreeCellUpdatedArgs
-beta;TreeCheckboxStateChangeEventArgs
+deprecated;TreeCellUpdatedArgs
+public;TreeCheckboxStateChangeEventArgs
 public;TreeDataChangesListener = (nodes: Array
 public;TreeDataProvider = TreeDataProviderRaw | TreeDataProviderPromise | TreeDataProviderMethod | ITreeDataProvider
 public;TreeDataProviderMethod = (node?: TreeNodeItem) => Promise
@@ -478,41 +571,48 @@ public;TreeDataProviderPromise = Promise
 public;TreeDataProviderRaw = ImmediatelyLoadedTreeNodeItem[]
 internal;TreeDataSource 
 beta;TreeDragDropProps
+deprecated;TreeDragDropProps
 beta;TreeDragDropType = {} | TreeNodeItem | TreeDataProvider
-beta;TreeEditingParams
+deprecated;TreeDragDropType = {} | TreeNodeItem | TreeDataProvider
+public;TreeEditingParams
 internal;TreeEventDispatcher 
-beta;TreeEventHandler 
-beta;TreeEventHandlerParams
-beta;TreeEvents
+public;TreeEventHandler 
+public;TreeEventHandlerParams
+public;TreeEvents
 public;TreeImageLoader 
-beta;TreeModel
-beta;TreeModelChanges
-beta;TreeModelNode
-beta;TreeModelNodeEditingInfo
-beta;TreeModelNodeInput
-beta;TreeModelNodePlaceholder
-beta;TreeModelNodeType = TreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode
-beta;TreeModelRootNode
-beta;TreeModelSource
+public;TreeModel
+public;TreeModelChanges
+public;TreeModelNode
+public;TreeModelNodeEditingInfo
+public;TreeModelNodeInput
+public;TreeModelNodePlaceholder
+public;TreeModelNodeType = TreeModelNode | TreeModelNodePlaceholder | TreeModelRootNode
+public;TreeModelRootNode
+public;TreeModelSource
 public;TreeNode 
-beta;TreeNodeEventArgs
+deprecated;TreeNode 
+public;TreeNodeEventArgs
 public;TreeNodeIcon(props: TreeNodeIconProps): JSX.Element | null
+deprecated;TreeNodeIcon(props: TreeNodeIconProps): JSX.Element | null
 public;TreeNodeIconProps 
+deprecated;TreeNodeIconProps 
 public;TreeNodeItem
-beta;TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem
-beta;TreeNodeLoader
-beta;TreeNodeLoadResult
+public;TreeNodeItemData = ImmediatelyLoadedTreeNodeItem & DelayLoadedTreeNodeItem
+public;TreeNodeLoader
+public;TreeNodeLoadResult
 public;TreeNodeProps 
+deprecated;TreeNodeProps 
 beta;TreeNodeRenderer: React.MemoExoticComponent
-beta;TreeNodeRendererProps 
+public;TreeNodeRendererProps 
 public;TreeProps 
+deprecated;TreeProps 
 beta;TreeRenderer 
-beta;TreeRendererAttributes
+public;TreeRendererAttributes
 beta;TreeRendererContext
-beta;TreeRendererProps
-beta;TreeSelectionChange
-beta;TreeSelectionModificationEventArgs
-beta;TreeSelectionReplacementEventArgs
+public;TreeRendererProps
+public;TreeSelectionChange
+public;TreeSelectionModificationEventArgs
+public;TreeSelectionReplacementEventArgs
 public;class TypeConverter 
 public;TypeConverterManager
 beta;TypeEditor
@@ -521,18 +621,18 @@ public;Unsubscribable
 beta;useAsyncValue: 
 alpha;useDebouncedAsyncValue
 beta;usePagedTreeNodeLoader
-alpha;usePropertyData(props:
-alpha;usePropertyGridEventHandler(props:
-alpha;usePropertyGridModel(props:
-alpha;usePropertyGridModelSource(props:
+beta;usePropertyData(props:
+beta;usePropertyGridEventHandler(props:
+beta;usePropertyGridModel(props:
+beta;usePropertyGridModelSource(props:
 internal;useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise
 internal;useToolbarPopupContext(): ToolbarPopupContextProps
 internal;useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps
 internal;useToolItemEntryContext(): ToolbarItemContextArgs
-beta;useTreeEventsHandler
-beta;useTreeModelSource(dataProvider: TreeDataProvider): TreeModelSource
-beta;useTreeNodeLoader
-beta;useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes
+public;useTreeEventsHandler
+public;useTreeModelSource(dataProvider: TreeDataProvider): TreeModelSource
+public;useTreeNodeLoader
+public;useVisibleTreeNodes(modelSource: TreeModelSource): VisibleTreeNodes
 public;ViewClassFullNameChangedEvent 
 public;ViewClassFullNameChangedEventArgs
 public;ViewIdChangedEvent 
@@ -543,20 +643,27 @@ public;ViewportProps
 public;ViewRotationChangeEvent 
 public;ViewRotationChangeEventArgs
 public;ViewStateProp = ViewState | (() => ViewState)
-alpha;VirtualizedPropertyGrid 
-internal;VirtualizedPropertyGridContext
-alpha;VirtualizedPropertyGridProps 
-alpha;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element
-alpha;VirtualizedPropertyGridWithDataProviderProps 
-beta;VisibleTreeNodes 
+beta;VirtualizedPropertyGrid 
+beta;VirtualizedPropertyGridContext
+beta;VirtualizedPropertyGridProps 
+beta;VirtualizedPropertyGridWithDataProvider(props: VirtualizedPropertyGridWithDataProviderProps): JSX.Element
+beta;VirtualizedPropertyGridWithDataProviderProps 
+public;VisibleTreeNodes 
 beta;WeightEditor 
 beta;WeightPickerButton 
 beta;WeightPickerProps 
 beta;WeightPropertyEditor 
 beta;withBreadcrumbDetailsDragDrop
+deprecated;withBreadcrumbDetailsDragDrop
 beta;withBreadcrumbDragDrop
+deprecated;withBreadcrumbDragDrop
 beta;withDragSource: 
+deprecated;withDragSource: 
 beta;WithDragSourceProps
+deprecated;WithDragSourceProps
 beta;withDropTarget: 
+deprecated;withDropTarget: 
 beta;WithDropTargetProps
+deprecated;WithDropTargetProps
 beta;withTableDragDrop
+deprecated;withTableDragDrop

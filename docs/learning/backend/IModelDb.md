@@ -27,13 +27,15 @@ Use [SnapshotDb.close]($backend) to close the *snapshot* iModel.
 Every now and then the schemas in the iModel may become incompatible with newer versions of the software. In these cases it may be recommended, and sometimes even mandatory to upgrade the schemas in the iModel before it can be opened. Note that whether an upgrade is mandatory may depend on if the model is to be opened ReadOnly or ReadWrite - the requirements for the latter are more stringent.
 
 There are two kinds of schemas that typically get upgraded:
-* [Domain schemas](../../bis/intro/schemas-domains) - the ECSchema-s that define the information for specific [Domains](../../bis/intro/glossary/#domain)
-* *Profile schemas* - the Schemas of database tables that are either not mapped to domain schemas, or are otherwise used to store meta-data about the mapping of database tables to domain schemas.
 
-The iModel.js API provides for a way to validate (check compatibility) and upgrade all the schemas in the iModel. To upgrade -
-* Download a local copy of the iModel as a briefcase with [BriefcaseManager.downloadBriefcase]($backend)
-* Call [BriefcaseDb.validateSchemas]($backend) to validate the schemas in the iModel.
-* Call [BriefcaseDb.upgradeSchemas]($backend) to upgrade schemas - the upgrade process involves the following steps first for the profile upgrade, and then for the domain schema upgrade:
+- [Domain schemas](../../bis/intro/schemas-domains) - the ECSchema-s that define the information for specific [Domains](../../bis/intro/glossary/#domain)
+- *Profile schemas* - the Schemas of database tables that are either not mapped to domain schemas, or are otherwise used to store meta-data about the mapping of database tables to domain schemas.
+
+The iTwin.js API provides for a way to validate (check compatibility) and upgrade all the schemas in the iModel. To upgrade -
+
+- Download a local copy of the iModel as a briefcase with [BriefcaseManager.downloadBriefcase]($backend)
+- Call [BriefcaseDb.validateSchemas]($backend) to validate the schemas in the iModel.
+- Call [BriefcaseDb.upgradeSchemas]($backend) to upgrade schemas - the upgrade process involves the following steps first for the profile upgrade, and then for the domain schema upgrade:
   - acquiring a schema lock to avoid concurrent schema changes by different users
   - opening the local briefcase
   - making the necessary schema changes to the briefcase

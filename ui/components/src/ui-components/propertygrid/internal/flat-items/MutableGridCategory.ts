@@ -7,13 +7,13 @@
  * @module PropertyGrid
  */
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { PropertyCategory } from "../../PropertyDataProvider";
 import { FlatGridItemType, IMutableFlatGridItem, IMutableGridCategoryItem, MutableFlatPropertyGridItem } from "./MutableFlatGridItem";
 import { IMutableGridItemFactory } from "./MutableGridItemFactory";
-import { PropertyCategory } from "../../PropertyDataProvider";
 
 /**
  * Category name to PropertyRecord[] key pair interface used to describe which records belong to which category.
- * @alpha
+ * @beta
  */
 export interface CategoryRecordsDict {
   [categoryName: string]: PropertyRecord[];
@@ -21,7 +21,7 @@ export interface CategoryRecordsDict {
 
 /**
  * Mutable wrapper object for PropertyCategory which provides methods for working with and managing category and record children hierarchies
- * @alpha
+ * @beta
  */
 export class MutableGridCategory extends MutableFlatPropertyGridItem implements IMutableGridCategoryItem {
   private _children: IMutableFlatGridItem[];
@@ -115,11 +115,11 @@ export class MutableGridCategory extends MutableFlatPropertyGridItem implements 
    * New value is sent down to this items last child
    * @internal
    */
-  public get lastInNumberOfCategories(): number {
+  public override get lastInNumberOfCategories(): number {
     return super.lastInNumberOfCategories;
   }
 
-  public set lastInNumberOfCategories(value: number) {
+  public override set lastInNumberOfCategories(value: number) {
     super.lastInNumberOfCategories = value + 1;
   }
 }

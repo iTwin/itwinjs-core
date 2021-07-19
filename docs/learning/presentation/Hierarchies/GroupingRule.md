@@ -5,11 +5,13 @@
 Grouping rules provide advanced ways to group instances when creating hierarchies.
 
 It allows to define these types of groupings:
+
 - Group by base class.
 - Group by any property of the instance by a common value or a range of values.
 - Group multiple instances with the same label in to one ECInstance node. This can be used in cases when these instances represent the same object for the user.
 
 The rule works in conjunction with other grouping options available in [navigation specifications](./index.md#specifications): `groupByClass` and `groupByLabel`. The grouping hierarchy looks like this:
+
 - Base ECClass grouping node (specified by [base class grouping specification](#base-class-grouping))
   - ECClass grouping node (specified by `groupByClass` property)
     - ECProperty grouping node 1 (specified by 1st [property grouping specification](#property-grouping))
@@ -26,6 +28,7 @@ to do that.
 Name | Required? | Type | Default | Meaning
 -|-|-|-|-
 *Filtering* |
+`requiredSchemas` | No | [`RequiredSchemaSpecification[]`](../SchemaRequirements.md) | `[]` | Specifications that define schema requirements for the rule to take effect.
 `priority` | No | `number` | `1000` | Defines the order in which presentation rules are evaluated.
 `onlyIfNotHandled` | No | `boolean` | `false` | Should this rule be ignored if there is already an existing rule with a higher priority.
 `condition` | No | [ECExpression](./ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
@@ -61,7 +64,7 @@ Name | Required? | Type | Default | Meaning
 `propertyName` | Yes | `string` | | Name of the ECProperty which is used for grouping.
 `imageId` | No | `string` | `""` | ID of an image to use for the grouping node.
 `groupingValue` | No | `"PropertyValue" \| "DisplayLabel"` | `"DisplayLabel"` | Should the instances be grouped on display label or the grouping property value. **Note:** Grouping by property value is required if the display label is overridden to display grouped instances count. **Warning:** Grouping by label and sorting by property value is not possible.
-`sortingValue` | No | `"PropertyValue" \| "DisplayLabel"` | `"DisplayLabel"` | Should the nodes be sorted by display label or the grouping property value. In most cases the result is the same, unless [[LabelOverride]] rule is used to change the display label. **Note:** Sorting by property value only makes sense when instances are grouped by property value as well. **Warning:** Grouping by label and sorting by property value is not possible.
+`sortingValue` | No | `"PropertyValue" \| "DisplayLabel"` | `"DisplayLabel"` | Should the nodes be sorted by display label or the grouping property value. In most cases the result is the same, unless [LabelOverride]($presentation-common) rule is used to change the display label. **Note:** Sorting by property value only makes sense when instances are grouped by property value as well. **Warning:** Grouping by label and sorting by property value is not possible.
 `ranges` | No | [`PropertyRangeGroupSpecification[]`](#propertyrangegroupspecification-attributes) | `[]` | Ranges into which the grouping values are divided. Instances are grouped by value if no ranges are specified.
 
 #### PropertyRangeGroupSpecification Attributes
@@ -89,6 +92,7 @@ Name | Required? | Type | Default | Meaning
 {
   "ruleType": "Grouping",
   "priority": 999,
+  "requiredSchemas": [{ "name": "MySchema", "minVersion": "1.2.3" }],
   "class": { "schemaName": "MySchema", "className": "MyClass" },
   "groups": [{
     "specType": "Property",

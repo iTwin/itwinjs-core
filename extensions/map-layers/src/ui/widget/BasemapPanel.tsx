@@ -8,7 +8,7 @@ import * as React from "react";
 import { ColorByName, ColorDef, MapLayerProps, MapLayerSettings } from "@bentley/imodeljs-common";
 import { DisplayStyleState } from "@bentley/imodeljs-frontend";
 import { ColorPickerDialog, ColorSwatch } from "@bentley/ui-components";
-import { OptionType, ThemedSelect } from "@bentley/ui-core";
+import { OptionType, ThemedSelect, WebFontIcon } from "@bentley/ui-core";
 import { ActionMeta, ValueType } from "react-select/src/types";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { TransparencyPopupButton } from "./TransparencyPopupButton";
@@ -122,12 +122,32 @@ export function BasemapPanel() {
     }
   }, [bases, activeViewport, bgColor]);
 
+  const [baseMapVisible, setBaseMapVisible] = React.useState(() => {
+    if (activeViewport && activeViewport.displayStyle.backgroundMapBase instanceof MapLayerSettings) {
+      return activeViewport.displayStyle.backgroundMapBase.visible;
+    }
+    return false;
+  });
+
+  const handleVisibilityChange = React.useCallback(() => {
+    if (activeViewport) {
+      const newState = !baseMapVisible;
+      activeViewport.displayStyle.changeBaseMapProps({ visible: newState });
+      activeViewport.invalidateRenderPlan();
+      setBaseMapVisible(newState);
+    }
+  }, [baseMapVisible, activeViewport]);
+
   const [baseLayerLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.BaseLayer"));
   const [selectBaseMapLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Basemap.SelectBaseMap"));
+  const [toggleVisibility] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:Widget.ToggleVisibility"));
 
   return (
     <>
       <div className="map-manager-base-item" >
+        <button className="map-manager-item-visibility" title={toggleVisibility} onClick={handleVisibilityChange}>
+          <WebFontIcon iconName={baseMapVisible ? "icon-visibility" : "icon-visibility-hide-2"} />
+        </button>
         <span className="map-manager-base-label">{baseLayerLabel}</span>
         <ThemedSelect options={baseMapOptions} closeMenuOnSelect placeholder={selectBaseMapLabel} value={selectedBaseMapValue} onChange={handleBaseMapSelection} />
         {

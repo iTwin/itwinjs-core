@@ -1,5 +1,5 @@
 
-# Using Surface normals to make coarse facets looks smooth.
+# Using Surface normals to make coarse facets looks smooth
 
 ## Coarse facets on a smooth surface
 
@@ -29,21 +29,20 @@ Here is the same number of facets, with the same grid structure, but with the up
 
 Here are three images without the edges drawn.  From left to right they have:
 
- * (left) blocky display, with clearly visible breaks between facets
- * (middle) smooth display throughout.
-    * This is good in the portions where the original surface was curved
-    * This is _not_ good in at the sharp fold edge.  It appears to be a roll rather than a crisp edge, and the roll seems to continue into the 4 coplanar facets beyond the fold.
- * (right) correct display that is smooth in the curved section, a crisp fold, and then flat within the coplanar facets.
+- (left) blocky display, with clearly visible breaks between facets
+- (middle) smooth display throughout.
+  - This is good in the portions where the original surface was curved
+  - This is _not_ good in at the sharp fold edge.  It appears to be a roll rather than a crisp edge, and the roll seems to continue into the 4 coplanar facets beyond the fold.
+- (right) correct display that is smooth in the curved section, a crisp fold, and then flat within the coplanar facets.
 
 ![>](./figs/GriddedSurfaceExample/FoldedShadingVariants.png)
 
 Once again, the display variation is due to how surface normal is presented at each corner of each facet.
- * On the left, each facet's corners get the normal of that facets own plane, which of course has a significant angle from those other facets at that vertex.
- * In the middle, all the corners near each vertex get a single average normal from all of the (2 or 4) incident facets.   Within the smooth part this is good.  But at the fold edge, the single normal is not really right for either side.
- * On the right, the normals are correctly pulled from either the fold plane or the curved surface.   Hence there are multiple distinct normal values _at each vertex along the fold_.
+
+- On the left, each facet's corners get the normal of that facets own plane, which of course has a significant angle from those other facets at that vertex.
+- In the middle, all the corners near each vertex get a single average normal from all of the (2 or 4) incident facets.   Within the smooth part this is good.  But at the fold edge, the single normal is not really right for either side.
+- On the right, the normals are correctly pulled from either the fold plane or the curved surface.   Hence there are multiple distinct normal values _at each vertex along the fold_.
 
 ![>](./figs/GriddedSurfaceExample/FoldedWithNormals.png)
 
 This mixing of smooth patches sharing common edges is pervasive in realistic mechanical models.
-
-

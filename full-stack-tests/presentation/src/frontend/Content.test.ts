@@ -6,11 +6,12 @@ import { expect } from "chai";
 import { Guid, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import {
-  ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
+  ContentFlags, ContentSpecificationTypes, DefaultContentDisplayTypes, Descriptor, DisplayValueGroup, Field, FieldDescriptor, InstanceKey, KeySet,
   NestedContentField, PresentationError, PresentationStatus, RelationshipDirection, Ruleset, RuleTypes,
 } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
+import { findFieldByLabel } from "../Utils";
 
 import sinon = require("sinon");
 
@@ -25,6 +26,11 @@ describe("Content", () => {
     expect(imodel).is.not.null;
   };
 
+  const closeIModel = async () => {
+    if (imodel && imodel.isOpen)
+      await imodel.close();
+  };
+
   before(async () => {
     await initialize();
     await openIModel();
@@ -33,6 +39,62 @@ describe("Content", () => {
   after(async () => {
     await imodel.close();
     await terminate();
+  });
+
+  describe("Input Keys", () => {
+
+    it("associates content items with given input keys", async () => {
+      const ruleset: Ruleset = {
+        id: Guid.createValue(),
+        rules: [{
+          ruleType: RuleTypes.Content,
+          specifications: [{
+            specType: ContentSpecificationTypes.ContentRelatedInstances,
+            relationshipPaths: [{
+              relationship: { schemaName: "BisCore", className: "ElementOwnsChildElements" },
+              direction: RelationshipDirection.Forward,
+              count: "*",
+            }],
+          }],
+        }],
+      };
+      const content = await Presentation.presentation.getContent({
+        imodel,
+        rulesetOrId: ruleset,
+        descriptor: {
+          contentFlags: ContentFlags.IncludeInputKeys,
+        },
+
+        keys: new KeySet([{
+          className: "BisCore:Element",
+          id: "0x1",
+        }, {
+          className: "BisCore:Element",
+          id: "0x12",
+        }]),
+      });
+      expect(content?.contentSet.length).to.eq(9);
+      expect(content!.contentSet.map((item) => ({ itemId: item.primaryKeys[0].id, inputIds: item.inputKeys!.map((ik) => ik.id) }))).to.containSubset([{
+        itemId: "0xe", inputIds: ["0x1"],
+      }, {
+        itemId: "0x10", inputIds: ["0x1"],
+      }, {
+        itemId: "0x12", inputIds: ["0x1"],
+      }, {
+        itemId: "0x13", inputIds: ["0x1", "0x12"],
+      }, {
+        itemId: "0x14", inputIds: ["0x1", "0x12"],
+      }, {
+        itemId: "0x15", inputIds: ["0x1", "0x12"],
+      }, {
+        itemId: "0x16", inputIds: ["0x1", "0x12"],
+      }, {
+        itemId: "0x1b", inputIds: ["0x1", "0x12"],
+      }, {
+        itemId: "0x1c", inputIds: ["0x1", "0x12"],
+      }]);
+    });
+
   });
 
   describe("Distinct Values", () => {
@@ -54,6 +116,10 @@ describe("Content", () => {
               ],
             },
           }],
+        }, {
+          ruleType: RuleTypes.LabelOverride,
+          condition: `ThisNode.IsInstanceNode ANDALSO this.IsOfClass("Model", "BisCore")`,
+          label: `this.GetRelatedDisplayLabel("BisCore:ModelModelsElement", "Forward", "BisCore:Element")`,
         }],
       };
       const key1: InstanceKey = { id: Id64.fromString("0x1"), className: "BisCore:Subject" };
@@ -181,7 +247,7 @@ describe("Content", () => {
       };
       const keys = KeySet.fromJSON({ instanceKeys: [["PCJ_TestSchema:TestClass", ["0x61", "0x70", "0x6a", "0x3c", "0x71"]]], nodeKeys: [] });
       const descriptor = (await Presentation.presentation.getContentDescriptor({ imodel, rulesetOrId: ruleset }, "", keys, undefined))!;
-      const field = findFieldByLabel(descriptor.fields, "$óúrçè Fílê Ñâmé")!;
+      const field = findFieldByLabel(descriptor.fields, "Ñámê")!;
       await validatePagedDistinctValuesResponse(ruleset, keys, descriptor, field.getFieldDescriptor(), [{
         displayValue: "Properties_60InstancesWithUrl2.dgn",
         groupedRawValues: ["Properties_60InstancesWithUrl2.dgn"],
@@ -408,10 +474,11 @@ describe("Content", () => {
 
   describe("when request in the backend exceeds the backend timeout time", () => {
 
-    let raceStub: sinon.SinonStub<[Iterable<unknown>], Promise<unknown>>;
+    let raceStub: sinon.SinonStub<[readonly unknown[]], Promise<unknown>>;
 
     beforeEach(async () => {
       // re-initialize to set backend response timeout to 500 ms
+      await closeIModel();
       await terminate();
       await initialize(500);
       await openIModel();
@@ -426,7 +493,7 @@ describe("Content", () => {
     });
 
     afterEach(async () => {
-      await imodel.close();
+      await closeIModel();
       raceStub.restore();
     });
 
@@ -573,27 +640,4 @@ class ECClassHierarchy {
       derivedClassIds: this.getAllDerivedClassIds(id),
     };
   }
-}
-
-function findFieldByLabel(fields: Field[], label: string, allFields?: Field[]): Field | undefined {
-  const isTopLevel = (undefined === allFields);
-  if (!allFields)
-    allFields = new Array<Field>();
-  for (const field of fields) {
-    if (field.label === label)
-      return field;
-
-    if (field.isNestedContentField()) {
-      const nestedMatchingField = findFieldByLabel(field.nestedFields, label, allFields);
-      if (nestedMatchingField)
-        return nestedMatchingField;
-    }
-
-    allFields.push(field);
-  }
-  if (isTopLevel) {
-    // eslint-disable-next-line no-console
-    console.error(`Field '${label}' not found. Available fields: [${allFields.map((f) => `"${f.label}"`).join(", ")}]`);
-  }
-  return undefined;
 }

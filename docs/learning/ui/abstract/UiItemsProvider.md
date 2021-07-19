@@ -117,10 +117,10 @@ These actions are defined by [UiItemsApplicationAction]($ui-abstract).
 The application implements the [UiItemsApplication]($ui-abstract) and provides
 one or more of the following optional functions to validate items:
 
-* validateToolbarButtonItem -  Validate and optionally update a Toolbar button item
-* validateStatusBarItem - Validate and optionally update a StatusBar item
-* validateBackstageItem - Validate and optionally update a Backstage item
-* validateWidget - Validate and optionally update a Widget
+- validateToolbarButtonItem -  Validate and optionally update a Toolbar button item
+- validateStatusBarItem - Validate and optionally update a StatusBar item
+- validateBackstageItem - Validate and optionally update a Backstage item
+- validateWidget - Validate and optionally update a Widget
 
 To setup for arbitration, the application sets the `UiItemsArbiter.uiItemsApplication` member,
 which may only be set once:
@@ -131,10 +131,10 @@ UiItemsArbiter.uiItemsApplication = new ExampleUiItemsApplication();
 
 A [UiItemsProvider]($ui-abstract) can listen for the actions taken by the application by defining the following optional methods:
 
-* onToolbarButtonItemArbiterChange - Called if the application changes the Toolbar button item
-* onStatusBarItemArbiterChange - Called if the application changes the StatusBar item
-* onBackstageItemArbiterChange - Called if the application changes the Backstage item
-* onWidgetArbiterChange - Called if the application changes the Widget
+- onToolbarButtonItemArbiterChange - Called if the application changes the Toolbar button item
+- onStatusBarItemArbiterChange - Called if the application changes the StatusBar item
+- onBackstageItemArbiterChange - Called if the application changes the Backstage item
+- onWidgetArbiterChange - Called if the application changes the Widget
 
 ### Examples
 
@@ -181,4 +181,4 @@ class ExampleUiItemsApplication implements UiItemsApplication {
 
 ## API Reference
 
-* [UiItemsProvider]($ui-abstract:UiItemsProvider)
+- [UiItemsProvider]($ui-abstract:UiItemsProvider)

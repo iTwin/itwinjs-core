@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { Id64, Id64Set, Id64String } from "@bentley/bentleyjs-core";
+import { Id64, Id64String } from "@bentley/bentleyjs-core";
 import { BatchType, Feature } from "./FeatureTable";
 import { ColorDef } from "./ColorDef";
 import { GeometryClass } from "./GeometryParams";
@@ -14,9 +14,11 @@ import { LinePixels } from "./LinePixels";
 import { RgbColor, RgbColorProps } from "./RgbColor";
 import { SubCategoryOverride } from "./SubCategoryOverride";
 
-function copyIdSetToUint32Set(dst: Id64.Uint32Set, src?: Set<string>): void {
+function copyIdSetToUint32Set(dst: Id64.Uint32Set, src: Iterable<string>): void {
   dst.clear();
-  if (undefined !== src) {
+  if (typeof src === "string") {
+    dst.addId(src);
+  } else {
     for (const id of src)
       dst.addId(id);
   }
@@ -46,7 +48,7 @@ export interface FeatureAppearanceProps {
 
 /** Defines overrides for selected aspects of a [[Feature]]'s symbology.
  * Any member defined in the appearance overrides that aspect of symbology for all [[Feature]]s to which the appearance is applied.
- * @see [[FeatureOverrides]]
+ * @see [[FeatureOverrides]] to customize the appearance of multiple features.
  * @public
  */
 export class FeatureAppearance implements FeatureAppearanceProps {
@@ -92,8 +94,8 @@ export class FeatureAppearance implements FeatureAppearanceProps {
   /** Create a FeatureAppearance with overrides corresponding to those defined by the supplied SubCategoryOverride. */
   public static fromSubCategoryOverride(ovr: SubCategoryOverride): FeatureAppearance {
     const rgb = undefined !== ovr.color ? RgbColor.fromColorDef(ovr.color) : undefined;
-    const transparency = undefined !== ovr.transparency ? ovr.transparency : undefined;
-    const weight = undefined !== ovr.weight ? ovr.weight : undefined;
+    const transparency = ovr.transparency;
+    const weight = ovr.weight;
     const ignoresMaterial = undefined !== ovr.material && Id64.isValid(ovr.material) ? true : undefined;
     return this.fromJSON({ rgb, transparency, weight, ignoresMaterial });
   }
@@ -252,12 +254,27 @@ export interface FeatureAppearanceSource {
 }
 
 /** Specifies how to customize the appearance of individual [[Feature]]s, typically within the context of a [Viewport]($frontend).
- * It is possible to override multiple aspects of a Feature. For example, you might specify that all elements belonging to subcategory "A" should be drawn in red, and
- * that the element with Id "0x123" should be drawn with 0.25 transparency. In this case, when drawing a Feature with subcategory "A" and element Id "0x123", the two overrides will
- * be merged, causing the Feature's geometry to draw 25% transparent red. On the other hand, if subcategory "A" is specified to draw in red and element "0x123" to draw in green,
- * the color specified by the element override will take precedence over that specified for the subcategory, resulting in a green Feature.
+ * Individual aspects of a feature's appearance - like visibility, color, and transparency - are overridden by supplying a [[FeatureAppearance]].
+ * Those overrides can be specified on the basis of the feature's model, element, and/or subcategory. A default set of overrides can also be specified to
+ * apply to the appearance of any feature not otherwise overridden.
+ *
+ * It is possible to override multiple aspects of a feature on different bases. For example, you might specify that all features belonging to subcategory "A" should be drawn in red,
+ * and that all features belonging to model "B" should be drawn 50% transparent. In this case, a feature belonging to both subcategory "A" and model "B" will be drawn as 50% transparent red -
+ * the separate overrides are combined to produce the feature's overall appearance.
+ *
+ * In the case of conflicts, there is an order of precedence:
+ *  - Model overrides take highest precedence.
+ *  - Element overrides are of higher precedence than subcategory overrides.
+ *  - Subcategory overrides have lowest precedence.
+ *
+ * For example, you might specify that all features belonging to subcategory "A" should be drawn in red, and all those belonging to model "B" should be drawn in green.
+ * Then a feature belonging to subcategory "A" and model "B" will be drawn in green, because the model overrides take precedence.
+ *
+ * Instances of this class are not typically instantiated by an application directly; instead, an application can implement a [FeatureOverrideProvider]($frontend)
+ * that augments the overrides supplied by a viewport.
  *
  * @see [FeatureSymbology.Overrides]($frontend) to create overrides specific to a [Viewport]($frontend) or [ViewState]($frontend).
+ * @see [FeatureOverrideProvider]($frontend) to customize the appearance of features within a [Viewport]($frontend).
  * @public
  */
 export class FeatureOverrides implements FeatureAppearanceSource {
@@ -271,7 +288,6 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   public isAlwaysDrawnExclusive = false;
   /** If true, the always-drawn elements are drawn even if their subcategories are not visible.
    * @see [[setAlwaysDrawn]]
-   * @beta
    */
   public alwaysDrawnIgnoresSubCategory = true;
   /** If true, all subcategories are considered visible. This is used for drawing sheets via section callouts in the absence of an actual sheet view.
@@ -331,7 +347,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     if (this._neverDrawn.has(elemIdLo, elemIdHi))
       return true;
     else
-      return 0 !== animationNodeId && this.neverDrawnAnimationNodes.has(animationNodeId);
+      return this.neverDrawnAnimationNodes.has(animationNodeId);
   }
   /** @internal */
   protected isAlwaysDrawn(idLo: number, idHi: number): boolean { return this._alwaysDrawn.has(idLo, idHi); }
@@ -355,7 +371,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   /** @internal */
   protected getElementOverrides(idLo: number, idHi: number, animationNodeId: number): FeatureAppearance | undefined {
     const app = this._elementOverrides.get(idLo, idHi);
-    if (app !== undefined || 0 === animationNodeId)
+    if (app !== undefined)
       return app;
 
     return this.animationNodeOverrides.get(animationNodeId);
@@ -372,33 +388,31 @@ export class FeatureOverrides implements FeatureAppearanceSource {
   /** Specify the Id of a animation node that should never be drawn. */
   public setAnimationNodeNeverDrawn(id: number): void { this.neverDrawnAnimationNodes.add(id); }
   /** Specify the Ids of elements that should never be drawn. */
-  public setNeverDrawnSet(ids: Id64Set) { copyIdSetToUint32Set(this._neverDrawn, ids); }
+  public setNeverDrawnSet(ids: Iterable<Id64String>) { copyIdSetToUint32Set(this._neverDrawn, ids); }
   /** Specify the Ids of elements that should always be drawn. */
-  public setAlwaysDrawnSet(ids: Id64Set, exclusive: boolean, ignoreSubCategory = true) {
+  public setAlwaysDrawnSet(ids: Iterable<Id64String>, exclusive: boolean, ignoreSubCategory = true) {
     copyIdSetToUint32Set(this._alwaysDrawn, ids);
     this.isAlwaysDrawnExclusive = exclusive;
     this.alwaysDrawnIgnoresSubCategory = ignoreSubCategory;
   }
 
   /** Returns the feature's appearance overrides, or undefined if the feature is not visible. */
-  public getFeatureAppearance(feature: Feature, modelId: Id64String, type: BatchType = BatchType.Primary): FeatureAppearance | undefined {
+  public getFeatureAppearance(feature: Feature, modelId: Id64String, type: BatchType = BatchType.Primary, animationNodeId = 0): FeatureAppearance | undefined {
     return this.getAppearance(
       Id64.getLowerUint32(feature.elementId), Id64.getUpperUint32(feature.elementId),
       Id64.getLowerUint32(feature.subCategoryId), Id64.getUpperUint32(feature.subCategoryId),
       feature.geometryClass,
       Id64.getLowerUint32(modelId), Id64.getUpperUint32(modelId),
-      type, 0);
+      type, animationNodeId);
   }
 
   private static readonly _weight1Appearance = FeatureAppearance.fromJSON({ weight: 1 });
 
   /** Returns a feature's appearance overrides, or undefined if the feature is not visible.
-   * Takes Id64s as pairs of unsigned 32-bit integers, because that is how they are stored by the PackedFeatureTable associated with each batch of graphics.
-   * This API is invoked by [[getFeatureAppearance]]. It is much uglier, but much more efficient.
-   * @alpha
+   * Takes Id64s as pairs of unsigned 32-bit integers for efficiency, because that is how they are stored by the PackedFeatureTable associated with each batch of graphics.
+   * @see [[getFeatureAppearance]] for an equivalent function that accepts [Id64String]($bentleyjs-core)s instead of integer pairs.
    */
   public getAppearance(elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined {
-
     if (BatchType.VolumeClassifier === type || BatchType.PlanarClassifier === type)
       return this.getClassifierAppearance(elemLo, elemHi, subcatLo, subcatHi, modelLo, modelHi, animationNodeId);
 
@@ -471,7 +485,9 @@ export class FeatureOverrides implements FeatureAppearanceSource {
     return app;
   }
 
-  /** @internal */
+  /** Return whether geometry of the specified class should be drawn.
+   * @see [[ViewFlags.constructions]], [[ViewFlags.dimensions]], and [[ViewFlags.patterns]].
+   */
   public isClassVisible(geomClass: GeometryClass): boolean {
     switch (geomClass) {
       case GeometryClass.Construction: return this._constructions;
@@ -594,7 +610,7 @@ export class FeatureOverrides implements FeatureAppearanceSource {
  * This is useful for selectively overriding or agumenting a [Viewport]($frontend)'s symbology overrides.
  * A typical implementation will invoke [[FeatureAppearanceSource.getAppeaprance]] and customize the returned appearance.
  * @see [[FeatureAppearanceProvider.chain]] to chain two providers together.
- * @beta
+ * @public
  */
 export interface FeatureAppearanceProvider {
   /** Supply the desired appearance overrides for the specified [[Feature]], or `undefined` if the feature should not be drawn.
@@ -616,7 +632,7 @@ export interface FeatureAppearanceProvider {
   getFeatureAppearance(source: FeatureAppearanceSource, elemLo: number, elemHi: number, subcatLo: number, subcatHi: number, geomClass: GeometryClass, modelLo: number, modelHi: number, type: BatchType, animationNodeId: number): FeatureAppearance | undefined;
 }
 
-/** @beta */
+/** @public */
 export namespace FeatureAppearanceProvider {
   /** Produce a FeatureAppearanceSource for which `getAppearance()` returns the appearance specified in `source`, potentially modified by `provider`. */
   function wrap(source: FeatureAppearanceSource, provider: FeatureAppearanceProvider): FeatureAppearanceSource {
@@ -629,7 +645,7 @@ export namespace FeatureAppearanceProvider {
 
   /** Create a provider that obtains each feature's appearance from the source, and if the feature is visible, modifies the appearance.
    * @param supplementAppearance A function accepting the feature's base appearance and returning a supplemental appearance.
-   * @beta
+   * @public
    */
   export function supplement(supplementAppearance: (appearance: FeatureAppearance) => FeatureAppearance): FeatureAppearanceProvider {
     return {
@@ -642,7 +658,7 @@ export namespace FeatureAppearanceProvider {
 
   /** Chain two FeatureAppearanceProviders together such that `first`'s `getFeatureAppearance` function is applied before `second`'s.
    * If `second` invokes `source.getAppearance()`, the returned appearance will include any modifications applied by `first`.
-   * @beta
+   * @public
    */
   export function chain(first: FeatureAppearanceProvider, second: FeatureAppearanceProvider): FeatureAppearanceProvider {
     if (first === second)

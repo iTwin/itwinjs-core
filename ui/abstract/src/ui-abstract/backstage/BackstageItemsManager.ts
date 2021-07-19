@@ -108,9 +108,9 @@ export class BackstageItemsManager {
     items.forEach((item) => {
       for (const [, entry] of Object.entries(item)) {
         if (entry instanceof ConditionalBooleanValue) {
-          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId));
+          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
         } else /* istanbul ignore else */ if (entry instanceof ConditionalStringValue) {
-          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId));
+          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
         }
       }
     });

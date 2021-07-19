@@ -6,6 +6,7 @@
  * @module Compatibility
  */
 
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import {
   GraphicsDriverBugs, WebGLContext, WebGLFeature, WebGLRenderCompatibilityInfo, WebGLRenderCompatibilityStatus,
 } from "./RenderCompatibility";
@@ -60,26 +61,6 @@ export enum DepthType {
   TextureUnsignedInt32,            // core to WebGL2; available to WebGL1 via WEBGL_depth_texture
   // TextureFloat32,               // core to WebGL2
   // TextureFloat32Stencil8,       // core to WeBGL2
-}
-
-function detectIsMobile(): boolean {
-  // Modified from package 'detect-gpu': https://github.com/TimvanScherpenzeel/detect-gpu/blob/master/src/index.ts
-  // ###TODO: consume and use the actual full 'detect-gpu' package when querying capabilities so we can stay up to date.
-
-  const { userAgent, platform, maxTouchPoints } = window.navigator;
-
-  const isIOS = /(iphone|ipod|ipad)/i.test(userAgent);
-
-  // Workaround for ipadOS, force detection as tablet
-  // SEE: https://github.com/lancedikson/bowser/issues/329
-  // SEE: https://stackoverflow.com/questions/58019463/how-to-detect-device-name-in-safari-on-ios-13-while-it-doesnt-show-the-correct
-  const isIpad =
-    platform === "iPad" ||
-    (platform === "MacIntel" && maxTouchPoints > 0 && !window.MSStream);
-
-  const isAndroid = /android/i.test(userAgent);
-
-  return isAndroid || isIOS || isIpad;
 }
 
 /** Describes the rendering capabilities of the host system.
@@ -240,7 +221,7 @@ export class Capabilities {
     const gl2 = !(gl instanceof WebGLRenderingContext) ? gl : undefined;
     this._isWebGL2 = undefined !== gl2;
 
-    this._isMobile = detectIsMobile();
+    this._isMobile = ProcessDetector.isMobileBrowser;
 
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);

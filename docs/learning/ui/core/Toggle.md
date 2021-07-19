@@ -44,4 +44,4 @@ The [LabeledToggle]($ui-core) React component displays a label to the right of t
 
 ## API Reference
 
-* [Toggle]($ui-core:Toggle)
+- [Toggle]($ui-core:Toggle)

@@ -2,6 +2,372 @@
   "name": "@bentley/ui-core",
   "entries": [
     {
+      "version": "2.18.1",
+      "tag": "@bentley/ui-core_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.0",
+      "tag": "@bentley/ui-core_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix bug in ElementResizeObserver caused by using React.Ref and not an HTMLElement as a usedEffect dependency."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@bentley/ui-core_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.1",
+      "tag": "@bentley/ui-core_v2.17.1",
+      "date": "Fri, 02 Jul 2021 15:38:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.0",
+      "tag": "@bentley/ui-core_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update use of resize observer to be compatible with using it in a child/popup window."
+          },
+          {
+            "comment": "Update scss to remove use of slash for division to avoid SASS deprecation warnings."
+          },
+          {
+            "comment": "Publish in-use APIs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.9",
+      "tag": "@bentley/ui-core_v2.16.9",
+      "date": "Tue, 06 Jul 2021 22:08:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.8",
+      "tag": "@bentley/ui-core_v2.16.8",
+      "date": "Fri, 02 Jul 2021 17:40:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.7",
+      "tag": "@bentley/ui-core_v2.16.7",
+      "date": "Mon, 28 Jun 2021 18:13:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.6",
+      "tag": "@bentley/ui-core_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.5",
+      "tag": "@bentley/ui-core_v2.16.5",
+      "date": "Fri, 25 Jun 2021 16:03:01 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.4",
+      "tag": "@bentley/ui-core_v2.16.4",
+      "date": "Wed, 23 Jun 2021 17:09:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.3",
+      "tag": "@bentley/ui-core_v2.16.3",
+      "date": "Wed, 16 Jun 2021 20:29:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.2",
+      "tag": "@bentley/ui-core_v2.16.2",
+      "date": "Thu, 03 Jun 2021 18:08:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.1",
+      "tag": "@bentley/ui-core_v2.16.1",
+      "date": "Thu, 27 May 2021 20:04:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.0",
+      "tag": "@bentley/ui-core_v2.16.0",
+      "date": "Mon, 24 May 2021 15:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Wrap resizeObserver in a windows animation frame to prevent loop limit exceeded error."
+          },
+          {
+            "comment": "Add support for child popup windows. "
+          },
+          {
+            "comment": "Improved Multi-Value column filtering in the Table component"
+          },
+          {
+            "comment": "Update to latest classnames package "
+          },
+          {
+            "comment": "Fix GlobalContextMenu layout issue in presentation-test-app by setting display:none on anchoring div."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.6",
+      "tag": "@bentley/ui-core_v2.15.6",
+      "date": "Wed, 26 May 2021 15:55:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.5",
+      "tag": "@bentley/ui-core_v2.15.5",
+      "date": "Thu, 20 May 2021 15:06:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.4",
+      "tag": "@bentley/ui-core_v2.15.4",
+      "date": "Tue, 18 May 2021 21:59:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.3",
+      "tag": "@bentley/ui-core_v2.15.3",
+      "date": "Mon, 17 May 2021 13:31:38 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Wrap resizeObserver in a windows animation frame to prevent loop limit exceeded error."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.2",
+      "tag": "@bentley/ui-core_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@bentley/ui-core_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@bentley/ui-core_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add more descriptive UiSettingsStorage, LocalSettingsStorage, and SessionSettingsStorage and deprecate badly name beta classes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@bentley/ui-core_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@bentley/ui-core_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix z-index of statusbar overflow panel to show footer popups."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@bentley/ui-core_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@bentley/ui-core_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@bentley/ui-core_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add SettingsManager and SettingsContainer for displaying app settings UI."
+          },
+          {
+            "comment": "fix height in number control."
+          },
+          {
+            "comment": "Fix for listbox not rerendering when selectedVaue prop is changed."
+          },
+          {
+            "comment": "Add option to show/hide settings category header text."
+          },
+          {
+            "comment": "Improved ui-components test coverage to 100%"
+          },
+          {
+            "comment": "Support for Focus into Tool Settings"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.0",
+      "tag": "@bentley/ui-core_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Keep hideIconContainer prop from bleeding into div."
+          },
+          {
+            "comment": "Add right mouse click on TreeNode"
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "Floating widget opacity for UI 2.0. Slider formatMin, formatMax props."
+          },
+          {
+            "comment": "Support for conditionally disabling/hiding keyboard shortcuts"
+          },
+          {
+            "comment": "Add margin and padding top labeled-themed-select."
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@bentley/ui-core_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@bentley/ui-core_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:53 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.1",
+      "tag": "@bentley/ui-core_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@bentley/ui-core_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Allow target _blank in Message boxes if secure relationships exist on the element"
+          },
+          {
+            "comment": "AccuDraw bi-directional value updates"
+          },
+          {
+            "comment": "Wrap the props.valueChanged call in the SearchBox to prevent a state change when the value has not really changed. This generally only happens when a valueChangedDelay is specified."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.2",
+      "tag": "@bentley/ui-core_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@bentley/ui-core_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.0",
+      "tag": "@bentley/ui-core_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update components that support providing refs via React.forwardRef to work better with document generation.  "
+          },
+          {
+            "comment": "Add option to use a 'x-small' webfont icon."
+          },
+          {
+            "comment": "Add nested popup support to components that use HOC withOnOutsideClick."
+          },
+          {
+            "comment": "Fix bug processing zero value in Select options."
+          },
+          {
+            "comment": "Fix calling of onClick and onSelect calls when ContextMenuItem is disabled"
+          },
+          {
+            "comment": "Lock react-select to 3.1.0 and @types/react-select to 3.0.26 until we can fi"
+          },
+          {
+            "comment": "updated `ExpandableBlock` component to be able to take in title as JSX.Element and a tooltip, in which title string property can be passed"
+          },
+          {
+            "comment": "updated `ExpandableBlock` component to be able to take in title as JSX.Element and a tooltip, in which title string property can be passed"
+          },
+          {
+            "comment": "Add partial checkbox handling to TreeNode"
+          },
+          {
+            "comment": "Initial implementation of AccuDraw UI"
+          },
+          {
+            "comment": "Added ui-core learning docs content and added Notification.md, Style.md & Tooltip.md ui-core learning doc files."
+          },
+          {
+            "comment": "Added support to ExpandableList for updating the active block programmatically"
+          },
+          {
+            "comment": "Fix controlled/uncontrolled react warning in Select component."
+          },
+          {
+            "comment": "Added disabled support to Select component options"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/ui-core_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",

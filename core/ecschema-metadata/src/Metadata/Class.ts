@@ -29,14 +29,14 @@ import { SchemaItem } from "./SchemaItem";
 export abstract class ECClass extends SchemaItem implements CustomAttributeContainerProps {
   protected _modifier: ECClassModifier;
   protected _baseClass?: LazyLoadedECClass;
-  protected _properties?: Property[];
+  protected _properties?: Map<string, Property>;
   private _customAttributes?: Map<string, CustomAttribute>;
   private _mergedPropertyCache?: Property[];
 
   public get modifier() { return this._modifier; }
   public get baseClass(): LazyLoadedECClass | undefined { return this._baseClass; }
   public set baseClass(baseClass: LazyLoadedECClass | undefined) { this._baseClass = baseClass; }
-  public get properties(): Property[] | undefined { return this._properties; }
+  public get properties(): IterableIterator<Property> | undefined { return this._properties?.values(); }
   public get customAttributes(): CustomAttributeSet | undefined { return this._customAttributes; }
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
@@ -55,9 +55,9 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    */
   protected addProperty<T extends Property>(prop: T): T {
     if (!this._properties)
-      this._properties = [];
+      this._properties = new Map<string, Property>();
 
-    this._properties.push(prop);
+    this._properties.set(prop.name.toUpperCase(), prop);
     return prop;
   }
 
@@ -74,12 +74,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param name
    */
   public async getProperty(name: string, includeInherited: boolean = false): Promise<Property | undefined> {
-    if (this.properties) {
+    if (this._properties) {
       const upperKey = name.toUpperCase();
-      const foundProp = this.properties.find((prop) => prop.name.toUpperCase() === upperKey);
-      if (foundProp) {
-        return foundProp;
-      }
+      const property = this._properties.get(upperKey);
+      if (property)
+        return property;
     }
 
     if (!includeInherited) {
@@ -94,12 +93,11 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param name
    */
   public getPropertySync(name: string, includeInherited: boolean = false): Property | undefined {
-    if (this.properties) {
+    if (this._properties) {
       const upperKey = name.toUpperCase();
-      const foundProp = this.properties.find((prop) => prop.name.toLocaleUpperCase() === upperKey);
-      if (foundProp) {
-        return foundProp;
-      }
+      const property = this._properties.get(upperKey);
+      if (property)
+        return property;
     }
 
     if (!includeInherited) {
@@ -329,7 +327,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): ClassProps {
+  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): ClassProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     const isMixin = SchemaItemType.Mixin === this.schemaItemType;
     const isRelationship = SchemaItemType.RelationshipClass === this.schemaItemType;
@@ -337,8 +335,8 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
       schemaJson.modifier = classModifierToString(this.modifier);
     if (this.baseClass !== undefined)
       schemaJson.baseClass = this.baseClass.fullName;
-    if (this.properties !== undefined && this.properties.length > 0)
-      schemaJson.properties = this.properties.map((prop) => prop.toJSON());
+    if (this._properties !== undefined && this._properties.size > 0)
+      schemaJson.properties = [...this.properties!].map((prop) => prop.toJSON());
 
     const customAttributes = serializeCustomAttributes(this.customAttributes);
     if (customAttributes !== undefined)
@@ -347,7 +345,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   }
 
   /** @internal */
-  public async toXml(schemaXml: Document): Promise<Element> {
+  public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
 
     if (undefined !== this.modifier)
@@ -380,7 +378,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     return itemElement;
   }
 
-  public fromJSONSync(classProps: ClassProps) {
+  public override fromJSONSync(classProps: ClassProps) {
     super.fromJSONSync(classProps);
 
     if (undefined !== classProps.modifier) {
@@ -404,7 +402,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     }
   }
 
-  public async fromJSON(classProps: ClassProps): Promise<void> {
+  public override async fromJSON(classProps: ClassProps): Promise<void> {
     this.fromJSONSync(classProps);
   }
 
@@ -489,7 +487,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (!this.properties)
       return;
 
-    ECClass.mergeProperties(result, existingValues, this.properties, true);
+    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
   }
 
   protected buildPropertyCacheSync(result: Property[], existingValues?: Map<string, number>, resetBaseCaches: boolean = false): void {
@@ -505,7 +503,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
     if (!this.properties)
       return;
 
-    ECClass.mergeProperties(result, existingValues, this.properties, true);
+    ECClass.mergeProperties(result, existingValues, [...this.properties], true);
   }
 
   /**
@@ -620,7 +618,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
 
       return this.traverseBaseClasses(SchemaItem.equalByKey, key);
     } else {
-      assert(targetClass instanceof ECClass, "Expected targetClass to be of type ECClass");
+      assert(ECClass.isECClass(targetClass), "Expected targetClass to be of type ECClass");
 
       if (SchemaItem.equalByKey(this, targetClass))
         return true;
@@ -641,6 +639,17 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   }
 
   /**
+   * @internal
+   */
+  public static isECClass(object: any): object is ECClass {
+    if (!SchemaItem.isSchemaItem(object))
+      return false;
+
+    return object.schemaItemType === SchemaItemType.EntityClass || object.schemaItemType === SchemaItemType.Mixin || object.schemaItemType === SchemaItemType.RelationshipClass ||
+      object.schemaItemType === SchemaItemType.StructClass || object.schemaItemType === SchemaItemType.CustomAttributeClass;
+  }
+
+  /**
    * @alpha
    * A setter method used specifically for schema editing.
    * @param modifier
@@ -655,7 +664,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
  * @beta
  */
 export class StructClass extends ECClass {
-  public readonly schemaItemType!: SchemaItemType.StructClass; // eslint-disable-line
+  public override readonly schemaItemType!: SchemaItemType.StructClass; // eslint-disable-line
 
   constructor(schema: Schema, name: string, modifier?: ECClassModifier) {
     super(schema, name, modifier);
@@ -668,7 +677,7 @@ export class StructClass extends ECClass {
  * An abstract class used for schema editing.
  */
 export abstract class MutableStructClass extends StructClass {
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }
 
 /**
@@ -676,28 +685,28 @@ export abstract class MutableStructClass extends StructClass {
  * @internal
  */
 export abstract class MutableClass extends ECClass {
-  public abstract addCustomAttribute(customAttribute: CustomAttribute): void;
-  public abstract setModifier(modifier: ECClassModifier): void;
-  public abstract async createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
-  public abstract async createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
-  public abstract async createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
+  public abstract override addCustomAttribute(customAttribute: CustomAttribute): void;
+  public abstract override setModifier(modifier: ECClassModifier): void;
+  public abstract override createPrimitiveProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveProperty>;
+  public abstract override createPrimitiveProperty(name: string, primitiveType: Enumeration): Promise<EnumerationProperty>;
+  public abstract override createPrimitiveProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
 
-  public abstract createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
-  public abstract createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
-  public abstract createPrimitivePropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property;
+  public abstract override createPrimitivePropertySync(name: string, primitiveType: PrimitiveType): PrimitiveProperty;
+  public abstract override createPrimitivePropertySync(name: string, primitiveType: Enumeration): EnumerationProperty;
+  public abstract override createPrimitivePropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property;
 
-  public abstract async createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
-  public abstract async createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
-  public abstract async createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
+  public abstract override createPrimitiveArrayProperty(name: string, primitiveType: PrimitiveType): Promise<PrimitiveArrayProperty>;
+  public abstract override createPrimitiveArrayProperty(name: string, primitiveType: Enumeration): Promise<EnumerationArrayProperty>;
+  public abstract override createPrimitiveArrayProperty(name: string, primitiveType?: string | PrimitiveType | Enumeration): Promise<Property>;
 
-  public abstract createPrimitiveArrayPropertySync(name: string, primitiveType: PrimitiveType): PrimitiveArrayProperty;
-  public abstract createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
-  public abstract createPrimitiveArrayPropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property;
+  public abstract override createPrimitiveArrayPropertySync(name: string, primitiveType: PrimitiveType): PrimitiveArrayProperty;
+  public abstract override createPrimitiveArrayPropertySync(name: string, primitiveType: Enumeration): EnumerationArrayProperty;
+  public abstract override createPrimitiveArrayPropertySync(name: string, primitiveType?: string | PrimitiveType | Enumeration): Property;
 
-  public abstract async createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty>;
-  public abstract createStructPropertySync(name: string, structType: string | StructClass): StructProperty;
+  public abstract override createStructProperty(name: string, structType: string | StructClass): Promise<StructProperty>;
+  public abstract override createStructPropertySync(name: string, structType: string | StructClass): StructProperty;
 
-  public abstract async createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
-  public abstract createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty;
+  public abstract override createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
+  public abstract override createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty;
 
 }

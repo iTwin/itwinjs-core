@@ -18,9 +18,9 @@ import { SyncUiEventDispatcher } from "@bentley/ui-framework";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 
 import upstreamIcon from "./icons/upstream-query.svg?sprite";
-import connectedIcon from "./icons/connected-query.svg?sprite";
 import downstreamIcon from "./icons/downstream-query.svg?sprite";
 import traceIcon from "./icons/query-multi.svg?sprite";
+import { OpenTraceDialogTool } from "./tools/OpenTraceDialogTool";
 
 export class TraceUiItemsProvider implements UiItemsProvider {
   public static syncEventIdTraceAvailable = "ui-test:trace-available-changed";
@@ -35,7 +35,7 @@ export class TraceUiItemsProvider implements UiItemsProvider {
     TraceUiItemsProvider._defaultNs = defaultNs;
   }
 
-  private static translate(key: string) {
+  public static translate(key: string) {
     return TraceUiItemsProvider._i18n.translate(
       `${TraceUiItemsProvider._defaultNs}:${key}`
     );
@@ -77,19 +77,7 @@ export class TraceUiItemsProvider implements UiItemsProvider {
           !TraceUiItemsProvider.isTraceAvailable
         );
 
-      const getConnectedButton = ToolbarItemUtilities.createActionButton(
-        "trace-tool-connected",
-        10, /* order within group button */
-        IconSpecUtilities.createSvgIconSpec(connectedIcon),
-        TraceUiItemsProvider.translate("trace-tool-connected"),
-        (): void => {
-          // test only - testing enable/disable;
-        },
-        {
-          isDisabled: isDisabledCondition,
-          badgeType: BadgeType.TechnicalPreview,
-        }
-      );
+      const getConnectedButton = OpenTraceDialogTool.getActionButtonDef(10);
 
       const getDownstreamButton = ToolbarItemUtilities.createActionButton(
         "trace-tool-downstream",

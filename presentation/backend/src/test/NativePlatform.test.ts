@@ -106,13 +106,6 @@ describe("default NativePlatform", () => {
       addonMock.verify((x) => x.pollResponse(guid), moq.Times.exactly(3));
     });
 
-    it("throws on invalid queueRequest response", async () => {
-      addonMock
-        .setup((x) => x.queueRequest(moq.It.isAny(), ""))
-        .returns(() => undefined as any);
-      await expect(nativePlatform.handleRequest(undefined, "")).to.eventually.be.rejectedWith(PresentationError);
-    });
-
     it("throws on cancellation response", async () => {
       const guid = faker.random.uuid();
       addonMock
@@ -177,13 +170,6 @@ describe("default NativePlatform", () => {
     addonMock.verifyAll();
   });
 
-  it("throws on invalid void response", async () => {
-    addonMock
-      .setup((x) => x.setupRulesetDirectories(moq.It.isAny()))
-      .returns(() => (undefined as any));
-    expect(() => nativePlatform.setupRulesetDirectories([])).to.throw(PresentationError);
-  });
-
   it("throws on void error response", async () => {
     addonMock
       .setup((x) => x.setupRulesetDirectories(moq.It.isAny()))
@@ -235,6 +221,16 @@ describe("default NativePlatform", () => {
     addonMock.verifyAll();
   });
 
+  it("calls addon's unsetRulesetVariableValue", async () => {
+    const rulesetId = faker.random.word();
+    const variableId = faker.random.word();
+    addonMock.setup((x) => x.unsetRulesetVariableValue(rulesetId, variableId))
+      .returns(() => ({}))
+      .verifiable();
+    nativePlatform.unsetRulesetVariableValue(rulesetId, variableId);
+    addonMock.verifyAll();
+  });
+
   it("calls addon's getRulesetVariableValue", async () => {
     const rulesetId = faker.random.word();
     const variableId = faker.random.word();
@@ -255,6 +251,14 @@ describe("default NativePlatform", () => {
     const result = nativePlatform.getUpdateInfo();
     addonMock.verifyAll();
     expect(result).to.deep.equal({ result: updates });
+  });
+
+  it("calls addon's updateHierarchyState", async () => {
+    addonMock.setup((x) => x.updateHierarchyState(moq.It.isAny(), "test-ruleset-id", "nodesExpanded", "[]"))
+      .returns(() => ({}))
+      .verifiable();
+    nativePlatform.updateHierarchyState({}, "test-ruleset-id", "nodesExpanded", "[]");
+    addonMock.verifyAll();
   });
 
   it("returns imodel addon from IModelDb", () => {

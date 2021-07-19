@@ -2,10 +2,29 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import * as JSON5 from "json5";
-import * as fs from "fs";
-import * as path from "path";
 import * as chalk from "chalk";
+import * as fs from "fs";
+import * as JSON5 from "json5";
+import * as path from "path";
+
+/** Loads the provided `.env` file into process.env
+ * @internal
+ */
+export function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
+
+/* eslint-disable deprecation/deprecation */
 
 /** Handles locating an iModel.js configuration JSON file and merging it with the existing configuration.
  *
@@ -14,6 +33,7 @@ import * as chalk from "chalk";
  *
  * For details on how the configuration is loaded, see the documentation on [[IModelJsConfig.init]].
  * @public
+ * @deprecated Deprecated in favor of directly using the dotenv package or using the new `loadEnv()`. Will be removed in next major release (3.0).
  */
 export class IModelJsConfig {
   private static _repositoryPath: string;

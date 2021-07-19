@@ -18,10 +18,13 @@ export interface PropertyCategory {
   label: string;
   expand: boolean;
 
-  /** @alpha */
+  /** @beta */
   childCategories?: PropertyCategory[];
-  /** @alpha */
-  parentCategory?: PropertyCategory;
+
+  /** @beta */
+  renderer?: {
+    name: string;
+  };
 }
 
 /**

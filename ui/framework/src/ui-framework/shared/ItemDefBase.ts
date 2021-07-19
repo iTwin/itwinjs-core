@@ -30,12 +30,14 @@ export abstract class ItemDefBase {
   private _tooltip: string | StringGetter | ConditionalStringValue = "";
   private _description: string | StringGetter | ConditionalStringValue = "";
 
-  /** @deprecated */
+  /** @deprecated Use isHidden instead */
   public isVisible: boolean = true;
-  /** @deprecated */
+  /** @deprecated Use isDisabled instead */
   public isEnabled: boolean = true;
   public isPressed: boolean = false;
-  public isActive: boolean = false;
+  private _isActive: boolean = false;
+  public get isActive(): boolean { return this._isActive; }
+  public set isActive(v: boolean) { this._isActive = v; }
   public applicationData?: any;
 
   public isHidden?: boolean | ConditionalBooleanValue;

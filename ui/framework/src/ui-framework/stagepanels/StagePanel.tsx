@@ -41,7 +41,7 @@ import { WidgetDef, WidgetStateChangedEventArgs } from "../widgets/WidgetDef";
  */
 
 /** Properties of a Stage Panel Zone
- * @beta
+ * @public
  */
 export interface StagePanelZoneProps {
   /** Properties for the Widgets in this Zone.
@@ -54,7 +54,7 @@ export interface StagePanelZoneProps {
 }
 
 /** Properties of the Stage Panel Zones
- * @beta
+ * @public
  */
 export interface StagePanelZonesProps {
   /** Properties for the Widgets in the Start section. */
@@ -67,12 +67,12 @@ export interface StagePanelZonesProps {
 
 /** Available units of panel maximum size. Pixels or percentage of 9-Zone App size.
  * @note Percentage of 9-Zone `height` is used for top/bottom panel and percentage of 9-Zone `width` is used for left/right panel.
- * @beta
+ * @public
  */
 export type StagePanelMaxSizeSpec = number | { percentage: number };
 
 /** Properties of a [[StagePanel]] component
- * @beta
+ * @public
  */
 export interface StagePanelProps {
   /** Describes which zones are allowed in this stage panel. */
@@ -107,7 +107,7 @@ export interface StagePanelProps {
 }
 
 /** Default properties of [[StagePanel]] component.
- * @beta
+ * @public
  */
 export type StagePanelDefaultProps = Pick<StagePanelProps, "resizable">;
 
@@ -134,7 +134,7 @@ interface StagePanelComponentState {
 }
 
 /** Frontstage Panel React component.
- * @beta
+ * @public
  */
 export class StagePanel extends React.Component<StagePanelProps, StagePanelComponentState> {
   public static readonly defaultProps: StagePanelDefaultProps = {
@@ -147,7 +147,7 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
     const panelState = this.props.runtimeProps?.panelDef.panelState;
     this.state = {
       panelState: panelState === undefined ? StagePanelState.Open : panelState,
-      stagePanelWidgets: this._getVisibileStagePanelWidgets(),
+      stagePanelWidgets: this._getVisibleStagePanelWidgets(),
     };
   }
 
@@ -155,25 +155,25 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
     panelDef.initializeFromProps(props, panelLocation);
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     FrontstageManager.onPanelStateChangedEvent.addListener(this._handlePanelStateChangedEvent);
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
   }
 
-  public componentDidUpdate(prevProps: StagePanelProps) {
+  public override componentDidUpdate(prevProps: StagePanelProps) {
     if (prevProps.runtimeProps?.panelDef !== this.props.runtimeProps?.panelDef) {
       this.setState({
-        stagePanelWidgets: this._getVisibileStagePanelWidgets(),
+        stagePanelWidgets: this._getVisibleStagePanelWidgets(),
       });
     }
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     FrontstageManager.onPanelStateChangedEvent.removeListener(this._handlePanelStateChangedEvent);
     FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { applicationData, defaultState, runtimeProps, maxSize, size, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     if (!runtimeProps)
       return null;
@@ -230,11 +230,11 @@ export class StagePanel extends React.Component<StagePanelProps, StagePanelCompo
     if (!runtimeProps.panelDef.findWidgetDef(widgetDef.id))
       return;
     this.setState({
-      stagePanelWidgets: this._getVisibileStagePanelWidgets(),
+      stagePanelWidgets: this._getVisibleStagePanelWidgets(),
     });
   };
 
-  private _getVisibileStagePanelWidgets() {
+  private _getVisibleStagePanelWidgets() {
     const panelDef = this.props.runtimeProps?.panelDef;
     if (!panelDef)
       return [];

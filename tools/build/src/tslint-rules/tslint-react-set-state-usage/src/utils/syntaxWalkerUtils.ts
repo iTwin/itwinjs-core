@@ -1,4 +1,8 @@
 /*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------
 * This code has been adapted from
 * [tslint-react-set-state-usage](https://github.com/sutrkiller/tslint-react-set-state-usage).
 *--------------------------------------------------------------------------------------------*/
@@ -6,8 +10,8 @@
 import * as ts from "typescript";
 import {
   isCallExpression,
-  isPropertyAccessExpression,
   isParenthesizedExpression,
+  isPropertyAccessExpression,
 } from "tsutils";
 
 import { isThisKeyword } from "./syntaxKindUtils";
@@ -27,7 +31,7 @@ export function getFirstSetStateAncestor(node: ts.Node): ts.CallExpression | nul
   }
 
   if (isThisSetState(node)) {
-    return node as ts.CallExpression;
+    return node;
   }
 
   return getFirstSetStateAncestor(node.parent);

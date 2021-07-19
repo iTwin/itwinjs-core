@@ -4,11 +4,15 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Code, ColorDef, DbResult, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { BackendRequestContext, BriefcaseIdValue, ECSqlStatement, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory } from "../imodeljs-backend";
+import { BriefcaseIdValue, Code, ColorDef, DbResult, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { Arc3d, IModelJson as GeomJson, Point2d, Point3d } from "@bentley/geometry-core";
+import { IModelDb, SnapshotDb } from "../IModelDb";
+import { IModelJsFs } from "../IModelJsFs";
+import { BackendRequestContext } from "../BackendRequestContext";
+import { SpatialCategory } from "../Category";
+import { ECSqlStatement } from "../ECSqlStatement";
 
 export class PerfTestDataMgr {
   public db: SnapshotDb | undefined;
@@ -40,8 +44,7 @@ export class PerfTestDataMgr {
       if (undefined === this.catId) {
         this.catId = SpatialCategory.insert(this.db, IModel.dictionaryId, "MySpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
       }
-      const result: DbResult = this.db.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
-      assert.equal(DbResult.BE_SQLITE_OK, result);
+      this.db.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
       this.db.saveChanges();
     }
   }

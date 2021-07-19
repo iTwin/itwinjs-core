@@ -47,6 +47,16 @@ centerRight={
   />
 ```
 
+## Popout Widget Support
+
+Starting in version 2.17 Widgets can specify if they support being "popped-out" to a child window by setting the AbstractWidgetProps property `canPopout` to true. This option must be explicitly set because the property `reactNode` must return React components that works properly in a child window. At minimum components should typically not use the `window` or `document` property to register listeners as these listener will be registered for events in the main window and not in the child window. Components will need to use the `ownerDocument` and `ownerDocument.defaultView` properties to retrieve `document` and `window` properties for the child window. Below is an example of a widget specification that can be "popped-out".
+
+```tsx
+  <Widget id="RightStart2" canPopout={true} label="Example Widget" defaultState={WidgetState.Open} element={<ComponentThatSupportsPopout>} />,
+```
+
+As long as the application is using AppUi version "2" or later, a "pop-out" icon will be shown along side the widget tab(s) if the active widget tab has its `canPopout` property set to true. When this icon is pressed the contents of the widget tab will be moved from the widget panel to an independent child window that can be moved to a secondary monitor. If the user closes a "popped-out" widget it will be re-docked in the widget panel. For security reasons, browsers do not allow javascript to automatically open popup windows, so when the current page unloaded and returned to at a later time, any "popped-out" widgets are converted to floating widgets. These floating widgets can be "popped-out" again using the same "pop-out" icon. Some browsers, like Firefox, will return the popout to it last position, and other browser, like Chrome, will force the popup window to be on same screen as main browser window. If the application is an Electron-based application, the "popped-out" widgets will be restored without being converted to floating widgets.
+
 ## WidgetControls
 
 A subclass of [WidgetControl]($ui-framework) may be used to populate a widget. The `reactNode` property specifies the React component.
@@ -81,14 +91,14 @@ A [WidgetDef]($ui-framework) object is created for each Widget component in the 
 
 The following example demonstrates how to open a widget programmatically. The example assumes an `id` prop of "VerticalPropertyGrid" has been provided on the Widget component.
 
-```TS
-    const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
-    if (activeFrontstageDef) {
-      const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
-      if (widgetDef) {
-        widgetDef.setWidgetState(WidgetState.Open);
-      }
-    }
+```ts
+const activeFrontstageDef = FrontstageManager.activeFrontstageDef;
+if (activeFrontstageDef) {
+  const widgetDef = activeFrontstageDef.findWidgetDef("VerticalPropertyGrid");
+  if (widgetDef) {
+    widgetDef.setWidgetState(WidgetState.Open);
+  }
+}
 ```
 
 ## Tool Widget
@@ -148,10 +158,11 @@ function SampleNavigationWidget () {
       horizontalToolbar={<ToolbarComposer items={horizontalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Horizontal} />}
       verticalToolbar={<ToolbarComposer items={verticalItems} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Vertical} />}
     />
-  ```
+  );
+```
 
 There is an extensible Navigation Widget named [BasicNavigationWidget]($ui-framework) in the ui-framework package. It provides basic view manipulation tools and supports the specification of additional horizontal and vertical toolbar items via props.
 
 ## API Reference
 
-* [Widget]($ui-framework:Widget)
+- [Widget]($ui-framework:Widget)

@@ -18,9 +18,12 @@ import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManag
 import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
 import { TimeField, TimeSpec } from "../datepicker/TimeField";
 import { TypeConverter } from "../converters/TypeConverter";
-import { adjustDateToTimezone, DatePicker } from "../datepicker/DatePicker";
+import { DatePicker } from "../datepicker/DatePicker";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { DateTimeTypeConverterBase } from "../converters/DateTimeTypeConverter";
+import { adjustDateToTimezone } from "../common/DateUtils";
+
+// cSpell:ignore datepicker
 
 /** @internal */
 interface DateTimeEditorState {
@@ -43,9 +46,10 @@ interface DateTimeEditorProps extends PropertyEditorProps {
 export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, DateTimeEditorState> implements TypeEditor {
   private _isMounted = false;
   private _enterKey = false;
+  private _divElement = React.createRef<HTMLDivElement>();
 
   /** @internal */
-  public readonly state: Readonly<DateTimeEditorState> = {
+  public override readonly state: Readonly<DateTimeEditorState> = {
     value: new Date(),
     editInUtc: false,
   };
@@ -64,6 +68,18 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
     }
 
     return propertyValue;
+  }
+
+  public get htmlElement(): HTMLElement | null {
+    return this._divElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    let containsFocus = false;
+    // istanbul ignore else
+    if (this._divElement.current)
+      containsFocus = this._divElement.current.contains(document.activeElement);
+    return containsFocus;
   }
 
   public async processDateChange(typeConverter: TypeConverter, newValue: Date): Promise<void> {
@@ -104,18 +120,18 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -252,7 +268,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
   };
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const date = this.state.editInUtc ? adjustDateToTimezone(this.state.value, 0) : this.state.value;
     const timeSpec: TimeSpec = {
       hours: date.getHours(),
@@ -263,7 +279,7 @@ export class DateTimeEditor extends React.PureComponent<DateTimeEditorProps, Dat
     const className = classnames("components-cell-editor", "components-datetime-editor", this.props.className);
 
     return (
-      <div className={className}>
+      <div className={className} ref={this._divElement}>
         <PopupButton label={this.state.displayValue} onClose={this._handleClose} onEnter={this._handleEnter}
           setFocus={this.props.setFocus}>
           <PopupContent>
@@ -295,7 +311,7 @@ export class ShortDateTimePropertyEditor extends PropertyEditorBase {
     return <DateTimeEditor showTime={false} />;
   }
   // istanbul ignore next
-  public get containerHandlesTab(): boolean {
+  public override get containerHandlesTab(): boolean {
     return false;
   }
 }
@@ -309,7 +325,7 @@ export class DateTimePropertyEditor extends PropertyEditorBase {
     return <DateTimeEditor showTime={true} />;
   }
   // istanbul ignore next
-  public get containerHandlesTab(): boolean {
+  public override get containerHandlesTab(): boolean {
     return false;
   }
 }

@@ -46,7 +46,7 @@ export class AccuDrawPopupTools {
 
   public static get addMenuButton() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.addMenuButton", execute: () => {
+      labelKey: "SampleApp:buttons.addMenuButton", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
           IModelApp.uiAdmin.showMenuButton("test1", this._exampleMenuItems, IModelApp.uiAdmin.createXAndY(150, 150), viewport.toolTipDiv);
@@ -58,7 +58,7 @@ export class AccuDrawPopupTools {
 
   public static get hideMenuButton() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.hideMenuButton", execute: () => {
+      labelKey: "SampleApp:buttons.hideMenuButton", execute: () => {
         if (this._menuButtonAdded) {
           IModelApp.uiAdmin.hideMenuButton("test1");
           this._menuButtonAdded = false;
@@ -82,7 +82,7 @@ export class AccuDrawPopupTools {
 
   public static get showCalculator() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showCalculator", execute: () => {
+      labelKey: "SampleApp:buttons.showCalculator", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
           IModelApp.uiAdmin.showCalculator(100, "icon-placeholder", IModelApp.uiAdmin.createXAndY(150, 150), this._calculatorOnOk, this._calculatorOnCancel, viewport.toolTipDiv);
@@ -144,7 +144,7 @@ export class AccuDrawPopupTools {
 
   public static get showInputEditor() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showInputEditor", execute: () => {
+      labelKey: "SampleApp:buttons.showInputEditor", execute: () => {
         const propertyDescription: PropertyDescription = { name: "test", displayLabel: "Test", typename: "number" };
         IModelApp.uiAdmin.showInputEditor(30, propertyDescription, IModelApp.uiAdmin.cursorPosition, this._inputCommit, this._inputCancel);
       },
@@ -153,7 +153,7 @@ export class AccuDrawPopupTools {
 
   public static get showContextMenu() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showContextMenu", execute: () => {
+      labelKey: "SampleApp:buttons.showContextMenu", execute: () => {
         IModelApp.uiAdmin.showContextMenu(this._exampleMenuItems, IModelApp.uiAdmin.cursorPosition);
       },
     });
@@ -249,7 +249,7 @@ export class AccuDrawPopupTools {
 
   public static get showToolbar() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showToolbar", execute: () => {
+      labelKey: "SampleApp:buttons.showToolbar", execute: () => {
         IModelApp.uiAdmin.showToolbar(
           this._exampleToolbar(), IModelApp.uiAdmin.cursorPosition, IModelApp.uiAdmin.createXAndY(8, 8),
           this._toolbarItemExecuted, this._toolbarCancel);
@@ -259,7 +259,7 @@ export class AccuDrawPopupTools {
 
   public static get showToolbarOnViewport() {
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.showToolbar", execute: () => {
+      labelKey: "SampleApp:buttons.showToolbar", execute: () => {
         const viewport = IModelApp.viewManager.selectedView;
         if (viewport) {
           IModelApp.uiAdmin.showToolbar(

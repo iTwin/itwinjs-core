@@ -132,6 +132,42 @@
   "commands": {
     "backToPreviousFrontstage": "Back to previous Frontstage"
   },
+  "settings": {
+    "settingsStageLabel": "Settings",
+    "noSettingsProvidersRegistered": "No SettingsProviders have been registered.",
+    "noSettingsAvailable": "No Settings Available",
+    "quantity-formatting": {
+      "label": "Units",
+      "subLabel": "Quantity Formatting",
+      "tooltip": "Define Active Units and Quantity Formats",
+      "formatSectionLabel": "Quantity Formats",
+      "setButtonLabel": "Set",
+      "clearButtonLabel": "Clear"
+    },
+    "uiSettingsPage": {
+      "label": "UI Settings",
+      "tooltip": "UI Settings",
+      "light": "Light",
+      "dark": "Dark",
+      "systemPreferred": "System preferred",
+      "themeTitle": "Theme",
+      "themeDescription": "Toggle the theme between light and dark",
+      "autoHideTitle": "Auto-Hide UI",
+      "autoHideDescription": "Toggle the auto-hide of UI after inactivity",
+      "dragInteractionTitle": "Toolbar Group Buttons show child action item",
+      "dragInteractionDescription": "Requires long press to open pop-up panel. Single click executes displayed action.",
+      "newUiTitle": "Use 2.0 Ui",
+      "newUiDescription": "Use new 2.0 UI layout",
+      "useProximityOpacityTitle": "Change Toolbar Opacity",
+      "useProximityOpacityDescription": "Change the toolbar opacity as the mouse gets closer or farther away",
+      "snapWidgetOpacityTitle": "Snap Toolbar Opacity",
+      "snapWidgetOpacityDescription": "Immediately change the toolbar opacity when the mouse gets close",
+      "accuDrawNotificationsTitle": "Display AccuDraw Notifications",
+      "accuDrawNotificationsDescription": "Display toast notifications when AccuDraw status changes",
+      "widgetOpacityTitle": "Widget Opacity",
+      "widgetOpacityDescription": "Opacity when mouse is not hovering for 2.0 floating widgets and all 1.0 widgets"
+    }
+  },
   "tools": {
     "clearSelection": "Clear Selection",
     "hideSelected": "Hide Elements",
@@ -146,6 +182,11 @@
     "clearVisibility": "Clear Isolated, Hidden, and Emphasized Elements",
     "sectionTools": "Section Tools",
     "sectionClear": "Clear Sections",
+    "sectionPanelLabel": "Section",
+    "sectionByPlane": "Plane",
+    "sectionByElement": "Element",
+    "sectionByRange": "Range",
+    "sectionByShape": "Shape",
     "measureTools": "Measure Tools",
     "sectionShowHandles": "Section Handles",
     "viewZoomingTools": "Zooming Tools",
@@ -159,6 +200,9 @@
         "flyover": "Toggle Camera"
       }
     },
+    "OpenSettings": {
+      "keyin": "open settings"
+    },
     "RestoreFrontstageLayout": {
       "keyin": "restore frontstage layout",
       "description": "Restore Frontstage to Default Layout",
@@ -169,6 +213,16 @@
       "keyin": "clear keyin history",
       "description": "Clear keyin palette history",
       "flyover": "Clear keyin palette history"
+    },
+    "BumpToolSetting": {
+      "keyin": "bump toolsetting",
+      "description": "Bump a Tool Settings value",
+      "flyover": "Bump a Tool Setting"
+    },
+    "FocusToolSettings": {
+      "keyin": "focus toolsettings",
+      "description": "Focus into the Tool Settings widget",
+      "flyover": "Focus into Tool Settings"
     }
   },
   "iModelIndex": {
@@ -264,7 +318,8 @@
       "sendHome": "Send to panel",
       "resizeGrip": "Resize widget panel",
       "toolSettingsHandle": "Undock tool settings",
-      "unpinPanel": "Unpin widget panel"
+      "unpinPanel": "Unpin widget panel",
+      "popoutActiveTab": "Pop out active widget tab"
     }
   },
   "statusBar": {
@@ -278,21 +333,46 @@
   },
   "accuDraw": {
     "dialogTitle": "AccuDraw",
+    "subMenu": "AccuDraw",
     "lockSmart": "Smart Lock",
     "lockX": "Lock X",
     "lockY": "Lock Y",
     "lockZ": "Lock Z",
     "lockAngle": "Lock Angle",
     "lockDistance": "Lock Distance",
-    "changeCompassMode": "Change Compass Mode",
+    "changeCompassMode": "Toggle Mode",
     "rotateTop": "Rotate Top",
     "rotateFront": "Rotate Front",
     "rotateSide": "Rotate Side",
     "rotateView": "Rotate View",
-    "setOrigin": "Set Origin",
+    "setOrigin": "Reposition Origin",
     "rotateCycle": "Rotate Cycle",
     "rotateAxes": "Rotate Axes",
     "rotateToElement": "Rotate To Element",
-    "defineACSByPoints": "Define ACS By Points"
+    "defineACSByPoints": "Define ACS By Points",
+    "bumpToolSetting": "Bump Tool Settings",
+    "focusToolSetting": "Focus into Tool Settings",
+    "rotateSubMenu": "AccuDraw Rotate",
+    "rotationSet": "AccuDraw rotation mode set to {{rotationString}}",
+    "rotation": {
+      "top": "top",
+      "front": "front",
+      "side": "side",
+      "view": "view",
+      "context": "context",
+      "ACS": "ACS"
+    },
+    "compassModeSet": "AccuDraw compass mode set to {{modeString}}",
+    "compassMode": {
+      "polar": "polar",
+      "rectangular": "rectangular"
+    }
+  },
+  "presentationUnitSystem": {
+    "selector-label": "Presentation Unit System",
+    "Metric": "Metric",
+    "BritishImperial": "Imperial",
+    "USCustomary": "US Customary",
+    "USSurvey": "US Survey"
   }
 }

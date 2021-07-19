@@ -1,13 +1,13 @@
 # Point and Vector operations
 
-# Notes on compact table notation
+## Notes on compact table notation
 
-* Many arguments which might be strongly typed as `Point3d`, `Vector3d`, `Point3d`, `Vector3d` are weakly typed as `XYandZ` or `XandY`.
-  * These allow any object that has `x` and `y` properties to be passed as inputs.
-* Many methods have optional result args.
-  * The optional arg is NOT indicated here.
-  * If the caller supplies the optional arg, that preexisting object will be reinitialized.
-  * If a method is being called many times in a loop, reusing a result can give a significant performance benefit.
+- Many arguments which might be strongly typed as `Point3d`, `Vector3d`, `Point3d`, `Vector3d` are weakly typed as `XYandZ` or `XandY`.
+  - These allow any object that has `x` and `y` properties to be passed as inputs.
+- Many methods have optional result args.
+  - The optional arg is NOT indicated here.
+  - If the caller supplies the optional arg, that preexisting object will be reinitialized.
+  - If a method is being called many times in a loop, reusing a result can give a significant performance benefit.
 
 Typical names in the tables are:
 
@@ -123,8 +123,8 @@ Typical names in the tables are:
 
 ## Angles between vectors
 
-* Methods that return bare radians have *radians* in the method name.
-* Methods without specific *radians* indication return a (strongly typed) `Angle` object that can be queried for `degrees` or `radians`.
+- Methods that return bare radians have *radians* in the method name.
+- Methods without specific *radians* indication return a (strongly typed) `Angle` object that can be queried for `degrees` or `radians`.
 
 | category | Point3d | Vector3d | Point2d | Vector2d |
 |---|---|---|---|---|

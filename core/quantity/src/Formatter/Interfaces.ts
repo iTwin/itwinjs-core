@@ -2,8 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** This interface defines the persistence format for defining the format of quantity values.
- * @alpha
+/** @packageDocumentation
+ * @module Quantity
+ */
+
+import { UnitProps } from "../Interfaces";
+import { DecimalPrecision, FormatTraits, FormatType, FractionalPrecision } from "./FormatEnums";
+
+/** This interface defines the persistence format for describing the formatting of quantity values.
+ * @beta
  */
 export interface FormatProps {
   readonly type: string;
@@ -20,7 +27,7 @@ export interface FormatProps {
   readonly stationSeparator?: string;
   readonly composite?: {
     readonly spacer?: string;
-    readonly includeZero?: boolean;
+    readonly includeZero?: boolean; // not currently used in Native formatter
     readonly units: Array<{
       readonly name: string;
       readonly label?: string;
@@ -28,3 +35,40 @@ export interface FormatProps {
   };
 }
 
+/** This interface is used when supporting Custom Formatters that need more than the standard set of properties.
+ * @beta
+ */
+export interface CustomFormatProps extends FormatProps {
+  readonly custom: any;
+}
+
+/** CustomFormatProps type guard.
+ * @beta
+ */
+export const isCustomFormatProps = (item: FormatProps): item is CustomFormatProps => {
+  return (item as CustomFormatProps).custom !== undefined;
+};
+
+/** CloneFormat defines unit and label specification if primary unit is to be set during clone.
+ * @beta
+ */
+export interface CloneUnit {
+  unit?: UnitProps;
+  label?: string;
+}
+
+/** CloneOptions that define modifications that can be made during the cloning of a Format.
+ * @beta
+ */
+export interface CloneOptions {
+  /** allows composite formats to be converted to only show primary unit */
+  showOnlyPrimaryUnit?: boolean;
+  /** allow format traits to be set */
+  traits?: FormatTraits;
+  /** allows new FormatType to be specified */
+  type?: FormatType;
+  /** allows precision to be set, this will throw if value is not valid for FormatType */
+  precision?: DecimalPrecision | FractionalPrecision;
+  /** allows primary unit and label to be specified */
+  primaryUnit?: CloneUnit;
+}

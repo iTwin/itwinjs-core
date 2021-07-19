@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-editor-common",
-  "version": "2.12.0-dev.15",
+  "version": "2.19.0-dev.20",
   "description": "iModel.js editing properties common to frontend and backend",
   "main": "lib/imodeljs-editor-common.js",
   "typings": "lib/imodeljs-editor-common",
@@ -31,30 +31,26 @@
     "name": "Bentley Systems, Inc.",
     "url": "http://www.bentley.com"
   },
-  "dependencies": {},
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "^2.12.0-dev.15",
-    "@bentley/imodeljs-common": "^2.12.0-dev.15"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.20",
+    "@bentley/geometry-core": "workspace:^2.19.0-dev.20",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.20"
   },
   "devDependencies": {
-    "@bentley/bentleyjs-core": "2.12.0-dev.15",
-    "@bentley/build-tools": "2.12.0-dev.15",
-    "@bentley/eslint-plugin": "2.12.0-dev.15",
-    "@bentley/imodeljs-common": "2.12.0-dev.15",
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/geometry-core": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
     "@types/chai": "^4.1.4",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
-    "eslint": "^6.8.0",
-    "mocha": "^5.2.0",
+    "eslint": "^7.11.0",
+    "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
-    "ts-node": "^7.0.1",
-    "typescript": "~3.7.4"
-  },
-  "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc",
-    "all": true
+    "typescript": "~4.3.0"
   },
   "eslintConfig": {
     "plugins": [

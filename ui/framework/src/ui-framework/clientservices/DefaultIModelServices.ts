@@ -84,7 +84,7 @@ export class DefaultIModelServices implements IModelServices {
   public async openIModel(contextId: string, iModelId: GuidString, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection> {
     try {
       // GatewayProxyApi.setAccessToken(accessToken);
-      const iModelConnection: IModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode ? openMode : OpenMode.Readonly, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
+      const iModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode ? openMode : OpenMode.Readonly, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest()); // eslint-disable-line deprecation/deprecation
       return iModelConnection;
     } catch (e) {
       alert(JSON.stringify(e));
@@ -176,6 +176,7 @@ export class DefaultIModelServices implements IModelServices {
 
   private createVersionInfo(thisVersion: Version): VersionInfo {
     const createDate: Date = new Date(thisVersion.createdDate!);
+    // eslint-disable-next-line deprecation/deprecation
     const thisVersionInfo: VersionInfo = new VersionInfoImpl(thisVersion.name!, thisVersion.description!, createDate, thisVersion.changeSetId!, thisVersion.userCreated, thisVersion.smallThumbnailId!.toString(), thisVersion.largeThumbnailId!.toString());
     return thisVersionInfo;
   }

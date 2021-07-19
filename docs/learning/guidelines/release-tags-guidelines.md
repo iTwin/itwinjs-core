@@ -8,11 +8,11 @@ API review files can then be placed under source code control and compared to fu
 
 The supported release tags are:
 
-* `@public`
-* `@beta`
-* `@alpha`
-* `@internal`
-* `@deprecated`
+- `@public`
+- `@beta`
+- `@alpha`
+- `@internal`
+- `@deprecated`
 
 Details about each tag are below.
 
@@ -73,14 +73,14 @@ Release Tag | Affects Package Semantic Version | Included in Public SDK Document
 
 An API Item is an **exported** TypeScript item that includes:
 
-* Classes
-* Class Members
-* Namespaces
-* Namespace Members
-* Interfaces
-* Types
-* Enums
-* Enum Members
+- Classes
+- Class Members
+- Namespaces
+- Namespace Members
+- Interfaces
+- Types
+- Enums
+- Enum Members
 
 Here are the guidelines for when a release tag is needed:
 

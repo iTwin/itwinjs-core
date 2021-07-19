@@ -6,7 +6,7 @@
 import { Vector3d } from "@bentley/geometry-core";
 import { expect } from "chai";
 import { DisplayStyle3dSettings } from "../DisplayStyleSettings";
-import { LightSettings, LightSettingsProps } from "../LightSettings";
+import { LightSettings, LightSettingsProps, SolarLightProps } from "../LightSettings";
 import { RgbColor } from "../RgbColor";
 
 describe("LightSettings", () => {
@@ -47,6 +47,8 @@ describe("LightSettings", () => {
     roundTrip({ solar: { intensity: 5.1 } }, { solar: { intensity: 5.0 } });
     roundTrip({ solar: { intensity: -0.1 } }, { solar: { intensity: 0.0 } });
     roundTrip({ solar: { alwaysEnabled: true } }, "input");
+    roundTrip({ solar: { timePoint: 54321 } }, "input");
+    roundTrip({ solar: { direction: new Vector3d(-1, 0, 1).toJSON(), timePoint: 12345 } }, "input");
 
     roundTrip({ ambient: { color: new RgbColor(0, 0, 0).toJSON(), intensity: 0.2 } }, undefined);
     roundTrip({ ambient: { color: new RgbColor(1, 127, 255).toJSON() } }, "input");
@@ -72,5 +74,24 @@ describe("LightSettings", () => {
 
     const style = new DisplayStyle3dSettings(props);
     expect(style.lights.solar.direction.isAlmostEqual(sunDir)).to.be.true;
+  });
+
+  it("clone preserves solar time point unless new direction differs from previous direction and new time point was not supplied", () => {
+    const test = (srcProps: SolarLightProps, changedProps: SolarLightProps, expectedProps: SolarLightProps) => {
+      const src = LightSettings.fromJSON({ solar: srcProps });
+      const clone = src.clone({ solar: changedProps });
+      const expected = LightSettings.fromJSON({ solar: expectedProps });
+      expect(clone.equals(expected)).to.be.true;
+    };
+
+    const dir1 = { x: 1, y: 2, z: 3 };
+    const dir2 = { x: -1, y: -2, z: -3 };
+
+    test({ }, { timePoint: 123 }, { timePoint: 123 });
+    test({ direction: dir1 }, { timePoint: 123 }, { direction: dir1, timePoint: 123 });
+    test({ direction: dir1, timePoint: 123 }, { timePoint: 456 }, { direction: dir1, timePoint: 456 });
+    test({ direction: dir1, timePoint: 123 }, { direction: dir2 }, { direction: dir2 });
+    test({ direction: dir1, timePoint: 123 }, { direction: dir1, timePoint: 456 }, { direction: dir1, timePoint: 456 });
+    test({ direction: dir1 }, { direction: dir2, timePoint: 456 }, { direction: dir2, timePoint: 456 });
   });
 });

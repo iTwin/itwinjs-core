@@ -904,8 +904,10 @@ export class ViewAttributesPanel extends ToolBarDropDown {
       name: "Display Style: ",
       id: "DisplayStyles",
       value: this._vp.view.displayStyle.id,
-      handler: (select) => {
-        this._vp.displayStyle = displayStyles.get(select.value)!;
+      handler: async (select) => {
+        const style = displayStyles.get(select.value)!;
+        await style.load();
+        this._vp.displayStyle = style;
         this._vp.invalidateScene();
       },
       entries: styleEntries,
@@ -915,7 +917,7 @@ export class ViewAttributesPanel extends ToolBarDropDown {
     if (undefined !== this._attributes)
       this._attributes.displayStylePickerInput = this._displayStylePickerInput;
   }
-  public get onViewChanged(): Promise<void> {
+  public override get onViewChanged(): Promise<void> {
     return this.populate();
   }
 

@@ -79,7 +79,7 @@ export interface HttpServerResponse extends Writable {
  * @public
  */
 export abstract class WebAppRpcProtocol extends RpcProtocol {
-  public preserveStreams = true;
+  public override preserveStreams = true;
 
   private _initialized: Promise<void> | undefined;
 
@@ -151,25 +151,31 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   public readonly requestType = WebAppRpcRequest;
 
   /** Supplies the status corresponding to a protocol-specific code value. */
-  public getStatus(code: number): RpcRequestStatus {
+  public override getStatus(code: number): RpcRequestStatus {
     switch (code) {
       case 404: return RpcRequestStatus.NotFound;
       case 202: return RpcRequestStatus.Pending;
       case 200: return RpcRequestStatus.Resolved;
       case 500: return RpcRequestStatus.Rejected;
       case 204: return RpcRequestStatus.NoContent;
+      case 502: return RpcRequestStatus.BadGateway;
+      case 503: return RpcRequestStatus.ServiceUnavailable;
+      case 504: return RpcRequestStatus.GatewayTimeout;
       default: return RpcRequestStatus.Unknown;
     }
   }
 
   /** Supplies the protocol-specific code corresponding to a status value. */
-  public getCode(status: RpcRequestStatus): number {
+  public override getCode(status: RpcRequestStatus): number {
     switch (status) {
       case RpcRequestStatus.NotFound: return 404;
       case RpcRequestStatus.Pending: return 202;
       case RpcRequestStatus.Resolved: return 200;
       case RpcRequestStatus.Rejected: return 500;
       case RpcRequestStatus.NoContent: return 204;
+      case RpcRequestStatus.BadGateway: return 502;
+      case RpcRequestStatus.ServiceUnavailable: return 503;
+      case RpcRequestStatus.GatewayTimeout: return 504;
       default: return 501;
     }
   }

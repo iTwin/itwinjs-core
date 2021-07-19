@@ -9,7 +9,7 @@
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { Logger } from "@bentley/bentleyjs-core";
-import { StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
+import { StagePanelLocation, UiItemProviderRegisteredEventArgs, UiItemsManager, WidgetState } from "@bentley/ui-abstract";
 import { CommonProps, Rectangle } from "@bentley/ui-core";
 import {
   HorizontalAnchor, Zones as NZ_Zones, StagePanels, StagePanelsManager, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManagerProps,
@@ -137,13 +137,14 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   /** React lifecycle method.
    * @internal
    */
-  public async componentDidMount() {
+  public override async componentDidMount() {
     UiFramework.onUiVisibilityChanged.addListener(this._uiVisibilityChanged);
     UiFramework.widgetManager.onWidgetsChanged.addListener(this._handleWidgetsChanged);
     UiFramework.widgetManager.onWidgetProvidersChanged.addListener(this._handleWidgetProvidersChanged);
+    UiItemsManager.onUiProviderRegisteredEvent.addListener(this._handleUiProviderRegisteredEvent);
   }
 
-  public componentDidUpdate() {
+  public override componentDidUpdate() {
     if (!this._zonesMeasurer.current || !this._floatingZonesMeasurer.current || !this.props.runtimeProps)
       return;
     let floatingBounds = Rectangle.create(this._floatingZonesMeasurer.current.getBoundingClientRect());
@@ -157,10 +158,11 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   /** React lifecycle method.
    * @internal
    */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     UiFramework.onUiVisibilityChanged.removeListener(this._uiVisibilityChanged);
     UiFramework.widgetManager.onWidgetsChanged.removeListener(this._handleWidgetsChanged);
     UiFramework.widgetManager.onWidgetProvidersChanged.removeListener(this._handleWidgetProvidersChanged);
+    UiItemsManager.onUiProviderRegisteredEvent.removeListener(this._handleUiProviderRegisteredEvent);
   }
 
   private _uiVisibilityChanged = (args: UiVisibilityEventArgs): void => {
@@ -175,12 +177,17 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
     this.updateWidgetDefs();
   };
 
+  private _handleUiProviderRegisteredEvent = (_args: UiItemProviderRegisteredEventArgs): void => {
+    this.updateWidgetDefs();
+  };
+
   private updateWidgetDefs() {
     if (!this.props.runtimeProps)
       return;
 
     const frontstageDef = this.props.runtimeProps.frontstageDef;
     frontstageDef.updateWidgetDefs();
+    FrontstageManager.onWidgetDefsUpdatedEvent.emit();
     this.forceUpdate();
   }
 
@@ -445,7 +452,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
   /** React render method
    * @internal
    */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { runtimeProps } = this.props;
 
     if (runtimeProps === undefined)
@@ -525,7 +532,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     };
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     FrontstageManager.onWidgetStateChangedEvent.addListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
 
@@ -537,7 +544,7 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     this.props.renderTo.appendChild(this._content);
   }
 
-  public componentDidUpdate(prevProps: WidgetContentRendererProps) {
+  public override componentDidUpdate(prevProps: WidgetContentRendererProps) {
     if (this.props.isHidden !== prevProps.isHidden) {
       this._content.style.display = this.props.isHidden ? "none" : "flex";
     }
@@ -554,13 +561,13 @@ class WidgetContentRenderer extends React.PureComponent<WidgetContentRendererPro
     shouldRemount && this.setState((prevState) => ({ widgetKey: prevState.widgetKey + 1 }));
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._content.parentNode && this._content.parentNode.removeChild(this._content);
     FrontstageManager.onWidgetStateChangedEvent.removeListener(this._handleWidgetStateChangedEvent);
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }
 
-  public render() {
+  public override render() {
     if (this.props.toolSettingsMode !== undefined) {
       return ReactDOM.createPortal((
         <ToolSettingsContent

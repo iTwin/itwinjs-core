@@ -18,11 +18,14 @@ import { initialize, initializeWithClientServices, terminate } from "../Integrat
 describe("Favorite properties", () => {
 
   let imodel: IModelConnection;
+  async function openIModel() {
+    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
+    expect(imodel).is.not.null;
+  }
 
   before(async () => {
     await initialize();
-    imodel = await SnapshotConnection.openFile("assets/datasets/Properties_60InstancesWithUrl2.ibim");
-    expect(imodel).is.not.null;
+    await openIModel();
   });
 
   after(async () => {
@@ -128,8 +131,8 @@ describe("Favorite properties", () => {
       expect(propertyData.categories.some((category) => category.name === FAVORITES_CATEGORY_NAME)).to.be.false;
 
       // find the property record to make the property favorite
-      const sourceFileInfoCategory = propertyData.categories.find((c) => c.name.endsWith("source_file_information"))!;
-      const sourceFileNameRecord = propertyData.records[sourceFileInfoCategory.name][0];
+      const sourceInfoModelSourceCategory = propertyData.categories.find((c) => c.name.endsWith("model_source"))!;
+      const sourceFileNameRecord = propertyData.records[sourceInfoModelSourceCategory.name][0];
       const field = await propertiesDataProvider.getFieldByPropertyRecord(sourceFileNameRecord);
       await Presentation.favoriteProperties.add(field!, imodel, FavoritePropertiesScope.Global);
 
@@ -259,8 +262,10 @@ describe("Favorite properties", () => {
   describe("#with-services", () => {
 
     before(async () => {
+      await imodel.close();
       await terminate();
       await initializeWithClientServices();
+      await openIModel();
     });
 
     it("favorite properties survive Presentation re-initialization", async () => {

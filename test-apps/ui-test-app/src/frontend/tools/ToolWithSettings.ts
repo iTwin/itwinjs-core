@@ -14,8 +14,8 @@ import {
 import { FormatterSpec } from "@bentley/imodeljs-quantity";
 import {
   DialogItem, DialogLayoutDataProvider, DialogProperty, DialogPropertyItem, DialogPropertySyncItem,
-  InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus, PropertyDescriptionHelper,
-  PropertyEditorParamTypes, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent,
+  EnumerationChoice, InputEditorSizeParams, PropertyChangeResult, PropertyChangeStatus,
+  PropertyDescriptionHelper, PropertyEditorParamTypes, RangeEditorParams, RelativePosition, SuppressLabelEditorParams, SyncPropertiesChangeEvent,
 } from "@bentley/ui-abstract";
 import { CursorInformation, MenuItemProps, UiFramework } from "@bentley/ui-framework";
 
@@ -44,7 +44,7 @@ class PointOnePopupSettingsProvider extends DialogLayoutDataProvider {
   public weightProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildWeightPickerDescription("weight", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Weight")), 3);
 
   /** Called by UI to inform data provider of changes.  */
-  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+  public override applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
     if (updatedValue.propertyName === this.weightProperty.name) {
       this.weightProperty.value = updatedValue.value.value! as number;
       const msg = `Set Weight = ${this.weightProperty.value}`;
@@ -53,22 +53,22 @@ class PointOnePopupSettingsProvider extends DialogLayoutDataProvider {
   };
 
   /** Called by UI to request available properties when UI is manually created. */
-  public supplyDialogItems(): DialogItem[] | undefined {
+  public override supplyDialogItems(): DialogItem[] | undefined {
     return [
       this.weightProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }),
     ];
   }
 
   /** Get Sync UI Control Properties Event */
-  public onSyncPropertiesChangeEvent = new SyncPropertiesChangeEvent();
+  public override onSyncPropertiesChangeEvent = new SyncPropertiesChangeEvent();
 
   /** Called by UI to validate a property value */
-  public validateProperty(_item: DialogPropertyItem): PropertyChangeResult {
+  public override validateProperty(_item: DialogPropertyItem): PropertyChangeResult {
     return { status: PropertyChangeStatus.Success };
   }
 
   /** Called to sync properties synchronously if a UiDataProvider is active for the UI */
-  public syncProperties(_syncProperties: DialogPropertySyncItem[]) {
+  public override syncProperties(_syncProperties: DialogPropertySyncItem[]) {
     return;
   }
 }
@@ -80,7 +80,7 @@ class PointTwoPopupSettingsProvider extends DialogLayoutDataProvider {
     "unknown", undefined);
 
   /** Called by UI to inform data provider of changes.  */
-  public applyUiPropertyChange = (prop: DialogPropertySyncItem): void => {
+  public override applyUiPropertyChange = (prop: DialogPropertySyncItem): void => {
     if (prop.propertyName === this.sourceProperty.name) {
       this.sourceProperty.value = prop.value.value ? prop.value.value as string : "";
       const msg = `Set Source = ${this.sourceProperty.value}`;
@@ -89,22 +89,22 @@ class PointTwoPopupSettingsProvider extends DialogLayoutDataProvider {
   };
 
   /** Called by UI to request available properties when UI is manually created. */
-  public supplyDialogItems(): DialogItem[] | undefined {
+  public override supplyDialogItems(): DialogItem[] | undefined {
     return [
       this.sourceProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }),
     ];
   }
 
   /** Get Sync UI Control Properties Event */
-  public onSyncPropertiesChangeEvent = new SyncPropertiesChangeEvent();
+  public override onSyncPropertiesChangeEvent = new SyncPropertiesChangeEvent();
 
   /** Called by UI to validate a property value */
-  public validateProperty(_item: DialogPropertyItem): PropertyChangeResult {
+  public override validateProperty(_item: DialogPropertyItem): PropertyChangeResult {
     return { status: PropertyChangeStatus.Success };
   }
 
   /** Called to sync properties synchronously if a UiDataProvider is active for the UI */
-  public syncProperties(_syncProperties: DialogPropertySyncItem[]) {
+  public override syncProperties(_syncProperties: DialogPropertySyncItem[]) {
     return;
   }
 }
@@ -112,7 +112,7 @@ class PointTwoPopupSettingsProvider extends DialogLayoutDataProvider {
 export class ToolWithSettings extends PrimitiveTool {
   private _pointOnePopupSettingsProvider = new PointOnePopupSettingsProvider();
   private _pointTwoPopupSettingsProvider = new PointTwoPopupSettingsProvider();
-  public static toolId = "ToolWithSettings";
+  public static override toolId = "ToolWithSettings";
   public points: Point3d[] = [];
   private _showCoordinatesOnPointerMove = false;
 
@@ -121,20 +121,24 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   // ------------- use length toggle  ---------------
-  public useLengthProperty = new DialogProperty<boolean>(
-    PropertyDescriptionHelper.buildCheckboxDescription("useLength", "",
-      [
-        {
-          type: PropertyEditorParamTypes.SuppressEditorLabel,
-          suppressLabelPlaceholder: true,
-        } as SuppressLabelEditorParams,
-      ]
-    ),
-    true, undefined, false);
+  private _useLengthProperty: DialogProperty<boolean> | undefined;
+  public get useLengthProperty() {
+    if (!this._useLengthProperty)
+      this._useLengthProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildLockPropertyDescription("useLength"), false);
+    return this._useLengthProperty;
+  }
+
+  // ------------- Length (persisted in meters) ---------------
+  private _lengthProperty: DialogProperty<number> | undefined;
+  public get lengthProperty() {
+    if (!this._lengthProperty)
+      this._lengthProperty = new DialogProperty<number>(new LengthDescription("length"), 1.5, undefined, !this.useLengthProperty.value);
+    return this._lengthProperty;
+  }
 
   // ------------- Color Enum ---------------
   private enumAsPicklistMessage(str: string) { return IModelApp.i18n.translate(`SampleApp:tools.ToolWithSettings.Options.${str}`); }
-  private getColorChoices = () => {
+  private getColorChoices = (): EnumerationChoice[] => {
     return this.useLengthProperty.isDisabled ? [
       { label: this.enumAsPicklistMessage(ToolOptionNames.Red), value: ToolOptions.Red },
       { label: this.enumAsPicklistMessage(ToolOptionNames.White), value: ToolOptions.White },
@@ -152,45 +156,96 @@ export class ToolWithSettings extends PrimitiveTool {
       ];
   };
 
-  public colorOptionProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildEnumPicklistEditorDescription(
-    "colorOption", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"), this.getColorChoices()), ToolOptions.Blue as number);
+  private _colorOptionProperty: DialogProperty<number> | undefined;
+  public get colorOptionProperty() {
+    if (!this._colorOptionProperty)
+      this._colorOptionProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildEnumPicklistEditorDescription(
+        "colorOption", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"), this.getColorChoices()), ToolOptions.Blue as number);
+    return this._colorOptionProperty;
+  }
 
-  // ------------- Color Picker ---------------
-  public colorPickerProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildColorPickerDescription("color", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
-    [ColorByName.blue, ColorByName.red, ColorByName.green, ColorByName.yellow, ColorByName.black, ColorByName.gray, ColorByName.purple, ColorByName.pink],
-    2), ColorByName.blue);
+  // ------------- Color Picker --------------
+  private _colorPickerProperty: DialogProperty<number> | undefined;
+  public get colorPickerProperty() {
+    if (!this._colorPickerProperty)
+      this._colorPickerProperty = new DialogProperty<number>(PropertyDescriptionHelper.buildColorPickerDescription("color", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Color"),
+        [ColorByName.blue, ColorByName.red, ColorByName.green, ColorByName.yellow, ColorByName.black, ColorByName.gray, ColorByName.purple, ColorByName.pink],
+        2), ColorByName.blue);
+    return this._colorPickerProperty;
+  }
 
   // ------------- boolean based toggle button ---------------
-  public lockProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildToggleDescription("lockToggle", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Lock")), true, undefined, false);
+  private _lockProperty: DialogProperty<boolean> | undefined;
+  public get lockProperty() {
+    if (!this._lockProperty)
+      this._lockProperty = new DialogProperty<boolean>(PropertyDescriptionHelper.buildToggleDescription("lockToggle",
+        IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Lock")), true, undefined, false);
+    return this._lockProperty;
+  }
 
   // ------------- boolean based toggle button ---------------
-  public imageCheckBoxProperty = new DialogProperty<boolean>(
-    PropertyDescriptionHelper.buildImageCheckBoxDescription("imageCheckBox", "", "icon-clear-night", "icon-clear-day", [{
-      type: PropertyEditorParamTypes.SuppressEditorLabel, suppressLabelPlaceholder: true,
-    } as SuppressLabelEditorParams]),
-    true, undefined, false);
+  private _imageCheckBoxProperty: DialogProperty<boolean> | undefined;
+  public get imageCheckBoxProperty() {
+    if (!this._imageCheckBoxProperty)
+      this._imageCheckBoxProperty = new DialogProperty<boolean>(
+        PropertyDescriptionHelper.buildImageCheckBoxDescription("imageCheckBox", "", "icon-clear-night", "icon-clear-day", [{
+          type: PropertyEditorParamTypes.SuppressEditorLabel, suppressLabelPlaceholder: true,
+        } as SuppressLabelEditorParams]),
+        true, undefined, false);
+    return this._imageCheckBoxProperty;
+  }
 
   // ------------- text based edit field ---------------
-  public cityProperty = new DialogProperty<string>(
-    PropertyDescriptionHelper.buildTextEditorDescription("city", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.City")),
-    "Exton", undefined);
+  private _cityProperty: DialogProperty<string> | undefined;
+  public get cityProperty() {
+    if (!this._cityProperty)
+      this._cityProperty = new DialogProperty<string>(PropertyDescriptionHelper.buildTextEditorDescription("city",
+        IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.City")), "Exton", undefined);
+    return this._cityProperty;
+  }
 
   // ------------- text based edit field ---------------
-  public stateProperty = new DialogProperty<string>(
-    PropertyDescriptionHelper.buildTextEditorDescription("state", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.State"),
-      [
-        {
-          type: PropertyEditorParamTypes.InputEditorSize,
-          size: 4,
-        } as InputEditorSizeParams,
-      ]
-    ),
-    "PA", undefined);
+  private _stateProperty: DialogProperty<string> | undefined;
+  public get stateProperty() {
+    if (!this._stateProperty)
+      this._stateProperty = new DialogProperty<string>(
+        PropertyDescriptionHelper.buildTextEditorDescription("state", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.State"),
+          [
+            {
+              type: PropertyEditorParamTypes.InputEditorSize,
+              size: 4,
+            } as InputEditorSizeParams,
+          ]
+        ),
+        "PA", undefined);
+    return this._stateProperty;
+  }
 
   // ------------- text based edit field ---------------
-  public coordinateProperty = new DialogProperty<string>(
-    PropertyDescriptionHelper.buildTextEditorDescription("coordinate", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Coordinate")),
-    "0.0, 0.0, 0.0", undefined);
+  private _coordinateProperty: DialogProperty<string> | undefined;
+  public get coordinateProperty() {
+    if (!this._coordinateProperty)
+      this._coordinateProperty = new DialogProperty<string>(
+        PropertyDescriptionHelper.buildTextEditorDescription("coordinate", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Coordinate")),
+        "0.0, 0.0, 0.0", undefined);
+    return this._coordinateProperty;
+  }
+
+  // ------------- text based edit field ---------------
+  private _numberProperty: DialogProperty<number> | undefined;
+  public get numberProperty() {
+    if (!this._numberProperty)
+      this._numberProperty = new DialogProperty<number>(
+        PropertyDescriptionHelper.buildNumberEditorDescription("numberVal", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Number"),
+          {
+            type: PropertyEditorParamTypes.Range,
+            step: 2,
+            precision: 0,
+            minimum: 0,
+            maximum: 1000,
+          } as RangeEditorParams), 14.0);
+    return this._numberProperty;
+  }
 
   // ------------- display station value as text  ---------------
   private _stationFormatterSpec?: FormatterSpec;
@@ -215,28 +270,40 @@ export class ToolWithSettings extends PrimitiveTool {
     return numberValue.toFixed(2);
   }
 
-  public stationProperty = new DialogProperty<string>(
-    PropertyDescriptionHelper.buildTextEditorDescription("station", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Station")),
-    this.formatStation(0.0), undefined);
-
-  // ------------- Length (persisted in meters) ---------------
-  public lengthProperty = new DialogProperty<number>(new LengthDescription("length"), 1.5);
+  private _stationProperty: DialogProperty<string> | undefined;
+  public get stationProperty() {
+    if (!this._stationProperty)
+      this._stationProperty = new DialogProperty<string>(
+        PropertyDescriptionHelper.buildTextEditorDescription("station", IModelApp.i18n.translate("SampleApp:tools.ToolWithSettings.Prompts.Station")),
+        this.formatStation(0.0), undefined);
+    return this._stationProperty;
+  }
 
   // ------------- Survey Length ---------------
-  public surveyLengthProperty = new DialogProperty<number>(new SurveyLengthDescription("surveyLength", "Survey"), 51.25);
+  private _surveyLengthProperty: DialogProperty<number> | undefined;
+  public get surveyLengthProperty() {
+    if (!this._surveyLengthProperty)
+      this._surveyLengthProperty = new DialogProperty<number>(new SurveyLengthDescription("surveyLength", "Survey"), 51.25);
+    return this._surveyLengthProperty;
+  }
 
   // ------------- Angle ---------------
-  public angleProperty = new DialogProperty<number>(new AngleDescription("angle", "Angle"), 0.0);
+  private _angleProperty: DialogProperty<number> | undefined;
+  public get angleProperty() {
+    if (!this._angleProperty)
+      this._angleProperty = new DialogProperty<number>(new AngleDescription("angle", "Angle"), 0.0);
+    return this._angleProperty;
+  }
 
   // -------- end of ToolSettings ----------
 
-  public requireWriteableTarget(): boolean { return false; }
-  public onPostInstall() {
+  public override requireWriteableTarget(): boolean { return false; }
+  public override onPostInstall() {
     super.onPostInstall();
     this.setupAndPromptForNextAction();
     this.points = [];
   }
-  public onUnsuspend(): void { this.provideToolAssistance(); }
+  public override onUnsuspend(): void { this.provideToolAssistance(); }
 
   /** Establish current tool state and initialize drawing aides following onPostInstall, onDataButtonDown, onUndoPreviousStep, or other events that advance or back up the current tool state.
    * Enable snapping or auto-locate for AccuSnap.
@@ -278,7 +345,7 @@ export class ToolWithSettings extends PrimitiveTool {
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   }
 
-  public async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onDataButtonDown(ev: BeButtonEvent): Promise<EventHandled> {
     // Used to test Cursor Menu
     if (ev.isAltKey) {
       const menuItems: MenuItemProps[] = [];
@@ -308,7 +375,7 @@ export class ToolWithSettings extends PrimitiveTool {
     return EventHandled.No;
   }
 
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     IModelApp.uiAdmin.closeToolSettingsPopup();
 
     /* Common reset behavior for primitive tools is calling onReinitialize to restart or exitTool to terminate. */
@@ -328,7 +395,7 @@ export class ToolWithSettings extends PrimitiveTool {
     this.syncToolSettingsProperties([this.coordinateProperty.syncItem, this.stationProperty.syncItem, this.surveyLengthProperty.syncItem]);
   }
 
-  public async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
+  public override async onKeyTransition(wentDown: boolean, keyEvent: KeyboardEvent): Promise<EventHandled> {
     if (wentDown && keyEvent.key === "1") {
       this.useLengthProperty.isDisabled = !this.useLengthProperty.isDisabled;
       // test updating color option and available colors by providing a new enum list
@@ -356,7 +423,7 @@ export class ToolWithSettings extends PrimitiveTool {
     return super.onKeyTransition(wentDown, keyEvent);
   }
 
-  public async onMouseMotion(ev: BeButtonEvent): Promise<void> {
+  public override async onMouseMotion(ev: BeButtonEvent): Promise<void> {
     if (!this._showCoordinatesOnPointerMove)
       return;
 
@@ -376,7 +443,7 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   /** Used to supply DefaultToolSettingProvider with a list of properties to use to generate ToolSettings.  If undefined then no ToolSettings will be displayed */
-  public supplyToolSettingsProperties(): DialogItem[] | undefined {
+  public override supplyToolSettingsProperties(): DialogItem[] | undefined {
     const toolSettings = new Array<DialogItem>();
     toolSettings.push(this.colorOptionProperty.toDialogItem({ rowPriority: 1, columnIndex: 1 }));
     toolSettings.push(this.colorPickerProperty.toDialogItem({ rowPriority: 2, columnIndex: 2 }));
@@ -384,8 +451,9 @@ export class ToolWithSettings extends PrimitiveTool {
     toolSettings.push(this.cityProperty.toDialogItem({ rowPriority: 10, columnIndex: 2 }));
     toolSettings.push(this.stateProperty.toDialogItem({ rowPriority: 10, columnIndex: 4 }));
     toolSettings.push(this.coordinateProperty.toDialogItem({ rowPriority: 15, columnIndex: 2 }));
-    toolSettings.push(this.stationProperty.toDialogItem({ rowPriority: 16, columnIndex: 2 }));
-    const lengthLock = this.useLengthProperty.toDialogItem({ rowPriority: 20, columnIndex: 0 });
+    toolSettings.push(this.numberProperty.toDialogItem({ rowPriority: 16, columnIndex: 2 }));
+    toolSettings.push(this.stationProperty.toDialogItem({ rowPriority: 17, columnIndex: 2 }));
+    const lengthLock = this.useLengthProperty.toDialogItem({ rowPriority: 18, columnIndex: 0 });
     toolSettings.push(this.lengthProperty.toDialogItem({ rowPriority: 20, columnIndex: 2 }, lengthLock));
     toolSettings.push(this.surveyLengthProperty.toDialogItem({ rowPriority: 21, columnIndex: 2 }));
     toolSettings.push(this.angleProperty.toDialogItem({ rowPriority: 25, columnIndex: 2 }));
@@ -411,7 +479,7 @@ export class ToolWithSettings extends PrimitiveTool {
   }
 
   /** Used to send changes from UI back to Tool */
-  public applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
+  public override applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean {
     if (updatedValue.propertyName === this.lockProperty.name) {
       this.lockProperty.value = updatedValue.value.value as boolean;
       this.showInfoFromUi(updatedValue);
@@ -431,6 +499,9 @@ export class ToolWithSettings extends PrimitiveTool {
     } else if (updatedValue.propertyName === this.lengthProperty.name) {
       this.lengthProperty.value = updatedValue.value.value as number;
       this.showInfoFromUi(updatedValue);
+    } else if (updatedValue.propertyName === this.numberProperty.name) {
+      this.numberProperty.value = updatedValue.value.value as number;
+      this.showInfoFromUi(updatedValue);
     } else if (updatedValue.propertyName === this.surveyLengthProperty.name) {
       this.surveyLengthProperty.value = updatedValue.value.value as number;
       this.showInfoFromUi(updatedValue);
@@ -441,5 +512,26 @@ export class ToolWithSettings extends PrimitiveTool {
 
     // return true is change is valid
     return true;
+  }
+
+  /** Used to bump the value of a tool setting. If no `settingIndex` param is specified, the first setting is bumped.
+   * @beta
+   */
+  public override async bumpToolSetting(settingIndex?: number): Promise<boolean> {
+    if (settingIndex === 0 || settingIndex === undefined) {
+      const newValue = await PropertyDescriptionHelper.bumpEnumProperty(this.colorOptionProperty.description, this.colorOptionProperty.value);
+
+      if (newValue !== this.colorOptionProperty.value) {
+        this.colorOptionProperty.value = newValue as number;
+        this.syncToolSettingsProperties([this.colorOptionProperty.syncItem]);
+        return true;
+      }
+    } else if (settingIndex === 2) {
+      this.lockProperty.value = !this.lockProperty.value;
+      this.syncToolSettingsProperties([this.lockProperty.syncItem]);
+      return true;
+    }
+
+    return false;
   }
 }

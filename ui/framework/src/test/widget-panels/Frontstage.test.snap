@@ -1,8 +1,10 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
-exports[`ActiveFrontstageDefProvider should render 1`] = `
+exports[`Frontstage local storage wrapper ModalFrontstageComposer ActiveFrontstageDefProvider should render 1`] = `
 <div
   className="uifw-widgetPanels-frontstage"
+  onKeyDown={[Function]}
+  role="presentation"
 >
   <NineZone
     dispatch={[Function]}
@@ -12,6 +14,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
         "moreToolSettingsTitle": "widget.tooltips.moreToolSettings",
         "moreWidgetsTitle": "widget.tooltips.moreWidgets",
         "pinPanelTitle": "widget.tooltips.pinPanel",
+        "popoutActiveTab": "widget.tooltips.popoutActiveTab",
         "resizeGripTitle": "widget.tooltips.resizeGrip",
         "sendWidgetHomeTitle": "widget.tooltips.sendHome",
         "toolSettingsHandleTitle": "widget.tooltips.toolSettingsHandle",
@@ -77,6 +80,10 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
             "widgets": Array [],
           },
         },
+        "popoutWidgets": Object {
+          "allIds": Array [],
+          "byId": Object {},
+        },
         "size": Object {
           "height": 0,
           "width": 0,
@@ -107,63 +114,7 @@ exports[`ActiveFrontstageDefProvider should render 1`] = `
 </div>
 `;
 
-exports[`WidgetPanelsFrontstage should not render w/o frontstage 1`] = `""`;
-
-exports[`WidgetPanelsFrontstage should render 1`] = `
-<ActiveFrontstageDefProvider
-  frontstageDef={
-    FrontstageDef {
-      "_contentGroupId": "",
-      "_defaultContentId": "",
-      "_defaultLayoutId": "",
-      "_id": "",
-      "_isInFooterMode": true,
-      "_timeTracker": TimeTracker {
-        "_firstActiveTimestamp": 0,
-        "_idleCount": 0,
-        "_idleStartTimestamp": 0,
-        "_idleTime": 0,
-        "_idleTimeCounter": [Function],
-        "_idleTimeout": 5000,
-        "_lastActiveTimestamp": 0,
-        "_totalIdleTime": 0,
-        "_totalTime": 0,
-        "_trackActivity": [Function],
-      },
-      "_version": 0,
-    }
-  }
-/>
-`;
-
-exports[`WidgetPanelsFrontstage should render modal stage content 1`] = `
-<ActiveFrontstageDefProvider
-  frontstageDef={
-    FrontstageDef {
-      "_contentGroupId": "",
-      "_defaultContentId": "",
-      "_defaultLayoutId": "",
-      "_id": "",
-      "_isInFooterMode": true,
-      "_timeTracker": TimeTracker {
-        "_firstActiveTimestamp": 0,
-        "_idleCount": 0,
-        "_idleStartTimestamp": 0,
-        "_idleTime": 0,
-        "_idleTimeCounter": [Function],
-        "_idleTimeout": 5000,
-        "_lastActiveTimestamp": 0,
-        "_totalIdleTime": 0,
-        "_totalTime": 0,
-        "_trackActivity": [Function],
-      },
-      "_version": 0,
-    }
-  }
-/>
-`;
-
-exports[`initializeNineZoneState should initialize widgets 1`] = `
+exports[`Frontstage local storage wrapper ModalFrontstageComposer initializeNineZoneState should initialize widgets 1`] = `
 Object {
   "draggedTab": undefined,
   "floatingWidgets": Object {
@@ -222,6 +173,10 @@ Object {
       "widgets": Array [],
     },
   },
+  "popoutWidgets": Object {
+    "allIds": Array [],
+    "byId": Object {},
+  },
   "size": Object {
     "height": 0,
     "width": 0,
@@ -244,7 +199,7 @@ Object {
 }
 `;
 
-exports[`packNineZoneState should remove labels 1`] = `
+exports[`Frontstage local storage wrapper ModalFrontstageComposer packNineZoneState should remove labels 1`] = `
 Object {
   "draggedTab": undefined,
   "floatingWidgets": Object {
@@ -320,6 +275,10 @@ Object {
       "widgets": Array [],
     },
   },
+  "popoutWidgets": Object {
+    "allIds": Array [],
+    "byId": Object {},
+  },
   "size": Object {
     "height": 0,
     "width": 0,
@@ -329,6 +288,7 @@ Object {
       "allowedPanelTargets": undefined,
       "id": "t1",
       "preferredFloatingWidgetSize": undefined,
+      "preferredPopoutWidgetSize": undefined,
     },
   },
   "toolSettings": Object {
@@ -347,14 +307,14 @@ Object {
 }
 `;
 
-exports[`restoreNineZoneState should log error if widgetDef is not found 1`] = `
+exports[`Frontstage local storage wrapper ModalFrontstageComposer restoreNineZoneState should log info if widgetDef is not found 1`] = `
 Object {
   "frontstageId": "",
   "tabId": "t1",
 }
 `;
 
-exports[`restoreNineZoneState should restore tabs 1`] = `
+exports[`Frontstage local storage wrapper ModalFrontstageComposer restoreNineZoneState should restore tabs 1`] = `
 Object {
   "draggedTab": undefined,
   "floatingWidgets": Object {
@@ -412,6 +372,10 @@ Object {
       "span": true,
       "widgets": Array [],
     },
+  },
+  "popoutWidgets": Object {
+    "allIds": Array [],
+    "byId": Object {},
   },
   "size": Object {
     "height": 0,
@@ -428,6 +392,7 @@ Object {
       "label": "Tool Settings",
     },
     "t1": Object {
+      "canPopout": undefined,
       "id": "t1",
       "label": "Widget",
     },
@@ -439,7 +404,7 @@ Object {
 }
 `;
 
-exports[`useSavedFrontstageState should load saved nineZoneState 1`] = `
+exports[`Frontstage local storage wrapper ModalFrontstageComposer useSavedFrontstageState should load saved nineZoneState 1`] = `
 Object {
   "draggedTab": undefined,
   "floatingWidgets": Object {
@@ -498,6 +463,10 @@ Object {
       "widgets": Array [],
     },
   },
+  "popoutWidgets": Object {
+    "allIds": Array [],
+    "byId": Object {},
+  },
   "size": Object {
     "height": 0,
     "width": 0,
@@ -518,4 +487,64 @@ Object {
   },
   "widgets": Object {},
 }
+`;
+
+exports[`Frontstage local storage wrapper WidgetPanelsFrontstage should not render w/o frontstage 1`] = `""`;
+
+exports[`Frontstage local storage wrapper WidgetPanelsFrontstage should render 1`] = `
+<ActiveFrontstageDefProvider
+  frontstageDef={
+    FrontstageDef {
+      "_contentGroupId": "",
+      "_defaultContentId": "",
+      "_defaultLayoutId": "",
+      "_id": "",
+      "_isApplicationClosing": false,
+      "_isInFooterMode": true,
+      "_isStageClosing": false,
+      "_timeTracker": TimeTracker {
+        "_firstActiveTimestamp": 0,
+        "_idleCount": 0,
+        "_idleStartTimestamp": 0,
+        "_idleTime": 0,
+        "_idleTimeCounter": [Function],
+        "_idleTimeout": 5000,
+        "_lastActiveTimestamp": 0,
+        "_totalIdleTime": 0,
+        "_totalTime": 0,
+        "_trackActivity": [Function],
+      },
+      "_version": 0,
+    }
+  }
+/>
+`;
+
+exports[`Frontstage local storage wrapper WidgetPanelsFrontstage should render modal stage content 1`] = `
+<ActiveFrontstageDefProvider
+  frontstageDef={
+    FrontstageDef {
+      "_contentGroupId": "",
+      "_defaultContentId": "",
+      "_defaultLayoutId": "",
+      "_id": "",
+      "_isApplicationClosing": false,
+      "_isInFooterMode": true,
+      "_isStageClosing": false,
+      "_timeTracker": TimeTracker {
+        "_firstActiveTimestamp": 0,
+        "_idleCount": 0,
+        "_idleStartTimestamp": 0,
+        "_idleTime": 0,
+        "_idleTimeCounter": [Function],
+        "_idleTimeout": 5000,
+        "_lastActiveTimestamp": 0,
+        "_totalIdleTime": 0,
+        "_totalTime": 0,
+        "_trackActivity": [Function],
+      },
+      "_version": 0,
+    }
+  }
+/>
 `;

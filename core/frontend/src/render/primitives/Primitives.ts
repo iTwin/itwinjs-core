@@ -39,7 +39,7 @@ export class GeometryOptions {
   public readonly surfaces: SurfacesOnly;
   public readonly preserveOrder: PreserveOrder;
   public readonly edges: GenerateEdges;
-  constructor(normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No, preserveOrder: PreserveOrder = PreserveOrder.No, edges: GenerateEdges = GenerateEdges.Yes) {
+  constructor(edges: GenerateEdges, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No, preserveOrder: PreserveOrder = PreserveOrder.No) {
     this.normals = normals; this.surfaces = surfaces; this.preserveOrder = preserveOrder; this.edges = edges;
   }
 
@@ -48,7 +48,7 @@ export class GeometryOptions {
   public get wantEdges(): boolean { return this.edges === GenerateEdges.Yes; }
 
   public static createForGraphicBuilder(params: GraphicBuilder, normals: NormalMode = NormalMode.Always, surfaces: SurfacesOnly = SurfacesOnly.No): GeometryOptions {
-    return new GeometryOptions(normals, surfaces, params.preserveOrder ? PreserveOrder.Yes : PreserveOrder.No, params.isSceneGraphic ? GenerateEdges.Yes : GenerateEdges.No);
+    return new GeometryOptions(params.wantEdges ? GenerateEdges.Yes : GenerateEdges.No, normals, surfaces, params.preserveOrder ? PreserveOrder.Yes : PreserveOrder.No);
   }
 }
 
@@ -98,6 +98,14 @@ export class TriangleList {
     }
 
     this._flags.push(flags);
+  }
+  public addFromTypedArray(indices: Uint16Array | Uint32Array, flags: number = 0) {
+    for (let i = 0; i < indices.length; ) {
+      this.indices.push(indices[i++]);
+      this.indices.push(indices[i++]);
+      this.indices.push(indices[i++]);
+      this._flags.push(flags);
+    }
   }
 
   public getTriangle(index: number, out?: Triangle): Triangle {

@@ -9,18 +9,19 @@ import * as path from "path";
 import { ClientRequestContext, Config, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import { Asset, Project } from "@bentley/context-registry-client";
 import {
-  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemContextClient, IModelBaseHandler,
+  Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
   Version, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, ProgressInfo, UserInfo, WsgError } from "@bentley/itwin-client";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
-import { RequestType, ResponseBuilder, ScopeType, UrlDiscoveryMock } from "../ResponseBuilder";
+import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
 import { getIModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { TestIModelHubCloudEnv } from "./IModelHubCloudEnv";
 import { assetsPath } from "./TestConstants";
 import { createFileHandler } from "./FileHandler";
+import { HttpRequestHost } from "@bentley/backend-itwin-client";
 
 const loggingCategory = "backend-itwin-client.TestUtils";
 
@@ -39,10 +40,10 @@ function configMockSettings() {
   if (!TestConfig.enableMocks)
     return;
 
-  Config.App.set("imjs_imodelhub_url", "https://mockimodelhub.com");
-  Config.App.set("imjs_rbac_url", "https://mockrbac.com");
-  Config.App.set("imjs_buddi_url", "https://mockbuddi.com");
+  Config.App.set("imjs_imodelhub_url", "https://api.bentley.com/imodelhub");
+  Config.App.set("imjs_rbac_url", "https://api.bentley.com/rbac");
   Config.App.set("imjs_buddi_resolve_url_using_region", 0);
+  Config.App.set("imjs_url_prefix", "");
   Config.App.set("imjs_test_serviceAccount1_user_name", "test");
   Config.App.set("imjs_test_serviceAccount1_user_password", "test");
   Config.App.set("imjs_test_manager_user_name", "test");
@@ -95,7 +96,7 @@ export class MockAccessToken extends AccessToken {
     super("");
   }
 
-  public getUserInfo(): UserInfo | undefined {
+  public override getUserInfo(): UserInfo | undefined {
     const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
     const email = { id: "testuser001@mailinator.com" };
     const profile = { firstName: "test", lastName: "user" };
@@ -104,7 +105,7 @@ export class MockAccessToken extends AccessToken {
     return new UserInfo(id, email, profile, organization, featureTracking);
   }
 
-  public toTokenString() { return ""; }
+  public override toTokenString() { return ""; }
 }
 
 export type RequestBehaviorOptionsList =
@@ -161,13 +162,6 @@ export class IModelHubUrlMock {
     configMockSettings();
     return Config.App.get("imjs_imodelhub_url", "");
   }
-
-  public static mockGetUrl() {
-    if (!TestConfig.enableMocks)
-      return;
-    const url = IModelHubUrlMock.getUrl();
-    UrlDiscoveryMock.mockGetUrl(IModelBaseHandler.searchKey, Config.App.get("imjs_buddi_resolve_url_using_region"), url);
-  }
 }
 
 export class RbacUrlMock {
@@ -175,17 +169,9 @@ export class RbacUrlMock {
     configMockSettings();
     return Config.App.get("imjs_rbac_url", "");
   }
-
-  public static mockGetUrl() {
-    if (!TestConfig.enableMocks)
-      return;
-    const url = RbacUrlMock.getUrl();
-    UrlDiscoveryMock.mockGetUrl("RBAC.Url.APIM", Config.App.get("imjs_buddi_resolve_url_using_region"), url);
-  }
 }
 
 export function getDefaultClient() {
-  IModelHubUrlMock.mockGetUrl();
   return getCloudEnv().isIModelHub ? getIModelHubClient() : imodelBankClient;
 }
 
@@ -333,7 +319,7 @@ export async function getIModelId(requestContext: AuthorizedClientRequestContext
 
 export function mockFileResponse(times = 1) {
   if (TestConfig.enableMocks)
-    ResponseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", getMockSeedFilePath(), times);
+    ResponseBuilder.mockFileResponse("https://imodelhubqasa01.blob.core.windows.net", "/imodelhubfile", getMockSeedFilePath(), times, getMockFileSize());
 }
 
 export function getMockFileSize(): string {
@@ -570,11 +556,10 @@ export async function getLastLockObjectId(requestContext: AuthorizedClientReques
 }
 
 export function generateLock(briefcaseId?: number, objectId?: Id64String,
-  lockType?: LockType, lockLevel?: LockLevel, seedFileId?: GuidString,
+  lockType?: LockType, lockLevel?: LockLevel, _seedFileId?: GuidString,
   releasedWithChangeSet?: string, releasedWithChangeSetIndex?: string): Lock {
   const result = new Lock();
   result.briefcaseId = briefcaseId || 1;
-  result.seedFileId = seedFileId;
   result.objectId = Id64.fromJSON(objectId || "0x0");
   result.lockLevel = lockLevel || 1;
   result.lockType = lockType || 1;
@@ -594,7 +579,6 @@ function convertLocksToMultiLocks(locks: Lock[]): MultiLock[] {
       const multiLock = new MultiLock();
       multiLock.changeState = "new";
       multiLock.briefcaseId = lock.briefcaseId;
-      multiLock.seedFileId = lock.seedFileId;
       multiLock.releasedWithChangeSet = lock.releasedWithChangeSet;
       multiLock.releasedWithChangeSetIndex = lock.releasedWithChangeSetIndex;
       multiLock.lockLevel = lock.lockLevel;
@@ -659,7 +643,9 @@ export function generateVersion(name?: string, changesetId?: string, addInstance
   }
   result.changeSetId = changesetId === undefined || changesetId === null ? generateChangeSetId() : changesetId;
   result.name = name || `TestVersion-${result.changeSetId}`;
+  // eslint-disable-next-line deprecation/deprecation
   result.smallThumbnailId = smallThumbnailId;
+  // eslint-disable-next-line deprecation/deprecation
   result.largeThumbnailId = largeThumbnailId;
   result.hidden = hidden;
   return result;
@@ -688,9 +674,9 @@ export function mockCreateVersion(imodelId: GuidString, name?: string, changeset
     return;
 
   const requestPath = createRequestUrl(ScopeType.iModel, imodelId.toString(), "Version");
-  const postBodyObject = generateVersion(name, changesetId, false);
+  const postBodyObject: Partial<Version> = generateVersion(name, changesetId, false);
   delete (postBodyObject.wsgId);
-  const postBody = ResponseBuilder.generatePostBody<Version>(postBodyObject);
+  const postBody = ResponseBuilder.generatePostBody<Version>(postBodyObject as Version);
   const requestResponse = ResponseBuilder.generatePostResponse<Version>(generateVersion(name, changesetId, true));
   ResponseBuilder.mockResponse(IModelHubUrlMock.getUrl(), RequestType.Post, requestPath, requestResponse, 1, postBody);
 }
@@ -814,7 +800,6 @@ export function getMockChangeSets(briefcase: Briefcase): ChangeSet[] {
     result.index = regexMatchValue[1]; // first regex group contains file index
     result.fileSize = fs.statSync(path.join(dir, file)).size.toString();
     result.briefcaseId = briefcase.briefcaseId;
-    result.seedFileId = briefcase.fileId;
     result.parentId = parentId;
     result.fileName = `${result.id}.cs`;
     parentId = result.id;
@@ -965,20 +950,6 @@ export class ProgressTracker {
 
 let cloudEnv: IModelCloudEnvironment | undefined;
 
-if (!TestConfig.enableIModelBank || TestConfig.enableMocks) {
-  cloudEnv = new TestIModelHubCloudEnv();
-} else {
-  cloudEnv = getIModelBankCloudEnv();
-  imodelBankClient = cloudEnv.imodelClient as IModelBankClient;
-}
-if (cloudEnv === undefined)
-  throw new Error("could not create cloudEnv");
-
-cloudEnv.startup()
-  .catch((err: Error) => {
-    Logger.logException(loggingCategory, err);
-  });
-
 // TRICKY! All of the "describe" functions are called first. Many of them call getCloudEnv,
 //  but they don't try to use it.
 
@@ -991,9 +962,13 @@ export function getCloudEnv(): IModelCloudEnvironment {
 // iModel server to finish starting up.
 
 before(async () => {
-  if (cloudEnv === undefined) {
-    Logger.logError(loggingCategory, "cloudEnv was not defined before tests began");
-    throw new Error();
+  await HttpRequestHost.initialize();
+
+  if (!TestConfig.enableIModelBank || TestConfig.enableMocks) {
+    cloudEnv = new TestIModelHubCloudEnv();
+  } else {
+    cloudEnv = getIModelBankCloudEnv();
+    imodelBankClient = cloudEnv.imodelClient as IModelBankClient;
   }
 
   Logger.logInfo(loggingCategory, "Waiting for cloudEnv to startup...");

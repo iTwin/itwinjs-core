@@ -40,6 +40,7 @@ export namespace RenderMemory {
     PointClouds,
     Instances,
     Terrain,
+    RealityMesh,
 
     COUNT,
   }
@@ -66,8 +67,9 @@ export namespace RenderMemory {
     public get pointClouds() { return this.consumers[BufferType.PointClouds]; }
     public get instances() { return this.consumers[BufferType.Instances]; }
     public get terrain() { return this.consumers[BufferType.Terrain]; }
+    public get reality() { return this.consumers[BufferType.RealityMesh]; }
 
-    public clear(): void {
+    public override clear(): void {
       for (const consumer of this.consumers)
         consumer.clear();
 
@@ -151,7 +153,12 @@ export namespace RenderMemory {
     public addPolyline(numBytes: number) { this.addBuffer(BufferType.Polylines, numBytes); }
     public addPointString(numBytes: number) { this.addBuffer(BufferType.PointStrings, numBytes); }
     public addPointCloud(numBytes: number) { this.addBuffer(BufferType.PointClouds, numBytes); }
-    public addTerrain(numBytes: number) { this.addBuffer(BufferType.Terrain, numBytes); }
+    public addTerrain(numBytes: number) {
+      this.addBuffer(BufferType.Terrain, numBytes);
+    }
+    public addRealityMesh(numBytes: number) {
+      this.addBuffer(BufferType.RealityMesh, numBytes);
+    }
     public addInstances(numBytes: number) { this.addBuffer(BufferType.Instances, numBytes); }
   }
 

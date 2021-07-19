@@ -378,6 +378,27 @@ export class HalfEdge {
     } while (node !== this);
     return count;
   }
+/** Return true of other is in the vertex loop around this. */
+  public findAroundVertex(other: HalfEdge): boolean {
+    let node: HalfEdge = this;
+    do {
+      if (node === other)
+        return true;
+      node = node.vertexSuccessor;
+    } while (node !== this);
+    return false;
+  }
+
+/** Return true of other is in the face loop around this. */
+public findAroundFace(other: HalfEdge): boolean {
+  let node: HalfEdge = this;
+  do {
+    if (node === other)
+      return true;
+    node = node.faceSuccessor;
+  } while (node !== this);
+  return false;
+}
 
   /**
    * Apply a edgeTag and mask to all edges around a face.

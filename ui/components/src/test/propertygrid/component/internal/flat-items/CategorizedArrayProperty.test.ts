@@ -3,13 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import TestUtils from "../../../../TestUtils";
-import { FlatGridItemType } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableFlatGridItem";
-import { FlatGridTestUtils as GridUtils } from "./FlatGridTestUtils";
-import { MutableCategorizedArrayProperty } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCategorizedArrayProperty";
 import sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
+import { MutableCategorizedArrayProperty } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableCategorizedArrayProperty";
+import { FlatGridItemType } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableFlatGridItem";
 import { MutableGridItemFactory } from "../../../../../ui-components/propertygrid/internal/flat-items/MutableGridItemFactory";
+import TestUtils from "../../../../TestUtils";
+import { FlatGridTestUtils as GridUtils } from "./FlatGridTestUtils";
 
 describe("CategorizedArrayProperty", () => {
   let factoryStub: sinon.SinonStubbedInstance<MutableGridItemFactory>;
@@ -178,17 +178,28 @@ describe("CategorizedArrayProperty", () => {
     describe("getDescendantsAndSelf", () => {
       it("Should return self when getDescendantsAndSelf called on array property with no children", () => {
         const propertyRecord = TestUtils.createArrayProperty("Prop", []);
-
         GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
         const property = new MutableCategorizedArrayProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
-
         const descendants = property.getDescendantsAndSelf();
-
         expect(descendants).to.deep.equal([property]);
       });
 
       it("Should return descendants when getDescendantsAndSelf called on array property with children", () => {
         const propertyRecord = TestUtils.createArrayProperty("Prop", arrayChildren);
+        const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
+        const { expectedDescendants } = GridUtils.setupExpectedDescendants(expectedChildren, [
+          { type: FlatGridItemType.Struct, isVisible: true },
+          { type: FlatGridItemType.Array, isVisible: false },
+          { type: FlatGridItemType.Primitive, isVisible: false },
+          { type: FlatGridItemType.Primitive, isVisible: true },
+        ]);
+        const property = new MutableCategorizedArrayProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
+        expect(property.getDescendantsAndSelf()).to.deep.equal([property, ...expectedDescendants]);
+      });
+
+      it("Should not include self when `PropertyRecord.property.hideCompositePropertyLabel` is set", () => {
+        const propertyRecord = TestUtils.createArrayProperty("Prop", arrayChildren);
+        propertyRecord.property.hideCompositePropertyLabel = true;
 
         const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
         const { expectedDescendants } = GridUtils.setupExpectedDescendants(expectedChildren, [
@@ -197,10 +208,8 @@ describe("CategorizedArrayProperty", () => {
           { type: FlatGridItemType.Primitive, isVisible: false },
           { type: FlatGridItemType.Primitive, isVisible: true },
         ]);
-
         const property = new MutableCategorizedArrayProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
-
-        expect(property.getDescendantsAndSelf()).to.deep.equal([property, ...expectedDescendants]);
+        expect(property.getDescendantsAndSelf()).to.deep.equal(expectedDescendants);
       });
 
       it("Should not depend on isExpanded", () => {
@@ -221,6 +230,20 @@ describe("CategorizedArrayProperty", () => {
 
         property.isExpanded = true;
         expect(property.getDescendantsAndSelf()).to.deep.equal([property, ...expectedDescendants]);
+      });
+    });
+
+    describe("getVisibleDescendants", () => {
+      it("Should return children even when not expanded when `PropertyRecord.property.hideCompositePropertyLabel` is set", () => {
+        const propertyRecord = TestUtils.createArrayProperty("Prop", arrayChildren);
+        propertyRecord.property.hideCompositePropertyLabel = true;
+
+        const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
+        const { expectedDescendants } = GridUtils.setupExpectedDescendants(expectedChildren, []);
+
+        const property = new MutableCategorizedArrayProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
+        property.isExpanded = false;
+        expect(property.getVisibleDescendants()).to.deep.equal(expectedDescendants);
       });
     });
 
@@ -280,6 +303,21 @@ describe("CategorizedArrayProperty", () => {
 
         property.isExpanded = true;
         expect(property.getVisibleDescendantsAndSelf()).to.deep.equal([property, ...expectedVisibleDescendants]);
+      });
+
+      it("Should not include self when `PropertyRecord.property.hideCompositePropertyLabel` is set", () => {
+        const propertyRecord = TestUtils.createArrayProperty("Prop", arrayChildren);
+        propertyRecord.property.hideCompositePropertyLabel = true;
+
+        const expectedChildren = GridUtils.createCategorizedPropertyStub(propertyRecord.getChildrenRecords(), factoryStub);
+        const { expectedVisibleDescendants } = GridUtils.setupExpectedDescendants(expectedChildren, [
+          { type: FlatGridItemType.Struct, isVisible: true },
+          { type: FlatGridItemType.Array, isVisible: true },
+          { type: FlatGridItemType.Primitive, isVisible: false },
+        ]);
+        const property = new MutableCategorizedArrayProperty(propertyRecord, "Cat1", "Cat1", 0, factoryStub);
+        property.isExpanded = true;
+        expect(property.getVisibleDescendantsAndSelf()).to.deep.equal(expectedVisibleDescendants);
       });
     });
 

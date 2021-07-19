@@ -1,5 +1,6 @@
 # Using iModel Console
-- Navigate to https://imodelconsole.bentley.com/
+
+- Navigate to <https://imodelconsole.bentley.com/>
 - Follow tutorial to learn how to use iModel Console
 - Select your Project
 - Select your iModel
@@ -9,6 +10,7 @@ Execute queries
 > Example: SELECT * FROM BisCore.Element
 
 ## Learn more
+
 [Learn more about ECSQL]($docs/learning/ecsql)
 
 Relaunch iModel Console tutorial by clicking the gear icon in the header

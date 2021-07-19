@@ -39,6 +39,7 @@ export interface WithDropTargetProps<DragDropObject = any> {
  * @beta
  * @deprecated
  */
+// istanbul ignore next
 export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
   // eslint-disable-next-line @typescript-eslint/naming-convention
   Component: React.ComponentType<ComponentProps>,
@@ -138,7 +139,7 @@ export const withDropTarget = <ComponentProps extends {}, DragDropObject = any>(
     };
   })(class WithDropTarget extends React.Component<any> {
     public rootElement: HTMLDivElement | null = null;
-    public render() {
+    public override render() {
       const {
         dropProps, shallow, // eslint-disable-line @typescript-eslint/no-unused-vars
         connectDropTarget,

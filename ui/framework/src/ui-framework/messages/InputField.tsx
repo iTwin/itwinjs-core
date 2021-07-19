@@ -7,6 +7,7 @@
  */
 
 import "./InputField.scss";
+import classnames from "classnames";
 import * as React from "react";
 import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
@@ -15,7 +16,6 @@ import { InputFieldMessageEventArgs, MessageManager } from "../messages/MessageM
 import { MessageDiv } from "./MessageSpan";
 import { NotifyMessageType } from "./ReactNotifyMessageDetails";
 
-import classnames = require("classnames");
 /** Properties of [[InputFieldMessage]] component.
  * @public
  */
@@ -25,7 +25,7 @@ interface InputFieldMessageProps {
 
 /** [[InputFieldMessage]] state.
  * @internal
- */
+ */
 interface InputFieldMessageState {
   isVisible: boolean;
   priority: OutputMessagePriority;
@@ -39,14 +39,14 @@ interface InputFieldMessageState {
  * @public
  */
 export class InputFieldMessage extends React.PureComponent<InputFieldMessageProps, InputFieldMessageState> {
-  public readonly state: Readonly<InputFieldMessageState> = {
+  public override readonly state: Readonly<InputFieldMessageState> = {
     message: "",
     isVisible: false,
     priority: OutputMessagePriority.None,
     showCloseButton: !!this.props.showCloseButton,
   };
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { isVisible, inputFieldElement, message, priority, detailedMessage, showCloseButton } = this.state;
 
     if (!inputFieldElement || !message) {
@@ -96,12 +96,12 @@ export class InputFieldMessage extends React.PureComponent<InputFieldMessageProp
       </Popup>);
   }
 
-  public componentDidMount(): void {
+  public override componentDidMount(): void {
     MessageManager.onInputFieldMessageAddedEvent.addListener(this._handleInputFieldMessageAddedEvent);
     MessageManager.onInputFieldMessageRemovedEvent.addListener(this._handleInputFieldMessageRemovedEvent);
   }
 
-  public componentWillUnmount(): void {
+  public override componentWillUnmount(): void {
     MessageManager.onInputFieldMessageAddedEvent.removeListener(this._handleInputFieldMessageAddedEvent);
     MessageManager.onInputFieldMessageRemovedEvent.removeListener(this._handleInputFieldMessageRemovedEvent);
   }

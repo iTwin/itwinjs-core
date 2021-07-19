@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, Id64String,
+  assert, ByteStream, compareBooleans, compareBooleansOrUndefined, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, Id64, Id64String,
 } from "@bentley/bentleyjs-core";
 import { Range3d, Vector3d } from "@bentley/geometry-core";
 import { BatchType } from "../FeatureTable";
@@ -58,9 +58,200 @@ export interface TileOptions {
   readonly enableInstancing: boolean;
   readonly enableImprovedElision: boolean;
   readonly ignoreAreaPatterns: boolean;
+  readonly enableExternalTextures: boolean;
   readonly useProjectExtents: boolean;
   readonly disableMagnification: boolean;
   readonly alwaysSubdivideIncompleteTiles: boolean;
+}
+
+/** @internal */
+export namespace TileOptions {
+  /** Given the string representation of an [[IModelTileTreeId]] and the contentId of a [Tile]($frontend) belonging to that [TileTree]($frontend),
+   * compute the [[TileOptions]] that were used to generate the Ids.
+   * @throws Error if `treeId` or `contentId` are not valid Ids.
+   * @note `treeId` and `contentId` are assumed to be valid Ids. They are not fully parsed and validated - only the information required by this function is extracted.
+   * @note `treeId` and `contentId` are assumed to have been produced for version 4 or later of the iMdl tile format.
+   */
+  export function fromTreeIdAndContentId(treeId: string, contentId: string): TileOptions {
+    const tree = treeFlagsAndFormatVersionFromId(treeId);
+    const contentFlags = contentFlagsFromId(contentId);
+
+    return {
+      maximumMajorTileFormatVersion: tree.version,
+      enableInstancing: 0 !== (contentFlags & ContentFlags.AllowInstancing),
+      enableImprovedElision: 0 !== (contentFlags & ContentFlags.ImprovedElision),
+      ignoreAreaPatterns: 0 !== (contentFlags & ContentFlags.IgnoreAreaPatterns),
+      enableExternalTextures: 0 !== (contentFlags & ContentFlags.ExternalTextures),
+      useProjectExtents: 0 !== (tree.flags & TreeFlags.UseProjectExtents),
+      disableMagnification: false,
+      alwaysSubdivideIncompleteTiles: false,
+    };
+  }
+}
+
+/** @internal */
+export function parseTileTreeIdAndContentId(treeId: string, contentId: string): { modelId: Id64String, treeId: IModelTileTreeId, contentId: ContentIdSpec, options: TileOptions } {
+  let idx = 0;
+  let type: BatchType,
+    expansion: number | undefined,
+    animationId: string | undefined,
+    nodeId: number | undefined,
+    edgesRequired: boolean | undefined,
+    sectionCut: string | undefined;
+
+  // Skip version and flags, they're handled by TileOptions.fromTreeIdAndContentId
+  while (idx < treeId.length && treeId[idx] !== "-")
+    idx++;
+  idx++; // -
+  if (idx >= treeId.length)
+    throw new Error("Invalid tree Id");
+
+  if (treeId[idx] === "C") {
+    // PlanarClassifier or VolumeClassifier
+    ({ idx, type, expansion } = parseClassifier(idx, treeId, expansion));
+  } else {
+    type = BatchType.Primary;
+  }
+
+  // Animation
+  // eslint-disable-next-line prefer-const
+  ({ idx, animationId, nodeId } = parseAnimation(idx, treeId, animationId, nodeId));
+
+  if (type === BatchType.Primary) {
+    ({ idx, edgesRequired, sectionCut } = parsePrimary(idx, treeId, edgesRequired, sectionCut));
+  }
+
+  const modelId = treeId.substr(idx);
+  if (!Id64.isId64(modelId))
+    throw new Error("Invalid tree Id");
+
+  const { flags: treeFlags } = treeFlagsAndFormatVersionFromId(treeId);
+  const parsedTreeId = getTreeId(type, edgesRequired, sectionCut, animationId, nodeId, expansion, (treeFlags & TreeFlags.EnforceDisplayPriority) !== 0 ? true : undefined);
+  const options = TileOptions.fromTreeIdAndContentId(treeId, contentId);
+
+  let parsedContentId: ContentIdSpec;
+  try {
+    parsedContentId = ContentIdProvider.create(true, options).specFromId(contentId);
+  } catch (e) {
+    throw new Error("Invalid content Id");
+  }
+
+  if (Object.keys(parsedContentId).some((key) => parsedContentId.hasOwnProperty(key) && typeof parsedContentId[key as keyof ContentIdSpec] === "number" && !Number.isFinite(parsedContentId[key as keyof ContentIdSpec])))
+    throw new Error("Invalid content Id");
+
+  return {
+    contentId: parsedContentId,
+    modelId,
+    options,
+    treeId: parsedTreeId,
+  };
+}
+
+function getTreeId(type: BatchType, edgesRequired?: boolean, sectionCut?: string, animationId?: string, nodeId?: number, expansion?: number, enforceDisplayPriority?: boolean): IModelTileTreeId {
+  if (type === BatchType.Primary)
+    return {
+      type,
+      edgesRequired,
+      sectionCut,
+      animationId,
+      animationTransformNodeId: nodeId,
+      enforceDisplayPriority,
+    } as PrimaryTileTreeId;
+  else
+    return {
+      type,
+      expansion,
+      animationId,
+      animationTransformNodeId: nodeId,
+    } as ClassifierTileTreeId;
+}
+
+function parsePrimary(idx: number, treeId: string, edgesRequired: boolean | undefined, sectionCut: string | undefined) {
+  // Edges
+  const edgesStr = "E:0_";
+  if (idx < treeId.length && treeId.startsWith(edgesStr, idx)) {
+    edgesRequired = false;
+    idx += edgesStr.length;
+  } else {
+    edgesRequired = true;
+  }
+
+  // Section cut
+  if (idx + 1 < treeId.length && treeId[idx] === "S") {
+    idx++; // S
+    sectionCut = "";
+    while (idx < treeId.length && treeId[idx] !== "s") {
+      sectionCut += treeId[idx++];
+    }
+    if (idx === treeId.length)
+      throw new Error("Invalid tree Id");
+    idx++; // s
+  }
+  return { idx, edgesRequired, sectionCut };
+}
+
+function parseClassifier(idx: number, treeId: string, expansion: number | undefined) {
+  let type: BatchType;
+  idx++; // C
+  if (idx + 1 < treeId.length && treeId[idx] === "P" && treeId[idx + 1] === ":") {
+    type = BatchType.PlanarClassifier;
+    idx += 2; // P:
+  } else if (idx < treeId.length && treeId[idx] === ":") {
+    type = BatchType.VolumeClassifier;
+    idx++; // :
+  } else {
+    throw new Error("Invalid tree Id");
+  }
+
+  // C: or CP: is always followed by {expansion}_
+  let expansionStr = "";
+  while (idx < treeId.length && (treeId[idx] >= "0" && treeId[idx] <= "9" || treeId[idx] === ".")) {
+    expansionStr += treeId[idx++];
+  }
+
+  if (idx === treeId.length || treeId[idx] !== "_")
+    throw new Error("Invalid tree Id");
+  idx++; // _
+
+  expansion = Number.parseFloat(expansionStr);
+  return { idx, type, expansion };
+}
+
+function parseAnimation(idx: number, treeId: string, animationId: string | undefined, nodeId: number | undefined) {
+  if (idx < treeId.length && treeId[idx] === "A") {
+    if (idx + 1 < treeId.length && treeId[idx + 1] !== ":")
+      throw new Error("Invalid tree Id");
+    idx += 2;
+
+    // Parse animation id
+    animationId = "";
+    while (idx < treeId.length && treeId[idx] !== "_") {
+      animationId += treeId[idx++];
+    }
+
+    if (!Id64.isId64(animationId) || idx === treeId.length)
+      throw new Error("Invalid tree Id");
+    idx++; // _
+
+    if (idx === treeId.length || treeId[idx] !== "#")
+      throw new Error("Invalid tree Id");
+    idx++; // #
+
+    // Parse animation node id
+    let nodeIdStr = "";
+    while (idx < treeId.length && treeId[idx] !== "_") {
+      nodeIdStr += treeId[idx++];
+    }
+
+    nodeId = Number.parseInt(nodeIdStr, 16);
+    if (idx === treeId.length || !Number.isFinite(nodeId) || nodeId.toString(16).toUpperCase() !== nodeIdStr.toUpperCase()) // if toString doesn't round-trip, that means there were invalid characters in the string
+      throw new Error("Invalid tree Id");
+    idx++; // _
+
+    if (nodeId === Constants.untransformedNodeValue)
+      nodeId = undefined;
+  }
+  return { idx, animationId, nodeId };
 }
 
 /** @internal */
@@ -69,10 +260,44 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   enableInstancing: true,
   enableImprovedElision: true,
   ignoreAreaPatterns: false,
+  enableExternalTextures: true,
   useProjectExtents: true,
   disableMagnification: false,
   alwaysSubdivideIncompleteTiles: false,
 });
+
+function contentFlagsFromId(id: string): ContentFlags {
+  if (0 === id.length || "-" !== id[0])
+    throw new Error("Invalid content Id");
+
+  // V4: -flags-d-i-j-k-m - version in tree Id
+  const end = id.indexOf("-", 1);
+  if (-1 !== end) {
+    const flags = Number.parseInt(id.substring(1, end), 16);
+    if (!Number.isNaN(flags))
+      return flags;
+  }
+
+  throw new Error("Invalid content Id");
+}
+
+function treeFlagsAndFormatVersionFromId(id: string): { flags: TreeFlags, version: number } {
+  if (0 === id.length)
+    throw new Error("Invalid tree Id");
+
+  let parts = id.split("-");
+  if (parts.length > 0) {
+    parts = parts[0].split("_");
+    if (parts.length === 2) {
+      const version = Number.parseInt(parts[0], 16);
+      const flags = Number.parseInt(parts[1], 16);
+      if (!Number.isNaN(version) || !Number.isNaN(flags))
+        return { version, flags };
+    }
+  }
+
+  throw new Error("Invalid tree Id");
+}
 
 /** @internal */
 export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, formatVersion?: number): number {
@@ -94,7 +319,7 @@ export function getMaximumMajorTileFormatVersion(maxMajorVersion: number, format
 }
 
 /** Flags controlling the structure of a tile tree. The flags are part of the tile tree's Id.
- * @internal
+ * @alpha
  */
 export enum TreeFlags {
   None = 0,
@@ -214,13 +439,14 @@ export function compareIModelTileTreeIds(lhs: IModelTileTreeId, rhs: IModelTileT
 }
 
 /** Flags controlling how tile content is produced. The flags are part of the ContentId.
- * @internal
+ * @alpha
  */
 export enum ContentFlags {
   None = 0,
   AllowInstancing = 1 << 0,
   ImprovedElision = 1 << 1,
   IgnoreAreaPatterns = 1 << 2,
+  ExternalTextures = 1 << 3,
 }
 
 /** Describes the components of a tile's content Id.
@@ -360,6 +586,9 @@ class ContentIdV4Provider extends ContentIdProvider {
 
     if (options.ignoreAreaPatterns)
       flags = flags | ContentFlags.IgnoreAreaPatterns;
+
+    if (options.enableExternalTextures)
+      flags = flags | ContentFlags.ExternalTextures;
 
     super(majorVersion, flags);
     this._prefix = this._separator + flags.toString(16) + this._separator;

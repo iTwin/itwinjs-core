@@ -1,61 +1,111 @@
-# 2.10.0 Change Notes
+# 2.18.0 Change Notes
 
-## Tile compression
+## Scientific visualization
 
-[IModelHostConfiguration.compressCachedTiles]($backend) specifies whether tiles uploaded to blob storage should be compressed using gzip. Previously, it defaulted to `false` if omitted. The default has now been switched to `true`. Compressing tiles conserves bandwidth; the tiles are transparently and efficiently decompressed by the browser.
+The [AnalysisStyle]($common) APIs have been cleaned up and promoted to `@public`. An AnalysisStyle is used to animate a mesh that has been supplemented with [PolyfaceAuxData]($geometry-core), by recoloring and/or deforming its vertices over time. This enables visualization of the effects of computed, changing variables like stress and temperature.
 
-## Changes to display style excluded elements
+## Section-cut element graphics
 
-[DisplayStyleSettings.excludedElements]($common) allows a display style to specify a set of elements that should not be drawn. Previously, this set was always persisted to the database as an array of element Ids, and represented in JSON and in memory as a `Set<string>`. However, element Ids tend to be long strings (at least 13 characters), and sets of excluded elements can occasionally grow quite large. To reduce the amount of data associated with these sets:
-  * They are now always persisted to the database as a [CompressedId64Set]($bentleyjs-core).
-  * The type of [DisplayStyleSettingsProps.excludedElements]($common) has changed from `Id64Array` to `Id64Array | CompressedId64Set`.
-  * [DisplayStyleSettings.excludedElements]($common) - a `Set<string>` - has been deprecated in favor of [DisplayStyleSettings.excludedElementIds]($common) - an [OrderedId64Iterable]($bentleyjs-core).
-  * [IModelDb.Views.getViewStateData]($backend) and [ElementLoadProps]($common) allow the caller to specify whether the Ids should be returned in compressed (string) form or as an uncompressed array; by default, they are uncompressed.
-  * [IModelConnection.Views.load]($frontend) will always use the compressed representation of the Ids.
+[TileAdmin.requestElementGraphics]($frontend) can now produce section-cut graphics if [GraphicsRequestProps.sectionCut]($common) is supplied. The temporary element graphics produced during interactive editing will automatically include section-cut graphics based on the viewport's [CutStyle]($common).
 
-To adjust code that uses [DisplayStyleSettings.excludedElements]($common), given `settings: DisplayStyleSettings`:
-```ts
-  settings.excludedElements.add(id); // Replace this...
-  settings.addExcludedElements(id); // ...with this.
+## Change summary API changes
 
-  settings.excludedElements.delete(id); // Replace this...
-  settings.dropExcludedElements(id); // ...with this.
+[ChangeSummaryManager.extractChangeSummaries]($imodeljs-backend) has now been deprecated, and replaced with two methods - [ChangeSummaryManager.createChangeSummaries]($imodeljs-backend) and [ChangeSummaryManager.createChangeSummary]($imodeljs-backend).
 
-  settings.excludedElements.clear(); // Replace this...
-  settings.clearExcludedElements(); // ...with this.
+The deprecated method works by creating a range of Change Summaries by starting with the end version, reversing Changesets one by one until the specified start version. Since Changesets containing schema changes cannot be reversed, the method may fail to create some Change Summaries. The new replacement instead walks the versions in the forward direction.
 
-  for (const id of settings.excludedElements) { } // Replace this...
-  for (const id of settings.excludedElementIds) { } // ...with this.
+- [ChangeSummaryManager.createChangeSummaries]($imodeljs-backend) creates Change Summaries for a range of Changesets by walking the versions in a forward direction starting with the specified first version.
+- [ChangeSummaryManager.createChangeSummary]($imodeljs-backend) creates a single Change Summary for the current version of the iModel, i.e., the last applied Changeset.
+
+[ChangeSummaryManager.detachChangeCache]($imodeljs-backend)  can now be used to detach the cache after querying the change summary to continue change summary creation if necessary.
+
+[ChangeSummaryExtractOptions]($imodeljs-backend) was also deprecated as a consequence of the above changes. [CreateChangeSummaryArgs]($imodeljs-backend) serves a similar purpose with the newer methods.
+ChangeSummaryExtractContext was unused and has been removed.
+
+## UI changes
+
+### @bentley/ui-abstract package
+
+Added ability for [UiItemsProvider]($ui-abstract) to provide widgets to [AbstractZoneLocation]($ui-abstract) locations when running is AppUi version 1. Prior to this a widget could only be targeted to a [StagePanelLocation]($ui-abstract) location.
+
+#### Example UiItemsProvider
+
+The example below, shows how to add a widget to a [StagePanelLocation]($ui-abstract) if UiFramework.uiVersion === "2" and to the "BottomRight" [AbstractZoneLocation]($ui-abstract) if UiFramework.uiVersion === "1".  See [UiItemsProvider.provideWidgets]($ui-abstract) for new `zoneLocation` argument.
+
+```tsx
+export class ExtensionUiItemsProvider implements UiItemsProvider {
+  public readonly id = "ExtensionUiItemsProvider";
+  public static i18n: I18N;
+  private _backstageItems?: BackstageItem[];
+
+  public constructor(i18n: I18N) {
+    ExtensionUiItemsProvider.i18n = i18n;
+  }
+
+  /** provideWidgets() is called for each registered UI provider to allow the provider to add widgets to a specific section of a stage panel.
+   *  items to the StatusBar.
+   */
+  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
+    const widgets: AbstractWidgetProps[] = [];
+    // section will be undefined if uiVersion === "1" and in that case we can add widgets to the specified zoneLocation
+    if ((undefined === section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.BottomRight) ||
+      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End && "1" !== UiFramework.uiVersion)) {
+      {
+        widgets.push({
+          id: PresentationPropertyGridWidgetControl.id,
+          icon: PresentationPropertyGridWidgetControl.iconSpec,  // icon required if uiVersion === "1"
+          label: PresentationPropertyGridWidgetControl.label,
+          defaultState: WidgetState.Open,
+          getWidgetContent: () => <PresentationPropertyGridWidget />, // eslint-disable-line react/display-name
+          canPopout: true,  // canPopout ignore if uiVersion === "1"
+        });
+      }
+    }
+    return widgets;
+  }
+}
 ```
 
-Note that [DisplayStyleSettings.addExcludedElements]($common) and [DisplayStyleSettings.dropExcludedElements]($common) can accept any number of Ids. If you have multiple Ids, prefer to pass them all at once rather than one at a time - it is more efficient.
+### @bentley/ui-framework package
 
-## Breaking API changes
+- The need for an IModelApp to explicitly call [ConfigurableUiManager.initialize]($ui-framework) has been removed. This call is now made when processing [UiFramework.initialize]($ui-framework). This will not break any existing applications as subsequent calls to `ConfigurableUiManager.initialize()` are ignored.
 
-* The union type [Matrix3dProps]($geometry-core) inadvertently included [Matrix3d]($geometry-core). "Props" types are wire formats and so must be pure JavaScript primitives. To fix compilation errors where you are using `Matrix3d` where a `Matrix3dProps` is expected, simply call [Matrix3d.toJSON]($geometry-core) on your Matrix3d object. Also, since [TransformProps]($geometry-core) includes Matrix3dProps, you may need to call [Transform.toJSON]($geometry-core) on your Transform objects some places too.
+- If an application calls [UiFramework.setIModelConnection]($ui-framework) it will no longer need to explicitly call [SyncUiEventDispatcher.initializeConnectionEvents]($ui-framework) as `UiFramework.setIModelConnection` will call that method as it update the redux store.
 
-* The type of [Texture.data]($backend) has been corrected from `string` to `Uint8Array` to match the type in the BIS schema. If you get compilation errors, simply remove calls to `Buffer.from(texture.data, "base64")` for read, and `texture.data.toString("base64")` if you create texture objects.
+- The `version` prop passed to [FrameworkVersion]($ui-framework) component will update the [UiFramework.uiVersion] if necessary keeping the redux state matching the value defined by the prop.
 
-## Updated version of Electron
+- The [ScheduleAnimationTimelineDataProvider]($ui-framework) is published for use by AppUi apps. Specifying this data provider to a [TimelineComponent]($ui-components) allows animation of the [RenderSchedule.Script]($common) if one exists for the view. A component that automatically detects a schedule script and attaches the data provider to its TimelineComponent can be found in the [DefaultViewOverlay]($ui-framework).
 
-Updated version of electron used from 8.2.1 to 10.1.3. Note that Electron is specified as a peer dependency in the iModel.js stack - so it's recommended but not mandatory that applications migrate to this electron version.
+- The [AnalysisAnimationTimelineDataProvider]($ui-framework) is published for use by AppUi apps. Specifying this data provider to a TimelineComponent allows animation of the information in the AnalysisDisplayProperties if the view's [DisplayStyleState]($frontend) contains one. A component that automatically detects analysis data and attaches the data provider to its TimelineComponent can be found in the [DefaultViewOverlay]($ui-framework).
 
-## Globe location tool fixes
+### @bentley/ui-components package
 
-The globe location tools now will properly use GCS reprojection when navigating. Previously, navigating to certain cartographic locations within the iModel extents could be slightly inaccurate.
+- Added component [QuantityNumberInput]($ui-components) which accepts input for quantity values. The quantity value is shown as a single numeric value and the quantity "display" unit is shown next to the input control. The "display" unit is determined by the active unit system as defined by the [QuantityFormatter]($frontend). The control also provides buttons to increment and decrement the "displayed" value. The value reported by via the onChange function is in "persistence" units that can be stored in the iModel.
 
-The tools affected are:
+- Apps that use the [TimelineComponent]($ui-components) can now customize their own playback speeds by providing an array of [TimelineMenuItemProps]($ui-components) to the component. These can either be appended to or prefix the standard items, or they can replace them entirely. An option has also been added to the [TimelineComponentProps]($ui-components) to allow the app to turn on/off the Repeat menu item in the context menu.
 
-* [ViewGlobeSatelliteTool]($frontend)
-* [ViewGlobeBirdTool]($frontend)
-* [ViewGlobeLocationTool]($frontend)
-* [ViewGlobeIModelTool]($frontend)
+### Quantity package
 
-The [ViewGlobeLocationTool]($frontend) has been further improved to navigate better across long distances when using plane mode.
+The Format class now provides the method [Format.clone]($quantity) to clone an existing Format. [CloneOptions]($quantity) may be optionally passed into the clone method to adjust the format.
 
-There is now a method called `lookAtGlobalLocationFromGcs` on [ViewState3d]($frontend). This method behaves exactly like `lookAtGlobalLocation` except that is async and uses the GCS to reproject the location.
+## [@bentley/ecschema-metadata](https://www.itwinjs.org/reference/ecschema-metadata/) changes
 
-[ViewState3d]($frontend) also has GCS versions of these methods:
+To reduce the size and limit the scope of the APIs available in the ecschema-metadata package, all APIs associated with EC Schema editing and validation have been moved to the [@bentley/ecschema-editing](https://www.itwinjs.org/reference/ecschema-editing/) package. This includes all source code under the [Validation](https://www.itwinjs.org/reference/ecschema-metadata/) and [Editing](https://www.itwinjs.org/reference/ecschema-metadata/editing/) folders. All corresponding @beta types defined in the ecschema-metadata package have been deprecated.  All @alpha types have been removed from the ecschema-metadata package. The source code move is the first step of a larger proposal for Schema editing and validation enhancements for connectors and editing applications. You may read and provide feedback on this initial proposal via this [github discussion](https://github.com/imodeljs/imodeljs/discussions/1525).
 
-* `rootToCartographicFromGcs` behaves like `rootToCartographic` except it is async and uses the GCS to reproject the location.
-* `cartographicToRootFromGcs` behaves like `cartographicToRoot` except it is async and uses the GCS to reproject the location.
+### Deprecated @beta types (moved to ecschema-editing)
+
+- IDiagnostic, BaseDiagnostic (including all sub-classes), DiagnosticType, DiagnosticCategory, DiagnosticCodes, Diagnostics
+- IDiagnosticReporter, SuppressionDiagnosticReporter, FormatDiagnosticReporter, LoggingDiagnosticReporter
+- IRuleSet, ECRuleSet
+- ISuppressionRule, BaseSuppressionRule, IRuleSuppressionMap, BaseRuleSuppressionMap, IRuleSuppressionSet
+- SchemaCompareCodes, SchemaCompareDiagnostics
+- SchemaValidater, SchemaValidationVisitor
+
+### Removed @alpha types (moved to ecschema-editing)
+
+- SchemaEditResults, SchemaItemEditResults, PropertyEditResults,
+SchemaContextEditor
+- Editors namespace, which includes all editor classes (ie. ECClasses, Entities, Mixins, etc.)
+- ISchemaChange, ISchemaChanges, ChangeType
+- BaseSchemaChange, BaseSchemaChanges (including all sub-classes)
+- ISchemaComparer, SchemaComparer, SchemaCompareDirection, ISchemaCompareReporter

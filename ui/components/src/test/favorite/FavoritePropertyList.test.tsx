@@ -10,6 +10,8 @@ import { PropertyRecord } from "@bentley/ui-abstract";
 import { PropertyCategory, PropertyData } from "../../ui-components/propertygrid/PropertyDataProvider";
 import { FavoritePropertyList } from "../../ui-components/favorite/FavoritePropertyList";
 import TestUtils from "../TestUtils";
+import { Orientation } from "@bentley/ui-core";
+import { PropertyValueRendererManager } from "../../ui-components/properties/ValueRendererManager";
 
 describe("FavoritePropertyList", () => {
 
@@ -53,6 +55,34 @@ describe("FavoritePropertyList", () => {
 
       record = wrapper.find(".components-property-record--horizontal").at(1);
       expect(record.exists(), "Second record does not exist").to.be.true;
+    });
+
+    it("renders correctly in vertical orientation", async () => {
+      const propertyValueRendererManager = new PropertyValueRendererManager();
+      const wrapper = mount(
+        <FavoritePropertyList propertyData={data} orientation={Orientation.Vertical} propertyValueRendererManager={propertyValueRendererManager} />
+      );
+
+      await TestUtils.flushAsyncOperations();
+      wrapper.update();
+
+      expect(wrapper.find(".components-favorite-property-list").first().exists()).to.be.true;
+
+      let record = wrapper.find(".components-property-record--vertical").at(0);
+      expect(record.exists(), "First record does not exist").to.be.true;
+
+      record = wrapper.find(".components-property-record--vertical").at(1);
+      expect(record.exists(), "Second record does not exist").to.be.true;
+    });
+
+    it("renders null if no Favorites", async () => {
+      delete data.records.Favorite;
+      const wrapper = mount(<FavoritePropertyList propertyData={data} />);
+
+      await TestUtils.flushAsyncOperations();
+      wrapper.update();
+
+      expect(wrapper.find(".components-favorite-property-list").first().exists()).to.be.false;
     });
 
   });

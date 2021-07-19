@@ -1,6 +1,6 @@
-# Using Views in iModel.js
+# Using Views in iTwin.js
 
-A *View* renders geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iModel.js applications can embed and interact with Views anywhere on a web page via an `HTMLDivElement`.
+A *View* renders geometry from one or more [Models]($docs/bis/intro/model-fundamentals) of an iModel in a web browser. iTwin.js applications can embed and interact with Views anywhere on a web page via an `HTMLDivElement`.
 
 Views are managed by the [ViewManager]($frontend) class, using [IModelApp.viewManager]($frontend).
 
@@ -32,10 +32,10 @@ There are subclasses of `ViewDefinition` to show different types of Models in va
 
 Here are several significant subclasses:
 
-* `ViewDefinition`
-  * `SpatialViewDefinition` - shows a view of one or more 3d SpatialModels
-  * `DrawingViewDefinition` - shows a view of a *single* 2d DrawingModel
-  * `SheetViewDefinition` - shows a view of a *single* 2d SheetModel
+- `ViewDefinition`
+  - `SpatialViewDefinition` - shows a view of one or more 3d SpatialModels
+  - `DrawingViewDefinition` - shows a view of a *single* 2d DrawingModel
+  - `SheetViewDefinition` - shows a view of a *single* 2d SheetModel
 
 For each subclass of `xxxViewDefinition`, there is a corresponding `xxxViewState` class in the frontend.
 
@@ -109,13 +109,13 @@ After the viewport is added to the [ViewManager]($frontend), all HTML events for
 
 ### The "Selected" View
 
-It is sometimes necessary to chose a Viewport from inside code that reacts to user input. Absent some other way of determining which Viewport to use, iModel.js applications often default to [ViewManager.selectedView]($frontend). This will be the last [ScreenViewport]($frontend) in which the user clicked. [ViewManager.selectedView]($frontend) is often the target Viewport for [Tools]($frontend:Tools).
+It is sometimes necessary to chose a Viewport from inside code that reacts to user input. Absent some other way of determining which Viewport to use, iTwin.js applications often default to [ViewManager.selectedView]($frontend). This will be the last [ScreenViewport]($frontend) in which the user clicked. [ViewManager.selectedView]($frontend) is often the target Viewport for [Tools]($frontend:Tools).
 
 > Note: If there is only one Viewport visible, that Viewport will always be the [ViewManager.selectedView]($frontend). If there are no Viewports visible, [ViewManager.selectedView]($frontend) can be undefined.
 
 ## Viewing Tools
 
-The iModel.js library supplies controls that allow users to modify what is shown in Views via the [ViewTool]($frontend) classes. You can create instances of the
+The iTwin.js library supplies controls that allow users to modify what is shown in Views via the [ViewTool]($frontend) classes. You can create instances of the
 supplied classes (e.g. [WindowAreaTool]($frontend), [FitViewTool]($frontend), [WalkViewTool]($frontend), [RotateViewTool]($frontend), etc.) or create your own subclasses for
 special viewing operations.
 
@@ -130,12 +130,12 @@ DisplayStyles describe the *styling* that should be applied to the contents of a
 
 This includes the:
 
-* [ViewFlags]($common)
-* [SubCategoryAppearance]($common) visibility and overrides
-* Background color
-* [RenderMode]($common)
-* [Environment]($frontend)
-* Other view-specific parameters
+- [ViewFlags]($common)
+- [SubCategoryAppearance]($common) visibility and overrides
+- Background color
+- [RenderMode]($common)
+- [Environment]($frontend)
+- Other view-specific parameters
 
 They are loaded in memory in the frontend with the [DisplayStyleState]($frontend) class.
 
@@ -191,11 +191,11 @@ Every view may have a thumbnail that shows an approximation of what it contains.
 
 ### Notes
 
-* The view origin is in world coordinates. It is the point at the lower left of the rectangle at the focus plane, projected onto the back plane.
+- The view origin is in world coordinates. It is the point at the lower left of the rectangle at the focus plane, projected onto the back plane.
 
-* `[delta.x,delta.y]` are on the focus plane and `delta.z` is from the back plane to the front plane.
+- `[delta.x,delta.y]` are on the focus plane and `delta.z` is from the back plane to the front plane.
 
-* The three view vectors come from:
+- The three view vectors come from:
 
  ```cmd
   {vector from eyePoint->targetPoint} : -Z (positive view Z points towards negative world Z)
@@ -205,17 +205,17 @@ Every view may have a thumbnail that shows an approximation of what it contains.
 
   these three vectors form the rows of the view's [Matrix3d]($geometry)
 
-* Objects in space in front of the front plane or behind the back plane are not displayed.
+- Objects in space in front of the front plane or behind the back plane are not displayed.
 
-* The focus plane is not necessarily centered between the front plane and back plane (though it often is.)
+- The focus plane is not necessarily centered between the front plane and back plane (though it often is.)
 It should generally be between the front plane and the back plane.
 
-* targetPoint is not stored in the view parameters. Instead it may be derived from `{origin},{eyePoint},[Matrix3d]` and `focusDist`.
+- targetPoint is not stored in the view parameters. Instead it may be derived from `{origin},{eyePoint},[Matrix3d]` and `focusDist`.
 
-* The ViewState holds the parameters: `{origin}{delta}[Matrix3d]` from which the View frustum is derived.
+- The ViewState holds the parameters: `{origin}{delta}[Matrix3d]` from which the View frustum is derived.
 
-* Cameras hold a "lens angle" value which is defines the field-of-view for the camera in radians.
+- Cameras hold a "lens angle" value which is defines the field-of-view for the camera in radians.
 The lens angle value is not used to compute the perspective transform for a view.
 Instead, the lens angle value can be used to reposition `{eyePoint}` when the view volume or target changes.
 
-* View volumes where one dimension is very small or large relative to the other dimensions (e.g. "long skinny telescope" views, or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.
+- View volumes where one dimension is very small or large relative to the other dimensions (e.g. "long skinny telescope" views, or "wide and shallow slices", etc.) are problematic and disallowed based on ratio limits.

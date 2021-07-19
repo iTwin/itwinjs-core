@@ -205,4 +205,4 @@ The `ModelessDialogManager.closeDialog` function is called to close a modeless d
 
 ## API Reference
 
-* [Dialog]($ui-framework:Dialog)
+- [Dialog]($ui-framework:Dialog)

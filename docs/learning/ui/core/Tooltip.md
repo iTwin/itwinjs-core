@@ -17,4 +17,4 @@ The `placement` prop specifies the preferred tooltip placement. This defaults to
 
 ## API Reference
 
-* [Tooltip]($ui-core:Tooltip)
+- [Tooltip]($ui-core:Tooltip)

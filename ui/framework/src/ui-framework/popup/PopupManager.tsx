@@ -10,19 +10,19 @@ import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { XAndY } from "@bentley/geometry-core";
 import {
-  AbstractToolbarProps, DialogLayoutDataProvider, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue, PropertyDescription,
-  PropertyRecord, PropertyValueFormat, RelativePosition,
+  AbstractToolbarProps, DialogLayoutDataProvider, OnCancelFunc, OnItemExecutedFunc, OnValueCommitFunc, Primitives, PrimitiveValue,
+  PropertyDescription, PropertyRecord, PropertyValueFormat, RelativePosition,
 } from "@bentley/ui-abstract";
 import { Orientation, Point, Rectangle, SizeProps, UiEvent } from "@bentley/ui-core";
 import { offsetAndContainInContainer } from "@bentley/ui-ninezone";
+import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 import { UiFramework } from "../UiFramework";
+import { CardPopup } from "./CardPopup";
 import { HTMLElementPopup } from "./HTMLElementPopup";
 import { InputEditorCommitHandler, InputEditorPopup } from "./InputEditorPopup";
-import { ToolbarPopup } from "./ToolbarPopup";
-import { CardPopup } from "./CardPopup";
-import { ToolSettingsPopup } from "./ToolSettingsPopup";
 import { KeyinPalettePopup } from "./KeyinPalettePopup";
-import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
+import { ToolbarPopup } from "./ToolbarPopup";
+import { ToolSettingsPopup } from "./ToolSettingsPopup";
 
 // cSpell:ignore uiadmin
 
@@ -33,6 +33,7 @@ export interface PopupInfo {
   id: string;
   pt: XAndY;
   component: React.ReactNode;
+  parentDocument: Document;
 }
 
 /** @alpha */
@@ -169,7 +170,7 @@ export class PopupManager {
     );
 
     const popupInfo: PopupInfo = {
-      id, pt, component,
+      id, pt, component, parentDocument: el.ownerDocument,
     };
     PopupManager.addOrUpdatePopup(popupInfo);
 
@@ -194,7 +195,7 @@ export class PopupManager {
     // cursor popups just set pt to 0,0.
     const pt = { x: 0, y: 0 };
     const popupInfo: PopupInfo = {
-      id, pt, component,
+      id, pt, component, parentDocument: el.ownerDocument,
     };
     PopupManager.addOrUpdatePopup(popupInfo);
 
@@ -217,7 +218,7 @@ export class PopupManager {
     );
 
     const popupInfo: PopupInfo = {
-      id, pt, component,
+      id, pt, component, parentDocument: el.ownerDocument,
     };
     PopupManager.addOrUpdatePopup(popupInfo);
 
@@ -240,7 +241,7 @@ export class PopupManager {
     );
 
     const popupInfo: PopupInfo = {
-      id, pt, component,
+      id, pt, component, parentDocument: el.ownerDocument,
     };
     PopupManager.addOrUpdatePopup(popupInfo);
 
@@ -265,7 +266,7 @@ export class PopupManager {
     );
 
     const popupInfo: PopupInfo = {
-      id, pt, component,
+      id, pt, component, parentDocument: el.ownerDocument,
     };
     PopupManager.addOrUpdatePopup(popupInfo);
 
@@ -290,7 +291,7 @@ export class PopupManager {
     );
 
     const popupInfo: PopupInfo = {
-      id, pt, component,
+      id, pt, component, parentDocument: el.ownerDocument,
     };
     PopupManager.addOrUpdatePopup(popupInfo);
 
@@ -314,6 +315,7 @@ export class PopupManager {
 
 /** @internal */
 interface PopupRendererState {
+  parentDocument: Document | null;
   popups: ReadonlyArray<PopupInfo>;
 }
 
@@ -322,34 +324,40 @@ interface PopupRendererState {
  */
 export class PopupRenderer extends React.Component<{}, PopupRendererState> {
   /** @internal */
-  public readonly state: PopupRendererState = {
+  public override readonly state: PopupRendererState = {
+    parentDocument: null,
     popups: PopupManager.popups,
   };
 
-  public componentDidMount(): void {
+  public override componentDidMount(): void {
     PopupManager.onPopupsChangedEvent.addListener(this._handlePopupsChangedEvent);
   }
 
-  public componentWillUnmount(): void {
+  public override componentWillUnmount(): void {
     PopupManager.onPopupsChangedEvent.removeListener(this._handlePopupsChangedEvent);
   }
 
-  public render(): React.ReactNode {
+  private _handleRefSet = (popupDiv: HTMLElement | null) => {
+    this.setState({ parentDocument: popupDiv?.ownerDocument ?? null });
+  };
+
+  public override render(): React.ReactNode {
     if (PopupManager.popupCount <= 0)
       return null;
 
     return (
-      <>
-        {
-          this.state.popups.map((popupInfo: PopupInfo) => {
-            return (
-              <React.Fragment key={popupInfo.id}>
-                {popupInfo.component}
-              </React.Fragment>
-            );
-          })
+      <div className="ui-framework-popup-render-container" ref={this._handleRefSet}>
+        { this.state.parentDocument &&
+          this.state.popups.filter((info) => info.parentDocument === this.state.parentDocument)
+            .map((popupInfo: PopupInfo) => {
+              return (
+                <React.Fragment key={popupInfo.id}>
+                  {popupInfo.component}
+                </React.Fragment>
+              );
+            })
         }
-      </>
+      </div>
     );
   }
 

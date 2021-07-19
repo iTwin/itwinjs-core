@@ -8,14 +8,15 @@
 
 import "./Table.scss";
 import "../columnfiltering/ColumnFiltering.scss";
+import classnamesDedupe from "classnames/dedupe";
 import classnames from "classnames";
 import { memoize } from "lodash";
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
 import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import {
-  CommonProps, Dialog, isNavigationKey, ItemKeyboardNavigator, LocalUiSettings, Orientation, SortDirection, UiSettings, UiSettingsStatus,
+  CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage,
+  Orientation, SortDirection, UiSettings, UiSettingsStatus, UiSettingsStorage,
 } from "@bentley/ui-core";
 import {
   MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
@@ -28,6 +29,7 @@ import { TableRowStyleProvider } from "../../properties/ItemStyle";
 import { PropertyDialogState, PropertyValueRendererManager } from "../../properties/ValueRendererManager";
 import { CompositeFilterDescriptorCollection, FilterCompositionLogicalOperator } from "../columnfiltering/ColumnFiltering";
 import { MultiSelectFilter } from "../columnfiltering/data-grid-addons/MultiSelectFilter";
+import { MultiValueFilter } from "../columnfiltering/multi-value-filter/MultiValueFilter";
 import { NumericFilter } from "../columnfiltering/data-grid-addons/NumericFilter";
 import { SingleSelectFilter } from "../columnfiltering/data-grid-addons/SingleSelectFilter";
 import { DataGridFilterParser, ReactDataGridFilter } from "../columnfiltering/DataGridFilterParser";
@@ -125,6 +127,9 @@ export interface TableProps extends CommonProps {
   /** Indicates whether the Table columns are reorderable */
   reorderableColumns?: boolean;
   /** Optional parameter for persistent UI settings. Used for column reordering and show persistency. */
+  settingsStorage?: UiSettingsStorage;
+  /** Optional parameter for persistent UI settings. Used for column reordering and show persistency.
+   * @deprecated use settingsStorage property */
   uiSettings?: UiSettings;
   /** Identifying string used for persistent state. */
   settingsIdentifier?: string;
@@ -149,6 +154,8 @@ export interface TableProps extends CommonProps {
 
   /** Called to show a context menu when a cell is right-clicked. @beta */
   onCellContextMenu?: (args: TableCellContextMenuArgs) => void;
+  /** Maximum number of distinct values for filtering */
+  maximumDistinctValues?: number;
 }
 
 /** Properties for a Table cell
@@ -232,6 +239,7 @@ interface TableState {
   keyboardEditorCellKey?: string;
   // TODO: Enable, when table gets refactored
   // popup?: PropertyPopupState;
+  gridContainer: HTMLDivElement | null;
 }
 
 const initialState: TableState = {
@@ -243,6 +251,7 @@ const initialState: TableState = {
   menuVisible: false,
   menuX: 0,
   menuY: 0,
+  gridContainer: null,
 };
 
 interface CellKey {
@@ -257,7 +266,7 @@ interface TableRowRendererProps {
 
 /** ReactDataGrid requires a class component for the RowRenderer because it sets a ref to it. */
 class TableRowRenderer extends React.Component<TableRowRendererProps> {
-  public render() {
+  public override render() {
     const creatorFn = this.props.rowRendererCreator();
     return creatorFn(this.props);
   }
@@ -279,7 +288,6 @@ const enum UpdateStatus { // eslint-disable-line no-restricted-syntax
  * @public
  */
 export class Table extends React.Component<TableProps, TableState> {
-
   private _pageAmount = 100;
   private _disposableListeners = new DisposableList();
   private _isMounted = false;
@@ -295,11 +303,12 @@ export class Table extends React.Component<TableProps, TableState> {
   private _pressedItemSelected: boolean = false;
   private _tableRef = React.createRef<HTMLDivElement>();
   private _gridRef = React.createRef<ReactDataGrid<any>>();
+  private _gridContainerRef = React.createRef<HTMLDivElement>();
   private _filterDescriptors?: TableFilterDescriptorCollection;
   private _filterRowShown = false;
 
   /** @internal */
-  public readonly state = initialState;
+  public override readonly state = initialState;
 
   /** @internal */
   constructor(props: TableProps) {
@@ -381,7 +390,7 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   /** @internal */
-  public componentDidUpdate(previousProps: TableProps) {
+  public override componentDidUpdate(previousProps: TableProps, previousState: TableState) {
     this._rowSelectionHandler.selectionMode = this.props.selectionMode ? this.props.selectionMode : SelectionMode.Single;
     this._cellSelectionHandler.selectionMode = this.props.selectionMode ? this.props.selectionMode : SelectionMode.Single;
 
@@ -396,6 +405,10 @@ export class Table extends React.Component<TableProps, TableState> {
       this.update();
       return;
     }
+
+    // When hiddenColumns length is changed, we need to re-render component so that cell widths would be calculated appropriately.
+    if (previousState.hiddenColumns.length !== this.state.hiddenColumns.length)
+      this.forceUpdate();
 
     if (this.props.isCellSelected !== previousProps.isCellSelected
       || this.props.isRowSelected !== previousProps.isRowSelected
@@ -416,15 +429,26 @@ export class Table extends React.Component<TableProps, TableState> {
   }
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
+    let gridContainer: HTMLDivElement | null = null;
+
     this._isMounted = true;
 
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    this.update();
+    // The previously used ReactResizeDetector, which does not work in popout/child windows, used deprecated React.findDomNode
+    // which is now deprecated so, so new ElementResizeObserver requires you to pass the element to observe. So get the
+    // same HTMLDivElement from grid as was used previously by ReactResizeDetector.
+    if (this._gridRef.current) {
+      const grid = this._gridRef.current as any;
+      gridContainer = grid.getDataGridDOMNode();
+    }
+    this.setState({ gridContainer }, () => {
+      // eslint-disable-next-line @typescript-eslint/no-floating-promises
+      this.update();
+    });
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
     this._disposableListeners.dispose();
   }
@@ -468,6 +492,7 @@ export class Table extends React.Component<TableProps, TableState> {
     let status = UpdateStatus.Continue;
     if (update === TableUpdate.Complete)
       status = await this.updateColumns();
+    // istanbul ignore else
     if (status === UpdateStatus.Continue && update > TableUpdate.None)
       status = await this.updateRows();
     return status;
@@ -494,17 +519,20 @@ export class Table extends React.Component<TableProps, TableState> {
 
     let dataGridColumns = columnDescriptions.map(this._columnDescriptionToReactDataGridColumn);
     if (this.props.settingsIdentifier) {
-      const uiSettings: UiSettings = this.props.uiSettings || /* istanbul ignore next */ new LocalUiSettings();
-      const reorderResult = await uiSettings.getSetting(this.props.settingsIdentifier, "ColumnReorder");
+      // eslint-disable-next-line deprecation/deprecation
+      const settingsStorage: UiSettingsStorage = this.props.settingsStorage || /* istanbul ignore next */ this.props.uiSettings || /* istanbul ignore next */ new LocalSettingsStorage();
+      const reorderResult = await settingsStorage.getSetting(this.props.settingsIdentifier, "ColumnReorder");
+      // istanbul ignore next
       if (reorderResult.status === UiSettingsStatus.Success) {
         const setting = reorderResult.setting as string[];
         // map columns according to the keys in columns, in the order of the loaded array of keys
         dataGridColumns = setting.map((key) => dataGridColumns.filter((col) => col.key === key)[0]);
       } else if (reorderResult.status === UiSettingsStatus.NotFound) {
         const keys = columnDescriptions.map((col) => col.key);
-        await uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
+        await settingsStorage.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys);
       }
-      const showhideResult = await uiSettings.getSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns");
+      const showhideResult = await settingsStorage.getSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns");
+      // istanbul ignore next
       if (showhideResult.status === UiSettingsStatus.Success) {
         const hiddenColumns = showhideResult.setting as string[];
         this.setState({ hiddenColumns });
@@ -517,8 +545,15 @@ export class Table extends React.Component<TableProps, TableState> {
       tableColumn.dataProvider = this.props.dataProvider;
       if (!keyboardEditorCellKey && tableColumn.columnDescription.editable)
         keyboardEditorCellKey = tableColumn.key;
+      if (tableColumn.filterable)
+        dataGridColumn.filterableColumn = tableColumn;
       return tableColumn;
     });
+
+    for (const tableColumn of tableColumns) {
+      if (tableColumn.filterable)
+        tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(this.props.maximumDistinctValues);
+    }
 
     this.setState({ columns: tableColumns, keyboardEditorCellKey });
 
@@ -609,6 +644,7 @@ export class Table extends React.Component<TableProps, TableState> {
       for (const column of this.state.columns) {
         const set = new Set<number>();
         for (let rowIndex = 0; rowIndex < this.state.rows.length; rowIndex++) {
+          // istanbul ignore next
           if (!this.state.rows[rowIndex])
             continue;
           const cellItem = this._getCellItem(this.state.rows[rowIndex].item, column.key);
@@ -656,6 +692,9 @@ export class Table extends React.Component<TableProps, TableState> {
         case FilterRenderer.MultiSelect:
           column.filterRenderer = MultiSelectFilter;
           break;
+        case FilterRenderer.MultiValue:
+          column.filterRenderer = MultiValueFilter;
+          break;
         case FilterRenderer.SingleSelect:
           column.filterRenderer = SingleSelectFilter;
           break;
@@ -669,7 +708,7 @@ export class Table extends React.Component<TableProps, TableState> {
   };
 
   private _getCellItem = (row: RowItem, columnKey: string): CellItem => {
-    return row.cells.find((cell: CellItem) => cell.key === columnKey) || { key: columnKey };
+    return row.cells.find((cell: CellItem) => cell.key === columnKey) || /* istanbul ignore next */ { key: columnKey };
   };
 
   private isCellSelected(key: CellKey) {
@@ -694,6 +733,7 @@ export class Table extends React.Component<TableProps, TableState> {
     for (const key of cellKeys) {
       // istanbul ignore else
       const set = this._selectedCellKeys.get(key.columnKey);
+      // istanbul ignore else
       if (set)
         set.delete(key.rowIndex);
     }
@@ -801,11 +841,14 @@ export class Table extends React.Component<TableProps, TableState> {
             if (rowIndex === item1.rowIndex && column.key === item1.columnKey) {
               firstItemFound = true;
               secondItem = item2;
-            } else if (rowIndex === item2.rowIndex && column.key === item2.columnKey) {
-              firstItemFound = true;
-              secondItem = item1;
-            } else
-              continue;
+            } else {
+              // istanbul ignore else
+              if (rowIndex === item2.rowIndex && column.key === item2.columnKey) {
+                firstItemFound = true;
+                secondItem = item1;
+              } else
+                continue;
+            }
           }
 
           const cellKey = { rowIndex, columnKey: column.key };
@@ -847,6 +890,7 @@ export class Table extends React.Component<TableProps, TableState> {
   };
 
   private _rowGetterAsync = memoize(async (index: number, clearRows: boolean): Promise<void> => {
+    // istanbul ignore next
     if (index < 0)
       return;
 
@@ -858,6 +902,7 @@ export class Table extends React.Component<TableProps, TableState> {
     if (!this._isMounted)
       return;
 
+    // istanbul ignore next
     if (this._pendingUpdate !== TableUpdate.None)
       return;
 
@@ -879,11 +924,8 @@ export class Table extends React.Component<TableProps, TableState> {
         this.props.onRowsLoaded(index, index + loadResult.rows.length - 1);
 
       const showFilter = this._isShowFilterRow();
-      if (showFilter !== this._filterRowShown) {
-        if (showFilter)
-          await this.loadDistinctValues();
+      if (showFilter !== this._filterRowShown)
         this.toggleFilterRow(showFilter);
-      }
     });
   });
 
@@ -900,11 +942,13 @@ export class Table extends React.Component<TableProps, TableState> {
         propertyValueRendererManager={this.props.propertyValueRendererManager
           ? this.props.propertyValueRendererManager
           : PropertyValueRendererManager.defaultManager}
+        style={{ zIndex: ((cellItem.mergedCellsCount ?? 1) > 1) ? 1 : undefined }}
       />
     );
   }
 
   private async getCellDisplayValue(cellItem: CellItem): Promise<string> {
+    // istanbul ignore next
     if (!cellItem.record || cellItem.record.value.valueFormat !== PropertyValueFormat.Primitive)
       return "";
 
@@ -917,7 +961,7 @@ export class Table extends React.Component<TableProps, TableState> {
       .getConverter(cellItem.record.property.typename, cellItem.record.property.converter?.name)
       .convertPropertyToString(cellItem.record.property, value);
 
-    return displayValue ? displayValue : "";
+    return displayValue ? displayValue : /* istanbul ignore next */ "";
   }
 
   private async createPropsForRowItem(item: RowItem, index: number): Promise<RowProps> {
@@ -1022,6 +1066,12 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private createRowCells(rowProps: RowProps, isSelected: boolean): { [columnKey: string]: React.ReactNode } {
     const cells: { [columnKey: string]: React.ReactNode } = {};
+    let gridColumns: HTMLElement[] = [];
+    let foundHiddenColumns = 0;
+
+    // istanbul ignore else
+    if (this._gridRef.current && (this._gridRef.current as any).getDataGridDOMNode)
+      gridColumns = (this._gridRef.current as any).getDataGridDOMNode().querySelectorAll(".react-grid-HeaderCell");
 
     for (let index = 0; index < this.state.columns.length; index++) {
       const column = this.state.columns[index];
@@ -1048,7 +1098,11 @@ export class Table extends React.Component<TableProps, TableState> {
         const selectionHandler = this.createCellItemSelectionHandler(cellKey);
         const selectionFunction = this._cellSelectionHandler.createSelectionFunction(this._cellComponentSelectionHandler, selectionHandler);
         onClick = (e: React.MouseEvent) => selectionFunction(e.shiftKey, e.ctrlKey);
-        onMouseMove = (e: React.MouseEvent) => { if (e.buttons === 1) this._cellSelectionHandler.updateDragAction(cellKey); };
+        onMouseMove = (e: React.MouseEvent) => {
+          // istanbul ignore else
+          if (e.buttons === 1)
+            this._cellSelectionHandler.updateDragAction(cellKey);
+        };
         onMouseDown = () => {
           this._cellSelectionHandler.createDragAction(this._cellComponentSelectionHandler, this.cellItemSelectionHandlers, cellKey);
         };
@@ -1059,6 +1113,37 @@ export class Table extends React.Component<TableProps, TableState> {
       }
 
       className = classnames(className, this.getCellBorderStyle(cellKey));
+      const mergedAdjacentCellsCount = (cellProps.item.mergedCellsCount ?? 1) - 1;
+      let cellWidth = 0;
+
+      for (let i = 0; i <= mergedAdjacentCellsCount; i++) {
+        const col = this.state.columns[index + i];
+        if (this.state.hiddenColumns.indexOf(col.key) === -1) {
+          const gridColumn = gridColumns[index + i - foundHiddenColumns];
+          const gridColumnWidth = gridColumn ? gridColumn.getBoundingClientRect().width : 0;
+          cellWidth += gridColumnWidth;
+        } else {
+          foundHiddenColumns++;
+        }
+
+        if (i > 0) {
+          cells[col.key] = (
+            <TableCell
+              className={className.replace("border-bottom", "")}
+              title={"empty-cell"}
+              onClick={onClick}
+              onMouseMove={onMouseMove}
+              onMouseDown={onMouseDown}
+            >
+            </TableCell>
+          );
+        }
+        const mergedColumn = this.state.columns[index + i];
+        const emptyCellKey = { rowIndex: rowProps.index, columnKey: mergedColumn.key };
+        className = classnamesDedupe(className, this.getCellBorderStyle(emptyCellKey));
+      }
+      index += mergedAdjacentCellsCount;
+
       cells[column.key] = (
         <TableCell
           className={className}
@@ -1072,6 +1157,7 @@ export class Table extends React.Component<TableProps, TableState> {
             propertyRecord: cellProps.item.record!,
             setFocus: true,
           } : undefined}
+          style={{ width: (mergedAdjacentCellsCount > 0) ? cellWidth : undefined }}
         >
           <CellContent isSelected={isSelected} />
         </TableCell>
@@ -1144,6 +1230,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _createRowRenderer = () => {
     return (props: { row: RowProps, [k: string]: React.ReactNode }) => {
+      // istanbul ignore next
       const renderRow = this.props.renderRow ? this.props.renderRow : this.renderRow;
       const { row: rowProps, ...reactDataGridRowProps } = props;
       if (this._tableSelectionTarget === TableSelectionTarget.Row) {
@@ -1200,9 +1287,9 @@ export class Table extends React.Component<TableProps, TableState> {
     cols.splice(columnTargetIndex, 0, cols.splice(columnSourceIndex, 1)[0]);
     // istanbul ignore else
     if (this.props.settingsIdentifier) {
-      const uiSettings: UiSettings = this.props.uiSettings || /* istanbul ignore next */ new LocalUiSettings();
+      const settingsStorage: UiSettingsStorage = this.props.settingsStorage || /* istanbul ignore next */ new LocalSettingsStorage();
       const keys = cols.map((col) => col.key);
-      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys); // eslint-disable-line @typescript-eslint/no-floating-promises
+      settingsStorage.saveSetting(this.props.settingsIdentifier, "ColumnReorder", keys); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
     this.setState({ columns: [] }, () => { // fix react-data-grid update issues
       this.setState({ columns: cols });
@@ -1273,7 +1360,7 @@ export class Table extends React.Component<TableProps, TableState> {
   };
 
   /** @internal */
-  public shouldComponentUpdate(_props: TableProps): boolean {
+  public override shouldComponentUpdate(_props: TableProps): boolean {
     return true;
   }
 
@@ -1331,14 +1418,16 @@ export class Table extends React.Component<TableProps, TableState> {
   private _handleShowHideChange = (cols: string[]) => {
     this.setState({ hiddenColumns: cols });
     if (this.props.settingsIdentifier) {
-      const uiSettings: UiSettings = this.props.uiSettings || new LocalUiSettings();
-      uiSettings.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols); // eslint-disable-line @typescript-eslint/no-floating-promises
+      const settingsStorage: UiSettingsStorage = this.props.settingsStorage || new LocalSettingsStorage();
+      settingsStorage.saveSetting(this.props.settingsIdentifier, "ColumnShowHideHiddenColumns", cols); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
     return true;
   };
 
+  // istanbul ignore next
   private _onDialogOpen = (dialogState: PropertyDialogState) => this.setState({ dialog: dialogState });
 
+  // istanbul ignore next
   private _onDialogClose = () => this.setState({ dialog: undefined });
 
   private _isShowFilterRow(): boolean {
@@ -1379,13 +1468,6 @@ export class Table extends React.Component<TableProps, TableState> {
     if (this.props.dataProvider.getPropertyDisplayValueExpression !== undefined)
       return this.props.dataProvider.getPropertyDisplayValueExpression(property);
     return property;
-  }
-
-  private async loadDistinctValues(): Promise<void> {
-    await Promise.all(this.state.columns.map(async (tableColumn: TableColumn) => {
-      if (tableColumn.filterable)
-        tableColumn.distinctValueCollection = await tableColumn.getDistinctValues(1000);
-    }));
   }
 
   private _handleFilterChange = (filter: ReactDataGridFilter): void => {
@@ -1591,7 +1673,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _onKeyUp = (e: React.KeyboardEvent) => this._onKeyboardEvent(e, false);
 
   /** @internal */
-  public render() {
+  public override render() {
     const rowRenderer = <TableRowRenderer rowRendererCreator={() => this._createRowRenderer()} />;
 
     const visibleColumns = this._getVisibleColumns();
@@ -1624,7 +1706,7 @@ export class Table extends React.Component<TableProps, TableState> {
               onClose={this._hideContextMenu}
               onShowHideChange={this._handleShowHideChange} />
           }
-          <ReactResizeDetector handleWidth handleHeight
+          <ElementResizeObserver watchedElement={this.state.gridContainer}
             render={({ width, height }) => (
               <ReactDataGrid
                 ref={this._gridRef}
@@ -1654,6 +1736,7 @@ export class Table extends React.Component<TableProps, TableState> {
         <div ref={this._tableRef}>
           {this.state.dialog
             ?
+            // istanbul ignore next
             <Dialog
               opened={true}
               onClose={this._onDialogClose}
@@ -1697,7 +1780,7 @@ export interface TableRowProps extends CommonProps {
 export class TableRow extends React.Component<TableRowProps> {
 
   /** @internal */
-  public render() {
+  public override render() {
     const { cells, isSelected, ...props } = this.props;
     return (
       <ReactDataGrid.Row {...props} row={cells} isSelected={isSelected} />

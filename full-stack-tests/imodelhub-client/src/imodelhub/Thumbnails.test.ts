@@ -49,11 +49,11 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
   let projectId: string;
   let imodelId: GuidString;
   let versions: Version[];
-  const imodelHubClient: IModelClient = utils.getDefaultClient();
+  let imodelHubClient: IModelClient;
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
-    this.enableTimeouts(false);
+    this.timeout(0);
 
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
@@ -61,6 +61,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     projectId = await utils.getProjectId(requestContext);
     await utils.createIModel(requestContext, utils.sharedimodelName, projectId);
     imodelId = await getIModelId(requestContext, utils.sharedimodelName, projectId);
+    imodelHubClient = utils.getDefaultClient();
 
     if (TestConfig.enableMocks) {
       versions = Array(3).fill(0).map(() => utils.generateVersion());
@@ -137,6 +138,7 @@ describe("iModelHub ThumbnailHandler (#unit)", () => {
     it(`should get ${params.size}Thumbnail by version id`, async () => {
       for (let i = 0; i < 3; i++) {
         utils.mockGetThumbnailsByVersionId(imodelId, params.size, versions[i].id!, params.thumbnails[i]);
+        // eslint-disable-next-line deprecation/deprecation
         const actualThumbnail: Thumbnail = (await imodelHubClient.thumbnails.get(requestContext, imodelId, params.size, new ThumbnailQuery().byVersionId(versions[i].id!)))[0];
         chai.assert(!!actualThumbnail);
         chai.expect(actualThumbnail.id!.toString()).to.be.equal(params.thumbnails[i].id!.toString());

@@ -6,10 +6,11 @@
  * @module Toolbar
  */
 
+import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import {
-  ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, OnItemExecutedFunc, SpecialKey, ToolbarItemUtilities,
+  ActionButton, ConditionalBooleanValue, ConditionalStringValue, GroupButton, OnItemExecutedFunc, ToolbarItemUtilities,
 } from "@bentley/ui-abstract";
 import { BadgeUtilities, CommonProps, withOnOutsideClick } from "@bentley/ui-core";
 import {
@@ -18,13 +19,12 @@ import {
 } from "@bentley/ui-ninezone";
 import { ToolGroupPanelContext } from "../frontstage/FrontstageComposer";
 import { FrontstageManager, ToolActivatedEventArgs } from "../frontstage/FrontstageManager";
-import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { ToolbarDragInteractionContext } from "./DragInteraction";
 import { ToolbarHelper } from "./ToolbarHelper";
 
-import classnames = require("classnames");
+import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 const ToolGroup = withOnOutsideClick(ToolGroupComponent, undefined, false);
@@ -71,7 +71,7 @@ interface ToolbarGroupItemState {
  */
 export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentProps, ToolbarGroupItemState> {
   /** @internal */
-  public readonly state: Readonly<ToolbarGroupItemState>;
+  public override readonly state: Readonly<ToolbarGroupItemState>;
   private _trayIndex = 0;
   private _closeOnPanelOpened = true;
   private _ref = React.createRef<HTMLDivElement>();
@@ -88,12 +88,12 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
     };
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
     FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
     FrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
   }
@@ -156,7 +156,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
     });
   }
 
-  public componentDidUpdate(prevProps: ToolbarGroupItemComponentProps, _prevState: ToolbarGroupItemState) {
+  public override componentDidUpdate(prevProps: ToolbarGroupItemComponentProps, _prevState: ToolbarGroupItemState) {
     if (!PropsHelper.isShallowEqual(this.props, prevProps)) {
       // istanbul ignore else
       if (this.props.groupItem !== prevProps.groupItem)
@@ -183,15 +183,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
     return tray;
   }
 
-  private _handleKeyDown = (e: React.KeyboardEvent): void => {
-    // istanbul ignore else
-    if (e.key === SpecialKey.Escape) {
-      this.closeGroupButton();
-      KeyboardShortcutManager.setFocusToHome();
-    }
-  };
-
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     if (!this.state.isVisible)
       return null;
 
@@ -227,7 +219,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
                         isActive={this.state.activeToolId === this.state.activeItemId}
                         isDisabled={!this.state.isEnabled}
                         onClick={this._handleDragInteractionClick}
-                        onKeyDown={this._handleKeyDown}
+                        onKeyDown={onEscapeSetFocusToHome}
                         onOpenPanel={this._handleOpenPanel}
                         title={ConditionalStringValue.getValue(activeItem.label)}
                       />
@@ -240,7 +232,7 @@ export class ToolbarGroupItem extends React.Component<ToolbarGroupItemComponentP
                         icon={ToolbarHelper.getIconReactNode(groupItem)}
                         isDisabled={!this.state.isEnabled}
                         onClick={this._handleClick}
-                        onKeyDown={this._handleKeyDown}
+                        onKeyDown={onEscapeSetFocusToHome}
                         title={ConditionalStringValue.getValue(this.state.groupItem.label)}
                       />
                     </div>

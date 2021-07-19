@@ -3,15 +3,14 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid } from "@bentley/bentleyjs-core";
 import { Point2d, Point3d, Range3d, Vector3d } from "@bentley/geometry-core";
 import {
-  Cartographic, ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
+  ColorDef, ImageBuffer, ImageBufferFormat, QParams3d, QPoint3dList, RenderMaterial, RenderMode, RenderTexture, TextureMapping,
 } from "@bentley/imodeljs-common";
 import { RenderGraphic } from "../../../render/RenderGraphic";
 import { createRenderPlanFromViewport } from "../../../render/RenderPlan";
 import { IModelApp } from "../../../IModelApp";
-import { BlankConnection } from "../../../IModelConnection";
+import { IModelConnection } from "../../../IModelConnection";
 import { SpatialViewState } from "../../../SpatialViewState";
 import { ScreenViewport } from "../../../Viewport";
 import { Target } from "../../../render/webgl/Target";
@@ -20,6 +19,7 @@ import { RenderPass } from "../../../render/webgl/RenderFlags";
 import { MeshGraphic, SurfaceGeometry } from "../../../render/webgl/Mesh";
 import { MeshArgs } from "../../../render/primitives/mesh/MeshPrimitives";
 import { MeshParams } from "../../../render/primitives/VertexTable";
+import { createBlankConnection } from "../../createBlankConnection";
 
 function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture): RenderGraphic {
   const args = new MeshArgs();
@@ -48,7 +48,7 @@ function createMesh(transparency: number, mat?: RenderMaterial | RenderTexture):
 }
 
 describe("Surface transparency", () => {
-  let imodel: BlankConnection;
+  let imodel: IModelConnection;
   let viewport: ScreenViewport;
   let opaqueTexture: RenderTexture;
   let translucentTexture: RenderTexture;
@@ -62,13 +62,7 @@ describe("Surface transparency", () => {
   before(async () => {
     await IModelApp.startup();
 
-    const exton = Cartographic.fromDegrees(-75.686694, 40.065757, 0);
-    imodel = BlankConnection.create({
-      name: "test",
-      location: exton,
-      extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-      contextId: Guid.createValue(),
-    });
+    imodel = createBlankConnection();
 
     const opaqueImage = ImageBuffer.create(new Uint8Array([255, 255, 255]), ImageBufferFormat.Rgb, 1);
     opaqueTexture = IModelApp.renderSystem.createTextureFromImageBuffer(opaqueImage, imodel, new RenderTexture.Params(imodel.transientIds.next))!;

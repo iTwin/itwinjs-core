@@ -216,10 +216,11 @@ export class Sample {
   public static createUnitCircle(numPoints: number): Point3d[] {
     const points: Point3d[] = [];
     const dTheta = Geometry.safeDivideFraction(Math.PI * 2, numPoints - 1, 0.0);
-    for (let i = 0; i < numPoints; i++) {
+    for (let i = 0; i + 1 < numPoints; i++) {
       const theta = i * dTheta;
       points.push(Point3d.create(Math.cos(theta), Math.sin(theta), 0.0));
     }
+    points.push(points[0].clone());
     return points;
   }
   /** Create points for an L shaped polygon
@@ -1084,7 +1085,7 @@ export class Sample {
   }
   /** assorted small polyface grids, possibly expanded by gridMultiplier */
   public static createSimpleIndexedPolyfaces(gridMultiplier: number): IndexedPolyface[] {
-    return [
+    const meshes = [
       Sample.createTriangularUnitGridPolyface(
         Point3d.create(),
         Vector3d.unitX(),
@@ -1111,6 +1112,9 @@ export class Sample {
         Vector3d.unitY(),
         3 * gridMultiplier, 2 * gridMultiplier, true, true, true),
     ];
+    for (const m of meshes)
+      m.expectedClosure = 1;
+    return meshes;
   }
   /**
    * Build a mesh that is a (possibly skewed) grid in a plane.
@@ -1456,6 +1460,16 @@ export class Sample {
     result.push(Cone.createAxisPoints(origin, centerB, 1.0, 0.0, false) as Cone);
     result.push(Cone.createAxisPoints(topZ, origin, 0.0, 1.0, true) as Cone);
     return result;
+  }
+  /** Return a TorusPipe with swept circle in xz plane rotating through an angle range around the Z axis. */
+  public static createPartialTorusAroundZ(majorRadius: number, majorSweep: Angle, minorRadius: number, minorStart: Angle, minorEnd: Angle): RotationalSweep{
+    const arc = Arc3d.createXYZXYZXYZ(
+      majorRadius, 0, 0,
+      minorRadius, 0, 0,
+      0, minorRadius, 0,
+      AngleSweep.createStartEnd(minorStart, minorEnd));
+    const contour = Path.create(arc);
+    return RotationalSweep.create(contour, Ray3d.createZAxis(), majorSweep, false)!;
   }
   /** Create assorted Torus Pipes */
   public static createTorusPipes(): TorusPipe[] {
@@ -2344,7 +2358,9 @@ export class Sample {
       channelDataArray.push(new AuxChannelData(input, values));
     }
     const channel = new AuxChannel(channelDataArray, dataType, name, inputName);
-    data.auxData.indices.push(channelIndex);
+    for (const _q of data.pointIndex){
+      data.auxData.indices.push(channelIndex);
+    }
     data.auxData.channels.push(channel);
   }
 }

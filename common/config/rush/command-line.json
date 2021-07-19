@@ -94,6 +94,23 @@
       "ignoreMissingScript": true,
       "ignoreDependencyOrder": true,
       "allowWarningsInSuccessfulBuild": true
+    },
+    {
+      "name": "copy:config",
+      "commandKind": "bulk",
+      "summary": "Run copy:config script for each package",
+      "description": "Iterates through each package in the monorepo and runs the 'copy:config' script. Note: If the files to copy already exist, the copy script will not overwrite it.",
+      "enableParallelism": true,
+      "ignoreMissingScript": true,
+      "ignoreDependencyOrder": true,
+      "allowWarningsInSuccessfulBuild": true
+    },
+    {
+      "name": "copyright:linter",
+      "commandKind": "global",
+      "summary": "Run copyright linter using lintstaged",
+      "autoinstallerName": "rush-lintstaged",
+      "shellCommand": "lint-staged --quiet --config common/scripts/.lintstagedrc.json"
     }
   ]
 }

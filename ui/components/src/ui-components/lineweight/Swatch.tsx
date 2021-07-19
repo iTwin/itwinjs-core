@@ -11,6 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { CommonProps } from "@bentley/ui-core";
+import { getCSSColorFromDef } from "../color/getCSSColorFromDef";
 
 /** Properties for the [[LineWeightSwatch]] React component
  * @beta
@@ -39,12 +40,12 @@ export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps>
     super(props);
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     // eslint-disable-next-line no-console
     // console.log(`LineWeightSwatchProps.componentDidMount setFocusRef=${this.props.setFocusRef} focusRef=${this.props.focusRef && this.props.focusRef.current ? "set" : "unset"}`);
   }
 
-  public render() {
+  public override render() {
     const {
       onClick, colorDef, weight, hideLabel, className, // do not pass on color swatch specific props
       // eslint-disable-next-line comma-dangle
@@ -54,8 +55,7 @@ export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps>
     let rgbaString = "";
 
     if (colorDef) {
-      const { b, g, r, t } = colorDef.colors;
-      rgbaString = `rgb(${r},${g},${b},${(255 - t) / 255})`;
+      rgbaString = getCSSColorFromDef(colorDef);
     }
 
     const buttonStyle: React.CSSProperties = colorDef ?
@@ -77,6 +77,7 @@ export class LineWeightSwatch extends React.PureComponent<LineWeightSwatchProps>
       };
 
     const handleClick = (_e: React.MouseEvent) => {
+      // istanbul ignore else
       if (onClick)
         onClick();
     };

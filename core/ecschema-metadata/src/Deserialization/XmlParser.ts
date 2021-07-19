@@ -11,7 +11,7 @@ import { CustomAttribute } from "../Metadata/CustomAttribute";
 import { CustomAttributeClass } from "../Metadata/CustomAttributeClass";
 import { Enumeration } from "../Metadata/Enumeration";
 import { PrimitiveProperty, Property, StructArrayProperty } from "../Metadata/Property";
-import { ECName } from "../SchemaKey";
+import { ECName } from "../ECName";
 import { AbstractParser, CAProviderTuple } from "./AbstractParser";
 import {
   ClassProps, ConstantProps, CustomAttributeClassProps, EntityClassProps, EnumerationProps, EnumeratorProps, FormatProps, InvertedUnitProps,
@@ -202,6 +202,13 @@ export class XmlParser extends AbstractParser<Element> {
 
   public parseMixin(xmlElement: Element): MixinProps {
     const classProps = this.getClassProps(xmlElement);
+
+    const baseClasses = this.getElementChildrenByTagName(xmlElement, "BaseClass");
+
+    // Mixins can only have one base class
+    if (baseClasses.length > 1)
+      throw new ECObjectsError(ECObjectsStatus.InvalidSchemaXML, `The Mixin ${this._currentItemFullName} has more than one base class which is not allowed.`);
+
     const customAttributesResult = this.getElementChildrenByTagName(xmlElement, "ECCustomAttributes");
 
     if (customAttributesResult.length < 1)

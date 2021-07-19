@@ -10,16 +10,56 @@
 
 import { assert, DbOpcode, DbResult, GuidString, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import { Point2d, Range3d } from "@bentley/geometry-core";
-import { LockLevel } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError, InformationPartitionElementProps,
-  ModelProps, RelatedElement,
+  AxisAlignedBox3d, ElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometricModelProps, IModel, IModelError,
+  InformationPartitionElementProps, ModelProps, RelatedElement,
 } from "@bentley/imodeljs-common";
+import { LockScope } from "./BackendHubAccess";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { DefinitionPartition, DocumentPartition, InformationRecordPartition, PhysicalPartition, SpatialLocationPartition } from "./Element";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
+
+/** Argument for the `Model.onXxx` static methods
+ * @beta
+ */
+export interface OnModelArg {
+  /** The iModel for the Model affected. */
+  iModel: IModelDb;
+}
+
+/** Argument for the `Model.onXxx` static methods that supply the properties of a Model to be inserted or updated.
+ * @beta
+ */
+export interface OnModelPropsArg extends OnModelArg {
+  /** The new properties of the Model affected. */
+  props: Readonly<ModelProps>;
+}
+
+/** Argument for the `Model.onXxx` static methods that only supply the Id of the affected Model.
+ * @beta
+ */
+export interface OnModelIdArg extends OnModelArg {
+  /** The Id of the Model affected */
+  id: Id64String;
+}
+
+/** Argument for the `Model.onXxxElement` static methods that supply the properties of an Element for a Model.
+ * @beta
+ */
+export interface OnElementInModelPropsArg extends OnModelIdArg {
+  /** The new properties of an Element for the affected Model */
+  elementProps: Readonly<ElementProps>;
+}
+
+/** Argument for the `Model.onXxxElement` static methods that supply the Id of an Element for a Model.
+ * @beta
+ */
+export interface OnElementInModelIdArg extends OnModelIdArg {
+  /** The Id of the Element for the affected Model */
+  elementId: Id64String;
+}
 
 /** A Model is a container for persisting a collection of related elements within an iModel.
  * See [[IModelDb.Models]] for how to query and manage the Models in an IModelDb.
@@ -28,9 +68,9 @@ import { SubjectOwnsPartitionElements } from "./NavigationRelationship";
  */
 export class Model extends Entity implements ModelProps {
   /** @internal */
-  public static get className(): string { return "Model"; }
+  public static override get className(): string { return "Model"; }
   /** @internal */
-  public static get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
+  public static override get protectedOperations() { return ["onInsert", "onUpdate", "onDelete"]; }
   public readonly modeledElement!: RelatedElement;
   public readonly name: string;
   public readonly parentModel!: Id64String;
@@ -50,7 +90,7 @@ export class Model extends Entity implements ModelProps {
   /** Add all properties of a Model to a json object.
    * @internal
    */
-  public toJSON(): ModelProps {
+  public override toJSON(): ModelProps {
     const val = super.toJSON() as ModelProps;
     val.name = this.name; // for cloning
     return val;
@@ -74,7 +114,7 @@ export class Model extends Entity implements ModelProps {
         break;
       }
       case DbOpcode.Delete: {
-        req.addLocks([ConcurrencyControl.Request.getModelLock(props.id!, LockLevel.Exclusive)]);
+        req.addLocks([ConcurrencyControl.Request.getModelLock(props.id!, LockScope.Exclusive)]);
         // before we can delete a model, we must delete all of its elements. If that fails, we cannot continue.
         iModel.withPreparedStatement(`select ecinstanceid from BisCore.Element where model.id=?`, (stmt) => {
           stmt.bindId(1, props.id!);
@@ -87,52 +127,122 @@ export class Model extends Entity implements ModelProps {
         break;
       }
       case DbOpcode.Update: {
-        req.addLocks([ConcurrencyControl.Request.getModelLock(props.id!, LockLevel.Exclusive)]);
+        req.addLocks([ConcurrencyControl.Request.getModelLock(props.id!, LockScope.Exclusive)]);
         break;
       }
     }
   }
 
-  /** Called before a new model is inserted.
-   * @throws [[IModelError]] if there is a problem
+  /** Called before a new Model is inserted.
+   * @note throw an exception to disallow the insert
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model to be inserted
    * @beta
    */
-  protected static onInsert(props: ModelProps, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Insert); }
+  protected static onInsert(arg: OnModelPropsArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onModelWrite(this, arg.props, DbOpcode.Insert);
+    }
   }
-  /** Called after a new model is inserted.
-   * @throws [[IModelError]] if there is a problem
+
+  /** Called after a new Model is inserted.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model that was inserted
    * @beta
    */
-  protected static onInserted(id: string, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWritten(this, id, DbOpcode.Insert); }
+  protected static onInserted(arg: OnModelIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onModelWritten(this, arg.id, DbOpcode.Insert);
+    }
   }
-  /** Called before a model is updated.
-   * @throws [[IModelError]] if there is a problem
+
+  /** Called before a Model is updated.
+   * @note throw an exception to disallow the update
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model to be updated
    * @beta
    */
-  protected static onUpdate(props: ModelProps, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Update); }
+  protected static onUpdate(arg: OnModelPropsArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onModelWrite(this, arg.props, DbOpcode.Update);
+    }
   }
-  /** Called after a model is updated.
-   * @throws [[IModelError]] if there is a problem
+
+  /** Called after a Model is updated.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model that was updated.
    * @beta
    */
-  protected static onUpdated(props: ModelProps, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWritten(this, props.id!, DbOpcode.Update); }
+  protected static onUpdated(arg: OnModelIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      arg.iModel.concurrencyControl.onModelWritten(this, arg.id, DbOpcode.Update);
+    }
   }
-  /** Called before a model is deleted.
-   * @throws [[IModelError]] if there is a problem
+
+  /** Called before a Model is deleted.
+   * @note throw an exception to disallow the delete
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model to be deleted
    * @beta
    */
-  protected static onDelete(props: ModelProps, iModel: IModelDb): void {
-    if (iModel.isBriefcaseDb()) { iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete); }
+  protected static onDelete(arg: OnModelIdArg): void {
+    if (arg.iModel.isBriefcaseDb()) {
+      const props = arg.iModel.models.getModelProps(arg.id);
+      arg.iModel.concurrencyControl.onModelWrite(this, props, DbOpcode.Delete);
+    }
   }
-  /** Called after a model is deleted.
-   * @throws [[IModelError]] if there is a problem
+
+  /** Called after a Model was deleted.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model that was deleted
    * @beta
    */
-  protected static onDeleted(_props: ModelProps, _iModel: IModelDb): void { }
+  protected static onDeleted(_arg: OnModelIdArg): void { }
+
+  /** Called before a prospective Element is to be inserted into an instance of a Model of this class.
+   * @note throw an exception to disallow the insert
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model to hold the element
+   * @beta
+   */
+  protected static onInsertElement(_arg: OnElementInModelPropsArg): void { }
+
+  /** Called after an Element has been inserted into an instance of a Model of this class.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model holding the element
+   * @beta
+   */
+  protected static onInsertedElement(_arg: OnElementInModelIdArg): void { }
+
+  /** Called when an Element in an instance of a Model of this class is about to be updated.
+   * @note throw an exception to disallow the update
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model holding the element
+   * @beta
+   */
+  protected static onUpdateElement(_arg: OnElementInModelPropsArg): void { }
+
+  /** Called after an Element in an instance of a Model of this class has been updated.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model holding the element
+   * @beta
+   */
+  protected static onUpdatedElement(_arg: OnElementInModelIdArg): void { }
+
+  /** Called when an Element in an instance of a Model of this class is about to be deleted.
+   * @note throw an exception to disallow the delete
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model holding the element
+   * @beta
+   */
+  protected static onDeleteElement(_arg: OnElementInModelIdArg): void { }
+
+  /** Called after an Element in an instance of a Model of this class has been deleted.
+   * @note If you override this method, you must call super.
+   * @note `this` is the class of the Model that held the element
+   * @beta
+   */
+  protected static onDeletedElement(_arg: OnElementInModelIdArg): void { }
 
   private getAllUserProperties(): any { if (!this.jsonProperties.UserProps) this.jsonProperties.UserProps = new Object(); return this.jsonProperties.UserProps; }
 
@@ -151,7 +261,7 @@ export class Model extends Entity implements ModelProps {
   /** Add a request for the locks that would be needed to carry out the specified operation.
    * @param opcode The operation that will be performed on the element.
    */
-  public buildConcurrencyControlRequest(opcode: DbOpcode): void {
+  public override buildConcurrencyControlRequest(opcode: DbOpcode): void {
     if (this.iModel.isBriefcaseDb()) {
       this.iModel.concurrencyControl.buildRequestForModel(this, opcode);
     }
@@ -172,7 +282,7 @@ export class GeometricModel extends Model implements GeometricModelProps {
   public geometryGuid?: GuidString; // Initialized by the Entity constructor
 
   /** @internal */
-  public static get className(): string { return "GeometricModel"; }
+  public static override get className(): string { return "GeometricModel"; }
   /** @internal */
   constructor(props: GeometricModelProps, iModel: IModelDb) { super(props, iModel); }
 
@@ -203,7 +313,7 @@ export abstract class GeometricModel3d extends GeometricModel implements Geometr
   public get iSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
 
   /** @internal */
-  public static get className(): string { return "GeometricModel3d"; }
+  public static override get className(): string { return "GeometricModel3d"; }
   /** @internal */
   constructor(props: GeometricModel3dProps, iModel: IModelDb) {
     super(props, iModel);
@@ -211,7 +321,7 @@ export abstract class GeometricModel3d extends GeometricModel implements Geometr
     this.isPlanProjection = JsonUtils.asBool(props.isPlanProjection);
   }
   /** @internal */
-  public toJSON(): GeometricModel3dProps {
+  public override toJSON(): GeometricModel3dProps {
     const val = super.toJSON() as GeometricModel3dProps;
     if (this.isNotSpatiallyLocated) val.isNotSpatiallyLocated = true;
     if (this.isPlanProjection) val.isPlanProjection = true;
@@ -226,11 +336,11 @@ export abstract class GeometricModel2d extends GeometricModel implements Geometr
   /** The actual coordinates of (0,0) in modeling coordinates. An offset applied to all modeling coordinates. */
   public globalOrigin?: Point2d; // Initialized by the Entity constructor
   /** @internal */
-  public static get className(): string { return "GeometricModel2d"; }
+  public static override get className(): string { return "GeometricModel2d"; }
   /** @internal */
   constructor(props: GeometricModel2dProps, iModel: IModelDb) { super(props, iModel); }
   /** @internal */
-  public toJSON(): GeometricModel2dProps {
+  public override toJSON(): GeometricModel2dProps {
     const val = super.toJSON() as GeometricModel2dProps;
     if (undefined !== this.globalOrigin) val.globalOrigin = Point2d.fromJSON(this.globalOrigin);
     return val;
@@ -242,7 +352,7 @@ export abstract class GeometricModel2d extends GeometricModel implements Geometr
  */
 export abstract class GraphicalModel2d extends GeometricModel2d {
   /** @internal */
-  public static get className(): string { return "GraphicalModel2d"; }
+  public static override get className(): string { return "GraphicalModel2d"; }
 }
 
 /** A container for persisting GraphicalElement3d instances.
@@ -252,7 +362,7 @@ export abstract class GraphicalModel2d extends GeometricModel2d {
  */
 export abstract class GraphicalModel3d extends GeometricModel3d {
   /** @internal */
-  public static get className(): string { return "GraphicalModel3d"; }
+  public static override get className(): string { return "GraphicalModel3d"; }
 }
 
 /** A container for persisting 3d geometric elements that are spatially located.
@@ -260,7 +370,7 @@ export abstract class GraphicalModel3d extends GeometricModel3d {
  */
 export abstract class SpatialModel extends GeometricModel3d {
   /** @internal */
-  public static get className(): string { return "SpatialModel"; }
+  public static override get className(): string { return "SpatialModel"; }
 }
 
 /** A container for persisting physical elements that model physical space.
@@ -269,7 +379,7 @@ export abstract class SpatialModel extends GeometricModel3d {
  */
 export class PhysicalModel extends SpatialModel {
   /** @internal */
-  public static get className(): string { return "PhysicalModel"; }
+  public static override get className(): string { return "PhysicalModel"; }
   /** Insert a PhysicalPartition and a PhysicalModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The PhysicalPartition will be inserted as a child of this Subject element.
@@ -301,7 +411,7 @@ export class PhysicalModel extends SpatialModel {
  */
 export class SpatialLocationModel extends SpatialModel {
   /** @internal */
-  public static get className(): string { return "SpatialLocationModel"; }
+  public static override get className(): string { return "SpatialLocationModel"; }
   /** Insert a SpatialLocationPartition and a SpatialLocationModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The SpatialLocationPartition will be inserted as a child of this Subject element.
@@ -332,7 +442,7 @@ export class SpatialLocationModel extends SpatialModel {
  */
 export class DrawingModel extends GraphicalModel2d {
   /** @internal */
-  public static get className(): string { return "DrawingModel"; }
+  public static override get className(): string { return "DrawingModel"; }
 }
 
 /** A container for persisting section [[DrawingGraphic]]s.
@@ -340,7 +450,7 @@ export class DrawingModel extends GraphicalModel2d {
  */
 export class SectionDrawingModel extends DrawingModel {
   /** @internal */
-  public static get className(): string { return "SectionDrawingModel"; }
+  public static override get className(): string { return "SectionDrawingModel"; }
 }
 
 /** A container for persisting [[ViewAttachment]]s and [[DrawingGraphic]]s.
@@ -350,7 +460,7 @@ export class SectionDrawingModel extends DrawingModel {
  */
 export class SheetModel extends GraphicalModel2d {
   /** @internal */
-  public static get className(): string { return "SheetModel"; }
+  public static override get className(): string { return "SheetModel"; }
 }
 
 /** A container for persisting role elements.
@@ -358,7 +468,7 @@ export class SheetModel extends GraphicalModel2d {
  */
 export class RoleModel extends Model {
   /** @internal */
-  public static get className(): string { return "RoleModel"; }
+  public static override get className(): string { return "RoleModel"; }
 }
 
 /** A container for persisting information elements.
@@ -366,7 +476,7 @@ export class RoleModel extends Model {
  */
 export abstract class InformationModel extends Model {
   /** @internal */
-  public static get className(): string { return "InformationModel"; }
+  public static override get className(): string { return "InformationModel"; }
 }
 
 /** A container for persisting group information elements.
@@ -375,7 +485,7 @@ export abstract class InformationModel extends Model {
  */
 export abstract class GroupInformationModel extends InformationModel {
   /** @internal */
-  public static get className(): string { return "GroupInformationModel"; }
+  public static override get className(): string { return "GroupInformationModel"; }
 }
 
 /** A container for persisting Information Record Elements
@@ -384,7 +494,7 @@ export abstract class GroupInformationModel extends InformationModel {
  */
 export class InformationRecordModel extends InformationModel {
   /** @internal */
-  public static get className(): string { return "InformationRecordModel"; }
+  public static override get className(): string { return "InformationRecordModel"; }
 
   /** Insert a InformationRecordPartition and a InformationRecordModel that sub-models it.
    * @param iModelDb Insert into this iModel
@@ -414,7 +524,7 @@ export class InformationRecordModel extends InformationModel {
  */
 export class DefinitionModel extends InformationModel {
   /** @internal */
-  public static get className(): string { return "DefinitionModel"; }
+  public static override get className(): string { return "DefinitionModel"; }
 
   /** Insert a DefinitionPartition and a DefinitionModel that sub-models it.
    * @param iModelDb Insert into this iModel
@@ -443,7 +553,7 @@ export class DefinitionModel extends InformationModel {
  */
 export class RepositoryModel extends DefinitionModel {
   /** @internal */
-  public static get className(): string { return "RepositoryModel"; }
+  public static override get className(): string { return "RepositoryModel"; }
 }
 
 /** Contains a list of document elements.
@@ -452,7 +562,7 @@ export class RepositoryModel extends DefinitionModel {
  */
 export class DocumentListModel extends InformationModel {
   /** @internal */
-  public static get className(): string { return "DocumentListModel"; }
+  public static override get className(): string { return "DocumentListModel"; }
   /** Insert a DocumentPartition and a DocumentListModel that sub-models it.
    * @param iModelDb Insert into this iModel
    * @param parentSubjectId The DocumentPartition will be inserted as a child of this Subject element.
@@ -481,7 +591,7 @@ export class DocumentListModel extends InformationModel {
  */
 export class LinkModel extends InformationModel {
   /** @internal */
-  public static get className(): string { return "LinkModel"; }
+  public static override get className(): string { return "LinkModel"; }
 }
 
 /** The singleton container for repository-specific definition elements.
@@ -489,7 +599,7 @@ export class LinkModel extends InformationModel {
  */
 export class DictionaryModel extends DefinitionModel {
   /** @internal */
-  public static get className(): string { return "DictionaryModel"; }
+  public static override get className(): string { return "DictionaryModel"; }
 }
 
 /** Obtains and displays multi-resolution tiled raster organized according to the WebMercator tiling system.
@@ -497,5 +607,5 @@ export class DictionaryModel extends DefinitionModel {
  */
 export class WebMercatorModel extends SpatialModel {
   /** @internal */
-  public static get className(): string { return "WebMercatorModel"; }
+  public static override get className(): string { return "WebMercatorModel"; }
 }

@@ -8,6 +8,7 @@ purely for that reason.
 The package delivers an API that allows creating hierarchies for supplied
 iModels and rulesets. Consumers can then verify the result using tools of
 their liking. Our recommendation is to use snapshot testing for 2 reasons:
+
 1. resulting hierarchies get rather large - testing the them in
 code might be difficult
 2. snapshots protect against regressions
@@ -15,6 +16,7 @@ code might be difficult
 ## Example
 
 An example of setting up snapshot tests with the **@bentley/presentation-testing** package:
+
 ``` ts
 [[include:Presentation.Testing.Rulesets]]
 ```
@@ -25,6 +27,7 @@ An example of setting up snapshot tests with the **@bentley/presentation-testing
 - Don't forget to close the iModel connection
 - Ruleset can be provided either as an ID of already registered ruleset or
   as a `Ruleset` object. The object can even be imported from a JSON file:
+
   ```ts
   await builder.createHierarchy(require("rulesets/YourRuleset"))
   ```

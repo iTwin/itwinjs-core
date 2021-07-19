@@ -11,7 +11,7 @@ export enum BackendTestCallbacks {
   resetOp8Initializer = "resetOp8Initializer",
   getEnvironment = "getEnvironment",
   setChunkThreshold = "setChunkThreshold", // Only registered for electron!
-  startPushTest = "startPushTest",
   startIpcTest = "startIpcTest",
+  startMockMobileTest = "startMockMobileTest",
   sendIpcMessage = "sendIpcMessage"
 }

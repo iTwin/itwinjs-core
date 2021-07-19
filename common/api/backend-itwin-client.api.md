@@ -41,7 +41,7 @@ export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientCo
 
 // @internal
 export class AzureFileHandler implements FileHandler {
-    constructor(useDownloadBuffer?: boolean, threshold?: number);
+    constructor(useDownloadBuffer?: boolean, threshold?: number, config?: ConfigData);
     // (undocumented)
     agent?: https.Agent;
     basename(filePath: string): string;
@@ -128,6 +128,16 @@ export class BackendTelemetryEvent extends ClientTelemetryEvent {
 }
 
 // @internal
+export class BlobDownloader {
+    // (undocumented)
+    static downloadFile(downloadUrl: string, downloadFile: string, config?: ConfigData, onProgress?: (data: ProgressData) => void, cancelRequest?: CancelRequest): Promise<void>;
+    // (undocumented)
+    static formatBytes(bytes: number): string;
+    // (undocumented)
+    static formatRate(bytePerSec: number): string;
+    }
+
+// @internal
 export class BufferedStream extends Transform {
     constructor(bufferSize: number);
     _flush(callback: TransformCallback): void;
@@ -153,6 +163,24 @@ export class ClientAuthIntrospectionManager {
     readonly introspectionClient: IntrospectionClient;
 }
 
+// @internal
+export interface ConfigData {
+    // (undocumented)
+    blockSize?: number;
+    // (undocumented)
+    checkMD5AfterDownload?: boolean;
+    // (undocumented)
+    downloadRateWindowSize?: number;
+    // (undocumented)
+    enableResumableDownload?: boolean;
+    // (undocumented)
+    ignoreResumeData?: boolean;
+    // (undocumented)
+    progressReportAfter?: number;
+    // (undocumented)
+    simultaneousDownloads?: number;
+}
+
 // @beta
 export class DelegationAuthorizationClient extends BackendAuthorizationClient {
     constructor(configuration: DelegationAuthorizationClientConfiguration);
@@ -163,6 +191,11 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
 
 // @beta
 export type DelegationAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
+
+// @internal
+export class HttpRequestHost {
+    static initialize(): Promise<void>;
+    }
 
 // @internal (undocumented)
 export class ImsClientAuthDetail extends ClientAuthDetail {
@@ -282,9 +315,24 @@ export type OidcDelegationClient = DelegationAuthorizationClient;
 export type OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration;
 
 // @internal
-export class RequestHost {
-    static initialize(): Promise<void>;
-    }
+export interface ProgressData {
+    // (undocumented)
+    blocksDownloaded: number;
+    // (undocumented)
+    blocksDownloading: number;
+    // (undocumented)
+    blocksPending: number;
+    // (undocumented)
+    bytesDone: number;
+    // (undocumented)
+    bytesTotal: number;
+    // (undocumented)
+    downloadRateBytesPerSec: number;
+    // (undocumented)
+    percentage: number;
+    // (undocumented)
+    windowRateBytesPerSec: number;
+}
 
 // @internal
 export class StorageServiceFileHandler extends UrlFileHandler {

@@ -20,7 +20,7 @@ export class MapLayerFormat {
     assert(false);
     return undefined;
   }
-  public static async validateSource(_url: string, _credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
+  public static async validateSource(_url: string, _credentials?: RequestBasicCredentials, _ignoreCache?: boolean): Promise<MapLayerSourceValidation> { return { status: MapLayerSourceStatus.Valid }; }
 }
 
 /** @internal */
@@ -76,8 +76,8 @@ export class MapLayerFormatRegistry {
     }
     return (format === undefined) ? undefined : format.createImageryProvider(layerSettings);
   }
-  public async validateSource(formatId: string, url: string, credentials?: RequestBasicCredentials): Promise<MapLayerSourceValidation> {
+  public async validateSource(formatId: string, url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation> {
     const format = this._formats.get(formatId);
-    return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSource(url, credentials);
+    return (format === undefined) ? { status: MapLayerSourceStatus.InvalidFormat } : format.validateSource(url, credentials, ignoreCache);
   }
 }

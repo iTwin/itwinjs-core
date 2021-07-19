@@ -6,6 +6,8 @@
  * @module DisplayStyles
  */
 
+import { MapLayerProps } from "./MapLayerSettings";
+import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
 import { TerrainProps, TerrainSettings } from "./TerrainSettings";
 
 /** Describes the type of background map displayed by a [[DisplayStyle]]
@@ -62,6 +64,10 @@ export interface BackgroundMapProps {
    * allows the user to select elements that are behind the map.
    */
   nonLocatable?: boolean;
+  /** A planar mask applied to the map geometry
+   * @beta
+   */
+  planarClipMask?: PlanarClipMaskProps;
 }
 
 /** The current set of supported background map providers.
@@ -114,6 +120,10 @@ export class BackgroundMapSettings {
   public readonly terrainSettings: TerrainSettings;
   /** Globe display mode. */
   public readonly globeMode: GlobeMode;
+  /** Planar Mask - used to mask the background map to avoid overlapping with other geometry
+   * @beta
+   */
+  public readonly planarClipMask: PlanarClipMaskSettings;
   private readonly _locatable: boolean;
   /** If false, the map will be treated as non-locatable - i.e., tools will not interact with it. This is particularly useful when the map is transparent - it
    * allows the user to select elements that are behind the map.
@@ -141,6 +151,7 @@ export class BackgroundMapSettings {
     this.terrainSettings = TerrainSettings.fromJSON(props.terrainSettings);
     this.globeMode = normalizeGlobeMode(props.globeMode);
     this._locatable = true !== props.nonLocatable;
+    this.planarClipMask = PlanarClipMaskSettings.fromJSON(props.planarClipMask);
   }
 
   /** Construct from JSON, performing validation and applying default values for undefined fields. */
@@ -174,6 +185,8 @@ export class BackgroundMapSettings {
         break;
       }
     }
+    if (this.planarClipMask.isValid)
+      props.planarClipMask = this.planarClipMask.toJSON();
 
     return props;
   }
@@ -186,12 +199,13 @@ export class BackgroundMapSettings {
   public equals(other: BackgroundMapSettings): boolean {
     return this.groundBias === other.groundBias && this.providerName === other.providerName && this.mapType === other.mapType
       && this.useDepthBuffer === other.useDepthBuffer && this.transparency === other.transparency && this.globeMode === other.globeMode
-      && this._locatable === other._locatable && this.applyTerrain === other.applyTerrain && this.terrainSettings.equals(other.terrainSettings);
+      && this._locatable === other._locatable && this.applyTerrain === other.applyTerrain && this.terrainSettings.equals(other.terrainSettings) && this.planarClipMask.equals(other.planarClipMask);
   }
 
   /** Create a copy of this BackgroundMapSettings, optionally modifying some of its properties.
    * @param changedProps JSON representation of the properties to change.
    * @returns A BackgroundMapSettings with all of its properties set to match those of `this`, except those explicitly defined in `changedProps`.
+   * @note If changing the provider it is currently necessary to also make same change to update the imagery base layer.
    */
   public clone(changedProps?: BackgroundMapProps): BackgroundMapSettings {
     if (undefined === changedProps)
@@ -209,8 +223,36 @@ export class BackgroundMapSettings {
       providerData: {
         mapType: changedProps.providerData?.mapType ?? this.mapType,
       },
+      planarClipMask: changedProps.planarClipMask ? this.planarClipMask.clone(changedProps.planarClipMask).toJSON() : this.planarClipMask.toJSON(),
     };
 
     return BackgroundMapSettings.fromJSON(props);
+  }
+
+  /** @internal */
+  public static providerFromMapLayer(props: MapLayerProps): BackgroundMapProps | undefined {
+    let providerName, mapType;
+    if (!props.url)
+      return undefined;
+    if (props.formatId === "BingMaps") {
+      providerName = "BingProvider";
+      if (props.url.indexOf("Road") > 0)
+        mapType = BackgroundMapType.Street;
+      else if (props.url.indexOf("AerialWithLabels") > 0)
+        mapType = BackgroundMapType.Hybrid;
+      else if (props.url.indexOf("Aerial") > 0)
+        mapType = BackgroundMapType.Aerial;
+    } else if (props.formatId === "MapboxImagery") {
+      providerName = "MapBoxProvider";
+      if (props.url.indexOf("streets-satellite") > 0)
+        mapType = BackgroundMapType.Hybrid;
+      else if (props.url.indexOf("streets") > 0)
+        mapType = BackgroundMapType.Street;
+      else if (props.url.indexOf("satellite") > 0)
+        mapType = BackgroundMapType.Aerial;
+    } else
+      return undefined;
+
+    return mapType !== undefined && providerName !== undefined ?  { providerName, providerData: { mapType } } : undefined;
   }
 }

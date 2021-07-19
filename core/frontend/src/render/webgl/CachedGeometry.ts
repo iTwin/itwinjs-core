@@ -10,6 +10,7 @@ import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Angle, Point2d, Point3d, Range3d, Vector2d, Vector3d } from "@bentley/geometry-core";
 import { Npc, QParams2d, QParams3d, QPoint2dList, QPoint3dList, RenderMode, RenderTexture } from "@bentley/imodeljs-common";
 import { SkyBox } from "../../DisplayStyleState";
+import { FlashMode } from "../../FlashSettings";
 import { TesselatedPolyline } from "../primitives/VertexTable";
 import { RenderMemory } from "../RenderMemory";
 import { AttributeMap } from "./AttributeMap";
@@ -24,13 +25,14 @@ import { InstancedGeometry } from "./InstancedGeometry";
 import { MaterialInfo } from "./Material";
 import { EdgeGeometry, MeshGeometry, SilhouetteEdgeGeometry, SurfaceGeometry } from "./Mesh";
 import { PointCloudGeometry } from "./PointCloud";
-import { CompositeFlags, FlashMode, RenderOrder, RenderPass } from "./RenderFlags";
+import { CompositeFlags, RenderOrder, RenderPass } from "./RenderFlags";
 import { System } from "./System";
 import { Target } from "./Target";
 import { computeCompositeTechniqueId, TechniqueId } from "./TechniqueId";
-import { TerrainMeshGeometry } from "./TerrainMesh";
+import { RealityMeshGeometry } from "./RealityMesh";
 import { TextureHandle } from "./Texture";
 import { VertexLUT } from "./VertexLUT";
+import { PlanarGridGeometry } from "./PlanarGrid";
 
 const scratchVec3a = new Vector3d();
 const scratchVec3b = new Vector3d();
@@ -55,11 +57,12 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
   public get asSurface(): SurfaceGeometry | undefined { return undefined; }
   public get asMesh(): MeshGeometry | undefined { return undefined; }
   public get asEdge(): EdgeGeometry | undefined { return undefined; }
-  public get asTerrainMesh(): TerrainMeshGeometry | undefined { return undefined; }
+  public get asRealityMesh(): RealityMeshGeometry | undefined { return undefined; }
   public get asSilhouette(): SilhouetteEdgeGeometry | undefined { return undefined; }
   public get asInstanced(): InstancedGeometry | undefined { return undefined; }
   public get isInstanced() { return undefined !== this.asInstanced; }
   public get asPointCloud(): PointCloudGeometry | undefined { return undefined; }
+  public get asPlanarGrid(): PlanarGridGeometry | undefined { return undefined; }
   public get alwaysRenderTranslucent(): boolean { return false; }
   public get allowColorOverride(): boolean { return true; }
 
@@ -102,7 +105,6 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
 
   public get polylineBuffers(): PolylineBuffers | undefined { return undefined; }
   public get hasFeatures(): boolean { return false; }
-
   public get viewIndependentOrigin(): Point3d | undefined { return undefined; }
   public get isViewIndependent(): boolean { return undefined !== this.viewIndependentOrigin; }
 
@@ -141,13 +143,13 @@ export abstract class CachedGeometry implements WebGLDisposable, RenderMemory.Co
     // By default only surfaces rendered with lighting get brightened. Overridden for reality meshes since they have lighting baked-in.
     // NB: If the reality model is classified, the classifiers are drawn without lighting, therefore we mix the hilite color.
     if (this.hasBakedLighting)
-      return FlashMode.MixHiliteColor;
+      return FlashMode.Hilite;
 
     const vf = params.target.currentViewFlags;
     if (!this.isLitSurface || RenderMode.SmoothShade !== vf.renderMode)
-      return FlashMode.MixHiliteColor;
+      return FlashMode.Hilite;
 
-    return vf.lighting ? FlashMode.Brighten : FlashMode.MixHiliteColor;
+    return vf.lighting ? params.target.plan.flashSettings.litMode : FlashMode.Hilite;
   }
 
   public wantMixMonochromeColor(_target: Target): boolean { return false; }
@@ -182,8 +184,8 @@ export abstract class LUTGeometry extends CachedGeometry {
 
   // The texture containing the vertex data.
   public abstract get lut(): VertexLUT;
-  public get asLUT() { return this; }
-  public get viewIndependentOrigin() { return this._viewIndependentOrigin; }
+  public override get asLUT() { return this; }
+  public override get viewIndependentOrigin() { return this._viewIndependentOrigin; }
 
   protected abstract _draw(_numInstances: number, _instanceBuffersContainer?: BuffersContainer): void;
   public draw(): void { this._draw(0); }
@@ -194,7 +196,7 @@ export abstract class LUTGeometry extends CachedGeometry {
 
   public get qOrigin(): Float32Array { return this.lut.qOrigin; }
   public get qScale(): Float32Array { return this.lut.qScale; }
-  public get hasAnimation() { return this.lut.hasAnimation; }
+  public override get hasAnimation() { return this.lut.hasAnimation; }
 
   protected constructor(viewIndependentOrigin?: Point3d) {
     super();
@@ -713,9 +715,9 @@ export class SkySphereViewportQuadGeometry extends ViewportQuadGeometry {
     return new SkySphereViewportQuadGeometry(params, skybox, technique);
   }
 
-  public get isDisposed(): boolean { return super.isDisposed && this._worldPosBuff.isDisposed; }
+  public override get isDisposed(): boolean { return super.isDisposed && this._worldPosBuff.isDisposed; }
 
-  public dispose() {
+  public override dispose() {
     super.dispose();
     dispose(this._worldPosBuff);
   }
@@ -861,6 +863,25 @@ export class CombineTexturesGeometry extends TexturedViewportQuadGeometry {
 
   private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
     super(params, TechniqueId.CombineTextures, textures);
+  }
+}
+
+export class Combine3TexturesGeometry extends TexturedViewportQuadGeometry {
+  public static createGeometry(texture0: WebGLTexture, texture1: WebGLTexture, texture2: WebGLTexture) {
+    const params = ViewportQuad.getInstance().createParams();
+    if (undefined !== params) {
+      return new Combine3TexturesGeometry(params, [texture0, texture1, texture2]);
+    } else {
+      return undefined;
+    }
+  }
+
+  public get texture0() { return this._textures[0]; }
+  public get texture1() { return this._textures[1]; }
+  public get texture2() { return this._textures[2]; }
+
+  private constructor(params: IndexedGeometryParams, textures: WebGLTexture[]) {
+    super(params, TechniqueId.Combine3Textures, textures);
   }
 }
 

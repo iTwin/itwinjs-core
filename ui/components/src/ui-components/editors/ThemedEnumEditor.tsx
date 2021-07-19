@@ -38,9 +38,10 @@ interface EnumEditorState {
  */
 export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps, EnumEditorState> implements TypeEditor {
   private _isMounted = false;
+  private _divElement = React.createRef<HTMLDivElement>();
 
   /** @internal */
-  public readonly state: Readonly<EnumEditorState> = {
+  public override readonly state: Readonly<EnumEditorState> = {
     selectValue: "",
     valueIsNumber: false,
     options: undefined,
@@ -60,6 +61,20 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
     }
 
     return propertyValue;
+  }
+
+  // istanbul ignore next
+  public get htmlElement(): HTMLElement | null {
+    return this._divElement.current;
+  }
+
+  // istanbul ignore next
+  public get hasFocus(): boolean {
+    let containsFocus = false;
+    // istanbul ignore else
+    if (this._divElement.current)
+      containsFocus = this._divElement.current.contains(document.activeElement);
+    return containsFocus;
   }
 
   private _updateSelectValue = (value: ValueType<OptionType>, action: ActionMeta<OptionType>) => {
@@ -92,18 +107,18 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -153,7 +168,7 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     const className = classnames("components-cell-editor", "components-enum-editor", this.props.className);
     const selectValue = this.state.selectValue ? this.state.selectValue.toString() : undefined;
     const options = this.state.options === undefined ? [] : this.state.options;
@@ -166,6 +181,7 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
 
     return (
       <ThemedSelect
+        divRef={this._divElement}
         className={className}
         value={selectedOption}
         onChange={this._updateSelectValue}
@@ -189,19 +205,19 @@ export class ThemedEnumEditor extends React.PureComponent<ThemedEnumEditorProps,
 export class ThemedEnumPropertyEditor extends PropertyEditorBase {
 
   // istanbul ignore next
-  public get containerHandlesBlur(): boolean {
+  public override get containerHandlesBlur(): boolean {
     return false;
   }
   // istanbul ignore next
-  public get containerHandlesEscape(): boolean {
+  public override get containerHandlesEscape(): boolean {
     return false;
   }
   // istanbul ignore next
-  public get containerHandlesEnter(): boolean {
+  public override get containerHandlesEnter(): boolean {
     return false;
   }
   // istanbul ignore next
-  public get containerHandlesTab(): boolean {
+  public override get containerHandlesTab(): boolean {
     return false;
   }
   // istanbul ignore next

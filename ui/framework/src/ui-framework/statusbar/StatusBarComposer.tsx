@@ -107,7 +107,7 @@ function useStatusBarItemSyncEffect(itemsManager: StatusBarItemsManager, syncIds
         return;
 
       // istanbul ignore else
-      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value))) {
+      if (syncIdsOfInterest.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) {
         // process each item that has interest
         itemsManager.refreshAffectedItems(args.eventIds);
       }
@@ -196,7 +196,7 @@ function isItemInOverflow(id: string, overflowItemIds: ReadonlyArray<string> | u
 }
 
 /** Properties for the [[StatusBarComposer]] React components
- * @beta
+ * @public
  */
 export interface StatusBarComposerProps extends CommonProps {
   /** Status Bar items */
@@ -213,7 +213,7 @@ export interface StatusBarComposerProps extends CommonProps {
 }
 
 /** Component to load components into the [[StatusBar]].
- * @beta
+ * @public
  */
 export function StatusBarComposer(props: StatusBarComposerProps) {
   const [defaultItemsManager, setDefaultItemsManager] = React.useState(new StatusBarItemsManager(props.items));
@@ -354,6 +354,7 @@ export function StatusBarComposer(props: StatusBarComposerProps) {
       className={className}
       ref={refs}
       style={props.style}
+      role="presentation"
     >
       <StatusBarSpaceBetween className={props.mainClassName}>
         <StatusBarLeftSection className={props.leftClassName}>

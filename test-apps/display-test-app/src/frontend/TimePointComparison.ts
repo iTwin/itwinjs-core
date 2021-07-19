@@ -7,7 +7,8 @@ import {
   ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point3d, Transform, Vector3d,
 } from "@bentley/geometry-core";
 import {
-  EditManipulator, FeatureSymbology, GraphicBranch, IModelApp, RenderClipVolume, SceneContext, ScreenViewport, TileTreeReference, Tool,
+  AccuDrawHintBuilder,
+  FeatureSymbology, GraphicBranch, IModelApp, RenderClipVolume, SceneContext, ScreenViewport, TileTreeReference, Tool,
 } from "@bentley/imodeljs-frontend";
 
 /** Prototype for SYNCHRO feature. Split the viewport down the middle. Left-hand side remains frozen at current time point. Right-hand side updates when time point changes. */
@@ -18,10 +19,6 @@ class TimePointComparison {
   private constructor(clip: ClipVector, timePoint: number) {
     this._clipVolume = IModelApp.renderSystem.createClipVolume(clip);
     this._timePoint = timePoint;
-  }
-
-  public dispose(): void {
-    this._clipVolume?.dispose();
   }
 
   public forEachTileTreeRef(viewport: ScreenViewport, func: (ref: TileTreeReference) => void): void {
@@ -37,7 +34,7 @@ class TimePointComparison {
     vp.displayStyle.settings.timePoint = this._timePoint;
 
     const context = vp.createSceneContext();
-    vp.view.createScene(context);
+    vp.createScene(context);
 
     const gfx = context.graphics;
     if (0 < gfx.length) {
@@ -66,7 +63,7 @@ class TimePointComparison {
     });
 
     if (!provider) {
-      const timePoint = vp.timePoint ?? vp.view.displayStyle.scheduleScript?.computeDuration().low;
+      const timePoint = vp.timePoint ?? vp.view.displayStyle.scheduleScript?.duration.low;
       if (undefined === timePoint)
         return;
 
@@ -74,14 +71,14 @@ class TimePointComparison {
       let point = new Point3d(rect.width / 2, rect.height / 2, 0);
       point = vp.viewToWorld(point);
 
-      const boresite = EditManipulator.HandleUtils.getBoresite(point, vp);
+      const boresite = AccuDrawHintBuilder.getBoresite(point, vp);
       const viewY = vp.rotation.rowY();
       const normal = viewY.crossProduct(boresite.direction);
 
       const createClip = (vec: Vector3d, pt: Point3d) => {
         const plane = ClipPlane.createNormalAndPoint(vec, pt)!;
-        const planes = ConvexClipPlaneSet.createPlanes([ plane ]);
-        return ClipVector.createCapture([ ClipPrimitive.createCapture(planes) ]);
+        const planes = ConvexClipPlaneSet.createPlanes([plane]);
+        return ClipVector.createCapture([ClipPrimitive.createCapture(planes)]);
       };
 
       vp.addTiledGraphicsProvider(new TimePointComparison(createClip(normal, point), timePoint));
@@ -89,7 +86,6 @@ class TimePointComparison {
       vp.viewFlags.clipVolume = true;
     } else {
       vp.dropTiledGraphicsProvider(provider);
-      provider.dispose();
       vp.view.setViewClip(undefined);
     }
 
@@ -98,9 +94,9 @@ class TimePointComparison {
 }
 
 export class TimePointComparisonTool extends Tool {
-  public static toolId = "ToggleTimePointComparison";
+  public static override toolId = "ToggleTimePointComparison";
 
-  public run(): boolean {
+  public override run(): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp)
       TimePointComparison.toggle(vp);

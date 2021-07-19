@@ -15,7 +15,7 @@ import {
 import { System } from "../System";
 import { FeatureMode, TechniqueFlags } from "../TechniqueFlags";
 import { addExtractNthBit, addEyeSpace, addUInt32s } from "./Common";
-import { decodeDepthRgb } from "./Decode";
+import { decodeDepthRgb, decodeUint24 } from "./Decode";
 import { addWindowToTexCoords, assignFragColor, computeLinearDepth } from "./Fragment";
 import { addLookupTable } from "./LookupTable";
 import { addRenderPass } from "./RenderPass";
@@ -56,13 +56,17 @@ export function addOvrFlagConstants(builder: ShaderBuilder): void {
 
 const computeLUTFeatureIndex = `g_featureAndMaterialIndex.xyz`;
 const computeInstanceFeatureIndex = `a_featureId`;
-function computeFeatureIndex(instanced: boolean): string {
-  return `g_featureIndex = ${instanced ? computeInstanceFeatureIndex : computeLUTFeatureIndex};`;
+function computeFeatureIndex(vertex: VertexShaderBuilder): string {
+  if (vertex.usesInstancedGeometry)
+    return `g_featureIndex = ${computeInstanceFeatureIndex};`;
+  else if (vertex.usesVertexTable)
+    return `g_featureIndex = ${computeLUTFeatureIndex};`;
+  else return "";
 }
-function getFeatureIndex(instanced: boolean): string {
+function getFeatureIndex(vertex: VertexShaderBuilder): string {
   return `
 float getFeatureIndex() {
-  ${computeFeatureIndex(instanced)};
+  ${computeFeatureIndex(vertex)}
   return decodeUInt24(g_featureIndex);
 }
 `;
@@ -125,9 +129,11 @@ float computeLineCode() {
 
 function addFeatureIndex(vert: VertexShaderBuilder): void {
   vert.addGlobal("g_featureIndex", VariableType.Vec3);
-  vert.addFunction(getFeatureIndex(vert.usesInstancedGeometry));
 
-  if (!vert.usesInstancedGeometry)
+  vert.addFunction(decodeUint24);
+  vert.addFunction(getFeatureIndex(vert));
+
+  if (vert.usesVertexTable && !vert.usesInstancedGeometry)
     addFeatureAndMaterialLookup(vert);
 }
 
@@ -165,7 +171,7 @@ function addCommon(builder: ProgramBuilder, mode: FeatureMode, opts: FeatureSymb
   if (!haveOverrides) {
     // For pick output we must compute g_featureIndex...
     if (FeatureMode.Pick === mode)
-      vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureIndex(vert.usesInstancedGeometry));
+      vert.set(VertexShaderComponent.ComputeFeatureOverrides, computeFeatureIndex(vert));
 
     return true;
   }
@@ -277,9 +283,11 @@ function addEmphasisFlags(builder: ShaderBuilder): void {
   builder.addBitFlagConstant("kEmphBit_Hilite", 0);
   builder.addBitFlagConstant("kEmphBit_Emphasize", 1);
   builder.addBitFlagConstant("kEmphBit_Flash", 2);
+  builder.addBitFlagConstant("kEmphBit_NonLocatable", 3);
   builder.addConstant("kEmphFlag_Hilite", VariableType.Float, "1.0");
   builder.addConstant("kEmphFlag_Emphasize", VariableType.Float, "2.0");
   builder.addConstant("kEmphFlag_Flash", VariableType.Float, "4.0");
+  builder.addConstant("kEmphFlag_NonLocatable", VariableType.Float, "8.0");
 }
 
 function addHiliteSettings(frag: FragmentShaderBuilder, wantFlashMode: boolean): void {
@@ -487,6 +495,12 @@ function addBatchId(builder: ShaderBuilder) {
   }, VariablePrecision.High);
 }
 
+const computeIdVert = `v_feature_id = addUInt32s(u_batch_id, vec4(g_featureIndex, 0.0)) / 255.0;`;
+const computeIdFrag = `
+  vec4 featureIndex = vec4(floor(v_feature_index + 0.5), 0.0);
+  feature_id = addUInt32s(u_batch_id, featureIndex) / 255.0;
+`;
+
 /** @internal */
 export function addFeatureId(builder: ProgramBuilder, computeInFrag: boolean) {
   const vert = builder.vert;
@@ -495,8 +509,7 @@ export function addFeatureId(builder: ProgramBuilder, computeInFrag: boolean) {
   if (!computeInFrag) {
     vert.addFunction(addUInt32s);
     addBatchId(vert);
-    const computeId = `v_feature_id = addUInt32s(u_batch_id, vec4(g_featureIndex, 0.0)) / 255.0;`;
-    builder.addInlineComputedVarying("v_feature_id", VariableType.Vec4, computeId);
+    builder.addInlineComputedVarying("v_feature_id", VariableType.Vec4, computeIdVert);
 
     frag.addInitializer("feature_id = v_feature_id;");
   } else {
@@ -504,11 +517,7 @@ export function addFeatureId(builder: ProgramBuilder, computeInFrag: boolean) {
     builder.addInlineComputedVarying("v_feature_index", VariableType.Vec3, "v_feature_index = g_featureIndex;");
 
     addBatchId(frag);
-    const computeId = `
-      vec4 featureIndex = vec4(floor(v_feature_index + 0.5), 0.0);
-      feature_id = addUInt32s(u_batch_id, featureIndex) / 255.0;
-    `;
-    frag.addInitializer(computeId);
+    frag.addInitializer(computeIdFrag);
   }
 }
 
@@ -600,6 +609,7 @@ const computeFeatureOverrides = `
     return; // nothing overridden for this feature
 
   bool nonLocatable = (u_shaderFlags[kShaderBit_IgnoreNonLocatable] ? nthFeatureBitSet(flags, kOvrBit_NonLocatable) : false);
+  v_feature_emphasis += kEmphFlag_NonLocatable * float(nthFeatureBitSet(flags, kOvrBit_NonLocatable));
   bool invisible = nthFeatureBitSet(flags, kOvrBit_Visibility);
   feature_invisible = invisible || nonLocatable;
   if (feature_invisible)

@@ -109,4 +109,4 @@ An example of the logging-related sections of a configuration .json file that is
 
 An [ActivityId](../../learning/RpcInterface.md#logging-and-activityids) is a globally unique Id that relates backend operations to frontend requests. The [ClientRequestContext]($bentleyjs-core) class manages the ActivityId for logging purposes. The current ActivityId is automatically associated as metadata with all logging messages.
 
-Backend code must cooperate with iModel.js to [manage the ClientRequestContext](../RpcInterface.md#logging-and-activityIds)
+Backend code must cooperate with iTwin.js to [manage the ClientRequestContext](../RpcInterface.md#logging-and-activityIds)

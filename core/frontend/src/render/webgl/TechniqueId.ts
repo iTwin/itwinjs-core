@@ -23,7 +23,8 @@ export const enum TechniqueId {
   PointString,
   Edge,
   SilhouetteEdge,
-  TerrainMesh,
+  RealityMesh,
+  PlanarGrid,
 
   // Techniques with a single associated shader that operates on the entire image
   CompositeHilite,
@@ -46,6 +47,7 @@ export const enum TechniqueId {
   AmbientOcclusion,
   Blur,
   CombineTextures,
+  Combine3Textures,
   VolClassCopyZ,
   VolClassSetBlend,
   VolClassBlend,

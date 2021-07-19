@@ -28,6 +28,14 @@ describe("Slider", () => {
     expect(component.getByTestId("core-slider-max")).to.exist;
   });
 
+  it("should render with showMinMax, formatMin & formatMax", () => {
+    const component = render(<Slider min={0} max={100} values={[50]} showMinMax={true} formatMin={(v: number) => v.toFixed(1)} formatMax={(v: number) => v.toFixed(1)} />);
+    expect(component.getByTestId("core-slider-min")).to.exist;
+    expect(component.getByTestId("core-slider-max")).to.exist;
+    expect(component.getByText("0.0")).to.exist;
+    expect(component.getByText("100.0")).to.exist;
+  });
+
   it("should render with showMinMax & minImage/maxImage", () => {
     const component = render(<Slider min={0} max={100} values={[50]} showMinMax={true} minImage={<Icon iconSpec="icon-placeholder" />} maxImage={<Icon iconSpec="icon-placeholder" />} />);
     expect(component.container.querySelector(".icon-placeholder")).not.to.be.null;

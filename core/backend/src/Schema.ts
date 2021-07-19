@@ -6,8 +6,8 @@
  * @module Schema
  */
 
-import { Logger } from "@bentley/bentleyjs-core";
-import { IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { IModelError } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ClassRegistry } from "./ClassRegistry";
 
@@ -27,6 +27,21 @@ export class Schema {
    * @internal
    */
   public static get missingRequiredBehavior(): boolean { return false; }
+
+  /** Get a semver-compatible string from a padded version string.
+   * works on unpadded version strings as well
+   * if there is no write version, it will be added
+   * @example Schema.toSemverString("1.02.03") === "1.2.3"
+   * @example Schema.toSemverString("1.01") === "1.0.1" // write version was added
+   * @beta
+   */
+  public static toSemverString(paddedVersion: string): string {
+    const tuple = paddedVersion.split(".").map(Number);
+    const noWriteVersion = tuple.length === 2;
+    if (noWriteVersion)
+      tuple.splice(1, 0, 0); // insert 0 before the second element
+    return tuple.join(".");
+  }
 
   /** Schemas may not be instantiated. The method is not private only because that precludes subclassing. It throws an
    * error if it is ever called.

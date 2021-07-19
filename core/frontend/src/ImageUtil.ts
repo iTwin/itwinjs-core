@@ -6,7 +6,7 @@
  * @module Rendering
  */
 
-import { isElectronRenderer } from "@bentley/bentleyjs-core";
+import { ProcessDetector } from "@bentley/bentleyjs-core";
 import { Point2d } from "@bentley/geometry-core";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat } from "@bentley/imodeljs-common";
 import { ViewRect } from "./ViewRect";
@@ -265,13 +265,13 @@ export function imageBufferToBase64EncodedPng(buffer: ImageBuffer, preserveAlpha
   return url.substring(urlPrefix.length);
 }
 
-/** Open an image specified as a data URL in a new window/tab. Works around differences between browsers and Electron.
+/** Open an image specified as a data URL in a new window or tab. Works around differences between browsers and Electron.
  * @param url The base64-encoded image URL.
  * @param title An optional title to apply to the new window.
  * @beta
  */
 export function openImageDataUrlInNewWindow(url: string, title?: string): void {
-  if (isElectronRenderer) {
+  if (ProcessDetector.isElectronAppFrontend) {
     window.open(url, title);
   } else {
     const win = window.open();
@@ -286,13 +286,13 @@ export function openImageDataUrlInNewWindow(url: string, title?: string): void {
   }
 }
 
-/** Determine maximum ViewRect that can be fitted and centered in specified ViewRect given a required aspect ratio.
- * @param viewRect view rectangle
- * @param aspectRatio width/height ratio
+/** Determine the maximum [[ViewRect]] that can be fitted and centered in specified ViewRect given a required aspect ratio.
+ * @param viewRect The rectangle in which the returned rectangle is to be centered and fitted.
+ * @param aspectRatio Ratio of width to height.
  * @returns A ViewRect centered in the input rectangle.
- * @beta
+ * @public
  */
-export function getCenteredViewRect(viewRect: ViewRect, aspectRatio = 1.4) {
+export function getCenteredViewRect(viewRect: ViewRect, aspectRatio = 1.4): ViewRect {
   // Determine scale that ensures ability to return an image with the prescribed aspectRatio
   const scale = Math.min(viewRect.width / aspectRatio, viewRect.height);
   const finalWidth = scale * aspectRatio;
@@ -305,11 +305,11 @@ export function getCenteredViewRect(viewRect: ViewRect, aspectRatio = 1.4) {
 }
 
 /** Produce a jpeg compressed to no more than specified bytes and of no less than specified quality.
- * @param canvas image source
- * @param maxBytes Maximum size of output image in bytes.
- * @param minCompressionQuality A Number between 0 and 1 indicating the image quality.
- * @returns Data URL for compressed jpeg or undefined if criteria could not be met.
- * @beta
+ * @param canvas Canvas containing the image to be compressed.
+ * @param maxBytes Maximum size of output jpeg in bytes.
+ * @param minCompressionQuality The minimum acceptable image quality as a number between 0 (lowest quality) and 1 (highest quality).
+ * @returns A [data URL](https://developer.mozilla.org/en-US/docs/Web/HTTP/Basics_of_HTTP/Data_URIs) for the image, or `undefined` if the compression and size constraints could not be met.
+ * @public
  */
 export function getCompressedJpegFromCanvas(canvas: HTMLCanvasElement, maxBytes = 60000, minCompressionQuality = 0.1): string | undefined {
   const decrements = 0.1; // Decrements of quality

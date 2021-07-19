@@ -50,25 +50,25 @@ export function viewWithUnifiedSelection<P extends ViewportProps>(ViewportCompon
 
     public get imodel() { return this.props.imodel; }
 
-    public componentDidMount() {
-      this.viewportSelectionHandler = this.props.selectionHandler
-        ? this.props.selectionHandler : new ViewportSelectionHandler({ imodel: this.props.imodel });
+    public override componentDidMount() {
+      this.viewportSelectionHandler = this.props.selectionHandler ?? new ViewportSelectionHandler({ imodel: this.props.imodel });
+      this.viewportSelectionHandler.applyCurrentSelection(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
 
-    public componentWillUnmount() {
+    public override componentWillUnmount() {
       if (this.viewportSelectionHandler) {
         this.viewportSelectionHandler.dispose();
         this.viewportSelectionHandler = undefined;
       }
     }
 
-    public componentDidUpdate() {
+    public override componentDidUpdate() {
       if (this.viewportSelectionHandler) {
         this.viewportSelectionHandler.imodel = this.props.imodel;
       }
     }
 
-    public render() {
+    public override render() {
       const {
         // eslint-disable-next-line @typescript-eslint/no-unused-vars
         ruleset, selectionHandler, // do not bleed our props
@@ -138,10 +138,16 @@ export class ViewportSelectionHandler implements IDisposable {
     this._imodel = value;
     this._imodel.hilited.wantSyncWithSelectionSet = false;
     this._selectionHandler.imodel = value;
+
+    this.applyCurrentSelection(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** note: used only it tests */
   public get pendingAsyncs() { return this._asyncsTracker.pendingAsyncs; }
+
+  public async applyCurrentSelection() {
+    await this.applyUnifiedSelection(this._imodel, { providerName: "" }, this.selectionHandler.getSelection());
+  }
 
   private async applyUnifiedSelection(imodel: IModelConnection, selectionInfo: SelectionInfo, selection: Readonly<KeySet>) {
     if (this._asyncsTracker.pendingAsyncs.size > 0) {

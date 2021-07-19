@@ -10,12 +10,13 @@ import memoize from "micro-memoize";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, ContentRequestOptions, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, Field, KeySet, PageOptions, RegisteredRuleset, Ruleset,
-  SelectionInfo,
+  Content, DEFAULT_KEYS_BATCH_SIZE, Descriptor, DescriptorOverrides, DiagnosticsOptionsWithHandler, Field, KeySet, PageOptions, RegisteredRuleset,
+  RequestOptionsWithRuleset, Ruleset, RulesetVariable, SelectionInfo,
 } from "@bentley/presentation-common";
-import { Presentation } from "@bentley/presentation-frontend";
+import { IModelContentChangeEventArgs, Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { PresentationComponentsLoggerCategory } from "../ComponentsLoggerCategory";
+import { createDiagnosticsOptions, DiagnosticsProps } from "./Diagnostics";
 import { IPresentationDataProvider } from "./IPresentationDataProvider";
 import { RulesetRegistrationHelper } from "./RulesetRegistrationHelper";
 import { findField } from "./Utils";
@@ -100,7 +101,7 @@ export interface IContentDataProvider extends IPresentationDataProvider {
  * Properties for creating a `ContentDataProvider` instance.
  * @public
  */
-export interface ContentDataProviderProps {
+export interface ContentDataProviderProps extends DiagnosticsProps {
   /** IModel to pull data from. */
   imodel: IModelConnection;
 
@@ -149,6 +150,7 @@ export class ContentDataProvider implements IContentDataProvider {
   private _previousKeysGuid: string;
   private _selectionInfo?: SelectionInfo;
   private _pagingSize?: number;
+  private _diagnosticsOptions?: DiagnosticsOptionsWithHandler;
 
   /** Constructor. */
   constructor(props: ContentDataProviderProps) {
@@ -158,6 +160,7 @@ export class ContentDataProvider implements IContentDataProvider {
     this._keys = new KeySet();
     this._previousKeysGuid = this._keys.guid;
     this._pagingSize = props.pagingSize;
+    this._diagnosticsOptions = createDiagnosticsOptions(props);
     if (props.enableContentAutoUpdate) {
       Presentation.presentation.onIModelContentChanged.addListener(this.onIModelContentChanged);
       Presentation.presentation.rulesets().onRulesetModified.addListener(this.onRulesetModified);
@@ -243,10 +246,11 @@ export class ContentDataProvider implements IContentDataProvider {
     }
   }
 
-  private createRequestOptions(): ContentRequestOptions<IModelConnection> {
+  private createRequestOptions(): RequestOptionsWithRuleset<IModelConnection, RulesetVariable> {
     return {
       imodel: this._imodel,
       rulesetOrId: this._rulesetRegistration.rulesetId,
+      ...(this._diagnosticsOptions ? { diagnostics: this._diagnosticsOptions } : undefined),
     };
   }
 
@@ -420,8 +424,8 @@ export class ContentDataProvider implements IContentDataProvider {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onIModelContentChanged = (args: { ruleset: Ruleset }) => {
-    if (args.ruleset.id === this.rulesetId)
+  private onIModelContentChanged = (args: IModelContentChangeEventArgs) => {
+    if (args.rulesetId === this.rulesetId && args.imodelKey === this.imodel.key)
       this.onContentUpdate();
   };
 

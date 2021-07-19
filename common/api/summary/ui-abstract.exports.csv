@@ -1,15 +1,17 @@
 sep=;
 Release Tag;API Item
-beta;AbstractActionItemProps 
-beta;AbstractMenuItemProps 
-beta;AbstractStatusBarActionItem 
-beta;AbstractStatusBarCustomItem 
-beta;AbstractStatusBarItem 
-beta;AbstractStatusBarItemUtilities
-beta;AbstractStatusBarLabelItem 
-beta;AbstractToolbarProps
-beta;AbstractWidgetProps 
+public;AbstractActionItemProps 
+public;AbstractMenuItemProps 
+public;AbstractStatusBarActionItem 
+public;AbstractStatusBarCustomItem 
+public;AbstractStatusBarItem 
+public;AbstractStatusBarItemUtilities
+public;AbstractStatusBarLabelItem 
+public;AbstractToolbarProps
+public;AbstractWidgetProps 
+public;AbstractZoneLocation
 alpha;AccuDrawField
+alpha;AccuDrawGrabInputFocusEvent 
 alpha;AccuDrawMode
 alpha;AccuDrawSetFieldFocusEvent 
 alpha;AccuDrawSetFieldFocusEventArgs
@@ -22,50 +24,50 @@ alpha;AccuDrawSetFieldValueToUiEventArgs
 alpha;AccuDrawSetModeEvent 
 alpha;AccuDrawSetModeEventArgs
 alpha;AccuDrawUiAdmin
-beta;ActionButton 
-beta;AlternateDateFormats
-beta;ArrayValue 
-beta;BackstageActionItem 
-beta;BackstageItem = BackstageActionItem | BackstageStageLauncher
+public;ActionButton 
+public;AlternateDateFormats
+public;ArrayValue 
+public;BackstageActionItem 
+public;BackstageItem = BackstageActionItem | BackstageStageLauncher
 internal;BackstageItemsChangedArgs
 internal;BackstageItemsManager
-beta;BackstageItemType
-beta;BackstageItemUtilities
-beta;BackstageStageLauncher 
+public;BackstageItemType
+public;BackstageItemUtilities
+public;BackstageStageLauncher 
 public;BadgeType
-beta;BaseDialogItem
-beta;BasePropertyEditorParams
-beta;BasePropertyValue
+public;BaseDialogItem
+public;BasePropertyEditorParams
+public;BasePropertyValue
 beta;class BaseQuantityDescription 
-beta;ButtonGroupEditorParams 
+public;ButtonGroupEditorParams 
 internal;enum CharCode
-beta;ColorEditorParams 
-beta;CommandHandler
-beta;CommonBackstageItem 
-beta;CommonItemProps
-beta;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
-beta;CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition
+public;ColorEditorParams 
+public;CommandHandler
+public;CommonBackstageItem 
+public;CommonItemProps
+public;CommonStatusBarItem = AbstractStatusBarActionItem | AbstractStatusBarLabelItem | AbstractStatusBarCustomItem
+public;CommonToolbarItem = ActionButton | GroupButton | CustomButtonDefinition
 public;ConditionalBooleanValue
-beta;ConditionalStringValue
+public;ConditionalStringValue
 internal;convertSimple2RegExpPattern(pattern: string): string
 internal;createMatches(score: undefined | FuzzyScore): IMatch[]
-beta;CustomButtonDefinition 
-beta;CustomFormattedNumberParams 
-beta;DateFormatter
+public;CustomButtonDefinition 
+public;CustomFormattedNumberParams 
+public;DateFormatter
 public;DialogButtonDef
 public;DialogButtonStyle
 public;DialogButtonType
-beta;DialogItem 
-beta;DialogItemValue
-beta;class DialogLayoutDataProvider 
-beta;DialogProperty
-beta;DialogPropertyItem
-beta;DialogPropertySyncItem 
-beta;DialogProps
-beta;DialogRow
-beta;EditorPosition
-beta;EnumerationChoice
-beta;EnumerationChoicesInfo
+public;DialogItem 
+public;DialogItemValue
+public;class DialogLayoutDataProvider 
+public;DialogProperty
+public;DialogPropertyItem
+public;DialogPropertySyncItem 
+public;DialogProps
+public;DialogRow
+public;EditorPosition
+public;EnumerationChoice
+public;EnumerationChoicesInfo
 internal;equalsIgnoreCase(a: string, b: string): boolean
 public;FunctionKey
 internal;FuzzyScore = [number, number, number]
@@ -74,35 +76,35 @@ internal;fuzzyScore(pattern: string, patternLow: string, patternStart: number, w
 internal;fuzzyScoreGraceful(pattern: string, lowPattern: string, patternPos: number, word: string, lowWord: string, wordPos: number, firstMatchCanBeWeak: boolean): FuzzyScore | undefined
 internal;fuzzyScoreGracefulAggressive(pattern: string, lowPattern: string, patternPos: number, word: string, lowWord: string, wordPos: number, firstMatchCanBeWeak: boolean): FuzzyScore | undefined
 internal;FuzzyScorer = (pattern: string, lowPattern: string, patternPos: number, word: string, lowWord: string, wordPos: number, firstMatchCanBeWeak: boolean) => FuzzyScore | undefined
-beta;GenericUiEvent 
-beta;GenericUiEventArgs
+public;GenericUiEvent 
+public;GenericUiEventArgs
 internal;getClassName: (obj: any) => string
-beta;GroupButton 
-beta;IconDefinition
-beta;IconEditorParams 
-beta;IconListEditorParams 
+public;GroupButton 
+public;IconDefinition
+public;IconEditorParams 
+public;IconListEditorParams 
 beta;IconSpecUtilities
 internal;IFilter = (word: string, wordToMatchAgainst: string) => IMatch[] | null
-beta;ImageCheckBoxParams 
+public;ImageCheckBoxParams 
 public;IMatch
-beta;InputEditorSizeParams 
-beta;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
-beta;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
-beta;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem
-beta;isActionItem: (item: BackstageItem) => item is BackstageActionItem
+public;InputEditorSizeParams 
+public;isAbstractStatusBarActionItem: (item: CommonStatusBarItem) => item is AbstractStatusBarActionItem
+public;isAbstractStatusBarCustomItem: (item: CommonStatusBarItem) => item is AbstractStatusBarCustomItem
+public;isAbstractStatusBarLabelItem: (item: CommonStatusBarItem) => item is AbstractStatusBarLabelItem
+public;isActionItem: (item: BackstageItem) => item is BackstageActionItem
 public;isArrowKey(key: string): boolean
-beta;isButtonGroupEditorParams: (item: BasePropertyEditorParams) => item is ButtonGroupEditorParams
-beta;isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEditorParams
-beta;isCustomFormattedNumberParams: (item: BasePropertyEditorParams) => item is CustomFormattedNumberParams
-beta;isIconListEditorParams: (item: BasePropertyEditorParams) => item is IconListEditorParams
-beta;isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputEditorSizeParams
+public;isButtonGroupEditorParams: (item: BasePropertyEditorParams) => item is ButtonGroupEditorParams
+public;isColorEditorParams: (item: BasePropertyEditorParams) => item is ColorEditorParams
+public;isCustomFormattedNumberParams: (item: BasePropertyEditorParams) => item is CustomFormattedNumberParams
+public;isIconListEditorParams: (item: BasePropertyEditorParams) => item is IconListEditorParams
+public;isInputEditorSizeParams: (item: BasePropertyEditorParams) => item is InputEditorSizeParams
 alpha;isLetter(char: string): boolean
 internal;isLowerAsciiLetter(code: number): boolean
 internal;isPatternInWord(patternLow: string, patternPos: number, patternLen: number, wordLow: string, wordPos: number, wordLen: number): boolean
-beta;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
-beta;isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams
+public;isStageLauncher: (item: BackstageItem) => item is BackstageStageLauncher
+public;isSuppressLabelEditorParams: (item: BasePropertyEditorParams) => item is SuppressLabelEditorParams
 internal;isUpperAsciiLetter(code: number): boolean
-beta;LinkElementsInfo
+public;LinkElementsInfo
 internal;matchesCamelCase(word: string, camelCaseWord: string): IMatch[] | null
 internal;matchesContiguousSubString(word: string, wordToMatchAgainst: string): IMatch[] | null
 internal;matchesFuzzy(word: string, wordToMatchAgainst: string, enableSeparateSubstringMatching?: boolean): IMatch[] | null
@@ -111,66 +113,66 @@ internal;matchesPrefix: IFilter
 internal;matchesStrictPrefix: IFilter
 internal;matchesSubString(word: string, wordToMatchAgainst: string): IMatch[] | null
 internal;matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null
-beta;MultilineTextEditorParams 
-beta;OnCancelFunc = () => void
-beta;OnItemExecutedFunc = (item: any) => void
-beta;OnNumberCommitFunc = (value: number) => void
-beta;OnValueCommitFunc = (value: Primitives.Value) => void
+public;MultilineTextEditorParams 
+public;OnCancelFunc = () => void
+public;OnItemExecutedFunc = (item: any) => void
+public;OnNumberCommitFunc = (value: number) => void
+public;OnValueCommitFunc = (value: Primitives.Value) => void
 internal;or(...filter: IFilter[]): IFilter
-beta;ParseResults
-beta;Primitives
-beta;PrimitiveValue 
-beta;PropertyChangeResult
-beta;PropertyChangeStatus
-beta;PropertyConverterInfo
-beta;PropertyDescription
-alpha;PropertyDescriptionHelper
-beta;PropertyEditorInfo
-beta;PropertyEditorParams = BasePropertyEditorParams
-beta;PropertyEditorParamTypes
-beta;PropertyRecord
-beta;PropertyRendererInfo
-beta;PropertyValue = PrimitiveValue | StructValue | ArrayValue
-beta;PropertyValueFormat
-beta;ProvidedItem
-beta;RangeEditorParams 
+public;ParseResults
+public;Primitives
+public;PrimitiveValue 
+public;PropertyChangeResult
+public;PropertyChangeStatus
+public;PropertyConverterInfo
+public;PropertyDescription
+beta;PropertyDescriptionHelper
+public;PropertyEditorInfo
+public;PropertyEditorParams = BasePropertyEditorParams
+public;PropertyEditorParamTypes
+public;PropertyRecord
+public;PropertyRendererInfo
+public;PropertyValue = PrimitiveValue | StructValue | ArrayValue
+public;PropertyValueFormat
+public;ProvidedItem
+public;RangeEditorParams 
 public;RelativePosition
-beta;SliderEditorParams 
+public;SliderEditorParams 
 public;SpecialKey
-beta;StagePanelLocation
-beta;StagePanelSection
-beta;StageUsage
+public;StagePanelLocation
+public;StagePanelSection
+public;StageUsage
 beta;StandardEditorNames
 beta;StandardTypeNames
 internal;startsWithIgnoreCase(str: string, candidate: string): boolean
-beta;StatusBarItemId = CommonStatusBarItem["id"]
+public;StatusBarItemId = CommonStatusBarItem["id"]
 internal;StatusBarItemsChangedArgs
 internal;StatusBarItemsManager
-beta;StatusBarLabelSide
-beta;StatusBarSection
-beta;StringGetter = () => string
-beta;StructValue 
-beta;SuppressLabelEditorParams 
-beta;SyncPropertiesChangeEvent 
-beta;SyncPropertiesChangeEventArgs
-beta;TimeDisplay
-beta;ToolbarItem 
-beta;ToolbarItemId = CommonToolbarItem["id"]
+public;StatusBarLabelSide
+public;StatusBarSection
+public;StringGetter = () => string
+public;StructValue 
+public;SuppressLabelEditorParams 
+public;SyncPropertiesChangeEvent 
+public;SyncPropertiesChangeEventArgs
+public;TimeDisplay
+public;ToolbarItem 
+public;ToolbarItemId = CommonToolbarItem["id"]
 internal;ToolbarItemsChangedArgs
 internal;ToolbarItemsManager
-beta;ToolbarItemUtilities
-beta;ToolbarOrientation
-beta;ToolbarUsage
+public;ToolbarItemUtilities
+public;ToolbarOrientation
+public;ToolbarUsage
 public;UiAbstract
-beta;UiAdmin
-beta;class UiDataProvider
+public;UiAdmin
+public;class UiDataProvider
 public;UiError 
-beta;UiFlags
-beta;UiItemProviderRegisteredEventArgs
+public;UiFlags
+public;UiItemProviderRegisteredEventArgs
 beta;UiItemsApplication
-beta;UiItemsApplicationAction
+public;UiItemsApplicationAction
 beta;UiItemsArbiter
-beta;UiItemsManager
-beta;UiItemsProvider
-beta;class UiLayoutDataProvider 
-beta;WidgetState
+public;UiItemsManager
+public;UiItemsProvider
+public;class UiLayoutDataProvider 
+public;WidgetState

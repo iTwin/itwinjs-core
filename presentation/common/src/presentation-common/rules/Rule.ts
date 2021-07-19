@@ -11,6 +11,7 @@ import { DefaultPropertyCategoryOverride } from "./content/DefaultPropertyCatego
 import { ContentModifier } from "./content/modifiers/ContentModifier";
 import { CustomizationRule } from "./customization/CustomizationRule";
 import { NavigationRule } from "./hierarchy/NavigationRule";
+import { RequiredSchemaSpecification } from "./SchemasSpecification";
 
 /**
  * Base interface for all [[Rule]] implementations. Not meant
@@ -34,6 +35,12 @@ export interface RuleBase {
    * rule with a higher priority.
    */
   onlyIfNotHandled?: boolean;
+
+  /**
+   * Schema requirements for this rule. The rule is not used if the requirements are not met.
+   * @beta
+   */
+  requiredSchemas?: RequiredSchemaSpecification[];
 }
 
 /**
@@ -68,8 +75,8 @@ export enum RuleTypes {
 
   // content rules
   Content = "Content",
-  ContentModifier = "ContentModifier", // eslint-disable-line no-shadow
-  DefaultPropertyCategoryOverride = "DefaultPropertyCategoryOverride", // eslint-disable-line no-shadow
+  ContentModifier = "ContentModifier", // eslint-disable-line @typescript-eslint/no-shadow
+  DefaultPropertyCategoryOverride = "DefaultPropertyCategoryOverride", // eslint-disable-line @typescript-eslint/no-shadow
 
   // customization rules
   Grouping = "Grouping",

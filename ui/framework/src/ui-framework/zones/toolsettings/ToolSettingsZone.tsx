@@ -14,14 +14,13 @@ import {
 import { ZoneTargets } from "../../dragdrop/ZoneTargets";
 import { TargetChangeHandler, WidgetChangeHandler } from "../../frontstage/FrontstageComposer";
 import { FrontstageManager } from "../../frontstage/FrontstageManager";
-import { KeyboardShortcutManager } from "../../keyboardshortcut/KeyboardShortcut";
 import { SafeAreaContext } from "../../safearea/SafeAreaContext";
 import { UiFramework } from "../../UiFramework";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
 import { getFloatingZoneBounds, getFloatingZoneStyle } from "../FrameworkZone";
 import { Outline } from "../Outline";
 import { ToolSettingsManager } from "./ToolSettingsManager";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { onEscapeSetFocusToHome } from "../../hooks/useEscapeSetFocusToHome";
 
 // cSpell:ignore safearea
 
@@ -29,7 +28,7 @@ import { SpecialKey } from "@bentley/ui-abstract";
  */
 enum ToolSettingsZoneContent {
   Closed,
-  ToolSettings, // eslint-disable-line no-shadow
+  ToolSettings, // eslint-disable-line @typescript-eslint/no-shadow
 }
 
 /** State for the [[ToolSettingsZone]].
@@ -64,7 +63,7 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
   private _widget = React.createRef<ToolSettings>();
 
   /** @internal */
-  public readonly state: Readonly<ToolSettingsZoneState>;
+  public override readonly state: Readonly<ToolSettingsZoneState>;
 
   constructor(props: ToolSettingsZoneProps) {
     super(props);
@@ -83,15 +82,15 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
     this.setState({ title });
   };
 
-  public componentDidMount(): void {
+  public override componentDidMount(): void {
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
   }
 
-  public componentWillUnmount(): void {
+  public override componentWillUnmount(): void {
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const bounds = getFloatingZoneBounds(this.props.zone);
     const zIndexStyle = getFloatingZoneStyle(this.props.zone);
     return (
@@ -139,20 +138,13 @@ export class ToolSettingsZone extends React.PureComponent<ToolSettingsZoneProps,
     });
   };
 
-  private _handleKeyDown = (e: React.KeyboardEvent): void => {
-    // istanbul ignore else
-    if (e.key === SpecialKey.Escape) {
-      KeyboardShortcutManager.setFocusToHome();
-    }
-  };
-
   private getToolSettingsWidget(): React.ReactNode {
     if (this.state.toolSettingsZoneContent === ToolSettingsZoneContent.Closed) {
 
       return (
         <ToolSettingsTab
           onClick={this._processClick}
-          onKeyDown={this._handleKeyDown}
+          onKeyDown={onEscapeSetFocusToHome}
           title={this.state.title}
           onMouseEnter={UiShowHideManager.handleWidgetMouseEnter}
         >

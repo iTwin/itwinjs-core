@@ -38,7 +38,9 @@ export type GlobalEventType =
   /** Sent when a named [[Version]] is created. See [[NamedVersionCreatedEvent]]. */
   "NamedVersionCreatedEvent" |
   /** Sent when a new [[Checkpoint]] is generated. See [[GlobalCheckpointCreatedEvent]]. */
-  "CheckpointCreatedEvent";
+  "CheckpointCreatedEvent" |
+  /** Sent when a new [[CheckpointV2]] is generated. See [[GlobalCheckpointV2CreatedEvent]]. */
+  "CheckpointV2CreatedEvent";
 
 /** Base type for all iModelHub global events.
  * @internal
@@ -57,7 +59,7 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public override fromJson(obj: any) {
     super.fromJson(obj);
     this.iModelId = obj.iModelId;
     this.projectId = obj.ProjectId;
@@ -104,7 +106,7 @@ export class ChangeSetCreatedEvent extends IModelHubGlobalEvent {
   /** Construct this event from object instance.
    * @param obj Object instance.
    */
-  public fromJson(obj: any) {
+  public override fromJson(obj: any) {
     super.fromJson(obj);
     this.changeSetId = obj.ChangeSetId;
     this.changeSetIndex = obj.ChangeSetIndex;
@@ -123,7 +125,7 @@ export class NamedVersionCreatedEvent extends IModelHubGlobalEvent {
   /** Construct this event from object instance.
    * @param obj Object instance.
    */
-  public fromJson(obj: any) {
+  public override fromJson(obj: any) {
     super.fromJson(obj);
     this.versionId = obj.VersionId;
     this.versionName = obj.VersionName;
@@ -142,7 +144,26 @@ export class GlobalCheckpointCreatedEvent extends IModelHubGlobalEvent {
   /** Construct this event from object instance.
    * @param obj Object instance.
    */
-  public fromJson(obj: any) {
+  public override fromJson(obj: any) {
+    super.fromJson(obj);
+    this.changeSetIndex = obj.ChangeSetIndex;
+    this.changeSetId = obj.ChangeSetId;
+    this.versionId = obj.VersionId;
+  }
+}
+
+/** Sent when a new [[CheckpointV2]] is generated. [[CheckpointV2]] might be created for every [[ChangeSet]].
+ * @internal
+ */
+export class GlobalCheckpointV2CreatedEvent extends IModelHubGlobalEvent {
+  public changeSetIndex?: string;
+  public changeSetId?: string;
+  public versionId?: GuidString;
+
+  /** Construct this event from object instance.
+   * @param obj Object instance.
+   */
+  public override fromJson(obj: any) {
     super.fromJson(obj);
     this.changeSetIndex = obj.ChangeSetIndex;
     this.changeSetId = obj.ChangeSetId;
@@ -166,6 +187,8 @@ function constructorFromEventType(type: GlobalEventType): GlobalEventConstructor
       return NamedVersionCreatedEvent;
     case "CheckpointCreatedEvent":
       return GlobalCheckpointCreatedEvent;
+    case "CheckpointV2CreatedEvent":
+      return GlobalCheckpointV2CreatedEvent;
   }
 }
 

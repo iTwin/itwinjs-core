@@ -47,7 +47,7 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
     this.props.closeModal();
   };
 
-  public render() {
+  public override render() {
     const classNames = classnames(
       "uifw-modal-frontstage",
       this.props.isOpen && "uifw-modal-open",
@@ -70,7 +70,7 @@ export class ModalFrontstage extends React.Component<ModalFrontstageProps> {
               <span className="uifw-modal-app-bar-right">{this.props.appBarRight}</span>
             }
           </div>
-          <div className="uifw-modal-content">
+          <div className="uifw-modal-stage-content">
             {this.props.children}
           </div>
         </div>

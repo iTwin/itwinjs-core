@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Dialog, DialogButtonType, ThemedSelect } from "@bentley/ui-core";
+import { Dialog, DialogButtonType, LabeledThemedSelect, ThemedSelect } from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
 
 enum ColorOptions {
@@ -48,7 +48,7 @@ interface TestReactSelectDialogState {
 }
 
 export class TestReactSelectDialog extends React.Component<TestReactSelectDialogProps, TestReactSelectDialogState> {
-  public readonly state: Readonly<TestReactSelectDialogState>;
+  public override readonly state: Readonly<TestReactSelectDialogState>;
   constructor(props: TestReactSelectDialogProps) {
     super(props);
     this.state = {
@@ -58,7 +58,7 @@ export class TestReactSelectDialog extends React.Component<TestReactSelectDialog
       overlay: true,
     };
   }
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     return (<Dialog
       title={"React-Select Modal Dialog"}
       opened={this.state.opened}
@@ -78,6 +78,7 @@ export class TestReactSelectDialog extends React.Component<TestReactSelectDialog
       <div className="modal-react-select-dialog">
         <div><label className="label-data">Color: </label><ThemedSelect options={colorChoices} /></div>
         <div><label className="label-data">Choose Cities: </label><ThemedSelect isMulti={true} isSearchable={true} options={cityChoices} /></div>
+        <div><LabeledThemedSelect label={"Labeled ThemedSelect Multi"} isMulti={true} isSearchable={true} options={cityChoices} /></div>
       </div>
     </Dialog>
     );

@@ -102,7 +102,7 @@ describe("iModelHub CheckpointV2Handler", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
-    this.enableTimeouts(false);
+    this.timeout(0);
     const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
@@ -179,8 +179,8 @@ describe("iModelHub CheckpointV2Handler", () => {
   });
 
   async function verifyPrecedingCheckpointV2(changeSetId: string, expectedPrecedingChangeSetId: string) {
-    mockGetCheckpointV2(imodelId, `?$filter=PrecedingCheckpoint-backward-ChangeSet.Id+eq+%27${changeSetId}%27`, mockCheckpointV2(expectedPrecedingChangeSetId, CheckpointV2State.Successful, "1"));
-    const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().precedingCheckpoint(changeSetId));
+    mockGetCheckpointV2(imodelId, `?$filter=PrecedingCheckpointV2-backward-ChangeSet.Id+eq+%27${changeSetId}%27`, mockCheckpointV2(expectedPrecedingChangeSetId, CheckpointV2State.Successful, "1"));
+    const checkpoints = await iModelClient.checkpointsV2.get(requestContext, imodelId, new CheckpointV2Query().precedingCheckpointV2(changeSetId));
     chai.assert(checkpoints);
     chai.expect(checkpoints.length).to.be.equal(1);
     chai.expect(checkpoints[0].changeSetId).to.be.equal(expectedPrecedingChangeSetId);

@@ -4,11 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as path from "path";
-import { Config } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import { IModelJsFs } from "@bentley/imodeljs-backend/lib/IModelJsFs";
-
-IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
 
 export class KnownTestLocations {
   /** The directory where test assets are stored. Keep in mind that the test is playing the role of the app. */

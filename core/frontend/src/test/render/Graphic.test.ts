@@ -28,38 +28,38 @@ class Branch extends GraphicBranch {
     super(ownsEntries);
   }
 
-  public dispose() {
+  public override dispose() {
     this.isDisposed = true;
     super.dispose();
   }
 }
 
 class System extends MockRender.System {
-  public createGraphicList(graphics: RenderGraphic[]) {
+  public override createGraphicList(graphics: RenderGraphic[]) {
     const ret = super.createGraphicList(graphics);
     addIsDisposed(ret);
     return ret;
   }
 
-  public createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) {
+  public override createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions) {
     const ret = super.createGraphicBranch(branch, transform, options);
     addIsDisposed(ret);
     return ret;
   }
 
-  public createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d) {
+  public override createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d) {
     const ret = super.createBatch(graphic, features, range);
     addIsDisposed(ret);
     return ret;
   }
 
-  public createGraphicOwner(graphic: RenderGraphic) {
+  public override createGraphicOwner(graphic: RenderGraphic) {
     const ret = super.createGraphicOwner(graphic);
     addIsDisposed(ret);
     return ret;
   }
 
-  public createGraphic() {
+  public createRenderGraphic() {
     const ret = super.createMesh({} as any);
     addIsDisposed(ret);
     return ret;
@@ -74,8 +74,8 @@ function isDisposed(disposable: any): boolean {
 describe("RenderGraphic", () => {
   it("should not be disposed if owned", () => {
     const system = new System();
-    const unowned = system.createGraphic();
-    const owned = system.createGraphic();
+    const unowned = system.createRenderGraphic();
+    const owned = system.createRenderGraphic();
     const owner = system.createGraphicOwner(owned);
 
     unowned.dispose();
@@ -93,11 +93,11 @@ describe("RenderGraphic", () => {
 describe("GraphicBranch", () => {
   it("should dispose of entries only if owned", () => {
     const system = new System();
-    const owned = system.createGraphic();
+    const owned = system.createRenderGraphic();
     const owningBranch = new Branch(true);
     owningBranch.add(owned);
 
-    const unowned = system.createGraphic();
+    const unowned = system.createRenderGraphic();
     const branch = new Branch(false);
     branch.add(unowned);
 
@@ -114,9 +114,9 @@ describe("GraphicBranch", () => {
 
   it("should not dispose of graphics owned by a graphic owner", () => {
     const system = new System();
-    const owned = system.createGraphic();
+    const owned = system.createRenderGraphic();
     const owner = system.createGraphicOwner(owned);
-    const unowned = system.createGraphic();
+    const unowned = system.createRenderGraphic();
 
     const branch = new Branch(true);
     branch.add(owner);

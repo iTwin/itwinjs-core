@@ -6,11 +6,15 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
-import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, RelatedElement, SubCategoryAppearance } from "@bentley/imodeljs-common";
-import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import {
-  BackendRequestContext, BriefcaseIdValue, ECSqlStatement, IModelDb, IModelJsFs, RelationshipProps, SnapshotDb, SpatialCategory,
-} from "../imodeljs-backend";
+  BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, RelatedElement, RelationshipProps, SubCategoryAppearance,
+} from "@bentley/imodeljs-common";
+import { Reporter } from "@bentley/perf-tools/lib/Reporter";
+import { BackendRequestContext } from "../BackendRequestContext";
+import { SpatialCategory } from "../Category";
+import { ECSqlStatement } from "../ECSqlStatement";
+import { IModelDb, SnapshotDb } from "../IModelDb";
+import { IModelJsFs } from "../IModelJsFs";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
 import { PerfTestUtility } from "./PerfTestUtils";
@@ -151,8 +155,7 @@ describe("SchemaDesignPerf Relationship Comparison", () => {
     if (!IModelJsFs.existsSync(seedName)) {
       const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("RelationshipPerformance", "relationship.bim"), { rootSubject: { name: "PerfTest" } });
       await seedIModel.importSchemas(new BackendRequestContext(), [st]);
-      const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
-      assert.equal(DbResult.BE_SQLITE_OK, result);
+      seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
       // first create Elements and then Relationship
       const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
       let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");

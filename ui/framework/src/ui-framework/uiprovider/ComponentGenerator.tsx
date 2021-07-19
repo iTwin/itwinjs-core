@@ -10,7 +10,7 @@ import "./DefaultDialogGridContainer.scss";
 import classnames from "classnames";
 import * as React from "react";
 import {
-  BaseDialogItem, DialogItem, DialogItemValue, DialogPropertySyncItem, DialogRow, PropertyRecord, PropertyValueFormat, SyncPropertiesChangeEventArgs,
+  BaseDialogItem, DialogItem, DialogItemValue, DialogPropertySyncItem, DialogRow, PropertyValueFormat, SyncPropertiesChangeEventArgs,
   UiLayoutDataProvider,
 } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyUpdatedArgs } from "@bentley/ui-components";
@@ -49,29 +49,38 @@ function EditorLabel({ uiDataProvider, item, isLeftmostRecord }: { uiDataProvide
   return <label className={className} htmlFor={propertyId}>{displayLabel}:</label>;
 }
 
-function PropertyEditor({ uiDataProvider, record, isLock, setFocus }: { uiDataProvider: UiLayoutDataProvider, record: PropertyRecord, isLock?: boolean, setFocus?: boolean }) {
-  const initialRecord = React.useRef(record);
-  const isMounted = React.useRef(false);
-  const [propertyRecord, setPropertyRecord] = React.useState(record);
+function PropertyEditor({ uiDataProvider, initialItem, isLock, setFocus }: { uiDataProvider: UiLayoutDataProvider, initialItem: BaseDialogItem, isLock?: boolean, setFocus?: boolean }) {
+  const getLatestRecordValue = React.useCallback(() => {
+    let newRecord = UiLayoutDataProvider.getPropertyRecord(initialItem);
 
-  React.useEffect(() => {
-    if (record !== initialRecord.current) {
-      initialRecord.current = record;
-      setPropertyRecord(record);
+    // istanbul ignore next
+    const foundItem = isLock ? uiDataProvider.items.find((item)=>item.lockProperty?.property.name === initialItem.property.name) : uiDataProvider.items.find((item)=>item.property.name === initialItem.property.name);
+    // istanbul ignore else
+    if (foundItem){
+      if (isLock) {
+        newRecord = newRecord.copyWithNewValue({
+          value: foundItem.lockProperty!.value.value,
+          valueFormat: PropertyValueFormat.Primitive,
+        });
+        newRecord.isDisabled = foundItem.lockProperty!.isDisabled;
+      } else {
+        newRecord = newRecord.copyWithNewValue({
+          value: foundItem.value.value,
+          valueFormat: PropertyValueFormat.Primitive,
+        });
+        newRecord.isDisabled = foundItem.isDisabled;
+      }
     }
-  }, [record]);
+    return newRecord;
+  }, [initialItem, isLock, uiDataProvider.items]);
 
-  React.useEffect(() => {
-    isMounted.current = true;
-    return () => {
-      isMounted.current = false;
-    };
-  }, []);
+  const currentRecord = getLatestRecordValue();
+  const [propertyRecord, setPropertyRecord] = React.useState(currentRecord);
 
   // monitor tool for sync UI events
   React.useEffect(() => {
     const handleSync = (args: SyncPropertiesChangeEventArgs) => {
-      const mySyncItem = args.properties.find((syncItem: DialogPropertySyncItem) => syncItem.propertyName === record.property.name);
+      const mySyncItem = args.properties.find((syncItem: DialogPropertySyncItem) => syncItem.propertyName === initialItem.property.name);
       // istanbul ignore else
       if (mySyncItem) {
         const newPropertyValue = propertyRecord.copyWithNewValue({
@@ -98,7 +107,7 @@ function PropertyEditor({ uiDataProvider, record, isLock, setFocus }: { uiDataPr
     return () => {
       uiDataProvider.onSyncPropertiesChangeEvent.removeListener(handleSync);
     };
-  }, [uiDataProvider, propertyRecord, record.property, record.property.name]);
+  }, [uiDataProvider, propertyRecord, initialItem.property.name]);
 
   const className = React.useMemo(() => isLock ? "uifw-default-property-lock" : "uifw-default-editor", [isLock]);
   // istanbul ignore next
@@ -107,20 +116,17 @@ function PropertyEditor({ uiDataProvider, record, isLock, setFocus }: { uiDataPr
     // istanbul ignore next
     assert(commit.newValue.valueFormat === PropertyValueFormat.Primitive && commit.propertyRecord.value.valueFormat === PropertyValueFormat.Primitive);
     const newPropertyValue = propertyRecord.copyWithNewValue(commit.newValue);
-    const syncItem: DialogPropertySyncItem = { value: commit.newValue as DialogItemValue, propertyName: record.property.name, isDisabled: newPropertyValue.isDisabled };
+    const syncItem: DialogPropertySyncItem = { value: commit.newValue as DialogItemValue, propertyName: initialItem.property.name, isDisabled: newPropertyValue.isDisabled };
     uiDataProvider.applyUiPropertyChange(syncItem);
-    // The above call could trigger a complete refresh of the UI, so ensure the component
-    // is still mounted before calling set state.
-    if (isMounted.current)
-      setPropertyRecord(newPropertyValue);
-  }, [propertyRecord, uiDataProvider, record.property.name]);
+    // Now have the uiDataProvider refetch the latest property values from the tool
+    uiDataProvider.reloadDialogItems(true);
+  }, [initialItem.property.name, propertyRecord, uiDataProvider]);
   // istanbul ignore next
-  const handleCancel = React.useCallback(() => {
-  }, []);
+  const handleCancel = () => {};
 
   return (
-    <div key={record.property.name} className={className} >
-      <EditorContainer key={record.property.name} propertyRecord={propertyRecord} setFocus={setFocus} onCommit={handleCommit} onCancel={handleCancel} />
+    <div key={initialItem.property.name} className={className} >
+      <EditorContainer key={initialItem.property.name} propertyRecord={propertyRecord} setFocus={setFocus} onCommit={handleCommit} onCancel={handleCancel} />
     </div>);
 }
 
@@ -136,8 +142,7 @@ export class ComponentGenerator {
   }
 
   private getEditor(item: BaseDialogItem, isLock = false, setFocus = false): React.ReactNode {
-    const record = UiLayoutDataProvider.getPropertyRecord(item);
-    return <PropertyEditor key={item.property.name} uiDataProvider={this.uiDataProvider} record={record} isLock={isLock} setFocus={setFocus} />;
+    return <PropertyEditor key={item.property.name} uiDataProvider={this.uiDataProvider} initialItem={item} isLock={isLock} setFocus={setFocus} />;
   }
 
   private generateRowWithButtonGroupEditors(row: DialogRow, rowIndex: number): React.ReactNode {

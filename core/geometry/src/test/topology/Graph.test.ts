@@ -28,7 +28,9 @@ function logGraph(graph: HalfEdgeGraph, title: any) {
   console.log(` ==end== ${title}`);
 }
 export class GraphChecker {
-  public static captureAnnotatedGraph(data: GeometryQuery[], graph: HalfEdgeGraph, dx: number = 0, dy: number = 0) {
+  public static captureAnnotatedGraph(data: GeometryQuery[], graph: HalfEdgeGraph | undefined, dx: number = 0, dy: number = 0) {
+    if (graph === undefined)
+      return;
     const maxTick = 0.01;
     const numTick = 20;
     const allNodes = graph.allHalfEdges;

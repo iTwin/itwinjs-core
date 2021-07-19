@@ -18,7 +18,7 @@ import { ButtonType, getButtonTypeClassName } from "../button/Button";
 // TODO: implement
 /** @internal */
 export enum SplitButtonActionType {
-  ContextMenu, // eslint-disable-line no-shadow
+  ContextMenu, // eslint-disable-line @typescript-eslint/no-shadow
   List,
 }
 
@@ -62,7 +62,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
   private _closing: boolean = false;
 
   /** @internal */
-  public readonly state: Readonly<SplitButtonState> = { expanded: false };
+  public override readonly state: Readonly<SplitButtonState> = { expanded: false };
 
   constructor(props: SplitButtonProps) {
     super(props);
@@ -72,7 +72,7 @@ export class SplitButton extends React.Component<SplitButtonProps, SplitButtonSt
     };
   }
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     let icon = (<></>);
     if (this.props.icon !== undefined) {
       icon = (

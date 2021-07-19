@@ -84,7 +84,7 @@ For reference, the pessimistic locking rules are as follows:
 | Delete model   | Model             | Exclusive  |
 | "              | Elements in model | Exclusive  |
 
-An app will normally implement the pessimistic policy by using high-level APIs to build lock requests based on the intended operation, as explained [below](#how-to-acquire-locks-and-reserve-codes). These high-level APIs take care of both acquiring locks and reserving Codes.
+An app will normally implement the pessimistic policy by using high-level APIs to build lock requests based on the intended operation, as explained [below](#how-and-when-to-acquire-locks-and-reserve-codes). These high-level APIs take care of both acquiring locks and reserving Codes.
 
 A briefcase must pull before it can lock an element or model if it is affected by a recently pushed ChangeSet.
 
@@ -130,7 +130,7 @@ Only models and elements may be changed optimistically. Locking is required when
 
 ## How and When to Acquire Locks and Reserve Codes
 
-This section describes how an app reserves Codes and/or acquires locks. There are two options for when and how to do this during a local transaction: before making changes (pessimistic) or after making changes (optimistic).
+This section describes how an app reserves Codes and/or acquires Locks. There are two options for when and how to do this during a local transaction: before making changes (pessimistic) or after making changes (optimistic).
 
 As explained above, in optimistic concurrency, models and elements are changed without locks. Codes must still be reserved. However, you get to defer the task of reserving codes until you are ready to call saveChanges.
 
@@ -156,10 +156,10 @@ Call [ConcurrencyControl.CodesManager.reserve]($backend) to reserve Codes before
 
 ### Acquiring locks and/or codes pessimistically
 
-1.  Call [ConcurrencyControl.LocksManager.lockModels]($backend) to lock models preemptively, if you wish.
-1.  Call [ConcurrencyControl.requestResources]($backend) on the elements and/or models that you intend to insert, update, of delete. This method will request the locks and/or codes that the planned local operations will require. It may send a request to iModelHub.
-1.  If the request fails, cancel the local operation.
-1.  If the request succeeds, go ahead with the local operation, make the planned local changes, and then call [IModelDb.saveChanges]($backend).
+1. Call [ConcurrencyControl.LocksManager.lockModels]($backend) to lock models preemptively, if you wish.
+1. Call [ConcurrencyControl.requestResources]($backend) on the elements and/or models that you intend to insert, update, of delete. This method will request the locks and/or codes that the planned local operations will require. It may send a request to iModelHub.
+1. If the request fails, cancel the local operation.
+1. If the request succeeds, go ahead with the local operation, make the planned local changes, and then call [IModelDb.saveChanges]($backend).
 
 This approach is the safest way to avoid conflicts. It requires that the app must plan ahead before making local changes.
 
@@ -170,10 +170,10 @@ Note that sending a request to iModelHub is a relatively expensive operation. Th
 
 ### Acquiring locks and/or codes optimistically or in bulk mode
 
-1.  Insert or update models and elements.
-1.  Call [ConcurrencyControl.request]($backend) to request the codes that those local operations require.
-1.  If the request fails, call [IModelDb.abandonChanges]($backend) to roll back the local transaction.
-1.  If the request succeeds, call [IModelDb.saveChanges]($backend) to commit the local transaction.
+1. Insert or update models and elements.
+1. Call [ConcurrencyControl.request]($backend) to request the codes that those local operations require.
+1. If the request fails, call [IModelDb.abandonChanges]($backend) to roll back the local transaction.
+1. If the request succeeds, call [IModelDb.saveChanges]($backend) to commit the local transaction.
 
 The optimistic approach is simpler than using the pessimistic approach, but it carries the risk that you must abandon all of your changes in case of a locking or code-reservation conflict. Use this approach only if you know that your changes are isolated such that conflicts are unlikely.
 

@@ -2,6 +2,897 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.18.1",
+      "tag": "@bentley/imodeljs-frontend_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add IModelConnection.Elements.getPlacements and update Viewport and ViewClipByElementTool to use it."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.0",
+      "tag": "@bentley/imodeljs-frontend_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add GraphicBuilder.addCurvePrimitive."
+          },
+          {
+            "comment": "Add Tiles.updateForScheduleScript to refresh tiles after modifying schedule script.\""
+          },
+          {
+            "comment": "Update Toolsettings set-up in SetCameraTool to fix enable/disable setting of input field."
+          },
+          {
+            "comment": "Add Viewport.flashedId property and corresponding onFlashedIdChanged event."
+          },
+          {
+            "comment": "Added support for ESRI MapServer exposing a minimum LOD."
+          },
+          {
+            "comment": "Fix the Nadir color for 2 colors skybox in the context of background map."
+          },
+          {
+            "comment": "Add ability to clone Format and to add property setters. This allows a user to synchronously tweak a format in the frontend."
+          },
+          {
+            "comment": "Fix issue with TouchCursor unexpectedly disappearing when disabling snap/locate."
+          },
+          {
+            "comment": "pickable decoration enhancement"
+          },
+          {
+            "comment": "Update tile trees when project extents change."
+          },
+          {
+            "comment": "Remove BackgroundMapLocation use EcefLocation directly."
+          },
+          {
+            "comment": "Clean up and promote AnalysisStyle APIs."
+          },
+          {
+            "comment": "TileAdmin.requestElementGraphics can now produce section-cut graphics."
+          },
+          {
+            "comment": "Update tooltips of RealityData with its type"
+          },
+          {
+            "comment": "Add API to wait until all pending external textures have finished loading."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@bentley/imodeljs-frontend_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.1",
+      "tag": "@bentley/imodeljs-frontend_v2.17.1",
+      "date": "Fri, 02 Jul 2021 15:38:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.0",
+      "tag": "@bentley/imodeljs-frontend_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Promote APIs to public."
+          },
+          {
+            "comment": "DR request for doClipPlaneOrientView to choose \"better\" view x direction."
+          },
+          {
+            "comment": "Added arc by 3 points tool. Ensure tools always get motion event before decorate or onDynamicFrame."
+          },
+          {
+            "comment": "Clean up and promote DisplayStyleState APIs for context reality models."
+          },
+          {
+            "comment": "Add TiledGraphicsProvider.isLoadingComplete."
+          },
+          {
+            "comment": "Make EditManipulator public"
+          },
+          {
+            "comment": "Export EmphasizeElementProps from common, deprecate from frontend."
+          },
+          {
+            "comment": "External textures enabled by default for TileAdmin. External textures will downsample to maxTextureSize of client."
+          },
+          {
+            "comment": "Make flash settings customizable for a viewport."
+          },
+          {
+            "comment": "Allow saved map-layer definition to be edited."
+          },
+          {
+            "comment": "Removed unused 'maxZoom' property on MapLayerProps.  Added MapLayerSourceProps interface."
+          },
+          {
+            "comment": "Made MaplayerSource independent from MapLayerProps."
+          },
+          {
+            "comment": "Add GraphicBuilder.addPrimitive accepting any type of primitive."
+          },
+          {
+            "comment": "Synchronize IModelConnection properties in response to Ipc notifications."
+          },
+          {
+            "comment": "added IModelApp.hubAccess and deprecated IModelApp.iModelClient"
+          },
+          {
+            "comment": "Promote various APIs to public. Add GraphicBuilder.addPrimitive accepting any type of primitive."
+          },
+          {
+            "comment": "set authorizationClient to undefined in IModelApp.shutdown"
+          },
+          {
+            "comment": "Don't allow undo of changes to project extents or geolocation."
+          },
+          {
+            "comment": "make IpcApp and NativeApp @public"
+          },
+          {
+            "comment": "Prevent preflight for ContextShare tile request"
+          },
+          {
+            "comment": "Erase touch cursor when it is drawn in a different view."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.9",
+      "tag": "@bentley/imodeljs-frontend_v2.16.9",
+      "date": "Tue, 06 Jul 2021 22:08:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.8",
+      "tag": "@bentley/imodeljs-frontend_v2.16.8",
+      "date": "Fri, 02 Jul 2021 17:40:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.7",
+      "tag": "@bentley/imodeljs-frontend_v2.16.7",
+      "date": "Mon, 28 Jun 2021 18:13:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.6",
+      "tag": "@bentley/imodeljs-frontend_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.5",
+      "tag": "@bentley/imodeljs-frontend_v2.16.5",
+      "date": "Fri, 25 Jun 2021 16:03:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Synch map settings provider when base layer provider changes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.4",
+      "tag": "@bentley/imodeljs-frontend_v2.16.4",
+      "date": "Wed, 23 Jun 2021 17:09:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.3",
+      "tag": "@bentley/imodeljs-frontend_v2.16.3",
+      "date": "Wed, 16 Jun 2021 20:29:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.2",
+      "tag": "@bentley/imodeljs-frontend_v2.16.2",
+      "date": "Thu, 03 Jun 2021 18:08:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.1",
+      "tag": "@bentley/imodeljs-frontend_v2.16.1",
+      "date": "Thu, 27 May 2021 20:04:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add method to return ecef transform for tile tree"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.0",
+      "tag": "@bentley/imodeljs-frontend_v2.16.0",
+      "date": "Mon, 24 May 2021 15:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Make AccuDrawHintBuilder public and include everything needed by an InteractiveTool."
+          },
+          {
+            "comment": "Fix acs rotation and remove unneeded clones."
+          },
+          {
+            "comment": "(geomlibs) fix swap logic in Matrix3d.inverse alias case"
+          },
+          {
+            "comment": "motion event changes."
+          },
+          {
+            "comment": "Add BatchOptions to customize how features can be resymbolized."
+          },
+          {
+            "comment": "Synchronize viewports when changes are made to geometry outside of a graphical editing scope."
+          },
+          {
+            "comment": "wip: CreateElementTool. Fix not being able to pick decorations after changing files."
+          },
+          {
+            "comment": "BatchOptions can specify that the contents of the batch should only be drawn for readPixels."
+          },
+          {
+            "comment": "Simplify GraphicBuilder creation using GraphicBuilderOptions."
+          },
+          {
+            "comment": "IModelConnection.View.load throws if the input is not a valid Id."
+          },
+          {
+            "comment": "Fix ViewState.hasSameCoordinates returning true if a 2d model was mistakenly included in a spatial view's model selector."
+          },
+          {
+            "comment": "Produce rounded joints when tesselating polylines."
+          },
+          {
+            "comment": "Return empty symbology overrides for maps to avoid inheriting from view"
+          },
+          {
+            "comment": "Add hiliter for reality meshes"
+          },
+          {
+            "comment": "Fix hiliting of reality meshes."
+          },
+          {
+            "comment": "Fix shader header typo"
+          },
+          {
+            "comment": "Ensure materials are ignored unless smooth render mode is enabled."
+          },
+          {
+            "comment": "Add FrameStats API."
+          },
+          {
+            "comment": "In FrameStats, break down scene time."
+          },
+          {
+            "comment": "Enable querying geometry and other properties via IModelConnection.Elements.loadProps."
+          },
+          {
+            "comment": "The idleTool can now be set."
+          },
+          {
+            "comment": "improved silhouettes for non-perspective views"
+          },
+          {
+            "comment": "Mobile fixes"
+          },
+          {
+            "comment": "Fixes to desktop/mobile authorization"
+          },
+          {
+            "comment": "set authorizationClient to undefined in IModelApp.shutdown"
+          },
+          {
+            "comment": "Fix errors when masking background map with a plan projection model."
+          },
+          {
+            "comment": "Support planar masks for OrbitGT, fix infinite recursion collecting classifiers graphics."
+          },
+          {
+            "comment": "Add shader based grid display."
+          },
+          {
+            "comment": "set changesetId on BriefcaseConnection in pullAndMergeChanges"
+          },
+          {
+            "comment": "Add Viewport.queryVisibleFeatures to determine the set of features currently visible in a viewport."
+          },
+          {
+            "comment": "Display styles support schedule scripts hosted by RenderTimeline elements."
+          },
+          {
+            "comment": "Move map tile trees to Viewport to handle synching correctly"
+          },
+          {
+            "comment": "Only draw the TouchCursor in the viewport that initiated the touch."
+          },
+          {
+            "comment": "Add iterator to ViewManager and deprecate forEachViewport."
+          },
+          {
+            "comment": "Transform tool dynamics."
+          },
+          {
+            "comment": "add placement to GeomtricElementProps"
+          },
+          {
+            "comment": "Revert to using older GPU timer extension in webgl2 if the newer extension isn't supported"
+          },
+          {
+            "comment": "ViewCreator APIs tagged as public"
+          },
+          {
+            "comment": "View Creator API - comments updated."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.6",
+      "tag": "@bentley/imodeljs-frontend_v2.15.6",
+      "date": "Wed, 26 May 2021 15:55:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.5",
+      "tag": "@bentley/imodeljs-frontend_v2.15.5",
+      "date": "Thu, 20 May 2021 15:06:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.4",
+      "tag": "@bentley/imodeljs-frontend_v2.15.4",
+      "date": "Tue, 18 May 2021 21:59:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.3",
+      "tag": "@bentley/imodeljs-frontend_v2.15.3",
+      "date": "Mon, 17 May 2021 13:31:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.2",
+      "tag": "@bentley/imodeljs-frontend_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix animations from schedule script being erroneously applied to tile graphics."
+          },
+          {
+            "comment": "Return empty symbology overrides for maps to avoid inheriting from view"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@bentley/imodeljs-frontend_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "EmphasizeElements can override the appearance of unanimated schedule script nodes."
+          },
+          {
+            "comment": "Fix iOS shader bugs"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@bentley/imodeljs-frontend_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Promote display-related APIs."
+          },
+          {
+            "comment": "Do not drape background map on reality if not geolocated"
+          },
+          {
+            "comment": "Revert the change which defaulted shader precompiling on. It resulted in noticeable UI sluggishness before any viewports were added, while shaders precompiled."
+          },
+          {
+            "comment": "TileAdmin.requestElementGraphics can obtain graphics for a non-persistent geometry stream."
+          },
+          {
+            "comment": "Refactor grid-in-view line creation to make the same context repeatedly callable."
+          },
+          {
+            "comment": "gridline filtering corrections"
+          },
+          {
+            "comment": "Fix orbitgt pointcloud position"
+          },
+          {
+            "comment": "Implement fixes for point cloud relative paths and node transforms"
+          },
+          {
+            "comment": "improved flickering silhouettes"
+          },
+          {
+            "comment": "Fix raster view attachments using black background color."
+          },
+          {
+            "comment": "Fix delay before raster view attachments appear in a sheet view."
+          },
+          {
+            "comment": "Fix WebGL1 clipping shaders."
+          },
+          {
+            "comment": "Fixed silhouettes for instanced geometry when running with WebGL1"
+          },
+          {
+            "comment": "Allow saved map layer definition to be deleted from setting service."
+          },
+          {
+            "comment": "No longer parse MapLayerSource URL for 'basemap' token."
+          },
+          {
+            "comment": "promote NativeApp to beta"
+          },
+          {
+            "comment": "Support nested clip volumes."
+          },
+          {
+            "comment": "Precompile WebGL shaders by default."
+          },
+          {
+            "comment": "Promote globe view tools to public. Add NextVersion promotion entries for these and for thematic display."
+          },
+          {
+            "comment": "Optimize reality model processing."
+          },
+          {
+            "comment": "Drop deprecated ldclient-js dependency"
+          },
+          {
+            "comment": "Remove deprecated ElementEditor that was replaced by EditCommands."
+          },
+          {
+            "comment": "Renamed InteractiveEditingSession to GraphicalEditingScope."
+          },
+          {
+            "comment": "Update release tags."
+          },
+          {
+            "comment": "Add BriefcaseTxns for monitoring changes to the briefcase."
+          },
+          {
+            "comment": "Update api tags"
+          },
+          {
+            "comment": "ViewCreator2d API - modelType parameter removed"
+          },
+          {
+            "comment": "Add an option to use the virtual cursor to help with element locate w/touch input."
+          },
+          {
+            "comment": "Added capability to scale the model display transform nonuniformly and have still Accusnap properly."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@bentley/imodeljs-frontend_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@bentley/imodeljs-frontend_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@bentley/imodeljs-frontend_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "fix imports in CheckpointConnection.ts to not reference own barrel"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@bentley/imodeljs-frontend_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix raster view attachments using black background color."
+          },
+          {
+            "comment": "Fix delay before raster view attachments appear in a sheet view."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@bentley/imodeljs-frontend_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Polish up InteractiveEditingSession API and promote to beta."
+          },
+          {
+            "comment": "rework Authentication to use IpcHost"
+          },
+          {
+            "comment": "Fixed isAuthorized check. "
+          },
+          {
+            "comment": "Fix GPU Profiler for display-test-app"
+          },
+          {
+            "comment": "Grid drawing code"
+          },
+          {
+            "comment": "fixed z for edges and polylines when extended behind the eye"
+          },
+          {
+            "comment": "Don't use GCS to align reality model if not in project vicinity."
+          },
+          {
+            "comment": "Refine test for calculating pixel size for tile sphere"
+          },
+          {
+            "comment": "Fix Viewport.turnCameraOn to invoke setupFromView, and add Viewport.turnCameraOff."
+          },
+          {
+            "comment": "Fix shader bug in function unpackFloat which affected iOS unpacking floats precisely."
+          },
+          {
+            "comment": "MapLayerImageryProviders now handle 401 errors."
+          },
+          {
+            "comment": "Quick grid performance fix from Earlin."
+          },
+          {
+            "comment": "fix check in cartographicToDbFromGcs which causes certain locations to query GCS when they should not."
+          },
+          {
+            "comment": "Refactor attribution logo cards and add OpenStreetMap building attribution"
+          },
+          {
+            "comment": "Update Quantity Formatter to support UnitFormattingSettingsProvider for persisting and retrieving unit format settings."
+          },
+          {
+            "comment": "Use ProcessDetector.isMobileBrowser to detect mobile frontends."
+          },
+          {
+            "comment": "Align scheduling of tile content requests more closely with capabilities of HTTP and RPC."
+          },
+          {
+            "comment": "Support for Bump Tool Settings"
+          },
+          {
+            "comment": "Add missing ViewState.viewFlags setter."
+          },
+          {
+            "comment": "Simplified web app signIn, following the pattern established for desktops. The logic for silent signin has now been moved to WebViewerApp. "
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.0",
+      "tag": "@bentley/imodeljs-frontend_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Update parsing of string input in Accudraw to use quantity parsing."
+          },
+          {
+            "comment": "Initial setup for adding \"basic manipulation\" tools and commands to editor package."
+          },
+          {
+            "comment": "Added ElementSetTool base class."
+          },
+          {
+            "comment": "ElementSetTool class documentation."
+          },
+          {
+            "comment": "Fixed broken double angle bracket link syntax"
+          },
+          {
+            "comment": "Fix iOS problem where a viewport would not redraw until resizing after closing multiple viewports."
+          },
+          {
+            "comment": "Fix incorrect GPU memory limits."
+          },
+          {
+            "comment": "Fix incorrect cached transform for plan projection models after the model's range changes."
+          },
+          {
+            "comment": "Fix Viewport.requestRedraw failing to request next animation frame."
+          },
+          {
+            "comment": "Imagery providers were incorrectly created for WMTS and AzureMaps. Improved testing."
+          },
+          {
+            "comment": "Split imagery providers in their own file."
+          },
+          {
+            "comment": "refactor IModelApp startup"
+          },
+          {
+            "comment": "Improve grid line fade for vertical lines by drawing from center out."
+          },
+          {
+            "comment": "Allow applications to react to WebGL context loss by overriding RenderSystem.contextLossHandler."
+          },
+          {
+            "comment": "IPC shim (WIP) for local webviewer apps."
+          },
+          {
+            "comment": "Added MoveElementsTool"
+          },
+          {
+            "comment": "implemented nonlocatable for planar classifiers"
+          },
+          {
+            "comment": "Update how custom QuantityType definitions are defined and registered."
+          },
+          {
+            "comment": "Add planar clip mask support."
+          },
+          {
+            "comment": "Fix transparent depthless map failing to blend with background color or skybox."
+          },
+          {
+            "comment": "add notifications for changed elements on SaveChanges"
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "Undo/Redo shortcuts"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          },
+          {
+            "comment": "Allow the same label to be used in two different units within the same family but in different systems."
+          },
+          {
+            "comment": "Fix failure to call screen-space effects `shouldApply` function when reading pixels."
+          },
+          {
+            "comment": "fix for running display-performance-test-app with a saved view which has volume classification using overrides"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@bentley/imodeljs-frontend_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@bentley/imodeljs-frontend_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:52 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix incorrect cached transform for plan projection models after the model's range changes."
+          },
+          {
+            "comment": "Add workaround for bogus transform in tile tree for empty model."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.1",
+      "tag": "@bentley/imodeljs-frontend_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Prevent buggy decorators from invalidating other decorators' cached decorations."
+          },
+          {
+            "comment": "Fixed regression introduced recently that prevent WMS map layers from being displayed."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@bentley/imodeljs-frontend_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "The about dialog now works better on smaller screens and mobile devices."
+          },
+          {
+            "comment": "Support clearing color/transparency overrides by element ids and not just key."
+          },
+          {
+            "comment": "Deprecate detachChangeCache()"
+          },
+          {
+            "comment": "dont toggle persistent html decoration's dom attachment"
+          },
+          {
+            "comment": "Fix regressions in image diff tests caused by changes to tile selection logic."
+          },
+          {
+            "comment": "added flag to truncate ecsql blob values"
+          },
+          {
+            "comment": "Smoother frustum transition"
+          },
+          {
+            "comment": "enter requestContexts in map layer settings service so that activity Id can be tracked in SEQ logs"
+          },
+          {
+            "comment": "Implement external textures for iModel tiles."
+          },
+          {
+            "comment": "Fix failure to compute frustum depth from view attachments causing them to be severely clipped."
+          },
+          {
+            "comment": "Added new ArcGis token generator/manager. ArcGISMapLAyerImageryProvider now check for token error messages when fetch tile, inform end-user and raise an event.  Token is generated / appended dynamically to each ArcGIS request."
+          },
+          {
+            "comment": "Add options for limiting GPU memory allocated for tile contents."
+          },
+          {
+            "comment": "Don't change the imodeljs-icon opacity on mobile devices that don't support hover."
+          },
+          {
+            "comment": "Fix locate for particle effects."
+          },
+          {
+            "comment": "Add support for defining custom particle effects."
+          },
+          {
+            "comment": "NativeApp now uses Ipc"
+          },
+          {
+            "comment": "Added support for Slope and Hillshade modes for Thematic display of Terrain"
+          },
+          {
+            "comment": "AccuDraw bi-directional value updates"
+          },
+          {
+            "comment": "Fixed AccuDraw shortcuts in apps like DR"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.2",
+      "tag": "@bentley/imodeljs-frontend_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "NativeApp download progress fix"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@bentley/imodeljs-frontend_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.0",
+      "tag": "@bentley/imodeljs-frontend_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Don't allow AccuDraw in exaggerated views."
+          },
+          {
+            "comment": "Avoid decoding the same texture image multiple times when receiving multiple simultaneous requests."
+          },
+          {
+            "comment": "Add support for altering the image produced by a Viewport using custom screen-space post-processing effects."
+          },
+          {
+            "comment": "work on NativeApp and editing commands"
+          },
+          {
+            "comment": "Improve ElementGeometry documentation."
+          },
+          {
+            "comment": "Account for aspect ratio skew in core decorations."
+          },
+          {
+            "comment": "Add ability for caller to override format per QuantityType."
+          },
+          {
+            "comment": "Add ability to set unit system for quantity formats to the same four supported by Presentation manager."
+          },
+          {
+            "comment": "Fix hilite silhouette ignoring weight overrides for polylines."
+          },
+          {
+            "comment": "Use optimized planar map corners for size"
+          },
+          {
+            "comment": "The type of ViewState3d.displayStyle is DisplayStyle3dState, to reduce need to cast."
+          },
+          {
+            "comment": "Ensure quantity formatter is initialized once IModelApp.startup is awaited."
+          },
+          {
+            "comment": "Added new WMTS capabilities parser and improved general support of WMTS."
+          },
+          {
+            "comment": "WmtsCapabilities now using 'xml-js' instead of 'fast-xml-parser'."
+          },
+          {
+            "comment": "Apply workaround for Intel HD 620/630 driver bug."
+          },
+          {
+            "comment": "Show iModel.js version rather than Application version in iModel.js Card\""
+          },
+          {
+            "comment": "Bias global reality models to match terrain corrections."
+          },
+          {
+            "comment": "Modified OrbitGT point clouds to be able to override their model color."
+          },
+          {
+            "comment": "Support global navigation with camera off"
+          },
+          {
+            "comment": "Add Viewport.onResized event; add option not to preserve order of geometry added to a GraphicBuilder for an overlay decoration (improves performance)."
+          },
+          {
+            "comment": "Display spatial view in context of section drawing view if so specified."
+          },
+          {
+            "comment": "Add support for section-cut graphics display."
+          },
+          {
+            "comment": "Add notion of attaching and detaching a ViewState to/from a Viewport. On attach, register event listeners to automatically synchronize the Viewport's state when aspects of the ViewState are modified, eliminating the need to manually synchronize or use specific Viewport APIs. In detach, deallocate Viewport-specific resources such as WebGL objects used for rendering view attachments."
+          },
+          {
+            "comment": "#415276 Fixed line widths for wide lines that extend behind the eye."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/imodeljs-frontend_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",

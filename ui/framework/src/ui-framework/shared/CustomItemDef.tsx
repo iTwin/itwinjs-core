@@ -19,7 +19,7 @@ interface CloneProps {
 }
 
 /** An Item that renders a React component.
- * @beta
+ * @public
  */
 export class CustomItemDef extends ActionButtonItemDef {
   private static _sId = 0;
@@ -46,7 +46,7 @@ export class CustomItemDef extends ActionButtonItemDef {
     return this.customId;
   }
 
-  public toolbarReactNode(index?: number): React.ReactNode {
+  public override toolbarReactNode(index?: number): React.ReactNode {
     if (!this.isVisible || ConditionalBooleanValue.getValue(this.isHidden)) // eslint-disable-line deprecation/deprecation
       return null;
 

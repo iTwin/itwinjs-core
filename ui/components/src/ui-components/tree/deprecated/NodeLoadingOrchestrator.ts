@@ -409,7 +409,7 @@ export class PendingNodeTracker implements Iterable<NodeKey> {
    */
   public [Symbol.iterator](): IterableIterator<NodeKey> {
     /** Concatenates input iterables */
-    // eslint-disable-next-line no-shadow
+    // eslint-disable-next-line @typescript-eslint/no-shadow
     function* concat<T>(...iterables: Array<Iterable<T>>) {
       for (const iterable of iterables) {
         for (const value of iterable) {

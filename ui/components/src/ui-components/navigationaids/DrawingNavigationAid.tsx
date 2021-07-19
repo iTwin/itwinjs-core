@@ -102,7 +102,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
   private _mounted: boolean = false;
 
   /** @internal */
-  public readonly state: Readonly<DrawingNavigationAidState>;
+  public override readonly state: Readonly<DrawingNavigationAidState>;
 
   constructor(props: DrawingNavigationAidProps) {
     super(props);
@@ -140,7 +140,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
   }
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const {
       startOrigin, origin, extents,
       startRotation, rotation,
@@ -322,6 +322,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
       this._lastPanTime = t - 16.667;
     const delta = t - this._lastPanTime;
     this._lastPanTime = t;
+    // istanbul ignore else
     if (!this.state.panningDirection.isAlmostZero && this.state.isMoving) {
       const { panningDirection } = this.state;
       const offset = panningDirection.scale(delta / 1000 / this.state.drawingZoom);
@@ -341,7 +342,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     }
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     this._mounted = true;
     ViewportComponentEvents.onViewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
     window.addEventListener("mousedown", this._handleMouseDown as any);
@@ -350,7 +351,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     window.addEventListener("keyup", this._handleKeyUp as any);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     ViewportComponentEvents.onViewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
     window.removeEventListener("mousedown", this._handleMouseDown as any);
     window.removeEventListener("mouseup", this._handleMouseDragEnd as any);
@@ -480,9 +481,9 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     if (this.state.isMoving) {
       // add scaled mouse movement
       this._processWindowDrag(movement);
-    } else /* istanbul ignore else */ if (this.state.isPanning) {
+    } else  {
       // istanbul ignore else
-      if (this.state.mode === MapMode.Opened) {
+      if (this.state.isPanning && this.state.mode === MapMode.Opened) {
         const vect = Vector3d.create(movement.x / this.state.drawingZoom, -movement.y / this.state.drawingZoom, 0);
         const offset = this.state.rotateMinimapWithView || this._isViewport3D() ? this.state.rotation.multiplyTransposeVector(vect) : vect;
         const mapOrigin = this.state.mapOrigin.minus(offset);
@@ -512,6 +513,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     this._lastClientXY = Point2d.create(event.clientX, event.clientY);
   };
 
+  // istanbul ignore next - unable to test touch
   private _handleWindowTouchStart = (event: any) => {
     if (1 !== event.targetTouches.length)
       return;
@@ -523,6 +525,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     this.setState({ isMoving: true });
   };
 
+  // istanbul ignore next - unable to test touch
   private _onTouchMove = (event: TouchEvent) => {
     if (1 !== event.targetTouches.length)
       return;
@@ -533,6 +536,7 @@ export class DrawingNavigationAid extends React.Component<DrawingNavigationAidPr
     this._lastClientXY = mouse;
   };
 
+  // istanbul ignore next - unable to test touch
   private _onTouchEnd = (event: TouchEvent) => {
     if (0 !== event.targetTouches.length)
       return;
@@ -733,7 +737,7 @@ export interface DrawingNavigationCanvasProps {
 export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCanvasProps> {
   private _canvasElement: HTMLDivElement | null = null;
   private _vp?: ScreenViewport;
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     return (
       <div className="drawing-canvas"
         data-testid="drawing-canvas"
@@ -741,7 +745,7 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
       </div>
     );
   }
-  public componentDidMount() {
+  public override componentDidMount() {
     if (this._canvasElement && this.props.view !== undefined) {
       const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
       /* istanbul ignore next */
@@ -774,7 +778,7 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
     }
   };
 
-  public componentDidUpdate(oldProps: DrawingNavigationCanvasProps) {
+  public override componentDidUpdate(oldProps: DrawingNavigationCanvasProps) {
     const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
     if (this.props.view !== undefined) {
       if (oldProps.view !== this.props.view) {
@@ -797,7 +801,7 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
     }
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     if (this._vp) {
       const viewManager = this.props.viewManagerOverride ? this.props.viewManagerOverride : /* istanbul ignore next */ IModelApp.viewManager;
       viewManager.dropViewport(this._vp, true);

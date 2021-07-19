@@ -7,7 +7,7 @@
  */
 
 import { Rule } from "./Rule";
-import { SchemasSpecification } from "./SchemasSpecification";
+import { RequiredSchemaSpecification, SchemasSpecification } from "./SchemasSpecification";
 import { VariablesGroup } from "./Variables";
 
 /**
@@ -32,10 +32,33 @@ export interface Ruleset {
   id: string;
 
   /**
+   * Version of the presentation ruleset in SemVer format: `{major}.{minor}.{patch}`.
+   *
+   * Setting the version is optional, but might be useful when ruleset is persisted
+   * somewhere and evolves over time. Having a version helps choose persisting
+   * strategy (keep all versions or only latest) and find the latest ruleset from a list
+   * of ruleset with the same id.
+   *
+   * Defaults to `0.0.0`.
+   *
+   * @pattern ^[\d]+\.[\d]+\.[\d]+$
+   * @beta
+   */
+  version?: string;
+
+  /**
    * Names of schemas which the rules should be applied for. Rules are applied to all
    * schemas if this property is not set.
+   *
+   * @deprecated Use [[requiredSchemas]] instead.
    */
   supportedSchemas?: SchemasSpecification;
+
+  /**
+   * Schema requirements for this ruleset. The ruleset is not used if the requirements are not met.
+   * @beta
+   */
+  requiredSchemas?: RequiredSchemaSpecification[];
 
   /** Supplementation-related information for this ruleset */
   supplementationInfo?: SupplementationInfo;

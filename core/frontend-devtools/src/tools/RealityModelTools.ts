@@ -13,13 +13,18 @@ import { copyStringToClipboard } from "../ClipboardUtilities";
 import { parseBoolean } from "./parseBoolean";
 import { parseToggle } from "./parseToggle";
 
-/** @alpha */
+/** This tool attaches a specified reality model.
+ * @beta
+ */
 export class AttachRealityModelTool extends Tool {
-  public static toolId = "AttachRealityModelTool";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "AttachRealityModelTool";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
 
-  public run(data: string): boolean {
+  /** This method runs the tool, attaching a specified reality model.
+   * @param data a [[ContextRealityModelProps]] JSON representation
+   */
+  public override run(data: string): boolean {
     const props = JSON.parse(data);
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
@@ -29,24 +34,31 @@ export class AttachRealityModelTool extends Tool {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error, `Properties ${props} are not valid`));
     }
 
-    vp.attachRealityModel(props);
+    vp.displayStyle.attachRealityModel(props);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Reality Model ${props.tilesetUrl} attached`));
 
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  /** Executes this tool's run method with args[0] containing `data`.
+   * @see [[run]]
+   */
+  public override parseAndRun(...args: string[]): boolean {
     return this.run(args[0]);
   }
 }
 
-/** @alpha */
+/** This tool saves a reality model's JSON representation to the system clipboard.
+ * @beta */
 export class SaveRealityModelTool extends Tool {
-  public static toolId = "SaveRealityModelTool";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "SaveRealityModelTool";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
-  public run(name: string | undefined): boolean {
+  /** This method runs the tool, saving a reality model's JSON representation to the system clipboard.
+   * @param name the name of the reality model to copy; if undefined, copy the last found reality model
+   */
+  public override run(name: string | undefined): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
@@ -60,25 +72,32 @@ export class SaveRealityModelTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  /** Executes this tool's run method with args[0] containing `name`.
+   * @see [[run]]
+   */
+  public override parseAndRun(...args: string[]): boolean {
     return this.run(args.length > 0 ? args[0] : undefined);
   }
 }
 
 function changeRealityModelAppearanceOverrides(vp: Viewport, overrides: FeatureAppearanceProps, index: number): boolean {
-  const existingOverrides = vp.getRealityModelAppearanceOverride(index);
-  return vp.overrideRealityModelAppearance(index, existingOverrides ? existingOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides));
+  const model = vp.displayStyle.settings.contextRealityModels.models[index];
+  if (!model)
+    return false;
+
+  model.appearanceOverrides = model.appearanceOverrides ? model.appearanceOverrides.clone(overrides) : FeatureAppearance.fromJSON(overrides);
+  return true;
 }
 
 /** Set reality model appearance override for transparency in display style.
  * @beta
  */
 export class SetRealityModelTransparencyTool extends Tool {
-  public static toolId = "SetRealityModelTransparencyTool";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 2; }
+  public static override toolId = "SetRealityModelTransparencyTool";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
 
-  public run(transparency: number, index: number): boolean {
+  public override run(transparency: number, index: number): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
@@ -91,7 +110,7 @@ export class SetRealityModelTransparencyTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     return this.run(parseFloat(args[0]), args.length > 1 ? parseInt(args[1], 10) : -1);
   }
 }
@@ -99,11 +118,11 @@ export class SetRealityModelTransparencyTool extends Tool {
  * @beta
  */
 export class SetRealityModelLocateTool extends Tool {
-  public static toolId = "SetRealityModelLocateTool";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 2; }
+  public static override toolId = "SetRealityModelLocateTool";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
 
-  public run(locate: boolean, index: number): boolean {
+  public override run(locate: boolean, index: number): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
@@ -117,7 +136,7 @@ export class SetRealityModelLocateTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     const locate = parseBoolean(args[0]);
     return locate === undefined ? false : this.run(locate, args.length > 1 ? parseInt(args[1], 10) : -1);
   }
@@ -127,11 +146,11 @@ export class SetRealityModelLocateTool extends Tool {
  * @beta
  */
 export class SetRealityModelEmphasizedTool extends Tool {
-  public static toolId = "SetRealityModelEmphasizedTool";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 2; }
+  public static override toolId = "SetRealityModelEmphasizedTool";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
 
-  public run(emphasized: true | undefined, index: number): boolean {
+  public override run(emphasized: true | undefined, index: number): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
@@ -144,7 +163,7 @@ export class SetRealityModelEmphasizedTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     const emphasized = parseBoolean(args[0]);
     return emphasized === undefined ? false : this.run(emphasized ? true : undefined, args.length > 1 ? parseInt(args[1], 10) : -1);
   }
@@ -154,21 +173,25 @@ export class SetRealityModelEmphasizedTool extends Tool {
  * @beta
  */
 export class DetachRealityModelTool extends Tool {
-  public static toolId = "ViewportDetachRealityModel";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "ViewportDetachRealityModel";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
-  public run(index: number): boolean {
+  public override run(index: number): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
 
-    vp.detachRealityModelByIndex(index);
+    const model = vp.displayStyle.settings.contextRealityModels.models[index];
+    if (!model)
+      return false;
+
+    vp.displayStyle.settings.contextRealityModels.delete(model);
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
-    return this.run(args.length > 1 ? parseInt(args[1], 10) : -1);
+  public override parseAndRun(...args: string[]): boolean {
+    return this.run(args.length > 1 ? parseInt(args[0], 10) : -1);
   }
 }
 
@@ -176,11 +199,11 @@ export class DetachRealityModelTool extends Tool {
  * @beta
  */
 export class SetRealityModelColorTool extends Tool {
-  public static toolId = "SetRealityModelColorTool";
-  public static get minArgs() { return 3; }
-  public static get maxArgs() { return 4; }
+  public static override toolId = "SetRealityModelColorTool";
+  public static override get minArgs() { return 3; }
+  public static override get maxArgs() { return 4; }
 
-  public run(rgb: RgbColorProps, index: number): boolean {
+  public override run(rgb: RgbColorProps, index: number): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
@@ -193,7 +216,7 @@ export class SetRealityModelColorTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     return this.run({ r: parseFloat(args[0]), g: parseFloat(args[1]), b: parseFloat(args[2]) }, args.length > 3 ? parseInt(args[3], 10) : -1);
   }
 }
@@ -202,19 +225,24 @@ export class SetRealityModelColorTool extends Tool {
  * @beta
  */
 export class ClearRealityModelAppearanceOverrides extends Tool {
-  public static toolId = "ClearRealityModelAppearanceOverrides";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "ClearRealityModelAppearanceOverrides";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
-  public run(index: number): boolean {
+  public override run(index: number): boolean {
     const vp = IModelApp.viewManager.selectedView;
-    if (vp)
-      vp.dropRealityModelAppearanceOverride(index);
+    if (!vp)
+      return false;
 
+    const model = vp.displayStyle.settings.contextRealityModels.models[index];
+    if (!model)
+      return false;
+
+    model.appearanceOverrides = undefined;
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     return this.run(args[0] === undefined ? -1 : parseInt(args[0], 10));
   }
 }
@@ -223,21 +251,22 @@ export class ClearRealityModelAppearanceOverrides extends Tool {
  * @beta
  */
 export class AttachCesiumAssetTool extends Tool {
-  public static toolId = "AttachCesiumAssetTool";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 2; }
+  public static override toolId = "AttachCesiumAssetTool";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
 
-  public run(assetId: number, requestKey: string): boolean {
+  public override run(assetId: number, requestKey: string): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
+
     const props = { tilesetUrl: getCesiumAssetUrl(assetId, requestKey) };
-    vp.attachRealityModel(props);
+    vp.displayStyle.attachRealityModel(props);
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Cesium Asset #${assetId} attached`));
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     const assetId = parseInt(args[0], 10);
     return Number.isNaN(assetId) ? false : this.run(assetId, args[1]);
   }
@@ -247,25 +276,25 @@ export class AttachCesiumAssetTool extends Tool {
  * @beta
  */
 export class ToggleOSMBuildingDisplay extends Tool {
-  public static toolId = "SetBuildingDisplay";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 2; }
+  public static override toolId = "SetBuildingDisplay";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 2; }
 
-  public run(onOff?: boolean, transparency?: number): boolean {
+  public override run(onOff?: boolean, transparency?: number): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (vp === undefined)
       return false;
 
     if (onOff === undefined)
-      onOff = vp.displayStyle.getOSMBuildingDisplayIndex() < 0;    // Toggle current state.
+      onOff = undefined === vp.displayStyle.getOSMBuildingRealityModel(); // Toggle current state.
 
     const appearanceOverrides = (transparency !== undefined && transparency > 0 && transparency < 1) ? FeatureAppearance.fromJSON({ transparency }) : undefined;
 
-    vp.setOSMBuildingDisplay({ onOff, appearanceOverrides });
+    vp.displayStyle.setOSMBuildingDisplay({ onOff, appearanceOverrides });
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     const toggle = parseToggle(args[0]);
     const transparency = args.length > 0 ? parseFloat(args[1]) : undefined;
     return typeof toggle === "string" ? false : this.run(toggle, transparency);

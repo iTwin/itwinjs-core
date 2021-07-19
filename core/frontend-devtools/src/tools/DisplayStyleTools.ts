@@ -8,7 +8,7 @@
  */
 
 import {
-  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, ViewFlags,
+  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
 } from "@bentley/imodeljs-common";
 import {
   DisplayStyle3dState, Environment, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
@@ -38,7 +38,7 @@ export abstract class DisplayStyleTool extends Tool {
   // Return false if failed to parse.
   protected abstract parse(args: string[]): boolean;
 
-  public run(): boolean {
+  public override run(): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.execute(vp))
       vp.displayStyle = vp.view.displayStyle;
@@ -46,7 +46,7 @@ export abstract class DisplayStyleTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined !== vp && (!this.require3d || vp.view.is3d()) && this.parse(args))
       return this.run();
@@ -64,18 +64,18 @@ export abstract class DisplayStyleTool extends Tool {
  * @beta
  */
 export class ChangeViewFlagsTool extends Tool {
-  public static toolId = "ChangeViewFlags";
-  public static get maxArgs() { return undefined; }
-  public static get minArgs() { return 1; }
+  public static override toolId = "ChangeViewFlags";
+  public static override get maxArgs() { return undefined; }
+  public static override get minArgs() { return 1; }
 
-  public run(vf: ViewFlags, vp?: Viewport): boolean {
+  public override run(vf: ViewFlags, vp?: Viewport): boolean {
     if (undefined !== vf && undefined !== vp)
       vp.viewFlags = vf;
 
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     const vp = IModelApp.viewManager.selectedView;
     if (undefined === vp || 0 === args.length)
       return true;
@@ -124,9 +124,9 @@ export class ChangeViewFlagsTool extends Tool {
  * @beta
  */
 export class ToggleSkyboxTool extends DisplayStyleTool {
-  public static toolId = "ToggleSkybox";
+  public static override toolId = "ToggleSkybox";
 
-  public get require3d() { return true; }
+  public override get require3d() { return true; }
 
   public parse(_args: string[]) { return true; } // no arguments
 
@@ -152,14 +152,14 @@ export class ToggleSkyboxTool extends DisplayStyleTool {
  * @beta
  */
 export class SaveRenderingStyleTool extends DisplayStyleTool {
-  private _options: DisplayStyleOverridesOptions = { };
+  private _options: DisplayStyleOverridesOptions = {};
   private _copyToClipboard = false;
   private _quote = false;
 
-  public static toolId = "SaveRenderingStyle";
+  public static override toolId = "SaveRenderingStyle";
 
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 7; }
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 7; }
 
   public parse(inputArgs: string[]) {
     const args = parseArgs(inputArgs);
@@ -198,10 +198,10 @@ export class SaveRenderingStyleTool extends DisplayStyleTool {
 export class ApplyRenderingStyleTool extends DisplayStyleTool {
   private _overrides?: DisplayStyle3dSettingsProps;
 
-  public static toolId = "ApplyRenderingStyle";
+  public static override toolId = "ApplyRenderingStyle";
 
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 1; }
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 1; }
 
   public parse(args: string[]) {
     try {
@@ -218,5 +218,43 @@ export class ApplyRenderingStyleTool extends DisplayStyleTool {
       vp.overrideDisplayStyle(this._overrides);
 
     return false;
+  }
+}
+
+/** Apply appearance overrides to one or more subcategories in the active viewport.
+ * @beta
+ */
+export class OverrideSubCategoryTool extends DisplayStyleTool {
+  private _overrideProps: SubCategoryAppearance.Props = {};
+  private _subcategoryIds: string[] = [];
+
+  public static override toolId = "OverrideSubCategory";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 7; }
+
+  public parse(inArgs: string[]): boolean {
+    const args = parseArgs(inArgs);
+    const ids = args.get("i");
+    if (ids)
+      this._subcategoryIds = ids.split(",");
+
+    const props = this._overrideProps;
+    props.color = args.getInteger("c");
+    props.weight = args.getInteger("w");
+    props.priority = args.getInteger("p");
+    props.transp = args.getFloat("t");
+    props.material = args.get("m");
+
+    const visible = args.getBoolean("v");
+    props.invisible = typeof visible === "boolean" ? !visible : undefined;
+    return true;
+  }
+
+  public execute(vp: Viewport): boolean {
+    const ovr = SubCategoryOverride.fromJSON(this._overrideProps);
+    for (const id of this._subcategoryIds)
+      vp.displayStyle.overrideSubCategory(id, ovr);
+
+    return true;
   }
 }

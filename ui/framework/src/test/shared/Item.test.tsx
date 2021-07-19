@@ -108,7 +108,7 @@ describe("Item", () => {
 
   it("ToolItemDef helper function with default args", () => {
     const toolItem = ToolItemDef.getItemDefForTool(Tool1);
-    expect(toolItem.iconSpec).to.be.eq("icon-placeholder");
+    expect(toolItem.iconSpec).to.be.eq(undefined);
 
     const spyMethod = sinon.spy(IModelApp.tools, "run");
     toolItem.execute();

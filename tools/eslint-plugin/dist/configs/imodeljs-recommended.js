@@ -48,6 +48,7 @@ module.exports = {
         }
       }
     ],
+    "@typescript-eslint/explicit-module-boundary-types": "off",
     "@typescript-eslint/indent": [
       "error",
       2
@@ -135,6 +136,7 @@ module.exports = {
     "@typescript-eslint/no-empty-interface": "error",
     "@typescript-eslint/no-explicit-any": "off",
     "@typescript-eslint/no-floating-promises": "error",
+    "@typescript-eslint/no-implied-eval": "off",
     "@typescript-eslint/no-inferrable-types": "off",
     "@typescript-eslint/no-misused-new": "error",
     "@typescript-eslint/no-misused-promises": [
@@ -146,10 +148,27 @@ module.exports = {
     "@typescript-eslint/no-namespace": "off",
     "@typescript-eslint/no-non-null-assertion": "off",
     "@typescript-eslint/no-parameter-properties": "off",
+    "@typescript-eslint/no-redeclare": [
+      "error",
+      {
+        "ignoreDeclarationMerge": true,
+      }
+    ],
+    "@typescript-eslint/no-shadow": [
+      "error",
+      {
+        "hoist": "all",
+        "allow": ["T", "args"]
+      }
+    ],
+    "@typescript-eslint/return-await": "error",
     "@typescript-eslint/no-this-alias": "error",
     "@typescript-eslint/no-use-before-define": "off",
-    "@typescript-eslint/no-var-requires": "error",
     "@typescript-eslint/no-unnecessary-type-assertion": "error",
+    "@typescript-eslint/no-unsafe-assignment": "off",
+    "@typescript-eslint/no-unsafe-call": "off",
+    "@typescript-eslint/no-unsafe-member-access": "off",
+    "@typescript-eslint/no-unsafe-return": "off",
     "@typescript-eslint/no-unused-vars": [
       "error",
       {
@@ -158,6 +177,7 @@ module.exports = {
         "varsIgnorePattern": "^_",
       }
     ],
+    "@typescript-eslint/no-var-requires": "error",
     "@typescript-eslint/prefer-for-of": "error",
     "@typescript-eslint/prefer-function-type": "error",
     "@typescript-eslint/prefer-includes": "off",
@@ -174,6 +194,8 @@ module.exports = {
       }
     ],
     "@typescript-eslint/require-await": "off",
+    "@typescript-eslint/restrict-plus-operands": "off",
+    "@typescript-eslint/restrict-template-expressions": "off",
     "@typescript-eslint/semi": [
       "error",
       "always"
@@ -253,20 +275,17 @@ module.exports = {
     "no-invalid-this": "off",
     "no-multiple-empty-lines": ["error", { max: 1 }],
     "no-new-wrappers": "error",
-    "no-redeclare": "error",
-    "no-restricted-properties": ["error", {
-      "object": "Math",
-      "property": "hypot",
-      "message": "Use Geometry.hypotenuse methods instead",
-    }],
-    "no-restricted-syntax": ["error", { selector: "TSEnumDeclaration[const=true]", message: "const enums are not allowed" }],
-    "no-return-await": "error",
-    "no-shadow": [
-      "error",
-      {
-        "hoist": "all"
+    "no-redeclare": "off", // using @typescript-eslint/no-redeclare instead
+    "no-restricted-properties": [
+      "error", {
+        "object": "Math",
+        "property": "hypot",
+        "message": "Use Geometry.hypotenuse methods instead",
       }
     ],
+    "no-restricted-syntax": ["error", { selector: "TSEnumDeclaration[const=true]", message: "const enums are not allowed" }],
+    "no-return-await": "off", // using @typescript-eslint/return-await instead
+    "no-shadow": "off", // using @typescript-eslint/no-shadow instead
     "no-sparse-arrays": "error",
     "no-template-curly-in-string": "error",
     "no-throw-literal": "error",

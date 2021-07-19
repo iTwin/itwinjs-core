@@ -33,9 +33,10 @@ interface TextEditorState {
 export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEditorState> implements TypeEditor {
   private _isMounted = false;
   private _ariaLabel = UiComponents.translate("editor.text");
+  private _inputElement = React.createRef<HTMLInputElement>();
 
   /** @internal */
-  public readonly state: Readonly<TextEditorState> = {
+  public override readonly state: Readonly<TextEditorState> = {
     inputValue: "",
     readonly: false,
   };
@@ -53,6 +54,14 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
     return propertyValue;
   }
 
+  public get htmlElement(): HTMLElement | null {
+    return this._inputElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    return document.activeElement === this._inputElement.current;
+  }
+
   private _updateInputValue = (e: React.ChangeEvent<HTMLInputElement>) => {
     // istanbul ignore else
     if (this._isMounted)
@@ -62,18 +71,18 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -119,7 +128,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
   }
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const className = classnames("components-cell-editor", "components-text-editor", this.props.className);
     const minSize = this.state.size ? this.state.size : 8;
     const minWidthStyle: React.CSSProperties = {
@@ -137,6 +146,7 @@ export class TextEditor extends React.PureComponent<PropertyEditorProps, TextEdi
       onBlur: this.props.onBlur,
       onChange: this._updateInputValue,
       setFocus: this.props.setFocus && !this.state.isDisabled,
+      ref: this._inputElement,
     };
 
     inputProps["aria-label"] = this._ariaLabel;

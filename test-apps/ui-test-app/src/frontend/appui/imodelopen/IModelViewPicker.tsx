@@ -38,7 +38,7 @@ class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
     );
   };
 
-  public render() {
+  public override render() {
     let name: string | undefined = this.props.view.code.value;
     if (!name)
       return undefined;
@@ -84,7 +84,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
   }
 
   // called when this component is first loaded
-  public async componentDidMount() {
+  public override async componentDidMount() {
     this.startRetrieveViews(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
@@ -156,7 +156,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
     }
   }
 
-  public render() {
+  public override render() {
     let iModelName = "";
     if (this.props.iModelInfo)
       iModelName = this.props.iModelInfo.name;
@@ -168,7 +168,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
         <div className="views animate">
           <div className="views-header">
             <h3>Select Views - {iModelName}</h3>
-            <span onClick={this._onClose.bind(this)} className="close icon icon-close" title="Close" />
+            <span onClick={this._onClose} className="close icon icon-close" title="Close" />
           </div>
           {this.renderViews()}
           <div className="views-footer">

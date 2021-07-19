@@ -8,8 +8,10 @@
  */
 import { using } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Content, DefaultContentDisplayTypes, InstanceKey, KeySet, PageOptions, RegisteredRuleset, Ruleset } from "@bentley/presentation-common";
-import { ContentDataProvider, ContentBuilder as PresentationContentBuilder } from "@bentley/presentation-components";
+import {
+  Content, DefaultContentDisplayTypes, InstanceKey, KeySet, PageOptions, RegisteredRuleset, Ruleset, traverseContent,
+} from "@bentley/presentation-common";
+import { ContentDataProvider, FieldHierarchyRecord, PropertyRecordsBuilder } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 
@@ -74,24 +76,9 @@ export class ContentBuilder {
     if (!content)
       return [];
 
-    const records: PropertyRecord[] = [];
-
-    const sortedFields = content.descriptor.fields.sort((f1, f2) => {
-      if (f1.name > f2.name)
-        return -1;
-      if (f1.name < f2.name)
-        return 1;
-      return 0;
-    });
-
-    for (const field of sortedFields) {
-      for (const set of content.contentSet) {
-        const record = PresentationContentBuilder.createPropertyRecord(field, set)!;
-        records.push(record);
-      }
-    }
-
-    return records;
+    const accumulator = new PropertyRecordsAccumulator();
+    traverseContent(accumulator, content);
+    return accumulator.records;
   }
 
   /**
@@ -171,5 +158,21 @@ export class ContentBuilder {
    */
   public async createContentForInstancePerClass(rulesetOrId: Ruleset | string, displayType: string = DefaultContentDisplayTypes.PropertyPane) {
     return this.createContentForClasses(rulesetOrId, true, displayType);
+  }
+}
+
+class PropertyRecordsAccumulator extends PropertyRecordsBuilder {
+  private _records: PropertyRecord[] = [];
+
+  public get records(): PropertyRecord[] {
+    return this._records;
+  }
+
+  protected createRootPropertiesAppender() {
+    return {
+      append: (record: FieldHierarchyRecord) => {
+        this._records.push(record.record);
+      },
+    };
   }
 }

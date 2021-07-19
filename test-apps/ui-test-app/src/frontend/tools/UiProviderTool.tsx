@@ -6,19 +6,29 @@
  * @module Tools
  */
 
+// cSpell: ignore popout
+
 import * as React from "react";
-import { Tool } from "@bentley/imodeljs-frontend";
+import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
-  ConditionalStringValue, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
-  ActionCreatorsObject, ActionsUnion, createAction, ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
+  ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, createAction,
+  ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { ShadowField } from "../appui/statusfields/ShadowField";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
+import toolIconSvg from "@bentley/icons-generic/icons/window-add.svg?sprite";
+import tool2IconSvg from "@bentley/icons-generic/icons/window-maximize.svg?sprite";
+import tool3IconSvg from "@bentley/icons-generic/icons/3d-render.svg?sprite";
+import { PopupTestPanel } from "./PopupTestPanel";
+import { PopupTestView } from "./PopupTestView";
+import { ComponentExamplesPage } from "../appui/frontstages/component-examples/ComponentExamples";
+import { ComponentExamplesProvider } from "../appui/frontstages/component-examples/ComponentExamplesProvider";
 
 // Simulate redux state being added via a extension
 interface SampleExtensionState {
@@ -173,8 +183,8 @@ class TestUiProvider implements UiItemsProvider {
 export class UiProviderTool extends Tool {
   public static testExtensionLoaded = "";
 
-  public static toolId = "TestUiProvider";
-  public run(_args: any[]): boolean {
+  public static override toolId = "TestUiProvider";
+  public override run(_args: any[]): boolean {
     // load state before ui provide so state is available when rendering on load occurs.
     if (!SampleExtensionStateManager.extensionStateManagerLoaded)
       SampleExtensionStateManager.initialize();
@@ -191,3 +201,140 @@ export class UiProviderTool extends Tool {
     return true;
   }
 }
+
+export class OpenComponentExamplesPopoutTool extends Tool {
+  public static override toolId = "openComponentExamplesChildWindow";
+  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(toolIconSvg);
+
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+
+  public override run(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this._run();
+    return true;
+  }
+
+  private async _run(): Promise<void> {
+    const location: ChildWindowLocationProps = {
+      width: 800,
+      height: 600,
+      left: 0,
+      top: 0,
+    };
+    const connection = UiFramework.getIModelConnection();
+    if (connection)
+      UiFramework.childWindowManager.openChildWindow("ComponentExamples", "Component Examples", <ComponentExamplesPage categories={ComponentExamplesProvider.categories} hideThemeOption />, location, UiFramework.useDefaultPopoutUrl);
+  }
+
+  public static override get flyover(): string {
+    return "open examples popout";
+  }
+
+  // if supporting localized key-ins return a localized string
+  public static override get keyin(): string {
+    return "open examples popout";
+  }
+
+  public static override get englishKeyin(): string {
+    return "open examples popout";
+  }
+
+  public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
+    const overrides = {
+      groupPriority,
+    };
+    return ToolbarItemUtilities.createActionButton(OpenComponentExamplesPopoutTool.toolId, itemPriority, OpenComponentExamplesPopoutTool.iconSpec, OpenComponentExamplesPopoutTool.flyover,
+      () => { IModelApp.tools.run(OpenComponentExamplesPopoutTool.toolId); }, overrides);
+  }
+}
+export class OpenCustomPopoutTool extends Tool {
+  public static override toolId = "OpenCustomPopout";
+  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(tool2IconSvg);
+
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+
+  public override run(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this._run();
+    return true;
+  }
+
+  private async _run(): Promise<void> {
+    const location: ChildWindowLocationProps = {
+      width: 800,
+      height: 600,
+      left: 0,
+      top: 0,
+    };
+    UiFramework.childWindowManager.openChildWindow("CustomPopout", "Custom Popout", <PopupTestPanel />, location /* , UiFramework.useDefaultPopoutUrl*/);
+  }
+
+  public static override get flyover(): string {
+    return "open custom popout";
+  }
+
+  // if supporting localized key-ins return a localized string
+  public static override get keyin(): string {
+    return "open custom popout";
+  }
+
+  public static override get englishKeyin(): string {
+    return "open custom popout";
+  }
+
+  public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
+    const overrides = {
+      groupPriority,
+    };
+    return ToolbarItemUtilities.createActionButton(OpenCustomPopoutTool.toolId, itemPriority, OpenCustomPopoutTool.iconSpec, OpenCustomPopoutTool.flyover,
+      () => { IModelApp.tools.run(OpenCustomPopoutTool.toolId); }, overrides);
+  }
+}
+
+export class OpenViewPopoutTool extends Tool {
+  public static override toolId = "OpenViewPopout";
+  public static override iconSpec = IconSpecUtilities.createSvgIconSpec(tool3IconSvg);
+
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 0; }
+
+  public override run(): boolean {
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    this._run();
+    return true;
+  }
+
+  private async _run(): Promise<void> {
+    const location: ChildWindowLocationProps = {
+      width: 800,
+      height: 600,
+      left: 0,
+      top: 0,
+    };
+    UiFramework.childWindowManager.openChildWindow("ViewPopout", "View Popout", <PopupTestView />, location);
+  }
+
+  public static override get flyover(): string {
+    return "open view popout";
+  }
+
+  // if supporting localized key-ins return a localized string
+  public static override get keyin(): string {
+    return "open view popout";
+  }
+
+  public static override get englishKeyin(): string {
+    return "open view popout";
+  }
+
+  public static getActionButtonDef(itemPriority: number, groupPriority?: number) {
+    const overrides = {
+      groupPriority,
+    };
+    return ToolbarItemUtilities.createActionButton(OpenViewPopoutTool.toolId, itemPriority, OpenViewPopoutTool.iconSpec, OpenViewPopoutTool.flyover,
+      () => { IModelApp.tools.run(OpenViewPopoutTool.toolId); }, overrides);
+  }
+}
+

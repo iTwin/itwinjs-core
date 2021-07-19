@@ -31,7 +31,7 @@ export class BasicAccessToken extends AccessToken {
    * Creates a token to be used in Authorization header.
    * @param includePrefix Set to Yes if prefix (Basic) should be included before the token.
    */
-  public toTokenString(includePrefix: IncludePrefix = IncludePrefix.Yes): string {
+  public override toTokenString(includePrefix: IncludePrefix = IncludePrefix.Yes): string {
     let token: string = "";
     if (includePrefix === IncludePrefix.Yes)
       token += `${this._prefix} `;
@@ -43,7 +43,7 @@ export class BasicAccessToken extends AccessToken {
    * initialize the tokenString field of the current instance of BasicAccessToken
    * @param tokenStr String representation of the token
    */
-  public initFromTokenString(tokenStr: string): void {
+  public override initFromTokenString(tokenStr: string): void {
     if (!tokenStr.startsWith(this._prefix)) {
       throw new BentleyError(AuthStatus.Error, "Invalid access token", Logger.logError, loggerCategory, () => ({ tokenStr }));
     }
@@ -62,14 +62,14 @@ export class IModelBankBasicAuthorizationClient implements FrontendAuthorization
   public constructor(_userInfo: UserInfo | undefined, private _userCredentials: any) {
   }
 
-  public async signIn(_requestContext: ClientRequestContext): Promise<void> {
-    _requestContext.enter();
+  public async signIn(_requestContext?: ClientRequestContext): Promise<void> {
+    _requestContext?.enter();
     this._token = BasicAccessToken.fromCredentials(this._userCredentials);
     this.onUserStateChanged.raiseEvent(this._token);
   }
 
-  public async signOut(_requestContext: ClientRequestContext): Promise<void> {
-    _requestContext.enter();
+  public async signOut(_requestContext?: ClientRequestContext): Promise<void> {
+    _requestContext?.enter();
     this._token = undefined;
     this.onUserStateChanged.raiseEvent(this._token);
   }

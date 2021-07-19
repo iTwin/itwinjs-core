@@ -59,7 +59,7 @@ export type RelatedPropertiesSpecification = DEPRECATED_RelatedPropertiesSpecifi
 /**
  * Sub-specification to include additional related instance properties.
  * @public
- * @deprecated Use `RelatedPropertiesSpecificationNew`. Will be removed in iModel.js 3.0
+ * @deprecated Use [[RelatedPropertiesSpecificationNew]]. Will be removed in iModel.js 3.0
  */
 export interface DEPRECATED_RelatedPropertiesSpecification { // eslint-disable-line @typescript-eslint/naming-convention
   /**
@@ -80,7 +80,7 @@ export interface DEPRECATED_RelatedPropertiesSpecification { // eslint-disable-l
 
   /**
    * Should [[relationships]] and [[relatedClasses]] be handled polymorphically.
-   * @deprecated Use `handleTargetClassPolymorphically`.
+   * @deprecated Use [[handleTargetClassPolymorphically]].
    */
   isPolymorphic?: boolean;
 
@@ -101,6 +101,12 @@ export interface DEPRECATED_RelatedPropertiesSpecification { // eslint-disable-l
   autoExpand?: boolean;
 
   /**
+   * Should this related properties specification be ignored if it duplicates another higher priority specification for the same relationship.
+   * @beta
+   */
+  skipIfDuplicate?: boolean;
+
+  /**
    * Meaning of the relationship which tells how to categorize the related properties. Defaults to [[RelationshipMeaning.RelatedInstance]].
    * @see [label]($docs/learning/presentation/Content/RelatedPropertiesSpecification.md#relationship-meaning-attribute)
    */
@@ -109,7 +115,7 @@ export interface DEPRECATED_RelatedPropertiesSpecification { // eslint-disable-l
   /**
    * List of names of related class properties that should be included in the content.
    * All properties are included if not specified.
-   * @deprecated Use `properties` attribute instead
+   * @deprecated Use [[properties]] attribute instead
    */
   propertyNames?: string[] | RelatedPropertiesSpecialValues;
 
@@ -148,6 +154,12 @@ export interface RelatedPropertiesSpecificationNew {
    * content class is related to properties source class through a one-to-many or many-to-many relationship.
    */
   autoExpand?: boolean;
+
+  /**
+   * Should this related properties specification be ignored if it duplicates another higher priority specification for the same relationship.
+   * @beta
+   */
+  skipIfDuplicate?: boolean;
 
   /**
    * Meaning of the relationship which tells how to categorize the related properties. Defaults to [[RelationshipMeaning.RelatedInstance]].

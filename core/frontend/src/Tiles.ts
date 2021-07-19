@@ -6,8 +6,7 @@
  * @module IModelConnection
  */
 
-import { BeTimePoint, Dictionary, dispose, Id64Array, IModelStatus } from "@bentley/bentleyjs-core";
-import { IModelTileTreeProps } from "@bentley/imodeljs-common";
+import { BeTimePoint, Dictionary, dispose, Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
 import { TileTree, TileTreeLoadStatus, TileTreeOwner, TileTreeSupplier } from "./tile/internal";
@@ -68,7 +67,11 @@ class TreeOwner implements TileTreeOwner {
 }
 
 /** Provides access to [[TileTree]]s associated with an [[IModelConnection]].
- * @beta
+ * The tile trees are accessed indirectly via their corresponding [[TileTreeOwner]]s.
+ * Loaded tile trees will be discarded after the iModel is closed, after a period of disuse, or when the contents of a [[GeometricModelState]] they represent
+ * change.
+ * @see [[IModelConnection.tiles]].
+ * @public
  */
 export class Tiles {
   private _iModel: IModelConnection;
@@ -78,7 +81,23 @@ export class Tiles {
   /** @internal */
   public get isDisposed() { return this._disposed; }
 
-  constructor(iModel: IModelConnection) { this._iModel = iModel; }
+  /** @internal */
+  constructor(iModel: IModelConnection) {
+    this._iModel = iModel;
+
+    iModel.onEcefLocationChanged.addListener(() => {
+      for (const supplier of this._treesBySupplier.keys()) {
+        if (supplier.isEcefDependent)
+          this.dropSupplier(supplier);
+      }
+    });
+
+    // When project extents change, purge tile trees for spatial models.
+    iModel.onProjectExtentsChanged.addListener(async () => {
+      if (!iModel.isBriefcaseConnection() || !iModel.editingScope)
+        await this.purgeModelTrees(this.getSpatialModels());
+    });
+  }
 
   /** @internal */
   public dispose(): void {
@@ -97,21 +116,52 @@ export class Tiles {
   }
 
   /** @internal */
-  public async getTileTreeProps(id: string): Promise<IModelTileTreeProps> {
-    return IModelApp.tileAdmin.requestTileTreeProps(this._iModel, id);
-  }
-
-  /** @internal */
-  public async getTileContent(treeId: string, contentId: string, isCanceled: () => boolean, guid: string | undefined, qualifier: string | undefined): Promise<Uint8Array> {
-    return IModelApp.tileAdmin.requestTileContent(this._iModel, treeId, contentId, isCanceled, guid, qualifier);
-  }
-
-  /** @internal */
   public async purgeTileTrees(modelIds: Id64Array | undefined): Promise<void> {
     return IModelApp.tileAdmin.purgeTileTrees(this._iModel, modelIds);
   }
 
-  /** Obtain the owner of a TileTree. The `id` is unique within all tile trees associated with `supplier`; its specific structure is an implementation detail known only to the supplier. */
+  private getModelsAnimatedByScheduleScript(scriptSourceElementId: Id64String): Set<Id64String> {
+    const modelIds = new Set<Id64String>();
+    for (const supplier of this._treesBySupplier.keys())
+      if (supplier.addModelsAnimatedByScript)
+        supplier.addModelsAnimatedByScript(modelIds, scriptSourceElementId, this.getTreeOwnersForSupplier(supplier));
+
+    return modelIds;
+  }
+
+  /** Update the [[Tile]]s for any [[TileTree]]s that use the [RenderSchedule.Script]($common) hosted by the specified
+   * [RenderTimeline]($backend) or [DisplayStyle]($backend) element. This method should be invoked after
+   * the host element is updated in the database with a new script, so that any [[Viewport]]s displaying tiles produced
+   * based on the previous version of the script are updated to use the new version of the script.
+   * @param scriptSourceElementId The Id of the RenderTimeline or DisplayStyle element that hosts the script.
+   * @public
+   */
+  public async updateForScheduleScript(scriptSourceElementId: Id64String): Promise<void> {
+    return this.purgeModelTrees(this.getModelsAnimatedByScheduleScript(scriptSourceElementId));
+  }
+
+  private async purgeModelTrees(modelIds: Set<Id64String>): Promise<void> {
+    if (0 === modelIds.size)
+      return;
+
+    const ids = Array.from(modelIds);
+    await this.purgeTileTrees(ids);
+    IModelApp.viewManager.refreshForModifiedModels(ids);
+  }
+
+  private getSpatialModels(): Set<Id64String> {
+    const modelIds = new Set<Id64String>();
+    for (const supplier of this._treesBySupplier.keys())
+      if (supplier.addSpatialModels)
+        supplier.addSpatialModels(modelIds, this.getTreeOwnersForSupplier(supplier));
+
+    return modelIds;
+  }
+
+  /** Obtain the owner of a TileTree.
+   * The `id` is unique within all tile trees associated with `supplier`; its specific structure is an implementation detail known only to the supplier.
+   * A [[TileTreeReference]] uses this method to obtain the tile tree to which it refers.
+   */
   public getTileTreeOwner(id: any, supplier: TileTreeSupplier): TileTreeOwner {
     let trees = this._treesBySupplier.get(supplier);
     if (undefined === trees) {
@@ -157,7 +207,9 @@ export class Tiles {
     };
   }
 
-  /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees. */
+  /** Unload any tile trees which have not been drawn since at least the specified time, excluding any of the specified TileTrees.
+   * @internal
+   */
   public purge(olderThan: BeTimePoint, exclude?: Set<TileTree>): void {
     // NB: It would be nice to be able to detect completely useless leftover Owners or Suppliers, but we can't know if any TileTreeReferences exist pointing to a given Owner.
     for (const entry of this._treesBySupplier) {
@@ -168,14 +220,6 @@ export class Tiles {
           if (undefined === exclude || !exclude.has(tree))
             owner.dispose();
       });
-    }
-  }
-
-  /** @internal */
-  public onEcefChanged(): void {
-    for (const supplier of this._treesBySupplier.keys()) {
-      if (supplier.isEcefDependent)
-        this.dropSupplier(supplier);
     }
   }
 }

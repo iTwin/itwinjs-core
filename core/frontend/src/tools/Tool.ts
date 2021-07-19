@@ -241,7 +241,7 @@ export class BeTouchEvent extends BeButtonEvent implements BeTouchEventProps {
     this.touchEvent = props.touchEvent;
   }
 
-  public setFrom(src: BeTouchEvent): this {
+  public override setFrom(src: BeTouchEvent): this {
     super.setFrom(src);
     this.touchEvent = src.touchEvent;
     this.tapCount = src.tapCount;
@@ -303,7 +303,7 @@ export class BeWheelEvent extends BeButtonEvent implements BeWheelEventProps {
     this.wheelDelta = (props && props.wheelDelta !== undefined) ? props.wheelDelta : 0;
     this.time = (props && props.time) ? props.time : Date.now();
   }
-  public setFrom(src: BeWheelEvent): this {
+  public override setFrom(src: BeWheelEvent): this {
     super.setFrom(src);
     this.wheelDelta = src.wheelDelta;
     this.time = src.time;
@@ -607,6 +607,9 @@ export abstract class InteractiveTool extends Tool {
    */
   public async getToolTip(_hit: HitDetail): Promise<HTMLElement | string> { return _hit.getToolTip(); }
 
+  /** Convenience method to check whether control key is currently down without needing a button event. */
+  public get isControlDown(): boolean { return IModelApp.toolAdmin.currentInputState.isControlDown; }
+
   /** Fill the supplied button event from the current cursor location.   */
   public getCurrentButtonEvent(ev: BeButtonEvent): void { IModelApp.toolAdmin.fillEventFromCursorLocation(ev); }
 
@@ -646,11 +649,14 @@ export abstract class InteractiveTool extends Tool {
       toolAdmin.setLocateCursor(enableLocate);
     }
 
-    accuSnap.enableLocate(enableLocate);
-    if (undefined !== enableSnap)
-      accuSnap.enableSnap(enableSnap);
-    else
-      accuSnap.enableSnap(false);
+    // Always set the one that is true first, otherwise AccuSnap will clear the TouchCursor.
+    if (enableLocate) {
+      accuSnap.enableLocate(true);
+      accuSnap.enableSnap(true === enableSnap);
+    } else {
+      accuSnap.enableSnap(true === enableSnap);
+      accuSnap.enableLocate(false);
+    }
 
     if (undefined !== coordLockOvr) {
       toolAdmin.toolState.coordLockOvr = coordLockOvr;
@@ -671,7 +677,7 @@ export abstract class InteractiveTool extends Tool {
     this.changeLocateState(enableLocate, enableSnap, cursor, coordLockOvr);
   }
 
-  /** Used to supply list of properties that can be used to generate ToolSettings. If undefined is returned then no ToolSettings will be displayed
+  /** Used to supply list of properties that can be used to generate ToolSettings. If undefined is returned then no ToolSettings will be displayed.
    * @beta
    */
   public supplyToolSettingsProperties(): DialogItem[] | undefined { return undefined; }
@@ -696,13 +702,22 @@ export abstract class InteractiveTool extends Tool {
   public reloadToolSettingsProperties() {
     IModelApp.toolAdmin.reloadToolSettingsProperties();
   }
+
+  /** Used to "bump" the value of a tool setting. To "bump" a setting means to toggle a boolean value or cycle through enum values.
+   * If no `settingIndex` param is specified, the first setting is bumped.
+   * Return true if the setting was successfully bumped.
+   * @beta
+   */
+  public async bumpToolSetting(_settingIndex?: number): Promise<boolean> { return false; }
 }
 
-/** The InputCollector class can be used to implement a command for gathering input (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.
+/** The InputCollector class can be used to implement a command for gathering input
+ * (ex. get a distance by snapping to 2 points) without affecting the state of the active primitive tool.
+ * An InputCollector will suspend the active PrimitiveTool and can be suspended by a ViewTool.
  * @public
  */
 export abstract class InputCollector extends InteractiveTool {
-  public run(..._args: any[]): boolean {
+  public override run(..._args: any[]): boolean {
     const toolAdmin = IModelApp.toolAdmin;
     // An input collector can only suspend a primitive tool, don't install if a viewing tool is active...
     if (undefined !== toolAdmin.viewTool || !toolAdmin.onInstallTool(this))
@@ -716,14 +731,14 @@ export abstract class InputCollector extends InteractiveTool {
   public exitTool(): void {
     IModelApp.toolAdmin.exitInputCollector();
   }
-  public async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
+  public override async onResetButtonUp(_ev: BeButtonEvent): Promise<EventHandled> {
     this.exitTool();
     return EventHandled.Yes;
   }
 }
 
 /** The result type of [[ToolRegistry.parseAndRun]].
- * @beta
+ * @public
  */
 export enum ParseAndRunResult {
   /** The tool's `parseAndRun` method was invoked and returned `true`. */
@@ -739,7 +754,7 @@ export enum ParseAndRunResult {
 }
 
 /** Possible errors resulting from [[ToolRegistry.parseKeyin]].
- * @beta
+ * @public
  */
 export enum KeyinParseError {
   /** No registered tool matching the keyin was found. */
@@ -749,7 +764,7 @@ export enum KeyinParseError {
 }
 
 /** Possible errors form [[ToolRegistry.parseKeyin]].
- * @beta
+ * @public
  */
 export interface ParseKeyinError {
   /** Union discriminator for [[ParseKeyinResult]]. */
@@ -759,7 +774,7 @@ export interface ParseKeyinError {
 }
 
 /** Successful result from [[ToolRegistry.parseKeyin]].
- * @beta
+ * @public
  */
 export interface ParsedKeyin {
   /** Union discriminator for [[ParseKeyinResult]]. */
@@ -771,7 +786,7 @@ export interface ParsedKeyin {
 }
 
 /** The result type of [[ToolRegistry.parseKeyin]].
- * @beta
+ * @public
  */
 export type ParseKeyinResult = ParsedKeyin | ParseKeyinError;
 
@@ -934,7 +949,7 @@ export class ToolRegistry {
    *  - `my keyin "abc""def"` => one argument: `abc"def`.
    * @param keyin A string consisting of a toolId followed by any number of arguments. The arguments are separated by whitespace.
    * @returns The tool, if found, along with an array of parsed arguments.
-   * @beta
+   * @public
    */
   public parseKeyin(keyin: string): ParseKeyinResult {
     const tools = this.getToolList();
@@ -992,7 +1007,7 @@ export class ToolRegistry {
    * @returns A status indicating whether the keyin was successfully parsed and executed.
    * @see [[parseKeyin]] to parse the keyin string and for a detailed description of the syntax.
    * @throws any Error thrown by the tool's `parseAndRun` method.
-   * @beta
+   * @public
    */
   public parseAndRun(keyin: string): ParseAndRunResult {
     const parsed = this.parseKeyin(keyin);
@@ -1016,7 +1031,7 @@ export class ToolRegistry {
    * Find a tool by its localized keyin using a FuzzySearch
    * @param keyin the localized keyin string of the Tool.
    * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
-   * @internal
+   * @public
    */
   public findPartialMatches(keyin: string): FuzzySearchResults<ToolType> {
     return new FuzzySearch<ToolType>().search(this.getToolList(), ["keyin"], keyin.toLowerCase());
@@ -1027,7 +1042,7 @@ export class ToolRegistry {
    * @param keyin the localized keyin string of the Tool.
    * @returns the Tool class, if an exact match is found, otherwise returns undefined.
    * @note Make sure the i18n resources are all loaded (e.g. `await IModelApp.i81n.waitForAllRead()`) before calling this method.
-   * @internal
+   * @public
    */
   public findExactMatch(keyin: string): ToolType | undefined {
     keyin = keyin.toLowerCase();

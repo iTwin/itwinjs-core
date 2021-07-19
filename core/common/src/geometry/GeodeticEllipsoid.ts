@@ -2,13 +2,18 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Geometry
+ */
+
+import { Geometry } from "@bentley/geometry-core";
 
 /** This interface defines the mathematical model of the Earth shape in the form of an ellipsoid.
  *  There are various ways to define an ellipsoid but we have retained the definition based on the polar and equatorial radiuses.
  *  The other ellipsoid properties, such as flattening and inverse flattening, can be obtained using
  *  the simple equations that are defined at:
  *  https://en.wikipedia.org/wiki/Flattening and https://en.wikipedia.org/wiki/Earth_ellipsoid.
- *  @alpha
+ *  @public
  */
 export interface GeodeticEllipsoidProps {
   /** Ellipsoid key name */
@@ -40,7 +45,7 @@ export interface GeodeticEllipsoidProps {
  *  For a lot of purposes simply setting the id property is sufficient to describe the ellipsoid in most cases
  *  as the mathematical properties (equatorial and polar radiuses) will be often extracted from the dictionary
  *  of commonly known ellipsoids by the reprojection engine used.
- *  @alpha
+ *  @public
  */
 export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
   /** Ellipsoid key name */
@@ -73,12 +78,14 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
     }
   }
 
-  /** @internal */
+  /** Creates a Geodetic Ellipsoid from JSON representation.
+   * @public */
   public static fromJSON(data: GeodeticEllipsoidProps): GeodeticEllipsoid {
     return new GeodeticEllipsoid(data);
   }
 
-  /** @internal */
+  /** Creates a JSON from the Geodetic Ellipsoid definition
+   * @public */
   public toJSON(): GeodeticEllipsoidProps {
     const data: GeodeticEllipsoidProps = { equatorialRadius: this.equatorialRadius, polarRadius: this.polarRadius };
     data.id = this.id;
@@ -92,15 +99,18 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
     return data;
   }
 
-  /** @internal */
+  /** Compares two Geodetic Ellipsoid. It is a strict compare operation not an equivalence test
+   * but it applies a minuscule tolerance for floating point compares.
+   * It takes into account descriptive properties not only mathematical definition properties.
+   *  @public */
   public equals(other: GeodeticEllipsoid): boolean {
     return this.id === other.id &&
       this.description === other.description &&
       this.deprecated === other.deprecated &&
       this.source === other.source &&
       this.epsg === other.epsg &&
-      this.equatorialRadius === other.equatorialRadius &&
-      this.polarRadius === other.polarRadius;
+      Geometry.isAlmostEqualOptional(this.equatorialRadius, other.equatorialRadius, Geometry.smallMetricDistance) &&
+      Geometry.isAlmostEqualOptional(this.polarRadius, other.polarRadius, Geometry.smallMetricDistance);
   }
 }
 

@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Toolbar
@@ -111,9 +111,9 @@ export class ToolbarItemsManager {
     for (const item of items) {
       for (const [, entry] of Object.entries(item)) {
         if (entry instanceof ConditionalBooleanValue) {
-          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId));
+          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
         } else /* istanbul ignore else */ if (entry instanceof ConditionalStringValue) {
-          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId));
+          entry.syncEventIds.forEach((eventId: string) => eventIds.add(eventId.toLowerCase()));
         }
       }
 

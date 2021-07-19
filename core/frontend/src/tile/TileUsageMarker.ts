@@ -15,7 +15,8 @@ import { Viewport } from "../Viewport";
  *  - the set of [[Viewport]]s in which the tile is in use for some purpose (displayed, preloaded, requested, selected for shadow map, etc); and
  *  - the most recent time at which any viewport declared its use of the tile.
  * The marker is used to allow tiles to be discarded after they become disused by any viewport, via [[Tile.prune]].
- * @beta
+ * @see [[Tile.usageMarker]].
+ * @public
  */
 export class TileUsageMarker {
   private _timePoint = BeTimePoint.now();

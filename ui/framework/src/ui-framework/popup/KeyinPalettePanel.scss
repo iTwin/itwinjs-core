@@ -3,8 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@bentley/ui-core/lib/ui-core/z-index";
 
 .uifw-command-palette-popup-container {
+  @include uicore-z-index(keyin-palette-overlay);
+
   box-sizing: border-box;
   background: $buic-background-control;
   color: $buic-foreground-body;

@@ -13,7 +13,7 @@ import { IModelApp } from "../IModelApp";
 import { GraphicBranch } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
-import { MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
+import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
 
 /** @internal */
 export class TraversalDetails {
@@ -128,22 +128,19 @@ export class RealityTileTree extends TileTree {
   public get rootTile(): RealityTile { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return this.loader.maxDepth; }
-  public get isContentUnbounded() { return this.loader.isContentUnbounded; }
+  public get minDepth() { return this.loader.minDepth; }
+  public override get isContentUnbounded() { return this.loader.isContentUnbounded; }
   public get isTransparent() { return false; }
 
   protected _selectTiles(args: TileDrawArgs): Tile[] { return this.selectRealityTiles(args, []); }
-  public get viewFlagOverrides() { return this.loader.viewFlagOverrides; }
-  public get parentsAndChildrenExclusive() { return this.loader.parentsAndChildrenExclusive; }
+  public get viewFlagOverrides(): ViewFlagOverrides { return this.loader.viewFlagOverrides; }
+  public override get parentsAndChildrenExclusive() { return this.loader.parentsAndChildrenExclusive; }
 
   public createTile(props: TileParams): RealityTile { return new RealityTile(props, this); }
 
   public prune(): void {
     const olderThan = BeTimePoint.now().minus(this.expirationTime);
     this.rootTile.purgeContents(olderThan);
-  }
-
-  public forcePrune(): void {
-    this.rootTile.purgeContents(BeTimePoint.now());
   }
 
   public draw(args: TileDrawArgs): void {
@@ -156,6 +153,10 @@ export class RealityTileTree extends TileTree {
     const selectedTiles = this.selectRealityTiles(args, displayedTileDescendants, preloadDebugBuilder);
     if (!this.loader.parentsAndChildrenExclusive)
       selectedTiles.sort((a, b) => a.depth - b.depth);                    // If parent and child are not exclusive then display parents (low resolution) first.
+
+    const classifier = args.context.planarClassifiers.get(this.modelId);
+    if (classifier && !(args instanceof GraphicsCollectorDrawArgs))
+      classifier.collectGraphics(args.context, { modelId: this.modelId, tiles: selectedTiles, location: args.location, isPointCloud: this.isPointCloud });
 
     assert(selectedTiles.length === displayedTileDescendants.length);
     for (let i = 0; i < selectedTiles.length; i++) {
@@ -199,10 +200,7 @@ export class RealityTileTree extends TileTree {
                       plane.offsetDistance(-displayedDescendant.radius * .05);     // Overlap with existing (high resolution) tile slightly to avoid cracks.
 
               const branch = new GraphicBranch(false);
-              const doClipOverride = new ViewFlagOverrides();
-              doClipOverride.setShowClipVolume(true);
               branch.add(graphics);
-              branch.setViewFlagOverrides(doClipOverride);
               const clipVolume = args.context.target.renderSystem.createClipVolume(clipVector);
               targetBranch.add(args.context.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume }));
             }

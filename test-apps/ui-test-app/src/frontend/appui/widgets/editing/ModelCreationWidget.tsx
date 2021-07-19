@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
+  EditingFunctions,
   IModelApp, MessageBoxIconType, MessageBoxType, NotifyMessageDetails, OutputMessagePriority, SpatialViewState,
 } from "@bentley/imodeljs-frontend";
 import { Button } from "@bentley/ui-core";
@@ -41,14 +42,16 @@ export class ModelCreationComponent extends React.Component<{}, ModelCreationCom
     this.setState((prev) => ({ ...prev, haveName: (modelName.length !== 0) }));
   }
 
+  /* eslint-disable deprecation/deprecation */
   private async createNewModel() {
     const iModel = UiFramework.getIModelConnection();
-    if (iModel === undefined)
+    if (iModel === undefined || !iModel.isRemoteBriefcaseConnection())
       return;
     const modelName = this.modelName;
     if (modelName === "")
       return;
-    const modelCode = await iModel.editing.codes.makeModelCode(iModel.models.repositoryModelId, modelName);
+    const editing = new EditingFunctions(iModel);
+    const modelCode = await editing.codes.makeModelCode(iModel.models.repositoryModelId, modelName);
     const viewport = IModelApp.viewManager.selectedView;
     if (viewport === undefined)
       return;
@@ -58,8 +61,8 @@ export class ModelCreationComponent extends React.Component<{}, ModelCreationCom
     }
 
     try {
-      const modelId = await iModel.editing.models.createAndInsertPhysicalModel(modelCode);
-      await iModel.editing.saveChanges("");
+      const modelId = await editing.models.createAndInsertPhysicalModel(modelCode);
+      await iModel.saveChanges("");
 
       await viewport.addViewedModels([modelId]);
       ActiveSettingsManager.onModelCreated(modelId, modelName, true);
@@ -74,7 +77,7 @@ export class ModelCreationComponent extends React.Component<{}, ModelCreationCom
     }
   }
 
-  public render() {
+  public override render() {
     return (
       <div>
         <h2>Create Model</h2>

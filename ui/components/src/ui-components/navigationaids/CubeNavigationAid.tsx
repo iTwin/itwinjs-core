@@ -15,21 +15,42 @@ import { CommonProps, Cube, Face } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
 import { ViewportComponentEvents, ViewRotationChangeEventArgs } from "../viewport/ViewportComponentEvents";
 
-/** @internal */
+/** @public */
+export enum CubeNavigationHitBoxX {
+  None = 0,
+  Right = 1,
+  Left = -1,
+}
+/** @internal
+ * @deprecated Use [[CubeNavigationHitBoxX]] */
 export enum HitBoxX {
   None = 0,
   Right = 1,
   Left = -1,
 }
+/** @public */
+export enum CubeNavigationHitBoxY {
+  None = 0,
+  Back = 1,
+  Front = -1,
+}
 
-/** @internal */
+/** @internal
+ * @deprecated Use [[CubeNavigationHitBoxY]] */
 export enum HitBoxY {
   None = 0,
   Back = 1,
   Front = -1,
 }
 
-/** @internal */
+/** @public */
+export enum CubeNavigationHitBoxZ {
+  None = 0,
+  Top = 1,
+  Bottom = -1,
+}
+/** @internal
+ * @deprecated [[CubeNavigationHitBoxZ]] */
 export enum HitBoxZ {
   None = 0,
   Top = 1,
@@ -44,12 +65,12 @@ interface CubeNavigationRotationMap {
 }
 
 const cubeNavigationFaceLocs: { [key: string]: Vector3d } = {
-  [Face.Left]: Vector3d.create(HitBoxX.Left, HitBoxY.None, HitBoxZ.None),
-  [Face.Right]: Vector3d.create(HitBoxX.Right, HitBoxY.None, HitBoxZ.None),
-  [Face.Back]: Vector3d.create(HitBoxX.None, HitBoxY.Back, HitBoxZ.None),
-  [Face.Front]: Vector3d.create(HitBoxX.None, HitBoxY.Front, HitBoxZ.None),
-  [Face.Bottom]: Vector3d.create(HitBoxX.None, HitBoxY.None, HitBoxZ.Bottom),
-  [Face.Top]: Vector3d.create(HitBoxX.None, HitBoxY.None, HitBoxZ.Top),
+  [Face.Left]: Vector3d.create(CubeNavigationHitBoxX.Left, CubeNavigationHitBoxY.None, CubeNavigationHitBoxZ.None),
+  [Face.Right]: Vector3d.create(CubeNavigationHitBoxX.Right, CubeNavigationHitBoxY.None, CubeNavigationHitBoxZ.None),
+  [Face.Back]: Vector3d.create(CubeNavigationHitBoxX.None, CubeNavigationHitBoxY.Back, CubeNavigationHitBoxZ.None),
+  [Face.Front]: Vector3d.create(CubeNavigationHitBoxX.None, CubeNavigationHitBoxY.Front, CubeNavigationHitBoxZ.None),
+  [Face.Bottom]: Vector3d.create(CubeNavigationHitBoxX.None, CubeNavigationHitBoxY.None, CubeNavigationHitBoxZ.Bottom),
+  [Face.Top]: Vector3d.create(CubeNavigationHitBoxX.None, CubeNavigationHitBoxY.None, CubeNavigationHitBoxZ.Top),
 };
 
 const cubeNavigationFaceRotations: { [key: string]: Matrix3d } = {
@@ -82,7 +103,7 @@ export enum CubeHover {
 }
 
 /** Properties for the [[CubeNavigationAid]] component
- * @beta
+ * @public
  */
 export interface CubeNavigationAidProps extends CommonProps {
   iModelConnection: IModelConnection;
@@ -96,7 +117,7 @@ export interface CubeNavigationAidProps extends CommonProps {
   animationTime?: number;
 }
 
-/** @internal */
+/** @public */
 interface CubeNavigationAidState {
   dragging: boolean;
   startRotMatrix: Matrix3d;
@@ -107,12 +128,12 @@ interface CubeNavigationAidState {
 }
 
 /** Cube Navigation Aid Component
- * @beta
+ * @public
  */
 export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, CubeNavigationAidState> {
   private _start: Vector2d = Vector2d.createZero();
   /** @internal */
-  public readonly state: Readonly<CubeNavigationAidState> = {
+  public override readonly state: Readonly<CubeNavigationAidState> = {
     dragging: false,
     startRotMatrix: Matrix3d.createIdentity(),
     endRotMatrix: Matrix3d.createIdentity(),
@@ -134,7 +155,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._mounted = true;
     ViewportComponentEvents.onViewRotationChangeEvent.addListener(this._handleViewRotationChangeEvent);
 
@@ -146,7 +167,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     ViewportComponentEvents.onViewRotationChangeEvent.removeListener(this._handleViewRotationChangeEvent);
     clearTimeout(this._animationFrame);
     this._mounted = false;
@@ -209,7 +230,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     return sum === 3;
   };
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { animation, startRotMatrix, endRotMatrix } = this.state;
     const visible = CubeNavigationAid._isMatrixFace(endRotMatrix) && animation === 1.0;
     const rotMatrix = CubeNavigationAid._interpolateRotMatrix(startRotMatrix, animation, endRotMatrix);
@@ -456,6 +477,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     window.removeEventListener("mouseup", this._onMouseUp);
   };
 
+  // istanbul ignore next - unable to test touch
   private _handleBoxTouchStart = (event: any) => {
     if (1 !== event.targetTouches.length)
       return;
@@ -465,6 +487,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     this._start = this._lastClientXY;
   };
 
+  // istanbul ignore next - unable to test touch
   private _onTouchMove = (event: TouchEvent) => {
     if (1 !== event.targetTouches.length)
       return;
@@ -472,6 +495,7 @@ export class CubeNavigationAid extends React.Component<CubeNavigationAidProps, C
     this._processDrag(mousePos);
   };
 
+  // istanbul ignore next - unable to test touch
   private _onTouchEnd = (event: TouchEvent) => {
     if (0 !== event.targetTouches.length)
       return;
@@ -542,7 +566,7 @@ export interface NavCubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement
 
 /** @internal */
 export class NavCubeFace extends React.Component<NavCubeFaceProps> {
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { face, hoverMap, onFaceCellClick, onFaceCellHoverChange, label } = this.props;
     return (
       <div className="nav-cube-face" data-testid="nav-cube-face">
@@ -589,7 +613,7 @@ interface FaceRowProps extends React.AllHTMLAttributes<HTMLDivElement> {
 }
 
 class FaceRow extends React.Component<FaceRowProps> {
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { center, children, ...props } = this.props;
     const classNames = classnames(
       "face-row",
@@ -612,7 +636,7 @@ export interface FaceCellProps extends React.AllHTMLAttributes<HTMLDivElement> {
 /** @internal */
 export class FaceCell extends React.Component<FaceCellProps> {
   private _startMouse: Point2d | undefined;
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { center, children, onFaceCellClick, onFaceCellHoverChange, hoverMap, face, vector, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const { x, y, z } = vector;
     const n = `${x}-${y}-${z}`;
@@ -716,7 +740,7 @@ interface PointerProps extends React.AllHTMLAttributes<HTMLDivElement> {
 }
 
 class PointerButton extends React.Component<PointerProps> {
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { visible, pointerType, onArrowClick, title, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const classes = classnames(
       "cube-pointer", "icon",

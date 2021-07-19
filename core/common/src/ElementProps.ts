@@ -42,7 +42,10 @@ export interface ElementProps extends EntityProps {
   code: CodeProps;
   /** The Parent of this element, if defined. */
   parent?: RelatedElementProps;
-  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element by some other federated database */
+  /** A [FederationGuid]($docs/bis/intro/element-fundamentals.md#federationguid) assigned to this element.
+   * @note  On insert, if this is a valid Guid, the value is preserved. If it is `undefined`, a new Guid is created. If it is an invalid Guid (e.g. Guid.empty), the
+   * resultant element will have a `null` federationGuid. For update, `undefined` means "don't change."
+   */
   federationGuid?: GuidString;
   /** A [user-assigned label]($docs/bis/intro/element-fundamentals.md#userlabel) for this element. */
   userLabel?: string;
@@ -103,7 +106,10 @@ export class TypeDefinition extends RelatedElement {
 export interface GeometricElementProps extends ElementProps {
   /** The id of the category for this geometric element. */
   category: Id64String;
+  /** The geometry stream properties */
   geom?: GeometryStreamProps;
+  /** The placement properties */
+  placement?: PlacementProps;
 }
 
 /** Properties of a [[Placement3d]]
@@ -126,6 +132,20 @@ export interface Placement2dProps {
 
 /** @public */
 export type PlacementProps = Placement2dProps | Placement3dProps;
+
+/** determine if this is Placement2dProps
+ * @public
+ */
+export function isPlacement2dProps(props: PlacementProps): props is Placement2dProps {
+  return (props as Placement2dProps).angle !== undefined;
+}
+
+/** determine if this is Placement3dProps
+ * @public
+ */
+export function isPlacement3dProps(props: PlacementProps): props is Placement3dProps {
+  return !isPlacement2dProps(props);
+}
 
 /** Properties that define a [GeometricElement3d]($backend)
  * @public
@@ -152,29 +172,8 @@ export enum SectionType {
   Plan = 6,
 }
 
-/** Properties that define a [SectionLocation]($backend)
- * @alpha
- * @deprecated Use [[SectionDrawingLocationProps]] instead.
- */
-export interface SectionLocationProps extends GeometricElement3dProps {
-  /** Section type */
-  sectionType?: SectionType;
-  /** Optional Id of the associated [[ViewAttachmentProps]]. */
-  viewAttachment?: RelatedElementProps;
-  jsonProperties?: {
-    /** The Id of the spatial view from which this section location was created. */
-    spatialViewId?: Id64String;
-    /** The Id of the drawing associated with this section location, if any. If both this and `viewAttachment` are defined, this is the same as the Id of the view attachment's view. */
-    drawingViewId?: Id64String;
-    /** Transform from drawing coordinates to spatial coordinates. */
-    drawingToSpatialTransform?: TransformProps;
-    /** Transform from sheet coordinates to spatial coordinates. */
-    sheetToSpatialTransform?: TransformProps;
-  };
-}
-
 /** Properties that define a [SectionDrawing]($backend).
- * @beta
+ * @public
  */
 export interface SectionDrawingProps extends ElementProps {
   /** The type of section used to generate the drawing. Default: Section. */
@@ -182,29 +181,22 @@ export interface SectionDrawingProps extends ElementProps {
   /** The spatial view from which the section was generated. */
   spatialView?: RelatedElementProps;
   jsonProperties?: {
-    /** A transform from the section drawing model's coordinates to spatial coordinates.
-     * @alpha
-     */
+    /** A transform from the section drawing model's coordinates to spatial coordinates. */
     drawingToSpatialTransform?: TransformProps;
-    /** If the section drawing is placed onto a [Sheet]($backend) via a [ViewAttachment]($backend), a transform from the sheet's coordinates to spatial coordinates.
-     * @alpha
-     */
+    /** If the section drawing is placed onto a [Sheet]($backend) via a [ViewAttachment]($backend), a transform from the sheet's coordinates to spatial coordinates. */
     sheetToSpatialTransform?: TransformProps;
     /** If the section drawing is placed onto a [Sheet]($backend) via a [ViewAttachment]($backend), JSON representation of a [ClipVector]($geometry) to apply to
      * the sheet graphics when drawn in the context of the spatial view.
      * The ClipVector is in spatial coordinates.
-     * @alpha
      */
     drawingBoundaryClip?: ClipVectorProps;
-    /** If true, when displaying the section drawing as a [DrawingViewState]($frontend), the [[spatialView]] will also be displayed.
-     * @alpha
-     */
+    /** If true, when displaying the section drawing as a [DrawingViewState]($frontend), the [[spatialView]] will also be displayed. */
     displaySpatialView?: true;
   };
 }
 
 /** Properties that define a [SectionDrawingLocation]($backend)
- * @beta
+ * @public
  */
 export interface SectionDrawingLocationProps extends GeometricElement3dProps {
   /** The [ViewDefinition]($backend) to which this location refers. */
@@ -273,8 +265,8 @@ export interface SheetTemplateProps extends ElementProps {
   border?: Id64String;
 }
 
-/** Properties of a [Sheet]($backend)
- * @beta
+/** Properties of a [Sheet]($backend).
+ * @public
  */
 export interface SheetProps extends ElementProps {
   width?: number;
@@ -309,41 +301,63 @@ export interface PhysicalTypeProps extends TypeDefinitionElementProps {
 /** Properties of a [InformationPartitionElement]($backend)
  * @public
  */
-export interface InformationPartitionElementProps extends DefinitionElementProps {
+export interface InformationPartitionElementProps extends ElementProps {
   description?: string;
 }
 
-/** Options for loading a [[DisplayStyleProps]].
- * @see [[ViewStateLoadProps]].
+/** Options controlling which properties are included or excluded when querying [[DisplayStyleProps]].
+ * @see [[ViewStateLoadProps]] and [[ElementLoadOptions]].
  * @public
  */
 export interface DisplayStyleLoadProps {
-  /** If true, the element Ids in the display style's schedule script will be empty. The element Ids are not required on the frontend for display and can be quite large.
-   * @public
+  /** If true, the lists of element Ids in the display style's schedule script will be empty.
+   * The element Ids are not required on the frontend for display and can be quite large.
    */
   omitScheduleScriptElementIds?: boolean;
-  /** If true, the Ids of excluded elements will be compressed into a single string.
-   * @see [[DisplayStyleSettingsProps.excludedElements]]
-   * @public
+  /** If true, [[DisplayStyleSettingsProps.excludedElements]] will be compressed into a single compact string; otherwise they will be expanded into an array of strings.
+   * The number of Ids may be quite large, so the compressed format is preferred, especially when communicating between the backend and frontend.
    */
   compressExcludedElementIds?: boolean;
 }
 
-/** Parameters to specify what element to load for [IModelDb.Elements.getElementProps]($backend).
+/** Options controlling which properties are included or excluded when querying [[RenderTimelineProps]].
+ * @see [[ElementLoadOptions.renderTimeline]].
  * @public
  */
-export interface ElementLoadProps {
+export interface RenderTimelineLoadProps {
+  /** If true, the lists of element Ids in the schedule script will be empty.
+   * The element Ids can be extremely numerous and are not required on the frontend for display, so they are omitted by default by [DisplayStyleState.load]($frontend).
+   */
+  omitScriptElementIds?: boolean;
+}
+
+/** Options used to specify properties to include or exclude when querying [[ElementProps]] with functions like
+ * [IModelDb.Elements.getElementProps]($backend) and [IModelConnection.Elements.loadProps]($frontend).
+ * @public
+ */
+export interface ElementLoadOptions {
+  /** If true, include the [[GeometryStreamProps]] for [[GeometricElementProps]] and [[GeometryPartProps]].
+   * Geometry streams can consist of many megabytes worth of JSON, so they are omitted by default.
+   */
+  wantGeometry?: boolean;
+  /** When including a geometry stream containing brep entries, whether to return the raw brep data or proxy geometry, false when undefined */
+  /** If true, include [[BRepEntity.DataProps.data]] in the [[GeometryStreamProps]] for [[GeometricElementProps]] and [[GeometryPartProps]].
+   * The data is a potentially large base-64-encoded opaque binary blob that cannot be directly inspected or manipulated on the frontend, so it is omitted by default.
+   */
+  wantBRepData?: boolean;
+  /** Options controlling which properties of [[DisplayStyleProps]] to include or exclude. */
+  displayStyle?: DisplayStyleLoadProps;
+  /** Options controlling which properties of [[RenderTimelineProps]] to include or exclude. */
+  renderTimeline?: RenderTimelineLoadProps;
+}
+
+/** Parameters to specify what element to load for functions like [IModelDb.Elements.getElementProps]($backend).
+ * @public
+ */
+export interface ElementLoadProps extends ElementLoadOptions {
   id?: Id64String;
   code?: CodeProps;
   federationGuid?: GuidString;
-  /** Whether to include geometry stream in GeometricElementProps and GeometryPartProps, false when undefined */
-  wantGeometry?: boolean;
-  /** When including a geometry stream containing brep entries, whether to return the raw brep data or proxy geometry, false when undefined */
-  wantBRepData?: boolean;
-  /** Properties to omit when loading a [[DisplayStyle]].
-   * @internal
-   */
-  displayStyle?: DisplayStyleLoadProps;
 }
 
 /** Properties of an [ElementAspect]($backend)
@@ -372,6 +386,40 @@ export interface ExternalSourceAspectProps extends ElementAspectProps {
   checksum?: string;
   /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
   jsonProperties?: any;
+  /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
+  source?: RelatedElementProps;
+}
+
+/** Properties of an [ExternalSource]($backend)
+ * @beta
+ */
+export interface ExternalSourceProps extends ElementProps {
+  repository?: RelatedElementProps;
+  connectorName?: string;
+  connectorVersion?: string;
+}
+
+/** The role that an attached [ExternalSource]($backend) plays.
+ * @beta
+ */
+export enum ExternalSourceAttachmentRole {
+  /** The attached [ExternalSource]($backend) provides context. */
+  SpecifyContext = 0,
+  /** The attached [ExternalSource]($backend) models a part of the whole. */
+  SpecifyPart = 1,
+}
+
+/** Properties of an [ExternalSourceAttachment]($backend)
+ * @beta
+ */
+export interface ExternalSourceAttachmentProps extends ElementProps {
+  attaches?: RelatedElementProps;
+  role?: ExternalSourceAttachmentRole;
+  translation?: XYZProps;
+  yaw?: number;
+  pitch?: number;
+  roll?: number;
+  scale?: XYZProps;
 }
 
 /** Properties of an [ChannelRootAspect]($backend) that identifies an Element as the root of a *channel* which is a subset of the overall iModel hierarchy that is independently maintained.
@@ -383,10 +431,11 @@ export interface ChannelRootAspectProps extends ElementAspectProps {
 }
 
 /** Properties of a [LineStyle]($backend)
- * @beta
+ * @public
  */
 export interface LineStyleProps extends DefinitionElementProps {
   description?: string;
+  /** The JSON string line style definition element data [LineStyleDefinition.StyleProps]($backend) */
   data: string;
 }
 
@@ -440,4 +489,24 @@ export interface UrlLinkProps extends ElementProps {
  */
 export interface RepositoryLinkProps extends UrlLinkProps {
   repositoryGuid?: GuidString;
+  format?: string;
+}
+
+/** The properties of a [SynchronizationConfigLink]($backend)
+ * @beta
+ */
+export interface SynchronizationConfigLinkProps extends UrlLinkProps {
+  lastSuccessfulRun?: string;
+}
+
+/** Wire format describing a [RenderTimeline]($backend).
+ * @public
+ */
+export interface RenderTimelineProps extends ElementProps {
+  /** An optional human-readable description of the timeline. */
+  description?: string;
+  /** The stringified JSON representation of the instructions for visualizing change over time.
+   * @see [[RenderSchedule.ScriptProps]] for the JSON interface.
+   */
+  script: string;
 }

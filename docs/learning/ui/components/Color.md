@@ -36,16 +36,16 @@ interface State {
 #### Preset Colors
 
 ```tsx
-  private readonly _presetColors = [
-    new ColorDef(ColorByName.grey),
-    new ColorDef(ColorByName.lightGrey),
-    new ColorDef(ColorByName.darkGrey),
-    new ColorDef(ColorByName.lightBlue),
-    new ColorDef(ColorByName.lightGreen),
-    new ColorDef(ColorByName.darkGreen),
-    new ColorDef(ColorByName.tan),
-    new ColorDef(ColorByName.darkBrown),
-  ];
+private readonly _presetColors = [
+  new ColorDef(ColorByName.grey),
+  new ColorDef(ColorByName.lightGrey),
+  new ColorDef(ColorByName.darkGrey),
+  new ColorDef(ColorByName.lightBlue),
+  new ColorDef(ColorByName.lightGreen),
+  new ColorDef(ColorByName.darkGreen),
+  new ColorDef(ColorByName.tan),
+  new ColorDef(ColorByName.darkBrown),
+];
 ```
 
 #### render() method
@@ -140,4 +140,4 @@ private _handleColorChange = (value: ColorDef) => {
 
 ## API Reference
 
-* [Color]($ui-components:Color)
+- [Color]($ui-components:Color)

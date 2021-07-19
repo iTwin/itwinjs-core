@@ -24,7 +24,7 @@ import { UnitSystem } from "./UnitSystem";
  * @beta
  */
 export class Unit extends SchemaItem {
-  public readonly schemaItemType!: SchemaItemType.Unit; // eslint-disable-line
+  public override readonly schemaItemType!: SchemaItemType.Unit; // eslint-disable-line
   protected _phenomenon?: LazyLoadedPhenomenon;
   protected _unitSystem?: LazyLoadedUnitSystem;
   protected _definition: string;
@@ -49,11 +49,24 @@ export class Unit extends SchemaItem {
   public get denominator(): number { return this._denominator; }
 
   /**
+   * Returns true if a conversion can be calculated between the input units
+   * @alpha
+   */
+  public static async areCompatible(unitA: Unit, unitB: Unit): Promise<boolean> {
+    const unitAPhenomenon = await unitA.phenomenon;
+    const unitBPhenomenon = await unitB.phenomenon;
+
+    if (!unitAPhenomenon || !unitBPhenomenon || !unitAPhenomenon.key.matches(unitBPhenomenon.key))
+      return false;
+    return true;
+  }
+
+  /**
    * Save this Unit's properties to an object for serializing to JSON.
    * @param standalone Serialization includes only this object (as opposed to the full schema).
    * @param includeSchemaVersion Include the Schema's version information in the serialized object.
    */
-  public toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): UnitProps {
+  public override toJSON(standalone: boolean = false, includeSchemaVersion: boolean = false): UnitProps {
     const schemaJson = super.toJSON(standalone, includeSchemaVersion) as any;
     schemaJson.phenomenon = this.phenomenon!.fullName;
     schemaJson.unitSystem = this.unitSystem!.fullName;
@@ -68,7 +81,7 @@ export class Unit extends SchemaItem {
   }
 
   /** @internal */
-  public async toXml(schemaXml: Document): Promise<Element> {
+  public override async toXml(schemaXml: Document): Promise<Element> {
     const itemElement = await super.toXml(schemaXml);
 
     const phenomenon = await this.phenomenon;
@@ -91,7 +104,7 @@ export class Unit extends SchemaItem {
     return itemElement;
   }
 
-  public fromJSONSync(unitProps: UnitProps) {
+  public override fromJSONSync(unitProps: UnitProps) {
     super.fromJSONSync(unitProps);
 
     const phenomenonSchemaItemKey = this.schema.getSchemaItemKey(unitProps.phenomenon);
@@ -137,7 +150,7 @@ export class Unit extends SchemaItem {
     }
   }
 
-  public async fromJSON(unitProps: UnitProps) {
+  public override async fromJSON(unitProps: UnitProps) {
     this.fromJSONSync(unitProps);
   }
 
@@ -170,8 +183,8 @@ export class Unit extends SchemaItem {
  * An abstract class used for schema editing.
  */
 export abstract class MutableUnit extends Unit {
-  public abstract async setPhenomenon(phenomenon: LazyLoadedPhenomenon): Promise<void>;
-  public abstract async setUnitSystem(unitSystem: LazyLoadedUnitSystem): Promise<void>;
-  public abstract async setDefinition(definition: string): Promise<void>;
-  public abstract setDisplayLabel(displayLabel: string): void;
+  public abstract override setPhenomenon(phenomenon: LazyLoadedPhenomenon): Promise<void>;
+  public abstract override setUnitSystem(unitSystem: LazyLoadedUnitSystem): Promise<void>;
+  public abstract override setDefinition(definition: string): Promise<void>;
+  public abstract override setDisplayLabel(displayLabel: string): void;
 }

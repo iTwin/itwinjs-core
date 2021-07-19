@@ -113,6 +113,7 @@ export class MeshPolylineList extends Array<MeshPolyline> { constructor(...args:
 /** @internal */
 export class MeshEdge {
   public indices = [0, 0];
+
   public constructor(index0?: number, index1?: number) {
     if (undefined === index0 || undefined === index1)
       return;
@@ -123,6 +124,14 @@ export class MeshEdge {
       this.indices[0] = index1;
       this.indices[1] = index0;
     }
+  }
+
+  public compareTo(other: MeshEdge): number {
+    let diff = this.indices[0] - other.indices[0];
+    if (0 === diff)
+      diff = this.indices[1] - other.indices[1];
+
+    return diff;
   }
 }
 
@@ -156,7 +165,7 @@ export class EdgeArgs {
 export class SilhouetteEdgeArgs extends EdgeArgs {
   public normals?: OctEncodedNormalPair[];
 
-  public init(meshEdges?: MeshEdges) {
+  public override init(meshEdges?: MeshEdges) {
     this.clear();
     if (undefined !== meshEdges && 0 < meshEdges.silhouette.length) {
       this.edges = meshEdges.silhouette;
@@ -166,7 +175,7 @@ export class SilhouetteEdgeArgs extends EdgeArgs {
     return this.isValid;
   }
 
-  public clear() { this.normals = undefined; super.clear(); }
+  public override clear() { this.normals = undefined; super.clear(); }
 }
 
 /** @internal */

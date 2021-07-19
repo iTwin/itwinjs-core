@@ -8,7 +8,9 @@
 
 import { assert, dispose } from "@bentley/bentleyjs-core";
 import { Transform, Vector2d, Vector3d } from "@bentley/geometry-core";
-import { Feature, PackedFeatureTable, RenderMode, SpatialClassificationProps, ViewFlags } from "@bentley/imodeljs-common";
+import {
+  Feature, PackedFeatureTable, RenderMode, SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ViewFlags,
+} from "@bentley/imodeljs-common";
 import { DepthType, RenderType } from "@bentley/webgl-compatibility";
 import { IModelConnection } from "../../IModelConnection";
 import { SceneContext } from "../../ViewContext";
@@ -668,6 +670,7 @@ abstract class Compositor extends SceneCompositor {
   protected _translucentRenderState = new RenderState();
   protected _hiliteRenderState = new RenderState();
   protected _noDepthMaskRenderState = new RenderState();
+  protected _backgroundMapRenderState = new RenderState();
   protected _debugStencil: number = 0; // 0 to draw stencil volumes normally, 1 to draw as opaque, 2 to draw blended
   protected _vcBranchState?: BranchState;
   protected _vcSetStencilRenderState?: RenderState;
@@ -682,8 +685,8 @@ abstract class Compositor extends SceneCompositor {
   protected _antialiasSamples: number = 1;
   protected readonly _viewProjectionMatrix = new Matrix4();
 
-  public abstract get currentRenderTargetIndex(): number;
-  public abstract set currentRenderTargetIndex(_index: number);
+  public abstract override get currentRenderTargetIndex(): number;
+  public abstract override set currentRenderTargetIndex(_index: number);
 
   protected abstract clearOpaque(_needComposite: boolean): void;
   protected abstract renderLayers(_commands: RenderCommands, _needComposite: boolean, pass: RenderPass): void;
@@ -757,6 +760,11 @@ abstract class Compositor extends SceneCompositor {
     this._hiliteRenderState.blend.functionDestAlpha = GL.BlendFactor.One;
 
     this._noDepthMaskRenderState.flags.depthMask = false;
+
+    // Background map supports transparency, even when depth is off, which is mostly useless but should blend with background color / skybox.
+    this._backgroundMapRenderState.flags.depthMask = false;
+    this._backgroundMapRenderState.flags.blend = true;
+    this._backgroundMapRenderState.blend.setBlendFunc(GL.BlendFactor.One, GL.BlendFactor.OneMinusSrcAlpha);
 
     // Can't write depth without enabling depth test - so make depth test always pass
     this._layerRenderState.flags.depthTest = true;
@@ -885,9 +893,13 @@ abstract class Compositor extends SceneCompositor {
     const needComposite = CompositeFlags.None !== compositeFlags;
 
     // Clear output targets
+    this.target.frameStatsCollector.beginTime("opaqueTime");
     this.target.beginPerfMetricRecord("Clear Opaque");
     this.clearOpaque(needComposite);
     this.target.endPerfMetricRecord();
+    this.target.frameStatsCollector.endTime("opaqueTime");
+
+    this.target.frameStatsCollector.beginTime("backgroundTime"); // includes skybox
 
     // Render the background
     this.target.beginPerfMetricRecord("Render Background");
@@ -904,15 +916,21 @@ abstract class Compositor extends SceneCompositor {
     this.renderBackgroundMap(commands, needComposite);
     this.target.endPerfMetricRecord();
 
+    this.target.frameStatsCollector.endTime("backgroundTime");
+
     // Enable clipping
     this.target.beginPerfMetricRecord("Enable Clipping");
     this.target.pushViewClip();
     this.target.endPerfMetricRecord();
 
     // Render volume classification first so that we only classify the reality data
+    this.target.frameStatsCollector.beginTime("classifiersTime");
     this.target.beginPerfMetricRecord("Render VolumeClassification");
     this.renderVolumeClassification(commands, compositeFlags, false);
     this.target.endPerfMetricRecord();
+    this.target.frameStatsCollector.endTime("classifiersTime");
+
+    this.target.frameStatsCollector.beginTime("opaqueTime");
 
     // Render layers
     this.target.beginPerfMetricRecord("Render Opaque Layers");
@@ -920,6 +938,7 @@ abstract class Compositor extends SceneCompositor {
     this.target.endPerfMetricRecord();
 
     // Render opaque geometry
+    this.target.frameStatsCollector.beginTime("onRenderOpaqueTime");
     IModelFrameLifecycle.onRenderOpaque.raiseEvent({
       commands,
       needComposite,
@@ -927,11 +946,16 @@ abstract class Compositor extends SceneCompositor {
       fbo: this.getBackgroundFbo(needComposite),
       frameBufferStack: System.instance.frameBufferStack,
     });
+    this.target.frameStatsCollector.endTime("onRenderOpaqueTime");
 
     // Render opaque geometry
     this.target.beginPerfMetricRecord("Render Opaque");
     this.renderOpaque(commands, compositeFlags, false);
     this.target.endPerfMetricRecord();
+
+    this.target.frameStatsCollector.endTime("opaqueTime");
+
+    this.target.frameStatsCollector.beginTime("translucentTime");
 
     // Render translucent layers
     this.target.beginPerfMetricRecord("Render Translucent Layers");
@@ -945,6 +969,8 @@ abstract class Compositor extends SceneCompositor {
       this.renderTranslucent(commands);
       this.target.endPerfMetricRecord();
 
+      this.target.frameStatsCollector.endTime("translucentTime");
+
       this.target.beginPerfMetricRecord("Render Hilite");
       this.renderHilite(commands);
       this.target.endPerfMetricRecord();
@@ -952,12 +978,15 @@ abstract class Compositor extends SceneCompositor {
       this.target.beginPerfMetricRecord("Composite");
       this.composite();
       this.target.endPerfMetricRecord();
-    }
+    } else
+      this.target.frameStatsCollector.endTime("translucentTime");
 
     // Render overlay Layers
+    this.target.frameStatsCollector.beginTime("overlaysTime");
     this.target.beginPerfMetricRecord("Render Overlay Layers");
     this.renderLayers(commands, false, RenderPass.OverlayLayers);
     this.target.endPerfMetricRecord();
+    this.target.frameStatsCollector.endTime("overlaysTime");
 
     this.target.popViewClip();
   }
@@ -1339,10 +1368,10 @@ abstract class Compositor extends SceneCompositor {
     let insideFlags = this.target.activeVolumeClassifierProps.flags.inside;
 
     if (this.target.wantThematicDisplay) {
-      if (outsideFlags !== SpatialClassificationProps.Display.Off)
-        outsideFlags = SpatialClassificationProps.Display.On;
-      if (insideFlags !== SpatialClassificationProps.Display.Off)
-        insideFlags = SpatialClassificationProps.Display.On;
+      if (outsideFlags !== SpatialClassifierOutsideDisplay.Off)
+        outsideFlags = SpatialClassifierOutsideDisplay.On;
+      if (insideFlags !== SpatialClassifierInsideDisplay.Off)
+        insideFlags = SpatialClassifierInsideDisplay.On;
     }
 
     // Render the geometry which we are going to classify.
@@ -1388,9 +1417,9 @@ abstract class Compositor extends SceneCompositor {
       return;
     }
 
-    const needOutsideDraw = SpatialClassificationProps.Display.On !== outsideFlags;
-    const needInsideDraw = SpatialClassificationProps.Display.On !== insideFlags;
-    const doColorByElement = SpatialClassificationProps.Display.ElementColor === insideFlags || renderForReadPixels;
+    const needOutsideDraw = SpatialClassifierOutsideDisplay.On !== outsideFlags;
+    const needInsideDraw = SpatialClassifierInsideDisplay.On !== insideFlags;
+    const doColorByElement = SpatialClassifierInsideDisplay.ElementColor === insideFlags || renderForReadPixels;
     const doColorByElementForIntersectingVolumes = this.target.vcSupportIntersectingVolumes;
     const needAltZ = (doColorByElement && !doColorByElementForIntersectingVolumes) || needOutsideDraw;
     let zOnlyFbo = this._frameBuffers.stencilSet;
@@ -1585,7 +1614,7 @@ abstract class Compositor extends SceneCompositor {
     const cmdsSelected = extractHilitedVolumeClassifierCommands(this.target.hilites, commands.getCommands(RenderPass.HiliteClassification));
     commands.replaceCommands(RenderPass.HiliteClassification, cmdsSelected); // replace the hilite command list for use in hilite pass as well.
     // if (cmdsSelected.length > 0 && insideFlags !== this.target.activeVolumeClassifierProps!.flags.selected) {
-    if (!doColorByElement && cmdsSelected.length > 0 && insideFlags !== SpatialClassificationProps.Display.Hilite) { // assume selected ones are always hilited
+    if (!doColorByElement && cmdsSelected.length > 0 && insideFlags !== SpatialClassifierInsideDisplay.Hilite) { // assume selected ones are always hilited
       // Set the stencil using just the hilited volume classifiers.
       fbStack.execute(this._frameBuffers.stencilSet, false, this.useMsBuffers, () => {
         this.target.pushState(this._vcBranchState!);
@@ -1674,7 +1703,7 @@ abstract class Compositor extends SceneCompositor {
 
     // Process the volume classifiers.
     const vcHiliteCmds = commands.getCommands(RenderPass.HiliteClassification);
-    if (0 !== vcHiliteCmds.length) {
+    if (0 !== vcHiliteCmds.length && undefined !== this._vcBranchState) {
       // Set the stencil for the given classifier stencil volume.
       system.frameBufferStack.execute(this._frameBuffers.stencilSet!, false, false, () => {
         this.target.pushState(this._vcBranchState!);
@@ -1719,6 +1748,8 @@ abstract class Compositor extends SceneCompositor {
         return this._translucentRenderState;
       case RenderPass.Hilite:
         return this._hiliteRenderState;
+      case RenderPass.BackgroundMap:
+        return this._backgroundMapRenderState;
       default:
         return this._noDepthMaskRenderState;
     }
@@ -1748,7 +1779,7 @@ class MRTFrameBuffers extends FrameBuffers {
   public idsAndZComposite?: FrameBuffer;
   public idsAndAltZComposite?: FrameBuffer;
 
-  public init(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
+  public override init(textures: Textures, depth: DepthBuffer, depthMs: DepthBuffer | undefined): boolean {
     if (!super.init(textures, depth, depthMs))
       return false;
 
@@ -1797,7 +1828,7 @@ class MRTFrameBuffers extends FrameBuffers {
       && undefined !== this.opaqueAndCompositeAll;
   }
 
-  public enableVolumeClassifier(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
+  public override enableVolumeClassifier(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
     const boundColor = System.instance.frameBufferStack.currentColorBuffer;
     if (undefined === boundColor)
       return;
@@ -1814,7 +1845,7 @@ class MRTFrameBuffers extends FrameBuffers {
     }
   }
 
-  public disableVolumeClassifier(): void {
+  public override disableVolumeClassifier(): void {
     super.disableVolumeClassifier();
     if (undefined !== this.idsAndZ) {
       this.idsAndZ = dispose(this.idsAndZ);
@@ -1824,14 +1855,14 @@ class MRTFrameBuffers extends FrameBuffers {
     }
   }
 
-  public enableMultiSampling(textures: Textures, depth: DepthBuffer, depthMS: DepthBuffer): boolean {
+  public override enableMultiSampling(textures: Textures, depth: DepthBuffer, depthMS: DepthBuffer): boolean {
     super.enableMultiSampling(textures, depth, depthMS);
     this.opaqueAll = dispose(this.opaqueAll);
     this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
     return this.initPotentialMSMRTFbos(textures, depth, depthMS);
   }
 
-  public disableMultiSampling(textures: Textures, depth: DepthBuffer): boolean {
+  public override disableMultiSampling(textures: Textures, depth: DepthBuffer): boolean {
     this.opaqueAll = dispose(this.opaqueAll);
     this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
     if (!this.initPotentialMSMRTFbos(textures, depth, undefined))
@@ -1839,7 +1870,7 @@ class MRTFrameBuffers extends FrameBuffers {
     return super.disableMultiSampling(textures, depth);
   }
 
-  public get isDisposed(): boolean {
+  public override get isDisposed(): boolean {
     return super.isDisposed
       && undefined === this.opaqueAll
       && undefined === this.opaqueAndCompositeAll
@@ -1852,7 +1883,7 @@ class MRTFrameBuffers extends FrameBuffers {
       && undefined === this.idsAndAltZComposite;
   }
 
-  public dispose(): void {
+  public override dispose(): void {
     super.dispose();
     this.opaqueAll = dispose(this.opaqueAll);
     this.opaqueAndCompositeAll = dispose(this.opaqueAndCompositeAll);
@@ -1871,14 +1902,14 @@ class MRTGeometry extends Geometry {
   public clearTranslucent?: ViewportQuadGeometry;
   public clearPickAndColor?: ViewportQuadGeometry;
 
-  public collectStatistics(stats: RenderMemory.Statistics): void {
+  public override collectStatistics(stats: RenderMemory.Statistics): void {
     super.collectStatistics(stats);
     collectGeometryStatistics(this.copyPickBuffers, stats);
     collectGeometryStatistics(this.clearTranslucent, stats);
     collectGeometryStatistics(this.clearPickAndColor, stats);
   }
 
-  public init(textures: Textures): boolean {
+  public override init(textures: Textures): boolean {
     if (!super.init(textures))
       return false;
 
@@ -1891,14 +1922,14 @@ class MRTGeometry extends Geometry {
     return undefined !== this.copyPickBuffers && undefined !== this.clearTranslucent && undefined !== this.clearPickAndColor;
   }
 
-  public get isDisposed(): boolean {
+  public override get isDisposed(): boolean {
     return super.isDisposed
       && undefined === this.copyPickBuffers
       && undefined === this.clearTranslucent
       && undefined === this.clearPickAndColor;
   }
 
-  public dispose() {
+  public override dispose() {
     super.dispose();
     this.copyPickBuffers = dispose(this.copyPickBuffers);
     this.clearTranslucent = dispose(this.clearTranslucent);
@@ -1926,19 +1957,19 @@ class MRTCompositor extends Compositor {
   private get _fbos(): MRTFrameBuffers { return this._frameBuffers as MRTFrameBuffers; }
   private get _geometry(): MRTGeometry { return this._geom as MRTGeometry; }
 
-  protected enableVolumeClassifierFbos(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
+  protected override enableVolumeClassifierFbos(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
     this._fbos.enableVolumeClassifier(textures, depth, volClassDepth, depthMS, volClassDepthMS);
   }
-  protected disableVolumeClassifierFbos(): void { this._fbos.disableVolumeClassifier(); }
+  protected override disableVolumeClassifierFbos(): void { this._fbos.disableVolumeClassifier(); }
 
-  protected enableMultiSampling(): boolean {
+  protected override enableMultiSampling(): boolean {
     if (!super.enableMultiSampling())
       return false;
     assert(undefined !== this._depth && undefined !== this._depthMS);
     return this._fbos.enableMultiSampling(this._textures, this._depth, this._depthMS);
   }
 
-  protected disableMultiSampling(): boolean {
+  protected override disableMultiSampling(): boolean {
     assert(undefined !== this._depth);
     if (!this._fbos.disableMultiSampling(this._textures, this._depth))
       return false;
@@ -2081,7 +2112,7 @@ class MPFrameBuffers extends FrameBuffers {
   public featureIdWithDepth?: FrameBuffer;
   public featureIdWithDepthAltZ?: FrameBuffer;
 
-  public init(textures: Textures, depth: DepthBuffer): boolean {
+  public override init(textures: Textures, depth: DepthBuffer): boolean {
     if (!super.init(textures, depth, undefined))
       return false;
 
@@ -2094,7 +2125,7 @@ class MPFrameBuffers extends FrameBuffers {
     return undefined !== this.accumulation && undefined !== this.revealage && undefined !== this.featureId;
   }
 
-  public enableVolumeClassifier(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
+  public override enableVolumeClassifier(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
     super.enableVolumeClassifier(textures, depth, volClassDepth, depthMS, volClassDepthMS);
     if (undefined !== this.featureId) {
       this.featureIdWithDepth = FrameBuffer.create([this.featureId.getColor(0)], depth);
@@ -2102,7 +2133,7 @@ class MPFrameBuffers extends FrameBuffers {
     }
   }
 
-  public disableVolumeClassifier(): void {
+  public override disableVolumeClassifier(): void {
     super.disableVolumeClassifier();
     if (undefined !== this.featureIdWithDepth) {
       this.featureIdWithDepth = dispose(this.featureIdWithDepth);
@@ -2110,7 +2141,7 @@ class MPFrameBuffers extends FrameBuffers {
     }
   }
 
-  public get isDisposed(): boolean {
+  public override get isDisposed(): boolean {
     return super.isDisposed
       && undefined === this.accumulation
       && undefined === this.revealage
@@ -2119,7 +2150,7 @@ class MPFrameBuffers extends FrameBuffers {
       && undefined === this.featureIdWithDepthAltZ;
   }
 
-  public dispose(): void {
+  public override dispose(): void {
     super.dispose();
 
     this.accumulation = dispose(this.accumulation);
@@ -2132,12 +2163,12 @@ class MPFrameBuffers extends FrameBuffers {
 class MPGeometry extends Geometry {
   public copyColor?: SingleTexturedViewportQuadGeometry;
 
-  public collectStatistics(stats: RenderMemory.Statistics): void {
+  public override collectStatistics(stats: RenderMemory.Statistics): void {
     super.collectStatistics(stats);
     collectGeometryStatistics(this.copyColor, stats);
   }
 
-  public init(textures: Textures): boolean {
+  public override init(textures: Textures): boolean {
     if (!super.init(textures))
       return false;
 
@@ -2146,9 +2177,9 @@ class MPGeometry extends Geometry {
     return undefined !== this.copyColor;
   }
 
-  public get isDisposed(): boolean { return super.isDisposed && undefined === this.copyColor; }
+  public override get isDisposed(): boolean { return super.isDisposed && undefined === this.copyColor; }
 
-  public dispose(): void {
+  public override dispose(): void {
     super.dispose();
     this.copyColor = dispose(this.copyColor);
   }
@@ -2170,7 +2201,7 @@ class MPCompositor extends Compositor {
     this._opaqueRenderStateNoZWt.flags.depthMask = false;
   }
 
-  protected getRenderState(pass: RenderPass): RenderState {
+  protected override getRenderState(pass: RenderPass): RenderState {
     switch (pass) {
       case RenderPass.OpaqueLinear:
       case RenderPass.OpaquePlanar:
@@ -2191,10 +2222,10 @@ class MPCompositor extends Compositor {
 
   protected getBackgroundFbo(needComposite: boolean): FrameBuffer { return needComposite ? this._fbos.opaqueAndCompositeColor! : this._fbos.opaqueColor!; }
 
-  protected enableVolumeClassifierFbos(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
+  protected override enableVolumeClassifierFbos(textures: Textures, depth: DepthBuffer, volClassDepth: DepthBuffer | undefined, depthMS?: DepthBuffer, volClassDepthMS?: DepthBuffer): void {
     this._fbos.enableVolumeClassifier(textures, depth, volClassDepth, depthMS, volClassDepthMS);
   }
-  protected disableVolumeClassifierFbos(): void { this._fbos.disableVolumeClassifier(); }
+  protected override disableVolumeClassifierFbos(): void { this._fbos.disableVolumeClassifier(); }
 
   protected clearOpaque(needComposite: boolean): void {
     const bg = this._scratchBgColor;

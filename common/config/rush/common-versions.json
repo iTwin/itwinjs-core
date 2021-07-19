@@ -2,12 +2,13 @@
   "$schema": "https://developer.microsoft.com/json-schemas/rush/v5/common-versions.schema.json",
   "preferredVersions": {
     "@types/react": "^17.0.0",
+    "axe-core": "4.1.2",
     "event-stream": "~4.0.1",
     "flatbuffers": "~1.12.0",
     "lint-staged": "^10.2.11",
     "object-is": "1.0.2",
     "ssri": "^6.0.1",
     "tsutils": "~3.17.1",
-    "typescript": "~3.7.4"
+    "typescript": "~4.3.0"
   }
 }

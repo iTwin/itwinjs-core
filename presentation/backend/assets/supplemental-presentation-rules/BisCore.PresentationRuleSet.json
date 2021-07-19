@@ -4,11 +4,11 @@
   "supplementationInfo": {
     "supplementationPurpose": "BisCore specific customization rules"
   },
-  "supportedSchemas": {
-    "schemaNames": [
-      "BisCore"
-    ]
-  },
+  "requiredSchemas": [
+    {
+      "name": "BisCore"
+    }
+  ],
   "rules": [
     {
       "ruleType": "InstanceLabelOverride",
@@ -188,10 +188,24 @@
       ]
     },
     {
-      "ruleType": "LabelOverride",
+      "ruleType": "InstanceLabelOverride",
       "onlyIfNotHandled": true,
-      "condition": "ThisNode.IsInstanceNode ANDALSO this.IsOfClass(\"Model\", \"BisCore\")",
-      "label": "this.GetRelatedDisplayLabel(\"BisCore:ModelModelsElement\", \"Forward\", \"BisCore:Element\")"
+      "class": {
+        "schemaName": "BisCore",
+        "className": "Model"
+      },
+      "values": [
+        {
+          "specType": "RelatedInstanceLabel",
+          "pathToRelatedInstance": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "ModelModelsElement"
+            },
+            "direction": "Forward"
+          }
+        }
+      ]
     },
     {
       "ruleType": "ContentModifier",
@@ -201,8 +215,14 @@
       },
       "propertyCategories": [
         {
-          "id": "source_file_information",
-          "label": "@BisCore:Categories.SourceFileInformation@"
+          "id": "source_information",
+          "label": "@BisCore:Categories.SourceInformation@"
+        },
+        {
+          "id": "model_source",
+          "label": "@BisCore:Categories.SourceInformationModelSource@",
+          "parentId": "source_information",
+          "autoExpand": true
         }
       ],
       "relatedProperties": [
@@ -221,7 +241,8 @@
           },
           "requiredDirection": "Forward",
           "isPolymorphic": true,
-          "relationshipMeaning": "SameInstance"
+          "relationshipMeaning": "SameInstance",
+          "skipIfDuplicate": true
         },
         {
           "relationships": {
@@ -238,7 +259,8 @@
           },
           "requiredDirection": "Forward",
           "isPolymorphic": true,
-          "relationshipMeaning": "SameInstance"
+          "relationshipMeaning": "SameInstance",
+          "skipIfDuplicate": true
         },
         {
           "relationships": {
@@ -255,7 +277,8 @@
           },
           "requiredDirection": "Forward",
           "isPolymorphic": true,
-          "relationshipMeaning": "RelatedInstance"
+          "relationshipMeaning": "RelatedInstance",
+          "skipIfDuplicate": true
         },
         {
           "relationships": {
@@ -292,32 +315,8 @@
               "autoExpand": true,
               "relationshipMeaning": "RelatedInstance"
             }
-          ]
-        },
-        {
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ElementOwnsMultiAspects"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "ExternalSourceAspect"
-            ]
-          },
-          "properties": [
-            {
-              "name": "Identifier",
-              "overridesPriority": 1001,
-              "labelOverride": "@BisCore:Properties.SourceElementId@",
-              "categoryId": "source_file_information",
-              "isDisplayed": true
-            }
           ],
-          "relationshipMeaning": "SameInstance"
+          "skipIfDuplicate": true
         },
         {
           "relationships": {
@@ -372,15 +371,15 @@
                     {
                       "name": "Url",
                       "overridesPriority": 1001,
-                      "labelOverride": "@BisCore:Properties.SourceFilePath@",
-                      "categoryId": "source_file_information",
+                      "labelOverride": "@BisCore:Properties.SourceInformation.Path@",
+                      "categoryId": "model_source",
                       "isDisplayed": true
                     },
                     {
                       "name": "UserLabel",
                       "overridesPriority": 1001,
-                      "labelOverride": "@BisCore:Properties.SourceFileName@",
-                      "categoryId": "source_file_information",
+                      "labelOverride": "@BisCore:Properties.SourceInformation.Name@",
+                      "categoryId": "model_source",
                       "isDisplayed": true
                     }
                   ],
@@ -388,7 +387,181 @@
                 }
               ]
             }
-          ]
+          ],
+          "skipIfDuplicate": true
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "requiredSchemas": [
+        {
+          "name": "BisCore",
+          "minVersion": "1.0.2"
+        }
+      ],
+      "class": {
+        "schemaName": "BisCore",
+        "className": "Element"
+      },
+      "propertyCategories": [
+        {
+          "id": "source_information",
+          "label": "@BisCore:Categories.SourceInformation@"
+        }
+      ],
+      "relatedProperties": [
+        {
+          "relationshipMeaning": "SameInstance",
+          "propertiesSource": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ElementOwnsMultiAspects"
+              },
+              "direction": "Forward",
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "ExternalSourceAspect"
+              }
+            }
+          ],
+          "properties": [
+            {
+              "name": "Identifier",
+              "overridesPriority": 1001,
+              "categoryId": "source_information",
+              "labelOverride": "@BisCore:Properties.SourceInformation.ElementId@",
+              "isDisplayed": true
+            }
+          ],
+          "skipIfDuplicate": true
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "requiredSchemas": [
+        {
+          "name": "BisCore",
+          "minVersion": "1.0.13"
+        }
+      ],
+      "class": {
+        "schemaName": "BisCore",
+        "className": "Element"
+      },
+      "propertyCategories": [
+        {
+          "id": "source_information",
+          "label": "@BisCore:Categories.SourceInformation@",
+          "autoExpand": true
+        },
+        {
+          "id": "secondary_sources",
+          "label": "@BisCore:Categories.SourceInformationSecondarySources@",
+          "parentId": "source_information",
+          "autoExpand": true
+        }
+      ],
+      "relatedProperties": [
+        {
+          "relationshipMeaning": "SameInstance",
+          "propertiesSource": [
+            {
+              "relationship": {
+                "schemaName": "BisCore",
+                "className": "ElementOwnsMultiAspects"
+              },
+              "direction": "Forward",
+              "targetClass": {
+                "schemaName": "BisCore",
+                "className": "ExternalSourceAspect"
+              }
+            }
+          ],
+          "properties": "_none_",
+          "autoExpand": true,
+          "nestedRelatedProperties": [
+            {
+              "relationshipMeaning": "SameInstance",
+              "autoExpand": true,
+              "propertiesSource": [
+                {
+                  "relationship": {
+                    "schemaName": "BisCore",
+                    "className": "ElementIsFromSource"
+                  },
+                  "direction": "Forward"
+                },
+                {
+                  "relationship": {
+                    "schemaName": "BisCore",
+                    "className": "ExternalSourceIsInRepository"
+                  },
+                  "direction": "Forward"
+                }
+              ],
+              "properties": [
+                {
+                  "name": "UserLabel",
+                  "categoryId": "source_information",
+                  "labelOverride": "@BisCore:Properties.SourceInformation.Name@",
+                  "isDisplayed": true
+                },
+                {
+                  "name": "Url",
+                  "categoryId": "source_information",
+                  "labelOverride": "@BisCore:Properties.SourceInformation.Path@"
+                }
+              ]
+            },
+            {
+              "relationshipMeaning": "SameInstance",
+              "autoExpand": true,
+              "propertiesSource": [
+                {
+                  "relationship": {
+                    "schemaName": "BisCore",
+                    "className": "ElementIsFromSource"
+                  },
+                  "direction": "Forward",
+                  "targetClass": {
+                    "schemaName": "BisCore",
+                    "className": "ExternalSourceGroup"
+                  }
+                },
+                {
+                  "relationship": {
+                    "schemaName": "BisCore",
+                    "className": "ExternalSourceGroupGroupsSources"
+                  },
+                  "direction": "Forward"
+                },
+                {
+                  "relationship": {
+                    "schemaName": "BisCore",
+                    "className": "ExternalSourceIsInRepository"
+                  },
+                  "direction": "Forward"
+                }
+              ],
+              "properties": [
+                {
+                  "name": "UserLabel",
+                  "categoryId": "secondary_sources",
+                  "labelOverride": "@BisCore:Properties.SourceInformation.Name@",
+                  "isDisplayed": true
+                },
+                {
+                  "name": "Url",
+                  "categoryId": "secondary_sources",
+                  "labelOverride": "@BisCore:Properties.SourceInformation.Path@"
+                }
+              ]
+            }
+          ],
+          "skipIfDuplicate": true
         }
       ]
     },
@@ -396,39 +569,44 @@
       "ruleType": "ContentModifier",
       "class": {
         "schemaName": "BisCore",
-        "className": "PhysicalElement"
+        "className": "GeometricElement3d"
       },
       "relatedProperties": [
         {
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "PhysicalElementIsOfType"
-            ]
+          "propertiesSource": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "GeometricElement3dHasTypeDefinition"
+            },
+            "direction": "Forward"
           },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "PhysicalType"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "isPolymorphic": true,
+          "handleTargetClassPolymorphically": true,
           "relationshipMeaning": "RelatedInstance",
           "nestedRelatedProperties": [
             {
-              "relationships": {
-                "schemaName": "BisCore",
-                "classNames": [
-                  "ElementOwnsMultiAspects",
-                  "ElementOwnsUniqueAspects"
-                ]
+              "propertiesSource": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsUniqueAspect"
+                },
+                "direction": "Forward"
               },
-              "requiredDirection": "Forward",
-              "isPolymorphic": true,
+              "handleTargetClassPolymorphically": true,
+              "relationshipMeaning": "SameInstance"
+            },
+            {
+              "propertiesSource": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsMultiAspects"
+                },
+                "direction": "Forward"
+              },
+              "handleTargetClassPolymorphically": true,
               "relationshipMeaning": "SameInstance"
             }
-          ]
+          ],
+          "skipIfDuplicate": true
         }
       ]
     },
@@ -436,39 +614,44 @@
       "ruleType": "ContentModifier",
       "class": {
         "schemaName": "BisCore",
-        "className": "SpatialLocationElement"
+        "className": "GeometricElement2d"
       },
       "relatedProperties": [
         {
-          "relationships": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SpatialLocationIsOfType"
-            ]
+          "propertiesSource": {
+            "relationship": {
+              "schemaName": "BisCore",
+              "className": "GeometricElement2dHasTypeDefinition"
+            },
+            "direction": "Forward"
           },
-          "relatedClasses": {
-            "schemaName": "BisCore",
-            "classNames": [
-              "SpatialLocationType"
-            ]
-          },
-          "requiredDirection": "Forward",
-          "isPolymorphic": true,
+          "handleTargetClassPolymorphically": true,
           "relationshipMeaning": "RelatedInstance",
           "nestedRelatedProperties": [
             {
-              "relationships": {
-                "schemaName": "BisCore",
-                "classNames": [
-                  "ElementOwnsMultiAspects",
-                  "ElementOwnsUniqueAspects"
-                ]
+              "propertiesSource": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsUniqueAspect"
+                },
+                "direction": "Forward"
               },
-              "requiredDirection": "Forward",
-              "isPolymorphic": true,
+              "handleTargetClassPolymorphically": true,
+              "relationshipMeaning": "SameInstance"
+            },
+            {
+              "propertiesSource": {
+                "relationship": {
+                  "schemaName": "BisCore",
+                  "className": "ElementOwnsMultiAspects"
+                },
+                "direction": "Forward"
+              },
+              "handleTargetClassPolymorphically": true,
               "relationshipMeaning": "SameInstance"
             }
-          ]
+          ],
+          "skipIfDuplicate": true
         }
       ]
     },
@@ -494,7 +677,8 @@
           },
           "requiredDirection": "Forward",
           "isPolymorphic": true,
-          "relationshipMeaning": "RelatedInstance"
+          "relationshipMeaning": "RelatedInstance",
+          "skipIfDuplicate": true
         }
       ]
     },
@@ -520,37 +704,44 @@
           },
           "requiredDirection": "Forward",
           "isPolymorphic": true,
-          "relationshipMeaning": "RelatedInstance"
+          "relationshipMeaning": "RelatedInstance",
+          "skipIfDuplicate": true
         }
       ]
     },
     {
       "ruleType": "ContentModifier",
+      "class": {
+        "schemaName": "BisCore",
+        "className": "TypeDefinitionElement"
+      },
+      "propertyOverrides": [
+        {
+          "name": "IsPrivate",
+          "isDisplayed": false
+        },
+        {
+          "name": "Recipe",
+          "isDisplayed": false
+        }
+      ]
+    },
+    {
+      "ruleType": "ContentModifier",
+      "requiredSchemas": [
+        {
+          "name": "BisCore",
+          "minVersion": "1.0.11"
+        }
+      ],
       "class": {
         "schemaName": "BisCore",
         "className": "PhysicalType"
       },
-      "propertiesDisplay": [
+      "propertyOverrides": [
         {
-          "propertyNames": [
-            "*"
-          ],
-          "isDisplayed": false
-        }
-      ]
-    },
-    {
-      "ruleType": "ContentModifier",
-      "class": {
-        "schemaName": "BisCore",
-        "className": "SpatialLocationType"
-      },
-      "propertiesDisplay": [
-        {
-          "propertyNames": [
-            "*"
-          ],
-          "isDisplayed": false
+          "name": "PhysicalMaterial",
+          "labelOverride": "Physical Material"
         }
       ]
     },

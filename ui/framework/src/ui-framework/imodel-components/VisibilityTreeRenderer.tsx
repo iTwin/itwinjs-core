@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { IPresentationTreeDataProvider, useControlledTreeFiltering } from "@bentley/presentation-components";
+import { IPresentationTreeDataProvider, useControlledPresentationTreeFiltering } from "@bentley/presentation-components";
 import {
   AbstractTreeNodeLoaderWithProvider, TreeImageLoader, TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps,
 } from "@bentley/ui-components";
@@ -19,6 +19,7 @@ import { VisibilityTreeFilterInfo } from "./Common";
  * @alpha
  */
 export const useVisibilityTreeRenderer = (iconsEnabled: boolean, descriptionsEnabled: boolean) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const nodeRenderer = React.useCallback(createVisibilityTreeNodeRenderer(iconsEnabled, descriptionsEnabled), [iconsEnabled, descriptionsEnabled]);
   return React.useCallback((props: TreeRendererProps) => (
     <TreeRenderer
@@ -75,7 +76,7 @@ export const useVisibilityTreeFiltering = (
     isFiltering,
     matchesCount,
     nodeHighlightingProps,
-  } = useControlledTreeFiltering({ nodeLoader, filter, activeMatchIndex });
+  } = useControlledPresentationTreeFiltering({ nodeLoader, filter, activeMatchIndex });
 
   React.useEffect(
     () => {

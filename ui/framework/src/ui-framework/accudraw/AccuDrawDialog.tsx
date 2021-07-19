@@ -17,8 +17,13 @@ import { KeyboardShortcutManager } from "../keyboardshortcut/KeyboardShortcut";
 
 /** @alpha */
 export interface AccuDrawDialogProps extends CommonProps {
+  /** Indicates whether the dialog is open */
   opened: boolean;
+  /** Unique id for the dialog */
   dialogId: string;
+  /** Orientation of the fields */
+  orientation?: Orientation;
+  /** Callback for when the dialog closes */
   onClose?: () => void;
 }
 
@@ -41,6 +46,8 @@ export function AccuDrawDialog(props: AccuDrawDialogProps) {
   }, []);
 
   const classNames = classnames("uifw-accudraw-dialog", props.className);
+  const orientation = (props.orientation !== undefined) ? props.orientation : Orientation.Vertical;
+  const dialogWidth = (orientation === Orientation.Horizontal) ? 500 : 250;
 
   return (
     <ModelessDialog
@@ -48,12 +55,14 @@ export function AccuDrawDialog(props: AccuDrawDialogProps) {
       title={title.current}
       opened={opened}
       dialogId={props.dialogId}
-      width={250}
+      width={dialogWidth}
+      minHeight={75}
+      inset={false}
       movable={true}
       onClose={handleClose}
       onEscape={handleEscape}
     >
-      <AccuDrawFieldContainer orientation={Orientation.Vertical} />
+      <AccuDrawFieldContainer orientation={orientation} />
     </ModelessDialog >
   );
-};
+}

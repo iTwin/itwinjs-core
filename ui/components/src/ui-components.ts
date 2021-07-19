@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-// cSpell:ignore iconpicker lineweight hocs datepicker
+// cSpell:ignore iconpicker lineweight hocs datepicker quantityformat
 
 export { UiComponents } from "./ui-components/UiComponents";
 
@@ -25,6 +25,7 @@ export * from "./ui-components/common/showhide/ShowHideMenu";
 export * from "./ui-components/common/StandardTypeNames";
 export * from "./ui-components/common/UseAsyncValue";
 export * from "./ui-components/common/UseDebouncedAsyncValue";
+export * from "./ui-components/common/DateUtils";
 
 export * from "./ui-components/converters/TypeConverter";
 export * from "./ui-components/converters/TypeConverterManager";
@@ -87,6 +88,15 @@ export * from "./ui-components/properties/renderers/PropertyView";
 export * from "./ui-components/properties/renderers/ActionButtonList";
 export * from "./ui-components/properties/renderers/ActionButtonRenderer";
 
+export * from "./ui-components/quantityformat/FormatPanel";
+export * from "./ui-components/quantityformat/FormatPrecision";
+export * from "./ui-components/quantityformat/FormatSample";
+export * from "./ui-components/quantityformat/FormatType";
+export * from "./ui-components/quantityformat/FormatUnitLabel";
+export * from "./ui-components/quantityformat/FormatUnits";
+export * from "./ui-components/quantityformat/MiscFormatOptions";
+export * from "./ui-components/quantityformat/QuantityFormatPanel";
+
 export * from "./ui-components/timeline/interfaces";
 export * from "./ui-components/timeline/BaseTimelineDataProvider";
 export * from "./ui-components/timeline/ContextMenu";
@@ -119,6 +129,7 @@ export * from "./ui-components/properties/renderers/value/table/StructValueRende
 export * from "./ui-components/properties/renderers/value/table/NonPrimitiveValueRenderer";
 export * from "./ui-components/properties/ItemStyle";
 
+export * from "./ui-components/propertygrid/PropertyCategoryRendererManager";
 export * from "./ui-components/propertygrid/PropertyDataProvider";
 export * from "./ui-components/propertygrid/SimplePropertyDataProvider";
 export * from "./ui-components/propertygrid/component/PropertyGrid";
@@ -154,6 +165,7 @@ export * from "./ui-components/color/ColorPickerButton";
 export * from "./ui-components/color/ColorPickerDialog";
 export * from "./ui-components/color/ColorPickerPanel";
 export * from "./ui-components/color/ColorPickerPopup";
+export * from "./ui-components/color/getCSSColorFromDef";
 
 export * from "./ui-components/iconpicker/IconPickerButton";
 
@@ -172,6 +184,7 @@ export * from "./ui-components/favorite/FavoritePropertyList";
 
 export * from "./ui-components/inputs/QuantityInput";
 export * from "./ui-components/inputs/ParsedInput";
+export * from "./ui-components/inputs/QuantityNumberInput";
 
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/SimpleTreeDataProvider";
@@ -266,6 +279,10 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
 /**
  * @docs-group-description PropertyGrid
  * Classes and components for working with a PropertyGrid.
+ */
+/**
+ * @docs-group-description QuantityFormat
+ * Classes and components for working with a Quantity Formats.
  */
 /**
  * @docs-group-description Table

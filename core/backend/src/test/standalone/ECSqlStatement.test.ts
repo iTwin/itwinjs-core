@@ -54,9 +54,10 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
 
-      const r = await ecdb.withPreparedStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
+      const r = await ecdb.withStatement("INSERT INTO ts.Foo(n,dt,fooId) VALUES(20,TIMESTAMP '2018-10-18T12:00:00Z',20)", async (stmt: ECSqlStatement) => {
         return stmt.stepForInsert();
       });
+      ecdb.saveChanges();
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       assert.equal(r.id, "0x1");
     });
@@ -117,7 +118,7 @@ describe("ECSqlStatement", () => {
       const ROW_COUNT = 27;
       // insert test rows
       for (let i = 1; i <= ROW_COUNT; i++) {
-        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -157,7 +158,7 @@ describe("ECSqlStatement", () => {
       const ROW_COUNT = 100;
       // insert test rows
       for (let i = 1; i <= ROW_COUNT; i++) {
-        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -188,7 +189,7 @@ describe("ECSqlStatement", () => {
       const ROW_COUNT = 100;
       // insert test rows
       for (let i = 1; i <= ROW_COUNT; i++) {
-        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -198,7 +199,7 @@ describe("ECSqlStatement", () => {
       let successful = 0;
       let rowCount = 0;
       const cb = async () => {
-        return new Promise(async (resolve, reject) => {
+        return new Promise<void>(async (resolve, reject) => {
           try {
             for await (const _row of ecdb.restartQuery("tag", "SELECT * FROM ts.Foo")) {
               rowCount++;
@@ -228,7 +229,7 @@ describe("ECSqlStatement", () => {
       assert.isAtLeast(rowCount, 1);
     });
   });
-  it("Paging use cache statement query()", async () => {
+  it("Paging uses cache statement query()", async () => {
     await using(ECDbTestHelper.createECDb(outDir, "pagingresultset.ecdb",
       `<ECSchema schemaName="Test" alias="ts" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.2">
         <ECEntityClass typeName="Foo" modifier="Sealed">
@@ -239,7 +240,7 @@ describe("ECSqlStatement", () => {
       const ROW_COUNT = 27;
       // insert test rows
       for (let i = 1; i <= ROW_COUNT; i++) {
-        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -296,7 +297,7 @@ describe("ECSqlStatement", () => {
       </ECSchema>`), async (ecdb: ECDb) => {
       assert.isTrue(ecdb.isOpen);
       for (let i = 1; i <= 2; i++) {
-        const r = await ecdb.withPreparedStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
+        const r = await ecdb.withStatement(`insert into ts.Foo(n) values(${i})`, async (stmt: ECSqlStatement) => {
           return stmt.stepForInsert();
         });
         assert.equal(r.status, DbResult.BE_SQLITE_DONE);
@@ -1622,7 +1623,7 @@ describe("ECSqlStatement", () => {
 
       assert.isTrue(ecdb.isOpen);
 
-      const parentId: Id64String = ecdb.withPreparedStatement("INSERT INTO test.Parent(Code) VALUES('Parent 1')", (stmt: ECSqlStatement) => {
+      const parentId: Id64String = ecdb.withStatement("INSERT INTO test.Parent(Code) VALUES('Parent 1')", (stmt: ECSqlStatement) => {
         const res: ECSqlInsertResult = stmt.stepForInsert();
         assert.equal(res.status, DbResult.BE_SQLITE_DONE);
         assert.isDefined(res.id);
@@ -1630,7 +1631,7 @@ describe("ECSqlStatement", () => {
       });
 
       const childIds = new Array<Id64String>();
-      ecdb.withPreparedStatement("INSERT INTO test.Child(Name,Parent) VALUES(?,?)", (stmt: ECSqlStatement) => {
+      ecdb.withStatement("INSERT INTO test.Child(Name,Parent) VALUES(?,?)", (stmt: ECSqlStatement) => {
         stmt.bindString(1, "Child 1");
         stmt.bindNavigation(2, { id: parentId, relClassName: "Test.ParentHasChildren" });
         let res: ECSqlInsertResult = stmt.stepForInsert();
@@ -1648,7 +1649,7 @@ describe("ECSqlStatement", () => {
         childIds.push(res.id!);
       });
 
-      ecdb.withPreparedStatement("INSERT INTO test.Child(Name,Parent) VALUES(:name,:parent)", (stmt: ECSqlStatement) => {
+      ecdb.withStatement("INSERT INTO test.Child(Name,Parent) VALUES(:name,:parent)", (stmt: ECSqlStatement) => {
         stmt.bindString("name", "Child 3");
         stmt.bindNavigation("parent", { id: parentId, relClassName: "Test.ParentHasChildren" });
         let res: ECSqlInsertResult = stmt.stepForInsert();
@@ -1706,6 +1707,7 @@ describe("ECSqlStatement", () => {
         });
 
     } finally {
+      iModel.saveChanges();
       iModel.close();
     }
   });
@@ -1727,7 +1729,7 @@ describe("ECSqlStatement", () => {
         assert.isDefined(res.id);
         return res.id!;
       });
-
+      ecdb.saveChanges();
       ecdb.withPreparedStatement("SELECT Range FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -1754,8 +1756,9 @@ describe("ECSqlStatement", () => {
           assert.equal(r.status, DbResult.BE_SQLITE_DONE);
           assert.isDefined(r.id);
           assert.equal(r.id!, expectedId);
+          ecdb.saveChanges();
 
-          ecdb.withPreparedStatement(`SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=${expectedId}`, (confstmt: ECSqlStatement) => {
+          ecdb.withStatement(`SELECT ECInstanceId, ECClassId, Name FROM ecdbf.ExternalFileInfo WHERE ECInstanceId=${expectedId}`, (confstmt: ECSqlStatement) => {
             assert.equal(confstmt.step(), DbResult.BE_SQLITE_ROW);
             const row = confstmt.getRow();
             assert.equal(row.id, expectedId);
@@ -2456,6 +2459,7 @@ describe("ECSqlStatement", () => {
         return res.id!;
       });
 
+      ecdb.saveChanges();
       ecdb.withPreparedStatement("SELECT I, HexStr(I) hex FROM test.Foo WHERE ECInstanceId=?", (stmt: ECSqlStatement) => {
         stmt.bindId(1, id);
         assert.equal(stmt.step(), DbResult.BE_SQLITE_ROW);
@@ -2787,6 +2791,7 @@ describe("ECSqlStatement", () => {
         assert.isTrue(nativesql.startsWith("INSERT INTO [ts_Foo]"));
         return stmt.stepForInsert();
       });
+      ecdb.saveChanges();
       assert.equal(r.status, DbResult.BE_SQLITE_DONE);
       assert.equal(r.id, "0x1");
     });

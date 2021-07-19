@@ -4,9 +4,11 @@ ECExpressions is a very basic language that allows customizing presentation
 rules' behavior.
 
 Symbols that can be used depend on current context. Example:
+
 ```
 this.GetContextB().ContextC.DoSomething()
 ```
+
 Here, symbol `this` returns a context which has a function symbol
 `GetContextB()`. This function returns a context which has a property
 symbol `ContextC`. And the property value is a context that contains a
@@ -81,6 +83,17 @@ Method symbols supply a named method in a context.
 ```
 System.Math.Sin(1.57)
 this.IsOfClass("ClassName", "SchemaName")
+```
+
+##### Value Lists
+
+Value lists in ECExpressions are iterable containers and can be handled with [lambdas](#lambda-operator). Currently presentation rules
+engine supports only a single simple lambda for value lists, `AnyMatches`, which checks if any of the items in the value list passes given condition. Examples:
+
+```
+value_list.AnyMatches(x => x = this.PropertyValue)
+value_list.AnyMatches(x => this.PropertyValue = x)
+value_list.AnyMatches(x => this.IsOfClass(x.PropertyValue))
 ```
 
 #### Operators
@@ -247,21 +260,40 @@ Symbol                    | Type    | Value
 
 ECInstance expression context provides access to ECInstance property values.
 Example:
+
 ```
 this.PropertyName
 this.StructPropertyName.PropertyName
 this.StructArray[1].Struct.PropertyName
 ```
 
-Additionally, when evaluating ECInstance contexts, the below symbols are
-available:
+Additionally, when evaluating ECInstance contexts, the below symbols are available:
 
 Symbol                              | Type    | Value
 ------------------------------------|---------|----------
-<code>GetRelatedInstance("RelationshipName:0&#124;1:RelatedClassName")</code> | [ECInstance context](#ecinstance) | Returns related instance context
 <code>GetRelatedInstancesCount("RelationshipSchemaName:RelationshipName", "Forward&#124;Backward", "RelatedClassSchemaName:RelatedClassName")</code> | number | Number of related instances following the specified relationship
+<code>GetRelatedInstancesCount("RelatedClassSchemaName:RelatedClassName", lambda_for_filtering_related_instances)</code> | number | Number of related instances that match criteria described by given [lambda](#lambda-operator)
 <code>HasRelatedInstance("RelationshipSchemaName:RelationshipName", "Forward&#124;Backward", "RelatedClassSchemaName:RelatedClassName")</code> | bool | Does this instance has a related instance following the specified relationship
+<code>HasRelatedInstance("RelatedClassSchemaName:RelatedClassName", lambda_for_filtering_related_instances)</code> | bool | Does this instance has a related instance that matches criteria described by given [lambda](#lambda-operator)
 <code>GetRelatedValue("RelationshipSchemaName:RelationshipName", "Forward&#124;Backward", "RelatedClassSchemaName:RelatedClassName", "PropertyName")</code> | any | Returns property value of the related instance
+<code>GetRelatedValue("RelatedClassSchemaName:RelatedClassName", lambda_for_filtering_related_instances, "PropertyName")</code> | any | Returns property value of related instance that matches criteria described by given [lambda](#lambda-operator)
+<code>IsOfClass("SchemaName", "ClassName"))</code> | bool | Returns <code>true</code> if the instance is of a class with given schema and class names
+<code>IsOfClass(SomeECClassId))</code> | bool | Returns <code>true</code> if the instance is of a class with specified ECClass ID
+
+Deprecated symbols:
+
+Symbol                              | Type    | Value
+------------------------------------|---------|----------
+<code>GetRelatedInstance("RelationshipName:0&#124;1:RelatedClassName")</code> | [ECInstance context](#ecinstance) | Returns related instance context. **Not available when evaluating instance filters.**
+
+### ECInstance Key
+
+ECInstance key expression context provides access to class and instance IDs. The context has the following symbols:
+
+Symbol         | Type    | Value
+---------------|---------|----------
+`ECClassId`    | number  | ID of ECInstance's ECClass
+`ECInstanceId` | number  | ID of ECInstance
 
 ## Symbols in Global Context
 
@@ -286,22 +318,12 @@ Symbol                                | Type     | Value
 `Set(number1, number2, ..., numberN)` | number[] | Create a [value list](#value-lists) of the supplied numbers.
 `GetFormattedValue(this.MyProp, "Metric\|UsCustomary\|UsSurvey\|BritishImperial")` | any | Returns property value formatted using specified unit system. If unit system is not specified default presentation units are used to format value
 
-## Value Lists
-
-Value lists in ECExpressions can be handled with lambdas. Currently the
-presentation rules engine supports only a single simple lambda for
-value lists:
-```
-value_list.AnyMatch(x => x = this.PropertyValue)
-```
-The above expression returns `true` if `value_list` contains the value
-of `this.PropertyValue`.
-
 ## Formatted property values
 
 Comparison of formatted property values in ECExpressions can be done using
-`GetFormattedValue` function. Specific unit system can be passed as second argument
+`GetFormattedValue` function. Specific unit system can be passed as a second argument
 to function or omitted to use default presentation format:
+
 ```
 GetFormattedValue(this.Length, "Metric") = "10.0 m"
 GetFormattedValue(this.Length) = "10.0 m"

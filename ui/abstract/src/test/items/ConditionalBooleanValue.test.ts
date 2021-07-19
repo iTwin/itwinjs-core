@@ -8,7 +8,7 @@ import { ConditionalBooleanValue } from "../../ui-abstract";
 
 const trueFunc = () => true;
 const falseFunc = () => false;
-const syncEventIds = ["sync-id-one", "sync-id-two"];
+const syncEventIds = ["sync-id-one", "sync-id-two", "sync-id-THREE"];
 
 describe("ConditionalBooleanValue", () => {
   it("should construct without initial boolean value", () => {
@@ -39,6 +39,16 @@ describe("ConditionalBooleanValue", () => {
     expect(ConditionalBooleanValue.refreshValue(sut, new Set<string>(["cat"]))).to.be.false;
     expect(sut.value).to.be.false;
     expect(ConditionalBooleanValue.refreshValue(sut, new Set<string>(["sync-id-two"]))).to.be.true;
+    expect(sut.value).to.be.true;
+    expect(ConditionalBooleanValue.refreshValue(undefined, new Set<string>(["cat"]))).to.be.false;
+  });
+
+  it("test static refreshValue method with capitalized ids", () => {
+    const sut = new ConditionalBooleanValue(trueFunc, syncEventIds, false);
+    expect(sut.value).to.be.false;
+    expect(ConditionalBooleanValue.refreshValue(sut, new Set<string>(["cat"]))).to.be.false;
+    expect(sut.value).to.be.false;
+    expect(ConditionalBooleanValue.refreshValue(sut, new Set<string>(["sync-id-three"]))).to.be.true;
     expect(sut.value).to.be.true;
     expect(ConditionalBooleanValue.refreshValue(undefined, new Set<string>(["cat"]))).to.be.false;
   });

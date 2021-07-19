@@ -7,10 +7,10 @@
  */
 
 import { ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
-import { BaseTimelineDataProvider, Milestone, PlaybackSettings } from "@bentley/ui-components";
+import { BaseTimelineDataProvider, PlaybackSettings } from "@bentley/ui-components";
 
-/** ScheduleAnimation Timeline Data Provider - handles View that define 'scheduleScript' data.
- * @alpha
+/** ScheduleAnimation Timeline Data Provider - allows a TimelineComponent to animate the data found in a ScheduleScript in a ViewState.
+ * @public
  */
 // No access to scheduleScript to even mock in test
 // istanbul ignore next
@@ -26,7 +26,7 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     }
   }
 
-  public async loadTimelineData(): Promise<boolean> {
+  public override async loadTimelineData(): Promise<boolean> {
     const script = this._viewState.scheduleScript;
     if (this.supportsTimelineAnimation && script) {
       // for now just initial settings
@@ -35,15 +35,9 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
         loop: true,
       });
 
-      const timeRange = script.computeDuration();
+      const timeRange = script.duration;
       this.start = new Date(timeRange.low * 1000);
       this.end = new Date(timeRange.high * 1000);
-
-      const quarter = (this.end.getTime() - this.start.getTime()) / 4;
-      const milestones: Milestone[] = [];
-      milestones.push({ id: "1", label: "1st Floor Concrete", date: new Date(this.start.getTime() + quarter), readonly: true });
-      milestones.push({ id: "2", label: "2nd Floor Concrete", date: new Date(this.end.getTime() - quarter), readonly: true });
-      this._milestones = milestones;
 
       if (this._viewport) {
         if (this._viewport.timePoint)
@@ -58,16 +52,16 @@ export class ScheduleAnimationTimelineDataProvider extends BaseTimelineDataProvi
     return false;
   }
 
-  public onAnimationFractionChanged = (animationFraction: number) => {
+  public override onAnimationFractionChanged = (animationFraction: number) => {
     this.animationFraction = animationFraction;
     if (this._viewport) {
       const script = this._viewport.displayStyle.scheduleScript;
       if (script)
-        this._viewport.timePoint = script.computeDuration().fractionToPoint(animationFraction);
+        this._viewport.timePoint = script.duration.fractionToPoint(animationFraction);
     }
   };
 
-  public onPlaybackSettingChanged = (settings: PlaybackSettings) => {
+  public override onPlaybackSettingChanged = (settings: PlaybackSettings) => {
     this.updateSettings(settings);
   };
 }

@@ -33,7 +33,7 @@ export abstract class CloudStorageService {
   public terminate(): void { }
   public abstract id: CloudStorageProvider;
   public abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
-  public abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string>;
+  public abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
   public async download(_name: string): Promise<Readable | undefined> { return undefined; }
 
   protected makeDescriptor(id: CloudStorageContainerDescriptor) {
@@ -107,7 +107,7 @@ export class AzureBlobStorage extends CloudStorageService {
     });
   }
 
-  public async upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions): Promise<string> {
+  public async upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string> {
     return new Promise(async (resolve, reject) => {
       try {
         await this.ensureContainer(container);
@@ -115,13 +115,18 @@ export class AzureBlobStorage extends CloudStorageService {
         const containerUrl = Azure.ContainerURL.fromServiceURL(this._service, container);
         const blob = Azure.BlobURL.fromContainerURL(containerUrl, name);
         const blocks = Azure.BlockBlobURL.fromBlobURL(blob);
-
-        const blobOptions: Azure.IUploadStreamToBlockBlobOptions = {
-          blobHTTPHeaders: {
-            blobContentType: (options && options.type) ? options.type : "application/octet-stream",
-            blobCacheControl: (options && options.cacheControl) ? options.cacheControl : "private, max-age=31536000, immutable",
-          },
+        const blobHTTPHeaders = {
+          blobContentType: options?.type ?? "application/octet-stream",
+          blobCacheControl: options?.cacheControl ?? "private, max-age=31536000, immutable",
         };
+
+        const blobOptions: Azure.IUploadStreamToBlockBlobOptions = metadata ?
+          {
+            blobHTTPHeaders,
+            metadata: { ...metadata },
+          } : {
+            blobHTTPHeaders,
+          };
 
         const dataStream = new PassThrough();
         dataStream.end(data);
@@ -139,7 +144,7 @@ export class AzureBlobStorage extends CloudStorageService {
         const blockSize = 100 * 1024 * 1024;
         const concurrency = 1;
         const result = await Azure.uploadStreamToBlockBlob(Azure.Aborter.none, source, blocks, blockSize, concurrency, blobOptions);
-        return resolve(result.eTag);
+        return resolve(result.eTag ?? "");
       } catch (maybeErr) {
         if (typeof (maybeErr) !== "undefined" && maybeErr) {
           return reject(maybeErr);
@@ -159,7 +164,7 @@ export class CloudStorageTileUploader {
     return this._activeUploads.values();
   }
 
-  private async uploadToCache(id: TileContentIdentifier, content: Uint8Array, containerKey: string, resourceKey: string) {
+  private async uploadToCache(id: TileContentIdentifier, content: Uint8Array, containerKey: string, resourceKey: string, metadata?: object,) {
     await new Promise((resolve) => setTimeout(resolve));
 
     try {
@@ -170,7 +175,7 @@ export class CloudStorageTileUploader {
 
       const perfInfo = { ...id.tokenProps, treeId: id.treeId, contentId: id.contentId, size: content.byteLength, compress: IModelHost.compressCachedTiles };
       const perfLogger = new PerfLogger("Uploading tile to external tile cache", () => perfInfo);
-      await IModelHost.tileCacheService.upload(containerKey, resourceKey, content, options);
+      await IModelHost.tileCacheService.upload(containerKey, resourceKey, content, options, metadata);
       perfLogger.dispose();
     } catch (err) {
       Logger.logError(BackendLoggerCategory.IModelTileUpload, (err instanceof Error) ? err.toString() : JSON.stringify(err));
@@ -179,7 +184,7 @@ export class CloudStorageTileUploader {
     this._activeUploads.delete(containerKey + resourceKey);
   }
 
-  public cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined) {
+  public cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object) {
     const id: TileContentIdentifier = { tokenProps, treeId, contentId, guid };
 
     const cache = CloudStorageTileCache.getCache();
@@ -190,6 +195,6 @@ export class CloudStorageTileUploader {
     if (this._activeUploads.has(key))
       return;
 
-    this._activeUploads.set(key, this.uploadToCache(id, content, containerKey, resourceKey));
+    this._activeUploads.set(key, this.uploadToCache(id, content, containerKey, resourceKey, metadata));
   }
 }

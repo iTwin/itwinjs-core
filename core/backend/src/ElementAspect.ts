@@ -12,6 +12,28 @@ import { IModelDb } from "./IModelDb";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { DbResult, Id64String } from "@bentley/bentleyjs-core";
 
+/** Argument for the `ElementAspect.onXxx` static methods
+ * @beta
+ */
+export interface OnAspectArg {
+  /** The iModel for the aspect affected by this event. */
+  iModel: IModelDb;
+}
+/** Argument for the `ElementAspect.onXxx` static methods that supply the properties of an aspect to be inserted or updated.
+ * @beta
+ */
+export interface OnAspectPropsArg extends OnAspectArg {
+  /** The new properties of the aspect affected by this event. */
+  props: Readonly<ElementAspectProps>;
+}
+/** Argument for the `ElementAspect.onXxx` static methods that only supply the Id of the affected aspect.
+ * @beta
+ */
+export interface OnAspectIdArg extends OnAspectArg {
+  /** The Id of the aspect affected by this event */
+  aspectId: Id64String;
+}
+
 /** An Element Aspect is a class that defines a set of properties that are related to (and owned by) a single element.
  * Semantically, an ElementAspect can be considered part of the Element. Thus, an ElementAspect is deleted if its owning Element is deleted.
  * BIS Guideline: Subclass ElementUniqueAspect or ElementMultiAspect rather than subclassing ElementAspect directly.
@@ -19,7 +41,7 @@ import { DbResult, Id64String } from "@bentley/bentleyjs-core";
  */
 export class ElementAspect extends Entity implements ElementAspectProps {
   /** @internal */
-  public static get className(): string { return "ElementAspect"; }
+  public static override get className(): string { return "ElementAspect"; }
   public element: RelatedElement;
 
   /** @internal */
@@ -29,42 +51,50 @@ export class ElementAspect extends Entity implements ElementAspectProps {
   }
 
   /** @internal */
-  public toJSON(): ElementAspectProps {
+  public override toJSON(): ElementAspectProps {
     const val = super.toJSON() as ElementAspectProps;
     val.element = this.element;
     return val;
   }
 
   /** Called before a new ElementAspect is inserted.
-   * @throws [[IModelError]] if there is a problem
+   * @note throw an exception to disallow the insert
+   * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onInsert(_props: ElementAspectProps, _iModel: IModelDb): void { }
-  /** Called before an ElementAspect is updated.
-   * @throws [[IModelError]] if there is a problem
-   * @beta
-   */
-  protected static onUpdate(_props: ElementAspectProps, _iModel: IModelDb): void { }
-  /** Called before an ElementAspect is deleted.
-   * @throws [[IModelError]] if there is a problem
-   * @beta
-   */
-  protected static onDelete(_props: ElementAspectProps, _iModel: IModelDb): void { }
+  protected static onInsert(_arg: OnAspectPropsArg): void { }
+
   /** Called after a new ElementAspect was inserted.
-   * @throws [[IModelError]] if there is a problem
+   * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onInserted(_props: ElementAspectProps, _iModel: IModelDb): void { }
+  protected static onInserted(_arg: OnAspectPropsArg): void { }
+
+  /** Called before an ElementAspect is updated.
+   * @note throw an exception to disallow the update
+   * @note If you override this method, you must call super.
+   * @beta
+   */
+  protected static onUpdate(_arg: OnAspectPropsArg): void { }
+
   /** Called after an ElementAspect was updated.
-   * @throws [[IModelError]] if there is a problem
+   * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onUpdated(_props: ElementAspectProps, _iModel: IModelDb): void { }
+  protected static onUpdated(_arg: OnAspectPropsArg): void { }
+
+  /** Called before an ElementAspect is deleted.
+   * @note throw an exception to disallow the delete
+   * @note If you override this method, you must call super.
+   * @beta
+   */
+  protected static onDelete(_arg: OnAspectIdArg): void { }
+
   /** Called after an ElementAspect was deleted.
-   * @throws [[IModelError]] if there is a problem
+   * @note If you override this method, you must call super.
    * @beta
    */
-  protected static onDeleted(_props: ElementAspectProps, _iModel: IModelDb): void { }
+  protected static onDeleted(_arg: OnAspectIdArg): void { }
 }
 
 /** An Element Unique Aspect is an ElementAspect where there can be only zero or one instance of the Element Aspect class per Element.
@@ -72,7 +102,7 @@ export class ElementAspect extends Entity implements ElementAspectProps {
  */
 export class ElementUniqueAspect extends ElementAspect {
   /** @internal */
-  public static get className(): string { return "ElementUniqueAspect"; }
+  public static override get className(): string { return "ElementUniqueAspect"; }
 }
 
 /** An Element Multi-Aspect is an ElementAspect where there can be **n** instances of the Element Aspect class per Element.
@@ -80,7 +110,7 @@ export class ElementUniqueAspect extends ElementAspect {
  */
 export class ElementMultiAspect extends ElementAspect {
   /** @internal */
-  public static get className(): string { return "ElementMultiAspect"; }
+  public static override get className(): string { return "ElementMultiAspect"; }
 }
 
 /** A ChannelRootAspect identifies an Element as the root of a *channel* which is a subset of the overall iModel hierarchy that is independently maintained.
@@ -89,7 +119,7 @@ export class ElementMultiAspect extends ElementAspect {
  */
 export class ChannelRootAspect extends ElementUniqueAspect {
   /** @internal */
-  public static get className(): string { return "ChannelRootAspect"; }
+  public static override get className(): string { return "ChannelRootAspect"; }
 
   /** The owner of the channel */
   public owner: string;
@@ -101,7 +131,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
   }
 
   /** @internal */
-  public toJSON(): ChannelRootAspectProps {
+  public override toJSON(): ChannelRootAspectProps {
     const val = super.toJSON() as ChannelRootAspectProps;
     val.owner = this.owner;
     return val;
@@ -124,7 +154,7 @@ export class ChannelRootAspect extends ElementUniqueAspect {
  */
 export class ExternalSourceAspect extends ElementMultiAspect implements ExternalSourceAspectProps {
   /** @internal */
-  public static get className(): string { return "ExternalSourceAspect"; }
+  public static override get className(): string { return "ExternalSourceAspect"; }
 
   /** An element that scopes the combination of `kind` and `identifier` to uniquely identify the object from the external source. */
   public scope: RelatedElement;
@@ -141,11 +171,14 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
   public version?: string;
   /** A place where additional JSON properties can be stored. For example, provenance information or properties relating to the synchronization process. */
   public jsonProperties?: string;
+  /** The source of the imported/synchronized object. Should point to an instance of [ExternalSource]($backend). */
+  public source?: RelatedElement;
 
   /** @internal */
   constructor(props: ExternalSourceAspectProps, iModel: IModelDb) {
     super(props, iModel);
     this.scope = RelatedElement.fromJSON(props.scope)!;
+    this.source = RelatedElement.fromJSON(props.source);
     this.identifier = props.identifier;
     this.kind = props.kind;
     this.checksum = props.checksum;
@@ -172,9 +205,10 @@ export class ExternalSourceAspect extends ElementMultiAspect implements External
   }
 
   /** @internal */
-  public toJSON(): ExternalSourceAspectProps {
+  public override toJSON(): ExternalSourceAspectProps {
     const val = super.toJSON() as ExternalSourceAspectProps;
     val.scope = this.scope;
+    val.source = this.source;
     val.identifier = this.identifier;
     val.kind = this.kind;
     val.checksum = this.checksum;
@@ -190,7 +224,13 @@ export namespace ExternalSourceAspect { // eslint-disable-line no-redeclare
    * @public
    */
   export enum Kind {
+    /** Indicates that the [[ExternalSourceAspect]] is storing [[Element]] provenance */
     Element = "Element",
+    /** Indicates that the [[ExternalSourceAspect]] is storing [[Relationship]] provenance */
     Relationship = "Relationship",
+    /** Indicates that the [[ExternalSourceAspect]] is storing *scope* provenance
+     * @see [[ExternalSourceAspect.scope]]
+     */
+    Scope = "Scope",
   }
 }

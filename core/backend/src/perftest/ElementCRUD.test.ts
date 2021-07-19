@@ -6,10 +6,10 @@ import { assert } from "chai";
 import * as path from "path";
 import { DbResult, Id64, Id64String } from "@bentley/bentleyjs-core";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
-import { Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, Code, ColorDef, GeometricElementProps, GeometryStreamProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import {
-  BackendRequestContext, BriefcaseIdValue, DrawingCategory, ECSqlStatement, Element, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory,
+  BackendRequestContext, DrawingCategory, ECSqlStatement, Element, IModelDb, IModelJsFs, SnapshotDb, SpatialCategory,
 } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { KnownTestLocations } from "../test/KnownTestLocations";
@@ -119,7 +119,7 @@ function getCount(imodel: IModelDb, className: string) {
 
 describe("PerformanceElementsTests", () => {
   const reporter = new Reporter();
-  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test3d;
+  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test3d; // eslint-disable-line @typescript-eslint/no-var-requires
 
   before(async () => {
     // Create all of the seed iModels
@@ -134,8 +134,7 @@ describe("PerformanceElementsTests", () => {
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas(new BackendRequestContext(), [testSchemaName]);
-        const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
-        assert.equal(DbResult.BE_SQLITE_OK, result);
+        seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
         const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(seedIModel, Code.createEmpty(), true);
         let spatialCategoryId = SpatialCategory.queryCategoryIdByName(seedIModel, IModel.dictionaryId, "MySpatialCategory");
@@ -322,7 +321,7 @@ describe("PerformanceElementsTests", () => {
 describe("PerformanceElementsTests2d", () => {
   const outDir: string = path.join(KnownTestLocations.outputDir, "ElementCRUDPerformance2d");
   const reporter = new Reporter();
-  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test2d;
+  const crudConfig = require(path.join(__dirname, "CRUDConfig.json")).test2d; // eslint-disable-line @typescript-eslint/no-var-requires
 
   before(async () => {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
@@ -342,8 +341,7 @@ describe("PerformanceElementsTests2d", () => {
         const seedIModel = SnapshotDb.createEmpty(IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", fileName), { rootSubject: { name: "PerfTest" } });
         const testSchemaName = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
         await seedIModel.importSchemas(new BackendRequestContext(), [testSchemaName]);
-        const result: DbResult = seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Standalone);
-        assert.equal(DbResult.BE_SQLITE_OK, result);
+        seedIModel.nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
         assert.isDefined(seedIModel.getMetaData(`PerfTestDomain:${name}`), `${name}is present in iModel.`);
 
         const codeProps = Code.createEmpty();
@@ -450,7 +448,7 @@ describe("PerformanceElementsTests2d", () => {
 
           const testFileName = IModelTestUtils.prepareOutputFile("ElementCRUDPerformance2d", `IModelPerformance2d_Read_${name}_${opCount}.bim`);
           const perfimodel = IModelTestUtils.createSnapshotFromSeed(testFileName, seedFileName);
-          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.GraphicalElement2d");;
+          const minId: number = PerfTestUtility.getMinId(perfimodel, "bis.GraphicalElement2d");
           const elementIdIncrement = Math.floor(size / opCount);
 
           const startTime = new Date().getTime();

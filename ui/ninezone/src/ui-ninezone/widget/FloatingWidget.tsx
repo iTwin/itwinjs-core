@@ -10,7 +10,7 @@ import "./FloatingWidget.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { CommonProps, Point, PointProps, Rectangle, useRefs } from "@bentley/ui-core";
-import { assert } from "../base/assert";
+import { assert } from "@bentley/bentleyjs-core";
 import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";
 import { FloatingWidgetState, WidgetState } from "../base/NineZoneState";
@@ -73,14 +73,14 @@ FloatingWidgetIdContext.displayName = "nz:FloatingWidgetIdContext";
 export const FloatingWidgetContext = React.createContext<FloatingWidgetState | undefined>(undefined); // eslint-disable-line @typescript-eslint/naming-convention
 FloatingWidgetContext.displayName = "nz:FloatingWidgetContext";
 
-const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
+const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetComponent(props) { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
   const widget = React.useContext(WidgetStateContext);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
-  assert(widget);
-  assert(floatingWidgetId);
+  assert(!!widget);
+  assert(!!floatingWidgetId);
   const item = React.useMemo(() => ({
     id: floatingWidgetId,
-    type: "widget" as "widget",
+    type: "widget" as const,
   }), [floatingWidgetId]);
   const dragged = useIsDraggedItem(item);
   const className = classnames(
@@ -111,14 +111,14 @@ interface FloatingWidgetHandleProps {
   handle: FloatingWidgetResizeHandle;
 }
 
-const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function FloatingWidgetHandle(props) { // eslint-disable-line no-shadow, @typescript-eslint/naming-convention
+const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function FloatingWidgetHandle(props) { // eslint-disable-line @typescript-eslint/no-shadow, @typescript-eslint/naming-convention
   const id = React.useContext(FloatingWidgetIdContext);
   const dispatch = React.useContext(NineZoneDispatchContext);
   const { handle } = props;
   const relativePosition = React.useRef<Point>(new Point());
   assert(id !== undefined);
   const onDrag = React.useCallback<NonNullable<UseDragResizeHandleArgs["onDrag"]>>((pointerPosition) => {
-    assert(ref.current);
+    assert(!!ref.current);
     const bounds = Rectangle.create(ref.current.getBoundingClientRect());
     const newRelativePosition = bounds.topLeft().getOffsetTo(pointerPosition);
     const offset = relativePosition.current.getOffsetTo(newRelativePosition);
@@ -135,7 +135,7 @@ const FloatingWidgetHandle = React.memo<FloatingWidgetHandleProps>(function Floa
     onDrag,
   });
   const handlePointerDown = React.useCallback((args: PointerCaptorArgs) => {
-    assert(ref.current);
+    assert(!!ref.current);
     const bounds = Rectangle.create(ref.current.getBoundingClientRect());
     const initialPointerPosition = new Point(args.clientX, args.clientY);
     relativePosition.current = bounds.topLeft().getOffsetTo(initialPointerPosition);

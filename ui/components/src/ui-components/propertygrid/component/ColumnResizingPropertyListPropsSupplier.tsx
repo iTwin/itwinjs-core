@@ -9,7 +9,7 @@ import { Orientation, RatioChangeResult } from "@bentley/ui-core";
 import { PropertyListProps } from "./PropertyList";
 
 /** @internal */
-export type ColumnResizeRelatedPropertyListProps = Pick<PropertyListProps, "onColumnChanged" | "columnRatio" | "isResizeHandleHovered" | "onResizeHandleHoverChanged" | "isResizeHandleBeingDragged" | "onResizeHandleDragChanged" | "columnInfo" | "onListWidthChanged" | "orientation">;
+export type ColumnResizeRelatedPropertyListProps = Required<Pick<PropertyListProps, "onColumnChanged" | "columnRatio" | "isResizeHandleHovered" | "onResizeHandleHoverChanged" | "isResizeHandleBeingDragged" | "onResizeHandleDragChanged" | "columnInfo" | "onListWidthChanged" | "orientation">>;
 
 /** @internal */
 export interface ColumnResizingPropertyListPropsSupplierProps {
@@ -44,7 +44,7 @@ export class ColumnResizingPropertyListPropsSupplier extends React.Component<Col
   private _minRatio = this._defaultMinRatio;
   private _maxRatio = this._defaultMaxRatio;
 
-  public state: ColumnResizingPropertyListPropsSupplierState = {
+  public override state: ColumnResizingPropertyListPropsSupplierState = {
     columnRatio: this._initialRatio,
     isResizeHandleHovered: false,
     isResizeHandleBeingDragged: false,
@@ -66,6 +66,7 @@ export class ColumnResizingPropertyListPropsSupplier extends React.Component<Col
     return { ratio };
   };
 
+  // istanbul ignore next
   private _onResizeHandleHoverChanged = (isHovered: boolean) => {
     this.setState({ isResizeHandleHovered: isHovered });
   };
@@ -82,6 +83,7 @@ export class ColumnResizingPropertyListPropsSupplier extends React.Component<Col
     if (width < this.props.minLabelWidth! + 1 + this.props.minValueWidth! + this.props.actionButtonWidth!) {
       this._minRatio = this._defaultMinRatio;
       this._maxRatio = this._defaultMaxRatio;
+      // istanbul ignore next
       if (this.state.isMinimumColumnSizeEnabled)
         this.setState({ isMinimumColumnSizeEnabled: false });
 
@@ -90,6 +92,7 @@ export class ColumnResizingPropertyListPropsSupplier extends React.Component<Col
 
     this._minRatio = this.props.minLabelWidth! / width;
     this._maxRatio = (width - this.props.actionButtonWidth! - this.props.minValueWidth!) / width;
+    // istanbul ignore else
     if (!this.state.isMinimumColumnSizeEnabled)
       this.setState({ isMinimumColumnSizeEnabled: true });
   };
@@ -98,7 +101,7 @@ export class ColumnResizingPropertyListPropsSupplier extends React.Component<Col
     return Geometry.clamp(this.state.columnRatio, this._minRatio, this._maxRatio);
   }
 
-  public render() {
+  public override render() {
     const listProps: ColumnResizeRelatedPropertyListProps = {
       orientation: this.props.orientation,
       onColumnChanged: this._onColumnRatioChanged,

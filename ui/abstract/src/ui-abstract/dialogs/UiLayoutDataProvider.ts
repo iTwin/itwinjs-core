@@ -57,7 +57,7 @@ export interface DialogButtonDef {
 }
 
 /** [[DialogRow]] is the interface that groups dialog items into rows for building UI
- * @beta
+ * @public
  */
 export interface DialogRow {
   priority: number;
@@ -65,13 +65,13 @@ export interface DialogRow {
 }
 
 /**
- * @beta
+ * @public
  */
 export abstract class UiLayoutDataProvider extends UiDataProvider {
   private _items: ReadonlyArray<DialogItem> | undefined;
 
   /** Applies changes from one or more properties - some dialogs will use this to send a bulk set of changes back to the provider */
-  public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
+  public override processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
     // Default implementation is to just pass each property to applyUiPropertyChange
     properties.forEach((property) => this.applyUiPropertyChange(property));
     return { status: PropertyChangeStatus.Success };
@@ -192,7 +192,7 @@ export abstract class UiLayoutDataProvider extends UiDataProvider {
 
 /** [[DialogLayoutDataProvider]] Abstract class that allows property values to be passed between hosting API and Dialog that generates and arranges components dynamically
  * including the buttons at the bottom of the dialog.
- * @beta
+ * @public
  */
 export abstract class DialogLayoutDataProvider extends UiLayoutDataProvider {
   public onButtonsReloadedEvent = new BeUiEvent<void>();

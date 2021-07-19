@@ -12,7 +12,10 @@ import {
 } from "@bentley/itwin-client";
 import { IModelBaseHandler } from "./BaseHandler";
 
-/** Base class for event shared access signatures. */
+/**
+ * Base class for event shared access signatures.
+ * @public
+ */
 export abstract class BaseEventSAS extends WsgInstance {
   /** Base address for event requests. */
   @ECJsonTypeMap.propertyToJson("wsg", "properties.BaseAddress")
@@ -24,7 +27,7 @@ export abstract class BaseEventSAS extends WsgInstance {
 }
 
 /** Base type for all iModelHub global events
- * @beta
+ * @public
  */
 export abstract class IModelHubBaseEvent {
   /** Topic of this event. For [[IModelHubEvent]]s this is iModelId. */

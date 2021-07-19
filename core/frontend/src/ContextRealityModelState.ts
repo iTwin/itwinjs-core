@@ -5,157 +5,125 @@
 /** @packageDocumentation
  * @module Views
  */
+
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
-import { Angle, Constant } from "@bentley/geometry-core";
-import { CartographicRange, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps } from "@bentley/imodeljs-common";
+import { Angle } from "@bentley/geometry-core";
+import {
+  CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps,
+} from "@bentley/imodeljs-common";
 import { AccessToken } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
 import { IModelApp } from "./IModelApp";
 import { IModelConnection } from "./IModelConnection";
+import { PlanarClipMaskState } from "./PlanarClipMaskState";
 import { SpatialModelState } from "./ModelState";
-import { SpatialClassifiers } from "./SpatialClassifiers";
-import { createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileClient, RealityModelTileTree, RealityModelTileUtils, TileTreeReference } from "./tile/internal";
+import {
+  createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference,
+} from "./tile/internal";
 
 async function getAccessToken(): Promise<AccessToken | undefined> {
   if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
     return undefined; // Not signed in
 
   try {
-    return IModelApp.authorizationClient.getAccessToken();
+    return await IModelApp.authorizationClient.getAccessToken();
   } catch (_) {
     return undefined;
   }
 }
 
-/** A reference to a [[TileTree]] obtained from a reality data service and associated to a [[ViewState]] by way of its [[DisplayStyleState]].
- * Contrast with a persistent [[GeometricModelState]] which may contain a URL pointing to a [[TileTree]] hosted on a reality data service.
- * @beta
+/** A [ContextRealityModel]($common) attached to a [[DisplayStyleState]] supplying a [[TileTreeReference]] used to draw the
+ * reality model in a [[Viewport]].
+ * @see [DisplayStyleSettings.contextRealityModels]($common).
+ * @see [[DisplayStyleState.contextRealityModelStates]].
+ * @see [[DisplayStyleState.attachRealityModel]].
+ * @public
  */
-export class ContextRealityModelState {
+export class ContextRealityModelState extends ContextRealityModel {
   private readonly _treeRef: RealityModelTileTree.Reference;
-  public readonly name: string;
-  public readonly url: string;
-  public readonly orbitGtBlob?: OrbitGtBlobProps;
-  /** Not required to be present to display the model. It is use to elide the call to getRealityDataIdFromUrl in the widget if present. */
-  public readonly realityDataId?: string;
-  public readonly description: string;
+  /** The iModel with which the reality model is associated. */
   public readonly iModel: IModelConnection;
-  private _appearanceOverrides?: FeatureAppearance;
-  private _isGlobal?: boolean;
 
+  /** @internal */
   public constructor(props: ContextRealityModelProps, iModel: IModelConnection, displayStyle: DisplayStyleState) {
-    this.url = props.tilesetUrl;
-    this.orbitGtBlob = props.orbitGtBlob;
-    this.realityDataId = props.realityDataId;
-    this.name = undefined !== props.name ? props.name : "";
-    this.description = undefined !== props.description ? props.description : "";
+    super(props);
     this.iModel = iModel;
     this._appearanceOverrides = props.appearanceOverrides ? FeatureAppearance.fromJSON(props.appearanceOverrides) : undefined;
-
-    const classifiers = new SpatialClassifiers(props);
     this._treeRef = (undefined === props.orbitGtBlob) ?
       createRealityTileTreeReference({
         iModel,
         source: displayStyle,
         url: props.tilesetUrl,
         name: props.name,
-        classifiers,
+        classifiers: this.classifiers,
+        planarClipMask: this.planarClipMaskSettings,
       }) :
       createOrbitGtTileTreeReference({
         iModel,
         orbitGtBlob: props.orbitGtBlob,
         name: props.name,
-        classifiers,
-        displayStyle,
+        classifiers: this.classifiers,
+        source: displayStyle,
       });
 
+    this.onPlanarClipMaskChanged.addListener((newSettings) => {
+      this._treeRef.planarClipMask = newSettings ? PlanarClipMaskState.create(newSettings) : undefined;
+    });
   }
 
+  /** The tile tree reference responsible for drawing the reality model into a [[Viewport]]. */
   public get treeRef(): TileTreeReference { return this._treeRef; }
-  public get classifiers(): SpatialClassifiers | undefined { return this._treeRef.classifiers; }
-  public get appearanceOverrides(): FeatureAppearance | undefined { return this._appearanceOverrides; }
-  public set appearanceOverrides(overrides: FeatureAppearance | undefined) { this._appearanceOverrides = overrides; }
-  public get modelId(): Id64String | undefined { return (this._treeRef instanceof RealityModelTileTree.Reference) ? this._treeRef.modelId : undefined; }
-  /** Return true if the model spans the entire globe ellipsoid in 3D */
+
+  /** The transient Id assigned to this reality model at run-time. */
+  public get modelId(): Id64String | undefined {
+    return (this._treeRef instanceof RealityModelTileTree.Reference) ? this._treeRef.modelId : undefined;
+  }
+
+  /** Whether the reality model spans the entire globe ellipsoid. */
   public get isGlobal(): boolean {
-    if (undefined === this._isGlobal) {
-      const range = this.treeRef.computeWorldContentRange();
-      if (!range.isNull)
-        this._isGlobal = range.diagonal().magnitude() > 2 * Constant.earthRadiusWGS84.equator;
-    }
-    return this._isGlobal === undefined ? false : this._isGlobal;
-  }
-
-  public toJSON(): ContextRealityModelProps {
-    return {
-      tilesetUrl: this.url,
-      orbitGtBlob: this.orbitGtBlob,
-      realityDataId: this.realityDataId,
-      name: 0 > this.name.length ? this.name : undefined,
-      description: 0 > this.description.length ? this.description : undefined,
-      appearanceOverrides: this.appearanceOverrides,
-    };
-  }
-
-  /** ###TODO this is ridiculously slow (like, 10s of seconds) and downloads megabytes of data to extract range and throw it all away.
-   * findAvailableRealityModels() already TAKES the project extents as a cartographic range to exclude so...
-   */
-  public async intersectsProjectExtents(): Promise<boolean> {
-    if (undefined === this.iModel.ecefLocation)
-      return false;
-
-    const accessToken = await getAccessToken();
-    if (!accessToken)
-      return false;
-
-    const client = new RealityModelTileClient(this.url, accessToken, this.iModel.contextId);
-    const json = await client.getRootDocument(this.url);
-    let tileTreeRange, tileTreeTransform;
-    if (json === undefined ||
-      undefined === json.root ||
-      undefined === (tileTreeRange = RealityModelTileUtils.rangeFromBoundingVolume(json.root.boundingVolume)) ||
-      undefined === (tileTreeTransform = RealityModelTileUtils.transformFromJson(json.root.transform)))
-      return false;
-
-    const treeCartographicRange = new CartographicRange(tileTreeRange.range, tileTreeTransform);
-    const projectCartographicRange = new CartographicRange(this.iModel.projectExtents, this.iModel.ecefLocation.getTransform());
-
-    return treeCartographicRange.intersectsRange(projectCartographicRange);
-  }
-
-  public matches(other: ContextRealityModelState): boolean {
-    return this.matchesNameAndUrl(other.name, other.url);
-  }
-
-  public matchesNameAndUrl(name: string, url: string): boolean {
-    return this.name === name && this.url === url;
+    return this.treeRef.isGlobal;
   }
 }
-/**
- * Returns a list of reality data associated to the given iTwin context
- * @param contextId id of associated iTwin context
- * @param modelCartographicRange optional cartographic range of the model that can limit the spatial range for the search
- * @returns a list of reality model properties associated with the project
- * @alpha
+
+/** Criteria used to query for reality data associated with an iTwin context.
+ * @see [[queryRealityData]].
+ * @public
+ */
+export interface RealityDataQueryCriteria {
+  /** The Id of the iTwin context. */
+  contextId: GuidString;
+  /** If supplied, only reality data overlapping this range will be included. */
+  range?: CartographicRange;
+  /** If supplied, reality data already referenced by a [[GeometricModelState]] within this iModel will be excluded. */
+  filterIModel?: IModelConnection;
+}
+
+/** @deprecated Use queryRealityData
+ * @internal
  */
 export async function findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
-  return findAvailableUnattachedRealityModels(contextId, undefined, modelCartographicRange);
+  return queryRealityData({ contextId, range: modelCartographicRange });
 }
 
-/**
- * Returns a list of reality data associated to the given iTwin context - but filters out any reality sets that are directly attached to the iModel.
- * @param contextId id of associated iTwin context
- * @param iModel the iModel -- reality data sets attached to this model will be excluded from the returned list.
- * @param modelCartographicRange optional cartographic range of the model that can limit the spatial range for the search
- * @returns a list of reality model properties associated with the project
- * @alpha
+/** @deprecated Use queryRealityData
+ * @internal
  */
 export async function findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise<ContextRealityModelProps[]> {
+  return queryRealityData({ contextId, filterIModel: iModel, range: modelCartographicRange });
+}
+
+/** Query for reality data associated with an iTwin context.
+ * @param criteria Criteria by which to query.
+ * @returns Properties of reality data associated with the context, filtered according to the criteria.
+ * @public
+ */
+export async function queryRealityData(criteria: RealityDataQueryCriteria): Promise<ContextRealityModelProps[]> {
+  const contextId = criteria.contextId;
   const availableRealityModels: ContextRealityModelProps[] = [];
 
-  const accessToken: AccessToken | undefined = await getAccessToken();
+  const accessToken = await getAccessToken();
   if (!accessToken)
     return availableRealityModels;
 
@@ -165,8 +133,8 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
   const client = new RealityDataClient();
 
   let realityData: RealityData[];
-  if (modelCartographicRange) {
-    const iModelRange = modelCartographicRange.getLongitudeLatitudeBoundingBox();
+  if (criteria.range) {
+    const iModelRange = criteria.range.getLongitudeLatitudeBoundingBox();
     realityData = await client.getRealityDataInProjectOverlapping(requestContext, contextId, Angle.radiansToDegrees(iModelRange.low.x),
       Angle.radiansToDegrees(iModelRange.high.x),
       Angle.radiansToDegrees(iModelRange.low.y),
@@ -174,13 +142,14 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
   } else {
     realityData = await client.getRealityDataInProject(requestContext, contextId);
   }
+
   requestContext.enter();
 
   // Get set of URLs that are directly attached to the model.
   const modelRealityDataIds = new Set<string>();
-  if (iModel) {
+  if (criteria.filterIModel) {
     const query = { from: SpatialModelState.classFullName, wantPrivate: false };
-    const props = await iModel.models.queryProps(query);
+    const props = await criteria.filterIModel.models.queryProps(query);
     for (const prop of props)
       if (prop.jsonProperties !== undefined && prop.jsonProperties.tilesetUrl) {
         const realityDataId = client.getRealityDataIdFromUrl(prop.jsonProperties.tilesetUrl);
@@ -212,6 +181,7 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
       if (currentRealityData.type && (currentRealityData.type.toUpperCase() === "OPC") && currentRealityData.rootDocument !== undefined) {
         const rootDocUrl: string = await currentRealityData.getBlobStringUrl(requestContext, currentRealityData.rootDocument);
         opcConfig = {
+          rdsUrl: "",
           containerName: "",
           blobFileName: rootDocUrl,
           accountName: "",
@@ -227,5 +197,6 @@ export async function findAvailableUnattachedRealityModels(contextId: GuidString
         });
     }
   }
+
   return availableRealityModels;
 }

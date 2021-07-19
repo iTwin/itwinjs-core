@@ -15,7 +15,7 @@ import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageTy
 import { UiFramework } from "../UiFramework";
 import { matchesWords, OnItemExecutedFunc, SpecialKey } from "@bentley/ui-abstract";
 import { ClearKeyinPaletteHistoryTool } from "../tools/KeyinPaletteTools";
-import { useUiSettingsContext } from "../uisettings/useUiSettings";
+import { useUiSettingsStorageContext } from "../uisettings/useUiSettings";
 import { KeyinEntry } from "../uiadmin/FrameworkUiAdmin";
 
 const KEYIN_PALETTE_NAMESPACE = "KeyinPalettePanel";
@@ -23,11 +23,11 @@ const KEYIN_HISTORY_KEY = "historyArray";
 
 /** @internal */
 export function clearKeyinPaletteHistory() {
-  const uiSettings = UiFramework.getUiSettings();
+  const uiSettingsStorage = UiFramework.getUiSettingsStorage();
   // istanbul ignore else
-  if (uiSettings) {
+  if (uiSettingsStorage) {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    uiSettings.deleteSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
+    uiSettingsStorage.deleteSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
   }
 }
 
@@ -46,32 +46,36 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
   const inputRef = React.useRef<HTMLInputElement>(null);
   const keyinSeparator = "--#--";
   const [historyKeyins, setHistoryKeyins] = React.useState<string[]>([]);
-  const uiSettings = useUiSettingsContext();
+  const uiSettingsStorage = useUiSettingsStorageContext();
 
   React.useEffect(() => {
     async function fetchState() {
-      const settingsResult = await uiSettings.getSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
+      const settingsResult = await uiSettingsStorage.getSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY);
       // istanbul ignore else
       if (UiSettingsStatus.Success === settingsResult.status) {
-        setHistoryKeyins(settingsResult.setting);
+        const filteredHistory = (settingsResult.setting as string[]).filter((keyin)=>{
+          const result = IModelApp.tools.parseKeyin(keyin);
+          return result.ok;
+        });
+        setHistoryKeyins(filteredHistory);
       } else {
         setHistoryKeyins([]);
       }
     }
 
     fetchState(); // eslint-disable-line @typescript-eslint/no-floating-promises
-  }, [uiSettings]);
+  }, [uiSettingsStorage]);
 
   // istanbul ignore next
   const storeHistoryKeyins = React.useCallback(async (value: string[]) => {
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    const result = await uiSettings.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, value);
+    const result = await uiSettingsStorage.saveSetting(KEYIN_PALETTE_NAMESPACE, KEYIN_HISTORY_KEY, value);
     if (result.status !== UiSettingsStatus.Success) {
       const briefMessage = UiFramework.translate("keyinbrowser.couldNotSaveHistory");
       const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Error, briefMessage);
       IModelApp.notifications.outputMessage(errorDetails);
     }
-  }, [uiSettings]);
+  }, [uiSettingsStorage]);
 
   const allKeyins = React.useMemo(() => {
     const availableKeyins = [];

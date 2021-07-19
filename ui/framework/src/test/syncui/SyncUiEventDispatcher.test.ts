@@ -48,8 +48,10 @@ describe("SyncUiEventDispatcher", () => {
     expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["dog"])).to.be.true;
     expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["cat", "rabbit"])).to.be.true;
     expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["rabbit"])).to.be.true;
-    // test is case sensitive
-    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["Rabbit"])).to.be.false;
+    // idsOfInterest are now case insensitive - the set of eventIds held by the dispacther are in lower case.
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["Rabbit"])).to.be.true;
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["DOG", "cAT", "Rabbit"])).to.be.true;
+    expect(SyncUiEventDispatcher.hasEventOfInterest(eventIds, ["horse"])).to.be.false;
 
     const dummyImodelId = "dummy";
     UiFramework.setActiveIModelId(dummyImodelId);
@@ -294,6 +296,16 @@ describe("SyncUiEventDispatcher", () => {
       SyncUiEventDispatcher.clearConnectionEvents(imodelMock.object);
     });
 
+    it("initializeConnectionEvents with blank iModelConnection", () => {
+      imodelMock.setup((x) => x.isBlankConnection()).returns(() => true);
+      SyncUiEventDispatcher.initializeConnectionEvents(imodelMock.object);
+    });
+
+    it("initializeConnectionEvents with blank iModelConnection and an undefined iModelId", () => {
+      imodelMock.setup((x) => x.iModelId).returns(() => undefined);
+      imodelMock.setup((x) => x.isBlankConnection()).returns(() => true);
+      SyncUiEventDispatcher.initializeConnectionEvents(imodelMock.object);
+    });
   });
 
   describe("SelectedViewportChanged", () => {

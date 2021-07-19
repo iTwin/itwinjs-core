@@ -24,8 +24,14 @@
     "EmphasizeSelectedElements": {
       "keyin": "fdt emphasize selection"
     },
+    "EmphasizeVisibleElements": {
+      "keyin": "fdt emphasize visible"
+    },
     "IsolateSelectedElements": {
       "keyin": "fdt isolate selection"
+    },
+    "ClearEmphasizedElements": {
+      "keyin": "fdt clear emphasized"
     },
     "ClearIsolatedElements": {
       "keyin": "fdt clear isolate"
@@ -102,6 +108,9 @@
     "ChangeEmphasisSettings": {
       "keyin": "fdt emphasis settings"
     },
+    "ChangeFlashSettings": {
+      "keyin": "fdt flash settings"
+    },
     "ChangeUnits": {
       "keyin": "fdt metric"
     },
@@ -147,6 +156,9 @@
     "ChangeLayerSettings": {
       "keyin": "fdt layer set"
     },
+    "OverrideSubCategory": {
+      "keyin": "fdt subcat ovr"
+    },
     "OverrideSubCategoryPriority": {
       "keyin": "fdt subcat priority"
     },
@@ -163,6 +175,12 @@
       "keyin": "fdt elemId from sourceId"
     },
     "AttachMapLayerTool": {
+      "Messages": {
+        "MapLayerAttached": "Map layer {{sourceName}} attached from URL: {{sourceUrl}}",
+        "MapLayerAttachedRequiresAuth": "Map layer {{sourceName}} attached, but requires credentials to be provided",
+        "MapLayerValidationFailed": "Map layer validation failed for URL: {{sourceUrl}}",
+        "MapLayerAttachError": "Error '{{error}}' occurred attaching MapLayer from URL: {{sourceUrl}}"
+      },
       "keyin": "fdt attach maplayer"
     },
     "AttachMapOverlayTool": {
@@ -191,6 +209,9 @@
     },
     "SetMapBaseTransparencyTool": {
       "keyin": "fdt set map base transparency"
+    },
+    "SetMapBaseVisibilityTool": {
+      "keyin": "fdt set map base visibility"
     },
     "DetachMapLayersTool": {
       "keyin": "fdt detach maplayers"
@@ -295,7 +316,7 @@
       "keyin": "fdt effect add flip"
     },
     "FlipImageConfig": {
-      "keyin" :"fdt effect config flip"
+      "keyin": "fdt effect config flip"
     },
     "LensDistortionEffect": {
       "keyin": "fdt effect add lensdistortion"
@@ -327,6 +348,12 @@
     "SaturationEffect": {
       "keyin": "fdt effect add saturation"
     },
+    "VignetteEffect": {
+      "keyin": "fdt effect add vignette"
+    },
+    "VignetteConfig": {
+      "keyin": "fdt effect config vignette"
+    },
     "SnowEffect": {
       "keyin": "fdt particle snow"
     },
@@ -335,6 +362,85 @@
     },
     "ClearEffects": {
       "keyin": "fdt effect clear"
+    },
+    "SetGpuMemoryLimit": {
+      "keyin": "fdt gpu mem limit"
+    },
+    "SetHigherPriorityRealityModelMasking": {
+      "keyin": "fdt set reality model mask by priority",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify reality model to mask by priority"
+      }
+    },
+    "SetMapHigherPriorityMask": {
+      "keyin": "fdt set map mask by priority"
+    },
+    "UnmaskMap": {
+      "keyin": "fdt unmask map"
+    },
+    "UnmaskRealityModel": {
+      "keyin": "fdt unmask reality model",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify reality model to unmask"
+      }
+    },
+    "MaskRealityModelByModel": {
+      "keyin": "fdt set reality model mask models",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify reality model to mask with BIM models",
+        "IdentifyMaskModel": "Identify BIM mask models",
+        "AcceptSelection": "Accept selected element Model"
+      }
+    },
+    "MaskRealityModelByElement": {
+      "keyin": "fdt set reality model mask elements",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify reality model to mask with elements",
+        "IdentifyMaskElement": "Identify mask elements",
+        "AcceptSelection": "Accept selected elements"
+      }
+    },
+    "MaskRealityModelByExcludedElement": {
+      "keyin": "fdt set reality model mask exclude elements",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify reality model to mask with excluded elements",
+        "IdentifyMaskElement": "Identify excluded mask elements",
+        "AcceptSelection": "Accept selected elements"
+      }
+    },
+    "MaskRealityModelBySubCategory": {
+      "keyin": "fdt set reality model mask subcategory",
+      "Prompts": {
+        "IdentifyRealityModel": "Identify reality model to mask with SubCategories",
+        "IdentifyMaskSubCategory": "Identify mask SubCategory"
+      }
+    },
+    "MaskBackgroundMapByElement": {
+      "keyin": "fdt set map mask elements",
+      "Prompts": {
+        "IdentifyMaskElement": "Identify mask element",
+        "AcceptSelection": "Accept selected elements"
+      }
+    },
+    "MaskBackgroundMapByExcludedElement": {
+      "keyin": "fdt set map mask exclude elements",
+      "Prompts": {
+        "IdentifyMaskElement": "Identify excluded mask element",
+        "AcceptSelection": "Accept selected elements"
+      }
+    },
+    "MaskBackgroundMapByModel": {
+      "keyin": "fdt set map mask models",
+      "Prompts": {
+        "IdentifyMaskModel": "Identify mask model",
+        "AcceptSelection": "Accept selected element models"
+      }
+    },
+    "MaskBackgroundMapBySubCategory": {
+      "keyin": "fdt set map mask subcategory",
+      "Prompts": {
+        "IdentifyMaskSubCategory": "Identify mask subCategory"
+      }
     }
   }
 }

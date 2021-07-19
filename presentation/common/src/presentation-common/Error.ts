@@ -13,25 +13,49 @@ import { BentleyError, GetMetaDataFunction, LogFunction } from "@bentley/bentley
  * @public
  */
 export enum PresentationStatus {
-  /** Success result */
+  /** Success result. */
   Success = 0,
-  /** Request was canceled */
+
+  /** Request was cancelled. */
   Canceled = 1,
+
   /** Error: Unknown */
   Error = 0x10000,
-  /** Error: Not initialized */
+
+  /** Error: Backend is not initialized. */
   NotInitialized = Error + 1,
-  /** Error: Attempting to use something after disposal */
+
+  /**
+   * Error: Attempting to use something after disposal.
+   * @deprecated The value is not used anymore.
+   */
   UseAfterDisposal = Error + 2,
-  /** Error: Argument is invalid */
+
+  /** Error: Argument is invalid. */
   InvalidArgument = Error + 3,
-  /** Error: Received invalid response */
+
+  /**
+   * Error: Received invalid response.
+   * @deprecated The value is not used anymore.
+   */
   InvalidResponse = Error + 4,
-  /** Error: Requested content when there is none. */
+
+  /**
+   * Error: Requested content when there is none.
+   * @deprecated The value is not used anymore.
+   */
   NoContent = Error + 5,
-  /** Error: Backend needs to be synced with client state */
+
+  /**
+   * Error: Backend needs to be synced with client state.
+   * @deprecated The value is not used anymore.
+   */
   BackendOutOfSync = Error + 6,
-  /** Error: The timeout for the request was reached which prevented it from being fulfilled */
+
+  /**
+   * Timeout for the request was reached which prevented it from being fulfilled. Frontend may
+   * repeat the request.
+   */
   BackendTimeout = Error + 7,
 }
 
@@ -58,7 +82,7 @@ export class PresentationError extends BentleyError {
    * method to create a string representation of the error.
    */
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  protected _initName(): string {
+  protected override _initName(): string {
     let value = PresentationStatus[this.errorNumber];
     if (!value)
       value = `Unknown Error (${this.errorNumber})`;

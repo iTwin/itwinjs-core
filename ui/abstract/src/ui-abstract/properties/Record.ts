@@ -11,11 +11,11 @@ import { StandardTypeNames } from "./StandardTypeNames";
 import { PropertyValue, PropertyValueFormat } from "./Value";
 
 /** Properties for the [[PropertyRecord]] with link info supplied
- * @beta
+ * @public
  */
 export interface LinkElementsInfo {
   /** Callback to link click event */
-  onClick?: (record: PropertyRecord, text: string) => void;
+  onClick: (text: string) => void;
   /**
    * Function that specifies which parts of display value need to be clickable.
    *
@@ -28,7 +28,7 @@ export interface LinkElementsInfo {
 /**
  * PropertyRecord contains instance information about a Property, including a
  * value that can be edited using a PropertyEditor and converted using a TypeConverter.
- * @beta
+ * @public
  */
 export class PropertyRecord {
   /** Value for the property */
@@ -80,11 +80,6 @@ export class PropertyRecord {
         return Object.values(this.value.members);
       case PropertyValueFormat.Array:
         return this.value.items;
-      /* istanbul ignore next */
-      default:
-        // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-        const unhandledFormat: never = this.value!.valueFormat;
-        throw new Error(`Failed getting PropertyRecord children because of unhandled value format: ${unhandledFormat}`);
     }
   }
 

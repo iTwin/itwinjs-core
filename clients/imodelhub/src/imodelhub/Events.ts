@@ -16,20 +16,20 @@ import {
 } from "./EventsBase";
 import { LockLevel, LockType } from "./Locks";
 
-/* eslint-disable no-shadow */
+/* eslint-disable @typescript-eslint/no-shadow */
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
 /** Type of [[IModelHubEvent]]. Event type is used to define which events you wish to receive from your [[EventSubscription]]. See [[EventSubscriptionHandler.create]] and [[EventSubscriptionHandler.update]].
- * @beta
+ * @public
  */
 export enum IModelHubEventType {
   /** Sent when one or more [[Lock]]s are updated. See [[LockEvent]].
-   * @alpha Hide Lock API while focused on readonly viewing scenarios
+   * @internal
    */
   LockEvent = "LockEvent",
   /** Sent when all [[Lock]]s for a [[Briefcase]] are deleted. See [[AllLocksDeletedEvent]].
-   * @alpha Hide Lock API while focused on readonly viewing scenarios
+   * @internal
    */
   AllLocksDeletedEvent = "AllLocksDeletedEvent",
   /** Sent when a [[ChangeSet]] is successfully pushed. See [[ChangeSetPostPushEvent]]. */
@@ -37,11 +37,11 @@ export enum IModelHubEventType {
   /** Sent when a [[ChangeSet]] push has started. See [[ChangeSetPrePushEvent]]. */
   ChangeSetPrePushEvent = "ChangeSetPrePushEvent",
   /** Sent when one or more [Code]($common)s are updated. See [[CodeEvent]].
-   * @alpha Hide Code API while focused on readonly viewing scenarios
+   * @internal
    */
   CodeEvent = "CodeEvent",
   /** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. See [[AllCodesDeletedEvent]].
-   * @alpha Hide Code API while focused on readonly viewing scenarios
+   * @internal
    */
   AllCodesDeletedEvent = "AllCodesDeletedEvent",
   /** Sent when a [[Briefcase]] is deleted. See [[BriefcaseDeletedEvent]].
@@ -52,34 +52,42 @@ export enum IModelHubEventType {
   iModelDeletedEvent = "iModelDeletedEvent",
   /** Sent when a new named [[Version]] is created. See [[VersionEvent]]. */
   VersionEvent = "VersionEvent",
-  /** Sent when a new [[Checkpoint]] is generated. See [[CheckpointCreatedEvent]]. */
+  /**
+   * Sent when a new [[Checkpoint]] is generated. See [[CheckpointCreatedEvent]].
+   * @internal
+   */
   CheckpointCreatedEvent = "CheckpointCreatedEvent",
+  /**
+   * Sent when a new [[CheckpointV2]] is generated. See [[CheckpointV2CreatedEvent]].
+   * @internal
+   */
+  CheckpointV2CreatedEvent = "CheckpointV2CreatedEvent",
 }
 
-/* eslint-enable no-shadow */
+/* eslint-enable @typescript-eslint/no-shadow */
 
-/** @beta @deprecated Use [[IModelHubEventType]] instead */
-export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent";
+/** @internal @deprecated Use [[IModelHubEventType]] instead */
+export type EventType = "LockEvent" | "AllLocksDeletedEvent" | "ChangeSetPostPushEvent" | "ChangeSetPrePushEvent" | "CodeEvent" | "AllCodesDeletedEvent" | "BriefcaseDeletedEvent" | "iModelDeletedEvent" | "VersionEvent" | "CheckpointCreatedEvent" | "CheckpointV2CreatedEvent";
 
 /** Base type for all iModelHub events.
- * @beta
+ * @public
  */
 export abstract class IModelHubEvent extends IModelHubBaseEvent {
-  /** Id of the iModel where the event occured. */
+  /** Id of the iModel where the event occurred. */
   public iModelId?: GuidString;
 
   /** Construct this event from object instance.
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public override fromJson(obj: any) {
     super.fromJson(obj);
     this.iModelId = this.eventTopic;
   }
 }
 
 /** Base type for iModelHub events that have BriefcaseId.
- * @beta
+ * @public
  */
 export abstract class BriefcaseEvent extends IModelHubEvent {
   /** Id of the [[Briefcase]] involved in this event. */
@@ -89,14 +97,14 @@ export abstract class BriefcaseEvent extends IModelHubEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public override fromJson(obj: any) {
     super.fromJson(obj);
     this.briefcaseId = obj.BriefcaseId;
   }
 }
 
 /** Sent when one or more [[Lock]]s are updated. Lock updates can be very frequent, so it's recommended to not to subscribe to LockEvents, if it's not necessary.
- * @alpha Hide Lock API while focused on readonly viewing scenarios
+ * @internal
  */
 export class LockEvent extends BriefcaseEvent {
   /** [[LockType]] of the updated Locks. */
@@ -112,7 +120,7 @@ export class LockEvent extends BriefcaseEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public override fromJson(obj: any) {
     super.fromJson(obj);
     this.lockType = LockType[obj.LockType as keyof typeof LockType];
     this.lockLevel = LockLevel[obj.LockLevel as keyof typeof LockLevel];
@@ -122,13 +130,13 @@ export class LockEvent extends BriefcaseEvent {
 }
 
 /** Sent when all [[Lock]]s for a [[Briefcase]] are deleted. Can occur when calling [[LockHandler.deleteAll]] or [[BriefcaseHandler.delete]].
- * @alpha Hide Lock API while focused on readonly viewing scenarios
+ * @internal
  */
 export class AllLocksDeletedEvent extends BriefcaseEvent {
 }
 
 /** Sent when a [[ChangeSet]] is successfully pushed. See [[ChangeSetHandler.create]]. It's sent when a new [[ChangeSet]] is successfully pushed to an iModel. See [[ChangeSetPrePushEvent]] for the event indicating the start of a ChangeSet push.
- * @beta
+ * @public
  */
 export class ChangeSetPostPushEvent extends BriefcaseEvent {
   /** Id of the ChangeSet that was pushed. */
@@ -140,7 +148,7 @@ export class ChangeSetPostPushEvent extends BriefcaseEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public override fromJson(obj: any) {
     super.fromJson(obj);
     this.changeSetId = obj.ChangeSetId;
     this.changeSetIndex = obj.ChangeSetIndex;
@@ -148,13 +156,13 @@ export class ChangeSetPostPushEvent extends BriefcaseEvent {
 }
 
 /** Sent when a [[ChangeSet]] push has started. See [[ChangeSetHandler.create]]. ChangeSetPrePushEvent indicates that iModelHub allowed one of the [[Briefcase]]s to push a ChangeSet and all other push attempts will fail, until this push times out or succeeds. See [[ChangeSetPostPushEvent]] for an event indicating a successful push.
- * @beta
+ * @public
  */
 export class ChangeSetPrePushEvent extends IModelHubEvent {
 }
 
 /** Sent when one or more [Code]($common)s are updated. See [[CodeHandler.update]]. Code updates can be very frequent, so it's recommended to not to subscribe to CodeEvents, if it's not necessary.
- * @alpha Hide Code API while focused on readonly viewing scenarios
+ * @internal
  */
 export class CodeEvent extends BriefcaseEvent {
   /** Id of the [CodeSpec]($common) for the updated Codes. */
@@ -170,7 +178,7 @@ export class CodeEvent extends BriefcaseEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public override fromJson(obj: any) {
     super.fromJson(obj);
     this.codeSpecId = Id64.fromJSON(obj.CodeSpecId);
     this.codeScope = obj.CodeScope;
@@ -180,7 +188,7 @@ export class CodeEvent extends BriefcaseEvent {
 }
 
 /** Sent when all [Code]($common)s for a [[Briefcase]] are deleted. Can occur when calling [[CodeHandler.deleteAll]] or [[BriefcaseHandler.delete]].
- * @alpha Hide Code API while focused on readonly viewing scenarios
+ * @internal
  */
 export class AllCodesDeletedEvent extends BriefcaseEvent {
 }
@@ -192,13 +200,13 @@ export class BriefcaseDeletedEvent extends BriefcaseEvent {
 }
 
 /** Sent when an iModel is deleted. See [[IModelHandler.delete]]. [[EventSubscription]] will be deleted 5 minutes after iModel is deleted, removing all events from subscription queues, making it possible for this event to be missed if not retrieved immediately.
- * @beta
+ * @public
  */
 export class IModelDeletedEvent extends IModelHubEvent {
 }
 
 /** Sent when a new named [[Version]] is created. See [[VersionHandler.create]].
- * @beta
+ * @public
  */
 export class VersionEvent extends IModelHubEvent {
   /** Id of the created Version. */
@@ -212,7 +220,7 @@ export class VersionEvent extends IModelHubEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public override fromJson(obj: any) {
     super.fromJson(obj);
     this.versionId = obj.VersionId;
     this.versionName = obj.VersionName;
@@ -221,7 +229,7 @@ export class VersionEvent extends IModelHubEvent {
 }
 
 /** Sent when a new [[Checkpoint]] is generated. [[Checkpoint]]s can be generated daily when there are new [[ChangeSet]]s pushed or when a new [[Version]] is created.
- * @beta
+ * @internal
  */
 export class CheckpointCreatedEvent extends IModelHubEvent {
   /** Index of the [[ChangeSet]] this [[Checkpoint]] was created for.  */
@@ -235,7 +243,30 @@ export class CheckpointCreatedEvent extends IModelHubEvent {
    * @param obj Object instance.
    * @internal
    */
-  public fromJson(obj: any) {
+  public override fromJson(obj: any) {
+    super.fromJson(obj);
+    this.changeSetIndex = obj.ChangeSetIndex;
+    this.changeSetId = obj.ChangeSetId;
+    this.versionId = obj.VersionId;
+  }
+}
+
+/** Sent when a new [[CheckpointV2]] is generated. [[CheckpointV2]] might be created for every [[ChangeSet]].
+ * @internal
+ */
+export class CheckpointV2CreatedEvent extends IModelHubEvent {
+  /** Index of the [[ChangeSet]] this [[CheckpointV2]] was created for.  */
+  public changeSetIndex: string;
+  /** Id of the [[ChangeSet]] this [[CheckpointV2]] was created for.  */
+  public changeSetId: string;
+  /** Id of the [[Version]] this [[CheckpointV2]] was created for. */
+  public versionId?: GuidString;
+
+  /** Construct this event from object instance.
+   * @param obj Object instance.
+   * @internal
+   */
+  public override fromJson(obj: any) {
     super.fromJson(obj);
     this.changeSetIndex = obj.ChangeSetIndex;
     this.changeSetId = obj.ChangeSetId;
@@ -273,6 +304,8 @@ export function constructorFromEventType(type: IModelHubEventType): EventConstru
       return VersionEvent;
     case IModelHubEventType.CheckpointCreatedEvent:
       return CheckpointCreatedEvent;
+    case IModelHubEventType.CheckpointV2CreatedEvent:
+      return CheckpointV2CreatedEvent;
   }
 }
 
@@ -290,7 +323,7 @@ export function ParseEvent(response: Response) {
 }
 
 /** Subscription to receive [[IModelHubEvent]]s. Each subscription has a separate queue for events that it hasn't read yet. Subscriptions are deleted, if they are inactive for an hour. Use wsgId of this instance for the methods that require subscriptionId. See [[EventSubscriptionHandler]].
- * @beta
+ * @public
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.EventSubscription", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class EventSubscription extends WsgInstance {
@@ -300,14 +333,14 @@ export class EventSubscription extends WsgInstance {
 }
 
 /** Shared access signature token for getting [[IModelHubEvent]]s. It's used to authenticate for [[EventHandler.getEvent]]. To receive an instance call [[EventHandler.getSASToken]].
- * @beta
+ * @public
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.EventSAS", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class EventSAS extends BaseEventSAS {
 }
 
 /** Handler for managing [[EventSubscription]]s. Use [[EventHandler.Subscriptions]] to get an instance of this class.
- * @beta
+ * @public
  */
 export class EventSubscriptionHandler {
   private _handler: IModelBaseHandler;
@@ -342,7 +375,7 @@ export class EventSubscriptionHandler {
    * @param events Array of EventTypes to subscribe to.
    * @return Created EventSubscription instance.
    * @throws [Common iModelHub errors]($docs/learning/iModelHub/CommonErrors)
-   * @deprecated Use IModelHubEventType enum for `events` instead.
+   * @internal @deprecated Use IModelHubEventType enum for `events` instead.
    */
   public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: EventType[]): Promise<EventSubscription>; // eslint-disable-line @typescript-eslint/unified-signatures, deprecation/deprecation
   public async create(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, events: IModelHubEventType[] | EventType[]) { // eslint-disable-line deprecation/deprecation
@@ -406,7 +439,7 @@ export class EventSubscriptionHandler {
 }
 
 /** Handler for receiving [[IModelHubEvent]]s. Use [[IModelClient.Events]] to get an instance of this class.
- * @beta
+ * @public
  */
 export class EventHandler extends EventBaseHandler {
   private _subscriptionHandler: EventSubscriptionHandler | undefined;

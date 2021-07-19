@@ -57,4 +57,4 @@ private _handleLink = () => {
 
 ## API Reference
 
-* [Notification]($ui-framework:Notification)
+- [Notification]($ui-framework:Notification)

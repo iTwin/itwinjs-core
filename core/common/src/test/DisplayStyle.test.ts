@@ -4,15 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { CompressedId64Set, OrderedId64Iterable } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, Id64String, OrderedId64Iterable } from "@bentley/bentleyjs-core";
 import { BackgroundMapType, GlobeMode } from "../BackgroundMapSettings";
 import { ColorByName } from "../ColorByName";
-import { DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, DisplayStyleSettings, MonochromeMode } from "../DisplayStyleSettings";
+import {
+  DisplayStyle3dSettings, DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, DisplayStylePlanarClipMaskProps, DisplayStyleSettings, MonochromeMode,
+} from "../DisplayStyleSettings";
 import { LinePixels } from "../LinePixels";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "../PlanProjectionSettings";
-import { SpatialClassificationProps } from "../SpatialClassificationProps";
+import { SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay } from "../SpatialClassification";
 import { ThematicDisplayMode } from "../ThematicDisplay";
 import { RenderMode, ViewFlags } from "../ViewFlags";
+import { PlanarClipMaskMode, PlanarClipMaskSettings } from "../PlanarClipMask";
+import { MapLayerSettings } from "../MapLayerSettings";
 
 /* eslint-disable deprecation/deprecation */
 //  - for DisplayStyleSettings.excludedElements.
@@ -141,6 +145,131 @@ describe("DisplayStyleSettings", () => {
       test(undefined, (settings) => { settings.addExcludedElements(["0x1", "0x2"]); settings.excludedElements.add("0x3"); settings.clearExcludedElements(); });
     });
   });
+
+  describe("planarClipMasks", () => {
+    function makeSettings(priority: number) {
+      return PlanarClipMaskSettings.createByPriority(priority);
+    }
+
+    function makeProps(priority: number, modelId: Id64String) {
+      return {
+        ...makeSettings(priority).toJSON(),
+        modelId,
+      };
+    }
+
+    it("initializes from JSON", () => {
+      function expectMasks(json: DisplayStylePlanarClipMaskProps[] | undefined, expectedPairs: Array<[Id64String, PlanarClipMaskSettings]>): void {
+        const styleProps = json ? { styles: { planarClipOvr: json } } : { };
+        const style = new DisplayStyleSettings(styleProps);
+        expect(Array.from(style.planarClipMasks)).to.deep.equal(expectedPairs);
+      }
+
+      expectMasks(undefined, []);
+      expectMasks([], []);
+
+      expectMasks([makeProps(1, "0")], []);
+      expectMasks([makeProps(1, "NotAnId")], []);
+
+      expectMasks([{ modelId: "0x1", mode: PlanarClipMaskMode.None }], []);
+
+      expectMasks([makeProps(123, "0x456")], [["0x456", makeSettings(123)]]);
+      expectMasks([makeProps(5, "0x1"), makeProps(1, "0x5"), makeProps(3, "0x3")], [["0x1", makeSettings(5)], ["0x5", makeSettings(1)], ["0x3", makeSettings(3)]]);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x1")], [["0x1", makeSettings(2)]]);
+    });
+
+    it("synchronizes JSON and in-memory representations", () => {
+      function expectMasks(initialProps: DisplayStylePlanarClipMaskProps[] | undefined,
+        func: (masks: Map<Id64String, PlanarClipMaskSettings>, style: DisplayStyleSettings) => void,
+        expectedPairs: Array<[Id64String, PlanarClipMaskSettings]>,
+        expectedProps: DisplayStylePlanarClipMaskProps[] | undefined) {
+        const styleProps = initialProps ? { styles: { planarClipOvr: initialProps } } : { };
+        const style = new DisplayStyleSettings(styleProps);
+
+        func(style.planarClipMasks, style);
+
+        expect(Array.from(style.planarClipMasks)).to.deep.equal(expectedPairs);
+        expect(style.toJSON().planarClipOvr).to.deep.equal(expectedProps);
+      }
+
+      expectMasks(undefined, (map) => {
+        map.set("0x2", makeSettings(2));
+        map.set("0x1", makeSettings(1));
+        map.set("0x3", makeSettings(3));
+      }, [["0x2", makeSettings(2)], ["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
+      [makeProps(2, "0x2"), makeProps(1, "0x1"), makeProps(3, "0x3")]);
+
+      expectMasks([makeProps(1, "0x1")], (map) => map.set("0x1", makeSettings(2)),
+        [["0x1", makeSettings(2)]], [makeProps(2, "0x1")]);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(3, "0x3"), makeProps(2, "0x2")], (map) => {
+        map.delete("0x2");
+        map.delete("0x4");
+      }, [["0x1", makeSettings(1)], ["0x3", makeSettings(3)]],
+      [makeProps(1, "0x1"), makeProps(3, "0x3")]);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map) => map.clear(), [], undefined);
+
+      expectMasks([makeProps(1, "0x1"), makeProps(2, "0x2")], (map, style) => {
+        style.toJSON().planarClipOvr = [makeProps(4, "0x4")];
+        expect(typeof (map as any).populate).to.equal("function");
+        (map as any).populate();
+      }, [["0x4", makeSettings(4)]], [makeProps(4, "0x4")]);
+    });
+
+    it("dispatches events", () => {
+      const events: Array<[Id64String, boolean]> = [];
+      const style = new DisplayStyleSettings({});
+      style.onPlanarClipMaskChanged.addListener((id, newMask) => {
+        events.push([id, undefined !== newMask]);
+      });
+
+      const map = style.planarClipMasks;
+      function expectEvents(expected: Array<[Id64String, boolean]>): void {
+        expect(events).to.deep.equal(expected);
+        events.length = 0;
+      }
+
+      const mask = makeSettings(1);
+      map.set("0x1", mask);
+      expectEvents([["0x1", true]]);
+
+      map.delete("0x1");
+      expectEvents([["0x1", false]]);
+
+      map.set("0x1", mask);
+      map.set("0x2", mask);
+      expectEvents([["0x1", true], ["0x2", true]]);
+
+      map.clear();
+      expectEvents([["0x1", false], ["0x2", false]]);
+
+      map.clear();
+      expectEvents([]);
+    });
+  });
+
+  // ###TODO @rbbentley
+  it.skip("synchronizes BackgroundMapSettings with MapLayerSettings", () => {
+    const style = new DisplayStyleSettings({});
+    expect(style.backgroundMap.providerName).to.equal("BingProvider");
+    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Hybrid);
+
+    let base = style.mapImagery.backgroundBase as MapLayerSettings;
+    expect(base).instanceOf(MapLayerSettings);
+    expect(base.formatId).to.equal("BingMaps");
+    expect(base.url.indexOf("AerialWithLabels")).least(1);
+
+    style.backgroundMap = style.backgroundMap.clone({ providerName: "MapBoxProvider", providerData: { mapType: BackgroundMapType.Street } });
+    base = style.mapImagery.backgroundBase as MapLayerSettings;
+    expect(base.formatId).to.equal("MapboxImagery");
+    expect(base.url.indexOf("mapbox.streets/")).least(1);
+
+    style.mapImagery.backgroundBase = MapLayerSettings.fromMapSettings(style.backgroundMap.clone({ providerData: { mapType: BackgroundMapType.Aerial } }));
+    expect(style.backgroundMap.providerName).to.equal("MapBoxProvider");
+    expect(style.backgroundMap.mapType).to.equal(BackgroundMapType.Aerial);
+  });
 });
 
 describe("DisplayStyleSettings overrides", () => {
@@ -208,12 +337,8 @@ describe("DisplayStyleSettings overrides", () => {
       sensorSettings: undefined,
       sunDirection: [1, 0, -1],
       gradientSettings: {
-        mode: 0,
-        colorScheme: 0,
-        customKeys: [],
         stepCount: 2,
         marginColor: ColorByName.magenta,
-        colorMix: 0,
       },
     },
   };
@@ -247,14 +372,9 @@ describe("DisplayStyleSettings overrides", () => {
 
   const iModelProps: DisplayStyle3dSettingsProps = {
     analysisStyle: {
-      inputName: "channel1",
-      inputRange: undefined,
-      displacementChannelName: "channel2",
-      displacementScale: undefined,
-      normalChannelName: undefined,
-      scalarChannelName: undefined,
-      scalarThematicSettings: undefined,
-      scalarRange: [1, 5],
+      displacement: {
+        channelName: "channel2",
+      },
     },
     analysisFraction: 0.2,
     scheduleScript: [{
@@ -291,10 +411,9 @@ describe("DisplayStyleSettings overrides", () => {
         modelId: "0x123",
         expand: 0.5,
         flags: {
-          inside: SpatialClassificationProps.Display.Off,
-          outside: SpatialClassificationProps.Display.Dimmed,
+          inside: SpatialClassifierInsideDisplay.Off,
+          outside: SpatialClassifierOutsideDisplay.Dimmed,
           isVolumeClassifier: true,
-          type: 0,
         },
         name: "classifier",
         isActive: true,
@@ -303,12 +422,8 @@ describe("DisplayStyleSettings overrides", () => {
     thematic: {
       displayMode: ThematicDisplayMode.Height,
       gradientSettings: {
-        mode: 0,
         stepCount: 2,
         marginColor: ColorByName.magenta,
-        colorScheme: 0,
-        customKeys: [],
-        colorMix: 0,
       },
       axis: [-1, 0, 1],
       sunDirection: [1, 0, -1],
@@ -335,7 +450,7 @@ describe("DisplayStyleSettings overrides", () => {
 
     const viewflags = ViewFlags.fromJSON(baseProps.viewflags).toFullyDefinedJSON();
 
-    const vfNoMapNoDec = { ...viewflags };
+    const vfNoMapNoDec: Partial<typeof viewflags> = { ...viewflags };
     delete vfNoMapNoDec.acs;
     delete vfNoMapNoDec.grid;
     delete vfNoMapNoDec.backgroundMap;
@@ -377,14 +492,15 @@ describe("DisplayStyleSettings overrides", () => {
     test({
       viewflags,
       analysisStyle: {
-        inputName: undefined,
-        inputRange: [2, 4],
-        displacementChannelName: "displacement",
-        displacementScale: 2.5,
+        displacement: {
+          channelName: "displacement",
+          scale: 2.5,
+        },
         normalChannelName: "normal",
-        scalarChannelName: undefined,
-        scalarThematicSettings: undefined,
-        scalarRange: undefined,
+        scalar: {
+          channelName: "scalar",
+          range: [-1, 2],
+        },
       },
       analysisFraction: 0.8,
     });
@@ -447,10 +563,9 @@ describe("DisplayStyleSettings overrides", () => {
           modelId: "0x321",
           expand: 1.5,
           flags: {
-            inside: SpatialClassificationProps.Display.Dimmed,
-            outside: SpatialClassificationProps.Display.On,
+            inside: SpatialClassifierInsideDisplay.Dimmed,
+            outside: SpatialClassifierOutsideDisplay.On,
             isVolumeClassifier: false,
-            type: 0,
           },
           name: "bing",
           isActive: true,
@@ -478,7 +593,7 @@ describe("DisplayStyleSettings overrides", () => {
         gradientSettings: {
           mode: 1,
           colorScheme: 1,
-          customKeys: [],
+          customKeys: [{ value: 0.5, color: 1234 }],
           stepCount: 3,
           marginColor: ColorByName.pink,
           colorMix: 0.5,

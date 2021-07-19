@@ -7,7 +7,7 @@
 /* eslint-disable no-console */
 import * as path from "path";
 
-const fs = require("fs-extra")
+const fs = require("fs-extra");
 const { logBuildWarning, logBuildError, failBuild } = require("../scripts/rush/utils");
 
 const Base = require("mocha/lib/reporters/base");
@@ -21,24 +21,29 @@ function withStdErr(callback: () => void) {
   console.log = originalConsoleLog;
 }
 
+declare const mocha: any;
 const isCI = process.env.CI || process.env.TF_BUILD;
 
+// Force rush test to fail CI builds if describe.only or it.only is used.
+// These should only be used for debugging and must not be committed, otherwise we may be accidentally skipping lots of tests.
+if (isCI) {
+  if (typeof (mocha) !== "undefined")
+    mocha.forbidOnly();
+  else
+    require.cache[require.resolve("mocha/lib/mocharc.json", { paths: require.main?.paths ?? module.paths })].exports.forbidOnly = true;
+}
+
 // This is necessary to enable colored output when running in rush test:
-Object.defineProperty(Base, "useColors", {
+Object.defineProperty(Base, "color", {
   get: () => process.env.FORCE_COLOR !== "false" && process.env.FORCE_COLOR !== "0",
   set: () => { },
 });
 
 class BentleyMochaReporter extends Spec {
   protected _junitReporter: any;
-  constructor(_runner: any, options: any) {
+  constructor(_runner: any, _options: any) {
     super(...arguments);
     this._junitReporter = new MochaJUnitReporter(...arguments);
-
-    // Force rush test to fail CI builds if describe.only or it.only is used.
-    // These should only be used for debugging and must not be committed, otherwise we may be accidentally skipping lots of tests.
-    if (isCI)
-      options.forbidOnly = true;
   }
 
   public epilogue(...args: any[]) {

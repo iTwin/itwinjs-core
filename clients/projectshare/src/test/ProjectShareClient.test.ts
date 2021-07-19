@@ -14,23 +14,30 @@ chai.should();
  * Project Share Client API TODOs:
  * + Add an id field, and replace all wsgIds with ids - including parentFolderWsgId
  */
-const mainTestFolderName: string = `${Guid.createValue()}_testFolder`;
+const testFolderPostfix = "_testFolder";
+const mainTestFolderName = `${Guid.createValue()}${testFolderPostfix}`;
 const testFolderAName = "2A";
 const testFolderBName = "2B";
 const testFile1Name = "example1.txt";
 const testFile2Name = "example2.jpg";
 const testFile3Name = "example3.jpg";
-const testFile4Name = "example4.txt";
 
-const createFoldersWithFiles = async (projectShareClient: ProjectShareClient, requestContext: AuthorizedClientRequestContext, projectId: string, parentFolderId: any): Promise<void> => {
+const createFolders = async (projectShareClient: ProjectShareClient, requestContext: AuthorizedClientRequestContext, projectId: string, parentFolderId: any): Promise<ProjectShareFolder[]> => {
   const testFolder2A = new ProjectShareFolder();
   testFolder2A.name = testFolderAName;
-  const folder2A = await projectShareClient.createFolder(requestContext, projectId, parentFolderId, testFolder2A);
+  testFolder2A.description = "test";
+  const createdFolder2A: ProjectShareFolder = await projectShareClient.createFolder(requestContext, projectId, parentFolderId, testFolder2A);
+
+  chai.assert.strictEqual(createdFolder2A.name, testFolder2A.name);
 
   const testFolder2B = new ProjectShareFolder();
   testFolder2B.name = testFolderBName;
-  const folder2B = await projectShareClient.createFolder(requestContext, projectId, parentFolderId, testFolder2B);
+  const createdFolder2B = await projectShareClient.createFolder(requestContext, projectId, parentFolderId, testFolder2B);
 
+  return [createdFolder2A, createdFolder2B];
+};
+
+const createFiles = async (projectShareClient: ProjectShareClient, requestContext: AuthorizedClientRequestContext, projectId: string, parentFolderId: any): Promise<ProjectShareFile[]> => {
   const testFile1 = new ProjectShareFile();
   testFile1.name = testFile1Name;
   testFile1.size = 32;
@@ -46,31 +53,42 @@ const createFoldersWithFiles = async (projectShareClient: ProjectShareClient, re
   testFile3.size = 32;
   testFile3.description = "test";
 
-  const testFile4 = new ProjectShareFile();
-  testFile4.name = testFile4Name;
-  testFile4.size = 32;
-  testFile4.description = "test";
-
-  const fileA: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, folder2A.wsgId, testFile1); // create new file with file exist property as false
+  const fileA: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, parentFolderId, testFile1);
   const dataA = { name: "John", age: 30, city: "New York" };
-  await projectShareClient.uploadContentInFile(requestContext, projectId, fileA, JSON.stringify(dataA)); // upload content into file
+  const createdFileA = await projectShareClient.uploadContentInFile(requestContext, projectId, fileA, JSON.stringify(dataA));
 
-  const file2A: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, folder2A.wsgId, testFile2); // create new file with file exist property as false
+  chai.assert.strictEqual(createdFileA.name, testFile1.name);
+  chai.assert.strictEqual(createdFileA.description, testFile1.description);
+  chai.assert.strictEqual(createdFileA.fileExists, true);
+
+  const file2A: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, parentFolderId, testFile2);
   const data2A = {};
-  await projectShareClient.uploadContentInFile(requestContext, projectId, file2A, JSON.stringify(data2A)); // upload content into file
+  const createdFile2A = await projectShareClient.uploadContentInFile(requestContext, projectId, file2A, JSON.stringify(data2A));
 
-  const file3A: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, folder2A.wsgId, testFile3); // create new file with file exist property as false
+  const file3A: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, parentFolderId, testFile3);
   const data3A = {};
-  await projectShareClient.uploadContentInFile(requestContext, projectId, file3A, JSON.stringify(data3A)); // upload content into file
+  const createdFile3A = await projectShareClient.uploadContentInFile(requestContext, projectId, file3A, JSON.stringify(data3A));
+  return [createdFileA, createdFile2A, createdFile3A];
+};
 
-  const fileB: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, folder2B.wsgId, testFile4);
-  const dataB = { name: "xyz", age: 31, city: "aus" };
-  await projectShareClient.uploadContentInFile(requestContext, projectId, fileB, JSON.stringify(dataB));
+const deleteOldTestFolders = async (projectShareClient: ProjectShareClient, requestContext: AuthorizedClientRequestContext, projectId: string) => {
+  const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(projectId));
+  const maximumAgeInHours = 1;
+  const date = new Date();
+  date.setHours(date.getHours() - maximumAgeInHours);
+
+  const foldersToDelete = folders.filter((x) => x.name?.endsWith(testFolderPostfix) && x.modifiedTimeStamp !== undefined
+    && new Date(x.modifiedTimeStamp) < date);
+
+  for (const folder of foldersToDelete) {
+    await projectShareClient.deleteFolder(requestContext, projectId, folder.wsgId);
+  }
 };
 
 describe("ProjectShareClient (#integration)", () => {
   const projectShareClient: ProjectShareClient = new ProjectShareClient();
   let projectId: GuidString;
+  let mainFolder: ProjectShareFolder;
 
   let requestContext: AuthorizedClientRequestContext;
 
@@ -79,12 +97,15 @@ describe("ProjectShareClient (#integration)", () => {
 
     const project = await TestConfig.queryProject(requestContext, "iModelJsIntegrationTest");
     projectId = project.wsgId;
+
+    // removing old folders to avoid trash data
+    await deleteOldTestFolders(projectShareClient, requestContext, projectId);
   });
 
   beforeEach(async () => {
     const testFolder = new ProjectShareFolder();
     testFolder.name = mainTestFolderName;
-    await projectShareClient.createFolder(requestContext, projectId, projectId, testFolder); // Create a folder
+    mainFolder = await projectShareClient.createFolder(requestContext, projectId, projectId, testFolder);
   });
 
   afterEach(async () => {
@@ -122,11 +143,7 @@ describe("ProjectShareClient (#integration)", () => {
 
   it("should be able to get folders in folder", async () => {
     // arrange
-    const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-
-    await createFoldersWithFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
+    await createFolders(projectShareClient, requestContext, projectId, mainFolder.wsgId);
 
     // act
     const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(mainFolder.wsgId));
@@ -137,15 +154,9 @@ describe("ProjectShareClient (#integration)", () => {
 
   it("should be able to query folders by WsgIds", async () => {
     // arrange
-    const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-
-    await createFoldersWithFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
-    const foundedFolders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(mainFolder.wsgId));
-    chai.assert.strictEqual(foundedFolders.length, 2);
-    const folder2A = foundedFolders.find((x) => x.name === testFolderAName) ?? foundedFolders[0];
-    const folder2B = foundedFolders.find((x) => x.name === testFolderBName) ?? foundedFolders[0];
+    const createdFolders = await createFolders(projectShareClient, requestContext, projectId, mainFolder.wsgId);
+    const folder2A = createdFolders.find((x) => x.name === testFolderAName) ?? createdFolders[0];
+    const folder2B = createdFolders.find((x) => x.name === testFolderBName) ?? createdFolders[0];
 
     // act
     const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().byWsgIds(folder2A.wsgId, folder2B.wsgId));
@@ -160,18 +171,12 @@ describe("ProjectShareClient (#integration)", () => {
 
   it("should be able to query folders in path", async () => {
     // arrange
-    const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-
-    await createFoldersWithFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
-    const foundedFolders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(mainFolder.wsgId));
-    chai.assert.strictEqual(foundedFolders.length, 2);
-    const folder2A = foundedFolders.find((x) => x.name === testFolderAName) ?? foundedFolders[0];
-    const folder2B = foundedFolders.find((x) => x.name === testFolderBName) ?? foundedFolders[0];
+    const createdFolders = await createFolders(projectShareClient, requestContext, projectId, mainFolder.wsgId);
+    const folder2A = createdFolders.find((x) => x.name === testFolderAName) ?? createdFolders[0];
+    const folder2B = createdFolders.find((x) => x.name === testFolderBName) ?? createdFolders[0];
 
     // act
-    const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inPath(projectId, mainTestFolderName));
+    const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inPath(projectId, `${mainTestFolderName}/`));
 
     // assert
     chai.assert.strictEqual(2, folders.length);
@@ -183,15 +188,9 @@ describe("ProjectShareClient (#integration)", () => {
 
   it("should be able to query folders in folder with name like", async () => {
     // arrange
-    const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-
-    await createFoldersWithFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
-    const foundedFolders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(mainFolder.wsgId));
-    chai.assert.strictEqual(foundedFolders.length, 2);
-    const folder2A = foundedFolders.find((x) => x.name === testFolderAName) ?? foundedFolders[0];
-    const folder2B = foundedFolders.find((x) => x.name === testFolderBName) ?? foundedFolders[0];
+    const createdFolders = await createFolders(projectShareClient, requestContext, projectId, mainFolder.wsgId);
+    const folder2A = createdFolders.find((x) => x.name === testFolderAName) ?? createdFolders[0];
+    const folder2B = createdFolders.find((x) => x.name === testFolderBName) ?? createdFolders[0];
 
     // act
     const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolderWithNameLike(mainFolder.wsgId, "2*"));
@@ -206,10 +205,7 @@ describe("ProjectShareClient (#integration)", () => {
 
   it("should be able to query folders which start with path and name like", async () => {
     // arrange
-    const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-    await createFoldersWithFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
+    await createFolders(projectShareClient, requestContext, projectId, mainFolder.wsgId);
 
     // act & assert
     const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().startsWithPathAndNameLike(projectId, mainTestFolderName, testFolderAName));
@@ -222,11 +218,6 @@ describe("ProjectShareClient (#integration)", () => {
 
   // folder remove
   it("should be able to permanent delete a folder", async () => {
-    // arrange
-    const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-
     // act
     const res = await projectShareClient.deleteFolder(requestContext, projectId, mainFolder.wsgId); // Permanent deleting Folder.
 
@@ -238,11 +229,6 @@ describe("ProjectShareClient (#integration)", () => {
   });
 
   it("should be able to send folder to recycle bin", async () => {
-    // arrange
-    const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-
     // act
     await projectShareClient.deleteFolder(requestContext, projectId, mainFolder.wsgId, RecycleOption.SendToRecycleBin); // Move folder, to recycle bin.
 
@@ -276,17 +262,10 @@ describe("ProjectShareClient (#integration)", () => {
 
   it("should be able to query files in folder", async () => {
     // arrange
-    const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-
-    await createFoldersWithFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
-    const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(mainFolder.wsgId));
-    chai.assert.strictEqual(folders.length, 2);
-    const folder2A = folders.find((x) => x.name === testFolderAName) ?? folders[0];
+    await createFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
 
     // act
-    const files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolder(folder2A.wsgId));
+    const files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolder(mainFolder.wsgId));
 
     // assert
     chai.assert(files);
@@ -295,16 +274,10 @@ describe("ProjectShareClient (#integration)", () => {
 
   it("should be able to query files starts with path", async () => {
     // arrange
-    const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-    await createFoldersWithFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
-    const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(mainFolder.wsgId));
-    chai.assert.strictEqual(folders.length, 2);
-    const folder2A = folders.find((x) => x.name === testFolderAName) ?? folders[0];
+    await createFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
 
     // act
-    const files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().startsWithPath(projectId, `${mainTestFolderName}/${folder2A.name}`));
+    const files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().startsWithPath(projectId, `${mainTestFolderName}/`));
 
     // assert
     chai.assert(files);
@@ -313,16 +286,10 @@ describe("ProjectShareClient (#integration)", () => {
 
   it("should be able to query files in folder with name like", async () => {
     // arrange
-    const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-    await createFoldersWithFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
-    const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(mainFolder.wsgId));
-    chai.assert.strictEqual(folders.length, 2);
-    const folder2A = folders.find((x) => x.name === testFolderAName) ?? folders[0];
+    await createFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
 
     // act
-    const files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolderWithNameLike(folder2A.wsgId, testFile2Name.split(".")[0]));
+    const files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolderWithNameLike(mainFolder.wsgId, testFile2Name.split(".")[0]));
 
     // assert
     chai.assert(files);
@@ -333,16 +300,10 @@ describe("ProjectShareClient (#integration)", () => {
 
   it("should be able to query files which starts with path and name like", async () => {
     // arrange
-    const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-    await createFoldersWithFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
-    const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(mainFolder.wsgId));
-    chai.assert.strictEqual(folders.length, 2);
-    const folder2A = folders.find((x) => x.name === testFolderAName) ?? folders[0];
+    await createFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
 
     // act
-    const files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().startsWithPathAndNameLike(projectId, `${mainTestFolderName}/${folder2A.name}`, testFile3Name.split(".")[0]));
+    const files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().startsWithPathAndNameLike(projectId, `${mainTestFolderName}`, testFile3Name.split(".")[0]));
 
     // assert
     chai.assert(files);
@@ -353,43 +314,27 @@ describe("ProjectShareClient (#integration)", () => {
 
   it("should be able to query files by WsgIds", async () => {
     // arrange
-    const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-    await createFoldersWithFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
-    const folders = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inFolder(mainFolder.wsgId));
-    chai.assert.strictEqual(folders.length, 2);
-    const folder2A = folders.find((x) => x.name === testFolderAName) ?? folders[0];
-    const files = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().inFolder(folder2A.wsgId));
-    const firstImage = files.find((x) => x.name === testFile2Name) ?? files[0];
-    const secondImage = files.find((x) => x.name === testFile3Name) ?? files[0];
+    const createdFiles = await createFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
+    const firstImage = createdFiles.find((x) => x.name === testFile2Name) ?? createdFiles[0];
+    const secondImage = createdFiles.find((x) => x.name === testFile3Name) ?? createdFiles[0];
 
     // act
     const foundFiles = await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().byWsgIds(firstImage.wsgId, secondImage.wsgId));
 
     // assert
-    chai.assert.strictEqual(files.length, 3);
+    chai.assert.strictEqual(createdFiles.length, 3);
     const foundFirstImage = foundFiles[0];
     chai.assert.strictEqual(foundFirstImage.name, testFile2Name);
     const foundSecondImage = foundFiles[1];
     chai.assert.strictEqual(foundSecondImage.name, testFile3Name);
   });
 
-  // file remove
   it("should be able to permanent delete file", async () => {
     // arrange
-    const foldersInRootFolder = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-
     const testFile = new ProjectShareFile();
     testFile.name = "sap.txt";
-    testFile.size = 32;
-    testFile.description = "test";
 
     const fileA: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, mainFolder.wsgId, testFile); // create new file with file exist property as false
-    chai.assert.strictEqual(fileA.description, testFile.description);
-    chai.assert.equal(fileA.size, testFile.size);
     const dataA = { name: "John", age: 30, city: "New York" };
     const changedFileA = await projectShareClient.uploadContentInFile(requestContext, projectId, fileA, JSON.stringify(dataA)); // upload content into file
     chai.assert.equal(changedFileA.fileExists, true);
@@ -402,18 +347,10 @@ describe("ProjectShareClient (#integration)", () => {
   });
 
   it("should be able to send file to recycle bin", async () => {
-    const foldersInRootFolder = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-
     const testFile = new ProjectShareFile();
     testFile.name = "sap.txt";
-    testFile.size = 32;
-    testFile.description = "test";
 
     const fileB: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, mainFolder.wsgId, testFile);
-    chai.assert.strictEqual(fileB.description, testFile.description);
-    chai.assert.equal(fileB.size, testFile.size);
     const dataB = { name: "xyz", age: 31, city: "aus" };
     const changedFileB = await projectShareClient.uploadContentInFile(requestContext, projectId, fileB, JSON.stringify(dataB));
     chai.assert.equal(changedFileB.fileExists, true);
@@ -431,12 +368,12 @@ describe("ProjectShareClient (#integration)", () => {
   }
 
   it("should be able to CRUD custom properties", async () => {
-    const foldersInRootFolder: ProjectShareFolder[] = await projectShareClient.getFolders(requestContext, projectId, new ProjectShareFolderQuery().inRootFolder(projectId));
-    const mainFolder = foldersInRootFolder.find((x) => x.name === mainTestFolderName);
-    if (!mainFolder) throw new TypeError("MainFolder is undefined");
-    await createFoldersWithFiles(projectShareClient, requestContext, projectId, mainFolder.wsgId);
+    const testFile = new ProjectShareFile();
+    testFile.name = "customProp.txt";
 
-    const firstImageFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().startsWithPathAndNameLike(projectId, `${mainTestFolderName}/${testFolderAName}`, "example2")))[0];
+    const file: ProjectShareFile = await projectShareClient.createFile(requestContext, projectId, mainFolder.wsgId, testFile); // create new file with file exist property as false
+    const data = {};
+    await projectShareClient.uploadContentInFile(requestContext, projectId, file, JSON.stringify(data));
 
     // Create custom properties and validate returned file
     const createCustomProperties = [
@@ -449,7 +386,7 @@ describe("ProjectShareClient (#integration)", () => {
         Value: "TestValue2", // eslint-disable-line @typescript-eslint/naming-convention
       },
     ];
-    const retFile: ProjectShareFile = await projectShareClient.updateCustomProperties(requestContext, projectId, firstImageFile, createCustomProperties);
+    const retFile: ProjectShareFile = await projectShareClient.updateCustomProperties(requestContext, projectId, file, createCustomProperties);
     chai.assert.isDefined(retFile.customProperties);
     chai.assert.isAtLeast(retFile.customProperties.length, 2);
     const firstPropFile = grabCustomProperty(retFile, createCustomProperties[0].Name);
@@ -460,7 +397,7 @@ describe("ProjectShareClient (#integration)", () => {
     chai.assert.strictEqual(secondPropFile.Value, createCustomProperties[1].Value);
 
     // Get the updated file again and validate it
-    const retFile2: ProjectShareFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().byWsgIds(firstImageFile.wsgId)))[0];
+    const retFile2: ProjectShareFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().byWsgIds(file.wsgId)))[0];
     chai.assert.isAtLeast(retFile2.customProperties.length, 2);
     const firstPropFile2 = grabCustomProperty(retFile2, createCustomProperties[0].Name);
     chai.assert.isDefined(firstPropFile2, `The ${createCustomProperties[0].Name} does not exist on the server but it should`);
@@ -476,7 +413,7 @@ describe("ProjectShareClient (#integration)", () => {
         Value: "TestUpdatedValue1", // eslint-disable-line @typescript-eslint/naming-convention
       },
     ];
-    const retFile3: ProjectShareFile = await projectShareClient.updateCustomProperties(requestContext, projectId, firstImageFile, updateCustomProperties);
+    const retFile3: ProjectShareFile = await projectShareClient.updateCustomProperties(requestContext, projectId, file, updateCustomProperties);
     chai.assert.isAtLeast(retFile3.customProperties.length, 2);
     const firstPropFile3 = grabCustomProperty(retFile3, createCustomProperties[0].Name);
     chai.assert.isDefined(firstPropFile3);
@@ -486,7 +423,7 @@ describe("ProjectShareClient (#integration)", () => {
     chai.assert.strictEqual(secondPropFile3.Value, createCustomProperties[1].Value);
 
     // Get the updated file again and validate it
-    const retFile4: ProjectShareFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().byWsgIds(firstImageFile.wsgId)))[0];
+    const retFile4: ProjectShareFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().byWsgIds(file.wsgId)))[0];
     chai.assert.isAtLeast(retFile4.customProperties.length, 2);
     const firstPropFile4 = grabCustomProperty(retFile4, createCustomProperties[0].Name);
     chai.assert.isDefined(firstPropFile4);
@@ -497,14 +434,14 @@ describe("ProjectShareClient (#integration)", () => {
 
     // Delete a custom property and validate
     const deleteProperties = [createCustomProperties[0].Name, createCustomProperties[1].Name];
-    const retFile5: ProjectShareFile = await projectShareClient.updateCustomProperties(requestContext, projectId, firstImageFile, undefined, deleteProperties);
+    const retFile5: ProjectShareFile = await projectShareClient.updateCustomProperties(requestContext, projectId, file, undefined, deleteProperties);
 
     // Ensure the two properties no longer exist
     chai.assert.isUndefined(grabCustomProperty(retFile5, createCustomProperties[0].Name));
     chai.assert.isUndefined(grabCustomProperty(retFile5, createCustomProperties[1].Name));
 
     // Get the updated file again and validate it
-    const retFile6: ProjectShareFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().byWsgIds(firstImageFile.wsgId)))[0];
+    const retFile6: ProjectShareFile = (await projectShareClient.getFiles(requestContext, projectId, new ProjectShareFileQuery().byWsgIds(file.wsgId)))[0];
     chai.assert.isUndefined(grabCustomProperty(retFile6, createCustomProperties[0].Name));
     chai.assert.isUndefined(grabCustomProperty(retFile6, createCustomProperties[1].Name));
   });

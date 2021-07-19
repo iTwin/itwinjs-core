@@ -7,9 +7,8 @@
  */
 
 import * as React from "react";
-import ReactResizeDetector from "react-resize-detector";
 import { Logger } from "@bentley/bentleyjs-core";
-import { CommonProps, NoChildrenProps, Orientation, Size } from "@bentley/ui-core";
+import { CommonProps, NoChildrenProps, Orientation, ResizableContainerObserver, Size } from "@bentley/ui-core";
 import { Direction, Toolbar as NZ_Toolbar, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { ActionButtonItemDef } from "../shared/ActionButtonItemDef";
 import { AnyItemDef } from "../shared/AnyItemDef";
@@ -92,15 +91,15 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     return this.props.toolbarId ? this.props.toolbarId : "unknown";
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
-  public componentDidUpdate(prevProps: ToolbarProps, _prevState: State) {
+  public override componentDidUpdate(prevProps: ToolbarProps, _prevState: State) {
     if (this.props.items !== prevProps.items) {
       // if sync event changed number of displayable buttons layout the toolbar and re-render
       const items = this.generateToolbarItems(this.props.items, new Size(this.state.width, this.state.height));
@@ -135,7 +134,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     // Review all the itemDefs to see if any are monitoring sync events in SyncUiEventArgs
     for (const item of itemList) {
       if (item.stateFunc && item.stateSyncIds && item.stateSyncIds.length > 0 && // eslint-disable-line deprecation/deprecation
-        item.stateSyncIds.some((value: string): boolean => args.eventIds.has(value))) { // eslint-disable-line deprecation/deprecation
+        item.stateSyncIds.some((value: string): boolean => args.eventIds.has(value.toLowerCase()))) { // eslint-disable-line deprecation/deprecation
         if (item instanceof GroupItemDef) {
           this.setCurrentStateValues(item);
           this._processSyncUiEvent(item.items, args);
@@ -257,7 +256,9 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
   }
 
   // istanbul ignore next - currently unable to replicate resizing in unit test
-  private _onResize = (width: number, height: number) => {
+  private _onResize = (width: number | undefined, height: number | undefined) => {
+    width = width ?? this._minToolbarSize;
+    height = height ?? this._minToolbarSize;
     // do allow toolbar to go to a size that doesn't show at least one button;
     if (width < this._minToolbarSize) width = this._minToolbarSize;
     if (height < this._minToolbarSize) height = this._minToolbarSize;
@@ -277,7 +278,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     return false;
   }
 
-  public render() {
+  public override render() {
     // istanbul ignore next
     if (0 === this.props.items.length || !this.hasVisibleItems(this.props.items)) {
       Logger.logTrace(UiFramework.loggerCategory(this), `--->  nothing to render for ${this._toolbarId} `);
@@ -285,10 +286,8 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     }
 
     Logger.logTrace(UiFramework.loggerCategory(this), `---> render ${this._toolbarId} `);
-
     return (
-      <>
-        <ReactResizeDetector handleWidth handleHeight onResize={this._onResize} />
+      <ResizableContainerObserver onResize={this._onResize}>
         <NZ_Toolbar
           style={this.props.style}
           className={this.props.className}
@@ -300,7 +299,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
             </>
           }
         />
-      </>
+      </ResizableContainerObserver>
     );
   }
 }

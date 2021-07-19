@@ -3,17 +3,18 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Config } from "@bentley/bentleyjs-core";
-import { IModelJsConfig } from "@bentley/config-loader/lib/IModelJsConfig";
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
+import * as path from "path";
+import { Config } from "@bentley/bentleyjs-core";
+import { loadEnv } from "@bentley/config-loader";
 import { getTestAccessToken, TestBrowserAuthorizationClientConfiguration, TestUsers, TestUtility } from "../index";
 
 const assert = chai.assert;
 const expect = chai.expect;
 chai.use(chaiAsPromised);
 
-IModelJsConfig.init(true /* suppress exception */, false /* suppress error message */, Config.App);
+loadEnv(path.join(__dirname, "..", "..", ".env"));
 
 describe("Sign in (#integration)", () => {
   let oidcConfig: TestBrowserAuthorizationClientConfiguration;
@@ -30,6 +31,13 @@ describe("Sign in (#integration)", () => {
     const validUser = TestUsers.regular;
     const token = await getTestAccessToken(oidcConfig, validUser);
     assert.exists(token);
+  });
+
+  it("failure with invalid url", async () => {
+    const oidcInvalidConfig = { ...oidcConfig, redirectUri: "invalid.com" };
+    const validUser = TestUsers.regular;
+    await expect(getTestAccessToken(oidcInvalidConfig, validUser))
+      .to.be.rejectedWith(Error, `Failed OIDC signin for ${validUser.email}.\nError:`);
   });
 
   it.skip("failure with invalid Bentley federated user", async () => {

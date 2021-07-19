@@ -8,7 +8,7 @@
 
 /** Class used to return a string value. The string value is refreshed by using the specified function. The syncEventIds define one or more
  * eventIds that would require the stringGetter function to be rerun.
- * @beta
+ * @public
  */
 export class ConditionalStringValue {
   private _value?: string;
@@ -49,7 +49,7 @@ export class ConditionalStringValue {
     if (undefined === conditionalValue || !(conditionalValue instanceof ConditionalStringValue))
       return false;
 
-    if (conditionalValue.syncEventIds.some((value: string): boolean => eventIds.has(value)))
+    if (conditionalValue.syncEventIds.some((value: string): boolean => eventIds.has(value.toLowerCase())))
       return conditionalValue.refresh();
 
     return false;

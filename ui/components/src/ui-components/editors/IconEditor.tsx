@@ -35,6 +35,7 @@ interface IconEditorState {
 export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEditorState> implements TypeEditor {
   private _control: any | null = null;
   private _isMounted = false;
+  private _divElement = React.createRef<HTMLDivElement>();
 
   constructor(props: PropertyEditorProps) {
     super(props);
@@ -78,6 +79,17 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
     return propertyValue;
   }
 
+  public get htmlElement(): HTMLElement | null {
+    return this._divElement.current;
+  }
+
+  public get hasFocus(): boolean {
+    let containsFocus = false;
+    if (this._divElement.current)
+      containsFocus = this._divElement.current.contains(document.activeElement);
+    return containsFocus;
+  }
+
   private setFocus(): void {
     // istanbul ignore else
     if (this._control && !this.state.isDisabled) {
@@ -103,18 +115,18 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -145,10 +157,10 @@ export class IconEditor extends React.PureComponent<PropertyEditorProps, IconEdi
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     const { icon, icons, numColumns } = this.state;
     return (
-      <div className={classnames("components-icon-editor", this.props.className)} style={this.props.style}>
+      <div className={classnames("components-icon-editor", this.props.className)} style={this.props.style} ref={this._divElement}>
         <IconPickerButton ref={(control) => this._control = control}
           icon={icon}
           icons={icons}

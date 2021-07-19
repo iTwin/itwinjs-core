@@ -78,7 +78,7 @@ export class EntityState implements EntityProps {
  */
 export class ElementState extends EntityState implements ElementProps {
   /** @internal */
-  public static get className() { return "Element"; }
+  public static override get className() { return "Element"; }
 
   /** The ModelId of the [Model]($docs/bis/intro/model-fundamentals.md) containing this element */
   public readonly model: Id64String;
@@ -102,11 +102,14 @@ export class ElementState extends EntityState implements ElementProps {
       this.userLabel = props.userLabel;
   }
 
-  /** @internal */
-  public toJSON(): ElementProps {
+  /** Obtain this element's JSON representation. Subclasses of ElementState typically override this method with a more
+   * specific return type.
+   */
+  public override toJSON(): ElementProps {
     const val = super.toJSON() as ElementProps;
     if (Id64.isValid(this.code.spec))
       val.code = this.code;
+
     val.model = this.model;
     val.parent = this.parent;
     val.federationGuid = this.federationGuid;

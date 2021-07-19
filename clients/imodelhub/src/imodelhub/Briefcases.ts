@@ -193,7 +193,6 @@ export class BriefcaseHandler {
   /** Get relative url for Briefcase requests.
    * @param iModelId Id of the iModel. See [[HubIModel]].
    * @param briefcaseId Id of the briefcase.
-   * @internal
    */
   private getRelativeUrl(iModelId: GuidString, briefcaseId?: number) {
     return `/Repositories/iModel--${iModelId}/iModelScope/Briefcase/${briefcaseId || ""}`;

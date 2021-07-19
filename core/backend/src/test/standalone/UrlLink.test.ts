@@ -19,7 +19,7 @@ describe("UrlLink tests", () => {
     const imodel = SnapshotDb.createEmpty(iModelPath, { rootSubject: { name: "UrlLinkTest" } });
     const linkProps: RepositoryLinkProps = {
       description: "This is a test repository link",
-      url: "http://imodeljs.org",
+      url: "http://itwinjs.org",
       repositoryGuid: Guid.createValue(),
       classFullName: RepositoryLink.classFullName,
       code: RepositoryLink.createCode(imodel, IModel.repositoryModelId, "MyTestValue"),

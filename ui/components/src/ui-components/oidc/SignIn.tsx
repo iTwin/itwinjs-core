@@ -85,13 +85,16 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
     }
   };
 
-  public render() {
+  public override render() {
     const disableSignInOnClick = this.props.disableSignInOnClick === undefined ? true : this.props.disableSignInOnClick; // disableSignInOnClick defaults to true!
     return (
       <div className={classnames("components-signin", this.props.className)} style={this.props.style}>
         <div className="components-signin-content">
           <span className="icon icon-user" />
-          <span className="components-signin-prompt">{this.state.prompt}</span>
+          {(this.state.isSigningIn && this.props.signingInMessage !== undefined) ?
+            <span className="components-signin-prompt">{this.props.signingInMessage}</span> :
+            <span className="components-signin-prompt">{this.state.prompt}</span>
+          }
           <button className="components-signin-button" disabled={this.state.isSigningIn && disableSignInOnClick}
             onClick={this._onSignInClick} onKeyUp={(e) => this._handleKeyUp(e, this._onSigningIn)}>
             {this.state.signInButton}
@@ -110,9 +113,6 @@ export class SignIn extends React.PureComponent<SignInProps, SignInState> {
             <a className="components-signin-offline" onClick={this.props.onOffline} onKeyUp={(e) => this._handleKeyUp(e, this.props.onOffline)} role="link" tabIndex={0}>
               {this.state.offlineButton}
             </a>
-          }
-          {this.state.isSigningIn && this.props.signingInMessage !== undefined &&
-            <span className="components-signingin-message">{this.props.signingInMessage}</span>
           }
         </div>
       </div>

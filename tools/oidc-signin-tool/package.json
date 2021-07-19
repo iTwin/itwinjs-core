@@ -1,6 +1,6 @@
 {
   "name": "@bentley/oidc-signin-tool",
-  "version": "2.12.0-dev.15",
+  "version": "2.19.0-dev.20",
   "description": "OIDC Signin Helper",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -16,6 +16,7 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "test:integration": "betools test",
+    "copy:config": "internal-tools copy-config",
     "docs": "",
     "cover": ""
   },
@@ -30,32 +31,29 @@
     "url": "http://www.bentley.com"
   },
   "dependencies": {
-    "@bentley/bentleyjs-core": "2.12.0-dev.15",
-    "@bentley/certa": "2.12.0-dev.15",
-    "@bentley/config-loader": "2.12.0-dev.15",
-    "@bentley/frontend-authorization-client": "2.12.0-dev.15",
-    "@bentley/itwin-client": "2.12.0-dev.15",
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/certa": "workspace:*",
+    "@bentley/config-loader": "workspace:*",
+    "@bentley/frontend-authorization-client": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
     "openid-client": "^3.15.3",
-    "puppeteer": "chrome-80"
+    "puppeteer": "chrome-86"
   },
   "devDependencies": {
-    "@bentley/build-tools": "2.12.0-dev.15",
-    "@bentley/eslint-plugin": "2.12.0-dev.15",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
-    "@types/mocha": "^5.2.5",
+    "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/puppeteer": "2.0.1",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
-    "eslint": "^6.8.0",
-    "mocha": "^5.2.0",
-    "nyc": "^14.0.0",
+    "eslint": "^7.11.0",
+    "internal-tools": "workspace:*",
+    "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
-    "typescript": "~3.7.4"
-  },
-  "nyc": {
-    "nycrc-path": "./node_modules/@bentley/build-tools/.nycrc"
+    "typescript": "~4.3.0"
   },
   "eslintConfig": {
     "plugins": [

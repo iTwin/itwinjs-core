@@ -6,9 +6,10 @@
  * @module Core
  */
 
-import { IDisposable } from "@bentley/bentleyjs-core";
-import { EventSink } from "@bentley/imodeljs-backend";
-import { PresentationRpcEvents, PresentationRpcInterface } from "@bentley/presentation-common";
+import { IDisposable, Logger } from "@bentley/bentleyjs-core";
+import { IModelDb, IpcHost } from "@bentley/imodeljs-backend";
+import { PresentationIpcEvents, UpdateInfoJSON } from "@bentley/presentation-common";
+import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { NativePlatformDefinition } from "./NativePlatform";
 
 /**
@@ -17,7 +18,6 @@ import { NativePlatformDefinition } from "./NativePlatform";
  */
 export interface UpdatesTrackerProps {
   nativePlatformGetter: () => NativePlatformDefinition;
-  eventSink: EventSink;
   pollInterval: number;
 }
 
@@ -29,12 +29,10 @@ export interface UpdatesTrackerProps {
  */
 export class UpdatesTracker implements IDisposable {
   private _getNativePlatform: () => NativePlatformDefinition;
-  private _eventSink: EventSink;
   private _intervalHandle: any;
 
   private constructor(props: UpdatesTrackerProps) {
     this._getNativePlatform = props.nativePlatformGetter;
-    this._eventSink = props.eventSink;
     this._intervalHandle = setInterval(this.onInterval.bind(this), props.pollInterval);
   }
 
@@ -45,8 +43,30 @@ export class UpdatesTracker implements IDisposable {
   }
 
   private onInterval() {
-    const updateInfo = this._getNativePlatform().getUpdateInfo();
-    if (updateInfo.result)
-      this._eventSink.emit(PresentationRpcInterface.interfaceName, PresentationRpcEvents.Update, updateInfo.result);
+    const response = this._getNativePlatform().getUpdateInfo();
+    const info = parseUpdateInfo(response.result);
+    if (info)
+      IpcHost.send(PresentationIpcEvents.Update, info);
   }
 }
+
+const parseUpdateInfo = (info: UpdateInfoJSON | undefined) => {
+  if (info === undefined)
+    return undefined;
+
+  const parsedInfo: UpdateInfoJSON = {};
+  for (const fileName in info) {
+    // istanbul ignore if
+    if (!info.hasOwnProperty(fileName))
+      continue;
+
+    const imodelDb = IModelDb.findByFilename(fileName);
+    if (!imodelDb) {
+      Logger.logError(PresentationBackendLoggerCategory.PresentationManager, `Update records IModelDb not found with path ${fileName}`);
+      continue;
+    }
+
+    parsedInfo[imodelDb.getRpcProps().key] = info[fileName];
+  }
+  return Object.keys(parsedInfo).length > 0 ? parsedInfo : undefined;
+};

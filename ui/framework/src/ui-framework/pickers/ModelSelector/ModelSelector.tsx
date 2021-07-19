@@ -59,13 +59,13 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** @internal */
-  public async componentDidMount() {
+  public override async componentDidMount() {
     this._isMounted = true;
     await this.initialize();
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
@@ -188,8 +188,8 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   private _onModelsChecked = (items: ListItem[], checked: boolean) => {
     if (!IModelApp.viewManager) return;
 
-    IModelApp.viewManager.forEachViewport(async (vp: Viewport) => {
-      if (!(vp.view instanceof SpatialViewState)) return;
+    for (const vp of IModelApp.viewManager) {
+      if (!(vp.view instanceof SpatialViewState)) continue;
 
       const modelIds = items.map((item) => {
         item.enabled = checked;
@@ -201,7 +201,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
       } else {
         vp.changeModelDisplay(modelIds, checked);
       }
-    });
+    }
   };
 
   /**
@@ -245,7 +245,9 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
 
     // This property let us act on all viewports or just on the selected one, configurable by the app
     if (this.props.allViewports) {
-      IModelApp.viewManager.forEachViewport(updateViewport);
+      for (const viewport of IModelApp.viewManager) {
+        updateViewport(viewport);
+      }
     } else if (IModelApp.viewManager.selectedView) {
       updateViewport(IModelApp.viewManager.selectedView);
     }
@@ -296,7 +298,7 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     return (
       <div className="uifw-widget-picker" data-testid="model-selector-widget">
         {!this.state.activeRuleset && (

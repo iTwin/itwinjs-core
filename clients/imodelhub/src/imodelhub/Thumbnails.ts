@@ -16,12 +16,12 @@ import { InstanceIdQuery } from "./HubQuery";
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
 
 /** Thumbnail size. 'Small' is 400x250 PNG image and 'Large' is a 800x500 PNG image.
- * @beta
+ * @public
  */
 export type ThumbnailSize = "Small" | "Large";
 
 /** Base class for Thumbnails.
- * @alpha
+ * @public
  */
 export abstract class Thumbnail extends WsgInstance {
   @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
@@ -29,19 +29,19 @@ export abstract class Thumbnail extends WsgInstance {
 }
 
 /** Small [[Thumbnail]] class. Small Thumbnail is a 400x250 PNG image.
- * @alpha
+ * @public
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.SmallThumbnail", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class SmallThumbnail extends Thumbnail { }
 
 /** Large [[Thumbnail]] class. Large Thumbnail is a 800x500 PNG image.
- * @alpha
+ * @public
  */
 @ECJsonTypeMap.classToJson("wsg", "iModelScope.LargeThumbnail", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class LargeThumbnail extends Thumbnail { }
 
 /** Tip [[Thumbnail]] download parameters. See [[ThumbnailHandler.download]]. Tip Thumbnail is generated for the periodically updated master file copy on iModelHub.
- * @alpha
+ * @public
  */
 export interface TipThumbnail {
   /** Id of the iModel's context ([[Project]] or [[Asset]]). */
@@ -52,7 +52,7 @@ export interface TipThumbnail {
 
 /**
  * Query object for getting [[Thumbnail]]s. You can use this to modify the [[ThumbnailHandler.get]] results.
- * @alpha
+ * @public
  */
 export class ThumbnailQuery extends InstanceIdQuery {
   /**
@@ -60,6 +60,7 @@ export class ThumbnailQuery extends InstanceIdQuery {
    * @param versionId Id of the version.
    * @returns This query.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if versionId is undefined or it is not a valid [GuidString]($bentley) value.
+   * @internal @deprecated
    */
   public byVersionId(versionId: GuidString) {
     ArgumentCheck.validGuid("versionId", versionId);
@@ -70,7 +71,7 @@ export class ThumbnailQuery extends InstanceIdQuery {
 
 /**
  * Handler for retrieving [[Thumbnail]]s. Use [[IModelClient.Thumbnails]] to get an instance of this class.
- * @alpha
+ * @public
  */
 export class ThumbnailHandler {
   private _handler: IModelBaseHandler;
@@ -113,7 +114,7 @@ export class ThumbnailHandler {
    * @param requestContext The client request context.
    *
    * @param url Url to download thumbnail.
-   * @return String for the PNG image that includes the base64 encoded array of the image bytes.
+   * @return String for the PNG image that includes the base64 encoded array of the image bytes
    */
   private async downloadThumbnail(requestContext: AuthorizedClientRequestContext, url: string): Promise<string> {
     requestContext.enter();

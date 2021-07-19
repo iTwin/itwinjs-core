@@ -7,37 +7,36 @@ import { assert, expect } from "chai";
 import * as path from "path";
 import * as semver from "semver";
 import {
-  BeEvent, ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
+  ClientRequestContext, DbResult, GetMetaDataFunction, Guid, GuidString, Id64, Id64String, Logger, LogLevel, OpenMode, using,
 } from "@bentley/bentleyjs-core";
 import {
   GeometryQuery, LineString3d, Loop, Matrix4d, Point3d, PolyfaceBuilder, Range3d, StrokeOptions, Transform, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import { CheckpointV2 } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
-  DisplayStyleSettingsProps, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeometricElement3dProps,
+  AxisAlignedBox3d, BisCodeSpec, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorByName, ColorDef, DefinitionElementProps, DisplayStyleProps,
+  DisplayStyleSettingsProps, EcefLocation, ElementProps, EntityMetaData, EntityProps, FilePropertyProps, FontMap, FontType, GeographicCRS, GeometricElement3dProps,
   GeometricElementProps, GeometryParams, GeometryStreamBuilder, ImageSourceFormat, IModel, IModelError, IModelStatus, MapImageryProps, ModelProps,
   PhysicalElementProps, Placement3d, PrimitiveTypeCode, RelatedElement, RenderMode, SchemaState, SpatialViewDefinitionProps, SubCategoryAppearance,
-  TextureFlags, TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
+  TextureMapping, TextureMapProps, TextureMapUnits, ViewDefinitionProps, ViewFlagProps, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
-import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseDb } from "../../IModelDb";
 import {
-  AutoPush, AutoPushEventHandler, AutoPushEventType, AutoPushParams, AutoPushState, BackendRequestContext, BisCoreSchema, BriefcaseIdValue, Category,
-  ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel, DefinitionPartition, DictionaryModel,
-  DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic, ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers,
-  ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d, GeometricModel, GroupInformationPartition, IModelDb, IModelHost,
-  IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation, LinkPartition, Model, PhysicalElement, PhysicalModel,
-  PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb,
-  SubCategory, Subject, Texture, ViewDefinition,
+  BackendRequestContext, BisCoreSchema, Category, ClassRegistry, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions,
+  DefinitionModel, DefinitionPartition, DictionaryModel, DisplayStyle3d, DisplayStyleCreationOptions, DocumentPartition, DrawingGraphic,
+  ECSqlStatement, Element, ElementDrivesElement, ElementGroupsMembers, ElementOwnsChildElements, Entity, GeometricElement2d, GeometricElement3d,
+  GeometricModel, GroupInformationPartition, IModelDb, IModelHost, IModelJsFs, InformationPartitionElement, InformationRecordElement, LightLocation,
+  LinkPartition, Model, PhysicalElement, PhysicalModel, PhysicalObject, PhysicalPartition, RenderMaterialElement, SnapshotDb, SpatialCategory,
+  SqliteStatement, SqliteValue, SqliteValueType, StandaloneDb, SubCategory, Subject, Texture, ViewDefinition,
 } from "../../imodeljs-backend";
 import { DisableNativeAssertions, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
-let lastPushTimeMillis = 0;
-let lastAutoPushEventType: AutoPushEventType | undefined;
+import { IModelHubBackend } from "../../IModelHubBackend";
+import { V2CheckpointManager } from "../../CheckpointManager";
 
 // spell-checker: disable
 
@@ -62,14 +61,6 @@ function exerciseGc() {
     const fmt = obj.value.toString();
     assert.isTrue(i === parseInt(fmt, 10));
   }
-}
-
-function generateChangeSetId(): string {
-  let result = "";
-  for (let i = 0; i < 20; ++i) {
-    result += Math.floor(Math.random() * 256).toString(16).padStart(2, "0");
-  }
-  return result;
 }
 
 describe("iModel", () => {
@@ -207,6 +198,7 @@ describe("iModel", () => {
     }
 
     stmt.dispose();
+    Logger.initializeToConsole(); // reset back to console so future tests will log correctly
   });
 
   it("should be able to get properties of an iIModel", () => {
@@ -410,34 +402,6 @@ describe("iModel", () => {
     }
   });
 
-  it("should insert a Texture", () => {
-    const model = imodel2.models.getModel<DictionaryModel>(IModel.dictionaryId);
-    expect(model).not.to.be.undefined;
-
-    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in
-    // bottom right pixel.  The rest of the square is red.
-    const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
-
-    const testTextureName = "fake texture name";
-    const testTextureFormat = ImageSourceFormat.Png;
-    const testTextureData = Base64.btoa(String.fromCharCode(...pngData));
-    const testTextureWidth = 3;
-    const testTextureHeight = 3;
-    const testTextureDescription = "empty description";
-    const testTextureFlags = TextureFlags.None;
-
-    const textureId = Texture.insert(imodel2, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
-
-    const texture = imodel2.elements.getElement<Texture>(textureId);
-    assert((texture instanceof Texture) === true, "did not retrieve an instance of Texture");
-    expect(texture.format).to.equal(testTextureFormat);
-    expect(Array.from(texture.data)).to.deep.equal(pngData);
-    expect(texture.width).to.equal(testTextureWidth);
-    expect(texture.height).to.equal(testTextureHeight);
-    expect(texture.description).to.equal(testTextureDescription);
-    expect(texture.flags).to.equal(testTextureFlags);
-  });
-
   it("should insert a RenderMaterial", () => {
     const model = imodel2.models.getModel<DictionaryModel>(IModel.dictionaryId);
     expect(model).not.to.be.undefined;
@@ -523,12 +487,9 @@ describe("iModel", () => {
     const testTextureName = "fake texture name";
     const testTextureFormat = ImageSourceFormat.Png;
     const testTextureData = Base64.btoa(String.fromCharCode(...pngData));
-    const testTextureWidth = 3;
-    const testTextureHeight = 3;
     const testTextureDescription = "empty description";
-    const testTextureFlags = TextureFlags.None;
 
-    const texId = Texture.insert(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureWidth, testTextureHeight, testTextureDescription, testTextureFlags);
+    const texId = Texture.insertTexture(imodel5, IModel.dictionaryId, testTextureName, testTextureFormat, testTextureData, testTextureDescription);
 
     /* eslint-disable @typescript-eslint/naming-convention */
     const matId = RenderMaterialElement.insert(imodel5, IModel.dictionaryId, "test material name",
@@ -652,7 +613,7 @@ describe("iModel", () => {
 
     const mapImagery: MapImageryProps = {
       backgroundBase: ColorDef.red.tbgr,
-      backgroundLayers: [{ transparency: 0.5, userName: "blah" }],
+      backgroundLayers: [{ transparency: 0.5 }],
     };
 
     const props: DisplayStyleSettingsProps = {
@@ -674,9 +635,6 @@ describe("iModel", () => {
       [{ backgroundColor: ColorDef.from(1, 2, 3, 4) }, defaultViewFlags, false],
       [{ backgroundColor: ColorDef.blue.tbgr }, defaultViewFlags, false],
       [{ backgroundColor: ColorDef.from(1, 2, 3, 4).tbgr }, defaultViewFlags, false],
-      [{ scheduleScript: { someRandomProperty: "Not a valid schedule script" } }, defaultViewFlags, false],
-      [{ scheduleScript: [{ modelId: "0xabc", elementTimelines: [] }] }, defaultViewFlags, true],
-      [{ scheduleScript: [{ someRandomProperty: "but still an array" }] }, defaultViewFlags, true],
     ];
 
     let suffix = 123;
@@ -695,8 +653,6 @@ describe("iModel", () => {
       const actualVf = ViewFlags.fromJSON(actual.viewflags);
       expect(actualVf.toJSON()).to.deep.equal(expectedVf.toJSON());
 
-      expect(undefined !== actual.scheduleScript).to.equal(test[2]);
-
       const expectedBGColor = expected.backgroundColor instanceof ColorDef ? expected.backgroundColor.toJSON() : expected.backgroundColor;
       expect(actual.backgroundColor).to.equal(expectedBGColor);
 
@@ -710,7 +666,7 @@ describe("iModel", () => {
     const rootSubject = imodel1.elements.getRootSubject();
     assert.exists(rootSubject);
     assert.isTrue(rootSubject instanceof Subject);
-    assert.isAtLeast(rootSubject.code.getValue().length, 1);
+    assert.isAtLeast(rootSubject.code.value.length, 1);
     assert.isFalse(imodel1.elements.hasSubModel(IModel.rootSubjectId));
 
     try {
@@ -863,7 +819,7 @@ describe("iModel", () => {
         assert.isTrue(defaultSubCategory instanceof SubCategory, "defaultSubCategory should be instance of SubCategory");
         if (defaultSubCategory instanceof SubCategory) {
           assert.isTrue(defaultSubCategory.parent!.id === categoryId, "defaultSubCategory id should be prescribed value");
-          assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.getValue(), "DefaultSubcategory name should match that of Category");
+          assert.isTrue(defaultSubCategory.getSubCategoryName() === category.code.value, "DefaultSubcategory name should match that of Category");
           assert.isTrue(defaultSubCategory.isDefaultSubCategory, "isDefaultSubCategory should return true");
         }
 
@@ -1190,20 +1146,27 @@ describe("iModel", () => {
     assert.isTrue(imodel5.isGeoLocated);
     const center = { x: 289095, y: 3803860, z: 10 }; // near center of project extents, 10 meters above ground.
     const ecefPt = imodel5.spatialToEcef(center);
-    const pt = { x: -3575157.057023252, y: 3873432.7966756118, z: 3578994.5664978377 };
+    const pt = { x: -3575156.3661052254, y: 3873432.0891543664, z: 3578996.012643183 };
     assert.isTrue(ecefPt.isAlmostEqual(pt), "spatialToEcef");
 
     const z2 = imodel5.ecefToSpatial(ecefPt);
     assert.isTrue(z2.isAlmostEqual(center), "ecefToSpatial");
 
     const carto = imodel5.spatialToCartographicFromEcef(center);
-    assert.approximately(carto.longitudeDegrees, 132.70599650539427, .1); // this data is in Japan
-    assert.approximately(carto.latitudeDegrees, 34.35461328445589, .1);
-    const c2 = { longitude: 2.316156576159219, latitude: 0.5996011150631385, height: 10 };
+    assert.approximately(carto.longitudeDegrees, 132.70683882277805, .1); // this data is in Japan
+    assert.approximately(carto.latitudeDegrees, 34.35462768786055, .1);
+    const c2 = { longitude: 2.3161712773709127, latitude: 0.5996013664499733, height: 10 };
     assert.isTrue(carto.equalsEpsilon(c2, .001), "spatialToCartographic");
 
     imodel5.cartographicToSpatialFromEcef(carto, z2);
     assert.isTrue(z2.isAlmostEqual(center, .001), "cartographicToSpatial");
+
+    assert.isTrue(imodel5.geographicCoordinateSystem !== undefined);
+    assert.isTrue(imodel5.geographicCoordinateSystem!.horizontalCRS !== undefined);
+    assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS !== undefined);
+    assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS!.id !== undefined);
+    assert.isTrue(imodel5.geographicCoordinateSystem!.horizontalCRS!.id === "UTM84-53N");
+    assert.isTrue(imodel5.geographicCoordinateSystem!.verticalCRS!.id === "ELLIPSOID");
   });
 
   function checkClassHasHandlerMetaData(obj: EntityMetaData) {
@@ -1298,6 +1261,7 @@ describe("iModel", () => {
       assert.equal(count, 1);
     });
 
+    let firstCodeValueId: Id64String | undefined;
     imodel2.withPreparedStatement("select ecinstanceid, codeValue from bis.element WHERE (codeValue = :codevalue)", (stmt4: ECSqlStatement) => {
       // Try a named placeholder
       const codeValueToFind = firstCodeValue;
@@ -1308,10 +1272,15 @@ describe("iModel", () => {
         const row = stmt4.getRow();
         // Verify that we got the row that we asked for
         assert.equal(row.codeValue, codeValueToFind);
+        firstCodeValueId = row.id;
       }
       // Verify that we got the row that we asked for
       assert.equal(count, 1);
     });
+
+    // make sure we can use parameterized values for queryEnityId (test on parameterized codevalue)
+    const ids = imodel2.queryEntityIds({ from: "bis.element", where: "codevalue=:cv", bindings: { cv: firstCodeValue } });
+    assert.equal(ids.values().next().value, firstCodeValueId);
 
     imodel2.withPreparedStatement("select ecinstanceid as id, codevalue from bis.element", (stmt5: ECSqlStatement) => {
       while (DbResult.BE_SQLITE_ROW === stmt5.step()) {
@@ -1324,6 +1293,9 @@ describe("iModel", () => {
       }
     });
 
+    // make sure queryEnityIds works fine when all params are specified
+    const physicalObjectIds = imodel2.queryEntityIds({ from: "generic.PhysicalObject", where: "codevalue is null", limit: 1, offset: 1, only: true, orderBy: "ecinstanceid desc" });
+    assert.equal(physicalObjectIds.size, 1);
   });
 
   it("validate BisCodeSpecs", async () => {
@@ -1398,6 +1370,7 @@ describe("iModel", () => {
       assert.equal(codeSpec.scopeType, CodeScopeSpec.Type.Model);
       assert.equal(codeSpec.scopeReq, CodeScopeSpec.ScopeRequirement.FederationGuid);
       assert.isFalse(codeSpec.isManagedWithIModel);
+      iModelDb.saveChanges();
       iModelDb.close();
     }
 
@@ -1664,7 +1637,7 @@ describe("iModel", () => {
   it("should be able to create a snapshot IModel", async () => {
     const args = {
       rootSubject: { name: "TestSubject", description: "test project" },
-      client: "ABC Manufacturing",
+      client: "ABC Engineering",
       globalOrigin: { x: 10, y: 10 },
       projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
       guid: Guid.createValue(),
@@ -1717,10 +1690,217 @@ describe("iModel", () => {
     const testValue = "this is a test";
     const nativeDb = iModel.nativeDb;
     assert.isUndefined(nativeDb.queryLocalValue(testLocal));
-    assert.equal(DbResult.BE_SQLITE_DONE, nativeDb.saveLocalValue(testLocal, testValue));
+    nativeDb.saveLocalValue(testLocal, testValue);
     assert.equal(nativeDb.queryLocalValue(testLocal), testValue);
 
     iModel.close();
+  });
+
+  it("should be able to create a snapshot IModel and set geolocation by GCS", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test project" },
+      client: "ABC Engineering",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: Guid.createValue(),
+    };
+
+    const gcs = new GeographicCRS({
+      horizontalCRS: {
+        id: "10TM115-27",
+        description: "",
+        source: "Mentor Software Client",
+        deprecated: false,
+        datumId: "NAD27",
+        unit: "Meter",
+        projection: {
+          method: "TransverseMercator",
+          centralMeridian: -115,
+          latitudeOfOrigin: 0,
+          scaleFactor: 0.9992,
+          falseEasting: 0.0,
+          falseNorthing: 0.0,
+        },
+        extent: {
+          southWest: { latitude: 48, longitude: -120.5 },
+          northEast: { latitude: 84, longitude: -109.5 },
+        },
+      },
+      verticalCRS: { id: "GEOID" },
+      additionalTransform: {
+        helmert2DWithZOffset: {
+          translationX: 10.0,
+          translationY: 15.0,
+          translationZ: 0.02,
+          rotDeg: 1.2,
+          scale: 1.0001,
+        },
+      },
+    });
+
+    const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot2.bim");
+    const iModel = SnapshotDb.createEmpty(testFile, args);
+
+    let eventListenedTo = false;
+    const gcsListener = (previousGCS: GeographicCRS | undefined) => {
+      assert.equal(previousGCS, undefined);
+      assert.isTrue(iModel.geographicCoordinateSystem !== undefined);
+      assert.isTrue(iModel.geographicCoordinateSystem!.equals(gcs));
+      eventListenedTo = true;
+    };
+    iModel.onGeographicCoordinateSystemChanged.addListener(gcsListener);
+
+    assert.isTrue(iModel.geographicCoordinateSystem === undefined);
+
+    assert.isFalse(eventListenedTo);
+
+    iModel.geographicCoordinateSystem = gcs;
+
+    assert.isTrue(eventListenedTo);
+
+    iModel.updateIModelProps();
+    iModel.saveChanges();
+    iModel.close();
+
+    const iModel2 = SnapshotDb.openFile(testFile);
+
+    assert.isTrue(iModel2.geographicCoordinateSystem !== undefined);
+
+    // The reloaded gcs will be different as the datum definition will have been expanded
+    assert.isFalse(iModel2.geographicCoordinateSystem!.equals(gcs));
+
+    // But other properties will be identical
+    assert.isTrue(iModel2.geographicCoordinateSystem !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.verticalCRS !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.verticalCRS!.equals(gcs.verticalCRS!));
+    assert.isTrue(iModel2.geographicCoordinateSystem!.additionalTransform !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.additionalTransform!.equals(gcs.additionalTransform!));
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.projection !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.projection!.equals(gcs.horizontalCRS!.projection!));
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.id !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.id === gcs.horizontalCRS!.id!);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.extent !== undefined);
+    assert.isTrue(iModel2.geographicCoordinateSystem!.horizontalCRS!.extent!.equals(gcs.horizontalCRS!.extent!));
+
+    // When a gcs is present then the ECEF is automatically defined.
+    assert.isTrue(iModel2.ecefLocation !== undefined);
+
+    iModel2.close();
+  });
+
+  it("should be able to create a snapshot IModel and set geolocation by ECEF", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test project" },
+      client: "ABC Engineering",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: Guid.createValue(),
+    };
+
+    const ecef = new EcefLocation({
+      origin: [42, 21, 0],
+      orientation: { yaw: 1, pitch: 1, roll: -1 },
+    });
+
+    const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot3.bim");
+    const iModel = SnapshotDb.createEmpty(testFile, args);
+
+    assert.isTrue(iModel.ecefLocation === undefined);
+
+    iModel.ecefLocation = ecef;
+
+    iModel.updateIModelProps();
+    iModel.saveChanges();
+    iModel.close();
+
+    const iModel2 = SnapshotDb.openFile(testFile);
+
+    assert.isTrue(iModel2.ecefLocation !== undefined);
+    assert.isTrue(iModel2.ecefLocation!.isAlmostEqual(ecef));
+
+    iModel2.close();
+  });
+
+  it("presence of a GCS imposes the ecef value", async () => {
+    const args = {
+      rootSubject: { name: "TestSubject", description: "test project" },
+      client: "ABC Engineering",
+      globalOrigin: { x: 10, y: 10 },
+      projectExtents: { low: { x: -300, y: -300, z: -20 }, high: { x: 500, y: 500, z: 400 } },
+      guid: Guid.createValue(),
+    };
+
+    const gcs = new GeographicCRS({
+      horizontalCRS: {
+        id: "10TM115-27",
+        description: "",
+        source: "Mentor Software Client",
+        deprecated: false,
+        datumId: "NAD27",
+        unit: "Meter",
+        projection: {
+          method: "TransverseMercator",
+          centralMeridian: -115,
+          latitudeOfOrigin: 0,
+          scaleFactor: 0.9992,
+          falseEasting: 0.0,
+          falseNorthing: 0.0,
+        },
+        extent: {
+          southWest: { latitude: 48, longitude: -120.5 },
+          northEast: { latitude: 84, longitude: -109.5 },
+        },
+      },
+      verticalCRS: { id: "GEOID" },
+      additionalTransform: {
+        helmert2DWithZOffset: {
+          translationX: 10.0,
+          translationY: 15.0,
+          translationZ: 0.02,
+          rotDeg: 1.2,
+          scale: 1.0001,
+        },
+      },
+    });
+
+    const ecef = new EcefLocation({
+      origin: [42, 21, 0],
+      orientation: { yaw: 1, pitch: 1, roll: -1 },
+    });
+
+    const testFile = IModelTestUtils.prepareOutputFile("IModel", "TestSnapshot4.bim");
+
+    const iModel = SnapshotDb.createEmpty(testFile, args);
+
+    iModel.ecefLocation = ecef;
+
+    iModel.updateIModelProps();
+    iModel.saveChanges();
+    iModel.close();
+
+    const iModel2 = SnapshotDb.openForApplyChangesets(testFile);
+
+    assert.isTrue(iModel2.ecefLocation !== undefined);
+    assert.isTrue(iModel2.ecefLocation!.isAlmostEqual(ecef));
+
+    assert.isTrue(iModel2.geographicCoordinateSystem === undefined);
+
+    iModel2.geographicCoordinateSystem = gcs;
+
+    iModel2.updateIModelProps();
+    iModel2.saveChanges();
+    iModel2.close();
+
+    const iModel3 = SnapshotDb.openFile(testFile);
+
+    assert.isTrue(iModel3.geographicCoordinateSystem !== undefined);
+
+    // When a gcs is present then ecef value is imposed by the gcs disregarding previous value.
+    assert.isTrue(iModel3.ecefLocation !== undefined);
+    assert.isFalse(iModel3.ecefLocation!.isAlmostEqual(ecef));
+
+    iModel3.close();
   });
 
   it("should be able to open checkpoints", async () => {
@@ -1729,8 +1909,10 @@ describe("iModel", () => {
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = snapshot.getGuid();
     const contextId = Guid.createValue();
-    const changeSetId = generateChangeSetId();
+    const changeSetId = IModelTestUtils.generateChangeSetId();
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
     snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId); // even fake checkpoints need a changeSetId!
+    snapshot.saveChanges();
     snapshot.close();
 
     // Mock iModelHub
@@ -1743,9 +1925,9 @@ describe("iModel", () => {
       containerAccessKeySAS: "testSAS",
       containerAccessKeyDbName: "testDb",
     };
-    const checkpointsV2Handler = IModelHost.iModelClient.checkpointsV2;
+    const checkpointsV2Handler = IModelHubBackend.iModelClient.checkpointsV2;
     sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
-    sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     // Mock blockcacheVFS daemon
     sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
@@ -1775,162 +1957,73 @@ describe("iModel", () => {
     checkpoint.close();
   });
 
-  it("should throw when opening checkpoint without blockcache dir env", async () => {
-    process.env.BLOCKCACHE_DIR = "";
+  it("should throw for invalid v2 checkpoints", async () => {
+    const dbPath = IModelTestUtils.prepareOutputFile("IModel", "TestCheckpoint.bim");
+    const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
+    const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
+    const contextId = Guid.createValue();
+    const changeSetId = IModelTestUtils.generateChangeSetId();
+    snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId);
+    snapshot.saveChanges();
+    snapshot.close();
+
+    // Mock iModelHub
+    const mockCheckpointV2: CheckpointV2 = {
+      wsgId: "INVALID",
+      ecId: "INVALID",
+      changeSetId,
+      containerAccessKeyAccount: "testAccount",
+      containerAccessKeyContainer: `imodelblocks-${iModelId}`,
+      containerAccessKeySAS: "testSAS",
+      containerAccessKeyDbName: "testDb",
+    };
+    const checkpointsV2Handler = IModelHubBackend.iModelClient.checkpointsV2;
+    sinon.stub(checkpointsV2Handler, "get").callsFake(async () => [mockCheckpointV2]);
+    sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+
+    // Mock blockcacheVFS daemon
+    sinon.stub(BlobDaemon, "getDbFileName").callsFake(() => dbPath);
+    const daemonSuccessResult = { result: DbResult.BE_SQLITE_OK, errMsg: "" };
+    sinon.stub(BlobDaemon, "command").callsFake(async () => daemonSuccessResult);
+
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
-    expectIModelError(IModelStatus.BadRequest, error);
+
+    process.env.BLOCKCACHE_DIR = ""; // try without setting daemon dir
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
+    expectIModelError(IModelStatus.BadRequest, error); // bad request because daemon dir wasn't set
+
+    process.env.BLOCKCACHE_DIR = "/foo/";
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeSetId }));
+    expectIModelError(IModelStatus.ValidationFailed, error);
   });
 
   it("should throw for missing/invalid checkpoint in hub", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
-    const checkpointsV2Handler = IModelHost.iModelClient.checkpointsV2;
+    const checkpointsV2Handler = IModelHubBackend.iModelClient.checkpointsV2;
     const hubMock = sinon.stub(checkpointsV2Handler, "get").callsFake(async () => []);
-    sinon.stub(IModelHost.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
+    sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: generateChangeSetId() }));
-    expectIModelError(IModelStatus.BadRequest, error);
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
+    expectIModelError(IModelStatus.NotFound, error);
   });
 
-  it("should throw when attempting to re-attach a non-checkpoint snapshot", async () => {
+  it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(imodel1.reattachDaemon(ctx));
-    expectIModelError(IModelStatus.WrongIModel, error);
-  });
-
-  // This is skipped because it fails unpredictably - the timeouts don't seem to happen as expected
-  it.skip("should test AutoPush", async () => {
-    let idle: boolean = true;
-    const activityMonitor = {
-      isIdle: idle,
-    };
-
-    const fakePushTimeRequired = 1; // pretend that it takes 1/1000 of a second to do the push
-    const millisToWaitForAutoPush = (15 * fakePushTimeRequired); // a long enough wait to ensure that auto-push ran.
-
-    const iModel = {
-      pushChanges: async (_clientAccessToken: AccessToken) => {
-        await new Promise((resolve, _reject) => { setTimeout(resolve, fakePushTimeRequired); }); // sleep, to simulate time spent doing push
-        lastPushTimeMillis = Date.now();
-      },
-      iModelToken: {
-        changeSetId: "",
-        iModelId: "fake",
-      },
-      concurrencyControl: {
-        request: async (_clientAccessToken: AccessToken) => { },
-      },
-      onBeforeClose: new BeEvent<() => void>(),
-      txns: {
-        hasLocalChanges: () => true,
-      },
-    };
-
-    const authorizationClient: AuthorizationClient = {
-      getAccessToken: async (_requestContext: ClientRequestContext): Promise<AccessToken> => {
-        const fakeAccessToken2 = {} as AccessToken;
-        return fakeAccessToken2;
-      },
-      isAuthorized: true,
-    };
-
-    lastPushTimeMillis = 0;
-    lastAutoPushEventType = undefined;
-
-    // Create an autopush in manual-schedule mode.
-    const autoPushParams: AutoPushParams = { pushIntervalSecondsMin: 0, pushIntervalSecondsMax: 1, autoSchedule: false };
-    IModelHost.authorizationClient = authorizationClient;
-    const autoPush = new AutoPush(iModel as any, autoPushParams, activityMonitor);
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
-    assert.isFalse(autoPush.autoSchedule);
-
-    // Schedule the next push
-    autoPush.scheduleNextPush();
-    assert.equal(autoPush.state, AutoPushState.Scheduled);
-
-    // Wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
-
-    // Verify that push happened during the time that I was asleep.
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to restart automatically");
-    assert.notEqual(lastPushTimeMillis, 0);
-    assert.isAtLeast(autoPush.durationOfLastPushMillis, fakePushTimeRequired);
-    assert.isUndefined(lastAutoPushEventType);  // not listening to events yet.
-
-    // Cancel the next scheduled push
-    autoPush.cancel();
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "cancel does NOT automatically schedule the next push");
-
-    // Register an event handler
-    const autoPushEventHandler: AutoPushEventHandler = (etype: AutoPushEventType, _theAutoPush: AutoPush) => { lastAutoPushEventType = etype; };
-    autoPush.event.addListener(autoPushEventHandler);
-
-    lastPushTimeMillis = 0;
-
-    // Explicitly schedule the next auto-push
-    autoPush.scheduleNextPush();
-    assert.equal(autoPush.state, AutoPushState.Scheduled);
-
-    // wait long enough for the auto-push to happen
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); });
-    assert.equal(autoPush.state, AutoPushState.NotRunning, "I configured auto-push NOT to start automatically");
-    assert.notEqual(lastPushTimeMillis, 0);
-    assert.equal(lastAutoPushEventType, AutoPushEventType.PushFinished, "event handler should have been called");
-
-    // Just verify that this doesn't blow up.
-    await autoPush.reserveCodes();
-
-    // Now turn on auto-schedule and verify that we get a few auto-pushes
-    lastPushTimeMillis = 0;
-    autoPush.autoSchedule = true;
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0);
-    lastPushTimeMillis = 0;
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0);
-    autoPush.cancel();
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert(autoPush.state === AutoPushState.NotRunning);
-    assert.isFalse(autoPush.autoSchedule, "cancel turns off autoSchedule");
-
-    // Test auto-push when isIdle returns false
-    idle = false;
-    lastPushTimeMillis = 0;
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
-    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
-    autoPush.cancel();
-    idle = true;
-
-    // Test auto-push when Txn.hasLocalChanges returns false
-    iModel.txns.hasLocalChanges = () => false;
-    lastPushTimeMillis = 0;
-    autoPush.cancel();
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.equal(lastPushTimeMillis, 0); // auto-push should not have run, because isIdle==false.
-    assert.equal(autoPush.state, AutoPushState.Scheduled); // Instead, it should have re-scheduled
-    autoPush.cancel();
-
-    // ... now turn it back on
-    iModel.txns.hasLocalChanges = () => true;
-    autoPush.autoSchedule = true; // start running AutoPush...
-    await new Promise((resolve, _reject) => { setTimeout(resolve, millisToWaitForAutoPush); }); // let auto-push run
-    assert.notEqual(lastPushTimeMillis, 0); // AutoPush should have run
-
-    autoPush.cancel();
+    const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
+    await imodel1.reattachDaemon(ctx);
+    assert.isTrue(attachMock.notCalled);
   });
 
   function hasClassView(db: IModelDb, name: string): boolean {
     try {
-      return db.withPreparedSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
+      return db.withSqliteStatement(`SELECT ECInstanceId FROM [${name}]`, (): boolean => true);
     } catch (e) {
       return false;
     }
@@ -1938,20 +2031,21 @@ describe("iModel", () => {
 
   it("Standalone iModel properties", () => {
     const standaloneRootSubjectName = "Standalone";
-    const standaloneFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
+    const standaloneFile1 = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
     let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName } });
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
     assert.isFalse(standaloneDb1.isReadonly, "Expect standalone iModels to be read-write during create");
-    assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(standaloneDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(standaloneDb1.pathName, standaloneFile1);
     assert.equal(standaloneDb1, StandaloneDb.tryFindByKey(standaloneDb1.key), "Should be in the list of open StandaloneDbs");
     assert.isFalse(standaloneDb1.nativeDb.isEncrypted());
-    assert.equal(standaloneDb1.elements.getRootSubject().code.getValue(), standaloneRootSubjectName);
+    assert.equal(standaloneDb1.elements.getRootSubject().code.value, standaloneRootSubjectName);
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
-    assert.isUndefined(standaloneDb1.contextId);
-    assert.isUndefined(standaloneDb1.changeSetId);
+    assert.equal(standaloneDb1.contextId, Guid.empty);
+    assert.strictEqual("", standaloneDb1.changeset.id);
+    assert.strictEqual(0, standaloneDb1.changeset.index);
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();
     assert.isFalse(standaloneDb1.isOpen);
@@ -1978,16 +2072,13 @@ describe("iModel", () => {
     assert.isTrue(snapshotDb1.isSnapshot);
     assert.isTrue(snapshotDb2.isSnapshot);
     assert.isTrue(snapshotDb3.isSnapshot);
-    assert.isFalse(snapshotDb1.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb2.txns.hasPendingTxns);
-    assert.isFalse(snapshotDb3.txns.hasPendingTxns);
     assert.isFalse(snapshotDb1.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb2.isReadonly, "Expect snapshots to be read-write during create");
     assert.isFalse(snapshotDb3.isReadonly, "Expect snapshots to be read-write during create");
-    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
-    assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Unassigned);
+    assert.equal(imodel1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     assert.equal(snapshotDb1.pathName, snapshotFile1);
     assert.equal(snapshotDb2.pathName, snapshotFile2);
     assert.equal(snapshotDb3.pathName, snapshotFile3);
@@ -2003,10 +2094,10 @@ describe("iModel", () => {
     const iModelGuid3: GuidString = snapshotDb3.getGuid();
     assert.notEqual(iModelGuid1, iModelGuid2, "Expect different iModel GUIDs for each snapshot");
     assert.notEqual(iModelGuid2, iModelGuid3, "Expect different iModel GUIDs for each snapshot");
-    const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.getValue();
-    const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.getValue();
-    const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.getValue();
-    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.getValue();
+    const rootSubjectName1 = snapshotDb1.elements.getRootSubject().code.value;
+    const rootSubjectName2 = snapshotDb2.elements.getRootSubject().code.value;
+    const rootSubjectName3 = snapshotDb3.elements.getRootSubject().code.value;
+    const imodel1RootSubjectName = imodel1.elements.getRootSubject().code.value;
     assert.equal(rootSubjectName1, snapshotRootSubjectName);
     assert.equal(rootSubjectName1, rootSubjectName2, "Expect a snapshot to maintain the root Subject name from its seed");
     assert.equal(rootSubjectName3, imodel1RootSubjectName, "Expect a snapshot to maintain the root Subject name from its seed");
@@ -2067,7 +2158,7 @@ describe("iModel", () => {
 
     // create snapshot from scratch without a password, then unnecessarily specify a password to open
     let snapshotDb1 = SnapshotDb.createFrom(imodel1, snapshotFile1);
-    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb1.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     snapshotDb1.close();
     snapshotDb1 = SnapshotDb.openFile(snapshotFile1, { password: "unnecessaryPassword" });
     assert.isTrue(snapshotDb1.isSnapshotDb());
@@ -2078,7 +2169,7 @@ describe("iModel", () => {
 
     // create snapshot from scratch and give it a password
     let snapshotDb2 = SnapshotDb.createEmpty(snapshotFile2, { rootSubject: { name: "Password-Protected" }, password: "password", createClassViews: true });
-    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb2.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     const subjectName2 = "TestSubject2";
     const subjectId2: Id64String = Subject.insert(snapshotDb2, IModel.rootSubjectId, subjectName2);
     assert.isTrue(Id64.isValidId64(subjectId2));
@@ -2093,7 +2184,7 @@ describe("iModel", () => {
 
     // create a new snapshot from a non-password-protected snapshot and then give it a password
     let snapshotDb3 = SnapshotDb.createFrom(imodel1, snapshotFile3, { password: "password" });
-    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Standalone);
+    assert.equal(snapshotDb3.getBriefcaseId(), BriefcaseIdValue.Unassigned);
     snapshotDb3.close();
     snapshotDb3 = SnapshotDb.openFile(snapshotFile3, { password: "password" });
     assert.isTrue(snapshotDb3.isSnapshotDb());
@@ -2283,10 +2374,10 @@ describe("iModel", () => {
     element = imodel4.elements.getElement<InformationRecordElement>(elementId, InformationRecordElement);
     assert.isTrue(Code.isValid(element.code));
     assert.isFalse(Code.isEmpty(element.code));
-    assert.equal(element.code.getValue(), codeValue);
+    assert.equal(element.code.value, codeValue);
   });
 
-  it("should clear UserLabel", () => {
+  it("should update UserLabel", () => {
     // type coercion reminder!
     const s: string = "";
     assert.isTrue(s === "");
@@ -2302,54 +2393,215 @@ describe("iModel", () => {
     let element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.userLabel);
 
-    // update element with a defined UserLabel
+    // update element with a defined userLabel
     element.userLabel = "UserLabel";
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.equal(element.userLabel, "UserLabel");
 
+    // make sure userLabel is not updated when not part of the specified ElementProps
+    imodel1.elements.updateElement({
+      id: element.id,
+      classFullName: element.classFullName,
+      model: element.model,
+      code: element.code,
+    });
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.userLabel, "UserLabel"); // NOTE: userLabel is not modified when userLabel is not part of the input ElementProps
+
     // update UserLabel to undefined
     element.userLabel = undefined;
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.equal(element.userLabel, "UserLabel"); // NOTE: UserLabel is not cleared in this case!
+    assert.equal(element.userLabel, undefined); // NOTE: userLabel is cleared when userLabel is specified as undefined
 
     // update UserLabel to ""
     element.userLabel = "";
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.isUndefined(element.userLabel);
+    assert.isUndefined(element.userLabel); // NOTE: userLabel is also cleared when the empty string is specified
   });
 
-  it("should clear FederationGuid", () => {
+  it("should update FederationGuid", () => {
     // insert element with an undefined FederationGuid
     const elementProps: DefinitionElementProps = {
       classFullName: SpatialCategory.classFullName,
       model: IModel.dictionaryId,
+      federationGuid: Guid.empty,
       code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategoryForClearFederationGuid"),
     };
     const elementId = imodel1.elements.insertElement(elementProps);
     let element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.federationGuid);
+    assert.isFalse(element.isPrivate);
 
     // update element with a defined FederationGuid
-    const federationGuid: GuidString = Guid.createValue();
+    const federationGuid = Guid.createValue();
     element.federationGuid = federationGuid;
+    element.isPrivate = true;
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.equal(element.federationGuid, federationGuid);
+    assert.isTrue(element.isPrivate);
+
+    // make sure FederationGuid is not updated when not part of the specified ElementProps
+    imodel1.elements.updateElement({
+      id: element.id,
+      classFullName: element.classFullName,
+      model: element.model,
+      code: element.code,
+    });
+    element = imodel1.elements.getElement<SpatialCategory>(elementId);
+    assert.equal(element.federationGuid, federationGuid);
+    assert.isTrue(element.isPrivate);
 
     // update FederationGuid to undefined
     element.federationGuid = undefined;
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
-    assert.equal(element.federationGuid, federationGuid); // NOTE: FederationGuid is not cleared in this case!
+    assert.isUndefined(element.federationGuid);
 
     // update FederationGuid to ""
     element.federationGuid = "";
     element.update();
     element = imodel1.elements.getElement<SpatialCategory>(elementId);
     assert.isUndefined(element.federationGuid);
+  });
+
+  it("should support partial update", () => {
+    // Insert Subject elements - initializing Description and UserLabel to similar values
+    let subject1 = Subject.create(imodel1, IModel.rootSubjectId, "Subject1", "Description1");
+    let subject2 = Subject.create(imodel1, IModel.rootSubjectId, "Subject2", "Description2");
+    let subject3 = Subject.create(imodel1, IModel.rootSubjectId, "Subject3", "");
+    let subject4 = Subject.create(imodel1, IModel.rootSubjectId, "Subject4");
+    subject1.userLabel = "UserLabel1";
+    subject2.userLabel = "UserLabel2";
+    subject3.userLabel = "";
+    subject4.userLabel = undefined;
+    const federationGuid1 = Guid.createValue();
+    const federationGuid2 = Guid.createValue();
+    subject1.federationGuid = federationGuid1;
+    subject2.federationGuid = federationGuid2;
+    subject3.federationGuid = "";
+    subject4.federationGuid = Guid.empty;
+    const subjectId1 = subject1.insert();
+    const subjectId2 = subject2.insert();
+    const subjectId3 = subject3.insert();
+    const subjectId4 = subject4.insert();
+    subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
+    subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
+    subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
+    subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
+
+    // Subject.Description is an auto-handled property
+    assert.equal(subject1.description, "Description1");
+    assert.equal(subject2.description, "Description2");
+    assert.equal(subject3.description, ""); // NOTE: different behavior between auto-handled and custom-handled
+    assert.isUndefined(subject4.description);
+
+    // Test toJSON
+    assert.equal(subject1.toJSON().description, "Description1");
+    assert.equal(subject2.toJSON().description, "Description2");
+    assert.equal(subject3.toJSON().description, "");
+    assert.isUndefined(subject4.toJSON().description);
+
+    // Element.UserLabel is a custom-handled property
+    assert.equal(subject1.userLabel, "UserLabel1");
+    assert.equal(subject2.userLabel, "UserLabel2");
+    assert.isUndefined(subject3.userLabel); // NOTE: different behavior between auto-handled and custom-handled
+    assert.isUndefined(subject4.userLabel);
+
+    // Element.FederationGuid is a custom-handled property
+    assert.equal(subject1.federationGuid, federationGuid1);
+    assert.equal(subject2.federationGuid, federationGuid2);
+    assert.isUndefined(subject3.federationGuid);
+    assert.isUndefined(subject4.federationGuid);
+
+    // test partial update of Description (auto-handled)
+    imodel1.elements.updateElement({
+      id: subject1.id,
+      classFullName: subject1.classFullName,
+      description: "Description1-Updated",
+    } as unknown as ElementProps);
+    subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
+    assert.equal(subject1.description, "Description1-Updated"); // should have been updated
+    assert.isDefined(subject1.model);
+    assert.isDefined(subject1.parent);
+    assert.equal(subject1.code.value, "Subject1"); // should not have changed
+    assert.equal(subject1.userLabel, "UserLabel1"); // should not have changed
+    assert.equal(subject1.federationGuid, federationGuid1); // should not have changed
+
+    // test partial update of UserLabel (custom-handled)
+    imodel1.elements.updateElement({
+      id: subject2.id,
+      classFullName: subject2.classFullName,
+      userLabel: "UserLabel2-Updated",
+    } as unknown as ElementProps);
+    subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
+    assert.isDefined(subject2.model);
+    assert.isDefined(subject2.parent);
+    assert.equal(subject2.userLabel, "UserLabel2-Updated"); // should have been updated
+    assert.equal(subject2.code.value, "Subject2"); // should not have changed
+    assert.equal(subject2.description, "Description2"); // should not have changed
+    assert.equal(subject2.federationGuid, federationGuid2); // should not have changed
+
+    // Update Subject elements - setting Description and UserLabel to similar values
+    subject1.description = undefined;
+    subject2.description = "";
+    subject3.description = "Description3";
+    subject4.description = "Description4";
+    subject1.userLabel = undefined;
+    subject2.userLabel = "";
+    subject3.userLabel = "UserLabel3";
+    subject4.userLabel = "UserLabel4";
+    subject1.update();
+    subject2.update();
+    subject3.update();
+    subject4.update();
+    subject1 = imodel1.elements.getElement<Subject>(subjectId1, Subject);
+    subject2 = imodel1.elements.getElement<Subject>(subjectId2, Subject);
+    subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
+    subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
+
+    // Subject.Description is an auto-handled property
+    assert.isUndefined(subject1.description);
+    assert.equal(subject2.description, ""); // NOTE: different behavior between auto-handled and custom-handled
+    assert.equal(subject3.description, "Description3");
+    assert.equal(subject4.description, "Description4");
+
+    // Element.UserLabel is a custom-handled property
+    assert.isUndefined(subject1.userLabel);
+    assert.isUndefined(subject2.userLabel); // NOTE: different behavior between auto-handled and custom-handled
+    assert.equal(subject3.userLabel, "UserLabel3");
+    assert.equal(subject4.userLabel, "UserLabel4");
+
+    // test partial update of Description to undefined
+    imodel1.elements.updateElement({
+      id: subject3.id,
+      classFullName: subject3.classFullName,
+      description: undefined,
+    } as unknown as ElementProps);
+    subject3 = imodel1.elements.getElement<Subject>(subjectId3, Subject);
+    assert.isUndefined(subject3.description); // should have been updated
+    assert.isDefined(subject3.model);
+    assert.isDefined(subject3.parent);
+    assert.equal(subject3.code.value, "Subject3"); // should not have changed
+    assert.equal(subject3.userLabel, "UserLabel3"); // should not have changed
+    assert.isUndefined(subject3.federationGuid); // should not have changed
+
+    // test partial update of UserLabel to undefined
+    imodel1.elements.updateElement({
+      id: subject4.id,
+      classFullName: subject4.classFullName,
+      userLabel: undefined,
+    } as unknown as ElementProps);
+    subject4 = imodel1.elements.getElement<Subject>(subjectId4, Subject);
+    assert.isDefined(subject4.model);
+    assert.isDefined(subject4.parent);
+    // assert.isUndefined(subject4.userLabel); // should have been updated  - WIP WIP WIP
+    assert.equal(subject4.code.value, "Subject4"); // should not have changed
+    assert.equal(subject4.description, "Description4"); // should not have changed
+    assert.isUndefined(subject4.federationGuid); // should not have changed
   });
 });
 

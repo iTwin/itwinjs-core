@@ -51,14 +51,30 @@ export class VertexIndices {
     bytes[byteIndex + 1] = (index & 0x0000ff00) >> 8;
     bytes[byteIndex + 2] = (index & 0x00ff0000) >> 16;
   }
+
+  public decodeIndex(index: number): number {
+    assert(index < this.length);
+    const byteIndex = index * 3;
+    return this.data[byteIndex] | (this.data[byteIndex + 1] << 8) | (this.data[byteIndex + 2] << 16);
+  }
+
+  public decodeIndices(): number[] {
+    const indices = [];
+    for (let i = 0; i < this.length; i++)
+      indices.push(this.decodeIndex(i));
+
+    return indices;
+  }
 }
 
-interface Dimensions {
+/** @internal */
+export interface Dimensions {
   width: number;
   height: number;
 }
 
-function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number): Dimensions {
+/** @internal */
+export function computeDimensions(nEntries: number, nRgbaPerEntry: number, nExtraRgba: number): Dimensions {
   const maxSize = IModelApp.renderSystem.maxTextureSize;
   const nRgba = nEntries * nRgbaPerEntry + nExtraRgba;
 
@@ -320,7 +336,7 @@ class PolylineTesselator {
   private _nextParam: number[] = [];
   private _position: Point3d[] = [];
 
-  private constructor(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean) {
+  public constructor(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean) {
     this._polylines = polylines;
     this._points = points;
     this._doJoints = doJointTriangles;
@@ -399,6 +415,12 @@ class PolylineTesselator {
           this._addVertex(v0, v0.computeParam(false, jointAt0, false, false));
           this._addVertex(v1, v1.computeParam(false, jointAt1, false, true));
           this._addVertex(v1, v1.computeParam(true, jointAt1, false, false));
+
+          if (jointAt0)
+            this.addJointTriangles(v0, v0.computeParam(false, true, false, true), v0);
+
+          if (jointAt1)
+            this.addJointTriangles(v1, v1.computeParam(false, true, false, true), v1);
         } else {
           this._addVertex(v0, v0.computeParam(true));
           this._addVertex(v1, v1.computeParam(false));
@@ -408,6 +430,15 @@ class PolylineTesselator {
           this._addVertex(v1, v1.computeParam(true));
         }
       }
+    }
+  }
+
+  private addJointTriangles(v0: PolylineVertex, p0: number, v1: PolylineVertex): void {
+    const param = v1.computeParam(false, false, true);
+    for (let i = 0; i < 3; i++) {
+      this._addVertex(v0, p0);
+      this._addVertex(v1, param + i + 1);
+      this._addVertex(v1, param + i);
     }
   }
 
@@ -425,6 +456,12 @@ class PolylineTesselator {
     this._nextParam[this._numIndices] = param;
     this._numIndices++;
   }
+}
+
+/** Strictly for tests. @internal */
+export function tesselatePolyline(polylines: PolylineData[], points: QPoint3dList, doJointTriangles: boolean): TesselatedPolyline {
+  const tesselator = new PolylineTesselator(polylines, points, doJointTriangles);
+  return tesselator.tesselate();
 }
 
 /** @internal */
@@ -623,8 +660,8 @@ export interface EdgeParams {
 
 function wantJointTriangles(weight: number, is2d: boolean): boolean {
   // Joints are incredibly expensive. In 3d, only generate them if the line is sufficiently wide for them to be noticeable.
-  const jointWidthThreshold = 5;
-  return is2d || weight > jointWidthThreshold;
+  const jointWidthThreshold = 3;
+  return is2d || weight >= jointWidthThreshold;
 }
 
 function convertEdges(meshArgs: MeshArgs): EdgeParams | undefined {
@@ -695,8 +732,9 @@ export class MeshParams {
       material: createSurfaceMaterial(args.material),
     };
 
+    const channels = undefined !== args.auxChannels ? AuxChannelTable.fromChannels(args.auxChannels, vertices.numVertices) : undefined;
     const edges = convertEdges(args);
-    return new MeshParams(vertices, surface, edges, args.isPlanar);
+    return new MeshParams(vertices, surface, edges, args.isPlanar, channels);
   }
 }
 
@@ -912,10 +950,10 @@ class TexturedMeshBuilder extends MeshBuilder {
     assert(undefined !== args.textureUv);
   }
 
-  public get numRgbaPerVertex() { return 4; }
-  public get uvParams() { return this._qparams; }
+  public override get numRgbaPerVertex() { return 4; }
+  public override get uvParams() { return this._qparams; }
 
-  public appendVertex(vertIndex: number) {
+  public override appendVertex(vertIndex: number) {
     this.appendPosition(vertIndex);
     this.appendNormal(vertIndex);
     this.appendFeatureIndex(vertIndex);
@@ -938,7 +976,7 @@ class TexturedLitMeshBuilder extends TexturedMeshBuilder {
     assert(undefined !== args.normals);
   }
 
-  protected appendNormal(vertIndex: number) { this.append16(this.args.normals![vertIndex].value); }
+  protected override appendNormal(vertIndex: number) { this.append16(this.args.normals![vertIndex].value); }
 }
 
 /** 16 bytes. The last 2 bytes are unused; the 2 immediately preceding it hold the oct-encoded normal value. */
@@ -948,9 +986,9 @@ class LitMeshBuilder extends MeshBuilder {
     assert(undefined !== args.normals);
   }
 
-  public get numRgbaPerVertex() { return 4; }
+  public override get numRgbaPerVertex() { return 4; }
 
-  public appendVertex(vertIndex: number) {
+  public override appendVertex(vertIndex: number) {
     super.appendVertex(vertIndex);
     this.append16(this.args.normals![vertIndex].value);
     this.advance(2); // 2 unused bytes

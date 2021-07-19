@@ -21,7 +21,7 @@ import { IModelConnection } from "./IModelConnection";
  */
 export class CategorySelectorState extends ElementState {
   /** @internal */
-  public static get className() { return "CategorySelector"; }
+  public static override get className() { return "CategorySelector"; }
 
   private readonly _categories = new ObservableSet<string>();
 
@@ -46,7 +46,7 @@ export class CategorySelectorState extends ElementState {
     return this._categories;
   }
 
-  public toJSON(): CategorySelectorProps {
+  public override toJSON(): CategorySelectorProps {
     const val = super.toJSON() as CategorySelectorProps;
     val.categories = [];
     this.categories.forEach((cat) => val.categories.push(cat));
@@ -68,7 +68,7 @@ export class CategorySelectorState extends ElementState {
   }
 
   /** The name of this CategorySelector */
-  public get name(): string { return this.code.getValue(); }
+  public get name(): string { return this.code.value; }
 
   /** Determine whether this CategorySelector includes the specified categoryId string */
   public has(id: Id64String): boolean { return this.categories.has(id.toString()); }
@@ -78,12 +78,14 @@ export class CategorySelectorState extends ElementState {
 
   /** Add one or more categories to this CategorySelector */
   public addCategories(arg: Id64Arg): void {
-    Id64.forEach(arg, (id) => this.categories.add(id));
+    for (const id of Id64.iterable(arg))
+      this.categories.add(id);
   }
 
   /** Remove one or more categories from this CategorySelector */
   public dropCategories(arg: Id64Arg) {
-    Id64.forEach(arg, (id) => this.categories.delete(id));
+    for (const id of Id64.iterable(arg))
+      this.categories.delete(id);
   }
 
   /** Add or remove categories from this CategorySelector.

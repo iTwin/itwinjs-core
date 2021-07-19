@@ -8,19 +8,17 @@
 
 import * as React from "react";
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { PropertyRecord } from "@bentley/ui-abstract";
+import { LinkElementsInfo, PropertyRecord } from "@bentley/ui-abstract";
 import { UnderlinedButton } from "@bentley/ui-core";
 
 /** Render a single anchor tag */
-function renderTag(text: string, record: PropertyRecord, highlight?: (text: string) => React.ReactNode) {
+function renderTag(text: string, links: LinkElementsInfo, highlight?: (text: string) => React.ReactNode) {
   return (
     <UnderlinedButton
       onClick={(e) => {
         e.preventDefault();
         e.stopPropagation();
-        // istanbul ignore else
-        if (record.links!.onClick)
-          record.links!.onClick(record, text);
+        links.onClick(text);
       }}
     >
       {highlight ? highlight(text) : text}
@@ -42,11 +40,11 @@ function renderTextPart(text: string, highlight?: (text: string) => React.ReactN
   return highlight ? highlight(text) : text;
 }
 
-function renderText(text: string, record: PropertyRecord, highlight?: (text: string) => React.ReactNode): React.ReactNode {
-  const { matcher } = record.links!;
+function renderText(text: string, links: LinkElementsInfo, highlight?: (text: string) => React.ReactNode): React.ReactNode {
+  const { matcher } = links;
 
   if (!matcher)
-    return renderTag(text, record, highlight);
+    return renderTag(text, links, highlight);
 
   const matches = matcher(text);
 
@@ -64,7 +62,7 @@ function renderText(text: string, record: PropertyRecord, highlight?: (text: str
       parts.push(renderTextPart(text.substring(lastIndex, match.start), highlight));
 
     const anchorText = text.substring(match.start, match.end);
-    parts.push(renderTag(anchorText, record, highlight));
+    parts.push(renderTag(anchorText, links, highlight));
 
     lastIndex = match.end;
   }
@@ -81,23 +79,24 @@ function renderHighlighted(text: string, highlight: (text: string) => React.Reac
 
 /** Returns true if property record has an anchor tag
  * @public
+ * @deprecated Should check if [[PropertyRecord]] has any links set instead.
  */
 export const hasLinks = (record: PropertyRecord) => !!record.links;
 
 /** Renders anchor tag by wrapping or splitting provided text
  * @public
  */
-export const renderLinks = (text: string, record: PropertyRecord, highlight?: (text: string) => React.ReactNode): React.ReactNode => {
-  return renderText(text, record, highlight);
+export const renderLinks = (text: string, links: LinkElementsInfo, highlight?: (text: string) => React.ReactNode): React.ReactNode => {
+  return renderText(text, links, highlight);
 };
 
 /** If record has links, wraps stringValue in them, otherwise returns unchanged stringValue
  * Optionally it can highlight text
  * @public
  */
-export const withLinks = (record: PropertyRecord, stringValue: string, highlight?: (text: string) => React.ReactNode): React.ReactNode => {
-  if (hasLinks(record))
-    return renderLinks(stringValue, record, highlight);
+export const withLinks = (stringValue: string, links?: LinkElementsInfo, highlight?: (text: string) => React.ReactNode): React.ReactNode => {
+  if (links)
+    return renderLinks(stringValue, links, highlight);
   if (highlight)
     return renderHighlighted(stringValue, highlight);
   return stringValue;
@@ -109,7 +108,7 @@ export const withLinks = (record: PropertyRecord, stringValue: string, highlight
  */
 export interface LinksRendererProps {
   value: string;
-  record: PropertyRecord;
+  links?: LinkElementsInfo;
   highlighter?: (text: string) => React.ReactNode;
 }
 
@@ -118,5 +117,5 @@ export interface LinksRendererProps {
  * @alpha
  */
 export function LinksRenderer(props: LinksRendererProps) {
-  return <>{withLinks(props.record, props.value, props.highlighter)}</>;
+  return <>{withLinks(props.value, props.links, props.highlighter)}</>;
 }

@@ -527,5 +527,5 @@ export enum ModelNames {
 }
 
 enum Palettes {
-  TestBridge = "TestBridge", // eslint-disable-line no-shadow
+  TestBridge = "TestBridge", // eslint-disable-line @typescript-eslint/no-shadow
 }

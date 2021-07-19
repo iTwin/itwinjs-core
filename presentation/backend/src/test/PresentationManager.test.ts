@@ -10,16 +10,21 @@ import * as path from "path";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { ClientRequestContext, DbResult, using } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, ECSqlStatement, ECSqlValue, EventSink, IModelDb, IModelHost } from "@bentley/imodeljs-backend";
+import { BriefcaseDb, ECSqlStatement, ECSqlValue, IModelDb, IModelHost, IpcHost } from "@bentley/imodeljs-backend";
 import {
-  ArrayTypeDescription, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor,
-  DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory,
-  HierarchyRequestOptions, InstanceKey, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, LabelRequestOptions, NestedContentFieldJSON, NodeJSON,
-  NodeKey, Paged, PageOptions, PartialHierarchyModification, PartialHierarchyModificationJSON, PresentationDataCompareOptions, PresentationError,
-  PresentationUnitSystem, PrimitiveTypeDescription, PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset,
-  SelectClassInfoJSON, SelectionInfo, SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
+  ArrayTypeDescription, Content, ContentDescriptorRequestOptions, ContentFlags, ContentJSON, ContentRequestOptions, DefaultContentDisplayTypes,
+  Descriptor, DescriptorJSON, DiagnosticsOptions, DiagnosticsScopeLogs, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
+  DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
+  FieldDescriptor, FieldDescriptorType, FieldJSON, getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareInfoJSON, HierarchyCompareOptions,
+  HierarchyRequestOptions, InstanceKey, IntRulesetVariable, ItemJSON, KeySet, KindOfQuantityInfo, LabelDefinition, LabelRequestOptions,
+  NestedContentFieldJSON, NodeJSON, NodeKey, Paged, PageOptions, PresentationError, PresentationUnitSystem, PrimitiveTypeDescription,
+  PropertiesFieldJSON, PropertyInfoJSON, PropertyJSON, RegisteredRuleset, RequestPriority, Ruleset, SelectClassInfoJSON, SelectionInfo,
+  SelectionScope, StandardNodeTypes, StructTypeDescription, VariableValueTypes,
 } from "@bentley/presentation-common";
+import {
+  createTestCategoryDescription, createTestContentDescriptor, createTestContentItem, createTestSimpleContentField,
+} from "@bentley/presentation-common/lib/test/_helpers/Content";
+import { createTestECClassInfo } from "@bentley/presentation-common/lib/test/_helpers/EC";
 import {
   createRandomCategory, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfoJSON, createRandomECInstanceKey,
   createRandomECInstanceKeyJSON, createRandomECInstancesNodeJSON, createRandomECInstancesNodeKey, createRandomECInstancesNodeKeyJSON, createRandomId,
@@ -28,6 +33,7 @@ import {
 } from "@bentley/presentation-common/lib/test/_helpers/random";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "../presentation-backend/Constants";
 import { NativePlatformDefinition, NativePlatformRequestTypes } from "../presentation-backend/NativePlatform";
+import { PresentationIpcHandler } from "../presentation-backend/PresentationIpcHandler";
 import {
   HierarchyCacheMode, HybridCacheConfig, PresentationManager, PresentationManagerMode, PresentationManagerProps,
 } from "../presentation-backend/PresentationManager";
@@ -38,6 +44,7 @@ import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 import { WithClientRequestContext } from "../presentation-backend/Utils";
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
+
 describe("PresentationManager", () => {
 
   before(async () => {
@@ -93,6 +100,8 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            useMmap: undefined,
+            defaultFormats: {},
           });
         });
       });
@@ -104,6 +113,22 @@ describe("PresentationManager", () => {
         const cacheConfig = {
           mode: HierarchyCacheMode.Memory,
         };
+        const formatProps = {
+          composite: {
+            includeZero: true,
+            spacer: " ",
+            units: [
+              { label: "'", name: "IN" },
+            ],
+          },
+          formatTraits: "KeepSingleZero|KeepDecimalPoint|ShowUnitLabel",
+          precision: 4,
+          type: "Decimal",
+          uomSeparator: "",
+        };
+        const defaultFormats = {
+          length: { unitSystems: [PresentationUnitSystem.BritishImperial], format: formatProps },
+        };
         const props: PresentationManagerProps = {
           id: faker.random.uuid(),
           presentationAssetsRoot: "/test",
@@ -113,6 +138,8 @@ describe("PresentationManager", () => {
           updatesPollInterval: 1,
           cacheConfig,
           contentCacheSize: 999,
+          useMmap: 666,
+          defaultFormats,
         };
         const expectedCacheConfig = {
           mode: HierarchyCacheMode.Memory,
@@ -127,6 +154,8 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: true,
             cacheConfig: expectedCacheConfig,
             contentCacheSize: 999,
+            defaultFormats: { length: { unitSystems: [PresentationUnitSystem.BritishImperial], serializedFormat: JSON.stringify(formatProps) } },
+            useMmap: 666,
           });
         });
       });
@@ -143,6 +172,8 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Disk, directory: "" },
             contentCacheSize: undefined,
+            useMmap: undefined,
+            defaultFormats: {},
           });
         });
         constructorSpy.resetHistory();
@@ -161,6 +192,8 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            useMmap: undefined,
+            defaultFormats: {},
           });
         });
       });
@@ -177,6 +210,8 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: { mode: HierarchyCacheMode.Hybrid, disk: undefined },
             contentCacheSize: undefined,
+            useMmap: undefined,
+            defaultFormats: {},
           });
         });
         constructorSpy.resetHistory();
@@ -200,6 +235,8 @@ describe("PresentationManager", () => {
             isChangeTrackingEnabled: false,
             cacheConfig: expectedConfig,
             contentCacheSize: undefined,
+            useMmap: undefined,
+            defaultFormats: {},
           });
         });
       });
@@ -220,10 +257,25 @@ describe("PresentationManager", () => {
         addon.reset();
       });
 
-      it("sets up ruleset directories if supplied", () => {
-        const dirs = ["test1", "test2"];
-        addon.setup((x) => x.setupRulesetDirectories(dirs)).verifiable();
+      it("sets up primary ruleset directories if supplied", () => {
+        const dirs = ["test1", "test2", "test2"];
+        const addonDirs = [path.join(PRESENTATION_BACKEND_ASSETS_ROOT, "primary-presentation-rules"), "test1", "test2"];
+        addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
         using(new PresentationManager({ addon: addon.object, rulesetDirectories: dirs }), (pm: PresentationManager) => { pm; });
+        addon.verifyAll();
+      });
+
+      it("sets up presentation backend's primary ruleset directories using `presentationAssetsRoot` as string if supplied", () => {
+        const addonDirs = [path.join("/test", "primary-presentation-rules")];
+        addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
+        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: "/test" }), (pm: PresentationManager) => { pm; });
+        addon.verifyAll();
+      });
+
+      it("sets up presentation backend's primary ruleset directories using `presentationAssetsRoot.backend` if supplied", () => {
+        const addonDirs = [path.join("/backend-test", "primary-presentation-rules")];
+        addon.setup((x) => x.setupRulesetDirectories(addonDirs)).verifiable();
+        using(new PresentationManager({ addon: addon.object, presentationAssetsRoot: { backend: "/backend-test", common: "/common-test" } }), (_pm: PresentationManager) => { });
         addon.verifyAll();
       });
 
@@ -298,15 +350,25 @@ describe("PresentationManager", () => {
         });
       });
 
-      it("creates an `UpdateTracker` when in read-write mode and `updatesPollInterval` is specified", () => {
-        const eventSink = sinon.createStubInstance(EventSink) as unknown as EventSink;
+      it("creates an `UpdateTracker` when in read-write mode, `updatesPollInterval` is specified and IPC host is available", () => {
+        sinon.stub(IpcHost, "isValid").get(() => true);
+        sinon.stub(PresentationIpcHandler, "register").returns(() => { });
+
         const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
         const stub = sinon.stub(UpdatesTracker, "create").returns(tracker);
-        using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123, eventSink }), (_) => {
-          expect(stub).to.be.calledOnceWith(sinon.match({ pollInterval: 123, eventSink }));
+        using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123 }), (_) => {
+          expect(stub).to.be.calledOnceWith(sinon.match({ pollInterval: 123 }));
           expect(tracker.dispose).to.not.be.called; // eslint-disable-line @typescript-eslint/unbound-method
         });
         expect(tracker.dispose).to.be.calledOnce; // eslint-disable-line @typescript-eslint/unbound-method
+      });
+
+      it("doesn't create an `UpdateTracker` when IPC host is unavailable", () => {
+        sinon.stub(IpcHost, "isValid").get(() => false);
+        const stub = sinon.stub(UpdatesTracker, "create");
+        using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123 }), (_) => {
+          expect(stub).to.not.be.called;
+        });
       });
 
     });
@@ -467,6 +529,16 @@ describe("PresentationManager", () => {
       expect(() => manager.getNativePlatform()).to.throw(PresentationError);
     });
 
+    it("unregisters PresentationIpcHandler if IpcHost is valid", () => {
+      sinon.stub(IpcHost, "isValid").get(() => true);
+      const nativePlatformMock = moq.Mock.ofType<NativePlatformDefinition>();
+      const unregisterSpy = sinon.spy();
+      sinon.stub(PresentationIpcHandler, "register").returns(unregisterSpy);
+      const manager = new PresentationManager({ addon: nativePlatformMock.object });
+      manager.dispose();
+      expect(unregisterSpy).to.be.calledOnce;
+    });
+
   });
 
   describe("getRulesetId", () => {
@@ -492,8 +564,9 @@ describe("PresentationManager", () => {
       expect(manager.getRulesetId(ruleset)).to.contain(ruleset.id);
     });
 
-    it("returns correct id when input is a ruleset and in native app mode", async () => {
-      sinon.stub(IModelHost, "isNativeAppBackend").get(() => true);
+    it("returns correct id when input is a ruleset and in one-backend-one-frontend mode", async () => {
+      sinon.stub(IpcHost, "isValid").get(() => true);
+      sinon.stub(IpcHost, "handle");
       manager = new PresentationManager({ addon: moq.Mock.ofType<NativePlatformDefinition>().object });
       const ruleset = await createRandomRuleset();
       expect(manager.getRulesetId(ruleset)).to.eq(ruleset.id);
@@ -540,7 +613,7 @@ describe("PresentationManager", () => {
       addonMock.verifyAll();
     });
 
-    it("sends diagnostic options to native platform and invokes listener with diagnostic results", async () => {
+    it("sends diagnostic options to native platform and invokes handler with diagnostic results", async () => {
       const diagnosticOptions: DiagnosticsOptions = {
         perf: true,
         editor: "info",
@@ -555,9 +628,9 @@ describe("PresentationManager", () => {
         .setup(async (x) => x.handleRequest(moq.It.isAny(), moq.It.is((reqStr) => sinon.match(diagnosticOptions).test(JSON.parse(reqStr).params.diagnostics))))
         .returns(async () => ({ result: "{}", diagnostics: diagnosticsResult }))
         .verifiable(moq.Times.once());
-      await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, listener: diagnosticsListener } });
+      await manager.getNodesCount({ requestContext: ClientRequestContext.current, imodel: imodelMock.object, rulesetOrId: "ruleset", diagnostics: { ...diagnosticOptions, handler: diagnosticsListener } });
       addonMock.verifyAll();
-      expect(diagnosticsListener).to.be.calledOnceWith(diagnosticsResult);
+      expect(diagnosticsListener).to.be.calledOnceWith([diagnosticsResult]);
     });
 
   });
@@ -1113,8 +1186,8 @@ describe("PresentationManager", () => {
     describe("compareHierarchies", () => {
 
       it("[deprecated] addon to compare hierarchies after ruleset change", async () => {
-        const var1 = { id: "var", type: VariableValueTypes.Id64, value: 123 };
-        const var2 = { id: "var", type: VariableValueTypes.Id64, value: 465 };
+        const var1: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 123 };
+        const var2: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 465 };
         const nodeKey = createRandomECInstancesNodeKey();
 
         // what the addon receives
@@ -1130,14 +1203,17 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: PartialHierarchyModificationJSON[] = setup([{
-          type: "Insert",
-          position: 1,
-          node: createRandomECInstancesNodeJSON(),
-        }]);
+        const unprocessedResponse: HierarchyCompareInfoJSON = {
+          changes: [{
+            type: "Insert",
+            position: 1,
+            node: createRandomECInstancesNodeJSON(),
+          }],
+        };
+        const addonResponse = setup(unprocessedResponse);
 
         // test
-        const options: PresentationDataCompareOptions<IModelDb, NodeKey> = {
+        const options: HierarchyCompareOptions<IModelDb, NodeKey> = {
           imodel: imodelMock.object,
           prev: {
             rulesetOrId: "test",
@@ -1148,12 +1224,12 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [nodeKey],
         };
         const result = await manager.compareHierarchies(ClientRequestContext.current, options);
-        verifyWithExpectedResult(result, addonResponse.map(PartialHierarchyModification.fromJSON), expectedParams);
+        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse).changes, expectedParams);
       });
 
       it("requests addon to compare hierarchies based on ruleset and variables' changes", async () => {
-        const var1 = { id: "var", type: VariableValueTypes.Id64, value: 123 };
-        const var2 = { id: "var", type: VariableValueTypes.Id64, value: 465 };
+        const var1: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 123 };
+        const var2: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 465 };
         const nodeKey = createRandomECInstancesNodeKey();
 
         // what the addon receives
@@ -1169,14 +1245,17 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: PartialHierarchyModificationJSON[] = setup([{
-          type: "Insert",
-          position: 1,
-          node: createRandomECInstancesNodeJSON(),
-        }]);
+        const unprocessedResponse: HierarchyCompareInfoJSON = {
+          changes: [{
+            type: "Insert",
+            position: 1,
+            node: createRandomECInstancesNodeJSON(),
+          }],
+        };
+        const addonResponse = setup(unprocessedResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1188,7 +1267,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [nodeKey],
         };
         const result = await manager.compareHierarchies(options);
-        verifyWithExpectedResult(result, addonResponse.map(PartialHierarchyModification.fromJSON), expectedParams);
+        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
       it("requests addon to compare hierarchies based on ruleset changes", async () => {
@@ -1205,13 +1284,18 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: PartialHierarchyModificationJSON[] = setup([{
-          type: "Delete",
-          node: createRandomECInstancesNodeJSON(),
-        }]);
+        const addonResponse: HierarchyCompareInfoJSON = {
+          changes: [{
+            type: "Delete",
+            target: createRandomECInstancesNodeJSON().key,
+            parent: createRandomECInstancesNodeJSON().key,
+            position: 123,
+          }],
+        };
+        setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1220,12 +1304,12 @@ describe("PresentationManager", () => {
           rulesetOrId: "test",
         };
         const result = await manager.compareHierarchies(options);
-        verifyWithExpectedResult(result, addonResponse.map(PartialHierarchyModification.fromJSON), expectedParams);
+        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
       it("requests addon to compare hierarchies based on ruleset variables' changes", async () => {
-        const var1 = { id: "var", type: VariableValueTypes.Id64, value: 123 };
-        const var2 = { id: "var", type: VariableValueTypes.Id64, value: 465 };
+        const var1: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 123 };
+        const var2: IntRulesetVariable = { id: "var", type: VariableValueTypes.Int, value: 465 };
 
         // what the addon receives
         const expectedParams = {
@@ -1240,14 +1324,17 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        const addonResponse: PartialHierarchyModificationJSON[] = setup([{
-          type: "Update",
-          node: createRandomECInstancesNodeJSON(),
-          changes: [],
-        }]);
+        const addonResponse: HierarchyCompareInfoJSON = {
+          changes: [{
+            type: "Update",
+            target: createRandomECInstancesNodeJSON().key,
+            changes: {},
+          }],
+        };
+        setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1257,7 +1344,7 @@ describe("PresentationManager", () => {
           rulesetVariables: [var2],
         };
         const result = await manager.compareHierarchies(options);
-        verifyWithExpectedResult(result, addonResponse.map(PartialHierarchyModification.fromJSON), expectedParams);
+        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
       it("returns empty result if neither ruleset nor ruleset variables changed", async () => {
@@ -1269,12 +1356,12 @@ describe("PresentationManager", () => {
           rulesetOrId: "test",
         });
         nativePlatformMock.verify(async (x) => x.handleRequest(moq.It.isAny(), moq.It.isAny()), moq.Times.never());
-        expect(result).to.deep.eq([]);
+        expect(result).to.deep.eq({ changes: [] });
       });
 
       it("throws when trying to compare hierarchies with different ruleset ids", async () => {
         nativePlatformMock.reset();
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1304,10 +1391,13 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        setup([]);
+        const addonResponse: HierarchyCompareInfoJSON = {
+          changes: [],
+        };
+        setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1317,7 +1407,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [],
         };
         const result = await manager.compareHierarchies(options);
-        verifyWithExpectedResult(result, [], expectedParams);
+        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
       it("uses `locale` from options for comparison", async () => {
@@ -1337,10 +1427,13 @@ describe("PresentationManager", () => {
         };
 
         // what the addon returns
-        setup([]);
+        const addonResponse: HierarchyCompareInfoJSON = {
+          changes: [],
+        };
+        setup(addonResponse);
 
         // test
-        const options: WithClientRequestContext<PresentationDataCompareOptions<IModelDb, NodeKey>> = {
+        const options: WithClientRequestContext<HierarchyCompareOptions<IModelDb, NodeKey>> = {
           requestContext: ClientRequestContext.current,
           imodel: imodelMock.object,
           prev: {
@@ -1351,7 +1444,7 @@ describe("PresentationManager", () => {
           expandedNodeKeys: [],
         };
         const result = await manager.compareHierarchies(options);
-        verifyWithExpectedResult(result, [], expectedParams);
+        verifyWithExpectedResult(result, HierarchyCompareInfo.fromJSON(addonResponse), expectedParams);
       });
 
     });
@@ -2404,6 +2497,81 @@ describe("PresentationManager", () => {
         };
         const result = await manager.getPagedDistinctValues(options);
         verifyWithExpectedResult(result, addonResponse, expectedParams);
+      });
+
+    });
+
+    describe("getElementProperties", () => {
+
+      it("returns element properties", async () => {
+        // what the addon receives
+        const elementKey = { className: "BisCore:Element", id: "0x123" };
+        setupIModelForElementKey(imodelMock, elementKey);
+
+        const expectedContentParams = {
+          requestId: NativePlatformRequestTypes.GetContent,
+          params: {
+            keys: new KeySet([elementKey]).toJSON(),
+            descriptorOverrides: {
+              displayType: DefaultContentDisplayTypes.PropertyPane,
+              contentFlags: ContentFlags.ShowLabels,
+            },
+            rulesetId: "ElementProperties",
+          },
+        };
+
+        // what the addon returns
+        const addonContentResponse = new Content(
+          createTestContentDescriptor({
+            fields: [
+              createTestSimpleContentField({
+                name: "test",
+                label: "Test Field",
+                category: createTestCategoryDescription({ label: "Test Category" }),
+              }),
+            ],
+          }),
+          [
+            createTestContentItem({
+              label: "test label",
+              classInfo: createTestECClassInfo({ label: "Test Class" }),
+              primaryKeys: [{ className: "TestSchema:TestClass", id: "0x123" }],
+              values: {
+                test: "test value",
+              },
+              displayValues: {
+                test: "test display value",
+              },
+            }),
+          ],
+        ).toJSON();
+        setup(addonContentResponse);
+
+        // test
+        const options: WithClientRequestContext<ElementPropertiesRequestOptions<IModelDb>> = {
+          requestContext: ClientRequestContext.current,
+          imodel: imodelMock.object,
+          elementId: elementKey.id,
+        };
+        const expectedResponse: ElementProperties = {
+          class: "Test Class",
+          id: "0x123",
+          label: "test label",
+          items: {
+            ["Test Category"]: {
+              type: "category",
+              items: {
+                ["Test Field"]: {
+                  type: "primitive",
+                  value: "test display value",
+                },
+              },
+            },
+          },
+        };
+        const result = await manager.getElementProperties(options);
+        verifyMockRequest(expectedContentParams);
+        expect(result).to.deep.eq(expectedResponse);
       });
 
     });

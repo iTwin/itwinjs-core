@@ -127,8 +127,8 @@ export class BeEvent<T extends Listener> {
   public clear(): void { this._listeners.length = 0; }
 }
 
-/** Specialization of BeEvent for Ui events that take a single strongly typed argument.
- * @beta Right name? Right package?
+/** Specialization of BeEvent for events that take a single strongly typed argument, primarily used for UI events.
+ * @public
  */
 export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
   /** Raises event with single strongly typed argument. */
@@ -138,15 +138,14 @@ export class BeUiEvent<TEventArgs> extends BeEvent<(args: TEventArgs) => void> {
 /**
  * A list of BeEvent objects, accessible by an event name.
  * This class may be used instead of explicitly declaring each BeEvent as a member of a containing class.
- * @beta Is this class used?
+ * @public
  */
 export class BeEventList<T extends Listener> {
   private _events: { [name: string]: BeEvent<T> | undefined } = {};
 
   /**
-   * Gets the BeEvent associated with a name.
+   * Gets the event associated with the specified name, creating the event if it does not already exist.
    * @param name The name of the event.
-   * @note the BeEvent will be created if none existed before this call.
    */
   public get(name: string): BeEvent<T> {
     let event = this._events[name];
@@ -159,7 +158,7 @@ export class BeEventList<T extends Listener> {
   }
 
   /**
-   * Removes the BeEvent associated with a name.
+   * Removes the event associated with a name.
    * @param name The name of the event.
    */
   public remove(name: string): void {

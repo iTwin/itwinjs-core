@@ -1,0 +1,55 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "~@bentley/ui-core/lib/ui-core/select/select";
+
+.components-quantityFormat-panel {
+  display: grid;
+  grid-template-columns: auto 1fr;
+  row-gap: 0;
+  column-gap: 6px;
+  align-items: center;
+
+  >.uicore-label {
+    font-size:    $uicore-font-size;
+    margin: 4.4px 0; /* match margin on other select controls so it spaces properly in grid */
+    &.uicore-disabled {   color: $buic-text-color-disabled; }
+  }
+
+  >span.components-inline {
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    gap: 4px;
+  }
+
+  > label.core-checkbox.core-checkbox-no-label {
+    min-height: 1.57em;
+  }
+
+  >button.components-quantityFormat-more-button {
+    grid-column: 1 / span 2;
+    border: none;
+    outline: none;
+    background: none;
+  }
+
+  .components-quantityFormat-more-button-label {
+    margin-right: .25em;
+  }
+
+  > a.components-quantityFormat-more-less {
+    font-size: $uicore-font-size;
+    color: $buic-foreground-alert;
+    -webkit-transition: text-decoration 1s ease;
+    -moz-transition: text-decoration 1s ease;
+    -o-transition: text-decoration 1s ease;
+    transition: text-decoration 0.1s ease;
+
+    &:hover {
+      text-decoration: underline;
+      cursor: pointer;
+    }
+  }
+}

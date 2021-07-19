@@ -2,6 +2,528 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.18.1",
+      "tag": "@bentley/imodeljs-common_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.0",
+      "tag": "@bentley/imodeljs-common_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Accomodated the inability to reverse Changesets when creating change summaries. "
+          },
+          {
+            "comment": "Use ecef location calculated for projected models.  "
+          },
+          {
+            "comment": "Clean up and promote AnalysisStyle APIs."
+          },
+          {
+            "comment": "Added support for section clip to ElementGraphicsRequestProps."
+          },
+          {
+            "comment": "Add internal API for reconstructing TileOptions from tree and content Ids."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@bentley/imodeljs-common_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.1",
+      "tag": "@bentley/imodeljs-common_v2.17.1",
+      "date": "Fri, 02 Jul 2021 15:38:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.0",
+      "tag": "@bentley/imodeljs-common_v2.17.0",
+      "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clean up and promote beta RenderMaterial and RenderTexture APIs."
+          },
+          {
+            "comment": "Include ECClass Ids in ChangedEntities; provide iteration via ChangedEntitiesIterable."
+          },
+          {
+            "comment": "Added editor apis to request and update geometry, exercised by CreateOrContinuePathTool."
+          },
+          {
+            "comment": "Clean up and promote DisplayStyleSettings APIs for planar clip masks and reality model appearance overrides."
+          },
+          {
+            "comment": "Clean up spatial classification APIs and promote to public."
+          },
+          {
+            "comment": "Export EmphasizeElementProps from common, deprecate from frontend."
+          },
+          {
+            "comment": "Corrected geographicCoordinateSystem property from GeographicCRS to GeographicCRSProps in iModelProps\""
+          },
+          {
+            "comment": "Persist 'visible' property of map-layers.  Removed unused 'maxZoom' property on MapLayerProps."
+          },
+          {
+            "comment": "Made MaplayerSource independent from MapLayerProps."
+          },
+          {
+            "comment": "Add events for changes to IModel properties. Add RenderSchedule.ScriptBuilder for assembling a new schedule script."
+          },
+          {
+            "comment": "deprecate IModelVersion.evaluateChangeSet"
+          },
+          {
+            "comment": "Changed area to extent to conform with iModelHub public API"
+          },
+          {
+            "comment": "Promote various APIs to public. Remove useless TextureProps properties."
+          },
+          {
+            "comment": "Don't allow undo of changes to project extents or geolocation."
+          },
+          {
+            "comment": "promote BriefcaseManager to public"
+          },
+          {
+            "comment": "Promoted GCS model to public API"
+          },
+          {
+            "comment": "Make Ipc interfaces @public. Promote BriefcaseManager to public"
+          },
+          {
+            "comment": "Clean up and promote beta RenderMaterial and RenderTexture APIs."
+          },
+          {
+            "comment": "Remove useless TextureProps properties."
+          },
+          {
+            "comment": "TextureLoadProps takes a maxTextureSize."
+          },
+          {
+            "comment": "Removed unrequired sourceEllipsoidId and targetEllipsoidId from Geodetic Transforms"
+          },
+          {
+            "comment": "Add RenderSchedule.ScriptBuilder for assembling a new schedule script."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.9",
+      "tag": "@bentley/imodeljs-common_v2.16.9",
+      "date": "Tue, 06 Jul 2021 22:08:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.8",
+      "tag": "@bentley/imodeljs-common_v2.16.8",
+      "date": "Fri, 02 Jul 2021 17:40:46 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.7",
+      "tag": "@bentley/imodeljs-common_v2.16.7",
+      "date": "Mon, 28 Jun 2021 18:13:04 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.6",
+      "tag": "@bentley/imodeljs-common_v2.16.6",
+      "date": "Mon, 28 Jun 2021 13:12:55 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.5",
+      "tag": "@bentley/imodeljs-common_v2.16.5",
+      "date": "Fri, 25 Jun 2021 16:03:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Synch map settings provider when base layer provider changes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.4",
+      "tag": "@bentley/imodeljs-common_v2.16.4",
+      "date": "Wed, 23 Jun 2021 17:09:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.3",
+      "tag": "@bentley/imodeljs-common_v2.16.3",
+      "date": "Wed, 16 Jun 2021 20:29:32 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.2",
+      "tag": "@bentley/imodeljs-common_v2.16.2",
+      "date": "Thu, 03 Jun 2021 18:08:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.1",
+      "tag": "@bentley/imodeljs-common_v2.16.1",
+      "date": "Thu, 27 May 2021 20:04:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.0",
+      "tag": "@bentley/imodeljs-common_v2.16.0",
+      "date": "Mon, 24 May 2021 15:58:39 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Introduced Additional Transform for Geographic Coordinate Systems"
+          },
+          {
+            "comment": "wip: CreateElementTool. Fix not being able to pick decorations after changing files."
+          },
+          {
+            "comment": "Allow RenderGraphic to be created from flatbuffers format geometry as well as json."
+          },
+          {
+            "comment": "Fix incorrect transforms applied by schedule scripts."
+          },
+          {
+            "comment": "Updated map layers release tags from alpha to beta."
+          },
+          {
+            "comment": "Additional properties (source/target ellipsoid) and fallback transform for geodetic transforms\""
+          },
+          {
+            "comment": "Make changed elements public and add descriptions"
+          },
+          {
+            "comment": "Fixes to desktop/mobile authorization"
+          },
+          {
+            "comment": "Add shader based grid display."
+          },
+          {
+            "comment": "Add Viewport.queryVisibleFeatures to determine the set of features currently visible in a viewport."
+          },
+          {
+            "comment": "Clean up RenderSchedule API."
+          },
+          {
+            "comment": "add placement to GeomtricElementProps"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.6",
+      "tag": "@bentley/imodeljs-common_v2.15.6",
+      "date": "Wed, 26 May 2021 15:55:19 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.5",
+      "tag": "@bentley/imodeljs-common_v2.15.5",
+      "date": "Thu, 20 May 2021 15:06:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.4",
+      "tag": "@bentley/imodeljs-common_v2.15.4",
+      "date": "Tue, 18 May 2021 21:59:07 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.3",
+      "tag": "@bentley/imodeljs-common_v2.15.3",
+      "date": "Mon, 17 May 2021 13:31:38 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.2",
+      "tag": "@bentley/imodeljs-common_v2.15.2",
+      "date": "Wed, 12 May 2021 18:08:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.15.1",
+      "tag": "@bentley/imodeljs-common_v2.15.1",
+      "date": "Wed, 05 May 2021 13:18:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "FeatureOverrides can hide or override the symbology of unanimated nodes."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.15.0",
+      "tag": "@bentley/imodeljs-common_v2.15.0",
+      "date": "Fri, 30 Apr 2021 12:36:58 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add documentation and links for each BisCodeSpec name."
+          },
+          {
+            "comment": "Properly declare changeSetId variables as string."
+          },
+          {
+            "comment": "Promote display-related APIs."
+          },
+          {
+            "comment": "An ElementGraphicsRequest can supply a non-persistent geometry stream."
+          },
+          {
+            "comment": "Add TypeScript wrappers for ExternalSource and related classes and relationships."
+          },
+          {
+            "comment": "Fixes to desktop and iOS apps."
+          },
+          {
+            "comment": "ClipStyle supports recolorization. Promote ModelClipGroups to public."
+          },
+          {
+            "comment": "Promote thematic display API to public."
+          },
+          {
+            "comment": "Optimize reality model processing."
+          },
+          {
+            "comment": "Remove deprecated ElementEditor that was replaced by EditCommands."
+          },
+          {
+            "comment": "rename (deprecate) BriefcaseIdValue.Standalone to BriefcaseIdValue.Unassigned to reduce confusion"
+          },
+          {
+            "comment": "Update release tags."
+          },
+          {
+            "comment": "Add support for forwarding txn events from backend to frontend."
+          },
+          {
+            "comment": "Update api tags"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.14.4",
+      "tag": "@bentley/imodeljs-common_v2.14.4",
+      "date": "Thu, 22 Apr 2021 21:07:33 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.3",
+      "tag": "@bentley/imodeljs-common_v2.14.3",
+      "date": "Thu, 15 Apr 2021 15:13:16 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.2",
+      "tag": "@bentley/imodeljs-common_v2.14.2",
+      "date": "Thu, 08 Apr 2021 14:30:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.1",
+      "tag": "@bentley/imodeljs-common_v2.14.1",
+      "date": "Mon, 05 Apr 2021 16:28:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.14.0",
+      "tag": "@bentley/imodeljs-common_v2.14.0",
+      "date": "Fri, 02 Apr 2021 13:18:42 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "added BriefcaseIdValue"
+          },
+          {
+            "comment": "rework Authentication to use IpcHost"
+          },
+          {
+            "comment": "add `bindings` member to EntityQueryParams"
+          },
+          {
+            "comment": "Support working in world coords with ElementGeometry.Builder/Iterator. Place line string using ipc command."
+          },
+          {
+            "comment": "Add IpcAppFunctions.queryConcurrency."
+          },
+          {
+            "comment": "Memory leak fix"
+          },
+          {
+            "comment": "Decouple requesting tile content from cloud storage and from backend."
+          },
+          {
+            "comment": "Support for transient errors"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.13.0",
+      "tag": "@bentley/imodeljs-common_v2.13.0",
+      "date": "Tue, 09 Mar 2021 20:28:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Clarify and expand FeatureOverrides documentation."
+          },
+          {
+            "comment": "The `Code` constructor now trims leading and trailing whitespace characters from the `value` property"
+          },
+          {
+            "comment": "The Code.getValue method has been deprecated in favor of the Code.value property"
+          },
+          {
+            "comment": "Fixed broken double angle bracket link syntax"
+          },
+          {
+            "comment": "refactor IModelApp/IModelHost startup"
+          },
+          {
+            "comment": "Add planar clip mask support."
+          },
+          {
+            "comment": "Updated to use TypeScript 4.1"
+          },
+          {
+            "comment": "Undo/Redo shortcuts"
+          },
+          {
+            "comment": "begin rename project from iModel.js to iTwin.js"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.3",
+      "tag": "@bentley/imodeljs-common_v2.12.3",
+      "date": "Mon, 08 Mar 2021 15:32:00 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.2",
+      "tag": "@bentley/imodeljs-common_v2.12.2",
+      "date": "Wed, 03 Mar 2021 18:48:52 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.12.1",
+      "tag": "@bentley/imodeljs-common_v2.12.1",
+      "date": "Tue, 23 Feb 2021 20:54:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Persist the time point used to compute solar light direction in LightSettingsProps."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.12.0",
+      "tag": "@bentley/imodeljs-common_v2.12.0",
+      "date": "Thu, 18 Feb 2021 22:10:13 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Deprecate detachChangeCache()"
+          },
+          {
+            "comment": "Implement external textures for iModel tiles."
+          },
+          {
+            "comment": "Moved username/password from MapLayerProps to MapLayerSettings. Raise the 'onMapImageryChanged' event when ever Map imagery is synced."
+          },
+          {
+            "comment": "add ResponseHandler for notifications from backend to frontend"
+          },
+          {
+            "comment": "Mobile IPC fix"
+          },
+          {
+            "comment": "Mobile IPC fix"
+          },
+          {
+            "comment": "add IpcSocket"
+          },
+          {
+            "comment": "remove IpcInterface, getVersion() method is not needed"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.11.2",
+      "tag": "@bentley/imodeljs-common_v2.11.2",
+      "date": "Thu, 18 Feb 2021 02:50:59 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.1",
+      "tag": "@bentley/imodeljs-common_v2.11.1",
+      "date": "Thu, 04 Feb 2021 17:22:41 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.11.0",
+      "tag": "@bentley/imodeljs-common_v2.11.0",
+      "date": "Thu, 28 Jan 2021 13:39:27 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fix brep DataProps to/from flatbuffer to account for base64 string header."
+          },
+          {
+            "comment": "Element geometry creation by brep operations. "
+          },
+          {
+            "comment": "add EditCommand"
+          },
+          {
+            "comment": "Improve ElementGeometry documentation."
+          },
+          {
+            "comment": "Remove assertion in supplyPathForOperation when defaulting changeSetId."
+          },
+          {
+            "comment": "Introduced the the Geographic Coordinate System classes and plugged in the Imodel props."
+          },
+          {
+            "comment": "Separated out API to upgrade iModels."
+          },
+          {
+            "comment": "Remove unused trueWidth and trueStart properties from GraphicParams."
+          },
+          {
+            "comment": "Add option to SectionDrawingProps specifying the spatial view should be drawn in the context of the drawing view."
+          },
+          {
+            "comment": "Support for section-cut graphics."
+          },
+          {
+            "comment": "Version compare property checksums"
+          },
+          {
+            "comment": "Add change events to DisplayStyleSettings and ViewDetails."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.10.3",
       "tag": "@bentley/imodeljs-common_v2.10.3",
       "date": "Fri, 08 Jan 2021 18:34:03 GMT",

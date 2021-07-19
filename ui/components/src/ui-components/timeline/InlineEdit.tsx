@@ -31,7 +31,7 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: InlineEditProps, _prevState: InlineEditState) { // eslint-disable-line @typescript-eslint/naming-convention
+  public override componentDidUpdate(prevProps: InlineEditProps, _prevState: InlineEditState) { // eslint-disable-line @typescript-eslint/naming-convention
     if (prevProps.defaultValue !== this.props.defaultValue) {
       this.setState((_, props) => {
         return { value: props.defaultValue, originalValue: props.defaultValue };
@@ -49,12 +49,15 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
   };
 
   private _onKeyDown = (event: React.KeyboardEvent<HTMLInputElement>) => {
-    if (event.key === SpecialKey.Escape) {
-      this.setState(
-        (prevState) => ({ value: prevState.originalValue }),
-        () => this._inputRef.current!.select());
-    } else if (event.key === SpecialKey.Enter) {
-      this._sendChange(this.state.value);
+    switch (event.key) {
+      case SpecialKey.Escape:
+        this.setState(
+          (prevState) => ({ value: prevState.originalValue }),
+          () => this._inputRef.current!.select());
+        break;
+      case SpecialKey.Enter:
+        this._sendChange(this.state.value);
+        break;
     }
   };
 
@@ -68,7 +71,7 @@ export class InlineEdit extends React.Component<InlineEditProps, InlineEditState
       this.props.onChange(value);
   }
 
-  public render() {
+  public override render() {
     return (
       <input
         data-testid="timeline-duration-edit-input"

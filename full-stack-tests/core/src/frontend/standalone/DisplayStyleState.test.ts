@@ -2,10 +2,14 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Vector3d } from "@bentley/geometry-core";
-import { BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, FeatureAppearance, SpatialClassificationProps, ThematicDisplayMode } from "@bentley/imodeljs-common";
-import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
 import { expect } from "chai";
+import { CompressedId64Set } from "@bentley/bentleyjs-core";
+import { Vector3d } from "@bentley/geometry-core";
+import {
+  BackgroundMapType, ColorByName, DisplayStyle3dProps, DisplayStyle3dSettingsProps, PlanarClipMaskMode, PlanarClipMaskSettings,
+  SpatialClassifierInsideDisplay, SpatialClassifierOutsideDisplay, ThematicDisplayMode,
+} from "@bentley/imodeljs-common";
+import { ContextRealityModelState, DisplayStyle3dState, IModelConnection, MockRender, SnapshotConnection } from "@bentley/imodeljs-frontend";
 
 describe("DisplayStyle", () => {
   let imodel: IModelConnection;
@@ -63,28 +67,6 @@ describe("DisplayStyle", () => {
     expect(style.sunDirection.z).to.equal(sunDir.z);
   });
 
-  it("Should override model appearance correctly", () => {
-    const style = new DisplayStyle3dState(styleProps, imodel);
-    const appearanceOverride = FeatureAppearance.fromJSON({
-      rgb: { r: 0, g: 255, b: 0 },
-      transparency: 0.5,
-      nonLocatable: true,
-      emphasized: true,
-    });
-
-    let index = 0;
-    style.forEachRealityModel((_realityModel) => {
-      style.overrideRealityModelAppearance(index, appearanceOverride);
-
-      expect(appearanceOverride).to.deep.equal(style.getRealityModelAppearanceOverride(index));
-      index++;
-    });
-
-    const modelId = "0x001f";
-    style.overrideModelAppearance(modelId, appearanceOverride);
-    expect(appearanceOverride).to.deep.equal(style.getModelAppearanceOverride(modelId));
-  });
-
   it("should use iModel extents for thematic height range if unspecified", () => {
     const style = new DisplayStyle3dState(styleProps, imodel);
     style.settings.applyOverrides({ thematic: { displayMode: ThematicDisplayMode.Height, range: [1, 100] } });
@@ -99,7 +81,7 @@ describe("DisplayStyle", () => {
     expect(style.settings.thematic.range.isNull).to.be.true;
   });
 
-  it("should override selected settings", () => {
+  it("should override selected settings", async () => {
     const style = new DisplayStyle3dState(styleProps, imodel);
     const test = (overrides: DisplayStyle3dSettingsProps, changed?: DisplayStyle3dSettingsProps) => {
       const originalSettings = { ...style.settings.toJSON() };
@@ -117,11 +99,12 @@ describe("DisplayStyle", () => {
       if (undefined !== expected.contextRealityModels)
         compareRealityModels(style, expected);
 
+      // eslint-disable-next-line deprecation/deprecation
       if (undefined !== expected.scheduleScript)
         compareScheduleScripts(style, expected);
     };
 
-    function compareRealityModels(style3d: DisplayStyle3dState, expected: any): void {
+    function compareRealityModels(style3d: DisplayStyle3dState, expected: DisplayStyle3dSettingsProps): void {
       const models: ContextRealityModelState[] = [];
       style3d.forEachRealityModel((model) => models.push(model));
       if (undefined !== expected.contextRealityModels) {
@@ -138,24 +121,31 @@ describe("DisplayStyle", () => {
 
           expect(undefined === a.classifiers).to.equal(undefined === e.classifiers);
           if (undefined !== a.classifiers && undefined !== e.classifiers)
-            expect(a.classifiers.length).to.equal(e.classifiers.length);
+            expect(a.classifiers.size).to.equal(e.classifiers.length);
 
-          const foundIndex = style3d.findRealityModelIndex((accept) => { return accept.url === a.url; });
-          expect(i === foundIndex);
+          expect(undefined === a.planarClipMaskSettings).to.equal(undefined === e.planarClipMask);
+          if (undefined !== a.planarClipMaskSettings && undefined !== e.planarClipMask)
+            expect(a.planarClipMaskSettings.equals(PlanarClipMaskSettings.fromJSON(e.planarClipMask)));
+
+          const foundIndex = style3d.settings.contextRealityModels.models.findIndex((x) => x.url === a.url);
+          expect(foundIndex).to.equal(i);
         }
         // Detach all.
-        style3d.detachRealityModelByIndex(-1);
+        style3d.settings.contextRealityModels.clear();
         style3d.forEachRealityModel((_model) => expect(false));
       } else {
         expect(models.length).to.equal(0);
       }
     }
 
-    function compareScheduleScripts(style3d: DisplayStyle3dState, expected: any): void {
-      if (undefined !== style3d.scheduleScript)
+    function compareScheduleScripts(style3d: DisplayStyle3dState, expected: DisplayStyle3dSettingsProps): void {
+      if (undefined !== style3d.scheduleScript) {
+        // eslint-disable-next-line deprecation/deprecation
         expect(JSON.stringify(style3d.scheduleScript.toJSON())).to.equal(JSON.stringify(expected.scheduleScript));
-      else
+      } else {
+        // eslint-disable-next-line deprecation/deprecation
         expect(expected.scheduleScript).to.be.undefined;
+      }
     }
 
     // Note that each test adds some new settings to our display style. This allows us to test that settings not specified in overrides retain their previous values.
@@ -165,6 +155,7 @@ describe("DisplayStyle", () => {
         providerData: { mapType: BackgroundMapType.Street },
         applyTerrain: true,
         terrainSettings: { exaggeration: 0.5, heightOriginMode: 1 },
+        planarClipMask: { mode: PlanarClipMaskMode.IncludeSubCategories, modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]), transparency: .5, subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]), priority: 0 },
       },
     });
 
@@ -180,10 +171,9 @@ describe("DisplayStyle", () => {
           modelId: "0x321",
           expand: 1.5,
           flags: {
-            inside: SpatialClassificationProps.Display.Dimmed,
-            outside: SpatialClassificationProps.Display.On,
+            inside: SpatialClassifierInsideDisplay.Dimmed,
+            outside: SpatialClassifierOutsideDisplay.On,
             isVolumeClassifier: false,
-            type: 0,
           },
           name: "bing",
           isActive: true,
@@ -193,14 +183,14 @@ describe("DisplayStyle", () => {
         tilesetUrl: "google.com",
         name: "google",
         description: "a popular search engine",
+
         classifiers: [{
           modelId: "0x321",
           expand: 1.5,
           flags: {
-            inside: SpatialClassificationProps.Display.Dimmed,
-            outside: SpatialClassificationProps.Display.On,
+            inside: SpatialClassifierInsideDisplay.Dimmed,
+            outside: SpatialClassifierOutsideDisplay.On,
             isVolumeClassifier: false,
-            type: 0,
           },
           name: "google",
           isActive: true,
@@ -229,7 +219,6 @@ describe("DisplayStyle", () => {
         gradientSettings: {
           mode: 1,
           colorScheme: 1,
-          customKeys: [],
           stepCount: 3,
           marginColor: ColorByName.pink,
           colorMix: 0.333,
@@ -253,14 +242,14 @@ describe("DisplayStyle", () => {
         tilesetUrl: "google.com",
         name: "google",
         description: "a popular search engine",
+        planarClipMask: { mode: PlanarClipMaskMode.IncludeSubCategories, modelIds: CompressedId64Set.compressArray(["0x123", "0x456"]), transparency: .5, subCategoryOrElementIds: CompressedId64Set.compressArray(["0x123", "0x456"]), priority: 1024 },
         classifiers: [{
           modelId: "0x123",
           expand: 0.5,
           flags: {
-            inside: SpatialClassificationProps.Display.Off,
-            outside: SpatialClassificationProps.Display.Dimmed,
+            inside: SpatialClassifierInsideDisplay.Off,
+            outside: SpatialClassifierOutsideDisplay.Dimmed,
             isVolumeClassifier: true,
-            type: 0,
           },
           name: "google",
           isActive: false,
@@ -281,6 +270,7 @@ describe("DisplayStyle", () => {
 
     // Also, while we have one constructed, test creation with reality model and script.
     const newStyle = new DisplayStyle3dState(style.toJSON(), imodel);
+    await newStyle.load();
     expect(newStyle.equals(style)).to.be.true;
     compareRealityModels(newStyle, style.settings.toJSON());
     compareScheduleScripts(newStyle, style.settings.toJSON());

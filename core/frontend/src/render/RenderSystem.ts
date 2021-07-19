@@ -7,21 +7,23 @@
  */
 
 import { base64StringToUint8Array, Id64String, IDisposable } from "@bentley/bentleyjs-core";
-import { ClipVector, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
-import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
+import { ClipVector, Matrix3d, Point2d, Point3d, Range2d, Range3d, Transform, Vector2d, XAndY } from "@bentley/geometry-core";
+import { ColorDef, ElementAlignedBox3d, FeatureIndexType, Frustum, Gradient, ImageBuffer, ImageSource, ImageSourceFormat, isValidImageSourceFormat, PackedFeatureTable, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, TextureProps } from "@bentley/imodeljs-common";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { SkyBox } from "../DisplayStyleState";
 import { imageElementFromImageSource } from "../ImageUtil";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";
 import { MapTileTreeReference, TileTreeReference } from "../tile/internal";
+import { ToolAdmin } from "../tools/ToolAdmin";
 import { SceneContext } from "../ViewContext";
 import { Viewport } from "../Viewport";
 import { ViewRect } from "../ViewRect";
 import { GraphicBranch, GraphicBranchOptions } from "./GraphicBranch";
-import { GraphicBuilder, GraphicType } from "./GraphicBuilder";
+import { BatchOptions, GraphicBuilder, GraphicBuilderOptions, GraphicType } from "./GraphicBuilder";
 import { InstancedGraphicParams } from "./InstancedGraphicParams";
 import { MeshArgs, PolylineArgs } from "./primitives/mesh/MeshPrimitives";
+import { RealityMeshPrimitive } from "./primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "./primitives/mesh/TerrainMeshPrimitive";
 import { PointCloudArgs } from "./primitives/PointCloudPrimitive";
 import { MeshParams, PointStringParams, PolylineParams } from "./primitives/VertexTable";
@@ -131,11 +133,10 @@ export interface RenderSystemDebugControl {
 }
 
 /** @internal */
-export abstract class RenderTerrainMeshGeometry implements IDisposable, RenderMemory.Consumer {
+export abstract class RenderRealityMeshGeometry implements IDisposable, RenderMemory.Consumer {
   public abstract dispose(): void;
   public abstract collectStatistics(stats: RenderMemory.Statistics): void;
 }
-
 /** @internal */
 export class TerrainTexture {
   public constructor(public readonly texture: RenderTexture, public featureId: number, public readonly scale: Vector2d, public readonly translate: Vector2d, public readonly targetRectangle: Range2d, public readonly layerIndex: number, public transparency: number, public readonly clipRectangle?: Range2d) {
@@ -146,6 +147,35 @@ export class TerrainTexture {
 export class DebugShaderFile {
   public constructor(public readonly filename: string, public readonly src: string, public isVS: boolean, public isGL: boolean, public isUsed: boolean) {
   }
+}
+/** Transparency settings for planar grid display.
+ * @alpha
+ */
+export class PlanarGridTransparency {
+  /** Transparency for the grid plane.   This should generally be fairly high to avoid obscuring other geometry */
+  public readonly planeTransparency = .9;
+  /** Transparency of the grid lines.  This should be higher than the plane, but less than reference line transparency */
+  public readonly lineTransparency = .75;
+  /** Transparency of the reference lines.   This should be less than plane or line transparency so that reference lines are more prominent */
+  public readonly refTransparency = .5;
+}
+
+/** Settings for planar grid display.
+ * @alpha
+ */
+export interface PlanarGridProps {
+  /**  The grid origin */
+  origin: Point3d;
+  /** The grid orientation. The grid X and Y direction are the first and second matrix rows */
+  rMatrix: Matrix3d;
+  /** The spacing between grid liens in the X and Y direction */
+  spacing: XAndY;
+  /** Grid lines per reference. If zero no reference lines are displayed. */
+  gridsPerRef: number;
+  /** Grid color.   [[Use Viewport.getContrastToBackgroundColor]] to get best constrast color based on current background. */
+  color: ColorDef;
+  /** Transparency settings.  If omitted then the [[PlanarGridTransparency]] defaults are used. */
+  transparency?: PlanarGridTransparency;
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
@@ -191,6 +221,9 @@ export abstract class RenderSystem implements IDisposable {
   public get supportsInstancing(): boolean { return true; }
 
   /** @internal */
+  public get supportsNonuniformScaledInstancing(): boolean { return true; }
+
+  /** @internal */
   public get dpiAwareLOD(): boolean { return true === this.options.dpiAwareLOD; }
 
   /** @internal */
@@ -232,11 +265,19 @@ export abstract class RenderSystem implements IDisposable {
    * @see [[RenderContext.createGraphicBuilder]].
    * @see [[Decorator]]
    */
-  public abstract createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder;
+  public createGraphicBuilder(placement: Transform, type: GraphicType, viewport: Viewport, pickableId?: Id64String): GraphicBuilder {
+    const pickable = undefined !== pickableId ? { id: pickableId } : undefined;
+    return this.createGraphic({ type, viewport, placement, pickable });
+  }
+
+  /** Obtain a [[GraphicBuilder]] from which to produce a [[RenderGraphic]].
+   * @param options Options describing how to create the builder.
+   * @returns A builder that produces a [[RenderGraphic]].
+   */
+  public abstract createGraphic(options: GraphicBuilderOptions): GraphicBuilder;
 
   /** Obtain an object capable of producing a custom screen-space effect to be applied to the image rendered by a [[Viewport]].
    * @returns undefined if screen-space effects are not supported by this RenderSystem.
-   * @beta
    */
   public createScreenSpaceEffectBuilder(_params: ScreenSpaceEffectBuilderParams): ScreenSpaceEffectBuilder | undefined {
     return undefined;
@@ -264,17 +305,27 @@ export abstract class RenderSystem implements IDisposable {
   /** @internal */
   public createPolyline(_params: PolylineParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public createTerrainMeshGeometry(_terrainMesh: TerrainMeshPrimitive, _transform: Transform): RenderTerrainMeshGeometry | undefined { return undefined; }
+  public createRealityMeshFromTerrain(_terrainMesh: TerrainMeshPrimitive, _transform?: Transform): RenderRealityMeshGeometry | undefined { return undefined; }
   /** @internal */
-  public createTerrainMeshGraphic(_terrainGeometry: RenderTerrainMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
+  public createRealityMeshGraphic(_terrainGeometry: RenderRealityMeshGeometry, _featureTable: PackedFeatureTable, _tileId: string | undefined, _baseColor: ColorDef | undefined, _baseTransparent: boolean, _textures?: TerrainTexture[]): RenderGraphic | undefined { return undefined; }
   /** @internal */
-  public get maxTerrainImageryLayers() { return 0; }
+  public createRealityMesh(_realityMesh: RealityMeshPrimitive): RenderGraphic | undefined { return undefined; }
+  /** @internal */
+  public get maxRealityImageryLayers() { return 0; }
   /** @internal */
   public createPointString(_params: PointStringParams, _instances?: InstancedGraphicParams | Point3d): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createPointCloud(_args: PointCloudArgs, _imodel: IModelConnection): RenderGraphic | undefined { return undefined; }
-  /** @internal */
+
+  /** Create a clip volume to clip geometry.
+   * @note The clip volume takes ownership of the ClipVector, which must not be subsequently mutated.
+   * @param _clipVector Defines how the volume clips geometry.
+   * @returns A clip volume, or undefined if, e.g., the clip vector does not clip anything.
+   */
   public createClipVolume(_clipVector: ClipVector): RenderClipVolume | undefined { return undefined; }
+
+  /** @internal */
+  public createPlanarGrid(_frustum: Frustum,_grid: PlanarGridProps): RenderGraphic | undefined { return undefined; }
   /** @internal */
   public createBackgroundMapDrape(_drapedTree: TileTreeReference, _mapTree: MapTileTreeReference): RenderTextureDrape | undefined { return undefined; }
   /** @internal */
@@ -332,13 +383,16 @@ export abstract class RenderSystem implements IDisposable {
     return this.createGraphicBranch(branch, transform);
   }
 
-  /** @internal */
+  /** Create a graphic from a [[GraphicBranch]]. */
   public abstract createGraphicBranch(branch: GraphicBranch, transform: Transform, options?: GraphicBranchOptions): RenderGraphic;
 
   /** Create a RenderGraphic consisting of batched [[Feature]]s.
    * @internal
    */
-  public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string): RenderGraphic;
+  public abstract createBatch(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions): RenderGraphic;
+
+  /** Return a Promise which when resolved indicates that all pending external textures have finished loading from the backend. */
+  public async waitForAllExternalTextures(): Promise<void> { return Promise.resolve(); }
 
   /** Create a graphic that assumes ownership of another graphic.
    * @param ownedGraphic The RenderGraphic to be owned.
@@ -440,6 +494,9 @@ export abstract class RenderSystem implements IDisposable {
     });
   }
 
+  /** Create a new texture by its element ID. This texture will be retrieved asynchronously from the backend. A placeholder image will be associated with the texture until the requested image data loads. */
+  public createTextureFromElement(_id: Id64String, _imodel: IModelConnection, _params: RenderTexture.Params, _format: ImageSourceFormat): RenderTexture | undefined { return undefined; }
+
   /** Create a new texture from a cube of HTML images.
    * @internal
    */
@@ -461,6 +518,24 @@ export abstract class RenderSystem implements IDisposable {
 
   /** @internal */
   public collectStatistics(_stats: RenderMemory.Statistics): void { }
+
+  /** A function that is invoked after the WebGL context is lost. Context loss is almost always caused by excessive consumption of GPU memory.
+   * After context loss occurs, the RenderSystem will be unable to interact with WebGL by rendering viewports, creating graphics and textures, etc.
+   * By default, this function invokes [[ToolAdmin.exceptionHandler]] with a brief message describing what occurred.
+   * An application can override this behavior as follows:
+   * ```ts
+   * RenderSystem.contextLossHandler = (): Promise<any> => {
+   *  // your implementation here.
+   * }
+   * ```
+   * @note Context loss is reported by the browser some short time *after* it has occurred. It is not possible to determine the specific cause.
+   * @see [[TileAdmin.gpuMemoryLimit]] to limit the amount of GPU memory consumed thereby reducing the likelihood of context loss.
+   * @see [[TileAdmin.totalTileContentBytes]] for the amount of GPU memory allocated for tile graphics.
+   */
+  public static async contextLossHandler(): Promise<any> {
+    const msg = IModelApp.i18n.translate("iModelJs:Errors.WebGLContextLost");
+    return ToolAdmin.exceptionHandler(msg);
+  }
 }
 
 /** A RenderSystem provides access to resources used by the internal WebGL-based rendering system.
@@ -472,15 +547,15 @@ export abstract class RenderSystem implements IDisposable {
 export namespace RenderSystem { // eslint-disable-line no-redeclare
   /** Options passed to [[IModelApp.supplyRenderSystem]] to configure the [[RenderSystem]] on startup. Many of these options serve as "feature flags" used to enable newer, experimental features. As such they typically begin life tagged as "alpha" or "beta" and are subsequently deprecated when the feature is declared stable.
    *
-   * @beta
+   * @public
    */
   export interface Options {
     /** WebGL extensions to be explicitly disabled, regardless of whether or not the WebGL implementation supports them.
-     * This is chiefly useful for testing code which only executes in the absence of particular extensions.
+     * This is chiefly useful for testing code that only executes in the absence of particular extensions, while running on a system that supports those extensions.
      *
      * Default value: undefined
      *
-     * @internal
+     * @public
      */
     disabledExtensions?: WebGLExtensionName[];
 
@@ -488,7 +563,7 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      *
      * Default value: false
      *
-     * @internal
+     * @public
      */
     preserveShaderSourceCode?: boolean;
 
@@ -504,24 +579,13 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      *
      * Default value: true
      *
-     * @beta
+     * @public
      */
     logarithmicDepthBuffer?: boolean;
 
-    /** If true anisotropic filtering is applied to map tile textures.
-     *
-     * Default value: false
-     *
-     * @internal
-     */
+    /** ###TODO this appears to do nothing. @internal */
     filterMapTextures?: boolean;
-
-    /** If true anisotropic filtering is not applied to draped map tile textures.
-     *
-     * Default value: true
-     *
-     * @internal
-     */
+    /** ###TODO this appears to do nothing. @internal */
     filterMapDrapeTextures?: boolean;
 
     /** If true, [[ScreenViewport]]s will respect the DPI of the display.  See [[Viewport.devicePixelRatio]] and [[Viewport.cssPixelsToDevicePixels]].
@@ -531,7 +595,7 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      *
      * Default value: true
      *
-     * @beta
+     * @public
      */
     dpiAwareViewports?: boolean;
 
@@ -543,7 +607,7 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      *
      * Default value: undefined
      *
-     * @beta
+     * @public
      */
     devicePixelRatioOverride?: number;
 
@@ -554,28 +618,29 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
      *
      * Default value: false
      *
-     * @beta
+     * @public
      */
     dpiAwareLOD?: boolean;
 
-    /** If true will attempt to create a WebGL2 context.
+    /** If true will attempt to create a WebGL2 context, falling back to WebGL1 if WebGL2 is not supported.
      *
      * Default value: true
      *
-     * @internal
+     * @public
      */
     useWebGL2?: boolean;
 
     /** If true, plan projection models will be rendered using [PlanProjectionSettings]($common) defined by the [[DisplayStyle3dState]].
      * Default value: true
-     * @internal
+     * @public
      */
     planProjections?: boolean;
 
-    /** By default, shader programs used by the [[RenderSystem]] are not compiled until the first time they are used. This can produce noticeable delays when the user interacts with a [[Viewport]].
-     * To prevent such delays, set this to `true` to allow the RenderSystem to precompile shader programs before any Viewport is opened.
-     * Applications should consider enabling this feature if they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and a view through the user interface.
+    /** To help prevent delays when a user interacts with a [[Viewport]], the WebGL render system can precompile shader programs before any Viewport is opened.
+     * This particularly helps applications when they do not open a Viewport immediately upon startup - for example, if the user is first expected to select an iModel and a view through the user interface.
      * Shader precompilation will cease once all shader programs have been compiled, or when a Viewport is opened (registered with the [[ViewManager]]).
+     * @note Enabling this feature can slow UI interactions before a [[Viewport]] is opened.
+     * To enable this feature, set this to `true`.
      *
      * Default value: false
      *
@@ -599,7 +664,7 @@ export namespace RenderSystem { // eslint-disable-line no-redeclare
     /** Initial antialias setting
      * If > 1, and a WebGL2 context is being used, will turn on antialiasing using that many samples.
      * Default value: 1
-     * @beta
+     * @public
      */
     antialiasSamples?: number;
   }

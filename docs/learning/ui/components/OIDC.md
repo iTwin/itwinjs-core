@@ -31,7 +31,7 @@ import { FrontendRequestContext } from "@bentley/imodeljs-frontend";
   }
 
   private _onRegister = () => {
-    window.open("https://www.imodeljs.org/getting-started/#developer-registration", "_blank");
+    window.open("https://www.itwinjs.org/getting-started/#developer-registration", "_blank");
   }
 ```
 
@@ -39,4 +39,4 @@ import { FrontendRequestContext } from "@bentley/imodeljs-frontend";
 
 ## API Reference
 
-* [OIDC]($ui-components:OIDC)
+- [OIDC]($ui-components:OIDC)

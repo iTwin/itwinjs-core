@@ -6,9 +6,11 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
   groupItemDef={
     GroupItemDef {
       "_description": "",
+      "_isActive": false,
       "_itemList": ItemList [
         CommandItemDef {
           "_description": "",
+          "_isActive": false,
           "_label": "Tool 1",
           "_onItemExecuted": undefined,
           "_tooltip": "",
@@ -18,7 +20,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "getKey": [Function],
           "handleSizeKnown": [Function],
           "iconSpec": "icon-placeholder",
-          "isActive": false,
           "isDisabled": undefined,
           "isEnabled": true,
           "isHidden": undefined,
@@ -28,6 +29,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         },
         CommandItemDef {
           "_description": "",
+          "_isActive": false,
           "_label": "Tool 2",
           "_onItemExecuted": undefined,
           "_tooltip": "",
@@ -40,7 +42,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "getKey": [Function],
           "handleSizeKnown": [Function],
           "iconSpec": "icon-placeholder",
-          "isActive": false,
           "isDisabled": undefined,
           "isEnabled": true,
           "isHidden": undefined,
@@ -55,6 +56,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "_itemMap": Map {
         "tool1" => CommandItemDef {
           "_description": "",
+          "_isActive": false,
           "_label": "Tool 1",
           "_onItemExecuted": undefined,
           "_tooltip": "",
@@ -64,7 +66,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "getKey": [Function],
           "handleSizeKnown": [Function],
           "iconSpec": "icon-placeholder",
-          "isActive": false,
           "isDisabled": undefined,
           "isEnabled": true,
           "isHidden": undefined,
@@ -74,6 +75,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         },
         "tool2" => CommandItemDef {
           "_description": "",
+          "_isActive": false,
           "_label": "Tool 2",
           "_onItemExecuted": undefined,
           "_tooltip": "",
@@ -86,7 +88,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "getKey": [Function],
           "handleSizeKnown": [Function],
           "iconSpec": "icon-placeholder",
-          "isActive": false,
           "isDisabled": undefined,
           "isEnabled": true,
           "isHidden": undefined,
@@ -111,7 +112,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "groupId": "Group-3",
       "handleSizeKnown": [Function],
       "iconSpec": "icon-placeholder",
-      "isActive": false,
       "isDisabled": undefined,
       "isEnabled": true,
       "isHidden": undefined,
@@ -120,6 +120,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       "items": Array [
         CommandItemDef {
           "_description": "",
+          "_isActive": false,
           "_label": "Tool 1",
           "_onItemExecuted": undefined,
           "_tooltip": "",
@@ -129,7 +130,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "getKey": [Function],
           "handleSizeKnown": [Function],
           "iconSpec": "icon-placeholder",
-          "isActive": false,
           "isDisabled": undefined,
           "isEnabled": true,
           "isHidden": undefined,
@@ -139,6 +139,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         },
         CommandItemDef {
           "_description": "",
+          "_isActive": false,
           "_label": "Tool 2",
           "_onItemExecuted": undefined,
           "_tooltip": "",
@@ -151,7 +152,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
           "getKey": [Function],
           "handleSizeKnown": [Function],
           "iconSpec": "icon-placeholder",
-          "isActive": false,
           "isDisabled": undefined,
           "isEnabled": true,
           "isHidden": undefined,
@@ -173,6 +173,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
     Array [
       CommandItemDef {
         "_description": "",
+        "_isActive": false,
         "_label": "Tool 1",
         "_onItemExecuted": undefined,
         "_tooltip": "",
@@ -182,7 +183,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         "getKey": [Function],
         "handleSizeKnown": [Function],
         "iconSpec": "icon-placeholder",
-        "isActive": false,
         "isDisabled": undefined,
         "isEnabled": true,
         "isHidden": undefined,
@@ -192,6 +192,7 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
       },
       CommandItemDef {
         "_description": "",
+        "_isActive": false,
         "_label": "Tool 2",
         "_onItemExecuted": undefined,
         "_tooltip": "",
@@ -204,7 +205,6 @@ exports[`GroupItem <GroupButton /> renders correctly 1`] = `
         "getKey": [Function],
         "handleSizeKnown": [Function],
         "iconSpec": "icon-placeholder",
-        "isActive": false,
         "isDisabled": undefined,
         "isEnabled": true,
         "isHidden": undefined,

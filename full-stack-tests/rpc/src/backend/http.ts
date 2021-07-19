@@ -8,12 +8,14 @@ import { BackendTestCallbacks } from "../common/SideChannels";
 import { AttachedInterface, rpcInterfaces } from "../common/TestRpcInterface";
 import { commonSetup } from "./CommonBackendSetup";
 import { initializeMockMobileTest, setupMockMobileTest } from "./mockmobile";
+import { initializeWebRoutingTest } from "./routing";
 import { AttachedInterfaceImpl } from "./TestRpcImpl";
 import { TestServer } from "./TestServer";
 
 async function init() {
   const port = Number(process.env.CERTA_PORT || 3021) + 2000;
-  await setupMockMobileTest(port + 1);
+  const mobilePort = port + 2000;
+  await setupMockMobileTest(mobilePort);
 
   await commonSetup();
   registerBackendCallback(BackendTestCallbacks.getEnvironment, () => "http");
@@ -23,12 +25,16 @@ async function init() {
   // create a basic express web server
   const server = new TestServer(rpcConfig.protocol);
   await server.initialize(port);
+  // eslint-disable-next-line no-console
+  console.log(`Web backend for rpc full-stack-tests listening on port ${port}`);
 
   initializeAttachedInterfacesTest(rpcConfig);
+  initializeWebRoutingTest(rpcConfig.protocol);
+
   await initializeMockMobileTest();
 
   // eslint-disable-next-line no-console
-  console.log(`Web backend for full-stack-tests listening on port ${port}`);
+  console.log(`Mobile backend for rpc full-stack-tests listening on port ${mobilePort}`);
 }
 
 function initializeAttachedInterfacesTest(config: BentleyCloudRpcConfiguration) {

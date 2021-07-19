@@ -7,7 +7,7 @@
  */
 
 import { immerable } from "immer";
-import { compareNumbers, lowerBound } from "@bentley/bentleyjs-core";
+import { assert, compareNumbers, lowerBound } from "@bentley/bentleyjs-core";
 
 /** @internal */
 export interface Node {
@@ -70,6 +70,57 @@ export class SparseTree<T extends Node> {
     this._idToNode[child.id] = child;
   }
 
+  public setNodeId(parentId: string | undefined, index: number, newId: string): boolean {
+    const previousNodeId = this.getChildren(parentId)?.get(index);
+    if (previousNodeId === undefined) {
+      return false;
+    }
+
+    if (previousNodeId === newId) {
+      return true;
+    }
+
+    if (this.getNode(newId) !== undefined) {
+      return false;
+    }
+
+    this._idToNode[newId] = this._idToNode[previousNodeId];
+    delete this._idToNode[previousNodeId];
+
+    this._parentToChildren[newId] = this._parentToChildren[previousNodeId];
+    delete this._parentToChildren[previousNodeId];
+
+    if (parentId === undefined) {
+      this._rootNodes.set(index, newId);
+    } else {
+      this._parentToChildren[parentId].set(index, newId);
+    }
+
+    return true;
+  }
+
+  public moveNode(
+    sourceParentId: string | undefined,
+    sourceNodeId: string,
+    targetParentId: string | undefined,
+    targetIndex: number,
+  ): void {
+    const sourceNodeSiblings = this.getChildren(sourceParentId);
+    assert(sourceNodeSiblings !== undefined);
+
+    const sourceIndex = this.getChildOffset(sourceParentId, sourceNodeId);
+    assert(sourceIndex !== undefined);
+
+    sourceNodeSiblings.remove(sourceIndex);
+    if (targetParentId === sourceParentId && targetIndex > sourceIndex) {
+      targetIndex -= 1;
+    }
+
+    const targetNodeSiblings = this.getChildren(targetParentId, true);
+    assert(targetNodeSiblings !== undefined);
+    targetNodeSiblings.insert(targetIndex, sourceNodeId);
+  }
+
   public setNumChildren(parentId: string | undefined, numChildren: number) {
     const children = this.getChildren(parentId, true)!;
     for (const [childId] of children.iterateValues()) {
@@ -79,17 +130,25 @@ export class SparseTree<T extends Node> {
     children.setLength(numChildren);
   }
 
-  public removeChild(parentId: string | undefined, childId: string) {
+  public removeChild(parentId: string | undefined, child: string | number): void {
     const children = this.getChildren(parentId);
     if (children === undefined)
       return;
 
-    const childIndex = children.getIndex(childId);
-    if (childIndex !== undefined) {
-      children.remove(childIndex);
-    }
+    if (typeof child === "string") {
+      const childIndex = children.getIndex(child);
+      if (childIndex !== undefined) {
+        children.remove(childIndex);
+      }
 
-    this.deleteSubtree(childId);
+      this.deleteSubtree(child);
+    } else {
+      const childId = children.get(child);
+      children.remove(child);
+      if (childId !== undefined) {
+        this.deleteSubtree(childId);
+      }
+    }
   }
 
   public deleteSubtree(parentId: string | undefined, deleteParent: boolean = true) {
@@ -164,7 +223,7 @@ export class SparseArray<T> implements Iterable<T | undefined> {
     this._length = Math.max(this._length, index + 1);
   }
 
-  /** Inserts value at specific position. Increases array length by 1. */
+  /** Inserts value at specific position. Increases array length by one. */
   public insert(index: number, value: T) {
     const { index: i } = this.lowerBound(index);
     this._array.splice(i, 0, [value, index]);
@@ -176,14 +235,19 @@ export class SparseArray<T> implements Iterable<T | undefined> {
     this._length = Math.max(this._length + 1, index + 1);
   }
 
-  /** Removes value at specific position. It could remove stored value or intermediate 'undefined' value. */
-  public remove(index: number) {
+  /** Removes value at specified index and reduces array length by one. */
+  public remove(index: number): void {
+    if (index >= this._length) {
+      return;
+    }
+
     const { index: i, equal } = this.lowerBound(index);
     this._array.splice(i, equal ? 1 : 0);
 
     for (let j = i; j < this._array.length; j++) {
       this._array[j][1]--;
     }
+
     this._length = Math.max(0, this._length - 1);
   }
 
@@ -216,7 +280,9 @@ export class SparseArray<T> implements Iterable<T | undefined> {
     })();
   }
 
-  private lowerBound(index: number): { index: number, equal: boolean } {
+  private lowerBound(index: number): {
+    index: number; equal: boolean;
+  } {
     return lowerBound(index, this._array, SparseArray.compare);
   }
 

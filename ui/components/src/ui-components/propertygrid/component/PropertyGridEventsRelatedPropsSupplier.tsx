@@ -17,16 +17,18 @@ import { PropertyListProps } from "./PropertyList";
 /** @internal */
 export type PropertyGridEventsRelatedProps = Pick<PropertyListProps, "onPropertyClicked" | "onPropertyRightClicked" |
 "onPropertyContextMenu" | "onEditCommit" | "onEditCancel" | "selectedPropertyKey" | "editingPropertyKey"> &
-Pick<CommonPropertyGridProps, "isPropertySelectionEnabled" | "isPropertySelectionOnRightClickEnabled" | "isPropertyHoverEnabled" | "isPropertyEditingEnabled">;
+Pick<CommonPropertyGridProps, "isPropertySelectionOnRightClickEnabled" | "isPropertyEditingEnabled"> &
+Required<Pick<CommonPropertyGridProps, "isPropertyHoverEnabled" | "isPropertySelectionEnabled">>;
 
 /** Properties for [[PropertyGridEventsRelatedPropsSupplier]] React component
  * @internal
  */
-export interface PropertyGridEventsRelatedPropsSupplierProps extends Pick<CommonPropertyGridProps, "onPropertyContextMenu" | "isPropertyHoverEnabled" |
-"isPropertySelectionEnabled" | "isPropertySelectionOnRightClickEnabled" | "isPropertySelectionOnRightClickEnabled" |
-"onPropertySelectionChanged" | "isPropertyEditingEnabled" | "onPropertyUpdated"> {
+export type PropertyGridEventsRelatedPropsSupplierProps = Pick<CommonPropertyGridProps, "onPropertyContextMenu" |
+"isPropertySelectionOnRightClickEnabled" | "isPropertySelectionOnRightClickEnabled" |
+"onPropertySelectionChanged" | "isPropertyEditingEnabled" | "onPropertyUpdated"> &
+Required<Pick<CommonPropertyGridProps, "isPropertyHoverEnabled" | "isPropertySelectionEnabled">> & {
   children: (context: PropertyGridEventsRelatedProps) => React.ReactNode;
-}
+};
 
 /** State of [[PropertyGridEventsRelatedPropsSupplier]] React component
  * @internal
@@ -128,7 +130,7 @@ export class PropertyGridEventsRelatedPropsSupplier extends React.Component<Prop
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     const renderContext: PropertyGridEventsRelatedProps = {
       isPropertyHoverEnabled: this.props.isPropertyHoverEnabled,
       isPropertySelectionEnabled: this.props.isPropertySelectionEnabled,

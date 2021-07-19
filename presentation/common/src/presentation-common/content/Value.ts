@@ -16,7 +16,7 @@ import { ValuesDictionary } from "../Utils";
 export type Value = string | number | boolean | undefined | ValuesMap | ValuesArray | NestedContentValue[];
 
 /** @public */
-export namespace Value {
+export namespace Value { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Is the value a primitive */
   export function isPrimitive(value: Value): value is string | number | boolean | undefined { return isPrimitiveValue(value); }
 
@@ -75,7 +75,7 @@ export interface ValuesArray extends Array<Value> { } // eslint-disable-line @ty
 export type DisplayValue = string | undefined | DisplayValuesMap | DisplayValuesArray;
 
 /** @public */
-export namespace DisplayValue {
+export namespace DisplayValue { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Is the value a primitive */
   export function isPrimitive(value: DisplayValue): value is string | undefined { return isPrimitiveValue(value); }
 
@@ -207,7 +207,7 @@ export interface NestedContentValueJSON {
 
 /**
  * A group of raw values and their common display value.
- * @alpha
+ * @public
  */
 export interface DisplayValueGroup {
   /** Common display value for all grouped raw values */
@@ -218,14 +218,14 @@ export interface DisplayValueGroup {
 
 /**
  * JSON representation of [[DisplayValueGroup]].
- * @alpha
+ * @public
  */
 export interface DisplayValueGroupJSON {
   displayValue: DisplayValueJSON;
   groupedRawValues: ValueJSON[];
 }
 
-/** @alpha */
+/** @public */
 export namespace DisplayValueGroup {
   /** Serialize [[DisplayValueGroup]] to JSON */
   export function toJSON(group: DisplayValueGroup): DisplayValueGroupJSON {

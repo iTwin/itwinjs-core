@@ -12,7 +12,7 @@ import { MarkupApp } from "./Markup";
 
 // cspell:ignore lmultiply matrixify dmove
 
-/** @beta */
+/** @public */
 export interface MarkupColor {
   fill: any;
   stroke: any;
@@ -22,8 +22,8 @@ export interface MarkupColor {
  * @public
  */
 declare module "@svgdotjs/svg.js" {
-  function register(subclass: typeof MarkupElement, name?: string): void; // eslint-disable-line no-shadow
-  function nodeOrNew(name: string, node: any): any; // eslint-disable-line no-shadow
+  function register(subclass: typeof MarkupElement, name?: string): void; // eslint-disable-line @typescript-eslint/no-shadow
+  function nodeOrNew(name: string, node: any): any; // eslint-disable-line @typescript-eslint/no-shadow
 
   interface Dom {
     css(val: object): this;
@@ -234,12 +234,12 @@ extend(Matrix, {
  */
 export class Title extends MarkupElement {
   constructor(node: any) { super(nodeOrNew("title", node)); }
-  public scale() { return this; }
-  public size() { return this; }
-  public move() { return this; }
-  public dmove() { return this; }
-  public bbox() { return new Box(); }
-  public screenCTM() { return new Matrix(); }
+  public override scale() { return this; }
+  public override size() { return this; }
+  public override move() { return this; }
+  public override dmove() { return this; }
+  public override bbox() { return new Box(); }
+  public override screenCTM() { return new Matrix(); }
 
 }
 register(Title, "Title");

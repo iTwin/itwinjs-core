@@ -9,6 +9,7 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON, StrippedRelationshipPath } from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
+import { RelationshipMeaning } from "../rules/content/modifiers/RelatedPropertiesSpecification";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { EditorDescription } from "./Editor";
 import { Property, PropertyJSON } from "./Property";
@@ -46,6 +47,8 @@ export interface NestedContentFieldJSON extends BaseFieldJSON {
   contentClassInfo: ClassInfoJSON;
   pathToPrimaryClass: RelationshipPathJSON;
   /** @alpha */
+  relationshipMeaning?: RelationshipMeaning;
+  /** @alpha */
   actualPrimaryClassIds?: Id64String[];
   autoExpand?: boolean;
   nestedFields: FieldJSON[];
@@ -59,12 +62,12 @@ export type FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentField
 
 /** Is supplied field a properties field. */
 const isPropertiesField = (field: FieldJSON | Field): field is PropertiesFieldJSON | PropertiesField => {
-  return (field as any).properties;
+  return !!(field as any).properties;
 };
 
 /** Is supplied field a nested content field. */
 const isNestedContentField = (field: FieldJSON | Field): field is NestedContentFieldJSON | NestedContentField => {
-  return (field as any).nestedFields;
+  return !!(field as any).nestedFields;
 };
 
 /**
@@ -131,7 +134,6 @@ export class Field {
    */
   public get parent(): NestedContentField | undefined { return this._parent; }
 
-  /** @alpha */
   public clone() {
     const clone = new Field(
       this.category,
@@ -217,7 +219,7 @@ export class Field {
 
   /**
    * Get descriptor for this field.
-   * @beta
+   * @public
    */
   public getFieldDescriptor(): FieldDescriptor {
     return {
@@ -264,8 +266,7 @@ export class PropertiesField extends Field {
     this.properties = properties;
   }
 
-  /** @alpha */
-  public clone() {
+  public override clone() {
     const clone = new PropertiesField(
       this.category,
       this.name,
@@ -282,7 +283,7 @@ export class PropertiesField extends Field {
   }
 
   /** Serialize this object to JSON */
-  public toJSON(): PropertiesFieldJSON {
+  public override toJSON(): PropertiesFieldJSON {
     return {
       ...super.toJSON(),
       properties: this.properties.map((p) => Property.toJSON(p)),
@@ -290,13 +291,13 @@ export class PropertiesField extends Field {
   }
 
   /** Deserialize [[PropertiesField]] from JSON */
-  public static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
+  public static override fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
   /**
    * Deserialize [[PropertiesField]] from JSON
    * @deprecated Use an overload that takes a list of categories
    */
-  public static fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined;
-  public static fromJSON(json: PropertiesFieldJSON | string | undefined, categories?: CategoryDescription[]): PropertiesField | undefined {
+  public static override fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined;
+  public static override fromJSON(json: PropertiesFieldJSON | string | undefined, categories?: CategoryDescription[]): PropertiesField | undefined {
     if (!json)
       return undefined;
     if (typeof json === "string") {
@@ -312,9 +313,9 @@ export class PropertiesField extends Field {
 
   /**
    * Get descriptor for this field.
-   * @beta
+   * @public
    */
-  public getFieldDescriptor(): FieldDescriptor {
+  public override getFieldDescriptor(): FieldDescriptor {
     const pathFromPropertyToSelectClass = new Array<RelatedClassInfo>();
     let currAncestor = this.parent;
     while (currAncestor) {
@@ -343,6 +344,8 @@ export class NestedContentField extends Field {
   /** Relationship path to [Primary class]($docs/learning/presentation/Content/Terminology#primary-class) */
   public pathToPrimaryClass: RelationshipPath;
   /** @alpha */
+  public relationshipMeaning: RelationshipMeaning;
+  /** @alpha */
   public actualPrimaryClassIds: Id64String[];
   /** Contained nested fields */
   public nestedFields: Field[];
@@ -362,6 +365,7 @@ export class NestedContentField extends Field {
    * @param nestedFields Contained nested fields
    * @param editor Property editor used to edit values of this field
    * @param autoExpand Flag specifying whether field should be expanded
+   * @param relationshipMeaning RelationshipMeaning of the field
    * @param renderer Property renderer used to render values of this field
    */
   public constructor(
@@ -381,13 +385,13 @@ export class NestedContentField extends Field {
     super(category, name, label, description, isReadonly, priority, editor, renderer);
     this.contentClassInfo = contentClassInfo;
     this.pathToPrimaryClass = pathToPrimaryClass;
+    this.relationshipMeaning = RelationshipMeaning.RelatedInstance;
     this.nestedFields = nestedFields;
     this.autoExpand = autoExpand;
     this.actualPrimaryClassIds = [];
   }
 
-  /** @alpha */
-  public clone() {
+  public override clone() {
     const clone = new NestedContentField(
       this.category,
       this.name,
@@ -397,12 +401,13 @@ export class NestedContentField extends Field {
       this.priority,
       this.contentClassInfo,
       this.pathToPrimaryClass,
-      this.nestedFields,
+      this.nestedFields.map((n) => n.clone()),
       this.editor,
       this.autoExpand,
       this.renderer,
     );
     clone.actualPrimaryClassIds = this.actualPrimaryClassIds;
+    clone.relationshipMeaning = this.relationshipMeaning;
     clone.rebuildParentship(this.parent);
     return clone;
   }
@@ -417,11 +422,12 @@ export class NestedContentField extends Field {
   }
 
   /** Serialize this object to JSON */
-  public toJSON(): NestedContentFieldJSON {
+  public override toJSON(): NestedContentFieldJSON {
     return {
       ...super.toJSON(),
       contentClassInfo: this.contentClassInfo,
       pathToPrimaryClass: this.pathToPrimaryClass,
+      relationshipMeaning: this.relationshipMeaning,
       actualPrimaryClassIds: this.actualPrimaryClassIds,
       nestedFields: this.nestedFields.map((field: Field) => field.toJSON()),
       autoExpand: this.autoExpand,
@@ -429,13 +435,13 @@ export class NestedContentField extends Field {
   }
 
   /** Deserialize [[NestedContentField]] from JSON */
-  public static fromJSON(json: NestedContentFieldJSON | undefined, categories: CategoryDescription[]): NestedContentField | undefined;
+  public static override fromJSON(json: NestedContentFieldJSON | undefined, categories: CategoryDescription[]): NestedContentField | undefined;
   /**
    * Deserialize [[NestedContentField]] from JSON
    * @deprecated Use an overload that takes a list of categories
    */
-  public static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
-  public static fromJSON(json: NestedContentFieldJSON | string | undefined, categories?: CategoryDescription[]): NestedContentField | undefined {
+  public static override fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
+  public static override fromJSON(json: NestedContentFieldJSON | string | undefined, categories?: CategoryDescription[]): NestedContentField | undefined {
     if (!json)
       return undefined;
     if (typeof json === "string") {
@@ -449,20 +455,21 @@ export class NestedContentField extends Field {
         .filter((nestedField): nestedField is Field => !!nestedField),
       contentClassInfo: ClassInfo.fromJSON(json.contentClassInfo),
       pathToPrimaryClass: json.pathToPrimaryClass.map(RelatedClassInfo.fromJSON),
+      relationshipMeaning: json.relationshipMeaning ?? RelationshipMeaning.RelatedInstance,
       actualPrimaryClassIds: json.actualPrimaryClassIds ?? [],
       autoExpand: json.autoExpand,
     });
   }
 
   /** @internal */
-  public resetParentship(): void {
+  public override resetParentship(): void {
     super.resetParentship();
     for (const nestedField of this.nestedFields)
       nestedField.resetParentship();
   }
 
   /** @internal */
-  public rebuildParentship(parentField?: NestedContentField): void {
+  public override rebuildParentship(parentField?: NestedContentField): void {
     super.rebuildParentship(parentField);
     for (const nestedField of this.nestedFields)
       nestedField.rebuildParentship(this);
@@ -486,7 +493,7 @@ export const getFieldByName = (fields: Field[], name: string, recurse?: boolean)
 
 /**
  * Types of different field descriptors.
- * @beta
+ * @public
  */
 export enum FieldDescriptorType {
   Name = "name",
@@ -495,7 +502,7 @@ export enum FieldDescriptorType {
 
 /**
  * Base for a field descriptor
- * @beta
+ * @public
  */
 export interface FieldDescriptorBase {
   type: FieldDescriptorType;
@@ -503,11 +510,11 @@ export interface FieldDescriptorBase {
 
 /**
  * A union of all possible field descriptor types
- * @beta
+ * @public
  */
 export type FieldDescriptor = NamedFieldDescriptor | PropertiesFieldDescriptor;
-/** @beta */
-export namespace FieldDescriptor {
+/** @public */
+export namespace FieldDescriptor { // eslint-disable-line @typescript-eslint/no-redeclare
   /** Is this a named field descriptor */
   export function isNamed(d: FieldDescriptor): d is NamedFieldDescriptor {
     return d.type === FieldDescriptorType.Name;
@@ -520,7 +527,7 @@ export namespace FieldDescriptor {
 
 /**
  * Field descriptor that identifies a content field by its unique name.
- * @beta
+ * @public
  */
 export interface NamedFieldDescriptor extends FieldDescriptorBase {
   type: FieldDescriptorType.Name;
@@ -530,7 +537,7 @@ export interface NamedFieldDescriptor extends FieldDescriptorBase {
 /**
  * Field descriptor that identifies a properties field using a list of
  * properties that the field contains.
- * @beta
+ * @public
  */
 export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
   type: FieldDescriptorType.Properties;

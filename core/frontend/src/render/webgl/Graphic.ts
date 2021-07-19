@@ -13,6 +13,7 @@ import { IModelConnection } from "../../IModelConnection";
 import { FeatureSymbology } from "../FeatureSymbology";
 import { GraphicBranch, GraphicBranchFrustum, GraphicBranchOptions } from "../GraphicBranch";
 import { GraphicList, RenderGraphic } from "../RenderGraphic";
+import { BatchOptions } from "../GraphicBuilder";
 import { RenderMemory } from "../RenderMemory";
 import { ClipVolume } from "./ClipVolume";
 import { WebGLDisposable } from "./Disposable";
@@ -30,7 +31,7 @@ import { ThematicSensors } from "./ThematicSensors";
 export abstract class Graphic extends RenderGraphic implements WebGLDisposable {
   public abstract addCommands(_commands: RenderCommands): void;
   public abstract get isDisposed(): boolean;
-  public get isPickable(): boolean { return false; }
+  public abstract get isPickable(): boolean;
   public addHiliteCommands(_commands: RenderCommands, _pass: RenderPass): void { assert(false); }
   public toPrimitive(): Primitive | undefined { return undefined; }
 }
@@ -58,13 +59,13 @@ export class GraphicOwner extends Graphic {
   public addCommands(commands: RenderCommands): void {
     this._graphic.addCommands(commands);
   }
-  public get isPickable(): boolean {
+  public override get isPickable(): boolean {
     return this._graphic.isPickable;
   }
-  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     this._graphic.addHiliteCommands(commands, pass);
   }
-  public toPrimitive(): Primitive | undefined {
+  public override toPrimitive(): Primitive | undefined {
     return this._graphic.toPrimitive();
   }
 }
@@ -93,9 +94,18 @@ export class Batch extends Graphic {
   public readonly graphic: RenderGraphic;
   public readonly featureTable: PackedFeatureTable;
   public readonly range: ElementAlignedBox3d;
-  public readonly tileId?: string; // Chiefly for debugging.
   private readonly _context: BatchContext = { batchId: 0 };
   private readonly _perTargetData: PerTargetBatchData[] = [];
+  private readonly _options: BatchOptions;
+
+  // Chiefly for debugging.
+  public get tileId(): string | undefined {
+    return this._options.tileId;
+  }
+
+  public get locateOnly(): boolean {
+    return true === this._options.locateOnly;
+  }
 
   public get batchId() { return this._context.batchId; }
   public get batchIModel() { return this._context.iModel; }
@@ -108,12 +118,12 @@ export class Batch extends Graphic {
     this._context.iModel = undefined;
   }
 
-  public constructor(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, tileId?: string) {
+  public constructor(graphic: RenderGraphic, features: PackedFeatureTable, range: ElementAlignedBox3d, options?: BatchOptions) {
     super();
     this.graphic = graphic;
     this.featureTable = features;
     this.range = range;
-    this.tileId = tileId;
+    this._options = options ?? {};
   }
 
   private _isDisposed = false;
@@ -146,8 +156,13 @@ export class Batch extends Graphic {
     }
   }
 
-  public addCommands(commands: RenderCommands): void { commands.addBatch(this); }
-  public get isPickable(): boolean { return true; }
+  public addCommands(commands: RenderCommands): void {
+    commands.addBatch(this);
+  }
+
+  public override get isPickable(): boolean {
+    return true;
+  }
 
   private getPerTargetData(target: Target): PerTargetBatchData {
     let ptd = this._perTargetData.find((x) => x.target === target);
@@ -180,7 +195,7 @@ export class Batch extends Graphic {
   public getOverrides(target: Target): FeatureOverrides {
     const ptd = this.getPerTargetData(target);
     if (!ptd.featureOverrides) {
-      ptd.featureOverrides = FeatureOverrides.createFromTarget(target);
+      ptd.featureOverrides = FeatureOverrides.createFromTarget(target, this._options);
       ptd.featureOverrides.initFromMap(this.featureTable);
     }
 
@@ -203,7 +218,7 @@ export class Batch extends Graphic {
 export class Branch extends Graphic {
   public readonly branch: GraphicBranch;
   public localToWorldTransform: Transform;
-  public clips?: ClipVolume;
+  public readonly clips?: ClipVolume;
   public readonly planarClassifier?: PlanarClassifier;
   public readonly textureDrape?: TextureDrape;
   public readonly edgeSettings?: EdgeSettings;
@@ -223,7 +238,7 @@ export class Branch extends Graphic {
       return;
 
     this.appearanceProvider = opts.appearanceProvider;
-    this.clips = opts.clipVolume as any;
+    this.clips = opts.clipVolume as ClipVolume | undefined;
     this.iModel = opts.iModel;
     this.frustum = opts.frustum;
 
@@ -244,17 +259,19 @@ export class Branch extends Graphic {
     this.branch.dispose();
   }
 
+  public override get isPickable(): boolean {
+    return this.branch.entries.some((gf) => (gf as Graphic).isPickable);
+  }
+
   public collectStatistics(stats: RenderMemory.Statistics): void {
     this.branch.collectStatistics(stats);
-    if (undefined !== this.clips)
-      this.clips.collectStatistics(stats);
   }
 
   public addCommands(commands: RenderCommands): void {
     commands.addBranch(this);
   }
 
-  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     commands.addHiliteBranch(this, pass);
   }
 }
@@ -282,6 +299,10 @@ export class GraphicsArray extends Graphic {
 
   public get isDisposed(): boolean { return 0 === this.graphics.length; }
 
+  public override get isPickable(): boolean {
+    return this.graphics.some((x) => (x as Graphic).isPickable);
+  }
+
   public dispose() {
     for (const graphic of this.graphics)
       dispose(graphic);
@@ -294,7 +315,7 @@ export class GraphicsArray extends Graphic {
     }
   }
 
-  public addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
+  public override addHiliteCommands(commands: RenderCommands, pass: RenderPass): void {
     for (const graphic of this.graphics) {
       (graphic as Graphic).addHiliteCommands(commands, pass);
     }
