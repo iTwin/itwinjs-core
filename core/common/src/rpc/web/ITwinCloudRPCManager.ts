@@ -44,7 +44,7 @@ export abstract class ITwinCloudRpcConfiguration extends RpcConfiguration {
   };
 
   /** The protocol of the configuration. */
-  public abstract readonly protocol: ITwinCloudRpcProtocol;
+  public abstract override readonly protocol: ITwinCloudRpcProtocol;
 }
 
 /** Coordinates usage of RPC interfaces for ITwin cloud deployments.
@@ -80,14 +80,14 @@ export class ITwinCloudRpcManager extends RpcManager {
 
   private static performInitialization(params: ITwinCloudRpcParams, interfaces: RpcInterfaceDefinition[], routing: RpcRoutingToken = RpcRoutingToken.default): ITwinCloudRpcConfiguration {
     const protocol = class extends (params.protocol || ITwinCloudRpcProtocol) {
-      public pathPrefix = params.uriPrefix || "";
+      public override pathPrefix = params.uriPrefix || "";
       public info = params.info;
     };
 
     const config = class extends ITwinCloudRpcConfiguration {
       public interfaces = () => interfaces;
       public protocol: ITwinCloudRpcProtocol = new protocol(this);
-      public routing = routing;
+      public override routing = routing;
     };
 
     for (const def of interfaces) {
