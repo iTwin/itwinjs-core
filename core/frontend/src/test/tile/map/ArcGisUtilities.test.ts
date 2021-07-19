@@ -7,9 +7,9 @@ import { expect } from "chai";
 
 import { EsriOAuth2EndpointType } from "../../../tile/map/EsriOAuth2";
 import * as sinon from "sinon";
-import { ArcGisUtilities, EsriOAuth2 } from "../../../tile/internal";
+import { ArcGisUtilities } from "../../../tile/internal";
 
-describe("ESRI OAuth2", () => {
+describe("ArcGisUtilities tests", () => {
   const sandbox = sinon.createSandbox();
 
   afterEach(async () => {
@@ -31,17 +31,17 @@ describe("ESRI OAuth2", () => {
 
   it("should build proper OAuth2 endpoint URL using generateTokenUrl", async () => {
 
-    sandbox.stub(EsriOAuth2, "validateOAuth2Endpoint").resolves(true);
+    sandbox.stub(ArcGisUtilities, "validateOAuth2Endpoint").resolves(true);
     sandbox.stub(ArcGisUtilities, "requestGetJson").callsFake(async function _(_url: string) {
-      return Promise.resolve({ body: {authInfo : {tokenServicesUrl: sampleGenerateTokenUrl1}}, text: undefined, status: 200, header: undefined });
+      return Promise.resolve({ body: { authInfo: { tokenServicesUrl: sampleGenerateTokenUrl1 } }, text: undefined, status: 200, header: undefined });
     });
 
-    const authorize1 =  await EsriOAuth2.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, EsriOAuth2EndpointType.Authorize);
+    const authorize1 = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, EsriOAuth2EndpointType.Authorize);
 
     expect(authorize1).to.not.undefined;
     expect(authorize1?.getUrl()).to.equals(sampleAuthorizeUrl1);
 
-    const token1 =  await EsriOAuth2.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, EsriOAuth2EndpointType.Token);
+    const token1 = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, EsriOAuth2EndpointType.Token);
     expect(token1).to.not.undefined;
     expect(token1?.getUrl()).to.equals(sampleTokenUrl1);
 
@@ -49,17 +49,17 @@ describe("ESRI OAuth2", () => {
 
   it("should build proper OAuth2 endpoint URL if no generateTokenUrl response", async () => {
 
-    sandbox.stub(EsriOAuth2, "validateOAuth2Endpoint").resolves(true);
+    sandbox.stub(ArcGisUtilities, "validateOAuth2Endpoint").resolves(true);
     sandbox.stub(ArcGisUtilities, "requestGetJson").callsFake(async function _(_url: string) {
-      return Promise.resolve({ body:  undefined, text: undefined, status: 404, header: undefined });
+      return Promise.resolve({ body: undefined, text: undefined, status: 404, header: undefined });
     });
 
-    const endpointUrl =  await EsriOAuth2.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, EsriOAuth2EndpointType.Authorize);
+    const endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, EsriOAuth2EndpointType.Authorize);
 
     expect(endpointUrl).to.not.undefined;
     expect(endpointUrl?.getUrl()).to.equals(sampleAuthorizeUrl2);
 
-    const token1 =  await EsriOAuth2.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, EsriOAuth2EndpointType.Token);
+    const token1 = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, EsriOAuth2EndpointType.Token);
     expect(token1).to.not.undefined;
     expect(token1?.getUrl()).to.equals(sampleTokenUrl2);
 
@@ -67,21 +67,21 @@ describe("ESRI OAuth2", () => {
 
   it("should build proper OAuth2 endpoint URL if could not validate url base on generateTokenUrl", async () => {
 
-    sandbox.stub(EsriOAuth2, "validateOAuth2Endpoint")
-      .callsFake(async function _(url: string)  {
+    sandbox.stub(ArcGisUtilities, "validateOAuth2Endpoint")
+      .callsFake(async function _(url: string) {
         return (url.includes("/oauth2") ? Promise.resolve(true) : Promise.resolve(false));
       });
 
-    sandbox.stub(ArcGisUtilities, "requestGetJson").callsFake(async function _(_url: string)  {
-      return Promise.resolve({ body: {authInfo : {tokenServicesUrl: sampleGenerateTokenUrl1}}, text: undefined, status: 200, header: undefined });
+    sandbox.stub(ArcGisUtilities, "requestGetJson").callsFake(async function _(_url: string) {
+      return Promise.resolve({ body: { authInfo: { tokenServicesUrl: sampleGenerateTokenUrl1 } }, text: undefined, status: 200, header: undefined });
     });
 
-    let endpointUrl =  await EsriOAuth2.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, EsriOAuth2EndpointType.Authorize);
+    let endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, EsriOAuth2EndpointType.Authorize);
 
     expect(endpointUrl).to.not.undefined;
     expect(endpointUrl?.getUrl()).to.equals(sampleAuthorizeUrl2);
 
-    endpointUrl = await EsriOAuth2.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, EsriOAuth2EndpointType.Token);
+    endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, EsriOAuth2EndpointType.Token);
     expect(endpointUrl).to.not.undefined;
     expect(endpointUrl?.getUrl()).to.equals(sampleTokenUrl2);
 
@@ -89,12 +89,12 @@ describe("ESRI OAuth2", () => {
 
   it("should build proper OAuth2 endpoint URL if ArcGIS online", async () => {
 
-    let endpointUrl =  await EsriOAuth2.getOAuth2EndpointFromMapLayerUrl(sampleOnlineFeatureServer1, EsriOAuth2EndpointType.Authorize);
+    let endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnlineFeatureServer1, EsriOAuth2EndpointType.Authorize);
 
     expect(endpointUrl).to.not.undefined;
     expect(endpointUrl?.getUrl()).to.equals(sampleOnlineAuthorize1);
 
-    endpointUrl = await EsriOAuth2.getOAuth2EndpointFromMapLayerUrl(sampleOnlineFeatureServer1, EsriOAuth2EndpointType.Token);
+    endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnlineFeatureServer1, EsriOAuth2EndpointType.Token);
     expect(endpointUrl).to.not.undefined;
     expect(endpointUrl?.getUrl()).to.equals(sampleOnlineToken1);
 

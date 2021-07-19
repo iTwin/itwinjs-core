@@ -282,7 +282,11 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       const validation = await source.validateSource(true);
 
       if (validation.status === MapLayerSourceStatus.Valid) {
-        return (layerRequiringCredentialsIdx === undefined ? doAttach(source, validation) : updateAttachedLayer(source, validation) );
+        if (layerRequiringCredentialsIdx === undefined ) {
+          return await doAttach(source, validation);
+        } else {
+          return await updateAttachedLayer(source, validation);
+        }
       } else if (updateAuthState(validation)) {
         return false;
       } else {

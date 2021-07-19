@@ -13,8 +13,8 @@ import { IModelApp } from "../../../IModelApp";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../../imodeljs-frontend";
 import { ScreenViewport } from "../../../Viewport";
 import {
-  ArcGisErrorCode, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
-  MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId, ArcGisBaseToken, ArcGisOAuth2Token, EsriOAuth2,
+  ArcGisBaseToken, ArcGisErrorCode, ArcGisOAuth2Token, ArcGisTokenClientType, ArcGisTokenManager, ArcGisUtilities, EsriOAuth2, ImageryMapTile, ImageryMapTileTree, MapCartoRectangle,
+  MapLayerImageryProvider, MapLayerImageryProviderStatus, QuadId,
 } from "../../internal";
 
 // eslint-disable-next-line prefer-const
