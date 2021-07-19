@@ -33,6 +33,24 @@ export enum DuplicateRulesetHandlingStrategy {
   Replace,
 }
 
+/** Interface for callbacks which will be called before and after Element updates */
+interface OnElementUpdate {
+  onBeforeElementUpdate: () => Promise<void>;
+  onAfterElementUpdate: () => Promise<void>;
+}
+
+/** Interface for callbacks which will be called before and after Element is inserted */
+interface OnElementInsert {
+  onBeforeElementInsert: () => Promise<void>;
+  onAfterElementInsert: () => Promise<void>;
+}
+
+/** Interface for callbacks which will be called before and after Model is inserted */
+interface OnModelInsert {
+  onBeforeModelInsert: () => Promise<void>;
+  onAfterModelInsert: () => Promise<void>;
+}
+
 /**
  * Options for [[RulesetEmbedder.insertRuleset]] operation.
  * @beta
@@ -58,6 +76,15 @@ export interface RulesetInsertOptions {
    * Defaults to `exact`.
    */
   replaceVersions?: "all" | "all-lower" | "exact";
+
+  /** Callbacks that will be called before and after Element updates */
+  onElementUpdate?: OnElementUpdate;
+
+  /** Callbacks that will be called before and after Element is inserted */
+  onElementInsert?: OnElementInsert;
+
+  /** Callbacks that will be called before and after Model is inserted */
+  onModelInsert?: OnModelInsert;
 }
 
 /**
@@ -164,32 +191,47 @@ export class RulesetEmbedder {
     // attempt to update ruleset with same ID and version
     const exactMatch = rulesetsWithSameId.find((curr) => curr.normalizedVersion === rulesetVersion);
     if (exactMatch !== undefined) {
-      return this.updateRuleset(exactMatch.id, ruleset);
+      return this.updateRuleset(exactMatch.id, ruleset, normalizedOptions.onElementUpdate);
     }
 
     // no exact match found - insert a new ruleset element
-    const model = this.getOrCreateRulesetModel();
+    const model = this.getOrCreateRulesetModel(normalizedOptions.onElementInsert, normalizedOptions.onModelInsert);
     const rulesetCode = RulesetElements.Ruleset.createRulesetCode(this._imodel, model.id, ruleset);
-    return this.insertNewRuleset(ruleset, model, rulesetCode);
+    return this.insertNewRuleset(ruleset, model, rulesetCode, normalizedOptions.onElementInsert);
   }
 
-  private updateRuleset(elementId: Id64String, ruleset: Ruleset) {
+  private updateRuleset(elementId: Id64String, ruleset: Ruleset, onElementUpdate?: OnElementUpdate) {
     const existingRulesetElement = this._imodel.elements.tryGetElement<DefinitionElement>(elementId);
     assert(existingRulesetElement !== undefined);
     existingRulesetElement.jsonProperties.jsonProperties = ruleset;
-    existingRulesetElement.update();
+
+    onElementUpdate?.onBeforeElementUpdate();
+    try {
+      existingRulesetElement.update();
+    } finally {
+      onElementUpdate?.onAfterElementUpdate();
+    }
+
     this._imodel.saveChanges();
     return existingRulesetElement.id;
   }
 
-  private insertNewRuleset(ruleset: Ruleset, model: Model, rulesetCode: Code): Id64String {
+  private insertNewRuleset(ruleset: Ruleset, model: Model, rulesetCode: Code, onElementInsert?: OnElementInsert): Id64String {
     const props: DefinitionElementProps = {
       model: model.id,
       code: rulesetCode,
       classFullName: RulesetElements.Ruleset.classFullName,
       jsonProperties: { jsonProperties: ruleset },
     };
-    const id = this._imodel.elements.insertElement(props);
+
+    let id;
+    onElementInsert?.onBeforeElementInsert();
+    try {
+      id = this._imodel.elements.insertElement(props);
+    } finally {
+      onElementInsert?.onAfterElementInsert();
+    }
+
     this._imodel.saveChanges();
     return id;
   }
@@ -213,14 +255,14 @@ export class RulesetEmbedder {
     return rulesetList;
   }
 
-  private getOrCreateRulesetModel(): DefinitionModel {
+  private getOrCreateRulesetModel(onElementInsert?: OnElementInsert, onModelInsert?: OnModelInsert): DefinitionModel {
     const rulesetModel = this.queryRulesetModel();
     if (undefined !== rulesetModel)
       return rulesetModel;
 
-    const rulesetSubject: Subject = this.insertSubject();
-    const definitionPartition: DefinitionPartition = this.insertDefinitionPartition(rulesetSubject);
-    return this.insertDefinitionModel(definitionPartition);
+    const rulesetSubject: Subject = this.insertSubject(onElementInsert);
+    const definitionPartition: DefinitionPartition = this.insertDefinitionPartition(rulesetSubject, onElementInsert);
+    return this.insertDefinitionModel(definitionPartition, onModelInsert);
   }
 
   private queryRulesetModel(): DefinitionModel | undefined {
@@ -251,7 +293,7 @@ export class RulesetEmbedder {
     return this._imodel.elements.tryGetElement<DefinitionPartition>(code);
   }
 
-  private insertDefinitionModel(definitionPartition: DefinitionPartition): DefinitionModel {
+  private insertDefinitionModel(definitionPartition: DefinitionPartition, onModelInsert?: OnModelInsert): DefinitionModel {
     const modelProps: ModelProps = {
       modeledElement: definitionPartition,
       name: this._rulesetModelName,
@@ -260,11 +302,18 @@ export class RulesetEmbedder {
     };
 
     const model = this._imodel.models.createModel(modelProps);
-    this._imodel.models.insertModel(model);
+
+    onModelInsert?.onBeforeModelInsert();
+    try {
+      this._imodel.models.insertModel(model);
+    } finally {
+      onModelInsert?.onAfterModelInsert();
+    }
+
     return model;
   }
 
-  private insertDefinitionPartition(rulesetSubject: Subject): DefinitionPartition {
+  private insertDefinitionPartition(rulesetSubject: Subject, onElementInsert?: OnElementInsert): DefinitionPartition {
     const partitionCode = DefinitionPartition.createCode(this._imodel, rulesetSubject.id, this._rulesetModelName);
     const definitionPartitionProps: InformationPartitionElementProps = {
       parent: {
@@ -275,11 +324,19 @@ export class RulesetEmbedder {
       code: partitionCode,
       classFullName: DefinitionPartition.classFullName,
     };
-    const id = this._imodel.elements.insertElement(definitionPartitionProps);
+
+    let id;
+    onElementInsert?.onBeforeElementInsert();
+    try {
+      id = this._imodel.elements.insertElement(definitionPartitionProps);
+    } finally {
+      onElementInsert?.onAfterElementInsert();
+    }
+
     return this._imodel.elements.getElement(id);
   }
 
-  private insertSubject(): Subject {
+  private insertSubject(onElementInsert?: OnElementInsert): Subject {
     const root = this._imodel.elements.getRootSubject();
     const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(BisCodeSpec.subject);
     const subjectCode = new Code({
@@ -296,7 +353,15 @@ export class RulesetEmbedder {
       },
       code: subjectCode,
     };
-    const id = this._imodel.elements.insertElement(subjectProps);
+
+    let id;
+    onElementInsert?.onBeforeElementInsert();
+    try {
+      id = this._imodel.elements.insertElement(subjectProps);
+    } finally {
+      onElementInsert?.onAfterElementInsert();
+    }
+
     return this._imodel.elements.getElement(id);
   }
 
@@ -315,7 +380,7 @@ export class RulesetEmbedder {
 }
 
 /* eslint-disable deprecation/deprecation */
-function normalizeRulesetInsertOptions(options?: RulesetInsertOptions | DuplicateRulesetHandlingStrategy): Required<RulesetInsertOptions> {
+function normalizeRulesetInsertOptions(options?: RulesetInsertOptions | DuplicateRulesetHandlingStrategy): RulesetInsertOptions {
   if (options === undefined)
     return { skip: "same-id-and-version-eq", replaceVersions: "exact" };
 
@@ -328,6 +393,9 @@ function normalizeRulesetInsertOptions(options?: RulesetInsertOptions | Duplicat
   return {
     skip: options.skip ?? "same-id-and-version-eq",
     replaceVersions: options.replaceVersions ?? "exact",
+    onElementUpdate: options.onElementUpdate,
+    onElementInsert: options.onElementInsert,
+    onModelInsert: options.onModelInsert,
   };
 }
 /* eslint-enable deprecation/deprecation */
