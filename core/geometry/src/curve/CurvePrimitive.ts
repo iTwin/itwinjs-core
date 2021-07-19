@@ -646,7 +646,7 @@ class AppendPlaneIntersectionStrokeHandler extends NewtonRotRStrokeHandler imple
       return this._parentCurvePrimitive;
     return this._curve;
   }
-  public get getDerivativeB() { return this._derivativeB; }    // <--- DerivativeB is not currently used anywhere. Provided getter to suppress tslint error
+  public get getDerivativeB() { return this._derivativeB; }    // <--- DerivativeB is not currently used anywhere. Provided getter to suppress lint error
 
   public constructor(plane: PlaneAltitudeEvaluator, intersections: CurveLocationDetail[]) {
     super();

@@ -13,32 +13,6 @@ Requires build: no
 
 This file contains common tsconfig settings across all iTwin.js packages. Packages should extend this file in their own tsconfig.json file, and then overwrite and set new properties as needed. Note that this file is different from the tsconfig.json file for this package, as that contains different settings for bentleyjs-tools only.
 
-### tslint
-
-> WARNING: TSLint support will be dropped in the next major release, 3.0. Please switch to ESLint, using `@bentley/eslint-plugin`.
-
-Location: tslint.json\
-Requires build: yes
-
-This file contains common tslint settings across all iTwin.js packages. Packages should extend this file in their own tslint.json file, and then overwrite and set new properties as needed.
-
-### TSLint Rules
-
-> WARNING: TSLint support will be dropped in the next major release, 3.0. Please switch to ESLint, using `@bentley/eslint-plugin`.
-
-Location: tslint-rules\
-Requires build: yes
-
-This directory contains several developer-defined TSLint rules that may be imported into tslint.json files. The rules are written in Typescript and compiled. These rules are imported into the tslint.json file for this package (which other imodeljs packages inherit from), however, the rules may also be imported individually from the generated tslint-rules directory after compilation.
-
-The following are several guidelines to follow when creating new TSLint rules:
-
-- Each new rule must be defined in its own file.
-- The file name must be camel-case and end with the suffix "Rule". When accessing the rule in a tslint.json file, the rule's name will be all lowercase and contain each word in the file name separated with a hyphen (except for the word "Rule").
-  - ie: The file noImportsRule.ts would be accessible in tslint.json as "no-imports".
-
-After compiling each rule, they may be used inside a tslint.json file by setting the "rulesDirectory" property to the path of the directory containing the rule. The rule may be accessed and set just as any other.
-
 ### NPM Scripts
 
 Location: scripts/\
@@ -55,7 +29,6 @@ The default behaviors of the scripts (without parameters) assume that the direct
   - lib
   - package.json
   - tsconfig.json
-  - tslint.json
 
 The following is a list of some of the most commonly used scripts within this package:
 

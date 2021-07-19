@@ -1031,30 +1031,6 @@
       "allowedCategories": [ "frontend", "tools" ]
     },
     {
-      "name": "tslib",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "tslint",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "tslint-consistent-codestyle",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "tslint-eslint-rules",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "tslint-etc",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "tsutils",
-      "allowedCategories": [ "tools" ]
-    },
-    {
       "name": "typedoc",
       "allowedCategories": [ "tools" ]
     },

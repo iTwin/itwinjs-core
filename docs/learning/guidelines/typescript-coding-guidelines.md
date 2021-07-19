@@ -1,7 +1,7 @@
 # iTwin.js TypeScript Coding Guidelines
 
 These are the TypeScript coding guidelines that we expect all iTwin.js contributors to follow.
-Where possible, these guidelines are enforced through our TSLint configuration file (tslint.json).
+Where possible, these guidelines are enforced through our ESLint configuration (`plugin:@bentley/imodeljs-recommended`).
 
 ## Names
 
@@ -40,7 +40,7 @@ Where possible, these guidelines are enforced through our TSLint configuration f
 
 ## General Constructs
 
-1. Always use semicolons. JavaScript does not require a semicolon when it thinks it can safely infer its existence. Not using a semicolon is confusing and error prone. Our TSLint rules enforce this.
+1. Always use semicolons. JavaScript does not require a semicolon when it thinks it can safely infer its existence. Not using a semicolon is confusing and error prone. Our ESLint rules enforce this.
 2. Use curly braces `{}` instead of `new Object()`.
 3. Use brackets `[]` instead of `new Array()`.
 
@@ -154,7 +154,7 @@ On the other hand, vertical whitespace can contribute significantly to code read
    2. `if (x < 10) { }`
    3. `public calculate(x: number, y: string): void { . . . }`
 1. Use 2 spaces per indentation. Do not use tabs!
-1. Turn on `tslint` in your editor to see violations of these rules immediately.
+1. Turn on `eslint` in your editor to see violations of these rules immediately.
 
 ## Return
 
@@ -304,15 +304,15 @@ class Role {
 
 ## Prefer getters where possible
 
-If a public method takes no parameters and its name begins with a keyword such as "is", "has", or "want", the method should be a getter (specified by using the "get" modifier in front of the method name). This way the method is accessed as a property rather than as a function. This avoids confusion over whether it is necessary to include parenthesis to access the value, and the caller will get a compile error if they are included. This rule is enforced by TsLint.
+If a public method takes no parameters and its name begins with a keyword such as "is", "has", or "want", the method should be a getter (specified by using the "get" modifier in front of the method name). This way the method is accessed as a property rather than as a function. This avoids confusion over whether it is necessary to include parenthesis to access the value, and the caller will get a compile error if they are included. This rule is enforced by ESLint.
 
 If the value being returned is expensive to compute, consider using a different name to reflect this. Possible prefixes are "compute" or "calculate", etc.
 
 ## Don't export const enums
 
-Exported `const enum`s require a .d.ts file to be present when a file that consumes one is transpiled. This prevents the [--isolatedModules](https://www.typescriptlang.org/docs/handbook/compiler-options.html) option required by [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html) and are therefore forbidden. A TSLint rule enforces this.
+Exported `const enum`s require a .d.ts file to be present when a file that consumes one is transpiled. This prevents the [--isolatedModules](https://www.typescriptlang.org/docs/handbook/compiler-options.html) option required by [create-react-app](https://reactjs.org/docs/create-a-new-react-app.html) and are therefore forbidden. An ESLint rule enforces this.
 
-> Note: `const enum`s are slightly more efficient, so there may be reasons to use them in non-exported code. The TSLint rule must be disabled to allow them.
+> Note: `const enum`s are slightly more efficient, so there may be reasons to use them in non-exported code. The ESLint rule must be disabled with `// eslint-disable-line no-restricted-syntax` to allow them.
 
 ## Don't repeat type names unnecessarily
 
@@ -367,6 +367,7 @@ The following JavaDoc tags are supported by TypeDoc:
   - The `@returns` description (when provided) should start with *Returns* for readability within the generated documentation.
   - The `@return` JavaDoc tag is also supported, but `@returns` is preferred for readability and consistency with `@throws`.
   <!--
+
   - *TODO:*
     - *Need to decide how to document methods returning `Promise<T>`. Should the description mention a `Promise` or just `T` since the return type will clearly indicate `Promise` and using `await` will cause `T` to be returned.*
   -->
