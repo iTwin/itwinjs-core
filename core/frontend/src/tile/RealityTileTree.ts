@@ -18,7 +18,7 @@ import { SceneContext } from "../ViewContext";
 import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
 
 // eslint-disable-next-line prefer-const
-let skipReprojection = false, skipInteresectionTest = true;
+let skipReprojection = false, skipIntersectionTest = true;
 
 /** @internal */
 export class TraversalDetails {
@@ -109,9 +109,7 @@ export class TraversalSelectionContext {
 
 const scratchFrustum = new Frustum();
 const scratchFrustumPlanes = new FrustumPlanes();
-const scratchPoint = Point3d.createZero();
 const scratchCarto = new Cartographic();
-const scratchTransform = Transform.createIdentity();
 const scratchRange = Range3d.createNull();
 
 interface ChildReprojection {
@@ -265,69 +263,12 @@ export class RealityTileTree extends TileTree {
     if (skipReprojection || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
       return false;
 
-    if (skipInteresectionTest)
+    if (skipIntersectionTest)
       return true;
 
     const tileRange = this.iModelTransform.isIdentity ? tile.range : this.iModelTransform.multiplyRange(tile.range, scratchRange);
 
     return this.cartesianRange.intersectsRange(tileRange);
-  }
-
-  private async calculateChildReprojections(reprojections: ChildReprojection[]): Promise<void> {
-    const rootToEcef = this._rootToEcef!;   // Tested for undefined in doReprojectChildren
-    const requestProps = [];
-    const requestFromEcef = (childToEcef: Transform, childPoint: Point3d) => {
-      const ecefPoint = childToEcef.multiplyPoint3d(childPoint, scratchPoint);
-      const carto = Cartographic.fromEcef(ecefPoint, scratchCarto);
-      assert(carto !== undefined);
-      return { x: carto.longitudeDegrees, y: carto.latitudeDegrees, z: carto.height };
-    };
-
-    for (const reprojection of reprojections) {
-      const realityChild = reprojection.child;
-      const childToEcef = realityChild.transformToRoot ? rootToEcef.multiplyTransformTransform(realityChild.transformToRoot, scratchTransform) : rootToEcef;
-
-      const ecefOrigin = reprojection.ecefCenter;
-      requestProps.push(requestFromEcef(childToEcef, ecefOrigin));
-      requestProps.push(requestFromEcef(childToEcef,ecefOrigin.plusXYZ(1, 0, 0)));
-      requestProps.push(requestFromEcef(childToEcef,ecefOrigin.plusXYZ(0, 1, 0)));
-      requestProps.push(requestFromEcef(childToEcef,ecefOrigin.plusXYZ(0, 0, 1)));
-    }
-
-    this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(requestProps).then((response) => {
-      if (response.iModelCoords.length !== 4 * reprojections.length) {
-        return;
-      }
-      let responseIndex = 0;
-      const reprojectedCoords = response.iModelCoords;
-      const rootToDb = this.iModelTransform;
-      const dbToRoot = rootToDb.inverse()!;
-
-      for (const reprojection of reprojections) {
-        let i = 0;
-        for (; i < 4; i++)
-          if (GeoCoordStatus.Success !== reprojectedCoords[responseIndex + i].s)
-            break;
-        if (i === 4) {  /** All reprojections successful */
-          const reprojectedOrigin = Point3d.fromJSON(reprojectedCoords[responseIndex++].p);
-          const xVector = Vector3d.createStartEnd(reprojectedOrigin, Point3d.fromJSON((reprojectedCoords[responseIndex++].p)));
-          const yVector = Vector3d.createStartEnd(reprojectedOrigin, Point3d.fromJSON((reprojectedCoords[responseIndex++].p)));
-          const zVector = Vector3d.createStartEnd(reprojectedOrigin, Point3d.fromJSON((reprojectedCoords[responseIndex++].p)));
-          const matrix = Matrix3d.createColumns(xVector, yVector, zVector);
-          if (matrix !== undefined) {
-            const dbReprojection = Transform.createMatrixPickupPutdown(matrix, reprojection.dbCenter, reprojectedOrigin);
-            if (dbReprojection) {
-              const realityChild = reprojection.child;
-              const rootReprojection = dbToRoot.multiplyTransformTransform(dbReprojection, scratchTransform).multiplyTransformTransform(rootToDb, scratchTransform);
-              if (realityChild.transformToRoot)
-                realityChild.transformToRoot = rootReprojection.multiplyTransformTransform(realityChild.transformToRoot);
-              else
-                realityChild.transformToRoot = rootReprojection.clone();
-            }
-          }
-        }
-      }
-    }).catch(() => { });
   }
 
   public reprojectAndResolveChildren(parent: Tile, children: Tile[], resolve: (children: Tile[] | undefined) => void): void {
@@ -385,9 +326,9 @@ export class RealityTileTree extends TileTree {
                   const realityChild = reprojection.child;
                   const rootReprojection = dbToRoot.multiplyTransformTransform(dbReprojection).multiplyTransformTransform(rootToDb);
                   if (realityChild.transformToRoot)
-                    realityChild.transformToRoot = rootReprojection.multiplyTransformTransform(realityChild.transformToRoot);
+                    assert(false);
                   else
-                    realityChild.transformToRoot = rootReprojection.clone();
+                    realityChild.reprojectionTransform = rootReprojection;
                 }
               }
             }
@@ -475,7 +416,7 @@ export class RealityTileTree extends TileTree {
   protected logTiles(label: string, tiles: IterableIterator<Tile>) {
     let depthString = "";
     let min = 10000, max = -10000;
-    let count = 0, stepChildCount = 0;
+    let count = 0, stepChildCount = 0, reprojectedCount = 0, maxRadius = 0;
     const depthMap = new Map<number, number>();
     for (const tile of tiles) {
       count++;
@@ -485,9 +426,12 @@ export class RealityTileTree extends TileTree {
       const found = depthMap.get(depth);
       depthMap.set(depth, found === undefined ? 1 : found + 1);
       if (tile instanceof RealityTile && tile.isStepChild) stepChildCount++;
+      if ((tile as RealityTile).reprojectionTransform) reprojectedCount++;
+      if (tile.radius > maxRadius)
+        maxRadius = tile.radius;
     }
 
     depthMap.forEach((key, value) => depthString += `${key}-${value}, `);
-    console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString, "StepChildren: " + stepChildCount);    // eslint-disable-line
+    console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString, "StepChildren: " + stepChildCount + " Reprojected: " + reprojectedCount + " Max Radius: " + maxRadius);    // eslint-disable-line
   }
 }

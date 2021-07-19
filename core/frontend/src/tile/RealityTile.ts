@@ -31,6 +31,7 @@ export interface RealityTileParams extends TileParams {
 const scratchLoadedChildren = new Array<RealityTile>();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 const cornerReorder = [0, 1, 3, 2];
+const additiveRefinementThreshold = 10000;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // eslint-disable-next-line prefer-const
@@ -46,6 +47,7 @@ export class RealityTile extends Tile {
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
   private _everDisplayed = false;
+  public reprojectionTransform?: Transform;
 
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
     super(props, tree);
@@ -104,11 +106,12 @@ export class RealityTile extends Tile {
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
     this.realityRoot.loader.loadChildren(this).then((children: Tile[] | undefined) => {
-      if (this.additiveRefinement && this.isDisplayable && this.realityRoot.doReprojectChildren(this))
+      if (this.additiveRefinement && this.isDisplayable && this.radius > additiveRefinementThreshold && this.realityRoot.doReprojectChildren(this))
         this.loadAdditiveRefinementChildren((stepChildren: Tile[]) =>  { children = children ? children?.concat(stepChildren) : stepChildren; });
 
       if (children)
         this.realityRoot.reprojectAndResolveChildren(this, children, resolve);
+
     }).catch((err) => {
       reject(err);
     });
@@ -343,7 +346,7 @@ export class RealityTile extends Tile {
     const xHalf = xVector.magnitude() / 2;
     const yHalf = yVector.magnitude() / 2;
     const maximumSize = this.maximumSize;
-    const isLeaf = this.depth > 14;
+    const isLeaf = this.radius < additiveRefinementThreshold;
     const localTransform = Transform.createOriginAndMatrixColumns(origin, xVector.normalize()!, yVector.normalize()!, zVector.normalize()!);
     if (!localTransform) {
       assert(false);
@@ -382,10 +385,20 @@ export class RealityTile extends Tile {
     }
     resolve(stepChildren);
   }
-}
+  public produceGraphics(): RenderGraphic | undefined {
+    const graphics = super.produceGraphics();
 
-// eslint-disable-next-line prefer-const
-let debugStep: number = 0; /** 1 - display nothing, 2 omit clip */
+    if (!graphics || !this.reprojectionTransform)
+      return graphics;
+
+    const branch = new GraphicBranch(false);
+    branch.add(graphics);
+    return  IModelApp.renderSystem.createGraphicBranch(branch, this.reprojectionTransform);
+  }
+  public produceUnreprojectedGraphics(): RenderGraphic | undefined {
+    return super.produceGraphics();
+  }
+}
 
 class StepChildRealityTile  extends RealityTile {
   public get isStepChild() { return true; }
@@ -407,19 +420,16 @@ class StepChildRealityTile  extends RealityTile {
   public get isLoaded(): boolean { return this._loadableTile.isLoaded; }
   public get isEmpty() { return false; }
   public produceGraphics(): RenderGraphic | undefined {
-    const parentGraphics = this._loadableTile.produceGraphics();
+    const parentGraphics = this._loadableTile.produceUnreprojectedGraphics();
 
-    if (1 === debugStep)
-      return undefined;
-
-    if (!parentGraphics)
+    if (!parentGraphics || !this.reprojectionTransform)
       return undefined;
 
     const branch = new GraphicBranch(false);
     branch.add(parentGraphics);
     const renderSystem =  IModelApp.renderSystem;
-    const clipVolume = debugStep === 2 ? undefined : renderSystem.createClipVolume(this._boundingClip);
-    return  renderSystem.createGraphicBranch(branch, Transform.createIdentity(), { clipVolume });
+    const clipVolume = renderSystem.createClipVolume(this._boundingClip);
+    return  renderSystem.createGraphicBranch(branch, this.reprojectionTransform, { clipVolume });
   }
   public addBoundingGraphic(builder: GraphicBuilder, _color: ColorDef) {
     super.addBoundingGraphic(builder, ColorDef.red);
