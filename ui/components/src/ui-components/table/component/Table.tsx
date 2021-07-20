@@ -306,6 +306,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _gridContainerRef = React.createRef<HTMLDivElement>();
   private _filterDescriptors?: TableFilterDescriptorCollection;
   private _filterRowShown = false;
+  private _topRowIndex = 0;
 
   /** @internal */
   public override readonly state = initialState;
@@ -462,6 +463,7 @@ export class Table extends React.Component<TableProps, TableState> {
         const top = TABLE_ROW_HEIGHT * rowIndex;
         const gridCanvas = grid.getDataGridDOMNode().querySelector(".react-grid-Canvas");
         gridCanvas.scrollTop = top;
+        this._topRowIndex = rowIndex;
 
         // istanbul ignore else
         if (this.props.onScrollToRow)
@@ -603,8 +605,30 @@ export class Table extends React.Component<TableProps, TableState> {
     return UpdateStatus.Continue;
   }
 
+  // Workaround for react-data-grid bug that shows blank grid when updating after grid has been scrolled.
+  // Force a re-render by scrolling up 1 then down 1
+  private _pokeScrollAfterUpdate = () => {
+    // istanbul ignore else
+    if (this._gridRef.current && this._topRowIndex !== 0) {
+      const grid = this._gridRef.current as any;
+      // istanbul ignore else
+      if (grid.getRowOffsetHeight && grid.getDataGridDOMNode) {
+        const gridCanvas = grid.getDataGridDOMNode().querySelector(".react-grid-Canvas");
+
+        // Scroll up 1
+        let top = TABLE_ROW_HEIGHT * this._topRowIndex - 1;
+        gridCanvas.scrollTop = top;
+
+        // Scroll back down
+        top = TABLE_ROW_HEIGHT * this._topRowIndex;
+        gridCanvas.scrollTop = top;
+      }
+    }
+  };
+
   private _onRowsChanged = async () => {
     await this.updateRows();
+    this._pokeScrollAfterUpdate();
   };
 
   /** @internal */
@@ -1043,6 +1067,8 @@ export class Table extends React.Component<TableProps, TableState> {
 
     // Sort the column
     this.gridSortAsync(columnKey, directionEnum); // eslint-disable-line @typescript-eslint/no-floating-promises
+
+    this._pokeScrollAfterUpdate();
   };
 
   private getColumnIndexFromKey(columnKey: string): number {
@@ -1517,6 +1543,7 @@ export class Table extends React.Component<TableProps, TableState> {
 
   // istanbul ignore next
   private _onScroll = (scrollData: ScrollState) => {
+    this._topRowIndex = scrollData.rowVisibleStartIdx;
     if (this.props.onScrollToRow)
       this.props.onScrollToRow(scrollData.rowVisibleStartIdx);
   };
@@ -1707,30 +1734,33 @@ export class Table extends React.Component<TableProps, TableState> {
               onShowHideChange={this._handleShowHideChange} />
           }
           <ElementResizeObserver watchedElement={this.state.gridContainer}
-            render={({ width, height }) => (
-              <ReactDataGrid
-                ref={this._gridRef}
-                columns={visibleColumns}
-                rowGetter={this._rowGetter}
-                rowRenderer={rowRenderer}
-                rowsCount={this.state.rowsCount}
-                {...(this.props.reorderableColumns ? {
-                  draggableHeaderCell: DragDropHeaderCell,
-                  onHeaderDrop: this._onHeaderDrop,
-                } as any : {})}
-                minHeight={height}
-                minWidth={width}
-                headerRowHeight={TABLE_ROW_HEIGHT}
-                rowHeight={TABLE_ROW_HEIGHT}
-                onGridSort={this._handleGridSort}
-                enableRowSelect={null}  // Prevent deprecation warning
-                onAddFilter={this._handleFilterChange}
-                onClearFilters={this._handleOnClearFilters} // eslint-disable-line @typescript-eslint/unbound-method
-                headerFiltersHeight={TABLE_FILTER_ROW_HEIGHT}
-                getValidFilterValues={this._getValidFilterValues}
-                onScroll={this._onScroll}
-              />
-            )}
+            render={({ width, height }) => {
+              setTimeout(() => this._pokeScrollAfterUpdate());
+              return (
+                <ReactDataGrid
+                  ref={this._gridRef}
+                  columns={visibleColumns}
+                  rowGetter={this._rowGetter}
+                  rowRenderer={rowRenderer}
+                  rowsCount={this.state.rowsCount}
+                  {...(this.props.reorderableColumns ? {
+                    draggableHeaderCell: DragDropHeaderCell,
+                    onHeaderDrop: this._onHeaderDrop,
+                  } as any : {})}
+                  minHeight={height}
+                  minWidth={width}
+                  headerRowHeight={TABLE_ROW_HEIGHT}
+                  rowHeight={TABLE_ROW_HEIGHT}
+                  onGridSort={this._handleGridSort}
+                  enableRowSelect={null}  // Prevent deprecation warning
+                  onAddFilter={this._handleFilterChange}
+                  onClearFilters={this._handleOnClearFilters} // eslint-disable-line @typescript-eslint/unbound-method
+                  headerFiltersHeight={TABLE_FILTER_ROW_HEIGHT}
+                  getValidFilterValues={this._getValidFilterValues}
+                  onScroll={this._onScroll}
+                />
+              );
+            }}
           />
         </div>
         <div ref={this._tableRef}>
