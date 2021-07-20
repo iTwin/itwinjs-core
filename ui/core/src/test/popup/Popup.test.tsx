@@ -207,15 +207,15 @@ describe("<Popup />", () => {
     const inputOne = component.getByTestId("input-one") as HTMLInputElement;
     expect(document.activeElement).to.eq(inputOne);
     const inputTwo = component.getByTestId("input-two") as HTMLInputElement;
-    inputTwo.focus();
+    fireEvent.focusIn(inputTwo);
     expect(document.activeElement).to.eq(inputTwo);
 
     // if we hit top - reset focus to bottom
-    topDiv.focus();
+    fireEvent.focusIn(topDiv);
     expect(document.activeElement).to.eq(inputTwo);
 
     // if we hit bottom - reset focus to top
-    bottomDiv.focus();
+    fireEvent.focusIn(bottomDiv);
     expect(document.activeElement).to.eq(inputOne);
   });
 
