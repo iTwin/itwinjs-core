@@ -1,6 +1,91 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 25 Jun 2021 16:03:01 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+### Updates
+
+- Add IModelConnection.Elements.getPlacements and update Viewport and ViewClipByElementTool to use it.
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- add GraphicBuilder.addCurvePrimitive.
+- Add Tiles.updateForScheduleScript to refresh tiles after modifying schedule script."
+- Update Toolsettings set-up in SetCameraTool to fix enable/disable setting of input field.
+- Add Viewport.flashedId property and corresponding onFlashedIdChanged event.
+- Added support for ESRI MapServer exposing a minimum LOD.
+- Fix the Nadir color for 2 colors skybox in the context of background map.
+- Add ability to clone Format and to add property setters. This allows a user to synchronously tweak a format in the frontend.
+- Fix issue with TouchCursor unexpectedly disappearing when disabling snap/locate.
+- pickable decoration enhancement
+- Update tile trees when project extents change.
+- Remove BackgroundMapLocation use EcefLocation directly.
+- Clean up and promote AnalysisStyle APIs.
+- TileAdmin.requestElementGraphics can now produce section-cut graphics.
+- Update tooltips of RealityData with its type
+- Add API to wait until all pending external textures have finished loading.
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Promote APIs to public.
+- DR request for doClipPlaneOrientView to choose "better" view x direction.
+- Added arc by 3 points tool. Ensure tools always get motion event before decorate or onDynamicFrame.
+- Clean up and promote DisplayStyleState APIs for context reality models.
+- Add TiledGraphicsProvider.isLoadingComplete.
+- Make EditManipulator public
+- Export EmphasizeElementProps from common, deprecate from frontend.
+- External textures enabled by default for TileAdmin. External textures will downsample to maxTextureSize of client.
+- Make flash settings customizable for a viewport.
+- Allow saved map-layer definition to be edited.
+- Removed unused 'maxZoom' property on MapLayerProps.  Added MapLayerSourceProps interface.
+- Made MaplayerSource independent from MapLayerProps.
+- Add GraphicBuilder.addPrimitive accepting any type of primitive.
+- Synchronize IModelConnection properties in response to Ipc notifications.
+- added IModelApp.hubAccess and deprecated IModelApp.iModelClient
+- Promote various APIs to public. Add GraphicBuilder.addPrimitive accepting any type of primitive.
+- set authorizationClient to undefined in IModelApp.shutdown
+- Don't allow undo of changes to project extents or geolocation.
+- make IpcApp and NativeApp @public
+- Prevent preflight for ContextShare tile request
+- Erase touch cursor when it is drawn in a different view.
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
 
 ## 2.16.5
 Fri, 25 Jun 2021 16:03:01 GMT

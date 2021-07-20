@@ -1,6 +1,6 @@
 {
   "name": "@bentley/presentation-components",
-  "version": "2.18.0-dev.19",
+  "version": "2.19.0-dev.21",
   "description": "React components based on iModel.js Presentation library",
   "main": "lib/presentation-components.js",
   "typings": "lib/presentation-components",
@@ -49,15 +49,15 @@
     "rxjs": "^6.6.2"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.19",
-    "@bentley/imodeljs-common": "workspace:^2.18.0-dev.19",
-    "@bentley/imodeljs-frontend": "workspace:^2.18.0-dev.19",
-    "@bentley/imodeljs-i18n": "workspace:^2.18.0-dev.19",
-    "@bentley/presentation-common": "workspace:^2.18.0-dev.19",
-    "@bentley/presentation-frontend": "workspace:^2.18.0-dev.19",
-    "@bentley/ui-abstract": "workspace:^2.18.0-dev.19",
-    "@bentley/ui-components": "workspace:^2.18.0-dev.19",
-    "@bentley/ui-core": "workspace:^2.18.0-dev.19",
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.21",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.21",
+    "@bentley/imodeljs-frontend": "workspace:^2.19.0-dev.21",
+    "@bentley/imodeljs-i18n": "workspace:^2.19.0-dev.21",
+    "@bentley/presentation-common": "workspace:^2.19.0-dev.21",
+    "@bentley/presentation-frontend": "workspace:^2.19.0-dev.21",
+    "@bentley/ui-abstract": "workspace:^2.19.0-dev.21",
+    "@bentley/ui-components": "workspace:^2.19.0-dev.21",
+    "@bentley/ui-core": "workspace:^2.19.0-dev.21",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -96,7 +96,7 @@
     "enzyme": "^3.4.0",
     "enzyme-adapter-react-16": "^1.15.5",
     "enzyme-to-json": "^3.3.4",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "faker": "^4.1.0",
     "ignore-styles": "^5.0.1",
     "jsdom-global": "3.0.2",
@@ -109,7 +109,7 @@
     "sinon": "^9.0.2",
     "sinon-chai": "^3.2.0",
     "typemoq": "^2.1.0",
-    "typescript": "~4.1.0",
+    "typescript": "~4.3.0",
     "xmlhttprequest": "^1.8.0"
   },
   "nyc": {

@@ -29,10 +29,12 @@ import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
-  RealityModelTileTree, Tile, TileContent,
+  RealityModelTileClient, RealityModelTileTree, Tile, TileContent,
   TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeSupplier,
 } from "./internal";
 import { TileUsageMarker } from "./TileUsageMarker";
+import { AccessToken } from "@bentley/itwin-client";
+import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
 
 const scratchRange = Range3d.create();
 const scratchWorldFrustum = new Frustum();
@@ -126,7 +128,7 @@ class OrbitGtRootTile extends Tile {
   public async requestContent(_isCanceled: () => boolean): Promise<TileRequest.Response> { return undefined; }
   public get channel() { return IModelApp.tileAdmin.channels.getForHttp("itwinjs-orbitgit"); }
   public async readContent(_data: TileRequest.ResponseData, _system: RenderSystem, _isCanceled?: () => boolean): Promise<TileContent> { return {}; }
-  public freeMemory(): void { }
+  public override freeMemory(): void { }
 
   constructor(params: TileParams, tree: TileTree) { super(params, tree); }
 }
@@ -226,11 +228,11 @@ export class OrbitGtTileTree extends TileTree {
     this.rootTile = new OrbitGtRootTile(this._tileParams, this);
   }
 
-  public async getEcefTransform(): Promise<Transform | undefined> {
+  public override async getEcefTransform(): Promise<Transform | undefined> {
     return this._ecefTransform;
   }
 
-  public dispose(): void {
+  public override dispose(): void {
     if (this.isDisposed)
       return;
 
@@ -243,7 +245,7 @@ export class OrbitGtTileTree extends TileTree {
 
   protected _selectTiles(_args: TileDrawArgs): Tile[] { return []; }
   public get is3d(): boolean { return true; }
-  public get isContentUnbounded(): boolean { return false; }
+  public override get isContentUnbounded(): boolean { return false; }
   public get maxDepth(): number | undefined { return undefined; }
 
   private _doPrune(olderThan: BeTimePoint) {
@@ -259,7 +261,7 @@ export class OrbitGtTileTree extends TileTree {
     this._doPrune(olderThan);
   }
 
-  public collectStatistics(stats: RenderMemory.Statistics): void {
+  public override collectStatistics(stats: RenderMemory.Statistics): void {
     for (const tileGraphic of this._tileGraphics)
       tileGraphic[1].graphic.collectStatistics(stats);
   }
@@ -343,7 +345,54 @@ export namespace OrbitGtTileTree {
     modelId?: Id64String;
   }
 
+  async function getAccessTokenRDS(): Promise<AccessToken | undefined> {
+
+    if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
+      return undefined; // Not signed in
+
+    try {
+      return await IModelApp.authorizationClient.getAccessToken();
+    } catch (_) {
+      return undefined;
+    }
+  }
+
+  async function initializeBlobStorage(_props: OrbitGtBlobProps, iModel: IModelConnection, _modelId: Id64String) {
+
+    // rdsUrl must be defined and not null to be resolved
+    if(!_props.rdsUrl)
+      return false;
+
+    const accessToken: AccessToken | undefined = await getAccessTokenRDS();
+    if (!accessToken)
+      return false;
+
+    const authRequestContext = new AuthorizedFrontendRequestContext(accessToken);
+    authRequestContext.enter();
+
+    const tileClient = new RealityModelTileClient(_props.rdsUrl, accessToken, iModel.contextId);
+
+    const blobUrl = await tileClient.getBlobAccessData();
+    if (blobUrl === undefined)
+      return false;
+
+    _props.accountName = "";
+    _props.containerName = "";
+    _props.sasToken = "";
+
+    // _props.blobFileName originates from Connector Conversion
+    _props.accountName = blobUrl.hostname.split(".")[0];   // take first word up to first .
+    _props.containerName = blobUrl.pathname.substring(1);  // strip off leading slash
+    _props.sasToken = blobUrl.search.substring(1);         // strip off leading ?
+
+    return _props.accountName !== "" && _props.containerName !== "" && _props.sasToken !== "" && _props.blobFileName !== "";
+  }
+
   export async function createOrbitGtTileTree(props: OrbitGtBlobProps, iModel: IModelConnection, modelId: Id64String): Promise<TileTree | undefined> {
+
+    if (await initializeBlobStorage(props, iModel, modelId) === false)
+      return undefined;
+
     const { accountName, containerName, blobFileName, sasToken } = props;
     if (Downloader.INSTANCE == null) Downloader.INSTANCE = new DownloaderXhr();
     if (CRSManager.ENGINE == null) CRSManager.ENGINE = await OnlineEngine.create();
@@ -415,7 +464,7 @@ export namespace OrbitGtTileTree {
  */
 class OrbitGtTreeReference extends RealityModelTileTree.Reference {
   public readonly treeOwner: TileTreeOwner;
-  public get castsShadows() { return false; }
+  public override get castsShadows() { return false; }
 
   public constructor(props: OrbitGtTileTree.ReferenceProps) {
     super(props);
@@ -424,7 +473,7 @@ class OrbitGtTreeReference extends RealityModelTileTree.Reference {
     this.treeOwner = orbitGtTreeSupplier.getOwner(ogtTreeId, props.iModel);
   }
 
-  public async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
+  public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
     const tree = this.treeOwner.tileTree;
     if (undefined === tree || hit.iModel !== tree.iModel)
       return undefined;

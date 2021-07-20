@@ -7,10 +7,9 @@
  */
 
 import { assert, DbResult, GuidString, Id64String, IModelStatus, Logger, PerfLogger, using } from "@bentley/bentleyjs-core";
-import { ChangedValueState, ChangeOpCode, IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import { ChangedValueState, ChangeOpCode, ChangesetRange, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as path from "path";
-import { ChangesetRange } from "./BackendHubAccess";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDb, ECDbOpenMode } from "./ECDb";
@@ -164,7 +163,7 @@ export class ChangeSummaryManager {
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
 
     const iModelId = iModel.iModelId;
-    const endChangeSetId = iModel.changeSetId;
+    const endChangeSetId = iModel.changeset.id;
     assert(endChangeSetId.length !== 0);
 
     let startChangeSetId = "";
@@ -255,7 +254,7 @@ export class ChangeSummaryManager {
       changesFile.dispose();
 
       perfLogger = new PerfLogger("ChangeSummaryManager.extractChangeSummaries>Move iModel to original changeset");
-      if (iModel.changeSetId !== endChangeSetId)
+      if (iModel.changeset.id !== endChangeSetId)
         await iModel.reinstateChanges(requestContext, IModelVersion.asOfChangeSet(endChangeSetId));// eslint-disable-line deprecation/deprecation
       requestContext.enter();
       perfLogger.dispose();
@@ -507,7 +506,7 @@ export class ChangeSummaryManager {
     requestContext.enter();
     if (!iModel?.isOpen)
       throw new IModelError(IModelStatus.BadRequest, "Briefcase must be open");
-    const changesetId = iModel.changeSetId;
+    const changesetId = iModel.changeset.id;
     if (!changesetId)
       throw new IModelError(IModelStatus.BadRequest, "No change set was applied to the iModel");
     if (this.isChangeCacheAttached(iModel))
@@ -515,7 +514,7 @@ export class ChangeSummaryManager {
 
     const iModelId = iModel.iModelId;
     const changesetsFolder: string = BriefcaseManager.getChangeSetsPath(iModelId);
-    const changeset = await IModelHost.hubAccess.downloadChangeset({ requestContext, iModelId, changeset: { id: iModel.changeSetId }, targetDir: changesetsFolder });
+    const changeset = await IModelHost.hubAccess.downloadChangeset({ requestContext, iModelId, changeset: { id: iModel.changeset.id }, targetDir: changesetsFolder });
     requestContext.enter();
 
     if (!IModelJsFs.existsSync(changeset.pathname))

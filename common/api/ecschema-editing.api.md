@@ -9,27 +9,54 @@ import { AnyECType } from '@bentley/ecschema-metadata';
 import { AnyEnumerator } from '@bentley/ecschema-metadata';
 import { AnyProperty } from '@bentley/ecschema-metadata';
 import { Constant } from '@bentley/ecschema-metadata';
+import { ConstantProps } from '@bentley/ecschema-metadata';
 import { CustomAttribute } from '@bentley/ecschema-metadata';
 import { CustomAttributeClass } from '@bentley/ecschema-metadata';
+import { CustomAttributeClassProps } from '@bentley/ecschema-metadata';
 import { CustomAttributeContainerProps } from '@bentley/ecschema-metadata';
+import { CustomAttributeContainerType } from '@bentley/ecschema-metadata';
+import { ECClassModifier } from '@bentley/ecschema-metadata';
 import { EntityClass } from '@bentley/ecschema-metadata';
+import { EntityClassProps } from '@bentley/ecschema-metadata';
 import { Enumeration } from '@bentley/ecschema-metadata';
+import { EnumerationPropertyProps } from '@bentley/ecschema-metadata';
+import { EnumerationProps } from '@bentley/ecschema-metadata';
 import { Format } from '@bentley/ecschema-metadata';
+import { FormatProps } from '@bentley/ecschema-metadata';
+import { FormatType } from '@bentley/ecschema-metadata';
 import { I18N } from '@bentley/imodeljs-i18n';
 import { InvertedUnit } from '@bentley/ecschema-metadata';
+import { InvertedUnitProps } from '@bentley/ecschema-metadata';
 import { ISchemaPartVisitor } from '@bentley/ecschema-metadata';
 import { KindOfQuantity } from '@bentley/ecschema-metadata';
+import { KindOfQuantityProps } from '@bentley/ecschema-metadata';
 import { Mixin } from '@bentley/ecschema-metadata';
+import { MixinProps } from '@bentley/ecschema-metadata';
 import { OverrideFormat } from '@bentley/ecschema-metadata';
 import { Phenomenon } from '@bentley/ecschema-metadata';
+import { PhenomenonProps } from '@bentley/ecschema-metadata';
+import { PrimitiveArrayPropertyProps } from '@bentley/ecschema-metadata';
+import { PrimitivePropertyProps } from '@bentley/ecschema-metadata';
+import { PrimitiveType } from '@bentley/ecschema-metadata';
 import { PropertyCategory } from '@bentley/ecschema-metadata';
+import { PropertyCategoryProps } from '@bentley/ecschema-metadata';
 import { RelationshipClass } from '@bentley/ecschema-metadata';
+import { RelationshipClassProps } from '@bentley/ecschema-metadata';
 import { RelationshipConstraint } from '@bentley/ecschema-metadata';
 import { Schema } from '@bentley/ecschema-metadata';
+import { SchemaContext } from '@bentley/ecschema-metadata';
 import { SchemaItem } from '@bentley/ecschema-metadata';
+import { SchemaItemKey } from '@bentley/ecschema-metadata';
+import { SchemaKey } from '@bentley/ecschema-metadata';
+import { StrengthDirection } from '@bentley/ecschema-metadata';
+import { StructArrayPropertyProps } from '@bentley/ecschema-metadata';
 import { StructClass } from '@bentley/ecschema-metadata';
+import { StructClassProps } from '@bentley/ecschema-metadata';
+import { StructPropertyProps } from '@bentley/ecschema-metadata';
 import { Unit } from '@bentley/ecschema-metadata';
+import { UnitProps } from '@bentley/ecschema-metadata';
 import { UnitSystem } from '@bentley/ecschema-metadata';
+import { UnitSystemProps } from '@bentley/ecschema-metadata';
 
 // @beta
 export type AnyDiagnostic = IDiagnostic<AnyECType, any[]>;
@@ -609,6 +636,16 @@ export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnos
     get schema(): Schema;
 }
 
+// @alpha (undocumented)
+export interface PropertyEditResults {
+    // (undocumented)
+    errorMessage?: string;
+    // (undocumented)
+    itemKey?: SchemaItemKey;
+    // (undocumented)
+    propertyName?: string;
+}
+
 // @beta
 export abstract class RelationshipConstraintDiagnostic<ARGS extends any[]> extends BaseDiagnostic<RelationshipConstraint, ARGS> {
     constructor(constraint: RelationshipConstraint, messageArgs: ARGS, category?: DiagnosticCategory);
@@ -727,13 +764,13 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
     BaseClassDelta: {
-        new (ecClass: AnyClass, messageArgs: [EntityClass | Mixin | import("@bentley/ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | import("@bentley/ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined], category?: import("./Diagnostic").DiagnosticCategory): {
+        new (ecClass: AnyClass, messageArgs: [AnyClass | undefined, AnyClass | undefined], category?: import("./Diagnostic").DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
             readonly diagnosticType: import("./Diagnostic").DiagnosticType;
             ecDefinition: AnyClass;
-            messageArgs?: [EntityClass | Mixin | import("@bentley/ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined, EntityClass | Mixin | import("@bentley/ecschema-metadata").StructClass | CustomAttributeClass | RelationshipClass | undefined] | undefined;
+            messageArgs?: [AnyClass | undefined, AnyClass | undefined] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
         };
         diagnosticType: import("./Diagnostic").DiagnosticType;
@@ -1001,6 +1038,47 @@ export const SchemaCompareDiagnostics: {
     };
 };
 
+// @alpha
+export class SchemaContextEditor {
+    constructor(schemaContext: SchemaContext);
+    addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<SchemaEditResults>;
+    addSchemaReference(schemaKey: SchemaKey, refSchema: Schema): Promise<SchemaEditResults>;
+    // (undocumented)
+    readonly constants: Constants;
+    createSchema(name: string, alias: string, readVersion: number, writeVersion: number, minorVersion: number): Promise<SchemaEditResults>;
+    // (undocumented)
+    readonly customAttributes: CustomAttributes;
+    // (undocumented)
+    readonly entities: Entities;
+    // (undocumented)
+    readonly enumerations: Enumerations;
+    // (undocumented)
+    finish(): Promise<SchemaContext>;
+    // (undocumented)
+    readonly formats: Formats;
+    getSchema(schemaKey: SchemaKey): Promise<MutableSchema>;
+    incrementMinorVersion(schemaKey: SchemaKey): Promise<SchemaEditResults>;
+    // (undocumented)
+    readonly invertedUnits: InvertedUnits;
+    // (undocumented)
+    readonly kindOfQuantities: KindOfQuantities;
+    // (undocumented)
+    readonly mixins: Mixins;
+    // (undocumented)
+    readonly phenomenons: Phenomena;
+    // (undocumented)
+    readonly propertyCategories: PropertyCategories;
+    // (undocumented)
+    readonly relationships: RelationshipClasses;
+    get schemaContext(): SchemaContext;
+    // (undocumented)
+    readonly structs: Structs;
+    // (undocumented)
+    readonly units: Units;
+    // (undocumented)
+    readonly unitSystems: UnitSystems;
+}
+
 // @beta
 export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnostic<Schema, ARGS> {
     constructor(schema: Schema, messageArgs: ARGS, category?: DiagnosticCategory);
@@ -1010,6 +1088,14 @@ export abstract class SchemaDiagnostic<ARGS extends any[]> extends BaseDiagnosti
     get schema(): Schema;
 }
 
+// @alpha (undocumented)
+export interface SchemaEditResults {
+    // (undocumented)
+    errorMessage?: string;
+    // (undocumented)
+    schemaKey?: SchemaKey;
+}
+
 // @beta
 export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends any[]> extends BaseDiagnostic<TYPE, ARGS> {
     constructor(ecDefinition: SchemaItem, messageArgs: ARGS, category?: DiagnosticCategory);
@@ -1017,6 +1103,14 @@ export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends
     static diagnosticType: DiagnosticType;
     get diagnosticType(): DiagnosticType;
     get schema(): Schema;
+}
+
+// @alpha (undocumented)
+export interface SchemaItemEditResults {
+    // (undocumented)
+    errorMessage?: string;
+    // (undocumented)
+    itemKey?: SchemaItemKey;
 }
 
 // @beta

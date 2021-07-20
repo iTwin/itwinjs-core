@@ -1,6 +1,70 @@
 # Change Log - @bentley/ui-framework
 
-This log was last generated on Fri, 25 Jun 2021 16:03:01 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+### Updates
+
+- Add test for the iModelConnection being blank to avoid asserts when setting up for new iModel.
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- Update component to pass HtmlDivElement to ElementResizeObserver.
+- Update ToolSettings documentation.
+- Improved `onVisibilityChange` event to allow passing new visibility status.
+- Refactor DefaultViewOverlay to be more reliable.
+- Turn off lint rule for deprecated components.
+- Ensure redux stays in sync with FrameworkVersion context and convenience updates that take UI initialization burden off IModelApp.
+- Models Tree: Add a way to filter the hierarchy by element IDs
+- Add ability to provide widgets to zones via UiItemsProvider when using AppUI version 1.
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Add ability to "pop-out" a widget to a child window.
+- Export EmphasizeElementProps from common, deprecate from frontend.
+- Add ability to maintain tab state even if UiItemsProvider that added the tab is not loaded. This allow preference size to be maintained.
+- Add 100ms wait during unit test for open window processing to be triggered.
+- Add getters to retrieve the list of category and model overrides & make update category/model overrides functions public
+- publish in-use APIs
+- Refactor SolarTimeline and ScheduleAnimationProvider to use new TimelineComponent iteration.
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
 
 ## 2.16.5
 Fri, 25 Jun 2021 16:03:01 GMT

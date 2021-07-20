@@ -224,7 +224,7 @@
     },
     {
       "name": "@bentley/telemetry-client",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "tools" ]
     },
     {
       "name": "@bentley/ui-abstract",
@@ -936,7 +936,7 @@
     },
     {
       "name": "sass",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "sass-loader",

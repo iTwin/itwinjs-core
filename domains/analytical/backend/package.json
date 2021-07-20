@@ -1,6 +1,6 @@
 {
   "name": "@bentley/analytical-backend",
-  "version": "2.18.0-dev.19",
+  "version": "2.19.0-dev.21",
   "main": "lib/analytical-backend.js",
   "typings": "lib/analytical-backend",
   "license": "MIT",
@@ -32,9 +32,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.18.0-dev.19",
-    "@bentley/imodeljs-backend": "workspace:^2.18.0-dev.19",
-    "@bentley/imodeljs-common": "workspace:^2.18.0-dev.19"
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.21",
+    "@bentley/imodeljs-backend": "workspace:^2.19.0-dev.21",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.21"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -53,11 +53,11 @@
     "@types/semver": "^5.5.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "mocha": "^8.3.2",
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
-    "typescript": "~4.1.0"
+    "typescript": "~4.3.0"
   },
   "dependencies": {
     "semver": "^5.5.0"
