@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-i18n",
-  "version": "2.20.0-dev.0",
+  "version": "3.0.0-dev.0",
   "description": "iModel.js localization code",
   "main": "lib/imodeljs-i18n",
   "typings": "lib/imodeljs-i18n",
@@ -30,7 +30,7 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^2.20.0-dev.0"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.0"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

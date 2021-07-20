@@ -1,6 +1,6 @@
 {
   "name": "@bentley/usage-logging-client",
-  "version": "2.20.0-dev.0",
+  "version": "3.0.0-dev.0",
   "description": "iModel.js Usage Logging Client",
   "main": "lib/usage-logging-client.js",
   "typings": "lib/usage-logging-client",
@@ -39,8 +39,8 @@
     "@bentley/bentleyjs-core": "workspace:*"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^2.20.0-dev.0",
-    "@bentley/telemetry-client": "workspace:^2.20.0-dev.0"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.0",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.0"
   },
   "devDependencies": {
     "@bentley/build-tools": "workspace:*",
