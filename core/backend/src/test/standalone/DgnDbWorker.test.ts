@@ -36,11 +36,15 @@ describe.only("DgnDbWorker", () => {
       this._worker = worker as IModelJsNative.TestWorker;
     }
 
+    public queue() { this._worker.queue(); }
     public setReady() { this._worker.setReady(); }
+    public setThrow() { this._worker.setThrow(); }
+
     public get isCanceled(): boolean { return this._worker.isCanceled(); }
     public get wasExecuted(): boolean { return this._worker.wasExecuted(); }
     public get state(): IModelJsNative.TestWorkerState { return this._worker.getState(); }
 
+    public get wasQueued() { return IModelJsNative.TestWorkerState.NotQueued !== this.state; }
     public get isQueued() { return IModelJsNative.TestWorkerState.Queued === this.state; }
     public get isRunning() { return IModelJsNative.TestWorkerState.Running === this.state; }
     public get isError() { return IModelJsNative.TestWorkerState.Error === this.state; }
@@ -50,7 +54,12 @@ describe.only("DgnDbWorker", () => {
 
   it("executes asynchronously", async () => {
     const worker = new Worker();
+    await BeDuration.wait(1000);
+    expect(worker.wasQueued).to.be.false;
+    expect(worker.isCanceled).to.be.false;
+
     worker.setReady();
+    worker.queue();
     await worker.promise;
 
     expect(worker.wasExecuted).to.be.true;
