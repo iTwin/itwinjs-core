@@ -386,6 +386,10 @@ export abstract class Tile {
 
   private isCulled(range: ElementAlignedBox3d, args: TileDrawArgs, testClipIntersection: boolean, sphere?: BoundingSphere) {
     const box = Frustum.fromRange(range, scratchRootFrustum);
+    return this.isFrustumCulled(box, args, testClipIntersection, sphere);
+  }
+
+  protected isFrustumCulled(box: Frustum, args: TileDrawArgs, testClipIntersection: boolean, sphere?: BoundingSphere) {
     const worldBox = box.transformBy(args.location, scratchWorldFrustum);
     const worldSphere = sphere?.transformBy(args.location, scratchWorldSphere);
 
