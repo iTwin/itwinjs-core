@@ -8,7 +8,7 @@
 
 import { assert, BeTimePoint, dispose } from "@bentley/bentleyjs-core";
 import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { ColorDef, Frustum } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
@@ -26,11 +26,13 @@ export interface RealityTileParams extends TileParams {
   readonly additiveRefinement?: boolean;
   readonly noContentButTerminateOnSelection?: boolean;
   readonly rangeCorners?: Point3d[];
+  readonly boundedByRegion?: boolean;
 }
 
 const scratchLoadedChildren = new Array<RealityTile>();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
 const additiveRefinementThreshold = 20000;
+const scratchFrustum = new Frustum();
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // eslint-disable-next-line prefer-const
@@ -41,10 +43,11 @@ let debugMaxDepth: number, debugMinDepth = 0;
  * @internal
  */
 export class RealityTile extends Tile {
-  public transformToRoot?: Transform;   // May be reset during reprojection.
+  public readonly transformToRoot?: Transform;
   public readonly additiveRefinement?: boolean;
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
+  public readonly boundedByRegion;
   private _everDisplayed = false;
   public reprojectionTransform?: Transform;
   private _reprojectedGraphic?: RenderGraphic;
@@ -55,6 +58,7 @@ export class RealityTile extends Tile {
     this.additiveRefinement = (undefined === props.additiveRefinement) ? this.realityParent?.additiveRefinement : props.additiveRefinement;
     this.noContentButTerminateOnSelection = props.noContentButTerminateOnSelection;
     this.rangeCorners = props.rangeCorners;
+    this.boundedByRegion = props.boundedByRegion;
 
     if (undefined === this.transformToRoot)
       return;
@@ -171,9 +175,17 @@ export class RealityTile extends Tile {
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
     builder.setSymbology(color, color, 3);
     builder.addRangeBoxFromCorners(this.rangeCorners ? this.rangeCorners : this.range.corners());
+    if (this.reprojectionTransform && this.rangeCorners) {
+      const reprojectedColor = ColorDef.fromString("rgb(255,255, 0)");
+      const reprojectedCorners = [];
+      for (const corner of this.rangeCorners)
+        reprojectedCorners.push(this.reprojectionTransform.multiplyPoint3d(corner));
+      builder.setSymbology(reprojectedColor, reprojectedColor, 5);
+      builder.addRangeBoxFromCorners(reprojectedCorners);
+    }
   }
 
-  public setReprojection(rootReprojection: Transform, _dbReprojection: Transform) {
+  public setReprojection(rootReprojection: Transform) {
     this.reprojectionTransform = rootReprojection;
   }
 
@@ -252,7 +264,15 @@ export class RealityTile extends Tile {
   }
 
   public computeVisibilityFactor(args: TileDrawArgs): number {
-    if (this.isEmpty || this.isRegionCulled(args))
+    if (this.isEmpty)
+      return -1;
+
+    if (this.rangeCorners)
+      scratchFrustum.setFromCorners(this.rangeCorners);
+    else
+      Frustum.fromRange(this.range, scratchFrustum);
+
+    if (this.isFrustumCulled(scratchFrustum, args, true, this.boundingSphere))
       return -1;
 
     // some nodes are merely for structure and don't have any geometry
@@ -312,6 +332,7 @@ export class RealityTile extends Tile {
     const yVector = Vector3d.createStartEnd(origin, corners[2]);
     const zVector = Vector3d.createStartEnd(origin, corners[4]);
     const maximumSize = this.maximumSize;
+    const boundedByRegion = this.boundedByRegion;
     const isLeaf = this.radius < additiveRefinementThreshold;
     const localTransform = Transform.createOriginAndMatrixColumns(origin, xVector, yVector, zVector);
     if (!localTransform) {
@@ -336,7 +357,7 @@ export class RealityTile extends Tile {
 
         const contentId = `${this.contentId}_S${step++}`;
         const range = Range3d.createArray(rangeCorners);
-        const childParams: RealityTileParams = { rangeCorners, contentId, range, maximumSize, parent: this, additiveRefinement: false, isLeaf };
+        const childParams: RealityTileParams = { rangeCorners, contentId, range, maximumSize, parent: this, additiveRefinement: false, isLeaf, boundedByRegion };
 
         stepChildren.push(new StepChildRealityTile(childParams, this.realityRoot));
       }
@@ -401,10 +422,6 @@ class StepChildRealityTile  extends RealityTile {
       this._graphic = renderSystem.createGraphicBranch(branch, this.reprojectionTransform, branchOptions);
     }
     return this._graphic;
-  }
-  public setReprojection(rootReprojection: Transform, dbReprojection: Transform) {
-    super.setReprojection(rootReprojection, dbReprojection);
-    // rootReprojection.multiplyPoint3dArrayInPlace(this._boundingClip);
   }
 
   public markUsed(args: TileDrawArgs): void {

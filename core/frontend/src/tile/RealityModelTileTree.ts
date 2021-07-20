@@ -256,11 +256,13 @@ class RealityModelTileProps implements RealityTileParams {
   public readonly parent?: RealityTile;
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
+  public readonly boundedByRegion;
 
   constructor(json: any, parent: RealityTile | undefined, thisId: string, transformToRoot?: Transform, additiveRefinement?: boolean) {
     this.contentId = thisId;
     this.parent = parent;
     const boundingVolume = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume);
+    this.boundedByRegion = json.boundingVolume.region !== undefined;
     if (boundingVolume) {
       this.range = boundingVolume.range;
       this.rangeCorners = boundingVolume.corners;

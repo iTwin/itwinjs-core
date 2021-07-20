@@ -17,9 +17,6 @@ import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
 
-// eslint-disable-next-line prefer-const
-let skipReprojection = false, skipIntersectionTest = true;
-
 /** @internal */
 export class TraversalDetails {
   public queuedChildren = new Array<Tile>();
@@ -110,12 +107,15 @@ export class TraversalSelectionContext {
 const scratchFrustum = new Frustum();
 const scratchFrustumPlanes = new FrustumPlanes();
 const scratchCarto = new Cartographic();
+const scratchPoint = Point3d.createZero(), scratchOrigin = Point3d.createZero();
 const scratchRange = Range3d.createNull();
+const scratchX = Vector3d.createZero(), scratchY = Vector3d.createZero(), scratchZ = Vector3d.createZero();
+const scratchMatrix = Matrix3d.createZero(), scratchTransform = Transform.createZero();
 
 interface ChildReprojection {
   child: RealityTile;
   ecefCenter: Point3d;
-  dbCenter: Point3d;
+  dbPoints: Point3d[];    // Center, xEnd, yEnd, zEnd
 }
 
 /** @internal */
@@ -145,6 +145,8 @@ export class RealityTileTree extends TileTree {
     this.yAxisUp = true === params.yAxisUp;
     this._rootTile = this.createTile(params.rootTile);
     this.cartesianRange = BackgroundMapGeometry.getCartesianRange(this.iModel);
+    this.cartesianRange.low.z -= 1.0E5;
+    this.cartesianRange.high.z += 1.0E5;
     this.cartesianTransitionDistance = this.cartesianRange.diagonal().magnitudeXY() * .25;      // Transition distance from elliptical to cartesian.
     this._gcsConverter = params.gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
     if (params.rootToEcef) {
@@ -260,11 +262,8 @@ export class RealityTileTree extends TileTree {
   }
 
   public doReprojectChildren(tile: Tile): boolean {
-    if (skipReprojection || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
+    if (!(tile instanceof RealityTile) || !tile.boundedByRegion || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
       return false;
-
-    if (skipIntersectionTest)
-      return true;
 
     const tileRange = this.iModelTransform.isIdentity ? tile.range : this.iModelTransform.multiplyRange(tile.range, scratchRange);
 
@@ -284,47 +283,55 @@ export class RealityTileTree extends TileTree {
     for (const child of children) {
       const realityChild = child as RealityTile;
       const childRange  = realityChild.rangeCorners ? Range3d.createTransformedArray(rootToDb, realityChild.rangeCorners) : rootToDb.multiplyRange(realityChild.contentRange, scratchRange);
-      const dbCenter = childRange.center; // intersectRange.center;
+      const dbCenter = childRange.center;
       const ecefCenter = dbToEcef.multiplyPoint3d(dbCenter);
-      reprojectChildren.push({child: realityChild, ecefCenter, dbCenter});
+      const dbPoints = [dbCenter, dbCenter.plusXYZ(1), dbCenter.plusXYZ(0, 1), dbCenter.plusXYZ(0, 0, 1)];
+      reprojectChildren.push({child: realityChild, ecefCenter, dbPoints});
     }
     if (reprojectChildren.length === 0)
       resolve(children);
     else {
       const requestProps = new Array<XYZProps>();
-      const pushRequestFromEcef = (ecefPoint: Point3d) => {
-        const carto = Cartographic.fromEcef(ecefPoint, scratchCarto);
-        if (carto)
-          requestProps.push({ x: carto.longitudeDegrees, y: carto.latitudeDegrees, z: carto.height });
-      };
 
       for (const reprojection of reprojectChildren) {
-        const ecefOrigin = reprojection.ecefCenter;
-        pushRequestFromEcef(ecefOrigin);
-        for (let i = 0; i < 3; i++)
-          pushRequestFromEcef(ecefOrigin.plus(dbToEcef.matrix.getColumn(i)));
+        for (const dbPoint of reprojection.dbPoints) {
+          const ecefPoint = dbToEcef.multiplyPoint3d(dbPoint);
+          const carto = Cartographic.fromEcef(ecefPoint, scratchCarto);
+          if (carto)
+            requestProps.push({ x: carto.longitudeDegrees, y: carto.latitudeDegrees, z: carto.height });
+
+        }
       }
 
       if (requestProps.length !== 4 * reprojectChildren.length)
         resolve(children);
       else {
         this._gcsConverter!.getIModelCoordinatesFromGeoCoordinates(requestProps).then((response) => {
-          let responseIndex = 0;
+
           const reprojectedCoords = response.iModelCoords;
           const dbToRoot = rootToDb.inverse()!;
+          const getReprojectedPoint = (original: Point3d, reprojectedXYZ: XYZProps) => {
+            scratchPoint.setFromJSON(reprojectedXYZ);
+            const cartesianDistance = this.cartesianRange.distanceToPoint(scratchPoint);
+            if (cartesianDistance < this.cartesianTransitionDistance)
+              return scratchPoint.interpolate(cartesianDistance / this.cartesianTransitionDistance, original, scratchPoint);
+            else
+              return original;
+          };
 
+          let responseIndex = 0;
           for (const reprojection of reprojectChildren) {
             if (reprojectedCoords.every((coord) => coord.s === GeoCoordStatus.Success)) {
-              const reprojectedOrigin = Point3d.fromJSON(reprojectedCoords[responseIndex++].p);
-              const xVector = Vector3d.createStartEnd(reprojectedOrigin, Point3d.fromJSON((reprojectedCoords[responseIndex++].p)));
-              const yVector = Vector3d.createStartEnd(reprojectedOrigin, Point3d.fromJSON((reprojectedCoords[responseIndex++].p)));
-              const zVector = Vector3d.createStartEnd(reprojectedOrigin, Point3d.fromJSON((reprojectedCoords[responseIndex++].p)));
-              const matrix = Matrix3d.createColumns(xVector, yVector, zVector);
+              const reprojectedOrigin = getReprojectedPoint(reprojection.dbPoints[0], reprojectedCoords[responseIndex++].p).clone(scratchOrigin);
+              const xVector = Vector3d.createStartEnd(reprojectedOrigin, getReprojectedPoint(reprojection.dbPoints[1], reprojectedCoords[responseIndex++].p), scratchX);
+              const yVector = Vector3d.createStartEnd(reprojectedOrigin, getReprojectedPoint(reprojection.dbPoints[2], reprojectedCoords[responseIndex++].p), scratchY);
+              const zVector = Vector3d.createStartEnd(reprojectedOrigin, getReprojectedPoint(reprojection.dbPoints[3], reprojectedCoords[responseIndex++].p), scratchZ);
+              const matrix = Matrix3d.createColumns(xVector, yVector, zVector, scratchMatrix);
               if (matrix !== undefined) {
-                const dbReprojection = Transform.createMatrixPickupPutdown(matrix, reprojection.dbCenter, reprojectedOrigin);
+                const dbReprojection = Transform.createMatrixPickupPutdown(matrix, reprojection.dbPoints[0], reprojectedOrigin, scratchTransform);
                 if (dbReprojection) {
                   const rootReprojection = dbToRoot.multiplyTransformTransform(dbReprojection).multiplyTransformTransform(rootToDb);
-                  reprojection.child.setReprojection(rootReprojection, dbReprojection);
+                  reprojection.child.setReprojection(rootReprojection);
                 }
               }
             }
