@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
+import { BeDuration } from "@bentley/bentleyjs-core";
 import { IModelHost } from "../../IModelHost";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -39,14 +40,21 @@ describe.only("DgnDbWorker", () => {
     public get isCanceled(): boolean { return this._worker.isCanceled(); }
     public get wasExecuted(): boolean { return this._worker.wasExecuted(); }
     public get state(): IModelJsNative.TestWorkerState { return this._worker.getState(); }
+
+    public get isQueued() { return IModelJsNative.TestWorkerState.Queued === this.state; }
+    public get isRunning() { return IModelJsNative.TestWorkerState.Running === this.state; }
+    public get isError() { return IModelJsNative.TestWorkerState.Error === this.state; }
+    public get isOk() { return IModelJsNative.TestWorkerState.Ok === this.state; }
+    public get isSkipped() { return IModelJsNative.TestWorkerState.Skipped === this.state; }
   }
 
   it("executes asynchronously", async () => {
     const worker = new Worker();
     worker.setReady();
     await worker.promise;
+
     expect(worker.wasExecuted).to.be.true;
     expect(worker.isCanceled).to.be.false;
-    expect(worker.state).to.equal(IModelJsNative.TestWorkerState.Ok);
+    expect(worker.isOk).to.be.true;
   });
 });
