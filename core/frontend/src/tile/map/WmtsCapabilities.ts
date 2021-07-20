@@ -6,8 +6,7 @@ import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { Point2d, Range2d } from "@bentley/geometry-core";
 import { request, RequestBasicCredentials, RequestOptions } from "@bentley/itwin-client";
 import { xml2json } from "xml-js";
-import { MapCartoRectangle } from "../internal";
-import { WmsUtilities } from "./WmsUtilities"; // needed for getBaseUrl
+import { MapCartoRectangle, WmsUtilities  } from "../internal"; // WmsUtilities needed for getBaseUrl
 
 /** @packageDocumentation
  * @module Views

@@ -46,12 +46,14 @@ import {
   TileDrawArgs,
   TileLoadPriority,
   TileParams,
+  TileTree,
+  TileTreeLoadStatus,
   TileTreeOwner,
   TileTreeReference,
   TileTreeSupplier,
-  UpsampledMapTile, WebMercatorTilingScheme,
+  UpsampledMapTile,
+  WebMercatorTilingScheme,
 } from "../internal";
-import { TileTree, TileTreeLoadStatus } from "../TileTree";
 
 const scratchPoint = Point3d.create();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
