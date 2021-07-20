@@ -37,6 +37,7 @@ describe.only("DgnDbWorker", () => {
     }
 
     public queue() { this._worker.queue(); }
+    public cancel() { this._worker.cancel(); }
     public setReady() { this._worker.setReady(); }
     public setThrow() { this._worker.setThrow(); }
 
@@ -111,5 +112,39 @@ describe.only("DgnDbWorker", () => {
 
     await Promise.all(workers.map((x) => x.promise));
     expect(workers.every((x) => x.isOk)).to.be.true;
+  });
+
+  it("skips execution if canceled before execution begins", async () => {
+    const worker = new Worker();
+    worker.cancel();
+    expect(worker.isCanceled).to.be.true;
+    worker.queue();
+    await worker.promise;
+    expect(worker.isSkipped).to.be.true;
+    expect(worker.wasExecuted).to.be.false;
+  });
+
+  it("executes if canceled after execution begins", async () => {
+    const worker = new Worker();
+    worker.queue();
+    await waitUntil(() => worker.isRunning);
+    worker.cancel();
+    worker.setReady();
+    await worker.promise;
+    expect(worker.isCanceled).to.be.true;
+    expect(worker.isSkipped).to.be.false;
+    expect(worker.wasExecuted).to.be.true;
+  });
+
+  it("throws", async () => {
+    const worker = new Worker();
+    worker.setThrow();
+    worker.queue();
+    await worker.promise;
+    expect(worker.isCanceled).to.be.false;
+    expect(worker.isError).to.be.true;
+  });
+
+  it("cancels all workers before iModel is closed", async () => {
   });
 });
