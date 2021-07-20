@@ -85,7 +85,7 @@ export class EsriOAuth2 {
     /** Define a *global* callback function that will be used by the redirect URL to pass the generated token
    * @param redirectLocation Unmodified value of 'window.location' from the redirect_uri page.
    */
-    (window as any).esriOAuth2Callback = (redirectLocation?:Location) => {
+    (window as any).esriOAuth2Callback = (redirectLocation?: Location) => {
       let eventSuccess = false;
       let decodedState;
 

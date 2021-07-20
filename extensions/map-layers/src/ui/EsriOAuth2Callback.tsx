@@ -14,9 +14,9 @@ export function EsriOAuth2Callback() {
       const opener = (window.opener as any);
       assert(opener?.esriOAuth2Callback);
       if (opener?.esriOAuth2Callback) {
-          opener.esriOAuth2Callback(window.location);
-        }
+        opener.esriOAuth2Callback(window.location);
       }
+    }
   };
 
   React.useEffect(() => {

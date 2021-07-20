@@ -74,28 +74,6 @@ export interface ArcGisGenerateTokenOptions {
   expiration?: number;   // in minutes, defaults to 60 minutes
 }
 
-export interface ArcGisOAuth2CodeOptions {
-  // Application client_id.
-  clientId: string;
-
-  // redirect_uri : user will be redirected to this endpoint with the authorization code.
-  redirectUri: string;
-
-  // Requested duration (in seconds) of the refresh_token. -1 = a refresh_token that will last forever. ArcGIS Online organizations can override this with a shorter duration.
-  expiration: number;
-}
-
-export interface ArcGisOAuth2TokenOptions {
-  // Application client_id.
-  clientId: string;
-
-  // The authorization code.
-  code: string;
-
-  // The redirect_uri used to get the authorization code.
-  redirectUri: string;
-}
-
 /** @internal */
 export class ArcGisTokenGenerator {
   private static readonly restApiPath = "/rest/";
@@ -180,31 +158,6 @@ export class ArcGisTokenGenerator {
       };
 
       const response = await request(new FrontendRequestContext(""), tokenServiceUrl, httpRequestOptions);
-
-      // Check a token was really generated (an error could be part of the body)
-      token = response?.body;
-
-    } catch (_error) {
-    }
-    return token;
-  }
-
-  public static async generateOAuh2(tokenEndpoint: string, options: ArcGisOAuth2TokenOptions): Promise<any> {
-
-    let token: undefined;
-    try {
-      const encodedClientId = ArcGisTokenGenerator.formEncode(options.clientId);
-      const encodedCode = encodeURIComponent(options.code);
-      const encodedRedirectUri = encodeURIComponent(options.redirectUri);
-
-      const httpRequestOptions: RequestOptions = {
-        method: "POST",
-        body: `client_id=${encodedClientId}&code=${encodedCode}&redirect_uri=${encodedRedirectUri}&grant_type=authorization_code`,
-        headers: { "content-type": "application/x-www-form-urlencoded" },
-        responseType: "json",
-      };
-
-      const response = await request(new FrontendRequestContext(""), tokenEndpoint, httpRequestOptions);
 
       // Check a token was really generated (an error could be part of the body)
       token = response?.body;
