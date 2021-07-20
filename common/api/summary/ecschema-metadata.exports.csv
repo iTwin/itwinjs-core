@@ -168,7 +168,7 @@ beta;class PropertyDiagnostic
 deprecated;class PropertyDiagnostic
 beta;PropertyProps
 beta;PropertyType
-beta;propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty"
+beta;propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "NavigationProperty" | "StructProperty" | "StructArrayProperty" | "PrimitiveArrayProperty"
 beta;PropertyTypeUtils
 beta;RelationshipClass 
 beta;RelationshipClassProps 
