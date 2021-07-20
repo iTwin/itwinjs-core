@@ -115,7 +115,7 @@ const rule = {
     const extraOpts = context.options[0];
     const { ignoredBarrelModules = [], requiredBarrelModules = [] } =
       typeof maybeTsConfig === "string" &&
-        extraOpts && {
+        extraOpts ? {
           ignoredBarrelModules:
             extraOpts[OPTION_IGNORED_BARREL_MODULES] &&
             resolvePathsOption(
@@ -128,7 +128,7 @@ const rule = {
               extraOpts[OPTION_REQUIRED_BARREL_MODULES],
               maybeTsConfig
             ),
-        };
+        } : {};
 
     return {
       ImportDeclaration(node) {
@@ -198,7 +198,7 @@ const rule = {
             messageId: messageIds.mustUseRequiredBarrels,
             data: { barrelPath: requiredBarrelModule },
             fix(fixer) {
-              return [fixer.replaceText(node)]
+              return fixer.replaceText(node);
             }
           });
         }
@@ -293,7 +293,7 @@ const rule = {
                     )
                     .join(", ")} } from "${importPath}";`
 
-            ).join();
+            ).join("");
           return fixer.replaceText(node, newImportStmtsText);
         }
 
