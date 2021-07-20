@@ -1,7 +1,7 @@
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 /*
 Within a package, you can create cyclic dependencies by doing the following:
@@ -114,21 +114,22 @@ const rule = {
 
     const extraOpts = context.options[0];
     const { ignoredBarrelModules = [], requiredBarrelModules = [] } =
-      typeof maybeTsConfig === "string" &&
-        extraOpts ? {
-          ignoredBarrelModules:
-            extraOpts[OPTION_IGNORED_BARREL_MODULES] &&
-            resolvePathsOption(
-              extraOpts[OPTION_IGNORED_BARREL_MODULES],
-              maybeTsConfig
-            ),
-          requiredBarrelModules:
-            extraOpts[OPTION_REQUIRED_BARREL_MODULES] &&
-            resolvePathsOption(
-              extraOpts[OPTION_REQUIRED_BARREL_MODULES],
-              maybeTsConfig
-            ),
-        } : {};
+      typeof maybeTsConfig === "string" && extraOpts
+        ? {
+            ignoredBarrelModules:
+              extraOpts[OPTION_IGNORED_BARREL_MODULES] &&
+              resolvePathsOption(
+                extraOpts[OPTION_IGNORED_BARREL_MODULES],
+                maybeTsConfig
+              ),
+            requiredBarrelModules:
+              extraOpts[OPTION_REQUIRED_BARREL_MODULES] &&
+              resolvePathsOption(
+                extraOpts[OPTION_REQUIRED_BARREL_MODULES],
+                maybeTsConfig
+              ),
+          }
+        : {};
 
     return {
       ImportDeclaration(node) {
@@ -137,18 +138,7 @@ const rule = {
           if (symbol === undefined) return "";
           const declaration = symbol.valueDeclaration || symbol.declarations[0];
           const fileOfExport = declaration.getSourceFile();
-          const path = TsImportPaths.normalize(
-            withoutExt(
-              TsImportPaths.relative(
-                TsImportPaths.dirname(thisModule.fileName),
-                fileOfExport.fileName
-              )
-            )
-          );
-          // a path unprefixed by "./" is interpretted as from node_modules
-          const ensurePrefixed = (path) =>
-            path[0] === "." ? path : `./${path}`;
-          return ensurePrefixed(path);
+          return fileToImportPath(thisModule.fileName, fileOfExport.fileName);
         }
 
         if (typeof node.source.value !== "string")
@@ -163,7 +153,6 @@ const rule = {
           return;
 
         const thisModule = importNodeTs.getSourceFile();
-
 
         const importInfo = ts.getResolvedModule(
           thisModule,
@@ -187,10 +176,16 @@ const rule = {
 
         if (!importedModule) throw Error("couldn't find imported module");
 
-        const normedImportModulePath = OsPaths.normalize(importedModule.fileName);
+        const normedImportModulePath = OsPaths.normalize(
+          importedModule.fileName
+        );
 
-        const requiredBarrelModule = requiredBarrelModules.find(barrelModule => pathContains(OsPaths.basename(barrelModule), normedImportModulePath));
-        const importIsSiblingOfRequiredBarrel = requiredBarrelModule !== undefined;
+        const requiredBarrelModule = requiredBarrelModules.find(
+          (barrelModule) =>
+            pathContains(OsPaths.basename(barrelModule), normedImportModulePath)
+        );
+        const importIsSiblingOfRequiredBarrel =
+          requiredBarrelModule !== undefined;
 
         if (importIsSiblingOfRequiredBarrel) {
           context.report({
@@ -198,8 +193,15 @@ const rule = {
             messageId: messageIds.mustUseRequiredBarrels,
             data: { barrelPath: requiredBarrelModule },
             fix(fixer) {
-              return fixer.replaceText(node);
-            }
+              // TODO: could be improved to check the re-exported name in case it changed
+              return fixer.replaceText(
+                node,
+                `import { ${5} } from ${fileToImportPath(
+                  normedImportModulePath,
+                  requiredBarrelModule
+                )}`
+              );
+            },
           });
         }
 
@@ -282,7 +284,8 @@ const rule = {
               import_[1].sort((a, b) => a.namedImport.name.escapedText > b.namedImport.name.escapedText ? 1 : -1);
               return import_;
             })
-            .map(([importPath, namedImports], i) =>
+            .map(
+              ([importPath, namedImports], i) =>
                 // prettier-ignore
                 `${ i === 0 ? "" : "\n" /* separate all imported modules with a new line*/
                   }import { ${namedImports
@@ -292,8 +295,8 @@ const rule = {
                         : namedImport.name.escapedText
                     )
                     .join(", ")} } from "${importPath}";`
-
-            ).join("");
+            )
+            .join("");
           return fixer.replaceText(node, newImportStmtsText);
         }
 
@@ -346,7 +349,30 @@ function resolvePathsOption(pathArray, tsConfigPath) {
  */
 function pathContains(parent, child) {
   const relative = OsPaths.relative(parent, child);
-  return relative !== "" && !relative.startsWith('..') && OsPaths.isAbsolute(relative);
+  return (
+    relative !== "" &&
+    !relative.startsWith("..") &&
+    OsPaths.isAbsolute(relative)
+  );
+}
+
+/**
+ * given a typescript file path, and a path to a typescript file that the first file wants to import,
+ * return the import path that should be used in the import statement.
+ * @param {string} importerPath - the path of the typescript file that wants to import something
+ * @param {string} filePath - the path of the typescript file that importerPath wants to import
+ * @returns {string}
+ */
+function fileToImportPath(importerPath, filePath) {
+  // a path unprefixed by "./" is interpretted as from node_modules, so we must prefix it
+  const ensurePrefixed = (path) => (path[0] === "." ? path : `./${path}`);
+  return ensurePrefixed(
+    TsImportPaths.normalize(
+      withoutExt(
+        TsImportPaths.relative(TsImportPaths.dirname(importerPath), filePath)
+      )
+    )
+  );
 }
 
 module.exports = rule;
