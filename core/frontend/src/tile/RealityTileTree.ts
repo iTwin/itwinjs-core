@@ -323,12 +323,8 @@ export class RealityTileTree extends TileTree {
               if (matrix !== undefined) {
                 const dbReprojection = Transform.createMatrixPickupPutdown(matrix, reprojection.dbCenter, reprojectedOrigin);
                 if (dbReprojection) {
-                  const realityChild = reprojection.child;
                   const rootReprojection = dbToRoot.multiplyTransformTransform(dbReprojection).multiplyTransformTransform(rootToDb);
-                  if (realityChild.transformToRoot)
-                    assert(false);
-                  else
-                    realityChild.reprojectionTransform = rootReprojection;
+                  reprojection.child.setReprojection(rootReprojection, dbReprojection);
                 }
               }
             }

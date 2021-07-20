@@ -10,7 +10,7 @@ import { assert, BeTimePoint, dispose } from "@bentley/bentleyjs-core";
 import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
-import { GraphicBranch } from "../render/GraphicBranch";
+import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
 import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
@@ -30,8 +30,7 @@ export interface RealityTileParams extends TileParams {
 
 const scratchLoadedChildren = new Array<RealityTile>();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
-const cornerReorder = [0, 1, 3, 2];
-const additiveRefinementThreshold = 10000;
+const additiveRefinementThreshold = 20000;
 
 // eslint-disable-next-line @typescript-eslint/no-unused-vars
 // eslint-disable-next-line prefer-const
@@ -172,42 +171,10 @@ export class RealityTile extends Tile {
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
     builder.setSymbology(color, color, 3);
     builder.addRangeBoxFromCorners(this.rangeCorners ? this.rangeCorners : this.range.corners());
-    /*
-    const corners = this.rangeCorners;
-    if (!corners)
-      return;
+  }
 
-    const origin = corners[0];
-    const xVector = Vector3d.createStartEnd(origin, corners[1]);
-    const yVector = Vector3d.createStartEnd(origin, corners[2]);
-    const zVector = Vector3d.createStartEnd(origin, corners[4]);
-    const xHalf = xVector.magnitude() / 2;
-    const yHalf = yVector.magnitude() / 2;
-    const clipTransform = Transform.createOriginAndMatrixColumns(origin, xVector.normalize()!, yVector.normalize()!, zVector.normalize()!);
-    if (!clipTransform) {
-      assert(false);
-      return;
-    }
-    builder.setSymbology(ColorDef.red, ColorDef.red, 5);
-
-    for (let i = 0, x = 0; i < 2; i++, x += xHalf) {
-      for (let j = 0, y = 0; j < 2; j++, y += yHalf) {
-        const clipPolygon = new Array<Point3d>();
-
-        clipPolygon.push(Point3d.create(x, y, 0));
-        clipPolygon.push(Point3d.create(x + xHalf, y, 0));
-        clipPolygon.push(Point3d.create(x + xHalf, y + yHalf, 0));
-        clipPolygon.push(Point3d.create(x, y + yHalf, 0));
-
-        const rangeCorners = new Array<Point3d>();
-        for (let k = 0; k < 4; k++) {
-          const thisCorner = clipTransform.multiplyPoint3d(clipPolygon[cornerReorder[k]]);
-          rangeCorners.push(thisCorner);
-          rangeCorners.push(thisCorner.plus(zVector));
-        }
-        builder.addRangeBoxFromCorners(rangeCorners);
-      }
-    } */
+  public setReprojection(rootReprojection: Transform, _dbReprojection: Transform) {
+    this.reprojectionTransform = rootReprojection;
   }
 
   public allChildrenIncluded(tiles: Tile[]) {
@@ -344,44 +311,34 @@ export class RealityTile extends Tile {
     const xVector = Vector3d.createStartEnd(origin, corners[1]);
     const yVector = Vector3d.createStartEnd(origin, corners[2]);
     const zVector = Vector3d.createStartEnd(origin, corners[4]);
-    const xHalf = xVector.magnitude() / 2;
-    const yHalf = yVector.magnitude() / 2;
     const maximumSize = this.maximumSize;
     const isLeaf = this.radius < additiveRefinementThreshold;
-    const localTransform = Transform.createOriginAndMatrixColumns(origin, xVector.normalize()!, yVector.normalize()!, zVector.normalize()!);
+    const localTransform = Transform.createOriginAndMatrixColumns(origin, xVector, yVector, zVector);
     if (!localTransform) {
       assert(false);
       return;
     }
 
     const stepChildren = new Array<StepChildRealityTile>();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const allRange = Range3d.createNull(), cornersRange = Range3d.createArray(corners);
-    const clipTransform = this.tree.iModelTransform.multiplyTransformTransform(localTransform);
 
-    for (let i = 0, x = 0; i < 2; i++, x += xHalf) {
-      for (let j = 0, y = 0; j < 2; j++, y += yHalf) {
-        const clipPolygon = new Array<Point3d>();
+    for (let i = 0, step = 0; i < 2; i++) {
+      for (let j = 0; j < 2; j++) {
+        const  rangeCorners = [];
+        const xLow = i / 2, xHigh = xLow + .5, yLow = j / 2, yHigh = yLow + .5;
+        rangeCorners.push(Point3d.create(xLow, yLow));
+        rangeCorners.push(Point3d.create(xHigh, yLow));
+        rangeCorners.push(Point3d.create(xLow, yHigh));
+        rangeCorners.push(Point3d.create(xHigh, yHigh));
+        for (let k = 0; k < 4; k++)
+          rangeCorners.push(rangeCorners[k].plusXYZ(0, 0, 1));
 
-        clipPolygon.push(Point3d.create(x, y, 0));
-        clipPolygon.push(Point3d.create(x + xHalf, y, 0));
-        clipPolygon.push(Point3d.create(x + xHalf, y + yHalf, 0));
-        clipPolygon.push(Point3d.create(x, y + yHalf, 0));
+        localTransform.multiplyPoint3dArrayInPlace(rangeCorners);
 
-        const clipShape = ClipShape.createShape(clipPolygon, undefined, undefined, clipTransform);
-        const rangeCorners = new Array<Point3d>();
-        for (let k = 0; k < 4; k++) {
-          const thisCorner = localTransform.multiplyPoint3d(clipPolygon[cornerReorder[k]]);
-          rangeCorners.push(thisCorner);
-          rangeCorners.push(thisCorner.plus(zVector));
-        }
-
-        const contentId = `${this.contentId}_Step${i}`;
+        const contentId = `${this.contentId}_S${step++}`;
         const range = Range3d.createArray(rangeCorners);
-        allRange.extendArray(rangeCorners);
         const childParams: RealityTileParams = { rangeCorners, contentId, range, maximumSize, parent: this, additiveRefinement: false, isLeaf };
 
-        stepChildren.push(new StepChildRealityTile(childParams, this.realityRoot, ClipVector.create([clipShape!])));
+        stepChildren.push(new StepChildRealityTile(childParams, this.realityRoot));
       }
     }
     resolve(stepChildren);
@@ -411,7 +368,7 @@ class StepChildRealityTile  extends RealityTile {
   public get isStepChild() { return true; }
   private _loadableTile: RealityTile;
 
-  public constructor(props: RealityTileParams, tree: RealityTileTree, private _boundingClip: ClipVector) {
+  public constructor(props: RealityTileParams, tree: RealityTileTree) {
     super(props, tree);
     this._loadableTile = this.realityParent;
     for (; this._loadableTile && this._loadableTile.isStepChild; this._loadableTile = this._loadableTile.realityParent)
@@ -436,14 +393,20 @@ class StepChildRealityTile  extends RealityTile {
       const branch = new GraphicBranch(false);
       branch.add(parentGraphics);
       const renderSystem =  IModelApp.renderSystem;
-      const clipVolume = renderSystem.createClipVolume(this._boundingClip);
-      this._graphic = renderSystem.createGraphicBranch(branch, this.reprojectionTransform, { clipVolume });
+      const branchOptions: GraphicBranchOptions = {};
+      if (this.rangeCorners) {
+        const clipPolygon = [this.rangeCorners[0], this.rangeCorners[1], this.rangeCorners[3], this.rangeCorners[2]];
+        branchOptions.clipVolume =  renderSystem.createClipVolume(ClipVector.create([ClipShape.createShape(clipPolygon, undefined, undefined, this.tree.iModelTransform)!]));
+      }
+      this._graphic = renderSystem.createGraphicBranch(branch, this.reprojectionTransform, branchOptions);
     }
     return this._graphic;
   }
-  public addBoundingGraphic(builder: GraphicBuilder, _color: ColorDef) {
-    super.addBoundingGraphic(builder, ColorDef.red);
+  public setReprojection(rootReprojection: Transform, dbReprojection: Transform) {
+    super.setReprojection(rootReprojection, dbReprojection);
+    // rootReprojection.multiplyPoint3dArrayInPlace(this._boundingClip);
   }
+
   public markUsed(args: TileDrawArgs): void {
     args.markUsed(this);
     args.markUsed(this._loadableTile);
