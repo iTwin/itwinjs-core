@@ -52,18 +52,64 @@ describe.only("DgnDbWorker", () => {
     public get isSkipped() { return IModelJsNative.TestWorkerState.Skipped === this.state; }
   }
 
+  async function waitUntil(condition: () => boolean): Promise<void> {
+    if (condition())
+      return;
+
+    await new Promise<void>((resolve: any) => setTimeout(resolve, 100));
+    return waitUntil(condition);
+  }
+
   it("executes asynchronously", async () => {
     const worker = new Worker();
     await BeDuration.wait(1000);
     expect(worker.wasQueued).to.be.false;
     expect(worker.isCanceled).to.be.false;
 
-    worker.setReady();
     worker.queue();
+    expect(worker.isQueued || worker.isRunning).to.be.true;
+
+    worker.setReady();
     await worker.promise;
 
     expect(worker.wasExecuted).to.be.true;
     expect(worker.isCanceled).to.be.false;
     expect(worker.isOk).to.be.true;
+  });
+
+  it("executes a maximum of 4 simultaneously", async () => {
+    // Create 4 workers. They should all start executing.
+    const first = [new Worker(), new Worker(), new Worker(), new Worker()];
+    for (const worker of first)
+      worker.queue();
+
+    await waitUntil(() => first.every((x) => x.isRunning));
+
+    // Queue up 2 more workers. They should not start executing until at least one of the first 4 resolves.
+    const next = [new Worker(), new Worker()];
+    for (const worker of next)
+      worker.queue();
+
+    await BeDuration.wait(1000);
+    expect(first.every((x) => x.isRunning)).to.be.true;
+    expect(next.every((x) => x.isQueued)).to.be.true;
+
+    // Let the first worker resolve.
+    first[0].setReady();
+    await first[0].promise;
+    expect(first[0].isOk).to.be.true;
+
+    // Exactly one of the 2 workers remaining in the queue should start executing.
+    await waitUntil(() => next.some((x) => x.isRunning));
+    await BeDuration.wait(1000);
+    expect(next.every((x) => x.isRunning)).to.be.false;
+
+    // Clear the queue.
+    const workers = first.concat(next);
+    for (const worker of workers)
+      worker.setReady();
+
+    await Promise.all(workers.map((x) => x.promise));
+    expect(workers.every((x) => x.isOk)).to.be.true;
   });
 });
