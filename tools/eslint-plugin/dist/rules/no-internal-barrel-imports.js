@@ -49,9 +49,13 @@ const OsPaths = require("path");
 const TsImportPaths = OsPaths.posix;
 
 const OPTION_IGNORED_BARREL_MODULES = "ignored-barrel-modules";
+const OPTION_REQUIRED_BARREL_MODULES = "required-barrel-modules";
 
 const messages = {
-  noInternalBarrelImports: "Do not consume barrel imports within the same package",
+  noInternalBarrelImports:
+    "Do not consume barrel imports within the same package",
+  mustUseRequiredBarrels:
+    "You must import from the configured required barrel module, '{{barrelPath}}'",
 };
 
 /** @type {typeof messages} */
@@ -86,6 +90,14 @@ const rule = {
             description: "Usage of re-exports from these paths are ignored.",
             default: [],
           },
+          [OPTION_REQUIRED_BARREL_MODULES]: {
+            type: "array",
+            description:
+              "Paths to barrel modules for which it is illegal to import sibling modules, the barrel must be imported. " +
+              "This allows the forcing of dependency order which can be used to resolve cyclic dependencies. " +
+              'A "sibling" Module is any module in that is a descendant of the containing directory of the barrel. ',
+            default: [],
+          },
         },
       },
     ],
@@ -101,16 +113,22 @@ const rule = {
     const maybeTsConfig = program.getCompilerOptions().configFilePath;
 
     const extraOpts = context.options[0];
-    const ignoredBarrelModules = (
-      (maybeTsConfig &&
-        extraOpts &&
-        extraOpts[OPTION_IGNORED_BARREL_MODULES]) ||
-      []
-    ).map((p) => {
-      /** @type {string} earlier check means it is definitely a string */
-      const tsConfig = maybeTsConfig;
-      return OsPaths.normalize(OsPaths.resolve(OsPaths.dirname(tsConfig), p));
-    });
+    const { ignoredBarrelModules = [], requiredBarrelModules = [] } =
+      typeof maybeTsConfig === "string" &&
+        extraOpts && {
+          ignoredBarrelModules:
+            extraOpts[OPTION_IGNORED_BARREL_MODULES] &&
+            resolvePathsOption(
+              extraOpts[OPTION_IGNORED_BARREL_MODULES],
+              maybeTsConfig
+            ),
+          requiredBarrelModules:
+            extraOpts[OPTION_REQUIRED_BARREL_MODULES] &&
+            resolvePathsOption(
+              extraOpts[OPTION_REQUIRED_BARREL_MODULES],
+              maybeTsConfig
+            ),
+        };
 
     return {
       ImportDeclaration(node) {
@@ -146,7 +164,11 @@ const rule = {
 
         const thisModule = importNodeTs.getSourceFile();
 
-        const importInfo = ts.getResolvedModule(thisModule, importNodeTs.moduleSpecifier.text);
+
+        const importInfo = ts.getResolvedModule(
+          thisModule,
+          importNodeTs.moduleSpecifier.text
+        );
 
         const importIsPackage =
           importInfo === undefined || importInfo.isExternalLibraryImport;
@@ -165,16 +187,37 @@ const rule = {
 
         if (!importedModule) throw Error("couldn't find imported module");
 
+        const normedImportModulePath = OsPaths.normalize(importedModule.fileName);
+
+        const requiredBarrelModule = requiredBarrelModules.find(barrelModule => pathContains(OsPaths.basename(barrelModule), normedImportModulePath));
+        const importIsSiblingOfRequiredBarrel = requiredBarrelModule !== undefined;
+
+        if (importIsSiblingOfRequiredBarrel) {
+          context.report({
+            node,
+            messageId: messageIds.mustUseRequiredBarrels,
+            data: { barrelPath: requiredBarrelModule },
+            fix(fixer) {
+              return [fixer.replaceText(node)]
+            }
+          });
+        }
+
         // prettier-ignore
         if (ignoredBarrelModules.includes(OsPaths.normalize(importedModule.fileName)))
           return;
 
         let containsReExport = false;
         ts.forEachChild(importedModule, (child) => {
-          const potentialReExport = (ts.isExportDeclaration(child) && child.moduleSpecifier !== undefined && !child.isTypeOnly);
-          if (!potentialReExport)
-            return;
-          const transitiveImportInfo = ts.getResolvedModule(importedModule, child.moduleSpecifier.text);
+          const potentialReExport =
+            ts.isExportDeclaration(child) &&
+            child.moduleSpecifier !== undefined &&
+            !child.isTypeOnly;
+          if (!potentialReExport) return;
+          const transitiveImportInfo = ts.getResolvedModule(
+            importedModule,
+            child.moduleSpecifier.text
+          );
           const reExportsExternalPackage =
             transitiveImportInfo === undefined ||
             transitiveImportInfo.isExternalLibraryImport;
@@ -210,44 +253,38 @@ const rule = {
 
         /** @param {import("eslint").Rule.RuleFixer} fixer */
         function fix(fixer) {
-          const modulesToImportStmtsMap =
-            namedImports
-              .map((namedImport) => {
-                const symbol = checker.getSymbolAtLocation(
-                  namedImport.name
-                );
-                return {
-                  namedImport,
-                  importPath:
-                    symbol &&
-                    getRelativeImportPathForExportedSymbol(
-                      checker.getAliasedSymbol(symbol)
-                    ),
-                };
-              })
-              .filter(({ importPath }) => importPath !== undefined)
-              .reduce((result, cur) => {
-                if (!result.has(cur.importPath))
-                  result.set(cur.importPath, [cur]);
-                else result.get(cur.importPath).push(cur);
-                return result;
-              }, new Map());
+          const modulesToImportStmtsMap = namedImports
+            .map((namedImport) => {
+              const symbol = checker.getSymbolAtLocation(namedImport.name);
+              return {
+                namedImport,
+                importPath:
+                  symbol &&
+                  getRelativeImportPathForExportedSymbol(
+                    checker.getAliasedSymbol(symbol)
+                  ),
+              };
+            })
+            .filter(({ importPath }) => importPath !== undefined)
+            .reduce((result, cur) => {
+              if (!result.has(cur.importPath))
+                result.set(cur.importPath, [cur]);
+              else result.get(cur.importPath).push(cur);
+              return result;
+            }, new Map());
 
-          const addReplacementImportTextFixers =
-              [...modulesToImportStmtsMap]
-              // sort the modules (get keys in the map as a list and sort)
-              .sort((a, b) => (a[0] > b[0] ? 1 : -1))
-              // for each one, sort their named imports (sort each value of the map)
-              .map((import_) => {
+          const newImportStmtsText = [...modulesToImportStmtsMap]
+            // sort the modules (get keys in the map as a list and sort)
+            .sort((a, b) => (a[0] > b[0] ? 1 : -1))
+            // for each one, sort their named imports (sort each value of the map)
+            .map((import_) => {
+              // prettier-ignore
+              import_[1].sort((a, b) => a.namedImport.name.escapedText > b.namedImport.name.escapedText ? 1 : -1);
+              return import_;
+            })
+            .map(([importPath, namedImports], i) =>
                 // prettier-ignore
-                import_[1].sort((a, b) => a.namedImport.name.escapedText > b.namedImport.name.escapedText ? 1 : -1);
-                return import_;
-              })
-              .map(([importPath, namedImports], i) =>
-                fixer.insertTextAfter(
-                  node,
-                  // prettier-ignore
-                  `${ i === 0 ? "" : "\n" /* separate all imported modules with a new line*/
+                `${ i === 0 ? "" : "\n" /* separate all imported modules with a new line*/
                   }import { ${namedImports
                     .map(({ namedImport }) =>
                       namedImport.propertyName !== undefined
@@ -255,15 +292,13 @@ const rule = {
                         : namedImport.name.escapedText
                     )
                     .join(", ")} } from "${importPath}";`
-                )
-              );
-          return [
-            fixer.remove(node),
-            ...addReplacementImportTextFixers
-          ];
-        };
 
-        const canFix = !hasDefaultImport &&
+            ).join();
+          return fixer.replaceText(node, newImportStmtsText);
+        }
+
+        const canFix =
+          !hasDefaultImport &&
           !isSideEffectImport &&
           !hasNamespaceImport &&
           namedImports.length !== 0;
@@ -292,6 +327,26 @@ function withoutExt(inPath) {
     TsImportPaths.dirname(inPath),
     TsImportPaths.basename(inPath).replace(/\.[^.]+$/, "")
   );
+}
+
+/**
+ * @param {string[]} pathArray
+ * @param {string} tsConfigPath
+ */
+function resolvePathsOption(pathArray, tsConfigPath) {
+  return pathArray.map((path) =>
+    OsPaths.normalize(OsPaths.resolve(OsPaths.dirname(tsConfigPath), path))
+  );
+}
+
+/**
+ * @param {string} parent
+ * @param {string} child
+ * @returns {boolean}
+ */
+function pathContains(parent, child) {
+  const relative = OsPaths.relative(parent, child);
+  return relative !== "" && !relative.startsWith('..') && OsPaths.isAbsolute(relative);
 }
 
 module.exports = rule;
