@@ -13,9 +13,13 @@ import { IModelJsNative } from "@bentley/imodeljs-native";
 describe.only("DgnDbWorker", () => {
   let imodel: StandaloneDb;
 
-  before(() => {
+  function openIModel(): void {
     const rootSubject = { name: "DgnDbWorker tests", description: "DgnDbWorker tests" };
     imodel = StandaloneDb.createEmpty(IModelTestUtils.prepareOutputFile("DgnDbWorker", "DgnDbWorker.bim"), { rootSubject });
+  }
+
+  before(() => {
+    openIModel();
   });
 
   after(() => {
@@ -146,5 +150,22 @@ describe.only("DgnDbWorker", () => {
   });
 
   it("cancels all workers before iModel is closed", async () => {
+    const resolve = new Worker();
+    resolve.setReady();
+    const reject = new Worker();
+    reject.setThrow();
+
+    const cancel = [new Worker(), new Worker(), new Worker(), new Worker(), new Worker(), new Worker()];
+
+    const workers = cancel.concat([resolve, reject]);
+    for (const worker of workers)
+      worker.queue();
+
+    imodel.close();
+    openIModel();
+
+    expect(cancel.every((x) => x.isCanceled)).to.be.true;
+    expect(resolve.isCanceled || resolve.isOk).to.be.true;
+    expect(reject.isCanceled || reject.isError).to.be.true;
   });
 });
