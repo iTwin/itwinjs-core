@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/presentation-components",
+      "comment": "Update to React 17.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/presentation-components",
+  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+}

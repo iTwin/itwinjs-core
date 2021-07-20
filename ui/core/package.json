@@ -108,7 +108,7 @@
     "classnames": "^2.3.1",
     "dompurify": "^2.0.12",
     "lodash": "^4.17.10",
-    "react-autosuggest": "^10.0.1",
+    "react-autosuggest": "^10.0.4",
     "react-compound-slider": "^2.5.0",
     "react-select": "3.1.0",
     "resize-observer-polyfill": "1.5.1",
