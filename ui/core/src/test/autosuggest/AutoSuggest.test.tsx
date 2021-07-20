@@ -7,6 +7,7 @@ import { mount, ReactWrapper } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as ReactAutosuggest from "react-autosuggest";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { AutoSuggest, AutoSuggestData } from "../../ui-core";
@@ -61,71 +62,54 @@ describe("AutoSuggest", () => {
   });
 
   it("should open suggestions when typing", async () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
-
     const spyMethod = sinon.spy();
-    const wrapper = mount(<AutoSuggest options={options} onSuggestionSelected={spyMethod} />, { attachTo: outerNode });
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+    const { container } = render(<div><AutoSuggest options={options} onSuggestionSelected={spyMethod} /></div>);
 
-    const input = autoSuggest.find("input[type='text']");
-    expect(input.length).to.eq(1);
+    const input = container.querySelector("input");
+    expect(input).not.to.be.null;
 
-    const inputNode = getInputElement(input);
-    inputNode.focus();
-
-    input.simulate("change", { target: { value: "abc" } });
+    const inputNode: HTMLElement = input!;
+    fireEvent.focusIn(inputNode);
+    fireEvent.change(inputNode, { target: { value: "abc" } })
     await TestUtils.flushAsyncOperations();
-    wrapper.update();
 
-    let li = wrapper.find("li");
-    expect(li.length).to.eq(1);
+    let li = container.querySelectorAll("li");
+    expect(li).not.to.be.null;
+    expect(li?.length).to.eq(1);
 
-    input.simulate("change", { target: { value: "lab" } });
+    fireEvent.change(inputNode, { target: { value: "lab" } })
     await TestUtils.flushAsyncOperations();
-    wrapper.update();
 
-    li = wrapper.find("li");
-    expect(li.length).to.eq(3);
+    li = container.querySelectorAll("li");
+    expect(li).not.to.be.null;
+    expect(li?.length).to.eq(3);
 
-    input.simulate("change", { target: { value: "" } });
-    wrapper.update();
+    fireEvent.change(inputNode, { target: { value: "" } })
+    await TestUtils.flushAsyncOperations();
 
-    li = wrapper.find("li");
-    expect(li.length).to.eq(0);
-
-    wrapper.unmount();
-    document.body.removeChild(outerNode);
+    li = container.querySelectorAll("li");
+    expect(li).not.to.be.null;
+    expect(li?.length).to.eq(0);
   });
 
   it("should call onSuggestionSelected with clicked suggestion", async () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
-
     const spyMethod = sinon.spy();
-    const wrapper = mount(<AutoSuggest options={options} onSuggestionSelected={spyMethod} />, { attachTo: outerNode });
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+    const { container } = render(<div><AutoSuggest options={options} onSuggestionSelected={spyMethod} /></div>);
 
-    const input = autoSuggest.find("input[type='text']");
-    expect(input.length).to.eq(1);
+    const input = container.querySelector("input");
+    expect(input).not.to.be.null;
 
-    const inputNode = getInputElement(input);
-    inputNode.focus();
-
-    input.simulate("change", { target: { value: "abc" } });
+    const inputNode: HTMLElement = input!;
+    fireEvent.focusIn(inputNode);
+    fireEvent.change(inputNode, { target: { value: "abc" } })
     await TestUtils.flushAsyncOperations();
-    wrapper.update();
 
-    const li = wrapper.find("li");
-    expect(li.length).to.eq(1);
+    let li = container.querySelectorAll("li");
+    expect(li).not.to.be.null;
+    expect(li?.length).to.eq(1);
 
-    li.simulate("click");
+    fireEvent.click(li[0]);
     spyMethod.calledOnce.should.true;
-
-    wrapper.unmount();
-    document.body.removeChild(outerNode);
   });
 
   const getSuggestions = (value: string): AutoSuggestData[] => {
@@ -150,55 +134,37 @@ describe("AutoSuggest", () => {
   };
 
   it("should support options function and getLabel", async () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
-
     const spyMethod = sinon.spy();
-    const wrapper = mount(<AutoSuggest options={getSuggestions} getLabel={getLabel} onSuggestionSelected={spyMethod} />, { attachTo: outerNode });
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+    const { container } = render(<div><AutoSuggest options={getSuggestions} getLabel={getLabel} onSuggestionSelected={spyMethod} /></div>);
 
-    const input = autoSuggest.find("input[type='text']");
-    expect(input.length).to.eq(1);
+    const input = container.querySelector("input");
+    expect(input).not.to.be.null;
 
-    const inputNode = getInputElement(input);
-    inputNode.focus();
-
-    input.simulate("change", { target: { value: "abc" } });
+    const inputNode: HTMLElement = input!;
+    fireEvent.focusIn(inputNode);
+    fireEvent.change(inputNode, { target: { value: "abc" } })
     await TestUtils.flushAsyncOperations();
-    wrapper.update();
 
-    const li = wrapper.find("li");
-    expect(li.length).to.eq(1);
-
-    wrapper.unmount();
-    document.body.removeChild(outerNode);
+    const li = container.querySelectorAll("li");
+    expect(li).not.to.be.null;
+    expect(li?.length).to.eq(1);
   });
 
   it("should support getSuggestions prop", async () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
-
     const spyMethod = sinon.spy();
-    const wrapper = mount(<AutoSuggest getSuggestions={getSuggestionsAsync} onSuggestionSelected={spyMethod} />, { attachTo: outerNode });
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+    const { container } = render(<div><AutoSuggest getSuggestions={getSuggestionsAsync} onSuggestionSelected={spyMethod} /></div>);
 
-    const input = autoSuggest.find("input[type='text']");
-    expect(input.length).to.eq(1);
+    const input = container.querySelector("input");
+    expect(input).not.to.be.null;
 
-    const inputNode = getInputElement(input);
-    inputNode.focus();
-
-    input.simulate("change", { target: { value: "abc" } });
+    const inputNode: HTMLElement = input!;
+    fireEvent.focusIn(inputNode);
+    fireEvent.change(inputNode, { target: { value: "abc" } })
     await TestUtils.flushAsyncOperations();
-    wrapper.update();
 
-    const li = wrapper.find("li");
-    expect(li.length).to.eq(1);
-
-    wrapper.unmount();
-    document.body.removeChild(outerNode);
+    const li = container.querySelectorAll("li");
+    expect(li).not.to.be.null;
+    expect(li?.length).to.eq(1);
   });
 
   it("should support renderInputComponent prop", async () => {
@@ -266,30 +232,21 @@ describe("AutoSuggest", () => {
   });
 
   it("should log Error when options function provided but not getLabel", async () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
-
     const spyMethod = sinon.spy();
     const spyLogger = sinon.spy(Logger, "logError");
-    const wrapper = mount(<AutoSuggest options={getSuggestions} onSuggestionSelected={spyMethod} />, { attachTo: outerNode });
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+    const { container } = render(<div><AutoSuggest options={getSuggestions} onSuggestionSelected={spyMethod} /></div>);
 
-    const input = autoSuggest.find("input[type='text']");
-    expect(input.length).to.eq(1);
+    const input = container.querySelector("input");
+    expect(input).not.to.be.null;
 
-    const inputNode = getInputElement(input);
-    inputNode.focus();
-
-    input.simulate("change", { target: { value: "abc" } });
+    const inputNode: HTMLElement = input!;
+    fireEvent.focusIn(inputNode);
+    fireEvent.change(inputNode, { target: { value: "abc" } })
     await TestUtils.flushAsyncOperations();
-    wrapper.update();
 
-    const li = wrapper.find("li");
-    expect(li.length).to.eq(1);
-
-    wrapper.unmount();
-    document.body.removeChild(outerNode);
+    const li = container.querySelectorAll("li");
+    expect(li).not.to.be.null;
+    expect(li?.length).to.eq(1);
 
     spyLogger.called.should.true;
     (Logger.logError as any).restore();
@@ -371,25 +328,18 @@ describe("AutoSuggest", () => {
   });
 
   it("should invoke onInputFocus", async () => {
-    const outerNode = document.createElement("div");
-    document.body.appendChild(outerNode);
 
     const spyMethod = sinon.spy();
     const spyFocus = sinon.spy();
-    const wrapper = mount(<AutoSuggest options={options} onSuggestionSelected={spyMethod} onInputFocus={spyFocus} />, { attachTo: outerNode });
-    const autoSuggest = wrapper.find(AutoSuggest);
-    expect(autoSuggest.length).to.eq(1);
+    const { container } = render(<div><AutoSuggest options={options} onSuggestionSelected={spyMethod} onInputFocus={spyFocus} /></div>);
 
-    const input = autoSuggest.find("input[type='text']");
-    expect(input.length).to.eq(1);
+    const input = container.querySelector("input");
+    expect(input).not.to.be.null;
 
-    const inputNode = getInputElement(input);
-    inputNode.focus();
+    const inputNode: HTMLElement = input!;
+    fireEvent.focusIn(inputNode);
 
     expect(spyFocus.called).to.be.true;
-
-    wrapper.unmount();
-    document.body.removeChild(outerNode);
   });
 
 });

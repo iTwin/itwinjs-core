@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { fireEvent, render, wait } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../ui-core/settings/SettingsContainer";
@@ -14,7 +14,7 @@ import TestUtils from "../TestUtils";
 // cSpell:ignore sublabel
 
 const waitForSpy = async (spy: sinon.SinonSpy, options: { timeout: number } = { timeout: 250 }) => {
-  return wait(() => {
+  return waitFor(() => {
     if (!spy.called)
       throw new Error("Waiting for spy timed out!");
   }, { timeout: options.timeout, interval: 10 });
