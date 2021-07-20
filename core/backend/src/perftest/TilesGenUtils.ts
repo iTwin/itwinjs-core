@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Range3d } from "@bentley/geometry-core";
-import { IModelDb, SpatialModel } from "../imodeljs-backend";
+import { IModelDb } from "../IModelDb";
+import { SpatialModel } from "../Model";
 import {
   BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, iModelTileTreeIdToString,
   TileMetadata, TileMetadataReader, TileProps,

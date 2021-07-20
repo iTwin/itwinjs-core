@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @type{import("eslint").Linter.BaseConfig} */
 module.exports = {
   env: {
     "browser": true
@@ -372,10 +373,19 @@ module.exports = {
     "@bentley/prefer-get": "error",
     "@bentley/react-set-state-usage": ["error", { "updater-only": false, "allow-object": true }],
     "@bentley/require-basic-rpc-values": "off",
+    "@bentley/no-internal-barrel-imports": "error",
   },
+  overrides: [
+    {
+      files: ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
+      rules: {
+        "@bentley/no-internal-barrel-imports": "off",
+      }
+    }
+  ],
   settings: {
     "react": {
       "version": "16.8"
     }
-  }
+  },
 }
