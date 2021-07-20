@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { render } from "@testing-library/react";
+import { cleanup, fireEvent, render } from "@testing-library/react";
 import * as sinon from "sinon";
 import * as React from "react";
 
@@ -17,6 +17,7 @@ describe("<FocusTrap />", () => {
 
   afterEach(() => {
     sandbox.restore();
+    cleanup();
   });
 
   it("renders correctly", () => {
@@ -69,7 +70,7 @@ describe("<FocusTrap />", () => {
 
     const limitDiv = component.getByTestId("focus-trap-limit-div");
     expect(limitDiv).to.exist;
-    limitDiv.focus();
+    fireEvent.focusIn(limitDiv);
 
     const activeElement = document.activeElement as HTMLElement;
     expect(activeElement.id).to.eq("test1");
@@ -92,7 +93,7 @@ describe("<FocusTrap />", () => {
 
     const firstDiv = component.getByTestId("focus-trap-div");
     expect(firstDiv).to.exist;
-    firstDiv.focus();
+    fireEvent.focusIn(firstDiv);
 
     activeElement = document.activeElement as HTMLElement;
     expect(activeElement.id).to.eq("test3");
