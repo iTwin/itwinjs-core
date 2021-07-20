@@ -81,6 +81,10 @@ ruleTester.run(
         code: `import {c} from "./far/barrel";`,
         options: [{ "required-barrel-modules": ["./far/barrel.ts"] }],
       },
+      {
+        code: `import {a} from "./barrel";`,
+        options: [{ "required-barrel-modules": ["./barrel.ts"] }],
+      },
     ],
     invalid: [
       {
@@ -116,10 +120,16 @@ ruleTester.run(
         `,
       },
       {
-        code: `import {c as X} from "./far/c";`,
-        options: [{ "required-barrel-modules": ["./far/barrel.ts"] }],
+        code: `import {a} from "./a";`,
+        options: [{ "required-barrel-modules": ["./barrel.ts"] }],
         errors: [{ messageId: "mustUseRequiredBarrels" }],
-        output: `import {c as X} from "./far/barrel";`,
+        output: `import {a} from "./barrel";`,
+      },
+      {
+        code: `import * as X from "./a";`,
+        options: [{ "required-barrel-modules": ["./barrel.ts"] }],
+        errors: [{ messageId: "mustUseRequiredBarrels" }],
+        output: `import * as X from "./barrel";`,
       },
     ],
   })
