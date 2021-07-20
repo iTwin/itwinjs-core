@@ -23,7 +23,8 @@ export interface StatusMessageRendererProps extends CommonProps {
   dismissActivityMessage?: () => void;
 }
 
-/** Message Popup React component that renders one or more Toast or Sticky messages and an Activity message
+/** Message Popup React component that renders one or more Toast or Sticky messages and an Activity message without a StatusBar.
+ * @note This component was formerly named MessageRenderer in previous releases.
  * @beta
  */
 export function StatusMessageRenderer(props: StatusMessageRendererProps) {
