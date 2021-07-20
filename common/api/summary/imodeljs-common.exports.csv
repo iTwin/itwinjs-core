@@ -432,6 +432,7 @@ alpha;OrbitGtBlobProps
 beta;OverriddenBy
 internal;PackedFeature
 internal;PackedFeatureTable
+internal;parseTileTreeIdAndContentId(treeId: string, contentId: string):
 public;PartReference
 public;PersistentGraphicsRequestProps 
 public;PhysicalElementProps 

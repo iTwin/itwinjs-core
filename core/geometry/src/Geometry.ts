@@ -177,6 +177,10 @@ export class Geometry {
   public static readonly smallAngleRadians = 1.0e-12;
   /** square of `smallAngleRadians` */
   public static readonly smallAngleRadiansSquared = 1.0e-24;
+  /** tolerance for small angle measured in degrees. */
+  public static readonly smallAngleDegrees = 5.7e-11;
+  /** tolerance for small angle measured in arc-seconds. */
+   public static readonly smallAngleSeconds = 2e-7;
   /** numeric value that may considered huge for numbers expected to be 0..1 fractions.
    * * But note that the "allowed" result value is vastly larger than 1.
    */
@@ -320,6 +324,19 @@ export class Geometry {
   public static isSmallRelative(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
   /** Test if `value` is small compared to `smallAngleRadians` */
   public static isSmallAngleRadians(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
+  /** Returns true if both values are undefined or if both are defined and almost equal within tolerance.
+   * If one is undefined and the other is not then false is returned.
+  */
+  public static isAlmostEqualOptional(a: number | undefined, b: number | undefined, tolerance: number): boolean {
+    if (a !== undefined && b !== undefined) {
+      if (Math.abs(a - b) > tolerance)
+        return false;
+    } else {
+      if (a !== undefined || b !== undefined)
+        return false;
+    }
+    return true;
+  }
   /** Toleranced equality test, using tolerance `smallAngleRadians * ( 1 + abs(a) + (abs(b)))`
    * * Effectively an absolute tolerance of `smallAngleRadians`, with tolerance increasing for larger values of a and b.
   */

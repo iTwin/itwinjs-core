@@ -1,6 +1,24 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+_Version update only_
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- Update table to pass HtmlDivElement to ElementResizeObserver.
+- Add QuantityNumberInput that looks like NumberInput but works with Quantities and active unit system.
+- `TreeRenderer`: Add ability to explicitly specify component's width and height.
+- `VirtualizedPropertyGrid`: Add ability to explicitly specify component's width and height.
+- `ControlledTree`: Accept and forward size props to `TreeRenderer`.
+- Clean up timeline and fix test coverage.
+- Add props to the TimelineComponent that will allow apps to pass a set of items to be prefixed, appended, or to replace the context menu entries.
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT

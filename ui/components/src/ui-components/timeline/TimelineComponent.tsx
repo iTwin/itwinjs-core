@@ -16,6 +16,7 @@ import { InlineEdit } from "./InlineEdit";
 import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces";
 import { PlayButton, PlayerButton } from "./PlayerButton";
 import { Scrubber } from "./Scrubber";
+import { toDateString, toTimeString } from "../common/DateUtils";
 
 // cspell:ignore millisec
 
@@ -65,6 +66,8 @@ export interface TimelineComponentProps {
   includeRepeat?: boolean; // include the repeat option on the Timeline Context Menu
   appMenuItems?: TimelineMenuItemProps[]; // app-supplied speed entries in the Timeline Context Menu
   appMenuItemOption?: TimelineMenuItemOption; // how to include the supplied app menu items in the Timeline Context Menu
+  timeZoneOffset?: number; // Display date and time offset by the number of minutes specified. When undefined - local timezone will be used
+
 }
 /** @internal */
 interface TimelineComponentState {
@@ -430,7 +433,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   };
 
   public override render() {
-    const { startDate, endDate, showDuration } = this.props;
+    const { startDate, endDate, showDuration, timeZoneOffset } = this.props;
     const { currentDuration, totalDuration, minimized } = this.state;
     const currentDate = this._currentDate();
     const durationString = this._displayTime(currentDuration);
@@ -448,13 +451,13 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
             title={UiComponents.translate("timeline.step")} />
           <PlayerButton className="play-forward" icon="icon-caret-right" onClick={this._onForward}
             title={UiComponents.translate("timeline.backward")} />
-          <span className="current-date">{currentDate.toLocaleDateString()}</span>
+          <span className="current-date">{toDateString(currentDate, timeZoneOffset)}</span>
         </div>
         <div className="scrubber">
           <PlayButton className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
           <div className="start-time-container">
-            {hasDates && <span className="start-date">{startDate!.toLocaleDateString()}</span>}
-            {hasDates && !showDuration && <span className="start-time">{startDate!.toLocaleTimeString()}</span>}
+            {hasDates && <span data-testid="test-start-date" className="start-date">{toDateString(startDate!, timeZoneOffset)}</span>}
+            {hasDates && !showDuration && <span data-testid="test-start-time" className="start-time">{toTimeString (startDate!, timeZoneOffset)}</span>}
             {showDuration && <span className="duration-start-time">{durationString}</span>}
           </div>
           <Scrubber
@@ -468,10 +471,11 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
             showTime={!showDuration}
             onChange={this._onTimelineChange}
             onUpdate={this._onTimelineChange}
+            timeZoneOffset={this.props.timeZoneOffset}
           />
           <div className="end-time-container">
-            {hasDates && <span className="end-date">{endDate!.toLocaleDateString()}</span>}
-            {hasDates && !showDuration && <span className="end-time">{endDate!.toLocaleTimeString()}</span>}
+            {hasDates && <span className="end-date">{toDateString (endDate!, timeZoneOffset)}</span>}
+            {hasDates && !showDuration && <span className="end-time">{toTimeString (endDate!, timeZoneOffset)}</span>}
             {showDuration && <InlineEdit className="duration-end-time" defaultValue={totalDurationString} onChange={this._onTotalDurationChange} />}
           </div>
           {minimized && this._renderSettings()}
