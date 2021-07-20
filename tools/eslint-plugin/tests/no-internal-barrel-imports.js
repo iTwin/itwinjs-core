@@ -77,6 +77,11 @@ ruleTester.run(
       { code: `import { barreled } from "barrel-pkg";` },
       { code: `import {A} from "./typebarrel";` },
       { code: `import {y, x} from "./external-reexports";` },
+      {
+        only: true,
+        code: `import {c} from "./far/barrel";`,
+        options: [{ "required-barrel-modules": ["./far/barrel.ts"] }],
+      }
     ],
     invalid: [
       {
@@ -110,6 +115,12 @@ ruleTester.run(
           import { b, b3 } from "./b";
           import { c } from "./far/c";
         `,
+      },
+      {
+        code: `import {c as X} from "./far/c";`,
+        options: [{ "required-barrel-modules": ["./far/barrel.ts"] }],
+        errors: [{ messageId: "mustUseRequiredBarrels" }],
+        output: `import {c as X} from "./far/barrel";`,
       },
     ],
   })

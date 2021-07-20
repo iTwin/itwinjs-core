@@ -182,10 +182,14 @@ const rule = {
 
         const requiredBarrelModule = requiredBarrelModules.find(
           (barrelModule) =>
-            pathContains(OsPaths.basename(barrelModule), normedImportModulePath)
+            pathContains(OsPaths.dirname(barrelModule), normedImportModulePath)
         );
         const importIsSiblingOfRequiredBarrel =
           requiredBarrelModule !== undefined;
+
+        const importIsFromRequiredBarrelModule = requiredBarrelModule === normedImportModulePath;
+
+        if (importIsFromRequiredBarrelModule) return;
 
         if (importIsSiblingOfRequiredBarrel) {
           context.report({
@@ -193,16 +197,19 @@ const rule = {
             messageId: messageIds.mustUseRequiredBarrels,
             data: { barrelPath: requiredBarrelModule },
             fix(fixer) {
-              // TODO: could be improved to check the re-exported name in case it changed
-              return fixer.replaceText(
-                node,
-                `import { ${5} } from ${fileToImportPath(
-                  normedImportModulePath,
-                  requiredBarrelModule
-                )}`
-              );
+              // TODO: could be improved to check the re-exported name in case it was changed
+              if (importNodeTs.importClause)
+                return fixer.replaceText(
+                  node,
+                  `import ${importNodeTs.importClause.getText()} from "${fileToImportPath(
+                    thisModule.fileName,
+                    requiredBarrelModule
+                  )}";`
+                );
+              else return fixer.remove(node);
             },
           });
+          return;
         }
 
         // prettier-ignore
@@ -352,7 +359,7 @@ function pathContains(parent, child) {
   return (
     relative !== "" &&
     !relative.startsWith("..") &&
-    OsPaths.isAbsolute(relative)
+    !OsPaths.isAbsolute(relative)
   );
 }
 
@@ -368,11 +375,22 @@ function fileToImportPath(importerPath, filePath) {
   const ensurePrefixed = (path) => (path[0] === "." ? path : `./${path}`);
   return ensurePrefixed(
     TsImportPaths.normalize(
-      withoutExt(
-        TsImportPaths.relative(TsImportPaths.dirname(importerPath), filePath)
+      tsPathFromOsPath(
+        withoutExt(
+          TsImportPaths.relative(OsPaths.dirname(importerPath), filePath)
+        )
       )
     )
   );
+}
+
+/**
+ * given a relative os path, return a typescript compatible (posix) path
+ * @param {string} path
+ * @returns {string}
+ */
+function tsPathFromOsPath(path) {
+  return path.split(OsPaths.sep).join(TsImportPaths.sep);
 }
 
 module.exports = rule;
