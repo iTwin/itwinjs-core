@@ -11,8 +11,7 @@ import { Angle, Ellipsoid, EllipsoidPatch, Point2d, Point3d, Range1d, Range3d, T
 import { QParams3d, QPoint2d } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
-import { MapCartoRectangle, MapTile, QuadId, TerrainMeshProvider } from "../internal";
-import { MapTilingScheme, WebMercatorTilingScheme } from "./MapTilingScheme";
+import { MapCartoRectangle, MapTile, MapTilingScheme, QuadId, TerrainMeshProvider, WebMercatorTilingScheme } from "../internal";
 
 const scratchPoint2d = Point2d.createZero();
 const scratchPoint = Point3d.createZero();

@@ -342,6 +342,7 @@ internal;MapLayerSourceStatus
 internal;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
 internal;MapTile 
+internal;MapTiledGraphicsProvider 
 internal;MapTileLoader 
 internal;class MapTileProjection
 internal;MapTileTree 

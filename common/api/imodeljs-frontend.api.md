@@ -5631,6 +5631,27 @@ export class MapTile extends RealityTile {
     tileFromQuadId(quadId: QuadId): MapTile | undefined;
 }
 
+// @internal (undocumented)
+export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
+    constructor(_vp: Viewport);
+    // (undocumented)
+    readonly backgroundDrapeMap: MapTileTreeReference;
+    // (undocumented)
+    readonly backgroundMap: MapTileTreeReference;
+    // (undocumented)
+    detachFromDisplayStyle(): void;
+    // (undocumented)
+    forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
+    // (undocumented)
+    getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
+    // (undocumented)
+    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
+    // (undocumented)
+    readonly overlayMap: MapTileTreeReference;
+    // (undocumented)
+    setView(newView: ViewState): void;
+    }
+
 // @internal
 export class MapTileLoader extends RealityTileLoader {
     constructor(_iModel: IModelConnection, _modelId: Id64String, _groundBias: number, _terrainProvider: TerrainMeshProvider);
