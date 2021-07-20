@@ -43,6 +43,7 @@ describe.only("DgnDbWorker", () => {
 
   it("executes asynchronously", async () => {
     const worker = new Worker();
+    worker.setReady();
     await worker.promise;
     expect(worker.wasExecuted).to.be.true;
     expect(worker.isCanceled).to.be.false;
