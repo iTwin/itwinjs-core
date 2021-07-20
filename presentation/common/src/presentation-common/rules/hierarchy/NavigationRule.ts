@@ -21,6 +21,13 @@ import { SubCondition } from "./SubCondition";
  */
 export interface NavigationRuleBase extends RuleBase {
   /**
+   * Defines a condition for the rule, which needs to be met in order to execute it. Condition
+   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
+   * a [limited set of symbols]($docs/learning/presentation/Hierarchies/ECExpressions.md#rule-condition).
+   */
+  condition?: string;
+
+  /**
    * Specifications that define what content the rule returns.
    */
   specifications?: ChildNodeSpecification[];
