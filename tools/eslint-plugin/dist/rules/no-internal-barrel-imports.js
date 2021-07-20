@@ -187,7 +187,8 @@ const rule = {
         const importIsSiblingOfRequiredBarrel =
           requiredBarrelModule !== undefined;
 
-        const importIsFromRequiredBarrelModule = requiredBarrelModule === normedImportModulePath;
+        const importIsFromRequiredBarrelModule =
+          requiredBarrelModule === normedImportModulePath;
 
         if (importIsFromRequiredBarrelModule) return;
 
@@ -376,9 +377,7 @@ function fileToImportPath(importerPath, filePath) {
   return ensurePrefixed(
     TsImportPaths.normalize(
       tsPathFromOsPath(
-        withoutExt(
-          TsImportPaths.relative(OsPaths.dirname(importerPath), filePath)
-        )
+        withoutExt(OsPaths.relative(OsPaths.dirname(importerPath), filePath))
       )
     )
   );

@@ -78,10 +78,9 @@ ruleTester.run(
       { code: `import {A} from "./typebarrel";` },
       { code: `import {y, x} from "./external-reexports";` },
       {
-        only: true,
         code: `import {c} from "./far/barrel";`,
         options: [{ "required-barrel-modules": ["./far/barrel.ts"] }],
-      }
+      },
     ],
     invalid: [
       {
