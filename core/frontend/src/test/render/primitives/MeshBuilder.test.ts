@@ -16,7 +16,8 @@ import { PolyfacePrimitive, PolyfacePrimitiveList } from "../../../render/primit
 import { PrimitiveBuilder } from "../../../render/primitives/geometry/GeometryListBuilder";
 import { StrokesPrimitiveList, StrokesPrimitivePointLists } from "../../../render/primitives/Strokes";
 import { ToleranceRatio, Triangle } from "../../../render/primitives/Primitives";
-import { MeshBuilder, MeshEdgeCreationOptions, MeshParams } from "../../../render-primitives";
+import { MeshParams } from "../../../render/primitives/VertexTable";
+import { MeshBuilder, MeshEdgeCreationOptions } from "../../../render/primitives/mesh/MeshBuilder";
 import { openBlankViewport } from "../../openBlankViewport";
 
 class FakeDisplayParams extends DisplayParams {
