@@ -18,7 +18,8 @@ import { UiSettingsProvider } from "../uisettings/useUiSettings";
 import { PopupRenderer } from "../popup/PopupManager";
 import { ModelessDialogRenderer } from "../dialog/ModelessDialogManager";
 import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
-import { CursorPopupMenu, FrameworkVersion } from "../../ui-framework";
+import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
+import { FrameworkVersion } from "../hooks/useFrameworkVersion";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ThemeManager } from "../theme/ThemeManager";
 

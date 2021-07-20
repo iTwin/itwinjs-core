@@ -14,7 +14,9 @@ import { RpcProtocol } from "../core/RpcProtocol";
 import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
-import { CommonLoggerCategory, RpcInterface, RpcManager } from "../../imodeljs-common";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { RpcInterface } from "../../RpcInterface";
+import { RpcManager } from "../../RpcManager";
 import { RpcRoutingToken } from "../core/RpcRoutingToken";
 import { Logger } from "@bentley/bentleyjs-core";
 

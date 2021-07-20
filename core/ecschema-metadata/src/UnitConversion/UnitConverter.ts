@@ -3,7 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { BentleyError, BentleyStatus } from "@bentley/bentleyjs-core";
-import { Constant, SchemaContext, SchemaItem, SchemaKey, Unit } from "../ecschema-metadata";
+import { SchemaContext } from "../Context";
+import { Constant } from "../Metadata/Constant";
+import { SchemaItem } from "../Metadata/SchemaItem";
+import { Unit } from "../Metadata/Unit";
+import { SchemaKey } from "../SchemaKey";
 import { UnitConversion } from "./UnitConversion";
 import { UnitGraph } from "./UnitTree";
 

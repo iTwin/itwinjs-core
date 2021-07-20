@@ -311,6 +311,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "@typescript-eslint/typescript-estree",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "@ungap/url-search-params",
       "allowedCategories": [ "common" ]
     },
