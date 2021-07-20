@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodel-bridge",
-  "version": "2.19.0-dev.10",
+  "version": "2.19.0-dev.21",
   "description": "iModel.js bridge components",
   "main": "lib/imodel-bridge.js",
   "typings": "lib/imodel-bridge",
@@ -40,14 +40,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/backend-itwin-client": "workspace:^2.19.0-dev.10",
-    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.10",
-    "@bentley/context-registry-client": "workspace:^2.19.0-dev.10",
-    "@bentley/geometry-core": "workspace:^2.19.0-dev.10",
-    "@bentley/imodelhub-client": "workspace:^2.19.0-dev.10",
-    "@bentley/imodeljs-backend": "workspace:^2.19.0-dev.10",
-    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.10",
-    "@bentley/rbac-client": "workspace:^2.19.0-dev.10"
+    "@bentley/backend-itwin-client": "workspace:^2.19.0-dev.21",
+    "@bentley/bentleyjs-core": "workspace:^2.19.0-dev.21",
+    "@bentley/context-registry-client": "workspace:^2.19.0-dev.21",
+    "@bentley/geometry-core": "workspace:^2.19.0-dev.21",
+    "@bentley/imodelhub-client": "workspace:^2.19.0-dev.21",
+    "@bentley/imodeljs-backend": "workspace:^2.19.0-dev.21",
+    "@bentley/imodeljs-common": "workspace:^2.19.0-dev.21",
+    "@bentley/rbac-client": "workspace:^2.19.0-dev.21"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",

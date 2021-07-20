@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "accessor for InterpolationCurve3dOptions",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "68340676+dassaf4@users.noreply.github.com"
+}

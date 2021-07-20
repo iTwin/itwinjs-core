@@ -1,6 +1,21 @@
 # Change Log - @bentley/oidc-signin-tool
 
-This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+_Version update only_
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+_Version update only_
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:31 GMT
@@ -405,20 +420,20 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
 - Add retry logic for navigation context destroyed error.
 - Option to refresh token before expiry
-- Fixes to integration tests.
+- Fixes to integration tests. 
 - Update error handling for Ping login page.
 - Fix federated workflow with slow network speed
 - react to changes in imodeljs-clients
 - update TestOidcClient to implement FrontendAuthorizationClient; add universal TestFrontendAuthorizationClient
-- Temporarily commented out failing tests.
+- Temporarily commented out failing tests. 
 - This come from another branch.
 - react to new clients packages from imodeljs-clients
 - Update documentation for the TestUsers
 - Upgrade to Rush 5.23.2
-- Update to support new Bentley sign-in and consent pages
+- Update to support new Bentley sign-in and consent pages 
 - Renamed TestOidcClient and related constructs for consistency
 - Add certa helper functions to support initializing a SideChannel to get an AccessToken.
 
@@ -432,7 +447,7 @@ Tue, 31 Mar 2020 15:44:19 GMT
 
 ### Updates
 
-- Moved changes from master to fix integration tests.
+- Moved changes from master to fix integration tests. 
 
 ## 1.13.0
 Wed, 04 Mar 2020 16:16:31 GMT
@@ -440,7 +455,7 @@ Wed, 04 Mar 2020 16:16:31 GMT
 ### Updates
 
 - Fix federated workflow with slow network speed
-- Update to support new Bentley sign-in and consent pages
+- Update to support new Bentley sign-in and consent pages 
 
 ## 1.12.0
 Wed, 12 Feb 2020 17:45:50 GMT

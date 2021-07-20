@@ -222,7 +222,7 @@ class ImageryTileLoader extends RealityTileLoader {
     try {
       const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.FilteredTileSection);
 
-      return imageElementFromImageSource(imageSource)
+      return await imageElementFromImageSource(imageSource)
         .then((image) => isCanceled() ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
         .catch((_) => undefined);
     } catch (e) {

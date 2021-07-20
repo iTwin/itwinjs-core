@@ -25,6 +25,7 @@ export * from "./ui-components/common/showhide/ShowHideMenu";
 export * from "./ui-components/common/StandardTypeNames";
 export * from "./ui-components/common/UseAsyncValue";
 export * from "./ui-components/common/UseDebouncedAsyncValue";
+export * from "./ui-components/common/DateUtils";
 
 export * from "./ui-components/converters/TypeConverter";
 export * from "./ui-components/converters/TypeConverterManager";

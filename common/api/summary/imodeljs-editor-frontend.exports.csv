@@ -1,10 +1,12 @@
 sep=;
 Release Tag;API Item
 alpha;ArcMethod
+alpha;BCurveMethod
 alpha;CircleMethod
 alpha;computeChordToleranceFromPoint(vp: Viewport, pt: Point3d, radius?: number): number
 alpha;computeChordToleranceFromRange(vp: Viewport, range: Range3d): number
 alpha;CreateArcTool 
+alpha;CreateBCurveTool 
 alpha;CreateCircleTool 
 alpha;CreateCurvePhase
 alpha;class CreateElementTool 

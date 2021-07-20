@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-common",
+      "comment": "Added compare of numbers in Geographic CRS classes with tolerances.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-common",
+  "email": "73677355+AlainRobertAtBentley@users.noreply.github.com"
+}

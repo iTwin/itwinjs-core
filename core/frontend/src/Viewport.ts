@@ -16,7 +16,7 @@ import {
   Range3d, Ray3d, Transform, Vector3d, XAndY, XYAndZ, XYZ,
 } from "@bentley/geometry-core";
 import {
-  BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
+  AnalysisStyle, BackgroundMapProps, BackgroundMapSettings, Camera, ClipStyle, ColorDef, DisplayStyleSettingsProps, Easing,
   ElementProps, FeatureAppearance, Frustum, GlobeMode, GridOrientationType, Hilite, ImageBuffer, Interpolation,
   isPlacement2dProps, LightSettings, MapLayerSettings, Npc, NpcCenter, Placement, Placement2d, Placement3d, PlacementProps,
   SolarShadowSettings, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
@@ -1880,18 +1880,22 @@ export abstract class Viewport implements IDisposable {
     return ViewStatus.Success;
   }
 
-  /** Zoom the view to a show the tightest box around a given set of PlacementProps. Optionally, change view rotation.
-   * @param props array of PlacementProps. Will zoom to the union of the placements.
-   * @param options options that control how the view change works and whether to change view rotation.
-   * @note any invalid placements are ignored. If no valid placements are supplied, this function does nothing.
-   */
-  public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions) {
-    const toPlacement = (props: PlacementProps): Placement => {
-      return isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props);
-    };
+  /** @see [[zoomToPlacements]]. */
+  public zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void {
+    const placements = placementProps.map((props) => isPlacement2dProps(props) ? Placement2d.fromJSON(props) : Placement3d.fromJSON(props));
+    this.zoomToPlacements(placements, options);
+  }
 
-    const indexOfFirstValidPlacement = placementProps.findIndex((props) => toPlacement(props).isValid);
-    if (-1 === indexOfFirstValidPlacement)
+  /** Zoom the view in or out to a fit to the tightest volume enclosing a given set of placements, optionally also changing the view rotation.
+   * @param placements The array of placements. The view will zoom to fit the union of the placements.
+   * @param options Options controlling how the view change works and whether to change view rotation.
+   * @note any invalid placements are ignored. If no valid placements are supplied, this function does nothing.
+   * @see [[zoomToElements]] to zoom to a set of elements.
+   * @see [[IModelConnection.Elements.getPlacements]] to obtain the placements for a set of elements.
+   */
+  public zoomToPlacements(placements: Placement[], options?: ViewChangeOptions & ZoomToOptions): void {
+    placements = placements.filter((x) => x.isValid);
+    if (placements.length === 0)
       return;
 
     const view = this.view;
@@ -1899,9 +1903,8 @@ export abstract class Viewport implements IDisposable {
       if (undefined !== options.standardViewId) {
         view.setStandardRotation(options.standardViewId);
       } else if (undefined !== options.placementRelativeId) {
-        const firstPlacement = toPlacement(placementProps[indexOfFirstValidPlacement]);
         const viewRotation = StandardView.getStandardRotation(options.placementRelativeId).clone();
-        viewRotation.multiplyMatrixMatrixTranspose(firstPlacement.transform.matrix, viewRotation);
+        viewRotation.multiplyMatrixMatrixTranspose(placements[0].transform.matrix, viewRotation);
         view.setRotation(viewRotation);
       } else if (undefined !== options.viewRotation) {
         view.setRotation(options.viewRotation);
@@ -1911,16 +1914,14 @@ export abstract class Viewport implements IDisposable {
     const viewTransform = Transform.createOriginAndMatrix(undefined, view.getRotation());
     const frust = new Frustum();
     const viewRange = new Range3d();
-    for (let i = indexOfFirstValidPlacement; i < placementProps.length; i++) {
-      const placement = toPlacement(placementProps[i]);
-      if (placement.isValid)
-        viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
-    }
+    for (const placement of placements)
+      viewRange.extendArray(placement.getWorldCorners(frust).points, viewTransform);
 
     const ignoreError: ViewChangeOptions = {
       ...options,
       onExtentsError: () => ViewStatus.Success,
     };
+
     view.lookAtViewAlignedVolume(viewRange, this.viewRect.aspect, ignoreError);
     this.synchWithView(options);
   }
@@ -1928,16 +1929,19 @@ export abstract class Viewport implements IDisposable {
   /** Zoom the view to a show the tightest box around a given set of ElementProps. Optionally, change view rotation.
    * @param props element props. Will zoom to the union of the placements.
    * @param options options that control how the view change works and whether to change view rotation.
+   * @note Do not query for ElementProps just to zoom to their placements - [[zoomToElements]] is much more efficient because it queries only for the placement properties.
    */
-  public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions) {
+  public zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions): void {
     if (elementProps.length === 0)
       return;
+
     const placementProps: PlacementProps[] = [];
     for (const props of elementProps) {
       const placement = (props as any).placement;
       if (placement !== undefined && this.view.viewsModel(props.model))
         placementProps.push(placement);
     }
+
     this.zoomToPlacementProps(placementProps, options);
   }
 
@@ -1946,7 +1950,7 @@ export abstract class Viewport implements IDisposable {
    * @param options options that control how the view change works and whether to change view rotation.
    */
   public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void> {
-    this.zoomToElementProps(await this.iModel.elements.getProps(ids), options);
+    this.zoomToPlacements(await this.iModel.elements.getPlacements(ids), options);
   }
 
   /** Zoom the view to a volume of space in world coordinates.
@@ -2561,6 +2565,39 @@ export abstract class Viewport implements IDisposable {
    */
   public removeScreenSpaceEffects(): void {
     this.screenSpaceEffects = [];
+  }
+
+  /** Add an event listener to be invoked whenever the [AnalysisStyle]($common) associated with this viewport changes.
+   * The analysis style may change for any of several reasons:
+   *  - When the viewport's associated [DisplayStyleSettings.analysisStyle]($common).
+   *  - When the viewport's associated [[ViewState.displayStyle]] changes.
+   *  - When the viewport's associated [[ViewState]] changes via [[changeView]].
+   * @param listener Callback accepting the new analysis style, or undefined if there is no analysis style.
+   * @returns A function that can be invoked to remove the event listener.
+   */
+  public addOnAnalysisStyleChangedListener(listener: (newStyle: AnalysisStyle | undefined) => void): () => void {
+    const addSettingsListener = (style: DisplayStyleState) => style.settings.onAnalysisStyleChanged.addListener(listener);
+    let removeSettingsListener = addSettingsListener(this.displayStyle);
+
+    const addStyleListener = (view: ViewState) => view.onDisplayStyleChanged.addListener((style) => {
+      listener(style.settings.analysisStyle);
+      removeSettingsListener();
+      removeSettingsListener = addSettingsListener(view.displayStyle);
+    });
+
+    const removeStyleListener = addStyleListener(this.view);
+
+    const removeViewListener = this.onChangeView.addListener((vp) => {
+      listener(vp.view.displayStyle.settings.analysisStyle);
+      removeStyleListener();
+      addStyleListener(vp.view);
+    });
+
+    return () => {
+      removeSettingsListener();
+      removeStyleListener();
+      removeViewListener();
+    };
   }
 }
 

@@ -53,6 +53,7 @@ export class Primitive extends Graphic {
   }
 
   public get isDisposed(): boolean { return this.cachedGeometry.isDisposed; }
+  public get isPickable() { return false; }
 
   public dispose() {
     dispose(this.cachedGeometry);
