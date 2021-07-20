@@ -2,7 +2,8 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-/** @packageDocumentation
+/**
+ * @packageDocumentation
  * @module Table
  */
 
@@ -83,7 +84,8 @@ interface ScrollState {
   isScrolling: boolean;
 }
 
-/** Properties for the Table React component
+/**
+ * Properties for the Table React component
  * @public
  */
 export interface TableProps extends CommonProps {
@@ -127,8 +129,10 @@ export interface TableProps extends CommonProps {
   reorderableColumns?: boolean;
   /** Optional parameter for persistent UI settings. Used for column reordering and show persistency. */
   settingsStorage?: UiSettingsStorage;
-  /** Optional parameter for persistent UI settings. Used for column reordering and show persistency.
-   * @deprecated use settingsStorage property */
+  /**
+   * Optional parameter for persistent UI settings. Used for column reordering and show persistency.
+   * @deprecated use settingsStorage property
+   */
   uiSettings?: UiSettings;
   /** Identifying string used for persistent state. */
   settingsIdentifier?: string;
@@ -157,7 +161,8 @@ export interface TableProps extends CommonProps {
   maximumDistinctValues?: number;
 }
 
-/** Properties for a Table cell
+/**
+ * Properties for a Table cell
  * @public
  */
 export interface CellProps {
@@ -166,7 +171,8 @@ export interface CellProps {
   render: React.ComponentType<{ isSelected: boolean }>;
 }
 
-/** Properties for a Table row
+/**
+ * Properties for a Table row
  * @public
  */
 export interface RowProps {
@@ -189,7 +195,8 @@ interface ReactDataGridColumnEventArgs {
   name: string;
 }
 
-/** Cell/Property Editor state
+/**
+ * Cell/Property Editor state
  * @public
  */
 export interface TableCellEditorState {
@@ -199,7 +206,8 @@ export interface TableCellEditorState {
   cellKey?: string;
 }
 
-/** Cell/Property Updated Args
+/**
+ * Cell/Property Updated Args
  * @public
  */
 export interface TableCellUpdatedArgs {
@@ -208,7 +216,8 @@ export interface TableCellUpdatedArgs {
   cellKey: string;
 }
 
-/** Arguments for `TableProps.onCellContextMenu` callback
+/**
+ * Arguments for `TableProps.onCellContextMenu` callback
  * @beta
  */
 export interface TableCellContextMenuArgs {
@@ -1683,34 +1692,7 @@ export class Table extends React.Component<TableProps, TableState> {
               onClose={this._hideContextMenu}
               onShowHideChange={this._handleShowHideChange} />
           }
-<<<<<<< HEAD
           <ElementResizeObserver watchedElement={this._gridContainerRef}
-            render={({ width, height }) => (
-              <ReactDataGrid
-                ref={this._gridRef}
-                columns={visibleColumns}
-                rowGetter={this._rowGetter}
-                rowRenderer={rowRenderer}
-                rowsCount={this.state.rowsCount}
-                {...(this.props.reorderableColumns ? {
-                  draggableHeaderCell: DragDropHeaderCell,
-                  onHeaderDrop: this._onHeaderDrop,
-                } as any : {})}
-                minHeight={height}
-                minWidth={width}
-                headerRowHeight={TABLE_ROW_HEIGHT}
-                rowHeight={TABLE_ROW_HEIGHT}
-                onGridSort={this._handleGridSort}
-                enableRowSelect={null}  // Prevent deprecation warning
-                onAddFilter={this._handleFilterChange}
-                onClearFilters={this._handleOnClearFilters} // eslint-disable-line @typescript-eslint/unbound-method
-                headerFiltersHeight={TABLE_FILTER_ROW_HEIGHT}
-                getValidFilterValues={this._getValidFilterValues}
-                onScroll={this._onScroll}
-              />
-            )}
-=======
-          <ElementResizeObserver watchedElement={this.state.gridContainer}
             render={({ width, height }) => {
               setTimeout(() => this._pokeScrollAfterUpdate());
               return (
@@ -1738,7 +1720,6 @@ export class Table extends React.Component<TableProps, TableState> {
                 />
               );
             }}
->>>>>>> c6f3d4d07a (Workaround for react-data-grid blank grid after scroll and update (#1900))
           />
         </div>
         <div ref={this._tableRef}>
