@@ -10,7 +10,10 @@
 import { assert, dispose, IDisposable } from "@bentley/bentleyjs-core";
 import { Range2d, Range3d, Transform, Vector2d } from "@bentley/geometry-core";
 import { ColorDef, PackedFeatureTable, Quantization, RenderTexture } from "@bentley/imodeljs-common";
-import { AttributeMap, BufferHandle, BufferParameters, IndexedGeometry, IndexedGeometryParams, Matrix4, QBufferHandle2d, QBufferHandle3d } from "../../webgl";
+import { AttributeMap } from "./AttributeMap";
+import { BufferHandle, BufferParameters, QBufferHandle2d, QBufferHandle3d } from "./AttributeBuffers";
+import { IndexedGeometry, IndexedGeometryParams } from "./CachedGeometry";
+import { Matrix4 } from "./Matrix";
 import { GraphicBranch } from "../GraphicBranch";
 import { RealityMeshPrimitive } from "../primitives/mesh/RealityMeshPrimitive";
 import { TerrainMeshPrimitive } from "../primitives/mesh/TerrainMeshPrimitive";

@@ -111,6 +111,17 @@
     "plugins": [
       "@bentley"
     ],
-    "extends": "plugin:@bentley/imodeljs-recommended"
+    "extends": "plugin:@bentley/imodeljs-recommended",
+    "rules": {
+      "@bentley/no-internal-barrel-imports": ["error", {"ignored-barrel-modules": ["./src/oidc/index.ts"]}]
+    },
+    "overrides": [
+      {
+        "files": ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
+        "rules": {
+          "@bentley/no-internal-barrel-imports": "off"
+        }
+      }
+    ]
   }
 }
