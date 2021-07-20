@@ -308,7 +308,7 @@ export class Descriptor implements DescriptorSource {
     const fields: FieldJSON<string>[] = this.fields.map((field) => field.toCompressedJSON(classesMap));
 
     return Object.assign({},
-      this.sortingField !== undefined && { sortingField: this.sortingField },
+      this.sortingField !== undefined && { sortingFieldName: this.sortingField.name },
       this.sortDirection !== undefined && { sortDirection: this.sortDirection },
       this.filterExpression !== undefined && { filterExpression: this.filterExpression },
       this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo }, {

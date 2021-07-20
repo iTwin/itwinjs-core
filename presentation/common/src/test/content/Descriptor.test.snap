@@ -21,6 +21,10 @@ Object {
     },
   ],
   "classesMap": Object {
+    "0x107cb00000052ab": Object {
+      "label": "Falls International",
+      "name": "sensor",
+    },
     "0x108ab000000968f": Object {
       "label": "Table Kids",
       "name": "JSON",
@@ -45,6 +49,10 @@ Object {
       "label": "microchip",
       "name": "Cambridgeshire",
     },
+    "0x11c4a000000a7f8": Object {
+      "label": "architect synthesize niches",
+      "name": "azure",
+    },
     "0x126510000001b6f": Object {
       "label": "Inverse",
       "name": "stable",
@@ -60,6 +68,10 @@ Object {
     "0x1357300000117a1": Object {
       "label": "capacitor Buckinghamshire",
       "name": "metrics",
+    },
+    "0x13e830000014328": Object {
+      "label": "Home Fiji secondary",
+      "name": "protocol",
     },
     "0x1494a000000d3c8": Object {
       "label": "Small iterate",
@@ -80,6 +92,10 @@ Object {
     "0x1749300000052da": Object {
       "label": "Strategist",
       "name": "Security",
+    },
+    "0x176bc0000015da4": Object {
+      "label": "Fish",
+      "name": "Moldova",
     },
     "0x1780a0000008b46": Object {
       "label": "24/7",
@@ -185,6 +201,10 @@ Object {
       "label": "Avon interface",
       "name": "Savings Account",
     },
+    "0xe08b0000010564": Object {
+      "label": "Automotive FTP",
+      "name": "Crossing",
+    },
     "0xe2e40000000939": Object {
       "label": "backing up Auto Loan Account",
       "name": "calculating",
@@ -200,6 +220,14 @@ Object {
     "0xf357000001039f": Object {
       "label": "invoice Analyst District",
       "name": "circuit",
+    },
+    "0xf5eb0000001966": Object {
+      "label": "integrate",
+      "name": "architecture",
+    },
+    "0xfa440000015257": Object {
+      "label": "Berkshire Unbranded Granite Chicken Bedfordshire",
+      "name": "overriding",
     },
     "0xfe2e0000008099": Object {
       "label": "violet functionalities monitor",
@@ -339,7 +367,88 @@ Object {
         "valueFormat": "Primitive",
       },
     },
+    Object {
+      "actualPrimaryClassIds": Array [],
+      "autoExpand": false,
+      "category": Object {
+        "description": "Qui magni consequatur est dolore nulla aperiam.",
+        "expand": true,
+        "label": "port bandwidth",
+        "name": "quantifying",
+        "parent": undefined,
+        "priority": 44020,
+      },
+      "contentClassInfo": "0xf5eb0000001966",
+      "editor": undefined,
+      "isReadonly": true,
+      "label": "synergies",
+      "name": "District",
+      "nestedFields": Array [
+        Object {
+          "category": Object {
+            "description": "Qui magni consequatur est dolore nulla aperiam.",
+            "expand": true,
+            "label": "port bandwidth",
+            "name": "quantifying",
+            "parent": undefined,
+            "priority": 44020,
+          },
+          "editor": Object {
+            "name": "synergies",
+          },
+          "isReadonly": false,
+          "label": "morph Books Group",
+          "name": "redundant",
+          "priority": 63965,
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
+          "type": Object {
+            "typeName": "datetime",
+            "valueFormat": "Primitive",
+          },
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x11c4a000000a7f8",
+          "sourceClassInfo": "0xe08b0000010564",
+          "targetClassInfo": "0xfa440000015257",
+        },
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x107cb00000052ab",
+          "sourceClassInfo": "0x176bc0000015da4",
+          "targetClassInfo": "0x13e830000014328",
+        },
+      ],
+      "priority": 58477,
+      "relationshipMeaning": "RelatedInstance",
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
+      "type": Object {
+        "members": Array [
+          Object {
+            "label": "calculate",
+            "name": "Steel",
+            "type": Object {
+              "typeName": "float",
+              "valueFormat": "Primitive",
+            },
+          },
+        ],
+        "typeName": "Fresh",
+        "valueFormat": "Struct",
+      },
+    },
   ],
+  "filterExpression": "testFilterExpression",
   "inputKeysHash": "1c4990ef-0994-4792-8cdf-b2215821f023",
   "selectClasses": Array [
     Object {
@@ -471,6 +580,12 @@ Object {
       "selectClassInfo": "0xd40c000000165b",
     },
   ],
+  "selectionInfo": Object {
+    "level": 1,
+    "providerName": "testProviderName",
+  },
+  "sortDirection": 0,
+  "sortingFieldName": "Personal Loan Account",
 }
 `;
 
