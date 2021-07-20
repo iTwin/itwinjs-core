@@ -1180,7 +1180,7 @@ export abstract class IModelDb extends IModel {
           if (ret.error !== undefined)
             reject(new Error(ret.error.message));
           else
-            resolve(ret.result!); // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
+            resolve(ret.result!);
         });
       }
     });
@@ -1189,8 +1189,18 @@ export abstract class IModelDb extends IModel {
   /** Get the mass properties for the supplied elements. */
   public async getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     requestContext.enter();
-    const resultString = this.nativeDb.getMassProperties(JSON.stringify(props));
-    return JSON.parse(resultString) as MassPropertiesResponseProps;
+    return new Promise<MassPropertiesResponseProps>((resolve, reject) => {
+      if (!this.isOpen) {
+        reject(new Error("not open"));
+      } else {
+        this.nativeDb.getMassProperties(JSON.stringify(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, MassPropertiesResponseProps>) => {
+          if (ret.error !== undefined)
+            reject(new Error(ret.error.message));
+          else
+            resolve(ret.result!);
+        });
+      }
+    });
   }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */

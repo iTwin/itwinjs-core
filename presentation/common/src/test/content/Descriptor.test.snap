@@ -1,5 +1,862 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`Descriptor fromJSON creates valid CompressedDescriptorJSON 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "description": "Sed libero distinctio in minima odit et nam natus maxime.",
+      "expand": true,
+      "label": "functionalities",
+      "name": "Identity",
+      "parent": undefined,
+      "priority": 21494,
+    },
+    Object {
+      "description": "Blanditiis et quia consequatur voluptatem sed aut aspernatur excepturi.",
+      "expand": false,
+      "label": "Supervisor Lakes",
+      "name": "tertiary",
+      "parent": undefined,
+      "priority": 24429,
+    },
+  ],
+  "classesMap": Object {
+    "0x106150000009c08": Object {
+      "label": "synthesize Towels",
+      "name": "Palladium",
+    },
+    "0x1119000000bad0": Object {
+      "label": "Home gold cyan",
+      "name": "driver",
+    },
+    "0x111ac00000135c0": Object {
+      "label": "Future",
+      "name": "Architect",
+    },
+    "0x1173b0000004fb3": Object {
+      "label": "Berkshire IB whiteboard",
+      "name": "IB",
+    },
+    "0x11ca6000000d832": Object {
+      "label": "orchestration Focused",
+      "name": "repurpose",
+    },
+    "0x11d260000005062": Object {
+      "label": "Fresh Estates",
+      "name": "efficient",
+    },
+    "0x12587000001058e": Object {
+      "label": "panel bluetooth",
+      "name": "Handmade",
+    },
+    "0x12f370000012781": Object {
+      "label": "Handmade neural Diverse",
+      "name": "HTTP",
+    },
+    "0x13a500000053b1": Object {
+      "label": "Parkways",
+      "name": "Washington",
+    },
+    "0x13b33000000ea72": Object {
+      "label": "leading-edge Bedfordshire",
+      "name": "systems",
+    },
+    "0x1469e0000005cc2": Object {
+      "label": "Fresh Georgia Avon",
+      "name": "Gorgeous",
+    },
+    "0x14a7b000001462c": Object {
+      "label": "Hill Officer",
+      "name": "cyan",
+    },
+    "0x151730000004e88": Object {
+      "label": "Haven",
+      "name": "Crossroad",
+    },
+    "0x153f80000013064": Object {
+      "label": "Open-architected Corporate Plastic",
+      "name": "Credit Card Account",
+    },
+    "0x15e210000017f5a": Object {
+      "label": "scalable",
+      "name": "Identity",
+    },
+    "0x15e9100000026ce": Object {
+      "label": "artificial intelligence Credit Card Account",
+      "name": "overriding",
+    },
+    "0x16380000000121d": Object {
+      "label": "payment e-markets Direct",
+      "name": "Liaison",
+    },
+    "0x16a050000008e77": Object {
+      "label": "cross-platform",
+      "name": "connecting",
+    },
+    "0x16bc50000011661": Object {
+      "label": "sensor relationships",
+      "name": "monitoring",
+    },
+    "0x17050000011d2c": Object {
+      "label": "withdrawal Oregon",
+      "name": "Steel",
+    },
+    "0x1730c000000d70d": Object {
+      "label": "cross-platform",
+      "name": "matrix",
+    },
+    "0x17b3d0000007582": Object {
+      "label": "USB plug-and-play Senior",
+      "name": "Egypt",
+    },
+    "0x18a10000000171": Object {
+      "label": "Kazakhstan next generation solutions",
+      "name": "Lake",
+    },
+    "0x19f9000000bc2a": Object {
+      "label": "Bike Taka expedite",
+      "name": "South Dakota",
+    },
+    "0x1e510000010347": Object {
+      "label": "Universal synthesizing web-readiness",
+      "name": "Generic Concrete Table",
+    },
+    "0x2bc100000044bf": Object {
+      "label": "Licensed",
+      "name": "Industrial",
+    },
+    "0x32e000000b1a3": Object {
+      "label": "experiences Rubber",
+      "name": "users",
+    },
+    "0x34f60000008fb1": Object {
+      "label": "back-end",
+      "name": "Assurance",
+    },
+    "0x441d000000a0d4": Object {
+      "label": "Cotton throughput Principal",
+      "name": "Cambridgeshire",
+    },
+    "0x4cce0000007e17": Object {
+      "label": "protocol Director",
+      "name": "Kids",
+    },
+    "0x4fcb00000159fa": Object {
+      "label": "Tasty China Sleek",
+      "name": "application",
+    },
+    "0x51200000153fb": Object {
+      "label": "dynamic",
+      "name": "Djibouti Franc",
+    },
+    "0x61c6000000d0e3": Object {
+      "label": "Jordanian Dinar",
+      "name": "applications",
+    },
+    "0x625b0000016d49": Object {
+      "label": "Course THX",
+      "name": "hacking",
+    },
+    "0x849f000001867b": Object {
+      "label": "feed",
+      "name": "Madagascar",
+    },
+    "0x86720000016443": Object {
+      "label": "South Dakota neural Rustic Frozen Chips",
+      "name": "Music",
+    },
+    "0x90270000010734": Object {
+      "label": "software Tactics",
+      "name": "circuit",
+    },
+    "0x95df000000457e": Object {
+      "label": "Checking Account deposit",
+      "name": "Handcrafted Metal Chips",
+    },
+    "0x97a00000009df7": Object {
+      "label": "Team-oriented Cuban Peso Peso Convertible",
+      "name": "Plastic",
+    },
+    "0xa794000000015c": Object {
+      "label": "Saint Pierre and Miquelon",
+      "name": "Tokelau",
+    },
+    "0xa91e000000feeb": Object {
+      "label": "driver Books Cheese",
+      "name": "matrix",
+    },
+    "0xad0e000000cd71": Object {
+      "label": "invoice Plastic Credit Card Account",
+      "name": "Usability",
+    },
+    "0xb36b00000056ba": Object {
+      "label": "Unbranded Granite Towels maximize methodologies",
+      "name": "Grass-roots",
+    },
+    "0xbaa90000010367": Object {
+      "label": "Rubber",
+      "name": "International",
+    },
+    "0xbf9d0000010956": Object {
+      "label": "Wooden Indiana",
+      "name": "generate",
+    },
+    "0xca3f00000109af": Object {
+      "label": "virtual Centralized",
+      "name": "firewall",
+    },
+    "0xd24400000167a0": Object {
+      "label": "Unbranded superstructure Latvian Lats",
+      "name": "invoice",
+    },
+    "0xdbc90000002ee9": Object {
+      "label": "paradigms",
+      "name": "User-friendly",
+    },
+    "0xdf14000000858c": Object {
+      "label": "bluetooth supply-chains",
+      "name": "Re-contextualized",
+    },
+    "0xe539000000e5b2": Object {
+      "label": "override Checking Account synthesizing",
+      "name": "Auto Loan Account",
+    },
+    "0xf978000000829f": Object {
+      "label": "Stravenue Home Loan Account Kyrgyz Republic",
+      "name": "Steel",
+    },
+    "0xfac5000000a767": Object {
+      "label": "lime Granite strategize",
+      "name": "Lane",
+    },
+    "0xfbaa000000e499": Object {
+      "label": "Books Ergonomic Concrete Cheese Persistent",
+      "name": "Underpass",
+    },
+  },
+  "connectionId": "06cc1ac1-d0f7-42dd-b177-32c96f4868f0",
+  "contentFlags": 0,
+  "contentOptions": "bar",
+  "displayType": "et cupiditate ut",
+  "fields": Array [
+    Object {
+      "category": Object {
+        "description": "Sed libero distinctio in minima odit et nam natus maxime.",
+        "expand": true,
+        "label": "functionalities",
+        "name": "Identity",
+        "parent": undefined,
+        "priority": 21494,
+      },
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "East Caribbean Dollar invoice Manager",
+      "name": "Baby",
+      "priority": 82465,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
+      "type": Object {
+        "typeName": "mediumint",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "category": Object {
+        "description": "Sed libero distinctio in minima odit et nam natus maxime.",
+        "expand": true,
+        "label": "functionalities",
+        "name": "Identity",
+        "parent": undefined,
+        "priority": 21494,
+      },
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "input Money Market Account PCI",
+      "name": "Incredible Soft Car",
+      "priority": 11942,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
+      "type": Object {
+        "typeName": "bit",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "category": Object {
+        "description": "Sed libero distinctio in minima odit et nam natus maxime.",
+        "expand": true,
+        "label": "functionalities",
+        "name": "Identity",
+        "parent": undefined,
+        "priority": 21494,
+      },
+      "editor": Object {
+        "name": "Orchestrator",
+      },
+      "isReadonly": false,
+      "label": "Direct Generic Fresh Chips",
+      "name": "SMTP",
+      "priority": 36017,
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
+      "type": Object {
+        "typeName": "mediumint",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "category": Object {
+        "description": "Blanditiis et quia consequatur voluptatem sed aut aspernatur excepturi.",
+        "expand": false,
+        "label": "Supervisor Lakes",
+        "name": "tertiary",
+        "parent": undefined,
+        "priority": 24429,
+      },
+      "editor": Object {
+        "name": "Progressive",
+      },
+      "isReadonly": false,
+      "label": "real-time Grocery Progressive",
+      "name": "process improvement",
+      "priority": 16813,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": "0xdbc90000002ee9",
+            "name": "copying",
+            "type": "string",
+          },
+          "relatedClassPath": Array [
+            Object {
+              "isForwardRelationship": true,
+              "isPolymorphicRelationship": true,
+              "isPolymorphicTargetClass": true,
+              "relationshipInfo": "0x15e210000017f5a",
+              "sourceClassInfo": "0x32e000000b1a3",
+              "targetClassInfo": "0x12587000001058e",
+            },
+          ],
+        },
+        Object {
+          "property": Object {
+            "classInfo": "0xca3f00000109af",
+            "name": "Center",
+            "type": "string",
+          },
+          "relatedClassPath": Array [
+            Object {
+              "isForwardRelationship": false,
+              "isPolymorphicRelationship": true,
+              "isPolymorphicTargetClass": false,
+              "relationshipInfo": "0xad0e000000cd71",
+              "sourceClassInfo": "0x849f000001867b",
+              "targetClassInfo": "0x14a7b000001462c",
+            },
+          ],
+        },
+      ],
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
+      "type": Object {
+        "typeName": "date",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "actualPrimaryClassIds": Array [],
+      "autoExpand": true,
+      "category": Object {
+        "description": "Blanditiis et quia consequatur voluptatem sed aut aspernatur excepturi.",
+        "expand": false,
+        "label": "Supervisor Lakes",
+        "name": "tertiary",
+        "parent": undefined,
+        "priority": 24429,
+      },
+      "contentClassInfo": "0xbaa90000010367",
+      "editor": Object {
+        "name": "extend",
+      },
+      "isReadonly": true,
+      "label": "Electronics Granite Loop",
+      "name": "Bedfordshire",
+      "nestedFields": Array [
+        Object {
+          "category": Object {
+            "description": "Blanditiis et quia consequatur voluptatem sed aut aspernatur excepturi.",
+            "expand": false,
+            "label": "Supervisor Lakes",
+            "name": "tertiary",
+            "parent": undefined,
+            "priority": 24429,
+          },
+          "editor": Object {
+            "name": "Checking Account",
+          },
+          "isReadonly": false,
+          "label": "Checking Account Personal Loan Account",
+          "name": "Organic",
+          "priority": 92708,
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
+          "type": Object {
+            "typeName": "blob",
+            "valueFormat": "Primitive",
+          },
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": true,
+          "relationshipInfo": "0x111ac00000135c0",
+          "sourceClassInfo": "0x16380000000121d",
+          "targetClassInfo": "0x15e9100000026ce",
+        },
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": true,
+          "relationshipInfo": "0x16bc50000011661",
+          "sourceClassInfo": "0x86720000016443",
+          "targetClassInfo": "0x18a10000000171",
+        },
+      ],
+      "priority": 67612,
+      "relationshipMeaning": "RelatedInstance",
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
+      "type": Object {
+        "members": Array [
+          Object {
+            "label": "Salad",
+            "name": "Naira",
+            "type": Object {
+              "typeName": "time",
+              "valueFormat": "Primitive",
+            },
+          },
+        ],
+        "typeName": "Product",
+        "valueFormat": "Struct",
+      },
+    },
+  ],
+  "filterExpression": "testFilterExpression",
+  "inputKeysHash": "dbf9bb16-94fe-484f-9116-fd4b708395af",
+  "selectClasses": Array [
+    Object {
+      "isSelectPolymorphic": true,
+      "navigationPropertyClasses": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0xa91e000000feeb",
+          "sourceClassInfo": "0xf978000000829f",
+          "targetClassInfo": "0xb36b00000056ba",
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x441d000000a0d4",
+          "sourceClassInfo": "0xfbaa000000e499",
+          "targetClassInfo": "0x1730c000000d70d",
+        },
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x1e510000010347",
+          "sourceClassInfo": "0x19f9000000bc2a",
+          "targetClassInfo": "0x13a500000053b1",
+        },
+      ],
+      "relatedInstanceClasses": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": true,
+          "relationshipInfo": "0x13b33000000ea72",
+          "sourceClassInfo": "0xd24400000167a0",
+          "targetClassInfo": "0xe539000000e5b2",
+        },
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "isPolymorphicRelationship": true,
+            "isPolymorphicTargetClass": false,
+            "relationshipInfo": "0x17050000011d2c",
+            "sourceClassInfo": "0x625b0000016d49",
+            "targetClassInfo": "0x16a050000008e77",
+          },
+        ],
+        Array [
+          Object {
+            "isForwardRelationship": false,
+            "isPolymorphicRelationship": false,
+            "isPolymorphicTargetClass": false,
+            "relationshipInfo": "0x4fcb00000159fa",
+            "sourceClassInfo": "0xa794000000015c",
+            "targetClassInfo": "0x1119000000bad0",
+          },
+        ],
+      ],
+      "selectClassInfo": "0x11d260000005062",
+    },
+    Object {
+      "isSelectPolymorphic": true,
+      "navigationPropertyClasses": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": true,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x1173b0000004fb3",
+          "sourceClassInfo": "0x12f370000012781",
+          "targetClassInfo": "0x90270000010734",
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x97a00000009df7",
+          "sourceClassInfo": "0x2bc100000044bf",
+          "targetClassInfo": "0xdf14000000858c",
+        },
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x151730000004e88",
+          "sourceClassInfo": "0x95df000000457e",
+          "targetClassInfo": "0x153f80000013064",
+        },
+      ],
+      "relatedInstanceClasses": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": true,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x61c6000000d0e3",
+          "sourceClassInfo": "0xbf9d0000010956",
+          "targetClassInfo": "0x51200000153fb",
+        },
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "isPolymorphicRelationship": true,
+            "isPolymorphicTargetClass": false,
+            "relationshipInfo": "0x11ca6000000d832",
+            "sourceClassInfo": "0x17b3d0000007582",
+            "targetClassInfo": "0x34f60000008fb1",
+          },
+        ],
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "isPolymorphicRelationship": false,
+            "isPolymorphicTargetClass": false,
+            "relationshipInfo": "0x4cce0000007e17",
+            "sourceClassInfo": "0x106150000009c08",
+            "targetClassInfo": "0x1469e0000005cc2",
+          },
+        ],
+      ],
+      "selectClassInfo": "0xfac5000000a767",
+    },
+  ],
+  "selectionInfo": Object {
+    "level": 1,
+    "providerName": "testProviderName",
+  },
+  "sortDirection": 0,
+  "sortingFieldName": "Baby",
+}
+`;
+
+exports[`Descriptor fromJSON creates valid Descriptor from CompressedDescriptorJSON 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "description": "Voluptas fuga cum vitae praesentium sunt numquam omnis molestiae.",
+      "expand": false,
+      "label": "Facilitator Agent solution-oriented",
+      "name": "engineer",
+      "parent": undefined,
+      "priority": 62935,
+    },
+  ],
+  "connectionId": "d32fd189-d419-4acc-8164-c4be307f496f",
+  "contentFlags": 0,
+  "contentOptions": "car",
+  "displayType": "et eligendi non",
+  "fields": Array [
+    Object {
+      "category": Object {
+        "description": "Voluptas fuga cum vitae praesentium sunt numquam omnis molestiae.",
+        "expand": false,
+        "label": "Facilitator Agent solution-oriented",
+        "name": "engineer",
+        "parent": undefined,
+        "priority": 62935,
+      },
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Garden indigo Keyboard",
+      "name": "Future",
+      "priority": 40839,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": Object {
+              "id": "0x1",
+              "label": "label1",
+              "name": "name1",
+            },
+            "name": "similique neque ut",
+            "type": "similique in laborum",
+          },
+          "relatedClassPath": Array [
+            Object {
+              "isForwardRelationship": true,
+              "isPolymorphicRelationship": false,
+              "isPolymorphicTargetClass": false,
+              "relationshipInfo": Object {
+                "id": "0x4",
+                "label": "label4",
+                "name": "name4",
+              },
+              "sourceClassInfo": Object {
+                "id": "0x2",
+                "label": "label2",
+                "name": "name2",
+              },
+              "targetClassInfo": Object {
+                "id": "0x3",
+                "label": "label3",
+                "name": "name3",
+              },
+            },
+          ],
+        },
+      ],
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
+      "type": Object {
+        "typeName": "mediumint",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "actualPrimaryClassIds": Array [],
+      "autoExpand": false,
+      "category": Object {
+        "description": "Voluptas fuga cum vitae praesentium sunt numquam omnis molestiae.",
+        "expand": false,
+        "label": "Facilitator Agent solution-oriented",
+        "name": "engineer",
+        "parent": undefined,
+        "priority": 62935,
+      },
+      "contentClassInfo": Object {
+        "id": "0x2",
+        "label": "label2",
+        "name": "name2",
+      },
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Borders Small",
+      "name": "grow",
+      "nestedFields": Array [
+        Object {
+          "category": Object {
+            "description": "Voluptas fuga cum vitae praesentium sunt numquam omnis molestiae.",
+            "expand": false,
+            "label": "Facilitator Agent solution-oriented",
+            "name": "engineer",
+            "parent": undefined,
+            "priority": 62935,
+          },
+          "editor": undefined,
+          "isReadonly": true,
+          "label": "dynamic",
+          "name": "Rubber",
+          "priority": 8302,
+          "renderer": Object {
+            "name": "custom_renderer",
+          },
+          "type": Object {
+            "typeName": "geometry",
+            "valueFormat": "Primitive",
+          },
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": Object {
+            "id": "0x4",
+            "label": "label4",
+            "name": "name4",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x2",
+            "label": "label2",
+            "name": "name2",
+          },
+          "targetClassInfo": Object {
+            "id": "0x3",
+            "label": "label3",
+            "name": "name3",
+          },
+        },
+      ],
+      "priority": 33586,
+      "relationshipMeaning": "RelatedInstance",
+      "renderer": Object {
+        "name": "custom_renderer",
+      },
+      "type": Object {
+        "members": Array [
+          Object {
+            "label": "Analyst",
+            "name": "Agent",
+            "type": Object {
+              "typeName": "varchar",
+              "valueFormat": "Primitive",
+            },
+          },
+        ],
+        "typeName": "incubate",
+        "valueFormat": "Struct",
+      },
+    },
+  ],
+  "inputKeysHash": "1f281abd-2ff5-4143-9fc9-190d5f0f03ad",
+  "selectClasses": Array [
+    Object {
+      "isSelectPolymorphic": true,
+      "navigationPropertyClasses": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": Object {
+            "id": "0x4",
+            "label": "label4",
+            "name": "name4",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x2",
+            "label": "label2",
+            "name": "name2",
+          },
+          "targetClassInfo": Object {
+            "id": "0x3",
+            "label": "label3",
+            "name": "name3",
+          },
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": Object {
+            "id": "0x4",
+            "label": "label4",
+            "name": "name4",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x2",
+            "label": "label2",
+            "name": "name2",
+          },
+          "targetClassInfo": Object {
+            "id": "0x3",
+            "label": "label3",
+            "name": "name3",
+          },
+        },
+      ],
+      "relatedInstanceClasses": Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": Object {
+            "id": "0x4",
+            "label": "label4",
+            "name": "name4",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x2",
+            "label": "label2",
+            "name": "name2",
+          },
+          "targetClassInfo": Object {
+            "id": "0x3",
+            "label": "label3",
+            "name": "name3",
+          },
+        },
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": true,
+            "isPolymorphicRelationship": false,
+            "isPolymorphicTargetClass": false,
+            "relationshipInfo": Object {
+              "id": "0x4",
+              "label": "label4",
+              "name": "name4",
+            },
+            "sourceClassInfo": Object {
+              "id": "0x2",
+              "label": "label2",
+              "name": "name2",
+            },
+            "targetClassInfo": Object {
+              "id": "0x3",
+              "label": "label3",
+              "name": "name3",
+            },
+          },
+        ],
+      ],
+      "selectClassInfo": Object {
+        "id": "0x1",
+        "label": "label1",
+        "name": "name1",
+      },
+    },
+  ],
+  "sortingField": undefined,
+}
+`;
+
 exports[`Descriptor fromJSON creates valid Descriptor from valid JSON with categories 1`] = `
 Object {
   "categories": Array [
