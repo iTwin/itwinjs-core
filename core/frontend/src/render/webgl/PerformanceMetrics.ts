@@ -102,12 +102,14 @@ export class PerformanceMetrics {
     }
 
     const system = System.instance;
+    const bytes = new Uint8Array(4);
+    const gl = system.context;
     if (this.gatherGlFinish && !system.isGLTimerSupported) {
       this.beginOperation("Finish GPU Queue");
 
       // Ensure all previously queued webgl commands are finished by reading back one pixel since gl.Finish didn't work
-      const bytes = new Uint8Array(4);
-      const gl = system.context;
+      // const bytes = new Uint8Array(4);
+      // const gl = system.context;
       system.frameBufferStack.execute(fbo, true, false, () => {
         gl.readPixels(0, 0, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes);
       });
@@ -116,5 +118,15 @@ export class PerformanceMetrics {
     }
 
     this.endFrame();
+
+    /// ///////////NEW STUFF/////////////////////////
+    const beginTimePoint = BeTimePoint.now();
+    const colorTexture = fbo.getColor(0);
+    system.frameBufferStack.execute(fbo, true, false, () => {
+      gl.readPixels(colorTexture.width -1, colorTexture.height -1, 1, 1, gl.RGBA, gl.UNSIGNED_BYTE, bytes); // Do this for second pixel
+    });
+    const endTimePoint = BeTimePoint.now();
+    console.log(`GPU Time: ${endTimePoint.milliseconds - beginTimePoint.milliseconds}`); // eslint-disable-line no-console
+    /// ///////////////////////////////////////////////
   }
 }
