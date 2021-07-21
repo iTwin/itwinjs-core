@@ -8,6 +8,7 @@ import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { Content } from '@bentley/presentation-common';
 import { ContentDescriptorRequestOptions } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
+import { DefinitionElement } from '@bentley/imodeljs-backend';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
 import { DiagnosticsScopeLogs } from '@bentley/presentation-common';
@@ -17,6 +18,7 @@ import { DisplayValueGroup } from '@bentley/presentation-common';
 import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
 import { ElementProperties } from '@bentley/presentation-common';
 import { ElementPropertiesRequestOptions } from '@bentley/presentation-common';
+import { ElementProps } from '@bentley/imodeljs-common';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { FormatProps } from '@bentley/imodeljs-quantity';
@@ -30,6 +32,7 @@ import { InstanceKey } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
 import { LabelDefinition } from '@bentley/presentation-common';
 import { LabelRequestOptions } from '@bentley/presentation-common';
+import { ModelProps } from '@bentley/imodeljs-common';
 import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
@@ -302,9 +305,9 @@ export interface RulesetEmbedderProps {
 
 // @beta
 export interface RulesetInsertOptions {
-    onElementInsert?: OnElementInsert;
-    onElementUpdate?: OnElementUpdate;
-    onModelInsert?: OnModelInsert;
+    onElementInsert?: InsertCallbacks<ElementProps>;
+    onElementUpdate?: UpdateCallbacks<DefinitionElement>;
+    onModelInsert?: InsertCallbacks<ModelProps>;
     replaceVersions?: "all" | "all-lower" | "exact";
     skip?: "never" | "same-id" | "same-id-and-version-eq" | "same-id-and-version-gte";
 }
