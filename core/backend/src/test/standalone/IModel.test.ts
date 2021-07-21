@@ -36,6 +36,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 
 import sinon = require("sinon");
 import { IModelHubBackend } from "../../IModelHubBackend";
+import { V2CheckpointManager } from "../../CheckpointManager";
 
 // spell-checker: disable
 
@@ -1145,16 +1146,16 @@ describe("iModel", () => {
     assert.isTrue(imodel5.isGeoLocated);
     const center = { x: 289095, y: 3803860, z: 10 }; // near center of project extents, 10 meters above ground.
     const ecefPt = imodel5.spatialToEcef(center);
-    const pt = { x: -3575157.057023252, y: 3873432.7966756118, z: 3578994.5664978377 };
+    const pt = { x: -3575156.3661052254, y: 3873432.0891543664, z: 3578996.012643183 };
     assert.isTrue(ecefPt.isAlmostEqual(pt), "spatialToEcef");
 
     const z2 = imodel5.ecefToSpatial(ecefPt);
     assert.isTrue(z2.isAlmostEqual(center), "ecefToSpatial");
 
     const carto = imodel5.spatialToCartographicFromEcef(center);
-    assert.approximately(carto.longitudeDegrees, 132.70599650539427, .1); // this data is in Japan
-    assert.approximately(carto.latitudeDegrees, 34.35461328445589, .1);
-    const c2 = { longitude: 2.316156576159219, latitude: 0.5996011150631385, height: 10 };
+    assert.approximately(carto.longitudeDegrees, 132.70683882277805, .1); // this data is in Japan
+    assert.approximately(carto.latitudeDegrees, 34.35462768786055, .1);
+    const c2 = { longitude: 2.3161712773709127, latitude: 0.5996013664499733, height: 10 };
     assert.isTrue(carto.equalsEpsilon(c2, .001), "spatialToCartographic");
 
     imodel5.cartographicToSpatialFromEcef(carto, z2);
@@ -1821,8 +1822,7 @@ describe("iModel", () => {
     iModel2.close();
   });
 
-  // Deactivated since change was (temporarily) reverted
-  it.skip("presence of a GCS imposes the ecef value", async () => {
+  it("presence of a GCS imposes the ecef value", async () => {
     const args = {
       rootSubject: { name: "TestSubject", description: "test project" },
       client: "ABC Engineering",
@@ -2013,11 +2013,12 @@ describe("iModel", () => {
     expectIModelError(IModelStatus.NotFound, error);
   });
 
-  it("should throw when attempting to re-attach a non-checkpoint snapshot", async () => {
+  it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const error = await getIModelError(imodel1.reattachDaemon(ctx));
-    expectIModelError(IModelStatus.WrongIModel, error);
+    const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
+    await imodel1.reattachDaemon(ctx);
+    assert.isTrue(attachMock.notCalled);
   });
 
   function hasClassView(db: IModelDb, name: string): boolean {
@@ -2030,7 +2031,7 @@ describe("iModel", () => {
 
   it("Standalone iModel properties", () => {
     const standaloneRootSubjectName = "Standalone";
-    const standaloneFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
+    const standaloneFile1 = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
     let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName } });
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
@@ -2043,7 +2044,8 @@ describe("iModel", () => {
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
     assert.equal(standaloneDb1.contextId, Guid.empty);
-    assert.isUndefined(standaloneDb1.changeSetId);
+    assert.strictEqual("", standaloneDb1.changeset.id);
+    assert.strictEqual(0, standaloneDb1.changeset.index);
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();
     assert.isFalse(standaloneDb1.isOpen);
@@ -2425,6 +2427,7 @@ describe("iModel", () => {
     const elementProps: DefinitionElementProps = {
       classFullName: SpatialCategory.classFullName,
       model: IModel.dictionaryId,
+      federationGuid: Guid.empty,
       code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategoryForClearFederationGuid"),
     };
     const elementId = imodel1.elements.insertElement(elementProps);
@@ -2433,7 +2436,7 @@ describe("iModel", () => {
     assert.isFalse(element.isPrivate);
 
     // update element with a defined FederationGuid
-    const federationGuid: GuidString = Guid.createValue();
+    const federationGuid = Guid.createValue();
     element.federationGuid = federationGuid;
     element.isPrivate = true;
     element.update();
@@ -2480,7 +2483,7 @@ describe("iModel", () => {
     subject1.federationGuid = federationGuid1;
     subject2.federationGuid = federationGuid2;
     subject3.federationGuid = "";
-    subject4.federationGuid = undefined;
+    subject4.federationGuid = Guid.empty;
     const subjectId1 = subject1.insert();
     const subjectId2 = subject2.insert();
     const subjectId3 = subject3.insert();

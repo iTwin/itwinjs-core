@@ -11,9 +11,8 @@ import { getJson, RequestBasicCredentials } from "@bentley/itwin-client";
 import { FrontendRequestContext } from "../../FrontendRequestContext";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { ArcGisUtilities, MapCartoRectangle, MapLayerSourceValidation } from "../internal";
-import { MapLayerSettingsService } from "./MapLayerSettingsService";
 import { NotifyMessageDetails, OutputMessagePriority } from "../../NotificationManager";
+import { ArcGisUtilities, MapCartoRectangle, MapLayerSettingsService, MapLayerSourceValidation } from "../internal";
 
 /** @internal */
 export enum MapLayerSourceStatus {

@@ -8,6 +8,7 @@
 !lib/**/*.json
 !lib/**/*.svg
 !lib/public/**/*
+lib/public/locales/en-PSEUDO
 lib/test
 !*.md
 !rulesets/**/*

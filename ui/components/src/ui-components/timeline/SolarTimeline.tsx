@@ -23,8 +23,9 @@ import { ColorSwatch } from "../color/Swatch";
 import { SolarDataProvider } from "./interfaces";
 import { PlayButton } from "./PlayerButton";
 import { SpeedTimeline } from "./SpeedTimeline";
-import { adjustDateToTimezone, DatePicker } from "../datepicker/DatePicker";
+import { DatePicker } from "../datepicker/DatePicker";
 import { TimeField, TimeSpec } from "../datepicker/TimeField";
+import { adjustDateToTimezone } from "../common/DateUtils";
 
 // cSpell:ignore millisec solarsettings showticks shadowcolor solartimeline
 
@@ -47,7 +48,7 @@ interface HandleProps {
 }
 
 class Handle extends React.Component<HandleProps> {
-  public render() {
+  public override render() {
     const {
       domain: [min, max],
       handle: { id, value, percent },
@@ -129,7 +130,7 @@ class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
     });
   };
 
-  public render() {
+  public override render() {
     const { value, percent } = this.state;
     const { formatTime, activeHandleID, getRailProps, dayStartMs, sunrise, sunset } = this.props;
     const leftOffset = (sunrise / millisecPerDay) * 100;
@@ -198,13 +199,15 @@ interface TimelineProps extends CommonProps {
 interface TimelineState {
   sunriseTooltipTarget: HTMLSpanElement | undefined;
   sunsetTooltipTarget: HTMLSpanElement | undefined;
+  timelineElement: HTMLDivElement | null;
 }
 
 class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
   private _timelineRef = React.createRef<HTMLDivElement>();
-  public readonly state = {
+  public override readonly state = {
     sunriseTooltipTarget: undefined,
     sunsetTooltipTarget: undefined,
+    timelineElement: null,
   };
 
   private _getTickValues = (width: number) => {
@@ -235,7 +238,12 @@ class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
     });
   };
 
-  public render() {
+  /** @internal */
+  public override componentDidMount() {
+    this.setState({ timelineElement: this._timelineRef.current });
+  }
+
+  public override render() {
     const { formatTick, formatTime, onChange, onUpdate, dayStartMs, sunSetOffsetMs, sunRiseOffsetMs, currentTimeOffsetMs } = this.props;
     const domain = [0, millisecPerDay];
     const className = classnames("solar-slider", this.props.className, formatTick && "showticks");
@@ -252,7 +260,7 @@ class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
           </Tooltip>
         </span>
         <div ref={this._timelineRef} className="ui-component-solar-slider-sizer">
-          <ElementResizeObserver watchedElement={this._timelineRef}
+          <ElementResizeObserver watchedElement={this.state.timelineElement}
             render={({ width }) => (
               <Slider
                 mode={(curr, next) => {
@@ -430,7 +438,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     };
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     window.cancelAnimationFrame(this._requestFrame);
     this._unmounted = true;
   }
@@ -667,7 +675,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     return adjustDateToTimezone(projectTime, this.props.dataProvider.timeZoneOffset * 60);
   }
 
-  public render() {
+  public override render() {
     const { dataProvider } = this.props;
     const { speed, loop, currentTimeOffsetMs, isExpanded, sunRiseOffsetMs, sunSetOffsetMs } = this.state;
     const localTime = this.getLocalTime(this.state.dayStartMs + this.state.currentTimeOffsetMs);

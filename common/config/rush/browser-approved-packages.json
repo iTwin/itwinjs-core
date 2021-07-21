@@ -136,7 +136,7 @@
     },
     {
       "name": "@bentley/imodeljs-i18n",
-      "allowedCategories": [ "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/imodeljs-markup",
@@ -224,7 +224,7 @@
     },
     {
       "name": "@bentley/telemetry-client",
-      "allowedCategories": [ "backend", "common", "frontend", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "tools" ]
     },
     {
       "name": "@bentley/ui-abstract",
@@ -248,7 +248,7 @@
     },
     {
       "name": "@bentley/units-schema",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "@bentley/usage-logging-client",
@@ -299,18 +299,20 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "@typescript-eslint/typescript-estree",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "@ungap/url-search-params",
       "allowedCategories": [ "common" ]
     },
     {
       "name": "agentkeepalive",
-      "allowedCategories": [
-        "backend"
-      ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "almost-equal",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "applicationinsights",
@@ -338,7 +340,7 @@
     },
     {
       "name": "benchmark",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "body-parser",
@@ -610,7 +612,7 @@
     },
     {
       "name": "i18next-node-fs-backend",
-      "allowedCategories": [ "common" ]
+      "allowedCategories": [ "backend", "common" ]
     },
     {
       "name": "i18next-xhr-backend",
@@ -693,6 +695,10 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "memfs",
+      "allowedCategories": [ "tools" ]
+    },
+    {
       "name": "micro-memoize",
       "allowedCategories": [ "frontend" ]
     },
@@ -703,14 +709,6 @@
     {
       "name": "mkdirp",
       "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "mobx",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "mobx-react",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "mocha",
@@ -727,6 +725,10 @@
     {
       "name": "nock",
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
+    },
+    {
+      "name": "node-fetch",
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "nodemon",
@@ -782,9 +784,7 @@
     },
     {
       "name": "proper-lockfile",
-      "allowedCategories": [
-        "backend"
-      ]
+      "allowedCategories": [ "backend" ]
     },
     {
       "name": "puppeteer",
@@ -940,7 +940,7 @@
     },
     {
       "name": "sass",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "tools" ]
     },
     {
       "name": "sass-loader",
@@ -1132,7 +1132,7 @@
     },
     {
       "name": "xmlhttprequest",
-      "allowedCategories": [ "common", "extensions", "frontend", "internal" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "internal" ]
     },
     {
       "name": "xpath",

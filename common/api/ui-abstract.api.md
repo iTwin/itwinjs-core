@@ -97,6 +97,18 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly tooltip?: string | ConditionalStringValue;
 }
 
+// @public
+export enum AbstractZoneLocation {
+    // (undocumented)
+    BottomLeft = 7,
+    // (undocumented)
+    BottomRight = 9,
+    // (undocumented)
+    CenterLeft = 4,
+    // (undocumented)
+    CenterRight = 6
+}
+
 // @alpha
 export enum AccuDrawField {
     // (undocumented)
@@ -1072,6 +1084,8 @@ export class DialogProperty<T> {
     get isDisabled(): boolean;
     set isDisabled(val: boolean);
     // (undocumented)
+    get item(): DialogPropertyItem;
+    // (undocumented)
     get name(): string;
     // (undocumented)
     get syncItem(): DialogPropertySyncItem;
@@ -1431,7 +1445,6 @@ export namespace Primitives {
     export type ShortDate = string | Date;
     export type String = string;
     export type Text = string;
-    // (undocumented)
     export type Value = Text | String | ShortDate | Boolean | Numeric | Enum | Point | Composite | InstanceKey;
 }
 
@@ -1485,21 +1498,14 @@ export interface PropertyDescription {
 
 // @beta
 export class PropertyDescriptionHelper {
-    // @alpha
     static buildCheckboxDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildColorPickerDescription(name: string, label: string, colorValues: number[], numColumns: number, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildEnumPicklistEditorDescription(name: string, label: string, choices: Promise<EnumerationChoice[]> | EnumerationChoice[], additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildImageCheckBoxDescription(name: string, label: string, imageOff: string, imageOn: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
+    static buildLockPropertyDescription(name: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
     static buildNumberEditorDescription(name: string, label: string, overrideParams?: RangeEditorParams, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildTextEditorDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildToggleDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
-    // @alpha
     static buildWeightPickerDescription(name: string, label: string, additionalParams?: BasePropertyEditorParams[]): PropertyDescription;
     static bumpEnumProperty(description: PropertyDescription, value: string | number): Promise<string | number>;
 }
@@ -2099,7 +2105,7 @@ export class UiItemsManager {
     static getStatusBarItems(stageId: string, stageUsage: string): CommonStatusBarItem[];
     static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[];
     static getUiItemsProvider(providerId: string): UiItemsProvider | undefined;
-    static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection): ReadonlyArray<AbstractWidgetProps>;
+    static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps>;
     static get hasRegisteredProviders(): boolean;
     static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiItemProviderRegisteredEventArgs) => void>;
     static register(uiProvider: UiItemsProvider): void;
@@ -2117,7 +2123,7 @@ export interface UiItemsProvider {
     provideBackstageItems?: () => BackstageItem[];
     provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
     provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
-    provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection) => ReadonlyArray<AbstractWidgetProps>;
+    provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation) => ReadonlyArray<AbstractWidgetProps>;
 }
 
 // @public (undocumented)

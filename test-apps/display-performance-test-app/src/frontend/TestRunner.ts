@@ -12,7 +12,7 @@ import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
   PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
-import { ExternalTextureLoader, System } from "@bentley/imodeljs-frontend/lib/webgl";
+import { System } from "@bentley/imodeljs-frontend/lib/webgl";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import {
@@ -341,9 +341,7 @@ export class TestRunner {
   }
 
   private async setupTest(context: TestContext): Promise<TestCase | undefined> {
-    // Workaround for shifting map geometry when location needs to be asynchronously initialized.
     const imodel = context.iModel;
-    await imodel.backgroundMapLocation.initialize(imodel);
     // Open the view.
     const view = await this.loadView(context);
     if (!view)
@@ -472,10 +470,7 @@ export class TestRunner {
       await BeDuration.wait(100);
     }
 
-    const extTexLoader = ExternalTextureLoader.instance;
-    while (extTexLoader.numActiveRequests > 0 || extTexLoader.numPendingRequests > 0) {
-      await BeDuration.wait(100);
-    }
+    await IModelApp.renderSystem.waitForAllExternalTextures();
 
     viewport.renderFrame();
     timer.stop();
@@ -611,7 +606,7 @@ export class TestRunner {
     const iModels = [];
     for (const file of files) {
       if (file.endsWith(".bim") || file.endsWith(".ibim")) {
-        const split = file.split("\\"); // ###TODO Use the path API to support non-Windows platforms.
+        const split = file.split(/[^\/\\]+/g);
         const iModel = split[split.length - 1];
         if (iModel)
           iModels.push(iModel);

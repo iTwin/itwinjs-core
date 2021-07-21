@@ -134,6 +134,23 @@
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
       ]
     },
+    {
+      "name": "EC Schema Editing Tests",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/ecschema-editing",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+      ]
+    },
     { /* PARTIAL */
       "name": "[NODE] Certa Test Runner for Frontend Tests",
       "presentation": {
@@ -875,19 +892,6 @@
       ]
     },
     {
-      "name": "analysis-importer",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/test-apps/analysis-importer/",
-      "type": "pwa-node",
-      "request": "launch",
-      "program": "${workspaceFolder}/test-apps/analysis-importer/lib/Main.js",
-      "outFiles": [
-        "${workspaceFolder}/test-apps/agent-test-app/lib/**/*.js"
-      ]
-    },
-    {
       "name": "Extension CLI Tests (Integration)",
       "presentation": {
         "group": "6_Misc"
@@ -953,6 +957,7 @@
         "--sourceIModelId='73c9d3f0-3a47-41d6-8d2a-c0b0e4099f6a'", // ReadOnlyTest
         "--targetFile='d:/tmp/test-target.bim'",
         "--logTransformer",
+        "--logChangesets",
       ],
       "outFiles": [
         "${workspaceFolder}/test-apps/imodel-transformer/lib/**/*.js",
@@ -1008,6 +1013,22 @@
       "args": [
         "--input=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/proj.ibim",
         "--script=${workspaceFolder}/test-apps/synchro-schedule-importer/lib/assets/anim.json"
+      ]
+    },
+    {
+      "name": "Webpack Plugin Tests",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/tools/webpack-core",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/lib/**/*.js"
       ]
     },
     // TEST APPS
@@ -1614,6 +1635,21 @@
         "[NODE] Certa Test Runner for Full Stack RPC Interface Tests",
         "[BACKEND] Local Backend for Full Stack RPC Interface Tests"
       ]
+    },
+    {
+      "name": "eslint rule test @bentley/no-internal-barrel-imports",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/tools/eslint-plugin",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/eslint-plugin/node_modules/mocha/bin/_mocha",
+      "args": [
+        "${workspaceFolder}/tools/eslint-plugin/tests/no-internal-barrel-imports.js",
+        "--timeout 50000" // for easier debugging
+      ],
+      "console": "integratedTerminal",
     }
   ],
   "compounds": [

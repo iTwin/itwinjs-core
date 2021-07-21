@@ -5,7 +5,7 @@
 import { ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import {
-  BriefcaseDb, BriefcaseManager, ChangeSummaryExtractOptions, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs,
+  BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs,
 } from "@bentley/imodeljs-backend";
 import { V1CheckpointManager } from "@bentley/imodeljs-backend/lib/CheckpointManager";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
@@ -23,10 +23,10 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     await IModelHost.startup();
   }
 
-  public async extractChangeSummaries(tokenProps: IModelRpcProps, options: any): Promise<void> {
+  public async createChangeSummary(tokenProps: IModelRpcProps): Promise<void> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    await ChangeSummaryManager.extractChangeSummaries(requestContext, BriefcaseDb.findByKey(tokenProps.key) as BriefcaseDb, options as ChangeSummaryExtractOptions);
+    await ChangeSummaryManager.createChangeSummary(requestContext, BriefcaseDb.findByKey(tokenProps.key) as BriefcaseDb);
   }
 
   public async deleteChangeCache(tokenProps: IModelRpcProps): Promise<void> {

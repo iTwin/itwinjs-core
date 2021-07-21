@@ -1,6 +1,97 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Thu, 03 Jun 2021 18:08:11 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+_Version update only_
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- Accomodated the inability to reverse Changesets when creating change summaries. 
+- Use ecef location calculated for projected models.  
+- Clean up and promote AnalysisStyle APIs.
+- Added support for section clip to ElementGraphicsRequestProps.
+- Add internal API for reconstructing TileOptions from tree and content Ids.
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:31 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Clean up and promote beta RenderMaterial and RenderTexture APIs.
+- Include ECClass Ids in ChangedEntities; provide iteration via ChangedEntitiesIterable.
+- Added editor apis to request and update geometry, exercised by CreateOrContinuePathTool.
+- Clean up and promote DisplayStyleSettings APIs for planar clip masks and reality model appearance overrides.
+- Clean up spatial classification APIs and promote to public.
+- Export EmphasizeElementProps from common, deprecate from frontend.
+- Corrected geographicCoordinateSystem property from GeographicCRS to GeographicCRSProps in iModelProps"
+- Persist 'visible' property of map-layers.  Removed unused 'maxZoom' property on MapLayerProps.
+- Made MaplayerSource independent from MapLayerProps.
+- Add events for changes to IModel properties. Add RenderSchedule.ScriptBuilder for assembling a new schedule script.
+- deprecate IModelVersion.evaluateChangeSet
+- Changed area to extent to conform with iModelHub public API
+- Promote various APIs to public. Remove useless TextureProps properties.
+- Don't allow undo of changes to project extents or geolocation.
+- promote BriefcaseManager to public
+- Promoted GCS model to public API
+- Make Ipc interfaces @public. Promote BriefcaseManager to public
+- Clean up and promote beta RenderMaterial and RenderTexture APIs.
+- Remove useless TextureProps properties.
+- TextureLoadProps takes a maxTextureSize.
+- Removed unrequired sourceEllipsoidId and targetEllipsoidId from Geodetic Transforms
+- Add RenderSchedule.ScriptBuilder for assembling a new schedule script.
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+### Updates
+
+- Synch map settings provider when base layer provider changes.
+
+## 2.16.4
+Wed, 23 Jun 2021 17:09:07 GMT
+
+_Version update only_
+
+## 2.16.3
+Wed, 16 Jun 2021 20:29:32 GMT
+
+_Version update only_
 
 ## 2.16.2
 Thu, 03 Jun 2021 18:08:11 GMT

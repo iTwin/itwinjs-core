@@ -12,10 +12,10 @@ import { assert, DbOpcode, DbResult, Id64, Id64String, IModelStatus, OpenMode, R
 import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
 import { ChannelConstraintError, CodeProps, ElementProps, IModelError, ModelProps } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { BriefcaseIdArg, ChangesetIndexArg, LockProps, LockScope } from "./BackendHubAccess";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Element, Subject } from "./Element";
 import { ChannelRootAspect } from "./ElementAspect";
-import { LockProps } from "./BackendHubAccess";
 import { BriefcaseDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelHubBackend } from "./IModelHubBackend";
@@ -201,7 +201,7 @@ export class ConcurrencyControl {
   public onModelWritten(_modelClass: typeof Model, id: Id64String, opcode: DbOpcode): void {
     if (opcode !== DbOpcode.Insert || !this.needLocks)
       return;
-    this._cache.insertLocks([ConcurrencyControl.Request.getModelLock(id, LockLevel.Exclusive)], this.iModel.txns.getCurrentTxnId());
+    this._cache.insertLocks([ConcurrencyControl.Request.getModelLock(id, LockScope.Exclusive)], this.iModel.txns.getCurrentTxnId());
   }
 
   /** @internal [[Element.buildConcurrencyControlRequest]] */
@@ -244,7 +244,7 @@ export class ConcurrencyControl {
   public onElementWritten(_elementClass: typeof Element, id: Id64String, opcode: DbOpcode): void {
     if (opcode !== DbOpcode.Insert || !this.needLocks)
       return;
-    this._cache.insertLocks([ConcurrencyControl.Request.getElementLock(id, LockLevel.Exclusive)], this.iModel.txns.getCurrentTxnId());
+    this._cache.insertLocks([ConcurrencyControl.Request.getElementLock(id, LockScope.Exclusive)], this.iModel.txns.getCurrentTxnId());
   }
 
   /** @internal [[LinkTableRelationship.buildConcurrencyControlRequest]] */
@@ -446,7 +446,9 @@ export class ConcurrencyControl {
 
     this.abandonRequest();
     this._cache.deleteFile();
-    const arg = { requestContext, briefcaseId: this.iModel.briefcaseId, iModelId: this.iModel.iModelId };
+
+    // NEEDS_WORK - release but don't update
+    const arg: BriefcaseIdArg & ChangesetIndexArg = { requestContext, briefcaseId: this.iModel.briefcaseId, iModelId: this.iModel.iModelId, csIndex: 0 };
     await Promise.all([IModelHost.hubAccess.releaseAllLocks(arg), IModelHost.hubAccess.releaseAllCodes(arg)]);
     requestContext.enter();
     return this.openOrCreateCache(requestContext); // re-create after we know that locks and codes were deleted.
@@ -528,16 +530,16 @@ export class ConcurrencyControl {
   }
 
   /** @internal */
-  public getHeldLock0(type: LockType, objectId: Id64String): LockLevel {
-    return this._cache.getHeldLock(type, objectId);
+  public getHeldLock0(objectId: Id64String): LockScope {
+    return this._cache.getHeldLock(objectId);
   }
 
   private checkLockRestrictions(locks: LockProps[]) {
     for (const lock of locks) {
-      if (lock.type === LockType.Model) {
+      if (lock.scope === LockScope.Shared) {
         // If the app does not have write access to a channel, then it should not be taking out locks on that model at any level, even shared.
         // If we allowed that, then some random app could lock out the bridge or app from writing to its own channel. Would want to allow that??
-        this._channel.checkModelAccess(lock.objectId, new ConcurrencyControl.Request(), DbOpcode.Insert); //  throws if app does not have write access to this model.
+        this._channel.checkModelAccess(lock.entityId, new ConcurrencyControl.Request(), DbOpcode.Insert); //  throws if app does not have write access to this model.
       }
     }
   }
@@ -550,9 +552,7 @@ export class ConcurrencyControl {
     await IModelHost.hubAccess.acquireLocks({ requestContext, briefcase: this._iModel, locks });
   }
 
-  /** Abandon any *pending* requests for locks or codes.
-   * This is called automatically by BriefcaseDb.abandonChanges.
-  */
+  /** Abandon any *pending* requests for locks or codes. This is called automatically by BriefcaseDb.abandonChanges. */
   public abandonRequest() {
     this._pendingRequest.clear();
     this._cache.deleteLocksForTxn(this.iModel.txns.getCurrentTxnId());
@@ -632,7 +632,7 @@ export class ConcurrencyControl {
           continue;
         // This lock is held by some other briefcase at some level.
         // If we are requesting it at a higher level, then our request would be denied.
-        if (undefined !== req.locks.find((reqLock) => (reqLock.level > lock.lockLevel!)))
+        if (undefined !== req.locks.find((reqLock) => (reqLock.scope > lock.lockLevel!)))
           return false;
       }
     }
@@ -790,7 +790,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     public get isChannelRootLocked(): boolean {
       if (this.channelRoot === undefined)
         return false;
-      return this._iModel.concurrencyControl.holdsLock0(ConcurrencyControl.Request.getElementLock(this.channelRoot, LockLevel.Exclusive));
+      return this._iModel.concurrencyControl.holdsLock0(ConcurrencyControl.Request.getElementLock(this.channelRoot, LockScope.Exclusive));
     }
 
     /** @internal */
@@ -1020,30 +1020,30 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     public get codes(): CodeProps[] { return this._codes; }
 
     public static get dbLock(): LockProps {
-      return { type: LockType.Db, objectId: "0x1", level: LockLevel.Shared };
+      return { entityId: "0x1", scope: LockScope.Shared };
     }
 
     public static get schemaLock(): LockProps {
-      return { type: LockType.Schemas, objectId: "0x1", level: LockLevel.Exclusive };
+      return { entityId: "0x1", scope: LockScope.Exclusive };
     }
 
     public static get codeSpecsLock(): LockProps {
-      return { type: LockType.CodeSpecs, objectId: "0x1", level: LockLevel.Exclusive };
+      return { entityId: "0x1", scope: LockScope.Exclusive };
     }
 
-    public static getElementLock(objectId: Id64String, level: LockLevel): LockProps {
-      return { type: LockType.Element, objectId, level };
+    public static getElementLock(entityId: Id64String, scope: LockScope): LockProps {
+      return { entityId, scope };
     }
 
-    public static getModelLock(objectId: Id64String, level: LockLevel): LockProps {
-      return { type: LockType.Model, objectId, level };
+    public static getModelLock(entityId: Id64String, scope: LockScope): LockProps {
+      return { entityId, scope };
     }
 
-    public getLockByKey(type: LockType, objectId: string): LockProps | undefined {
+    public getLockByKey(entityId: string): LockProps | undefined {
       // We don't expect a large number locks in a request. Therefore, simple brute-force search should be fine.
       // If that proves to be false, we can implement a Map on the side to help with look-ups and de-duping.
       for (const l of this.locks) {
-        if (l.type === type && l.objectId === objectId)
+        if (l.entityId === entityId)
           return l;
       }
       return undefined;
@@ -1051,12 +1051,12 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
     public addLocks(locks: LockProps[]): this {
       locks.forEach((lock) => {
-        const existingLock = this.getLockByKey(lock.type, lock.objectId);
+        const existingLock = this.getLockByKey(lock.entityId);
         if (existingLock === undefined)
           this.locks.push(lock);
         else {
-          if (existingLock.level < lock.level)
-            existingLock.level = lock.level;
+          if (existingLock.scope < lock.scope)
+            existingLock.scope = lock.scope;
           // If the lock is already in the request at a higher level, stick with that. The user must delete and re-add to demote.
         }
       });
@@ -1064,7 +1064,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     }
 
     public replaceLocksWithChannelLock(channelRootId: Id64String) {
-      this._locks = [Request.getElementLock(channelRootId, LockLevel.Exclusive)];
+      this._locks = [Request.getElementLock(channelRootId, LockScope.Exclusive)];
     }
 
     public addCodes(codes: CodeProps[]): this {
@@ -1110,10 +1110,10 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     public static toHubLock(concurrencyControl: ConcurrencyControl, reqLock: LockProps): Lock {
       const lock = new Lock();
       lock.briefcaseId = concurrencyControl.iModel.briefcaseId;
-      lock.lockLevel = reqLock.level;
-      lock.lockType = reqLock.type;
-      lock.objectId = reqLock.objectId;
-      lock.releasedWithChangeSet = concurrencyControl.iModel.changeSetId;
+      lock.lockLevel = reqLock.scope as number;
+      lock.lockType = LockType.Element;
+      lock.objectId = reqLock.entityId;
+      lock.releasedWithChangeSet = concurrencyControl.iModel.changeset.id;
       lock.seedFileId = concurrencyControl.iModel.iModelId;
       return lock;
     }
@@ -1317,22 +1317,22 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     /** Get the level at which the specified lock is held by this briefcase.
      * @alpha
      */
-    public getHeldLock(type: LockType, objectId: Id64String): LockLevel {
-      return this._iModel.concurrencyControl.getHeldLock0(type, objectId);
+    public getHeldLock(objectId: Id64String): LockScope {
+      return this._iModel.concurrencyControl.getHeldLock0(objectId);
     }
 
     /** Get the level at which the specified model lock is held by this briefcase.
      * @alpha
      */
-    public getHeldModelLock(modelId: Id64String): LockLevel {
-      return this.getHeldLock(LockType.Model, modelId);
+    public getHeldModelLock(modelId: Id64String): LockScope {
+      return this.getHeldLock(modelId);
     }
 
     /** Get the level at which the specified element lock is held by this briefcase.
      * @alpha
      */
-    public getHeldElementLock(elementId: Id64String): LockLevel {
-      return this.getHeldLock(LockType.Element, elementId);
+    public getHeldElementLock(elementId: Id64String): LockScope {
+      return this.getHeldLock(elementId);
     }
 
     /** Lock the specified models exclusively.
@@ -1419,7 +1419,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     private initializeDb() {
       const initStmts = [
         `CREATE TABLE reservedCodes(specid TEXT NOT NULL, scope TEXT NOT NULL, value TEXT NOT NULL, PRIMARY KEY(specid, scope, value))`,
-        `CREATE TABLE heldLocks(type INTEGER NOT NULL, objectId TEXT NOT NULL, level INTEGER NOT NULL, txnId TEXT, PRIMARY KEY(type, objectId, level))`,
+        `CREATE TABLE heldLocks(objectId TEXT NOT NULL, level INTEGER NOT NULL, txnId TEXT, PRIMARY KEY(objectId, level))`,
         `INSERT INTO be_local(name,val) VALUES('cctl_version','0.1')`,
       ];
 
@@ -1485,12 +1485,11 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
       this._db.saveChanges();
     }
 
-    public getHeldLock(type: LockType, objectId: string): LockLevel {
+    public getHeldLock(entityId: string): LockScope {
       this.mustBeOpenAndWriteable();
-      let ll = LockLevel.None;
-      this._db.withPreparedSqliteStatement("SELECT level FROM heldLocks WHERE type=? AND objectId=?", (stmt) => {
-        stmt.bindValue(1, type);
-        stmt.bindValue(2, objectId);
+      let ll = LockScope.None;
+      this._db.withPreparedSqliteStatement("SELECT level FROM heldLocks WHERE objectId=?", (stmt) => {
+        stmt.bindValue(1, entityId);
         if (stmt.step() === DbResult.BE_SQLITE_ROW)
           ll = stmt.getValue(0).getInteger();
       });
@@ -1498,7 +1497,7 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
     }
 
     public isLockHeld(lock: LockProps): boolean {
-      return this.getHeldLock(lock.type, lock.objectId) >= lock.level;
+      return this.getHeldLock(lock.entityId) >= lock.scope;
     }
 
     public isCodeReserved(code: CodeProps): boolean {
@@ -1532,17 +1531,18 @@ export namespace ConcurrencyControl { // eslint-disable-line no-redeclare
 
     public insertLocks(locks: LockProps[], txnId?: string) {
       this.mustBeOpenAndWriteable();
-      this._db.withPreparedSqliteStatement("INSERT INTO heldLocks(type,objectId,level,txnId) VALUES(?,?,?,?)", (stmt) => {
+      this._db.withPreparedSqliteStatement("INSERT INTO heldLocks(objectId,level,txnId) VALUES(?,?,?)", (stmt) => {
         for (const lock of locks) {
-          stmt.reset();
-          stmt.clearBindings();
-          stmt.bindValue(1, lock.type);
-          stmt.bindValue(2, lock.objectId);
-          stmt.bindValue(3, lock.level);
-          stmt.bindValue(4, txnId);
-          const rc = stmt.step();
-          if (rc !== DbResult.BE_SQLITE_DONE)
-            throw new IModelError(rc, "error inserting lock");
+          if (!this.isLockHeld(lock)) {
+            stmt.reset();
+            stmt.clearBindings();
+            stmt.bindValue(1, lock.entityId);
+            stmt.bindValue(2, lock.scope);
+            stmt.bindValue(3, txnId);
+            const rc = stmt.step();
+            if (rc !== DbResult.BE_SQLITE_DONE)
+              throw new IModelError(rc, "error inserting lock");
+          }
         }
       });
     }

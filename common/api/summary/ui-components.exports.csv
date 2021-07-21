@@ -8,7 +8,7 @@ beta;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNod
 beta;ActionButtonRendererProps
 internal;ActionItem({ item, addGroupSeparator }:
 public;ActiveMatchInfo
-alpha;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
+public;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
 beta;AlphaSlider 
 beta;AlphaSliderProps 
 public;AnimationFractionChangeHandler = (animationFraction: number) => void
@@ -104,8 +104,11 @@ beta;CompositeFilterType
 beta;CompositePropertyDataFilterer 
 public;CompositeTypeConverter 
 internal;ContextMenu 
+deprecated;ContextMenu 
 internal;ContextMenuItem 
+deprecated;ContextMenuItem 
 internal;ContextMenuProps 
+deprecated;ContextMenuProps 
 beta;ControlledSelectableContent(props: ControlledSelectableContentProps): JSX.Element
 beta;ControlledSelectableContentProps
 public;ControlledTree(props: ControlledTreeProps): JSX.Element
@@ -304,6 +307,7 @@ internal;MapMode
 public;MapPayloadToInspireNodeCallback
 deprecated;MapPayloadToInspireNodeCallback
 internal;MenuItem
+deprecated;MenuItem
 internal;Milestone
 deprecated;Milestone
 public;MilestoneRange
@@ -427,6 +431,8 @@ public;PropertyViewProps
 alpha;QuantityFormatPanel(props: QuantityFormatPanelProps): JSX.Element
 alpha;QuantityFormatPanelProps 
 beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQuantityChange, ref }: QuantityProps): JSX.Element
+beta;QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null
+beta;QuantityNumberInputProps 
 beta;QuantityProps 
 public;ReactDataGridColumn 
 alpha;RenderedItemsRange
@@ -479,6 +485,7 @@ beta;StandardTypeConverterTypeNames
 deprecated;StandardTypeConverterTypeNames
 beta;StandardTypeNames
 deprecated;StandardTypeNames
+beta;StepFunctionProp = number | ((direction: string) => number | undefined)
 public;StringOperatorProcessor
 public;StringTypeConverter 
 public;StructPropertyValueRenderer 
@@ -518,13 +525,17 @@ beta;ThemedEnumPropertyEditor
 internal;Timeline 
 deprecated;Timeline 
 public;TimelineComponent 
+public;TimelineComponentProps
 public;TimelineDataProvider
 public;TimelineDateDisplay
+public;TimelineMenuItemOption = "replace" | "append" | "prefix"
+public;TimelineMenuItemProps
 public;TimelinePausePlayAction
 public;TimelinePausePlayArgs 
 internal;TimelineProps 
 deprecated;TimelineProps 
 public;TimelineScale
+public;toDateString: (date: Date, timeZoneOffset?: number | undefined) => string
 beta;ToggleEditor 
 beta;TogglePropertyEditor 
 internal;toNode: 
@@ -547,6 +558,7 @@ beta;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
 internal;ToolbarWithOverflowDirectionContext: React.Context
 beta;ToolbarWithOverflowProps 
 internal;toRxjsObservable
+public;toTimeString: (date: Date, timeZoneOffset?: number | undefined) => string
 internal;toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition
 public;TreeActions
 beta;TreeCellUpdatedArgs

@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { SchemaContext } from "../../Context";
 import { PrimitiveType, RelationshipEnd } from "../../ECObjects";
-import { DiagnosticCategory } from "../../ecschema-metadata";
+import { DiagnosticCategory } from "../../Validation/Diagnostic";
 import { ECClass, MutableClass, StructClass } from "../../Metadata/Class";
 import { Constant } from "../../Metadata/Constant";
 import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
@@ -29,6 +29,8 @@ import {
 } from "../TestUtils/DiagnosticHelpers";
 
 import sinon = require("sinon");
+
+/* eslint-disable deprecation/deprecation */
 
 describe("SchemaValidationVisitor tests", () => {
   let visitor: SchemaValidationVisitor;

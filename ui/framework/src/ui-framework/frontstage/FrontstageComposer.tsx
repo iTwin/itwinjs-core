@@ -91,7 +91,7 @@ export interface FrontstageRuntimeProps {
 
 /** State for the FrontstageComposer component.
  * @internal
- */
+ */
 interface FrontstageComposerState {
   allowPointerUpSelection: boolean;
   modalFrontstageCount: number;
@@ -121,7 +121,7 @@ const stagePanelLocations: ReadonlyArray<StagePanelLocation> = [
 
 /** FrontstageComposer React component.
  * @public
- */
+ */
 export class FrontstageComposer extends React.Component<CommonProps, FrontstageComposerState>
   implements WidgetChangeHandler, TargetChangeHandler, ZoneDefProvider, StagePanelChangeHandler, NineZoneChangeHandler {
 
@@ -129,7 +129,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
   private _isMounted = false;
 
   /** @internal */
-  public readonly state: Readonly<FrontstageComposerState>;
+  public override readonly state: Readonly<FrontstageComposerState>;
 
   constructor(props: CommonProps) {
     super(props);
@@ -326,7 +326,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     );
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     let content: React.ReactNode;
     if (this._frontstageDef) {
       if (this._frontstageDef.frontstageProvider) {
@@ -365,7 +365,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     );
   }
 
-  public componentDidMount(): void {
+  public override componentDidMount(): void {
     this._isMounted = true;
     const needInitialLayout = (this._frontstageDef && this._frontstageDef.nineZone) ? /* istanbul ignore next */ false : true;
     if (this._frontstageDef && needInitialLayout)
@@ -381,9 +381,10 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     FrontstageManager.onPanelSizeChangedEvent.addListener(this._handlePanelSizeChangedEvent);
     FrontstageManager.onToolActivatedEvent.addListener(this._handleToolActivatedEvent);
     FrontstageManager.onToolPanelOpenedEvent.addListener(this._handleToolPanelOpenedEvent);
+    FrontstageManager.onWidgetDefsUpdatedEvent.addListener(this._handleWidgetStateChangedEvent);
   }
 
-  public componentWillUnmount(): void {
+  public override componentWillUnmount(): void {
     this._isMounted = false;
     window.removeEventListener("resize", this._handleWindowResize, true);
     FrontstageManager.onFrontstageActivatedEvent.removeListener(this._handleFrontstageActivatedEvent);
@@ -392,6 +393,7 @@ export class FrontstageComposer extends React.Component<CommonProps, FrontstageC
     FrontstageManager.onPanelSizeChangedEvent.removeListener(this._handlePanelSizeChangedEvent);
     FrontstageManager.onToolActivatedEvent.removeListener(this._handleToolActivatedEvent);
     FrontstageManager.onToolPanelOpenedEvent.removeListener(this._handleToolPanelOpenedEvent);
+    FrontstageManager.onWidgetDefsUpdatedEvent.removeListener(this._handleWidgetStateChangedEvent);
   }
 
   // istanbul ignore next
