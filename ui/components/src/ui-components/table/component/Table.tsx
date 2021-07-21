@@ -1727,34 +1727,7 @@ export class Table extends React.Component<TableProps, TableState> {
               onClose={this._hideContextMenu}
               onShowHideChange={this._handleShowHideChange} />
           }
-<<<<<<< HEAD
           <ElementResizeObserver watchedElement={this._gridContainerRef}
-            render={({ width, height }) => (
-              <ReactDataGrid
-                ref={this._gridRef}
-                columns={visibleColumns}
-                rowGetter={this._rowGetter}
-                rowRenderer={rowRenderer}
-                rowsCount={this.state.rowsCount}
-                {...(this.props.reorderableColumns ? {
-                  draggableHeaderCell: DragDropHeaderCell,
-                  onHeaderDrop: this._onHeaderDrop,
-                } as any : {})}
-                minHeight={height}
-                minWidth={width}
-                headerRowHeight={TABLE_ROW_HEIGHT}
-                rowHeight={TABLE_ROW_HEIGHT}
-                onGridSort={this._handleGridSort}
-                enableRowSelect={null}  // Prevent deprecation warning
-                onAddFilter={this._handleFilterChange}
-                onClearFilters={this._handleOnClearFilters} // eslint-disable-line @typescript-eslint/unbound-method
-                headerFiltersHeight={TABLE_FILTER_ROW_HEIGHT}
-                getValidFilterValues={this._getValidFilterValues}
-                onScroll={this._onScroll}
-              />
-            )}
-=======
-          <ElementResizeObserver watchedElement={this.state.gridContainer}
             render={({ width, height }) => {
               setTimeout(() => this._pokeScrollAfterUpdate());
               return (
@@ -1782,7 +1755,6 @@ export class Table extends React.Component<TableProps, TableState> {
                 />
               );
             }}
->>>>>>> c6f3d4d07a (Workaround for react-data-grid blank grid after scroll and update (#1900))
           />
         </div>
         <div ref={this._tableRef}>
