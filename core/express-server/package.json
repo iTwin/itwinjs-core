@@ -1,6 +1,6 @@
 {
   "name": "@bentley/express-server",
-  "version": "3.0.0-dev.0",
+  "version": "3.0.0-dev.1",
   "description": "iModel.js express utilities",
   "main": "lib/ExpressServer.js",
   "typings": "lib/ExpressServer",
