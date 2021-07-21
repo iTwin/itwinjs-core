@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "Adjusted WGS84 polar radius to be more precise than millimeter",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "73677355+AlainRobertAtBentley@users.noreply.github.com"
+}

@@ -150,10 +150,17 @@ describe("Descriptor", () => {
       expect(descriptorFromCompressedJSON).to.matchSnapshot();
     });
 
-    it("creates valid CompressedDescriptorJSON from DescriptorJSON", () => {
+    it("creates valid CompressedDescriptorJSON", () => {
       testDescriptorJSON = createRandomDescriptorJSON();
       testDescriptorJSON.categories!.push(createRandomCategoryJSON());
-      testDescriptorJSON.fields.push(createRandomPropertiesFieldJSON(testDescriptorJSON.categories![1], 2));
+      testDescriptorJSON.fields.push(createRandomPropertiesFieldJSON(testDescriptorJSON.categories![1], 2), createRandomNestedFieldJSON(testDescriptorJSON.categories![1]));
+
+      Object.assign(testDescriptorJSON, {
+        sortDirection: SortDirection.Ascending,
+        filterExpression: "testFilterExpression",
+        selectionInfo: { providerName: "testProviderName", level: 1 },
+        sortingFieldName: testDescriptorJSON.fields[0].name,
+      });
 
       const descriptor = Descriptor.fromJSON(JSON.stringify(testDescriptorJSON))!;
       const compressedDescriptorJSON = descriptor.toCompressedJSON();

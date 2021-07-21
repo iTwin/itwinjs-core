@@ -200,6 +200,7 @@ import { PackedFeatureTable } from '@bentley/imodeljs-common';
 import { ParseResults } from '@bentley/ui-abstract';
 import { ParserSpec } from '@bentley/imodeljs-quantity';
 import { Path } from '@bentley/geometry-core';
+import { Placement } from '@bentley/imodeljs-common';
 import { PlacementProps } from '@bentley/imodeljs-common';
 import { PlanarClipMaskProps } from '@bentley/imodeljs-common';
 import { PlanarClipMaskSettings } from '@bentley/imodeljs-common';
@@ -4619,6 +4620,9 @@ export namespace IModelConnection {
     export class Elements {
         // @internal
         constructor(_iModel: IModelConnection);
+        getPlacements(elementIds: Iterable<Id64String>): Promise<Array<Placement & {
+            elementId: Id64String;
+        }>>;
         getProps(arg: Id64Arg): Promise<ElementProps[]>;
         loadProps(identifier: Id64String | GuidString | CodeProps, options?: ElementLoadOptions): Promise<ElementProps | undefined>;
         queryIds(params: EntityQueryParams): Promise<Id64Set>;
@@ -7489,6 +7493,8 @@ export type RealityModelSource = ViewState | DisplayStyleState;
 // @internal
 export class RealityModelTileClient {
     constructor(url: string, accessToken?: AccessToken, contextId?: string);
+    // (undocumented)
+    getBlobAccessData(): Promise<URL | undefined>;
     getRealityDataType(): Promise<string | undefined>;
     // (undocumented)
     getRootDocument(url: string): Promise<any>;
@@ -12390,6 +12396,7 @@ export abstract class Viewport implements IDisposable {
     zoomToElementProps(elementProps: ElementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
     zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void>;
     zoomToPlacementProps(placementProps: PlacementProps[], options?: ViewChangeOptions & ZoomToOptions): void;
+    zoomToPlacements(placements: Placement[], options?: ViewChangeOptions & ZoomToOptions): void;
     zoomToVolume(volume: LowAndHighXYZ | LowAndHighXY, options?: ViewChangeOptions): void;
 }
 

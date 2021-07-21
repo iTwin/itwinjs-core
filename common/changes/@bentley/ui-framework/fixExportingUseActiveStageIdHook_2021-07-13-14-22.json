@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/ui-framework",
-      "comment": "Update component to pass HtmlDivElement to ElementResizeObserver.",
+      "comment": "Add useActiveStageId to barrel file so it is properly exported.",
       "type": "none"
     }
   ],

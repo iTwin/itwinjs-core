@@ -104,3 +104,44 @@ export function NoRepeatSampleTimeline() {
     </div>
   );
 }
+export function NoLocalizedTimeSampleTimeline() {
+  const duration = 10 * 1000;
+  const startDate = new Date("July 1, 2016, 00:00:00 GMT -0000");
+  const endDate = new Date("July 1, 2016, 20:30:45 GMT -0000");
+  return (
+    <div style={{width:"100%", height:"auto"}}>
+      <TimelineComponent
+        startDate={startDate}
+        endDate={endDate}
+        initialDuration={0}
+        totalDuration={duration}
+        minimized={true}
+        showDuration={false }
+        alwaysMinimized={true}
+        timeZoneOffset={0}
+        componentId={"sampleApp-noLocalizedTimeSampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
+      />
+    </div>
+  );
+}
+
+export function LocalizedTimeSampleTimeline() {
+  const duration = 10 * 1000;
+  const startDate = new Date("July 1, 2016, 00:00:00 GMT -0000");
+  const endDate = new Date("July 1, 2016, 20:30:45 GMT -0000");
+  return (
+    <div style={{width:"100%", height:"auto"}}>
+      <TimelineComponent
+        startDate={startDate}
+        endDate={endDate}
+        initialDuration={0}
+        totalDuration={duration}
+        minimized={true}
+        showDuration={false }
+        alwaysMinimized={true}
+        componentId={"sampleApp-localizedTimeSampleTimeline"} // qualify id with "<appName>-" to ensure uniqueness
+      />
+    </div>
+  );
+}
+

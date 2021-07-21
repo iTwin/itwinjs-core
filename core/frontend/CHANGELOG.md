@@ -1,6 +1,34 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+### Updates
+
+- Add IModelConnection.Elements.getPlacements and update Viewport and ViewClipByElementTool to use it.
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- add GraphicBuilder.addCurvePrimitive.
+- Add Tiles.updateForScheduleScript to refresh tiles after modifying schedule script."
+- Update Toolsettings set-up in SetCameraTool to fix enable/disable setting of input field.
+- Add Viewport.flashedId property and corresponding onFlashedIdChanged event.
+- Added support for ESRI MapServer exposing a minimum LOD.
+- Fix the Nadir color for 2 colors skybox in the context of background map.
+- Add ability to clone Format and to add property setters. This allows a user to synchronously tweak a format in the frontend.
+- Fix issue with TouchCursor unexpectedly disappearing when disabling snap/locate.
+- pickable decoration enhancement
+- Update tile trees when project extents change.
+- Remove BackgroundMapLocation use EcefLocation directly.
+- Clean up and promote AnalysisStyle APIs.
+- TileAdmin.requestElementGraphics can now produce section-cut graphics.
+- Update tooltips of RealityData with its type
+- Add API to wait until all pending external textures have finished loading.
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT

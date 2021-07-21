@@ -927,7 +927,6 @@ export class Field {
     resetParentship(): void;
     // @internal @deprecated
     static reviver(key: string, value: any): any;
-    // (undocumented)
     toCompressedJSON(classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): FieldJSON<string>;
@@ -2264,7 +2263,7 @@ export interface PropertyInfo {
 // @public (undocumented)
 export namespace PropertyInfo {
     export function fromJSON(json: PropertyInfoJSON): PropertyInfo;
-    export function toCompressedJSON(json: PropertyInfoJSON, classesMap: {
+    export function toCompressedJSON(propertyInfo: PropertyInfo, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): PropertyInfoJSON<string>;
     export function toJSON(info: PropertyInfo): PropertyInfoJSON;
@@ -2725,7 +2724,6 @@ export namespace SelectClassInfo {
         [id: string]: CompressedClassInfoJSON;
     }): SelectClassInfoJSON;
     export function fromJSON(json: SelectClassInfoJSON): SelectClassInfo;
-    // (undocumented)
     export function toCompressedJSON(selectClass: SelectClassInfo, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): SelectClassInfoJSON<string>;
