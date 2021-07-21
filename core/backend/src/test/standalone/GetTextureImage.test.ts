@@ -9,7 +9,7 @@ import { TextureLoadProps } from "@bentley/imodeljs-common";
 import { SnapshotDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 
-describe.only("IModelDb.getTextureImage", () => {
+describe("IModelDb.getTextureImage", () => {
   let imodel: SnapshotDb;
   const ctxt = new ClientRequestContext();
 
@@ -35,5 +35,5 @@ describe.only("IModelDb.getTextureImage", () => {
       await expect(imodel.getTextureImage(ctxt, { name: "0x123", maxTextureSize: 0 })).to.be.rejectedWith("GetTextureImage maxTextureSize property must be a positive number");
       await expect(imodel.getTextureImage(ctxt, { name: "0x123", maxTextureSize: -1 })).to.be.rejectedWith("GetTextureImage maxTextureSize property must be a positive number");
     });
-  })
+  });
 });
