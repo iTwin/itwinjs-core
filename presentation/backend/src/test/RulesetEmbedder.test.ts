@@ -112,14 +112,18 @@ describe("RulesetEmbedder", () => {
 
     rootSubjectMock.setup((x) => x.id).returns(() => rootSubjectId);
     rootSubjectMock.setup((x) => x.model).returns(() => modelId);
+    moq.configureForPromiseResult(rootSubjectMock);
 
     presentationRulesSubjectMock.setup((x) => x.id).returns(() => presentationRulesSubjectId);
     presentationRulesSubjectMock.setup((x) => x.model).returns(() => modelId);
+    moq.configureForPromiseResult(presentationRulesSubjectMock);
 
     definitionPartitionMock.setup((x) => x.id).returns(() => definitionPartitionId);
     definitionPartitionMock.setup((x) => x.model).returns(() => modelId);
+    moq.configureForPromiseResult(definitionPartitionMock);
 
     rulesetModelMock.setup((x) => x.id).returns(() => modelId);
+    moq.configureForPromiseResult(rulesetModelMock);
   }
 
   function setupMocksForHandlingPrerequisites() {
