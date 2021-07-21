@@ -179,3 +179,46 @@ export class BandedSystem {
     return result;
   }
 }
+
+export namespace BandedSystem {
+  /**
+   * A helper class for solving tridiagonal and near-tridiagonal linear systems involved in C2 cubic spline interpolation.
+   * @public
+   */
+  export class Tridiagonal {
+    /** Setup tridiagonal system */
+    public static setUpSystem(alpha: number[], beta: number[], gamma: number[], params: number[], closed: boolean, useNaturalStartTangent: boolean, useNaturalEndTangent: boolean): boolean {
+      if (alpha.length !== beta.length || alpha.length !== gamma.length || alpha.length !== params.length)
+        return false;
+      const numIntervals = params.length - 1;
+      // START HERE
+      return false;
+    }
+
+    /** Perform LU decomposition on the tridiagonal system */
+    public static decomposeLU(triUp: number[], triLow: number[], alpha: number[], beta: number[], gamma: number[]): boolean {
+      if (alpha.length !== beta.length || alpha.length !== gamma.length || alpha.length !== triUp.length || alpha.length !== triLow.length)
+        return false;
+      const numIntervals = alpha.length - 1;
+      // START HERE
+      return false;
+    }
+
+    /** Solve the tridiagonal system */
+    public static solve(dataPts: Point3d[], triUp: number[], triLow: number[], alpha: number[], beta: number[], gamma: number[]): Point3d[] | undefined {
+      if (alpha.length !== beta.length || alpha.length !== gamma.length || alpha.length !== triUp.length || alpha.length !== triLow.length)
+        return undefined;
+      const numIntervals = alpha.length - 1;
+      // START HERE
+      return undefined;
+    }
+
+    /** Solve the near tridiagonal system */
+    public static solveNear(fitPts: Point3d[], params: number[], alpha: number[], beta: number[], gamma: number[]): Point3d[] | undefined {
+      if (alpha.length !== beta.length || alpha.length !== gamma.length || alpha.length !== fitPts.length || alpha.length !== params.length)
+        return undefined;
+      // START HERE
+      return undefined;
+    }
+  }
+}
