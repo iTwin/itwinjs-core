@@ -45,7 +45,7 @@ export class RealityTile extends Tile {
   public readonly rangeCorners?: Point3d[];
   public readonly boundedByRegion;
   private _everDisplayed = false;
-  public reprojectionTransform?: Transform;
+  protected _reprojectionTransform?: Transform;
   private _reprojectedGraphic?: RenderGraphic;
 
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
@@ -180,7 +180,7 @@ export class RealityTile extends Tile {
   }
 
   public setReprojection(rootReprojection: Transform) {
-    this.reprojectionTransform = rootReprojection;
+    this._reprojectionTransform = rootReprojection;
   }
 
   public allChildrenIncluded(tiles: Tile[]) {
@@ -357,13 +357,13 @@ export class RealityTile extends Tile {
     resolve(stepChildren);
   }
   public override produceGraphics(): RenderGraphic | undefined {
-    if (undefined === this.reprojectionTransform)
+    if (undefined === this._reprojectionTransform)
       return super.produceGraphics();
 
     if (undefined === this._reprojectedGraphic && undefined !== this._graphic) {
       const branch = new GraphicBranch(false);
       branch.add(this._graphic);
-      this._reprojectedGraphic = IModelApp.renderSystem.createGraphicBranch(branch, this.reprojectionTransform);
+      this._reprojectedGraphic = IModelApp.renderSystem.createGraphicBranch(branch, this._reprojectionTransform);
     }
     return this._reprojectedGraphic;
   }
@@ -405,7 +405,7 @@ class AdditiveRefinementStepChild  extends RealityTile {
     if (undefined === this._graphic) {
       const parentGraphics = this._loadableTile.unprojectedGraphic;
 
-      if (!parentGraphics || !this.reprojectionTransform)
+      if (!parentGraphics || !this._reprojectionTransform)
         return undefined;
 
       const branch = new GraphicBranch(false);
@@ -416,7 +416,7 @@ class AdditiveRefinementStepChild  extends RealityTile {
         const clipPolygon = [this.rangeCorners[0], this.rangeCorners[1], this.rangeCorners[3], this.rangeCorners[2]];
         branchOptions.clipVolume =  renderSystem.createClipVolume(ClipVector.create([ClipShape.createShape(clipPolygon, undefined, undefined, this.tree.iModelTransform)!]));
       }
-      this._graphic = renderSystem.createGraphicBranch(branch, this.reprojectionTransform, branchOptions);
+      this._graphic = renderSystem.createGraphicBranch(branch, this._reprojectionTransform, branchOptions);
     }
     return this._graphic;
   }

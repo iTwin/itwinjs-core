@@ -418,7 +418,7 @@ export class RealityTileTree extends TileTree {
   protected logTiles(label: string, tiles: IterableIterator<Tile>) {
     let depthString = "";
     let min = 10000, max = -10000;
-    let count = 0, stepChildCount = 0, reprojectedCount = 0, maxRadius = 0;
+    let count = 0;
     const depthMap = new Map<number, number>();
     for (const tile of tiles) {
       count++;
@@ -427,13 +427,10 @@ export class RealityTileTree extends TileTree {
       max = Math.max(max, tile.depth);
       const found = depthMap.get(depth);
       depthMap.set(depth, found === undefined ? 1 : found + 1);
-      if (tile instanceof RealityTile && tile.isStepChild) stepChildCount++;
-      if ((tile as RealityTile).reprojectionTransform) reprojectedCount++;
-      if (tile.radius > maxRadius)
-        maxRadius = tile.radius;
     }
 
     depthMap.forEach((key, value) => depthString += `${key}-${value}, `);
-    console.log(label + ": " + count + " Min: " + min + " Max: " + max + " Depths: " + depthString, "StepChildren: " + stepChildCount + " Reprojected: " + reprojectedCount + " Max Radius: " + maxRadius);    // eslint-disable-line
+    // eslint-disable-next-line no-console
+    console.log(`${label  }: ${  count  } Min: ${  min  } Max: ${  max  } Depths: ${  depthString}`);
   }
 }
