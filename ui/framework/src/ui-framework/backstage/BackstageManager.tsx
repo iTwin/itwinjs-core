@@ -9,7 +9,7 @@
 import * as React from "react";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { IconSpec } from "@bentley/ui-core";
-import { CommandItemDef } from "../../ui-framework";
+import { CommandItemDef } from "../shared/CommandItemDef";
 import { UiFramework } from "../UiFramework";
 import { Backstage } from "./Backstage";
 

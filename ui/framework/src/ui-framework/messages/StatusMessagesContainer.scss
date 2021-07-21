@@ -5,6 +5,7 @@
 @import "~@bentley/ui-core/lib/ui-core/text/mixins";
 @import "~@bentley/ui-core/lib/ui-core/icons/index";
 @import "~@bentley/ui-core/lib/ui-core/scrollbar";
+@import "~@bentley/ui-core/lib/ui-core/z-index";
 
 .uifw-statusbar-message-label {
   color: $buic-text-color;
@@ -27,6 +28,7 @@
 }
 
 .uifw-statusbar-messages-container {
+  @include uicore-z-index(status-message);
   max-height: 66vh;
 
   &.uifw-scrollable {

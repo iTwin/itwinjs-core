@@ -81,7 +81,6 @@ import { YawPitchRollProps } from '@bentley/geometry-core';
 // @public
 export class AdditionalTransform implements AdditionalTransformProps {
     constructor(data?: AdditionalTransformProps);
-    // @internal
     equals(other: AdditionalTransform): boolean;
     static fromJSON(data: AdditionalTransformProps): AdditionalTransform;
     readonly helmert2DWithZOffset?: Helmert2DWithZOffset;
@@ -100,7 +99,6 @@ export class AffineTransform implements AffineTransformProps {
     readonly a2: number;
     readonly b1: number;
     readonly b2: number;
-    // @internal
     equals(other: AffineTransform): boolean;
     static fromJSON(data: AffineTransformProps): AffineTransform;
     toJSON(): AffineTransformProps;
@@ -423,6 +421,8 @@ export class BackgroundMapSettings {
     readonly mapType: BackgroundMapType;
     // @beta
     readonly planarClipMask: PlanarClipMaskSettings;
+    // @internal (undocumented)
+    static providerFromMapLayer(props: MapLayerProps): BackgroundMapProps | undefined;
     readonly providerName: BackgroundMapProviderName;
     readonly terrainSettings: TerrainSettings;
     // (undocumented)
@@ -603,7 +603,7 @@ export interface BRepGeometryCreate {
     entryArray: ElementGeometryDataEntry[];
     onResult: BRepGeometryFunction;
     operation: BRepGeometryOperation;
-    parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps;
+    parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps | BRepOffsetProps;
     separateDisjoint?: boolean;
 }
 
@@ -622,6 +622,7 @@ export enum BRepGeometryOperation {
     Hollow = 7,
     Intersect = 2,
     Loft = 9,
+    Offset = 11,
     Round = 10,
     Sew = 3,
     Subtract = 1,
@@ -632,6 +633,11 @@ export enum BRepGeometryOperation {
 
 // @alpha
 export interface BRepHollowProps {
+    distance: number;
+}
+
+// @alpha
+export interface BRepOffsetProps {
     distance: number;
 }
 
@@ -763,7 +769,6 @@ export interface CameraProps {
 // @public
 export class Carto2DDegrees implements Carto2DDegreesProps {
     constructor(data?: Carto2DDegreesProps);
-    // @internal
     equals(other: Carto2DDegrees): boolean;
     static fromJSON(data: Carto2DDegreesProps): Carto2DDegrees;
     get latitude(): number;
@@ -887,7 +892,68 @@ export enum ChangeOpCode {
     Update = 2
 }
 
+// @beta
+export interface ChangesetFileProps extends ChangesetProps {
+    pathname: LocalFileName;
+}
+
+// @public
+export type ChangesetId = string;
+
+// @public
+export interface ChangesetIdWithIndex {
+    // (undocumented)
+    id: ChangesetId;
+    // (undocumented)
+    index?: ChangesetIndex;
+}
+
+// @public
+export type ChangesetIndex = number;
+
+// @public
+export interface ChangesetIndexAndId {
+    // (undocumented)
+    id: ChangesetId;
+    // (undocumented)
+    index: ChangesetIndex;
+}
+
+// @public
+export type ChangesetIndexOrId = ChangesetIndexAndId | {
+    index: ChangesetIndex;
+    id?: never;
+} | {
+    id: ChangesetId;
+    index?: never;
+};
+
+// @beta
+export interface ChangesetProps {
+    briefcaseId: number;
+    changesType: ChangesetType;
+    description: string;
+    id: ChangesetId;
+    index: ChangesetIndex;
+    parentId: ChangesetId;
+    pushDate: string;
+    size?: number;
+    userCreated: string;
+}
+
+// @public
+export interface ChangesetRange {
+    end?: ChangesetIndex;
+    first: ChangesetIndex;
+}
+
 export { ChangeSetStatus }
+
+// @public
+export enum ChangesetType {
+    Regular = 0,
+    Schema = 1
+}
 
 // @alpha
 export class ChannelConstraintError extends IModelError {
@@ -1664,8 +1730,8 @@ export const CURRENT_REQUEST: unique symbol;
 
 // @internal
 export enum CurrentImdlVersion {
-    Combined = 1572864,
-    Major = 24,
+    Combined = 1638400,
+    Major = 25,
     Minor = 0
 }
 
@@ -1785,7 +1851,7 @@ export class DisplayStyle3dSettings extends DisplayStyleSettings {
     set thematic(thematic: ThematicDisplay);
     // @internal (undocumented)
     toJSON(): DisplayStyle3dSettingsProps;
-    // @internal
+    // @internal (undocumented)
     toOverrides(options?: DisplayStyleOverridesOptions): DisplayStyle3dSettingsProps;
 }
 
@@ -2065,6 +2131,8 @@ export class EcefLocation implements EcefLocationProps {
     readonly origin: Point3d;
     // (undocumented)
     toJSON(): EcefLocationProps;
+    readonly xVector?: Vector3d;
+    readonly yVector?: Vector3d;
 }
 
 // @public
@@ -2072,6 +2140,8 @@ export interface EcefLocationProps {
     cartographicOrigin?: LatLongAndHeight;
     orientation: YawPitchRollProps;
     origin: XYZProps;
+    xVector?: XYZProps;
+    yVector?: XYZProps;
 }
 
 // @public
@@ -2918,7 +2988,6 @@ export type GateValue = number | boolean | string | undefined;
 export class GeocentricTransform implements GeocentricTransformProps {
     constructor(data?: GeocentricTransformProps);
     readonly delta: Vector3d;
-    // @internal
     equals(other: GeocentricTransform): boolean;
     static fromJSON(data: GeocentricTransformProps): GeocentricTransform;
     toJSON(): GeocentricTransformProps;
@@ -2973,7 +3042,6 @@ export class GeodeticDatum implements GeodeticDatumProps {
     readonly ellipsoid?: GeodeticEllipsoid;
     readonly ellipsoidId?: string;
     readonly epsg?: number;
-    // @internal
     equals(other: GeodeticDatum): boolean;
     static fromJSON(data: GeodeticDatumProps): GeodeticDatum;
     readonly id?: string;
@@ -3000,7 +3068,6 @@ export class GeodeticEllipsoid implements GeodeticEllipsoidProps {
     readonly deprecated: boolean;
     readonly description?: string;
     readonly epsg?: number;
-    // @internal
     equals(other: GeodeticEllipsoid): boolean;
     readonly equatorialRadius?: number;
     static fromJSON(data: GeodeticEllipsoidProps): GeodeticEllipsoid;
@@ -3024,7 +3091,6 @@ export interface GeodeticEllipsoidProps {
 // @public
 export class GeodeticTransform implements GeodeticTransformProps {
     constructor(data?: GeodeticTransformProps);
-    // @internal
     equals(other: GeodeticTransform): boolean;
     static fromJSON(data: GeodeticTransformProps): GeodeticTransform;
     readonly geocentric?: GeocentricTransform;
@@ -3572,6 +3638,7 @@ export interface GraphicsRequestProps {
     readonly id: string;
     readonly location?: TransformProps;
     readonly omitEdges?: boolean;
+    readonly sectionCut?: string;
     readonly toleranceLog10: number;
     // @alpha
     readonly treeFlags?: TreeFlags;
@@ -3581,7 +3648,6 @@ export interface GraphicsRequestProps {
 export class GridFileDefinition implements GridFileDefinitionProps {
     constructor(data?: GridFileDefinitionProps);
     readonly direction: GridFileDirection;
-    // @internal
     equals(other: GridFileDefinition): boolean;
     readonly fileName: string;
     readonly format: GridFileFormat;
@@ -3605,7 +3671,6 @@ export type GridFileFormat = "NONE" | "NTv1" | "NTv2" | "NADCON" | "FRENCH" | "J
 // @public
 export class GridFileTransform implements GridFileTransformProps {
     constructor(data?: GridFileTransformProps);
-    // @internal
     equals(other: GridFileTransform): boolean;
     readonly fallback?: PositionalVectorTransform;
     readonly files: GridFileDefinition[];
@@ -3652,7 +3717,6 @@ export interface GroundPlaneProps {
 // @public
 export class Helmert2DWithZOffset implements Helmert2DWithZOffsetProps {
     constructor(data?: Helmert2DWithZOffsetProps);
-    // @internal
     equals(other: Helmert2DWithZOffset): boolean;
     static fromJSON(data: Helmert2DWithZOffsetProps): Helmert2DWithZOffset;
     rotDeg: number;
@@ -3777,7 +3841,6 @@ export class HorizontalCRS implements HorizontalCRSProps {
     readonly ellipsoid?: GeodeticEllipsoid;
     readonly ellipsoidId?: string;
     readonly epsg?: number;
-    // @internal
     equals(other: HorizontalCRS): boolean;
     readonly extent?: HorizontalCRSExtent;
     static fromJSON(data: HorizontalCRSProps): HorizontalCRS;
@@ -3792,7 +3855,6 @@ export class HorizontalCRS implements HorizontalCRSProps {
 // @public
 export class HorizontalCRSExtent implements HorizontalCRSExtentProps {
     constructor(data?: HorizontalCRSExtentProps);
-    // @internal
     equals(other: HorizontalCRSExtent): boolean;
     static fromJSON(data: HorizontalCRSExtentProps): HorizontalCRSExtent;
     readonly northEast: Carto2DDegrees;
@@ -4074,9 +4136,10 @@ export abstract class IModel implements IModelProps {
     // @internal
     protected constructor(tokenProps: IModelRpcProps | undefined, openMode: OpenMode);
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
-    get changeSetId(): string | undefined;
-    // @internal (undocumented)
-    protected _changeSetId: string | undefined;
+    // (undocumented)
+    changeset: ChangesetIdWithIndex;
+    // @deprecated
+    get changeSetId(): string;
     get contextId(): GuidString | undefined;
     // @internal (undocumented)
     protected _contextId?: GuidString;
@@ -4232,7 +4295,8 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 
 // @public
 export interface IModelRpcOpenProps {
-    changeSetId?: string;
+    changeSetId?: ChangesetId;
+    changesetIndex?: ChangesetIndex;
     readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
     openMode?: OpenMode;
@@ -4287,16 +4351,16 @@ export interface IModelTileTreeProps extends TileTreeProps {
 export class IModelVersion {
     static asOfChangeSet(changeSetId: string): IModelVersion;
     // @deprecated
-    evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<GuidString>;
+    evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<ChangesetId>;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
     // @deprecated
     static fromJson(jsonObj: any): IModelVersion;
-    getAsOfChangeSet(): GuidString | undefined;
+    getAsOfChangeSet(): ChangesetId | undefined;
     // @internal @deprecated
-    static getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<GuidString>;
+    static getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<ChangesetId>;
     // @internal @deprecated
-    static getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<GuidString>;
+    static getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<ChangesetId>;
     getName(): string | undefined;
     get isFirst(): boolean;
     get isLatest(): boolean;
@@ -4329,7 +4393,7 @@ export type IModelVersionProps = {
     afterChangeSetId?: never;
 };
 
-// @internal
+// @internal @deprecated
 export abstract class IModelWriteRpcInterface extends RpcInterface {
     // @deprecated (undocumented)
     createAndInsertPhysicalModel(_tokenProps: IModelRpcProps, _newModelCode: CodeProps, _privateModel: boolean): Promise<Id64String>;
@@ -4344,7 +4408,7 @@ export abstract class IModelWriteRpcInterface extends RpcInterface {
     // @deprecated (undocumented)
     getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]>;
     // @deprecated (undocumented)
-    getParentChangeset(_iModelToken: IModelRpcProps): Promise<string>;
+    getParentChangeset(_iModelToken: IModelRpcProps): Promise<ChangesetId>;
     // (undocumented)
     hasPendingTxns(_iModelToken: IModelRpcProps): Promise<boolean>;
     // (undocumented)
@@ -4438,8 +4502,8 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
-    pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<string>;
-    pushChanges: (key: string, description: string) => Promise<string>;
+    pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<ChangesetIndexAndId>;
+    pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
     reinstateTxn: (key: string) => Promise<IModelStatus>;
@@ -4746,12 +4810,20 @@ export type LocalAlignedBox3d = Range3d;
 // @public
 export interface LocalBriefcaseProps {
     briefcaseId: number;
-    changeSetId: string;
+    changeSetId: ChangesetId;
+    // (undocumented)
+    changesetIndex?: ChangesetIndex;
     contextId: GuidString;
     fileName: string;
     fileSize: number;
     iModelId: GuidString;
 }
+
+// @public (undocumented)
+export type LocalDirName = string;
+
+// @public (undocumented)
+export type LocalFileName = string;
 
 export { LogFunction }
 
@@ -4767,7 +4839,6 @@ export interface MapImageryProps {
 
 // @beta
 export class MapImagerySettings {
-    // (undocumented)
     get backgroundBase(): BaseLayerSettings;
     set backgroundBase(base: BaseLayerSettings);
     // (undocumented)
@@ -4953,6 +5024,8 @@ export interface MaterialProps {
 // @internal (undocumented)
 export class MeshEdge {
     constructor(index0?: number, index1?: number);
+    // (undocumented)
+    compareTo(other: MeshEdge): number;
     // (undocumented)
     indices: number[];
 }
@@ -5419,6 +5492,8 @@ export interface OrbitGtBlobProps {
     // (undocumented)
     containerName: string;
     // (undocumented)
+    rdsUrl?: string;
+    // (undocumented)
     sasToken: string;
 }
 
@@ -5479,6 +5554,14 @@ export class PackedFeatureTable {
     get uniform(): Feature | undefined;
     unpack(): FeatureTable;
 }
+
+// @internal (undocumented)
+export function parseTileTreeIdAndContentId(treeId: string, contentId: string): {
+    modelId: Id64String;
+    treeId: IModelTileTreeId;
+    contentId: ContentIdSpec;
+    options: TileOptions;
+};
 
 // @public
 export interface PartReference {
@@ -5749,7 +5832,6 @@ export enum PolylineTypeFlags {
 export class PositionalVectorTransform implements PositionalVectorTransformProps {
     constructor(data?: PositionalVectorTransformProps);
     readonly delta: Vector3d;
-    // @internal
     equals(other: PositionalVectorTransform): boolean;
     static fromJSON(data: PositionalVectorTransformProps): PositionalVectorTransform;
     readonly rotation: XyzRotation;
@@ -5814,7 +5896,6 @@ export class Projection implements ProjectionProps {
     readonly centralPointLongitude?: number;
     readonly danishSystem34Region?: DanishSystem34Region;
     readonly elevationAboveGeoid?: number;
-    // @internal
     equals(other: Projection): boolean;
     readonly falseEasting?: number;
     readonly falseNorthing?: number;
@@ -8204,6 +8285,11 @@ export interface TileOptions {
     readonly useProjectExtents: boolean;
 }
 
+// @internal (undocumented)
+export namespace TileOptions {
+    export function fromTreeIdAndContentId(treeId: string, contentId: string): TileOptions;
+}
+
 // @internal
 export interface TileProps {
     contentId: string;
@@ -8406,9 +8492,9 @@ export interface TxnNotifications {
     // (undocumented)
     notifyProjectExtentsChanged: (extents: Range3dProps) => void;
     // (undocumented)
-    notifyPulledChanges: (parentChangeSetId: string) => void;
+    notifyPulledChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
     // (undocumented)
-    notifyPushedChanges: (parentChangeSetId: string) => void;
+    notifyPushedChanges: (parentChangeSetId: ChangesetIndexAndId) => void;
     // (undocumented)
     notifyRootSubjectChanged: (subject: RootSubjectProps) => void;
 }
@@ -8455,7 +8541,6 @@ export interface UrlLinkProps extends ElementProps {
 // @public
 export class VerticalCRS implements VerticalCRSProps {
     constructor(data?: VerticalCRSProps);
-    // @internal
     equals(other: VerticalCRS): boolean;
     static fromJSON(data: VerticalCRSProps): VerticalCRS;
     readonly id: "GEOID" | "ELLIPSOID" | "NGVD29" | "NAVD88";
@@ -8803,7 +8888,6 @@ export class ViewFlags {
     dimensions: boolean;
     // @internal
     edgeMask: number;
-    // @internal (undocumented)
     edgesRequired(): boolean;
     // (undocumented)
     equals(other: ViewFlags): boolean;
@@ -8950,7 +9034,6 @@ export abstract class WipRpcInterface extends RpcInterface {
 // @public
 export class XyzRotation implements XyzRotationProps {
     constructor(data?: XyzRotationProps);
-    // @internal
     equals(other: XyzRotation): boolean;
     static fromJSON(data: XyzRotationProps): XyzRotation;
     toJSON(): XyzRotationProps;

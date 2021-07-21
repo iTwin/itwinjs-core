@@ -1,6 +1,6 @@
 {
   "name": "@bentley/usage-logging-client",
-  "version": "2.18.0-dev.13",
+  "version": "3.0.0-dev.1",
   "description": "iModel.js Usage Logging Client",
   "main": "lib/usage-logging-client.js",
   "typings": "lib/usage-logging-client",
@@ -39,8 +39,8 @@
     "@bentley/bentleyjs-core": "workspace:*"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^2.18.0-dev.13",
-    "@bentley/telemetry-client": "workspace:^2.18.0-dev.13"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.1",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.1"
   },
   "devDependencies": {
     "@bentley/build-tools": "workspace:*",
@@ -54,12 +54,12 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
-    "eslint": "^6.8.0",
+    "eslint": "^7.11.0",
     "internal-tools": "workspace:*",
     "mocha": "^8.3.2",
     "rimraf": "^3.0.2",
     "source-map-loader": "^1.0.0",
-    "typescript": "~4.1.0",
+    "typescript": "~4.3.0",
     "webpack": "4.42.0"
   },
   "eslintConfig": {

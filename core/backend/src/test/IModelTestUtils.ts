@@ -8,8 +8,7 @@ import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { BackendITwinClientLoggerCategory } from "@bentley/backend-itwin-client";
 import {
-  BeEvent, BentleyLoggerCategory, ChangeSetStatus, DbResult, Guid, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel,
-  OpenMode,
+  BeEvent, BentleyLoggerCategory, DbResult, Guid, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
@@ -33,8 +32,8 @@ import { ElementDrivesElement, RelationshipProps } from "../Relationship";
 import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
 import { Schema, Schemas } from "../Schema";
 import { HubMock } from "./HubMock";
-import { KnownTestLocations } from "./KnownTestLocations";
 import { HubUtility } from "./integration/HubUtility";
+import { KnownTestLocations } from "./KnownTestLocations";
 
 const assert = chai.assert;
 chai.use(chaiAsPromised);
@@ -92,30 +91,30 @@ export class DisableNativeAssertions implements IDisposable {
 }
 
 export class TestBim extends Schema {
-  public static get schemaName(): string { return "TestBim"; }
+  public static override get schemaName(): string { return "TestBim"; }
 
 }
 export interface TestRelationshipProps extends RelationshipProps {
   property1: string;
 }
 export class TestElementDrivesElement extends ElementDrivesElement implements TestRelationshipProps {
-  public static get className(): string { return "TestElementDrivesElement"; }
+  public static override get className(): string { return "TestElementDrivesElement"; }
   public property1!: string;
   public static rootChanged = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
   public static deletedDependency = new BeEvent<(props: RelationshipProps, imodel: IModelDb) => void>();
-  public static onRootChanged(props: RelationshipProps, imodel: IModelDb): void { this.rootChanged.raiseEvent(props, imodel); }
-  public static onDeletedDependency(props: RelationshipProps, imodel: IModelDb): void { this.deletedDependency.raiseEvent(props, imodel); }
+  public static override onRootChanged(props: RelationshipProps, imodel: IModelDb): void { this.rootChanged.raiseEvent(props, imodel); }
+  public static override onDeletedDependency(props: RelationshipProps, imodel: IModelDb): void { this.deletedDependency.raiseEvent(props, imodel); }
 }
 export interface TestPhysicalObjectProps extends PhysicalElementProps {
   intProperty: number;
 }
 export class TestPhysicalObject extends PhysicalElement implements TestPhysicalObjectProps {
-  public static get className(): string { return "TestPhysicalObject"; }
+  public static override get className(): string { return "TestPhysicalObject"; }
   public intProperty!: number;
   public static beforeOutputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
   public static allInputsHandled = new BeEvent<(id: Id64String, imodel: IModelDb) => void>();
-  public static onBeforeOutputsHandled(id: Id64String, imodel: IModelDb): void { this.beforeOutputsHandled.raiseEvent(id, imodel); }
-  public static onAllInputsHandled(id: Id64String, imodel: IModelDb): void { this.allInputsHandled.raiseEvent(id, imodel); }
+  public static override onBeforeOutputsHandled(id: Id64String, imodel: IModelDb): void { this.beforeOutputsHandled.raiseEvent(id, imodel); }
+  public static override onAllInputsHandled(id: Id64String, imodel: IModelDb): void { this.allInputsHandled.raiseEvent(id, imodel); }
 }
 
 /** the types of users available for tests */
@@ -230,15 +229,16 @@ export class IModelTestUtils {
 
   /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
   public static async openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<SnapshotDb> {
-    args.requestContext.enter();
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
+    const changeset = await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId);
     const openArgs: DownloadAndOpenArgs = {
       tokenProps: {
         contextId: args.contextId,
         iModelId: args.iModelId,
-        changeSetId: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).id,
+        changeSetId: changeset.id,
+        changesetIndex: changeset.index,
       },
       requestContext: args.requestContext,
       syncMode: SyncMode.FixedVersion,
@@ -569,10 +569,7 @@ export class IModelTestUtils {
 
   /** Flushes the Txns in the TxnTable - this allows importing of schemas */
   public static flushTxns(iModelDb: IModelDb): boolean {
-    iModelDb.nativeDb.startCreateChangeSet();
-    const status = iModelDb.nativeDb.finishCreateChangeSet();
-    if (ChangeSetStatus.Success !== status)
-      return false;
+    iModelDb.nativeDb.deleteAllTxns();
     return true;
   }
 }

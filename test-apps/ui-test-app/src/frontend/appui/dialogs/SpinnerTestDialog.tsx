@@ -8,6 +8,7 @@ import { Dialog, FillCentered, LoadingSpinner, Spinner, SpinnerSize } from "@ben
 
 export interface SpinnerTestDialogProps {
   opened: boolean;
+  onClose: () => void;
 }
 
 export interface SpinnerTestDialogState {
@@ -15,7 +16,7 @@ export interface SpinnerTestDialogState {
 }
 
 export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, SpinnerTestDialogState> {
-  public readonly state: Readonly<SpinnerTestDialogState>;
+  public override readonly state: Readonly<SpinnerTestDialogState>;
   private _title = IModelApp.i18n.translate("SampleApp:buttons.spinnerTestDialog");
 
   constructor(props: SpinnerTestDialogProps) {
@@ -25,17 +26,17 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
     };
   }
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     return (
       <Dialog
         title={this._title}
         opened={this.state.opened}
-        modal={true}
+        modal={false}
+        movable={true}
         width={470}
         height={700}
-        onClose={this._handleCancel}
-        onEscape={this._handleCancel}
-        onOutsideClick={this._handleCancel}
+        onClose={this._handleClose}
+        onEscape={this._handleClose}
       >
         <div style={{ display: "flex", flexDirection: "row", marginBottom: "5px" }}>
           <span style={{ flex: "1", marginRight: "5px" }}>
@@ -126,8 +127,9 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
     );
   }
 
-  private _handleCancel = () => {
+  private _handleClose = () => {
     this._closeDialog();
+    this.props.onClose();
   };
 
   private _closeDialog = () => {

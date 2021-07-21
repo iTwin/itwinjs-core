@@ -136,7 +136,7 @@ export interface ActiveMatchInfo {
     nodeId: string;
 }
 
-// @alpha
+// @public
 export function adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date;
 
 // @beta
@@ -162,7 +162,7 @@ export type AnimationFractionChangeHandler = (animationFraction: number) => void
 // @public
 export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode;
 }
 
 // @beta
@@ -199,7 +199,7 @@ export abstract class BasePointTypeConverter extends TypeConverter {
     // (undocumented)
     protected abstract constructPoint(_values: Primitives.Point): ConvertedPrimitives.Point | undefined;
     // (undocumented)
-    convertFromString(value: string): ConvertedPrimitives.Point2d | ConvertedPrimitives.Point3d | undefined;
+    convertFromString(value: string): ConvertedPrimitives.Point | undefined;
     // (undocumented)
     convertToString(value?: Primitives.Point): string | Promise<string>;
     // (undocumented)
@@ -1041,19 +1041,19 @@ export class CompositeTypeConverter extends TypeConverter {
     sortCompare(valueA: Primitives.Composite, valueB: Primitives.Composite, ignoreCase?: boolean | undefined): number;
 }
 
-// @internal
+// @internal @deprecated
 export class ContextMenu extends React.Component<ContextMenuProps> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @internal
+// @internal @deprecated
 export class ContextMenuItem extends React.Component<MenuItem> {
     // (undocumented)
     render(): JSX.Element;
 }
 
-// @internal
+// @internal @deprecated
 export interface ContextMenuProps extends CommonProps {
     isOpened: boolean;
     items?: MenuItem[];
@@ -1083,6 +1083,7 @@ export function ControlledTree(props: ControlledTreeProps): JSX.Element;
 // @public
 export interface ControlledTreeProps extends CommonProps {
     descriptionsEnabled?: boolean;
+    height?: number;
     iconsEnabled?: boolean;
     noDataRenderer?: () => React.ReactElement;
     nodeHighlightingProps?: HighlightableTreeProps;
@@ -1094,6 +1095,7 @@ export interface ControlledTreeProps extends CommonProps {
     treeEvents: TreeEvents;
     treeRenderer?: (props: TreeRendererProps) => React.ReactElement;
     visibleNodes: VisibleTreeNodes;
+    width?: number;
 }
 
 // @public
@@ -2731,7 +2733,7 @@ export const matchLinks: (text: string) => Array<{
     url: string;
 }>;
 
-// @internal
+// @internal @deprecated
 export interface MenuItem {
     checked?: boolean;
     disabled?: boolean;
@@ -2994,7 +2996,7 @@ export class MutableTreeModel implements TreeModel {
     insertChild(parentId: string | undefined, childNodeInput: TreeModelNodeInput, offset: number): void;
     iterateTreeModelNodes(parentId?: string): IterableIterator<MutableTreeModelNode>;
     moveNode(sourceNodeId: string, targetParentId: string | undefined, targetIndex: number): boolean;
-    removeChild(parentId: string | undefined, childId: string): void;
+    removeChild(parentId: string | undefined, child: string | number): void;
     setChildren(parentId: string | undefined, nodeInputs: TreeModelNodeInput[], offset: number): void;
     setNumChildren(parentId: string | undefined, numChildren: number | undefined): void;
     }
@@ -3363,7 +3365,7 @@ export class PrimitivePropertyRenderer extends React.Component<PrimitiveRenderer
 // @public
 export class PrimitivePropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode;
 }
 
 // @internal (undocumented)
@@ -3933,6 +3935,8 @@ export interface ScrubberProps extends CommonProps {
     // (undocumented)
     startDate?: Date;
     // (undocumented)
+    timeZoneOffset?: number;
+    // (undocumented)
     totalDuration: number;
 }
 
@@ -4279,7 +4283,7 @@ export class SparseTree<T extends Node> {
     // (undocumented)
     moveNode(sourceParentId: string | undefined, sourceNodeId: string, targetParentId: string | undefined, targetIndex: number): void;
     // (undocumented)
-    removeChild(parentId: string | undefined, childId: string): void;
+    removeChild(parentId: string | undefined, child: string | number): void;
     // (undocumented)
     setChildren(parentId: string | undefined, children: T[], offset: number): void;
     // (undocumented)
@@ -4448,7 +4452,7 @@ export class StringTypeConverter extends TypeConverter implements StringOperator
 // @public
 export class StructPropertyValueRenderer implements IPropertyValueRenderer {
     canRender(record: PropertyRecord): boolean;
-    render(record: PropertyRecord, context?: PropertyValueRendererContext): {} | null | undefined;
+    render(record: PropertyRecord, context?: PropertyValueRendererContext): React.ReactNode;
 }
 
 // @public
@@ -4809,6 +4813,44 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
     }
 
 // @public
+export interface TimelineComponentProps {
+    // (undocumented)
+    alwaysMinimized?: boolean;
+    // (undocumented)
+    appMenuItemOption?: TimelineMenuItemOption;
+    // (undocumented)
+    appMenuItems?: TimelineMenuItemProps[];
+    // (undocumented)
+    componentId?: string;
+    // (undocumented)
+    endDate?: Date;
+    // (undocumented)
+    includeRepeat?: boolean;
+    // (undocumented)
+    initialDuration?: number;
+    // (undocumented)
+    minimized?: boolean;
+    // (undocumented)
+    onChange?: (duration: number) => void;
+    // (undocumented)
+    onJump?: (forward: boolean) => void;
+    // (undocumented)
+    onPlayPause?: (playing: boolean) => void;
+    // (undocumented)
+    onSettingsChange?: (arg: PlaybackSettings) => void;
+    // (undocumented)
+    repeat?: boolean;
+    // (undocumented)
+    showDuration?: boolean;
+    // (undocumented)
+    startDate?: Date;
+    // (undocumented)
+    timeZoneOffset?: number;
+    // (undocumented)
+    totalDuration: number;
+}
+
+// @public
 export interface TimelineDataProvider {
     animationFraction?: number;
     duration: number;
@@ -4832,6 +4874,15 @@ export interface TimelineDataProvider {
 export enum TimelineDateDisplay {
     ActualTime = 0,
     ProjectTime = 1
+}
+
+// @public
+export type TimelineMenuItemOption = "replace" | "append" | "prefix";
+
+// @public
+export interface TimelineMenuItemProps {
+    label: string;
+    timelineDuration: number;
 }
 
 // @public
@@ -4878,6 +4929,9 @@ export enum TimelineScale {
     Quarters = 1,
     Years = 0
 }
+
+// @public
+export const toDateString: (date: Date, timeZoneOffset?: number | undefined) => string;
 
 // @beta
 export class ToggleEditor extends React.PureComponent<PropertyEditorProps, ToggleEditorState> implements TypeEditor {
@@ -5044,6 +5098,9 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
 
 // @internal (undocumented)
 export function toRxjsObservable<T>(observable: Observable<T>): Observable_2<T>;
+
+// @public
+export const toTimeString: (date: Date, timeZoneOffset?: number | undefined) => string;
 
 // @internal (undocumented)
 export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition;
@@ -5510,6 +5567,7 @@ TreeRendererContextProvider: React.ProviderExoticComponent<React.ProviderProps<T
 
 // @public
 export interface TreeRendererProps {
+    height?: number;
     nodeHeight: (node: TreeModelNode | TreeModelNodePlaceholder, index: number) => number;
     nodeHighlightingProps?: HighlightableTreeProps;
     // (undocumented)
@@ -5522,6 +5580,7 @@ export interface TreeRendererProps {
     // (undocumented)
     treeActions: TreeActions;
     visibleNodes: VisibleTreeNodes;
+    width?: number;
 }
 
 // @public
@@ -5861,6 +5920,8 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
     // (undocumented)
     eventHandler: IPropertyGridEventHandler;
     // (undocumented)
+    height?: number;
+    // (undocumented)
     highlight?: HighlightingComponentProps & {
         filteredTypes?: FilteredType[];
     };
@@ -5868,6 +5929,8 @@ export interface VirtualizedPropertyGridProps extends CommonPropertyGridProps {
     model: IPropertyGridModel;
     // (undocumented)
     propertyCategoryRendererManager?: PropertyCategoryRendererManager;
+    // (undocumented)
+    width?: number;
 }
 
 // @beta
@@ -5878,11 +5941,15 @@ export interface VirtualizedPropertyGridWithDataProviderProps extends CommonProp
     // (undocumented)
     dataProvider: IPropertyDataProvider;
     // (undocumented)
+    height?: number;
+    // (undocumented)
     highlight?: HighlightingComponentProps & {
         filteredTypes?: FilteredType[];
     };
     // (undocumented)
     propertyCategoryRendererManager?: PropertyCategoryRendererManager;
+    // (undocumented)
+    width?: number;
 }
 
 // @public

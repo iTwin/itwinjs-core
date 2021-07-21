@@ -427,12 +427,12 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.shouldExportElement]($backend) that is called to determine if an element should be exported from the source iModel.
    * @note Reaching this point means that the element has passed the standard exclusion checks in IModelExporter.
    */
-  protected shouldExportElement(_sourceElement: Element): boolean { return true; }
+  protected override shouldExportElement(_sourceElement: Element): boolean { return true; }
 
   /** Override of [IModelExportHandler.onExportElement]($backend) that imports an element into the target iModel when it is exported from the source iModel.
    * This override calls [[onTransformElement]] and then [IModelImporter.importElement]($backend) to update the target iModel.
    */
-  protected onExportElement(sourceElement: Element): void {
+  protected override onExportElement(sourceElement: Element): void {
     let targetElementId: Id64String | undefined;
     let targetElementProps: ElementProps;
     if (this._wasSourceIModelCopiedToTarget) {
@@ -442,7 +442,8 @@ export class IModelTransformer extends IModelExportHandler {
       targetElementId = this.context.findTargetElementId(sourceElement.id);
       targetElementProps = this.onTransformElement(sourceElement);
     }
-    if (!Id64.isValidId64(targetElementId)) {
+    // if an existing remapping was not yet found, check by Code as long as the CodeScope is valid (invalid means a missing predecessor so not worth checking)
+    if (!Id64.isValidId64(targetElementId) && Id64.isValidId64(targetElementProps.code.scope)) {
       targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
       if (undefined !== targetElementId) {
         const targetElement: Element = this.targetDb.elements.getElement(targetElementId);
@@ -454,7 +455,7 @@ export class IModelTransformer extends IModelExportHandler {
         }
       }
     }
-    if (undefined !== targetElementId) {
+    if (undefined !== targetElementId && Id64.isValidId64(targetElementId)) {
       // compare LastMod of sourceElement to ExternalSourceAspect of targetElement to see there are changes to import
       if (!this.hasElementChanged(sourceElement, targetElementId)) {
         return;
@@ -492,7 +493,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.onDeleteElement]($backend) that is called when [IModelExporter]($backend) detects that an Element has been deleted from the source iModel.
    * This override propagates the delete to the target iModel via [IModelImporter.deleteElement]($backend).
    */
-  protected onDeleteElement(sourceElementId: Id64String): void {
+  protected override onDeleteElement(sourceElementId: Id64String): void {
     const targetElementId: Id64String = this.context.findTargetElementId(sourceElementId);
     if (Id64.isValidId64(targetElementId)) {
       this.importer.deleteElement(targetElementId);
@@ -502,7 +503,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.onExportModel]($backend) that is called when a Model should be exported from the source iModel.
    * This override calls [[onTransformModel]] and then [IModelImporter.importModel]($backend) to update the target iModel.
    */
-  protected onExportModel(sourceModel: Model): void {
+  protected override onExportModel(sourceModel: Model): void {
     if (IModel.repositoryModelId === sourceModel.id) {
       return; // The RepositoryModel should not be directly imported
     }
@@ -512,7 +513,7 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Override of [IModelExportHandler.onDeleteModel]($backend) that is called when [IModelExporter]($backend) detects that a [Model]($backend) has been deleted from the source iModel. */
-  protected onDeleteModel(_sourceModelId: Id64String): void {
+  protected override onDeleteModel(_sourceModelId: Id64String): void {
     // WIP: currently ignored
   }
 
@@ -613,12 +614,12 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.shouldExportRelationship]($backend) that is called to determine if a [Relationship]($backend) should be exported.
    * @note Reaching this point means that the relationship has passed the standard exclusion checks in [IModelExporter]($backend).
    */
-  protected shouldExportRelationship(_sourceRelationship: Relationship): boolean { return true; }
+  protected override shouldExportRelationship(_sourceRelationship: Relationship): boolean { return true; }
 
   /** Override of [IModelExportHandler.onExportRelationship]($backend) that imports a relationship into the target iModel when it is exported from the source iModel.
    * This override calls [[onTransformRelationship]] and then [IModelImporter.importRelationship]($backend) to update the target iModel.
    */
-  protected onExportRelationship(sourceRelationship: Relationship): void {
+  protected override onExportRelationship(sourceRelationship: Relationship): void {
     const targetRelationshipProps: RelationshipProps = this.onTransformRelationship(sourceRelationship);
     const targetRelationshipInstanceId: Id64String = this.importer.importRelationship(targetRelationshipProps);
     if (!this._noProvenance && Id64.isValidId64(targetRelationshipInstanceId)) {
@@ -632,7 +633,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.onDeleteRelationship]($backend) that is called when [IModelExporter]($backend) detects that a [Relationship]($backend) has been deleted from the source iModel.
    * This override propagates the delete to the target iModel via [IModelImporter.deleteRelationship]($backend).
    */
-  protected onDeleteRelationship(sourceRelInstanceId: Id64String): void {
+  protected override onDeleteRelationship(sourceRelInstanceId: Id64String): void {
     const sql = `SELECT ECInstanceId,JsonProperties FROM ${ExternalSourceAspect.classFullName} aspect` +
       ` WHERE aspect.Scope.Id=:scopeId AND aspect.Kind=:kind AND aspect.Identifier=:identifier LIMIT 1`;
     this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
@@ -642,8 +643,10 @@ export class IModelTransformer extends IModelExportHandler {
       if (DbResult.BE_SQLITE_ROW === statement.step()) {
         const json: any = JSON.parse(statement.getValue(1).getString());
         if (undefined !== json.targetRelInstanceId) {
-          const targetRelationship: Relationship = this.targetDb.relationships.getInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
-          this.importer.deleteRelationship(targetRelationship);
+          const targetRelationship = this.targetDb.relationships.tryGetInstance(ElementRefersToElements.classFullName, json.targetRelInstanceId);
+          if (targetRelationship) {
+            this.importer.deleteRelationship(targetRelationship);
+          }
           this.targetDb.elements.deleteAspect(statement.getValue(0).getId());
         }
       }
@@ -699,12 +702,12 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.shouldExportElementAspect]($backend) that is called to determine if an ElementAspect should be exported from the source iModel.
    * @note Reaching this point means that the ElementAspect has passed the standard exclusion checks in [IModelExporter]($backend).
    */
-  protected shouldExportElementAspect(_sourceAspect: ElementAspect): boolean { return true; }
+  protected override shouldExportElementAspect(_sourceAspect: ElementAspect): boolean { return true; }
 
   /** Override of [IModelExportHandler.onExportElementUniqueAspect]($backend) that imports an ElementUniqueAspect into the target iModel when it is exported from the source iModel.
    * This override calls [[onTransformElementAspect]] and then [IModelImporter.importElementUniqueAspect]($backend) to update the target iModel.
    */
-  protected onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void {
+  protected override onExportElementUniqueAspect(sourceAspect: ElementUniqueAspect): void {
     const targetElementId: Id64String = this.context.findTargetElementId(sourceAspect.element.id);
     const targetAspectProps: ElementAspectProps = this.onTransformElementAspect(sourceAspect, targetElementId);
     this.importer.importElementUniqueAspect(targetAspectProps);
@@ -714,7 +717,7 @@ export class IModelTransformer extends IModelExportHandler {
    * This override calls [[onTransformElementAspect]] for each ElementMultiAspect and then [IModelImporter.importElementMultiAspects]($backend) to update the target iModel.
    * @note ElementMultiAspects are handled as a group to make it easier to differentiate between insert, update, and delete.
    */
-  protected onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void {
+  protected override onExportElementMultiAspects(sourceAspects: ElementMultiAspect[]): void {
     const targetElementId: Id64String = this.context.findTargetElementId(sourceAspects[0].element.id);
     // Transform source ElementMultiAspects into target ElementAspectProps
     const targetAspectPropsArray: ElementAspectProps[] = sourceAspects.map((sourceAspect: ElementMultiAspect) => {
@@ -756,7 +759,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.shouldExportSchema]($backend) that is called to determine if a schema should be exported
    * @note the default behavior doesn't import schemas older than those already in the target
    */
-  protected shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean {
+  protected override shouldExportSchema(schemaKey: ECSchemaMetaData.SchemaKey): boolean {
     const versionInTarget = this.targetDb.querySchemaVersion(schemaKey.name);
     if (versionInTarget === undefined)
       return true;
@@ -765,10 +768,15 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Override of [IModelExportHandler.onExportSchema]($backend) that serializes a schema to disk for [[processSchemas]] to import into
    * the target iModel when it is exported from the source iModel. */
-  protected async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
+  protected override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
     const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
     IModelJsFs.writeFileSync(schemaPath, await schema.toXmlString());
   }
+
+  // pending PR https://github.com/typescript-eslint/typescript-eslint/pull/3601 fixes the rule @typescript-eslint/return-await
+  // to work in try/catch syntax in functions that contain a nested function
+  // until that merges and we upgrade our dependency, the callback cannot be defined inside the method it is used
+  private makeAbsolute = (s: string) => path.join(this._schemaExportDir, s);
 
   /** Cause all schemas to be exported from the source iModel and imported into the target iModel.
    * @note For performance reasons, it is recommended that [IModelDb.saveChanges]($backend) be called after `processSchemas` is complete.
@@ -783,8 +791,8 @@ export class IModelTransformer extends IModelExportHandler {
       const exportedSchemaFiles = IModelJsFs.readdirSync(this._schemaExportDir);
       if (exportedSchemaFiles.length === 0)
         return;
-      const schemaFullPaths = exportedSchemaFiles.map((s) => path.join(this._schemaExportDir, s));
-      return this.targetDb.importSchemas(requestContext, schemaFullPaths);
+      const schemaFullPaths = exportedSchemaFiles.map(this.makeAbsolute);
+      return await this.targetDb.importSchemas(requestContext, schemaFullPaths);
     } finally {
       requestContext.enter();
       IModelJsFs.removeSync(this._schemaExportDir);
@@ -799,7 +807,7 @@ export class IModelTransformer extends IModelExportHandler {
   }
 
   /** Override of [IModelExportHandler.onExportFont]($backend) that imports a font into the target iModel when it is exported from the source iModel. */
-  protected onExportFont(font: FontProps, _isUpdate: boolean | undefined): void {
+  protected override onExportFont(font: FontProps, _isUpdate: boolean | undefined): void {
     this.context.importFont(font.id);
   }
 
@@ -820,10 +828,10 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.shouldExportCodeSpec]($backend) that is called to determine if a CodeSpec should be exported from the source iModel.
    * @note Reaching this point means that the CodeSpec has passed the standard exclusion checks in [IModelExporter]($backend).
    */
-  protected shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean { return true; }
+  protected override shouldExportCodeSpec(_sourceCodeSpec: CodeSpec): boolean { return true; }
 
   /** Override of [IModelExportHandler.onExportCodeSpec]($backend) that imports a CodeSpec into the target iModel when it is exported from the source iModel. */
-  protected onExportCodeSpec(sourceCodeSpec: CodeSpec): void {
+  protected override onExportCodeSpec(sourceCodeSpec: CodeSpec): void {
     this.context.importCodeSpec(sourceCodeSpec.id);
   }
 
@@ -863,17 +871,17 @@ export class IModelTransformer extends IModelExportHandler {
   /** Export changes from the source iModel and import the transformed entities into the target iModel.
  * Inserts, updates, and deletes are determined by inspecting the changeset(s).
  * @param requestContext The request context
- * @param startChangeSetId Include changes from this changeset up through and including the current changeset.
+ * @param startChangesetId Include changes from this changeset up through and including the current changeset.
  * If this parameter is not provided, then just the current changeset will be exported.
- * @note To form a range of versions to process, set `startChangeSetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
+ * @note To form a range of versions to process, set `startChangesetId` for the start (inclusive) of the desired range and open the source iModel as of the end (inclusive) of the desired range.
  */
-  public async processChanges(requestContext: AuthorizedClientRequestContext, startChangeSetId?: string): Promise<void> {
+  public async processChanges(requestContext: AuthorizedClientRequestContext, startChangesetId?: string): Promise<void> {
     requestContext.enter();
     Logger.logTrace(loggerCategory, "processChanges()");
     this.logSettings();
     this.validateScopeProvenance();
     this.initFromExternalSourceAspects();
-    await this.exporter.exportChanges(requestContext, startChangeSetId);
+    await this.exporter.exportChanges(requestContext, startChangesetId);
     requestContext.enter();
     await this.processDeferredElements();
     this.importer.computeProjectExtents();
@@ -938,7 +946,7 @@ export class TemplateModelCloner extends IModelTransformer {
     return this._sourceIdToTargetIdMap; // return the sourceElementId -> targetElementId Map in case further post-processing is required.
   }
   /** Cloning from a template requires this override of onTransformElement. */
-  protected onTransformElement(sourceElement: Element): ElementProps {
+  protected override onTransformElement(sourceElement: Element): ElementProps {
     const predecessorIds: Id64Set = sourceElement.getPredecessorIds();
     predecessorIds.forEach((predecessorId: Id64String) => {
       if (Id64.invalid === this.context.findTargetElementId(predecessorId)) {

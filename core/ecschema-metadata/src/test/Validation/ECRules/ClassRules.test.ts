@@ -4,11 +4,16 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { DelayedPromiseWithProps, ECClassModifier, RelationshipClass, SchemaContext, schemaItemTypeToString } from "../../../ecschema-metadata";
+import { SchemaContext } from "../../../Context";
+import { DelayedPromiseWithProps } from "../../../DelayedPromise";
+import { ECClassModifier, schemaItemTypeToString } from "../../../ECObjects";
+import { RelationshipClass } from "../../../Metadata/RelationshipClass";
 import { EntityClass } from "../../../Metadata/EntityClass";
 import { Schema } from "../../../Metadata/Schema";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 import * as Rules from "../../../Validation/ECRules";
+
+/* eslint-disable deprecation/deprecation */
 
 describe("ClassRule tests", () => {
   let schema: Schema;

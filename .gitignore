@@ -46,6 +46,8 @@ common/autoinstallers/*/.npmrc
 .DS_Store
 
 .env
+.env.local
+.env.*.local
 
 common/api/summary/summary.exports.csv
 
