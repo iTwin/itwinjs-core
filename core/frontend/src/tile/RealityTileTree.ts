@@ -149,9 +149,11 @@ export class RealityTileTree extends TileTree {
     this._gcsConverter = params.gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
     if (params.rootToEcef) {
       this._rootToEcef = params.rootToEcef;
-      const dbToRoot = this.iModelTransform.inverse()!;
-      const dbToEcef = this._rootToEcef.multiplyTransformTransform(dbToRoot);
-      this._ecefToDb = dbToEcef.inverse();
+      const dbToRoot = this.iModelTransform.inverse();
+      if (dbToRoot) {
+        const dbToEcef = this._rootToEcef.multiplyTransformTransform(dbToRoot);
+        this._ecefToDb = dbToEcef.inverse();
+      }
     }
   }
   public get rootTile(): RealityTile { return this._rootTile; }
