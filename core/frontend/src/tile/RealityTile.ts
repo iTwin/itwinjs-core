@@ -378,7 +378,7 @@ export class RealityTile extends Tile {
 }
 
 /** When additive refinement is used (as in the Cesium OSM tileset) it is not possible to accurately reproject very large, low level tiles
- * In this case we create addtitional "step" children (grandchildren etc. ) that will clipped portions display the their ancestor's additive geometry.
+ * In this case we create additional "step" children (grandchildren etc. ) that will clipped portions display the their ancestor's additive geometry.
  * These step children are subdivided until they are small enough to be accurately reprojected - this is controlled by the additiveRefinementThreshold (currently 20KM).
  * The stepchildren do not contain any tile graphics - they just create a branch with clipping and reprojection to display their additive refinement ancestor graphics.
  */
