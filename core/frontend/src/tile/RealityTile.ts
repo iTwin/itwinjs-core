@@ -103,13 +103,16 @@ export class RealityTile extends Tile {
   public async requestContent(isCanceled: () => boolean): Promise<TileRequest.Response> {
     return this.realityRoot.loader.requestTileContent(this, isCanceled);
   }
+  private useAdditiveRefinementStepchildren() {
+    return this.additiveRefinement && this.isDisplayable && this.radius > additiveRefinementThreshold && this.realityRoot.doReprojectChildren(this);
+  }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
     this.realityRoot.loader.loadChildren(this).then((children: Tile[] | undefined) => {
 
       /* If this is a large tile is to be included additively, but we are reprojecting (Cesium OSM Buildings) then we must add step-children to display the geometry as an overly large
          tile cannot be reprojected accurately.  */
-      if (this.additiveRefinement && this.isDisplayable && this.radius > additiveRefinementThreshold && this.realityRoot.doReprojectChildren(this))
+      if (this.useAdditiveRefinementStepchildren())
         this.loadAdditiveRefinementChildren((stepChildren: Tile[]) =>  { children = children ? children?.concat(stepChildren) : stepChildren; });
 
       if (children)
@@ -226,7 +229,7 @@ export class RealityTile extends Tile {
       }
     } else {
       if (this.additiveRefinement && this.isDisplayable) {
-        if (!this.realityRoot.doReprojectChildren(this))
+        if (!this.useAdditiveRefinementStepchildren())
           context.selectOrQueue(this, args, traversalDetails);
       }
 
