@@ -55,6 +55,7 @@ describe.only("DgnDbWorker", () => {
     public get isError() { return IModelJsNative.TestWorkerState.Error === this.state; }
     public get isOk() { return IModelJsNative.TestWorkerState.Ok === this.state; }
     public get isSkipped() { return IModelJsNative.TestWorkerState.Skipped === this.state; }
+    public get isAborted() { return IModelJsNative.TestWorkerState.Aborted === this.state; }
   }
 
   async function waitUntil(condition: () => boolean): Promise<void> {
@@ -155,17 +156,23 @@ describe.only("DgnDbWorker", () => {
     const reject = new Worker();
     reject.setThrow();
 
+    // These 6 workers will never resolve nor reject explicitly.
     const cancel = [new Worker(), new Worker(), new Worker(), new Worker(), new Worker(), new Worker()];
 
+    // Queue up all the workers.
     const workers = cancel.concat([resolve, reject]);
     for (const worker of workers)
       worker.queue();
 
+    // Closing the iModel cancels all extant workers.
     imodel.close();
     openIModel();
+    await Promise.all(workers.map((x) => x.promise));
 
     expect(cancel.every((x) => x.isCanceled)).to.be.true;
-    expect(resolve.isCanceled || resolve.isOk).to.be.true;
-    expect(reject.isCanceled || reject.isError).to.be.true;
+    expect(cancel.every((x) => x.isAborted || x.isSkipped)).to.be.true;
+    expect(resolve.isOk || resolve.isSkipped || resolve.isAborted).to.be.true;
+    expect(reject.isError || reject.isSkipped).to.be.true;
+    expect(workers.some((x) => x.isAborted)).to.be.true;
   });
 });
