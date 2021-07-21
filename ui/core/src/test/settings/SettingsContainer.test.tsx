@@ -10,16 +10,9 @@ import * as sinon from "sinon";
 import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../ui-core/settings/SettingsContainer";
 import { SettingsManager, SettingsTabEntry } from "../../ui-core/settings/SettingsManager";
 import TestUtils from "../TestUtils";
+import { doesNotReject } from "assert";
 
 // cSpell:ignore sublabel
-
-const waitForSpy = async (spy: sinon.SinonSpy, options: { timeout: number } = { timeout: 250 }) => {
-  return waitFor(() => {
-    if (!spy.called)
-      throw new Error("Waiting for spy timed out!");
-  }, { timeout: options.timeout, interval: 10 });
-};
-
 function TestModalSettingsPage({ settingsManager, title }: { settingsManager: SettingsManager, title: string }) {
 
   const saveChanges = (afterSaveFunction: (args: any) => void, args?: any) => {
@@ -96,7 +89,8 @@ describe("<SettingsContainer />", () => {
 
     const tab3 = wrapper.getByTestId("page3");
     fireEvent.click(tab3);
-    await waitForSpy(spyMethod, { timeout: 200 });
+
+    await Promise.all(spyMethod.returnValues);
 
     activePageSelector = `li[data-for='page3']`;
     const liPage3 = wrapper.container.querySelector(activePageSelector) as HTMLLIElement;
@@ -111,7 +105,7 @@ describe("<SettingsContainer />", () => {
       onSettingsTabSelected={spyMethod} currentSettingsTab={tabs[1]} />);
 
     settingsManager.activateSettingsTab("page3");
-    await waitForSpy(spyMethod, { timeout: 500 });
+    await Promise.all(spyMethod.returnValues);
 
     const activePageSelector = `li[data-for='page3']`;
     const liPage3 = wrapper.container.querySelector(activePageSelector) as HTMLLIElement;
@@ -120,7 +114,7 @@ describe("<SettingsContainer />", () => {
 
     spyMethod.resetHistory();
     settingsManager.closeSettingsContainer(spyMethod);
-    await waitForSpy(spyMethod, { timeout: 200 });
+    await Promise.all(spyMethod.returnValues);
   });
 
   it("simulate tab 4 activation via keyin", async () => {
@@ -149,7 +143,7 @@ describe("<SettingsContainer />", () => {
 
     // trigger the close container processing
     settingsManager.closeSettingsContainer(spyMethod);
-    await waitForSpy(spyMethod, { timeout: 200 });
+    await Promise.all(spyMethod.returnValues);
 
     wrapper.unmount();
   });
