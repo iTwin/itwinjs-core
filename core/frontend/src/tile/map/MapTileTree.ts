@@ -180,7 +180,7 @@ export class MapTileTree extends RealityTileTree {
 
     return false;  // Display as globe if more than 100 KM from project.
   }
-  public doReprojectChildren(tile: Tile): boolean {
+  public override doReprojectChildren(tile: Tile): boolean {
     if (this._gcsConverter === undefined)
       return false;
 

@@ -364,7 +364,7 @@ export class RealityTile extends Tile {
     }
     resolve(stepChildren);
   }
-  public produceGraphics(): RenderGraphic | undefined {
+  public override produceGraphics(): RenderGraphic | undefined {
     if (undefined === this.reprojectionTransform)
       return super.produceGraphics();
 
@@ -379,14 +379,14 @@ export class RealityTile extends Tile {
   public get unprojectedGraphic(): RenderGraphic | undefined {
     return this._graphic;
   }
-  public disposeContents(): void {
+  public override disposeContents(): void {
     super.disposeContents();
     this._reprojectedGraphic = dispose(this._reprojectedGraphic);
   }
 }
 
 class StepChildRealityTile  extends RealityTile {
-  public get isStepChild() { return true; }
+  public override get isStepChild() { return true; }
   private _loadableTile: RealityTile;
 
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
@@ -395,16 +395,16 @@ class StepChildRealityTile  extends RealityTile {
     for (; this._loadableTile && this._loadableTile.isStepChild; this._loadableTile = this._loadableTile.realityParent)
       ;
   }
-  public get loadableTile(): RealityTile {
+  public override get loadableTile(): RealityTile {
     return this._loadableTile;
   }
-  public get isLoading(): boolean { return this._loadableTile.isLoading; }
-  public get isQueued(): boolean { return this._loadableTile.isQueued; }
-  public get isNotFound(): boolean { return this._loadableTile.isNotFound; }
-  public get isReady(): boolean { return this._loadableTile.isReady; }
-  public get isLoaded(): boolean { return this._loadableTile.isLoaded; }
-  public get isEmpty() { return false; }
-  public produceGraphics(): RenderGraphic | undefined {
+  public override get isLoading(): boolean { return this._loadableTile.isLoading; }
+  public override get isQueued(): boolean { return this._loadableTile.isQueued; }
+  public override get isNotFound(): boolean { return this._loadableTile.isNotFound; }
+  public override get isReady(): boolean { return this._loadableTile.isReady; }
+  public override get isLoaded(): boolean { return this._loadableTile.isLoaded; }
+  public override get isEmpty() { return false; }
+  public override produceGraphics(): RenderGraphic | undefined {
     if (undefined === this._graphic) {
       const parentGraphics = this._loadableTile.unprojectedGraphic;
 
@@ -424,11 +424,11 @@ class StepChildRealityTile  extends RealityTile {
     return this._graphic;
   }
 
-  public markUsed(args: TileDrawArgs): void {
+  public override markUsed(args: TileDrawArgs): void {
     args.markUsed(this);
     args.markUsed(this._loadableTile);
   }
-  protected _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+  protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
     this.loadAdditiveRefinementChildren((stepChildren: Tile[]) =>  {
       if (stepChildren)
         this.realityRoot.reprojectAndResolveChildren(this, stepChildren, resolve);

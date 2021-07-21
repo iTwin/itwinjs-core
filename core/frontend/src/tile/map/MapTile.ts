@@ -631,7 +631,6 @@ export class MapTile extends RealityTile {
 
 /** @internal */
 export class UpsampledMapTile extends MapTile {
-  public override get isLoadable() { return false; }
   public override get isUpsampled() { return true; }
   public override get isEmpty() { return false; }
   public override get loadableTile(): RealityTile {
@@ -668,7 +667,7 @@ export class UpsampledMapTile extends MapTile {
   public override get isQueued(): boolean { return this.loadableTile.isQueued; }
   public override get isNotFound(): boolean { return this.loadableTile.isNotFound; }
   public override get isReady(): boolean { return (this._geometry !== undefined || this.loadableTile.loadStatus === TileLoadStatus.Ready) && this.baseImageryIsReady; }
-  public markUsed(args: TileDrawArgs): void {
+  public override markUsed(args: TileDrawArgs): void {
     args.markUsed(this);
     args.markUsed(this.loadableTile);
   }
