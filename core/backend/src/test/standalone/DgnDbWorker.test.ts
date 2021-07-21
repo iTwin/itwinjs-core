@@ -115,7 +115,7 @@ describe("DgnDbWorker", () => {
     for (const worker of workers)
       worker.setReady();
 
-    await Promise.all(workers.map((x) => x.promise));
+    await Promise.all(workers.map((x) => x.promise)); // eslint-disable-line @typescript-eslint/promise-function-async
     expect(workers.every((x) => x.isOk)).to.be.true;
   });
 
@@ -167,7 +167,7 @@ describe("DgnDbWorker", () => {
     // Closing the iModel cancels all extant workers.
     imodel.close();
     openIModel();
-    await Promise.all(workers.map((x) => x.promise));
+    await Promise.all(workers.map((x) => x.promise)); // eslint-disable-line @typescript-eslint/promise-function-async
 
     expect(cancel.every((x) => x.isCanceled)).to.be.true;
     expect(cancel.every((x) => x.isAborted || x.isSkipped)).to.be.true;
