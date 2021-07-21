@@ -10,10 +10,10 @@ import * as path from "path";
 import { gt as versionGt, gte as versionGte, lt as versionLt } from "semver";
 import { assert, ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import {
-  DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, IModelDb, KnownLocations, Model, Subject,
+  DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, IModelDb, KnownLocations, Model, Subject,
 } from "@bentley/imodeljs-backend";
 import {
-  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, InformationPartitionElementProps, ModelProps, SubjectProps,
+  BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ElementProps, InformationPartitionElementProps, ModelProps, SubjectProps,
 } from "@bentley/imodeljs-common";
 import { Ruleset } from "@bentley/presentation-common";
 import { PresentationRules } from "./domain/PresentationRulesDomain";
@@ -33,22 +33,22 @@ export enum DuplicateRulesetHandlingStrategy {
   Replace,
 }
 
-/** Interface for callbacks which will be called before and after Element updates */
-interface OnElementUpdate {
-  onBeforeElementUpdate: () => Promise<void>;
-  onAfterElementUpdate: () => Promise<void>;
+/**
+ * Interface for callbacks which will be called before and after Element/Model updates
+ * @beta
+ */
+interface UpdateCallbacks<TProps> {
+  onBeforeUpdate: (props: TProps) => Promise<void>;
+  onAfterUpdate: (props: TProps) => Promise<void>;
 }
 
-/** Interface for callbacks which will be called before and after Element is inserted */
-interface OnElementInsert {
-  onBeforeElementInsert: () => Promise<void>;
-  onAfterElementInsert: () => Promise<void>;
-}
-
-/** Interface for callbacks which will be called before and after Model is inserted */
-interface OnModelInsert {
-  onBeforeModelInsert: () => Promise<void>;
-  onAfterModelInsert: () => Promise<void>;
+/**
+ * Interface for callbacks which will be called before and after Element/Model is inserted
+ * @beta
+ */
+interface InsertCallbacks<TProps> {
+  onBeforeInsert: (props: TProps) => Promise<void>;
+  onAfterInsert: (props: TProps) => Promise<void>;
 }
 
 /**
@@ -77,14 +77,23 @@ export interface RulesetInsertOptions {
    */
   replaceVersions?: "all" | "all-lower" | "exact";
 
-  /** Callbacks that will be called before and after Element updates */
-  onElementUpdate?: OnElementUpdate;
+  /**
+   * Callbacks that will be called before and after Element updates
+   * @beta
+   */
+  onElementUpdate?: UpdateCallbacks<DefinitionElement>;
 
-  /** Callbacks that will be called before and after Element is inserted */
-  onElementInsert?: OnElementInsert;
+  /**
+   * Callbacks that will be called before and after Element is inserted
+   * @beta
+   */
+  onElementInsert?: InsertCallbacks<ElementProps>;
 
-  /** Callbacks that will be called before and after Model is inserted */
-  onModelInsert?: OnModelInsert;
+  /**
+   * Callbacks that will be called before and after Model is inserted
+   * @beta
+   */
+  onModelInsert?: InsertCallbacks<ModelProps>;
 }
 
 /**
@@ -195,28 +204,23 @@ export class RulesetEmbedder {
     }
 
     // no exact match found - insert a new ruleset element
-    const model = this.getOrCreateRulesetModel(normalizedOptions.onElementInsert, normalizedOptions.onModelInsert);
+    const model = await this.getOrCreateRulesetModel(normalizedOptions.onElementInsert, normalizedOptions.onModelInsert);
     const rulesetCode = RulesetElements.Ruleset.createRulesetCode(this._imodel, model.id, ruleset);
     return this.insertNewRuleset(ruleset, model, rulesetCode, normalizedOptions.onElementInsert);
   }
 
-  private updateRuleset(elementId: Id64String, ruleset: Ruleset, onElementUpdate?: OnElementUpdate) {
+  private async updateRuleset(elementId: Id64String, ruleset: Ruleset, callbacks?: UpdateCallbacks<DefinitionElement>) {
     const existingRulesetElement = this._imodel.elements.tryGetElement<DefinitionElement>(elementId);
     assert(existingRulesetElement !== undefined);
     existingRulesetElement.jsonProperties.jsonProperties = ruleset;
 
-    onElementUpdate?.onBeforeElementUpdate();
-    try {
-      existingRulesetElement.update();
-    } finally {
-      onElementUpdate?.onAfterElementUpdate();
-    }
+    await this.updateElement(existingRulesetElement, callbacks);
 
     this._imodel.saveChanges();
     return existingRulesetElement.id;
   }
 
-  private insertNewRuleset(ruleset: Ruleset, model: Model, rulesetCode: Code, onElementInsert?: OnElementInsert): Id64String {
+  private async insertNewRuleset(ruleset: Ruleset, model: Model, rulesetCode: Code, callbacks?: InsertCallbacks<DefinitionElementProps>): Promise<Id64String> {
     const props: DefinitionElementProps = {
       model: model.id,
       code: rulesetCode,
@@ -224,16 +228,9 @@ export class RulesetEmbedder {
       jsonProperties: { jsonProperties: ruleset },
     };
 
-    let id;
-    onElementInsert?.onBeforeElementInsert();
-    try {
-      id = this._imodel.elements.insertElement(props);
-    } finally {
-      onElementInsert?.onAfterElementInsert();
-    }
-
+    const element = await this.insertElement(props, callbacks);
     this._imodel.saveChanges();
-    return id;
+    return element.id;
   }
 
   /**
@@ -255,14 +252,14 @@ export class RulesetEmbedder {
     return rulesetList;
   }
 
-  private getOrCreateRulesetModel(onElementInsert?: OnElementInsert, onModelInsert?: OnModelInsert): DefinitionModel {
+  private async getOrCreateRulesetModel(onElementInsertCallbacks?: InsertCallbacks<ElementProps>, onModelInsertCallbacks?: InsertCallbacks<ModelProps>): Promise<DefinitionModel> {
     const rulesetModel = this.queryRulesetModel();
     if (undefined !== rulesetModel)
       return rulesetModel;
 
-    const rulesetSubject: Subject = this.insertSubject(onElementInsert);
-    const definitionPartition: DefinitionPartition = this.insertDefinitionPartition(rulesetSubject, onElementInsert);
-    return this.insertDefinitionModel(definitionPartition, onModelInsert);
+    const rulesetSubject = await this.insertSubject(onElementInsertCallbacks);
+    const definitionPartition = await this.insertDefinitionPartition(rulesetSubject, onElementInsertCallbacks);
+    return this.insertDefinitionModel(definitionPartition, onModelInsertCallbacks);
   }
 
   private queryRulesetModel(): DefinitionModel | undefined {
@@ -293,7 +290,7 @@ export class RulesetEmbedder {
     return this._imodel.elements.tryGetElement<DefinitionPartition>(code);
   }
 
-  private insertDefinitionModel(definitionPartition: DefinitionPartition, onModelInsert?: OnModelInsert): DefinitionModel {
+  private async insertDefinitionModel(definitionPartition: DefinitionPartition, callbacks?: InsertCallbacks<ModelProps>): Promise<DefinitionModel> {
     const modelProps: ModelProps = {
       modeledElement: definitionPartition,
       name: this._rulesetModelName,
@@ -301,19 +298,10 @@ export class RulesetEmbedder {
       isPrivate: true,
     };
 
-    const model = this._imodel.models.createModel(modelProps);
-
-    onModelInsert?.onBeforeModelInsert();
-    try {
-      this._imodel.models.insertModel(model);
-    } finally {
-      onModelInsert?.onAfterModelInsert();
-    }
-
-    return model;
+    return this.insertModel(modelProps, callbacks);
   }
 
-  private insertDefinitionPartition(rulesetSubject: Subject, onElementInsert?: OnElementInsert): DefinitionPartition {
+  private async insertDefinitionPartition(rulesetSubject: Subject, callbacks?: InsertCallbacks<ElementProps>): Promise<DefinitionPartition> {
     const partitionCode = DefinitionPartition.createCode(this._imodel, rulesetSubject.id, this._rulesetModelName);
     const definitionPartitionProps: InformationPartitionElementProps = {
       parent: {
@@ -325,18 +313,10 @@ export class RulesetEmbedder {
       classFullName: DefinitionPartition.classFullName,
     };
 
-    let id;
-    onElementInsert?.onBeforeElementInsert();
-    try {
-      id = this._imodel.elements.insertElement(definitionPartitionProps);
-    } finally {
-      onElementInsert?.onAfterElementInsert();
-    }
-
-    return this._imodel.elements.getElement(id);
+    return this.insertElement(definitionPartitionProps, callbacks);
   }
 
-  private insertSubject(onElementInsert?: OnElementInsert): Subject {
+  private async insertSubject(callbacks?: InsertCallbacks<ElementProps>): Promise<Subject> {
     const root = this._imodel.elements.getRootSubject();
     const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(BisCodeSpec.subject);
     const subjectCode = new Code({
@@ -354,15 +334,7 @@ export class RulesetEmbedder {
       code: subjectCode,
     };
 
-    let id;
-    onElementInsert?.onBeforeElementInsert();
-    try {
-      id = this._imodel.elements.insertElement(subjectProps);
-    } finally {
-      onElementInsert?.onAfterElementInsert();
-    }
-
-    return this._imodel.elements.getElement(id);
+    return this.insertElement(subjectProps, callbacks);
   }
 
   private async handleElementOperationPrerequisites(): Promise<void> {
@@ -376,6 +348,38 @@ export class RulesetEmbedder {
     this._imodel.codeSpecs.insert(CodeSpec.create(this._imodel, PresentationRules.CodeSpec.Ruleset, CodeScopeSpec.Type.Model));
 
     this._imodel.saveChanges();
+  }
+
+  private async insertElement<TProps extends ElementProps>(props: TProps, callbacks?: InsertCallbacks<TProps>): Promise<Element> {
+    await callbacks?.onBeforeInsert(props);
+    try {
+      const id = this._imodel.elements.insertElement(props);
+      return this._imodel.elements.getElement(id);
+    } finally {
+      await callbacks?.onAfterInsert(props);
+    }
+  }
+
+  private async insertModel<TProps extends ModelProps>(props: TProps, callbacks?: InsertCallbacks<TProps>): Promise<Model> {
+    const model = this._imodel.models.createModel(props);
+
+    await callbacks?.onBeforeInsert(props);
+    try {
+      this._imodel.models.insertModel(model);
+    } finally {
+      await callbacks?.onAfterInsert(props);
+    }
+
+    return model;
+  }
+
+  private async updateElement<TElement extends Element>(element: TElement, callbacks?: UpdateCallbacks<TElement>) {
+    await callbacks?.onBeforeUpdate(element);
+    try {
+      element.update();
+    } finally {
+      await callbacks?.onAfterUpdate(element);
+    }
   }
 }
 
