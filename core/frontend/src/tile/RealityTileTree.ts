@@ -145,8 +145,6 @@ export class RealityTileTree extends TileTree {
     this.yAxisUp = true === params.yAxisUp;
     this._rootTile = this.createTile(params.rootTile);
     this.cartesianRange = BackgroundMapGeometry.getCartesianRange(this.iModel);
-    this.cartesianRange.low.z -= 1.0E5;
-    this.cartesianRange.high.z += 1.0E5;
     this.cartesianTransitionDistance = this.cartesianRange.diagonal().magnitudeXY() * .25;      // Transition distance from elliptical to cartesian.
     this._gcsConverter = params.gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
     if (params.rootToEcef) {

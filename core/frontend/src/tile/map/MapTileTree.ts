@@ -114,7 +114,6 @@ export class MapTileTree extends RealityTileTree {
   public tileFromQuadId(quadId: QuadId): MapTile | undefined {
     return (this._rootTile as MapTile).tileFromQuadId(quadId);
   }
-  public get minReprojectionDepth(): number | undefined { return MapTileTree.minReprojectionDepth; }
 
   public imageryTrees: ImageryMapTileTree[] = [];
   private _layerSettings = new Map<Id64String, MapLayerSettings>();

@@ -31,7 +31,7 @@ export interface RealityTileParams extends TileParams {
 
 const scratchLoadedChildren = new Array<RealityTile>();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
-const additiveRefinementThreshold = 20000;
+const additiveRefinementThreshold = 20000;    // Additive tiles (Cesium OSM tileset) are subdivided until their radius falls below this threshold to ensure accurate reprojection.
 const scratchFrustum = new Frustum();
 
 /**
@@ -104,13 +104,15 @@ export class RealityTile extends Tile {
     return this.realityRoot.loader.requestTileContent(this, isCanceled);
   }
   private useAdditiveRefinementStepchildren() {
+    // Create additive stepchildren only if we are this tile is additive and we are repojecting and the radius exceeds the additiveRefinementThreshold.
+    // This criteria is currently only met by the Cesium OSM tileset.
     return this.additiveRefinement && this.isDisplayable && this.radius > additiveRefinementThreshold && this.realityRoot.doReprojectChildren(this);
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
     this.realityRoot.loader.loadChildren(this).then((children: Tile[] | undefined) => {
 
-      /* If this is a large tile is to be included additively, but we are reprojecting (Cesium OSM Buildings) then we must add step-children to display the geometry as an overly large
+      /* If this is a large tile is to be included additively, but we are reprojecting (Cesium OSM) then we must add step-children to display the geometry as an overly large
          tile cannot be reprojected accurately.  */
       if (this.useAdditiveRefinementStepchildren())
         this.loadAdditiveRefinementChildren((stepChildren: Tile[]) =>  { children = children ? children?.concat(stepChildren) : stepChildren; });
@@ -228,10 +230,8 @@ export class RealityTile extends Tile {
         }
       }
     } else {
-      if (this.additiveRefinement && this.isDisplayable) {
-        if (!this.useAdditiveRefinementStepchildren())
-          context.selectOrQueue(this, args, traversalDetails);
-      }
+      if (this.additiveRefinement && this.isDisplayable && !this.useAdditiveRefinementStepchildren())
+        context.selectOrQueue(this, args, traversalDetails);      // With additive refinement it is necessary to display this tile along with any displayed children.
 
       this.selectRealityChildren(context, args, traversalDetails);
       if (this.isReady && (traversalDetails.childrenLoading || 0 !== traversalDetails.queuedChildren.length)) {
@@ -332,7 +332,7 @@ export class RealityTile extends Tile {
       return;
     }
 
-    const stepChildren = new Array<StepChildRealityTile>();
+    const stepChildren = new Array<AdditiveRefinementStepChild>();
 
     for (let i = 0, step = 0; i < 2; i++) {
       for (let j = 0; j < 2; j++) {
@@ -351,7 +351,7 @@ export class RealityTile extends Tile {
         const range = Range3d.createArray(rangeCorners);
         const childParams: RealityTileParams = { rangeCorners, contentId, range, maximumSize, parent: this, additiveRefinement: false, isLeaf, boundedByRegion };
 
-        stepChildren.push(new StepChildRealityTile(childParams, this.realityRoot));
+        stepChildren.push(new AdditiveRefinementStepChild(childParams, this.realityRoot));
       }
     }
     resolve(stepChildren);
@@ -377,7 +377,12 @@ export class RealityTile extends Tile {
   }
 }
 
-class StepChildRealityTile  extends RealityTile {
+/** When additive refinement is used (as in the Cesium OSM tileset) it is not possible to accurately reproject very large, low level tiles
+ * In this case we create addtitional "step" children (grandchildren etc. ) that will clipped portions display the their ancestor's additive geometry.
+ * These step children are subdivided until they are small enough to be accurately reprojected - this is controlled by the additiveRefinementThreshold (currently 20KM).
+ * The stepchildren do not contain any tile graphics - they just create a branch with clipping and reprojection to display their additive refinement ancestor graphics.
+ */
+class AdditiveRefinementStepChild  extends RealityTile {
   public override get isStepChild() { return true; }
   private _loadableTile: RealityTile;
 

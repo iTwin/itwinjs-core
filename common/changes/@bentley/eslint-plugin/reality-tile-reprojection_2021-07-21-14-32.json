@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/eslint-plugin",
+      "comment": "Whitespace changes",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/eslint-plugin",
+  "email": "rbbentley@users.noreply.github.com"
+}

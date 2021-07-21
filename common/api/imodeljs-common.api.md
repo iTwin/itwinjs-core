@@ -2933,6 +2933,7 @@ export class Frustum {
     scaleAboutCenter(scale: number): void;
     scaleXYAboutCenter(scale: number): void;
     setFrom(other: Frustum): void;
+    setFromCorners(corners: Point3d[]): void;
     toMap4d(): Map4d | undefined;
     toRange(range?: Range3d): Range3d;
     transformBy(trans: Transform, result?: Frustum): Frustum;
