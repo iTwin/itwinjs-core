@@ -123,7 +123,7 @@ export class GLTimer {
     return new GLTimer(system);
   }
 
-  public get isSupported(): boolean { return this._extension.isSupported; }
+  public get isSupported(): boolean { return false; } // this._extension.isSupported; } // Temporarily turn off using timer extension for testing
 
   public set resultsCallback(callback: GLTimerResultCallback | undefined) {
     if (this._queryStack.length !== 0)
