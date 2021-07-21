@@ -13,9 +13,7 @@ import { request } from "@bentley/itwin-client";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { RenderSystem } from "../../render/RenderSystem";
-import { MapCartoRectangle, MapTile, RealityTile, RealityTileLoader, TerrainMeshProvider, TerrainTileContent, TileRequest } from "../internal";
-import { Tile, TileLoadPriority } from "../Tile";
-import { QuadId } from "./QuadId";
+import { MapCartoRectangle, MapTile, QuadId, RealityTile, RealityTileLoader, TerrainMeshProvider, TerrainTileContent, Tile, TileLoadPriority, TileRequest } from "../internal";
 
 /** Specialization of map tile loader that includes terrain geometry with map imagery draped on it.
  * @internal

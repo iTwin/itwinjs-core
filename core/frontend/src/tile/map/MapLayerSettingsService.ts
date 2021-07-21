@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { MapLayerSource } from "./MapLayerSources";
+import { MapLayerSource } from "../internal";
 import { AuthorizedFrontendRequestContext } from "../../FrontendRequestContext";
 import { IModelApp } from "../../IModelApp";
 import { SettingsMapResult, SettingsResult, SettingsStatus } from "@bentley/product-settings-client";

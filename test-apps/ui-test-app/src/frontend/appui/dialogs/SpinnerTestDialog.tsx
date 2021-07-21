@@ -8,6 +8,7 @@ import { Dialog, FillCentered, LoadingSpinner, Spinner, SpinnerSize } from "@ben
 
 export interface SpinnerTestDialogProps {
   opened: boolean;
+  onClose: () => void;
 }
 
 export interface SpinnerTestDialogState {
@@ -30,12 +31,12 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
       <Dialog
         title={this._title}
         opened={this.state.opened}
-        modal={true}
+        modal={false}
+        movable={true}
         width={470}
         height={500}
-        onClose={this._handleCancel}
-        onEscape={this._handleCancel}
-        onOutsideClick={this._handleCancel}
+        onClose={this._handleClose}
+        onEscape={this._handleClose}
       >
         <div style={{ display: "flex", flexDirection: "row", marginBottom: "5px" }}>
           <span style={{ flex: "1", marginRight: "5px" }}>
@@ -98,8 +99,9 @@ export class SpinnerTestDialog extends React.Component<SpinnerTestDialogProps, S
     );
   }
 
-  private _handleCancel = () => {
+  private _handleClose = () => {
     this._closeDialog();
+    this.props.onClose();
   };
 
   private _closeDialog = () => {

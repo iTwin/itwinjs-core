@@ -18,9 +18,8 @@ import { ScreenViewport, Viewport } from "../../Viewport";
 import {
   MapCartoRectangle, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
   RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
-  TileTreeSupplier,
+  TileTreeSupplier, WebMercatorTilingScheme,
 } from "../internal";
-import { WebMercatorTilingScheme } from "./MapTilingScheme";
 
 /** @internal */
 export interface ImageryTileContent extends TileContent {
