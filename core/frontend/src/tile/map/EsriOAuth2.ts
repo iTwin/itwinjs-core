@@ -29,7 +29,12 @@ export class EsriOAuth2Endpoint implements MapLayerTokenEndpoint {
 
     // Set the client id
     if (this._isArcgisOnline) {
-      urlObj.searchParams.set("client_id", EsriOAuth2.arcGisOnlineClientId);
+      const clientId = EsriOAuth2.arcGisOnlineClientId;
+      assert(clientId !== undefined);
+      if (clientId !== undefined) {
+        urlObj.searchParams.set("client_id", clientId);
+      }
+
     } else {
       const appId = EsriOAuth2.getMatchingEnterpriseAppId(this._url);
       assert(appId !== undefined);
@@ -56,30 +61,34 @@ export class EsriOAuth2Endpoint implements MapLayerTokenEndpoint {
 }
 
 /** @beta */
+export interface ArcGisEnterpriseClientId {
+  serviceBaseUrl: string;
+  appId: string;
+}
+/** @beta */
+export interface EsriOAuthClientIds {
+  arcgisOnlineClientId?: string;
+  enterpriseClientIds?: ArcGisEnterpriseClientId[];
+}
+/** @beta */
 export class EsriOAuth2 {
   public static readonly  onEsriOAuth2Callback = new BeEvent();
   private static _redirectUri: string;
   private static _expiration: number|undefined;
-  private static _arcGisOnlineClientId: string;
-  private static _arcGisEnterpriseClientIds: {serviceBaseUrl: string, appId: string}[];
+  private static _clientIds: EsriOAuthClientIds;
 
   /** Initialize ESRI OAuth2
    * @param redirectUri URI where the user is going redirected with the token
-   * @param arcGisOnlineClientId Application ID that should be used to access ArcGIS Online
-   * @param arcgisEnterpriseClientIds A dictionary of Application ID for each ArcGIS Enterprise service that Oauth2 should be supported
+   * @param clientIds List of clients ids to use to get Oauth authorization
    * @param tokenExpiration Optional expiration after which the token will expire, defined in minutes.  The default value is 2 hours (120 minutes). The maximum value is two weeks (20160 minutes).
    * @returns true if the initialized was successful otherwise false.
    */
-  public static initialize(redirectUri: string, arcGisOnlineClientId?: string, arcGisEnterpriseClientIds?: {serviceBaseUrl: string, appId: string}[], tokenExpiration?: number): boolean {
+  public static initialize(redirectUri: string, clientIds?: EsriOAuthClientIds, tokenExpiration?: number): boolean {
     EsriOAuth2._redirectUri = redirectUri;
-    if (arcGisEnterpriseClientIds)
-      EsriOAuth2._arcGisEnterpriseClientIds = arcGisEnterpriseClientIds;
-
-    // arcGisOnlineClientId is actually mandatory might become optional in the future.
-    if (arcGisOnlineClientId === undefined) {
-      return false;
+    if (clientIds) {
+      EsriOAuth2._clientIds = clientIds;
     }
-    EsriOAuth2._arcGisOnlineClientId = arcGisOnlineClientId;
+
     EsriOAuth2._expiration = tokenExpiration;
 
     /** Define a *global* callback function that will be used by the redirect URL to pass the generated token
@@ -130,7 +139,11 @@ export class EsriOAuth2 {
 
   public static getMatchingEnterpriseAppId(url: string) {
     let appId: string|undefined;
-    for (const entry of EsriOAuth2.arcGisEnterpriseClientIds) {
+    const clientIds = EsriOAuth2.arcGisEnterpriseClientIds;
+    if (!clientIds) {
+      return undefined;
+    }
+    for (const entry of clientIds) {
       if (url.toLowerCase().startsWith(entry.serviceBaseUrl)) {
         appId = entry.appId;
       }
@@ -143,11 +156,11 @@ export class EsriOAuth2 {
   }
 
   public static get arcGisOnlineClientId() {
-    return EsriOAuth2._arcGisOnlineClientId;
+    return EsriOAuth2._clientIds.arcgisOnlineClientId;
   }
 
   public static get arcGisEnterpriseClientIds() {
-    return EsriOAuth2._arcGisEnterpriseClientIds;
+    return EsriOAuth2._clientIds.enterpriseClientIds;
   }
 
 }
