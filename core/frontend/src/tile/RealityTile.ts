@@ -34,10 +34,6 @@ const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.crea
 const additiveRefinementThreshold = 20000;
 const scratchFrustum = new Frustum();
 
-// eslint-disable-next-line @typescript-eslint/no-unused-vars
-// eslint-disable-next-line prefer-const
-let debugMaxDepth: number, debugMinDepth = 0;
-
 /**
  * A specialization of tiles that represent reality tiles.  3D Tilesets and maps use this class and have their own optimized traversal and lifetime management.
  * @internal
@@ -110,11 +106,14 @@ export class RealityTile extends Tile {
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
     this.realityRoot.loader.loadChildren(this).then((children: Tile[] | undefined) => {
+
+      /* If this is a large tile is to be included additively, but we are reprojecting (Cesium OSM Buildings) then we must add step-children to display the geometry as an overly large
+         tile cannot be reprojected accurately.  */
       if (this.additiveRefinement && this.isDisplayable && this.radius > additiveRefinementThreshold && this.realityRoot.doReprojectChildren(this))
         this.loadAdditiveRefinementChildren((stepChildren: Tile[]) =>  { children = children ? children?.concat(stepChildren) : stepChildren; });
 
       if (children)
-        this.realityRoot.reprojectAndResolveChildren(this, children, resolve);
+        this.realityRoot.reprojectAndResolveChildren(this, children, resolve);   /* Potentially reprojecect and resolve these children */
 
     }).catch((err) => {
       reject(err);
@@ -154,8 +153,6 @@ export class RealityTile extends Tile {
   }
 
   protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails) {
-    if (debugMaxDepth !== undefined && this.depth > debugMaxDepth)
-      return;
     const childrenLoadStatus = this.loadChildren(); // NB: asynchronous
     if (TileTreeLoadStatus.Loading === childrenLoadStatus) {
       args.markChildrenLoading();
@@ -175,14 +172,6 @@ export class RealityTile extends Tile {
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
     builder.setSymbology(color, color, 3);
     builder.addRangeBoxFromCorners(this.rangeCorners ? this.rangeCorners : this.range.corners());
-    if (this.reprojectionTransform && this.rangeCorners) {
-      const reprojectedColor = ColorDef.fromString("rgb(255,255, 0)");
-      const reprojectedCorners = [];
-      for (const corner of this.rangeCorners)
-        reprojectedCorners.push(this.reprojectionTransform.multiplyPoint3d(corner));
-      builder.setSymbology(reprojectedColor, reprojectedColor, 5);
-      builder.addRangeBoxFromCorners(reprojectedCorners);
-    }
   }
 
   public setReprojection(rootReprojection: Transform) {
@@ -225,7 +214,7 @@ export class RealityTile extends Tile {
     if (visibility >= 1 && this.noContentButTerminateOnSelection)
       return;
 
-    if (this.isDisplayable && this.depth > debugMinDepth && (visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile() || context.selectionCountExceeded)) {
+    if (this.isDisplayable && (visibility >= 1 || this._anyChildNotFound || this.forceSelectRealityTile() || context.selectionCountExceeded)) {
       if (!this.isOccluded(args.viewingSpace)) {
         context.selectOrQueue(this, args, traversalDetails);
 
