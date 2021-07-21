@@ -10,7 +10,7 @@ import { StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 
-describe.only("DgnDbWorker", () => {
+describe("DgnDbWorker", () => {
   let imodel: StandaloneDb;
 
   function openIModel(): void {
