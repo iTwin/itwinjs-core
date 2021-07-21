@@ -8,7 +8,7 @@ import { ChildNodeSpecificationTypes, Ruleset, RuleTypes } from "@bentley/presen
 import { Presentation } from "@bentley/presentation-frontend";
 import { initialize, terminate } from "../IntegrationTests";
 
-describe.only("Learning Snippets", () => {
+describe("Learning Snippets", () => {
 
   describe("Ruleset Variables", () => {
 
