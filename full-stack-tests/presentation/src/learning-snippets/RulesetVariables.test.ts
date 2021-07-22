@@ -27,12 +27,12 @@ describe("Learning Snippets", () => {
     it("uses ruleset variable in rule condition", async () => {
       // __PUBLISH_EXTRACT_START__ RulesetVariables.InRuleCondition.Ruleset
       // The ruleset has two root node rules - one for models and one for elements. The one actually used
-      // depends on a ruleset variable value, which can be changed without modifying the ruleset itself.
+      // depends on the value of `TREE_TYPE` ruleset variable, which can be changed without modifying the ruleset itself.
       const ruleset: Ruleset = {
         id: "test",
         rules: [{
           ruleType: RuleTypes.RootNodes,
-          condition: `GetVariableStringValue("tree-type") = "models"`,
+          condition: `GetVariableStringValue("TREE_TYPE") = "models"`,
           specifications: [{
             specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
             classes: { schemaName: "BisCore", classNames: ["Model"] },
@@ -40,7 +40,7 @@ describe("Learning Snippets", () => {
           }],
         }, {
           ruleType: RuleTypes.RootNodes,
-          condition: `GetVariableStringValue("tree-type") = "elements"`,
+          condition: `GetVariableStringValue("TREE_TYPE") = "elements"`,
           specifications: [{
             specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
             classes: { schemaName: "BisCore", classNames: ["Element"] },
@@ -56,7 +56,7 @@ describe("Learning Snippets", () => {
 
       // Set variable to "models" and ensure we get model grouping nodes
       // __PUBLISH_EXTRACT_START__ RulesetVariables.InRuleCondition.SetToModels
-      await Presentation.presentation.vars(ruleset.id).setString("tree-type", "models");
+      await Presentation.presentation.vars(ruleset.id).setString("TREE_TYPE", "models");
       // __PUBLISH_EXTRACT_END__
       const modelNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
       expect(modelNodes).to.containSubset([{
@@ -77,7 +77,7 @@ describe("Learning Snippets", () => {
 
       // Set variable to "elements" and ensure we get element grouping nodes
       // __PUBLISH_EXTRACT_START__ RulesetVariables.InRuleCondition.SetToElements
-      await Presentation.presentation.vars(ruleset.id).setString("tree-type", "elements");
+      await Presentation.presentation.vars(ruleset.id).setString("TREE_TYPE", "elements");
       // __PUBLISH_EXTRACT_END__
       const elementNodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
       expect(elementNodes).to.containSubset([{
@@ -122,7 +122,7 @@ describe("Learning Snippets", () => {
     it("uses ruleset variable in instance filter", async () => {
       // __PUBLISH_EXTRACT_START__ RulesetVariables.InInstanceFilter.Ruleset
       // The ruleset has a root node rule which loads all bis.Element instances, optionally filtered
-      // by ECInstanceId.
+      // by ECInstanceId. The filter is controlled through `ELEMENT_IDS` ruleset variable.
       const ruleset: Ruleset = {
         id: "test",
         rules: [{
@@ -131,7 +131,7 @@ describe("Learning Snippets", () => {
             specType: ChildNodeSpecificationTypes.InstanceNodesOfSpecificClasses,
             classes: { schemaName: "BisCore", classNames: ["Element"] },
             arePolymorphic: true,
-            instanceFilter: `NOT HasVariable("element-ids") OR GetVariableIntValues("element-ids").AnyMatch(id => id = this.ECInstanceId)`,
+            instanceFilter: `NOT HasVariable("ELEMENT_IDS") OR GetVariableIntValues("ELEMENT_IDS").AnyMatch(id => id = this.ECInstanceId)`,
           }],
         }],
       };
@@ -179,7 +179,7 @@ describe("Learning Snippets", () => {
 
       // Set the value to several element IDs and ensure we get their class grouping nodes
       // __PUBLISH_EXTRACT_START__ RulesetVariables.InInstanceFilter.SetIds
-      await Presentation.presentation.vars(ruleset.id).setId64s("element-ids", ["0x1", "0x74", "0x40"]);
+      await Presentation.presentation.vars(ruleset.id).setId64s("ELEMENT_IDS", ["0x1", "0x74", "0x40"]);
       // __PUBLISH_EXTRACT_END__
       nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
       expect(nodes).to.containSubset([{
@@ -191,7 +191,7 @@ describe("Learning Snippets", () => {
       }]);
 
       // Set the value to different element IDs and ensure we get their class grouping nodes
-      await Presentation.presentation.vars(ruleset.id).setId64s("element-ids", ["0x17", "0x16"]);
+      await Presentation.presentation.vars(ruleset.id).setId64s("ELEMENT_IDS", ["0x17", "0x16"]);
       nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
       expect(nodes).to.containSubset([{
         label: { displayValue: "Definition Partition" },
@@ -201,7 +201,7 @@ describe("Learning Snippets", () => {
 
       // Finally, unsetting the value should get us the initial view
       // __PUBLISH_EXTRACT_START__ RulesetVariables.InInstanceFilter.Unset
-      await Presentation.presentation.vars(ruleset.id).unset("element-ids");
+      await Presentation.presentation.vars(ruleset.id).unset("ELEMENT_IDS");
       // __PUBLISH_EXTRACT_END__
       nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
       expect(nodes).to.containSubset([{
@@ -247,7 +247,8 @@ describe("Learning Snippets", () => {
       // __PUBLISH_EXTRACT_START__ RulesetVariables.InCustomizationRuleValueExpression.Ruleset
       // The ruleset has a root node rule which loads all bis.SpatialViewDefinition instances. There's
       // also a label customization rule which optionally prefixes node labels with a ruleset variable value and
-      // an instance label override rule to clear default BIS label override rules.
+      // an instance label override rule to clear default BIS label override rules. The prefix is
+      // controlled through the `PREFIX` ruleset variable.
       const ruleset: Ruleset = {
         id: "test",
         rules: [{
@@ -261,7 +262,7 @@ describe("Learning Snippets", () => {
           }],
         }, {
           ruleType: RuleTypes.LabelOverride,
-          label: `IIF(HasVariable("prefix"), GetVariableStringValue("prefix") & " " & this.CodeValue, this.CodeValue)`,
+          label: `IIF(HasVariable("PREFIX"), GetVariableStringValue("PREFIX") & " " & this.CodeValue, this.CodeValue)`,
         }, {
           ruleType: RuleTypes.InstanceLabelOverride,
           class: { schemaName: "BisCore", className: "SpatialViewDefinition" },
@@ -284,7 +285,7 @@ describe("Learning Snippets", () => {
 
       // Set the prefix to some value and confirm node labels get prefixed
       // __PUBLISH_EXTRACT_START__ RulesetVariables.InCustomizationRuleValueExpression.SetValue
-      await Presentation.presentation.vars(ruleset.id).setString("prefix", "test");
+      await Presentation.presentation.vars(ruleset.id).setString("PREFIX", "test");
       // __PUBLISH_EXTRACT_END__
       nodes = await Presentation.presentation.getNodes({ imodel, rulesetOrId: ruleset });
       expect(nodes).to.containSubset([{
