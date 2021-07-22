@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
-import { CustomAttributeClass, RelationshipClass } from "../../ecschema-metadata";
+import { CustomAttributeClass } from "../../Metadata/CustomAttributeClass";
+import { RelationshipClass } from "../../Metadata/RelationshipClass";
 import { SchemaContext } from "../../Context";
 import { DelayedPromiseWithProps } from "../../DelayedPromise";
 import { ECObjectsError } from "../../Exception";

@@ -16,8 +16,10 @@ import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
 import { RenderRealityMeshGeometry, RenderSystem, TerrainTexture } from "../../render/RenderSystem";
 import { ViewingSpace } from "../../ViewingSpace";
-import { ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, Tile, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileTreeLoadStatus, TraversalSelectionContext } from "../internal";
-import { TileGraphicType } from "../TileTreeReference";
+import {
+  ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, Tile, TileContent, TileDrawArgs, TileGraphicType,
+  TileLoadStatus, TileParams, TileTreeLoadStatus, TraversalSelectionContext,
+} from "../internal";
 
 /** @internal */
 export class PlanarTilePatch {

@@ -603,7 +603,7 @@ export interface BRepGeometryCreate {
     entryArray: ElementGeometryDataEntry[];
     onResult: BRepGeometryFunction;
     operation: BRepGeometryOperation;
-    parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps;
+    parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps | BRepOffsetProps;
     separateDisjoint?: boolean;
 }
 
@@ -622,6 +622,7 @@ export enum BRepGeometryOperation {
     Hollow = 7,
     Intersect = 2,
     Loft = 9,
+    Offset = 11,
     Round = 10,
     Sew = 3,
     Subtract = 1,
@@ -632,6 +633,11 @@ export enum BRepGeometryOperation {
 
 // @alpha
 export interface BRepHollowProps {
+    distance: number;
+}
+
+// @alpha
+export interface BRepOffsetProps {
     distance: number;
 }
 

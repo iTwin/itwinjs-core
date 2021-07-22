@@ -1,0 +1,14 @@
+{
+  "compilerOptions": {
+    "checkJs": true,
+    "noEmit": true,
+    "target": "es6", // need for using for...of on iterables
+    "lib": ["es6"],
+    "strict": true,
+    "noImplicitAny": false,
+    "strictNullChecks": true,
+    "strictFunctionTypes": true,
+    "moduleResolution": "node"
+  },
+  "include": ["**/*.js"]
+}
