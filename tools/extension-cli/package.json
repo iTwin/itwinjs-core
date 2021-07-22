@@ -44,7 +44,6 @@
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/presentation-common": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
     "electron": "^11.1.0",
     "fast-sha256": "1.3.0",

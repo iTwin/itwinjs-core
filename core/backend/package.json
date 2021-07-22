@@ -62,7 +62,6 @@
     "@bentley/imodelhub-client": "workspace:^3.0.0-dev.2",
     "@bentley/imodeljs-common": "workspace:^3.0.0-dev.2",
     "@bentley/itwin-client": "workspace:^3.0.0-dev.2",
-    "@bentley/rbac-client": "workspace:^3.0.0-dev.2",
     "@bentley/telemetry-client": "workspace:^3.0.0-dev.2"
   },
   "//devDependencies": [
@@ -82,7 +81,6 @@
     "@bentley/itwin-client": "workspace:*",
     "@bentley/oidc-signin-tool": "workspace:*",
     "@bentley/perf-tools": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
