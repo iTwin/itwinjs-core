@@ -84,7 +84,7 @@ export interface RulesetInsertOptions {
   onEntityUpdate?: UpdateCallbacks;
 
   /**
-   * Callbacks that will be called before and after Entity is inserted
+   * Callbacks that will be called before and after `Entity` is inserted
    * @beta
    */
   onEntityInsert?: InsertCallbacks;
