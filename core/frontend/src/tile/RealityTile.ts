@@ -310,8 +310,11 @@ export class RealityTile extends Tile {
     if (!this.tree.isContentUnbounded)
       return undefined;           // For a non-global tree use the standard size algorithm.
 
-    // For global tiles (as in OSM buildings) return the range corners - this allows an algorithm that uses the area of the projected corners to attenuate horizon tiles.
-    return this.range.corners(scratchCorners);
+    // For global tiles (as in OSM buildings) return the range corners or X-Y corners only if bounded by region- this allows an algorithm that uses the area of the projected corners to attenuate horizon tiles.
+    if (!this.rangeCorners)
+      return this.range.corners(scratchCorners);
+
+    return this.boundedByRegion ? this.rangeCorners.slice(4) : this.rangeCorners;
   }
 
   public get isStepChild() { return false; }
