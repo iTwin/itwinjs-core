@@ -2997,6 +2997,10 @@
           "description": "Automatically expand nodes created by this rule.",
           "type": "boolean"
         },
+        "condition": {
+          "description": "Defines a condition for the rule, which needs to be met in order to execute it. Condition\nis an ECExpression, which can use\na limited set of symbols.",
+          "type": "string"
+        },
         "customizationRules": {
           "description": "Customization rules that are applied for the content returned by\nthis rule.",
           "items": {
