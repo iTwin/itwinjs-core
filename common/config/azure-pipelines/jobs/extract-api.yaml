@@ -9,6 +9,9 @@ schedules:
       include:
         - master
 
+pool:
+  vmImage: ubuntu-latest
+
 jobs:
 - job:
   steps:
