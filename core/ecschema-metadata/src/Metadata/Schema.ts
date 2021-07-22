@@ -153,6 +153,21 @@ export class Schema implements CustomAttributeContainerProps {
   }
 
   /**
+   * Deletes a class from within this schema.
+   * @param name the local (unqualified) class name, lookup is case-insensitive
+   * @return Deleted class if it is found in schema; otherwise returns undefined
+   * @alpha
+   */
+  protected deleteClassSync<T extends AnyClass>(name: string): T | undefined {
+    const schemaItem = this.getItemSync(name);
+    if (ECClass.isECClass(schemaItem)) {
+      this._items.delete(name.toUpperCase());
+      return schemaItem as T;
+    }
+    return undefined;
+  }
+
+  /**
    * @alpha
    */
   protected createItem<T extends AnySchemaItem>(type: (new (schema: Schema, name: string) => T), name: string): T {
@@ -659,4 +674,5 @@ export abstract class MutableSchema extends Schema {
   public abstract override addReference(refSchema: Schema): Promise<void>;
   public abstract override addReferenceSync(refSchema: Schema): void;
   public abstract override setContext(schemaContext: SchemaContext): void;
+  public abstract override deleteClassSync<T extends AnyClass>(name: string): T | undefined;
 }

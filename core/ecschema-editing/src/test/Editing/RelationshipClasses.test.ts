@@ -78,4 +78,56 @@ describe("Relationship tests from an existing schema", () => {
     const baseSourceClassKey = testSchema.getSchemaItemKey("TestSchema.SourceBaseEntity");
     expect(await relClass.source.abstractConstraint).to.eql(await testEditor.schemaContext.getSchemaItem(baseSourceClassKey));
   });
+
+  it("should delete a relationship class", async () => {
+    const sourceJson: RelationshipConstraintProps = {
+      polymorphic: true,
+      multiplicity: "(0..*)",
+      roleLabel: "Source RoleLabel",
+      abstractConstraint: "TestSchema.SourceBaseEntity",
+      constraintClasses: [
+        "TestSchema.TestSourceEntity",
+      ],
+    };
+    const targetJson: RelationshipConstraintProps = {
+      polymorphic: true,
+      multiplicity: "(0..*)",
+      roleLabel: "Target RoleLabel",
+      abstractConstraint: "TestSchema.TargetBaseEntity",
+      constraintClasses: [
+        "TestSchema.TestTargetEntity",
+      ],
+    };
+
+    const relClassProps: RelationshipClassProps = {
+      name: "TestRelationship",
+      strength: "Embedding",
+      strengthDirection: "Forward",
+      source: sourceJson,
+      target: targetJson,
+    };
+
+    const result = await testEditor.relationships.createFromProps(testKey, relClassProps);
+    const relClass = await testEditor.schemaContext.getSchemaItem(result.itemKey!) as RelationshipClass;
+    const baseSourceClassKey = testSchema.getSchemaItemKey("TestSchema.SourceBaseEntity");
+    expect(await relClass.source.abstractConstraint).to.eql(await testEditor.schemaContext.getSchemaItem(baseSourceClassKey));
+
+    let relationship = await testSchema.getItem("TestRelationship");
+    expect(relationship).to.eql(relClass);
+
+    const delRes = await testEditor.relationships.delete(testKey, "TestRelationship");
+    expect(delRes.itemKey).to.eql(result.itemKey);
+
+    relationship = await testSchema.getItem("TestRelationship");
+    expect(relationship).to.be.undefined;
+  });
+
+  it("should not be able to delete a relationship class if it is not in schema", async () => {
+    const className = "TestRelationship";
+    const entity = await testSchema.getItem(className);
+    expect(entity).to.be.undefined;
+
+    const delRes = await testEditor.relationships.delete(testKey, className);
+    expect(delRes.errorMessage).to.eql(`Failed to delete class ${className} because it was not found in schema ${testSchema!.name}`);
+  });
 });

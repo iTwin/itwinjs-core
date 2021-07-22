@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  Constant, CustomAttribute, CustomAttributeClass, ECClassModifier, EntityClass, Enumeration,
+  AnyClass, Constant, CustomAttribute, CustomAttributeClass, ECClassModifier, EntityClass, Enumeration,
   Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PrimitiveType, PropertyCategory,
   RelationshipClass, Schema, SchemaContext, SchemaItem, StructClass, Unit, UnitSystem,
 } from "@bentley/ecschema-metadata";
@@ -49,4 +49,5 @@ export abstract class MutableSchema extends Schema {
   public abstract override addReferenceSync(refSchema: Schema): void;
   public abstract override setContext(schemaContext: SchemaContext): void;
   public abstract override setVersion(readVersion?: number, writeVersion?: number, minorVersion?: number): void;
+  public abstract override deleteClassSync<T extends AnyClass>(name: string): T | undefined;
 }

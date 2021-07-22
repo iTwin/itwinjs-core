@@ -153,6 +153,21 @@ export class ECClasses {
     return { itemKey: classKey, propertyName: name };
   }
 
+  public async deleteProperty(classKey: SchemaItemKey, name: string): Promise<PropertyEditResults> {
+    let mutableClass: MutableClass;
+    try {
+      mutableClass = await this.getClass(classKey, name);
+    } catch (e) {
+      return { errorMessage: e.message };
+    }
+
+    const deletedProp = mutableClass.deletePropertySync(name);
+    if (undefined === deletedProp)
+      return { errorMessage: `Failed to delete property ${name} because it was not found in class ${classKey.name}`};
+    else
+      return { itemKey: classKey, propertyName: deletedProp.name };
+  }
+
   private async getClass(classKey: SchemaItemKey, name: string): Promise<MutableClass> {
     const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
     if (schema === undefined)

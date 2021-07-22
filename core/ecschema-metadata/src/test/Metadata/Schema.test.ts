@@ -159,6 +159,105 @@ describe("Schema", () => {
     });
   });
 
+  describe("adding and deleting classes from schemas", async () => {
+    it("should do nothing when deleting class name that is not in schema", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+
+      const delClass = (testSchema as MutableSchema).deleteClassSync("TestEntity");
+      expect(delClass).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+    });
+
+    it("should do nothing if class is already deleted", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      const entityClass = await (testSchema as MutableSchema).createEntityClass("TestEntity");
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      let delClass = (testSchema as MutableSchema).deleteClassSync("TestEntity");
+      expect(delClass).to.equal(entityClass);
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+
+      delClass = (testSchema as MutableSchema).deleteClassSync("TestEntity");
+      expect(delClass).to.be.undefined;
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+    });
+
+    it("should add and delete classes by case-insensitive names", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      const entityClass1 = await (testSchema as MutableSchema).createEntityClass("TestEntity1");
+      const entityClass2 = await (testSchema as MutableSchema).createEntityClass("TestEntity2");
+      const entityClass3 = await (testSchema as MutableSchema).createEntityClass("TestEntity3");
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity1"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity1"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity2"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity2"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity3"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity3"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      const delClass1 = (testSchema as MutableSchema).deleteClassSync("TestEntity1");
+      expect(delClass1).to.equal(entityClass1);
+      expect(await testSchema.getItem("TestEntity1")).to.be.undefined;
+
+      const delClass2 = (testSchema as MutableSchema).deleteClassSync("testentity2");
+      expect(delClass2).to.equal(entityClass2);
+      expect(await testSchema.getItem("TestEntity2")).to.be.undefined;
+
+      const delClass3 = (testSchema as MutableSchema).deleteClassSync("TESTENTITY3");
+      expect(delClass3).to.equal(entityClass3);
+      expect(await testSchema.getItem("TestEntity3")).to.be.undefined;
+    });
+
+    it("should successfully delete for all ECClasses from schema", async () => {
+      const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
+      const entityClass = await (testSchema as MutableSchema).createEntityClass("TestEntity");
+      const mixinClass = await (testSchema as MutableSchema).createMixinClass("TestMixin");
+      const structClass = await (testSchema as MutableSchema).createStructClass("TestStruct");
+      const customAttributeClass = await (testSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
+      const relationshipClass = await (testSchema as MutableSchema).createRelationshipClass("TestRelationship");
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestMixin"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestMixin"))?.schemaItemType).to.equal(SchemaItemType.Mixin);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestStruct"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestStruct"))?.schemaItemType).to.equal(SchemaItemType.StructClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestCustomAttribute"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestCustomAttribute"))?.schemaItemType).to.equal(SchemaItemType.CustomAttributeClass);
+
+      expect(ECClass.isECClass(await testSchema.getItem("TestRelationship"))).to.equal(true);
+      expect((await testSchema.getItem<EntityClass>("TestRelationship"))?.schemaItemType).to.equal(SchemaItemType.RelationshipClass);
+
+      const delClass1 = (testSchema as MutableSchema).deleteClassSync("TestEntity");
+      expect(delClass1).to.equal(entityClass);
+      expect(await testSchema.getItem("TestEntity")).to.be.undefined;
+
+      const delClass2 = (testSchema as MutableSchema).deleteClassSync("TestMixin");
+      expect(delClass2).to.equal(mixinClass);
+      expect(await testSchema.getItem("TestMixin")).to.be.undefined;
+
+      const delClass3 = (testSchema as MutableSchema).deleteClassSync("TestStruct");
+      expect(delClass3).to.equal(structClass);
+      expect(await testSchema.getItem("TestStruct")).to.be.undefined;
+
+      const delClass4 = (testSchema as MutableSchema).deleteClassSync("TestCustomAttribute");
+      expect(delClass4).to.equal(customAttributeClass);
+      expect(await testSchema.getItem("TestCustomAttribute")).to.be.undefined;
+
+      const delClass5 = (testSchema as MutableSchema).deleteClassSync("TestRelationship");
+      expect(delClass5).to.equal(relationshipClass);
+      expect(await testSchema.getItem("TestRelationship")).to.be.undefined;
+    });
+  });
+
   describe("bulk get methods for schema items", () => {
     let testSchema: Schema;
 
