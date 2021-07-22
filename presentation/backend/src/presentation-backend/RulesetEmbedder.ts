@@ -10,7 +10,7 @@ import * as path from "path";
 import { gt as versionGt, gte as versionGte, lt as versionLt } from "semver";
 import { assert, ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-core";
 import {
-  DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, IModelDb, KnownLocations, Model, Subject,
+  DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, Entity, IModelDb, KnownLocations, Model, Subject,
 } from "@bentley/imodeljs-backend";
 import {
   BisCodeSpec, Code, CodeScopeSpec, CodeSpec, DefinitionElementProps, ElementProps, InformationPartitionElementProps, ModelProps, SubjectProps,
@@ -81,19 +81,13 @@ export interface RulesetInsertOptions {
    * Callbacks that will be called before and after Element updates
    * @beta
    */
-  onElementUpdate?: UpdateCallbacks<DefinitionElement>;
+  onElementUpdate?: UpdateCallbacks<Element>;
 
   /**
-   * Callbacks that will be called before and after Element is inserted
+   * Callbacks that will be called before and after Entity is inserted
    * @beta
    */
-  onElementInsert?: InsertCallbacks<ElementProps>;
-
-  /**
-   * Callbacks that will be called before and after Model is inserted
-   * @beta
-   */
-  onModelInsert?: InsertCallbacks<ModelProps>;
+  onEntityInsert?: InsertCallbacks<Entity>;
 }
 
 /**
@@ -204,12 +198,12 @@ export class RulesetEmbedder {
     }
 
     // no exact match found - insert a new ruleset element
-    const model = await this.getOrCreateRulesetModel(normalizedOptions.onElementInsert, normalizedOptions.onModelInsert);
+    const model = await this.getOrCreateRulesetModel(normalizedOptions.onEntityInsert);
     const rulesetCode = RulesetElements.Ruleset.createRulesetCode(this._imodel, model.id, ruleset);
-    return this.insertNewRuleset(ruleset, model, rulesetCode, normalizedOptions.onElementInsert);
+    return this.insertNewRuleset(ruleset, model, rulesetCode, normalizedOptions.onEntityInsert);
   }
 
-  private async updateRuleset(elementId: Id64String, ruleset: Ruleset, callbacks?: UpdateCallbacks<DefinitionElement>) {
+  private async updateRuleset(elementId: Id64String, ruleset: Ruleset, callbacks?: UpdateCallbacks<Element>) {
     const existingRulesetElement = this._imodel.elements.tryGetElement<DefinitionElement>(elementId);
     assert(existingRulesetElement !== undefined);
     existingRulesetElement.jsonProperties.jsonProperties = ruleset;
@@ -220,7 +214,7 @@ export class RulesetEmbedder {
     return existingRulesetElement.id;
   }
 
-  private async insertNewRuleset(ruleset: Ruleset, model: Model, rulesetCode: Code, callbacks?: InsertCallbacks<DefinitionElementProps>): Promise<Id64String> {
+  private async insertNewRuleset(ruleset: Ruleset, model: Model, rulesetCode: Code, callbacks?: InsertCallbacks<Entity>): Promise<Id64String> {
     const props: DefinitionElementProps = {
       model: model.id,
       code: rulesetCode,
@@ -252,14 +246,14 @@ export class RulesetEmbedder {
     return rulesetList;
   }
 
-  private async getOrCreateRulesetModel(onElementInsertCallbacks?: InsertCallbacks<ElementProps>, onModelInsertCallbacks?: InsertCallbacks<ModelProps>): Promise<DefinitionModel> {
+  private async getOrCreateRulesetModel(callbacks?: InsertCallbacks<Entity>): Promise<DefinitionModel> {
     const rulesetModel = this.queryRulesetModel();
     if (undefined !== rulesetModel)
       return rulesetModel;
 
-    const rulesetSubject = await this.insertSubject(onElementInsertCallbacks);
-    const definitionPartition = await this.insertDefinitionPartition(rulesetSubject, onElementInsertCallbacks);
-    return this.insertDefinitionModel(definitionPartition, onModelInsertCallbacks);
+    const rulesetSubject = await this.insertSubject(callbacks);
+    const definitionPartition = await this.insertDefinitionPartition(rulesetSubject, callbacks);
+    return this.insertDefinitionModel(definitionPartition, callbacks);
   }
 
   private queryRulesetModel(): DefinitionModel | undefined {
@@ -290,7 +284,7 @@ export class RulesetEmbedder {
     return this._imodel.elements.tryGetElement<DefinitionPartition>(code);
   }
 
-  private async insertDefinitionModel(definitionPartition: DefinitionPartition, callbacks?: InsertCallbacks<ModelProps>): Promise<DefinitionModel> {
+  private async insertDefinitionModel(definitionPartition: DefinitionPartition, callbacks?: InsertCallbacks<Entity>): Promise<DefinitionModel> {
     const modelProps: ModelProps = {
       modeledElement: definitionPartition,
       name: this._rulesetModelName,
@@ -301,7 +295,7 @@ export class RulesetEmbedder {
     return this.insertModel(modelProps, callbacks);
   }
 
-  private async insertDefinitionPartition(rulesetSubject: Subject, callbacks?: InsertCallbacks<ElementProps>): Promise<DefinitionPartition> {
+  private async insertDefinitionPartition(rulesetSubject: Subject, callbacks?: InsertCallbacks<Entity>): Promise<DefinitionPartition> {
     const partitionCode = DefinitionPartition.createCode(this._imodel, rulesetSubject.id, this._rulesetModelName);
     const definitionPartitionProps: InformationPartitionElementProps = {
       parent: {
@@ -316,7 +310,7 @@ export class RulesetEmbedder {
     return this.insertElement(definitionPartitionProps, callbacks);
   }
 
-  private async insertSubject(callbacks?: InsertCallbacks<ElementProps>): Promise<Subject> {
+  private async insertSubject(callbacks?: InsertCallbacks<Entity>): Promise<Subject> {
     const root = this._imodel.elements.getRootSubject();
     const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(BisCodeSpec.subject);
     const subjectCode = new Code({
@@ -350,27 +344,25 @@ export class RulesetEmbedder {
     this._imodel.saveChanges();
   }
 
-  private async insertElement<TProps extends ElementProps>(props: TProps, callbacks?: InsertCallbacks<TProps>): Promise<Element> {
-    await callbacks?.onBeforeInsert(props);
+  private async insertElement<TProps extends ElementProps>(props: TProps, callbacks?: InsertCallbacks<Entity>): Promise<Element> {
+    const element = this._imodel.elements.createElement(props);
+    await callbacks?.onBeforeInsert(element);
     try {
-      const id = this._imodel.elements.insertElement(props);
-      return this._imodel.elements.getElement(id);
+      return this._imodel.elements.getElement(element.insert());
     } finally {
-      await callbacks?.onAfterInsert(props);
+      await callbacks?.onAfterInsert(element);
     }
   }
 
-  private async insertModel<TProps extends ModelProps>(props: TProps, callbacks?: InsertCallbacks<TProps>): Promise<Model> {
+  private async insertModel<TProps extends ModelProps>(props: TProps, callbacks?: InsertCallbacks<Entity>): Promise<Model> {
     const model = this._imodel.models.createModel(props);
-
-    await callbacks?.onBeforeInsert(props);
+    await callbacks?.onBeforeInsert(model);
     try {
-      this._imodel.models.insertModel(model);
+      model.id = model.insert();
+      return model;
     } finally {
-      await callbacks?.onAfterInsert(props);
+      await callbacks?.onAfterInsert(model);
     }
-
-    return model;
   }
 
   private async updateElement<TElement extends Element>(element: TElement, callbacks?: UpdateCallbacks<TElement>) {
@@ -398,8 +390,7 @@ function normalizeRulesetInsertOptions(options?: RulesetInsertOptions | Duplicat
     skip: options.skip ?? "same-id-and-version-eq",
     replaceVersions: options.replaceVersions ?? "exact",
     onElementUpdate: options.onElementUpdate,
-    onElementInsert: options.onElementInsert,
-    onModelInsert: options.onModelInsert,
+    onEntityInsert: options.onEntityInsert,
   };
 }
 /* eslint-enable deprecation/deprecation */
