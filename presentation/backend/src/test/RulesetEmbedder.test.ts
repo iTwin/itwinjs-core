@@ -42,7 +42,7 @@ describe("RulesetEmbedder", () => {
   let subjectCodeSpec: CodeSpec;
   let informationPartitionCodeSpec: CodeSpec;
 
-  const onElementUpdate = {
+  const onEntityUpdate = {
     onBeforeUpdate: sinon.spy(),
     onAfterUpdate: sinon.spy(),
   };
@@ -63,8 +63,8 @@ describe("RulesetEmbedder", () => {
     sinon.restore();
     onEntityInsert.onBeforeInsert.resetHistory();
     onEntityInsert.onAfterInsert.resetHistory();
-    onElementUpdate.onBeforeUpdate.resetHistory();
-    onElementUpdate.onAfterUpdate.resetHistory();
+    onEntityUpdate.onBeforeUpdate.resetHistory();
+    onEntityUpdate.onAfterUpdate.resetHistory();
   });
 
   function initializeMocks() {
@@ -396,11 +396,11 @@ describe("RulesetEmbedder", () => {
       rulesetElementMock.setup((x) => x.id).returns(() => rulesetElementId);
       elementsMock.setup((x) => x.tryGetElement(rulesetElementId)).returns(() => rulesetElementMock.object);
 
-      const insertId = await embedder.insertRuleset(ruleset, { skip: "never", replaceVersions: "exact", onElementUpdate });
+      const insertId = await embedder.insertRuleset(ruleset, { skip: "never", replaceVersions: "exact", onEntityUpdate });
       expect(insertId).to.eq(rulesetElementId);
       rulesetElementMock.verify((x) => x.update(), moq.Times.once());
-      expect(onElementUpdate.onBeforeUpdate).to.have.been.calledOnce;
-      expect(onElementUpdate.onAfterUpdate).to.have.been.calledOnce;
+      expect(onEntityUpdate.onBeforeUpdate).to.have.been.calledOnce;
+      expect(onEntityUpdate.onAfterUpdate).to.have.been.calledOnce;
     });
 
     it("removes rulesets with same id", async () => {

@@ -37,18 +37,18 @@ export enum DuplicateRulesetHandlingStrategy {
  * Interface for callbacks which will be called before and after Element/Model updates
  * @beta
  */
-interface UpdateCallbacks<TProps> {
-  onBeforeUpdate: (props: TProps) => Promise<void>;
-  onAfterUpdate: (props: TProps) => Promise<void>;
+interface UpdateCallbacks {
+  onBeforeUpdate: (props: Entity) => Promise<void>;
+  onAfterUpdate: (props: Entity) => Promise<void>;
 }
 
 /**
  * Interface for callbacks which will be called before and after Element/Model is inserted
  * @beta
  */
-interface InsertCallbacks<TProps> {
-  onBeforeInsert: (props: TProps) => Promise<void>;
-  onAfterInsert: (props: TProps) => Promise<void>;
+interface InsertCallbacks {
+  onBeforeInsert: (props: Entity) => Promise<void>;
+  onAfterInsert: (props: Entity) => Promise<void>;
 }
 
 /**
@@ -81,13 +81,13 @@ export interface RulesetInsertOptions {
    * Callbacks that will be called before and after Element updates
    * @beta
    */
-  onElementUpdate?: UpdateCallbacks<Element>;
+  onEntityUpdate?: UpdateCallbacks;
 
   /**
    * Callbacks that will be called before and after Entity is inserted
    * @beta
    */
-  onEntityInsert?: InsertCallbacks<Entity>;
+  onEntityInsert?: InsertCallbacks;
 }
 
 /**
@@ -194,7 +194,7 @@ export class RulesetEmbedder {
     // attempt to update ruleset with same ID and version
     const exactMatch = rulesetsWithSameId.find((curr) => curr.normalizedVersion === rulesetVersion);
     if (exactMatch !== undefined) {
-      return this.updateRuleset(exactMatch.id, ruleset, normalizedOptions.onElementUpdate);
+      return this.updateRuleset(exactMatch.id, ruleset, normalizedOptions.onEntityUpdate);
     }
 
     // no exact match found - insert a new ruleset element
@@ -203,7 +203,7 @@ export class RulesetEmbedder {
     return this.insertNewRuleset(ruleset, model, rulesetCode, normalizedOptions.onEntityInsert);
   }
 
-  private async updateRuleset(elementId: Id64String, ruleset: Ruleset, callbacks?: UpdateCallbacks<Element>) {
+  private async updateRuleset(elementId: Id64String, ruleset: Ruleset, callbacks?: UpdateCallbacks) {
     const existingRulesetElement = this._imodel.elements.tryGetElement<DefinitionElement>(elementId);
     assert(existingRulesetElement !== undefined);
     existingRulesetElement.jsonProperties.jsonProperties = ruleset;
@@ -214,7 +214,7 @@ export class RulesetEmbedder {
     return existingRulesetElement.id;
   }
 
-  private async insertNewRuleset(ruleset: Ruleset, model: Model, rulesetCode: Code, callbacks?: InsertCallbacks<Entity>): Promise<Id64String> {
+  private async insertNewRuleset(ruleset: Ruleset, model: Model, rulesetCode: Code, callbacks?: InsertCallbacks): Promise<Id64String> {
     const props: DefinitionElementProps = {
       model: model.id,
       code: rulesetCode,
@@ -246,7 +246,7 @@ export class RulesetEmbedder {
     return rulesetList;
   }
 
-  private async getOrCreateRulesetModel(callbacks?: InsertCallbacks<Entity>): Promise<DefinitionModel> {
+  private async getOrCreateRulesetModel(callbacks?: InsertCallbacks): Promise<DefinitionModel> {
     const rulesetModel = this.queryRulesetModel();
     if (undefined !== rulesetModel)
       return rulesetModel;
@@ -284,7 +284,7 @@ export class RulesetEmbedder {
     return this._imodel.elements.tryGetElement<DefinitionPartition>(code);
   }
 
-  private async insertDefinitionModel(definitionPartition: DefinitionPartition, callbacks?: InsertCallbacks<Entity>): Promise<DefinitionModel> {
+  private async insertDefinitionModel(definitionPartition: DefinitionPartition, callbacks?: InsertCallbacks): Promise<DefinitionModel> {
     const modelProps: ModelProps = {
       modeledElement: definitionPartition,
       name: this._rulesetModelName,
@@ -295,7 +295,7 @@ export class RulesetEmbedder {
     return this.insertModel(modelProps, callbacks);
   }
 
-  private async insertDefinitionPartition(rulesetSubject: Subject, callbacks?: InsertCallbacks<Entity>): Promise<DefinitionPartition> {
+  private async insertDefinitionPartition(rulesetSubject: Subject, callbacks?: InsertCallbacks): Promise<DefinitionPartition> {
     const partitionCode = DefinitionPartition.createCode(this._imodel, rulesetSubject.id, this._rulesetModelName);
     const definitionPartitionProps: InformationPartitionElementProps = {
       parent: {
@@ -310,7 +310,7 @@ export class RulesetEmbedder {
     return this.insertElement(definitionPartitionProps, callbacks);
   }
 
-  private async insertSubject(callbacks?: InsertCallbacks<Entity>): Promise<Subject> {
+  private async insertSubject(callbacks?: InsertCallbacks): Promise<Subject> {
     const root = this._imodel.elements.getRootSubject();
     const codeSpec: CodeSpec = this._imodel.codeSpecs.getByName(BisCodeSpec.subject);
     const subjectCode = new Code({
@@ -344,7 +344,7 @@ export class RulesetEmbedder {
     this._imodel.saveChanges();
   }
 
-  private async insertElement<TProps extends ElementProps>(props: TProps, callbacks?: InsertCallbacks<Entity>): Promise<Element> {
+  private async insertElement<TProps extends ElementProps>(props: TProps, callbacks?: InsertCallbacks): Promise<Element> {
     const element = this._imodel.elements.createElement(props);
     await callbacks?.onBeforeInsert(element);
     try {
@@ -354,7 +354,7 @@ export class RulesetEmbedder {
     }
   }
 
-  private async insertModel<TProps extends ModelProps>(props: TProps, callbacks?: InsertCallbacks<Entity>): Promise<Model> {
+  private async insertModel(props: ModelProps, callbacks?: InsertCallbacks): Promise<Model> {
     const model = this._imodel.models.createModel(props);
     await callbacks?.onBeforeInsert(model);
     try {
@@ -365,7 +365,7 @@ export class RulesetEmbedder {
     }
   }
 
-  private async updateElement<TElement extends Element>(element: TElement, callbacks?: UpdateCallbacks<TElement>) {
+  private async updateElement(element: Element, callbacks?: UpdateCallbacks) {
     await callbacks?.onBeforeUpdate(element);
     try {
       element.update();
@@ -389,7 +389,7 @@ function normalizeRulesetInsertOptions(options?: RulesetInsertOptions | Duplicat
   return {
     skip: options.skip ?? "same-id-and-version-eq",
     replaceVersions: options.replaceVersions ?? "exact",
-    onElementUpdate: options.onElementUpdate,
+    onEntityUpdate: options.onEntityUpdate,
     onEntityInsert: options.onEntityInsert,
   };
 }
