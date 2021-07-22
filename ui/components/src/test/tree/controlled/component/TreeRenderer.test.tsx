@@ -37,12 +37,12 @@ describe("TreeRenderer", () => {
 
   before(async () => {
     await TestUtils.initializeUiComponents();
-    Element.prototype.scrollIntoView = () => { };
+    HTMLElement.prototype.scrollIntoView = () => { };
   });
 
   after(() => {
     TestUtils.terminateUiComponents();
-    delete (Element.prototype as any).scrollIntoView;
+    delete (HTMLElement.prototype as any).scrollIntoView;
   });
 
   afterEach(() => {
@@ -229,9 +229,7 @@ describe("TreeRenderer", () => {
     const verticalScrollSpy = sinon.spy();
     sinon.replace(VariableSizeList.prototype, "scrollToItem", verticalScrollSpy);
     const horizontalScrollSpy = sinon.spy();
-    // sinon.replace(Element.prototype, "scrollIntoView", horizontalScrollSpy);
-    const saveScrollIntoView = window.HTMLElement.prototype.scrollIntoView;
-    window.HTMLElement.prototype.scrollIntoView = horizontalScrollSpy;
+    sinon.replace(HTMLElement.prototype, "scrollIntoView", horizontalScrollSpy);
 
     const { rerender } = render(<TreeRenderer {...defaultProps} />);
 
@@ -241,8 +239,6 @@ describe("TreeRenderer", () => {
 
     expect(verticalScrollSpy).to.be.calledWith(1);
     expect(horizontalScrollSpy).to.be.called;
-
-    window.HTMLElement.prototype.scrollIntoView = saveScrollIntoView;
   });
 
   it("calls treeActions.onTreeKeyDown & onTreeKeyUp", () => {
