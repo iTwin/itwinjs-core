@@ -25,7 +25,7 @@ jobs:
     - script: node common/scripts/install-run-rush.js install
       displayName: rush install
       workingDirectory: $(System.DefaultWorkingDirectory)
-    - script: node common/scripts/install-run-rush.js build -v -p max
+    - script: node common/scripts/install-run-rush.js compile -v -p max
       displayName: rush build
       workingDirectory: $(System.DefaultWorkingDirectory)
     - script: node common/scripts/install-run-rush.js extract-api
