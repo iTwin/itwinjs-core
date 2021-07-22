@@ -90,7 +90,6 @@
     "@types/formidable": "^1.0.31",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
-    "@types/js-base64": "^3.3.1",
     "@types/lru-cache": "^5.1.0",
     "@types/mocha": "^8.2.2",
     "@types/multiparty": "^0.0.31",

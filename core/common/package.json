@@ -53,7 +53,6 @@
     "@bentley/rbac-client": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/flatbuffers": "~1.10.0",
-    "@types/js-base64": "^3.3.1",
     "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/semver": "^5.5.0",
