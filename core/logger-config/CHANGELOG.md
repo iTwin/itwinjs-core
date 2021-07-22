@@ -32,6 +32,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 
 _Version update only_
 
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
+
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
 
@@ -521,7 +526,7 @@ Mon, 13 May 2019 15:52:05 GMT
 
 ### Updates
 
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

@@ -36,6 +36,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 
 - Remove deprecated iModelHub permissions API
 
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
+
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
 
@@ -435,7 +440,7 @@ Wed, 06 May 2020 13:17:49 GMT
 ### Updates
 
 - react to renaming of imodeljs-clients
-- Re-enabled RbacClient integration tests. 
+- Re-enabled RbacClient integration tests.
 - Updated docs
 - create new package from imodeljs-clients
 - Upgrade to Rush 5.23.2

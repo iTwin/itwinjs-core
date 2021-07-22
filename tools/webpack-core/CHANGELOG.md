@@ -32,6 +32,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 
 _Version update only_
 
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
+
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
 
@@ -193,7 +198,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
 
-- Add function to check versions semantically 
+- Add function to check versions semantically
 - Changed the way CopyExternalsPlugin works to grab more dependencies
 
 ## 2.10.3
@@ -208,7 +213,7 @@ Fri, 08 Jan 2021 14:52:02 GMT
 
 ### Updates
 
-- Add function to check versions semantically 
+- Add function to check versions semantically
 
 ## 2.10.1
 Tue, 22 Dec 2020 00:53:38 GMT

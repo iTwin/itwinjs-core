@@ -32,6 +32,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 
 _Version update only_
 
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
+
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
 
@@ -425,9 +430,9 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
 - react to renaming of imodeljs-clients
-- Fixed failing ulas tests. 
+- Fixed failing ulas tests.
 - Renamed OIDC constructs for consistency; Removed SAML support.
 - create new package from imodeljs-clients
 - ; substitute current date when posting feature usage without any set start/end dates

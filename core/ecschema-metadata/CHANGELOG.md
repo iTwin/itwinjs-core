@@ -41,6 +41,13 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - Added tests for validating custom attribute namespace and schema version
 - Added get fullName tests for each schema item type if they didn't exist before
 
+_Version update only_
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:44 GMT
+
+_Version update only_
+
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
 
@@ -464,7 +471,7 @@ Wed, 06 May 2020 13:17:49 GMT
 
 - new EC Rule 501 - CustomAttribute schemas must be referenced by the container's schema.
 - Removing deprecated API. Please see NextVersion.md under the heading 'ecschema-metadata Package' for details.
-- Deprecating schema classes' method 'toJson' and replacing it with the JSON.stringify supported method 'toJSON'.  Also deprecating the 'deserialize' method and replacing it with 'fromJSON' for naming consistency. 
+- Deprecating schema classes' method 'toJson' and replacing it with the JSON.stringify supported method 'toJSON'.  Also deprecating the 'deserialize' method and replacing it with 'fromJSON' for naming consistency.
 - Undefined display labels should equal empty display labels during schema comparison.
 - order imports.
 - Removed unused package dependencies
@@ -590,7 +597,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Adds parameter for api-extractor to validate missing release tags
 - Adds ignoreMissingTags flag
 - Fix broken links
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Added ability to suppress rule violations from being reported during schema validation.
 - Upgrade TypeDoc dependency to 0.14.2
 - Updated BIS and EC schema validation documentation and adjusted diagnostic codes to match documentation.
