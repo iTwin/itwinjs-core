@@ -1294,6 +1294,7 @@ describe("Table", () => {
         onRowsLoaded={onRowsLoaded}
       />);
       await waitForSpy(onRowsLoaded);
+      table.setProps({ scrollToRow: 1 });
       table.update();
     });
 
