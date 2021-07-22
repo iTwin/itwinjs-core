@@ -78,7 +78,7 @@ export interface RulesetInsertOptions {
   replaceVersions?: "all" | "all-lower" | "exact";
 
   /**
-   * Callbacks that will be called before and after Element updates
+   * Callbacks that will be called before and after `Entity` updates
    * @beta
    */
   onEntityUpdate?: UpdateCallbacks;
