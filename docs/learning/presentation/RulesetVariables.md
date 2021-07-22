@@ -65,8 +65,7 @@ Setting the ruleset value to specific IDs creates the hierarchy only for specifi
 
 ![Filtered Elements' Hierarchy](./media/ruleset-variables/filtered-elements-hierarchy.png)
 
-Clearing the ruleset value brings us back to initial, unfiltered, view:
-
+Clearing the ruleset value brings us back to the initial unfiltered view:
 ```ts
 [[include:RulesetVariables.InInstanceFilter.Unset]]
 ```
