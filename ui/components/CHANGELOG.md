@@ -1,6 +1,13 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+This log was last generated on Thu, 22 Jul 2021 20:23:45 GMT and should not be manually modified.
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+### Updates
+
+- Workaround for react-data-grid blank grid after scroll and update
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
