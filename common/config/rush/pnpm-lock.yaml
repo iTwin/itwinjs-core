@@ -210,17 +210,17 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/rbac-client': workspace:*
       '@types/deep-assign': ^0.1.0
-      '@types/js-base64': ^2.3.1
+      '@types/js-base64': ^3.3.1
       '@types/node': 10.14.1
       deep-assign: ^2.0.0
       eslint: ^7.11.0
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       rimraf: ^3.0.2
       typescript: ~4.3.0
     dependencies:
       '@bentley/context-registry-client': link:../context-registry
       deep-assign: 2.0.0
-      js-base64: 2.6.4
+      js-base64: 3.6.1
     devDependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
@@ -229,7 +229,7 @@ importers:
       '@bentley/itwin-client': link:../itwin
       '@bentley/rbac-client': link:../rbac
       '@types/deep-assign': 0.1.1
-      '@types/js-base64': 2.3.2
+      '@types/js-base64': 3.3.1
       '@types/node': 10.14.1
       eslint: 7.30.0
       rimraf: 3.0.2
@@ -244,7 +244,7 @@ importers:
       '@bentley/eslint-plugin': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
-      '@types/js-base64': ^2.3.1
+      '@types/js-base64': ^3.3.1
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -254,7 +254,7 @@ importers:
       chai: ^4.1.2
       deep-assign: ^2.0.0
       eslint: ^7.11.0
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       lodash: ^4.17.10
       mocha: ^8.3.2
       nock: ^12.0.3
@@ -269,7 +269,7 @@ importers:
       xpath: 0.0.27
     dependencies:
       deep-assign: 2.0.0
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       lodash: 4.17.21
       qs: 6.10.1
       superagent: 5.3.1
@@ -283,7 +283,7 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
-      '@types/js-base64': 2.3.2
+      '@types/js-base64': 3.3.1
       '@types/lodash': 4.14.171
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
@@ -590,7 +590,7 @@ importers:
       '@types/formidable': ^1.0.31
       '@types/fs-extra': ^4.0.7
       '@types/glob': ^5.0.35
-      '@types/js-base64': ^2.3.1
+      '@types/js-base64': ^3.3.1
       '@types/lru-cache': ^5.1.0
       '@types/mocha': ^8.2.2
       '@types/multiparty': ^0.0.31
@@ -609,7 +609,7 @@ importers:
       fs-extra: ^8.1.0
       glob: ^7.1.2
       internal-tools: workspace:*
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       mkdirp: ^1.0.4
       mocha: ^8.3.2
       multiparty: ^4.2.1
@@ -634,7 +634,7 @@ importers:
       form-data: 2.5.1
       fs-extra: 8.1.0
       glob: 7.1.7
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       multiparty: 4.2.2
       semver: 5.7.1
       ws: 7.5.3
@@ -659,7 +659,7 @@ importers:
       '@types/formidable': 1.2.3
       '@types/fs-extra': 4.0.12
       '@types/glob': 5.0.37
-      '@types/js-base64': 2.3.2
+      '@types/js-base64': 3.3.1
       '@types/lru-cache': 5.1.1
       '@types/mocha': 8.2.3
       '@types/multiparty': 0.0.31
@@ -706,7 +706,7 @@ importers:
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
       '@types/fs-extra': ^4.0.7
-      '@types/js-base64': ^2.3.1
+      '@types/js-base64': ^3.3.1
       '@types/jsonwebtoken': ^8.5.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -725,7 +725,7 @@ importers:
       got: ~11.8.2
       https-proxy-agent: ^5.0.0
       internal-tools: workspace:*
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       jsonwebtoken: ^8.5.0
       mocha: ^8.3.2
       nock: ^12.0.3
@@ -747,7 +747,7 @@ importers:
       fs-write-stream-atomic: 1.0.10
       got: 11.8.2
       https-proxy-agent: 5.0.0
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       jsonwebtoken: 8.5.1
       openid-client: 3.15.10
       proper-lockfile: 4.1.2
@@ -769,7 +769,7 @@ importers:
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
       '@types/fs-extra': 4.0.12
-      '@types/js-base64': 2.3.2
+      '@types/js-base64': 3.3.1
       '@types/jsonwebtoken': 8.5.4
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
@@ -831,7 +831,7 @@ importers:
       '@bentley/rbac-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/flatbuffers': ~1.10.0
-      '@types/js-base64': ^2.3.1
+      '@types/js-base64': ^3.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/semver': ^5.5.0
@@ -839,7 +839,7 @@ importers:
       chai: ^4.1.2
       eslint: ^7.11.0
       flatbuffers: ~1.12.0
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       mocha: ^8.3.2
       nyc: ^15.1.0
       rimraf: ^3.0.2
@@ -859,13 +859,13 @@ importers:
       '@bentley/rbac-client': link:../../clients/rbac
       '@types/chai': 4.2.21
       '@types/flatbuffers': 1.10.0
-      '@types/js-base64': 2.3.2
+      '@types/js-base64': 3.3.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/semver': 5.5.0
       chai: 4.3.4
       eslint: 7.30.0
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
@@ -1199,7 +1199,6 @@ importers:
       '@bentley/webgl-compatibility': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
-      '@types/js-base64': ^2.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/semver': ^5.5.0
@@ -1210,7 +1209,6 @@ importers:
       eslint: ^7.11.0
       fuse.js: ^3.3.0
       glob: ^7.1.2
-      js-base64: ^2.4.5
       mocha: ^8.3.2
       nyc: ^15.1.0
       oidc-client: ^1.9.1
@@ -1228,7 +1226,6 @@ importers:
       '@bentley/reality-data-client': link:../../clients/reality-data
       '@bentley/usage-logging-client': link:../../clients/usage-logging
       fuse.js: 3.6.1
-      js-base64: 2.6.4
       oidc-client: 1.11.5
       semver: 5.7.1
       wms-capabilities: 0.4.0
@@ -1253,7 +1250,6 @@ importers:
       '@bentley/webgl-compatibility': link:../webgl-compatibility
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
-      '@types/js-base64': 2.3.2
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/semver': 5.5.0
@@ -1574,7 +1570,7 @@ importers:
       '@bentley/presentation-common': workspace:*
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
-      '@types/js-base64': ^2.3.1
+      '@types/js-base64': ^3.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/ws': ^6.0.4
@@ -1582,7 +1578,7 @@ importers:
       chai-as-promised: ^7
       cpx: ^1.5.0
       eslint: ^7.11.0
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       mocha: ^8.3.2
       rimraf: ^3.0.2
       typescript: ~4.3.0
@@ -1600,7 +1596,7 @@ importers:
       '@bentley/presentation-common': link:../../presentation/common
       '@types/chai': 4.2.21
       '@types/fs-extra': 4.0.12
-      '@types/js-base64': 2.3.2
+      '@types/js-base64': 3.3.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/ws': 6.0.4
@@ -1608,7 +1604,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.4
       cpx: 1.5.0
       eslint: 7.30.0
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       mocha: 8.4.0
       rimraf: 3.0.2
       typescript: 4.3.5
@@ -2025,7 +2021,6 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/i18next': ^8.4.2
       '@types/i18next-browser-languagedetector': ^2.0.1
-      '@types/js-base64': ^2.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       body-parser: ^1.18.2
@@ -2039,7 +2034,6 @@ importers:
       i18next: ^10.2.2
       i18next-browser-languagedetector: ^2.1.0
       i18next-xhr-backend: ^2.0.1
-      js-base64: ^2.4.5
       mocha: ^8.3.2
       rimraf: ^3.0.2
       save: ^2.3.3
@@ -2067,7 +2061,6 @@ importers:
       i18next: 10.6.0
       i18next-browser-languagedetector: 2.2.4
       i18next-xhr-backend: 2.0.1
-      js-base64: 2.6.4
       save: 2.4.0
       webpack: 4.42.0
     devDependencies:
@@ -2080,7 +2073,6 @@ importers:
       '@types/fs-extra': 4.0.12
       '@types/i18next': 8.4.6
       '@types/i18next-browser-languagedetector': 2.0.2
-      '@types/js-base64': 2.3.2
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       cpx: 1.5.0
@@ -2111,7 +2103,7 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/i18next': ^8.4.2
       '@types/i18next-browser-languagedetector': ^2.0.1
-      '@types/js-base64': ^2.3.1
+      '@types/js-base64': ^3.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       body-parser: ^1.18.2
@@ -2125,7 +2117,7 @@ importers:
       i18next: ^10.2.2
       i18next-browser-languagedetector: ^2.1.0
       i18next-xhr-backend: ^2.0.1
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       mocha: ^8.3.2
       rimraf: ^3.0.2
       save: ^2.3.3
@@ -2151,7 +2143,7 @@ importers:
       i18next: 10.6.0
       i18next-browser-languagedetector: 2.2.4
       i18next-xhr-backend: 2.0.1
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       save: 2.4.0
       webpack: 4.42.0
     devDependencies:
@@ -2164,7 +2156,7 @@ importers:
       '@types/fs-extra': 4.0.12
       '@types/i18next': 8.4.6
       '@types/i18next-browser-languagedetector': 2.0.2
-      '@types/js-base64': 2.3.2
+      '@types/js-base64': 3.3.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       cpx: 1.5.0
@@ -2528,7 +2520,7 @@ importers:
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
       '@types/fs-extra': ^4.0.7
-      '@types/js-base64': ^2.3.1
+      '@types/js-base64': ^3.3.1
       '@types/mocha': ^8.2.2
       chai: ^4.1.2
       cpx: ^1.5.0
@@ -2536,7 +2528,7 @@ importers:
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       internal-tools: workspace:*
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       mocha: ^8.3.2
       nock: ^12.0.3
       nyc: ^15.1.0
@@ -2554,7 +2546,7 @@ importers:
       chai: 4.3.4
       deep-assign: 2.0.0
       fs-extra: 8.1.0
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       mocha: 8.4.0
       nock: 12.0.3
     devDependencies:
@@ -2565,7 +2557,7 @@ importers:
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
       '@types/fs-extra': 4.0.12
-      '@types/js-base64': 2.3.2
+      '@types/js-base64': 3.3.1
       '@types/mocha': 8.2.3
       cpx: 1.5.0
       eslint: 7.30.0
@@ -10350,8 +10342,11 @@ packages:
       '@types/sizzle': 2.3.3
     dev: false
 
-  /@types/js-base64/2.3.2:
-    resolution: {integrity: sha512-iGjZEnheu9n53fhlU+QLovdKHsdwPJ79iammNM0opTEp18zcJ/nNAIthuMilJoDPNUQHoqRAJdDNI5rxHY4nkA==}
+  /@types/js-base64/3.3.1:
+    resolution: {integrity: sha512-Zw33oQNAvDdAN9b0IE5stH0y2MylYvtU7VVTKEJPxhyM2q57CVaNJhtJW258ah24NRtaiA23tptUmVn3dmTKpw==}
+    deprecated: This is a stub types definition. js-base64 provides its own type definitions, so you do not need this installed.
+    dependencies:
+      js-base64: 3.6.1
     dev: true
 
   /@types/jsdom/12.2.4:
@@ -18166,6 +18161,9 @@ packages:
 
   /js-base64/2.6.4:
     resolution: {integrity: sha512-pZe//GGmwJndub7ZghVHz7vjb2LgC1m8B07Au3eYqeqv9emhESByMXxaEgkUkEqJe87oBbSniGYoQNIBklc7IQ==}
+
+  /js-base64/3.6.1:
+    resolution: {integrity: sha512-Frdq2+tRRGLQUIQOgsIGSCd1VePCS2fsddTG5dTCqR0JHgltXWfsxnY0gIXPoMeRmdom6Oyq+UMOFg5suduOjQ==}
 
   /js-tokens/3.0.2:
     resolution: {integrity: sha1-mGbfOVECEw449/mWvOtlRDIJwls=}
