@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-itwin-client",
-  "version": "3.0.0-dev.1",
+  "version": "3.0.0-dev.2",
   "description": "Clients for various Bentley Services used by iModel.js at the backend",
   "main": "lib/backend-itwin-client.js",
   "browser": {
@@ -38,14 +38,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.1",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.1",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.1",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.1",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.1",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.1",
-    "@bentley/rbac-client": "workspace:^3.0.0-dev.1",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.1"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.2",
+    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.2",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.2",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.2",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.2",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.2",
+    "@bentley/rbac-client": "workspace:^3.0.0-dev.2",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.2"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
