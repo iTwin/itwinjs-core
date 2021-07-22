@@ -31,7 +31,8 @@ export interface RealityTileParams extends TileParams {
 
 const scratchLoadedChildren = new Array<RealityTile>();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
-const additiveRefinementThreshold = 20000;    // Additive tiles (Cesium OSM tileset) are subdivided until their radius falls below this threshold to ensure accurate reprojection.
+const additiveRefinementThreshold = 2000;    // Additive tiles (Cesium OSM tileset) are subdivided until their range diagonal falls below this threshold to ensure accurate reprojection.
+const additiveRefinementDepthLimit = 20;
 const scratchFrustum = new Frustum();
 
 /**
@@ -106,7 +107,8 @@ export class RealityTile extends Tile {
   private useAdditiveRefinementStepchildren() {
     // Create additive stepchildren only if we are this tile is additive and we are repojecting and the radius exceeds the additiveRefinementThreshold.
     // This criteria is currently only met by the Cesium OSM tileset.
-    return this.additiveRefinement && this.isDisplayable && this.radius > additiveRefinementThreshold && this.realityRoot.doReprojectChildren(this);
+    const rangeDiagonal = this.rangeCorners ? this.rangeCorners[0].distance(this.rangeCorners[3]) : 0;
+    return this.additiveRefinement && this.isDisplayable && rangeDiagonal > additiveRefinementThreshold && this.depth < additiveRefinementDepthLimit && this.realityRoot.doReprojectChildren(this);
   }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
@@ -325,7 +327,8 @@ export class RealityTile extends Tile {
     const zVector = Vector3d.createStartEnd(origin, corners[4]);
     const maximumSize = this.maximumSize;
     const boundedByRegion = this.boundedByRegion;
-    const isLeaf = this.radius < additiveRefinementThreshold;
+    const rangeDiagonal = corners[0].distance(corners[3]);
+    const isLeaf = rangeDiagonal < additiveRefinementThreshold || this.depth  > additiveRefinementDepthLimit;
     const localTransform = Transform.createOriginAndMatrixColumns(origin, xVector, yVector, zVector);
     if (!localTransform) {
       assert(false);
@@ -379,7 +382,7 @@ export class RealityTile extends Tile {
 
 /** When additive refinement is used (as in the Cesium OSM tileset) it is not possible to accurately reproject very large, low level tiles
  * In this case we create additional "step" children (grandchildren etc. ) that will clipped portions display the their ancestor's additive geometry.
- * These step children are subdivided until they are small enough to be accurately reprojected - this is controlled by the additiveRefinementThreshold (currently 20KM).
+ * These step children are subdivided until they are small enough to be accurately reprojected - this is controlled by the additiveRefinementThreshold (currently 2KM).
  * The stepchildren do not contain any tile graphics - they just create a branch with clipping and reprojection to display their additive refinement ancestor graphics.
  */
 class AdditiveRefinementStepChild  extends RealityTile {
