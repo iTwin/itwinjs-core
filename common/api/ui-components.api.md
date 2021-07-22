@@ -136,7 +136,7 @@ export interface ActiveMatchInfo {
     nodeId: string;
 }
 
-// @alpha
+// @public
 export function adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date;
 
 // @beta
@@ -3935,6 +3935,8 @@ export interface ScrubberProps extends CommonProps {
     // (undocumented)
     startDate?: Date;
     // (undocumented)
+    timeZoneOffset?: number;
+    // (undocumented)
     totalDuration: number;
 }
 
@@ -4843,6 +4845,8 @@ export interface TimelineComponentProps {
     // (undocumented)
     startDate?: Date;
     // (undocumented)
+    timeZoneOffset?: number;
+    // (undocumented)
     totalDuration: number;
 }
 
@@ -4925,6 +4929,9 @@ export enum TimelineScale {
     Quarters = 1,
     Years = 0
 }
+
+// @public
+export const toDateString: (date: Date, timeZoneOffset?: number | undefined) => string;
 
 // @beta
 export class ToggleEditor extends React.PureComponent<PropertyEditorProps, ToggleEditorState> implements TypeEditor {
@@ -5091,6 +5098,9 @@ export interface ToolbarWithOverflowProps extends CommonProps, NoChildrenProps {
 
 // @internal (undocumented)
 export function toRxjsObservable<T>(observable: Observable<T>): Observable_2<T>;
+
+// @public
+export const toTimeString: (date: Date, timeZoneOffset?: number | undefined) => string;
 
 // @internal (undocumented)
 export function toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition;

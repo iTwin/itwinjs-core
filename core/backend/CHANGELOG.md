@@ -1,6 +1,25 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+_Version update only_
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- TemplateModelCloner now assigns a new FederationGuid for cloned element instances.
+- Accomodated the inability to reverse Changesets when creating change summaries. 
+- fix lint issue
+- begin api transition to changeset index rather than changeset Id
+- Use ecef location calculated for projected iModels
+- Push refreshes access token if necessary. 
+- Do not reuse briefcase ids in ReadWrite workflows when using the RPC interfaces (if the briefcase was not found in the local file system)
+- Add missing SectionDrawing properties.
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT

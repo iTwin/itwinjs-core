@@ -76,7 +76,7 @@ export interface SynchronizationResults {
  * @beta
  */
 export class Synchronizer {
-  private _seenElements: Id64String[] = new Array<Id64String>();
+  private _seenElements: Set<Id64String> = new Set<Id64String>();
   private _unchangedSources: Id64String[] = new Array<Id64String>();
   private _links = new Map<string, SynchronizationResults>();
 
@@ -292,82 +292,86 @@ export class Synchronizer {
    * @beta
    */
   public onElementSeen(id: Id64String) {
-    this._seenElements.push(id);
+    this._seenElements.add(id);
   }
 
   /** Deletes elements from a BriefcaseDb that were previously converted but not longer exist in the source data.
    * @beta
    */
   public detectDeletedElements() {
-    if (this.imodel.isSnapshotDb()) {
+    if (this.imodel.isSnapshotDb())
       return;
-    }
 
-    if (this._supportsMultipleFilesPerChannel) {
-      this.detectDeletedElementsInFile();
-    } else {
+    if (this._supportsMultipleFilesPerChannel)
+      this.detectDeletedElementsInFiles();
+    else
       this.detectDeletedElementsInChannel();
-    }
   }
 
   private detectDeletedElementsInChannel() {
-    // This detection only is called for bridges that support a single source file per channel. If we skipped that file because it was unchanged, then we don't need to delete anything
-    if (this._unchangedSources.length !== 0) {
+    if (this._unchangedSources.length !== 0)
       return;
-    }
     const sql = `SELECT aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Kind !='DocumentWithBeGuid'`;
-    const deleteElements: Id64String[] = new Array<Id64String>();
-    const deleteDefElements: Id64String[] = new Array<Id64String>();
+    const elementsToDelete: Id64String[] = [];
+    const defElementsToDelete: Id64String[] = [];
     const db = this.imodel as BriefcaseDb;
     this.imodel.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        // If the element is in the current channel and we didn't visit it, delete it
         const elementId = statement.getValue(0).getId();
         const elementChannelRoot = db.concurrencyControl.channel.getChannelOfElement(db.elements.getElement(elementId));
-        if (elementChannelRoot.channelRoot === db.concurrencyControl.channel.channelRoot && !(this._seenElements.includes(elementId))) {
+        const isInChannelRoot = elementChannelRoot.channelRoot === db.concurrencyControl.channel.channelRoot;
+        const hasSeenElement = this._seenElements.has(elementId);
+        if (isInChannelRoot && !hasSeenElement) {
           const element = db.elements.getElement(elementId);
           if (element instanceof DefinitionElement)
-            deleteDefElements.push(elementId);
+            defElementsToDelete.push(elementId);
           else
-            deleteElements.push(elementId);
+            elementsToDelete.push(elementId);
         }
       }
     });
-    this.imodel.elements.deleteElement(deleteElements);
-    this.imodel.elements.deleteDefinitionElements(deleteDefElements);
+    this.deleteElements(elementsToDelete, defElementsToDelete);
   }
 
-  private detectDeletedElementsInFile() {
+  private detectDeletedElementsInFiles() {
     for (const value of this._links.values()) {
-      if (value.itemState === ItemState.Unchanged || value.itemState === ItemState.New) {
+      if (value.itemState === ItemState.Unchanged || value.itemState === ItemState.New)
         continue;
-      }
-      this.detectDeletedElementsForScope(value.element.id);
+      this.detectDeletedElementsInScope(value.element.id);
     }
   }
 
-  private detectDeletedElementsForScope(scopeId: Id64String) {
+  private detectDeletedElementsInScope(scopeId: Id64String) {
     const sql = `SELECT aspect.Element.Id FROM ${ExternalSourceAspect.classFullName} aspect WHERE aspect.Scope.Id=?`;
-    const deleteElements: Id64String[] = new Array<Id64String>();
-    const deleteDefElements: Id64String[] = new Array<Id64String>();
+    const elementsToDelete: Id64String[] = [];
+    const defElementsToDelete: Id64String[] = [];
     this.imodel.withPreparedStatement(sql, (statement: ECSqlStatement): void => {
       statement.bindId(1, scopeId);
       while (DbResult.BE_SQLITE_ROW === statement.step()) {
-        // If the element is in a scope that was processed and we didn't visit it, delete it
         const elementId = statement.getValue(0).getId();
         const element = this.imodel.elements.getElement(elementId);
-
-        if (!(this._seenElements.includes(elementId))) {
+        const hasSeenElement = this._seenElements.has(elementId);
+        if (!hasSeenElement) {
           if (element instanceof DefinitionElement)
-            deleteDefElements.push(elementId);
+            defElementsToDelete.push(elementId);
           else
-            deleteElements.push(elementId);
+            elementsToDelete.push(elementId);
         }
-        this.detectDeletedElementsForScope(elementId);
+        this.detectDeletedElementsInScope(elementId);
       }
     });
-    this.imodel.elements.deleteElement(deleteElements);
-    this.imodel.elements.deleteDefinitionElements(deleteDefElements);
+    this.deleteElements(elementsToDelete, defElementsToDelete);
+  }
+
+  private deleteElements(elementIds: Id64String[], defElementIds: Id64String[]) {
+    for (const elementId of elementIds) {
+      if (this.imodel.elements.tryGetElement(elementId))
+        this.imodel.elements.deleteElement(elementIds);
+    }
+    for (const elementId of defElementIds) {
+      if (this.imodel.elements.tryGetElement(elementId))
+        this.imodel.elements.deleteDefinitionElements(defElementIds);
+    }
   }
 
   private updateResultInIModelForOneElement(results: SynchronizationResults): IModelStatus {

@@ -254,7 +254,8 @@ describe("AzureFileHandler", async () => {
     assert.fail("Expected an error to be thrown!");
   }).timeout("30s");
 
-  it("should throw when tempfile is deleted", async () => {
+  // ###TODO khanaffan This tends to hang on linux.
+  it.skip("should throw when tempfile is deleted", async () => {
     const handler = new AzureFileHandler();
     const promise = handler.downloadFile(ctx, testValidUrl, targetFile, blobSizeInBytes);
     await onDataReceived();

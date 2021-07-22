@@ -310,11 +310,19 @@ export class SyncUiEventDispatcher {
 
   /** This should be called by IModelApp when the active IModelConnection is established. */
   public static initializeConnectionEvents(iModelConnection: IModelConnection) {
+    if (SyncUiEventDispatcher._unregisterListenerFunc)
+      SyncUiEventDispatcher._unregisterListenerFunc();
+
+    if (iModelConnection.isBlankConnection()) {
+      iModelConnection && UiFramework.setActiveIModelId(iModelConnection.iModelId ?? "");
+      UiFramework.dispatchActionToStore(SessionStateActionId.SetAvailableSelectionScopes, []);
+      UiFramework.dispatchActionToStore(SessionStateActionId.SetNumItemsSelected, 0);
+      return;
+    }
+
     iModelConnection.selectionSet.onChanged.removeListener(SyncUiEventDispatcher.selectionChangedHandler);
     iModelConnection.selectionSet.onChanged.addListener(SyncUiEventDispatcher.selectionChangedHandler);
     (iModelConnection.iModelId) ? UiFramework.setActiveIModelId(iModelConnection.iModelId) : /* istanbul ignore next */ "";
-    if (SyncUiEventDispatcher._unregisterListenerFunc)
-      SyncUiEventDispatcher._unregisterListenerFunc();
 
     // listen for changes from presentation rules selection manager (this is done once an iModelConnection is available to ensure Presentation.selection is valid)
     SyncUiEventDispatcher._unregisterListenerFunc = Presentation.selection.selectionChange.addListener((args: SelectionChangeEventArgs, provider: ISelectionProvider) => {

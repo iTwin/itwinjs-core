@@ -18,9 +18,10 @@ import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManag
 import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
 import { TimeField, TimeSpec } from "../datepicker/TimeField";
 import { TypeConverter } from "../converters/TypeConverter";
-import { adjustDateToTimezone, DatePicker } from "../datepicker/DatePicker";
+import { DatePicker } from "../datepicker/DatePicker";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { DateTimeTypeConverterBase } from "../converters/DateTimeTypeConverter";
+import { adjustDateToTimezone } from "../common/DateUtils";
 
 // cSpell:ignore datepicker
 

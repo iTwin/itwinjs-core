@@ -12,7 +12,7 @@ import {
   GrowableXYZArray, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PolygonOps, PolylineOps, Range1d, Range3d, Ray3d,
   Transform, Vector3d,
 } from "@bentley/geometry-core";
-import { ClipStyle, ColorDef, LinePixels, Placement2d, Placement2dProps, Placement3d } from "@bentley/imodeljs-common";
+import { ClipStyle, ColorDef, LinePixels, Placement2d } from "@bentley/imodeljs-common";
 import { DialogItem, DialogItemValue, DialogPropertySyncItem, PropertyDescription } from "@bentley/ui-abstract";
 import { AccuDrawHintBuilder, ContextRotationId } from "../AccuDraw";
 import { CoordSystem } from "../CoordSystem";
@@ -948,36 +948,35 @@ export class ViewClipByElementTool extends ViewClipTool {
 
   protected async doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange: boolean = false): Promise<boolean> {
     try {
-      const elementProps = await viewport.iModel.elements.getProps(ids);
-      if (0 === elementProps.length)
+      const placements = await viewport.iModel.elements.getPlacements(ids);
+      if (0 === placements.length)
         return false;
+
       const range = new Range3d();
       const transform = Transform.createIdentity();
-      for (const props of elementProps) {
-        const placementProps = (props as any).placement;
-        if (undefined === placementProps)
-          continue;
-
-        const hasAngle = (arg: any): arg is Placement2dProps => arg.angle !== undefined;
-        const placement = hasAngle(placementProps) ? Placement2d.fromJSON(placementProps) : Placement3d.fromJSON(placementProps);
-        if (!alwaysUseRange && 1 === elementProps.length) {
-          range.setFrom(placement instanceof Placement2d ? Range3d.createRange2d(placement.bbox, 0) : placement.bbox);
-          transform.setFrom(placement.transform); // Use ElementAlignedBox for single selection...
-        } else {
+      if (!alwaysUseRange && 1 === placements.length) {
+        const placement = placements[0];
+        range.setFrom(placement instanceof Placement2d ? Range3d.createRange2d(placement.bbox, 0) : placement.bbox);
+        transform.setFrom(placement.transform); // Use ElementAlignedBox for single selection...
+      } else {
+        for (const placement of placements)
           range.extendRange(placement.calculateRange());
-        }
       }
+
       if (range.isNull)
         return false;
+
       range.scaleAboutCenterInPlace(1.001); // pad range slightly...
       if (range.isAlmostZeroX || range.isAlmostZeroY) {
         if (range.isAlmostZeroZ)
           return false;
+
         // Invalid XY range for clip, see if XZ or YZ can be used instead...
         const canUseXZ = !range.isAlmostZeroX;
         const canUseYZ = !canUseXZ && !range.isAlmostZeroY;
         if (!canUseXZ && !canUseYZ)
           return false;
+
         const zDir = canUseXZ ? Vector3d.unitY() : Vector3d.unitX();
         const indices = Range3d.faceCornerIndices(canUseXZ ? 3 : 1);
         const corners = range.corners();
@@ -990,16 +989,20 @@ export class ViewClipByElementTool extends ViewClipTool {
         ViewClipTool.enableClipVolume(viewport);
         if (!ViewClipTool.doClipToShape(viewport, points, transform))
           return false;
+
         if (undefined !== this._clipEventHandler)
           this._clipEventHandler.onNewClip(viewport);
+
         this.onReinitialize();
         return true;
       }
       ViewClipTool.enableClipVolume(viewport);
       if (!ViewClipTool.doClipToRange(viewport, range, transform))
         return false;
+
       if (undefined !== this._clipEventHandler)
         this._clipEventHandler.onNewClip(viewport);
+
       this.onReinitialize();
       return true;
     } catch {

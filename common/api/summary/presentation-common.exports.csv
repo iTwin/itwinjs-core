@@ -13,6 +13,7 @@ public;CalculatedPropertiesSpecification
 public;CategoryDescription
 public;CategoryDescription
 public;CategoryDescriptionJSON
+public;CategoryIdentifier = ParentCategoryIdentifier | RootCategoryIdentifier | IdCategoryIdentifier
 public;CheckBoxRule 
 public;ChildNodeRule 
 public;ChildNodeSpecificationBase
@@ -23,6 +24,8 @@ public;ClassInfo
 public;ClassInfo
 public;ClassInfoJSON
 internal;CommonIpcParams
+public;CompressedClassInfoJSON
+public;CompressedDescriptorJSON = Omit
 public;ComputeDisplayValueCallback = (type: string, value: PrimitivePropertyValue, displayValue: string) => Promise
 public;ConditionContainer
 public;Content
@@ -134,7 +137,7 @@ public;FieldDescriptor
 public;FieldDescriptorBase
 public;FieldDescriptorType
 alpha;FieldHierarchy
-public;FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentFieldJSON
+public;FieldJSON
 internal;getFieldByName: (fields: Field[], name: string, recurse?: boolean | undefined) => Field | undefined
 public;getInstancesCount: (keys: Readonly
 internal;getLocalesDirectory: (assetsDirectory: string) => string
@@ -163,6 +166,7 @@ public;Id64RulesetVariable
 public;Id64RulesetVariableJSON 
 public;Id64sRulesetVariable 
 public;Id64sRulesetVariableJSON 
+public;IdCategoryIdentifier
 public;ImageIdOverride 
 public;InstanceId = Id64String
 public;InstanceKey
@@ -223,10 +227,11 @@ public;NamedFieldDescriptor
 public;NavigationRule = RootNodeRule | ChildNodeRule
 public;NavigationRuleBase 
 public;NestedContentField 
-public;NestedContentFieldJSON 
+public;NestedContentFieldJSON
 public;NestedContentValue
 public;NestedContentValue
 public;NestedContentValueJSON
+public;NoCategoryIdentifier
 public;Node
 public;Node
 internal;fromPartialJSON(json: PartialNodeJSON): PartialNode
@@ -259,6 +264,7 @@ public;Omit
 public;Paged
 public;PagedResponse
 public;PageOptions
+public;ParentCategoryIdentifier
 public;PartialHierarchyModification = NodeInsertionInfo | NodeDeletionInfo | NodeUpdateInfo
 public;PartialHierarchyModification
 public;PartialHierarchyModificationJSON = NodeInsertionInfoJSON | NodeDeletionInfoJSON | NodeUpdateInfoJSON
@@ -282,7 +288,7 @@ alpha;ProcessMergedValueProps
 alpha;ProcessPrimitiveValueProps
 public;PropertiesField 
 public;PropertiesFieldDescriptor 
-public;PropertiesFieldJSON 
+public;PropertiesFieldJSON
 public;Property
 public;Property
 public;PropertyAccessor
@@ -327,7 +333,7 @@ public;RelationshipDirection
 public;RelationshipMeaning
 public;RelationshipPath = RelatedClassInfo[]
 public;RelationshipPath
-public;RelationshipPathJSON = RelatedClassInfoJSON[]
+public;RelationshipPathJSON
 public;RelationshipPathSpecification = RelationshipStepSpecification | RelationshipStepSpecification[]
 public;RelationshipStepSpecification
 public;RendererDescription
@@ -337,6 +343,7 @@ public;RequestOptions
 public;RequestOptionsWithRuleset
 public;RequestPriority
 beta;RequiredSchemaSpecification
+public;RootCategoryIdentifier
 public;RootNodeRule 
 internal;RpcRequestsHandler 
 internal;RpcRequestsHandlerProps

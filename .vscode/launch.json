@@ -1635,6 +1635,21 @@
         "[NODE] Certa Test Runner for Full Stack RPC Interface Tests",
         "[BACKEND] Local Backend for Full Stack RPC Interface Tests"
       ]
+    },
+    {
+      "name": "eslint rule test @bentley/no-internal-barrel-imports",
+      "presentation": {
+        "group": "6_Misc"
+      },
+      "cwd": "${workspaceFolder}/tools/eslint-plugin",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/tools/eslint-plugin/node_modules/mocha/bin/_mocha",
+      "args": [
+        "${workspaceFolder}/tools/eslint-plugin/tests/no-internal-barrel-imports.js",
+        "--timeout 50000" // for easier debugging
+      ],
+      "console": "integratedTerminal",
     }
   ],
   "compounds": [
