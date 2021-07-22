@@ -216,7 +216,9 @@ export class BackgroundMapGeometry {
   public getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d {
     const clipPlanes = frustum.getRangePlanes(false, false, 0);
     const eyePoint = frustum.getEyePoint(scratchEyePoint);
-    const viewRotation = frustum.getRotation(scratchViewRotation)!;
+    const viewRotation = frustum.getRotation(scratchViewRotation);
+    if (undefined === viewRotation)
+      return Range1d.createNull();      // Degenerate frustum...
     const viewZ = viewRotation.getRow(2);
     const cartoRange = this.cartesianTransitionRange;
     const intersectRange = Range3d.createNull();
