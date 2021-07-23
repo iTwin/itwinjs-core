@@ -74,7 +74,6 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   private _parentWindowHeight: number = 0;
   private _parentWindowWidth: number = 0;
 
-
   public static defaultProps: Partial<ContextMenuProps> = {
     direction: ContextMenuDirection.BottomRight,
     autoflip: true,
