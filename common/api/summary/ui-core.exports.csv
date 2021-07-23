@@ -126,6 +126,7 @@ public;Headline(props: TextProps): JSX.Element
 deprecated;Headline(props: TextProps): JSX.Element
 public;HorizontalAlignment
 public;HorizontalTabs(props: TabsProps): JSX.Element
+deprecated;HorizontalTabs(props: TabsProps): JSX.Element
 public;Icon(props: IconProps): JSX.Element | null
 public;IconHelper
 public;IconInput: (props: IconInputProps) => JSX.Element | null

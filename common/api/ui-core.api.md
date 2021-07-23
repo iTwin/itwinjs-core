@@ -985,7 +985,7 @@ export enum HorizontalAlignment {
     Right = "right"
 }
 
-// @public
+// @public @deprecated
 export function HorizontalTabs(props: TabsProps): JSX.Element;
 
 // @public

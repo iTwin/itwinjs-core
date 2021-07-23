@@ -184,7 +184,18 @@ $key-size-modifier: 24px;
 
 .uifw-toolAssistance-tabs {
   @include iui-text-leading;
+
+  // Tabs are sized at 50% with the labels centered
   > li {
     width: 50%;
+
+    .iui-tab {
+      width: 100%;
+      display: unset;
+    }
+
+    .iui-tab-label {
+      text-align: center;
+    }
   }
 }
