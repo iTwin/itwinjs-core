@@ -14,15 +14,6 @@ describe("<Tabs />", () => {
     wrapper.find("a").length.should.equal(3);
   });
 
-  it("onClickLabel triggers correctly", () => {
-    const spyClick = sinon.spy();
-    const wrapper = mount(<VerticalTabs labels={["label 1", "label 2"]} onClickLabel={spyClick} />);
-    const label = wrapper.find("a").at(1);
-    label.simulate("click");
-    spyClick.should.have.been.calledOnceWithExactly(1);
-    wrapper.unmount();
-  });
-
   it("activeIndex sets correctly", () => {
     const wrapper = mount(<VerticalTabs labels={["label 1"]} activeIndex={0} />);
     wrapper.find(".core-active").length.should.eq(1);
