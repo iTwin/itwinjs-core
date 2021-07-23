@@ -17,6 +17,7 @@ import { DisplayValueGroup } from '@bentley/presentation-common';
 import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
 import { ElementProperties } from '@bentley/presentation-common';
 import { ElementPropertiesRequestOptions } from '@bentley/presentation-common';
+import { Entity } from '@bentley/imodeljs-backend';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { FormatProps } from '@bentley/imodeljs-quantity';
@@ -302,6 +303,8 @@ export interface RulesetEmbedderProps {
 
 // @beta
 export interface RulesetInsertOptions {
+    onEntityInsert?: InsertCallbacks;
+    onEntityUpdate?: UpdateCallbacks;
     replaceVersions?: "all" | "all-lower" | "exact";
     skip?: "never" | "same-id" | "same-id-and-version-eq" | "same-id-and-version-gte";
 }
