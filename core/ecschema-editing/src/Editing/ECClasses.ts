@@ -8,10 +8,10 @@
 
 import {
   ECClass, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
-  PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, StructArrayPropertyProps,
+  PrimitivePropertyProps, PrimitiveType, SchemaKey, SchemaItemKey, SchemaItemType, StructArrayPropertyProps,
   StructClass, StructPropertyProps,
 } from "@bentley/ecschema-metadata";
-import { PropertyEditResults, SchemaContextEditor } from "./Editor";
+import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableClass } from "./Mutable/MutableClass";
 
 /**
@@ -166,6 +166,17 @@ export class ECClasses {
       return { errorMessage: `Failed to delete property ${name} because it was not found in class ${classKey.name}`};
     else
       return { itemKey: classKey, propertyName: deletedProp.name };
+  }
+
+  public async delete(schemaKey: SchemaKey, name: string): Promise<SchemaItemEditResults> {
+    const schema = await this._schemaEditor.getSchema(schemaKey);
+    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+
+    const deletedClass = schema.deleteClassSync(name);
+    if (undefined === deletedClass)
+      return { errorMessage: `Failed to delete class ${name} because it was not found in schema ${schema.name}`};
+    else
+      return { itemKey: deletedClass.key };
   }
 
   private async getClass(classKey: SchemaItemKey, name: string): Promise<MutableClass> {

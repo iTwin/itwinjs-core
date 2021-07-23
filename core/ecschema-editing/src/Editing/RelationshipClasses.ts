@@ -45,17 +45,6 @@ export class RelationshipClasses extends ECClasses {
   //   return { itemKey: newClass.key };
   // }
 
-  public async delete(schemaKey: SchemaKey, name: string): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
-
-    const deletedClass = schema.deleteClassSync(name);
-    if (undefined === deletedClass)
-      return { errorMessage: `Failed to delete class ${name} because it was not found in schema ${schema.name}`};
-    else
-      return { itemKey: deletedClass.key };
-  }
-
   /**
    * Creates a RelationshipClass through a RelationshipClassProps.
    * @param schemaKey a SchemaKey of the Schema that will house the new object.
