@@ -8,7 +8,7 @@
 
 import {
   ECClass, ECObjectsError, ECObjectsStatus, Enumeration, EnumerationPropertyProps, PrimitiveArrayPropertyProps,
-  PrimitivePropertyProps, PrimitiveType, SchemaKey, SchemaItemKey, SchemaItemType, StructArrayPropertyProps,
+  PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, SchemaKey, StructArrayPropertyProps,
   StructClass, StructPropertyProps,
 } from "@bentley/ecschema-metadata";
 import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
