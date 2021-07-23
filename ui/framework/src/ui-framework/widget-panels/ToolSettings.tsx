@@ -95,15 +95,17 @@ export interface ToolSettingsGridProps {
  */
 export function ToolSettingsGrid({ settings }: ToolSettingsGridProps) {
   return (
-    <div className="uifw-standard-toolsettings-two-column-grid">
-      {settings && settings.map((setting: ToolSettingsEntry, index: number) => {
-        return (
-          <React.Fragment key={index}>
-            <span className="uifw-standard-toolsettings-label-entry">{setting.labelNode}</span>
-            {setting.editorNode}
-          </React.Fragment>
-        );
-      })}
+    <div className="uifw-standard-toolsettings-grid-container">
+      <div className="uifw-standard-toolsettings-two-column-grid">
+        {settings && settings.map((setting: ToolSettingsEntry, index: number) => {
+          return (
+            <React.Fragment key={index}>
+              <span className="uifw-standard-toolsettings-label-entry">{setting.labelNode}</span>
+              {setting.editorNode}
+            </React.Fragment>
+          );
+        })}
+      </div>
     </div>
   );
 }
