@@ -21,9 +21,10 @@ import { ModalDialogRenderer } from "../dialog/ModalDialogManager";
 import { CursorPopupMenu } from "../cursor/cursormenu/CursorMenu";
 import { FrameworkVersion } from "../hooks/useFrameworkVersion";
 import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { ThemeManager } from "../theme/ThemeManager";
+
 const childHtml = `<!DOCTYPE html>
 <html>
-
 <head>
   <meta charset="utf-8" />
   <style>
@@ -34,7 +35,6 @@ const childHtml = `<!DOCTYPE html>
       margin: 0;
       overflow: hidden;
     }
-
     #root {
       height: 100%;
     }
@@ -100,22 +100,23 @@ export class ChildWindowManager {
 
       setTimeout(() => {
         copyStyles(childWindow.document);
-        childWindow.document.documentElement.setAttribute("data-theme", UiFramework.getColorTheme());
         setImmediate(() => {
           ReactDOM.render(
             <Provider store={StateManager.store} >
               <UiSettingsProvider settingsStorage={UiFramework.getUiSettingsStorage()}>
-                <FrameworkVersion version="2">
-                  <div className="uifw-child-window-container-host">
-                    <PopupRenderer />
-                    <ModalDialogRenderer />
-                    <ModelessDialogRenderer />
-                    <CursorPopupMenu />
-                    <div className="uifw-child-window-container nz-widget-widget">
-                      {content}
+                <ThemeManager>
+                  <FrameworkVersion version="2">
+                    <div className="uifw-child-window-container-host">
+                      <PopupRenderer />
+                      <ModalDialogRenderer />
+                      <ModelessDialogRenderer />
+                      <CursorPopupMenu />
+                      <div className="uifw-child-window-container nz-widget-widget">
+                        {content}
+                      </div>
                     </div>
-                  </div>
-                </FrameworkVersion>
+                  </FrameworkVersion>
+                </ThemeManager>
               </UiSettingsProvider>
             </Provider>,
             reactConnectionDiv
