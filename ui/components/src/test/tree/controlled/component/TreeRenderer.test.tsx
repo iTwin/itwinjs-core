@@ -37,12 +37,12 @@ describe("TreeRenderer", () => {
 
   before(async () => {
     await TestUtils.initializeUiComponents();
-    Element.prototype.scrollIntoView = () => { };
+    HTMLElement.prototype.scrollIntoView = () => { };
   });
 
   after(() => {
     TestUtils.terminateUiComponents();
-    delete (Element.prototype as any).scrollIntoView;
+    delete (HTMLElement.prototype as any).scrollIntoView;
   });
 
   afterEach(() => {
@@ -229,12 +229,12 @@ describe("TreeRenderer", () => {
     const verticalScrollSpy = sinon.spy();
     sinon.replace(VariableSizeList.prototype, "scrollToItem", verticalScrollSpy);
     const horizontalScrollSpy = sinon.spy();
-    sinon.replace(Element.prototype, "scrollIntoView", horizontalScrollSpy);
+    sinon.replace(HTMLElement.prototype, "scrollIntoView", horizontalScrollSpy);
 
     const { rerender } = render(<TreeRenderer {...defaultProps} />);
 
     // need to rerender because after first render VariableSizeList ref is not set
-    rerender(<TreeRenderer {...defaultProps} nodeHighlightingProps={highlightProps} nodeRenderer={nodeRenderer}/>);
+    rerender(<TreeRenderer {...defaultProps} nodeHighlightingProps={highlightProps} nodeRenderer={nodeRenderer} />);
     onLabelRendered!(node2);
 
     expect(verticalScrollSpy).to.be.calledWith(1);
