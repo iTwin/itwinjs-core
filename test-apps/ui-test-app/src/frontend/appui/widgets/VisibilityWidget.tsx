@@ -8,7 +8,8 @@ import { BeEvent, Id64Array, Id64String } from "@bentley/bentleyjs-core";
 import { IModelApp, IModelConnection, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport } from "@bentley/imodeljs-frontend";
 import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
 import { FilteringInput, SelectableContent, SelectionMode } from "@bentley/ui-components";
-import { Button, ButtonType, Icon, WebFontIcon } from "@bentley/ui-core";
+import { Icon, WebFontIcon } from "@bentley/ui-core";
+import { Button } from "@itwin/itwinui-react";
 import {
   CategoryTree, ClassGroupingOption, CommandItemDef, ConfigurableCreateInfo, ModelsTree, ModelsTreeSelectionPredicate, toggleAllCategories, WidgetControl,
 } from "@bentley/ui-framework";
@@ -92,12 +93,14 @@ function ModelsTreeComponent(props: ModelsTreeComponentProps) {
       <Toolbar
         searchOptions={searchOptions} >
         {[
-          <Button buttonType={ButtonType.Hollow}
+          <Button
             key="activate-filter-btn"
             onClick={() => IModelApp.tools.run(TriggerFilterHierarchyByVisibleElementIdsTool.toolId)}>
             <Icon iconSpec={`svg:${filterIconSvg}`} />
           </Button>,
-          <Button buttonType={ButtonType.Hollow} key="cancel-filter-btn" onClick={() => IModelApp.tools.run(CancelFilterHierarchyByVisibleElementIdsTool.toolId)}>
+          <Button
+            key="cancel-filter-btn"
+            onClick={() => IModelApp.tools.run(CancelFilterHierarchyByVisibleElementIdsTool.toolId)}>
             <Icon iconSpec={`svg:${cancelFilterIconSvg}`} />
           </Button>,
         ]}
@@ -145,10 +148,10 @@ function CategoriesTreeComponent(props: CategoriesTreeComponentProps) {
         searchOptions={searchOptions}
       >
         {[
-          <Button buttonType={ButtonType.Hollow} key="show-all-btn" onClick={showAll}>
+          <Button key="show-all-btn" onClick={showAll}>
             <WebFontIcon iconName="icon-visibility" />
           </Button>,
-          <Button buttonType={ButtonType.Hollow} key="hide-all-btn" onClick={hideAll}>
+          <Button key="hide-all-btn" onClick={hideAll}>
             <WebFontIcon iconName="icon-visibility-hide-2" />
           </Button>,
         ]}
