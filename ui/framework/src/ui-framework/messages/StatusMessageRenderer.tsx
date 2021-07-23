@@ -6,7 +6,7 @@
  * @module Notification
  */
 
-import "./MessageRenderer.scss";
+import "./StatusMessageRenderer.scss";
 import * as React from "react";
 import classnames from "classnames";
 import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "./MessageManager";
@@ -14,19 +14,20 @@ import { CommonProps } from "@bentley/ui-core";
 import { StatusMessage } from "./StatusMessageManager";
 import { StatusMessagesContainer } from "./StatusMessagesContainer";
 
-/** Properties for [[MessageRenderer]] component
+/** Properties for [[StatusMessageRenderer]] component
  * @beta
  */
-export interface MessageRendererProps extends CommonProps {
+export interface StatusMessageRendererProps extends CommonProps {
   closeMessage?: (id: string) => void;
   cancelActivityMessage?: () => void;
   dismissActivityMessage?: () => void;
 }
 
-/** Message Popup React component that renders one or more Toast or Sticky messages and an Activity message
+/** Message Popup React component that renders one or more Toast or Sticky messages and an Activity message without a StatusBar.
+ * @note This component was formerly named MessageRenderer in previous releases.
  * @beta
  */
-export function MessageRenderer(props: MessageRendererProps) {
+export function StatusMessageRenderer(props: StatusMessageRendererProps) {
   const [messages, setMessages] = React.useState<ReadonlyArray<StatusMessage>>(MessageManager.activeMessageManager.messages);
   const [activityMessageInfo, setActivityMessageInfo] = React.useState<ActivityMessageEventArgs | undefined>(undefined);
   const [isActivityMessageVisible, setIsActivityMessageVisible] = React.useState(false);

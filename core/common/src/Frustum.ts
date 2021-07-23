@@ -97,7 +97,9 @@ export class Frustum {
    */
   public clone(result?: Frustum): Frustum { result = result ? result : new Frustum(); result.setFrom(this); return result; }
   /** Set the points of this Frustum to be copies of the points in another Frustum. */
-  public setFrom(other: Frustum) { for (let i = 0; i < 8; ++i) { this.points[i].setFrom(other.points[i]); } }
+  public setFrom(other: Frustum) { this.setFromCorners(other.points); }
+  /** Set the points of this frustum from array of corner points in NPC order. */
+  public setFromCorners(corners: Point3d[]) { for (let i = 0; i < 8; ++i) this.points[i].setFrom(corners[i]);  }
   /** Scale this Frustum, in place, about its center by a scale factor. */
   public scaleAboutCenter(scale: number): void {
     const orig = this.clone();
