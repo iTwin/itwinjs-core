@@ -26,7 +26,6 @@ import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
 import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -606,11 +605,5 @@ export class BriefcaseManager {
       token.changeSetId,
     );
     IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent); // eslint-disable-line @typescript-eslint/no-floating-promises
-
-    UsageLoggingUtilities.postUserUsage(requestContext, token.contextId!, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
-      .catch((err) => {
-        requestContext.enter();
-        Logger.logError(loggerCategory, `Could not log user usage`, () => ({ errorStatus: err.status, errorMessage: err.message, ...token }));
-      });
   }
 }
