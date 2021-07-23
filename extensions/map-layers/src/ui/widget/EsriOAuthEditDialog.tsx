@@ -6,6 +6,7 @@
 import * as React from "react";
 import { Dialog, DialogButtonType, Input, InputStatus, LabeledInput} from "@bentley/ui-core";
 import { ModalDialogManager } from "@bentley/ui-framework";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 export interface EsriOAuthEditDialogProps {
   clientId: string;
   baseUrl?: string;
@@ -23,6 +24,12 @@ export function EsriOAuthEditDialog(props: EsriOAuthEditDialogProps) {
   const [clientId, setClientId] = React.useState(() => props.clientId);
   const [baseUrl, setBaseUrl] = React.useState(() => props.baseUrl);
 
+    // i18n strings
+    const [editOAuthParamsTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:EsriSettings.EditOAuthParamsTitle"));
+    const [endpointOriginLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:EsriSettings.EndpointOriginLabel"));
+    const [clientIdLabel] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:EsriSettings.clientIdLabel"));
+
+    
   const isValidUrl = (url: string) => {
     try {
       const urlObj = new URL(url);
@@ -69,7 +76,7 @@ export function EsriOAuthEditDialog(props: EsriOAuthEditDialogProps) {
 
   return (
     <Dialog
-      title="Edit OAuth parameters"
+      title={editOAuthParamsTitle}
       opened={true}
       resizable={true}
       movable={true}
@@ -78,16 +85,16 @@ export function EsriOAuthEditDialog(props: EsriOAuthEditDialogProps) {
       onClose={handleCancel}
       onEscape={handleCancel}
       minHeight={120}
-      maxWidth={120}
+      maxWidth={200}
       trapFocus={false}
     >
       {baseUrl !== undefined &&
       <>
-        <span>Endpoint origin: </span>
+        <span>{endpointOriginLabel}</span>
         <LabeledInput value={baseUrl} status={isValidUrl(baseUrl) ? undefined : InputStatus.Warning} onChange={handleBaseUrlChange} />
       </>
       }
-      <span>Client ID: </span>
+      <span>{clientIdLabel}</span>
       <Input value={clientId}  onChange={handleClientIdChange} />
     </Dialog>
   );

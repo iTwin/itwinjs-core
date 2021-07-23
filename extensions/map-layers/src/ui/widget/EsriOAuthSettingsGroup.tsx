@@ -9,6 +9,7 @@ import {ArcGisEnterpriseClientId, EsriOAuth2} from "@bentley/imodeljs-frontend";
 import { ModalDialogManager } from "@bentley/ui-framework";
 import { EsriOAuthEditDialog, EsriOAuthEditParams } from "./EsriOAuthEditDialog";
 import "./MapManagerSettings.scss";
+import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function EsriOAuthSettingsGroup() {
@@ -17,6 +18,10 @@ export function EsriOAuthSettingsGroup() {
   const [selectedValue, setSelectedValue] = React.useState<string | undefined>();
   const [uniqueId, setUniqueId] = React.useState(0);
   const [loadingFromSettingService, setLoadingFromSettingService] = React.useState(false);
+
+  // i18n strings
+  const [arcGisOnlineButtonTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:EsriSettings.ArcGISOnlineButtonTitle"));
+  const [arcGisEntTitle] = React.useState(MapLayersUiItemsProvider.i18n.translate("mapLayers:EsriSettings.ArcGISEnterpriseLabel"));
 
   const isMounted = React.useRef(false);
   React.useEffect(() => {
@@ -115,12 +120,12 @@ export function EsriOAuthSettingsGroup() {
         {(!loadingFromSettingService) && <>
           <div className="maplayers-settings-container">
             <UiCore.Button className="esriSettings-button" buttonType={UiCore.ButtonType.Hollow} onClick={()=>handleClick(true)}>
-            ArcGIS Online
+            {arcGisOnlineButtonTitle}
             </UiCore.Button>
           </div>
           <div className="esriSettings-enterprise-clientIds">
             <div className="esriSettings-enterprise-header">
-              <span>ArcGIS Enterprise</span>
+              <span>{arcGisEntTitle}</span>
               <button className="esriSettings-enterprise-add-clientId-button" onClick={()=>handleClick(false, "")}>
                 <UiCore.WebFontIcon iconName="icon-add" />
               </button>
@@ -150,7 +155,6 @@ export function EsriOAuthSettingsGroup() {
                       <UiCore.Icon iconSpec="icon-delete" />
                     </UiCore.Button>
                   </>}
-
                     </UiCore.ListboxItem>
                   )
                 }
