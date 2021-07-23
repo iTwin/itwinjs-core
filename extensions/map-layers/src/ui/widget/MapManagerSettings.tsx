@@ -11,6 +11,7 @@ import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarCl
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
+import { EsriOAuthSettingsGroup } from "./EsriOAuthSettingsGroup";
 
 enum MapMaskingOption
   {
@@ -46,7 +47,7 @@ function getHeightOriginModeFromKey(mode: string): TerrainHeightOriginMode {
 
 // eslint-disable-next-line @typescript-eslint/naming-convention
 export function MapManagerSettings() {
-  const { activeViewport } = useSourceMapContext();
+  const { activeViewport, mapLayerOptions} = useSourceMapContext();
   const backgroundMapSettings = (activeViewport!.view as ViewState3d).getDisplayStyle3d().settings.backgroundMap;
 
   const [transparency, setTransparency] = React.useState(() =>
@@ -190,7 +191,7 @@ export function MapManagerSettings() {
         </>
 
       </div>
-      <div className="map-manager-settings-terrain-container">
+      <div className="map-manager-settings-group">
         <fieldset>
           <legend>{terrainLabel}</legend>
 
@@ -211,6 +212,9 @@ export function MapManagerSettings() {
 
         </fieldset>
       </div>
+
+      { mapLayerOptions?.showEsriOAuthSettings && <EsriOAuthSettingsGroup/>}
+
     </>
   );
 }

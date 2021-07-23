@@ -35,4 +35,5 @@ export interface MapLayerOptions {
   hideExternalMapLayers?: boolean;
   fetchPublicMapLayerSources?: boolean;
   mapTypeOptions?: MapTypesOptions;
+  showEsriOAuthSettings?: boolean;
 }

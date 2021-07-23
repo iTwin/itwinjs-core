@@ -33,7 +33,7 @@ export interface SourceMapContextProps {
   readonly activeViewport?: ScreenViewport;
   readonly backgroundLayers?: StyleMapLayerSettings[];
   readonly overlayLayers?: StyleMapLayerSettings[];
-  readonly mapTypesOptions?: MapTypesOptions;
+  readonly mapLayerOptions?: MapLayerOptions;
 }
 
 /** @internal */
@@ -406,7 +406,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
       refreshFromStyle: handleRefreshFromStyle,
       backgroundLayers: backgroundMapLayers,
       overlayLayers: overlayMapLayers,
-      mapTypesOptions: mapLayerOptions?.mapTypeOptions,
+      mapLayerOptions,
     }}>
       <div className="map-manager-top-header">
         <span className="map-manager-header-label">{baseMapPanelLabel}</span>

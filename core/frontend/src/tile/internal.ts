@@ -45,6 +45,7 @@ export * from "./I3dmReader";
 export * from "./B3dmReader";
 export * from "./ImdlReader";
 export * from "./map/MapLayerAuthentification";
+export * from "./map/EsriSettingsService";
 export * from "./map/EsriOAuth2";
 export * from "./map/ArcGisTokenGenerator";
 export * from "./map/ArcGisTokenManager";

@@ -268,7 +268,7 @@ export class ArcGisUtilities {
   public static async validateOAuth2Endpoint(endpointUrl: string): Promise<boolean> {
 
     // Check if we got a matching appId for that endpoint, otherwise its not worth going further
-    if (undefined === EsriOAuth2.getMatchingEnterpriseAppId(endpointUrl)) {
+    if (undefined === EsriOAuth2.getMatchingEnterpriseClientId(endpointUrl)) {
       return false;
     }
 
@@ -287,7 +287,9 @@ export class ArcGisUtilities {
   //      =>  https://hostname/portal/sharing/oauth2/authorize
   private static _oauthAuthorizeEndPointsCache = new Map<string, any>();
   private static _oauthTokenEndPointsCache = new Map<string, any>();
+
   public static async getOAuth2EndpointFromMapLayerUrl(url: string, endpoint: EsriOAuth2EndpointType): Promise<EsriOAuth2Endpoint | undefined> {
+    await EsriOAuth2.loadFromSettingsService();
 
     // Return from cache if available
     const cachedEndpoint = (endpoint === EsriOAuth2EndpointType.Authorize ? this._oauthAuthorizeEndPointsCache.get(url) : this._oauthTokenEndPointsCache.get(url));
@@ -308,6 +310,11 @@ export class ArcGisUtilities {
     if (urlObj.hostname.toLowerCase().endsWith("arcgis.com")) {
       // ArcGIS Online (fixed)
       // Doc: https://developers.arcgis.com/documentation/mapping-apis-and-services/security/oauth-2.0/
+
+      if (EsriOAuth2.arcGisOnlineClientId === undefined) {
+        return undefined;
+      }
+
       return new EsriOAuth2Endpoint(`https://www.arcgis.com/sharing/rest/oauth2/${endpointStr}`, true);
     } else {
 

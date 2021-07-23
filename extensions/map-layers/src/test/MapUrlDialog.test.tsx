@@ -192,7 +192,7 @@ describe("MapUrlDialog", () => {
     const expire = 3600;
     const esriOAuth2InitStatus = EsriOAuth2.initialize(redirectUrl,{
       arcgisOnlineClientId : fakeClientId,
-      enterpriseClientIds: [{serviceBaseUrl:authorizeUrl, appId:fakeClientId}],
+      enterpriseClientIds: [{serviceBaseUrl:authorizeUrl, clientId:fakeClientId}],
     }, expire);
 
     expect(esriOAuth2InitStatus).to.true;

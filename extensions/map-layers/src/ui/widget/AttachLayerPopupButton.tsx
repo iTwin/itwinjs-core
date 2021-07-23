@@ -51,7 +51,8 @@ function AttachLayerPanel({ isOverlay, onLayerAttached }: AttachLayerPanelProps)
     setSourceFilterString(event.target.value);
   }, []);
 
-  const { loadingSources, sources, activeViewport, backgroundLayers, overlayLayers, mapTypesOptions } = useSourceMapContext();
+  const { loadingSources, sources, activeViewport, backgroundLayers, overlayLayers, mapLayerOptions } = useSourceMapContext();
+  const mapTypesOptions = mapLayerOptions?.mapTypeOptions;
   const contextId = activeViewport?.iModel?.contextId;
   const iModelId = activeViewport?.iModel?.iModelId;
 

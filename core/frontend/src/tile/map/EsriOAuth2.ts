@@ -5,6 +5,7 @@
 import { assert, BeEvent } from "@bentley/bentleyjs-core";
 import { ArcGisOAuth2Token } from "../../imodeljs-frontend";
 import { ArcGisTokenManager, ArcGisUtilities, MapLayerTokenEndpoint} from "../internal";
+import { EsriSettingsService } from "./EsriSettingsService";
 
 /** @beta */
 export enum EsriOAuth2EndpointType {Authorize,Token}
@@ -36,10 +37,10 @@ export class EsriOAuth2Endpoint implements MapLayerTokenEndpoint {
       }
 
     } else {
-      const appId = EsriOAuth2.getMatchingEnterpriseAppId(this._url);
-      assert(appId !== undefined);
-      if (undefined !== appId) {
-        urlObj.searchParams.set("client_id", appId);
+      const clientId = EsriOAuth2.getMatchingEnterpriseClientId(this._url);
+      assert(clientId !== undefined);
+      if (undefined !== clientId) {
+        urlObj.searchParams.set("client_id", clientId);
       }
     }
 
@@ -63,7 +64,7 @@ export class EsriOAuth2Endpoint implements MapLayerTokenEndpoint {
 /** @beta */
 export interface ArcGisEnterpriseClientId {
   serviceBaseUrl: string;
-  appId: string;
+  clientId: string;
 }
 /** @beta */
 export interface EsriOAuthClientIds {
@@ -75,7 +76,8 @@ export class EsriOAuth2 {
   public static readonly  onEsriOAuth2Callback = new BeEvent();
   private static _redirectUri: string;
   private static _expiration: number|undefined;
-  private static _clientIds: EsriOAuthClientIds;
+  private static _clientIds: EsriOAuthClientIds|undefined;
+  private static _retrievedFromSettingsService = false;
 
   /** Initialize ESRI OAuth2
    * @param redirectUri URI where the user is going redirected with the token
@@ -83,11 +85,16 @@ export class EsriOAuth2 {
    * @param tokenExpiration Optional expiration after which the token will expire, defined in minutes.  The default value is 2 hours (120 minutes). The maximum value is two weeks (20160 minutes).
    * @returns true if the initialized was successful otherwise false.
    */
-  public static initialize(redirectUri: string, clientIds?: EsriOAuthClientIds, tokenExpiration?: number): boolean {
+  public  static async initialize(redirectUri: string, clientIds?: EsriOAuthClientIds, tokenExpiration?: number): Promise<boolean> {
     EsriOAuth2._redirectUri = redirectUri;
     if (clientIds) {
       EsriOAuth2._clientIds = clientIds;
-    }
+    } /* else {
+      const fetchClientIds = await EsriSettingsService.getClientIds();
+      if (fetchClientIds) {
+        EsriOAuth2._clientIds = fetchClientIds;
+      }
+    }*/
 
     EsriOAuth2._expiration = tokenExpiration;
 
@@ -122,6 +129,29 @@ export class EsriOAuth2 {
     return true;
   }
 
+  // Load settings from setting service.  This step is made outside  Initialize() because we delay settings load
+  // and make sure user has signed in.
+  // We load settings only if not previously set by the API
+  public static async loadFromSettingsService() {
+    if (this._clientIds === undefined  && !this._retrievedFromSettingsService) {
+      try {
+        const fetchClientIds = await EsriSettingsService.getClientIds();
+        if (fetchClientIds) {
+          EsriOAuth2._clientIds = fetchClientIds;
+        }
+      } catch {}
+      this._retrievedFromSettingsService = true;
+    }
+  }
+
+  // Store settings in settings service, only if settings were initially loaded from setting service too.
+  public static async saveInSettingsService(): Promise<boolean> {
+    if (EsriOAuth2.clientIds !== undefined && this._retrievedFromSettingsService) {
+      return EsriSettingsService.storeClientIds(EsriOAuth2.clientIds);
+    }
+    return false;
+  }
+
   public static async getOAuthTokenForMapLayerUrl(mapLayerUrl: string): Promise<ArcGisOAuth2Token|undefined> {
     try {
       const oauthEndpoint = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(mapLayerUrl, EsriOAuth2EndpointType.Authorize);
@@ -137,18 +167,18 @@ export class EsriOAuth2 {
     return EsriOAuth2._redirectUri;
   }
 
-  public static getMatchingEnterpriseAppId(url: string) {
-    let appId: string|undefined;
+  public static getMatchingEnterpriseClientId(url: string) {
+    let clientId: string|undefined;
     const clientIds = EsriOAuth2.arcGisEnterpriseClientIds;
     if (!clientIds) {
       return undefined;
     }
     for (const entry of clientIds) {
       if (url.toLowerCase().startsWith(entry.serviceBaseUrl)) {
-        appId = entry.appId;
+        clientId = entry.clientId;
       }
     }
-    return appId;
+    return clientId;
   }
 
   public static get expiration() {
@@ -156,11 +186,43 @@ export class EsriOAuth2 {
   }
 
   public static get arcGisOnlineClientId() {
-    return EsriOAuth2._clientIds.arcgisOnlineClientId;
+    return EsriOAuth2._clientIds?.arcgisOnlineClientId;
+  }
+
+  public static set arcGisOnlineClientId(clientId: string|undefined) {
+    if (EsriOAuth2._clientIds === undefined) {
+      EsriOAuth2._clientIds  = {arcgisOnlineClientId: clientId };
+    }
+    EsriOAuth2._clientIds.arcgisOnlineClientId = clientId;
   }
 
   public static get arcGisEnterpriseClientIds() {
-    return EsriOAuth2._clientIds.enterpriseClientIds;
+    return EsriOAuth2._clientIds?.enterpriseClientIds;
+  }
+
+  public static setEnterpriseClientId(serviceBaseUrl: string, clientId: string) {
+
+    if (EsriOAuth2._clientIds?.enterpriseClientIds) {
+      const foundIdx = EsriOAuth2._clientIds.enterpriseClientIds.findIndex((entry)=>entry.serviceBaseUrl === serviceBaseUrl);
+      if (foundIdx !== -1) {
+        EsriOAuth2._clientIds.enterpriseClientIds[foundIdx].clientId = clientId;
+      } else {
+        EsriOAuth2._clientIds.enterpriseClientIds.push({serviceBaseUrl, clientId});
+      }
+    } else {
+      if (EsriOAuth2._clientIds === undefined) {
+        EsriOAuth2._clientIds  = {};
+      }
+      EsriOAuth2._clientIds.enterpriseClientIds = [{serviceBaseUrl, clientId}];
+    }
+  }
+
+  public static get clientIds(): EsriOAuthClientIds|undefined {
+    return EsriOAuth2._clientIds;
+  }
+
+  public static set clientIds(clientIds: EsriOAuthClientIds|undefined) {
+    EsriOAuth2._clientIds = clientIds;
   }
 
 }
