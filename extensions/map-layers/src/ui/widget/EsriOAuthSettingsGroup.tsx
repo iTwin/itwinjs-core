@@ -48,16 +48,11 @@ export function EsriOAuthSettingsGroup() {
   }, []);
 
   // Handle Remove layer button clicked
-  const onItemRemoveButtonClicked = React.useCallback((clientId: ArcGisEnterpriseClientId, event) => {
+  const onItemRemoveButtonClicked = React.useCallback(async (clientId: ArcGisEnterpriseClientId, event) => {
     event.stopPropagation();  // We don't want the owning ListBox to react on mouse click.
-
-    const clientIds = EsriOAuth2.clientIds;
-    if (clientIds === undefined) {
-      return;
-    }
-    const filteredClientIds = clientIds.enterpriseClientIds?.filter((item) => item.serviceBaseUrl !== clientId.serviceBaseUrl);
-    EsriOAuth2.clientIds = {arcgisOnlineClientId: clientIds.arcgisOnlineClientId, enterpriseClientIds: filteredClientIds};
-    setEnterpriseClientIds(filteredClientIds);
+    EsriOAuth2.removeEnterpriseClientId(clientId);
+    await EsriOAuth2.saveInSettingsService();
+    setEnterpriseClientIds(EsriOAuth2.arcGisEnterpriseClientIds);
   }, []);
 
   // Clears the currently selected from the ListBox
@@ -72,7 +67,7 @@ export function EsriOAuthSettingsGroup() {
     clearListBoxSelectValue();
   }, [clearListBoxSelectValue]);
 
-  const onOkEdit= React.useCallback((params: EsriOAuthEditParams) => {
+  const onOkEdit= React.useCallback(async (params: EsriOAuthEditParams) => {
     ModalDialogManager.closeDialog();
     if (params.baseUrl === undefined){
       // ArcGIS online case
@@ -82,7 +77,7 @@ export function EsriOAuthSettingsGroup() {
       setEnterpriseClientIds(EsriOAuth2.arcGisEnterpriseClientIds);
       clearListBoxSelectValue();
     }
-    EsriOAuth2.saveInSettingsService();
+    await EsriOAuth2.saveInSettingsService();
 
   }, [clearListBoxSelectValue]);
 
@@ -151,7 +146,7 @@ export function EsriOAuthSettingsGroup() {
                   <>
                     <UiCore.Button
                       className="esriSettings-clientIds-entry-button"
-                      onClick={(event) => {onItemRemoveButtonClicked(clientId, event);}}>
+                      onClick={async (event) => {await onItemRemoveButtonClicked(clientId, event);}}>
                       <UiCore.Icon iconSpec="icon-delete" />
                     </UiCore.Button>
                   </>}

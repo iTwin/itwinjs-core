@@ -16,7 +16,7 @@ import { Toggle } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
 import * as React from "react";
 import { DragDropContext, DropResult } from "react-beautiful-dnd";
-import { MapLayerOptions, MapTypesOptions, StyleMapLayerSettings } from "../Interfaces";
+import { MapLayerOptions, StyleMapLayerSettings } from "../Interfaces";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { AttachLayerPopupButton } from "./AttachLayerPopupButton";
 import { BasemapPanel } from "./BasemapPanel";

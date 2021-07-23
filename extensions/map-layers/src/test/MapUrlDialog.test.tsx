@@ -190,10 +190,9 @@ describe("MapUrlDialog", () => {
     const redirectUrl = "http://localhost:3000/esri-oauth2-callback";
     const fakeClientId = "fake";
     const expire = 3600;
-    const esriOAuth2InitStatus = EsriOAuth2.initialize(redirectUrl,{
-      arcgisOnlineClientId : fakeClientId,
-      enterpriseClientIds: [{serviceBaseUrl:authorizeUrl, clientId:fakeClientId}],
-    }, expire);
+    const esriOAuth2InitStatus = EsriOAuth2.initialize(redirectUrl, expire);
+    EsriOAuth2.arcGisOnlineClientId = fakeClientId;
+    EsriOAuth2.setEnterpriseClientId(authorizeUrl, fakeClientId);
 
     expect(esriOAuth2InitStatus).to.true;
     const openStub = sinon.stub((global as any).window, "open");

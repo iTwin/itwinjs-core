@@ -85,17 +85,8 @@ export class EsriOAuth2 {
    * @param tokenExpiration Optional expiration after which the token will expire, defined in minutes.  The default value is 2 hours (120 minutes). The maximum value is two weeks (20160 minutes).
    * @returns true if the initialized was successful otherwise false.
    */
-  public  static async initialize(redirectUri: string, clientIds?: EsriOAuthClientIds, tokenExpiration?: number): Promise<boolean> {
+  public static initialize(redirectUri: string, tokenExpiration?: number): boolean {
     EsriOAuth2._redirectUri = redirectUri;
-    if (clientIds) {
-      EsriOAuth2._clientIds = clientIds;
-    } /* else {
-      const fetchClientIds = await EsriSettingsService.getClientIds();
-      if (fetchClientIds) {
-        EsriOAuth2._clientIds = fetchClientIds;
-      }
-    }*/
-
     EsriOAuth2._expiration = tokenExpiration;
 
     /** Define a *global* callback function that will be used by the redirect URL to pass the generated token
@@ -129,9 +120,9 @@ export class EsriOAuth2 {
     return true;
   }
 
-  // Load settings from setting service.  This step is made outside  Initialize() because we delay settings load
-  // and make sure user has signed in.
-  // We load settings only if not previously set by the API
+  // Load settings from setting service.
+  // This step is made outside  Initialize() because we delay settings load to avoid sign-in issues.
+  // We don't do any setting merging, so if you set settings by API, it will disable setting service R/W.
   public static async loadFromSettingsService() {
     if (this._clientIds === undefined  && !this._retrievedFromSettingsService) {
       try {
@@ -139,6 +130,7 @@ export class EsriOAuth2 {
         if (fetchClientIds) {
           EsriOAuth2._clientIds = fetchClientIds;
         }
+        this._retrievedFromSettingsService = true;
       } catch {}
       this._retrievedFromSettingsService = true;
     }
@@ -146,8 +138,8 @@ export class EsriOAuth2 {
 
   // Store settings in settings service, only if settings were initially loaded from setting service too.
   public static async saveInSettingsService(): Promise<boolean> {
-    if (EsriOAuth2.clientIds !== undefined && this._retrievedFromSettingsService) {
-      return EsriSettingsService.storeClientIds(EsriOAuth2.clientIds);
+    if (EsriOAuth2._clientIds !== undefined && this._retrievedFromSettingsService) {
+      return EsriSettingsService.storeClientIds(EsriOAuth2._clientIds);
     }
     return false;
   }
@@ -217,6 +209,15 @@ export class EsriOAuth2 {
     }
   }
 
+  public static removeEnterpriseClientId(clientId: ArcGisEnterpriseClientId) {
+
+    if (EsriOAuth2._clientIds?.enterpriseClientIds) {
+      EsriOAuth2._clientIds.enterpriseClientIds = EsriOAuth2._clientIds?.enterpriseClientIds?.filter((item) => item.serviceBaseUrl !== clientId.serviceBaseUrl);
+    }
+
+  }
+
+  /*
   public static get clientIds(): EsriOAuthClientIds|undefined {
     return EsriOAuth2._clientIds;
   }
@@ -224,5 +225,5 @@ export class EsriOAuth2 {
   public static set clientIds(clientIds: EsriOAuthClientIds|undefined) {
     EsriOAuth2._clientIds = clientIds;
   }
-
+*/
 }
