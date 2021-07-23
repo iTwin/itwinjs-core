@@ -12,7 +12,6 @@ import * as React from "react";
 import {
   AlternateDateFormats, PropertyValue, PropertyValueFormat, StandardTypeNames, TimeDisplay,
 } from "@bentley/ui-abstract";
-import { BodyText } from "@bentley/ui-core";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
@@ -21,6 +20,7 @@ import { TypeConverter } from "../converters/TypeConverter";
 import { DatePicker } from "../datepicker/DatePicker";
 import { TypeConverterManager } from "../converters/TypeConverterManager";
 import { DateTimeTypeConverterBase } from "../converters/DateTimeTypeConverter";
+import { BodyText } from "@bentley/ui-core";
 import { adjustDateToTimezone } from "../common/DateUtils";
 
 // cSpell:ignore datepicker
