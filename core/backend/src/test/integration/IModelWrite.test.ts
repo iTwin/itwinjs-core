@@ -3,21 +3,20 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { assert, expect } from "chai";
-import * as semver from "semver";
 import { DbOpcode, DbResult, GuidString, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { CodeState, HubCode, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
 import { CodeScopeSpec, CodeSpec, IModel, IModelError, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { WsgError } from "@bentley/itwin-client";
+import { assert, expect } from "chai";
+import * as semver from "semver";
+import { LockScope } from "../../BackendHubAccess";
 import { IModelHubBackend } from "../../IModelHubBackend";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, LockProps,
-  SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, LockProps, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType, Timer } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
-import { LockScope } from "../../BackendHubAccess";
 
 export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: BriefcaseDb, parent?: Id64String) {
   // Create a new physical model.
@@ -104,12 +103,12 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isFalse(iModel.concurrencyControl.locks.hasCodeSpecsLock, "pushChanges should automatically release all locks");
 
     // Verify that locks are released even if there are no changes.
-    const prePushChangesetId = iModel.changeSetId;
+    const prePushchangeset = iModel.changeset;
     await iModel.concurrencyControl.locks.lockCodeSpecs(superRequestContext);
     assert.isTrue(iModel.concurrencyControl.locks.hasCodeSpecsLock);
     /* make no changes */
     await iModel.pushChanges(superRequestContext, "did nothing");
-    assert.equal(prePushChangesetId, iModel.changeSetId, "no changeset was pushed");
+    assert.equal(prePushchangeset, iModel.changeset, "no changeset was pushed");
 
     assert.isFalse(iModel.concurrencyControl.locks.hasCodeSpecsLock, "pushChanges should automatically release all locks");
 
@@ -378,11 +377,11 @@ describe("IModelWriteTest (#integration)", () => {
     timer = new Timer("push changes");
 
     // Push the changes to the hub
-    const prePushChangeSetId = rwIModel.changeSetId;
+    const prePushChangeset = rwIModel.changeset;
     await rwIModel.pushChanges(adminRequestContext, "test");
-    const postPushChangeSetId = rwIModel.changeSetId;
-    assert(!!postPushChangeSetId);
-    expect(prePushChangeSetId !== postPushChangeSetId);
+    const postPushChangeset = rwIModel.changeset;
+    assert(!!postPushChangeset);
+    expect(prePushChangeset !== postPushChangeset);
 
     timer.end();
 
@@ -398,7 +397,7 @@ describe("IModelWriteTest (#integration)", () => {
     assert.isTrue(rwIModel.concurrencyControl.codes.isReserved(code2), "I reserved the code anotherCode");
     /* make no changes */
     await rwIModel.pushChanges(adminRequestContext, "no changes");
-    assert.equal(postPushChangeSetId, rwIModel.changeSetId), "no changeset created or pushed";
+    assert.equal(postPushChangeset, rwIModel.changeset), "no changeset created or pushed";
     assert.isFalse(rwIModel.concurrencyControl.codes.isReserved(code2), "I released my reservation of the code anotherCode");
 
     const codesAfter = await IModelHubBackend.iModelClient.codes.get(adminRequestContext, rwIModelId);
@@ -522,11 +521,11 @@ describe("IModelWriteTest (#integration)", () => {
     timer = new Timer("push changes");
 
     // Push the changes to the hub
-    const prePushChangeSetId = rwIModel.changeSetId;
+    const prePushChangeset = rwIModel.changeset;
     await rwIModel.pushChanges(adminRequestContext, "test");
-    const postPushChangeSetId = rwIModel.changeSetId;
-    assert(!!postPushChangeSetId);
-    expect(prePushChangeSetId !== postPushChangeSetId);
+    const postPushChangeset = rwIModel.changeset;
+    assert(!!postPushChangeset);
+    expect(prePushChangeset !== postPushChangeset);
 
     timer.end();
 
@@ -579,7 +578,7 @@ describe("IModelWriteTest (#integration)", () => {
     const otherBriefcaseLockReq = ConcurrencyControl.Request.getElementLock(elid1, LockScope.Exclusive);
     await IModelHost.hubAccess.acquireLocks({
       requestContext: adminRequestContext, briefcase: {
-        briefcaseId: rwIModel.briefcaseId, changeSetId: rwIModel.changeSetId, iModelId: rwIModel.iModelId,
+        briefcaseId: rwIModel.briefcaseId, changeSetId: rwIModel.changeset.id, iModelId: rwIModel.iModelId,
       }, locks: [otherBriefcaseLockReq],
     });
 
@@ -856,11 +855,11 @@ describe("IModelWriteTest (#integration)", () => {
     timer = new Timer("pullmergepush");
 
     // Push the changes to the hub
-    const prePushChangeSetId = rwIModel.changeSetId;
+    const prePushChangeset = rwIModel.changeset;
     await rwIModel.pushChanges(adminRequestContext, "test");
-    const postPushChangeSetId = rwIModel.changeSetId;
-    assert(!!postPushChangeSetId);
-    expect(prePushChangeSetId !== postPushChangeSetId);
+    const postPushChangeset = rwIModel.changeset;
+    assert(!!postPushChangeset);
+    expect(prePushChangeset !== postPushChangeset);
 
     timer.end();
 
@@ -1049,7 +1048,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Open briefcase and pull change sets to upgrade
     const superIModel = await BriefcaseDb.open(superRequestContext, { fileName: superBriefcaseProps.fileName });
-    superBriefcaseProps.changeSetId = await superIModel.pullAndMergeChanges(superRequestContext);
+    superBriefcaseProps.changeSetId = (await superIModel.pullAndMergeChanges(superRequestContext)).id;
     const superVersion = superIModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(superVersion!, ">= 1.0.10"));
     assert.isFalse(superIModel.nativeDb.hasUnsavedChanges()); // Validate no changes were made
@@ -1068,8 +1067,6 @@ describe("IModelWriteTest (#integration)", () => {
     schemaLock = await IModelHost.hubAccess.querySchemaLock({ requestContext: superRequestContext, briefcase: superBriefcaseProps });
     assert.isFalse(schemaLock); // Validate no schema locks held by the hub
 
-    /* Cleanup after test */
     await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, contextId: projectId, iModelId });
   });
-
 });

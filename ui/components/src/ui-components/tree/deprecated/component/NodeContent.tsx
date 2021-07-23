@@ -22,7 +22,8 @@ import { BeInspireTreeNode } from "./BeInspireTree";
 /* eslint-disable deprecation/deprecation */
 
 /** Properties for [[TreeNodeContent]] component
- * @internal @deprecated
+ * @internal
+ * @deprecated
  */
 export interface TreeNodeContentProps extends CommonProps {
   node: BeInspireTreeNode<TreeNodeItem>;
@@ -46,7 +47,8 @@ export interface TreeNodeContentProps extends CommonProps {
   renderId?: string;
 }
 
-/** @internal @deprecated */
+/** @internal
+ * @deprecated */
 export interface TreeNodeContentState {
   label: React.ReactNode;
   renderInfo?: {
@@ -56,7 +58,8 @@ export interface TreeNodeContentState {
 }
 
 /** React component for displaying [[TreeNode]] label
- * @internal @deprecated
+ * @internal
+ * @deprecated
  */
 export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeNodeContentState> {
   public constructor(props: TreeNodeContentProps) {
@@ -112,7 +115,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     this.setState({ label }, this._onLabelStateChanged);
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     this.updateLabel(this.props);
     this.setState((_, props) => ({ renderInfo: createRenderInfo(props.node) }));
   }
@@ -134,7 +137,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     return false;
   }
 
-  public componentDidUpdate(prevProps: TreeNodeContentProps) {
+  public override componentDidUpdate(prevProps: TreeNodeContentProps) {
     if (TreeNodeContent.needsLabelUpdate(this.state, prevProps, this.props)) {
       this.updateLabel(this.props);
     }
@@ -145,7 +148,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
       this.setState({ renderInfo });
   }
 
-  public shouldComponentUpdate(nextProps: TreeNodeContentProps, nextState: TreeNodeContentState) {
+  public override shouldComponentUpdate(nextProps: TreeNodeContentProps, nextState: TreeNodeContentState) {
     if (this.state.label !== nextState.label || TreeNodeContent.needsLabelUpdate(nextState, this.props, nextProps))
       return true;
 
@@ -163,7 +166,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     return false;
   }
 
-  public render() {
+  public override render() {
     // handle cell editing
     let editor: JSX.Element | undefined;
     if (this.props.cellEditing && this.props.cellEditing.isEditingEnabled(this.props.node)) {

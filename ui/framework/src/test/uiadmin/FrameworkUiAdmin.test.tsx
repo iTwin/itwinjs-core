@@ -6,13 +6,18 @@ import * as React from "react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { render } from "@testing-library/react";
-import { AbstractMenuItemProps, AbstractToolbarProps, DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames } from "@bentley/ui-abstract";
-import { Button, Point } from "@bentley/ui-core";
+import {
+  AbstractMenuItemProps, AbstractToolbarProps, DialogButtonDef, DialogButtonType, DialogItem,
+  DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult,
+  PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames,
+} from "@bentley/ui-abstract";
+import { Point } from "@bentley/ui-core";
 import { CursorInformation, FrameworkUiAdmin, KeyinFieldLocalization } from "../../ui-framework";
 import { ClearKeyinPaletteHistoryTool } from "../../ui-framework/tools/KeyinPaletteTools";
 import * as keyinExports from "../../ui-framework/popup/KeyinPalettePanel";
 import TestUtils from "../TestUtils";
 import { MockRender, Tool } from "@bentley/imodeljs-frontend";
+import { Button } from "@itwin/itwinui-react";
 
 class TestDialogUiDataProvider extends DialogLayoutDataProvider {
   public currentPageIndex = 0;
@@ -52,12 +57,12 @@ class TestDialogUiDataProvider extends DialogLayoutDataProvider {
   }
 
   // called to apply a single property value change.
-  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+  public override applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
     this.processChangesInUi([updatedValue]);
   };
 
   /** Called by UI to inform data provider of changes.  */
-  public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
+  public override processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
     if (properties.length > 0) {
       for (const prop of properties) {
         if (prop.propertyName === TestDialogUiDataProvider.userPropertyName) {
@@ -75,7 +80,7 @@ class TestDialogUiDataProvider extends DialogLayoutDataProvider {
   }
 
   /** Used Called by UI to request available properties when UI is manually created. */
-  public supplyDialogItems(): DialogItem[] | undefined {
+  public override supplyDialogItems(): DialogItem[] | undefined {
     const items: DialogItem[] = [];
 
     items.push({ value: this._userValue, property: TestDialogUiDataProvider._getUserDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } });
@@ -99,7 +104,7 @@ class TestDialogUiDataProvider extends DialogLayoutDataProvider {
     }
   };
 
-  public supplyButtonData(): DialogButtonDef[] | undefined {
+  public override supplyButtonData(): DialogButtonDef[] | undefined {
     const buttons: DialogButtonDef[] = [];
 
     if (this.currentPageIndex > 0 && this.currentPageIndex < this.numberOfPages)

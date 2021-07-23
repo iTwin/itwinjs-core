@@ -44,6 +44,7 @@ import { UpdatesTracker } from "../presentation-backend/UpdatesTracker";
 import { WithClientRequestContext } from "../presentation-backend/Utils";
 
 const deepEqual = require("deep-equal"); // eslint-disable-line @typescript-eslint/no-var-requires
+
 describe("PresentationManager", () => {
 
   before(async () => {
@@ -349,7 +350,10 @@ describe("PresentationManager", () => {
         });
       });
 
-      it("creates an `UpdateTracker` when in read-write mode and `updatesPollInterval` is specified", () => {
+      it("creates an `UpdateTracker` when in read-write mode, `updatesPollInterval` is specified and IPC host is available", () => {
+        sinon.stub(IpcHost, "isValid").get(() => true);
+        sinon.stub(PresentationIpcHandler, "register").returns(() => { });
+
         const tracker = sinon.createStubInstance(UpdatesTracker) as unknown as UpdatesTracker;
         const stub = sinon.stub(UpdatesTracker, "create").returns(tracker);
         using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123 }), (_) => {
@@ -357,6 +361,14 @@ describe("PresentationManager", () => {
           expect(tracker.dispose).to.not.be.called; // eslint-disable-line @typescript-eslint/unbound-method
         });
         expect(tracker.dispose).to.be.calledOnce; // eslint-disable-line @typescript-eslint/unbound-method
+      });
+
+      it("doesn't create an `UpdateTracker` when IPC host is unavailable", () => {
+        sinon.stub(IpcHost, "isValid").get(() => false);
+        const stub = sinon.stub(UpdatesTracker, "create");
+        using(new PresentationManager({ addon: addon.object, mode: PresentationManagerMode.ReadWrite, updatesPollInterval: 123 }), (_) => {
+          expect(stub).to.not.be.called;
+        });
       });
 
     });
@@ -1276,6 +1288,8 @@ describe("PresentationManager", () => {
           changes: [{
             type: "Delete",
             target: createRandomECInstancesNodeJSON().key,
+            parent: createRandomECInstancesNodeJSON().key,
+            position: 123,
           }],
         };
         setup(addonResponse);

@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/** @type{import("eslint").Linter.BaseConfig} */
 module.exports = {
   env: {
     "browser": true
@@ -161,6 +162,7 @@ module.exports = {
         "allow": ["T", "args"]
       }
     ],
+    "@typescript-eslint/return-await": "error",
     "@typescript-eslint/no-this-alias": "error",
     "@typescript-eslint/no-use-before-define": "off",
     "@typescript-eslint/no-unnecessary-type-assertion": "error",
@@ -283,7 +285,7 @@ module.exports = {
       }
     ],
     "no-restricted-syntax": ["error", { selector: "TSEnumDeclaration[const=true]", message: "const enums are not allowed" }],
-    "no-return-await": "error",
+    "no-return-await": "off", // using @typescript-eslint/return-await instead
     "no-shadow": "off", // using @typescript-eslint/no-shadow instead
     "no-sparse-arrays": "error",
     "no-template-curly-in-string": "error",
@@ -371,10 +373,19 @@ module.exports = {
     "@bentley/prefer-get": "error",
     "@bentley/react-set-state-usage": ["error", { "updater-only": false, "allow-object": true }],
     "@bentley/require-basic-rpc-values": "off",
+    "@bentley/no-internal-barrel-imports": "error",
   },
+  overrides: [
+    {
+      files: ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
+      rules: {
+        "@bentley/no-internal-barrel-imports": "off",
+      }
+    }
+  ],
   settings: {
     "react": {
       "version": "16.8"
     }
-  }
+  },
 }

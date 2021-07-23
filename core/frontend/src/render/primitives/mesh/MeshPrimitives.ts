@@ -7,7 +7,7 @@
  */
 
 import { assert } from "@bentley/bentleyjs-core";
-import { Point2d, Range3d } from "@bentley/geometry-core";
+import { AuxChannel, AuxChannelData, Point2d, Range3d } from "@bentley/geometry-core";
 import {
   ColorIndex, EdgeArgs, Feature, FeatureIndex, FeatureIndexType, FeatureTable, FillFlags, LinePixels, MeshEdges, MeshPolyline, MeshPolylineList,
   OctEncodedNormal, PolylineData, PolylineEdgeArgs, PolylineFlags, QParams3d, QPoint3dList, RenderMaterial, RenderTexture, SilhouetteEdgeArgs,
@@ -126,6 +126,7 @@ export class MeshArgs {
   public hasBakedLighting = false;
   public isVolumeClassifier = false;
   public hasFixedNormals = false;
+  public auxChannels?: ReadonlyArray<AuxChannel>;
 
   public clear() {
     this.edges.clear();
@@ -139,7 +140,9 @@ export class MeshArgs {
     this.material = undefined;
     this.fillFlags = FillFlags.None;
     this.isPlanar = this.is2d = this.hasBakedLighting = this.isVolumeClassifier = this.hasFixedNormals = false;
+    this.auxChannels = undefined;
   }
+
   public init(mesh: Mesh): boolean {
     this.clear();
     if (undefined === mesh.triangles || mesh.triangles.isEmpty)
@@ -171,6 +174,7 @@ export class MeshArgs {
 
     this.edges.width = mesh.displayParams.width;
     this.edges.linePixels = mesh.displayParams.linePixels;
+    this.auxChannels = mesh.auxChannels;
 
     const meshEdges = mesh.edges;
     if (undefined === meshEdges)
@@ -213,6 +217,7 @@ export class Mesh {
   public readonly hasBakedLighting: boolean;
   public readonly isVolumeClassifier: boolean;
   public displayParams: DisplayParams;
+  private _auxChannels?: AuxChannel[];
 
   private constructor(props: Mesh.Props) {
     const { displayParams, features, type, range, is2d, isPlanar } = props;
@@ -229,8 +234,50 @@ export class Mesh {
 
   public static create(props: Mesh.Props): Mesh { return new Mesh(props); }
 
-  public get triangles(): TriangleList | undefined { return Mesh.PrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined; }
-  public get polylines(): MeshPolylineList | undefined { return Mesh.PrimitiveType.Mesh !== this.type ? this._data as MeshPolylineList : undefined; }
+  public get triangles(): TriangleList | undefined {
+    return Mesh.PrimitiveType.Mesh === this.type ? this._data as TriangleList : undefined;
+  }
+
+  public get polylines(): MeshPolylineList | undefined {
+    return Mesh.PrimitiveType.Mesh !== this.type ? this._data as MeshPolylineList : undefined;
+  }
+
+  public get auxChannels(): ReadonlyArray<AuxChannel> | undefined {
+    return this._auxChannels;
+  }
+
+  public addAuxChannels(channels: ReadonlyArray<AuxChannel>, srcIndex: number): void {
+    // The native version of this function appears to assume that all polyfaces added to the Mesh will have
+    // the same number + type of aux channels.
+    // ###TODO We should really produce a separate Mesh for each unique combination. For now just bail on mismatch.
+    if (this._auxChannels) {
+      if (this._auxChannels.length !== channels.length)
+        return;
+
+      for (let i = 0; i < channels.length; i++) {
+        const src = channels[i];
+        const dst = this._auxChannels[i];
+        if (src.dataType !== dst.dataType || src.name !== dst.name || src.inputName !== dst.inputName)
+          return;
+      }
+    }
+
+    if (!this._auxChannels) {
+      // Copy the channels, leaving each AuxData's values array empty.
+      this._auxChannels = channels.map((x) => new AuxChannel(x.data.map((y) => new AuxChannelData(y.input, [])), x.dataType, x.name, x.inputName));
+    }
+
+    // Append the value at srcIndex from each source channel's data to our channels.
+    for (let channelIndex = 0; channelIndex < channels.length; channelIndex++) {
+      const srcChannel = channels[channelIndex];
+      const dstChannel = this._auxChannels[channelIndex];
+      const dstIndex = dstChannel.valueCount;
+      for (let dataIndex = 0; dataIndex < srcChannel.data.length; dataIndex++) {
+        const dstData = dstChannel.data[dataIndex];
+        dstData.copyValues(srcChannel.data[dataIndex], dstIndex, srcIndex, dstChannel.entriesPerValue);
+      }
+    }
+  }
 
   public toFeatureIndex(index: FeatureIndex): void {
     if (undefined !== this.features)

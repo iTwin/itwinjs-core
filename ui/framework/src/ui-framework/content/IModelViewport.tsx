@@ -13,7 +13,7 @@ import { viewWithUnifiedSelection } from "@bentley/presentation-components";
 import { ViewportComponent, ViewStateProp } from "@bentley/ui-components";
 import { FillCentered } from "@bentley/ui-core";
 
-import { FrontstageManager } from "../../ui-framework";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
 import { connectIModelConnectionAndViewState } from "../redux/connectIModel";
@@ -98,7 +98,7 @@ export class IModelViewportControl extends ViewportContentControl {
     }
   }
 
-  protected getReactNode(): React.ReactNode {
+  protected override getReactNode(): React.ReactNode {
     if (!React.isValidElement(this._reactNode) && this._options.deferNodeInitialization)
       this.initializeReactNode();
 
@@ -164,7 +164,7 @@ export class IModelViewportControl extends ViewportContentControl {
   }
 
   /** Get the React.Element for a ViewSelector change. */
-  public getReactElementForViewSelectorChange(iModelConnection: IModelConnection, _unusedViewDefinitionId: Id64String, viewState: ViewState, _name: string): React.ReactNode {
+  public override getReactElementForViewSelectorChange(iModelConnection: IModelConnection, _unusedViewDefinitionId: Id64String, viewState: ViewState, _name: string): React.ReactNode {
     return this.getImodelViewportReactElement(iModelConnection, viewState);
   }
 
@@ -180,7 +180,7 @@ export class IModelViewportControl extends ViewportContentControl {
   };
 
   /** Get the NavigationAidControl associated with this ContentControl */
-  public get navigationAidControl(): string {
+  public override get navigationAidControl(): string {
     if (this.viewport)
       return super.navigationAidControl;
     else

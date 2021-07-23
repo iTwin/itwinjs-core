@@ -32,12 +32,12 @@ class IconItem extends React.PureComponent<IconItemProps> {
     super(props);
   }
 
-  public render() {
+  public override render() {
     const {
       // eslint-disable-next-line @typescript-eslint/no-unused-vars
       onClick, icon, // do not pass on item specific props
       ...otherProps
-    } = this.props as any;
+    } = this.props;
 
     const handleClick = (_e: React.MouseEvent) => {
       if (onClick)
@@ -134,7 +134,7 @@ export class IconPickerButton extends React.PureComponent<IconPickerProps, IconP
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     const buttonStyle = { ...this.props.style } as React.CSSProperties;
     const buttonClassNames = classnames("components-iconpicker-button",
       this.props.readonly && "readonly",

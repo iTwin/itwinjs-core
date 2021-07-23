@@ -14,8 +14,9 @@ import {
   PropertyUpdatedArgs, RowItem, SelectionMode, SimpleTableDataProvider,
   Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget, TypeConverter, TypeConverterManager,
 } from "@bentley/ui-components";
-import { BodyText, Toggle } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
+import { Input, Select, SelectOption, ToggleSwitch } from "@itwin/itwinui-react";
+import { BodyText, Gap } from "@bentley/ui-core";
 
 class TableExampleContentControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -172,7 +173,7 @@ const createLoremPropertyRecord = (column: ColumnDescription) => {
 };
 
 export class TableExampleContent extends React.Component<{}, TableExampleState>  {
-  public readonly state: Readonly<TableExampleState>;
+  public override readonly state: Readonly<TableExampleState>;
 
   private _columns: ColumnDescription[] = [
     {
@@ -296,38 +297,16 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
     this.setState({ dataProvider });
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     this.loadData(this.state.useUtc);
   }
 
-  private _onChangeSelectionMode = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    let selectionMode: SelectionMode;
-
-    switch (e.target.value) {
-      case "1":
-        selectionMode = SelectionMode.Single;
-        break;
-      case "5":
-        selectionMode = SelectionMode.SingleAllowDeselect;
-        break;
-      case "6":
-        selectionMode = SelectionMode.Multiple;
-        break;
-      case "12":
-        selectionMode = SelectionMode.Extended;
-        break;
-      default: selectionMode = SelectionMode.Single;
-    }
-    this.setState({ selectionMode });
+  private _onChangeSelectionMode = (newValue: SelectionMode) => {
+    this.setState({ selectionMode: newValue });
   };
 
-  private _onChangeTableSelectionTarget = (e: React.ChangeEvent<HTMLSelectElement>) => {
-    if (e.target.value === "0") {
-      this.setState({ tableSelectionTarget: TableSelectionTarget.Row });
-      return;
-    }
-
-    this.setState({ tableSelectionTarget: TableSelectionTarget.Cell });
+  private _onChangeTableSelectionTarget = (newValue: TableSelectionTarget) => {
+    this.setState({ tableSelectionTarget: newValue });
   };
 
   private _updatePropertyRecord(record: PropertyRecord, newValue: PropertyValue): PropertyRecord {
@@ -370,12 +349,15 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
     console.log(`rowIndex ${args.rowIndex}, colIndex ${args.colIndex}, cellKey ${args.cellKey}`);
   };
 
-  private _onUtcChange = (checked: boolean) => {
+  private _onUtcChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
     this.setState({ useUtc: checked });
     this.loadData(checked);
   };
 
-  private _onFilteringChange = (checked: boolean) => {
+  private _onFilteringChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    this.setState({ filtering: checked });
     this._columns.forEach((column: ColumnDescription) => {
       column.filterable = checked;
     });
@@ -385,42 +367,47 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
     }
   };
 
-  public render(): React.ReactNode {
+  private _selectionModes: SelectOption<SelectionMode>[] = [
+    { value: SelectionMode.Single, label: "Single" },
+    { value: SelectionMode.SingleAllowDeselect, label: "Single Allow Deselect" },
+    { value: SelectionMode.Multiple, label: "Multiple" },
+    { value: SelectionMode.Extended, label: "Extended" },
+  ];
+
+  private _selectionTargets: SelectOption<TableSelectionTarget>[] = [
+    { value: TableSelectionTarget.Row, label: "Row" },
+    { value: TableSelectionTarget.Cell, label: "Cell" },
+  ];
+
+  public override render(): React.ReactNode {
     return (
       <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
-        <div style={{ marginTop: "3px", marginBottom: "4px" }}>
-          <select onChange={this._onChangeSelectionMode} aria-label="Selection Mode">
-            <option value={SelectionMode.Single}>Single</option>
-            <option value={SelectionMode.SingleAllowDeselect}>SingleAllowDeselect</option>
-            <option value={SelectionMode.Multiple}>Multiple</option>
-            <option value={SelectionMode.Extended}>Extended</option>
-          </select>
+        <div style={{ display: "flex", alignItems: "center", height: "32px" }}>
+          <Select onChange={this._onChangeSelectionMode} aria-label="Selection Mode" value={this.state.selectionMode} options={this._selectionModes} />
           <Gap />
-          <select onChange={this._onChangeTableSelectionTarget} aria-label="Selection Target">
-            <option value={TableSelectionTarget.Row}>Row</option>
-            <option value={TableSelectionTarget.Cell}>Cell</option>
-          </select>
+          <Select onChange={this._onChangeTableSelectionTarget} aria-label="Selection Target" value={this.state.tableSelectionTarget} options={this._selectionTargets} />
           <Gap />
           <label>
             <BodyText>Top row:</BodyText>
             &nbsp;
-            <input onChange={this._onRequestedTopRowChange} style={{ width: "100px" }} />
+            <Input onChange={this._onRequestedTopRowChange} style={{ width: "100px" }} />
             &nbsp;
             <span>({this.state.topRow})</span>
           </label>
           <Gap />
-          <label>
+          <label style={{ display: "flex" }}>
             <BodyText>Filtering:</BodyText>
             &nbsp;
-            <Toggle isOn={this.state.filtering} onChange={this._onFilteringChange} title="Filtering" />
+            <ToggleSwitch checked={this.state.filtering} onChange={this._onFilteringChange} title="Filtering" />
           </label>
-          <label>
+          <Gap />
+          <label style={{ display: "flex" }}>
             <BodyText>UTC:</BodyText>
             &nbsp;
-            <Toggle isOn={this.state.useUtc} onChange={this._onUtcChange} title="Use UTC in lieu of local time" />
+            <ToggleSwitch checked={this.state.useUtc} onChange={this._onUtcChange} title="Use UTC in lieu of local time" />
           </label>
         </div>
-        <div style={{ flex: "1", height: "calc(100% - 22px)" }}>
+        <div style={{ flex: "1", height: "calc(100% - 32px)" }}>
           {this.state.dataProvider &&
             <Table
               dataProvider={this.state.dataProvider}
@@ -436,12 +423,6 @@ export class TableExampleContent extends React.Component<{}, TableExampleState> 
       </div>
     );
   }
-}
-
-function Gap() {
-  return (
-    <span style={{ paddingLeft: "10px" }} />
-  );
 }
 
 ConfigurableUiManager.registerControl("TableExampleContent", TableExampleContentControl);
@@ -485,7 +466,7 @@ class MdyFormatter implements DateFormatter {
 class MmDdYyyDateTypeConverter extends TypeConverter implements LessGreaterOperatorProcessor {
   private _formatter = new MdyFormatter();
 
-  public convertToString(value?: Primitives.Value) {
+  public override convertToString(value?: Primitives.Value) {
     if (value === undefined)
       return "";
 
@@ -499,24 +480,24 @@ class MmDdYyyDateTypeConverter extends TypeConverter implements LessGreaterOpera
     return value.toString();
   }
 
-  public convertFromString(value: string) {
+  public override convertFromString(value: string) {
     if (!value)
       return undefined;
 
     return this._formatter.parseDate(value);
   }
 
-  public get isLessGreaterType(): boolean { return true; }
+  public override get isLessGreaterType(): boolean { return true; }
 
   public sortCompare(valueA: Date, valueB: Date, _ignoreCase?: boolean): number {
     return valueA.valueOf() - valueB.valueOf();
   }
 
-  public isEqualTo(valueA: Date, valueB: Date): boolean {
+  public override isEqualTo(valueA: Date, valueB: Date): boolean {
     return valueA.valueOf() === valueB.valueOf();
   }
 
-  public isNotEqualTo(valueA: Date, valueB: Date): boolean {
+  public override isNotEqualTo(valueA: Date, valueB: Date): boolean {
     return valueA.valueOf() !== valueB.valueOf();
   }
 

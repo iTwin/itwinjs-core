@@ -13,7 +13,7 @@ import * as modelsModule from "./TestConnectorModels";
  * @beta
  */
 export class TestConnectorSchema extends Schema {
-  public static get schemaName(): string { return "TestConnector"; }
+  public static override get schemaName(): string { return "TestConnector"; }
   public static get schemaFilePath(): string {
     return path.join(KnownTestLocations.assetsDir, "TestConnector.ecschema.xml");
   }

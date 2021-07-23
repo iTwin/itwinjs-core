@@ -177,6 +177,10 @@ export class Geometry {
   public static readonly smallAngleRadians = 1.0e-12;
   /** square of `smallAngleRadians` */
   public static readonly smallAngleRadiansSquared = 1.0e-24;
+  /** tolerance for small angle measured in degrees. */
+  public static readonly smallAngleDegrees = 5.7e-11;
+  /** tolerance for small angle measured in arc-seconds. */
+   public static readonly smallAngleSeconds = 2e-7;
   /** numeric value that may considered huge for numbers expected to be 0..1 fractions.
    * * But note that the "allowed" result value is vastly larger than 1.
    */
@@ -320,6 +324,19 @@ export class Geometry {
   public static isSmallRelative(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
   /** Test if `value` is small compared to `smallAngleRadians` */
   public static isSmallAngleRadians(value: number): boolean { return Math.abs(value) < Geometry.smallAngleRadians; }
+  /** Returns true if both values are undefined or if both are defined and almost equal within tolerance.
+   * If one is undefined and the other is not then false is returned.
+  */
+  public static isAlmostEqualOptional(a: number | undefined, b: number | undefined, tolerance: number): boolean {
+    if (a !== undefined && b !== undefined) {
+      if (Math.abs(a - b) > tolerance)
+        return false;
+    } else {
+      if (a !== undefined || b !== undefined)
+        return false;
+    }
+    return true;
+  }
   /** Toleranced equality test, using tolerance `smallAngleRadians * ( 1 + abs(a) + (abs(b)))`
    * * Effectively an absolute tolerance of `smallAngleRadians`, with tolerance increasing for larger values of a and b.
   */
@@ -608,6 +625,15 @@ export class Geometry {
   public static resolveNumber(value: number | undefined, defaultValue: number = 0): number {
     return value !== undefined ? value : defaultValue;
   }
+  /** If given a value, return it.   If given undefined, return `defaultValue`. */
+  public static resolveValue<T>(value: T | undefined, defaultValue: T): T {
+    return value !== undefined ? value : defaultValue;
+  }
+/** If given value matches a target, return undefined.   Otherwise return the value. */
+public static resolveToUndefined<T>(value: T | undefined, targetValue: T): T | undefined {
+  return value === targetValue ? undefined : value;
+}
+
   /** simple interpolation between values, but choosing (based on fraction) a or b as starting point for maximum accuracy. */
   public static interpolate(a: number, f: number, b: number): number {
     return f <= 0.5 ? a + f * (b - a) : b - (1.0 - f) * (b - a);
@@ -825,6 +851,47 @@ export class Geometry {
     }
   return false;
   }
+
+/** test for  match of typed arrays (e.g. Float64Array). */
+public static almostEqualNumberArrays(a: number[] | Float64Array | undefined, b: number[] | Float64Array | undefined,
+  testFunction: (p: number, q: number) => boolean): boolean{
+  if (Array.isArray(a) && a.length === 0)
+    a = undefined;
+if (Array.isArray(b) && b.length === 0)
+    b = undefined;
+if (a === undefined && b === undefined)
+  return true;
+if (Array.isArray(a) && Array.isArray(b)) {
+  if (a.length !== b.length)
+    return false;
+  for (let i = 0; i < a.length; i++){
+    if (!testFunction (a[i],b[i]))
+      return false;
+    }
+  return true;
+  }
+return false;
+}
+
+  /**
+   * Return
+   * * true if both values are defined and equal (with ===).
+   * * false if both defined by not equal
+   * * return (option arg) resultIfBothUndefined when both are undefined.
+   * * return false if one is defined and the other undefined
+   * @param a first value
+   * @param b second value
+   * @param resultIfBothUndefined return value when both are undefined.
+   * @returns
+   */
+  public static areEqualAllowUndefined<T>(a: T | undefined, b: T | undefined, resultIfBothUndefined: boolean = true): boolean{
+    if (a === undefined && b === undefined)
+      return resultIfBothUndefined;
+    if (a !== undefined && b !== undefined)
+      return a === b;
+    return false;
+  }
+
   /** clone an array whose members have a clone method.
    * * undefined return from clone is forced into the output array.
   */

@@ -12,7 +12,7 @@ import {
 } from "./demodataproviders/demoTreeDataProvider";
 import { ChildDragLayer } from "./draglayers/ChildDragLayer";
 import { ParentDragLayer } from "./draglayers/ParentDragLayer";
-import { Checkbox } from "@bentley/ui-core";
+import { Checkbox } from "@itwin/itwinui-react";
 
 // eslint-disable-next-line @typescript-eslint/naming-convention, deprecation/deprecation
 const DragDropTree = DEPRECATED_withTreeDragDrop<TreeProps, DemoTreeDragDropType>(DEPRECATED_Tree);
@@ -37,10 +37,10 @@ interface State {
 }
 
 class TreeDemoWidget extends React.Component<Props, State> {
-  public readonly state: State = {
+  public override readonly state: State = {
     checked: false,
   };
-  public render() {
+  public override render() {
     DragDropLayerManager.registerTypeLayer(TreeDragTypes.Parent, ParentDragLayer); // eslint-disable-line deprecation/deprecation
     DragDropLayerManager.registerTypeLayer(TreeDragTypes.Child, ChildDragLayer); // eslint-disable-line deprecation/deprecation
 

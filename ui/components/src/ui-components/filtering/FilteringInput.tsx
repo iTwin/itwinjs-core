@@ -11,6 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { Key } from "ts-key-enum";
 import { CommonProps, UiCore } from "@bentley/ui-core";
+import { Input } from "@itwin/itwinui-react";
 import { UiComponents } from "../UiComponents";
 import { ResultSelector, ResultSelectorProps } from "./ResultSelector";
 
@@ -174,7 +175,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
   };
 
   /** @internal */
-  public componentDidUpdate(prevProps: FilteringInputProps) {
+  public override componentDidUpdate(prevProps: FilteringInputProps) {
     if (FilteringInput.isDeprecatedProps(prevProps) && FilteringInput.isDeprecatedProps(this.props)) {
       // eslint-disable-next-line deprecation/deprecation
       if (prevProps.filteringInProgress !== this.props.filteringInProgress) {
@@ -215,7 +216,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
     return props.status;
   }
 
-  public render() {
+  public override render() {
     const status = this.getStatus(this.props);
 
     return (
@@ -226,7 +227,7 @@ export class FilteringInput extends React.PureComponent<FilteringInputProps, Fil
         role="presentation"
       >
         <span className="components-filtering-input-input">
-          <input type="text"
+          <Input type="text"
             placeholder={UiComponents.translate("filteringInput:placeholder")}
             // eslint-disable-next-line jsx-a11y/no-autofocus
             autoFocus={this.props.autoFocus}

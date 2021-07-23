@@ -10,8 +10,8 @@ import "./ViewAttributes.scss";
 import * as React from "react";
 import { ViewFlagProps, ViewFlags } from "@bentley/imodeljs-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Checkbox } from "@bentley/ui-core";
 import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
+import { Checkbox } from "@itwin/itwinui-react";
 import { StatusBarFieldId } from "../statusbar/StatusBarWidgetControl";
 import { UiFramework } from "../UiFramework";
 import { Indicator } from "./Indicator";
@@ -42,7 +42,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
     this._className = this.constructor.name;
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     this.updateState();
   }
 
@@ -119,7 +119,7 @@ export class ViewAttributesStatusField extends React.Component<StatusFieldProps,
     return <div className="uifw-view-attributes-contents">{items}</div>;
   }
 
-  public render() {
+  public override render() {
     const isOpen = this.props.openWidget === this._className;
 
     return (

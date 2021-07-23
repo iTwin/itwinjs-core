@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Arc3d, Loop, Path, Point2d, Point3d, Polyface } from "@bentley/geometry-core";
+import { Arc3d, Loop, Path, Point2d, Point3d, Polyface, SolidPrimitive } from "@bentley/geometry-core";
 import { GraphicBuilder, GraphicType } from "../../render/GraphicBuilder";
 import { GraphicPrimitive } from "../../render/GraphicPrimitive";
 
@@ -38,6 +38,7 @@ describe("GraphicPrimitive", () => {
     public addPath(path: Path) { this.primitive = { type: "path", path }; }
     public addLoop(loop: Loop) { this.primitive = { type: "loop", loop }; }
     public addPolyface(polyface: Polyface, filled: boolean) { this.primitive = { type: "polyface", polyface, filled }; }
+    public addSolidPrimitive(solidPrimitive: SolidPrimitive) { this.primitive = { type: "solidPrimitive", solidPrimitive }; }
 
     public expectPrimitive(expected: GraphicPrimitive) {
       expect(this._primitive).not.to.be.undefined;

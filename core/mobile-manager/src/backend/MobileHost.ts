@@ -10,7 +10,7 @@ import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } f
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { BatteryState, DeviceEvents, mobileAppChannel, MobileAppFunctions, Orientation } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
-import { MobileAuthorizationBackend } from "../MobileBackend";
+import { MobileAuthorizationBackend } from "./MobileAuthorizationBackend";
 import { setupMobileRpc } from "./MobileRpcServer";
 
 /** @beta */

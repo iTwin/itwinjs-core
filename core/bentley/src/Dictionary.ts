@@ -80,7 +80,33 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
   public get size(): number { return this._keys.length; }
 
   /** Returns an iterator over the key-value pairs in the Dictionary suitable for use in `for-of` loops. Entries are returned in sorted order by key. */
-  public [Symbol.iterator](): Iterator<DictionaryEntry<K, V>> { return new DictionaryIterator<K, V>(this._keys, this._values); }
+  public [Symbol.iterator](): Iterator<DictionaryEntry<K, V>> {
+    return new DictionaryIterator<K, V>(this._keys, this._values);
+  }
+
+  /** Provides iteration over the keys in this Dictionary, in sorted order. */
+  public keys(): Iterable<K> {
+    function * iterator(dict: Dictionary<K, V>) {
+      for (const entry of dict)
+        yield entry.key;
+    }
+
+    return {
+      [Symbol.iterator]: () => iterator(this),
+    };
+  }
+
+  /** Provides iteration over the values in this Dictionary, in sorted order by the corresponding keys. */
+  public values(): Iterable<V> {
+    function * iterator(dict: Dictionary<K, V>) {
+      for (const entry of dict)
+        yield entry.value;
+    }
+
+    return {
+      [Symbol.iterator]: () => iterator(this),
+    };
+  }
 
   /** Removes all entries from this dictionary */
   public clear(): void {
@@ -131,13 +157,24 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
    * @returns true if the new entry was inserted, false if an entry with an equivalent key already exists.
    */
   public insert(key: K, value: V): boolean {
-    const bound = this.lowerBound(key);
-    if (!bound.equal) {
-      this._keys.splice(bound.index, 0, this._cloneKey(key));
-      this._values.splice(bound.index, 0, this._cloneValue(value));
-    }
+    const result = this.findOrInsert(key, value);
+    return result.inserted;
+  }
 
-    return !bound.equal;
+  /** Obtains the value associated with the specified key, or inserts it if the specified key does not yet exist.
+   * @param key The key to search for.
+   * @param value The value to associate with `key` if `key` does not yet exist in the dictionary.
+   * @returns The found or inserted value and a flag indicating whether the new value was inserted.
+   */
+  public findOrInsert(key: K, value: V): { value: V, inserted: boolean } {
+    const bound = this.lowerBound(key);
+    if (bound.equal)
+      return { value: this._values[bound.index], inserted: false };
+
+    value = this._cloneValue(value);
+    this._keys.splice(bound.index, 0, this._cloneKey(key));
+    this._values.splice(bound.index, 0, this._cloneValue(value));
+    return { value, inserted: true };
   }
 
   /**

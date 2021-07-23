@@ -93,7 +93,7 @@ export class ThematicGradientSettings {
   public static get contentRange(): number { return 1.0 - 2.0 * ThematicGradientSettings.margin; }
   public static get contentMax(): number { return 1.0 - ThematicGradientSettings.margin; }
 
-  public static defaults = ThematicGradientSettings.fromJSON();
+  public static readonly defaults = new ThematicGradientSettings({ });
 
   private static _defaultCustomKeys = [[0.0, 255, 255, 255], [1.0, 0, 0, 0]];
 
@@ -157,21 +157,31 @@ export class ThematicGradientSettings {
   }
 
   public static fromJSON(json?: ThematicGradientSettingsProps) {
-    return new ThematicGradientSettings(json);
+    return json ? new ThematicGradientSettings(json) : this.defaults;
   }
 
   public toJSON(): ThematicGradientSettingsProps {
-    const json: ThematicGradientSettingsProps = {
-      mode: this.mode,
-      stepCount: this.stepCount,
-      marginColor: this.marginColor.toJSON(),
-      colorScheme: this.colorScheme,
-      colorMix: this.colorMix,
-    };
+    const props: ThematicGradientSettingsProps = { };
+    if (ThematicGradientMode.Smooth !== this.mode)
+      props.mode = this.mode;
 
-    json.customKeys = [];
-    this.customKeys.forEach((key) => json.customKeys!.push({ value: key.value, color: key.color.tbgr }));
-    return json;
+    if (10 !== this.stepCount)
+      props.stepCount = this.stepCount;
+
+    const marginColor = this.marginColor.toJSON();
+    if (0 !== marginColor)
+      props.marginColor = marginColor;
+
+    if (ThematicGradientColorScheme.BlueRed !== this.colorScheme)
+      props.colorScheme = this.colorScheme;
+
+    if (0 !== this.colorMix)
+      props.colorMix = this.colorMix;
+
+    if (this.customKeys.length > 0)
+      props.customKeys = this.customKeys.map((key) => { return { value: key.value, color: key.color.toJSON() }; });
+
+    return props;
   }
 
   /** Create a copy of this ThematicGradientSettings, optionally modifying some of its properties.

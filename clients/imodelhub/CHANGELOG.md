@@ -1,6 +1,64 @@
 # Change Log - @bentley/imodelhub-client
 
-This log was last generated on Wed, 16 Jun 2021 20:29:32 GMT and should not be manually modified.
+This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+_Version update only_
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+_Version update only_
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
+
+## 2.17.1
+Fri, 02 Jul 2021 15:38:30 GMT
+
+_Version update only_
+
+## 2.17.0
+Mon, 28 Jun 2021 16:20:11 GMT
+
+### Updates
+
+- Use new iModelHub permissions API
+- User id should not be enforced to be guid
+
+## 2.16.9
+Tue, 06 Jul 2021 22:08:34 GMT
+
+_Version update only_
+
+## 2.16.8
+Fri, 02 Jul 2021 17:40:46 GMT
+
+_Version update only_
+
+## 2.16.7
+Mon, 28 Jun 2021 18:13:04 GMT
+
+_Version update only_
+
+## 2.16.6
+Mon, 28 Jun 2021 13:12:55 GMT
+
+_Version update only_
+
+## 2.16.5
+Fri, 25 Jun 2021 16:03:01 GMT
+
+_Version update only_
+
+## 2.16.4
+Wed, 23 Jun 2021 17:09:07 GMT
+
+_Version update only_
 
 ## 2.16.3
 Wed, 16 Jun 2021 20:29:32 GMT
@@ -263,7 +321,7 @@ Fri, 02 Oct 2020 18:03:32 GMT
 
 ### Updates
 
-- Fixed lint warnings. 
+- Fixed lint warnings.
 - Changed the bulk lock deletion to use the new chunked bulk lock delete API
 
 ## 2.6.5
@@ -393,17 +451,17 @@ Thu, 28 May 2020 22:48:59 GMT
 
 - Added FailedToGetProductSettings error
 - Download ChangeSets in chunks
-- Simplified logging for monitoring briefcase operations. 
+- Simplified logging for monitoring briefcase operations.
 
 ## 2.0.0
 Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
 - Changed ChangeSets download API
 - Added unlink for file handler
-- Updated docs. 
+- Updated docs.
 - Changeset download get sas url just before starting download
 - react to changes in imodeljs-clients
 - update imodelbank auth clients to implement FrontendAuthorizationClient

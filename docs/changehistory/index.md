@@ -1,145 +1,111 @@
-# 2.16.0 Change Notes
+# 2.18.0 Change Notes
 
-Overview:
+## Scientific visualization
 
-- [Promoted APIs](#promoted-apis)
-- Breaking Changes:
-  - [Breaking API changes](#breaking-api-changes)
-- [Obtaining element geometry on the frontend](#obtaining-element-geometry-on-the-frontend)
-- Visualization
-  - [Clipping enhancements](#clipping-enhancements)
-    - [Colorization](#colorization)
-    - [Model clip groups](#model-clip-groups)
-    - [Nested clip volumes](#nested-clip-volumes)
-  - [Grid display enhancements](#grid-display-enhancements)
-  - [Schedule script enhancements](#schedule-script-enhancements)
-  - [Querying visible elements](#querying-visible-elements)
-  - [Creating graphics](#creating-graphics)
-  - [Map tile trees refactoring](#map-tile-trees-refactoring)
-- [Presentation](#presentation-changes)
-  - [InstanceLabelOverride enhancements](#instancelabeloverride-enhancements)
-  - [Custom category renderers](#custom-category-renderers)
-  - [Custom category nesting](#custom-category-nesting)
-  - [Presentation rule schema requirements](#presentation-rule-schema-requirements)
+The [AnalysisStyle]($common) APIs have been cleaned up and promoted to `@public`. An AnalysisStyle is used to animate a mesh that has been supplemented with [PolyfaceAuxData]($geometry-core), by recoloring and/or deforming its vertices over time. This enables visualization of the effects of computed, changing variables like stress and temperature.
 
-## Obtaining element geometry on the frontend
+## Section-cut element graphics
 
-Until now, an element's [GeometryStreamProps]($common) was only available on the backend - [IModelConnection.Elements.getProps]($frontend) always omits the geometry. [IModelConnection.Elements.loadProps]($frontend) has been introduced to provide greater control over which properties are returned. It accepts the Id, federation Guid, or [Code]($common) of the element of interest, and optionally an [ElementLoadOptions]($common) specifying which properties to include or exclude. For example, the following code queries for and iterates over the geometry of a [GeometricElement3d]($backend):
+[TileAdmin.requestElementGraphics]($frontend) can now produce section-cut graphics if [GraphicsRequestProps.sectionCut]($common) is supplied. The temporary element graphics produced during interactive editing will automatically include section-cut graphics based on the viewport's [CutStyle]($common).
 
-```ts
-  function printGeometryStream(elementId: Id64String, iModel: IModelConnection): void {
-    const props = await iModel.elements.loadProps(elementId, { wantGeometry: true }) as GeometricElement3dProps;
-    assert(undefined !== props, `Element ${elementId} does not exist`);
-    const iterator = GeometryStreamIterator.fromGeometricElement3d(props);
-    for (const entry of iterator)
-      console.log(JSON.stringify(entry));
+## Change summary API changes
+
+[ChangeSummaryManager.extractChangeSummaries]($imodeljs-backend) has now been deprecated, and replaced with two methods - [ChangeSummaryManager.createChangeSummaries]($imodeljs-backend) and [ChangeSummaryManager.createChangeSummary]($imodeljs-backend).
+
+The deprecated method works by creating a range of Change Summaries by starting with the end version, reversing Changesets one by one until the specified start version. Since Changesets containing schema changes cannot be reversed, the method may fail to create some Change Summaries. The new replacement instead walks the versions in the forward direction.
+
+- [ChangeSummaryManager.createChangeSummaries]($imodeljs-backend) creates Change Summaries for a range of Changesets by walking the versions in a forward direction starting with the specified first version.
+- [ChangeSummaryManager.createChangeSummary]($imodeljs-backend) creates a single Change Summary for the current version of the iModel, i.e., the last applied Changeset.
+
+[ChangeSummaryManager.detachChangeCache]($imodeljs-backend)  can now be used to detach the cache after querying the change summary to continue change summary creation if necessary.
+
+[ChangeSummaryExtractOptions]($imodeljs-backend) was also deprecated as a consequence of the above changes. [CreateChangeSummaryArgs]($imodeljs-backend) serves a similar purpose with the newer methods.
+ChangeSummaryExtractContext was unused and has been removed.
+
+## UI changes
+
+### @bentley/ui-abstract package
+
+Added ability for [UiItemsProvider]($ui-abstract) to provide widgets to [AbstractZoneLocation]($ui-abstract) locations when running is AppUi version 1. Prior to this a widget could only be targeted to a [StagePanelLocation]($ui-abstract) location.
+
+#### Example UiItemsProvider
+
+The example below, shows how to add a widget to a [StagePanelLocation]($ui-abstract) if UiFramework.uiVersion === "2" and to the "BottomRight" [AbstractZoneLocation]($ui-abstract) if UiFramework.uiVersion === "1".  See [UiItemsProvider.provideWidgets]($ui-abstract) for new `zoneLocation` argument.
+
+```tsx
+export class ExtensionUiItemsProvider implements UiItemsProvider {
+  public readonly id = "ExtensionUiItemsProvider";
+  public static i18n: I18N;
+  private _backstageItems?: BackstageItem[];
+
+  public constructor(i18n: I18N) {
+    ExtensionUiItemsProvider.i18n = i18n;
   }
+
+  /** provideWidgets() is called for each registered UI provider to allow the provider to add widgets to a specific section of a stage panel.
+   *  items to the StatusBar.
+   */
+  public provideWidgets(_stageId: string, stageUsage: string, location: StagePanelLocation, section: StagePanelSection | undefined, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps> {
+    const widgets: AbstractWidgetProps[] = [];
+    // section will be undefined if uiVersion === "1" and in that case we can add widgets to the specified zoneLocation
+    if ((undefined === section && stageUsage === StageUsage.General && zoneLocation === AbstractZoneLocation.BottomRight) ||
+      (stageUsage === StageUsage.General && location === StagePanelLocation.Right && section === StagePanelSection.End && "1" !== UiFramework.uiVersion)) {
+      {
+        widgets.push({
+          id: PresentationPropertyGridWidgetControl.id,
+          icon: PresentationPropertyGridWidgetControl.iconSpec,  // icon required if uiVersion === "1"
+          label: PresentationPropertyGridWidgetControl.label,
+          defaultState: WidgetState.Open,
+          getWidgetContent: () => <PresentationPropertyGridWidget />, // eslint-disable-line react/display-name
+          canPopout: true,  // canPopout ignore if uiVersion === "1"
+        });
+      }
+    }
+    return widgets;
+  }
+}
 ```
 
-Keep in mind that geometry streams can be extremely large. They may also contain data like [BRepEntity.DataProps]($common) that cannot be interpreted on the frontend; for this reason BRep data is omitted from the geometry stream, unless explicitly requested via [ElementLoadOptions.wantBRepData]($common).
+### @bentley/ui-framework package
 
-## Clipping enhancements
+- The need for an IModelApp to explicitly call [ConfigurableUiManager.initialize]($ui-framework) has been removed. This call is now made when processing [UiFramework.initialize]($ui-framework). This will not break any existing applications as subsequent calls to `ConfigurableUiManager.initialize()` are ignored.
 
-The contents of a [ViewState]($frontend) can be clipped by applying a [ClipVector]($geometry-core) to the view via [ViewState.setViewClip]($frontend). Several enhancements have been made to this feature:
+- If an application calls [UiFramework.setIModelConnection]($ui-framework) it will no longer need to explicitly call [SyncUiEventDispatcher.initializeConnectionEvents]($ui-framework) as `UiFramework.setIModelConnection` will call that method as it update the redux store.
 
-### Colorization
+- The `version` prop passed to [FrameworkVersion]($ui-framework) component will update the [UiFramework.uiVersion] if necessary keeping the redux state matching the value defined by the prop.
 
-[ClipStyle.insideColor]($common) and [ClipStyle.outsideColor]($common) can be used to colorize geometry based on whether it is inside or outside of the clip volume. If the outside color is defined, then that geometry will be drawn in the specified color instead of being clipped. These properties replace the beta [Viewport]($frontend) methods `setInsideColor` and `setOutsideColor` and are saved in the [DisplayStyle]($backend).
+- The [ScheduleAnimationTimelineDataProvider]($ui-framework) is published for use by AppUi apps. Specifying this data provider to a [TimelineComponent]($ui-components) allows animation of the [RenderSchedule.Script]($common) if one exists for the view. A component that automatically detects a schedule script and attaches the data provider to its TimelineComponent can be found in the [DefaultViewOverlay]($ui-framework).
 
-### Model clip groups
+- The [AnalysisAnimationTimelineDataProvider]($ui-framework) is published for use by AppUi apps. Specifying this data provider to a TimelineComponent allows animation of the information in the AnalysisDisplayProperties if the view's [DisplayStyleState]($frontend) contains one. A component that automatically detects analysis data and attaches the data provider to its TimelineComponent can be found in the [DefaultViewOverlay]($ui-framework).
 
-[ModelClipGroups]($common) can be used to apply additional clip volumes to groups of models. Try it out with an [interactive demo](https://www.itwinjs.org/sample-showcase/?group=Viewer+Features&sample=swiping-viewport-sample). Note that [ViewFlags.clipVolume]($common) applies **only** to the view clip - model clips apply regardless of view flags.
+### @bentley/ui-components package
 
-### Nested clip volumes
+- Added component [QuantityNumberInput]($ui-components) which accepts input for quantity values. The quantity value is shown as a single numeric value and the quantity "display" unit is shown next to the input control. The "display" unit is determined by the active unit system as defined by the [QuantityFormatter]($frontend). The control also provides buttons to increment and decrement the "displayed" value. The value reported by via the onChange function is in "persistence" units that can be stored in the iModel.
 
-Clip volumes now nest. For example, if you define a view clip, a model clip group, and a schedule script that applies its own clip volume, then geometry will be clipped by the **intersection** of all three clip volumes. Previously, only one clip volume could be active at a time.
+- Apps that use the [TimelineComponent]($ui-components) can now customize their own playback speeds by providing an array of [TimelineMenuItemProps]($ui-components) to the component. These can either be appended to or prefix the standard items, or they can replace them entirely. An option has also been added to the [TimelineComponentProps]($ui-components) to allow the app to turn on/off the Repeat menu item in the context menu.
 
-## Grid display enhancements
+### Quantity package
 
-The planar grid that is displayed when [ViewFlags.grid]($common) is now displayed with a shader rather than as explicit geometry.  This improved the overall appearance and efficiency of the grid display and corrects several anomalies when grid display was unstable at the horizon of a perspective view.  The view frustum is now expanded as necessary when grids are displayed to avoid truncating the grid to the displayed geometry.
+The Format class now provides the method [Format.clone]($quantity) to clone an existing Format. [CloneOptions]($quantity) may be optionally passed into the clone method to adjust the format.
 
-## Schedule script enhancements
+## [@bentley/ecschema-metadata](https://www.itwinjs.org/reference/ecschema-metadata/) changes
 
-The [RenderSchedule]($common) API for defining how to animate the contents of a view over time has been cleaned up and expanded. A new [RenderTimeline]($backend) element class has been introduced with version 1.0.13 of the BisCore ECSchema, to host a [RenderSchedule.Script]($common). `DisplayStyleSettings.scheduleScriptProps` has been deprecated in favor of [DisplayStyleSettings.renderTimeline]($common) specifying the Id of the RenderTimeline element hosting the script to be applied to the display style. A [DisplayStyleState]($frontend)'s schedule script is now loaded asynchronously via [DisplayStyleState.load]($frontend) - this is done automatically by [ViewState.load]($frontend) but must be done manually for display styles obtained through other means.
+To reduce the size and limit the scope of the APIs available in the ecschema-metadata package, all APIs associated with EC Schema editing and validation have been moved to the [@bentley/ecschema-editing](https://www.itwinjs.org/reference/ecschema-editing/) package. This includes all source code under the [Validation](https://www.itwinjs.org/reference/ecschema-metadata/) and [Editing](https://www.itwinjs.org/reference/ecschema-metadata/editing/) folders. All corresponding @beta types defined in the ecschema-metadata package have been deprecated.  All @alpha types have been removed from the ecschema-metadata package. The source code move is the first step of a larger proposal for Schema editing and validation enhancements for connectors and editing applications. You may read and provide feedback on this initial proposal via this [github discussion](https://github.com/imodeljs/imodeljs/discussions/1525).
 
-Sometimes it is useful to make the elements animated by the script more visible by de-emphasizing elements unaffected by the script. The appearance of non-animated elements can now be controlled by [EmphasizeElements.unanimatedAppearance]($frontend).
+### Deprecated @beta types (moved to ecschema-editing)
 
-## Querying visible elements
+- IDiagnostic, BaseDiagnostic (including all sub-classes), DiagnosticType, DiagnosticCategory, DiagnosticCodes, Diagnostics
+- IDiagnosticReporter, SuppressionDiagnosticReporter, FormatDiagnosticReporter, LoggingDiagnosticReporter
+- IRuleSet, ECRuleSet
+- ISuppressionRule, BaseSuppressionRule, IRuleSuppressionMap, BaseRuleSuppressionMap, IRuleSuppressionSet
+- SchemaCompareCodes, SchemaCompareDiagnostics
+- SchemaValidater, SchemaValidationVisitor
 
-The new `@beta` API [Viewport.queryVisibleFeatures]($frontend) can be used to determine the set of [Feature]($common)s - typically, elements - that are currently visible in the viewport. The API offers a choice between two criteria that can be used to determine visibility:
+### Removed @alpha types (moved to ecschema-editing)
 
-- The feature lit up at least one pixel on the screen. Pixels drawn behind other, transparent pixels are not included in this criterion. Pixel-based queries can be constrained to a sub-region of the viewport.
-- The feature is included in at least one [Tile]($frontend) currently being displayed by the viewport. By this criterion, if a [ClipVector]($geometry-core) is clipping the contents of the viewport, a feature contained in a tile that intersects the clip volume is considered visible even if the feature's geometry would be completely clipped out.
-
-## Creating graphics
-
-The new [GraphicBuilderOptions]($frontend) makes it easier to create a [GraphicBuilder]($frontend) and enables some additional features. [DecorateContext.createGraphic]($frontend) and [RenderSystem.createGraphic]($frontend) have been added, superseding [DecorateContext.createGraphicBuilder]($frontend) and [RenderSystem.createGraphicBuilder]($frontend). Each accepts a GraphicBuilderOptions specifying only those aspects of the GraphicBuilder that the caller wishes to customize. In particular, the behavior of pickable decorations can be customized using [GraphicBuilderOptions.pickable]($frontend):
-
-- [PickableGraphicOptions.noHilite]($frontend) and [PickableGraphicOptions.noFlash]($frontend) can prevent pickable graphics from being flashed and/or hilited by tools.
-- [PickableGraphicOptions.locateOnly]($frontend) allows a pickable graphic to be located by tools but not drawn to the screen.
-
-## Map tile trees refactoring
-
-The map tile trees have been moved from [DisplayStyleState]($frontend) to [Viewport]($frontend).  This enables the maps to be maintained correctly when viewports are synchronized.  This will primarily not affect applications except calls to [ViewState.areAllTileTreesLoaded]($frontend) should replaced with [Viewport.areAllTileTreesLoaded]($frontend) if the map tile trees should be tested.
-
-## Presentation changes
-
-### InstanceLabelOverride enhancements
-
-The [InstanceLabelOverride]($presentation-common) rule was enhanced with abilities to compose label using related instance values:
-
-- A `propertySource` attribute was added to [InstanceLabelOverridePropertyValueSpecification]($presentation-common) to allow picking a
-property value from a related instance.
-
-- A new [InstanceLabelOverrideRelatedInstanceLabelSpecification]($presentation-common) was added to allow taking label of a related
-instance. The related instance, possibly being a of a different ECClass, might have some different label overrides of its own.
-
-### Custom category renderers
-
-[VirtualizedPropertyGrid]($ui-components) now allows developers to fully customize displayed category contents, if the category is assigned a custom renderer via Presentation Rules. You can read more about that in our [Category customization learning page](../learning/presentation/Customization/PropertyCategoryRenderers.md).
-
-### Custom category nesting
-
-A new `parentId` attribute was added to [PropertyCategorySpecification]($presentation-common) to provide nesting abilities. See more details in our [property categorization page](../learning/presentation/Content/PropertyCategorization.md#category-nesting).
-
-### Presentation rule schema requirements
-
-A new `requiredSchemas` attribute was added to [Ruleset]($presentation-common), [Rule]($presentation-common) and [SubCondition]($presentation-common) definitions. The attribute allows specifying ECSchema requirements for rules and avoid using them when requirements are not met. See the [schema requirements page](../learning/presentation/SchemaRequirements.md) for more details.
-
-## Promoted APIs
-
-The following APIs have been promoted to `public`. Public APIs are guaranteed to remain stable for the duration of the current major version of a package.
-
-### [@bentley/webgl-compatibility](https://www.itwinjs.org/reference/webgl-compatibility/)
-
-- [queryRenderCompatibility]($webgl-compatibility) for querying the client system's compatibility with the iTwin.js rendering system.
-- [WebGLRenderCompatibilityInfo]($webgl-compatibility) for summarizing the client system's compatibility.
-- [WebGLFeature]($webgl-compatibility) for enumerating the required and optionals features used by the iTwin.js rendering system.
-- [WebGLRenderCompatibilityStatus]($webgl-compatibility) for describing a general compatibility rating of a client system.
-- [GraphicsDriverBugs]($webgl-compatibility) for describing any known graphics driver bugs for which iTwin.js will apply workarounds.
-- [ContextCreator]($webgl-compatibility) for describing a function that creates and returns a WebGLContext for [queryRenderCompatibility]($webgl-compatibility).
-
-## Breaking API changes
-
-### @bentley/imodeljs-backend package
-
-The arguments for the @beta protected static methods called during modifications have been changed to be more consistent and extensible:
-
-- [Element]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
-- [Model]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
-- [ElementAspect]($backend) `[onInsert, onInserted, onUpdate, onUpdated, onDelete, onDeleted]`
-
-In addition, new protected static methods were added:
-
-- [Element]($backend) `[onChildInsert, onChildInserted, onChildUpdate, onChildUpdated, onChildDelete, onChildDeleted, onChildAdd, onChildAdded, onChildDrop, onChildDropped]`
-- [Model]($backend) `[onInsertElement, onInsertedElement, onUpdateElement, onUpdatedElement, onDeleteElement, onDeletedElement]`
-
-The following method is now `async` to make it easier to integrate with asynchronous status and health reporting services:
-
-- [IModelExportHandler.onProgress]($backend)
-
-### @bentley/ecschema-metadata package
-
-Properties getter in @beta [ECClass]($ecschema-metadata) has been changed to return an iterator of properties instead of an array of properties.
-Array indexing and properties like .length will no longer work with the returned iterator, so you may need to create an array from the iterator or use its .next() method. Iterating with for...of loop works the same with iterator as before with an array.\
-This change is made because internally properties are now stored in a map instead of an array, and it is more efficient to return an iterator for the properties to be generated on demand than to create them on the getter.
+- SchemaEditResults, SchemaItemEditResults, PropertyEditResults,
+SchemaContextEditor
+- Editors namespace, which includes all editor classes (ie. ECClasses, Entities, Mixins, etc.)
+- ISchemaChange, ISchemaChanges, ChangeType
+- BaseSchemaChange, BaseSchemaChanges (including all sub-classes)
+- ISchemaComparer, SchemaComparer, SchemaCompareDirection, ISchemaCompareReporter

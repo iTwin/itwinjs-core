@@ -8,9 +8,9 @@
 
 import "./Form.scss";
 import * as React from "react";
-import { Button, ButtonType } from "../button/Button";
 import { UiCore } from "../UiCore";
 import { Field } from "./Field";
+import { Button } from "@itwin/itwinui-react";
 
 // cSpell:ignore multilinetextbox
 
@@ -193,7 +193,7 @@ export class Form extends React.Component<FormProps, FormState> {
       });
   };
 
-  public render() {
+  public override render() {
     const { submitSuccess, errorMsg } = this.state;
     const { fields, submitButtonLabel } = this.props;
     const context: FormContextState = { ...this.state, setValues: this._setValues };
@@ -206,7 +206,7 @@ export class Form extends React.Component<FormProps, FormState> {
               {Object.keys(fields).map((key) => <Field key={key} id={key} {...this.props.fields[key]} />)}
               <div className="core-form-footer">
                 <div className="core-form-buttons">
-                  <Button type="submit" buttonType={ButtonType.Blue} >
+                  <Button type="submit" styleType="high-visibility">
                     {submitButtonLabel ? submitButtonLabel : this._submitButtonLabel}
                   </Button>
                 </div>

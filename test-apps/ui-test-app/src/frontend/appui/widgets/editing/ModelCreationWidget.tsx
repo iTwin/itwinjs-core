@@ -7,10 +7,10 @@ import {
   EditingFunctions,
   IModelApp, MessageBoxIconType, MessageBoxType, NotifyMessageDetails, OutputMessagePriority, SpatialViewState,
 } from "@bentley/imodeljs-frontend";
-import { Button } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, UiFramework, WidgetControl } from "@bentley/ui-framework";
 import { ActiveSettingsManager } from "../../../api/ActiveSettingsManager";
 import { ErrorHandling } from "../../../api/ErrorHandling";
+import { Button } from "@itwin/itwinui-react";
 
 const modelNameId = "ui-test-app-modelcreation-modelname";
 
@@ -77,14 +77,14 @@ export class ModelCreationComponent extends React.Component<{}, ModelCreationCom
     }
   }
 
-  public render() {
+  public override render() {
     return (
       <div>
         <h2>Create Model</h2>
         <label htmlFor={modelNameId}>Name: </label>
         <input id={modelNameId} type="text" onChange={(ev) => this.onNameChange(ev)} />
         <p></p>
-        <Button onClick={async () => this.createNewModel()} disabled={!this.state.haveName}>
+        <Button styleType="cta" onClick={async () => this.createNewModel()} disabled={!this.state.haveName}>
           Create Model
         </Button>
       </div >

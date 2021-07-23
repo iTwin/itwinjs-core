@@ -293,6 +293,7 @@ beta;IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedCompo
 beta;IModelConnectedViewport: import("react-redux").ConnectedComponent
 beta;IModelConnectedViewSelector: import("react-redux").ConnectedComponent
 beta;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
+deprecated;IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent
 internal;IModelInfo
 internal;IModelScope
 internal;IModelServices
@@ -366,8 +367,6 @@ public;MessageAddedEventArgs
 public;MessageCenterField 
 public;MessageCenterFieldProps 
 public;MessageManager
-beta;MessageRenderer(props: MessageRendererProps): JSX.Element | null
-beta;MessageRendererProps 
 public;MessagesUpdatedEvent 
 public;ModalDialogChangedEvent 
 public;ModalDialogManager
@@ -529,10 +528,12 @@ public;StagePanelDefaultProps = Pick
 alpha;StagePanelHeader 
 alpha;StagePanelHeaderProps 
 alpha;StagePanelLocation
+deprecated;StagePanelLocation
 public;StagePanelMaxSizeSpec = number |
 public;StagePanelProps
 internal;StagePanelRuntimeProps
 alpha;StagePanelSection
+deprecated;StagePanelSection
 public;StagePanelState
 internal;StagePanelZoneDef 
 internal;StagePanelZoneDefKeys = keyof Pick
@@ -565,6 +566,8 @@ public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
 internal;StatusBarZoneProps 
 public;StatusFieldProps 
+beta;StatusMessageRenderer(props: StatusMessageRendererProps): JSX.Element | null
+beta;StatusMessageRendererProps 
 beta;StickyMessage(props: StickyMessageProps): JSX.Element
 beta;StickyMessageProps
 public;SupportsViewSelectorChange
@@ -657,6 +660,7 @@ internal;useActiveFrontstageDef(): FrontstageDef | undefined
 beta;useActiveFrontstageId: () => string
 public;useActiveIModelConnection(): IModelConnection | undefined
 internal;useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined
+public;useActiveStageId(): string
 public;useActiveViewport(): ScreenViewport | undefined
 public;useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined): AnalysisAnimationTimelineDataProvider | undefined
 internal;useAvailableUiItemsProviders(): readonly string[]
@@ -683,7 +687,7 @@ public;useScheduleAnimationDataProvider(viewport: ScreenViewport | undefined): S
 beta;useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvider | undefined
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
 internal;useSyncDefinitions(frontstageDef: FrontstageDef): void
-internal;useToolSettingsNode(): React.ReactNode
+internal;useToolSettingsNode(): string | number | boolean | {} | React.ReactElement
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
 beta;useUiSettingsStorageContext(): UiSettingsStorage
@@ -705,11 +709,15 @@ beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
 public;ViewUtilities
-alpha;VisibilityChangeListener = (nodeIds?: string[]) => void
+alpha;VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map
 beta;VisibilityComponent 
+deprecated;VisibilityComponent 
 beta;VisibilityComponentConfig
+deprecated;VisibilityComponentConfig
 public;VisibilityComponentHierarchy
+deprecated;VisibilityComponentHierarchy
 beta;VisibilityComponentProps
+deprecated;VisibilityComponentProps
 alpha;VisibilityStatus
 alpha;VisibilityTreeEventHandler 
 alpha;VisibilityTreeEventHandlerParams 
@@ -719,6 +727,7 @@ alpha;VisibilityTreeNoFilteredData(props: VisibilityTreeNoFilteredDataProps): JS
 alpha;VisibilityTreeNoFilteredDataProps
 alpha;VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean
 beta;VisibilityWidget 
+deprecated;VisibilityWidget 
 public;Widget 
 public;WIDGET_OPACITY_DEFAULT = 0.9
 internal;WidgetChangedEventArgs

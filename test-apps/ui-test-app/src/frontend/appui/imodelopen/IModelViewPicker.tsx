@@ -8,8 +8,8 @@ import classnames from "classnames";
 import * as React from "react";
 import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { Spinner, SpinnerSize } from "@bentley/ui-core";
 import { IModelInfo, UiFramework } from "@bentley/ui-framework";
+import { Button, ProgressRadial } from "@itwin/itwinui-react";
 
 interface ViewCardProps {
   view: ViewDefinitionProps;
@@ -38,7 +38,7 @@ class ViewCard extends React.Component<ViewCardProps, ViewCardState> {
     );
   };
 
-  public render() {
+  public override render() {
     let name: string | undefined = this.props.view.code.value;
     if (!name)
       return undefined;
@@ -84,7 +84,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
   }
 
   // called when this component is first loaded
-  public async componentDidMount() {
+  public override async componentDidMount() {
     this.startRetrieveViews(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
@@ -136,7 +136,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
     if (this.state.waitingForViews) {
       return (
         <div className="loading">
-          <Spinner size={SpinnerSize.Large} />
+          <ProgressRadial size="large" indeterminate />
         </div>
       );
     } else if (this.state.views && this.state.views.length > 0) {
@@ -156,7 +156,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
     }
   }
 
-  public render() {
+  public override render() {
     let iModelName = "";
     if (this.props.iModelInfo)
       iModelName = this.props.iModelInfo.name;
@@ -172,7 +172,7 @@ export class IModelViewPicker extends React.Component<ViewsProps, ViewsState> {
           </div>
           {this.renderViews()}
           <div className="views-footer">
-            <button data-tg-on={this.state.selectedViews.length} disabled={this.state.selectedViews.length === 0} onClick={this._onOKPressed}>Open</button>
+            <Button styleType="high-visibility" data-tg-on={this.state.selectedViews.length} disabled={this.state.selectedViews.length === 0} onClick={this._onOKPressed}>Open</Button>
           </div>
         </div>
       </div>

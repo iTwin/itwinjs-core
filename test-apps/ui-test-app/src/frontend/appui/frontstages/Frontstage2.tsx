@@ -15,10 +15,8 @@ import {
 import { AppTools } from "../../tools/ToolSpecifications";
 import { TreeExampleContentControl } from "../contentviews/TreeExampleContent";
 import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
-import { MobxDemoWidgetControl } from "../widgets/MobxDemoWidget/MobxDemoWidgetControl";
-import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import {
-  HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl,
+  HorizontalPropertyGridContentControl, HorizontalPropertyGridWidgetControl,
 } from "../widgets/PropertyGridDemoWidget";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ConditionalBooleanValue, WidgetState } from "@bentley/ui-abstract";
@@ -90,20 +88,6 @@ export class Frontstage2 extends FrontstageProvider {
             ]}
           />
         }
-        centerRight={
-          <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
-            widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.NavigationTree" control={NavigationTreeWidgetControl} />,
-            ]}
-          />
-        }
-        bottomLeft={
-          <Zone
-            widgets={[
-              <Widget iconSpec="icon-placeholder" labelKey="SampleApp:widgets.MobxDemoWidget" control={MobxDemoWidgetControl} fillZone={true} />,
-            ]}
-          />
-        }
         statusBar={
           <Zone defaultState={ZoneState.Open}
             widgets={[
@@ -114,7 +98,6 @@ export class Frontstage2 extends FrontstageProvider {
         bottomRight={
           <Zone allowsMerging={true} defaultState={ZoneState.Minimized}
             widgets={[
-              <Widget id="VerticalPropertyGrid" defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.VerticalPropertyGrid" control={VerticalPropertyGridWidgetControl} />,
               <Widget defaultState={WidgetState.Hidden} iconSpec="icon-placeholder" labelKey="SampleApp:widgets.HorizontalPropertyGrid" control={HorizontalPropertyGridWidgetControl} />,
             ]}
           />
@@ -199,7 +182,7 @@ class FrontstageToolWidget extends React.Component {
     return items;
   }
 
-  public render() {
+  public override render() {
     return (
       <ToolWidget
         appButton={AppTools.backstageToggleCommand}
@@ -213,7 +196,7 @@ class FrontstageToolWidget extends React.Component {
 /** Define a NavigationWidget with Buttons to display in the TopRight zone.
  */
 class FrontstageNavigationWidget extends React.Component {
-  public render() {
+  public override render() {
     const horizontalItems = new ItemList([
       CoreTools.fitViewCommand,
       CoreTools.windowAreaCommand,

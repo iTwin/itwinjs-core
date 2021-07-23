@@ -40,7 +40,7 @@ export interface ToolbarProps extends CommonProps, NoChildrenProps {
 /** State of [[Toolbar]] component.
  * @internal
  */
-interface State {
+interface ToolbarState {
   width: number;
   height: number;
   items: React.ReactNode;
@@ -49,7 +49,7 @@ interface State {
 /** Toolbar React component.
  * @internal
  */
-export class Toolbar extends React.Component<ToolbarProps, State> {
+export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
   private _dimension: number = 0;
   private _minToolbarSize = (ActionButtonItemDef.defaultButtonSize + 2);
 
@@ -91,15 +91,15 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     return this.props.toolbarId ? this.props.toolbarId : "unknown";
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     SyncUiEventDispatcher.onSyncUiEvent.addListener(this._handleSyncUiEvent);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     SyncUiEventDispatcher.onSyncUiEvent.removeListener(this._handleSyncUiEvent);
   }
 
-  public componentDidUpdate(prevProps: ToolbarProps, _prevState: State) {
+  public override componentDidUpdate(prevProps: ToolbarProps, _prevState: ToolbarState) {
     if (this.props.items !== prevProps.items) {
       // if sync event changed number of displayable buttons layout the toolbar and re-render
       const items = this.generateToolbarItems(this.props.items, new Size(this.state.width, this.state.height));
@@ -278,7 +278,7 @@ export class Toolbar extends React.Component<ToolbarProps, State> {
     return false;
   }
 
-  public render() {
+  public override render() {
     // istanbul ignore next
     if (0 === this.props.items.length || !this.hasVisibleItems(this.props.items)) {
       Logger.logTrace(UiFramework.loggerCategory(this), `--->  nothing to render for ${this._toolbarId} `);

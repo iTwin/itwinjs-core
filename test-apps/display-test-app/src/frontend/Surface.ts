@@ -5,7 +5,7 @@
 import { KeyinField, parseArgs } from "@bentley/frontend-devtools";
 import { Range3d } from "@bentley/geometry-core";
 import { Cartographic } from "@bentley/imodeljs-common";
-import { BlankConnection, IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { BlankConnection, BlankConnectionProps, IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import { DisplayTestApp } from "./App";
 import { BrowserFileSelector, selectFileName } from "./FileOpen";
 import { FpsMonitor } from "./FpsMonitor";
@@ -17,6 +17,8 @@ import { Viewer, ViewerProps } from "./Viewer";
 import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
 import { openStandaloneIModel } from "./openStandaloneIModel";
 import { setTitle } from "./Title";
+import { openAnalysisStyleExample } from "./AnalysisStyleExample";
+import { openDecorationGeometryExample } from "./DecorationGeometryExample";
 
 // cspell:ignore textbox topdiv
 
@@ -133,19 +135,42 @@ export class Surface {
       },
     }));
 
+    tb.addItem(createToolButton({
+      iconUnicode: "\uea32", // play
+      tooltip: "Analysis Style Example",
+      click: async () => {
+        this.openBlankConnection({ // eslint-disable-line @typescript-eslint/no-floating-promises
+          name: "Analysis Style Example",
+          extents: new Range3d(0, 0, -30, 100, 100, 20),
+        }).then(async (viewer) => openAnalysisStyleExample(viewer));
+      },
+    }));
+
+    tb.addItem(createToolButton({
+      iconUnicode: "\ue9d8",
+      tooltip: "Decoration Geometry Example",
+      click: async () => {
+        this.openBlankConnection({ // eslint-disable-line @typescript-eslint/no-floating-promises
+          name: "Decoration Geometry Example",
+          extents: new Range3d(-1, -1, -1, 13, 2, 2),
+        }).then(async (viewer) => openDecorationGeometryExample(viewer));
+      },
+    }));
+
     return tb;
   }
 
   // create a new blank connection for testing backgroundMap and reality models.
-  private async openBlankConnection() {
+  private async openBlankConnection(props?: Partial<BlankConnectionProps>): Promise<Viewer> {
     const iModel = BlankConnection.create({
-      location: Cartographic.fromDegrees(-75.686694, 40.065757, 0), // near Exton pa
-      extents: new Range3d(-1000, -1000, -100, 1000, 1000, 100),
-      name: "blank connection test",
+      location: props?.location ?? Cartographic.fromDegrees(-75.686694, 40.065757, 0), // near Exton pa
+      extents: props?.extents ?? new Range3d(-1000, -1000, -100, 1000, 1000, 100),
+      name: props?.name ?? "blank connection test",
     });
 
     const viewer = await this.createViewer({ iModel });
     viewer.dock(Dock.Full);
+    return viewer;
   }
 
   private async openIModel(filename?: string): Promise<void> {
@@ -391,16 +416,16 @@ export class Surface {
 }
 
 export class CreateWindowTool extends Tool {
-  public static toolId = "CreateWindow";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return undefined; }
+  public static override toolId = "CreateWindow";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return undefined; }
 
-  public run(props: NamedWindowProps): boolean {
+  public override run(props: NamedWindowProps): boolean {
     DisplayTestApp.surface.createNamedWindow(props);
     return true;
   }
 
-  public parseAndRun(...inputArgs: string[]): boolean {
+  public override parseAndRun(...inputArgs: string[]): boolean {
     let name: string | undefined;
     const props: WindowProps = {};
 
@@ -430,12 +455,12 @@ export class CreateWindowTool extends Tool {
 }
 
 export abstract class WindowIdTool extends Tool {
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
   public abstract execute(_window: Window): void;
 
-  public run(windowId?: string): boolean {
+  public override run(windowId?: string): boolean {
     const window = undefined !== windowId ? Surface.instance.findWindowById(windowId) : Surface.instance.focusedWindow;
     if (undefined !== window)
       this.execute(window);
@@ -443,20 +468,20 @@ export abstract class WindowIdTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     return this.run(args[0]);
   }
 }
 
 export class FocusWindowTool extends WindowIdTool {
-  public static toolId = "FocusWindow";
+  public static override toolId = "FocusWindow";
   public execute(window: Window): void {
     window.focus();
   }
 }
 
 export class MaximizeWindowTool extends WindowIdTool {
-  public static toolId = "MaximizeWindow";
+  public static override toolId = "MaximizeWindow";
   public execute(window: Window): void {
     if (!window.isDocked)
       window.dock(Dock.Full);
@@ -464,24 +489,24 @@ export class MaximizeWindowTool extends WindowIdTool {
 }
 
 export class RestoreWindowTool extends WindowIdTool {
-  public static toolId = "RestoreWindow";
+  public static override toolId = "RestoreWindow";
   public execute(window: Window): void {
     window.undock();
   }
 }
 
 export class CloseWindowTool extends WindowIdTool {
-  public static toolId = "CloseWindow";
+  public static override toolId = "CloseWindow";
   public execute(window: Window): void {
     Surface.instance.close(window);
   }
 }
 export class ResizeWindowTool extends Tool {
-  public static toolId = "ResizeWindow";
-  public static get minArgs() { return 2; }
-  public static get maxArgs() { return 3; }
+  public static override toolId = "ResizeWindow";
+  public static override get minArgs() { return 2; }
+  public static override get maxArgs() { return 3; }
 
-  public run(width: number, height: number, id?: string): boolean {
+  public override run(width: number, height: number, id?: string): boolean {
     const window = undefined !== id ? Surface.instance.findWindowById(id) : Surface.instance.focusedWindow;
     if (undefined !== window)
       window.resizeContent(width, height);
@@ -490,7 +515,7 @@ export class ResizeWindowTool extends Tool {
   }
 
   // width height [id]
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     const w = parseInt(args[0], 10);
     const h = parseInt(args[1], 10);
     if (!Number.isNaN(w) || !Number.isNaN(h))
@@ -501,11 +526,11 @@ export class ResizeWindowTool extends Tool {
 }
 
 export class DockWindowTool extends Tool {
-  public static toolId = "DockWindow";
-  public static get minArgs() { return 1; }
-  public static get maxArgs() { return 2; }
+  public static override toolId = "DockWindow";
+  public static override get minArgs() { return 1; }
+  public static override get maxArgs() { return 2; }
 
-  public run(dock: Dock, windowId?: string): boolean {
+  public override run(dock: Dock, windowId?: string): boolean {
     const window = undefined !== windowId ? Surface.instance.findWindowById(windowId) : Surface.instance.focusedWindow;
     if (undefined !== window)
       window.dock(dock);
@@ -513,7 +538,7 @@ export class DockWindowTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     let dock = 0;
     for (const c of args[0].toLowerCase()) {
       switch (c) {
@@ -542,11 +567,11 @@ export class DockWindowTool extends Tool {
 }
 
 export class CloneViewportTool extends Tool {
-  public static toolId = "CloneViewport";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "CloneViewport";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
-  public run(viewportId?: number): boolean {
+  public override run(viewportId?: number): boolean {
     if (undefined === viewportId) {
       const selectedView = IModelApp.viewManager.selectedView;
       if (undefined === selectedView)
@@ -563,40 +588,40 @@ export class CloneViewportTool extends Tool {
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     const viewportId = parseInt(args[0], 10);
     return undefined !== viewportId && !Number.isNaN(viewportId) && this.run(viewportId);
   }
 }
 
 export class OpenIModelTool extends Tool {
-  public static toolId = "OpenIModel";
-  public static get minArgs() { return 0; }
-  public static get maxArgs() { return 1; }
+  public static override toolId = "OpenIModel";
+  public static override get minArgs() { return 0; }
+  public static override get maxArgs() { return 1; }
 
-  public run(filename?: string): boolean {
+  public override run(filename?: string): boolean {
     Surface.instance.openFile(filename); // eslint-disable-line @typescript-eslint/no-floating-promises
     return true;
   }
 
-  public parseAndRun(...args: string[]): boolean {
+  public override parseAndRun(...args: string[]): boolean {
     return this.run(args[0]);
   }
 }
 
 export class CloseIModelTool extends Tool {
-  public static toolId = "CloseIModel";
+  public static override toolId = "CloseIModel";
 
-  public run(): boolean {
+  public override run(): boolean {
     Surface.instance.closeAllViewers();
     return true;
   }
 }
 
 export class ReopenIModelTool extends Tool {
-  public static toolId = "ReopenIModel";
+  public static override toolId = "ReopenIModel";
 
-  public run(): boolean {
+  public override run(): boolean {
     const viewer = Surface.instance.firstViewer;
     if (undefined !== viewer)
       viewer.openFile(viewer.viewport.iModel.key); // eslint-disable-line @typescript-eslint/no-floating-promises

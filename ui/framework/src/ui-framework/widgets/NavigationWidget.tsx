@@ -24,8 +24,9 @@ import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
 
 /** Definition of a Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
- *  @public @deprecated use NavigationWidgetComposer instead
- */
+ * @public
+ * @deprecated use NavigationWidgetComposer instead
+ */
 export class NavigationWidgetDef extends ToolbarWidgetDefBase {
   private _navigationAidId: string;
   private _imodel: IModelConnection | undefined;
@@ -44,7 +45,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     this.widgetBaseName = `[${activeStageName}]NavigationWidget`;
   }
 
-  public get reactNode(): React.ReactNode {
+  public override get reactNode(): React.ReactNode {
     // istanbul ignore else
     if (!this._reactNode)
       this._reactNode = <NavigationWidgetWithDef navigationWidgetDef={this} />;
@@ -54,7 +55,7 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 
   /** @deprecated use reactNode */
   // istanbul ignore next
-  public get reactElement(): React.ReactNode {
+  public override get reactElement(): React.ReactNode {
     return this.reactNode;
   }
 
@@ -102,8 +103,9 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 }
 
 /** Properties for the [[NavigationWidget]] React component.
- *  @public @deprecated use NavigationWidgetComposer instead
- */
+ * @public
+ * @deprecated use NavigationWidgetComposer instead
+ */
 export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps {
   iModelConnection?: IModelConnection;
   horizontalToolbar?: React.ReactNode;
@@ -112,18 +114,19 @@ export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonPr
 
 /** State for the Navigation Widget React component.
  * @internal
- */
+ */
 interface NavigationWidgetState {
   navigationWidgetDef: NavigationWidgetDef; // eslint-disable-line deprecation/deprecation
 }
 
 /** Navigation Widget React component.
- *  @public @deprecated use NavigationWidgetComposer instead
- */
+ * @public
+ * @deprecated use NavigationWidgetComposer instead
+ */
 export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> { // eslint-disable-line deprecation/deprecation
 
   /** @internal */
-  public readonly state: Readonly<NavigationWidgetState>;
+  public override readonly state: Readonly<NavigationWidgetState>;
 
   constructor(props: NavigationWidgetPropsEx) { // eslint-disable-line deprecation/deprecation
     super(props);
@@ -132,13 +135,13 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
   }
 
   /** Adds listeners */
-  public componentDidMount() {
+  public override componentDidMount() {
     FrontstageManager.onContentControlActivatedEvent.addListener(this._handleContentControlActivated);
     ViewportComponentEvents.onViewClassFullNameChangedEvent.addListener(this._handleViewClassFullNameChange);
   }
 
   /** Removes listeners */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     FrontstageManager.onContentControlActivatedEvent.removeListener(this._handleContentControlActivated);
     ViewportComponentEvents.onViewClassFullNameChangedEvent.removeListener(this._handleViewClassFullNameChange);
   }
@@ -162,13 +165,13 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
     });
   };
 
-  public componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState) { // eslint-disable-line deprecation/deprecation
+  public override componentDidUpdate(prevProps: NavigationWidgetPropsEx, _prevState: NavigationWidgetState) { // eslint-disable-line deprecation/deprecation
     if (this.props !== prevProps) {
       this.setState((_, props) => ({ navigationWidgetDef: new NavigationWidgetDef(props) })); // eslint-disable-line deprecation/deprecation
     }
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     return (
       <NavigationWidgetWithDef
         className={this.props.className}
@@ -182,7 +185,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 }
 
 /** Properties for the [[NavigationWidgetWithDef]] component.
- */
+ */
 interface Props extends CommonProps {
   navigationWidgetDef: NavigationWidgetDef; // eslint-disable-line deprecation/deprecation
   horizontalToolbar?: React.ReactNode;
@@ -196,7 +199,7 @@ interface NavigationWidgetWithDefState {
 }
 
 /** Navigation Widget React component that's passed a NavigationWidgetDef.
- */
+ */
 class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWithDefState> {
 
   constructor(props: Props) {
@@ -219,20 +222,20 @@ class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWit
     this.setState({ cornerItem: navigationAid });
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     FrontstageManager.onNavigationAidActivatedEvent.addListener(this._handleNavigationAidActivatedEvent);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     FrontstageManager.onNavigationAidActivatedEvent.removeListener(this._handleNavigationAidActivatedEvent);
   }
 
-  public componentDidUpdate(prevProps: Props) {
+  public override componentDidUpdate(prevProps: Props) {
     if (this.props !== prevProps)
       this.reloadToolbars();
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     return (
       <NZ_ToolsWidget isNavigation
         className={this.props.className}

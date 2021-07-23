@@ -5,11 +5,12 @@
 import { expect } from "chai";
 import * as faker from "faker";
 import { Descriptor, Field, NestedContentField, PropertyValueFormat, StructTypeDescription } from "../../presentation-common";
-import { DescriptorJSON, DescriptorSource, SortDirection } from "../../presentation-common/content/Descriptor";
-import { FieldDescriptorType } from "../../presentation-common/content/Fields";
+import { CompressedDescriptorJSON, DescriptorJSON, DescriptorSource, SortDirection } from "../../presentation-common/content/Descriptor";
+import { FieldDescriptorType, FieldJSON, NestedContentFieldJSON, PropertiesFieldJSON } from "../../presentation-common/content/Fields";
+import { RelatedClassInfoJSON } from "../../presentation-common/EC";
 import {
   createRandomCategory, createRandomCategoryJSON, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfo,
-  createRandomNestedFieldJSON, createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomRelationshipPath,
+  createRandomNestedFieldJSON, createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomPrimitiveTypeDescription, createRandomPropertiesFieldJSON, createRandomRelationshipPath,
 } from "../_helpers/random";
 
 describe("Descriptor", () => {
@@ -84,6 +85,86 @@ describe("Descriptor", () => {
       const descriptor = Descriptor.fromJSON(JSON.stringify(testDescriptorJSON));
       validateParentship(descriptor!.fields);
       expect(descriptor).to.matchSnapshot();
+    });
+
+    it("creates valid Descriptor from CompressedDescriptorJSON", () => {
+      const testCategory = createRandomCategoryJSON();
+      const ids = ["0x1", "0x2", "0x3", "0x4"];
+      const testRelatedClassInfo: RelatedClassInfoJSON<string> = {
+        sourceClassInfo: ids[1],
+        targetClassInfo: ids[2],
+        relationshipInfo: ids[3],
+        isForwardRelationship: true,
+      };
+      const fields: FieldJSON<string>[] = [{
+        ...createRandomPrimitiveFieldJSON(testCategory),
+        properties: [{
+          property: {
+            classInfo: ids[0],
+            name: faker.lorem.words(),
+            type: faker.lorem.words(),
+          },
+          relatedClassPath: [testRelatedClassInfo],
+        }],
+      } as PropertiesFieldJSON<string>, {
+        ...createRandomPrimitiveFieldJSON(testCategory),
+        type: {
+          valueFormat: PropertyValueFormat.Struct,
+          typeName: faker.random.word(),
+          members: [{
+            type: createRandomPrimitiveTypeDescription(),
+            name: faker.random.word(),
+            label: faker.random.word(),
+          }],
+        } as StructTypeDescription,
+        contentClassInfo: ids[1],
+        pathToPrimaryClass: [testRelatedClassInfo],
+        nestedFields: [createRandomPrimitiveFieldJSON(testCategory)],
+        autoExpand: false,
+      } as NestedContentFieldJSON<string>];
+
+      const testCompressedDescriptorJSON: CompressedDescriptorJSON = {
+        connectionId: faker.random.uuid(),
+        inputKeysHash: faker.random.uuid(),
+        contentOptions: faker.random.objectElement(),
+        displayType: faker.lorem.words(),
+        selectClasses: [{
+          selectClassInfo: ids[0],
+          isSelectPolymorphic: true,
+          pathToPrimaryClass: [testRelatedClassInfo],
+          relatedPropertyPaths: [[testRelatedClassInfo]],
+          navigationPropertyClasses: [testRelatedClassInfo],
+          relatedInstanceClasses: [testRelatedClassInfo],
+        }],
+        categories: [testCategory],
+        fields,
+        contentFlags: 0,
+        classesMap: {
+          [ids[0]]: { name: "name1", label: "label1" },
+          [ids[1]]: { name: "name2", label: "label2" },
+          [ids[2]]: { name: "name3", label: "label3" },
+          [ids[3]]: { name: "name4", label: "label4" },
+        },
+      };
+      const descriptorFromCompressedJSON = Descriptor.fromJSON(JSON.stringify(testCompressedDescriptorJSON));
+      expect(descriptorFromCompressedJSON).to.matchSnapshot();
+    });
+
+    it("creates valid CompressedDescriptorJSON", () => {
+      testDescriptorJSON = createRandomDescriptorJSON();
+      testDescriptorJSON.categories!.push(createRandomCategoryJSON());
+      testDescriptorJSON.fields.push(createRandomPropertiesFieldJSON(testDescriptorJSON.categories![1], 2), createRandomNestedFieldJSON(testDescriptorJSON.categories![1]));
+
+      Object.assign(testDescriptorJSON, {
+        sortDirection: SortDirection.Ascending,
+        filterExpression: "testFilterExpression",
+        selectionInfo: { providerName: "testProviderName", level: 1 },
+        sortingFieldName: testDescriptorJSON.fields[0].name,
+      });
+
+      const descriptor = Descriptor.fromJSON(JSON.stringify(testDescriptorJSON))!;
+      const compressedDescriptorJSON = descriptor.toCompressedJSON();
+      expect(compressedDescriptorJSON).to.matchSnapshot();
     });
 
     it("skips fields that fail to deserialize", () => {

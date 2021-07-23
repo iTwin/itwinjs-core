@@ -82,6 +82,7 @@ export * from "./ui-framework/frontstage/ModalFrontstage";
 export * from "./ui-framework/frontstage/ModalSettingsStage";
 
 export * from "./ui-framework/hooks/useActiveIModelConnection";
+export * from "./ui-framework/hooks/useActiveStageId";
 export * from "./ui-framework/hooks/useActiveViewport";
 export * from "./ui-framework/hooks/useAvailableUiItemsProviders";
 export * from "./ui-framework/hooks/useAnalysisAnimationDataProvider";
@@ -107,7 +108,7 @@ export * from "./ui-framework/messages/ActivityMessagePopup";
 export * from "./ui-framework/messages/AppNotificationManager";
 export * from "./ui-framework/messages/InputField";
 export * from "./ui-framework/messages/MessageManager";
-export * from "./ui-framework/messages/MessageRenderer";
+export * from "./ui-framework/messages/StatusMessageRenderer";
 export * from "./ui-framework/messages/Pointer";
 export * from "./ui-framework/messages/ReactNotifyMessageDetails";
 export * from "./ui-framework/messages/StickyMessage";

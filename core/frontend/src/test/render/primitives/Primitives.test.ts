@@ -24,7 +24,7 @@ describe("ToleranceRatio", () => {
 
 describe("GeometryOptions", () => {
   it("GeometryOptions works as expected", () => {
-    const a = new GeometryOptions();
+    const a = new GeometryOptions(GenerateEdges.Yes);
     assert.isTrue(a.normals === NormalMode.Always, "default normals correct");
     assert.isTrue(a.surfaces === SurfacesOnly.No, "default surfaces correct");
     assert.isTrue(a.preserveOrder === PreserveOrder.No, "default preserveOrder correct");
@@ -34,7 +34,7 @@ describe("GeometryOptions", () => {
     assert.isTrue(a.wantPreserveOrder === false, "default wantPreserveOrder correct");
     assert.isTrue(a.wantEdges === true, "default wantEdges correct");
 
-    const b = new GeometryOptions(NormalMode.Never, SurfacesOnly.Yes, PreserveOrder.Yes, GenerateEdges.No);
+    const b = new GeometryOptions(GenerateEdges.No, NormalMode.Never, SurfacesOnly.Yes, PreserveOrder.Yes);
     assert.isTrue(b.normals === NormalMode.Never, "normals correct");
     assert.isTrue(b.surfaces === SurfacesOnly.Yes, "surfaces correct");
     assert.isTrue(b.preserveOrder === PreserveOrder.Yes, "preserveOrder correct");

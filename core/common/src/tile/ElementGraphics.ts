@@ -37,6 +37,11 @@ export interface GraphicsRequestProps {
   readonly omitEdges?: boolean;
   /** If true, the element's graphics will be clipped against the iModel's project extents. */
   readonly clipToProjectExtents?: boolean;
+  /** If defined, the compact string representation of a [ClipVector]($geometry-core) to be applied to the geometry to produce section-cut
+   * geometry at the intersections with the clip planes. Any geometry *not* intersecting the clip planes is omitted from the tiles.
+   * @see [ClipVector.toCompactString]($geometry-core) to produce the string representation.
+   */
+  readonly sectionCut?: string;
 }
 
 /** Wire format describing a request to produce graphics in "iMdl" format for a single element.

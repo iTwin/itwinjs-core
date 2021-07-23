@@ -12,6 +12,7 @@ import {
 import {
   Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@bentley/geometry-core";
+import { ChangesetId, ChangesetIdWithIndex, ChangesetIndex } from "./ChangesetProps";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { AxisAlignedBox3d } from "./geometry/Placement";
@@ -26,10 +27,15 @@ export interface IModelRpcOpenProps {
   readonly contextId?: GuidString;
   /** Guid of the iModel. */
   readonly iModelId?: GuidString;
+
   /** Id of the last ChangeSet that was applied to the iModel - must be defined for briefcases that are synchronized with iModelHub. An empty string indicates the first version.
    * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
    */
-  changeSetId?: string;
+  changeSetId?: ChangesetId;
+
+  /** The index of the last changeset. If <= 0, must be determined by changeSetId */
+  changesetIndex?: ChangesetIndex;
+
   /** Mode used to open the iModel */
   openMode?: OpenMode;
 }
@@ -52,6 +58,10 @@ export interface EcefLocationProps {
   orientation: YawPitchRollProps;
   /** Optional position on the earth used to establish the ECEF coordinates. */
   cartographicOrigin?: LatLongAndHeight;
+  /** Optional X column vector used with [[yVector]] to calculate potentially non-rigid transform if a projection is present. */
+  xVector?: XYZProps;
+  /** Optional Y column vector used with [[xVector]] to calculate potentially non-rigid transform if a projection is present. */
+  yVector?: XYZProps;
 }
 
 /** Properties of the [Root Subject]($docs/bis/intro/glossary#subject-root).
@@ -188,11 +198,15 @@ export class EcefLocation implements EcefLocationProps {
   public readonly orientation: YawPitchRollAngles;
   /** Optional position on the earth used to establish the ECEF origin and orientation. */
   public readonly cartographicOrigin?: Cartographic;
+  /** Optional X column vector used with [[yVector]] to calculate potentially non-rigid transform if a projection is present. */
+  public readonly xVector?: Vector3d;
+  /** Optional Y column vector used with [[xVector]] to calculate potentially non-rigid transform if a projection is present. */
+  public readonly yVector?: Vector3d;
+
+  private _transform: Transform;
 
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
-  public getTransform(): Transform {
-    return Transform.createOriginAndMatrix(this.origin, this.orientation.toMatrix3d());
-  }
+  public getTransform(): Transform { return this._transform;  }
 
   /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
   constructor(props: EcefLocationProps) {
@@ -200,6 +214,20 @@ export class EcefLocation implements EcefLocationProps {
     this.orientation = YawPitchRollAngles.fromJSON(props.orientation).freeze();
     if (props.cartographicOrigin)
       this.cartographicOrigin = Cartographic.fromRadians(props.cartographicOrigin.longitude, props.cartographicOrigin.latitude, props.cartographicOrigin.height).freeze();
+    if (props.xVector && props.yVector) {
+      this.xVector = Vector3d.fromJSON(props.xVector);
+      this.yVector = Vector3d.fromJSON(props.yVector);
+    }
+    let matrix;
+    if (this.xVector && this.yVector) {
+      const zVector = this.xVector.crossProduct(this.yVector);
+      if (zVector.normalizeInPlace())
+        matrix = Matrix3d.createColumns(this.xVector, this.yVector, zVector);
+    }
+    if (!matrix)
+      matrix = this.orientation.toMatrix3d();
+
+    this._transform = Transform.createOriginAndMatrix(this.origin, matrix);
   }
 
   /** Construct ECEF Location from cartographic origin with optional known point and angle.   */
@@ -236,6 +264,15 @@ export class EcefLocation implements EcefLocationProps {
     if (!this.origin.isAlmostEqual(other.origin) || !this.orientation.isAlmostEqual(other.orientation))
       return false;
 
+    if ((this.xVector === undefined) !== (other.xVector === undefined) || (this.yVector === undefined) !== (other.yVector === undefined))
+      return false;
+
+    if (this.xVector !== undefined && other.xVector !== undefined && !this.xVector.isAlmostEqual(other.xVector))
+      return false;
+
+    if (this.yVector !== undefined && other.yVector !== undefined && !this.yVector.isAlmostEqual(other.yVector))
+      return false;
+
     const thisCarto = this.cartographicOrigin;
     const otherCarto = other.cartographicOrigin;
     if (undefined === thisCarto || undefined === otherCarto)
@@ -252,6 +289,12 @@ export class EcefLocation implements EcefLocationProps {
 
     if (this.cartographicOrigin)
       props.cartographicOrigin = this.cartographicOrigin.toJSON();
+
+    if (this.xVector)
+      props.xVector = this.xVector.toJSON();
+
+    if (this.yVector)
+      props.yVector = this.yVector.toJSON();
 
     return props;
   }
@@ -299,7 +342,7 @@ export abstract class IModel implements IModelProps {
   public set name(name: string) {
     if (name !== this._name) {
       const old = this._name;
-      this._name =  name;
+      this._name = name;
       if (undefined !== old)
         this.onNameChanged.raiseEvent(old);
     }
@@ -435,12 +478,14 @@ export abstract class IModel implements IModelProps {
   /** The Guid that identifies this iModel. */
   public get iModelId(): GuidString | undefined { return this._iModelId; }
 
-  /** @internal */
-  protected _changeSetId: string | undefined;
+  /** @public */
+  public changeset: ChangesetIdWithIndex;
+
   /** The Id of the last changeset that was applied to this iModel.
-   * @note An empty string indicates the first version while `undefined` mean no changeset information is available.
+   * @note An empty string indicates the first version
+   * @deprecated use changeset.id
    */
-  public get changeSetId() { return this._changeSetId; }
+  public get changeSetId() { return this.changeset.id; }
 
   /** The [[OpenMode]] used for this IModel. */
   public readonly openMode: OpenMode;
@@ -454,18 +499,24 @@ export abstract class IModel implements IModelProps {
       key: this._fileKey,
       contextId: this.contextId,
       iModelId: this.iModelId,
-      changeSetId: this.changeSetId,
+      changeSetId: this.changeset.id,
+      changesetIndex: this.changeset.index,
       openMode: this.openMode,
     };
   }
 
   /** @internal */
   protected constructor(tokenProps: IModelRpcProps | undefined, openMode: OpenMode) {
-    this._fileKey = tokenProps?.key ?? "";
-    this._contextId = tokenProps?.contextId;
-    this._iModelId = tokenProps?.iModelId;
-    this._changeSetId = tokenProps?.changeSetId;
-    this.openMode = openMode; // Note: The open mode passed through the RPC layer is ignored in the case of IModelDb-s
+    this.changeset = { id: "", index: 0 };
+    this._fileKey = "";
+    if (tokenProps) {
+      this._fileKey = tokenProps.key;
+      this._contextId = tokenProps.contextId;
+      this._iModelId = tokenProps.iModelId;
+      if (tokenProps.changeSetId)
+        this.changeset = { id: tokenProps.changeSetId, index: tokenProps.changesetIndex };
+    }
+    this.openMode = openMode;
   }
 
   /** @internal */

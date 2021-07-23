@@ -16,12 +16,13 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
-  FillCentered, HorizontalTabs, Icon, LabeledToggle, LocalSettingsStorage, SvgSprite, UiCore, UiSetting, UiSettingsResult, UiSettingsStatus, UiSettingsStorage,
+  FillCentered, HorizontalTabs, Icon, LocalSettingsStorage, SvgSprite, UiCore, UiSetting, UiSettingsResult, UiSettingsStatus, UiSettingsStorage,
 } from "@bentley/ui-core";
 import {
   FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog, ToolAssistanceItem,
   ToolAssistanceSeparator,
 } from "@bentley/ui-ninezone";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 import { CursorPrompt } from "../../cursor/cursorprompt/CursorPrompt";
 import { FrontstageManager, ToolIconChangedEventArgs } from "../../frontstage/FrontstageManager";
 import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager";
@@ -91,7 +92,7 @@ interface ToolAssistanceFieldState {
  */
 export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProps, ToolAssistanceFieldState> {
   /** @internal */
-  public static contextType = UiSettingsContext;
+  public static override contextType = UiSettingsContext;
   /** @internal */
   public declare context: React.ContextType<typeof UiSettingsContext>;
 
@@ -146,7 +147,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   /** @internal */
-  public async componentDidMount() {
+  public override async componentDidMount() {
     this._isMounted = true;
     MessageManager.onToolAssistanceChangedEvent.addListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.addListener(this._handleToolIconChangedEvent);
@@ -161,7 +162,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
     MessageManager.onToolAssistanceChangedEvent.removeListener(this._handleToolAssistanceChangedEvent);
     FrontstageManager.onToolIconChangedEvent.removeListener(this._handleToolIconChangedEvent);
@@ -291,7 +292,7 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
   };
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { instructions } = this.state;
     const dialogTitle = (IModelApp.toolAdmin.activeTool) ? /* istanbul ignore next */ IModelApp.toolAdmin.activeTool.flyover : UiFramework.translate("toolAssistance.title");
     const mouseLabel = UiFramework.translate("toolAssistance.mouse");
@@ -344,9 +345,10 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
               <>
                 <ToolAssistanceSeparator key="prompt-sep" />
                 <ToolAssistanceItem key="prompt-item">
-                  <LabeledToggle
+                  <ToggleSwitch
                     label={UiFramework.translate("toolAssistance.promptAtCursor")}
-                    isOn={this.state.showPromptAtCursor} onChange={this._onPromptAtCursorChange} />
+                    labelPosition="right"
+                    checked={this.state.showPromptAtCursor} onChange={this._onPromptAtCursorChange} />
                 </ToolAssistanceItem>
               </>
             }
@@ -423,11 +425,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
     this._target = target;
   };
 
-  private _onPromptAtCursorChange = async (checked: boolean) => {
+  private _onPromptAtCursorChange = async (e: React.ChangeEvent<HTMLInputElement>) => {
     // istanbul ignore else
     if (this._isMounted)
       this.setState({
-        showPromptAtCursor: checked,
+        showPromptAtCursor: e.target.checked,
       }, async () => {
         await this._showPromptAtCursorSetting.saveSetting(this._uiSettingsStorage);
       });

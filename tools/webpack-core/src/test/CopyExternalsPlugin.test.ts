@@ -96,6 +96,31 @@ describe("CopyExternalsPlugin", () => {
     expect(fs.readFileSync(path.join(__dirname, "dist/node_modules/bar/index.js"), "utf8")).to.equal(`console.log("This is bar inside foo");`);
   });
 
+  it("should log when optional dependency is not installed ", async () => {
+    fsFromJson({
+      "lib/test/assets/copy-externals-plugin-test/test.js": `try { require("foo"); } catch (err) {}`,
+    });
+    testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["foo"]);
+
+    const result = await runWebpack(testConfig);
+    expect(fs.existsSync(path.join(__dirname, "dist/node_modules/foo"))).to.be.false;
+    expect(result.logging.CopyExternalsPlugin.entries.length).to.be.equal(2);
+    expect(result.warnings.length).to.be.equal(0);
+  });
+
+  it("should warn when non-optional dependency is not installed ", async () => {
+    fsFromJson({
+      "lib/test/assets/copy-externals-plugin-test/test.js": `require("foo");`,
+    });
+    testConfig = getTestConfig("assets/copy-externals-plugin-test/test.js", [new CopyExternalsPlugin()], ["foo"]);
+
+    const result = await runWebpack(testConfig);
+    expect(fs.existsSync(path.join(__dirname, "dist/node_modules/foo"))).to.be.false;
+    expect(result.logging.CopyExternalsPlugin.entries.length).to.be.equal(2);
+    expect(result.warnings.length).to.be.equal(1);
+    expect(result.warnings[0]).to.match(/Can't copy external package "foo" - it is not installed./);
+  });
+
   afterEach(() => {
     vol.reset();
     clearFileSystem(__dirname);

@@ -27,10 +27,10 @@ export enum TypeOfChange {
   Hidden = 0b10000,
 }
 
-/** Changed elements found in a changeset or between a range of changesets
- * All arrays in this object will have the same number of items
+/** Changed elements found in a changeset or between a range of changesets.
+ * All arrays in this object will have the same number of items.
  * Each index for those arrays refer to the same element, e.g. to get the class Id of
- * the element given by element Id changedElements.elements[index], you can use changedElements.classIds[index]
+ * the element given by element Id changedElements.elements[index], you can use changedElements.classIds[index].
  * @public
  */
 export interface ChangedElements {

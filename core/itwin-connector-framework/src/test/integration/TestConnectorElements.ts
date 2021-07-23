@@ -40,7 +40,7 @@ const loggerCategory: string = TestConnectorLoggerCategory.Connector;
 
 export class TestConnectorPhysicalElement extends PhysicalElement implements TestConnectorPhysicalProps {
   /** @internal */
-  public static get className(): string { return "TestConnectorPhysicalElement"; }
+  public static override get className(): string { return "TestConnectorPhysicalElement"; }
 
   public condition?: string;
 
@@ -49,7 +49,7 @@ export class TestConnectorPhysicalElement extends PhysicalElement implements Tes
     this.condition = props.condition;
   }
   /** @internal */
-  public toJSON(): TestConnectorPhysicalProps {
+  public override toJSON(): TestConnectorPhysicalProps {
     const val = super.toJSON() as TestConnectorPhysicalProps;
     val.condition = this.condition;
     return val;
@@ -130,7 +130,7 @@ export namespace TestConnectorPhysicalElement { // eslint-disable-line no-redecl
 }
 
 export class SmallSquareTile extends TestConnectorPhysicalElement {
-  public static get className(): string { return "SmallSquareTile"; }
+  public static override get className(): string { return "SmallSquareTile"; }
 
   public static create(imodel: IModelDb, physicalModelId: Id64String, definitionModelId: Id64String, tile: any): PhysicalElement {
     return this.createElement(imodel, physicalModelId, definitionModelId, tile, new SmallSquareTileBuilder(imodel, definitionModelId), this.classFullName);
@@ -138,7 +138,7 @@ export class SmallSquareTile extends TestConnectorPhysicalElement {
 }
 
 export class LargeSquareTile extends TestConnectorPhysicalElement {
-  public static get className(): string { return "LargeSquareTile"; }
+  public static override get className(): string { return "LargeSquareTile"; }
 
   public static create(imodel: IModelDb, physicalModelId: Id64String, definitionModelId: Id64String, tile: any): PhysicalElement {
     return this.createElement(imodel, physicalModelId, definitionModelId, tile, new LargeSquareTileBuilder(imodel, definitionModelId), this.classFullName);
@@ -146,7 +146,7 @@ export class LargeSquareTile extends TestConnectorPhysicalElement {
 }
 
 export class RectangleTile extends TestConnectorPhysicalElement {
-  public static get className(): string { return "RectangleTile"; }
+  public static override get className(): string { return "RectangleTile"; }
 
   public static create(imodel: IModelDb, physicalModelId: Id64String, definitionModelId: Id64String, tile: any): PhysicalElement {
     return this.createElement(imodel, physicalModelId, definitionModelId, tile, new RectangleTileBuilder(imodel, definitionModelId), this.classFullName);
@@ -154,7 +154,7 @@ export class RectangleTile extends TestConnectorPhysicalElement {
 }
 
 export class EquilateralTriangleTile extends TestConnectorPhysicalElement {
-  public static get className(): string { return "EquilateralTriangleTile"; }
+  public static override get className(): string { return "EquilateralTriangleTile"; }
 
   public static create(imodel: IModelDb, physicalModelId: Id64String, definitionModelId: Id64String, tile: any): PhysicalElement {
     return this.createElement(imodel, physicalModelId, definitionModelId, tile, new EquilateralTriangleTileBuilder(imodel, definitionModelId), this.classFullName);
@@ -162,7 +162,7 @@ export class EquilateralTriangleTile extends TestConnectorPhysicalElement {
 }
 
 export class RightTriangleTile extends TestConnectorPhysicalElement {
-  public static get className(): string { return "RightTriangleTile"; }
+  public static override get className(): string { return "RightTriangleTile"; }
 
   public static create(imodel: IModelDb, physicalModelId: Id64String, definitionModelId: Id64String, tile: any): PhysicalElement {
     return this.createElement(imodel, physicalModelId, definitionModelId, tile, new RightTriangleTileBuilder(imodel, definitionModelId), this.classFullName);
@@ -170,7 +170,7 @@ export class RightTriangleTile extends TestConnectorPhysicalElement {
 }
 
 export class IsoscelesTriangleTile extends TestConnectorPhysicalElement {
-  public static get className(): string { return "IsoscelesTriangleTile"; }
+  public static override get className(): string { return "IsoscelesTriangleTile"; }
 
   public static create(imodel: IModelDb, physicalModelId: Id64String, definitionModelId: Id64String, tile: any): PhysicalElement {
     return this.createElement(imodel, physicalModelId, definitionModelId, tile, new IsoscelesTriangleTileBuilder(imodel, definitionModelId), this.classFullName);
@@ -178,7 +178,7 @@ export class IsoscelesTriangleTile extends TestConnectorPhysicalElement {
 }
 
 export class TestConnectorGroup extends GroupInformationElement implements TestConnectorGroupProps {
-  public static get className(): string { return "TestConnectorGroup"; }
+  public static override get className(): string { return "TestConnectorGroup"; }
   public groupType?: string;
   public manufactureLocation?: string;
   public manufactureDate?: Date;
@@ -190,7 +190,7 @@ export class TestConnectorGroup extends GroupInformationElement implements TestC
     this.manufactureDate = props.manufactureDate;
   }
 
-  public toJSON(): TestConnectorGroupProps {
+  public override toJSON(): TestConnectorGroupProps {
     const val = super.toJSON() as TestConnectorGroupProps;
     val.groupType = this.groupType;
     val.manufactureDate = this.manufactureDate;

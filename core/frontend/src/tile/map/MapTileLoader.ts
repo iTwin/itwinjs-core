@@ -13,9 +13,7 @@ import { request } from "@bentley/itwin-client";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { RenderSystem } from "../../render/RenderSystem";
-import { MapCartoRectangle, MapTile, RealityTile, RealityTileLoader, TerrainMeshProvider, TerrainTileContent, TileRequest } from "../internal";
-import { Tile, TileLoadPriority } from "../Tile";
-import { QuadId } from "./QuadId";
+import { MapCartoRectangle, MapTile, QuadId, RealityTile, RealityTileLoader, TerrainMeshProvider, TerrainTileContent, Tile, TileLoadPriority, TileRequest } from "../internal";
 
 /** Specialization of map tile loader that includes terrain geometry with map imagery draped on it.
  * @internal
@@ -27,7 +25,7 @@ export class MapTileLoader extends RealityTileLoader {
   public readonly featureTable: FeatureTable;
   // public get heightRange(): Range1d | undefined { return this._heightRange; }
   protected readonly _heightRange: Range1d | undefined;
-  public get isContentUnbounded(): boolean { return true; }
+  public override get isContentUnbounded(): boolean { return true; }
   public isTileAvailable(quadId: QuadId) { return this.terrainProvider.isTileAvailable(quadId); }
   private _requestContext = new ClientRequestContext("");
 
@@ -41,6 +39,7 @@ export class MapTileLoader extends RealityTileLoader {
   }
 
   public get maxDepth(): number { return this._terrainProvider.maxDepth; }
+  public get minDepth(): number { return 0;}
   public get terrainProvider(): TerrainMeshProvider { return this._terrainProvider; }
 
   public getRequestChannel(_tile: Tile) {
@@ -68,10 +67,10 @@ export class MapTileLoader extends RealityTileLoader {
     }
   }
 
-  public forceTileLoad(tile: Tile): boolean {
+  public override forceTileLoad(tile: Tile): boolean {
     return this._terrainProvider.forceTileLoad(tile);
   }
-  public async loadTileContent(tile: MapTile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TerrainTileContent> {
+  public override async loadTileContent(tile: MapTile, data: TileRequest.ResponseData, system: RenderSystem, isCanceled?: () => boolean): Promise<TerrainTileContent> {
     if (undefined === isCanceled)
       isCanceled = () => !tile.isLoading;
 

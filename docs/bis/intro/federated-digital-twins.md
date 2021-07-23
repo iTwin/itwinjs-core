@@ -17,7 +17,7 @@ Another distinguishing characteristic of a Digital Twin is that it is not applic
 
 ## Aligned
 
-A Digital Twin should be a cohesive digital replica against which to write services and apps. BIS embodies standard taxonomy, data structure, and relationships for those services and apps. By migrating data from proprietary repositories into an iModel (using [iModel Connectors](../../learning/imodel-connectors.md)) we can bring “dark data” from proprietary, closed CAD, BIM, and GIS formats in an open and extensible format.
+A Digital Twin should be a cohesive digital replica against which to write services and apps. Unfortunately, many applications developed to create isolated, often domain specific information, were designed without any such lofty goal in mind (usually because they were conceived before that was practical.) People sometimes refer to those data formats as "dark", not because they are without value, but because they are indecipherable without the original application program. With BIS as its foundation, a digital replica can make that data more understandable and accessible by "aligning" the concepts in common across source applications. BIS embodies the standard taxonomy, data structure, and relationships for digital twin services and apps. A key role of [iModel Connectors](../../learning/imodel-connectors.md)) is to perform this alignment, so that iModels are consistent even when they consist of information from disparate sources.
 
 ## Federated
 

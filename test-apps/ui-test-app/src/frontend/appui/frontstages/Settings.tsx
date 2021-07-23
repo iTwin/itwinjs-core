@@ -8,8 +8,8 @@
 
 import "./Settings.scss";
 import * as React from "react";
-import { Toggle } from "@bentley/ui-core";
 import { FrameworkAccuDraw, UiFramework } from "@bentley/ui-framework";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 
 /** UiSettingsPage displaying the active settings. */
 export class AccudrawSettingsPageComponent extends React.Component {
@@ -20,11 +20,11 @@ export class AccudrawSettingsPageComponent extends React.Component {
     FrameworkAccuDraw.displayNotifications = !FrameworkAccuDraw.displayNotifications;
   };
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     return (
       <div className="uifw-settings">
         <SettingsItem title={this._accuDrawNotificationsTitle} description={this._accuDrawNotificationsDescription}
-          settingUi={<Toggle isOn={FrameworkAccuDraw.displayNotifications} showCheckmark={false} onChange={this._onAccuDrawNotificationsChange} />}
+          settingUi={<ToggleSwitch checked={FrameworkAccuDraw.displayNotifications} onChange={this._onAccuDrawNotificationsChange} />}
         />
       </div>
     );

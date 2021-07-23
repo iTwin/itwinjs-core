@@ -12,7 +12,7 @@ import { produce } from "immer";
 import * as React from "react";
 import { DisposeFunc } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { Orientation, ResizableContainerObserver, SpinnerSize } from "@bentley/ui-core";
+import { Orientation, ResizableContainerObserver } from "@bentley/ui-core";
 import { DelayedSpinner } from "../../common/DelayedSpinner";
 import { IPropertyDataProvider, PropertyCategory, PropertyData } from "../PropertyDataProvider";
 import { ColumnResizeRelatedPropertyListProps, ColumnResizingPropertyListPropsSupplier } from "./ColumnResizingPropertyListPropsSupplier";
@@ -79,7 +79,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   }
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this._dataChangesListenerDisposeFunc = this.props.dataProvider.onDataChanged.addListener(this._onPropertyDataChanged);
 
@@ -88,7 +88,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     // istanbul ignore else
     if (this._dataChangesListenerDisposeFunc) {
       this._dataChangesListenerDisposeFunc();
@@ -97,7 +97,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
     this._isMounted = false;
   }
 
-  public componentDidUpdate(prevProps: PropertyGridProps) {
+  public override componentDidUpdate(prevProps: PropertyGridProps) {
     if (this.props.dataProvider !== prevProps.dataProvider) {
       // istanbul ignore else
       if (this._dataChangesListenerDisposeFunc)
@@ -201,11 +201,11 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     if (this.state.loadStart) {
       return (
         <div className="components-property-grid-loader">
-          <DelayedSpinner loadStart={this.state.loadStart} size={SpinnerSize.Large} />
+          <DelayedSpinner loadStart={this.state.loadStart} size="large" />
         </div>
       );
     }
@@ -222,7 +222,7 @@ export class PropertyGrid extends React.Component<PropertyGridProps, PropertyGri
       >
         {(selectionContext) => (
           <div className={classnames("components-property-grid-wrapper", this.props.className)} style={this.props.style}>
-            <div className="components-property-grid">
+            <div className={classnames("components-property-grid", "components-smallEditor-host")}>
               <div className="property-categories">
                 {
                   this.state.categories.map((categorizedRecords: CategorizedPropertyGridRecords) => (

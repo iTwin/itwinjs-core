@@ -50,7 +50,7 @@ import { VisibilityWidgetControl } from "../widgets/VisibilityWidget";
 import { NestedAnimationStage } from "./NestedAnimationStage";
 import { OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool } from "../../tools/UiProviderTool";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class ViewsFrontstage extends FrontstageProvider {
   public static stageId = "ViewsFrontstage";
@@ -511,7 +511,7 @@ class AdditionalTools {
   private get _outputMessageItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.outputMessage",
-      execute: () => { IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test")); },
+      execute: () => { IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test", undefined, OutputMessageType.Sticky)); },
     });
   }
 
@@ -553,7 +553,7 @@ class AdditionalTools {
     const id = "spinners";
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog",
-      execute: () => { ModelessDialogManager.openDialog(<SpinnerTestDialog opened={true} />, id); },
+      execute: () => { ModelessDialogManager.openDialog(<SpinnerTestDialog opened={true} onClose={() => ModelessDialogManager.closeDialog(id)} />, id); },
     });
   }
 

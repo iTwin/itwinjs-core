@@ -6,8 +6,8 @@
 import "./IModelSelector.css";
 import * as React from "react";
 import { IModelApp, IModelConnection } from "@bentley/imodeljs-frontend";
-import { Select, SelectOption } from "@bentley/ui-core";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
+import { Select, SelectOption } from "@itwin/itwinui-react";
 
 export interface Props {
   onIModelSelected: (imodel?: IModelConnection, path?: string) => void;
@@ -16,7 +16,7 @@ export interface Props {
 
 export interface State {
   activeIModel?: IModelConnection;
-  availableImodels: SelectOption[];
+  availableImodels: SelectOption<string>[];
   error?: any;
 }
 
@@ -27,7 +27,7 @@ export class IModelSelector extends React.Component<Props, State> {
     this.state = { availableImodels: [] };
   }
 
-  public async componentDidMount() {
+  public override async componentDidMount() {
     const imodels = await MyAppFrontend.getSampleImodels();
     imodels.splice(0, 0, "");
     this.setState({
@@ -59,11 +59,11 @@ export class IModelSelector extends React.Component<Props, State> {
   }
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private onImodelSelected = async (e: React.ChangeEvent<HTMLSelectElement>) => {
-    await this.doOpenIModel(e.currentTarget.value);
+  private onImodelSelected = async (newValue: string) => {
+    await this.doOpenIModel(newValue);
   };
 
-  public render() {
+  public override render() {
     let error = null;
     if (this.state.error)
       error = (<div className="Error">{IModelApp.i18n.translate("Sample:controls.notifications.error")}: {this.state.error.message}</div>);
@@ -72,7 +72,7 @@ export class IModelSelector extends React.Component<Props, State> {
       <div className="IModelSelector">
         <Select
           options={this.state.availableImodels}
-          defaultValue={this.props.activeIModelPath}
+          value={this.props.activeIModelPath}
           placeholder={IModelApp.i18n.translate("Sample:controls.notifications.select-imodel")}
           onChange={this.onImodelSelected}
         />

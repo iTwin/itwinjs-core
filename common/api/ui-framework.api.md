@@ -27,7 +27,7 @@ import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BeUiEvent } from '@bentley/bentleyjs-core';
-import { ButtonProps } from '@bentley/ui-core';
+import { ButtonProps } from '@itwin/itwinui-react';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CommandHandler } from '@bentley/ui-abstract';
 import { CommonDivProps } from '@bentley/ui-core';
@@ -134,11 +134,11 @@ import { StagePanelLocation as StagePanelLocation_2 } from '@bentley/ui-abstract
 import { StagePanelSection as StagePanelSection_2 } from '@bentley/ui-abstract';
 import { StagePanelType } from '@bentley/ui-ninezone';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
-import { Status } from '@bentley/ui-ninezone';
 import { StatusBarItemsManager as StatusBarItemsManager_2 } from '@bentley/ui-abstract';
 import { StatusBarSection } from '@bentley/ui-abstract';
 import { Store } from 'redux';
 import { StringGetter } from '@bentley/ui-abstract';
+import { Subtract } from '@bentley/presentation-common';
 import { Tab } from '@bentley/ui-ninezone';
 import { TabMode } from '@bentley/ui-ninezone';
 import { TabState } from '@bentley/ui-ninezone';
@@ -1798,7 +1798,7 @@ export interface DragDropLayerChangedEventArgs {
 
 // @beta @deprecated
 export class DragDropLayerManager {
-    static getActiveLayer(): React.ComponentClass<DragLayerProps<any>, any> | React.FunctionComponent<DragLayerProps<any>> | undefined;
+    static getActiveLayer(): React.ComponentType<DragLayerProps<any>> | undefined;
     static getType(): string | undefined;
     // (undocumented)
     static get onDragDropLayerChangedEvent(): DragDropLayerChangedEvent;
@@ -3046,7 +3046,7 @@ export const IModelConnectedViewport: import("react-redux").ConnectedComponent<R
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
 
-// @beta
+// @beta @deprecated
 export const IModelConnectedVisibilityComponent: import("react-redux").ConnectedComponent<typeof VisibilityComponent, any>;
 
 // @internal
@@ -3784,19 +3784,6 @@ export class MessageManager {
     static updateMessages(): void;
 }
 
-// @beta
-export function MessageRenderer(props: MessageRendererProps): JSX.Element | null;
-
-// @beta
-export interface MessageRendererProps extends CommonProps {
-    // (undocumented)
-    cancelActivityMessage?: () => void;
-    // (undocumented)
-    closeMessage?: (id: string) => void;
-    // (undocumented)
-    dismissActivityMessage?: () => void;
-}
-
 // @public
 export class MessagesUpdatedEvent extends UiEvent<{}> {
 }
@@ -4462,7 +4449,7 @@ export interface ProjectServices {
 }
 
 // @public @deprecated
-export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, Pick<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const PromptField: import("react-redux").ConnectedComponent<typeof PromptFieldComponent, import("react-redux").Omit<React.ClassAttributes<PromptFieldComponent> & PromptFieldProps, "toolPrompt">>;
 
 // @public
 export class PropsHelper {
@@ -4494,11 +4481,11 @@ export type ReactMessage = ReactMessage_2;
 
 // @public
 export class ReactNotifyMessageDetails {
-    constructor(priority: OutputMessagePriority, briefMessage: NotifyMessageType, detailedMessage?: string | HTMLElement | ReactMessage_2 | undefined, msgType?: OutputMessageType, openAlert?: OutputMessageAlert);
+    constructor(priority: OutputMessagePriority, briefMessage: NotifyMessageType, detailedMessage?: MessageType | undefined, msgType?: OutputMessageType, openAlert?: OutputMessageAlert);
     // (undocumented)
     briefMessage: NotifyMessageType;
     // (undocumented)
-    detailedMessage?: string | HTMLElement | ReactMessage_2 | undefined;
+    detailedMessage?: MessageType | undefined;
     get displayPoint(): Point2d | undefined;
     get displayTime(): BeDuration;
     set displayTime(duration: BeDuration);
@@ -4688,10 +4675,10 @@ export class SelectionContextToolDefinitions {
 }
 
 // @public
-export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, Pick<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "selectionCount">>;
 
 // @public
-export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, Pick<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
 
 // @public
 export class SeparatorBackstageItem extends React.PureComponent<BackstageItemProps> {
@@ -5490,7 +5477,7 @@ export class SignOutModalFrontstage implements ModalFrontstageInfo {
     }
 
 // @public
-export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, Pick<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "ref" | "style" | "key" | "className" | "isInFooterMode" | "openWidget" | "onOpenWidget">>;
+export const SnapModeField: import("react-redux").ConnectedComponent<typeof SnapModeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SnapModeFieldComponent> & SnapModeFieldProps, "setSnapMode" | "snapMode">>;
 
 // @alpha
 export class SolarTimelineDataProvider extends BaseSolarDataProvider {
@@ -5613,9 +5600,7 @@ export class StagePanelDef extends WidgetHost {
     initializeFromProps(props?: StagePanelProps, panelLocation?: StagePanelLocation_2): void;
     get location(): StagePanelLocation_2;
     // @internal (undocumented)
-    get maxSizeSpec(): number | {
-        percentage: number;
-    } | undefined;
+    get maxSizeSpec(): StagePanelMaxSizeSpec | undefined;
     // @internal (undocumented)
     get minSize(): number | undefined;
     get panelState(): StagePanelState;
@@ -5650,7 +5635,7 @@ export interface StagePanelHeaderProps extends CommonProps {
     title?: string;
 }
 
-// @alpha
+// @alpha @deprecated
 export enum StagePanelLocation {
     // (undocumented)
     Bottom = 105,
@@ -5715,7 +5700,7 @@ export interface StagePanelRuntimeProps {
     zoneDefProvider: ZoneDefProvider;
 }
 
-// @alpha
+// @alpha @deprecated
 export enum StagePanelSection {
     // (undocumented)
     End = 2,
@@ -5830,8 +5815,6 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     componentWillUnmount(): void;
     // (undocumented)
     render(): React.ReactNode;
-    // (undocumented)
-    static severityToStatus(severity: MessageSeverity): Status;
 }
 
 // @public
@@ -5937,6 +5920,19 @@ export interface StatusFieldProps extends CommonProps {
     isInFooterMode: boolean;
     onOpenWidget: (widget: StatusBarFieldId) => void;
     openWidget: StatusBarFieldId;
+}
+
+// @beta
+export function StatusMessageRenderer(props: StatusMessageRendererProps): JSX.Element | null;
+
+// @beta
+export interface StatusMessageRendererProps extends CommonProps {
+    // (undocumented)
+    cancelActivityMessage?: () => void;
+    // (undocumented)
+    closeMessage?: (id: string) => void;
+    // (undocumented)
+    dismissActivityMessage?: () => void;
 }
 
 // @beta
@@ -6132,7 +6128,7 @@ export interface TaskPropsList {
 }
 
 // @public
-export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, Pick<React.ClassAttributes<ThemeManagerComponent> & ThemeProps, "ref" | "children" | "key">>;
+export const ThemeManager: import("react-redux").ConnectedComponent<typeof ThemeManagerComponent, import("react-redux").Omit<React.ClassAttributes<ThemeManagerComponent> & ThemeManagerProps, "theme" | "widgetOpacity">>;
 
 // @beta
 export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, TileLoadingIndicatorState> {
@@ -6216,12 +6212,12 @@ export interface ToolAssistanceFieldProps extends StatusFieldProps {
 }
 
 // @internal
-export class Toolbar extends React.Component<ToolbarProps, State> {
+export class Toolbar extends React.Component<ToolbarProps, ToolbarState> {
     constructor(props: ToolbarProps);
     // (undocumented)
     componentDidMount(): void;
     // (undocumented)
-    componentDidUpdate(prevProps: ToolbarProps, _prevState: State): void;
+    componentDidUpdate(prevProps: ToolbarProps, _prevState: ToolbarState): void;
     // (undocumented)
     componentWillUnmount(): void;
     // (undocumented)
@@ -6811,6 +6807,9 @@ export function useActiveIModelConnection(): IModelConnection | undefined;
 export function useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined;
 
 // @public
+export function useActiveStageId(): string;
+
+// @public
 export function useActiveViewport(): ScreenViewport | undefined;
 
 // @public
@@ -6907,7 +6906,7 @@ export function useStatusBarEntry(): DockedStatusBarEntryContextArg;
 export function useSyncDefinitions(frontstageDef: FrontstageDef): void;
 
 // @internal (undocumented)
-export function useToolSettingsNode(): React.ReactNode;
+export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactNodeArray | React.ReactPortal | null | undefined;
 
 // @beta
 export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];
@@ -7077,9 +7076,9 @@ export class ViewUtilities {
 }
 
 // @alpha
-export type VisibilityChangeListener = (nodeIds?: string[]) => void;
+export type VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map<string, VisibilityStatus>) => void;
 
-// @beta
+// @beta @deprecated
 export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
     constructor(props: any);
     // (undocumented)
@@ -7089,7 +7088,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
     render(): JSX.Element;
     }
 
-// @beta
+// @beta @deprecated
 export interface VisibilityComponentConfig {
     // (undocumented)
     modelsTree?: {
@@ -7104,7 +7103,7 @@ export interface VisibilityComponentConfig {
     };
 }
 
-// @public
+// @public @deprecated
 export enum VisibilityComponentHierarchy {
     // (undocumented)
     Categories = "categories",
@@ -7114,7 +7113,7 @@ export enum VisibilityComponentHierarchy {
     SpatialContainment = "spatial-containment"
 }
 
-// @beta
+// @beta @deprecated
 export interface VisibilityComponentProps {
     activeTreeRef?: React.Ref<HTMLDivElement>;
     activeViewport?: Viewport;
@@ -7179,7 +7178,7 @@ export interface VisibilityTreeNoFilteredDataProps {
 // @alpha
 export type VisibilityTreeSelectionPredicate = (key: NodeKey, node: TreeNodeItem) => boolean;
 
-// @beta
+// @beta @deprecated
 export class VisibilityWidget extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
@@ -7663,16 +7662,16 @@ export enum WidgetType {
 }
 
 // @public
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>) => JSX.Element;
 
 // @public
-export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => {
-    new (props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>): {
+export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React.JSXElementConstructor<P> & C) => {
+    new (props: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>): {
         render(): JSX.Element;
         context: any;
-        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
-        readonly props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>> & Readonly<{
+        readonly props: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>> & Readonly<{
             children?: React.ReactNode;
         }>;
         state: Readonly<{}>;
@@ -7680,24 +7679,24 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (
             [key: string]: React.ReactInstance;
         };
         componentDidMount?(): void;
-        shouldComponentUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): boolean;
+        shouldComponentUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, nextState: Readonly<{}>, nextContext: any): boolean;
         componentWillUnmount?(): void;
         componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
-        getSnapshotBeforeUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, prevState: Readonly<{}>): any;
-        componentDidUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, prevState: Readonly<{}>, snapshot?: any): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, prevState: Readonly<{}>, snapshot?: any): void;
         componentWillMount?(): void;
         UNSAFE_componentWillMount?(): void;
-        componentWillReceiveProps?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextContext: any): void;
-        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextContext: any): void;
-        componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): void;
-        UNSAFE_componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): void;
+        componentWillReceiveProps?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    new (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>, context?: any): {
+    new (props: JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>, context?: any): {
         render(): JSX.Element;
         context: any;
-        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
+        setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
         forceUpdate(callback?: (() => void) | undefined): void;
-        readonly props: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>> & Readonly<{
+        readonly props: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>> & Readonly<{
             children?: React.ReactNode;
         }>;
         state: Readonly<{}>;
@@ -7705,23 +7704,23 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: (
             [key: string]: React.ReactInstance;
         };
         componentDidMount?(): void;
-        shouldComponentUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): boolean;
+        shouldComponentUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, nextState: Readonly<{}>, nextContext: any): boolean;
         componentWillUnmount?(): void;
         componentDidCatch?(error: Error, errorInfo: React.ErrorInfo): void;
-        getSnapshotBeforeUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, prevState: Readonly<{}>): any;
-        componentDidUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, prevState: Readonly<{}>, snapshot?: any): void;
+        getSnapshotBeforeUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, prevState: Readonly<{}>): any;
+        componentDidUpdate?(prevProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, prevState: Readonly<{}>, snapshot?: any): void;
         componentWillMount?(): void;
         UNSAFE_componentWillMount?(): void;
-        componentWillReceiveProps?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextContext: any): void;
-        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextContext: any): void;
-        componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): void;
-        UNSAFE_componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "safeAreaInsets">>>>, nextState: Readonly<{}>, nextContext: any): void;
+        componentWillReceiveProps?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, nextContext: any): void;
+        UNSAFE_componentWillReceiveProps?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, nextContext: any): void;
+        componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, nextState: Readonly<{}>, nextContext: any): void;
+        UNSAFE_componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, nextState: Readonly<{}>, nextContext: any): void;
     };
     contextType?: React.Context<any> | undefined;
 };
 
 // @public
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: (((props: P) => React.ReactElement<any, string | ((props: any) => React.ReactElement<any, string | any | (new (props: any) => React.Component<any, any, any>)> | null) | (new (props: any) => React.Component<any, any, any>)> | null) & C) | ((new (props: P) => React.Component<P, any, any>) & C)) => (props: JSX.LibraryManagedAttributes<C, Pick<P, Exclude<keyof P, "isInFooterMode" | "openWidget" | "onOpenWidget">>>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
 
 // @public
 export class Workflow extends ItemDefBase {

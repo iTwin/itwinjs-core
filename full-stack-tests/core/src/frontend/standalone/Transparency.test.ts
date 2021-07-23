@@ -71,6 +71,7 @@ class TransparencyDecorator {
     gfParams.material = opts.material;
 
     const builder = vp.target.renderSystem.createGraphicBuilder(Transform.createIdentity(), GraphicType.Scene, vp, opts.pickableId);
+    builder.wantNormals = builder.wantEdges = false;
     builder.activateGraphicParams(gfParams);
     builder.addShape(pts);
 

@@ -72,7 +72,7 @@ describe("ChangeSummary (#integration)", () => {
     const testIModel = await RemoteBriefcaseConnection.open(testProjectId, testIModelId, OpenMode.ReadWrite);
     try {
       await TestRpcInterface.getClient().deleteChangeCache(testIModel.getRpcProps());
-      await TestRpcInterface.getClient().extractChangeSummaries(testIModel.getRpcProps(), { currentChangeSetOnly: true });
+      await TestRpcInterface.getClient().createChangeSummary(testIModel.getRpcProps());
       await testIModel.attachChangeCache();
 
       const changeSummaryRows: any[] = await executeQuery(testIModel, "SELECT count(*) cnt FROM change.ChangeSummary");

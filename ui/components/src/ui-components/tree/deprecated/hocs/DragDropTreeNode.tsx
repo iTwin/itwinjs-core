@@ -16,7 +16,8 @@ import { TreeDragDropType } from "./withDragDrop";
 /* eslint-disable deprecation/deprecation */
 
 /** Properties for the [[DragDropTreeNodeComponent]] React component */
-/** @internal @deprecated  */
+/** @internal
+ * @deprecated  */
 export interface DragDropNodeProps extends React.AllHTMLAttributes<HTMLDivElement> {
   isOver?: boolean;
   isDragging?: boolean;
@@ -30,19 +31,21 @@ enum HoverMode {
   Below,
 }
 
-/** @internal @deprecated  */
+/** @internal
+ * @deprecated  */
 export interface DragDropNodeState {
   hoverMode: HoverMode;
 }
 
 // Used internally in ./Tree.tsx
-/** @internal @deprecated  */
+/** @internal
+ * @deprecated  */
 export class DragDropTreeNodeComponent extends React.Component<DragDropNodeProps, DragDropNodeState> {
   private _root: HTMLDivElement | null = null;
-  public readonly state: DragDropNodeState = {
+  public override readonly state: DragDropNodeState = {
     hoverMode: HoverMode.On,
   };
-  public render() {
+  public override render() {
     const { isOver, isDragging, canDrag, canDrop, ...props } = this.props as DragDropNodeProps; // eslint-disable-line @typescript-eslint/no-unused-vars
     const mode = this.state.hoverMode;
     const classes = classnames(

@@ -10,5 +10,5 @@ import { GroupInformationModel } from "@bentley/imodeljs-backend";
  */
 export abstract class TestConnectorGroupModel extends GroupInformationModel {
   /** @internal */
-  public static get className(): string { return "TestConnectorGroupModel"; }
+  public static override get className(): string { return "TestConnectorGroupModel"; }
 }

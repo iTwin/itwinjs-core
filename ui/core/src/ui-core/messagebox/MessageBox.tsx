@@ -9,12 +9,13 @@
 import "./MessageBox.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Dialog, DialogButtonDef } from "../dialog/Dialog";
+import { DialogButtonDef } from "@bentley/ui-abstract";
+import { Dialog } from "../dialog/Dialog";
 import { CommonProps } from "../utils/Props";
 
 /** Message Severity enum.
  * @public
- */
+ */
 export enum MessageSeverity {
   None = 0,
   Information = 1,
@@ -64,7 +65,7 @@ export interface MessageBoxProps extends CommonProps {
 
 /** Message Box React component.
  * @public
- */
+ */
 export class MessageBox extends React.PureComponent<MessageBoxProps> {
   public static defaultProps: Partial<MessageBoxProps> = {
     minWidth: 400,
@@ -73,7 +74,7 @@ export class MessageBox extends React.PureComponent<MessageBoxProps> {
     modal: true,
   };
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     return (
       <Dialog
         title={this.props.title}
@@ -102,7 +103,7 @@ export interface MessageContainerProps extends CommonProps {
 
 /** Message Container React component.
  * @public
- */
+ */
 export class MessageContainer extends React.PureComponent<MessageContainerProps> {
   public static getIconClassName(severity: MessageSeverity, hollow?: boolean): string {
     let iconClassName = "";
@@ -131,7 +132,7 @@ export class MessageContainer extends React.PureComponent<MessageContainerProps>
     return iconClassName;
   }
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     const iconClassName = classnames(
       "icon",
       "core-message-box-icon",

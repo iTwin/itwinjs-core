@@ -9,6 +9,8 @@ import { SchemaContext } from "../../../Context";
 import * as Rules from "../../../Validation/ECRules";
 import { DiagnosticCategory, DiagnosticType } from "../../../Validation/Diagnostic";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("Schema rules tests", () => {
   let context: SchemaContext;
 

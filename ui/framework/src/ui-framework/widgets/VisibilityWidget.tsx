@@ -23,12 +23,15 @@ import { SpatialContainmentTree } from "../imodel-components/spatial-tree/Spatia
 import { connectIModelConnection } from "../redux/connectIModel";
 import { UiFramework } from "../UiFramework";
 import { WidgetControl } from "../widgets/WidgetControl";
+import { Select, SelectOption } from "@itwin/itwinui-react";
 
 // cspell:ignore modeltree
+/* eslint-disable deprecation/deprecation */
 
 /**
  * Types of hierarchies displayed in the `VisibilityComponent`
  * @public
+ * @deprecated
  */
 export enum VisibilityComponentHierarchy {
   Models = "models",
@@ -39,6 +42,7 @@ export enum VisibilityComponentHierarchy {
 /**
  * Data structure that describes visibility component configuration
  * @beta
+ * @deprecated
  */
 export interface VisibilityComponentConfig {
   modelsTree?: {
@@ -55,6 +59,7 @@ export interface VisibilityComponentConfig {
 /**
  * Props for `VisibilityComponent`
  * @beta
+ * @deprecated
  */
 export interface VisibilityComponentProps {
   /** iModel whose data should be displayed in the component */
@@ -80,6 +85,7 @@ interface VisibilityTreeState {
 
 /** VisibilityComponent React component.
  * @beta
+ * @deprecated
  */
 // istanbul ignore next
 export class VisibilityComponent extends React.Component<VisibilityComponentProps, VisibilityTreeState> {
@@ -92,12 +98,12 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
       viewport: this.props.activeViewport, showAll: new BeUiEvent<void>(), hideAll: new BeUiEvent<void>(),
     };
   }
-  public async componentDidMount() {
+  public override async componentDidMount() {
     IModelApp.viewManager.onSelectedViewportChanged.addListener(this._onViewportChangedHandler);
   }
 
   /** Remove listeners */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     IModelApp.viewManager.onSelectedViewportChanged.removeListener(this._onViewportChangedHandler);
   }
 
@@ -117,8 +123,8 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
     this.setState({ showOptions: false });
   };
 
-  private _onShowTree = (event: any) => {
-    const activeTree = event.target.value;
+  private _onShowTree = (newValue: VisibilityComponentHierarchy) => {
+    const activeTree = newValue;
     this.setState({ activeTree, showSearchBox: false });
   };
 
@@ -184,7 +190,7 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
     </div>);
   }
 
-  public render() {
+  public override render() {
     const { iModelConnection } = this.props;
     if (!iModelConnection)
       return (<span>{UiFramework.translate("visibilityWidget.noImodelConnection")}</span>);
@@ -196,14 +202,17 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
       opacity: (activeTree === VisibilityComponentHierarchy.Categories) ? 1 : 0,
       visibility: (activeTree === VisibilityComponentHierarchy.Categories) ? "visible" : "hidden",
     };
+    const selectOptions: SelectOption<VisibilityComponentHierarchy>[] = [];
+    selectOptions.push({ value: VisibilityComponentHierarchy.Models, label: UiFramework.translate("visibilityWidget.modeltree") });
+    if (showCategories)
+      selectOptions.push({ value: VisibilityComponentHierarchy.Categories, label: UiFramework.translate("visibilityWidget.categories") });
+    if (showContainment)
+      selectOptions.push({ value: VisibilityComponentHierarchy.SpatialContainment, label: UiFramework.translate("visibilityWidget.containment") });
+
     return (<div className="uifw-visibility-tree">
       <div className="uifw-visibility-tree-header">
         {/* eslint-disable-next-line jsx-a11y/no-onchange */}
-        <select className="uifw-visibility-tree-select" onChange={this._onShowTree.bind(this)}>
-          <option value={VisibilityComponentHierarchy.Models}>{UiFramework.translate("visibilityWidget.modeltree")}</option>
-          {showCategories && <option value={VisibilityComponentHierarchy.Categories}>{UiFramework.translate("visibilityWidget.categories")}</option>}
-          {showContainment && <option value={VisibilityComponentHierarchy.SpatialContainment}>{UiFramework.translate("visibilityWidget.containment")}</option>}
-        </select>
+        <Select className="uifw-visibility-tree-select" value={this.state.activeTree} options={selectOptions} onChange={this._onShowTree} />
         {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
         <span className="icon icon-search" style={searchStyle} onClick={this._onToggleSearchBox} role="button" tabIndex={-1} />
         {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
@@ -221,11 +230,13 @@ export class VisibilityComponent extends React.Component<VisibilityComponentProp
 
 /** VisibilityComponent that is connected to the IModelConnection property in the Redux store. The application must set up the Redux store and include the FrameworkReducer.
  * @beta
+ * @deprecated
  */
 export const IModelConnectedVisibilityComponent = connectIModelConnection(null, null)(VisibilityComponent); // eslint-disable-line @typescript-eslint/naming-convention
 
 /** VisibilityWidget React component.
  * @beta
+ * @deprecated
  */
 // istanbul ignore next
 export class VisibilityWidget extends WidgetControl {
@@ -248,12 +259,12 @@ export class VisibilityWidget extends WidgetControl {
       this.reactNode = <IModelConnectedVisibilityComponent activeViewport={IModelApp.viewManager.selectedView} activeTreeRef={this._activeTreeRef} enableHierarchiesPreloading={options.enableHierarchiesPreloading} config={options.config} />;
   }
 
-  public saveTransientState(): void {
+  public override saveTransientState(): void {
     if (this._activeTreeRef.current)
       this._maintainScrollPosition = new ScrollPositionMaintainer(this._activeTreeRef.current);
   }
 
-  public restoreTransientState(): boolean {
+  public override restoreTransientState(): boolean {
     if (this._maintainScrollPosition) {
       this._maintainScrollPosition.dispose();
       this._maintainScrollPosition = undefined;

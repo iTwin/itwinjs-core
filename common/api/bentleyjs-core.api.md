@@ -172,7 +172,9 @@ export class ByteStream {
 export enum ChangeSetApplyOption {
     Merge = 1,
     None = 0,
+    // @deprecated
     Reinstate = 3,
+    // @deprecated
     Reverse = 2
 }
 
@@ -465,10 +467,15 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
         key: K;
         value: V;
     }>;
+    findOrInsert(key: K, value: V): {
+        value: V;
+        inserted: boolean;
+    };
     forEach(func: (key: K, value: V) => void): void;
     get(key: K): V | undefined;
     has(key: K): boolean;
     insert(key: K, value: V): boolean;
+    keys(): Iterable<K>;
     // (undocumented)
     protected _keys: K[];
     protected lowerBound(key: K): {
@@ -477,6 +484,7 @@ export class Dictionary<K, V> implements Iterable<DictionaryEntry<K, V>> {
     };
     set(key: K, value: V): void;
     get size(): number;
+    values(): Iterable<V>;
     // (undocumented)
     protected _values: V[];
 }

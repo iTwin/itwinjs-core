@@ -40,7 +40,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
   public hasFocus = false; // hot used since containerHandlesEnter is false
 
   /** @internal */
-  public readonly state: Readonly<NumericInputEditorState> = {
+  public override readonly state: Readonly<NumericInputEditorState> = {
     value: 0,
     readonly: false,
   };
@@ -83,24 +83,24 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
     if (this._isMounted)
       this.setState({
         value: newValue,
-      }, async ()=>{
-        await this._handleCommit ();
+      }, async () => {
+        await this._handleCommit();
       });
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -151,7 +151,7 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
   }
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const className = classnames("components-cell-editor", "components-numeric-input-editor", this.props.className);
     const minSize = this.state.size ? this.state.size : 8;
     const style: React.CSSProperties = {
@@ -170,7 +170,6 @@ export class NumericInputEditor extends React.PureComponent<PropertyEditorProps,
         step={this.state.step}
         precision={this.state.precision}
         readOnly={this.state.readonly}
-        size={this.state.size}
         maxLength={this.state.maxLength}
         onBlur={this.props.onBlur}
         onChange={this._updateValue}
@@ -189,7 +188,7 @@ export class NumericInputPropertyEditor extends PropertyEditorBase {
     return <NumericInputEditor />;
   }
   // istanbul ignore next
-  public get containerHandlesEnter(): boolean { // let input editor process enter key
+  public override get containerHandlesEnter(): boolean { // let input editor process enter key
     return false;
   }
 }

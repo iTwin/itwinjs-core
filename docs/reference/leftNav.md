@@ -13,6 +13,7 @@ packageClassification:  [
          "backend-itwin-client",
          "bentleyjs-core",
          "ecschema-metadata",
+         "ecschema-editing",
          "geometry-core",
          "logger-config",
          "frontend-devtools",

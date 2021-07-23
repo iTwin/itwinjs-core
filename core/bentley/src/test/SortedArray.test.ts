@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { compareStrings, Dictionary, SortedArray } from "../bentleyjs-core";
+import { compareStrings, SortedArray } from "../bentleyjs-core";
 import { compareBooleans, compareNumbers, compareNumbersOrUndefined, compareStringsOrUndefined, compareWithTolerance } from "../Compare";
 
 class Thing {
@@ -21,7 +21,7 @@ function compareThings(lhs: Thing, rhs: Thing) {
   return lhs.second - rhs.second;
 }
 
-class Id {
+export class Id {
   public constructor(public readonly value: string) { }
 
   public compare(rhs: Id) {
@@ -34,7 +34,7 @@ class Id {
   }
 }
 
-function expectSorted<T>(array: T[], expectedLength: number, allowDuplicates: boolean, compare: (lhs: T, rhs: T) => number) {
+export function expectSorted<T>(array: T[], expectedLength: number, allowDuplicates: boolean, compare: (lhs: T, rhs: T) => number) {
   expect(array.length).to.equal(expectedLength);
   for (let i = 0; i < array.length - 1; i++) {
     const lhs = array[i];
@@ -230,70 +230,5 @@ describe("SortFunctions", () => {
         expect(compareBooleans(b0, b1)).to.equal(compareNumbers(number0, number1));
       }
     }
-  });
-});
-
-describe("Dictionary", () => {
-  it("should maintain mapping between keys and values", () => {
-    const compareIds = (lhs: Id, rhs: Id) => lhs.compare(rhs);
-    const entries = ["a", "b", "c", "z", "y", "x", "p", "r", "q"];
-    const dict = new Dictionary<Id, Id>(compareIds);
-    for (const entry of entries) {
-      const key = new Id(entry);
-      const val = new Id(entry);
-      expect(dict.insert(key, val)).to.be.true;
-      const found = dict.get(key);
-      expect(found).not.to.be.undefined;
-      expect(found!.value).to.equal(entry);
-      expect(found!).to.equal(val);
-    }
-
-    expect(dict.size).to.equal(entries.length);
-
-    const arrays = dict.extractArrays();
-    expectSorted(arrays.keys, entries.length, false, compareIds);
-    expectSorted(arrays.values, entries.length, false, compareIds);
-  });
-
-  it("should support iteration", () => {
-    const dict = new Dictionary<string, number>((lhs, rhs) => compareStrings(lhs, rhs));
-
-    const countEntries = () => {
-      let numEntries = 0;
-      for (const entry of dict) {
-        expect(entry.key).not.to.be.undefined; // because otherwise `entry` is unused...
-        ++numEntries;
-      }
-
-      expect(numEntries).to.equal(dict.size);
-    };
-
-    countEntries();
-
-    dict.insert("one", 1);
-    dict.insert("two", 2);
-    dict.insert("three", 3);
-    dict.insert("four", 4);
-
-    countEntries();
-
-    const sorted = [["four", 4], ["one", 1], ["three", 3], ["two", 2]];
-    let index = 0;
-    for (const kvp of dict) {
-      expect(kvp.key).to.equal(sorted[index][0]);
-      expect(kvp.value).to.equal(sorted[index][1]);
-      ++index;
-    }
-
-    const iter = dict[Symbol.iterator]();
-    for (let i = 0; i < 4; i++) {
-      const next = iter.next();
-      expect(next.done).to.be.false;
-      expect(next.value).not.to.be.undefined;
-    }
-
-    const last = iter.next();
-    expect(last.done).to.be.true;
-    expect(last.value).to.be.undefined;
   });
 });

@@ -17,8 +17,9 @@ import { ToolWidgetProps, WidgetType } from "./WidgetDef";
 import { UiFramework } from "../UiFramework";
 
 /** Definition of a Tool Widget normally displayed in the top left zone in the 9-Zone Layout system.
- *  @public @deprecated use ToolWidgetComposer instead
- */
+ * @public
+ * @deprecated use [ToolWidgetComposer]($ui-framework) instead
+ */
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
   private _appButton: CommandItemDef | undefined;
   private _reactNode: React.ReactNode;
@@ -36,7 +37,7 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
     this.widgetBaseName = `[${activeStageName}]ToolWidget`;
   }
 
-  public get reactNode(): React.ReactNode {
+  public override get reactNode(): React.ReactNode {
     // istanbul ignore else
     if (!this._reactNode)
       this._reactNode = <ToolWidgetWithDef toolWidgetDef={this} />;
@@ -44,9 +45,9 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
     return this._reactNode;
   }
 
-  /** @deprecated use reactNode */
+  /** @deprecated use reactNode instead */
   // istanbul ignore next
-  public get reactElement(): React.ReactNode {
+  public override get reactElement(): React.ReactNode {
     return this.reactNode;
   }
 
@@ -68,8 +69,9 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
 }
 
 /** Properties for the [[ToolWidget]] React component.
- *  @public @deprecated use ToolWidgetComposer instead
- */
+ * @public
+ * @deprecated use [ToolWidgetComposer]($ui-framework) instead
+ */
 export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
   button?: React.ReactNode;
   horizontalToolbar?: React.ReactNode;
@@ -78,18 +80,19 @@ export interface ToolWidgetPropsEx extends ToolWidgetProps, CommonProps {
 
 /** State for the [[ToolWidget]] React component.
  * @internal
- */
+ */
 interface ToolWidgetState {
   toolWidgetDef: ToolWidgetDef; // eslint-disable-line deprecation/deprecation
 }
 
 /** ToolWidget React component.
- *  @public @deprecated use ToolWidgetComposer instead
- */
+ * @public
+ * @deprecated use [ToolWidgetComposer]($ui-framework) instead
+ */
 export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> { // eslint-disable-line deprecation/deprecation
 
   /** @internal */
-  public readonly state: Readonly<ToolWidgetState>;
+  public override readonly state: Readonly<ToolWidgetState>;
 
   constructor(props: ToolWidgetPropsEx) { // eslint-disable-line deprecation/deprecation
     super(props);
@@ -97,13 +100,13 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
     this.state = { toolWidgetDef: new ToolWidgetDef(props) }; // eslint-disable-line deprecation/deprecation
   }
 
-  public componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState) { // eslint-disable-line deprecation/deprecation
+  public override componentDidUpdate(prevProps: ToolWidgetPropsEx, _prevState: ToolWidgetState) { // eslint-disable-line deprecation/deprecation
     if (this.props !== prevProps) {
       this.setState((_, props) => ({ toolWidgetDef: new ToolWidgetDef(props) })); // eslint-disable-line deprecation/deprecation
     }
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     return (
       <ToolWidgetWithDef
         className={this.props.className}
@@ -118,7 +121,7 @@ export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetSta
 }
 
 /** Properties for the Tool Widget React component.
- */
+ */
 interface Props extends CommonProps {
   toolWidgetDef: ToolWidgetDef; // eslint-disable-line deprecation/deprecation
   button?: React.ReactNode;
@@ -133,7 +136,7 @@ interface ToolWidgetWithDefState {
 }
 
 /** Tool Widget React component.
- */
+ */
 class ToolWidgetWithDef extends React.Component<Props, ToolWidgetWithDefState> {
   constructor(props: Props) {
     super(props);
@@ -150,12 +153,12 @@ class ToolWidgetWithDef extends React.Component<Props, ToolWidgetWithDefState> {
     this.setState({ horizontalToolbar, verticalToolbar });
   }
 
-  public componentDidUpdate(prevProps: Props) {
+  public override componentDidUpdate(prevProps: Props) {
     if (this.props !== prevProps)
       this.reloadToolbars();
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     return (
       <NZ_ToolsWidget
         className={this.props.className}

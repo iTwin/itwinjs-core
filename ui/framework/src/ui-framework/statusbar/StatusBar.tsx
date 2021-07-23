@@ -8,8 +8,8 @@
 
 import "./StatusBar.scss";
 import * as React from "react";
-import { CommonDivProps, CommonProps, Div, MessageSeverity } from "@bentley/ui-core";
-import { Footer, Status } from "@bentley/ui-ninezone";
+import { CommonDivProps, CommonProps, Div } from "@bentley/ui-core";
+import { Footer } from "@bentley/ui-ninezone";
 import { ActivityMessageEventArgs, MessageAddedEventArgs, MessageManager } from "../messages/MessageManager";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";
 import { UiShowHideManager } from "../utils/UiShowHideManager";
@@ -43,28 +43,6 @@ export interface StatusBarProps extends CommonProps {
  */
 export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
 
-  public static severityToStatus(severity: MessageSeverity): Status {
-    let status = Status.Information;
-
-    switch (severity) {
-      case MessageSeverity.None:
-        status = Status.Success;
-        break;
-      case MessageSeverity.Information:
-        status = Status.Information;
-        break;
-      case MessageSeverity.Warning:
-        status = Status.Warning;
-        break;
-      case MessageSeverity.Error:
-      case MessageSeverity.Fatal:
-        status = Status.Error;
-        break;
-    }
-
-    return status;
-  }
-
   /** @internal */
   constructor(props: StatusBarProps) {
     super(props);
@@ -78,7 +56,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     };
   }
 
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     let footerSections: React.ReactNode = null;
     const widgetControl = this.props.widgetControl;
 
@@ -117,7 +95,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     );
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     MessageManager.onMessageAddedEvent.addListener(this._handleMessageAddedEvent);
     MessageManager.onActivityMessageUpdatedEvent.addListener(this._handleActivityMessageUpdatedEvent);
     MessageManager.onActivityMessageCancelledEvent.addListener(this._handleActivityMessageCancelledEvent);
@@ -127,7 +105,7 @@ export class StatusBar extends React.Component<StatusBarProps, StatusBarState> {
     MessageManager.updateMessages();
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     MessageManager.onMessageAddedEvent.removeListener(this._handleMessageAddedEvent);
     MessageManager.onActivityMessageUpdatedEvent.removeListener(this._handleActivityMessageUpdatedEvent);
     MessageManager.onActivityMessageCancelledEvent.removeListener(this._handleActivityMessageCancelledEvent);
