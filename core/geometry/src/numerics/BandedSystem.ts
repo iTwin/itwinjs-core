@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Geometry } from "../Geometry";
-
+import { Point3d } from "../geometry3d/Point3dVector3d";
 /**
  * `BandedSystem` is a class with static methods for solving banded linear systems, such as in computing
  * Bspline poles for pass-through points
@@ -187,10 +187,10 @@ export namespace BandedSystem {
    */
   export class Tridiagonal {
     /** Setup tridiagonal system */
-    public static setUpSystem(alpha: number[], beta: number[], gamma: number[], params: number[], closed: boolean, useNaturalStartTangent: boolean, useNaturalEndTangent: boolean): boolean {
+    public static setUpSystem(alpha: number[], beta: number[], gamma: number[], params: number[], _closed: boolean, _useNaturalStartTangent: boolean, _useNaturalEndTangent: boolean): boolean {
       if (alpha.length !== beta.length || alpha.length !== gamma.length || alpha.length !== params.length)
         return false;
-      const numIntervals = params.length - 1;
+      const _numIntervals = params.length - 1;
       // START HERE
       return false;
     }
@@ -199,16 +199,16 @@ export namespace BandedSystem {
     public static decomposeLU(triUp: number[], triLow: number[], alpha: number[], beta: number[], gamma: number[]): boolean {
       if (alpha.length !== beta.length || alpha.length !== gamma.length || alpha.length !== triUp.length || alpha.length !== triLow.length)
         return false;
-      const numIntervals = alpha.length - 1;
+      const _numIntervals = alpha.length - 1;
       // START HERE
       return false;
     }
 
     /** Solve the tridiagonal system */
-    public static solve(dataPts: Point3d[], triUp: number[], triLow: number[], alpha: number[], beta: number[], gamma: number[]): Point3d[] | undefined {
+    public static solve(_dataPts: Point3d[], triUp: number[], triLow: number[], alpha: number[], beta: number[], gamma: number[]): Point3d[] | undefined {
       if (alpha.length !== beta.length || alpha.length !== gamma.length || alpha.length !== triUp.length || alpha.length !== triLow.length)
         return undefined;
-      const numIntervals = alpha.length - 1;
+      const _numIntervals = alpha.length - 1;
       // START HERE
       return undefined;
     }

@@ -15,7 +15,6 @@ import { BandedSystem } from "../numerics/BandedSystem";
 import { BSplineCurve3d } from "./BSplineCurve";
 import { KnotVector } from "./KnotVector";
 import { InterpolationCurve3dOptions } from "./InterpolationCurve3d";
-import { create } from "domain";
 
 /**
  * A class with static methods for creating B-spline curves.
@@ -189,7 +188,7 @@ export namespace BSplineCurveOps {
     /** Set end conditions (2nd and penultimate dataPt) for the linear system.
      * @param options validated as per validateOptions, unmodified
      */
-    public static setEndConditions(dataPts: Point3d[], options: InterpolationCurve3dOptions): boolean {
+    public static setEndConditions(_dataPts: Point3d[], _options: InterpolationCurve3dOptions): boolean {
       // START HERE: dataPts.splice(1,0,pt)
       return false;
     }
@@ -273,7 +272,8 @@ export namespace BSplineCurveOps {
       const alpha: number[] = Array(options.fitPoints.length);
       const beta: number[] = Array(options.fitPoints.length);
       const gamma: number[] = Array(options.fitPoints.length);
-      BandedSystem.Tridiagonal.setUpSystem(alpha, beta, gamma, options.knots!, options.closed, undefined !== options.startTangent, undefined != options.endTangent);
+      BandedSystem.Tridiagonal.setUpSystem(alpha, beta, gamma, options.knots!, options.closed, undefined !== options.startTangent,
+        undefined !== options.endTangent);
 
       let poles: Point3d[] | undefined = [];
       if (!options.closed) {
