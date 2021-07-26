@@ -24,6 +24,10 @@ import { OffsetHelpers } from "../../curve/internalContexts/MultiChainCollector"
 import { RegionOps } from "../../curve/RegionOps";
 import { Path } from "../../curve/Path";
 import { ClippedPolyfaceBuilders, PolyfaceClip } from "../../polyface/PolyfaceClip";
+import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext";
+import { CurveFactory } from "../../curve/CurveFactory";
+import { LineSegment3d } from "../../curve/LineSegment3d";
+import { Arc3d } from "../../curve/Arc3d";
 
 describe("OffsetByClip", () => {
   it("LongLineString", () => {
@@ -246,6 +250,56 @@ describe("OffsetByClip", () => {
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "ArnoldasLaneClip");
   });
+
+  it("InwardCornerClip", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const y00 = 0.0;
+    const aa = 2.0;
+    const bb = 8.0;
+    let x0 = 0.0;
+    const paths = [];
+    const angles = [Angle.createDegrees(0), Angle.createDegrees(40), Angle.createDegrees(-120)];
+    // Make "not quite filleted" line-arc-line paths with quirky shapes
+    for (const shiftRadius of [0.0, 0.1, -0.1, -0.3, 1.0]) {
+      for (const angle of angles)
+        paths.push(quirkyArcPath(shiftRadius * angle.cos (), shiftRadius * angle.sin ()));
+    }
+    paths.push(quirkyArcPath(0, 0, 0, 1));
+    paths.push(quirkyArcPath(0, 0, 0, -1));
+
+  for (const radius0 of [1.0, 2.0]){    // nominally possible to have undefined return -- but it will get tossed later . ..
+      paths.push(CurveFactory.createRectangleXY(aa, aa, bb, bb, 0, radius0));
+    }
+
+    paths.push(CurveFactory.createFilletsInLineString(LineString3d.create ([
+      [0, 0, 0],
+      [5, 0, 0],
+      [5, 5, 0],
+      [10, 5, 0],
+      [10, 10, 0],
+      [0,8,0],
+    ]), 1.0));
+    for (const path of paths){
+      const y0 = y00;
+      if (path){
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, path, x0, y0, 0.01);
+        for (const offsetDistance of [2.0, 3.0, 0.9, 1.0, 1.1]) {   // 7.0 makes bow ties
+            const options1 = new JointOptions(offsetDistance);
+          const options2 = new JointOptions(-offsetDistance);
+            const offset1 = RegionOps.constructCurveXYOffset(path, options1);
+            const offset2 = RegionOps.constructCurveXYOffset(path, options2);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, offset1, x0, y0);
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, offset2, x0, y0);
+          // y0 += 25.0;
+        }
+        x0 += 25.0;
+      }
+    }
+    expect(ck.getNumErrors()).equals(0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "InwardCornerClip");
+  });
+
 });
 
 // Pass each segment to a test function.
@@ -274,4 +328,32 @@ linestringAcceptFunction: (ls: LineString3d) => void): void{
   }
   if (currentLineString)
     linestringAcceptFunction(currentLineString);
+}
+
+// Start at 00
+// base path is:
+// Line segment to (9,0)
+// Arc from (9,0) to (10,1), constructed by 3 points
+// Line segment to (10,10)
+// BUT move the three arc points by displacements
+function quirkyArcPath(dx0: number, dy0: number, dx1: number = 0.0, dy1: number = 0.0, dx2: number = 0.0, dy2: number = 0.0): Path | undefined {
+  const radius = 1.0;
+  const a = radius * Math.cos(Math.PI * 0.25);
+  const y0 = 0.0;
+  const y2 = y0 + radius;
+  const y1 = y2 - a;
+  const x0 = 9.0;
+  const x1 = x0 + a;
+  const x2 = x0 + radius;
+
+  const y3 = 10.0;
+  const pointA = Point3d.create(0, 0);
+  const point0 = Point3d.create(x0 + dx0, y0 + dy0);
+  const point1 = Point3d.create(x1 + dx1, y1 + dy1);
+  const point2 = Point3d.create(x2 + dx2, y2 + dy2);
+  const pointB = Point3d.create(x2, y3);
+  const arc = Arc3d.createCircularStartMiddleEnd(point0, point1, point2);
+  if (arc)
+    return Path.create(LineSegment3d.create(pointA, point0), arc, LineSegment3d.create(point2, pointB));
+  return undefined;
 }

@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import * as os from "os";
 import * as path from "path";
 import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 /** @packageDocumentation
@@ -11,8 +10,8 @@ import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logg
  */
 import { ChangesType } from "@bentley/imodelhub-client";
 import {
-  BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative,
-  LockScope, SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
+  BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs,
+  LockScope, SnapshotDb, Subject, SubjectOwnsSubjects,
 } from "@bentley/imodeljs-backend";
 import { IModel, IModelError, LocalBriefcaseProps, OpenBriefcaseProps, SubjectProps } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -470,10 +469,6 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new IModelError(IModelStatus.BadRequest, "Failed to instantiate AuthorizedClientRequestContext", Logger.logError, loggerCategory);
     }
     assert(this._serverArgs.contextId !== undefined);
-    UsageLoggingUtilities.postUserUsage(this._requestContext, this._serverArgs.contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
-      .catch((err) => {
-        Logger.logError(loggerCategory, `Could not log user usage for bridge`, () => ({ errorStatus: err.status, errorMessage: err.message }));
-      });
   }
 
   /** This will download the briefcase, open it with the option to update the Db profile, close it, re-open with the option to upgrade core domain schemas */

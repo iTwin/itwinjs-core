@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem,
+  DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem,
   PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames, WidgetState,
 } from "@bentley/ui-abstract";
 import {
+  ActionItemButton,
   CommandItemDef, ContentGroup, CoreTools, Frontstage, FrontstageProps,
   FrontstageProvider, GroupButton, ModalDialogManager, ModelessDialogManager,
   NavigationWidget, StagePanel, StagePanelState, ToolButton,
@@ -30,7 +31,6 @@ import {
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { TreeDemoWidgetControl } from "../widgets/TreeDemoWidget";
 import { TreeSelectionDemoWidgetControl } from "../widgets/TreeSelectionDemoWidget";
-import { DialogButtonDef, DialogButtonType } from "@bentley/ui-core";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { SampleModelessDialog } from "../dialogs/SampleModelessDialog";
 import { SampleModalDialog } from "../dialogs/SampleModalDialog";
@@ -270,7 +270,7 @@ export class Frontstage4 extends FrontstageProvider {
               ]}
               direction={Direction.Right}
             />
-            <ToolButton toolId={AppTools.tool2.id} iconSpec={AppTools.tool2.iconSpec} labelKey={AppTools.tool2.label} execute={AppTools.tool2.execute} />
+            <ActionItemButton actionItem={AppTools.activityMessageItem} />
             <ToolButton toolId={AppTools.addMessageCommand.commandId} iconSpec={AppTools.addMessageCommand.iconSpec} labelKey={AppTools.addMessageCommand.label}
               execute={AppTools.addMessageCommand.execute} />
           </>
@@ -322,8 +322,10 @@ export class Frontstage4 extends FrontstageProvider {
   };
 
   private get _spinnerTestDialogItem() {
+    const id = "spinners";
     return new CommandItemDef({
-      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog", execute: () => { ModalDialogManager.openDialog(<SpinnerTestDialog opened={true} />); },
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog",
+      execute: () => { ModelessDialogManager.openDialog(<SpinnerTestDialog opened={true} onClose={() => ModelessDialogManager.closeDialog(id)} />, id); },
     });
   }
 

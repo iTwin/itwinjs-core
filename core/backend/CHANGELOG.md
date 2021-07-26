@@ -1,6 +1,22 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Jul 2021 12:21:25 GMT and should not be manually modified.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- Reactivated test that stopped working when a previous PR for ecef dependency to geographicCRS was reverted
+- store changesetIndex on IModelDb
+- Better error checks when creating SpatialViewDefinition-s. 
+- remove internal barrel-import usage
+- throw exception when attempting to download a briefcase on top of an existing file
+- Add case for InterpolationCurve3d
+- Use worker thread for mass properties calculations.
+- Add offset body operation for IFC connector.
+- Correctly handle case where subtract operation consumes target body.
+- await returned promise to ensure finally block doesn't intercept it
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT

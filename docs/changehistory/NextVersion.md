@@ -3,65 +3,98 @@ publish: false
 ---
 # NextVersion
 
-## Decoration graphics enhancements
+## Build tools changes
 
-### Visible edges
+Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
+Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
-Graphics produced by a [GraphicBuilder]($frontend) can now produce edges for surfaces. By default, edges are only produced for graphics of type [GraphicType.Scene]($frontend), and only if the [Viewport]($frontend)'s [ViewFlags]($common) specify that edges should be displayed. To generate edges for other types of graphics, or to prevent them from being generated, override [GraphicBuilderOptions.generateEdges]($frontend) or [GraphicBuilder.wantEdges]($frontend) when creating the graphic. Note that surfaces will z-fight with their edges to a degree unless the graphic is also pickable - see [GraphicBuilderOptions.pickable]($frontend).
+## User Interface Package Changes
 
-### Solid primitives in decorations
+Several changes were made in the @bentley/ui-* packages.
+Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
+A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
+Some older deprecated components, enums and interfaces were removed. These also have alternatives.
 
-Decoration graphics can now be produced from [SolidPrimitive]($geometry-core)s - e.g., spheres, cones, slabs, swept surfaces, and so on - using [GraphicBuilder.addSolidPrimitive]($frontend).
+### Deprecated Several ui-core Components in Favor of iTwinUI-react Components
 
-## Presentation changes
+Several UI components in the @bentley/ui-core package have been deprecated.
+Developers should use equivalent components in @itwin/itwinui-react instead.
 
-Added [RelatedPropertiesSpecificationNew.skipIfDuplicate]($presentation-common) attribute to allow specification to be overriden by specifications from higher priority content modifiers. Set this attribute to all related properties' specifications in the default BisCore ruleset.
+|Deprecated in @bentley/ui-core|Use from @itwin/itwinui-react instead
+|-----|-----
+|Button | Button
+|ButtonSize | `size` prop for itwinui-react Button
+|ButtonType | `styleType` prop for itwinui-react Button
+|Checkbox | Checkbox
+|ExpandableBlock | ExpandableBlock
+|Headline| Headline
+|HorizontalTabs | HorizontalTabs
+|Input | Input
+|LabeledInput | LabeledInput
+|LabeledSelect | LabeledSelect
+|LabeledTextarea | LabeledTextarea
+|LabeledToggle | ToggleSwitch with `labelPosition="right"` prop
+|LeadingText | Leading
+|ProgressBar | ProgressLinear
+|ProgressSpinner | ProgressRadial
+|Radio | Radio
+|Select | Select
+|SelectOption | SelectOption
+|SmallText | Small
+|Spinner | ProgressRadial with `indeterminate` prop
+|SpinnerSize | `size` prop in ProgressRadialProps
+|SplitButton | SplitButton
+|Subheading | Subheading
+|Textarea | Textarea
+|Tile | Tile
+|Title | Title
+|Toggle | ToggleSwitch
+|Tooltip | Tooltip
+|TooltipPlacement | Placement
 
-## Dictionary enhancements
+### Deprecated with alternatives elsewhere
 
-[Dictionary.keys]($bentleyjs-core) and [Dictionary.values]($bentleyjs-core) enable iteration of the dictionary's keys and values in the same manner as a standard Map.
+A few constructs were deprecated in @bentley/ui-core package.
+Some were copied to the @bentley/ui-abstract package.
+Some have replacements within the @bentley/ui-core package.
 
-[Dictionary.findOrInsert]($bentleyjs-core) returns the existing value associated with a key, or - if none yet exists - inserts a new value with that key. It also returns a flag indicating whether or not a new value was inserted. This allows the following code that requires two lookups of the key:
+|Deprecated|Use instead
+|-----|-----
+|DialogButtonDef in @bentley/ui-core | DialogButtonDef in @bentley/ui-abstract
+|DialogButtonStyle in @bentley/ui-core | DialogButtonStyle in @bentley/ui-abstract
+|DialogButtonType in @bentley/ui-core | DialogButtonType in @bentley/ui-abstract
+|LocalUiSettings in @bentley/ui-core | LocalSettingsStorage in @bentley/ui-core
+|SessionUiSettings in @bentley/ui-core | SessionSettingsStorage in @bentley/ui-core
 
-```ts
-let value = dictionary.get(key);
-let inserted = undefined !== value;
-if (undefined === value)
-  inserted = dictionary.insert(key, value = newValue);
+### Older Deprecated items removed
 
-alert(`${value} was ${inserted ? "inserted" : "already present"}`);
-```
+Some older deprecated components, enums and interfaces were removed.
+Some of these have alternatives in the same package, while others have alternatives in a different package.
 
-To be replaced with a more efficient version that requires only one lookup:
+|Removed from @bentley/ui-core |Use instead
+|-----|-----
+|LoadingPromptProps.isDeterministic | LoadingPromptProps.isDeterminate in @bentley/ui-core
+|NumericInput component | NumberInput component in @bentley/ui-core
+|TabsProps.onClickLabel | TabsProps.onActivateTab in @bentley/ui-core
 
-```ts
-const result = dictionary.findOrInsert(key, value);
-alert(`${result.value} was ${result.inserted ? "inserted" : "already present"}`);
-```
+|Removed from @bentley/ui-components |Use instead
+|-----|-----
+|hasFlag function | hasSelectionModeFlag function in @bentley/ui-components
+|StandardEditorNames | StandardEditorNames in @bentley/ui-abstract
+|StandardTypeNames | StandardTypeNames in @bentley/ui-abstract
+|StandardTypeConverterTypeNames | StandardTypeNames in @bentley/ui-abstract
 
-## ChangesetIndex vs. ChangesetId
-
-A changeset represents the delta (i.e. the "set of changes") between two points on an iModel's timeline. It can be identified by two means: a [ChangesetId]($common) and a [ChangesetIndex]($common) - every changeset has both once it has been pushed to iModelHub. A `ChangesetId` is a string that is formed from the checksum of the contents of the changeset and its parent `ChangesetId`. A `ChangesetIndex` is a small sequential integer representing the position of the changeset on the iModel's timeline. Later changesets will always have a larger `ChangesetIndex` than earlier changesets. However, it is not possible to compare two `ChangesetId`s and tell anything about their relative position on the timeline.
-
-Much of the `iTwin.js` api that refers to changesets takes a `ChangesetId` as an argument. That is unfortunate, since `ChangesetIndex` is often required to determine order of changesets. Obtaining the `ChangesetIndex` from a `ChangesetId` requires a round-trip to iModelHub. This version begins the process of reworking the api to prefer `ChangesetIndex` as the identifier for changesets. However, for backwards compatibility, the new types [ChangesetIndexAndId]($common) (both values are known) and [ChangesetIdWithIndex]($common) (Id is known, index may be undefined) are used many places. Ultimately only `ChangesetIndex` will be used to identify changesets, and you should prefer it in any new api that identifies changesets.
-
-### Breaking change
-
- The return type of the methods [BriefcaseDb.pullAndMergeChanges]($backend) and [BriefcaseDb.pushChanges]($backend) was changed from a string `ChangesetId` to [ChangesetIndexAndId]($common).
-
-## FederationGuid Policy Change
-
-In previous versions, if you inserted an element with [ElementProps.federationGuid]($common) `undefined`, its value would be `NULL` in the inserted element. In this version, if `federationGuid === undefined`, a new valid Guid will be created for the new element. This is to better facilitate tracking element identity across iModels in `IModelTransformer`.
-
-> Note: if `federationGuid` is a valid Guid, its value will be preserved.
-
-To insert an element with a `NULL` federationGuid, set it to an illegal value (e.g. `Guid.empty`).
-
-```ts
-   const elementId = imodel1.elements.insertElement( {
-      classFullName: SpatialCategory.classFullName,
-      model: IModel.dictionaryId,
-      federationGuid: Guid.empty,
-      code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategory")
-   });
-```
+|Removed from @bentley/ui-framework |Use instead
+|-----|-----
+|COLOR_THEME_DEFAULT | SYSTEM_PREFERRED_COLOR_THEME in @bentley/ui-framework is used as default color theme
+|FunctionKey | FunctionKey in @bentley/ui-abstract
+|IModelAppUiSettings | UserSettingsStorage in @bentley/ui-framework
+|reactElement in ContentControl | ContentControl.reactNode
+|reactElement in NavigationAidControl | NavigationAidControl.reactNode
+|reactElement in NavigationWidgetDef | NavigationWidgetDef.reactNode
+|reactElement in ToolWidgetDef | ToolWidgetDef.reactNode
+|reactElement in WidgetControl | WidgetControl.reactNode
+|reactElement in WidgetDef | WidgetDef.reactNode
+|ReactMessage | ReactMessage in @bentley/ui-core
+|SpecialKey | SpecialKey in @bentley/ui-abstract
+|WidgetState | WidgetState in @bentley/ui-abstract
