@@ -2,6 +2,39 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "2.19.0",
+      "tag": "@bentley/geometry-core_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add AuxChannel.computeDisplacementRange."
+          },
+          {
+            "comment": "accessor for InterpolationCurve3dOptions"
+          },
+          {
+            "comment": "remove internal barrel-import usage"
+          },
+          {
+            "comment": "Eliminate artificial interior edge splits when clipping with a UnionOfConvexClipPlaneSets"
+          },
+          {
+            "comment": "New curve type InterpolationCurve3d.   Supported in IMJS, FB.  Construction methods to be added."
+          },
+          {
+            "comment": "Handle imjs and flatbuffer inputs with numPerFace blocking"
+          },
+          {
+            "comment": "Added compare of numbers in Geographic CRS classes with tolerances."
+          },
+          {
+            "comment": "Adjusted WGS84 polar radius to be more precise than millimeter"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.1",
       "tag": "@bentley/geometry-core_v2.18.1",
       "date": "Fri, 16 Jul 2021 17:45:09 GMT",
