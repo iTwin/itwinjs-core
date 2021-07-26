@@ -134,4 +134,16 @@ export class BatchUniforms {
       uniform.setUniform3fv(noOverrideRgb);
     }
   }
+
+  public bindUniformNonLocatable(uniform: UniformHandle, ignoreNonLocatable: boolean): void {
+    if (sync(this, uniform))
+      return;
+
+    let nonLocatable = 0;
+    if (!ignoreNonLocatable && undefined !== this._overrides) {
+      const uo = this._overrides.getUniformOverrides();
+      nonLocatable = (uo[0] & OvrFlags.NonLocatable) ? 1 : 0;
+    }
+    uniform.setUniform1i(nonLocatable);
+  }
 }
