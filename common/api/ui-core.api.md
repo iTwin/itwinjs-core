@@ -149,9 +149,6 @@ export function BlockText(props: TextProps): JSX.Element;
 // @public
 export function BodyText(props: TextProps): JSX.Element;
 
-// @beta @deprecated
-export type BoundsFunctionProp = number | (() => number | undefined);
-
 // @public @deprecated
 export class Button extends React.PureComponent<ButtonProps> {
     // (undocumented)
@@ -985,7 +982,7 @@ export enum HorizontalAlignment {
     Right = "right"
 }
 
-// @public
+// @public @deprecated
 export function HorizontalTabs(props: TabsProps): JSX.Element;
 
 // @public
@@ -1243,8 +1240,6 @@ export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
 // @public
 export interface LoadingPromptProps extends CommonProps {
     isDeterminate: boolean;
-    // @deprecated
-    isDeterministic: boolean;
     message?: string;
     onCancel?: () => void;
     percent: number;
@@ -1438,23 +1433,6 @@ export interface NumberInputProps extends Omit<InputProps_2, "min" | "max" | "st
     snap?: boolean;
     step?: StepFunctionProp;
     value?: number;
-}
-
-// @beta @deprecated
-export class NumericInput extends React.Component<NumericInputProps> {
-    // @internal (undocumented)
-    static readonly defaultProps: NumericInputDefaultProps;
-    // (undocumented)
-    render(): JSX.Element;
-    }
-
-// @internal @deprecated
-export type NumericInputDefaultProps = Pick<NumericInputProps, "strict">;
-
-// @beta @deprecated
-export interface NumericInputProps extends Omit<ReactNumericInputProps, "step">, CommonProps {
-    // (undocumented)
-    step?: StepFunctionProp;
 }
 
 // @public
@@ -1726,87 +1704,6 @@ export interface ReactMessage {
     // (undocumented)
     reactNode: React.ReactNode;
 }
-
-// @internal @deprecated (undocumented)
-export class ReactNumericInput extends React.Component<ReactNumericInputProps, ReactNumericInputState> {
-    constructor(props: ReactNumericInputProps);
-    componentDidMount(): void;
-    componentDidUpdate(prevProps: ReactNumericInputProps, prevState: ReactNumericInputState): void;
-    componentWillUnmount(): void;
-    static defaultProps: {
-        step: number;
-        min: number;
-        max: number;
-        precision: null;
-        parse: null;
-        format: null;
-        mobile: string;
-        strict: boolean;
-        componentClass: string;
-        style: {};
-    };
-    static DELAY: number;
-    static DIRECTION_DOWN: string;
-    static DIRECTION_UP: string;
-    // (undocumented)
-    refsInput: HTMLInputElement | undefined;
-    render(): JSX.Element;
-    static SPEED: number;
-    }
-
-// @beta @deprecated
-export interface ReactNumericInputProps extends Omit<React.InputHTMLAttributes<HTMLInputElement>, "min" | "max" | "step" | "onChange" | "defaultValue" | "onInvalid">, CommonProps {
-    // (undocumented)
-    componentClass?: string;
-    // (undocumented)
-    defaultValue?: number | string;
-    // (undocumented)
-    format?: ((value: number | null, strValue: string) => string);
-    // (undocumented)
-    max?: BoundsFunctionProp;
-    // (undocumented)
-    maxLength?: number;
-    // (undocumented)
-    min?: BoundsFunctionProp;
-    // (undocumented)
-    mobile?: boolean | "auto" | (() => boolean);
-    // (undocumented)
-    noStyle?: boolean;
-    // (undocumented)
-    noValidate?: boolean | string;
-    // (undocumented)
-    onBlur?: React.FocusEventHandler<HTMLDivElement | HTMLInputElement>;
-    // (undocumented)
-    onChange?: ((value: number | null, stringValue: string, input: HTMLInputElement) => void);
-    // (undocumented)
-    onFocus?: React.FocusEventHandler<HTMLDivElement | HTMLInputElement>;
-    // (undocumented)
-    onInput?: React.FormEventHandler<HTMLInputElement>;
-    // (undocumented)
-    onInvalid?: ((error: string, value: number | null, stringValue: string) => void);
-    // (undocumented)
-    onKeyDown?: React.KeyboardEventHandler<HTMLDivElement | HTMLInputElement>;
-    // (undocumented)
-    onSelect?: React.ReactEventHandler<HTMLInputElement>;
-    // (undocumented)
-    onValid?: ((value: number | null, stringValue: string) => void);
-    // (undocumented)
-    parse?: ((value: string) => number | null);
-    // (undocumented)
-    precision?: number | (() => number | null | undefined);
-    setFocus?: boolean;
-    // (undocumented)
-    snap?: boolean;
-    // @internal (undocumented)
-    step?: ReactStepFunctionProp;
-    // (undocumented)
-    strict: boolean;
-    // (undocumented)
-    value?: number | string;
-}
-
-// @internal @deprecated (undocumented)
-export type ReactStepFunctionProp = number | ((component: ReactNumericInput, direction: string) => number | undefined);
 
 // @internal
 export class Rectangle implements RectangleProps {
@@ -2228,8 +2125,6 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
     // @beta
     labels: Array<string | TabLabel>;
     onActivateTab?: (index: number) => any;
-    // @deprecated
-    onClickLabel?: (index: number) => any;
 }
 
 // @public @deprecated

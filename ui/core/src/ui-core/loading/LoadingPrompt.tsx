@@ -41,11 +41,6 @@ export interface LoadingPromptProps extends CommonProps {
   showIndeterminateBar: boolean;
   /** Function called when Cancel button is clicked. */
   onCancel?: () => void;
-
-  /** Determine if a loading bar is displayed (isDeterminate=true), otherwise a loading spinner or indeterminate progress bar is shown
-   * @deprecated Use isDeterminate instead
-   */
-  isDeterministic: boolean;
 }
 
 /**
@@ -64,8 +59,7 @@ export class LoadingPrompt extends React.PureComponent<LoadingPromptProps> {
   };
 
   public override render() {
-    // eslint-disable-next-line deprecation/deprecation
-    const isDeterminate = this.props.isDeterminate || this.props.isDeterministic;
+    const isDeterminate = this.props.isDeterminate;
 
     return (
       <div className={classnames("core-loadingprompt", this.props.className)} style={this.props.style}>

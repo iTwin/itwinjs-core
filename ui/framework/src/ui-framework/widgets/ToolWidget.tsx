@@ -45,12 +45,6 @@ export class ToolWidgetDef extends ToolbarWidgetDefBase {
     return this._reactNode;
   }
 
-  /** @deprecated use reactNode instead */
-  // istanbul ignore next
-  public override get reactElement(): React.ReactNode {
-    return this.reactNode;
-  }
-
   public renderCornerItem(): React.ReactNode | undefined {
     if (this._appButton) {
       return (
