@@ -22,9 +22,9 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 
 |Deprecated in @bentley/ui-core|Use from @itwin/itwinui-react instead
 |-----|-----
+|Button | Button
 |ButtonSize | `size` prop for itwinui-react Button
 |ButtonType | `styleType` prop for itwinui-react Button
-|Button | Button
 |Checkbox | Checkbox
 |ExpandableBlock | ExpandableBlock
 |Headline| Headline
@@ -43,14 +43,14 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 |SmallText | Small
 |Spinner | ProgressRadial with `indeterminate` prop
 |SpinnerSize | `size` prop in ProgressRadialProps
-|SplitButton| SplitButton
+|SplitButton | SplitButton
 |Subheading | Subheading
 |Textarea | Textarea
-|Tile | Title
+|Tile | Tile
 |Title | Title
 |Toggle | ToggleSwitch
-|TooltipPlacement | Placement
 |Tooltip | Tooltip
+|TooltipPlacement | Placement
 
 ### Deprecated with alternatives elsewhere
 
