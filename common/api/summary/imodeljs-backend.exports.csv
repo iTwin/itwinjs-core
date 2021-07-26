@@ -349,8 +349,6 @@ public;TxnManager
 public;class TypeDefinitionElement 
 public;UpdateModelOptions 
 public;UrlLink 
-internal;UsageLoggingUtilities
-internal;UsageLoggingUtilitiesOptions
 internal;V1CheckpointManager
 internal;V2CheckpointManager
 public;ValidationError
