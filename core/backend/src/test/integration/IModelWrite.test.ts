@@ -1142,12 +1142,12 @@ describe("IModelWriteTest (#integration)", () => {
     };
     const str = new Array(1024).join("x");
     insertElements(rwIModel, "Test2dElement", 1024, () => {
-      return { s: str};
+      return { s: str };
     });
-    assert.equal(1340202, rwIModel.nativeDb.getChangesetSize());
+    assert.equal(1357661, rwIModel.nativeDb.getChangesetSize());
     await rwIModel.concurrencyControl.request(adminRequestContext);
     rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "data" }));
-    assert.equal(13, rwIModel.nativeDb.getChangesetSize());
+    assert.equal(0, rwIModel.nativeDb.getChangesetSize());
     await rwIModel.pushChanges(adminRequestContext, "schema changeset", ChangesType.Schema);
     rwIModel.close();
   });
@@ -1243,7 +1243,7 @@ describe("IModelWriteTest (#integration)", () => {
         assert.fail(JSON.stringify(err));
       }
     }
-    assert.equal(3681, rwIModel.nativeDb.getChangesetSize());
+    assert.equal(3902, rwIModel.nativeDb.getChangesetSize());
     rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "data changeset" }));
 
     if ("push changes") {
@@ -1323,7 +1323,7 @@ describe("IModelWriteTest (#integration)", () => {
         </ECEntityClass>
     </ECSchema>`;
     await rwIModel.importSchemaStrings(adminRequestContext, [schemaV2]);
-    assert.equal(13, rwIModel.nativeDb.getChangesetSize());
+    assert.equal(0, rwIModel.nativeDb.getChangesetSize());
     rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "schema changeset2" }));
     if ("push changes") {
       // Push the changes to the hub
@@ -1348,7 +1348,7 @@ describe("IModelWriteTest (#integration)", () => {
         t: `t-${n}`, r: `r-${n}`,
       };
     });
-    assert.equal(5939, rwIModel.nativeDb.getChangesetSize());
+    assert.equal(6279, rwIModel.nativeDb.getChangesetSize());
     rwIModel.saveChanges(JSON.stringify({ userid: "user1", description: "data changeset" }));
 
     if ("push changes") {
@@ -1417,7 +1417,7 @@ describe("IModelWriteTest (#integration)", () => {
       assert.equal(rows.length, 30);
       assert.equal(rows.map((r) => r.s).filter((v) => v).length, 30);
       assert.equal(rows.map((r) => r.v).filter((v) => v).length, 10);
-      for(const row of rows) {
+      for (const row of rows) {
         const el: any = rwIModel2.elements.getElementProps(row.id);
         assert.isDefined(el);
         if (row.s) {
@@ -1440,7 +1440,7 @@ describe("IModelWriteTest (#integration)", () => {
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
       assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
-      for(const row of rows) {
+      for (const row of rows) {
         const el: any = rwIModel2.elements.getElementProps(row.id);
         assert.isDefined(el);
         if (row.s) {
@@ -1461,7 +1461,7 @@ describe("IModelWriteTest (#integration)", () => {
       assert.equal(rows.length, 10);
       assert.equal(rows.map((r) => r.t).filter((v) => v).length, 10);
       assert.equal(rows.map((r) => r.r).filter((v) => v).length, 10);
-      for(const row of rows) {
+      for (const row of rows) {
         const el: any = rwIModel2.elements.getElementProps(row.id);
         assert.isDefined(el);
         if (row.t) {
