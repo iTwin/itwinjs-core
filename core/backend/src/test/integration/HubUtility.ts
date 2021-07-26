@@ -33,7 +33,6 @@ export class HubUtility {
   public static contextId: GuidString | undefined;
   /** Returns the ContextId if a Context with the name exists. Otherwise, returns undefined. */
   public static async getTestContextId(requestContext: AuthorizedClientRequestContext): Promise<GuidString> {
-
     if (undefined !== HubUtility.contextId)
       return HubUtility.contextId;
     return HubUtility.queryProjectIdByName(requestContext, HubUtility.testContextName);
