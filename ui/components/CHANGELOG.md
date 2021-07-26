@@ -33,6 +33,13 @@ Fri, 09 Jul 2021 18:11:24 GMT
 - Clean up timeline and fix test coverage.
 - Add props to the TimelineComponent that will allow apps to pass a set of items to be prefixed, appended, or to replace the context menu entries.
 
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+### Updates
+
+- Workaround for react-data-grid blank grid after scroll and update
+
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
 

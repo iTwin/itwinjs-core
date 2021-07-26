@@ -31,6 +31,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 - Range equality functions accept Readonly<Range>. Add XYZ.toArray.
 - PolyfaceData.tryTransformInPlace now also transforms PolyfaceAuxData.
 
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
+
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
 

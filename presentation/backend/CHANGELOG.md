@@ -22,6 +22,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 - Add `PresentationManager.getElementProperties` to get properties for a single element in a simplified way.
 - Add `PresentationRpcInterface.getElementProperties` and related APIs
 
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
+
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
 
