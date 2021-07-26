@@ -2,6 +2,39 @@
   "name": "@bentley/imodeljs-common",
   "entries": [
     {
+      "version": "2.19.0",
+      "tag": "@bentley/imodeljs-common_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add ChangesetProps"
+          },
+          {
+            "comment": "Do not raise DisplayStyleSettings.onAnalysisStyleChanged event if the style did not actually change."
+          },
+          {
+            "comment": "Addition of rdsUrl to OrbitGtBlobProps to support PointCloudModel OPC attachments"
+          },
+          {
+            "comment": "remove internal barrel-import usage"
+          },
+          {
+            "comment": "Added compare of numbers in Geographic CRS classes with tolerances."
+          },
+          {
+            "comment": "update doc for new federationGuid policy"
+          },
+          {
+            "comment": "Add offset body operation for IFC connector."
+          },
+          {
+            "comment": "Add frustum method to support reality tile reprojection"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.1",
       "tag": "@bentley/imodeljs-common_v2.18.1",
       "date": "Fri, 16 Jul 2021 17:45:09 GMT",

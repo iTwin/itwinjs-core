@@ -1,6 +1,15 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Jul 2021 12:21:25 GMT and should not be manually modified.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- remove internal barrel-import usage
+- Stop delivering pseudo-localized strings
+- Update ResizableContainerObserver to monitor parent size if no children are specified.
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT

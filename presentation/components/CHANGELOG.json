@@ -2,6 +2,18 @@
   "name": "@bentley/presentation-components",
   "entries": [
     {
+      "version": "2.19.0",
+      "tag": "@bentley/presentation-components_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "remove internal barrel-import usage"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.1",
       "tag": "@bentley/presentation-components_v2.18.1",
       "date": "Fri, 16 Jul 2021 17:45:09 GMT",
