@@ -22,12 +22,12 @@ export interface CustomNodeSpecification extends ChildNodeSpecificationBase {
   type: string;
 
   /**
-   * Label of the node. May be [localized]($docs/learning/presentation/Localization.md).
+   * Label of the node. May be [localized]($docs/learning/presentation/Advanced/Localization.md).
    */
   label: string;
 
   /**
-   * Description of the node. May be [localized]($docs/learning/presentation/Localization.md).
+   * Description of the node. May be [localized]($docs/learning/presentation/Advanced/Localization.md).
    */
   description?: string;
 

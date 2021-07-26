@@ -18,7 +18,7 @@ export interface PropertyOverrides {
   /** Priority of the specified overrides. */
   overridesPriority?: number;
 
-  /** Label override. May be [localized]($docs/learning/presentation/Localization.md). */
+  /** Label override. May be [localized]($docs/learning/presentation/Advanced/Localization.md). */
   labelOverride?: string;
 
   /** Identifier of a category that should be used for the property. */

@@ -13,14 +13,14 @@
  * @public
  */
 export interface CalculatedPropertiesSpecification {
-  /** Label of the calculated property. May be [localized]($docs/learning/presentation/Localization.md). */
+  /** Label of the calculated property. May be [localized]($docs/learning/presentation/Advanced/Localization.md). */
   label: string;
 
   /**
-   * [ECExpression]($docs/learning/presentation/ECExpressions.md) used to calculate the value. The
+   * [ECExpression]($docs/learning/presentation/Advanced/ECExpressions.md) used to calculate the value. The
    * following symbol sets are available:
-   * - [ECInstance ECExpression context]($docs/learning/presentation/ECExpressions.md#ecinstance)
-   * - [Ruleset variables]($docs/learning/presentation/ECExpressions.md#ruleset-variables-user-settings)
+   * - [ECInstance ECExpression context]($docs/learning/presentation/Advanced/ECExpressions.md#ecinstance)
+   * - [Ruleset variables]($docs/learning/presentation/Advanced/ECExpressions.md#ruleset-variables-user-settings)
    */
   value: string;
 

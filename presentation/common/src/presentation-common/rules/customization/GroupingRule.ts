@@ -37,7 +37,7 @@ export interface GroupingRule extends RuleBase, ConditionContainer {
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
+   * is an [ECExpression]($docs/learning/presentation/Advanced/ECExpressions.md), which can use
    * a [limited set of symbols]($docs/learning/presentation/Hierarchies/ECExpressions.md#rule-condition).
    */
   condition?: string;
@@ -218,7 +218,7 @@ export interface PropertyRangeGroupSpecification {
   imageId?: string;
 
   /**
-   * Grouping node label. May be [localized]($docs/learning/presentation/Localization.md).
+   * Grouping node label. May be [localized]($docs/learning/presentation/Advanced/Localization.md).
    * Defaults to `{from value} - {to value}`
    *
    * @minLength 1

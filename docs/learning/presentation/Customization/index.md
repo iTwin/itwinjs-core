@@ -12,7 +12,3 @@ hierarchies and content. The rules apply to both hierarchies and content:
 - [StyleOverride](./StyleOverride.md)
 - [SortingRule](./SortingRule.md)
 - [ExtendedDataRule](./ExtendedDataRule.md)
-
-## Expressions
-
-- [ECExpressions](./ECExpressions.md)

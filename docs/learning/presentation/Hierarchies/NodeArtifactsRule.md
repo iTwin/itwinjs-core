@@ -19,15 +19,15 @@ Use `NodeArtifacts` on the *ModelB* nodes and a `hideExpression` on *Subject* no
 
 ## Attributes
 
-Name | Required? | Type | Default | Meaning
--|-|-|-|-
-*Filtering* |
-`requiredSchemas` | No | [`RequiredSchemaSpecification[]`](../SchemaRequirements.md) | `[]` | Specifications that define schema requirements for the rule to take effect.
-`priority` | No | `number` | `1000` | Defines the order in which presentation rules are evaluated.
-`onlyIfNotHandled` | No | `boolean` | `false` | Should this rule be ignored if there is already an existing rule with a higher priority.
-`condition` | No | [ECExpression](../Customization/ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
-*Artifacts* |
-`items` | No | `{ [key: string]: ECExpression }` | | A map of ECExpressions whose evaluation results are used as artifact values
+| Name               | Required? | Type                                                                 | Default | Meaning                                                                                  |
+| ------------------ | --------- | -------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------- |
+| *Filtering*        |
+| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    | Specifications that define schema requirements for the rule to take effect.              |
+| `priority`         | No        | `number`                                                             | `1000`  | Defines the order in which presentation rules are evaluated.                             |
+| `onlyIfNotHandled` | No        | `boolean`                                                            | `false` | Should this rule be ignored if there is already an existing rule with a higher priority. |
+| `condition`        | No        | [ECExpression](../Customization/ECExpressions.md#rule-condition)     | `""`    | Defines a condition for the rule, which needs to be met in order to execute it.          |
+| *Artifacts*        |
+| `items`            | No        | `{ [key: string]: ECExpression }`                                    |         | A map of ECExpressions whose evaluation results are used as artifact values              |
 
 ## Example
 

@@ -85,7 +85,7 @@ export interface PropertyCategorySpecification {
    */
   parentId?: string | CategoryIdentifier | NoCategoryIdentifier;
 
-  /** Display label of the category. May be [localized]($docs/learning/presentation/Localization.md). */
+  /** Display label of the category. May be [localized]($docs/learning/presentation/Advanced/Localization.md). */
   label: string;
 
   /** Optional extensive description of the category. */

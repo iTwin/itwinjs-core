@@ -32,9 +32,3 @@ are some hierarchy-specific customization rules:
 
 - [GroupingRule](./GroupingRule.md) for advanced grouping
 - [NodeArtifactsRule](./NodeArtifactsRule.md) to help create hierarchies for specific cases
-
-## Related Topics
-
-- [Infinite hierarchies prevention](./InfiniteHierarchiesPrevention.md)
-- [ECExpressions](./ECExpressions.md)
-- [Terminology](./Terminology.md)

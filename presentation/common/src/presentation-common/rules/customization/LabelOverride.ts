@@ -25,7 +25,7 @@ export interface LabelOverride extends RuleBase, ConditionContainer {
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
+   * is an [ECExpression]($docs/learning/presentation/Advanced/ECExpressions.md), which can use
    * a [limited set of symbols]($docs/learning/presentation/Customization/ECExpressions.md#rule-condition).
    */
   condition?: string;
@@ -34,7 +34,7 @@ export interface LabelOverride extends RuleBase, ConditionContainer {
    * Defines the label that should be used for node. This is
    * an [ECExpression]($docs/learning/presentation/Customization/ECExpressions.md), so label
    * can be defined/formatted dynamically based on the context - for example
-   * ECInstance property value. May be [localized]($docs/learning/presentation/Localization.md).
+   * ECInstance property value. May be [localized]($docs/learning/presentation/Advanced/Localization.md).
    *
    * @minLength 1
    */
@@ -44,7 +44,7 @@ export interface LabelOverride extends RuleBase, ConditionContainer {
    * Defines the description that should be used for node. This is
    * an [ECExpression]($docs/learning/presentation/Customization/ECExpressions.md), so
    * description can be defined/formatted dynamically based on the context - for example
-   * ECInstance property value. May be [localized]($docs/learning/presentation/Localization.md).
+   * ECInstance property value. May be [localized]($docs/learning/presentation/Advanced/Localization.md).
    *
    * @minLength 1
    */

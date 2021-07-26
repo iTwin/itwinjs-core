@@ -23,7 +23,7 @@ export interface ContentRule extends RuleBase, ConditionContainer {
 
   /**
    * Defines a condition for the rule, which needs to be met in order to execute it. Condition
-   * is an [ECExpression]($docs/learning/presentation/ECExpressions.md), which can use
+   * is an [ECExpression]($docs/learning/presentation/Advanced/ECExpressions.md), which can use
    * a [limited set of symbols]($docs/learning/presentation/Content/ECExpressions.md#rule-condition).
    */
   condition?: string;

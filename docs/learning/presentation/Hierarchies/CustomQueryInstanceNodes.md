@@ -6,24 +6,24 @@ Returns nodes for instances which are returned by an ECSQL query.
 
 ## Attributes
 
-Name | Required? | Type | Default | Meaning | Performance Notes
--|-|-|-|-|-
-*Filtering* |
-`queries` | No | [`QuerySpecification[]`](#query-specifications) | `[]` | Specifications of queries used to create the content.
-`hideNodesInHierarchy` | No | `boolean` | `false` | Hide instance nodes provided by this specification and directly show their children. | Expensive
-`hideIfNoChildren` | No | `boolean` | `false` | Hide nodes if they don't have children. | Expensive
-`hideExpression` | No | [ECExpression](./ECExpressions.md#specification) | `""` | An ECExpression that indicates whether a node should be hidden or not. | Expensive
-`suppressSimilarAncestorsCheck` | No | `boolean` | `false` | Suppress similar ancestor nodes' checking when creating nodes based on this specification. [See more](./InfiniteHierarchiesPrevention.md)
-*Ordering* |
-`priority` | No | `number` | `1000` | Changes the order of specifications used to create nodes for specific branch.
-`doNotSort` | No | `boolean` | `false` | Suppress default sorting of nodes returned by this specification. | Improves
-*Grouping* |
-`groupByClass` | No | `boolean` | `true` | Group instances by ECClass
-`groupByLabel` | No | `boolean` | `true` | Group instances by label | Expensive
-*Misc.* |
-`hasChildren` | No | `"Always" \| "Never" \| "Unknown"` | `"Unknown"` | Tells the rules engine that nodes produced using this specification always or never have children. | Improves
-`relatedInstances` | No | [`RelatedInstanceSpecification[]`](../RelatedInstanceSpecification.md) | `[]` | Specifications of [related instances](../RelatedInstanceSpecification.md) that can be used in nodes' creation.
-`nestedRules` | No | [`ChildNodeRule[]`](./ChildNodeRule.md) | `[]` | Specifications of [nested child node rules](./Terminology.md#nested-rules).
+| Name                            | Required? | Type                                                                                | Default     | Meaning                                                                                                                                   | Performance Notes |
+| ------------------------------- | --------- | ----------------------------------------------------------------------------------- | ----------- | ----------------------------------------------------------------------------------------------------------------------------------------- | ----------------- |
+| *Filtering*                     |
+| `queries`                       | No        | [`QuerySpecification[]`](#query-specifications)                                     | `[]`        | Specifications of queries used to create the content.                                                                                     |
+| `hideNodesInHierarchy`          | No        | `boolean`                                                                           | `false`     | Hide instance nodes provided by this specification and directly show their children.                                                      | Expensive         |
+| `hideIfNoChildren`              | No        | `boolean`                                                                           | `false`     | Hide nodes if they don't have children.                                                                                                   | Expensive         |
+| `hideExpression`                | No        | [ECExpression](./ECExpressions.md#specification)                                    | `""`        | An ECExpression that indicates whether a node should be hidden or not.                                                                    | Expensive         |
+| `suppressSimilarAncestorsCheck` | No        | `boolean`                                                                           | `false`     | Suppress similar ancestor nodes' checking when creating nodes based on this specification. [See more](./InfiniteHierarchiesPrevention.md) |
+| *Ordering*                      |
+| `priority`                      | No        | `number`                                                                            | `1000`      | Changes the order of specifications used to create nodes for specific branch.                                                             |
+| `doNotSort`                     | No        | `boolean`                                                                           | `false`     | Suppress default sorting of nodes returned by this specification.                                                                         | Improves          |
+| *Grouping*                      |
+| `groupByClass`                  | No        | `boolean`                                                                           | `true`      | Group instances by ECClass                                                                                                                |
+| `groupByLabel`                  | No        | `boolean`                                                                           | `true`      | Group instances by label                                                                                                                  | Expensive         |
+| *Misc.*                         |
+| `hasChildren`                   | No        | `"Always" \| "Never" \| "Unknown"`                                                  | `"Unknown"` | Tells the rules engine that nodes produced using this specification always or never have children.                                        | Improves          |
+| `relatedInstances`              | No        | [`RelatedInstanceSpecification[]`](../Common-Rules/RelatedInstanceSpecification.md) | `[]`        | Specifications of [related instances](../Common-Rules/RelatedInstanceSpecification.md) that can be used in nodes' creation.               |
+| `nestedRules`                   | No        | [`ChildNodeRule[]`](./ChildNodeRule.md)                                             | `[]`        | Specifications of [nested child node rules](./Terminology.md#nested-rules).                                                               |
 
 ## Query Specifications
 
@@ -47,10 +47,10 @@ The specification contains an ECSQL query which is used to query for instances.
 
 #### Attributes
 
-Name | Required? | Type |  Meaning
--|-|-|-
-`class` | Yes | `SingleSchemaClassSpecification` | Specification of ECClass whose instances the query returns.
-`query` | Yes | `string` | Specifies the search ECSQL query.
+| Name    | Required? | Type                             | Meaning                                                     |
+| ------- | --------- | -------------------------------- | ----------------------------------------------------------- |
+| `class` | Yes       | `SingleSchemaClassSpecification` | Specification of ECClass whose instances the query returns. |
+| `query` | Yes       | `string`                         | Specifies the search ECSQL query.                           |
 
 ### ECPropertyValue
 
@@ -64,10 +64,10 @@ has no effect.
 
 #### Attributes
 
-Name | Required? | Type | Meaning
--|-|-|-
-`class` | Yes | `SingleSchemaClassSpecification` | Specification of ECClass whose instances the query returns.
-`parentPropertyName` | Yes | `string` | Specifies name of the parent instance property whose value contains the ECSQL query. **Warning:** the property whose name is specified must be of string type.
+| Name                 | Required? | Type                             | Meaning                                                                                                                                                        |
+| -------------------- | --------- | -------------------------------- | -------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `class`              | Yes       | `SingleSchemaClassSpecification` | Specification of ECClass whose instances the query returns.                                                                                                    |
+| `parentPropertyName` | Yes       | `string`                         | Specifies name of the parent instance property whose value contains the ECSQL query. **Warning:** the property whose name is specified must be of string type. |
 
 ## Example
 

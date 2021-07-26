@@ -8,14 +8,14 @@ The default property category is a category that gets assigned to properties tha
 
 ## Attributes
 
-Name | Required? | Type | Default | Meaning
--|-|-|-|-
-*Picking attributes* |
-`requiredSchemas` | No | [`RequiredSchemaSpecification[]`](../SchemaRequirements.md) | `[]` | Specifications that define schema requirements for the rule to take effect.
-`priority` | No | `number` | `1000` | Defines the order in which presentation rules are evaluated.
-`onlyIfNotHandled` | No | `boolean` | `false` | Should this rule be ignored if there is already an existing rule with a higher priority.
-*Content Modifiers* |
-`specification` | Yes | [`PropertyCategorySpecification`](./PropertyCategorySpecification.md) | | Specification for the custom property category
+| Name                 | Required? | Type                                                                  | Default | Meaning                                                                                  |
+| -------------------- | --------- | --------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------- |
+| *Picking attributes* |
+| `requiredSchemas`    | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md)  | `[]`    | Specifications that define schema requirements for the rule to take effect.              |
+| `priority`           | No        | `number`                                                              | `1000`  | Defines the order in which presentation rules are evaluated.                             |
+| `onlyIfNotHandled`   | No        | `boolean`                                                             | `false` | Should this rule be ignored if there is already an existing rule with a higher priority. |
+| *Content Modifiers*  |
+| `specification`      | Yes       | [`PropertyCategorySpecification`](./PropertyCategorySpecification.md) |         | Specification for the custom property category                                           |
 
 ## Example
 

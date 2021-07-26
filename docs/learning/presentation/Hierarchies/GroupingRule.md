@@ -25,16 +25,16 @@ to do that.
 
 ## Attributes
 
-Name | Required? | Type | Default | Meaning
--|-|-|-|-
-*Filtering* |
-`requiredSchemas` | No | [`RequiredSchemaSpecification[]`](../SchemaRequirements.md) | `[]` | Specifications that define schema requirements for the rule to take effect.
-`priority` | No | `number` | `1000` | Defines the order in which presentation rules are evaluated.
-`onlyIfNotHandled` | No | `boolean` | `false` | Should this rule be ignored if there is already an existing rule with a higher priority.
-`condition` | No | [ECExpression](./ECExpressions.md#rule-condition) |`""` | Defines a condition for the rule, which needs to be met in order to execute it.
-`class` | Yes | `SingleSchemaClassSpecification` | | Specification of ECClass which should be grouped using this rule.
-*Grouping* |
-`groups` | Yes | `GroupingSpecification[]` | | Specifications of grouping which should be applied to matching ECInstances.
+| Name               | Required? | Type                                                                 | Default | Meaning                                                                                  |
+| ------------------ | --------- | -------------------------------------------------------------------- | ------- | ---------------------------------------------------------------------------------------- |
+| *Filtering*        |
+| `requiredSchemas`  | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    | Specifications that define schema requirements for the rule to take effect.              |
+| `priority`         | No        | `number`                                                             | `1000`  | Defines the order in which presentation rules are evaluated.                             |
+| `onlyIfNotHandled` | No        | `boolean`                                                            | `false` | Should this rule be ignored if there is already an existing rule with a higher priority. |
+| `condition`        | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    | Defines a condition for the rule, which needs to be met in order to execute it.          |
+| `class`            | Yes       | `SingleSchemaClassSpecification`                                     |         | Specification of ECClass which should be grouped using this rule.                        |
+| *Grouping*         |
+| `groups`           | Yes       | `GroupingSpecification[]`                                            |         | Specifications of grouping which should be applied to matching ECInstances.              |
 
 ## Grouping Specifications
 
@@ -46,10 +46,10 @@ Base class grouping allows grouping ECInstance nodes by their base class.
 
 #### Attributes
 
-Name | Required? | Type | Default | Meaning
--|-|-|-|-
-`createGroupForSingleItem` | No | `boolean` | `false` | Should the grouping node be created if there is only one item in that group.
-`baseClass` | No | `SingleSchemaClassSpecification` | Rule's `class` | Specification of the base ECClass to group by.
+| Name                       | Required? | Type                             | Default        | Meaning                                                                      |
+| -------------------------- | --------- | -------------------------------- | -------------- | ---------------------------------------------------------------------------- |
+| `createGroupForSingleItem` | No        | `boolean`                        | `false`        | Should the grouping node be created if there is only one item in that group. |
+| `baseClass`                | No        | `SingleSchemaClassSpecification` | Rule's `class` | Specification of the base ECClass to group by.                               |
 
 ### Property Grouping
 
@@ -57,24 +57,24 @@ Property grouping allows grouping by property of the instance by a value or by r
 
 #### Attributes
 
-Name | Required? | Type | Default | Meaning
--|-|-|-|-
-`createGroupForSingleItem` | No | `boolean` | `false` | Should the grouping node be created if there is only one item in that group.
-`createGroupForUnspecifiedValues` | No | `boolean` | `true` | Should a separate grouping node be created for nodes whose grouping value is not set.
-`propertyName` | Yes | `string` | | Name of the ECProperty which is used for grouping.
-`imageId` | No | `string` | `""` | ID of an image to use for the grouping node.
-`groupingValue` | No | `"PropertyValue" \| "DisplayLabel"` | `"DisplayLabel"` | Should the instances be grouped on display label or the grouping property value. **Note:** Grouping by property value is required if the display label is overridden to display grouped instances count. **Warning:** Grouping by label and sorting by property value is not possible.
-`sortingValue` | No | `"PropertyValue" \| "DisplayLabel"` | `"DisplayLabel"` | Should the nodes be sorted by display label or the grouping property value. In most cases the result is the same, unless [LabelOverride]($presentation-common) rule is used to change the display label. **Note:** Sorting by property value only makes sense when instances are grouped by property value as well. **Warning:** Grouping by label and sorting by property value is not possible.
-`ranges` | No | [`PropertyRangeGroupSpecification[]`](#propertyrangegroupspecification-attributes) | `[]` | Ranges into which the grouping values are divided. Instances are grouped by value if no ranges are specified.
+| Name                              | Required? | Type                                                                               | Default          | Meaning                                                                                                                                                                                                                                                                                                                                                                                           |
+| --------------------------------- | --------- | ---------------------------------------------------------------------------------- | ---------------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| `createGroupForSingleItem`        | No        | `boolean`                                                                          | `false`          | Should the grouping node be created if there is only one item in that group.                                                                                                                                                                                                                                                                                                                      |
+| `createGroupForUnspecifiedValues` | No        | `boolean`                                                                          | `true`           | Should a separate grouping node be created for nodes whose grouping value is not set.                                                                                                                                                                                                                                                                                                             |
+| `propertyName`                    | Yes       | `string`                                                                           |                  | Name of the ECProperty which is used for grouping.                                                                                                                                                                                                                                                                                                                                                |
+| `imageId`                         | No        | `string`                                                                           | `""`             | ID of an image to use for the grouping node.                                                                                                                                                                                                                                                                                                                                                      |
+| `groupingValue`                   | No        | `"PropertyValue" \| "DisplayLabel"`                                                | `"DisplayLabel"` | Should the instances be grouped on display label or the grouping property value. **Note:** Grouping by property value is required if the display label is overridden to display grouped instances count. **Warning:** Grouping by label and sorting by property value is not possible.                                                                                                            |
+| `sortingValue`                    | No        | `"PropertyValue" \| "DisplayLabel"`                                                | `"DisplayLabel"` | Should the nodes be sorted by display label or the grouping property value. In most cases the result is the same, unless [LabelOverride]($presentation-common) rule is used to change the display label. **Note:** Sorting by property value only makes sense when instances are grouped by property value as well. **Warning:** Grouping by label and sorting by property value is not possible. |
+| `ranges`                          | No        | [`PropertyRangeGroupSpecification[]`](#propertyrangegroupspecification-attributes) | `[]`             | Ranges into which the grouping values are divided. Instances are grouped by value if no ranges are specified.                                                                                                                                                                                                                                                                                     |
 
 #### PropertyRangeGroupSpecification Attributes
 
-Name | Required? | Type | Default | Meaning
--|-|-|-|-
-`imageId` | No | `string` | `imageId` of the [property group specification](#property-grouping) | ID of an image to use for the grouping node.
-`label` | No | `string` | `"{from value} - {to value}"` | Grouping node label. May be [localized](../Localization.md).
-`fromValue` | Yes | `string` | | Value that defines the range start (inclusive)
-`toValue` | Yes | `string` | | Value that defines the range end (inclusive)
+| Name        | Required? | Type     | Default                                                             | Meaning                                                               |
+| ----------- | --------- | -------- | ------------------------------------------------------------------- | --------------------------------------------------------------------- |
+| `imageId`   | No        | `string` | `imageId` of the [property group specification](#property-grouping) | ID of an image to use for the grouping node.                          |
+| `label`     | No        | `string` | `"{from value} - {to value}"`                                       | Grouping node label. May be [localized](../Advanced/Localization.md). |
+| `fromValue` | Yes       | `string` |                                                                     | Value that defines the range start (inclusive)                        |
+| `toValue`   | Yes       | `string` |                                                                     | Value that defines the range end (inclusive)                          |
 
 ### Same Label Instance Grouping
 
@@ -82,9 +82,9 @@ Allows grouping multiple instances with the same label into one ECInstance node.
 
 #### Attributes
 
-Name | Required? | Type | Default | Meaning
--|-|-|-|-
-`applicationStage` | No | `SameLabelInstanceGroupApplicationStage` | `"Query"` | Stage of hierarchy creation at which the rule is applied.
+| Name               | Required? | Type                                     | Default   | Meaning                                                   |
+| ------------------ | --------- | ---------------------------------------- | --------- | --------------------------------------------------------- |
+| `applicationStage` | No        | `SameLabelInstanceGroupApplicationStage` | `"Query"` | Stage of hierarchy creation at which the rule is applied. |
 
 ## Example
 

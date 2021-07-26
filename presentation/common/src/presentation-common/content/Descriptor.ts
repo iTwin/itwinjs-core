@@ -6,7 +6,9 @@
  * @module Content
  */
 
-import { ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON } from "../EC";
+import {
+  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON,
+} from "../EC";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
 
@@ -60,7 +62,7 @@ export namespace SelectClassInfo {
   export function fromCompressedJSON(compressedSelectClass: SelectClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfoJSON {
     return {
       ...compressedSelectClass,
-      selectClassInfo: {id: compressedSelectClass.selectClassInfo, ...classesMap[compressedSelectClass.selectClassInfo]},
+      selectClassInfo: { id: compressedSelectClass.selectClassInfo, ...classesMap[compressedSelectClass.selectClassInfo] },
       navigationPropertyClasses: compressedSelectClass.navigationPropertyClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
       relatedInstanceClasses: compressedSelectClass.relatedInstanceClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
       pathToPrimaryClass: compressedSelectClass.pathToPrimaryClass.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
@@ -221,7 +223,7 @@ export interface DescriptorOverrides {
     direction: SortDirection;
   };
 
-  /** [ECExpression]($docs/learning/presentation/ECExpressions.md) for filtering content */
+  /** [ECExpression]($docs/learning/presentation/Advanced/ECExpressions.md) for filtering content */
   filterExpression?: string;
 }
 
@@ -246,7 +248,7 @@ export interface DescriptorSource {
   readonly sortingField?: Field;
   /** Sorting direction */
   readonly sortDirection?: SortDirection;
-  /** Content filtering [ECExpression]($docs/learning/presentation/ECExpressions) */
+  /** Content filtering [ECExpression]($docs/learning/presentation/Advanced/ECExpressions) */
   readonly filterExpression?: string;
 }
 
@@ -279,7 +281,7 @@ export class Descriptor implements DescriptorSource {
   public sortingField?: Field;
   /** Sorting direction */
   public sortDirection?: SortDirection;
-  /** Content filtering [ECExpression]($docs/learning/presentation/ECExpressions) */
+  /** Content filtering [ECExpression]($docs/learning/presentation/Advanced/ECExpressions) */
   public filterExpression?: string;
 
   /** Construct a new Descriptor using a `DescriptorSource` */
@@ -312,16 +314,16 @@ export class Descriptor implements DescriptorSource {
       this.sortDirection !== undefined && { sortDirection: this.sortDirection },
       this.filterExpression !== undefined && { filterExpression: this.filterExpression },
       this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo }, {
-        connectionId: this.connectionId,
-        inputKeysHash: this.inputKeysHash,
-        contentOptions: this.contentOptions,
-        displayType: this.displayType,
-        contentFlags: this.contentFlags,
-        categories: this.categories.map(CategoryDescription.toJSON),
-        fields,
-        selectClasses,
-        classesMap,
-      }
+      connectionId: this.connectionId,
+      inputKeysHash: this.inputKeysHash,
+      contentOptions: this.contentOptions,
+      displayType: this.displayType,
+      contentFlags: this.contentFlags,
+      categories: this.categories.map(CategoryDescription.toJSON),
+      fields,
+      selectClasses,
+      classesMap,
+    }
     );
   }
 
