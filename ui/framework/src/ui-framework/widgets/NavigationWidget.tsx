@@ -53,12 +53,6 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     return this._reactNode;
   }
 
-  /** @deprecated use reactNode */
-  // istanbul ignore next
-  public override get reactElement(): React.ReactNode {
-    return this.reactNode;
-  }
-
   public renderCornerItem(): React.ReactNode {
     // istanbul ignore if
     if (FrontstageManager.isLoading)

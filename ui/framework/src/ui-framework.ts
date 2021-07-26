@@ -100,7 +100,6 @@ export * from "./ui-framework/imodel-components/VisibilityTreeRenderer";
 
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
-export * from "./ui-framework/keyboardshortcut/deprecated/KeyboardKey";
 export * from "./ui-framework/keyinbrowser/KeyinBrowser";
 
 export * from "./ui-framework/messages/ActivityMessage";
@@ -267,7 +266,6 @@ export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetManager";
 export * from "./ui-framework/widgets/WidgetProps";
 export * from "./ui-framework/widgets/WidgetStack";
-export * from "./ui-framework/widgets/WidgetState";
 export * from "./ui-framework/widgets/VisibilityWidget";
 
 export * from "./ui-framework/workflow/Task";
