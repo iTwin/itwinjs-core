@@ -2,12 +2,6 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-.uifw-standard-toolsettings-grid-container {
-  display: block;
-  min-width: 200px;
-  padding-right: 4px;  // really this is only needed in FireFox due to scrollbar
-}
-
 .uif-toolsetting-label-docked-horizontal {
   padding-right: 0.5em;
   align-self: center;
