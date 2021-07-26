@@ -96,7 +96,7 @@ title: iModel Connector Developer's Guide
 
 [External repository information](#external-repository-information)
 
-# Introduction
+## Introduction
 
 ## Preface
 
@@ -108,24 +108,29 @@ Bentley iTwin Services provides connectors to support a wide array of
 design applications to ensure that all engineering data can be
 aggregated into a single digital twin environment inside an iModel.
 
+As explained in the [overview](../learning/imodel-connectors.md), a "connector" is a program that:
+
+1. Reads information from a data source,
+2. Aligns the source data with the BIS schema and preferably a domain schema, and
+3. Writes BIS data to an iModel.
+
 A complete list of available connectors can be found in [iTwin Services
 Community
-Wiki](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47595/supported-applications-and-file-formats)
+
+Wiki](<https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47595/supported-applications-and-file-formats>)
+
 Examples of iTwin Connector include:
 
-![](docImages/media/image1.png){width="6.5in"
-height="2.5694444444444446in"}
-
-![Table Description automatically
-generated](docImages/media/image2.PNG){width="6.5in"
-height="3.2444444444444445in"}
+![Bentley iTwin Connectors](https://communities.bentley.com/resized-image/__size/650x450/__key/communityserver-wikis-components-files/00-00-00-05-55/Bentley.png)
+![3rd Party iTwin Connectors](https://communities.bentley.com/resized-image/__size/650x450/__key/communityserver-wikis-components-files/00-00-00-05-55/3rdParty.PNG)
 
 See \[Section on iTwin Synchronization\](#ways-to-sync-data-to-an-itwin)
 for more details on existing connectors.
 
 However, in some instances, where a specific format is not covered, one
-can develop a new connector using \[iModel.js
-SDK\](https://www.itwinjs.org/)
+can develop a new connector using [iModel.js SDK](https://www.itwinjs.org/)
+
+![iModel Connector Backend](./imodel_connector_backend.png)
 
 The imodel-bridge package provided as part of the iModel.js SDK makes it
 easier to write an iTwin connector backend that brings custom data into
@@ -197,35 +202,6 @@ twin means a lot more than just an iModel.
 An iTwin connector provides a workflow to easily synchronize information
 from various third-party design applications or data repositories into
 an iModel.
-
-### iTwin Connectors
-
-As explained in the [overview](../learning/imodel-connectors.md), a "connector" is a program that:
-
-1. Reads information from a data source,
-2. Aligns the source data with the BIS schema and preferably a domain schema, and
-3. Writes BIS data to an iModel.
-
-iTwin connectors play an important role in enabling a wide range of both Bentley and third-party design applications to contribute to an iTwin.
-
-Bentley iTwin Services provides connectors to support a wide array of design applications to ensure all of the engineering data can be aggregated into a single digital twin environment inside an iModel.
-
-A complete list of available connectors can be found in [iTwin Services Community Wiki](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47595/supported-applications-and-file-formats)
-
-Examples of iTwin Connector include:
-
-![](https://communities.bentley.com/resized-image/__size/650x450/__key/communityserver-wikis-components-files/00-00-00-05-55/Bentley.png)
-![](https://communities.bentley.com/resized-image/__size/650x450/__key/communityserver-wikis-components-files/00-00-00-05-55/3rdParty.PNG)
-
-See [Section on iTwin Synchronization](#ways-to-sync-data-to-an-itwin) for more details on existing connectors.
-
-However in certain cases, where a specific format is not covered, one can develop a new connector using  [iModel.js SDK](https://www.itwinjs.org/)
-
-![](./imodel_connector_backend.png)
-
-The imodel-bridge package provided as part of the iModel.js SDK makes it easier to write an iTwin connector backend that brings custom data into a digital twin. To run this environment with the iModel.js library that this package depends on requires JavaScript engine with es2017 support.
-
-Note: Please keep in mind iModelBridge is sometimes used as a synonym for iTwin Connector since it bridges the gap between input data and a digital twin.
 
 ### Briefcases
 
