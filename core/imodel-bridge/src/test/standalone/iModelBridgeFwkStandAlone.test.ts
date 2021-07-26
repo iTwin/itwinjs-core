@@ -47,7 +47,7 @@ describe("IModelBridgeFwkStandAlone", () => {
     const runner = new BridgeRunner(bridgeJobDef);
     const fileName = `${path.basename(assetFile, path.extname(assetFile))}.bim`;
     const filePath = path.join(KnownTestLocations.outputDir, fileName);
-    const issueReporter = new BadgersIssueReporter("", "", "", "TestBridge.json", KnownTestLocations.outputDir, undefined, assetFile);
+    const issueReporter = new BadgersIssueReporter("37c91053-2257-4976-bf7e-e567d5725fad", "5f7e765f-e3db-4f97-91c5-f344d664e066", "6dd55743-0c78-42ee-be50-558294a752c1", "TestBridge.json", KnownTestLocations.outputDir, undefined, assetFile);
     issueReporter.recordSourceFileInfo("TestBridge.json", "TestBridge", "TestBridge", "itemType", "dataSource", "state", "failureReason", true, 200, true);
     runner.setIssueReporter(issueReporter);
     const status = await runner.synchronize();

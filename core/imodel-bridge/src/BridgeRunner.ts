@@ -193,7 +193,7 @@ export class BridgeRunner {
       await this._bridge.onOpenIModel();
       await iModelDbBuilder.updateExistingIModel();
     } finally {
-      this._bridge.issueReporter?.publishReport();
+      await this._bridge.issueReporter?.publishReport();
       if (iModelDbBuilder.imodel.isBriefcaseDb() || iModelDbBuilder.imodel.isSnapshotDb()) {
         iModelDbBuilder.imodel.close();
       }
