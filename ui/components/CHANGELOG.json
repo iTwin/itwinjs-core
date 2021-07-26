@@ -2,6 +2,18 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.17.3",
+      "tag": "@bentley/ui-components_v2.17.3",
+      "date": "Mon, 26 Jul 2021 16:08:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Workaround for react-data-grid blank grid after scroll and update"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.17.2",
       "tag": "@bentley/ui-components_v2.17.2",
       "date": "Thu, 08 Jul 2021 15:23:00 GMT",
