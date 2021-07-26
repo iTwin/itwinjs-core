@@ -1,6 +1,25 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Jul 2021 12:21:25 GMT and should not be manually modified.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- BriefcaseConnection.PullAndMergeChanges now returns both changesetId and changesetIndex
+- Adjust the range of a RenderGraphic based on displacement applied by the viewport's AnalysisStyle, if any, so that displaced portions of the mesh can be located by tools.
+- Added support for PointCloudModel attachments in OPC format with RDS URL resolving to OrbitGtBlobProps.
+- Handle failures in models query when isNotSpatiallyLocated property does not exist in the schema
+- GraphicBuilder now generates normals for polyfaces if requested.
+- remove internal barrel-import usage
+- Stop delivering pseudo-localized strings
+- Fix multi-model animation issue.
+- Handle degenerate frustum in BackgroundMapGeometry.getFrustumIntersectionDepthRange.
+- Add support to GraphicBuilder for solid primitives and visible edges.
+- move check for redirect callback handling in WebViewerApp to before IModelApp.startup call
+- Support reprojection of Cesium OSM tiles
+- internal async order change
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
