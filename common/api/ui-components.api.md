@@ -38,7 +38,7 @@ import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { immerable } from 'immer';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
-import { InputProps } from '@bentley/ui-core';
+import { InputProps } from '@itwin/itwinui-react';
 import * as Inspire from 'inspire-tree';
 import { LinkElementsInfo } from '@bentley/ui-abstract';
 import { Matrix3d } from '@bentley/geometry-core';
@@ -67,6 +67,7 @@ import * as React from 'react';
 import ReactDataGrid = require('react-data-grid');
 import { RelativePosition } from '@bentley/ui-abstract';
 import { ScreenViewport } from '@bentley/imodeljs-frontend';
+import { SelectOption } from '@itwin/itwinui-react';
 import { SortDirection } from '@bentley/ui-core';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { TentativePoint } from '@bentley/imodeljs-frontend';
@@ -522,6 +523,8 @@ export class BooleanEditor extends React.PureComponent<PropertyEditorProps, Bool
 
 // @beta
 export class BooleanPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesBlur(): boolean;
     // (undocumented)
     get reactNode(): React.ReactNode;
 }
@@ -1750,6 +1753,8 @@ export class EnumPropertyEditor extends PropertyEditorBase {
     // (undocumented)
     get containerHandlesEnter(): boolean;
     // (undocumented)
+    get containerStopsKeydownPropagation(): boolean;
+    // (undocumented)
     get reactNode(): React.ReactNode;
 }
 
@@ -2188,9 +2193,6 @@ export function handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHi
 
 // @public
 export const hasChildren: (node: TreeNodeItem) => boolean;
-
-// @public @deprecated
-export const hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean;
 
 // @public
 export const hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean;
@@ -3531,6 +3533,8 @@ export abstract class PropertyEditorBase implements DataController {
     // (undocumented)
     get containerHandlesTab(): boolean;
     // (undocumented)
+    get containerStopsKeydownPropagation(): boolean;
+    // (undocumented)
     customDataController: DataController | undefined;
     // (undocumented)
     abstract get reactNode(): React.ReactNode;
@@ -4292,28 +4296,6 @@ export class SparseTree<T extends Node> {
     setNumChildren(parentId: string | undefined, numChildren: number): void;
 }
 
-// @beta @deprecated
-export enum StandardEditorNames {
-    // (undocumented)
-    ColorPicker = "color-picker",
-    // (undocumented)
-    EnumButtonGroup = "enum-buttongroup",
-    // (undocumented)
-    IconPicker = "icon-picker",
-    // (undocumented)
-    MultiLine = "multi-line",
-    // (undocumented)
-    NumberCustom = "number-custom",
-    // (undocumented)
-    NumericInput = "numeric-input",
-    // (undocumented)
-    Slider = "slider",
-    // (undocumented)
-    Toggle = "toggle",
-    // (undocumented)
-    WeightPicker = "weight-picker"
-}
-
 // @public
 export class StandardRotationChangeEvent extends UiEvent<StandardRotationChangeEventArgs> {
 }
@@ -4322,88 +4304,6 @@ export class StandardRotationChangeEvent extends UiEvent<StandardRotationChangeE
 export interface StandardRotationChangeEventArgs {
     // (undocumented)
     standardRotation: StandardViewId;
-}
-
-// @beta @deprecated
-export enum StandardTypeConverterTypeNames {
-    // (undocumented)
-    Bool = "bool",
-    // (undocumented)
-    Boolean = "boolean",
-    // (undocumented)
-    Composite = "composite",
-    // (undocumented)
-    DateTime = "dateTime",
-    // (undocumented)
-    Double = "double",
-    // (undocumented)
-    Enum = "enum",
-    // (undocumented)
-    Float = "float",
-    // (undocumented)
-    Hex = "hex",
-    // (undocumented)
-    Hexadecimal = "hexadecimal",
-    // (undocumented)
-    Int = "int",
-    // (undocumented)
-    Integer = "integer",
-    // (undocumented)
-    Navigation = "navigation",
-    // (undocumented)
-    Point2d = "point2d",
-    // (undocumented)
-    Point3d = "point3d",
-    // (undocumented)
-    ShortDate = "shortdate",
-    // (undocumented)
-    String = "string",
-    // (undocumented)
-    Text = "text"
-}
-
-// @beta @deprecated
-export enum StandardTypeNames {
-    // (undocumented)
-    Array = "array",
-    // (undocumented)
-    Bool = "bool",
-    // (undocumented)
-    Boolean = "boolean",
-    // (undocumented)
-    Composite = "composite",
-    // (undocumented)
-    DateTime = "dateTime",
-    // (undocumented)
-    Double = "double",
-    // (undocumented)
-    Enum = "enum",
-    // (undocumented)
-    Float = "float",
-    // (undocumented)
-    Hex = "hex",
-    // (undocumented)
-    Hexadecimal = "hexadecimal",
-    // (undocumented)
-    Int = "int",
-    // (undocumented)
-    Integer = "integer",
-    // (undocumented)
-    Navigation = "navigation",
-    // (undocumented)
-    Number = "number",
-    // (undocumented)
-    Point2d = "point2d",
-    // (undocumented)
-    Point3d = "point3d",
-    // (undocumented)
-    ShortDate = "shortdate",
-    // (undocumented)
-    String = "string",
-    // (undocumented)
-    Struct = "struct",
-    // (undocumented)
-    Text = "text"
 }
 
 // @beta
@@ -4955,6 +4855,8 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
 
 // @beta
 export class TogglePropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get containerHandlesBlur(): boolean;
     // (undocumented)
     get reactNode(): React.ReactNode;
 }

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/eslint-plugin",
+      "comment": "Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/eslint-plugin",
+  "email": "51122937+DanEastBentley@users.noreply.github.com"
+}

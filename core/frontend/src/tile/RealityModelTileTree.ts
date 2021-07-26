@@ -28,7 +28,7 @@ import { SceneContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
 import { ViewState } from "../ViewState";
 import {
-  BatchedTileIdMap, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, getCesiumAccessTokenAndEndpointUrl, getCesiumOSMBuildingsUrl, RealityTile, RealityTileLoader, RealityTileParams,
+  BatchedTileIdMap, createClassifierTileTreeReference, createDefaultViewFlagOverrides, DisclosedTileTreeSet, getCesiumAccessTokenAndEndpointUrl, getCesiumOSMBuildingsUrl, getGcsConverterAvailable, RealityTile, RealityTileLoader, RealityTileParams,
   RealityTileTree, RealityTileTreeParams, SpatialClassifierTileTreeReference, Tile, TileDrawArgs, TileLoadPriority, TileRequest, TileTree,
   TileTreeOwner, TileTreeReference, TileTreeSupplier,
 } from "./internal";
@@ -42,6 +42,7 @@ interface RealityTreeId {
   transform?: Transform;
   modelId: Id64String;
   maskModelIds?: string;
+  toEcefTransform?: Transform;
 }
 
 function compareOrigins(lhs: XYZ, rhs: XYZ): number {
@@ -63,6 +64,17 @@ function compareMatrices(lhs: Matrix3d, rhs: Matrix3d): number {
   }
 
   return 0;
+}
+
+function compareTransforms(lhs?: Transform, rhs?: Transform) {
+  if (undefined === lhs)
+    return undefined !== rhs ? -1 : 0;
+
+  else if (undefined === rhs)
+    return 1;
+
+  const cmp = compareOrigins(lhs.origin, rhs.origin);
+  return 0 !== cmp ? cmp : compareMatrices(lhs.matrix, rhs.matrix);
 }
 
 class RealityTreeSupplier implements TileTreeSupplier {
@@ -91,14 +103,11 @@ class RealityTreeSupplier implements TileTreeSupplier {
     if (0 !== cmp)
       return cmp;
 
-    if (undefined === lhs.transform)
-      return undefined !== rhs.transform ? -1 : 0;
-    else if (undefined === rhs.transform)
-      return 1;
+    cmp = compareTransforms(lhs.transform, rhs.transform);
+    if (0 !== cmp)
+      return cmp;
 
-    const l = lhs.transform, r = rhs.transform;
-    cmp = compareOrigins(l.origin, r.origin);
-    return 0 !== cmp ? cmp : compareMatrices(l.matrix, r.matrix);
+    return compareTransforms(lhs.toEcefTransform, rhs.toEcefTransform);
   }
 }
 
@@ -151,17 +160,17 @@ export class RealityModelTileUtils {
       const maxAngle = Math.max(Math.abs(maxLatitude - minLatitude), Math.abs(maxLongitude - minLongitude));
 
       if (maxAngle < Math.PI / 8) {
-        corners = new Array<Point3d>();
+        corners = new Array<Point3d>(8);
         const chordTolerance = (1 - Math.cos(maxAngle / 2)) * Constant.earthRadiusWGS84.polar;
-        const addEllipsoidCorner = ((long: number, lat: number) => {
+        const addEllipsoidCorner = ((long: number, lat: number, index: number) => {
           const ray = earthEllipsoid.radiansToUnitNormalRay(long, lat, scratchRay)!;
-          corners!.push(ray.fractionToPoint(minHeight - chordTolerance));
-          corners!.push(ray.fractionToPoint(maxHeight + chordTolerance));
+          corners![index] = ray.fractionToPoint(minHeight - chordTolerance);
+          corners![index + 4] = ray.fractionToPoint(maxHeight + chordTolerance);
         });
-        addEllipsoidCorner(minLongitude, minLatitude);
-        addEllipsoidCorner(minLongitude, maxLatitude);
-        addEllipsoidCorner(maxLongitude, minLatitude);
-        addEllipsoidCorner(maxLongitude, maxLatitude);
+        addEllipsoidCorner(minLongitude, minLatitude, 0);
+        addEllipsoidCorner(minLongitude, maxLatitude, 1);
+        addEllipsoidCorner(maxLongitude, minLatitude, 2);
+        addEllipsoidCorner(maxLongitude, maxLatitude, 3);
         range = Range3d.createArray(corners);
       } else {
         const minEq = Constant.earthRadiusWGS84.equator + minHeight, maxEq = Constant.earthRadiusWGS84.equator + maxHeight;
@@ -203,10 +212,10 @@ class RealityModelTileTreeProps {
   public yAxisUp = false;
   public root: any;
 
-  constructor(json: any, root: any, client: RealityModelTileClient, tilesetTransform: Transform) {
+  constructor(json: any, root: any, client: RealityModelTileClient, tilesetToDbTransform: Transform, public readonly tilesetToEcef?: Transform) {
     this.tilesetJson = root;
     this.client = client;
-    this.location = tilesetTransform;
+    this.location = tilesetToDbTransform;
     this.doDrapeBackgroundMap = (json.root && json.root.SMMasterHeader && SMTextureType.Streaming === json.root.SMMasterHeader.IsTextured);
     if (json.asset.gltfUpAxis === undefined || json.asset.gltfUpAxis === "y" || json.asset.gltfUpAxis === "Y")
       this.yAxisUp = true;
@@ -225,7 +234,7 @@ class RealityModelTileTreeParams implements RealityTileTreeParams {
   public get yAxisUp() { return this.loader.tree.yAxisUp; }
   public get priority() { return this.loader.priority; }
 
-  public constructor(url: string, iModel: IModelConnection, modelId: Id64String, loader: RealityModelTileLoader) {
+  public constructor(url: string, iModel: IModelConnection, modelId: Id64String, loader: RealityModelTileLoader, public readonly gcsConverterAvailable: boolean, public readonly rootToEcef: Transform | undefined) {
     this.loader = loader;
     this.id = url;
     this.modelId = modelId;
@@ -246,11 +255,13 @@ class RealityModelTileProps implements RealityTileParams {
   public readonly parent?: RealityTile;
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
+  public readonly boundedByRegion;
 
   constructor(json: any, parent: RealityTile | undefined, thisId: string, transformToRoot?: Transform, additiveRefinement?: boolean) {
     this.contentId = thisId;
     this.parent = parent;
     const boundingVolume = RealityModelTileUtils.rangeFromBoundingVolume(json.boundingVolume);
+    this.boundedByRegion = json.boundingVolume.region !== undefined;
     if (boundingVolume) {
       this.range = boundingVolume.range;
       this.rangeCorners = boundingVolume.corners;
@@ -452,6 +463,7 @@ export namespace RealityModelTileTree {
     source: RealityModelSource;
     modelId?: Id64String;
     tilesetToDbTransform?: TransformProps;
+    tilesetToEcefTransform?: TransformProps;
     name?: string;
     classifiers?: SpatialClassifiers;
     planarClipMask?: PlanarClipMaskSettings;
@@ -565,10 +577,11 @@ export namespace RealityModelTileTree {
     }
   }
 
-  export async function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb?: Transform): Promise<TileTree | undefined> {
+  export async function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined> {
     const props = await getTileTreeProps(url, tilesetToDb, iModel);
     const loader = new RealityModelTileLoader(props, new BatchedTileIdMap(iModel));
-    const params = new RealityModelTileTreeParams(url, iModel, modelId, loader);
+    const gcsConverterAvailable = await getGcsConverterAvailable(iModel);
+    const params = new RealityModelTileTreeParams(url, iModel, modelId, loader, gcsConverterAvailable, props.tilesetToEcef);
 
     return new RealityModelTileTree(params);
   }
@@ -627,17 +640,18 @@ export namespace RealityModelTileTree {
         }
       }
     }
+    let tilesetToEcef = Transform.createIdentity();
 
     if (json.root.transform) {
-      const realityToEcef = RealityModelTileUtils.transformFromJson(json.root.transform);
-      rootTransform = rootTransform.multiplyTransformTransform(realityToEcef);
+      tilesetToEcef = RealityModelTileUtils.transformFromJson(json.root.transform);
+      rootTransform = rootTransform.multiplyTransformTransform(tilesetToEcef);
     }
 
     if (undefined !== tilesetToDbJson)
       rootTransform = Transform.fromJSON(tilesetToDbJson).multiplyTransformTransform(rootTransform);
 
     const root = await expandSubTree(json.root, tileClient);
-    return new RealityModelTileTreeProps(json, root, tileClient, rootTransform);
+    return new RealityModelTileTreeProps(json, root, tileClient, rootTransform, tilesetToEcef);
   }
 }
 

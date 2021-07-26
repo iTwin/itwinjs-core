@@ -142,7 +142,6 @@ export interface CheckBoxRule extends RuleBase, ConditionContainer {
 
 // @public
 export interface ChildNodeRule extends NavigationRuleBase, ConditionContainer {
-    condition?: string;
     ruleType: RuleTypes.ChildNodes;
 }
 
@@ -1592,6 +1591,7 @@ export type NavigationRule = RootNodeRule | ChildNodeRule;
 
 // @public
 export interface NavigationRuleBase extends RuleBase {
+    condition?: string;
     customizationRules?: CustomizationRule[];
     specifications?: ChildNodeSpecification[];
     stopFurtherProcessing?: boolean;

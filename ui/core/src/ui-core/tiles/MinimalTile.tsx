@@ -11,7 +11,8 @@ import { Tile, TileProps } from "./Tile";
 
 /** Minimal [[Tile]] component
  * @beta
+ * @deprecated Use Tile in itwinui-react instead
  */
-export function MinimalTile(props: TileProps) {
-  return <Tile {...props} minimal={true} />;
+export function MinimalTile(props: TileProps) { // eslint-disable-line deprecation/deprecation
+  return <Tile {...props} minimal={true} />;  // eslint-disable-line deprecation/deprecation
 }
