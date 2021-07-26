@@ -1,6 +1,14 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Jul 2021 16:18:31 GMT and should not be manually modified.
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+### Updates
+
+- `ControlledTree`: Fix tree background not being rendered.
+- Workaround for react-data-grid blank grid after scroll and update
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT

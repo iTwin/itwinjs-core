@@ -2,6 +2,21 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.18.2",
+      "tag": "@bentley/ui-components_v2.18.2",
+      "date": "Mon, 26 Jul 2021 16:18:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "`ControlledTree`: Fix tree background not being rendered."
+          },
+          {
+            "comment": "Workaround for react-data-grid blank grid after scroll and update"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.1",
       "tag": "@bentley/ui-components_v2.18.1",
       "date": "Fri, 16 Jul 2021 17:45:09 GMT",
