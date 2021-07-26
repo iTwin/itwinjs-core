@@ -1,6 +1,20 @@
 # Change Log - @bentley/imodeljs-common
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Jul 2021 12:21:25 GMT and should not be manually modified.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- add ChangesetProps
+- Do not raise DisplayStyleSettings.onAnalysisStyleChanged event if the style did not actually change.
+- Addition of rdsUrl to OrbitGtBlobProps to support PointCloudModel OPC attachments
+- remove internal barrel-import usage
+- Added compare of numbers in Geographic CRS classes with tolerances.
+- update doc for new federationGuid policy
+- Add offset body operation for IFC connector.
+- Add frustum method to support reality tile reprojection
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT

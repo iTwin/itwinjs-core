@@ -1,6 +1,17 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Jul 2021 12:21:25 GMT and should not be manually modified.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- Stop delivering pseudo-localized strings
+- Provide more information on removed nodes in hierarchy comparison results.
+- Added conmpressed interfaces for `DescriptorJSON` and ways to handle them.
+- Add `RelatedPropertiesSpecification.skipIfDuplicate` attribute
+- Add a way to display related properties without a special related class category
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
