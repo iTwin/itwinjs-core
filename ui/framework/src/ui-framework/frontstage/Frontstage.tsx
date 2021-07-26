@@ -71,7 +71,7 @@ export interface FrontstageProps extends CommonProps {
    * @deprecated Place widgets in appropriate stage panel zone. */
   centerLeft?: React.ReactElement<ZoneProps>;
   /** The Zone along the center-right edge.
-   * @deprecated  Place widgets in appropriate stage panel zone. */
+   * @deprecated Place widgets in appropriate stage panel zone. */
   centerRight?: React.ReactElement<ZoneProps>;
   /** The Zone in the bottom-left corner.
    * @deprecated Place widgets in appropriate stage panel zone.  */

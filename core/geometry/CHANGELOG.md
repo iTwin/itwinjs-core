@@ -1,6 +1,20 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Jul 2021 12:21:25 GMT and should not be manually modified.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- Add AuxChannel.computeDisplacementRange.
+- accessor for InterpolationCurve3dOptions
+- remove internal barrel-import usage
+- Eliminate artificial interior edge splits when clipping with a UnionOfConvexClipPlaneSets
+- New curve type InterpolationCurve3d.   Supported in IMJS, FB.  Construction methods to be added.
+- Handle imjs and flatbuffer inputs with numPerFace blocking
+- Added compare of numbers in Geographic CRS classes with tolerances.
+- Adjusted WGS84 polar radius to be more precise than millimeter
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT

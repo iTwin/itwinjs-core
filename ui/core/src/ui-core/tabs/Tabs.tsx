@@ -48,11 +48,6 @@ export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, Co
   activeIndex?: number;
   /** Indicates whether the bar on the active tab is green instead of the default blue */
   green?: boolean;
-
-  /** Handler for clicking on a label
-   * @deprecated Use `onActivateTab` instead
-   */
-  onClickLabel?: (index: number) => any;
 }
 
 /** State for [[Tabs]] component
@@ -156,7 +151,6 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
   }
 
   private _activateTab = (index: number) => {
-    this.props.onClickLabel && this.props.onClickLabel(index);  // eslint-disable-line deprecation/deprecation
     this.props.onActivateTab && this.props.onActivateTab(index);
     this.setState({ activeIndex: index });
   };

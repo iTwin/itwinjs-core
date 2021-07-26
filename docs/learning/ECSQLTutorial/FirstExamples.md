@@ -68,7 +68,7 @@ The above example is not very meaningful. In large iModels the query might retur
 >
 <iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT count(*) FROM bis.Element"></iframe>
 
-This query considers all kinds of [Element](../../bis/domains/BisCore.ecschema.md#element)s. If we want to focus only on Elements which represent realworld assets, we can use the BIS class [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement)s instead.
+This query considers all kinds of [Element](../../bis/domains/BisCore.ecschema.md#element)s. If we want to focus only on Elements which represent real-world assets, we can use the BIS class [SpatialElement](../../bis/domains/BisCore.ecschema.md#spatialelement)s instead.
 
 > **Try it yourself**
 >
@@ -216,10 +216,10 @@ To reuse the same ECSQL statement with different values, parameters can be used.
 > *ECSQL*
 >
 > ```sql
-> SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE CodeValue=? LIMIT 5
+> SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel = ? LIMIT 5
 > ```
 >
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE CodeValue=? LIMIT 5"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel = ? LIMIT 5"></iframe>
 
 As you cannot bind values to parameters in the iModelConsole, the above query returns the same as if you did the following.
 
@@ -230,11 +230,11 @@ As you cannot bind values to parameters in the iModelConsole, the above query re
 > *ECSQL*
 >
 > ```sql
-> SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE CodeValue = NULL LIMIT 5
+> SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel = NULL LIMIT 5
 > ```
 >
 > *Result*
-<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE CodeValue = NULL LIMIT 5"></iframe>
+<iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECInstanceId,ECClassId FROM bis.SpatialElement WHERE UserLabel = NULL LIMIT 5"></iframe>
 
 ## Comparing to NULL
 
@@ -286,8 +286,8 @@ Any SQL function can be used in ECSQL. This includes functions built into SQLite
 >
 <iframe class="embedded-console" src="/console/?imodel=House Sample Bak&query=SELECT ECInstanceId, UserLabel, replace(UserLabel,'Fabric','ExpensiveFabric') ModifiedLabel FROM bis.Element WHERE instr(UserLabel,'Fabric')"></iframe>
 
-The example uses the SQLite functions [replace](https://www.sqlite.org/lang_corefunc.html#replace) to replace the substring 'Plant' in the code and
-[instr](https://www.sqlite.org/lang_corefunc.html#instr) to only do this on rows where the code contains the substring 'Plant' at all.
+The example uses the SQLite functions [replace](https://www.sqlite.org/lang_corefunc.html#replace) to replace the substring 'Fabric' in the code and
+[instr](https://www.sqlite.org/lang_corefunc.html#instr) to only do this on rows where the code contains the substring 'Fabric' at all.
 
 Note, that the `instr` function can be replaced by using the standard SQL `LIKE` operator together with the wildcard `%`.
 

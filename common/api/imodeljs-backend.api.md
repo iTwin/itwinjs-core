@@ -35,7 +35,6 @@ import { ChangesetProps } from '@bentley/imodeljs-common';
 import { ChangesetRange } from '@bentley/imodeljs-common';
 import { ChangesetType } from '@bentley/imodeljs-common';
 import { ChannelRootAspectProps } from '@bentley/imodeljs-common';
-import { ClientAuthIntrospectionManager } from '@bentley/backend-itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipVector } from '@bentley/geometry-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
@@ -115,7 +114,6 @@ import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
-import { IntrospectionClient } from '@bentley/backend-itwin-client';
 import { IpcAppNotifications } from '@bentley/imodeljs-common';
 import { IpcListener } from '@bentley/imodeljs-common';
 import { IpcSocketBackend } from '@bentley/imodeljs-common';
@@ -194,7 +192,6 @@ import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
 import { SynchronizationConfigLinkProps } from '@bentley/imodeljs-common';
-import { TelemetryEvent } from '@bentley/telemetry-client';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
@@ -447,9 +444,7 @@ export enum BackendLoggerCategory {
     NativeApp = "imodeljs-backend.NativeApp",
     PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
     Relationship = "imodeljs-backend.Relationship",
-    Schemas = "imodeljs-backend.Schemas",
-    // @internal
-    UsageLogging = "imodeljs-backend.UlasUtilities"
+    Schemas = "imodeljs-backend.Schemas"
 }
 
 // @public
@@ -2559,7 +2554,7 @@ export abstract class IModelDb extends IModel {
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
     // @alpha
-    getTextureImage(props: TextureLoadProps): Uint8Array | undefined;
+    getTextureImage(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<Uint8Array | undefined>;
     get iModelId(): GuidString;
     importSchemas(requestContext: ClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @alpha
@@ -2796,8 +2791,6 @@ export class IModelHost {
     // (undocumented)
     static backendVersion: string;
     static get cacheDir(): string;
-    // @alpha (undocumented)
-    static get clientAuthIntrospectionManager(): ClientAuthIntrospectionManager | undefined;
     // @internal
     static get compressCachedTiles(): boolean;
     // (undocumented)
@@ -2811,13 +2804,11 @@ export class IModelHost {
     static get hubAccess(): BackendHubAccess;
     // @deprecated (undocumented)
     static get iModelClient(): IModelClient;
-    // @alpha (undocumented)
-    static get introspectionClient(): IntrospectionClient | undefined;
     // @deprecated (undocumented)
     static get isUsingIModelBankClient(): boolean;
     static get isValid(): boolean;
     // @internal (undocumented)
-    static loadNative(region: number, applicationType?: IModelJsNative.ApplicationType, iModelClient?: IModelClient): void;
+    static loadNative(): void;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
     static readonly onAfterStartup: BeEvent<() => void>;
@@ -2856,8 +2847,6 @@ export class IModelHost {
 // @public
 export class IModelHostConfiguration {
     appAssetsDir?: string;
-    // @internal
-    applicationType?: IModelJsNative.ApplicationType;
     // @deprecated
     briefcaseCacheDir?: string;
     cacheDir?: string;
@@ -2877,8 +2866,6 @@ export class IModelHostConfiguration {
     logTileLoadTimeThreshold: number;
     // @internal
     logTileSizeThreshold: number;
-    // @deprecated
-    nativePlatform?: any;
     // @beta
     restrictTileUrlsByClientIp?: boolean;
     // @beta
@@ -4671,31 +4658,6 @@ export class UrlLink extends LinkElement implements UrlLinkProps {
     toJSON(): UrlLinkProps;
     // (undocumented)
     url?: string;
-}
-
-// @internal (undocumented)
-export class UsageLoggingUtilities {
-    // (undocumented)
-    static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement;
-    // (undocumented)
-    static configure(options: UsageLoggingUtilitiesOptions): void;
-    static postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startTime?: Date, endTime?: Date, additionalData?: {
-        [key: string]: string;
-    }): Promise<void>;
-    static postFeatureUsageFromTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent, usageType: IModelJsNative.UsageType): Promise<void>;
-    static postUserUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): Promise<void>;
-    }
-
-// @internal (undocumented)
-export interface UsageLoggingUtilitiesOptions {
-    // (undocumented)
-    clientAuthManager?: ClientAuthIntrospectionManager;
-    // (undocumented)
-    hostApplicationId?: string;
-    // (undocumented)
-    hostApplicationVersion?: string;
-    // (undocumented)
-    iModelJsNative?: typeof IModelJsNative;
 }
 
 // @internal

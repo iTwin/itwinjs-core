@@ -11,7 +11,7 @@ import { Tile, TileProps } from "./Tile";
 
 /** Featured [[Tile]] component
  * @beta
- * @deprecated
+ * @deprecated Use Tile in itwinui-react instead
  */
 export function FeaturedTile(props: TileProps) {    // eslint-disable-line deprecation/deprecation
   return <Tile {...props} featured={true} />; // eslint-disable-line deprecation/deprecation
