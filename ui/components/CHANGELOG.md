@@ -1,6 +1,6 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 26 Jul 2021 12:21:25 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Jul 2021 16:18:31 GMT and should not be manually modified.
 
 
 ## 2.19.0
@@ -14,6 +14,14 @@ Mon, 26 Jul 2021 12:21:25 GMT
 - `MutableTreeModel`: `removeChild` method now accepts child index for the second parameter.
 - Workaround for react-data-grid blank grid after scroll and update
 - Add option prop to set time zone offset for date and time display in the TimelineComponent.
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+### Updates
+
+- `ControlledTree`: Fix tree background not being rendered.
+- Workaround for react-data-grid blank grid after scroll and update
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT

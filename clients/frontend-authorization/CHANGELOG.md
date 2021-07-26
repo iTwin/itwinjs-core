@@ -1,6 +1,6 @@
 # Change Log - @bentley/frontend-authorization-client
 
-This log was last generated on Mon, 26 Jul 2021 12:21:25 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Jul 2021 16:18:31 GMT and should not be manually modified.
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
@@ -8,6 +8,11 @@ Mon, 26 Jul 2021 12:21:25 GMT
 ### Updates
 
 - match default BrowserAuthorizationCallbackHandler userstore to value of BrowserAuthorizationClient's userstore
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
