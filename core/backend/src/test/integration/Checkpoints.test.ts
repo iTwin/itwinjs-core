@@ -113,13 +113,11 @@ describe("Checkpoints V1 (#integration)", () => {
     await testUtility.pushTestChangeSet();
     briefcase.close();
 
-    // Validate the only checkpoint is at change set index: 0
+    // Validate the test setup - checkpoint at index 0, and latest change set at index 2
     const localHub = HubMock.findLocalHub(iModelId);
-    let checkpoints = localHub.getCheckpoints();
+    const checkpoints = localHub.getCheckpoints();
     assert.equal(checkpoints.length, 1);
     assert.equal(checkpoints[0], 0);
-
-    // Validate the latest change set is after the checkpoint
     const changeSetProps = localHub.getLatestChangeset();
     assert.equal(changeSetProps.index, 2);
 
@@ -129,13 +127,13 @@ describe("Checkpoints V1 (#integration)", () => {
       getAccessToken: async (_requestContext?: ClientRequestContext) => requestContext.accessToken,
     };
 
-    // Save the expiry of the access token for future comparison
+    // Setup a context with a token that's about to expire
     const jwt = requestContext.accessToken;
     const fourMinFromNow = new Date(Date.now() + 2 * 60 * 1000);
     const expiringToken = new AccessToken(jwt.toTokenString(IncludePrefix.No), jwt.getStartsAt(), fourMinFromNow, jwt.getUserInfo());
     const expiringContext = new AuthorizedClientRequestContext(expiringToken);
 
-    // Download checkpoint for latest change set, and ensure the access token gets refreshed
+    // Download checkpoint for latest change set, and validate the access token gets refreshed
     const tmpDir = path.join(KnownTestLocations.outputDir, "V1CheckpointsTest");
     const localFile = path.join(tmpDir, "TestModel.bim");
     const request = { localFile, checkpoint: { requestContext: expiringContext, contextId: testUtility.projectId, iModelId: testUtility.iModelId, changeSetId: changeSetProps.id } };
@@ -143,7 +141,6 @@ describe("Checkpoints V1 (#integration)", () => {
     const db = await V1CheckpointManager.getCheckpointDb(request);
     db.close();
 
-    // Validate that the token did refresh during the download
     assert.notStrictEqual(expiringContext.accessToken.getExpiresAt(), expiringToken.getExpiresAt());
     assert.strictEqual(expiringContext.accessToken.getExpiresAt(), requestContext.accessToken.getExpiresAt());
   });
