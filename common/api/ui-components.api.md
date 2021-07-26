@@ -2194,9 +2194,6 @@ export function handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHi
 // @public
 export const hasChildren: (node: TreeNodeItem) => boolean;
 
-// @public @deprecated
-export const hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean;
-
 // @public
 export const hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean;
 
@@ -4299,28 +4296,6 @@ export class SparseTree<T extends Node> {
     setNumChildren(parentId: string | undefined, numChildren: number): void;
 }
 
-// @beta @deprecated
-export enum StandardEditorNames {
-    // (undocumented)
-    ColorPicker = "color-picker",
-    // (undocumented)
-    EnumButtonGroup = "enum-buttongroup",
-    // (undocumented)
-    IconPicker = "icon-picker",
-    // (undocumented)
-    MultiLine = "multi-line",
-    // (undocumented)
-    NumberCustom = "number-custom",
-    // (undocumented)
-    NumericInput = "numeric-input",
-    // (undocumented)
-    Slider = "slider",
-    // (undocumented)
-    Toggle = "toggle",
-    // (undocumented)
-    WeightPicker = "weight-picker"
-}
-
 // @public
 export class StandardRotationChangeEvent extends UiEvent<StandardRotationChangeEventArgs> {
 }
@@ -4329,88 +4304,6 @@ export class StandardRotationChangeEvent extends UiEvent<StandardRotationChangeE
 export interface StandardRotationChangeEventArgs {
     // (undocumented)
     standardRotation: StandardViewId;
-}
-
-// @beta @deprecated
-export enum StandardTypeConverterTypeNames {
-    // (undocumented)
-    Bool = "bool",
-    // (undocumented)
-    Boolean = "boolean",
-    // (undocumented)
-    Composite = "composite",
-    // (undocumented)
-    DateTime = "dateTime",
-    // (undocumented)
-    Double = "double",
-    // (undocumented)
-    Enum = "enum",
-    // (undocumented)
-    Float = "float",
-    // (undocumented)
-    Hex = "hex",
-    // (undocumented)
-    Hexadecimal = "hexadecimal",
-    // (undocumented)
-    Int = "int",
-    // (undocumented)
-    Integer = "integer",
-    // (undocumented)
-    Navigation = "navigation",
-    // (undocumented)
-    Point2d = "point2d",
-    // (undocumented)
-    Point3d = "point3d",
-    // (undocumented)
-    ShortDate = "shortdate",
-    // (undocumented)
-    String = "string",
-    // (undocumented)
-    Text = "text"
-}
-
-// @beta @deprecated
-export enum StandardTypeNames {
-    // (undocumented)
-    Array = "array",
-    // (undocumented)
-    Bool = "bool",
-    // (undocumented)
-    Boolean = "boolean",
-    // (undocumented)
-    Composite = "composite",
-    // (undocumented)
-    DateTime = "dateTime",
-    // (undocumented)
-    Double = "double",
-    // (undocumented)
-    Enum = "enum",
-    // (undocumented)
-    Float = "float",
-    // (undocumented)
-    Hex = "hex",
-    // (undocumented)
-    Hexadecimal = "hexadecimal",
-    // (undocumented)
-    Int = "int",
-    // (undocumented)
-    Integer = "integer",
-    // (undocumented)
-    Navigation = "navigation",
-    // (undocumented)
-    Number = "number",
-    // (undocumented)
-    Point2d = "point2d",
-    // (undocumented)
-    Point3d = "point3d",
-    // (undocumented)
-    ShortDate = "shortdate",
-    // (undocumented)
-    String = "string",
-    // (undocumented)
-    Struct = "struct",
-    // (undocumented)
-    Text = "text"
 }
 
 // @beta

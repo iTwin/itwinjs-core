@@ -46,7 +46,7 @@ exports[`<LoadingPrompt /> renders with text and message correctly 1`] = `
 </div>
 `;
 
-exports[`<LoadingPrompt /> renders with text and message, and deterministic 1`] = `
+exports[`<LoadingPrompt /> renders with text and message, and determinate 1`] = `
 <div
   className="core-loadingprompt"
 >
@@ -73,7 +73,7 @@ exports[`<LoadingPrompt /> renders with text and message, and deterministic 1`] 
 </div>
 `;
 
-exports[`<LoadingPrompt /> renders with text and message, and deterministic 2`] = `
+exports[`<LoadingPrompt /> renders with text and message, and determinate and percent 1`] = `
 <div
   className="core-loadingprompt"
 >
@@ -100,7 +100,7 @@ exports[`<LoadingPrompt /> renders with text and message, and deterministic 2`] 
 </div>
 `;
 
-exports[`<LoadingPrompt /> renders with text and message, and deterministic 3`] = `
+exports[`<LoadingPrompt /> renders with text and message, and determinate and showCancel 1`] = `
 <div
   className="core-loadingprompt"
 >
@@ -132,7 +132,7 @@ exports[`<LoadingPrompt /> renders with text and message, and deterministic 3`] 
 </div>
 `;
 
-exports[`<LoadingPrompt /> renders with text and message, and deterministic 4`] = `
+exports[`<LoadingPrompt /> renders with text and message, and determinate and showStatus 1`] = `
 <div
   className="core-loadingprompt"
 >

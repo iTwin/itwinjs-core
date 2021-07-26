@@ -55,7 +55,7 @@ import { DragLayerProps } from '@bentley/ui-components';
 import { DragSourceArguments } from '@bentley/ui-components';
 import { ECClassGroupingNodeKey } from '@bentley/presentation-common';
 import { EmphasizeElementsProps } from '@bentley/imodeljs-common';
-import { FunctionKey as FunctionKey_2 } from '@bentley/ui-abstract';
+import { FunctionKey } from '@bentley/ui-abstract';
 import { GroupButton as GroupButton_2 } from '@bentley/ui-abstract';
 import { GuidString } from '@bentley/bentleyjs-core';
 import { HorizontalAnchor } from '@bentley/ui-ninezone';
@@ -113,7 +113,6 @@ import { PropertyUpdatedArgs } from '@bentley/ui-components';
 import * as PropTypes from 'prop-types';
 import { QuantityTypeArg } from '@bentley/imodeljs-frontend';
 import * as React from 'react';
-import { ReactMessage as ReactMessage_2 } from '@bentley/ui-core';
 import { RectangleProps } from '@bentley/ui-core';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RelativePosition } from '@bentley/ui-abstract';
@@ -129,7 +128,7 @@ import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 import { SnapMode } from '@bentley/imodeljs-frontend';
 import { SolarDataProvider } from '@bentley/ui-components';
-import { SpecialKey as SpecialKey_2 } from '@bentley/ui-abstract';
+import { SpecialKey } from '@bentley/ui-abstract';
 import { StagePanelLocation as StagePanelLocation_2 } from '@bentley/ui-abstract';
 import { StagePanelSection as StagePanelSection_2 } from '@bentley/ui-abstract';
 import { StagePanelType } from '@bentley/ui-ninezone';
@@ -181,7 +180,7 @@ import { ViewState } from '@bentley/imodeljs-frontend';
 import { ViewStateProp } from '@bentley/ui-components';
 import { ViewStateProps } from '@bentley/imodeljs-common';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
-import { WidgetState as WidgetState_2 } from '@bentley/ui-abstract';
+import { WidgetState } from '@bentley/ui-abstract';
 import { WidgetZoneId } from '@bentley/ui-ninezone';
 import { XAndY } from '@bentley/geometry-core';
 import { ZoneManagerProps } from '@bentley/ui-ninezone';
@@ -960,9 +959,6 @@ export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): 
 // @internal (undocumented)
 export function clearKeyinPaletteHistory(): void;
 
-// @public @deprecated
-export const COLOR_THEME_DEFAULT = ColorTheme.Light;
-
 // @public
 export enum ColorTheme {
     // (undocumented)
@@ -1213,9 +1209,6 @@ export class ContentControl extends ConfigurableUiControl {
     get navigationAidControl(): string;
     onActivated(): void;
     onDeactivated(): void;
-    // @deprecated
-    get reactElement(): React.ReactNode;
-    set reactElement(r: React.ReactNode);
     get reactNode(): React.ReactNode;
     set reactNode(r: React.ReactNode);
     // (undocumented)
@@ -2646,7 +2639,7 @@ export class FrontstageManager {
     static setActiveNavigationAid(navigationAidId: string, iModelConnection: IModelConnection): void;
     static setActiveTool(tool: Tool): void;
     static setActiveToolId(toolId: string): void;
-    static setWidgetState(widgetId: string, state: WidgetState_2): boolean;
+    static setWidgetState(widgetId: string, state: WidgetState): boolean;
     static updateModalFrontstage(): void;
 }
 
@@ -2742,34 +2735,6 @@ export interface FrontstageRuntimeProps {
     widgetTabs: WidgetTabs;
     // (undocumented)
     zoneDefProvider: ZoneDefProvider;
-}
-
-// @public @deprecated
-export enum FunctionKey {
-    // (undocumented)
-    F1 = "F1",
-    // (undocumented)
-    F10 = "F10",
-    // (undocumented)
-    F11 = "F11",
-    // (undocumented)
-    F12 = "F12",
-    // (undocumented)
-    F2 = "F2",
-    // (undocumented)
-    F3 = "F3",
-    // (undocumented)
-    F4 = "F4",
-    // (undocumented)
-    F5 = "F5",
-    // (undocumented)
-    F6 = "F6",
-    // (undocumented)
-    F7 = "F7",
-    // (undocumented)
-    F8 = "F8",
-    // (undocumented)
-    F9 = "F9"
 }
 
 // @public
@@ -3436,7 +3401,7 @@ export interface KeyboardShortcutProps extends ItemProps {
     isCtrlKeyRequired?: boolean;
     isShiftKeyRequired?: boolean;
     item?: ActionButtonItemDef;
-    key: string | FunctionKey_2 | SpecialKey_2;
+    key: string | FunctionKey | SpecialKey;
     shortcuts?: KeyboardShortcutProps[];
 }
 
@@ -4074,9 +4039,6 @@ export class NavigationAidControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getSize(): string | undefined;
     getType(): ConfigurableUiControlType;
-    // @deprecated
-    get reactElement(): React.ReactNode;
-    set reactElement(r: React.ReactNode);
     get reactNode(): React.ReactNode;
     set reactNode(r: React.ReactNode);
     }
@@ -4118,8 +4080,6 @@ export interface NavigationWidgetComposerProps extends CommonProps {
 // @public @deprecated
 export class NavigationWidgetDef extends ToolbarWidgetDefBase {
     constructor(props: NavigationWidgetProps);
-    // @deprecated (undocumented)
-    get reactElement(): React.ReactNode;
     // (undocumented)
     get reactNode(): React.ReactNode;
     // (undocumented)
@@ -4475,9 +4435,6 @@ export interface ReactContent {
     // (undocumented)
     reactNode: React.ReactNode;
 }
-
-// @public @deprecated
-export type ReactMessage = ReactMessage_2;
 
 // @public
 export class ReactNotifyMessageDetails {
@@ -5239,7 +5196,7 @@ export const setWidgetState: (base: {
         readonly width: number;
         readonly height: number;
     };
-}, widgetDef: WidgetDef, state: WidgetState_2) => import("immer/dist/internal").WritableDraft<NineZoneState>;
+}, widgetDef: WidgetDef, state: WidgetState) => import("immer/dist/internal").WritableDraft<NineZoneState>;
 
 // @alpha
 export class SheetCard extends React.Component<SheetCardProps, SheetCardState> {
@@ -5507,40 +5464,6 @@ export interface SpatialContainmentTreeProps {
     enablePreloading?: boolean;
     // (undocumented)
     iModel: IModelConnection;
-}
-
-// @public @deprecated
-export enum SpecialKey {
-    // (undocumented)
-    ArrowDown = "ArrowDown",
-    // (undocumented)
-    ArrowLeft = "ArrowLeft",
-    // (undocumented)
-    ArrowRight = "ArrowRight",
-    // (undocumented)
-    ArrowUp = "ArrowUp",
-    // (undocumented)
-    Backspace = "Backspace",
-    // (undocumented)
-    Delete = "Delete",
-    // (undocumented)
-    End = "End",
-    // (undocumented)
-    Enter = "Enter",
-    // (undocumented)
-    Escape = "Escape",
-    // (undocumented)
-    Home = "Home",
-    // (undocumented)
-    Insert = "Insert",
-    // (undocumented)
-    PageDown = "PageDown",
-    // (undocumented)
-    PageUp = "PageUp",
-    // (undocumented)
-    Space = " ",
-    // (undocumented)
-    Tab = "Tab"
 }
 
 // @internal (undocumented)
@@ -6527,8 +6450,6 @@ export interface ToolWidgetComposerProps extends CommonProps {
 // @public @deprecated
 export class ToolWidgetDef extends ToolbarWidgetDefBase {
     constructor(props: ToolWidgetProps);
-    // @deprecated (undocumented)
-    get reactElement(): React.ReactNode;
     // (undocumented)
     get reactNode(): React.ReactNode;
     // (undocumented)
@@ -7231,14 +7152,11 @@ export class WidgetControl extends ConfigurableUiControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     getType(): ConfigurableUiControlType;
     onWidgetStateChanged(): void;
-    // @deprecated
-    get reactElement(): React.ReactNode;
-    set reactElement(r: React.ReactNode);
     get reactNode(): React.ReactNode;
     set reactNode(r: React.ReactNode);
     restoreTransientState(): boolean;
     saveTransientState(): void;
-    setWidgetState(state: WidgetState_2): void;
+    setWidgetState(state: WidgetState): void;
     get widgetDef(): WidgetDef;
     set widgetDef(w: WidgetDef);
     }
@@ -7247,7 +7165,7 @@ export class WidgetControl extends ConfigurableUiControl {
 export class WidgetDef {
     constructor(widgetProps: WidgetProps);
     // (undocumented)
-    get activeState(): WidgetState_2;
+    get activeState(): WidgetState;
     // (undocumented)
     get applicationData(): any | undefined;
     // (undocumented)
@@ -7261,7 +7179,7 @@ export class WidgetDef {
     // (undocumented)
     static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps;
     // @internal (undocumented)
-    get defaultState(): WidgetState_2;
+    get defaultState(): WidgetState;
     // @alpha
     expand(): void;
     // (undocumented)
@@ -7297,9 +7215,6 @@ export class WidgetDef {
     get preferredPanelSize(): "fit-content" | undefined;
     // (undocumented)
     get priority(): number;
-    // @deprecated (undocumented)
-    get reactElement(): React.ReactNode;
-    set reactElement(node: React.ReactNode);
     // (undocumented)
     get reactNode(): React.ReactNode;
     set reactNode(node: React.ReactNode);
@@ -7312,11 +7227,11 @@ export class WidgetDef {
     // (undocumented)
     setUpSyncSupport(props: WidgetProps): void;
     // (undocumented)
-    setWidgetState(newState: WidgetState_2): void;
+    setWidgetState(newState: WidgetState): void;
     // @alpha
     show(): void;
     // (undocumented)
-    get state(): WidgetState_2;
+    get state(): WidgetState;
     // (undocumented)
     get stateChanged(): boolean;
     // (undocumented)
@@ -7606,15 +7521,6 @@ export interface WidgetStackTabsProps {
     widgetTabs: WidgetTabs;
 }
 
-// @public @deprecated
-export enum WidgetState {
-    Closed = 1,
-    Floating = 3,
-    Hidden = 2,
-    Open = 0,
-    Unloaded = 4
-}
-
 // @public
 export class WidgetStateChangedEvent extends UiEvent<WidgetStateChangedEventArgs> {
 }
@@ -7624,11 +7530,11 @@ export interface WidgetStateChangedEventArgs {
     // (undocumented)
     widgetDef: WidgetDef;
     // (undocumented)
-    widgetState: WidgetState_2;
+    widgetState: WidgetState;
 }
 
 // @public
-export type WidgetStateFunc = (state: Readonly<WidgetState_2>) => WidgetState_2;
+export type WidgetStateFunc = (state: Readonly<WidgetState>) => WidgetState;
 
 // @internal
 export interface WidgetTab {
