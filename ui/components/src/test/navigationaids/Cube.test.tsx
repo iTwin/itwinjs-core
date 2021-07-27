@@ -5,7 +5,7 @@
 import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { Matrix3d } from "@bentley/geometry-core";
-import { Cube, CubeFace, Face } from "../../ui-core";
+import { Cube, CubeFace, Face } from "../../ui-components/navigationaids/Cube";
 
 describe("Cube", () => {
   describe("<Cube />", () => {

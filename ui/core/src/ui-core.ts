@@ -34,8 +34,6 @@ export * from "./ui-core/contextmenu/ContextSubMenu";
 export * from "./ui-core/contextmenu/GlobalContextMenu";
 export * from "./ui-core/contextmenu/PopupContextMenu";
 
-export * from "./ui-core/cube/Cube";
-
 export * from "./ui-core/dialog/Dialog";
 export * from "./ui-core/dialog/DialogButtonDef";
 export * from "./ui-core/dialog/GlobalDialog";
@@ -160,11 +158,13 @@ export * from "./ui-core/uisettings/SessionSettingsStorage";
 
 export * from "./ui-core/utils/IconHelper";
 export * from "./ui-core/utils/Point";
+export * from "./ui-core/utils/PointProps";
 export * from "./ui-core/utils/Props";
 export * from "./ui-core/utils/Rectangle";
 export * from "./ui-core/utils/Size";
 export * from "./ui-core/utils/Timer";
 export * from "./ui-core/utils/UiEvent";
+export * from "./ui-core/utils/UiGeometry";
 export * from "./ui-core/utils/flattenChildren";
 export * from "./ui-core/utils/getBestBWContrastColor";
 export * from "./ui-core/utils/getCssVariable";

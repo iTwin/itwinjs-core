@@ -50,10 +50,11 @@ export * from "./ui-abstract/toolbars/ToolbarItemsManager";
 export * from "./ui-abstract/statusbar/StatusBarItem";
 export * from "./ui-abstract/statusbar/StatusBarItemsManager";
 
+export * from "./ui-abstract/utils/callbacks";
 export * from "./ui-abstract/utils/getClassName";
 export * from "./ui-abstract/utils/isLetter";
 export * from "./ui-abstract/utils/IconSpecUtilities";
-export * from "./ui-abstract/utils/callbacks";
+export * from "./ui-abstract/utils/PointProps";
 export * from "./ui-abstract/utils/UiError";
 export * from "./ui-abstract/utils/filter/charCode";
 export * from "./ui-abstract/utils/filter/filters";

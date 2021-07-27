@@ -4755,7 +4755,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
       '@bentley/icons-generic-webfont': ^1.0.15
       '@bentley/imodeljs-i18n': workspace:*
       '@types/chai': ^4.1.4
@@ -4791,7 +4790,6 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4

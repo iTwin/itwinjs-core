@@ -8,7 +8,8 @@
 
 import { Matrix3d, Point3d, Vector3d } from "@bentley/geometry-core";
 import { IModelApp, SelectedViewportChangedArgs, StandardViewId, Viewport } from "@bentley/imodeljs-frontend";
-import { Face, UiEvent } from "@bentley/ui-core";
+import { UiEvent } from "@bentley/ui-core";
+import { Face } from "../navigationaids/Cube";
 
 /** Arguments for [[DrawingViewportChangeEvent]]
  * @public

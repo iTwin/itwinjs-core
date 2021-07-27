@@ -220,6 +220,7 @@ internal;percentInRange(percent: number): number
 internal;placementToPosition(placement: TooltipPlacement | undefined): RelativePosition
 internal;Point 
 public;PointProps
+deprecated;PointProps
 public;Popup 
 beta;PopupContextMenu(props: PopupContextMenuProps): JSX.Element
 beta;PopupContextMenuProps 
@@ -350,6 +351,7 @@ public;TreeNodeProps
 public;TreeProps 
 public;UiCore
 public;UiEvent
+internal;UiGeometry
 public;UiSetting
 public;UiSettings = UiSettingsStorage
 public;UiSettingsResult

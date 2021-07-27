@@ -8,11 +8,11 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { AxisIndex, Matrix3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { DrawingViewState, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { Face } from "@bentley/ui-core";
 import { cleanup, fireEvent, render, wait } from "@testing-library/react";
 import { CubeHover, CubeNavigationAid, CubeNavigationHitBoxX, CubeNavigationHitBoxY, CubeNavigationHitBoxZ, FaceCell, NavCubeFace } from "../../ui-components/navigationaids/CubeNavigationAid";
 import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
 import TestUtils from "../TestUtils";
+import { Face } from "../../ui-components/navigationaids/Cube";
 
 describe("CubeNavigationAid", () => {
 
@@ -78,7 +78,7 @@ describe("CubeNavigationAid", () => {
       const animationEnd = sinon.fake();
       const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
 
-      const topFace = component.getByTestId("core-cube-face-top");
+      const topFace = component.getByTestId("components-cube-face-top");
       const pointerButton = component.getByTestId("cube-pointer-button-down");
 
       const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
@@ -95,7 +95,7 @@ describe("CubeNavigationAid", () => {
       const animationEnd = sinon.fake();
       const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
 
-      const topFace = component.getByTestId("core-cube-face-top");
+      const topFace = component.getByTestId("components-cube-face-top");
       const pointerButton = component.getByTestId("cube-pointer-button-up");
 
       const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
@@ -112,7 +112,7 @@ describe("CubeNavigationAid", () => {
       const animationEnd = sinon.fake();
       const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
 
-      const topFace = component.getByTestId("core-cube-face-top");
+      const topFace = component.getByTestId("components-cube-face-top");
       const pointerButton = component.getByTestId("cube-pointer-button-left");
 
       const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
@@ -129,7 +129,7 @@ describe("CubeNavigationAid", () => {
       const animationEnd = sinon.fake();
       const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
 
-      const topFace = component.getByTestId("core-cube-face-top");
+      const topFace = component.getByTestId("components-cube-face-top");
       const pointerButton = component.getByTestId("cube-pointer-button-right");
 
       const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
@@ -156,7 +156,7 @@ describe("CubeNavigationAid", () => {
     it("should click center cell", async () => {
       const component = render(<CubeNavigationAid iModelConnection={connection.object} />);
 
-      const topFace = component.getByTestId("core-cube-face-top");
+      const topFace = component.getByTestId("components-cube-face-top");
       const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
 
       expect(topCenterCell.classList.contains("cube-active")).to.be.false;
@@ -173,7 +173,7 @@ describe("CubeNavigationAid", () => {
       const animationEnd = sinon.fake();
       const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
 
-      const topFace = component.getByTestId("core-cube-face-top");
+      const topFace = component.getByTestId("components-cube-face-top");
       const topCornerCell = component.getByTestId("nav-cube-face-cell-top-1-0-1");
 
       expect(topCornerCell.classList.contains("cube-active")).to.be.false;
@@ -191,7 +191,7 @@ describe("CubeNavigationAid", () => {
       const animationEnd = sinon.fake();
       const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
 
-      const topFace = component.getByTestId("core-cube-face-top");
+      const topFace = component.getByTestId("components-cube-face-top");
       const topEdgeCell = component.getByTestId("nav-cube-face-cell-top-1-0-1");
       const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
 
@@ -214,7 +214,7 @@ describe("CubeNavigationAid", () => {
       const animationEnd = sinon.fake();
       const component = render(<CubeNavigationAid iModelConnection={connection.object} animationTime={.1} onAnimationEnd={animationEnd} />);
 
-      const topFace = component.getByTestId("core-cube-face-top");
+      const topFace = component.getByTestId("components-cube-face-top");
       const bottomCornerCell = component.getByTestId("nav-cube-face-cell-bottom--1-0--1");
       const bottomCornerCenter = component.getByTestId("nav-cube-face-cell-bottom-0-0--1");
 
@@ -238,7 +238,7 @@ describe("CubeNavigationAid", () => {
     it("should drag cube", async () => {
       const component = render(<CubeNavigationAid iModelConnection={connection.object} />);
 
-      const topFace = component.getByTestId("core-cube-face-top");
+      const topFace = component.getByTestId("components-cube-face-top");
       const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
 
       expect(topCenterCell.classList.contains("cube-active")).to.be.false;
@@ -255,7 +255,7 @@ describe("CubeNavigationAid", () => {
     it.skip("should touch drag cube", async () => { // Touch isn't currently supported so we can't test it...
       const component = render(<CubeNavigationAid iModelConnection={connection.object} />);
 
-      const topFace = component.getByTestId("core-cube-face-top");
+      const topFace = component.getByTestId("components-cube-face-top");
       const topCenterCell = component.getByTestId("nav-cube-face-cell-top-0-0-1");
 
       expect(topCenterCell.classList.contains("cube-active")).to.be.false;
@@ -281,7 +281,7 @@ describe("CubeNavigationAid", () => {
       });
       it("should update onViewRotationChangeEvent", async () => {
         const component = render(<CubeNavigationAid iModelConnection={connection.object} viewport={vp.object} />);
-        const topFace = component.getByTestId("core-cube-face-top");
+        const topFace = component.getByTestId("components-cube-face-top");
         const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
         expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
         ViewportComponentEvents.onViewRotationChangeEvent.emit({ viewport: vp.object });
@@ -290,7 +290,7 @@ describe("CubeNavigationAid", () => {
       });
       it("should update onViewRotationChangeEvent with new rotation", async () => {
         const component = render(<CubeNavigationAid iModelConnection={connection.object} viewport={vp.object} />);
-        const topFace = component.getByTestId("core-cube-face-top");
+        const topFace = component.getByTestId("components-cube-face-top");
         const mat = cssMatrix3dToBentleyTransform(topFace.style.transform)!;
         expect(mat.matrix.isAlmostEqual(Matrix3d.createIdentity())).is.true;
         rotation = Matrix3d.create90DegreeRotationAroundAxis(AxisIndex.Z);

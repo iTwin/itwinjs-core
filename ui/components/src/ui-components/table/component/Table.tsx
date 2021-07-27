@@ -310,6 +310,8 @@ export class Table extends React.Component<TableProps, TableState> {
   private _filterDescriptors?: TableFilterDescriptorCollection;
   private _filterRowShown = false;
   private _topRowIndex = 0;
+  private _pokeScrollTimeoutId: number = 0;
+  private _pokeScrollDelay: number = 100;
 
   /** @internal */
   public override readonly state = initialState;
@@ -455,6 +457,7 @@ export class Table extends React.Component<TableProps, TableState> {
   public override componentWillUnmount() {
     this._isMounted = false;
     this._disposableListeners.dispose();
+    this._unsetPokeScrollTimeout();
   }
 
   private scrollToRow(rowIndex: number) {
@@ -629,9 +632,21 @@ export class Table extends React.Component<TableProps, TableState> {
     }
   };
 
+  private _queuePokeScroll = () => {
+    this._unsetPokeScrollTimeout();
+    this._pokeScrollTimeoutId = window.setTimeout(() => { this._pokeScrollAfterUpdate(); this._pokeScrollTimeoutId = 0; }, this._pokeScrollDelay);
+  };
+
+  private _unsetPokeScrollTimeout = (): void => {
+    if (this._pokeScrollTimeoutId) {
+      window.clearTimeout(this._pokeScrollTimeoutId);
+      this._pokeScrollTimeoutId = 0;
+    }
+  };
+
   private _onRowsChanged = async () => {
     await this.updateRows();
-    this._pokeScrollAfterUpdate();
+    this._queuePokeScroll();
   };
 
   /** @internal */
@@ -1071,7 +1086,7 @@ export class Table extends React.Component<TableProps, TableState> {
     // Sort the column
     this.gridSortAsync(columnKey, directionEnum); // eslint-disable-line @typescript-eslint/no-floating-promises
 
-    this._pokeScrollAfterUpdate();
+    this._queuePokeScroll();
   };
 
   private getColumnIndexFromKey(columnKey: string): number {
@@ -1691,7 +1706,7 @@ export class Table extends React.Component<TableProps, TableState> {
         itemKeyboardNavigator.itemCount = this.state.rowsCount;
         itemKeyboardNavigator.crossAxisArrowKeyHandler = handleCrossAxisArrowKey;
 
-        const processedRow = this._cellSelectionHandler.processedItem ? this._cellSelectionHandler.processedItem.rowIndex /* istanbul ignore next */ : 0;
+        const processedRow = this._cellSelectionHandler.processedItem ? this._cellSelectionHandler.processedItem.rowIndex : /* istanbul ignore next */ 0;
         keyDown ?
           itemKeyboardNavigator.handleKeyDownEvent(e, processedRow) :
           itemKeyboardNavigator.handleKeyUpEvent(e, processedRow);
@@ -1739,7 +1754,7 @@ export class Table extends React.Component<TableProps, TableState> {
           }
           <ElementResizeObserver watchedElement={this.state.gridContainer}
             render={({ width, height }) => {
-              setTimeout(() => this._pokeScrollAfterUpdate());
+              this._queuePokeScroll();
               return (
                 <ReactDataGrid
                   ref={this._gridRef}

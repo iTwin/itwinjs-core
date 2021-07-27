@@ -106,7 +106,7 @@ describe("<BooleanEditor />", () => {
 
   class MineDataController extends DataControllerBase {
     public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
+      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test", displayTime: 1000 } };
     }
   }
 

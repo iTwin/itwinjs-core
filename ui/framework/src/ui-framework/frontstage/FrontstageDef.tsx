@@ -10,7 +10,8 @@
 
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
+import { PointProps, StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
+import { SizeProps } from "@bentley/ui-core";
 import {
   dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPopoutLocation, isPopoutWidgetLocation,
   NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow,
@@ -31,7 +32,6 @@ import { Frontstage, FrontstageProps } from "./Frontstage";
 import { FrontstageManager } from "./FrontstageManager";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
-import { PointProps, SizeProps } from "@bentley/ui-core";
 import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
 import { setImmediate } from "timers";

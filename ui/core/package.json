@@ -36,7 +36,6 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.6",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.6",
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.6",
     "@bentley/ui-abstract": "workspace:^3.0.0-dev.6",
     "react": "^16.8.0",
@@ -50,7 +49,6 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
     "@bentley/ui-abstract": "workspace:*",

@@ -14,9 +14,8 @@ import {
   CategorySelectorState, DisplayStyle3dState, EntityState, IModelConnection, MockRender, ModelSelectorState, OrthographicViewState, ScreenViewport,
   SpatialViewState, StandardViewId, TentativePoint, ViewManager, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
-import { Face } from "@bentley/ui-core";
 import { cleanup, fireEvent, render } from "@testing-library/react";
-import { ViewportComponent } from "../../ui-components";
+import { Face, ViewportComponent } from "../../ui-components";
 import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
 import TestUtils from "../TestUtils";
 
@@ -55,7 +54,7 @@ describe("ViewportComponent", () => {
   // globalViewId is set because clone() must be an arrow function, so it has not context to get the viewId
   let globalViewId: string = "id1";
 
-  const  clone = (): ViewState => {
+  const clone = (): ViewState => {
     return getViewState(globalViewId);
   };
   before(async () => {

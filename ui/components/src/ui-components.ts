@@ -71,6 +71,7 @@ export * from "./ui-components/editors/WeightEditor";
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";
 
+export * from "./ui-components/navigationaids/Cube";
 export * from "./ui-components/navigationaids/CubeNavigationAid";
 export * from "./ui-components/navigationaids/DrawingNavigationAid";
 

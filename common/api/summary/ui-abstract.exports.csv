@@ -120,6 +120,7 @@ public;OnNumberCommitFunc = (value: number) => void
 public;OnValueCommitFunc = (value: Primitives.Value) => void
 internal;or(...filter: IFilter[]): IFilter
 public;ParseResults
+public;PointProps
 public;Primitives
 public;PrimitiveValue 
 public;PropertyChangeResult

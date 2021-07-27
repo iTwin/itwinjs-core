@@ -20,7 +20,7 @@ export interface AsyncErrorMessage {
   detailedMessage?: string;
   msgType?: OutputMessageType;
   alertType?: OutputMessageAlert;
-  displayTime?: number;
+  displayTime?: number; // In milliseconds
 }
 
 /** Asynchronous Value Process Result

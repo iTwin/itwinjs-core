@@ -8,6 +8,7 @@
 
 import "./EditorContainer.scss";
 import * as React from "react";
+import { BeDuration } from "@bentley/bentleyjs-core";
 import { IModelApp, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
 import { PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
@@ -179,11 +180,13 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     }
   }
 
-  private displayInputFieldMessage(errorMessage: AsyncErrorMessage | undefined) {
+  private displayOutputMessage(errorMessage: AsyncErrorMessage | undefined) {
     // istanbul ignore else
     if (errorMessage && this._editorRef) {
-      const details = new NotifyMessageDetails(errorMessage.priority, errorMessage.briefMessage, errorMessage.detailedMessage);
+      const details = new NotifyMessageDetails(errorMessage.priority, errorMessage.briefMessage, errorMessage.detailedMessage, errorMessage.msgType, errorMessage.alertType);
       const htmlElement = this._editorRef && this._editorRef.htmlElement;
+      if (errorMessage.displayTime !== undefined)
+        details.displayTime = BeDuration.fromMilliseconds(errorMessage.displayTime);
       // istanbul ignore else
       if (htmlElement)
         details.setInputFieldTypeDetails(htmlElement);
@@ -200,7 +203,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
       const validateResult = await this._propertyEditor.validateValue(value, this.props.propertyRecord);
 
       if (validateResult.encounteredError) {
-        this.displayInputFieldMessage(validateResult.errorMessage);
+        this.displayOutputMessage(validateResult.errorMessage);
         isValid = false;
       }
     } else {
@@ -231,7 +234,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
       if (this._propertyEditor && args.propertyRecord) {
         const commitResult = await this._propertyEditor.commitValue(newValue, args.propertyRecord);
         if (commitResult.encounteredError) {
-          this.displayInputFieldMessage(commitResult.errorMessage);
+          this.displayOutputMessage(commitResult.errorMessage);
           doCommit = false;
         }
       }

@@ -10,7 +10,7 @@ import "./Cube.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Matrix3d } from "@bentley/geometry-core";
-import { CommonProps } from "../utils/Props";
+import { CommonProps } from "@bentley/ui-core";
 
 /** Cube Face enumeration
  * @public
@@ -40,7 +40,7 @@ export class Cube extends React.PureComponent<CubeProps> {
   public override render(): React.ReactNode {
     const { faces, rotMatrix, className, ...props } = this.props;
     return (
-      <div className={classnames("core-cube-css3d", className)} data-testid="core-cube" {...props}>
+      <div className={classnames("components-cube-css3d", className)} data-testid="components-cube" {...props}>
         {[Face.Front, Face.Back, Face.Right, Face.Left, Face.Top, Face.Bottom]
           .map((face: Face) => {
             const content = faces && faces[face];
@@ -117,7 +117,7 @@ export class CubeFace extends React.Component<CubeFaceProps> {
 
     return (
       <div style={s}
-        data-testid={`core-cube-face-${face}`}
+        data-testid={`components-cube-face-${face}`}
         className={classes}
         ref={(e) => { this._faceWidth = (e && e.clientWidth / 2) || 0; }}
         {...props}>
