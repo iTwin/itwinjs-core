@@ -15,6 +15,7 @@ import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
  * Algorithmic class for cloning curve collections.
  * * recurse through collection nodes, building image nodes as needed and inserting clones of children.
  * * for individual primitive, invoke doClone (protected) for direct clone; insert into parent
+ * @internal
  */
 export class CloneCurvesContext extends RecursiveCurveProcessorWithStack {
   protected _result: CurveCollection | undefined;

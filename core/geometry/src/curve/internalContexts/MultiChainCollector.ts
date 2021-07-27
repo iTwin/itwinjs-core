@@ -266,7 +266,11 @@ export class MultiChainCollector {
     return bag;
   }
 }
-// static methods to assist offset sequences ....
+
+/**
+ * static methods to assist offset sequences ....
+ * @internal
+ */
 export class OffsetHelpers {
   // recursively sum lengths, allowing CurvePrimitive, CurveCollection, or array of such at any level.
   public static sumLengths(data: any): number {

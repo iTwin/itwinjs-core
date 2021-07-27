@@ -10,7 +10,6 @@ import { CurveChain, CurveCollection } from "../CurveCollection";
 import { CurvePrimitive } from "../CurvePrimitive";
 import { RecursiveCurveProcessorWithStack } from "../CurveProcessor";
 
-// import { SumLengthsContext, GapSearchContext, CountLinearPartsSearchContext, CloneCurvesContext, TransformInPlaceContext } from "./CurveSearches";
 /** Algorithmic class: Accumulate maximum gap between adjacent primitives of CurveChain.
  * @internal
  */
