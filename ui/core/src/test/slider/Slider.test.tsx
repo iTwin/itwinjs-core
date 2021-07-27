@@ -10,6 +10,8 @@ import { Icon } from "../../ui-core/icons/IconComponent";
 import { Slider } from "../../ui-core/slider/Slider";
 import TestUtils from "../TestUtils";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("Slider", () => {
 
   afterEach(cleanup);

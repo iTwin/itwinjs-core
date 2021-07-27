@@ -40,6 +40,7 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 |Radio | Radio
 |Select | Select
 |SelectOption | SelectOption
+|Slider | Slider
 |SmallText | Small
 |Spinner | ProgressRadial with `indeterminate` prop
 |SpinnerSize | `size` prop in ProgressRadialProps

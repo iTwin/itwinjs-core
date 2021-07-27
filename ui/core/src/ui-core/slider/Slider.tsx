@@ -101,6 +101,7 @@ export interface SliderProps extends CommonProps {
   * [react-compound-slider](https://www.npmjs.com/package/react-compound-slider)
   * package internally.
   * @public
+  * @deprecated Use Slider in itwinui-react instead
   */
 export function Slider(props: SliderProps) {
   const { className, style, min, max, values, step, mode,
