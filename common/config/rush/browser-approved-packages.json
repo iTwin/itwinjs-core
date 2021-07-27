@@ -207,14 +207,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@bentley/projectshare-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/rbac-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/react-scripts",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
