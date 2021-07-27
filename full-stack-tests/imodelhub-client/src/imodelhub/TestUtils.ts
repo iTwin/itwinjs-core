@@ -41,7 +41,6 @@ function configMockSettings() {
     return;
 
   Config.App.set("imjs_imodelhub_url", "https://api.bentley.com/imodelhub");
-  Config.App.set("imjs_rbac_url", "https://api.bentley.com/rbac");
   Config.App.set("imjs_buddi_resolve_url_using_region", 0);
   Config.App.set("imjs_url_prefix", "");
   Config.App.set("imjs_test_serviceAccount1_user_name", "test");
@@ -161,13 +160,6 @@ export class IModelHubUrlMock {
   public static getUrl(): string {
     configMockSettings();
     return Config.App.get("imjs_imodelhub_url", "");
-  }
-}
-
-export class RbacUrlMock {
-  public static getUrl(): string {
-    configMockSettings();
-    return Config.App.get("imjs_rbac_url", "");
   }
 }
 

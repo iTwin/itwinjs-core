@@ -1087,7 +1087,17 @@ export abstract class IModelDb extends IModel {
    * @returns the Uint8Array or undefined if the texture image is not present.
    * @alpha
    */
-  public getTextureImage(props: TextureLoadProps): Uint8Array | undefined { return this.nativeDb.getTextureImage(props); }
+  public async getTextureImage(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<Uint8Array | undefined> {
+    requestContext.enter();
+    return new Promise<Uint8Array | undefined>((resolve, reject) => {
+      this.nativeDb.getTextureImage(props, (result) => {
+        if (result instanceof Error)
+          reject(result);
+        else
+          resolve(result);
+      });
+    });
+  }
 
   /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.

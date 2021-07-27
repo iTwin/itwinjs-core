@@ -38,8 +38,6 @@ The iTwin.js library is organized into the following separately downloadable [np
 - ($imodelhub-client)
 - ($itwin-client)
 - ($product-settings-client)
-- ($projectshare-client)
-- ($rbac-client)
 - ($reality-data-client)
 - ($usage-logging-client)
 
