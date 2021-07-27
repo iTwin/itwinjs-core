@@ -12,7 +12,7 @@ import {
 } from "@bentley/presentation-common";
 import { PresentationTableDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
 import { SortDirection } from "@bentley/ui-core";
 import { initialize, terminate } from "../../IntegrationTests";
 
@@ -167,7 +167,7 @@ describe("TableDataProvider", async () => {
           value: {
             valueFormat: PropertyValueFormat.Array,
             itemsTypeName: "Physical Object",
-            items: (value: PropertyRecord[]) => value.length === 2,
+            items: (value: PropertyRecord[]) => value.length === 2 && value.every((item) => Object.keys((item.value as StructValue).members).length > 0),
           },
         },
       }, {
@@ -187,7 +187,7 @@ describe("TableDataProvider", async () => {
           value: {
             valueFormat: PropertyValueFormat.Array,
             itemsTypeName: "TestClass",
-            items: (value: PropertyRecord[]) => value.length === 60,
+            items: (value: PropertyRecord[]) => value.length === 60 && value.every((item) => Object.keys((item.value as StructValue).members).length > 0),
           },
         },
       }, {

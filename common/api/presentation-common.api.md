@@ -363,6 +363,9 @@ export enum ContentSpecificationTypes {
 // @alpha (undocumented)
 export type ContentUpdateInfo = typeof UPDATE_FULL;
 
+// @alpha
+export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[];
+
 // @public
 export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | // eslint-disable-line deprecation/deprecation
 SortingRule | StyleOverride | ExtendedDataRule | NodeArtifactsRule;
