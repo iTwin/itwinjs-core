@@ -6,7 +6,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@bentley/imodeljs-backend";
@@ -19,6 +18,21 @@ import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
 import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 class DisplayTestAppRpc extends DtaRpcInterface {
 

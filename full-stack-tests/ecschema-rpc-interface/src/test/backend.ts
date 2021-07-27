@@ -7,11 +7,26 @@
 
 import * as path from "path";
 import { Config } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
 import { getRpcInterfaces, Settings } from "../common/Settings";
+import * as fs from "fs";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 const settings = new Settings(process.env);
