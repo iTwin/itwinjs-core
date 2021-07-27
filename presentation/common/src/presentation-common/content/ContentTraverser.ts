@@ -302,20 +302,20 @@ function traverseContentItemPrimitiveFieldValue(visitor: IContentVisitor, fieldH
 /**
  * `ignoreCategories` parameter enables adding all of the `nestedFields` to parent field's `childFields`
  *  without considering categories.
- * @alpha
+ *  @internal
 */
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean) {
   const hierarchies = new Array<FieldHierarchy>();
-  const visitField = (category: CategoryDescription, field: Field, parentField: Field | undefined, ignoreCategoriesFlag?: Boolean): FieldHierarchy | undefined => {
+  const visitField = (category: CategoryDescription, field: Field, parentField: Field | undefined): FieldHierarchy | undefined => {
     let childFields: FieldHierarchy[] = [];
     if (field.isNestedContentField()) {
       // visit all nested fields
-      childFields = visitFields(field.nestedFields, field, ignoreCategories);
+      childFields = visitFields(field.nestedFields, field);
       if (0 === childFields.length)
         return undefined;
     }
     const fieldHierarchy = { field, childFields };
-    if (category === parentField?.category || ignoreCategoriesFlag) {
+    if (category === parentField?.category || ignoreCategories && parentField) {
       // if categories of this field and its parent field match - return the field hierarchy without
       // including it as a top level field
       return fieldHierarchy;
@@ -323,10 +323,10 @@ export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boole
     addFieldHierarchy(hierarchies, fieldHierarchy);
     return undefined;
   };
-  const visitFields = (visitedFields: Field[], parentField: NestedContentField | undefined, ignoreCategoriesFlag?: Boolean) => {
+  const visitFields = (visitedFields: Field[], parentField: NestedContentField | undefined) => {
     const includedFields: FieldHierarchy[] = [];
     visitedFields.forEach((field) => {
-      const visitedField = visitField(field.category, field, parentField, ignoreCategories && ignoreCategoriesFlag);
+      const visitedField = visitField(field.category, field, parentField);
       if (visitedField)
         includedFields.push(visitedField);
     });

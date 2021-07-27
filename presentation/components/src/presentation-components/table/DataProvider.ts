@@ -439,8 +439,8 @@ class CellsBuilder extends PropertyRecordsBuilder {
         const expandedNestedContentField = this._sameInstanceFields[hierarchy.field.name];
         expandedNestedContentField.name = hierarchy.field.name;
         hierarchy.field = expandedNestedContentField;
-        const updatedField = createFieldHierarchies([expandedNestedContentField], true);
-        props.hierarchies.splice(index, 1, ...updatedField);
+        const updatedFieldHierarchy = createFieldHierarchies([expandedNestedContentField], true);
+        props.hierarchies.splice(index, 1, ...updatedFieldHierarchy);
       }
     });
   }
