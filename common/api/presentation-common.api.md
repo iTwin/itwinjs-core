@@ -363,7 +363,7 @@ export enum ContentSpecificationTypes {
 // @alpha (undocumented)
 export type ContentUpdateInfo = typeof UPDATE_FULL;
 
-// @alpha
+// @internal
 export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[];
 
 // @public
