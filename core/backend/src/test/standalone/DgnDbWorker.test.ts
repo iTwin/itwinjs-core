@@ -195,8 +195,8 @@ describe("DgnDbWorker", () => {
 
     // Clear the worker thread pool so the snap request (now canceled) can be processed.
     blockers.forEach((w) => w.setReady());
-    await Promise.all(blockers.map((w) => w.promise));
+    await Promise.all(blockers.map(async (w) => w.promise));
 
-    expect(snap).to.be.rejectedWith("aborted");
+    await expect(snap).to.be.rejectedWith("aborted");
   });
 });
