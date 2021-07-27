@@ -24,7 +24,7 @@ import {
   BetaBadge, BlockText, BodyText, Button, ButtonSize, ButtonType, Checkbox, CheckListBox, CheckListBoxItem, CheckListBoxSeparator, ContextMenuItem,
   DisabledText, ExpandableList, FeaturedTile, Headline, HorizontalAlignment, HorizontalTabs, Icon, IconInput, Input, InputStatus, LabeledInput,
   LabeledSelect, LabeledTextarea, LabeledThemedSelect, LabeledToggle, LeadingText, Listbox, ListboxItem, LoadingPrompt, LoadingSpinner, LoadingStatus,
-  MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, NumericInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
+  MinimalFeaturedTile, MinimalTile, MutedText, NewBadge, NumberInput, Popup, ProgressBar, ProgressSpinner, Radio, ReactMessage,
   SearchBox, Select, SettingsContainer, SettingsTabEntry, Slider, SmallText, Spinner, SpinnerSize, SplitButton, Subheading, Textarea, ThemedSelect, Tile, Title,
   Toggle, ToggleButtonType, UnderlinedButton, VerticalTabs,
 } from "@bentley/ui-core";
@@ -1279,18 +1279,6 @@ export class ComponentExamplesProvider {
     };
   }
 
-  private static get deprecatedComponentSamples(): ComponentExampleCategory {
-    return {
-      title: "Deprecated Components",
-      examples: [
-        // eslint-disable-next-line deprecation/deprecation
-        createComponentExample("Numeric Input", "Numeric Input component", <NumericInput min={1} max={100} className="uicore-full-width" />),
-        // eslint-disable-next-line deprecation/deprecation
-        createComponentExample("Numeric Input w/precision", "Numeric Input component", <NumericInput placeholder="Enter Number" min={1} max={100} step={.5} precision={1} className="uicore-full-width" />),
-      ],
-    };
-  }
-
   private static get quantityFormatting(): ComponentExampleCategory {
     const examples = [];
     examples.push(
@@ -1358,7 +1346,6 @@ export class ComponentExamplesProvider {
       ComponentExamplesProvider.weightSamples,
       ComponentExamplesProvider.quantityFormatting,
       ComponentExamplesProvider.settingPage,
-      ComponentExamplesProvider.deprecatedComponentSamples,
     ];
   }
 }

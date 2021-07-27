@@ -54,7 +54,6 @@ export * from "./NativeHost";
 export * from "./CloudStorageBackend";
 export * from "./AliCloudStorageService";
 export * from "./DevTools";
-export * from "./usage-logging/UsageLoggingUtilities";
 export * from "./LocalhostIpcHost";
 export * from "./ElementGraphics";
 export * from "./IModelDb"; // must be last

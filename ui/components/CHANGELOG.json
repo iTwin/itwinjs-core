@@ -2,6 +2,33 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.19.0",
+      "tag": "@bentley/ui-components_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "remove internal barrel-import usage"
+          },
+          {
+            "comment": "Stop delivering pseudo-localized strings"
+          },
+          {
+            "comment": "Add window \"beforeunload\" event listener to ensure viewport is dropped from ViewManager."
+          },
+          {
+            "comment": "`MutableTreeModel`: `removeChild` method now accepts child index for the second parameter."
+          },
+          {
+            "comment": "Workaround for react-data-grid blank grid after scroll and update"
+          },
+          {
+            "comment": "Add option prop to set time zone offset for date and time display in the TimelineComponent."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.1",
       "tag": "@bentley/ui-components_v2.18.1",
       "date": "Fri, 16 Jul 2021 17:45:09 GMT",
