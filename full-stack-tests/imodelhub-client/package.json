@@ -43,7 +43,6 @@
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "chai": "^4.1.2",
     "deep-assign": "^2.0.0",
     "fs-extra": "^8.1.0",
