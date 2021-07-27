@@ -26,7 +26,6 @@
     "@bentley/backend-itwin-client": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/imodeljs-frontend": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
     "electron": "^11.1.0",

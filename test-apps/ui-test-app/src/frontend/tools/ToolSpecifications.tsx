@@ -19,7 +19,7 @@ import {
 } from "@bentley/ui-abstract";
 import { Dialog, MessageSeverity, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
-  Backstage, BaseItemState, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
+  Backstage, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
@@ -207,18 +207,12 @@ export class AppTools {
       label: () => AnalysisAnimationTool.flyover,
       description: () => AnalysisAnimationTool.description,
       execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
-      isVisible: false, // default to not show and then allow stateFunc to redefine.
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
+      isHidden: new ConditionalBooleanValue(() => {
         const activeContentControl = ContentViewManager.getActiveContentControl();
-
-        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle))
-          returnState.isVisible = true;
-        else
-          returnState.isVisible = false;
-        return returnState;
-      },
+        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
+          return false;
+        return true;
+      }, [SyncUiEventId.ActiveContentChanged]),
     });
   }
 

@@ -27,7 +27,6 @@
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/imodeljs-frontend": "workspace:*",
     "@bentley/logger-config": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "@bentley/electron-manager": "workspace:*",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",

@@ -13,7 +13,7 @@ import { ConfigurableCreateInfo, ConfigurableUiControl, ConfigurableUiControlTyp
 
 /** NavigationAid Activated Event Args interface.
  * @public
- */
+ */
 export interface NavigationAidActivatedEventArgs {
   navigationAidId: string;
   iModelConnection: IModelConnection;
@@ -21,12 +21,12 @@ export interface NavigationAidActivatedEventArgs {
 
 /** NavigationAid Activated Event class.
  * @public
- */
+ */
 export class NavigationAidActivatedEvent extends UiEvent<NavigationAidActivatedEventArgs> { }
 
 /** The base class for Navigation Aid controls.
  * @public
- */
+ */
 export class NavigationAidControl extends ConfigurableUiControl {
   private _reactNode: React.ReactNode;
 
@@ -37,14 +37,6 @@ export class NavigationAidControl extends ConfigurableUiControl {
   /** The React element associated with this control */
   public get reactNode(): React.ReactNode { return this._reactNode; }
   public set reactNode(r: React.ReactNode) { this._reactNode = r; }
-
-  /** The React element associated with this control
-   * @deprecated use reactNode
-   */
-  // istanbul ignore next
-  public get reactElement(): React.ReactNode { return this.reactNode; }
-  // istanbul ignore next
-  public set reactElement(r: React.ReactNode) { this.reactNode = r; }
 
   /** Default size is "64px". Override to set a different size. */
   public getSize(): string | undefined { return undefined; }

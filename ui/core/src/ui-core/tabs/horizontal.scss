@@ -28,7 +28,7 @@
 
       .uicore-tabs-inline-label {
         display: grid;
-        grid-template-columns: auto auto;
+        grid-template-columns: auto 1fr;
         align-items: center;
       }
 

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "3.0.0-dev.3",
+  "version": "3.0.0-dev.7",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-frontend.js",
   "typings": "lib/imodeljs-frontend",
@@ -36,20 +36,19 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.3",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.3",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.3",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.3",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.3",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.3",
-    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.3",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.3",
-    "@bentley/orbitgt-core": "workspace:^3.0.0-dev.3",
-    "@bentley/product-settings-client": "workspace:^3.0.0-dev.3",
-    "@bentley/rbac-client": "workspace:^3.0.0-dev.3",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.3",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.3",
-    "@bentley/webgl-compatibility": "workspace:^3.0.0-dev.3"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.7",
+    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.7",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.7",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.7",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.7",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.7",
+    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.7",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.7",
+    "@bentley/orbitgt-core": "workspace:^3.0.0-dev.7",
+    "@bentley/product-settings-client": "workspace:^3.0.0-dev.7",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.7",
+    "@bentley/ui-abstract": "workspace:^3.0.0-dev.7",
+    "@bentley/webgl-compatibility": "workspace:^3.0.0-dev.7"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -69,7 +68,6 @@
     "@bentley/itwin-client": "workspace:*",
     "@bentley/orbitgt-core": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/webgl-compatibility": "workspace:*",
@@ -116,11 +114,23 @@
     ],
     "extends": "plugin:@bentley/imodeljs-recommended",
     "rules": {
-      "@bentley/no-internal-barrel-imports": ["error", {"required-barrel-modules": ["./src/tile/internal.ts"]}]
+      "@bentley/no-internal-barrel-imports": [
+        "error",
+        {
+          "required-barrel-modules": [
+            "./src/tile/internal.ts"
+          ]
+        }
+      ]
     },
     "overrides": [
       {
-        "files": ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
+        "files": [
+          "*.test.ts",
+          "*.test.tsx",
+          "**/test/**/*.ts",
+          "**/test/**/*.tsx"
+        ],
         "rules": {
           "@bentley/no-internal-barrel-imports": "off"
         }

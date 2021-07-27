@@ -37,7 +37,7 @@
       "Samples": "sample-showcase",
       "Learning": "learning",
       "API": "reference",
-      "v2.18.0": "changehistory"
+      "v2.19.0": "changehistory"
     },
     "archivedVersions": [
       {
@@ -73,9 +73,7 @@
       "presentation-components": "presentation-components",
       "presentation-frontend": "presentation-frontend",
       "product-settings-client": "product-settings-client",
-      "projectshare-client": "projectshare-client",
       "quantity": "imodeljs-quantity",
-      "rbac-client": "rbac-client",
       "reality-data-client": "reality-data-client",
       "ui-abstract": "ui-abstract",
       "ui-components": "ui-components",
