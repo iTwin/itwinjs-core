@@ -11,7 +11,7 @@ export interface BridgeIssueReporter {
   recordIgnoredElements: (repositoryLinkId: string, ignoredElementIdList: string) => void;
 
   /**Reports a generic issue encountered by the bridge. The sourceId here will determine what file the issue corresponds to*/
-  reportIssue: (ecInstanceId: string, sourceId: string, level: string, category: string, message: string, type: string) => void;
+  reportIssue: (ecInstanceId: string, sourceId: string, level: "Error" | "Warning", category: string, message: string, type: string) => void;
 
   /**Records file information for a bridge job. Should be called by the orchestrator */
   recordSourceFileInfo: (srcId: string, name: string, uniqueName: string, itemType: string, dataSource: string, state: string, failureReason: string, exists: boolean, fileSize: number, foundByBridge: boolean, downloadUrl?: string) => void;
@@ -23,5 +23,5 @@ export interface BridgeIssueReporter {
   getReportPath: () => string;
 
   /**Creates a JSON report file to be uploaded by the orchestrator*/
-  publishReport: () => void;
+  publishReport: () => Promise<void>;
 }

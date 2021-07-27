@@ -14,8 +14,8 @@ interface ContextInfo {
   activityId: string;
   contextId: string;
   iModelId: string;
+  operationType: "NormalUpdate" | "AllDocsProcessed";
   briefcaseId?: number;
-  operationType?: string;
   jobId?: string;
 }
 
@@ -25,19 +25,19 @@ interface FileInfo {
 }
 
 export interface PostPublishingProcessor {
-  (reportPath: string): Promise<void> | void;
+  (reportPath: string): Promise<void>;
 }
 
-/** BADGERS issue reporter. Can be provided to BridgeRunner in setIssueReporter
+/** SQLite issue reporter. Can be provided to BridgeRunner in setIssueReporter
  * @beta
  */
-export class BadgersIssueReporter implements BridgeIssueReporter {
+export class SqliteIssueReporter implements BridgeIssueReporter {
   private _reportDb;
   private _reportFile;
   private _outputDir;
   private _contextInfo: ContextInfo;
   private _fileInfo: FileInfo;
-  private _postPublishingProcessor: PostPublishingProcessor;
+  private _postPublishingProcessor?: PostPublishingProcessor;
   private _dbPath: string = "";
   private _deleteBadgersDb;
 
@@ -46,15 +46,15 @@ export class BadgersIssueReporter implements BridgeIssueReporter {
   private SRCFILE_TEMP_BRIDGE_ISSUES_TABLE = "BadgersSrcFileReports";
   private TEMP_IGNORED_ELEM_RECORD_TABLE = "BadgersReportIgnoredElementRecords";
 
-  public constructor(contextId: string, iModelId: GuidString, activityId: string, fileId: string, outputDir?: any, operationType?: string,
+  public constructor(contextId: string, iModelId: GuidString, activityId: string, fileId: string, outputDir?: any, operationType?: "NormalUpdate" | "AllDocsProcessed",
     filePath?: any, jobId?: string, deleteReportDB?: boolean) {
 
-    const opType = operationType ?? "NORMAL_UPDATE";
+    const opType = operationType ?? "NormalUpdate";
     this._contextInfo = { operationType: opType, activityId, jobId, contextId, iModelId };
     this._fileInfo = { fileId, filePath };
     this._outputDir = outputDir ?? os.tmpdir();
     this._deleteBadgersDb = deleteReportDB ?? false;
-    this._postPublishingProcessor = () => { };
+    this._postPublishingProcessor;
 
     this._reportFile = this.computeReportFileName(activityId, false);
 
@@ -90,7 +90,7 @@ export class BadgersIssueReporter implements BridgeIssueReporter {
     })
   }
 
-  public reportIssue(ecInstanceId: string, sourceId: string, level: string, category: string, message: string, type: string) {
+  public reportIssue(ecInstanceId: string, sourceId: string, level: "Error" | "Warning", category: string, message: string, type: string) {
     this.handleFileRecord();
     const guid = Guid.createValue();
     const values = [this._fileInfo.fileId, ecInstanceId, sourceId, level, category, message, type, guid];
@@ -277,7 +277,9 @@ export class BadgersIssueReporter implements BridgeIssueReporter {
   public publishReport() {
     this.createJsonReport();
     this.deleteBadgersDb();
-    return this._postPublishingProcessor(this.getReportPath());
+    if (this._postPublishingProcessor !== undefined)
+      return this._postPublishingProcessor(this.getReportPath());
+    return Promise.resolve();
   }
 
 }

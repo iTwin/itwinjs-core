@@ -94,7 +94,7 @@ class TestBridge extends IModelBridge {
       const error = `Unable to find model Id for ${undefined === groupModelId ? ModelNames.Group : (undefined === physicalModelId ? ModelNames.Physical : ModelNames.Definition)}`;
       throw new IModelError(IModelStatus.BadArg, error, Logger.logError, loggerCategory);
     }
-    this.issueReporter?.reportIssue(physicalModelId, "source", "Error", "Error", "Test Message", "Type");
+    this.issueReporter?.reportIssue(physicalModelId, "source", "Error", "Test", "Test Message", "Type");
 
     if (this._sourceDataState === ItemState.Unchanged) {
       return;
