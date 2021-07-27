@@ -1117,7 +1117,6 @@ importers:
       js-base64: ^2.4.5
       mocha: ^8.3.2
       nyc: ^15.1.0
-      oidc-client: ^1.9.1
       rimraf: ^3.0.2
       semver: ^5.5.0
       sinon: ^9.0.2
@@ -1133,7 +1132,6 @@ importers:
       '@bentley/usage-logging-client': link:../../clients/usage-logging
       fuse.js: 3.6.1
       js-base64: 2.6.4
-      oidc-client: 1.11.5
       semver: 5.7.1
       wms-capabilities: 0.4.0
       xml-js: 1.6.11
