@@ -44,5 +44,6 @@ export abstract class MutableClass extends ECClass {
   public abstract override createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
   public abstract override createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty;
 
-  public abstract override deletePropertySync<T extends Property>(name: string): T | undefined;
+  public abstract override deleteProperty(name: string): Promise<void>;
+  public abstract override deletePropertySync(name: string): void;
 }

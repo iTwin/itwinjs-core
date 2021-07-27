@@ -49,5 +49,6 @@ export abstract class MutableSchema extends Schema {
   public abstract override addReferenceSync(refSchema: Schema): void;
   public abstract override setContext(schemaContext: SchemaContext): void;
   public abstract override setVersion(readVersion?: number, writeVersion?: number, minorVersion?: number): void;
-  public abstract override deleteClassSync<T extends AnyClass>(name: string): T | undefined;
+  public abstract override deleteClass(name: string): Promise<void>;
+  public abstract override deleteClassSync(name: string): void;
 }

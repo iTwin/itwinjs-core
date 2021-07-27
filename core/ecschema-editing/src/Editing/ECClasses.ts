@@ -161,22 +161,22 @@ export class ECClasses {
       return { errorMessage: e.message };
     }
 
-    const deletedProp = mutableClass.deletePropertySync(name);
-    if (undefined === deletedProp)
-      return { errorMessage: `Failed to delete property ${name} because it was not found in class ${classKey.name}`};
-    else
-      return { itemKey: classKey, propertyName: deletedProp.name };
+    await mutableClass.deleteProperty(name);
+    return { itemKey: classKey, propertyName: name };
   }
 
-  public async delete(schemaKey: SchemaKey, name: string): Promise<SchemaItemEditResults> {
-    const schema = await this._schemaEditor.getSchema(schemaKey);
-    if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
+  public async delete(classKey: SchemaItemKey): Promise<SchemaItemEditResults> {
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${classKey.schemaKey.toString(true)} not found in context` };
 
-    const deletedClass = schema.deleteClassSync(name);
-    if (undefined === deletedClass)
-      return { errorMessage: `Failed to delete class ${name} because it was not found in schema ${schema.name}`};
-    else
-      return { itemKey: deletedClass.key };
+    const ecClass = await schema.getItem<ECClass>(classKey.name);
+    if (ecClass === undefined)
+      return {};
+
+    await schema.deleteClass(ecClass.name);
+
+    return { itemKey: classKey };
   }
 
   private async getClass(classKey: SchemaItemKey, name: string): Promise<MutableClass> {

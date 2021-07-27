@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  RelationshipClass, RelationshipClassProps, RelationshipConstraintProps, Schema, SchemaContext, SchemaKey,
+  RelationshipClass, RelationshipClassProps, RelationshipConstraintProps, Schema, SchemaContext, SchemaItemKey, SchemaKey,
 } from "@bentley/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
@@ -115,7 +115,7 @@ describe("Relationship tests from an existing schema", () => {
     let relationship = await testSchema.getItem("TestRelationship");
     expect(relationship).to.eql(relClass);
 
-    const delRes = await testEditor.relationships.delete(testKey, "TestRelationship");
+    const delRes = await testEditor.relationships.delete(relationship?.key!);
     expect(delRes.itemKey).to.eql(result.itemKey);
 
     relationship = await testSchema.getItem("TestRelationship");
@@ -124,10 +124,11 @@ describe("Relationship tests from an existing schema", () => {
 
   it("should not be able to delete a relationship class if it is not in schema", async () => {
     const className = "TestRelationship";
-    const entity = await testSchema.getItem(className);
-    expect(entity).to.be.undefined;
+    const classKey = new SchemaItemKey(className, testKey)
+    const relationship = await testSchema.getItem(className);
+    expect(relationship).to.be.undefined;
 
-    const delRes = await testEditor.relationships.delete(testKey, className);
-    expect(delRes.errorMessage).to.eql(`Failed to delete class ${className} because it was not found in schema ${testSchema!.name}`);
+    const delRes = await testEditor.relationships.delete(classKey);
+    expect(delRes).to.eql({});
   });
 });

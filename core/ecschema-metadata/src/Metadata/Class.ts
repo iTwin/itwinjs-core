@@ -64,18 +64,27 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
   /**
    * Deletes a property from within this class.
    * @param name The property name to delete, lookup is case-insensitive
-   * @returns The property that was deleted if it is found in class, otherwise returns undefined
    * @alpha
    */
-  protected deletePropertySync<T extends Property>(name: string): T | undefined {
+   protected async deleteProperty(name: string): Promise<void> {
+    if (this._properties) {
+      const property = await this.getProperty(name);
+      if (property)
+        this._properties.delete(name.toUpperCase());
+    }
+  }
+
+  /**
+   * Deletes a property from within this class.
+   * @param name The property name to delete, lookup is case-insensitive
+   * @alpha
+   */
+  protected deletePropertySync(name: string): void {
     if (this._properties) {
       const property = this.getPropertySync(name);
-      if (property) {
+      if (property)
         this._properties.delete(name.toUpperCase());
-        return property as T;
-      }
     }
-    return undefined;
   }
 
   public getBaseClassSync(): ECClass | undefined {
@@ -726,5 +735,6 @@ export abstract class MutableClass extends ECClass {
   public abstract override createStructArrayProperty(name: string, structType: string | StructClass): Promise<StructArrayProperty>;
   public abstract override createStructArrayPropertySync(name: string, structType: string | StructClass): StructArrayProperty;
 
-  public abstract override deletePropertySync<T extends Property>(name: string): T | undefined;
+  public abstract override deleteProperty(name: string): Promise<void>;
+  public abstract override deletePropertySync(name: string): void;
 }
