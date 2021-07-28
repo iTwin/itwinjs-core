@@ -57,7 +57,6 @@
     "@bentley/backend-itwin-client": "workspace:*",
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
-    "@bentley/config-loader": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
