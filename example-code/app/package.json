@@ -27,7 +27,6 @@
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/imodeljs-frontend": "workspace:*",
     "@bentley/logger-config": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "@bentley/electron-manager": "workspace:*",
     "body-parser": "^1.18.2",
     "chai": "^4.1.2",
@@ -38,7 +37,6 @@
     "i18next": "^10.2.2",
     "i18next-browser-languagedetector": "^2.1.0",
     "i18next-xhr-backend": "^2.0.1",
-    "js-base64": "^2.4.5",
     "save": "^2.3.3",
     "webpack": "4.42.0"
   },
@@ -52,7 +50,6 @@
     "@types/fs-extra": "^4.0.7",
     "@types/i18next": "^8.4.2",
     "@types/i18next-browser-languagedetector": "^2.0.1",
-    "@types/js-base64": "^2.3.1",
     "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",

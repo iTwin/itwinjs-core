@@ -237,8 +237,6 @@ beta;GridCategoryItem
 internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
-public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
-deprecated;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;HexadecimalTypeConverter 
 public;HighlightableTreeNodeProps
@@ -477,14 +475,8 @@ alpha;SolarTimeline
 public;SortComparer
 public;SparseArray
 internal;SparseTree
-beta;StandardEditorNames
-deprecated;StandardEditorNames
 public;StandardRotationChangeEvent 
 public;StandardRotationChangeEventArgs
-beta;StandardTypeConverterTypeNames
-deprecated;StandardTypeConverterTypeNames
-beta;StandardTypeNames
-deprecated;StandardTypeNames
 beta;StepFunctionProp = number | ((direction: string) => number | undefined)
 public;StringOperatorProcessor
 public;StringTypeConverter 

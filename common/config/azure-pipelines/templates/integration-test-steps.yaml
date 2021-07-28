@@ -31,10 +31,6 @@ steps:
 
       node ./common/scripts/install-run-rush build -v --to product-settings-client
 
-      node ./common/scripts/install-run-rush build -v --to projectshare-client
-
-      node ./common/scripts/install-run-rush build -v --to rbac-client
-
       node ./common/scripts/install-run-rush build -v --to reality-data-client
 
       node ./common/scripts/install-run-rush build -v --to usage-logging-client
@@ -60,22 +56,6 @@ steps:
   - script: "npm run test:integration"
     workingDirectory: clients/extension
     displayName: "Run Extension Client Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: "clients/product-settings"
-    displayName: "Run Product Settings Client Tests"
-    condition: succeededOrFailed()
-    enabled: false
-
-  - script: "npm run test:integration"
-    workingDirectory: clients/projectshare
-    displayName: "Run ProjectShare Client Tests"
-    condition: succeededOrFailed()
-
-  - script: "npm run test:integration"
-    workingDirectory: clients/rbac
-    displayName: "Run RBAC Client Tests"
     condition: succeededOrFailed()
 
   - script: "npm run test:integration"
@@ -144,22 +124,6 @@ steps:
     inputs:
       testResultsFiles: "clients/product-settings/lib/test/junit_results.xml"
       testRunTitle: "Client - Product Settings Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish Project Share Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/projectshare/lib/test/junit_results.xml"
-      testRunTitle: "Client - Project Share Tests - ${{ parameters.Node_Version }}"
-    continueOnError: true
-    condition: succeededOrFailed()
-
-  - task: PublishTestResults@2
-    displayName: "Publish RBAC Clients Test Results"
-    inputs:
-      testResultsFiles: "clients/rbac/lib/test/junit_results.xml"
-      testRunTitle: "Client - RBAC Tests - ${{ parameters.Node_Version }}"
     continueOnError: true
     condition: succeededOrFailed()
 

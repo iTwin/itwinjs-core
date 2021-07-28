@@ -105,20 +105,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/projectshare-client",
-      "projectFolder": "clients/projectshare",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/rbac-client",
-      "projectFolder": "clients/rbac",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/reality-data-client",
       "projectFolder": "clients/reality-data",
       "reviewCategory": "common",

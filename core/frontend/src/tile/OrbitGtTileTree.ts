@@ -31,9 +31,8 @@ import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
 import {
   RealityModelTileClient, RealityModelTileTree, Tile, TileContent,
-  TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeSupplier,
+  TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeOwner, TileTreeParams, TileTreeSupplier, TileUsageMarker,
 } from "./internal";
-import { TileUsageMarker } from "./TileUsageMarker";
 import { AccessToken } from "@bentley/itwin-client";
 import { AuthorizedFrontendRequestContext } from "../FrontendRequestContext";
 
