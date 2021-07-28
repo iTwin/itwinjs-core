@@ -1,6 +1,7 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 26 Jul 2021 12:21:25 GMT and should not be manually modified.
+This log was last generated on Mon, 26 Jul 2021 16:18:31 GMT and should not be manually modified.
+
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
@@ -13,6 +14,14 @@ Mon, 26 Jul 2021 12:21:25 GMT
 - `MutableTreeModel`: `removeChild` method now accepts child index for the second parameter.
 - Workaround for react-data-grid blank grid after scroll and update
 - Add option prop to set time zone offset for date and time display in the TimelineComponent.
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+### Updates
+
+- `ControlledTree`: Fix tree background not being rendered.
+- Workaround for react-data-grid blank grid after scroll and update
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
@@ -31,6 +40,13 @@ Fri, 09 Jul 2021 18:11:24 GMT
 - `ControlledTree`: Accept and forward size props to `TreeRenderer`.
 - Clean up timeline and fix test coverage.
 - Add props to the TimelineComponent that will allow apps to pass a set of items to be prefixed, appended, or to replace the context menu entries.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+### Updates
+
+- Workaround for react-data-grid blank grid after scroll and update
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
@@ -58,6 +74,13 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - `TreeRenderer`: Fix tree nodes being loaded repeatedly in some cases.
 - `VirtualizedPropertyGrid`: Remove top and bottom padding.
 - `VirtualizedPropertyGridWithDataProvider`: Fix loading animation overflowing its parent container.
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+### Updates
+
+- Workaround for react-data-grid blank grid after scroll and update
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
@@ -115,7 +138,7 @@ Mon, 24 May 2021 15:58:39 GMT
 - Improved Multi-Value column filtering in the Table component
 - Move `VirtualizedPropertyGrid` related types from @alpha to @beta.
 - Fixed getting distinct values when Table rows are updated
-- Update to latest classnames package 
+- Update to latest classnames package
 
 ## 2.15.6
 Wed, 26 May 2021 15:55:19 GMT
@@ -581,7 +604,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Fix toolbar overflow panel display.
-- Update to only show group separators if toolbar is not transparent. 
+- Update to only show group separators if toolbar is not transparent.
 - Fix toolbar error when scaling up UI.
 - Property grid horizontal layout updated according to UX requirements.
 - Fixed Table filter renderers after react-select version upgrade
@@ -1053,7 +1076,7 @@ Wed, 19 Dec 2018 18:26:14 GMT
 - Added DragDrop tests, added component withDragDrop HOC tests
 - Synchronizing navigation aids with view definition changes
 - Simplified property pane tooltips and improved Property Pane performance.
-- Simplified struct and array tooltips in Table component. 
+- Simplified struct and array tooltips in Table component.
 - Fix BeInspireTree's event listening functions to handle array inputs
 - Fix BeInspireTree's muting events with allowed number of triggers
 - Cache BeInspireTree.visible() result for better performance
@@ -1183,7 +1206,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Fix: Do not start search if input field is empty
 - Use strongly typed enums for identifying keyboard keys
 - PropertyGrid property editing and unit tests
