@@ -14,10 +14,24 @@ import {
   PropertyUpdatedArgs, RowItem, SelectionMode, SimpleTableDataProvider,
   Table, TableCellContextMenuArgs, TableCellUpdatedArgs, TableDataProvider, TableSelectionTarget, TypeConverter, TypeConverterManager,
 } from "@bentley/ui-components";
+<<<<<<< HEAD
 import { BodyText, Toggle } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl } from "@bentley/ui-framework";
+=======
+import { ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, WidgetControl } from "@bentley/ui-framework";
+import { Input, Select, SelectOption, ToggleSwitch } from "@itwin/itwinui-react";
+import { BodyText, Gap } from "@bentley/ui-core";
+>>>>>>> 793b44e84d (Fixed scrolling in Table component (#1952))
 
 class TableExampleContentControl extends ContentControl {
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+
+    this.reactNode = <TableExampleContent />;
+  }
+}
+
+export class TableExampleWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
