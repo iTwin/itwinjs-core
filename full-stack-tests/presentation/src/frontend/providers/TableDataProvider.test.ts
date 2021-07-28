@@ -12,7 +12,7 @@ import {
 } from "@bentley/presentation-common";
 import { PresentationTableDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
-import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PropertyRecord, PropertyValueFormat, StructValue } from "@bentley/ui-abstract";
 import { SortDirection } from "@bentley/ui-core";
 import { initialize, terminate } from "../../IntegrationTests";
 
@@ -114,6 +114,10 @@ describe("TableDataProvider", async () => {
       expect(row.cells.length).to.eq(32);
     });
 
+    function isStructWithMembers(record: PropertyRecord): boolean {
+      return Object.keys((record.value as StructValue).members).length > 0;
+    }
+
     it("returns row with merged cells from instances which have SameInstance relationshipMeaning and more than one value in it", async () => {
       provider = new PresentationTableDataProvider({
         imodel,
@@ -167,7 +171,7 @@ describe("TableDataProvider", async () => {
           value: {
             valueFormat: PropertyValueFormat.Array,
             itemsTypeName: "Physical Object",
-            items: (value: PropertyRecord[]) => value.length === 2,
+            items: (value: PropertyRecord[]) => value.length === 2 && value.every(isStructWithMembers),
           },
         },
       }, {
@@ -187,7 +191,7 @@ describe("TableDataProvider", async () => {
           value: {
             valueFormat: PropertyValueFormat.Array,
             itemsTypeName: "TestClass",
-            items: (value: PropertyRecord[]) => value.length === 60,
+            items: (value: PropertyRecord[]) => value.length === 60 && value.every(isStructWithMembers),
           },
         },
       }, {
