@@ -1,7 +1,6 @@
 # Change Log - @bentley/ecschema-editing
 
-This log was last generated on Mon, 26 Jul 2021 16:18:31 GMT and should not be manually modified.
-
+This log was last generated on Wed, 28 Jul 2021 17:16:30 GMT and should not be manually modified.
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
@@ -10,6 +9,11 @@ Mon, 26 Jul 2021 12:21:25 GMT
 
 - Extracted editor classes to their own files and other alpha level changes.
 - Split editing tests into different test files
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
 
 ## 2.18.2
 Mon, 26 Jul 2021 16:18:31 GMT
