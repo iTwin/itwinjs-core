@@ -168,49 +168,23 @@ to know to write a new connector.
 
 ### iTwin
 
-An iTwin is an infrastructure digital twin. An iTwin incorporates
-different types of data repositories -- including drawings,
-specifications, documents, analytical models, photos, reality meshes,
-IoT feeds, and enterprise resource and enterprise asset management data
--- into a living digital twin. This [link](http://www.bentley.com/itwin)
-to get additional information about iTwins and Bentley iTwin Services
+An iTwin is an infrastructure digital twin. An iTwin incorporates different types of data repositories -- including drawings, specifications, documents, analytical models, photos, reality meshes, IoT feeds, and enterprise resource and enterprise asset management data -- into a living digital twin. This [link](http://www.bentley.com/itwin) contains additional information about iTwins and Bentley iTwin Services
 
 ### iModelHub
 
-iModelHub is the control center for iModels. It is responsible for
-coordinating concurrent access to iModels and changes made to them
-in [ChangeSets](https://www.itwinjs.org/learning/glossary/#changeset).
-iModel connectors interact with iModelHub using the iModel.js API. The
-Connector SDK provides a framework through which a connector can easily
-maintain this interaction. For more information about iModelHub, please
-see <https://www.itwinjs.org/learning/imodelhub/>
+iModelHub is the control center for iModels. It is responsible for coordinating concurrent access to iModels and changes made to them in [ChangeSets](https://www.itwinjs.org/learning/glossary/#changeset). iModel connectors interact with iModelHub using the iModel.js API. The Connector SDK provides a framework through which a connector can easily maintain this interaction. For more information about iModelHub, please see <https://www.itwinjs.org/learning/imodelhub/>
 
 ### iModel
 
-An iModel is a specialized information container for exchanging data
-associated with the lifecycle of infrastructure assets. It contains
-digital components assembled from many sources. They are
-self-describing, geometrically precise, open, portable, and secure. The
-file format is based on open source SQLite relational database format
-and forms the backbone for iTwins
+An iModel is a specialized information container for exchanging data associated with the lifecycle of infrastructure assets. It contains digital components assembled from many sources. They are self-describing, geometrically precise, open, portable, and secure. The file format is based on open source SQLite relational database format and forms the backbone for iTwins
 
-iModels were created to facilitate the sharing and distribution of
-information regardless of the source and format of the information.
-iModels are an essential part of the digital twin world. But a digital
-twin means a lot more than just an iModel.
+iModels were created to facilitate the sharing and distribution of information regardless of the source and format of the information. iModels are an essential part of the digital twin world. But a digital twin means a lot more than just an iModel.
 
-An iTwin connector provides a workflow to easily synchronize information
-from various third-party design applications or data repositories into
-an iModel.
+An iTwin connector provides a workflow to easily synchronize information from various third-party design applications or data repositories into an iModel.
 
 ### Briefcases
 
-[Briefcases](https://www.itwinjs.org/learning/glossary/#briefcase) are
-the local copies of iModel that users can acquire to work with the
-iModel. A connector will download a briefcase locally using the Bridge
-Runner and change their copy of iModel. Once all the work is done, the
-results are then pushed into the iModel. Please see the section on
-Execution sequence on the different steps involved.
+[Briefcases](https://www.itwinjs.org/learning/glossary/#briefcase) are the local copies of iModel that users can acquire to work with the iModel. A connector will download a briefcase locally using the BridgeRunner and change their copy of iModel. Once all the work is done, the results are then pushed into the iModel. Please see the section on Execution sequence on the different steps involved.
 
 For more information, please see
 
@@ -293,21 +267,69 @@ If the source application data has a property that conceptually matches the BIS 
 
 ## Sync
 
-### Provenance
-
 ### Detecting and pushing changes
 
 Rather than starting over when the source data changes, a connector should be able to detect and convert only the changes. That makes for compact, meaningful changesets, which are added to the iModel's [timeline](https://github.com/imodeljs/imodeljs/blob/master/docs/learning/iModelHub/index.md#the-timeline-of-changes-to-an-imodel).
 
 In the case of source data that was previously converted and has changed, the connector should update the data in the iModel that were the results of the previous conversion. In the case of source data that was previously converted and has been deleted in the source, the connector should delete the results of the previous conversion. Source data that has been added should be inserted.
 
-To do incremental updates, a connector must do Id mapping and change-detection. An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to acheive both. The following sections describe how this is acheived.
+To do incremental updates, a connector must do Id mapping and change-detection.  The following sections describe how this is implemented.
 
-### Id mapping
+### Provenance
+
+A connector is usually dealing with two levels of provenance
+
+1. What is the identity and metadata of a file or repository synchronized into an iModel?
+2. What is the identity of the element within that repository?
+
+**Case 1**
+ExternalSource and ExternalSourceAttachments is used to describe the original external file reference hierarchy.
+
+To look up an existing ExternalSource:
+
+```
+select ecinstanceid from bis.ExternalSource where repository=?
+```
+
+If an ExternalSource is not found, insert one using
+
+```
+ function insertExternalSource(iModelDb: IModelDb, repository: Id64String, userLabel: string): Id64String {
+    const externalSourceProps: ExternalSourceProps = {
+      classFullName: ExternalSource.classFullName,
+      model: IModel.repositoryModelId,
+      code: Code.createEmpty(),
+      userLabel,
+      repository: new ExternalSourceIsInRepository(repository),
+      connectorName: <connectorName>,
+      connectorVersion: <connectorVersion>,
+    };
+    return iModelDb.elements.insertElement(externalSourceProps);
+  }
+```
+
+After calling Synchronizer.updateIModel, set the source property of the element's ExternalSourceAspect to point to the correct ExternalSource. Here is a code snippet:
+
+```
+const ids = ExternalSourceAspect.findBySource(imodel, scope, kind, item.id);
+const aspect = imodel.elements.getAspect(ids.aspectId) as ExternalSourceAspect;
+if (aspect.source === <externalsource.id>)
+    return;
+aspect.source = {id: <externalsource.id>};
+imodel.elements.updateAspect(aspect)
+```
+
+At the start of the connector's updateExistingData function, examine all existing elements to ensure their sources are set. The code shown above can be used to update an existing element's ExternalSourceAspect.
+
+A connector must also relate each physical model that it creates to source document(s) that it used to create that model. Specifically, each connector must create a ElementHasLinks ECRelationship from the InformationContentElement element that represents the model to one or more RepositoryLink elements that describe the source document.  When you create a physical partition model, link it to the RepositoryLink that corresponds to the source document.
+
+**Case 2 : Id mapping**
 
 Id mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data. If the source data has stable, unique IDs, then Id mapping could be straightforward.
 
 See [updateElementClass](https://github.com/imodeljs/itwin-connector-sample/blob/main/COBie-connector/src/DataAligner.ts) function in the provided sample. When the identifier is provided to the synchronizer, it is stored inside the ExternalSourceAspect class, in the Identifier property.
+
+An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to store information about the element.
 
 Note: If the source data does not have stable, unique IDs, then the connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
 
@@ -407,25 +429,28 @@ More on synchronization using connectors could be found [here](https://communiti
 
 ## Job Subjects
 
+A connector  is required to create a uniquely named Subject element in the iModel. The job subject element should be a child of the root subject and must have a unique code.
+
+A connector is required to scope all of the subjects and definitions and their models under its job subject element. That is,
+
+- Subjects and partitions that a bridge creates should be children of the job subject element,
+- The models and other elements that the bridge creates should be children of those subjects and partitions or in those models.
+
 ## Schema merging
 
-## Coordinate systems
+## Units and Coordinate systems
 
-For the basics of coordinate systems in iModels, please see
-<https://www.itwinjs.org/learning/geolocation/>
+For the basics of coordinate systems in iModels, please see <https://www.itwinjs.org/learning/geolocation/>
+
+All coordinates and distances in an iModel must be stored in meters, and so the connector must transform source data coordinates and distances into meters.
 
 For any iModel, a connector should
 
-1. If the iModel has coordinate system information, reproject the
-    existing data into the coordinate system of the iModel
+1. If the iModel has coordinate system information, reproject the existing data into the coordinate system of the iModel. Similarly, if the iModel has a global origin, the connector must subtract off that global origin from the source data as part of the conversion.
 
-2. If the iModel does not have coordinate system information,
-    initialize the iModel with the coordinate system appropriate to the
-    input data.
+2. If the iModel does not have coordinate system information, initialize the iModel with the coordinate system appropriate to the input data.
 
-As a general rule, for iModels that are primarily generated from
-connectors that deals with building data, a coordinate transform with
-linear transformation like ECEF will be better
+As a general rule, for iModels primarily generated from connectors that deal with building data, a coordinate transform with linear transformation like ECEF will be better.
 
 ## Dealing with geometry
 
@@ -433,7 +458,22 @@ linear transformation like ECEF will be better
 
 ## Locks & Codes
 
-## External repository information
+The connector SDK takes care of acquiring locks and codes. It sets up the briefcase manager to run in  "bulk insert" mode before calling UpdateExistingData. After UpdateExistingData finishes,  it then goes to iModelHub to acquire all needed locks and to request all codes used before committing the local txn. The entire conversion will fail and be rolled back if this step fails. Note that this is why it is so important that a connector must not call SaveChanges directly.
+
+Models that are created by a connector are exclusively locked by the job (that is, the job's briefcase). These locks are never released. Likewise, elements created by a connector are exclusively locked by the job forever.
+
+As long as the connector writes elements only to models that it creates, then the framework will never fail to get the necessary access to the models and elements that a connector creates or updates.
+
+A connector is required to scope all of the subjects and definitions and their models under a job-specific ["subject element"](#job-subjects) in the iModel. The only time a connector should write to a common model, such as the dictionary model, is when it creates its own job subject.
+
+By following the job-subject scoping rule, many connectors can write data to a single iModel without conflicts or confusion.
+
+Job-subject scoping also prevents problems with locks and codes. The framework should always be able to reserve codes for the elements created by a connector, and there should be no risk of conflicts. The only reasons why
+reserving codes might fail are:
+
+- On the initial conversion, the job subject itself did not use a unique name. This is a bug in the connector.
+- The connector created elements with codes in models or scopes that it does not own. This is a bug in the connector.
+- Temporary communications or server-side problems. The job can be retried later.
 
 ## More information
 
