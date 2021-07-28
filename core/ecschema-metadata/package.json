@@ -79,23 +79,11 @@
     "rules": {
       "radix": "warn",
       "@typescript-eslint/explicit-member-accessibility": "warn",
-      "@bentley/no-internal-barrel-imports": [
-        "error",
-        {
-          "ignored-barrel-modules": [
-            "./src/ECObjects.ts"
-          ]
-        }
-      ]
+      "@bentley/no-internal-barrel-imports": ["error", {"ignored-barrel-modules": ["./src/ECObjects.ts"]}]
     },
     "overrides": [
       {
-        "files": [
-          "*.test.ts",
-          "*.test.tsx",
-          "**/test/**/*.ts",
-          "**/test/**/*.tsx"
-        ],
+        "files": ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
         "rules": {
           "@bentley/no-internal-barrel-imports": "off"
         }
