@@ -50,7 +50,7 @@
     "benchmark": "^2.1.4",
     "chai": "^4.1.2",
     "chai-as-promised": "^7",
-    "cpx2": "^3.0.0",
+    "cpx": "^1.5.0",
     "eslint": "^7.11.0",
     "i18next-node-fs-backend": "^2.1.3",
     "mocha": "^8.3.2",
@@ -79,11 +79,23 @@
     "rules": {
       "radix": "warn",
       "@typescript-eslint/explicit-member-accessibility": "warn",
-      "@bentley/no-internal-barrel-imports": ["error", {"ignored-barrel-modules": ["./src/ECObjects.ts"]}]
+      "@bentley/no-internal-barrel-imports": [
+        "error",
+        {
+          "ignored-barrel-modules": [
+            "./src/ECObjects.ts"
+          ]
+        }
+      ]
     },
     "overrides": [
       {
-        "files": ["*.test.ts", "*.test.tsx", "**/test/**/*.ts", "**/test/**/*.tsx"],
+        "files": [
+          "*.test.ts",
+          "*.test.tsx",
+          "**/test/**/*.ts",
+          "**/test/**/*.tsx"
+        ],
         "rules": {
           "@bentley/no-internal-barrel-imports": "off"
         }

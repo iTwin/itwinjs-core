@@ -5,6 +5,7 @@
 import "@bentley/presentation-frontend/lib/test/_helpers/MockFrontendEnvironment";
 import * as chai from "chai";
 import chaiSubset from "chai-subset";
+import * as cpx from "cpx";
 import * as fs from "fs";
 import * as path from "path";
 import sinonChai from "sinon-chai";
@@ -21,8 +22,6 @@ import {
 import { RequestPriority } from "@bentley/presentation-common";
 import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
-
-const cpx = require("cpx2");
 
 chai.use(sinonChai);
 chai.use(chaiSubset);

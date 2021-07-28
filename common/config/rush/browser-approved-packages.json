@@ -423,7 +423,7 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "cpx2",
+      "name": "cpx",
       "allowedCategories": [ "backend", "common", "edit", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {

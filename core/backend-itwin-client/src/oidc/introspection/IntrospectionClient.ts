@@ -39,9 +39,7 @@ export class IntrospectionClient {
     custom.setHttpOptionsDefaults({
       timeout: RequestGlobalOptions.timeout.response,
       retry: RequestGlobalOptions.maxRetries,
-      agent: {
-        https: RequestGlobalOptions.httpsProxy,
-      },
+      agent: RequestGlobalOptions.httpsProxy,
     });
 
     const issuerUrl = await this.getIssuerUrl(requestContext);
