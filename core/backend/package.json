@@ -88,7 +88,6 @@
     "@types/formidable": "^1.0.31",
     "@types/fs-extra": "^4.0.7",
     "@types/glob": "^5.0.35",
-    "@types/js-base64": "^2.3.1",
     "@types/lru-cache": "^5.1.0",
     "@types/mocha": "^8.2.2",
     "@types/multiparty": "^0.0.31",
@@ -125,7 +124,7 @@
     "form-data": "^2.3.2",
     "fs-extra": "^8.1.0",
     "glob": "^7.1.2",
-    "js-base64": "^2.4.5",
+    "js-base64": "^3.6.1",
     "multiparty": "^4.2.1",
     "semver": "^5.5.0",
     "ws": "^7.5.3"
