@@ -49,8 +49,6 @@
     "@bentley/imodeljs-quantity": "workspace:*",
     "@bentley/imodeljs-frontend": "workspace:*",
     "@bentley/imodeljs-backend": "workspace:*",
-    "@bentley/projectshare-client": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/hypermodeling-frontend": "workspace:*",
     "body-parser": "^1.18.2"

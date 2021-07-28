@@ -102,8 +102,6 @@
     "@bentley/presentation-common": "workspace:*",
     "@bentley/presentation-components": "workspace:*",
     "@bentley/presentation-frontend": "workspace:*",
-    "@bentley/projectshare-client": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/ui-core": "workspace:*",
     "@bentley/ui-components": "workspace:*",

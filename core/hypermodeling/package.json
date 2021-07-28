@@ -1,6 +1,6 @@
 {
   "name": "@bentley/hypermodeling-frontend",
-  "version": "3.0.0-dev.6",
+  "version": "3.0.0-dev.8",
   "description": "iModel.js hypermodeling package",
   "main": "lib/hypermodeling-frontend.js",
   "typings": "lib/hypermodeling-frontend",
@@ -35,12 +35,12 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.6",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.6",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.6",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.6",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.6",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.6"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.8",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.8",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.8",
+    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.8",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.8",
+    "@bentley/ui-abstract": "workspace:^3.0.0-dev.8"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",

@@ -1,9 +1,7 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
 exports[`CategoryTree <CategoryTree /> should match snapshot 1`] = `
-<body
-  class="iui-body"
->
+<body>
   <div>
     <div
       class="ui-fw-categories-tree"

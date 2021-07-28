@@ -33,7 +33,6 @@
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/imodeljs-frontend": "workspace:*",
     "@bentley/imodeljs-markup": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "@bentley/electron-manager": "workspace:*",
     "chai": "^4.1.2",
     "fs-extra": "^8.1.0",
