@@ -458,18 +458,17 @@ As a general rule, for iModels primarily generated from connectors that deal wit
 
 ## Locks & Codes
 
-The connector SDK takes care of acquiring locks and codes. It sets up the briefcase manager to run in  "bulk insert" mode before calling UpdateExistingData. After UpdateExistingData finishes,  it then goes to iModelHub to acquire all needed locks and to request all codes used before committing the local txn. The entire conversion will fail and be rolled back if this step fails. Note that this is why it is so important that a connector must not call SaveChanges directly.
+The connector SDK takes care of acquiring locks and codes. It sets up the briefcase manager to run in  "bulk insert" mode before calling UpdateExistingData. After UpdateExistingData finishes,  it then goes to iModelHub to acquire all needed locks and to request all codes used before committing the local txn. The entire conversion will fail and be rolled back if this step fails. Note that this is why it is so crucial that a connector must not call SaveChanges directly.
 
-Models that are created by a connector are exclusively locked by the job (that is, the job's briefcase). These locks are never released. Likewise, elements created by a connector are exclusively locked by the job forever.
+Models that are created by a connector are exclusively locked by the job (that is, the job's briefcase) during the execution of a job. Likewise, elements created by a connector are exclusively locked as well for the job duration.
 
-As long as the connector writes elements only to models that it creates, then the framework will never fail to get the necessary access to the models and elements that a connector creates or updates.
+As long as the connector writes elements only to models that it creates, then the framework will never fail to get the necessary access to the models and elements that a connector inserts or updates.
 
-A connector is required to scope all of the subjects and definitions and their models under a job-specific ["subject element"](#job-subjects) in the iModel. The only time a connector should write to a common model, such as the dictionary model, is when it creates its own job subject.
+A connector is required to scope all of the subjects and definitions and their models under a job-specific ["subject element"](#job-subjects) in the iModel. The only time a connector should write to a common model, such as the dictionary model, is when it creates its job subject.
 
 By following the job-subject scoping rule, many connectors can write data to a single iModel without conflicts or confusion.
 
-Job-subject scoping also prevents problems with locks and codes. The framework should always be able to reserve codes for the elements created by a connector, and there should be no risk of conflicts. The only reasons why
-reserving codes might fail are:
+Job-subject scoping also prevents problems with locks and codes. The codes used by a connector is scoped by the job subject and there should be no risk of conflicts. The only reasons why reserving codes might fail are:
 
 - On the initial conversion, the job subject itself did not use a unique name. This is a bug in the connector.
 - The connector created elements with codes in models or scopes that it does not own. This is a bug in the connector.
