@@ -185,12 +185,427 @@ export namespace BSplineCurveOps {
       return options.knots?.length === options.fitPoints.length;
     }
 
-    /** Set end conditions (2nd and penultimate dataPt) for the linear system.
+    /** Compute a row of the tridiagonal system matrix from Farin.
+     * @param alpha sub-diagonal, length = # fit points
+     * @param beta diagonal, length = # fit points
+     * @param gamma super-diagonal, length = # fit points
+     * @param index 0-based row index to set
+     */
+    private static computeAlphaBetaGamma(alpha: number[], beta: number[], gamma: number[], index: number, deltaIPlus1: number, deltaI: number, deltaIMinus1: number, deltaIMinus2: number) {
+      let denomReciprocal = 1.0 / (deltaIMinus2 + deltaIMinus1 + deltaI);
+      alpha[index] = deltaI * deltaI * denomReciprocal;
+      beta[index] = deltaI * (deltaIMinus2 + deltaIMinus1) * denomReciprocal;
+
+      denomReciprocal = 1.0 / (deltaIMinus1 + deltaI + deltaIPlus1);
+      beta[index] += deltaIMinus1 * (deltaI + deltaIPlus1) * denomReciprocal;
+      gamma[index] = deltaIMinus1 * deltaIMinus1 * denomReciprocal;
+
+      denomReciprocal = 1.0 / (deltaIMinus1 + deltaI);
+      alpha[index] *= denomReciprocal;
+      beta[index] *= denomReciprocal;
+      gamma[index] *= denomReciprocal;
+    }
+
+    /** Setup tridiagonal system for 2 fit points
+     * @param alpha sub-diagonal, length = 2
+     * @param beta diagonal, length = 2
+     * @param gamma super-diagonal, length = 2
+     */
+    private static setUpSystem2Points(alpha: number[], beta: number[], gamma: number[]): boolean {
+      if (alpha.length !== 2 || beta.length !== 2 || gamma.length !== 2)
+        return false;
+
+      // identity matrix
+      alpha[0] = alpha[1] = gamma[0] = gamma[1] = 0.0;
+      beta[0] = beta[1] = 1.0;
+      return true;
+    }
+
+    /** Setup tridiagonal system for 3 fit points
+     * @param alpha sub-diagonal, length = 3
+     * @param beta diagonal, length = 3
+     * @param gamma super-diagonal, length = 3
+     * @param options validated as per validateOptions, unmodified
+     * @param useNaturalStartTangent whether to bake the natural end condition into the first row
+     * @param useNaturalEndTangent whether to bake the natural end condition into the last row
+     */
+     private static setUpSystem3Points(alpha: number[], beta: number[], gamma: number[], options: InterpolationCurve3dOptions, useNaturalStartTangent: boolean, useNaturalEndTangent: boolean): boolean {
+      if (undefined === options.knots)
+        return false;
+      if (alpha.length !== 3 || beta.length !== 3 || gamma.length !== 3)
+        return false;
+      if (options.knots.length !== 3 || options.fitPoints.length !== 3)
+        return false;
+
+      let deltaIPlus1 = 0, deltaI = 0, deltaIMinus1 = 0, deltaIMinus2 = 0, sum = 0, sumReciprocal = 0;
+
+      // first row
+      if (useNaturalStartTangent) {
+        alpha[0] = 0.0;
+        deltaI = options.knots[1] - options.knots[0];
+        deltaIPlus1 = options.knots[2] - options.knots[1];
+        sum = deltaI + deltaIPlus1;
+        sumReciprocal = 1.0 / sum;
+        beta[0] = (deltaI + sum) * sumReciprocal;
+        gamma[0] = -deltaI * sumReciprocal;
+      } else {
+        alpha[0] = gamma[0] = 0.0;
+        beta[0] = 1.0;
+      }
+
+      // middle row
+      deltaIMinus1 = options.knots[1] - options.knots[0];
+      deltaI = options.knots[2] - options.knots[1];
+      sumReciprocal = 1.0 / (deltaIMinus1 + deltaI);
+      sumReciprocal *= sumReciprocal;
+      alpha[1] = deltaI * deltaI * sumReciprocal;
+      beta[1]  = 2.0 * (deltaI * deltaIMinus1) * sumReciprocal;
+      gamma[1] = deltaIMinus1 * deltaIMinus1 * sumReciprocal;
+
+      // last row
+      if (useNaturalEndTangent) {
+        deltaIMinus1 = options.knots[2] - options.knots[1];
+        deltaIMinus2 = options.knots[1] - options.knots[0];
+        sum = deltaIMinus2 + deltaIMinus1;
+        sumReciprocal = 1.0 / sum;
+        alpha[2] = -deltaIMinus1 * sumReciprocal;
+        beta[2] = (deltaIMinus1 + sum) * sumReciprocal;
+        gamma[2] = 0.0;
+      } else {
+        alpha[2] = gamma[2] = 0.0;
+        beta[2] = 1.0;
+      }
+      return true;
+    }
+
+    /** Setup tridiagonal system for 4 fit points or more
+     * @param alpha sub-diagonal, length = # fit points
+     * @param beta diagonal, length = # fit points
+     * @param gamma super-diagonal, length = # fit points
+     * @param options validated as per validateOptions, unmodified
+     * @param useNaturalStartTangent whether to bake the natural end condition into the first row
+     * @param useNaturalEndTangent whether to bake the natural end condition into the last row
+     */
+    private static setUpSystem4PointsOrMore(alpha: number[], beta: number[], gamma: number[], options: InterpolationCurve3dOptions, useNaturalStartTangent: boolean, useNaturalEndTangent: boolean): boolean {
+      if (undefined === options.knots)
+        return false;
+      if (alpha.length !== beta.length || alpha.length !== gamma.length || alpha.length !== options.knots.length)
+        return false;
+      if (options.knots.length !== options.fitPoints.length)
+        return false;
+
+      const numIntervals = options.fitPoints.length - 1;
+      const numIntervalsMinus1 = numIntervals - 1;
+      let deltaIPlus1 = 0, deltaI = 0, deltaIMinus1 = 0, deltaIMinus2 = 0, sum = 0, sumReciprocal = 0;
+
+      if (options.closed) {
+        // first row
+        deltaIPlus1 = options.knots[2] - options.knots[1];
+        deltaI = options.knots[1] - options.knots[0];
+        deltaIMinus1 = options.knots[numIntervalsMinus1 + 1] - options.knots[numIntervalsMinus1];
+        deltaIMinus2 = options.knots[numIntervalsMinus1] - options.knots[numIntervalsMinus1 - 1];
+        this.computeAlphaBetaGamma(alpha, beta, gamma, 0, deltaIPlus1, deltaI, deltaIMinus1, deltaIMinus2);
+
+        // second row
+        deltaIPlus1 = options.knots[3] - options.knots[2];
+        deltaI = options.knots[2] - options.knots[1];
+        deltaIMinus1 = deltaI;
+        deltaIMinus2 = deltaIMinus1;
+        this.computeAlphaBetaGamma(alpha, beta, gamma, 1, deltaIPlus1, deltaI, deltaIMinus1, deltaIMinus2);
+
+        // last row; there's one less equation than open case
+        deltaIPlus1 = deltaIMinus1;
+        deltaI = options.knots[numIntervalsMinus1 + 1] - options.knots[numIntervalsMinus1];
+        deltaIMinus2 = options.knots[numIntervalsMinus1 - 1] - options.knots[numIntervalsMinus1 - 2];
+        deltaIMinus1 = options.knots[numIntervalsMinus1] - options.knots[numIntervalsMinus1 - 1];
+        this.computeAlphaBetaGamma(alpha, beta, gamma, numIntervalsMinus1, deltaIPlus1, deltaI, deltaIMinus1, deltaIMinus2);
+      } else { // open
+        // first row
+        if (useNaturalStartTangent) {
+          alpha[0] = 0.0;
+          deltaI = options.knots[1] - options.knots[0];
+          deltaIPlus1 = options.knots[2] - options.knots[1];
+          sum = deltaI + deltaIPlus1;
+          sumReciprocal = 1.0 / sum;
+          beta[0] = (deltaI + sum) * sumReciprocal;
+          gamma[0] = -deltaI * sumReciprocal;
+        } else {
+          alpha[0] = gamma[0] = 0.0;
+          beta[0] = 1.0;
+        }
+
+        // second row
+        deltaIPlus1 = options.knots[3] - options.knots[2];
+        deltaI = options.knots[2] - options.knots[1];
+        deltaIMinus1 = options.knots[1] - options.knots[0];
+        deltaIMinus2 = 0.0;
+        this.computeAlphaBetaGamma(alpha, beta, gamma, 1, deltaIPlus1, deltaI, deltaIMinus1, deltaIMinus2);
+
+        // penultimate row
+        deltaIPlus1 = 0.0;
+        deltaI = options.knots[numIntervalsMinus1 + 1] - options.knots[numIntervalsMinus1];
+        deltaIMinus1 = options.knots[numIntervalsMinus1] - options.knots[numIntervalsMinus1 - 1];
+        deltaIMinus2 = options.knots[numIntervalsMinus1 - 1] - options.knots[numIntervalsMinus1 - 2];
+        this.computeAlphaBetaGamma(alpha, beta, gamma, numIntervalsMinus1, deltaIPlus1, deltaI, deltaIMinus1, deltaIMinus2);
+
+        // last row
+        if (useNaturalEndTangent) {
+          deltaIMinus1 = options.knots[numIntervals] - options.knots[numIntervals - 1];
+          deltaIMinus2 = options.knots[numIntervals - 1] - options.knots[numIntervals - 2];
+          sum = deltaIMinus2 + deltaIMinus1;
+          sumReciprocal = 1.0 / sum;
+          alpha[numIntervals] = -deltaIMinus1 * sumReciprocal;
+          beta[numIntervals] = (deltaIMinus1 + sum) * sumReciprocal;
+          gamma[numIntervals] = 0.0;
+        } else {
+          alpha[numIntervals] = gamma[numIntervals] = 0.0;
+          beta[numIntervals] = 1.0;
+        }
+      }
+
+      // middle rows
+      for (let i = 2; i < numIntervalsMinus1; ++i) {
+        deltaIPlus1 = options.knots[i + 2] - options.knots[i + 1];
+        deltaI = options.knots[i + 1] - options.knots[i];
+        deltaIMinus1 = options.knots[i] - options.knots[i - 1];
+        deltaIMinus2 = options.knots[i - 1] - options.knots[i - 2];
+        this.computeAlphaBetaGamma(alpha, beta, gamma, i, deltaIPlus1, deltaI, deltaIMinus1, deltaIMinus2);
+      }
+      return true;
+    }
+
+    /** Setup tridiagonal system
+     * @param alpha sub-diagonal, length = # fitPoints
+     * @param beta diagonal, length = # fitPoints
+     * @param gamma super-diagonal, length = # fitPoints
      * @param options validated as per validateOptions, unmodified
      */
-    public static setEndConditions(_dataPts: Point3d[], _options: InterpolationCurve3dOptions): boolean {
-      // START HERE: dataPts.splice(1,0,pt)
-      return false;
+    private static setUpSystem(alpha: number[], beta: number[], gamma: number[], options: InterpolationCurve3dOptions): boolean {
+      let useNaturalStartTangent = false;
+      let useNaturalEndTangent = false;
+      if (options.isNaturalTangents && !options.closed) {
+        useNaturalStartTangent = (undefined === options.startTangent);
+        useNaturalEndTangent = (undefined === options.endTangent);
+      }
+
+      let succeeded = false;
+      if (2 === options.fitPoints.length)
+        succeeded = this.setUpSystem2Points(alpha, beta, gamma);
+      else if (3 === options.fitPoints.length)
+        succeeded = this.setUpSystem3Points(alpha, beta, gamma, options, useNaturalStartTangent, useNaturalEndTangent);
+      else if (4 <= options.fitPoints.length)
+        succeeded = this.setUpSystem4PointsOrMore(alpha, beta, gamma, options, useNaturalStartTangent, useNaturalEndTangent);
+
+      return succeeded;
+    }
+
+    /** Set the Bessel end condition for the linear system.
+     * @param dataPts array whose middle is the system rhs (augmented with first/last fitPoint at beginning/end);
+     *                2nd or penultimate point is set by this function.
+     * @param options validated as per validateOptions, unmodified
+     * @param atStart whether end condition is for start of curve (false: end of curve)
+     */
+    private static setBesselEndCondition(dataPts: Point3d[], options: InterpolationCurve3dOptions, atStart: boolean): boolean {
+      if (dataPts.length !== options.fitPoints.length + 2)
+        return false;
+      if (undefined === options.knots)
+        return false;
+
+      const scale = 1.0/3.0;
+      const numIntervals = options.fitPoints.length - 1;
+
+      if (1 === numIntervals) { // linear Bezier
+        if (atStart)
+          dataPts[1] = dataPts[0].interpolate(scale, dataPts[3]);
+        else
+          dataPts[2] = dataPts[3].interpolate(scale, dataPts[0]);
+        return true;
+      }
+
+      if (2 === numIntervals) {
+        const alpha = (options.knots[2] - options.knots[1]) / (options.knots[2] - options.knots[0]);
+        const beta = 1.0 - alpha;
+        const temp = dataPts[2].plus2Scaled(dataPts[0], -alpha * alpha, dataPts[4], -beta * beta);
+        if (atStart)
+          dataPts[1] = Point3d.createAdd2Scaled(temp, 1.0 / (2.0 * alpha), dataPts[0], alpha).interpolate(scale, dataPts[0]);
+        else
+          dataPts[3] = Point3d.createAdd2Scaled(temp, 1.0 / (2.0 * beta), dataPts[4], beta).interpolate(scale, dataPts[4]);
+        return true;
+      }
+
+      // numIntervals > 2
+      if (atStart) {
+          const alpha = (options.knots[2] - options.knots[1]) / (options.knots[2] - options.knots[0]);
+          const beta = 1.0 - alpha;
+          const temp = dataPts[2].plus2Scaled(dataPts[0], -alpha * alpha, dataPts[3], -beta * beta);
+          dataPts[1] = Point3d.createAdd2Scaled(temp, 1.0 / (2.0 * alpha), dataPts[0], alpha).interpolate(scale, dataPts[0]);
+      } else {
+          const alpha = (options.knots[numIntervals] - options.knots[numIntervals - 1]) / (options.knots[numIntervals] - options.knots[numIntervals - 2]);
+          const beta = 1.0 - alpha;
+          const temp = dataPts[numIntervals].plus2Scaled(dataPts[numIntervals - 1], -alpha * alpha, dataPts[numIntervals + 2], -beta * beta);
+          dataPts[numIntervals + 1] = Point3d.createAdd2Scaled(temp, 1.0 / (2.0 * beta), dataPts[numIntervals + 2], beta).interpolate(scale, dataPts[numIntervals + 2]);
+      }
+      return true;
+    }
+
+    /** Set the natural end condition for the linear system.
+     *  This is the end condition used by ADSK for fit-splines with a given zero tangent.
+     * @param dataPts array whose middle is the system rhs (augmented with first/last fitPoint at beginning/end);
+     *                2nd or penultimate point is set by this function.
+     * @param options validated as per validateOptions, unmodified
+     * @param atStart whether end condition is for start of curve (false: end of curve)
+     */
+    private static setNaturalEndCondition(dataPts: Point3d[], options: InterpolationCurve3dOptions, atStart: boolean): boolean {
+      if (dataPts.length !== options.fitPoints.length + 2)
+        return false;
+
+      const numIntervals = options.fitPoints.length - 1;
+      if (1 === numIntervals)
+        return this.setBesselEndCondition(dataPts, options, atStart);
+
+      if (atStart)
+        dataPts[1] = dataPts[0];
+      else
+        dataPts[dataPts.length - 2] = dataPts[dataPts.length - 1];
+      return true;
+    }
+
+    /** Set the end condition for the linear system to the given tangent, scaled by chord length.
+     *  This is the end condition used by ADSK for fit-splines with a given nonzero tangent.
+     * @param dataPts array whose middle is the system rhs (augmented with first/last fitPoint at beginning/end);
+     *                2nd or penultimate point is set by this function.
+     * @param options validated as per validateOptions
+     * @param atStart whether end condition is for start of curve (false: end of curve)
+     */
+    private static setChordLengthScaledEndCondition(dataPts: Point3d[], options: InterpolationCurve3dOptions, atStart: boolean): boolean {
+      if (dataPts.length !== options.fitPoints.length + 2)
+        return false;
+
+      const tangent = atStart ? options.startTangent : options.endTangent;
+      if (undefined === tangent)
+        return false;
+
+      let iExt = 0; // index of first/last fitPoint
+      let iSet = 0; // index of 2nd/penultimate Bezier point to set (determines start/end tangent of the curve)
+      let iInt = 0; // index of 2nd/penultimate fitPoint
+
+      const numIntervals = options.fitPoints.length - 1;
+      if (1 === numIntervals) { // no interior fit points
+        if (atStart) {
+          iExt = 0;
+          iSet = 1;
+          iInt = 3;
+        } else {
+          iExt = 3;
+          iSet = 2;
+          iInt = 0;
+        }
+      } else {
+        if (atStart) {
+          iExt = 0;
+          iSet = 1;
+          iInt = 2;
+        } else {
+          iExt = numIntervals + 2;
+          iSet = numIntervals + 1;
+          iInt = numIntervals;
+        }
+      }
+
+      // NOTE: tangent points INTO curve
+      const chordLength = dataPts[iInt].distance(dataPts[iExt]);
+      dataPts[iSet] = dataPts[iExt].plusScaled(tangent, chordLength / 3.0);
+      return true;
+    }
+
+    /** Set the end condition for the linear system to the given tangent, scaled by bessel length.
+     * @param dataPts array whose middle is the system rhs (augmented with first/last fitPoint at beginning/end);
+     *                2nd or penultimate point is set by this function.
+     * @param options validated as per validateOptions
+     * @param atStart whether end condition is for start of curve (false: end of curve)
+     */
+    private static setBesselLengthScaledEndCondition(dataPts: Point3d[], options: InterpolationCurve3dOptions, atStart: boolean): boolean {
+      if (dataPts.length !== options.fitPoints.length + 2)
+        return false;
+
+      const tangent = atStart ? options.startTangent : options.endTangent;
+      if (undefined === tangent)
+        return false;
+
+      // temporarily set bessel end condition
+      if (!this.setBesselEndCondition(dataPts, options, atStart))
+        return false;
+
+      const numIntervals = options.fitPoints.length - 1;
+      const iExt = atStart ? 0 : numIntervals + 2; // index of first/last fitPoint
+      const iSet = atStart ? 1 : numIntervals + 1; // index of 2nd/penultimate Bezier point to set (determines start/end tangent of the curve)
+
+      // reset end condition with our tangent, but scaled to the bessel tangent's length
+      dataPts[iSet] = dataPts[iExt].plusScaled(tangent, dataPts[iExt].distance(dataPts[iSet]));
+      return true;
+    }
+
+    /** Set end conditions for the linear system as per Farin 3e/4e.
+     * @param dataPts array whose middle is the system rhs (augmented with first/last fitPoint at beginning/end);
+     *                points are inserted into this array to become its 2nd and penultimate entries.
+     * @param options validated as per validateOptions, possibly modified
+     */
+    private static setEndConditions(dataPts: Point3d[], options: InterpolationCurve3dOptions): boolean {
+      if (dataPts.length !== options.fitPoints.length)
+        return false;
+
+      // insert dummy points to be set later
+      const dummy = Point3d.createZero();
+      dataPts.splice(1, 0, dummy);
+      dataPts.splice(dataPts.length - 1, 0, dummy);
+
+      let succeeded = false;
+      if (undefined === options.startTangent) {
+        if (options.isNaturalTangents)
+          succeeded = this.setNaturalEndCondition(dataPts, options, true);
+        else
+          succeeded = this.setBesselEndCondition(dataPts, options, true);
+      } else { // scale startTangent
+        if (options.isChordLenTangent)
+          succeeded = this.setChordLengthScaledEndCondition(dataPts, options, true);
+        else
+          succeeded = this.setBesselLengthScaledEndCondition(dataPts, options, true);
+      }
+
+      if (undefined === options.endTangent) {
+        if (options.isNaturalTangents)
+          succeeded = this.setNaturalEndCondition(dataPts, options, false);
+        else
+          succeeded = this.setBesselEndCondition(dataPts, options, false);
+      } else { // scale endTangent
+        if (options.isChordLenTangent)
+          succeeded = this.setChordLengthScaledEndCondition(dataPts, options, false);
+        else
+          succeeded = this.setBesselLengthScaledEndCondition(dataPts, options, false);
+      }
+
+      if (!succeeded)
+        return false;
+
+      const numIntervals = options.fitPoints.length - 1;
+      if (options.isColinearTangents
+            && numIntervals > 2
+            && (undefined === options.startTangent || undefined === options.endTangent)
+            && !options.isNaturalTangents
+            && dataPts[0].isAlmostEqual(dataPts[numIntervals + 2])) {
+        // let coTangent = Point3d.createZero();
+        // if (undefined !== options.startTangent) {
+        // START HERE
+      }
+      return succeeded;
+    }
+
+    /** Solve the near tridiagonal system */
+    private static solveNearTridiagonal(fitPts: Point3d[], params: number[], alpha: number[], beta: number[], gamma: number[]): Point3d[] | undefined {
+      if (alpha.length !== beta.length || alpha.length !== gamma.length || alpha.length !== fitPts.length || alpha.length !== params.length)
+        return undefined;
+      // START HERE
+      return undefined;
     }
 
     /** Adjust options by correcting invalid combinations
@@ -234,10 +649,19 @@ export namespace BSplineCurveOps {
       if (undefined !== options.knots)
         return options.fitPoints.length === options.knots.length; // sanity check
 
-      if (undefined !== options.startTangent && options.startTangent.isAlmostZero)
-        options.startTangent = undefined;
-      if (undefined !== options.endTangent && options.endTangent.isAlmostZero)
-        options.endTangent = undefined;
+      // NOTE: tangents point INTO curve
+      if (undefined !== options.startTangent) {
+        if (options.startTangent.isAlmostZero)
+          options.startTangent = undefined;
+        else
+          options.startTangent.normalizeInPlace();
+      }
+      if (undefined !== options.endTangent) {
+        if (options.endTangent.isAlmostZero)
+          options.endTangent = undefined;
+        else
+          options.endTangent.normalizeInPlace();
+      }
 
       return true;
     }
@@ -265,28 +689,55 @@ export namespace BSplineCurveOps {
     /** Construct the control points for the c2 cubic fit algorithm
      * @param options validated as per validateOptions, possibly modified
      */
-    public static constructPoles(options: InterpolationCurve3dOptions): Point3d[] | undefined {
-      if (!this.constructParams(options))
+    public static constructPoles(options: InterpolationCurve3dOptions): Point3d[] | Float64Array | undefined {
+      if (!this.constructParams(options) || (undefined === options.knots))
         return undefined;
 
-      const alpha: number[] = Array(options.fitPoints.length);
-      const beta: number[] = Array(options.fitPoints.length);
-      const gamma: number[] = Array(options.fitPoints.length);
-      BandedSystem.Tridiagonal.setUpSystem(alpha, beta, gamma, options.knots!, options.closed, undefined !== options.startTangent,
-        undefined !== options.endTangent);
+      const numRow = options.fitPoints.length;
+      const alpha: number[] = Array(numRow);
+      const beta: number[] = Array(numRow);
+      const gamma: number[] = Array(numRow);
+      if (!this.setUpSystem(alpha, beta, gamma, options))
+        return undefined;
 
-      let poles: Point3d[] | undefined = [];
+      let poles: Point3d[] | Float64Array | undefined = [];
       if (!options.closed) {
         const dataPts = options.fitPoints.slice();
-        this.setEndConditions(dataPts, options);
+        if (!this.setEndConditions(dataPts, options))
+          return undefined;
+        if (dataPts.length !== numRow + 2)
+          return undefined; // sanity check: we added 2nd/penultimate points, rhs is middle numRow entries.
 
-        const triUp: number[] = Array(options.fitPoints.length);
-        const triLow: number[] = Array(options.fitPoints.length);
-        BandedSystem.Tridiagonal.decomposeLU(triUp, triLow, alpha, beta, gamma);
+        // construct tridiagonal banded system components
+        const matrix = new Float64Array(numRow * 3);
+        const rhs = new Float64Array(numRow * 3);
+        for (let iRow = 0, iMatrixRead = 0, iRhsRead = 0; iRow < numRow; ++iRow) {
+          matrix[iMatrixRead++] = alpha[iRow];
+          matrix[iMatrixRead++] = beta[iRow];
+          matrix[iMatrixRead++] = gamma[iRow];
+          rhs[iRhsRead++] = dataPts[iRow+1].x;
+          rhs[iRhsRead++] = dataPts[iRow+1].y;
+          rhs[iRhsRead++] = dataPts[iRow+1].z;
+        }
 
-        poles = BandedSystem.Tridiagonal.solve(dataPts, triUp, triLow, alpha, beta, gamma);
+        const solution = BandedSystem.solveBandedSystemMultipleRHS(numRow, 3, matrix, 3, rhs);
+        if (undefined === solution)
+          return undefined;
+
+        // pre/append first/last poles/fitPoints
+        poles = new Float64Array(3 + solution.length + 3);
+        let iWrite = 0;
+        poles[iWrite++] = options.fitPoints[0].x;
+        poles[iWrite++] = options.fitPoints[0].y;
+        poles[iWrite++] = options.fitPoints[0].z;
+        for (let iRead = 0; iRead < solution.length; ) {
+          poles[iWrite++] = solution[iRead++];
+        }
+        poles[iWrite++] = options.fitPoints[options.fitPoints.length - 1].x;
+        poles[iWrite++] = options.fitPoints[options.fitPoints.length - 1].y;
+        poles[iWrite++] = options.fitPoints[options.fitPoints.length - 1].z;
       } else {
-        poles = BandedSystem.Tridiagonal.solveNear(options.fitPoints, options.knots!, alpha, beta, gamma);
+        poles = this.solveNearTridiagonal(options.fitPoints, options.knots, alpha, beta, gamma);
 
         if (undefined !== poles && poles.length > 1)
           poles.unshift(poles.pop()!);  // shift poles right by one position to line up with the knots

@@ -70,9 +70,9 @@ export class InterpolationCurve3dOptions {
   private _isColinearTangents?: number;
   private _isChordLenTangent?: number;
   private _isNaturalTangents?: number;
-  /** optional start tangent.  Use of the tangent magnitude may be indicated by other flags. */
+  /** optional start tangent, pointing into the curve. Tangent magnitude ignored. */
   private _startTangent?: Vector3d;
-  /** optional end tangent.  Use of the tangent magnitude may be indicated by other flags. */
+  /** optional end tangent, pointing into the curve. Tangent magnitude ignored. */
   private _endTangent?: Vector3d;
   /** Points that the curve must pass through */
   private _fitPoints: Point3d[];
@@ -96,10 +96,10 @@ export class InterpolationCurve3dOptions {
   /** `isNaturalTangents` as property with default 0 */
   public get isNaturalTangents(): number { return Geometry.resolveNumber(this._isNaturalTangents, 0); }
   public set isNaturalTangents(val: number) { this._isNaturalTangents = val; }
-  /** access POSSIBLY UNDEFINED start tangent. Setter CAPTURES. */
+  /** access POSSIBLY UNDEFINED normalized start tangent pointing into curve. Setter CAPTURES. */
   public get startTangent(): Vector3d | undefined { return this._startTangent; }
   public set startTangent(val: Vector3d | undefined) { this._startTangent = val; }
-  /** access POSSIBLY UNDEFINED end tangent. Setter CAPTURES. */
+  /** access POSSIBLY UNDEFINED normalized end tangent pointing into curve. Setter CAPTURES. */
   public get endTangent(): Vector3d | undefined { return this._endTangent; }
   public set endTangent(val: Vector3d | undefined) { this._endTangent = val; }
   /** access POINTER TO fitPoints. Setter CAPTURES. */
