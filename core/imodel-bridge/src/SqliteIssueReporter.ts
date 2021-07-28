@@ -100,11 +100,11 @@ export class SqliteIssueReporter implements BridgeIssueReporter {
     });
   }
 
-  public recordSourceFileInfo(srcId: string, name: string, uniqueName: string, itemType: string, dataSource: string, state: string, failureReason: string, exists: boolean, fileSize: number, foundByBridge: boolean, downloadUrl?: string,) {
-    if (srcId !== this._fileInfo.fileId) {
+  public recordSourceFileInfo(sourceId: string, name: string, uniqueName: string, itemType: string, dataSource: string, state: string, failureReason: string, exists: boolean, fileSize: number, foundByBridge: boolean, downloadUrl?: string,) {
+    if (sourceId !== this._fileInfo.fileId) {
       Logger.logWarning(BridgeLoggerCategory.Framework, "Source file Id does not match value set in constructor");
     }
-    const values = [this._contextInfo.activityId, this._contextInfo.contextId, this._contextInfo.jobId, this._contextInfo.iModelId, this._contextInfo.briefcaseId, srcId, this._fileInfo.filePath,
+    const values = [this._contextInfo.activityId, this._contextInfo.contextId, this._contextInfo.jobId, this._contextInfo.iModelId, this._contextInfo.briefcaseId, sourceId, this._fileInfo.filePath,
       "SourceFile", itemType, dataSource, name, exists, downloadUrl, state, failureReason, uniqueName, fileSize, foundByBridge]
     this._reportDb.withPreparedSqliteStatement(`INSERT INTO ${this.SRCFILE_TEMP_BRIDGE_ISSUES_TABLE}(activityId, contextId, jobId, imodelId, briefcaseId, fileId, filePath, dataType, itemType, dataSource, fileName, itemExists, downloadUrl, state, failureReason, uniqueName, fileSize, foundByBridge) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, (stmt) => {
       stmt.bindValues(values);
@@ -112,8 +112,8 @@ export class SqliteIssueReporter implements BridgeIssueReporter {
     })
   }
 
-  public recordReferenceFileInfo(srcId: string, name: string, uniqueName: string, itemType: string, dataSource: string, downloadUrl: string, state: string, failureReason: string, exists: boolean, fileSize: number, foundByBridge: boolean) {
-    const values = [this._contextInfo.activityId, this._contextInfo.contextId, this._contextInfo.jobId, this._contextInfo.iModelId, this._contextInfo.briefcaseId, srcId, this._fileInfo.filePath,
+  public recordReferenceFileInfo(sourceId: string, name: string, uniqueName: string, itemType: string, dataSource: string, downloadUrl: string, state: string, failureReason: string, exists: boolean, fileSize: number, foundByBridge: boolean) {
+    const values = [this._contextInfo.activityId, this._contextInfo.contextId, this._contextInfo.jobId, this._contextInfo.iModelId, this._contextInfo.briefcaseId, sourceId, this._fileInfo.filePath,
       "ReferenceFile", itemType, dataSource, name, exists, downloadUrl, state, failureReason, uniqueName, fileSize, foundByBridge]
     this._reportDb.withPreparedSqliteStatement(`INSERT INTO ${this.SRCFILE_TEMP_BRIDGE_ISSUES_TABLE}(activityId, contextId, jobId, imodelId, briefcaseId, fileId, filePath, dataType, itemType, dataSource, fileName, itemExists, downloadUrl, state, failureReason, uniqueName, fileSize, foundByBridge) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, (stmt) => {
       stmt.bindValues(values);
@@ -173,7 +173,7 @@ export class SqliteIssueReporter implements BridgeIssueReporter {
 
     const auditrecords: any[] = [];
     this._reportDb.withPreparedSqliteStatement(`SELECT fileId, ecInstanceId, elementSourceId, auditLevel, auditCategory, auditMessage, auditType, GUID FROM ${this.TEMP_REPORT_AUDIT_RECORDS_TABLE} WHERE fileId =? `, (stmt) => {
-      stmt.bindValue(1, sourceFile.fileId);
+      stmt.bindValue(1, this._fileInfo.fileId);
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         const row = stmt.getRow();
         auditrecords.push({
