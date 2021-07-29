@@ -2,6 +2,60 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.19.0",
+      "tag": "@bentley/ui-components_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "remove internal barrel-import usage"
+          },
+          {
+            "comment": "Stop delivering pseudo-localized strings"
+          },
+          {
+            "comment": "Add window \"beforeunload\" event listener to ensure viewport is dropped from ViewManager."
+          },
+          {
+            "comment": "`MutableTreeModel`: `removeChild` method now accepts child index for the second parameter."
+          },
+          {
+            "comment": "Workaround for react-data-grid blank grid after scroll and update"
+          },
+          {
+            "comment": "Add option prop to set time zone offset for date and time display in the TimelineComponent."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@bentley/ui-components_v2.18.3",
+      "date": "Wed, 28 Jul 2021 17:16:30 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed scrolling in Table component"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.2",
+      "tag": "@bentley/ui-components_v2.18.2",
+      "date": "Mon, 26 Jul 2021 16:18:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "`ControlledTree`: Fix tree background not being rendered."
+          },
+          {
+            "comment": "Workaround for react-data-grid blank grid after scroll and update"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.18.1",
       "tag": "@bentley/ui-components_v2.18.1",
       "date": "Fri, 16 Jul 2021 17:45:09 GMT",
@@ -33,6 +87,18 @@
           },
           {
             "comment": "Add props to the TimelineComponent that will allow apps to pass a set of items to be prefixed, appended, or to replace the context menu entries."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.3",
+      "tag": "@bentley/ui-components_v2.17.3",
+      "date": "Mon, 26 Jul 2021 16:08:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Workaround for react-data-grid blank grid after scroll and update"
           }
         ]
       }
@@ -87,6 +153,18 @@
           },
           {
             "comment": "`VirtualizedPropertyGridWithDataProvider`: Fix loading animation overflowing its parent container."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.10",
+      "tag": "@bentley/ui-components_v2.16.10",
+      "date": "Thu, 22 Jul 2021 20:23:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Workaround for react-data-grid blank grid after scroll and update"
           }
         ]
       }

@@ -1,6 +1,27 @@
 # Change Log - @bentley/presentation-common
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Wed, 28 Jul 2021 17:16:30 GMT and should not be manually modified.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- Stop delivering pseudo-localized strings
+- Provide more information on removed nodes in hierarchy comparison results.
+- Added conmpressed interfaces for `DescriptorJSON` and ways to handle them.
+- Add `RelatedPropertiesSpecification.skipIfDuplicate` attribute
+- Add a way to display related properties without a special related class category
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
@@ -14,6 +35,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 
 - Promote `PresentationUnitSystem` to @beta
 - Expose helper APIs to traverse presentation content.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
@@ -34,6 +60,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - Added `relationshipMeaning` property to `NestedContentField`
 - Send `Id64[]` ruleset variables as `CompressedId64Set`
 - Introduce `Ruleset.version` attribute.
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT

@@ -1,6 +1,23 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Wed, 28 Jul 2021 17:16:30 GMT and should not be manually modified.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- remove internal barrel-import usage
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
@@ -9,6 +26,11 @@ _Version update only_
 
 ## 2.18.0
 Fri, 09 Jul 2021 18:11:24 GMT
+
+_Version update only_
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
 
 _Version update only_
 
@@ -31,6 +53,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - `usePresentationTreeNodeLoader`: Fix change in props not being properly reflected when hierarchy auto-update is enabled.
 - Updated table/DataProvider so that it would find sameInstance nested properties and extract their values/fields when needed.
 - `usePropertyDataProviderWithUnifiedSelection`: Add selected element count to the return value.
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
@@ -842,7 +869,7 @@ Thu, 08 Nov 2018 17:59:21 GMT
 
 ### Updates
 
-- Deprecated dev-cors-proxy-server and use of it. 
+- Deprecated dev-cors-proxy-server and use of it.
 - Fix filtered tree rendering "0 matches found" when there's no filtering applied and data provider returns 0 nodes
 - Updated to TypeScript 3.1
 - React to Tree API changes

@@ -2,6 +2,66 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.19.0",
+      "tag": "@bentley/imodeljs-frontend_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "BriefcaseConnection.PullAndMergeChanges now returns both changesetId and changesetIndex"
+          },
+          {
+            "comment": "Adjust the range of a RenderGraphic based on displacement applied by the viewport's AnalysisStyle, if any, so that displaced portions of the mesh can be located by tools."
+          },
+          {
+            "comment": "Added support for PointCloudModel attachments in OPC format with RDS URL resolving to OrbitGtBlobProps."
+          },
+          {
+            "comment": "Handle failures in models query when isNotSpatiallyLocated property does not exist in the schema"
+          },
+          {
+            "comment": "GraphicBuilder now generates normals for polyfaces if requested."
+          },
+          {
+            "comment": "remove internal barrel-import usage"
+          },
+          {
+            "comment": "Stop delivering pseudo-localized strings"
+          },
+          {
+            "comment": "Fix multi-model animation issue."
+          },
+          {
+            "comment": "Handle degenerate frustum in BackgroundMapGeometry.getFrustumIntersectionDepthRange."
+          },
+          {
+            "comment": "Add support to GraphicBuilder for solid primitives and visible edges."
+          },
+          {
+            "comment": "move check for redirect callback handling in WebViewerApp to before IModelApp.startup call"
+          },
+          {
+            "comment": "Support reprojection of Cesium OSM tiles"
+          },
+          {
+            "comment": "internal async order change"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@bentley/imodeljs-frontend_v2.18.3",
+      "date": "Wed, 28 Jul 2021 17:16:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.2",
+      "tag": "@bentley/imodeljs-frontend_v2.18.2",
+      "date": "Mon, 26 Jul 2021 16:18:31 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.18.1",
       "tag": "@bentley/imodeljs-frontend_v2.18.1",
       "date": "Fri, 16 Jul 2021 17:45:09 GMT",
@@ -66,6 +126,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.17.3",
+      "tag": "@bentley/imodeljs-frontend_v2.17.3",
+      "date": "Mon, 26 Jul 2021 16:08:36 GMT",
+      "comments": {}
     },
     {
       "version": "2.17.2",
@@ -150,6 +216,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.16.10",
+      "tag": "@bentley/imodeljs-frontend_v2.16.10",
+      "date": "Thu, 22 Jul 2021 20:23:45 GMT",
+      "comments": {}
     },
     {
       "version": "2.16.9",

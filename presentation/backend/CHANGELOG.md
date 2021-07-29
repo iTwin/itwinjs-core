@@ -1,6 +1,23 @@
 # Change Log - @bentley/presentation-backend
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Wed, 28 Jul 2021 17:16:30 GMT and should not be manually modified.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- Set `RelatedPropertiesSpecification.skipIfDuplicate` attribute to all specifications in default BisCore ruleset to allow overriding them.
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
@@ -14,6 +31,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 
 - Add `PresentationManager.getElementProperties` to get properties for a single element in a simplified way.
 - Add `PresentationRpcInterface.getElementProperties` and related APIs
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
@@ -34,6 +56,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 
 - Fix previous `RulesetVariable` values not being deserialized when comparing hierarchies
 - Add ability to unset a ruleset variable value
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
@@ -627,7 +654,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Fixed `PresentationRpcImpl.computeSelection` for "model", "category" and "element" scope to return specific class names instead of "BisCore:Model", "BisCore:Category" or "BisCore:Element"
 - Allow requesting content with descriptor overrides instead of descriptor. This allows to competely avoid a descriptor request when content customization requirements are the same for all kinds of content
 - Do not attempt to handle transient element ids when computing selection based on scope
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Upgrade TypeDoc dependency to 0.14.2
 
 ## 0.190.0

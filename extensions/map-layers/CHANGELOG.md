@@ -1,6 +1,21 @@
 # Change Log - @bentley/map-layers
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Wed, 28 Jul 2021 17:16:30 GMT and should not be manually modified.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
@@ -9,6 +24,11 @@ _Version update only_
 
 ## 2.18.0
 Fri, 09 Jul 2021 18:11:24 GMT
+
+_Version update only_
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
 
 _Version update only_
 
@@ -32,6 +52,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - MapManagerSettings UI Refresh. Added tests.
 - Fixed typo in activeViewport.view.isSpatialView: it should be invoked as a method and not a property.
 - Fixed a bug where an elevation offset value of 0 could not be in the UI.
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
@@ -83,7 +108,7 @@ Mon, 24 May 2021 15:58:39 GMT
 
 ### Updates
 
-- Fix 'npm run cover' that would never complete. 
+- Fix 'npm run cover' that would never complete.
 - Exposed the map masking option in the map layers settings UI.
 - Move map tile trees to Viewport to handle synching correctly
 - Update to latest classnames package
@@ -158,7 +183,7 @@ Tue, 09 Mar 2021 20:28:13 GMT
 
 ### Updates
 
-- Restored base layer visibility button in map manager. 
+- Restored base layer visibility button in map manager.
 - Updated to use TypeScript 4.1
 - begin rename project from iModel.js to iTwin.js
 
@@ -183,7 +208,7 @@ Thu, 18 Feb 2021 22:10:13 GMT
 ### Updates
 
 - Provide default props to map-layers widget when used as an extension.
-- ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted. 
+- ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted.
 
 ## 2.11.2
 Thu, 18 Feb 2021 02:50:59 GMT

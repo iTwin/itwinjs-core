@@ -1,6 +1,25 @@
 # Change Log - @bentley/ui-core
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Wed, 28 Jul 2021 17:16:30 GMT and should not be manually modified.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- remove internal barrel-import usage
+- Stop delivering pseudo-localized strings
+- Update ResizableContainerObserver to monitor parent size if no children are specified.
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
@@ -13,6 +32,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 ### Updates
 
 - Fix bug in ElementResizeObserver caused by using React.Ref and not an HTMLElement as a usedEffect dependency.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
@@ -32,6 +56,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - Update use of resize observer to be compatible with using it in a child/popup window.
 - Update scss to remove use of slash for division to avoid SASS deprecation warnings.
 - Publish in-use APIs
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
@@ -84,9 +113,9 @@ Mon, 24 May 2021 15:58:39 GMT
 ### Updates
 
 - Wrap resizeObserver in a windows animation frame to prevent loop limit exceeded error.
-- Add support for child popup windows. 
+- Add support for child popup windows.
 - Improved Multi-Value column filtering in the Table component
-- Update to latest classnames package 
+- Update to latest classnames package
 - Fix GlobalContextMenu layout issue in presentation-test-app by setting display:none on anchoring div.
 
 ## 2.15.6
@@ -214,7 +243,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 
 ### Updates
 
-- Update components that support providing refs via React.forwardRef to work better with document generation.  
+- Update components that support providing refs via React.forwardRef to work better with document generation.
 - Add option to use a 'x-small' webfont icon.
 - Add nested popup support to components that use HOC withOnOutsideClick.
 - Fix bug processing zero value in Select options.
@@ -485,7 +514,7 @@ Tue, 28 Jul 2020 16:26:24 GMT
 - Add support for a basic single selection aria compliant listbox.
 - Checkboxes in lists & trees are out of place
 - Disabled component styling. Fixed Dialog focus problems.
-- Map Layer UX 
+- Map Layer UX
 - Allowing Input component user to override the type
 - Fix ThemeSelect formatOptionLabel prop to return React.ReactNode.
 - Added Arrow key navigation in Tabs components. Added ItemKeyboardNavigator.
@@ -808,7 +837,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Put sourcemap in npm package.
 - Added SignIn presentational component to ui-components. Removed --ignoreMissingTags extract-api option.
 - Require React & React-dom 16.8
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
 - Added ViewportDialog in ui-test-app, ui-core/ContributeGuidelines.md. TSLint rules in ui-core for no-default-export & completed-docs. @beta release tags.
 - Update icons-generic-webfont version to latest available.
 - Added TableProp to hide header and supporting style changes
