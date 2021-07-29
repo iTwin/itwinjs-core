@@ -101,6 +101,7 @@ describe("Checkpoints V1 (#integration)", () => {
   });
 
   after(() => {
+    IModelHost.authorizationClient = undefined;
     HubMock.shutdown();
   });
 

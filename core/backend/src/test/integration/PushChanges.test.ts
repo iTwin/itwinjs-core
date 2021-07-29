@@ -94,6 +94,7 @@ describe("PushChangesTest (#integration)", () => {
   });
 
   after(async () => {
+    IModelHost.authorizationClient = undefined;
     HubMock.shutdown();
   });
 
