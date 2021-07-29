@@ -30,6 +30,7 @@
   .ReactVirtualized__Grid,
   .ReactWindow__VariableSizeList {
     overflow: auto !important;
+    background-color: inherit;
 
     @include uicore-scrollbar;
 
