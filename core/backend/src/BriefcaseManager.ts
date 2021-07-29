@@ -518,9 +518,8 @@ export class BriefcaseManager {
     changesetProps.size = IModelJsFs.lstatSync(changesetProps.pathname)!.size;
 
     // Refresh the access token since startCreateChangeSet may have taken significant time
-    const auth = IModelHost.authorizationClient;
-    if (auth)
-      requestContext.accessToken = await auth.getAccessToken();
+    if (IModelHost.authorizationClient)
+      requestContext.accessToken = await IModelHost.authorizationClient.getAccessToken();
 
     const csIndex = await IModelHost.hubAccess.pushChangeset({ requestContext, iModelId: db.iModelId, changesetProps });
     db.nativeDb.completeCreateChangeset({ index: csIndex });

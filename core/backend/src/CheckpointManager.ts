@@ -240,7 +240,6 @@ export class CheckpointManager {
 
       throw (error); // most likely, was aborted
     }
-
   }
 
   public static async updateToRequestedVersion(request: DownloadRequest) {
@@ -264,9 +263,12 @@ export class CheckpointManager {
         CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
         // Apply change sets if necessary
         const parentChangeset = nativeDb.getParentChangeset();
-        if (parentChangeset.id !== checkpoint.changeSetId)
+        if (parentChangeset.id !== checkpoint.changeSetId) {
+          // Refresh the access token since downloading of the checkpoint may have taken significant time
+          if (IModelHost.authorizationClient)
+            checkpoint.requestContext.accessToken = await IModelHost.authorizationClient.getAccessToken();
           await BriefcaseManager.processChangesets(checkpoint.requestContext, db, { id: checkpoint.changeSetId, index: checkpoint.changesetIndex });
-        else {
+        } else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
           parentChangeset.index = checkpoint.changesetIndex;
           nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(parentChangeset));
