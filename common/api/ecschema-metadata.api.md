@@ -420,11 +420,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         code: string;
         diagnosticType: DiagnosticType;
@@ -437,11 +433,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [string, string, string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         code: string;
         diagnosticType: DiagnosticType;
@@ -454,11 +446,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         code: string;
         diagnosticType: DiagnosticType;
@@ -471,11 +459,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
     };
@@ -487,11 +471,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
     };
@@ -503,11 +483,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
     };
@@ -519,11 +495,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
     };
     CustomAttributeSchemaMustBeReferenced: {
@@ -534,11 +506,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
     };
     CustomAttributeClassNotFound: {
@@ -549,11 +517,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
     };
     EnumerationTypeUnsupported: {
@@ -564,11 +528,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
     };
@@ -580,11 +540,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: EntityClass;
             messageArgs?: [string, string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
     };
@@ -596,11 +552,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         code: string;
     };
@@ -612,11 +564,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         code: string;
     };
@@ -628,11 +576,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string, string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         code: string;
     };
@@ -644,11 +588,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         code: string;
     };
@@ -660,11 +600,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         code: string;
     };
@@ -676,11 +612,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         code: string;
     };
@@ -692,11 +624,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         code: string;
     };
@@ -708,11 +636,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
     };
@@ -724,11 +648,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
     };
@@ -740,11 +660,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, string, string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
         diagnosticType: DiagnosticType;
     };
@@ -756,11 +672,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
     };
     AbstractConstraintMustExistWithMultipleConstraints: {
@@ -771,11 +683,7 @@ export const Diagnostics: {
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, string] | undefined;
-            category: DiagnosticCategory; /**
-             * The list of [[IDiagnostic]] implementation classes used by the EC rule implementations.
-             * @beta
-             * @deprecated Moved to the ecschema-editing package.
-             */
+            category: DiagnosticCategory;
         };
     };
 };
@@ -2561,7 +2469,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: SchemaItem;
             messageArgs?: [string, any, any] | undefined;
@@ -2573,7 +2481,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: SchemaItem;
             messageArgs?: [] | undefined;
@@ -2633,7 +2541,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [Mixin], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: EntityClass;
             messageArgs?: [Mixin] | undefined;
@@ -2645,7 +2553,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Mixin;
             messageArgs?: [string, any, any] | undefined;
@@ -2657,7 +2565,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, any, any] | undefined;
@@ -2691,7 +2599,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeClass;
             messageArgs?: [string, any, any] | undefined;
@@ -2714,7 +2622,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [string, string, string] | undefined;
@@ -2726,7 +2634,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [AnyEnumerator], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [AnyEnumerator] | undefined;
@@ -2738,7 +2646,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [AnyEnumerator, string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [AnyEnumerator, string, any, any] | undefined;
@@ -2750,7 +2658,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: KindOfQuantity;
             messageArgs?: [string, any, any] | undefined;
@@ -2762,7 +2670,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: KindOfQuantity;
             messageArgs?: [Format | OverrideFormat] | undefined;
@@ -2774,7 +2682,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: PropertyCategory;
             messageArgs?: [string, any, any] | undefined;
@@ -2786,7 +2694,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
             messageArgs?: [string, any, any] | undefined;
@@ -2798,7 +2706,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
             messageArgs?: [Unit | InvertedUnit] | undefined;
@@ -2810,7 +2718,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit, string | undefined, string | undefined], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
             messageArgs?: [Unit | InvertedUnit, string | undefined, string | undefined] | undefined;
@@ -2822,7 +2730,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
             messageArgs?: [string, string, string] | undefined;
@@ -2834,7 +2742,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: InvertedUnit;
             messageArgs?: [string, string, string] | undefined;
@@ -2846,7 +2754,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: InvertedUnit;
             messageArgs?: [string, string, string] | undefined;
@@ -2858,7 +2766,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Constant;
             messageArgs?: [string, string, string] | undefined;
