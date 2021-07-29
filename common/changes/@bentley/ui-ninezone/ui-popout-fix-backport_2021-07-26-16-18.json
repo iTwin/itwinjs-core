@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-ninezone",
+      "comment": "Initialize size and position of popout window when popping a widget out from floating state.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-ninezone",
+  "email": "45079789+NancyMcCallB@users.noreply.github.com"
+}
