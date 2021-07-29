@@ -73,6 +73,12 @@ describe("Elements", () => {
         expect(placement.calculateRange().isAlmostEqual(actual.calculateRange())).to.be.true;
       }
     }
+
+    const placements2d = await imodel.elements.getPlacements(ids, { type: "2d" });
+    expect(placements2d.map((x) => x.elementId).sort()).to.deep.equal(Array.from(ids2d).sort());
+
+    const placements3d = await imodel.elements.getPlacements(ids, { type: "3d" });
+    expect(placements3d.map((x) => x.elementId).sort()).to.deep.equal(Array.from(ids3d).sort());
   });
 
   it("queries individual placements", async () => {
