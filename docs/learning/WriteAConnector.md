@@ -42,6 +42,8 @@ title: iModel Connector Developer's Guide
 
 [Dynamic Schemas](#dynamic-schemas)
 
+[Display Labels](#display-labels)
+
 [Sync](#sync)
 
 [Provenance](#provenance)
@@ -194,6 +196,8 @@ For more information, please see
 
 ### Changeset
 
+See [ChangeSets](https://www.itwinjs.org/reference/imodelhub-client/imodelhubclient/changeset/)
+
 ## The basics of writing a connector
 
 ## Getting started
@@ -233,6 +237,8 @@ For each iTwin Connector author, there will always be two conflicting goals:
 The appropriate balancing of these two conflicting goals is not an easy task. However, where clear BIS schema types exist, they should always be used.
 
 ### Schemas
+
+See this article on [Importing a schema and bootstrapping definitions](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
 
 ### Dynamic Schemas
 
@@ -419,6 +425,11 @@ Use this method to add any models (e.g. physical, definition or group) required 
   }
 ```
 
+See also:
+
+- [DefinitionModel.insert](https://www.itwinjs.org/reference/imodeljs-backend/models/definitionmodel/insertstatic/#insert)
+- [PhysicalModel.insert](https://www.itwinjs.org/reference/imodeljs-backend/models/physicalmodel/insertstatic/#insert)
+
 #### OpenSourceData
 
 Use this method to read your native source data and assign it to a member property of your connector so that it can be accessed later on when it is time to convert your native object to their counterparts in the iModel.
@@ -532,7 +543,11 @@ More on synchronization using connectors could be found [here](https://communiti
 
 ## Logs
 
+See this article on [Logging](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/common/Logging.md)
+
 ## Error Messages
+
+See [Errors](https://www.itwinjs.org/reference/bentleyjs-core/errors/)
 
 ## Building a test for a connector
 
@@ -576,6 +591,8 @@ Typical workflow to create iModel geometry is
 
 ### Authentication
 
+See this article on [AccessToken](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/common/AccessToken.md)
+
 ### Locks & Codes
 
 The connector SDK takes care of acquiring locks and codes. It sets up the briefcase manager to run in "bulk insert" mode before calling UpdateExistingData. After UpdateExistingData finishes, it then goes to iModelHub to acquire all needed locks and to request all codes used before committing the local txn. The entire conversion will fail and be rolled back if this step fails. Note that this is why it is so crucial that a connector must not call SaveChanges directly.
@@ -594,23 +611,20 @@ Job-subject scoping also prevents problems with locks and codes. The codes used 
 - The connector created elements with codes in models or scopes that it does not own. This is a bug in the connector.
 - Temporary communications or server-side problems. The job can be retried later.
 
+### External repository information
+
 ### More information
 
 For more indepth information please see:
 
-- [Importing a schema and bootstrapping definitions](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
-- [AccessToken](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/common/AccessToken.md)
 - [BriefcaseManager.create](https://www.itwinjs.org/reference/imodeljs-backend/imodels/briefcasemanager/createstatic/#create)
 - [BriefcaseDb.open](https://www.itwinjs.org/reference/imodeljs-backend/imodels/briefcasedb/openstatic/#open)
 - [IModelDb.saveChanges](https://www.itwinjs.org/reference/imodeljs-backend/imodels/imodeldb/savechanges/#savechanges)
 - [BriefcaseDb.pullAndMergeChanges](https://www.itwinjs.org/reference/imodeljs-backend/imodels/briefcasedb/pullandmergechanges/#pullandmergechanges)
 - [BriefcaseDb.pushChanges](https://www.itwinjs.org/reference/imodeljs-backend/imodels/briefcasedb/pushchanges/#pushchanges)
 - [ConcurrencyControl](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/ConcurrencyControl.md)
-- [DefinitionModel.insert](https://www.itwinjs.org/reference/imodeljs-backend/models/definitionmodel/insertstatic/#insert)
-- [PhysicalModel.insert](https://www.itwinjs.org/reference/imodeljs-backend/models/physicalmodel/insertstatic/#insert)
 - [Insert a Subject element](https://www.itwinjs.org/learning/backend/createelements/#subject)
 - [Insert a ModelSelector element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#ModelSelector)
 - [Insert a CategorySelector element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#CategorySelector)
 - [Insert a DisplayStyle3d element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#DisplayStyle3d)
 - [Insert a OrthographicViewDefinition element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#OrthographicViewDefinition)
-- [Logging](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/common/Logging.md)
