@@ -22,7 +22,7 @@ import { TestBridgeSchema } from "./TestBridgeSchema";
 import { TestBridgeGroupModel } from "./TestBridgeModels";
 import {
   Categories, CodeSpecs, EquilateralTriangleTile, GeometryParts, IsoscelesTriangleTile, LargeSquareTile, Materials, RectangleTile, RightTriangleTile, SmallSquareTile,
-  TestBridgeGroup, TestBridgeGroupProps,
+  TestBridgeGroup, TestBridgeGroupProps, TestBridgePhysicalElement,
 } from "./TestBridgeElements";
 import { Casings, EquilateralTriangleCasing, IsoscelesTriangleCasing, LargeSquareCasing, QuadCasing, RectangleCasing, RectangularMagnetCasing, RightTriangleCasing, SmallSquareCasing, TriangleCasing } from "./TestBridgeGeometry";
 
@@ -441,6 +441,11 @@ class TestBridge extends IModelBridge {
     if (!tile.hasOwnProperty("Group")) {
       return;
     }
+
+    // for testing purposes only: double check that what I calculated is what was saved in the briefcase
+    const persistentTile = this.synchronizer.imodel.elements.getElement<TestBridgePhysicalElement>(sync.element.id);
+    assert(persistentTile.placement.origin.isExactEqual((sync.element as TestBridgePhysicalElement).placement.origin));
+
     const groupCode = TestBridgeGroup.createCode(this.synchronizer.imodel, groupModelId, tile.Group);
     const groupElement = this.synchronizer.imodel.elements.queryElementIdByCode(groupCode);
     assert(groupElement !== undefined);
