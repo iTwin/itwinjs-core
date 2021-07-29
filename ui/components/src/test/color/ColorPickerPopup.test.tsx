@@ -7,7 +7,7 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { ColorPickerPopup } from "../../ui-components/color/ColorPickerPopup";
 import TestUtils from "../TestUtils";
 import { RelativePosition } from "@bentley/ui-abstract";
@@ -22,8 +22,6 @@ describe("<ColorPickerPopup/>", () => {
   after(() => {
     TestUtils.terminateUiComponents();
   });
-
-  afterEach(cleanup);
 
   it("should render", () => {
     const renderedComponent = render(<ColorPickerPopup initialColor={colorDef} />);
@@ -53,7 +51,7 @@ describe("<ColorPickerPopup/>", () => {
     fireEvent.click(pickerButton);
     expect(renderedComponent.container.querySelector(".icon-caret-up")).not.to.be.null;
 
-    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-panel"));
+    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
     expect(popupDiv).not.to.be.undefined;
 
     if (popupDiv) {
@@ -79,7 +77,7 @@ describe("<ColorPickerPopup/>", () => {
     expect(pickerButton.tagName).to.be.equal("BUTTON");
     fireEvent.click(pickerButton);
 
-    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-panel"));
+    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
     expect(popupDiv).not.to.be.undefined;
 
     if (popupDiv) {
@@ -117,7 +115,7 @@ describe("<ColorPickerPopup/>", () => {
     expect(pickerButton.tagName).to.be.equal("BUTTON");
     fireEvent.click(pickerButton);
 
-    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-panel"));
+    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
     expect(popupDiv).not.to.be.undefined;
 
     if (popupDiv) {
@@ -141,7 +139,7 @@ describe("<ColorPickerPopup/>", () => {
     fireEvent.click(pickerButton);
     expect(spyOnClick).not.to.be.called;
 
-    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-panel"));
+    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
     expect(popupDiv).not.to.be.undefined;
 
     if (popupDiv) {
@@ -163,7 +161,7 @@ describe("<ColorPickerPopup/>", () => {
     fireEvent.click(pickerButton);
     expect(spyOnClick).to.be.called;
 
-    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-panel"));
+    const popupDiv = renderedComponent.getByTestId("components-colorpicker-panel");
     expect(popupDiv).not.to.be.undefined;
 
     if (popupDiv) {
