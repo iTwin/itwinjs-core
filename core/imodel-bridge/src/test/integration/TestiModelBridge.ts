@@ -376,6 +376,8 @@ class TestBridge extends IModelBridge {
         element: this.synchronizer.imodel.elements.createElement(props),
         itemState: results.state,
       };
+      if (results.id !== undefined) // in case this is an update
+        sync.element.id = results.id;
       this.synchronizer.updateIModel(sync, groupModelId, sourceItem, "Group");
     }
   }
