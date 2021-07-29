@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  AnyClass, Constant, CustomAttribute, CustomAttributeClass, ECClassModifier, EntityClass, Enumeration,
+  Constant, CustomAttribute, CustomAttributeClass, ECClassModifier, EntityClass, Enumeration,
   Format, InvertedUnit, KindOfQuantity, Mixin, Phenomenon, PrimitiveType, PropertyCategory,
   RelationshipClass, Schema, SchemaContext, SchemaItem, StructClass, Unit, UnitSystem,
 } from "@bentley/ecschema-metadata";

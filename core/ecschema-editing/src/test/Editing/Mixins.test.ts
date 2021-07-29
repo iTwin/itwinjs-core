@@ -34,6 +34,7 @@ describe("Mixins tests", () => {
     const mixin = await schema?.getItem(className);
     expect(mixin).not.undefined;
 
+    /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
     const delRes = await testEditor.mixins.delete(mixin?.key!);
     expect(delRes.itemKey).to.eql(mixinResult.itemKey);
     expect(testEditor.schemaContext.getSchemaItemSync(mixinResult.itemKey!)).to.be.undefined;
@@ -42,6 +43,7 @@ describe("Mixins tests", () => {
   it("should not be able to delete a mixin if it is not in schema", async () => {
     const schema = await testEditor.schemaContext.getCachedSchema(testKey);
     const className = "testMixin";
+    /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
     const classKey = new SchemaItemKey(className, schema?.schemaKey!);
     const mixin = await schema?.getItem(className);
     expect(mixin).to.be.undefined;

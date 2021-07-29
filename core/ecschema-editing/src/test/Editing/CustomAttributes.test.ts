@@ -29,6 +29,7 @@ describe("CustomAttribute tests", () => {
     const customAttribute = await schema?.getItem("testCustomAttribute");
     expect(testEditor.schemaContext.getSchemaItemSync(customAttributeResult.itemKey!)?.name).to.eql("testCustomAttribute");
 
+    /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
     const delRes = await testEditor.customAttributes.delete(customAttribute?.key!);
     expect(delRes.itemKey).to.eql(customAttributeResult.itemKey);
 
@@ -38,6 +39,7 @@ describe("CustomAttribute tests", () => {
   it("should not be able to delete a customAttribute class if it is not in schema", async () => {
     const schema = await testEditor.schemaContext.getCachedSchema(testKey);
     const className = "testCustomAttribute";
+    /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
     const classKey = new SchemaItemKey(className, schema?.schemaKey!);
     const customAttribute = await schema?.getItem(className);
     expect(customAttribute).to.be.undefined;

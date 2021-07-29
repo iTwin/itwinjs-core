@@ -28,6 +28,7 @@ describe("Structs tests", () => {
     const structResult = await testEditor.structs.create(testKey, "testStruct");
     const struct = await schema?.getItem("testStruct");
 
+    /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
     const delRes = await testEditor.structs.delete(struct?.key!);
     expect(delRes.itemKey).to.eql(structResult.itemKey);
 
@@ -37,6 +38,7 @@ describe("Structs tests", () => {
   it("should not be able to delete a struct class if it is not in schema", async () => {
     const schema = await testEditor.schemaContext.getCachedSchema(testKey);
     const className = "testStruct";
+    /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
     const classKey = new SchemaItemKey(className, schema?.schemaKey!);
     const struct = await schema?.getItem(className);
     expect(struct).to.be.undefined;

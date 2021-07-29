@@ -157,7 +157,7 @@ export class Schema implements CustomAttributeContainerProps {
    * @param name the local (unqualified) class name, lookup is case-insensitive
    * @alpha
    */
-   protected async deleteClass(name: string): Promise<void> {
+  protected async deleteClass(name: string): Promise<void> {
     const schemaItem = await this.getItem(name);
     if (ECClass.isECClass(schemaItem)) {
       this._items.delete(name.toUpperCase());

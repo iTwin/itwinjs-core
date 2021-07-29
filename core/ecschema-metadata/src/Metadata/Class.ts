@@ -66,7 +66,7 @@ export abstract class ECClass extends SchemaItem implements CustomAttributeConta
    * @param name The property name to delete, lookup is case-insensitive
    * @alpha
    */
-   protected async deleteProperty(name: string): Promise<void> {
+  protected async deleteProperty(name: string): Promise<void> {
     if (this._properties) {
       const property = await this.getProperty(name);
       if (property)

@@ -178,7 +178,7 @@ describe("Schema", () => {
 
     it("should do nothing if class is already deleted, synchronous", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
-      const entityClass = await (testSchema as MutableSchema).createEntityClass("TestEntity");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
       expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
@@ -192,7 +192,7 @@ describe("Schema", () => {
 
     it("should do nothing if class is already deleted", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
-      const entityClass = await (testSchema as MutableSchema).createEntityClass("TestEntity");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
       expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
@@ -206,9 +206,9 @@ describe("Schema", () => {
 
     it("should add and delete classes by case-insensitive names", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
-      const entityClass1 = await (testSchema as MutableSchema).createEntityClass("TestEntity1");
-      const entityClass2 = await (testSchema as MutableSchema).createEntityClass("TestEntity2");
-      const entityClass3 = await (testSchema as MutableSchema).createEntityClass("TestEntity3");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity1");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity2");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity3");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity1"))).to.equal(true);
       expect((await testSchema.getItem<EntityClass>("TestEntity1"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
@@ -231,9 +231,9 @@ describe("Schema", () => {
 
     it("should add and delete classes by case-insensitive names, synchronous", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
-      const entityClass1 = await (testSchema as MutableSchema).createEntityClass("TestEntity1");
-      const entityClass2 = await (testSchema as MutableSchema).createEntityClass("TestEntity2");
-      const entityClass3 = await (testSchema as MutableSchema).createEntityClass("TestEntity3");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity1");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity2");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity3");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity1"))).to.equal(true);
       expect((await testSchema.getItem<EntityClass>("TestEntity1"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
@@ -256,11 +256,11 @@ describe("Schema", () => {
 
     it("should successfully delete for all ECClasses from schema, synchronous", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
-      const entityClass = await (testSchema as MutableSchema).createEntityClass("TestEntity");
-      const mixinClass = await (testSchema as MutableSchema).createMixinClass("TestMixin");
-      const structClass = await (testSchema as MutableSchema).createStructClass("TestStruct");
-      const customAttributeClass = await (testSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
-      const relationshipClass = await (testSchema as MutableSchema).createRelationshipClass("TestRelationship");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity");
+      await (testSchema as MutableSchema).createMixinClass("TestMixin");
+      await (testSchema as MutableSchema).createStructClass("TestStruct");
+      await (testSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
+      await (testSchema as MutableSchema).createRelationshipClass("TestRelationship");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
       expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
@@ -295,11 +295,11 @@ describe("Schema", () => {
 
     it("should successfully delete for all ECClasses from schema", async () => {
       const testSchema = new Schema(new SchemaContext(), "TestSchema", "ts", 1, 1, 1);
-      const entityClass = await (testSchema as MutableSchema).createEntityClass("TestEntity");
-      const mixinClass = await (testSchema as MutableSchema).createMixinClass("TestMixin");
-      const structClass = await (testSchema as MutableSchema).createStructClass("TestStruct");
-      const customAttributeClass = await (testSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
-      const relationshipClass = await (testSchema as MutableSchema).createRelationshipClass("TestRelationship");
+      await (testSchema as MutableSchema).createEntityClass("TestEntity");
+      await (testSchema as MutableSchema).createMixinClass("TestMixin");
+      await (testSchema as MutableSchema).createStructClass("TestStruct");
+      await (testSchema as MutableSchema).createCustomAttributeClass("TestCustomAttribute");
+      await (testSchema as MutableSchema).createRelationshipClass("TestRelationship");
 
       expect(ECClass.isECClass(await testSchema.getItem("TestEntity"))).to.equal(true);
       expect((await testSchema.getItem<EntityClass>("TestEntity"))?.schemaItemType).to.equal(SchemaItemType.EntityClass);
