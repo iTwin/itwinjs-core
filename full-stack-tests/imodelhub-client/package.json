@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client-tests",
-  "version": "3.0.0-dev.6",
+  "version": "3.0.0-dev.8",
   "main": "lib/imodelhub-client-tests.js",
   "description": "Tests the iModelHub client",
   "license": "MIT",
@@ -43,11 +43,10 @@
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "chai": "^4.1.2",
     "deep-assign": "^2.0.0",
     "fs-extra": "^8.1.0",
-    "js-base64": "^2.4.5",
+    "js-base64": "^3.6.1",
     "mocha": "^8.3.2",
     "nock": "^12.0.3"
   },
@@ -59,7 +58,6 @@
     "@types/chai": "^4.1.4",
     "@types/deep-assign": "^0.1.0",
     "@types/fs-extra": "^4.0.7",
-    "@types/js-base64": "^2.3.1",
     "@types/mocha": "^8.2.2",
     "cpx": "^1.5.0",
     "eslint": "^7.11.0",

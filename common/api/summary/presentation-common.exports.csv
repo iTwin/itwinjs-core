@@ -47,6 +47,7 @@ public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | C
 public;ContentSpecificationBase 
 public;ContentSpecificationTypes
 alpha;ContentUpdateInfo = typeof UPDATE_FULL
+internal;createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[]
 public;CustomNodeSpecification 
 public;CustomQueryInstanceNodesSpecification 
 public;CustomRendererSpecification

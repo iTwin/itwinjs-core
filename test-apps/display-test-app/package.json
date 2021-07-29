@@ -61,7 +61,6 @@
     "@bentley/imodeljs-editor-frontend": "workspace:*",
     "@bentley/imodeljs-editor-backend": "workspace:*",
     "@bentley/imodeljs-editor-common": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/webgl-compatibility": "workspace:*",
     "body-parser": "^1.18.2"

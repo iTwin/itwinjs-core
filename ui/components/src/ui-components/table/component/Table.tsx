@@ -16,7 +16,7 @@ import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import {
   CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage,
-  Orientation, SortDirection, UiSettings, UiSettingsStatus, UiSettingsStorage,
+  Orientation, SortDirection, Timer, UiSettings, UiSettingsStatus, UiSettingsStorage,
 } from "@bentley/ui-core";
 import {
   MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
@@ -310,8 +310,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _filterDescriptors?: TableFilterDescriptorCollection;
   private _filterRowShown = false;
   private _topRowIndex = 0;
-  private _pokeScrollTimeoutId: number = 0;
-  private _pokeScrollDelay: number = 100;
+  private _pokeScrollTimer = new Timer(100);
 
   /** @internal */
   public override readonly state = initialState;
@@ -634,14 +633,12 @@ export class Table extends React.Component<TableProps, TableState> {
 
   private _queuePokeScroll = () => {
     this._unsetPokeScrollTimeout();
-    this._pokeScrollTimeoutId = window.setTimeout(() => { this._pokeScrollAfterUpdate(); this._pokeScrollTimeoutId = 0; }, this._pokeScrollDelay);
+    this._pokeScrollTimer.setOnExecute(() => { this._pokeScrollAfterUpdate(); });
+    this._pokeScrollTimer.start();
   };
 
   private _unsetPokeScrollTimeout = (): void => {
-    if (this._pokeScrollTimeoutId) {
-      window.clearTimeout(this._pokeScrollTimeoutId);
-      this._pokeScrollTimeoutId = 0;
-    }
+    this._pokeScrollTimer.stop();
   };
 
   private _onRowsChanged = async () => {
@@ -1754,7 +1751,7 @@ export class Table extends React.Component<TableProps, TableState> {
           }
           <ElementResizeObserver watchedElement={this.state.gridContainer}
             render={({ width, height }) => {
-              this._queuePokeScroll();
+              setTimeout(() => this._queuePokeScroll());
               return (
                 <ReactDataGrid
                   ref={this._gridRef}

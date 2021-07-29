@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client",
-  "version": "3.0.0-dev.6",
+  "version": "3.0.0-dev.8",
   "description": "iModel.js iModelHub Client",
   "main": "lib/imodelhub-client.js",
   "typings": "lib/imodelhub-client",
@@ -35,13 +35,12 @@
   "dependencies": {
     "@bentley/context-registry-client": "workspace:*",
     "deep-assign": "^2.0.0",
-    "js-base64": "^2.4.5"
+    "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.6",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.6",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.6",
-    "@bentley/rbac-client": "workspace:^3.0.0-dev.6"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.8",
+    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.8",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.8"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
@@ -49,9 +48,7 @@
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "@types/deep-assign": "^0.1.0",
-    "@types/js-base64": "^2.3.1",
     "@types/node": "10.14.1",
     "eslint": "^7.11.0",
     "rimraf": "^3.0.2",

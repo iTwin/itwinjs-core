@@ -113,7 +113,6 @@ export class Frontstage3 extends FrontstageProvider {
         }
         bottomPanel={
           <StagePanel
-            size={225}
             widgets={[
               <Widget iconSpec="icon-placeholder" label="Large Table" control={TableExampleWidgetControl} />,
             ]}
