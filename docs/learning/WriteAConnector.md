@@ -2,7 +2,7 @@
 title: iModel Connector Developer's Guide
 ---
 
-# Contents {#contents .TOC-Heading}
+## Contents {#contents .TOC-Heading}
 
 [Introduction:](#introduction)
 
@@ -190,13 +190,11 @@ For more information, please see
 
 <https://www.itwinjs.org/learning/imodelhub/briefcases/>
 
-###
-
 ### Element
 
 ### Changeset
 
-# The basics of writing a connector
+## The basics of writing a connector
 
 ## Getting started
 
@@ -214,7 +212,7 @@ The sections below give a high level overview of the various parts that go into 
 
 ## Data Extraction
 
-Extraction of data from the input depends on the source format and the availablity of a library capable of understanding it.  There are two strategies typically employed for data extraction.
+Extraction of data from the input depends on the source format and the availablity of a library capable of understanding it. There are two strategies typically employed for data extraction.
 
 1. If the extraction library is compatible with TypeScript, write an extraction module and use that to connect the input data with the alignment phase.
 2. If a TypeScript binding is not available, extract the data into an intermediary format that can be then ingested by the alignment phase.
@@ -223,8 +221,8 @@ Extraction of data from the input depends on the source format and the availabli
 
 An iModel Connector must carefully transform the source data to BIS-based data in the iModel, and hence each connector is written for a specific data source.
 
-- Mappings of data are *from* source *into* an iModel.
-- Typically, a connector stores enough information about source data to detect the differences in it between job-runs. In this manner tge connector generates *changesets* that are sent to iModelHub. This is the key difference between a connector and a one-time converter.
+- Mappings of data are _from_ source _into_ an iModel.
+- Typically, a connector stores enough information about source data to detect the differences in it between job-runs. In this manner tge connector generates _changesets_ that are sent to iModelHub. This is the key difference between a connector and a one-time converter.
 - Each job generates data in the iModel that is isolated from all other jobs' data. The resulting combined iModel is partitioned at the Subject level of the iModel; each connector job has its own Subject.
 
 For each iTwin Connector author, there will always be two conflicting goals:
@@ -258,7 +256,7 @@ As discussed in [Element Fundamentals](https://github.com/imodeljs/imodeljs/tree
 
 iTwin Connector data transformations should be written considering the Display Label logic; UserLabel is the appropriate property for a connector to set to control the Display Label (CodeValue should never be set for anything other than coding purposes).
 
-*But what value should an iModel connector set UserLabel to?* There are two goals to consider in the generation of UserLabels. Those goals, in priority order, are:
+_But what value should an iModel connector set UserLabel to?_ There are two goals to consider in the generation of UserLabels. Those goals, in priority order, are:
 
 1. Consistency with source application label usage.
 2. Consistency with BIS domain default labeling strategy.
@@ -273,7 +271,7 @@ Rather than starting over when the source data changes, a connector should be ab
 
 In the case of source data that was previously converted and has changed, the connector should update the data in the iModel that were the results of the previous conversion. In the case of source data that was previously converted and has been deleted in the source, the connector should delete the results of the previous conversion. Source data that has been added should be inserted.
 
-To do incremental updates, a connector must do Id mapping and change-detection.  The following sections describe how this is implemented.
+To do incremental updates, a connector must do Id mapping and change-detection. The following sections describe how this is implemented.
 
 ### Provenance
 
@@ -282,18 +280,19 @@ A connector is usually dealing with two levels of provenance
 1. What is the identity and metadata of a file or repository synchronized into an iModel?
 2. What is the identity of the element within that repository?
 
-**Case 1**
+#### Case 1
+
 ExternalSource and ExternalSourceAttachments is used to describe the original external file reference hierarchy.
 
 To look up an existing ExternalSource:
 
-```
+```SQL
 select ecinstanceid from bis.ExternalSource where repository=?
 ```
 
 If an ExternalSource is not found, insert one using
 
-```
+```JavaScript
  function insertExternalSource(iModelDb: IModelDb, repository: Id64String, userLabel: string): Id64String {
     const externalSourceProps: ExternalSourceProps = {
       classFullName: ExternalSource.classFullName,
@@ -310,7 +309,7 @@ If an ExternalSource is not found, insert one using
 
 After calling Synchronizer.updateIModel, set the source property of the element's ExternalSourceAspect to point to the correct ExternalSource. Here is a code snippet:
 
-```
+```JavaScript
 const ids = ExternalSourceAspect.findBySource(imodel, scope, kind, item.id);
 const aspect = imodel.elements.getAspect(ids.aspectId) as ExternalSourceAspect;
 if (aspect.source === <externalsource.id>)
@@ -321,9 +320,9 @@ imodel.elements.updateAspect(aspect)
 
 At the start of the connector's updateExistingData function, examine all existing elements to ensure their sources are set. The code shown above can be used to update an existing element's ExternalSourceAspect.
 
-A connector must also relate each physical model that it creates to source document(s) that it used to create that model. Specifically, each connector must create a ElementHasLinks ECRelationship from the InformationContentElement element that represents the model to one or more RepositoryLink elements that describe the source document.  When you create a physical partition model, link it to the RepositoryLink that corresponds to the source document.
+A connector must also relate each physical model that it creates to source document(s) that it used to create that model. Specifically, each connector must create a ElementHasLinks ECRelationship from the InformationContentElement element that represents the model to one or more RepositoryLink elements that describe the source document. When you create a physical partition model, link it to the RepositoryLink that corresponds to the source document.
 
-**Case 2 : Id mapping**
+#### Case 2 : Id mapping
 
 Id mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data. If the source data has stable, unique IDs, then Id mapping could be straightforward.
 
@@ -346,7 +345,7 @@ If timestamps are not available, then the connector will have to use some other 
 The change-detection algorithm implemented is
 
 - For each source data item:
-  - add source item's Id to the *source_items_seen* set
+  - add source item's Id to the _source_items_seen_ set
   - Look in the mappings for the corresponding data in the iModel (element, aspect, model)
   - If found,
     - Detect if the source item's current data has changed. If so,
@@ -360,7 +359,7 @@ The change-detection algorithm implemented is
 Infer deletions:
 
 - For each source data item Id previously converted
-  - if item Id is not in *source_items_seen*
+  - if item Id is not in _source_items_seen_
     - Find the the corresponding data in the iModel
       - Delete the data in the iModel
       - Remove the the source data item's Id from the mappings
@@ -370,23 +369,135 @@ Infer deletions:
 The connector SDK exposes its functionality through three main clases
 BridgeRunner, Synchronizer and iModelBridge Interface.
 
-### BridgeRunner
+### BridgeRunner (2.x) or ConnectorRunner (3.x)
+
+Constructor
+
+The ConnectorRunner has a constructor which the takes a BridgeJobDefArgs as its lone parameter. The BridgeJobDefArgs has properties to describe the major pieces to the connector job:
+
+1. sourcePath - your native data (i.e. where the data is coming from) it has nothing to do with source code.
+2. outputDir - this is the target for your iModel (i.e where the data is going to)
+3. BridgeModule - path to your java script source code. This must extend IModelBridge and implement its methods
+4. IsSnapshot - write the iModel to the disk
+
+Methods
+
+The ConnectorRunner has a Synchronize method which runs your bridge module.
+
+```JavaScript
+    const bridgeJobDef = new BridgeJobDefArgs();
+    bridgeJobDef.sourcePath = "c:\tmp\mynativefile.txt";
+    bridgeJobDef.bridgeModule = "./HelloWorldConnector.js";
+    bridgeJobDef.outputDir = "c:\tmp\out\";
+    bridgeJobDef.isSnapshot = true;
+
+    const runner = new BridgeRunner(bridgeJobDef);
+    const status = await runner.synchronize();
+```
 
 ### Synchronizer
 
 ### Connector interface methods
 
+The connectorModule (bridgeModule) assigned to the BridgeJobDefArgs above must extend the IModelBridge class. This class has several methods that must be implemented to customize the behavior of your connector.
+
+```JavaScript
+class HelloWorldConnector extends IModelBridge {
+```
+
 #### InitializeJob
+
+Use this method to add any models (e.g. physical, definition or group) required by your connector up front to ensure that the models exist when it is time to populate them with their respective elements.
+
+```JavaScript
+  public async initializeJob(): Promise<void> {
+    if (ItemState.New === this._sourceDataState) {
+      this.createGroupModel();
+      this.createPhysicalModel();
+      this.createDefinitionModel();
+    }
+  }
+```
 
 #### OpenSourceData
 
+Use this method to read your native source data and assign it to a member property of your connector so that it can be accessed later on when it is time to convert your native object to their counterparts in the iModel.
+
+```JavaScript
+  public async openSourceData(sourcePath: string): Promise<void> {
+    // ignore the passed in source and open the test file
+    const json = fs.readFileSync(sourcePath, "utf8");
+    this._data = JSON.parse(json);
+    this._sourceData = sourcePath;
+
+    const documentStatus = this.getDocumentStatus(); // make sure the repository link is created now, while we are in the repository channel
+    this._sourceDataState = documentStatus.itemState;
+    this._repositoryLink = documentStatus.element;
+  }
+```
+
 #### ImportDefinitions
+
+Your source data may have non graphical data best represented as definitions. Typically, this data requires a single instance for each definition and the same singular instance is referenced multiple times. Therefore, it is best to import the definitions up front all at once. Override the ImportDefinitions method for this purpose.
+
+```JavaScript
+  // importDefinitions is for definitions that are written to shared models such as DictionaryModel
+  public async importDefinitions(): Promise<any> {
+    if (this._sourceDataState === ItemState.Unchanged) {
+      return;
+    }
+    this.insertCodeSpecs();
+  }
+```
 
 #### ImportDomainSchema
 
+Use this method to import any domain schema that is required to publish your data.
+
+```JavaScript
+  public async importDomainSchema(_requestContext: AuthorizedClientRequestContext | ClientRequestContext): Promise<any> {
+    if (this._sourceDataState === ItemState.Unchanged) {
+      return;
+    }
+    TestBridgeSchema.registerSchema();
+    const fileName = TestBridgeSchema.schemaFilePath;
+    await this.synchronizer.imodel.importSchemas(_requestContext, [fileName]);
+  }
+```
+
 #### ImportDynamicSchema
 
+When the format for incoming data in the native source is not completely known, it is not possible to map the data to a fixed schema. A solution for this scenario is called Dynamic Schema. For example, if the native source allows for user defined classes or user defined properties, then as the classes and properties are read from the native source, they can be added to an iModel schema in-memory and real-time (a.k.a. dynamically). In effect, each native source file has its own unique schema.
+
 #### UpdateExistingData
+
+This method is the main workhorse of your connector. When this method is called, models should be created and available for insertion of elements and definitions should be created (if that is the desired work flow). Note: in the example below definition elements are being inserted to the definition model at this point as well. Physical elements and Group elements can now be converted.
+
+```JavaScript
+  public async updateExistingData() {
+    const groupModelId = this.queryGroupModel();
+    const physicalModelId = this.queryPhysicalModel();
+    const definitionModelId = this.queryDefinitionModel();
+    if (undefined === groupModelId || undefined === physicalModelId || undefined === definitionModelId) {
+      const error = `Unable to find model Id for ${undefined === groupModelId ? ModelNames.Group : (undefined === physicalModelId ? ModelNames.Physical : ModelNames.Definition)}`;
+      throw new IModelError(IModelStatus.BadArg, error, Logger.logError, loggerCategory);
+    }
+
+    if (this._sourceDataState === ItemState.Unchanged) {
+      return;
+    }
+
+    if (this._sourceDataState === ItemState.New) {
+      this.insertCategories();
+      this.insertMaterials();
+      this.insertGeometryParts();
+    }
+
+    this.convertGroupElements(groupModelId);
+    this.convertPhysicalElements(physicalModelId, definitionModelId, groupModelId);
+    this.synchronizer.imodel.views.setDefaultViewId(this.createView(definitionModelId, physicalModelId, "TestBridgeView"));
+  }
+```
 
 ## Execution Sequence
 
@@ -394,7 +505,7 @@ The ultimate purpose of a connector is to synchronize an iModel with the data in
 
 - BridgeRunner: [Opens a local briefcase copy](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/IModelDb.md) of the iModel that is to be updated.
 - Import or Update Schema
-  - Connector: Possibly [import an appropriate BIS schema into the briefcase](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/SchemasAndElementsInTypeScript.md#importing-the-schema)  or upgrade an existing schema.
+  - Connector: Possibly [import an appropriate BIS schema into the briefcase](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/SchemasAndElementsInTypeScript.md#importing-the-schema) or upgrade an existing schema.
   - BridgeRunner: [Push](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModelServer.
 - Convert Changed Data
   - Connector:
@@ -425,20 +536,20 @@ More on synchronization using connectors could be found [here](https://communiti
 
 ## Building a test for a connector
 
-# Advanced Topics
+## Advanced Topics
 
-## Job Subjects
+### Job Subjects
 
-A connector  is required to create a uniquely named Subject element in the iModel. The job subject element should be a child of the root subject and must have a unique code.
+A connector is required to create a uniquely named Subject element in the iModel. The job subject element should be a child of the root subject and must have a unique code.
 
 A connector is required to scope all of the subjects and definitions and their models under its job subject element. That is,
 
 - Subjects and partitions that a bridge creates should be children of the job subject element,
 - The models and other elements that the bridge creates should be children of those subjects and partitions or in those models.
 
-## Schema merging
+### Schema merging
 
-## Units and Coordinate systems
+### Units and Coordinate systems
 
 For the basics of coordinate systems in iModels, please see <https://www.itwinjs.org/learning/geolocation/>
 
@@ -452,7 +563,7 @@ For any iModel, a connector should
 
 As a general rule, for iModels primarily generated from connectors that deal with building data, a coordinate transform with linear transformation like ECEF will be better.
 
-## Dealing with geometry
+### Dealing with geometry
 
 Please see the section on [GeometryStream](https://www.itwinjs.org/learning/common/geometrystream/) to understand the persistence of iModel geometry. Inside a connector, the input data geometry needs to transformed and persisted as a geometrystream stored with the element. The [geometry library](https://www.itwinjs.org/learning/geometry/) provided as a part of iModel.js will aid in lot of the heavy lifting of complex calculations.
 
@@ -463,11 +574,11 @@ Typical workflow to create iModel geometry is
 3. Create and map individual geometric primitives from the input data and feed it into the geometrystream. In order to learn how to create individual primitves that will be fed into the geometrystreambuilder, the [iTwin Geometry sample](https://www.itwinjs.org/sample-showcase/?group=Geometry+Samples&sample=simple-3d-sample) is a good starting point
 4. Provide geometry and other details to the element createion logic. Please see [GeometricElement3d](https://www.itwinjs.org/learning/backend/createelements/#geometricelement3d)
 
-## Authentication
+### Authentication
 
-## Locks & Codes
+### Locks & Codes
 
-The connector SDK takes care of acquiring locks and codes. It sets up the briefcase manager to run in  "bulk insert" mode before calling UpdateExistingData. After UpdateExistingData finishes,  it then goes to iModelHub to acquire all needed locks and to request all codes used before committing the local txn. The entire conversion will fail and be rolled back if this step fails. Note that this is why it is so crucial that a connector must not call SaveChanges directly.
+The connector SDK takes care of acquiring locks and codes. It sets up the briefcase manager to run in "bulk insert" mode before calling UpdateExistingData. After UpdateExistingData finishes, it then goes to iModelHub to acquire all needed locks and to request all codes used before committing the local txn. The entire conversion will fail and be rolled back if this step fails. Note that this is why it is so crucial that a connector must not call SaveChanges directly.
 
 Models that are created by a connector are exclusively locked by the job (that is, the job's briefcase) during the execution of a job. Likewise, elements created by a connector are exclusively locked as well for the job duration.
 
@@ -483,7 +594,7 @@ Job-subject scoping also prevents problems with locks and codes. The codes used 
 - The connector created elements with codes in models or scopes that it does not own. This is a bug in the connector.
 - Temporary communications or server-side problems. The job can be retried later.
 
-## More information
+### More information
 
 For more indepth information please see:
 
