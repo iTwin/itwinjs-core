@@ -454,6 +454,15 @@ As a general rule, for iModels primarily generated from connectors that deal wit
 
 ## Dealing with geometry
 
+Please see the section on [GeometryStream](https://www.itwinjs.org/learning/common/geometrystream/) to understand the persistence of iModel geometry. Inside a connector, the input data geometry needs to transformed and persisted as a geometrystream stored with the element. The [geometry library](https://www.itwinjs.org/learning/geometry/) provided as a part of iModel.js will aid in lot of the heavy lifting of complex calculations.
+
+Typical workflow to create iModel geometry is
+
+1. Identify the suitable ECClass to persist your data. Typically this is a PhysicalElement
+2. Construct a [GeometryStreamBuilder](https://www.itwinjs.org/reference/imodeljs-common/geometry/geometrystreambuilder/) to help with collecting all the geometric primitive that will be used to create the element.
+3. Create and map individual geometric primitives from the input data and feed it into the geometrystream. In order to learn how to create individual primitves that will be fed into the geometrystreambuilder, the [iTwin Geometry sample](https://www.itwinjs.org/sample-showcase/?group=Geometry+Samples&sample=simple-3d-sample) is a good starting point
+4. Provide geometry and other details to the element createion logic. Please see [GeometricElement3d](https://www.itwinjs.org/learning/backend/createelements/#geometricelement3d)
+
 ## Authentication
 
 ## Locks & Codes
