@@ -2,10 +2,10 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-@import "~@bentley/ui-core/lib/ui-core/icons/variables";
-@import "~@bentley/ui-core/lib/ui-core/inputs/variables";
-@import "~@bentley/ui-core/lib/ui-core/style/themecolors";
-@import "~@bentley/ui-core/lib/ui-core/style/variables";
+@import "../icons/variables";
+@import "../inputs/variables";
+@import "./themecolors";
+@import "./variables";
 @import "~@itwin/itwinui-css/scss/style/space";
 
 // Override some iTwinUI-css padding and minimums for iTwin.js applications
