@@ -1949,7 +1949,8 @@ export abstract class Viewport implements IDisposable {
    * @param options options that control how the view change works and whether to change view rotation.
    */
   public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void> {
-    this.zoomToPlacements(await this.iModel.elements.getPlacements(ids), options);
+    const placements = await this.iModel.elements.getPlacements(ids, { type: this.view.is3d() ? "3d" : "2d" });
+    this.zoomToPlacements(placements, options);
   }
 
   /** Zoom the view to a volume of space in world coordinates.

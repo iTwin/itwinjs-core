@@ -1,6 +1,35 @@
 # Change Log - @bentley/geometry-core
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Thu, 29 Jul 2021 20:01:11 GMT and should not be manually modified.
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+_Version update only_
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- Add AuxChannel.computeDisplacementRange.
+- accessor for InterpolationCurve3dOptions
+- remove internal barrel-import usage
+- Eliminate artificial interior edge splits when clipping with a UnionOfConvexClipPlaneSets
+- New curve type InterpolationCurve3d.   Supported in IMJS, FB.  Construction methods to be added.
+- Handle imjs and flatbuffer inputs with numPerFace blocking
+- Added compare of numbers in Geographic CRS classes with tolerances.
+- Adjusted WGS84 polar radius to be more precise than millimeter
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
@@ -16,6 +45,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 - Use ZXY axis order in Arc3d.createCenterNormalRadius().
 - Range equality functions accept Readonly<Range>. Add XYZ.toArray.
 - PolyfaceData.tryTransformInPlace now also transforms PolyfaceAuxData.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
@@ -33,6 +67,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 ### Updates
 
 - TaggedGeometryData to support subdivision surfaces and future variant meshes
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT

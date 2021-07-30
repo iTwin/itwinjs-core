@@ -26,7 +26,7 @@ export class AnalysisAnimationTool extends PrimitiveTool {
 
   /** Show tool prompt. */
   public setupAndPromptForNextAction(): void {
-    IModelApp.notifications.outputPromptByKey("UiFramework:tools.AnalysisAnimation.Prompts.SelectView");
+    IModelApp.notifications.outputPromptByKey("SampleApp:tools.AnalysisAnimation.Prompts.SelectView");
   }
 
   /** Handle user pressing left mouse button. */

@@ -299,7 +299,12 @@ function traverseContentItemPrimitiveFieldValue(visitor: IContentVisitor, fieldH
   visitor.processPrimitiveValue({ field: fieldHierarchy.field, valueType, namePrefix, rawValue, displayValue });
 }
 
-function createFieldHierarchies(fields: Field[]) {
+/**
+ * `ignoreCategories` parameter enables adding all of the `nestedFields` to parent field's `childFields`
+ *  without considering categories.
+ *  @internal
+*/
+export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean) {
   const hierarchies = new Array<FieldHierarchy>();
   const visitField = (category: CategoryDescription, field: Field, parentField: Field | undefined): FieldHierarchy | undefined => {
     let childFields: FieldHierarchy[] = [];
@@ -310,7 +315,7 @@ function createFieldHierarchies(fields: Field[]) {
         return undefined;
     }
     const fieldHierarchy = { field, childFields };
-    if (category === parentField?.category) {
+    if (category === parentField?.category || ignoreCategories && parentField) {
       // if categories of this field and its parent field match - return the field hierarchy without
       // including it as a top level field
       return fieldHierarchy;

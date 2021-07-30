@@ -359,16 +359,6 @@ export class WidgetDef {
     this._widgetReactNode = node;
   }
 
-  /** @deprecated use reactNode */
-  // istanbul ignore next
-  public get reactElement(): React.ReactNode {
-    return this.reactNode;
-  }
-  // istanbul ignore next
-  public set reactElement(node: React.ReactNode) {
-    this.reactNode = node;
-  }
-
   public setWidgetState(newState: WidgetState): void {
     if (this.state === newState)
       return;

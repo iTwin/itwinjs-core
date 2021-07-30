@@ -1,6 +1,28 @@
 # Change Log - @bentley/ui-ninezone
 
-This log was last generated on Fri, 16 Jul 2021 17:45:09 GMT and should not be manually modified.
+This log was last generated on Thu, 29 Jul 2021 20:01:11 GMT and should not be manually modified.
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+### Updates
+
+- Initialize size and position of popout window when popping a widget out from floating state.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
@@ -13,6 +35,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 ### Updates
 
 - Add ability to provide widgets to zones via UiItemsProvider when using AppUI version 1.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
@@ -35,6 +62,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - Update scss to remove use of slash for division to avoid SASS deprecation warnings.
 - Fix sass error reported by Civil iTwin.
 - publish in-use APIs
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
