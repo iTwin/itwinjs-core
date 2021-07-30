@@ -18,12 +18,7 @@ import { of } from "rxjs";
 
 const FILTERED_DATA_PAGE_SIZE = 20;
 
-/**
- * NodeLoader which will be returned when filtering,
- * it returns new `modelSource`.
- * @internal
- */
-export class FilteringInProgressNodeLoader extends AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> {
+class FilteringInProgressNodeLoader extends AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> {
   constructor(dataProvider: IPresentationTreeDataProvider) {
     super(new TreeModelSource(), dataProvider);
   }

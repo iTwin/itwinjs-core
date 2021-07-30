@@ -15,7 +15,6 @@ import {
 } from "../../../presentation-components";
 import { FilteredPresentationTreeDataProvider } from "../../../presentation-components/tree/FilteredDataProvider";
 import { createRandomPropertyRecord, createRandomTreeNodeItem } from "../../_helpers/UiComponents";
-import { FilteringInProgressNodeLoader } from "../../../presentation-components/tree/controlled/UseControlledTreeFiltering";
 
 describe("useControlledPresentationTreeFiltering", () => {
   const nodeLoaderMock = moq.Mock.ofType<AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider>>();
@@ -228,7 +227,23 @@ describe("useControlledPresentationTreeFiltering", () => {
     expect((provider as FilteredPresentationTreeDataProvider).parentDataProvider).to.not.be.instanceOf(FilteredPresentationTreeDataProvider);
   });
 
-  it("returns `FilteringInProgressNodeLoader` nodeLoader with `visibleNodes` whose `numRootNodes` are undefined when filtering", () => {
+  it("returns `filteredNodeLoader` with `visibleNodes` whose `numRootNodes` are undefined and `loadNode` method returns result with an empty `loadedNodes` array when filtering", (done) => {
+    const testModelNode: TreeModelNode = {
+      id: "test",
+      checkbox: {
+        isDisabled: false,
+        isVisible: true,
+        state: 0,
+      },
+      depth: 0,
+      description: "",
+      isExpanded: false,
+      isSelected: false,
+      item: createRandomTreeNodeItem(),
+      label: createRandomPropertyRecord(),
+      numChildren: 3,
+      parentId: "parentId",
+    };
     const initialProps: ControlledPresentationTreeFilteringProps = {
       nodeLoader: nodeLoaderMock.object,
       filter: "test",
@@ -239,39 +254,13 @@ describe("useControlledPresentationTreeFiltering", () => {
     );
 
     const nodeLoader = result.current.filteredNodeLoader;
-
     expect(result.current.isFiltering).to.be.true;
-    expect(nodeLoader).to.be.instanceOf(FilteringInProgressNodeLoader);
     expect(nodeLoader.modelSource.getVisibleNodes().getNumRootNodes()).to.be.undefined;
-  });
-
-  describe("FilteringInProgressNodeLoader", () => {
-    const nodeLoader = new FilteringInProgressNodeLoader(dataProviderMock.object);
-
-    it("returns `TreeNodeLoadResult` with an empty array of `loadedNodes` when loading a node", (done) => {
-      const testModelNode: TreeModelNode = {
-        id: "test",
-        checkbox: {
-          isDisabled: false,
-          isVisible: true,
-          state: 0,
-        },
-        depth: 0,
-        description: "",
-        isExpanded: false,
-        isSelected: false,
-        item: createRandomTreeNodeItem(),
-        label: createRandomPropertyRecord(),
-        numChildren: 3,
-        parentId: "parentId",
-      };
-
-      nodeLoader.loadNode(testModelNode, 0).subscribe((res) => {
-        expect(res).to.deep.eq({
-          loadedNodes: [],
-        });
-        done();
+    nodeLoader.loadNode(testModelNode, 0).subscribe((res) => {
+      expect(res).to.deep.eq({
+        loadedNodes: [],
       });
+      done();
     });
   });
 });
