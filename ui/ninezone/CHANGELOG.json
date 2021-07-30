@@ -2,6 +2,18 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "2.19.1",
+      "tag": "@bentley/ui-ninezone_v2.19.1",
+      "date": "Thu, 29 Jul 2021 20:01:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initialize size and position of popout window when popping a widget out from floating state."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.0",
       "tag": "@bentley/ui-ninezone_v2.19.0",
       "date": "Mon, 26 Jul 2021 12:21:25 GMT",
