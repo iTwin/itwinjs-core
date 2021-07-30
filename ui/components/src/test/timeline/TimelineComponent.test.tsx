@@ -161,6 +161,38 @@ describe("<TimelineComponent showDuration={true} />", () => {
     expect(dataProvider.pointerCallbackCalled).to.be.true;
   });
 
+  it("should show tooltip on pointer move", async () => {
+    const spyOnChange = sinon.spy();
+    const dataProvider = new TestTimelineDataProvider();
+    expect(dataProvider.loop).to.be.false;
+    fakeTimers = sinon.useFakeTimers();
+
+    const renderedComponent = render(<TimelineComponent
+      startDate={dataProvider.start}
+      endDate={dataProvider.end}
+      initialDuration={10 * 1000}
+      totalDuration={40 * 1000}
+      minimized={true}
+      showDuration={true}
+      onChange={spyOnChange}
+      onSettingsChange={dataProvider.onPlaybackSettingChanged}
+      onPlayPause={dataProvider.onPlayPause} />);
+
+    expect(renderedComponent).not.to.be.undefined;
+    // renderedComponent.debug();
+
+    expect(renderedComponent.container.querySelector(".tooltip-text")).not.to.exist;
+    const sliderContainer = renderedComponent.container.querySelector(".iui-slider-container");
+    expect(sliderContainer).to.exist;
+    fireEvent.pointerEnter(sliderContainer!, {});
+    fireEvent.pointerMove(sliderContainer!, {});
+    expect(renderedComponent.container.querySelector(".tooltip-text")).to.exist;
+    fireEvent.pointerLeave(sliderContainer!, {});
+    expect(renderedComponent.container.querySelector(".tooltip-text")).not.to.exist;
+    fireEvent.pointerDown(sliderContainer!, {});
+    expect(spyOnChange).to.be.called;
+  });
+
   it("timeline with short duration", async () => {
     const dataProvider = new TestTimelineDataProvider();
     dataProvider.getSettings().duration = 20;  // make sure this is shorter than 40 so we get to end of animation
