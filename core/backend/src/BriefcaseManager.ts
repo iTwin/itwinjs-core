@@ -205,9 +205,6 @@ export class BriefcaseManager {
     const briefcaseId = request.briefcaseId ?? await this.acquireNewBriefcaseId(requestContext, request.iModelId);
     const fileName = request.fileName ?? this.getFileName({ briefcaseId, iModelId: request.iModelId });
 
-    if (IModelJsFs.existsSync(fileName))
-      throw new IModelError(IModelStatus.FileAlreadyExists, `Briefcase "${fileName}" already exists`);
-
     const asOf = request.asOf ?? IModelVersion.latest().toJSON();
     const changeset = await this.changesetFromVersion(requestContext, IModelVersion.fromJSON(asOf), request.iModelId);
 
