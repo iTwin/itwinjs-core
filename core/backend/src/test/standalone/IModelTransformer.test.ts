@@ -1130,44 +1130,4 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
-  it("the transformer should successfully handle attributes with `<` or `&` entities", async () => {
-    const testSchemaPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestSchema1.ecschema.xml");
-    IModelJsFs.writeFileSync(testSchemaPath, `<?xml version="1.0" encoding="UTF-8"?>
-      <ECSchema schemaName="TestSchema" alias="ts" version="01.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
-          <ECSchemaReference name="BisCore" version="01.00" alias="bis"/>
-          <ECEntityClass typeName="TestElement" displayLabel="escape &lt; us &amp; please; except > I'm ok apparently">
-            <BaseClass>bis:PhysicalElement</BaseClass>
-            <ECProperty propertyName="MyProp1" typeName="string"/>
-          </ECEntityClass>
-      </ECSchema>`
-    );
-
-    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "EscapedEntitiesSource.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "Escaped Attr Entities Test" } });
-
-    const requestContext = new BackendRequestContext();
-    await sourceDb.importSchemas(requestContext, [testSchemaPath]);
-    sourceDb.saveChanges();
-
-    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "EscapedEntitiesTarget.bim");
-    const targetDb = SnapshotDb.createEmpty(targetDbPath, { rootSubject: { name: "Escaped Attr Entities Test" } });
-    const transformer = new IModelTransformer(sourceDb, targetDb);
-
-    let error: any;
-    try {
-      await transformer.processSchemas(new BackendRequestContext());
-    } catch (_error) {
-      error = _error;
-    }
-    assert.isUndefined(error);
-
-    targetDb.saveChanges();
-    const targetImportedSchemasLoader = new IModelSchemaLoader(targetDb);
-    const schema1InTarget = targetImportedSchemasLoader.getSchema("TestSchema");
-    assert.isDefined(schema1InTarget);
-
-    sourceDb.close();
-    targetDb.close();
-  });
-
 });
