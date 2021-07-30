@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "Remove exception in BriefcaseManager.downloadBriefcase when local file already exists to avoid changing behavior during 2.x generation",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "33028649+ColinKerr@users.noreply.github.com"
+}
