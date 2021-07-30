@@ -626,6 +626,13 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   public get treeOwner(): TileTreeOwner {
+    const planarClipMaskAppliesTransparency = false;
+    // if (undefined !== this._planarClipMask) {
+    //   const trans = this._planarClipMask.settings.transparency;
+    //   if (trans !== undefined && trans > 0)
+    //     planarClipMaskAppliesTransparency = true;
+    // }
+
     const id: MapTreeId = {
       viewportId: this._viewportId,
       applyTerrain: this.settings.applyTerrain && !this.isOverlay && !this._isDrape,
@@ -634,7 +641,7 @@ export class MapTileTreeReference extends TileTreeReference {
       terrainHeightOriginMode: this.settings.terrainSettings.heightOriginMode,
       terrainExaggeration: this.settings.terrainSettings.exaggeration,
       mapGroundBias: this.settings.groundBias,
-      wantSkirts: (this.settings.applyTerrain || this.useDepthBuffer) && !this.settings.transparency && !this._baseTransparent,
+      wantSkirts: (this.settings.applyTerrain || this.useDepthBuffer) && !this.settings.transparency && !this._baseTransparent && !planarClipMaskAppliesTransparency,
       wantNormals: false, // Can set to this.settings.terrainSettings.applyLighting if we want to ever apply lighting to terrain again so that normals are retrieved when lighting is on.
       globeMode: this._isDrape ? GlobeMode.Plane : this.settings.globeMode,
       isOverlay: this.isOverlay,

@@ -2,12 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Id64String } from "@bentley/bentleyjs-core";
+import { Id64Set, Id64String } from "@bentley/bentleyjs-core";
 import { ClipPlane, ClipPrimitive, ClipVector, ConvexClipPlaneSet, Point2d, Vector3d } from "@bentley/geometry-core";
-import { ModelClipGroup, ModelClipGroups } from "@bentley/imodeljs-common";
+import { ModelClipGroup, ModelClipGroups, PlanarClipMaskSettings } from "@bentley/imodeljs-common";
 import {
   imageBufferToPngDataUrl, IModelApp, IModelConnection, NotifyMessageDetails, openImageDataUrlInNewWindow, OutputMessagePriority, ScreenViewport,
-  Tool, Viewport, ViewState,
+  Tool, Viewport, ViewState, ViewState3d,
 } from "@bentley/imodeljs-frontend";
 import { MarkupApp, MarkupData } from "@bentley/imodeljs-markup";
 import { ClassificationsPanel } from "./ClassificationsPanel";
@@ -199,6 +199,18 @@ export class Viewer extends Window {
     }
   }
 
+  /** Returns a set of every model's id in the iModel. */
+  public static async getModelIds(iModel: IModelConnection, ...modelNames: string[]): Promise<Id64Set> {
+    const ids = new Set<string>();
+    if (!iModel.isClosed) {
+      const query = `SELECT ECInstanceId FROM Bis:PhysicalPartition${modelNames.length > 0 ? ` WHERE codeValue IN ('${modelNames.join("','")}')` : ""}`;
+      for await (const row of iModel.query(query)) {
+        ids.add(row.id);
+      }
+    }
+    return ids;
+  }
+
   private constructor(surface: Surface, view: ViewState, views: ViewList, props: ViewerProps) {
     super(surface, { scrollbars: true });
     surface.element.appendChild(this.container);
@@ -215,7 +227,26 @@ export class Viewer extends Window {
     this.toolBar.addItem(createToolButton({
       iconUnicode: "\ue90c", // properties
       tooltip: "Debug info",
-      click: () => this.toggleDebugWindow(),
+      // click: () => this.toggleDebugWindow(),
+      click: () => {
+        const fun = async () => {
+          const displayStyle = (view as ViewState3d).getDisplayStyle3d();
+          const modelsForMasking = await Viewer.getModelIds(this.viewport.iModel, "SS_MasterLandscape.dgn, LandscapeModel");
+          displayStyle.changeBackgroundMapProps({
+            groundBias: -1,
+            planarClipMask: PlanarClipMaskSettings.createForModels(modelsForMasking).toJSON(),
+            terrainSettings: {heightOriginMode:0},
+            transparency: 0.0, // Not do the fix: Temporary fix due to how the planar clip and transparency interact.
+            useDepthBuffer: true,
+          });
+          // view.displayStyle = displayStyle;
+          view.setDisplayStyle(displayStyle);
+          // view..synchWithView({ noSaveInUndo:? !saveInUndo });
+        };
+        fun().then(() => {
+          console.log("Done");
+        }).catch(() => {});
+      },
     }));
 
     this.toolBar.addItem(createToolButton({
