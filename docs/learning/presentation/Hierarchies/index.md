@@ -1,34 +1,42 @@
 # Hierarchies
 
-There are 2 primary concepts for creating hierarchies: rules and specifications.
+The Presentation library provides a declarative way to create hierarchies based on iModel data. There are 2 primary concepts for creating hierarchies: [rules](#rules) and [specifications](#specifications).
+
+![Hierarchy rule example](./media/hierarchy-rule-example.png)
 
 ## Rules
 
-Define *where* and *if* specific branch should be created in the hierarchy. There are 2 types of rules:
+Hierarchy presentation rule is a top level concept for defining hierarchies. There are two types of hierarchy rules:
 
-- [RootNodeRule](./RootNodeRule.md)
-- [ChildNodeRule](./ChildNodeRule.md)
+- [Root node rule](./RootNodeRule.md) is for creating nodes at the root level.
+- [Child node rule](./ChildNodeRule.md) is for creating child nodes.
 
-## Specifications
+The only difference between those two rules is that we're looking for root node rules when creating root level nodes and for child node rules otherwise.
 
-Define *contents* for each branch. There are 6 types of specifications:
+Both kinds of rules have two types of attributes - for defining [placement](#placement-attributes) and for defining [branch content](#branch-content-attributes). The latter attributes only get used if the rule does get used after evaluating the former.
 
-- [RelatedInstanceNodes](./RelatedInstanceNodes.md)
-- [InstanceNodesOfSpecificClasses](./InstanceNodesOfSpecificClasses.md)
-- [CustomQueryInstanceNodes](./CustomQueryInstanceNodes.md)
-- [CustomNode](./CustomNode.md)
+### Placement Attributes
 
-Multiple specifications can contribute to the same branch by specifying multiple
-specifications in a single rule or specifying multiple rules that match the same
-parent node.
+Placement attributes define **if** the rule should be used and **where** the nodes appear if it is.
 
-**Note:**  grouping and sorting is done at specification level which
-means nodes generated from different specifications do not get grouped and sorted together.
+### Branch Content Attributes
+
+Branch content attributes define **result of the rule** if it does get used after evaluating [placement attributes](#placement-attributes). The primary branch content attribute is `specifications`, which defines what content is going to be created. There are 4 types of specifications:
+
+- [Instance nodes of specific classes](./InstanceNodesOfSpecificClasses.md) specification returns nodes for instances of given ECClass(-es) without attempting to join them to the parent node using some relationship or attribute. This is mostly useful when specifying root nodes.
+- [Related instance nodes](./RelatedInstanceNodes.md) specification returns nodes for instances that are related to the parent instance node through given ECRelationship. This is the most commonly used specification to create child nodes.
+- [Custom query instance nodes](./CustomQueryInstanceNodes.md) specification returns nodes for instances based on a given ECSQL query. Generally, this specification is rarely needed as majority of cases can be handled by [Instance nodes of specific classes specification](./InstanceNodesOfSpecificClasses.md) which is more performant and easier to set up.
+- [Custom node](./CustomNode.md) specification returns a single node that's not based on data in the iModel. Instead, the specification itself specifies all the attributes (type, label, description, image, etc.) of the node.
 
 ## Hierarchy Customization
 
-All [general use customization rules](../Customization/index.md#rules) can be applied to hierarchies. In addition, there
-are some hierarchy-specific customization rules:
+All [general use customization rules](../Customization/index.md#rules) can be applied to hierarchies. In addition, there are some hierarchy-specific customization rules:
 
-- [GroupingRule](./GroupingRule.md) for advanced grouping
-- [NodeArtifactsRule](./NodeArtifactsRule.md) to help create hierarchies for specific cases
+- [Grouping rule](./GroupingRule.md) for advanced grouping.
+- [Node artifacts rule](./NodeArtifactsRule.md) to help customize produced nodes based on child nodes deeper in the hierarchy.
+
+## Related Topics
+
+- [Infinite hierarchies prevention](./InfiniteHierarchiesPrevention.md)
+- [ECExpressions](./ECExpressions.md)
+- [Terminology](./Terminology.md)

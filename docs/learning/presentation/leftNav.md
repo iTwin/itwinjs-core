@@ -20,7 +20,7 @@
 ### [Hierarchies](./Hierarchies/index.md)
 
 - [Rules](./Hierarchies/index.md#rules)
-- [Specifications](./Hierarchies/index.md#specifications)
+- [Specifications](./Hierarchies/ChildNodeRule.md#attribute-specifications)
 - [Customization](./Hierarchies/index.md#hierarchy-customization)
 - [Infinite hierarchies prevention](./Hierarchies/InfiniteHierarchiesPrevention.md)
 - [ECExpressions](./Hierarchies/ECExpressions.md)

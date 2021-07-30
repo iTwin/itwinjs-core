@@ -1,34 +1,115 @@
-# ChildNodeRule
+# Child Node Rule
 
 > Based on [ChildNodeRule]($presentation-common) interface.
 
-Child node rules are used to define child nodes. Generally, `priority`, `condition`, `onlyIfNotHandled` and `stopFurtherProcessing` attributes are used to determine where (under
-which parent node) the branch is placed.
+Child node rules are used to define child nodes in a hierarchy.
+
+The rules have two types of attributes - for defining *placement* and for defining *branch content*. The latter attributes only get used if the rule does get used after evaluating the former.
 
 ## Attributes
 
-| Name                        | Required? | Type                                                                 | Default | Meaning                                                                                                                                                                                    |
-| --------------------------- | --------- | -------------------------------------------------------------------- | ------- | ------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------ |
-| *Placement attributes*      |
-| `priority`                  | No        | `number`                                                             | `1000`  | Defines the order in which presentation rules are evaluated.                                                                                                                               |
-| `condition`                 | No        | [ECExpression](./ECExpressions.md#rule-condition)                    | `""`    | Defines a condition for the rule, which needs to be met in order to execute it.                                                                                                            |
-| `requiredSchemas`           | No        | [`RequiredSchemaSpecification[]`](../Advanced/SchemaRequirements.md) | `[]`    | Specifications that define schema requirements for the rule to take effect.                                                                                                                |
-| `onlyIfNotHandled`          | No        | `boolean`                                                            | `false` | Should this rule be ignored if there is already an existing rule with a higher priority.                                                                                                   |
-| `stopFurtherProcessing`     | No        | `boolean`                                                            | `false` | Stop processing rules that have lower priority. Used in cases when recursion suppression is needed. **Note:** If this flag is set, `specifications` and `subConditions` are not processed. |
-| *Branch content attributes* |
-| `specifications`            | No        | [`ChildNodeSpecification[]`](./index.md#specifications)              | `[]`    | Specifications that define what content the rule returns.                                                                                                                                  |
-| `customizationRules`        | No        | [`CustomizationRule[]`](../Customization/index.md#rules)             | `[]`    | Customization rules that are applied for the content returned by this rule.                                                                                                                |
-| `subConditions`             | No        | `SubCondition[]`                                                     | `[]`    | Specifies child node rules which are only used when specific condition is satisfied                                                                                                        |
+| Name                                                        | Required? | Type                                              | Default |
+| ----------------------------------------------------------- | --------- | ------------------------------------------------- | ------- |
+| *Placement attributes*                                      |
+| [`condition`](#attribute-condition)                         | No        | [ECExpression](./ECExpressions.md#rule-condition) | `""`    |
+| [`requiredSchemas`](#attribute-requiredschemas)             | No        | `RequiredSchemaSpecification[]`                   | `[]`    |
+| [`priority`](#attribute-priority)                           | No        | `number`                                          | `1000`  |
+| [`onlyIfNotHandled`](#attribute-onlyifnothandled)           | No        | `boolean`                                         | `false` |
+| [`stopFurtherProcessing`](#attribute-stopfurtherprocessing) | No        | `boolean`                                         | `false` |
+| *Branch content attributes*                                 |
+| [`specifications`](#attribute-specifications)               | No        | `ChildNodeSpecification[]`                        | `[]`    |
+| [`customizationRules`](#attribute-customizationrules)       | No        | `CustomizationRule[]`                             | `[]`    |
+| [`subConditions`](#attribute-subconditions)                 | No        | `SubCondition[]`                                  | `[]`    |
 
-## Example
+### Attribute: `condition`
 
-```JSON
-{
-  "ruleType": "ChildNodes",
-  "condition": "ParentNode.IsOfClass(\"Model\", \"BisCore\")",
-  "requiredSchemas": [{ "name": "BisCore", "minVersion": "1.0.1" }],
-  "priority": 999,
-  "stopFurtherProcessing": true,
-  "specifications": []
-}
+Defines a condition which needs to be met in order for the rule to be used. The condition is an [ECExpression](./ECExpressions.md#rule-condition) which has to evaluate to a boolean value.
+
+The most commonly used symbols are:
+
+- `ParentNode` to define which parent node this rule is creating child nodes for.
+
+  ```ts
+  [[include:Hierarchies.Condition.ParentNodeSymbol]]
+  ```
+
+  ![Example of using ParentNode symbol in rule condition](./media/hierarchy-with-parentnode-symbol-in-condition.png)
+
+- [Ruleset variables](../Advanced/RulesetVariables.md#using-variables-in-rule-condition) to  dynamically enable / disable the rule.
+
+  ```ts
+  [[include:Hierarchies.Condition.RulesetVariables.Ruleset]]
+  ```
+
+  | Ruleset variable values                                  | Result                                                                                                                           |
+  | -------------------------------------------------------- | -------------------------------------------------------------------------------------------------------------------------------- |
+  | `DISPLAY_A_NODES = false`<br />`DISPLAY_B_NODES = false` | ![Example of using ruleset variables in rule condition](./media/hierarchy-with-ruleset-variables-in-condition-none-set.png)      |
+  | `DISPLAY_A_NODES = false`<br />`DISPLAY_B_NODES = true`  | ![Example of using ruleset variables in rule condition](./media/hierarchy-with-ruleset-variables-in-condition-partially-set.png) |
+  | `DISPLAY_A_NODES = true`<br />`DISPLAY_B_NODES = true`   | ![Example of using ruleset variables in rule condition](./media/hierarchy-with-ruleset-variables-in-condition-all-set.png)       |
+
+### Attribute: `requiredSchemas`
+
+A list of ECSchema requirements that need to met for the rule to be used. See more details [here](../Advanced/SchemaRequirements.md).
+
+```ts
+[[include:Hierarchies.RequiredSchemas.Ruleset]]
 ```
+
+### Attribute: `priority`
+
+Defines the order in which rules are handled - higher priority means the rule is handled first. If priorities are equal, the rules are handled in the order they're defined. The attribute may be especially useful when combined with [`onlyIfNotHandled` attribute](#attribute-onlyifnothandled).
+
+```ts
+[[include:Hierarchies.Priority.Ruleset]]
+```
+
+![Example of using priority attribute](./media/hierarchy-with-priority-attribute.png)
+
+### Attribute: `onlyIfNotHandled`
+
+Tells the library that the rule should only be handled if no other rule of the same type was handled previously (based on rule priorities and definition order). This allows adding fallback rules which can be overriden by higher-priority rules.
+
+```ts
+[[include:Hierarchies.OnlyIfNotHandled.Ruleset]]
+```
+
+![Example of using onlyIfNotHandled attribute](./media/hierarchy-with-onlyifnothandled-attribute.png)
+
+### Attribute: `stopFurtherProcessing`
+
+Stop processing rules that have lower priority. Used in cases when recursion suppression is needed.
+
+**Note:** If this flag is set, `specifications` and `subConditions` are not processed.
+
+### Attribute: `specifications`
+
+A list of hierarchy specifications that define what content is going to be returned. This is the most important attribute which is responsible for what nodes are going to be returned. There are 4 types of specifications:
+
+- [Instance nodes of specific classes](./InstanceNodesOfSpecificClasses.md) specification returns nodes for instances of given ECClass(-es) without attempting to join them to the parent node using some relationship or attribute. This is mostly useful when specifying root nodes.
+- [Related instance nodes](./RelatedInstanceNodes.md) specification returns nodes for instances that are related to the parent instance node through given ECRelationship. This is the most commonly used specification to create child nodes.
+- [Custom query instance nodes](./CustomQueryInstanceNodes.md) specification returns nodes for instances based on a given ECSQL query. Generally, this specification is rarely needed as majority of cases can be handled by [Instance nodes of specific classes specification](./InstanceNodesOfSpecificClasses.md) which is more performant and easier to set up.
+- [Custom node](./CustomNode.md) specification returns a single node that's not based on data in the iModel. Instead, the specification itself specifies all the attributes (type, label, description, image, etc.) of the node.
+
+Multiple specifications can contribute to the same branch by specifying multiple specifications in a single rule or specifying multiple rules that match the same parent node.
+
+**Note:** grouping and sorting is done at specification level which means nodes generated from different specifications do not get grouped and sorted together.
+
+### Attribute: `customizationRules`
+
+A list of [customization rules](./index.md#hierarchy-customization) that apply only to nodes produced by this rule. Specifying customization rules at this level (as opposed to specifying them at ruleset root level) helps them isolate from other rules, which is useful when same type of nodes need to be customized differently based on what rule creates them.
+
+```ts
+[[include:Hierarchies.CustomizationRules.Ruleset]]
+```
+
+![Example of using customizationRules attribute](./media/hierarchy-with-customizationrules-attribute.png)
+
+### Attribute: `subConditions`
+
+A list of sub-rules which share [placement attributes](#placement-attributes) and [nested customization rules](#attribute-customizationrules) of the hierarchy rule. This means the attributes of hierarchy rule are still in effect and the sub-rules can add additional condition of their own.
+
+```ts
+[[include:Hierarchies.SubConditions.Ruleset]]
+```
+
+![Example of using subConditions attribute](./media/hierarchy-with-subconditions-attribute.png)
