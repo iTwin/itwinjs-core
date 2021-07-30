@@ -36,10 +36,12 @@ import { ITreeDataProvider } from '@bentley/ui-components';
 import { ITreeNodeLoaderWithProvider } from '@bentley/ui-components';
 import { Keys } from '@bentley/presentation-common';
 import { KeySet } from '@bentley/presentation-common';
+import { LoadedNodeHierarchy } from '@bentley/ui-components';
 import { MutableTreeModel } from '@bentley/ui-components';
 import { Node } from '@bentley/presentation-common';
 import { NodeKey } from '@bentley/presentation-common';
 import { NodePathElement } from '@bentley/presentation-common';
+import { Observable } from 'rxjs/internal/Observable';
 import { Omit } from '@bentley/presentation-common';
 import { Paged } from '@bentley/presentation-common';
 import { PagedTreeNodeLoader } from '@bentley/ui-components';
@@ -342,6 +344,13 @@ export interface FilteredPresentationTreeDataProviderProps {
     parentDataProvider: IPresentationTreeDataProvider;
     // (undocumented)
     paths: ReadonlyArray<Readonly<NodePathElement>>;
+}
+
+// @internal
+export class FilteringInProgressNodeLoader extends AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> {
+    constructor(dataProvider: IPresentationTreeDataProvider);
+    // (undocumented)
+    protected load(): Observable<LoadedNodeHierarchy>;
 }
 
 // @internal (undocumented)
