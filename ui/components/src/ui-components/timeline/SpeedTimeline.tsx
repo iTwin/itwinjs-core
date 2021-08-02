@@ -9,49 +9,10 @@
 import "./SpeedTimeline.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { GetHandleProps, GetRailProps, Handles, Rail, Slider, SliderItem } from "react-compound-slider";
+import { Slider } from "@itwin/itwinui-react";
 import { CommonProps } from "@bentley/ui-core";
 
 // component is in alpha state - it may change after usability testing - test coverage not complete
-
-// *******************************************************
-// HANDLE COMPONENT
-// *******************************************************
-interface HandleProps {
-  domain: number[];
-  handle: SliderItem;
-  getHandleProps: GetHandleProps;
-}
-
-function Handle(props: HandleProps) {
-  const {
-    domain: [min, max],
-    handle: { id, value, percent },
-    getHandleProps,
-  } = props;
-
-  return <div className="scrubberHandle" role="slider" aria-valuemin={min}
-    aria-valuemax={max} aria-valuenow={value} style={{ left: `${percent}%` }}
-    {...getHandleProps(id)} />;
-}
-
-// *******************************************************
-// RAIL COMPONENT
-// *******************************************************
-interface RailProps {
-  getRailProps: GetRailProps;
-}
-
-function Rails(props: RailProps) {
-  const { getRailProps } = props;
-
-  return (
-    <>
-      <div className="railOuter" {...getRailProps()} />
-      <div className="railInner" />
-    </>
-  );
-}
 
 interface SpeedProps extends CommonProps {
   speed: number;
@@ -70,33 +31,23 @@ export function SpeedTimeline(props: SpeedProps) {
       props.onChange(value);
   };
 
-  const domain = [1, 6];
+  const tooltipProps = React.useCallback(() => {
+    return { visible: false };
+  }, []);
 
   return (
     <div className={classnames("speed-timeline", props.className)}>
       <Slider
-        mode={1}
         step={1}
-        domain={domain}
-        onChange={onChange}
+        min={1}
+        max={6}
+        minLabel=""
+        maxLabel=""
         onUpdate={onChange}
-        values={[props.speed]}>
-        <Rail>{({ getRailProps }) => <Rails getRailProps={getRailProps} />}</Rail>
-        <Handles>
-          {({ handles, getHandleProps }) => (
-            <div className="slider-handles">
-              {handles.map((handle: SliderItem) => (
-                <Handle
-                  key={handle.id}
-                  handle={handle}
-                  domain={domain}
-                  getHandleProps={getHandleProps}
-                />
-              ))}
-            </div>
-          )}
-        </Handles>
-      </Slider>
+        onChange={onChange}
+        values={[props.speed]}
+        trackDisplayMode="none"
+        tooltipProps={tooltipProps} />
     </div>
   );
 }

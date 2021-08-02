@@ -179,7 +179,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
       onPlayPause={dataProvider.onPlayPause} />);
 
     expect(renderedComponent).not.to.be.undefined;
-    // renderedComponent.debug();
+    renderedComponent.debug();
 
     expect(renderedComponent.container.querySelector(".tooltip-text")).not.to.exist;
     const sliderContainer = renderedComponent.container.querySelector(".iui-slider-container");
