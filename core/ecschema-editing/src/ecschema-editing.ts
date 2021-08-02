@@ -13,6 +13,7 @@ export * from "./Validation/SchemaValidationVisitor";
 export * from "./Validation/SchemaWalker";
 export * from "./Validation/SchemaCompareDiagnostics";
 export * from "./Validation/SchemaChanges";
+export * from "./Validation/SchemaComparer";
 export * from "./Validation/SchemaCompareReporter";
 export * from "./Editing/Editor";
 export { ISuppressionRule, IRuleSuppressionSet, IRuleSuppressionMap } from "./Validation/RuleSuppressionSet";
