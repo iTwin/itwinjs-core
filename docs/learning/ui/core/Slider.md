@@ -9,7 +9,7 @@ The following items may optionally be shown:
 - Tick marks
 - Tick labels
 
-**Note**: The Slider component uses various components from the [react-compound-slider](https://www.npmjs.com/package/react-compound-slider) package internally.
+**Note**: The Slider component uses various components from the [react-compound-slider](https://www.npmjs.com/package/react-compound-slider) package internally. This slider is Deprecated and the Slider from iTwinUI-react package should be used.
 
 ## Properties
 
