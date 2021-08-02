@@ -16,7 +16,7 @@ describe("XmlSerializer", () => {
     entityClass.setDisplayLabel("escape < us & please; except > I'm ok apparently");
     const serializedXml = await schema.toXmlString();
 
-    // use regex to find the displayLabel quote, because the DOMParser implementation might be lenient
+    // use regex to find the displayLabel quote, because the DOMParser implementation could be lenient
     assert(
       /displayLabel\s*=\s*"escape &lt; us &amp; please; except > I'm ok apparently"/.test(serializedXml),
       "< and & must be escaped in serialized xml"
