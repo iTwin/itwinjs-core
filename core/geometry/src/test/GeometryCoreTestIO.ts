@@ -78,7 +78,7 @@ export class GeometryCoreTestIO {
       this.createAndCaptureLoop(collection, loop, dx, dy, dz);
   }
 
-  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][]| undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
+  public static captureCloneGeometry(collection: GeometryQuery[], newGeometry: GeometryQuery | GeometryQuery[] | IndexedXYZCollection | Point3d[] | Point3d[][] | IndexedXYZCollection[] | undefined, dx: number = 0, dy: number = 0, dz: number = 0) {
     if (!newGeometry)
       return;
     if (newGeometry instanceof GeometryQuery) {
