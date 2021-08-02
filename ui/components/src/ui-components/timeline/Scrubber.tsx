@@ -5,7 +5,7 @@
 import "./Scrubber.scss";
 import * as React from "react";
 import { Slider } from "@itwin/itwinui-react";
-import { CommonProps, useEventListener } from "@bentley/ui-core";
+import { CommonProps } from "@bentley/ui-core";
 import { toDateString, toTimeString } from "../common/DateUtils";
 
 const getPercentageOfRectangle = (rect: DOMRect, pointer: number) => {
@@ -129,14 +129,10 @@ export function Scrubber(props: ScrubberProps) {
     setShowRailTooltip(false);
   }, []);
 
-  const handlePointerMove = React.useCallback((event: Event) => {
+  const handlePointerMove = React.useCallback((event: React.PointerEvent) => {
     sliderContainer &&
-      setPointerPercent(getPercentageOfRectangle(sliderContainer.getBoundingClientRect(), (event as PointerEvent).clientX));
+      setPointerPercent(getPercentageOfRectangle(sliderContainer.getBoundingClientRect(), event.clientX));
   }, [sliderContainer]);
-
-  useEventListener("pointermove", handlePointerMove, sliderContainer);
-  useEventListener("pointerenter", handlePointerEnter, sliderContainer);
-  useEventListener("pointerleave", handlePointerLeave, sliderContainer);
 
   const tickLabel = React.useMemo(() => {
     const showTip = isPlaying || showRailTooltip;
@@ -146,21 +142,24 @@ export function Scrubber(props: ScrubberProps) {
   }, [isPlaying, showRailTooltip, currentDuration, totalDuration, pointerPercent, startDate, endDate, timeZoneOffset, showTime]);
 
   return (
-    <>
-      <Slider ref={sliderRef}
-        className={className}
-        step={1}
-        min={0}
-        max={totalDuration}
-        minLabel=""
-        maxLabel=""
-        onUpdate={onUpdate}
-        onChange={onChange}
-        values={[currentDuration]}
-        tooltipProps={tooltipProps}
-        thumbProps={thumbProps}
-        tickLabels={tickLabel}
-      />
-    </>
+    <Slider ref={sliderRef}
+      className={className}
+      step={1}
+      min={0}
+      max={totalDuration}
+      minLabel=""
+      maxLabel=""
+      onUpdate={onUpdate}
+      onChange={onChange}
+      values={[currentDuration]}
+      tooltipProps={tooltipProps}
+      thumbProps={thumbProps}
+      tickLabels={tickLabel}
+      railContainerProps={{
+        onPointerEnter: handlePointerEnter,
+        onPointerMove: handlePointerMove,
+        onPointerLeave: handlePointerLeave,
+      }}
+    />
   );
 }
