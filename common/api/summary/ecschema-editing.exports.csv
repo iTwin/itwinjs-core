@@ -43,6 +43,7 @@ beta;IRuleSuppressionMap
 beta;IRuleSuppressionSet
 alpha;ISchemaChange
 alpha;ISchemaChanges
+alpha;ISchemaComparer
 alpha;ISchemaCompareReporter
 beta;ISuppressionRule
 alpha;KindOfQuantityChanges 
@@ -60,6 +61,8 @@ beta;class RelationshipConstraintDiagnostic
 alpha;SchemaChanges 
 beta;SchemaCompareCodes:
 beta;SchemaCompareDiagnostics:
+alpha;SchemaCompareDirection
+alpha;SchemaComparer
 alpha;SchemaContextEditor
 beta;class SchemaDiagnostic
 alpha;SchemaEditResults

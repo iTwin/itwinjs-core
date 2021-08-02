@@ -768,6 +768,48 @@ export interface ISchemaChanges {
 }
 
 // @alpha
+export interface ISchemaComparer {
+    // (undocumented)
+    compareClasses(classA: AnyClass, classB: AnyClass | undefined): void;
+    // (undocumented)
+    compareConstants(constantA: Constant, constantB: Constant | undefined): void;
+    // (undocumented)
+    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass | undefined): void;
+    // (undocumented)
+    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps | undefined): void;
+    // (undocumented)
+    compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): void;
+    // (undocumented)
+    compareEnumerations(enumA: Enumeration, enumB: Enumeration | undefined): void;
+    // (undocumented)
+    compareFormats(formatA: Format, formatB: Format | undefined): void;
+    // (undocumented)
+    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit | undefined): void;
+    // (undocumented)
+    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity | undefined): void;
+    // (undocumented)
+    compareMixins(mixinA: Mixin, mixinB: Mixin | undefined): void;
+    // (undocumented)
+    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon | undefined): void;
+    // (undocumented)
+    compareProperties(propertyA: AnyProperty, propertyB: AnyProperty | undefined): void;
+    // (undocumented)
+    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory | undefined): void;
+    // (undocumented)
+    compareRelationshipClasses(relationshipClassA: RelationshipClass, relationshipClassB: RelationshipClass | undefined): void;
+    // (undocumented)
+    compareRelationshipConstraints(relationshipConstraintA: RelationshipConstraint, relationshipConstraintB: RelationshipConstraint | undefined): void;
+    // (undocumented)
+    compareSchemaItems(schemaItemA: SchemaItem, schemaItemB: SchemaItem | undefined): void;
+    // (undocumented)
+    compareSchemaProps(schemaA: Schema, schemaB: Schema): void;
+    // (undocumented)
+    compareSchemas(schemaA: Schema, schemaB: Schema): void;
+    // (undocumented)
+    compareUnits(unitA: Unit, unitB: Unit | undefined): void;
+}
+
+// @alpha
 export interface ISchemaCompareReporter {
     // (undocumented)
     report(schemaChanges: ISchemaChanges): void;
@@ -1261,6 +1303,38 @@ export const SchemaCompareDiagnostics: {
         diagnosticType: import("./Diagnostic").DiagnosticType;
     };
 };
+
+// @alpha
+export enum SchemaCompareDirection {
+    // (undocumented)
+    Backward = 1,
+    // (undocumented)
+    Forward = 0
+}
+
+// @alpha
+export class SchemaComparer {
+    constructor(...reporters: ISchemaCompareReporter[]);
+    compareClasses(classA: AnyClass, classB: AnyClass | undefined): Promise<void>;
+    compareConstants(constantA: Constant, constantB: Constant | undefined): Promise<void>;
+    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass | undefined): Promise<void>;
+    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps | undefined): Promise<void>;
+    compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): Promise<void>;
+    compareEnumerations(enumA: Enumeration, enumB: Enumeration | undefined): Promise<void>;
+    compareFormats(formatA: Format, formatB: Format | undefined): Promise<void>;
+    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit | undefined): Promise<void>;
+    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity | undefined): Promise<void>;
+    compareMixins(mixinA: Mixin, mixinB: Mixin | undefined): Promise<void>;
+    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon | undefined): Promise<void>;
+    compareProperties(propertyA: AnyProperty, propertyB: AnyProperty | undefined): Promise<void>;
+    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory | undefined): Promise<void>;
+    compareRelationshipClasses(relationshipA: RelationshipClass, relationshipB: RelationshipClass | undefined): Promise<void>;
+    compareRelationshipConstraints(constraintA: RelationshipConstraint, constraintB: RelationshipConstraint | undefined): Promise<void>;
+    compareSchemaItems(schemaItemA: SchemaItem, schemaItemB: SchemaItem | undefined): Promise<void>;
+    compareSchemaProps(schemaA: Schema, schemaB: Schema): Promise<void>;
+    compareSchemas(schemaA: Schema, schemaB: Schema): Promise<void>;
+    compareUnits(unitA: Unit, unitB: Unit | undefined): Promise<void>;
+    }
 
 // @alpha
 export class SchemaContextEditor {
