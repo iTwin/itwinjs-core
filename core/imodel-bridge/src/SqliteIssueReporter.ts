@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { DbResult, Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { ECDb } from "@bentley/imodeljs-backend";
-import { BridgeIssueReporter } from "./BridgeIssueReporter"
+import { BridgeIssueReporter } from "./BridgeIssueReporter";
 import * as fs from "fs";
 import * as path from "path";
 import * as os from "os";
@@ -24,9 +24,7 @@ interface FileInfo {
   filePath?: string;
 }
 
-export interface PostPublishingProcessor {
-  (reportPath: string): Promise<void>;
-}
+export type PostPublishingProcessor = (reportPath: string) => Promise<void>;
 
 /** SQLite issue reporter. Can be provided to BridgeRunner in setIssueReporter
  * @beta
@@ -41,10 +39,10 @@ export class SqliteIssueReporter implements BridgeIssueReporter {
   private _dbPath: string = "";
   private _deleteBadgersDb;
 
-  private TEMP_REPORT_FILE_RECORDS_TABLE = "BadgersReportFileRecords";
-  private TEMP_REPORT_AUDIT_RECORDS_TABLE = "BadgersReportAuditRecords";
-  private SRCFILE_TEMP_BRIDGE_ISSUES_TABLE = "BadgersSrcFileReports";
-  private TEMP_IGNORED_ELEM_RECORD_TABLE = "BadgersReportIgnoredElementRecords";
+  private _tempReportFileRecordsTable = "BadgersReportFileRecords";
+  private _tempReportAuditRecordsTable = "BadgersReportAuditRecords";
+  private _sourceFileTempBridgeIssuesTable = "BadgersSrcFileReports";
+  private _tempIgnoredElementRecordTable = "BadgersReportIgnoredElementRecords";
 
   public constructor(contextId: string, iModelId: GuidString, activityId: string, fileId: string, outputDir?: any, operationType?: "NormalUpdate" | "AllDocsProcessed",
     filePath?: any, jobId?: string, deleteReportDB?: boolean) {
@@ -72,29 +70,29 @@ export class SqliteIssueReporter implements BridgeIssueReporter {
   }
 
   private computeReportFileName(activityId: string, isSummary: boolean) {
-    let reportFileName = `${activityId}-${this._contextInfo.operationType}`
+    let reportFileName = `${activityId}-${this._contextInfo.operationType}`;
     if (isSummary) {
-      reportFileName = reportFileName + "-summary-issues.json";
+      reportFileName = `${reportFileName}-summary-issues.json`;
     } else {
-      reportFileName = reportFileName + "-issues.json";
+      reportFileName = `${reportFileName}-issues.json`;
     }
     return reportFileName;
   }
 
   public recordIgnoredElements(repositoryLinkId: string, ignoredElementIdList: string) {
     this.handleFileRecord();
-    this._reportDb.withPreparedSqliteStatement(`INSERT INTO ${this.TEMP_IGNORED_ELEM_RECORD_TABLE} (repositoryId, elementIds) VALUES(?,?)`, (stmt) => {
+    this._reportDb.withPreparedSqliteStatement(`INSERT INTO ${this._tempIgnoredElementRecordTable} (repositoryId, elementIds) VALUES(?,?)`, (stmt) => {
       stmt.bindValue(1, repositoryLinkId);
       stmt.bindValue(2, ignoredElementIdList);
       stmt.step();
-    })
+    });
   }
 
   public reportIssue(ecInstanceId: string, sourceId: string, level: "Error" | "Warning", category: string, message: string, type: string) {
     this.handleFileRecord();
     const guid = Guid.createValue();
     const values = [this._fileInfo.fileId, ecInstanceId, sourceId, level, category, message, type, guid];
-    this._reportDb.withPreparedSqliteStatement(`INSERT INTO ${this.TEMP_REPORT_AUDIT_RECORDS_TABLE} (fileId, ecInstanceId, elementSourceId, auditLevel, auditCategory, auditMessage, auditType, GUID) VALUES(?,?,?,?,?,?,?,?)`, (stmt) => {
+    this._reportDb.withPreparedSqliteStatement(`INSERT INTO ${this._tempReportAuditRecordsTable} (fileId, ecInstanceId, elementSourceId, auditLevel, auditCategory, auditMessage, auditType, GUID) VALUES(?,?,?,?,?,?,?,?)`, (stmt) => {
       stmt.bindValues(values);
       stmt.step();
     });
@@ -105,20 +103,20 @@ export class SqliteIssueReporter implements BridgeIssueReporter {
       Logger.logWarning(BridgeLoggerCategory.Framework, "Source file Id does not match value set in constructor");
     }
     const values = [this._contextInfo.activityId, this._contextInfo.contextId, this._contextInfo.jobId, this._contextInfo.iModelId, this._contextInfo.briefcaseId, sourceId, this._fileInfo.filePath,
-      "SourceFile", itemType, dataSource, name, exists, downloadUrl, state, failureReason, uniqueName, fileSize, foundByBridge]
-    this._reportDb.withPreparedSqliteStatement(`INSERT INTO ${this.SRCFILE_TEMP_BRIDGE_ISSUES_TABLE}(activityId, contextId, jobId, imodelId, briefcaseId, fileId, filePath, dataType, itemType, dataSource, fileName, itemExists, downloadUrl, state, failureReason, uniqueName, fileSize, foundByBridge) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, (stmt) => {
+      "SourceFile", itemType, dataSource, name, exists, downloadUrl, state, failureReason, uniqueName, fileSize, foundByBridge];
+    this._reportDb.withPreparedSqliteStatement(`INSERT INTO ${this._sourceFileTempBridgeIssuesTable}(activityId, contextId, jobId, imodelId, briefcaseId, fileId, filePath, dataType, itemType, dataSource, fileName, itemExists, downloadUrl, state, failureReason, uniqueName, fileSize, foundByBridge) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, (stmt) => {
       stmt.bindValues(values);
       stmt.step();
-    })
+    });
   }
 
   public recordReferenceFileInfo(sourceId: string, name: string, uniqueName: string, itemType: string, dataSource: string, downloadUrl: string, state: string, failureReason: string, exists: boolean, fileSize: number, foundByBridge: boolean) {
     const values = [this._contextInfo.activityId, this._contextInfo.contextId, this._contextInfo.jobId, this._contextInfo.iModelId, this._contextInfo.briefcaseId, sourceId, this._fileInfo.filePath,
-      "ReferenceFile", itemType, dataSource, name, exists, downloadUrl, state, failureReason, uniqueName, fileSize, foundByBridge]
-    this._reportDb.withPreparedSqliteStatement(`INSERT INTO ${this.SRCFILE_TEMP_BRIDGE_ISSUES_TABLE}(activityId, contextId, jobId, imodelId, briefcaseId, fileId, filePath, dataType, itemType, dataSource, fileName, itemExists, downloadUrl, state, failureReason, uniqueName, fileSize, foundByBridge) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, (stmt) => {
+      "ReferenceFile", itemType, dataSource, name, exists, downloadUrl, state, failureReason, uniqueName, fileSize, foundByBridge];
+    this._reportDb.withPreparedSqliteStatement(`INSERT INTO ${this._sourceFileTempBridgeIssuesTable}(activityId, contextId, jobId, imodelId, briefcaseId, fileId, filePath, dataType, itemType, dataSource, fileName, itemExists, downloadUrl, state, failureReason, uniqueName, fileSize, foundByBridge) VALUES(?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?,?)`, (stmt) => {
       stmt.bindValues(values);
       stmt.step();
-    })
+    });
   }
 
   public createJsonReport() {
@@ -131,33 +129,32 @@ export class SqliteIssueReporter implements BridgeIssueReporter {
       imodelid: this._contextInfo.iModelId,
       activityid: this._contextInfo.activityId,
       briefcaseid: this._contextInfo.briefcaseId,
-      timestamp: timestamp
+      timestamp,
     };
 
     const sourceFile: any = {};
-    this._reportDb.withPreparedSqliteStatement(`SELECT dataType, itemType, dataSource, fileId, fileName, itemExists, downloadUrl, state, failureReason, uniqueName, fileSize FROM ${this.SRCFILE_TEMP_BRIDGE_ISSUES_TABLE} WHERE activityId=? AND foundByBridge=? AND dataType=?`,
+    this._reportDb.withPreparedSqliteStatement(`SELECT dataType, itemType, dataSource, fileId, fileName, itemExists, downloadUrl, state, failureReason, uniqueName, fileSize FROM ${this._sourceFileTempBridgeIssuesTable} WHERE activityId=? AND foundByBridge=? AND dataType=?`,
       (stmt) => {
         stmt.bindValue(1, this._contextInfo.activityId);
         stmt.bindValue(2, true);
         stmt.bindValue(3, "SourceFile");
-        stmt.step() === DbResult.BE_SQLITE_ROW
-        const row = stmt.getRow()
-        sourceFile["itemType"] = row.itemType;
-        sourceFile["dataSource"] = row.dataSource;
-        sourceFile["path"] = this._fileInfo.filePath;
-        sourceFile["fileId"] = row.fileId;
-        sourceFile["fileName"] = row.fileName;
-        sourceFile["fileExists"] = row.itemExists;
+        stmt.step() === DbResult.BE_SQLITE_ROW;
+        const row = stmt.getRow();
+        sourceFile.itemType = row.itemType;
+        sourceFile.dataSource = row.dataSource;
+        sourceFile.path = this._fileInfo.filePath;
+        sourceFile.fileId = row.fileId;
+        sourceFile.fileName = row.fileName;
+        sourceFile.fileExists = row.itemExists;
 
       });
 
-
     const referenceFiles: any = [];
-    this._reportDb.withPreparedSqliteStatement(`SELECT dataType, itemType, dataSource, fileId, fileName, itemExists, downloadUrl, state, failureReason, uniqueName, fileSize  FROM ${this.SRCFILE_TEMP_BRIDGE_ISSUES_TABLE} WHERE activityId =? AND dataType=?`, (stmt) => {
+    this._reportDb.withPreparedSqliteStatement(`SELECT dataType, itemType, dataSource, fileId, fileName, itemExists, downloadUrl, state, failureReason, uniqueName, fileSize  FROM ${this._sourceFileTempBridgeIssuesTable} WHERE activityId =? AND dataType=?`, (stmt) => {
       stmt.bindValue(1, this._contextInfo.activityId);
       stmt.bindValue(2, "ReferenceFile");
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
-        const row = stmt.getRow()
+        const row = stmt.getRow();
         referenceFiles.push({
           fileId: row.fileId,
           fileName: row.fileName,
@@ -165,42 +162,42 @@ export class SqliteIssueReporter implements BridgeIssueReporter {
           state: row.state,
           iModelFileId: row.uniqueName,
           fileExists: row.itemExists,
-          bimFileExists: true //ToDo query iModel
-        })
+          bimFileExists: true, // ToDo query iModel
+        });
       }
     });
-    sourceFile["Files"] = referenceFiles;
+    sourceFile.Files = referenceFiles;
 
     const auditrecords: any[] = [];
-    this._reportDb.withPreparedSqliteStatement(`SELECT fileId, ecInstanceId, elementSourceId, auditLevel, auditCategory, auditMessage, auditType, GUID FROM ${this.TEMP_REPORT_AUDIT_RECORDS_TABLE} WHERE fileId =? `, (stmt) => {
+    this._reportDb.withPreparedSqliteStatement(`SELECT fileId, ecInstanceId, elementSourceId, auditLevel, auditCategory, auditMessage, auditType, GUID FROM ${this._tempReportAuditRecordsTable} WHERE fileId =? `, (stmt) => {
       stmt.bindValue(1, this._fileInfo.fileId);
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         const row = stmt.getRow();
         auditrecords.push({
           elementinfo: {
             ecinstanceid: row.ecInstanceId,
-            sourceid: row.elementSourceId
+            sourceid: row.elementSourceId,
           },
           auditinfo: {
             level: row.auditLevel,
             category: row.auditCategory,
             message: row.auditMessage,
-            type: row.auditType
-          }
-        })
+            type: row.auditType,
+          },
+        });
       }
-    })
+    });
 
     const ignoredelements: any[] = [];
-    this._reportDb.withPreparedSqliteStatement(`SELECT repositoryId, elementIds FROM ${this.TEMP_IGNORED_ELEM_RECORD_TABLE}`, (stmt) => {
+    this._reportDb.withPreparedSqliteStatement(`SELECT repositoryId, elementIds FROM ${this._tempIgnoredElementRecordTable}`, (stmt) => {
       while (stmt.step() === DbResult.BE_SQLITE_ROW) {
         const row = stmt.getRow();
         ignoredelements.push({
           ignoredelementinfo: {
             repositorylinkId: row.repositoryId,
-            elementsids: row.elementIds
-          }
-        })
+            elementsids: row.elementIds,
+          },
+        });
       }
     });
 
@@ -208,16 +205,16 @@ export class SqliteIssueReporter implements BridgeIssueReporter {
       file: {
         identifier: sourceFile.fileId,
         path: sourceFile.path,
-        ignoredelements: ignoredelements,
+        ignoredelements,
       },
-      auditrecords: auditrecords
+      auditrecords,
     }];
 
     const report = {
-      context: context,
+      context,
       sourceFilesInfo: sourceFile,
-      filerecords: fileRecord
-    }
+      filerecords: fileRecord,
+    };
     const reportFilePath = this.getReportPath();
     fs.writeFileSync(reportFilePath, JSON.stringify(report));
     return report;
@@ -228,37 +225,37 @@ export class SqliteIssueReporter implements BridgeIssueReporter {
   }
 
   private handleFileRecord() {
-    this._reportDb.withPreparedSqliteStatement(`SELECT fileId FROM ${this.TEMP_REPORT_FILE_RECORDS_TABLE} WHERE fileId =? and activityId =? `, (stmt) => {
+    this._reportDb.withPreparedSqliteStatement(`SELECT fileId FROM ${this._tempReportFileRecordsTable} WHERE fileId =? and activityId =? `, (stmt) => {
       stmt.bindValue(1, this._fileInfo.fileId);
       stmt.bindValue(2, this._contextInfo.activityId);
       if (stmt.step() !== DbResult.BE_SQLITE_ROW) {
-        this._reportDb.withSqliteStatement(`INSERT INTO ${this.TEMP_REPORT_FILE_RECORDS_TABLE}(activityId, fileId, filePath) VALUES(?,?,?)`, (myStmt) => {
-          const values = [this._contextInfo.activityId, this._fileInfo.fileId, this._fileInfo.filePath]
+        this._reportDb.withSqliteStatement(`INSERT INTO ${this._tempReportFileRecordsTable}(activityId, fileId, filePath) VALUES(?,?,?)`, (myStmt) => {
+          const values = [this._contextInfo.activityId, this._fileInfo.fileId, this._fileInfo.filePath];
           myStmt.bindValues(values);
           myStmt.step();
-        })
+        });
       }
-    })
+    });
   }
 
   private createDBSchema() {
-    this._reportDb.withSqliteStatement(`CREATE TABLE ${this.TEMP_REPORT_FILE_RECORDS_TABLE}(activityId STRING, fileId STRING NOT NULL UNIQUE, filePath STRING)`, (stmt) => { stmt.step(); });
-    this._reportDb.withSqliteStatement(`CREATE INDEX ${this.TEMP_REPORT_FILE_RECORDS_TABLE}ActivityIdx ON ${this.TEMP_REPORT_FILE_RECORDS_TABLE}(activityId)`, (stmt) => { stmt.step(); });
+    this._reportDb.withSqliteStatement(`CREATE TABLE ${this._tempReportFileRecordsTable}(activityId STRING, fileId STRING NOT NULL UNIQUE, filePath STRING)`, (stmt) => { stmt.step(); });
+    this._reportDb.withSqliteStatement(`CREATE INDEX ${this._tempReportFileRecordsTable}ActivityIdx ON ${this._tempReportFileRecordsTable}(activityId)`, (stmt) => { stmt.step(); });
 
-    this._reportDb.withSqliteStatement(`CREATE TABLE ${this.TEMP_REPORT_AUDIT_RECORDS_TABLE}(fileId STRING NOT NULL, ecInstanceId STRING, elementSourceId STRING, auditLevel STRING,
+    this._reportDb.withSqliteStatement(`CREATE TABLE ${this._tempReportAuditRecordsTable}(fileId STRING NOT NULL, ecInstanceId STRING, elementSourceId STRING, auditLevel STRING,
 			auditCategory STRING, auditMessage STRING, auditType STRING, GUID STRING,
       UNIQUE(fileId, ecInstanceId, elementSourceId, auditLevel, auditCategory, auditMessage, auditType))`, (stmt) => { stmt.step(); });
 
-    this._reportDb.withSqliteStatement(`CREATE TABLE ${this.SRCFILE_TEMP_BRIDGE_ISSUES_TABLE}(activityId STRING, contextId STRING, jobId STRING, imodelId STRING, briefcaseId STRING,
+    this._reportDb.withSqliteStatement(`CREATE TABLE ${this._sourceFileTempBridgeIssuesTable}(activityId STRING, contextId STRING, jobId STRING, imodelId STRING, briefcaseId STRING,
 				fileId STRING, filePath STRING, dataType STRING, itemType STRING, dataSource STRING, fileName STRING, itemExists BOOLEAN, downloadUrl STRING, state STRING, failureReason STRING, uniqueName STRING, fileSize INTEGER, foundByBridge BOOLEAN)`, (stmt) => { stmt.step(); });
-    this._reportDb.withSqliteStatement(`CREATE INDEX ${this.SRCFILE_TEMP_BRIDGE_ISSUES_TABLE}ActivityIdx ON ${this.SRCFILE_TEMP_BRIDGE_ISSUES_TABLE}(activityId)`, (stmt) => { stmt.step(); });
+    this._reportDb.withSqliteStatement(`CREATE INDEX ${this._sourceFileTempBridgeIssuesTable}ActivityIdx ON ${this._sourceFileTempBridgeIssuesTable}(activityId)`, (stmt) => { stmt.step(); });
 
-    this._reportDb.withSqliteStatement(`CREATE TABLE ${this.TEMP_IGNORED_ELEM_RECORD_TABLE}(repositoryId STRING, elementIds STRING)`, (stmt) => { stmt.step(); });
-    this._reportDb.withSqliteStatement(`CREATE INDEX ${this.TEMP_IGNORED_ELEM_RECORD_TABLE}repositoryIdx ON ${this.TEMP_IGNORED_ELEM_RECORD_TABLE}(repositoryId)`, (stmt) => { stmt.step(); });
+    this._reportDb.withSqliteStatement(`CREATE TABLE ${this._tempIgnoredElementRecordTable}(repositoryId STRING, elementIds STRING)`, (stmt) => { stmt.step(); });
+    this._reportDb.withSqliteStatement(`CREATE INDEX ${this._tempIgnoredElementRecordTable}repositoryIdx ON ${this._tempIgnoredElementRecordTable}(repositoryId)`, (stmt) => { stmt.step(); });
   }
 
   private createBadgersDb() {
-    const tempDbFileName = `${this._contextInfo.activityId} - ${this._contextInfo.operationType} - badgers.db`
+    const tempDbFileName = `${this._contextInfo.activityId} - ${this._contextInfo.operationType} - badgers.db`;
     this._dbPath = path.join(this._outputDir, tempDbFileName);
     if (fs.existsSync(this._dbPath)) {
       fs.unlinkSync(this._dbPath);
@@ -274,7 +271,7 @@ export class SqliteIssueReporter implements BridgeIssueReporter {
     }
   }
 
-  public publishReport() {
+  public async publishReport() {
     this.createJsonReport();
     this.deleteBadgersDb();
     if (this._postPublishingProcessor !== undefined)

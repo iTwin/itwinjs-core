@@ -43,6 +43,8 @@ export class BridgeRunner {
     static fromArgs(args: string[]): BridgeRunner;
     // (undocumented)
     getCacheDirectory(): string | undefined;
+    // (undocumented)
+    setIssueReporter(issueReporter: BridgeIssueReporter): void;
     synchronize(): Promise<BentleyStatus>;
 }
 
@@ -61,6 +63,9 @@ export abstract class IModelBridge {
     abstract importDynamicSchema(requestContext?: AuthorizedClientRequestContext | ClientRequestContext): Promise<any>;
     abstract initialize(params: BridgeJobDefArgs): any;
     abstract initializeJob(): Promise<void>;
+    set issueReporter(reporter: BridgeIssueReporter | undefined);
+    // (undocumented)
+    get issueReporter(): BridgeIssueReporter | undefined;
     set jobSubject(subject: Subject);
     // (undocumented)
     get jobSubject(): Subject;
