@@ -37,7 +37,6 @@ internal;FieldInfo
 internal;FieldRecord
 internal;FilteredPresentationTreeDataProvider 
 internal;FilteredPresentationTreeDataProviderProps
-internal;FilteringInProgressNodeLoader 
 internal;getFavoritesCategory: () => CategoryDescription
 public;IContentDataProvider 
 public;IFavoritePropertiesDataProvider
