@@ -9,7 +9,7 @@ import { MutableSchema, Schema } from "../../Metadata/Schema";
 import { MutableEntityClass } from "../../Metadata/EntityClass";
 
 describe("XmlSerializer", () => {
-  it("roundtrip attributes with html entities '<' '&' ", async () => {
+  it("try serializing attributes with html entities '<' '&' ", async () => {
     const ctx = new SchemaContext();
     const schema = new Schema(ctx, "TestSchema", "ts", 1, 0, 0) as MutableSchema;
     const entityClass = (await schema.createEntityClass("TestElement")) as MutableEntityClass;
