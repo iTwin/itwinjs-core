@@ -1,9 +1,24 @@
 # Change Log - @bentley/rpcinterface-full-stack-tests
 
-This log was last generated on Mon, 26 Jul 2021 12:21:25 GMT and should not be manually modified.
+This log was last generated on Thu, 29 Jul 2021 20:01:11 GMT and should not be manually modified.
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+_Version update only_
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
 
 _Version update only_
 
@@ -19,6 +34,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 
 - Add basic test using client credentials OIDC workflow
 - Add a test for `PresentationRpcInterface.getElementProperties`
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
@@ -36,6 +56,11 @@ Fri, 02 Jul 2021 15:38:31 GMT
 
 ## 2.17.0
 Mon, 28 Jun 2021 16:20:11 GMT
+
+_Version update only_
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
 
 _Version update only_
 

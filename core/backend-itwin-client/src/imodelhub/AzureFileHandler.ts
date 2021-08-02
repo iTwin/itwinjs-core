@@ -21,6 +21,7 @@ import {
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import { AzCopy, InitEventArgs, ProgressEventArgs, StringEventArgs } from "../util/AzCopy";
 import { BlobDownloader, ConfigData, ProgressData } from "./BlobDownloader";
+import { Base64 } from "js-base64";
 
 const loggerCategory: string = BackendITwinClientLoggerCategory.FileHandlers;
 

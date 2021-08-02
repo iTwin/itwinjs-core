@@ -2,9 +2,33 @@
   "name": "@bentley/ui-ninezone",
   "entries": [
     {
+      "version": "2.19.1",
+      "tag": "@bentley/ui-ninezone_v2.19.1",
+      "date": "Thu, 29 Jul 2021 20:01:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initialize size and position of popout window when popping a widget out from floating state."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.0",
       "tag": "@bentley/ui-ninezone_v2.19.0",
       "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@bentley/ui-ninezone_v2.18.3",
+      "date": "Wed, 28 Jul 2021 17:16:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.2",
+      "tag": "@bentley/ui-ninezone_v2.18.2",
+      "date": "Mon, 26 Jul 2021 16:18:31 GMT",
       "comments": {}
     },
     {
@@ -24,6 +48,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.17.3",
+      "tag": "@bentley/ui-ninezone_v2.17.3",
+      "date": "Mon, 26 Jul 2021 16:08:36 GMT",
+      "comments": {}
     },
     {
       "version": "2.17.2",
@@ -63,6 +93,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.16.10",
+      "tag": "@bentley/ui-ninezone_v2.16.10",
+      "date": "Thu, 22 Jul 2021 20:23:45 GMT",
+      "comments": {}
     },
     {
       "version": "2.16.9",

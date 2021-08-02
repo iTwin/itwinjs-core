@@ -1,6 +1,11 @@
 # Change Log - @bentley/frontend-authorization-client
 
-This log was last generated on Mon, 26 Jul 2021 12:21:25 GMT and should not be manually modified.
+This log was last generated on Thu, 29 Jul 2021 20:01:11 GMT and should not be manually modified.
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+_Version update only_
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
@@ -8,6 +13,16 @@ Mon, 26 Jul 2021 12:21:25 GMT
 ### Updates
 
 - match default BrowserAuthorizationCallbackHandler userstore to value of BrowserAuthorizationClient's userstore
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
@@ -21,6 +36,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 
 - add optional prompt configuration option to browser auth startup and request calls
 
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
+
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
 
@@ -33,6 +53,11 @@ _Version update only_
 
 ## 2.17.0
 Mon, 28 Jun 2021 16:20:11 GMT
+
+_Version update only_
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
 
 _Version update only_
 
