@@ -1950,6 +1950,55 @@ export abstract class ViewState3d extends ViewState {
     const settings = this.getDisplayStyle3d().settings.getPlanProjectionSettings(modelId);
     return settings && settings.elevation ? settings.elevation : 0;
   }
+  public globalZoom(target: Point3d, zoomRatio: number): ViewStatus {
+    if (!this.iModel.ecefLocation)
+      return ViewStatus.NotGeolocated;
+
+    const currentCamera = this.camera.eye;
+
+    const earthCenter = this.iModel.ecefLocation?.earthCenter;
+    const cameraToCenter = Vector3d.createStartEnd(currentCamera, earthCenter);
+    const cameraToTarget = Vector3d.createStartEnd(currentCamera, target);
+    const centerToTarget = Vector3d.createStartEnd(earthCenter, target);
+    const cAngle  = cameraToCenter.angleTo(cameraToTarget);
+    const bDistance = zoomRatio * target.distance(currentCamera);
+    const cDistance = centerToTarget.magnitude();
+    const b = - 2 * bDistance * Math.cos(cAngle.radians);
+    const c = bDistance * bDistance - cDistance * cDistance;
+    const discriminant = b * b - 4 * c;     // a = 1;
+    if (discriminant < 0)
+      return ViewStatus.InvalidTargetPoint;
+
+    const sqrtDiscriminant = Math.sqrt(discriminant);
+    const root0 = (- b + sqrtDiscriminant) / 2;
+    const root1 = (- b - sqrtDiscriminant) / 2;
+
+    const hypotenuse = Math.max(root0, root1);
+    if (hypotenuse < 0)
+      return ViewStatus.InvalidTargetPoint;
+
+    const cSinRatio = Math.sin(cAngle.radians) / cDistance;
+    const bAngle = Math.asin(cSinRatio * bDistance);
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const bSinRatio = Math.sin(bAngle) / bDistance;
+    const perp = cameraToCenter.crossProduct(centerToTarget);
+    const parallel = perp.unitCrossProduct(centerToTarget);
+    if (! parallel)
+      return ViewStatus.InvalidTargetPoint;
+
+    const newEye = earthCenter.plus2Scaled(centerToTarget, hypotenuse * Math.cos(bAngle) / centerToTarget.magnitude(), parallel, hypotenuse * Math.sin(bAngle));
+    const eyeToTarget = newEye.unitVectorTo(earthCenter)!;
+    const newFocusDistance = hypotenuse - Constant.earthRadiusWGS84.equator;
+    const newTarget = newEye.plusScaled(eyeToTarget, newFocusDistance);
+    const currExtents = this.getExtents();
+    // eslint-disable-next-line @typescript-eslint/no-unused-vars
+    const currZ = this.getRotation().getRow(2), currTarget = this.getTargetPoint();
+    const currFocusDistance = this.camera.focusDist;
+    const extentScale = newFocusDistance / currFocusDistance;
+    const newExtents = Vector2d.create(currExtents.x * extentScale, currExtents.y * extentScale);
+
+    return this.lookAt(newEye, newTarget, this.getRotation().rowY(), newExtents);
+  }
 }
 
 /** Defines the state of a view of a single 2d model.

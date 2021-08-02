@@ -1839,7 +1839,10 @@ export class WheelEventProcessor {
           lastEvent.point.setFrom(target);
         }
       }
-
+      const eyeHeight = view.getEyeCartographicHeight();
+      if (eyeHeight !== undefined && eyeHeight > 100000) {
+        status = view.globalZoom(target, zoomRatio);
+      } else {
       const transform = Transform.createFixedPointAndMatrix(target, Matrix3d.createScale(zoomRatio, zoomRatio, zoomRatio));
       const eye = view.getEyePoint();
       const newEye = transform.multiplyPoint3d(eye);
@@ -1853,12 +1856,13 @@ export class WheelEventProcessor {
         newEye.setFrom(eye.plus(offset));
         currentInputState.lastWheelEvent = undefined; // we need to search on the "other side" of what we were bumping into
       }
-
       const zDir = view.getZVector();
       target.setFrom(newEye.plusScaled(zDir, zDir.dotProduct(newEye.vectorTo(target))));
 
-      if (ViewStatus.Success === (status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens, undefined, undefined, animationOptions)))
-        vp.synchWithView(animationOptions);
+      status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens, undefined, undefined, animationOptions);
+    }
+    if (ViewStatus.Success === status)
+      vp.synchWithView(animationOptions);
     } else {
       const targetNpc = vp.worldToNpc(target);
       const trans = Transform.createFixedPointAndMatrix(targetNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1));
