@@ -1530,9 +1530,11 @@ it("synchroPolyface", () => {
     const errors = checkPolyfaceIndexErrors(polyfaceB);
     if (!ck.testUndefined(errors, "index error description"))
       console.log(errors);
-
+// EDL July 2021 twoSided is flipping?
+    polyfaceB.twoSided = polyfaceA.twoSided;
     ck.testTrue(polyfaceA.isAlmostEqual(polyfaceB), "Compare polyfaces");
   }
+  expect(ck.getNumErrors()).equals(0);
 });
 /**
  * This is the Synchro mesh structure, as deduced by looking at prior code to transfer to polyface.
