@@ -289,7 +289,7 @@ describe("Learning Snippets", () => {
       }]);
     });
 
-    it.only("uses `autoExpand` attribute", async () => {
+    it("uses `autoExpand` attribute", async () => {
       // __PUBLISH_EXTRACT_START__ Hierarchies.AutoExpand.Ruleset
       // The ruleset defines a root node "A" which should be automatically expanded. The flag is only
       // set if the node actually has children.
