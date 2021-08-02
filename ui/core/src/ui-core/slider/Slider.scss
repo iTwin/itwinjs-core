@@ -24,6 +24,10 @@ $uicore-slider-minmax-margin:   6px;
     margin-right: 4px;
   }
 
+  span.core-slider-minmax[data-testid="core-slider-max"] {
+    margin-left: 4px;
+  }
+
   &.core-slider-tickLabels {
     margin-bottom: 9px;
   }
