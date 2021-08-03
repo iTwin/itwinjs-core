@@ -73,13 +73,11 @@
     "null-loader": "^0.1.1"
   },
   "dependencies": {
-    "@bentley/backend-application-insights-client": "workspace:*",
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/electron-manager": "workspace:*",
     "@bentley/mobile-manager": "workspace:*",
     "@bentley/express-server": "workspace:*",
-    "@bentley/frontend-application-insights-client": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
     "@bentley/icons-generic-webfont": "^1.0.15",
