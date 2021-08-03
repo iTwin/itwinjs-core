@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import * as os from "os";
 import * as path from "path";
 import { Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { Presentation } from "@bentley/presentation-backend";
