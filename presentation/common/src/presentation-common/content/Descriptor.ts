@@ -20,16 +20,31 @@ import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
 export interface SelectClassInfo {
   /** Information about the ECClass */
   selectClassInfo: ClassInfo;
+
   /** Is the class handled polymorphically */
   isSelectPolymorphic: boolean;
-  /** Relationship path to the [Primary class]($docs/learning/presentation/Content/Terminology#primary-class) */
+
+  /**
+   * Relationship path to the [Primary class]($docs/learning/presentation/Content/Terminology#primary-class).
+   * @deprecated Use [[pathFromInputToSelectClass]]
+   */
   pathToPrimaryClass: RelationshipPath;
+  /** Relationship path from input class to the select class. */
+  pathFromInputToSelectClass?: RelationshipPath;
+
   /** Relationship paths to [Related property]($docs/learning/presentation/Content/Terminology#related-properties) classes */
   relatedPropertyPaths: RelationshipPath[];
+
   /** Relationship paths to navigation property classes */
   navigationPropertyClasses: RelatedClassInfo[];
-  /** Relationship paths to [Related instance]($docs/learning/presentation/Content/Terminology#related-instance) classes */
+
+  /**
+   * Relationship paths to [Related instance]($docs/learning/presentation/Content/Terminology#related-instance) classes.
+   * @deprecated Use [[relatedInstancePaths]]
+   */
   relatedInstanceClasses: RelatedClassInfo[];
+  /** Relationship paths to [related instance]($docs/learning/presentation/Content/Terminology#related-instance) classes. */
+  relatedInstancePaths?: RelationshipPath[];
 }
 
 /**
@@ -39,10 +54,14 @@ export interface SelectClassInfo {
 export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   selectClassInfo: TClassInfoJSON;
   isSelectPolymorphic: boolean;
+  /** @deprecated Use [[pathFromInputToSelectClass]] */
   pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
+  pathFromInputToSelectClass?: RelationshipPathJSON<TClassInfoJSON>;
   relatedPropertyPaths: RelationshipPathJSON<TClassInfoJSON>[];
   navigationPropertyClasses: RelatedClassInfoJSON<TClassInfoJSON>[];
+  /** @deprecated Use [[relatedInstancePaths]] */
   relatedInstanceClasses: RelatedClassInfoJSON<TClassInfoJSON>[];
+  relatedInstancePaths?: RelationshipPathJSON<TClassInfoJSON>[];
 }
 
 /** @public */
@@ -50,38 +69,50 @@ export namespace SelectClassInfo {
   /** Deserialize [[SelectClassInfo]] from JSON */
   export function fromJSON(json: SelectClassInfoJSON): SelectClassInfo {
     return {
-      ...json,
       selectClassInfo: ClassInfo.fromJSON(json.selectClassInfo),
-      pathToPrimaryClass: json.pathToPrimaryClass.map((p) => RelatedClassInfo.fromJSON(p)),
-      relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => (rp.map((p) => RelatedClassInfo.fromJSON(p)))),
-      navigationPropertyClasses: json.navigationPropertyClasses.map((p) => RelatedClassInfo.fromJSON(p)),
-      relatedInstanceClasses: json.relatedInstanceClasses.map((p) => RelatedClassInfo.fromJSON(p)),
+      isSelectPolymorphic: json.isSelectPolymorphic,
+      // eslint-disable-next-line deprecation/deprecation
+      pathToPrimaryClass: json.pathToPrimaryClass.map(RelatedClassInfo.fromJSON),
+      ...(json.pathFromInputToSelectClass ? { pathFromInputToSelectClass: json.pathFromInputToSelectClass.map(RelatedClassInfo.fromJSON) } : undefined),
+      relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => rp.map(RelatedClassInfo.fromJSON)),
+      navigationPropertyClasses: json.navigationPropertyClasses.map(RelatedClassInfo.fromJSON),
+      // eslint-disable-next-line deprecation/deprecation
+      relatedInstanceClasses: json.relatedInstanceClasses.map(RelatedClassInfo.fromJSON),
+      ...(json.relatedInstancePaths ? { relatedInstancePaths: json.relatedInstancePaths.map((rip) => rip.map(RelatedClassInfo.fromJSON)) } : undefined),
     };
   }
 
   /** Deserialize [[SelectClassInfo]] from compressed JSON */
-  export function fromCompressedJSON(compressedSelectClass: SelectClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfo {
+  export function fromCompressedJSON(json: SelectClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfo {
     return {
-      ...compressedSelectClass,
-      selectClassInfo: { id: compressedSelectClass.selectClassInfo, ...classesMap[compressedSelectClass.selectClassInfo] },
-      navigationPropertyClasses: compressedSelectClass.navigationPropertyClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
-      relatedInstanceClasses: compressedSelectClass.relatedInstanceClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
-      pathToPrimaryClass: compressedSelectClass.pathToPrimaryClass.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
-      relatedPropertyPaths: compressedSelectClass.relatedPropertyPaths.map((path) => path.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap))),
+      selectClassInfo: { id: json.selectClassInfo, ...classesMap[json.selectClassInfo] },
+      isSelectPolymorphic: json.isSelectPolymorphic,
+      navigationPropertyClasses: json.navigationPropertyClasses.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)),
+      // eslint-disable-next-line deprecation/deprecation
+      relatedInstanceClasses: json.relatedInstanceClasses.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)),
+      ...(json.relatedInstancePaths ? { relatedInstancePaths: json.relatedInstancePaths.map((rip) => rip.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))) } : undefined),
+      // eslint-disable-next-line deprecation/deprecation
+      pathToPrimaryClass: json.pathToPrimaryClass.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)),
+      ...(json.pathFromInputToSelectClass ? { pathFromInputToSelectClass: json.pathFromInputToSelectClass.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)) } : undefined),
+      relatedPropertyPaths: json.relatedPropertyPaths.map((path) => path.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))),
     };
   }
 
   /** Serialize [[SelectClassInfo]] to compressed JSON */
   export function toCompressedJSON(selectClass: SelectClassInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfoJSON<string> {
-    const { id, ...leftOverInfo } = selectClass.selectClassInfo;
-    classesMap[id] = leftOverInfo;
+    const { id, ...leftOverClassInfo } = selectClass.selectClassInfo;
+    classesMap[id] = leftOverClassInfo;
 
     return {
-      ...selectClass,
       selectClassInfo: id,
+      isSelectPolymorphic: selectClass.isSelectPolymorphic,
+      // eslint-disable-next-line deprecation/deprecation
       relatedInstanceClasses: selectClass.relatedInstanceClasses.map((instanceClass) => RelatedClassInfo.toCompressedJSON(instanceClass, classesMap)),
+      ...(selectClass.relatedInstancePaths ? { relatedInstancePaths: selectClass.relatedInstancePaths.map((rip) => rip.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap))) } : undefined),
       navigationPropertyClasses: selectClass.navigationPropertyClasses.map((propertyClass) => RelatedClassInfo.toCompressedJSON(propertyClass, classesMap)),
+      // eslint-disable-next-line deprecation/deprecation
       pathToPrimaryClass: selectClass.pathToPrimaryClass.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap)),
+      ...(selectClass.pathFromInputToSelectClass ? { pathFromInputToSelectClass: selectClass.pathFromInputToSelectClass.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap)) } : undefined),
       relatedPropertyPaths: selectClass.relatedPropertyPaths.map((path) => path.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap))),
     };
   }
@@ -93,20 +124,8 @@ export namespace SelectClassInfo {
    *
    * @internal
    */
-  export function listFromCompressedJSON(json: { selectClassInfos: SelectClassInfoJSON<Id64String>[], classesMap: { [id: string]: CompressedClassInfoJSON } } | string): SelectClassInfo[] {
-    if (typeof json === "string")
-      return JSON.parse(json, compressedListReviver);
-    return json.selectClassInfos.map((sci) => fromCompressedJSON(sci, json.classesMap));
-  }
-
-  /**
-   * Reviver function that can be used as a second argument for
-   * `JSON.parse` method when parsing [[SelectClassInfo]] objects.
-   *
-   * @internal
-   */
-  export function compressedListReviver(key: string, value: any): any {
-    return key === "" ? listFromCompressedJSON(value) : value;
+  export function listFromCompressedJSON(json: SelectClassInfoJSON<Id64String>[], classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfo[] {
+    return json.map((sci) => fromCompressedJSON(sci, classesMap));
   }
 }
 
@@ -391,7 +410,7 @@ export class Descriptor implements DescriptorSource {
   private static fromCompressedJSON(json: CompressedDescriptorJSON): Descriptor {
     const { classesMap, ...leftOverJson } = json;
     const categories = CategoryDescription.listFromJSON(json.categories);
-    const selectClasses = json.selectClasses.map((compressedSelectClass) => SelectClassInfo.fromCompressedJSON(compressedSelectClass, classesMap));
+    const selectClasses = SelectClassInfo.listFromCompressedJSON(json.selectClasses, classesMap);
     const fields = this.getFieldsFromJSON(json.fields, (fieldJson) => Field.fromCompressedJSON(fieldJson, classesMap, categories));
     return new Descriptor({
       ...leftOverJson,

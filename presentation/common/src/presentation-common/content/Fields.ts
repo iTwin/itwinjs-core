@@ -502,15 +502,11 @@ export class NestedContentField extends Field {
       return JSON.parse(json, Field.reviver);
     }
     const field = Object.create(NestedContentField.prototype);
-    return Object.assign(field, json, {
-      category: this.getCategoryFromFieldJson(json, categories),
+    return Object.assign(field, json, this.fromCommonJSON(json, categories), {
       nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson, categories!))
         .filter((nestedField): nestedField is Field => !!nestedField),
       contentClassInfo: ClassInfo.fromJSON(json.contentClassInfo),
       pathToPrimaryClass: json.pathToPrimaryClass.map(RelatedClassInfo.fromJSON),
-      relationshipMeaning: json.relationshipMeaning ?? RelationshipMeaning.RelatedInstance,
-      actualPrimaryClassIds: json.actualPrimaryClassIds ?? [],
-      autoExpand: json.autoExpand,
     });
   }
 
@@ -520,16 +516,22 @@ export class NestedContentField extends Field {
    */
   public static override fromCompressedJSON(json: NestedContentFieldJSON<Id64String>, classesMap: { [id: string]: CompressedClassInfoJSON }, categories: CategoryDescription[]) {
     const field = Object.create(NestedContentField.prototype);
-    return Object.assign(field, json, {
+    return Object.assign(field, json, this.fromCommonJSON(json, categories), {
       category: this.getCategoryFromFieldJson(json, categories),
       nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromCompressedJSON(nestedFieldJson, classesMap, categories))
         .filter((nestedField): nestedField is Field => !!nestedField),
       contentClassInfo: ClassInfo.fromJSON({ id: json.contentClassInfo, ...classesMap[json.contentClassInfo] }),
       pathToPrimaryClass: json.pathToPrimaryClass.map((stepJson) => RelatedClassInfo.fromCompressedJSON(stepJson, classesMap)),
+    });
+  }
+
+  private static fromCommonJSON(json: NestedContentFieldJSON<ClassInfoJSON | string>, categories: CategoryDescription[] | undefined): Partial<NestedContentField> {
+    return {
+      category: this.getCategoryFromFieldJson(json, categories),
       relationshipMeaning: json.relationshipMeaning ?? RelationshipMeaning.RelatedInstance,
       actualPrimaryClassIds: json.actualPrimaryClassIds ?? [],
       autoExpand: json.autoExpand,
-    });
+    };
   }
 
   /** @internal */

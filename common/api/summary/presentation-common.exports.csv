@@ -43,6 +43,9 @@ deprecated;ContentRequestOptions
 public;ContentRpcRequestOptions = PresentationRpcRequestOptions
 deprecated;ContentRpcRequestOptions = PresentationRpcRequestOptions
 public;ContentRule 
+beta;ContentSourcesRequestOptions
+beta;ContentSourcesRpcRequestOptions = PresentationRpcRequestOptions
+beta;ContentSourcesRpcResult
 public;ContentSpecification = ContentInstancesOfSpecificClassesSpecification | ContentRelatedInstancesSpecification | SelectedNodeInstancesSpecification
 public;ContentSpecificationBase 
 public;ContentSpecificationTypes
@@ -138,7 +141,7 @@ public;FieldDescriptorBase
 public;FieldDescriptorType
 alpha;FieldHierarchy
 public;FieldJSON
-internal;getFieldByName: (fields: Field[], name: string, recurse?: boolean | undefined) => Field | undefined
+internal;getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined
 public;getInstancesCount: (keys: Readonly
 internal;getLocalesDirectory: (assetsDirectory: string) => string
 public;GroupingNodeKey 
@@ -362,6 +365,7 @@ public;SameLabelInstanceGroupApplicationStage
 public;SchemasSpecification
 public;SelectClassInfo
 public;SelectClassInfo
+internal;listFromCompressedJSON(json: SelectClassInfoJSON
 public;SelectClassInfoJSON
 public;SelectedNodeInstancesSpecification 
 public;SelectionInfo
