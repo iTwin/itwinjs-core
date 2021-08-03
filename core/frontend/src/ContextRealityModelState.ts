@@ -28,7 +28,7 @@ async function getAccessToken(): Promise<AccessToken | undefined> {
     return undefined; // Not signed in
 
   try {
-    return IModelApp.authorizationClient.getAccessToken();
+    return await IModelApp.authorizationClient.getAccessToken();
   } catch (_) {
     return undefined;
   }
@@ -181,6 +181,7 @@ export async function queryRealityData(criteria: RealityDataQueryCriteria): Prom
       if (currentRealityData.type && (currentRealityData.type.toUpperCase() === "OPC") && currentRealityData.rootDocument !== undefined) {
         const rootDocUrl: string = await currentRealityData.getBlobStringUrl(requestContext, currentRealityData.rootDocument);
         opcConfig = {
+          rdsUrl: "",
           containerName: "",
           blobFileName: rootDocUrl,
           accountName: "",

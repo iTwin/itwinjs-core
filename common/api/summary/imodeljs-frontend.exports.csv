@@ -342,6 +342,7 @@ internal;MapLayerSourceStatus
 internal;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
 internal;MapTile 
+internal;MapTiledGraphicsProvider 
 internal;MapTileLoader 
 internal;class MapTileProjection
 internal;MapTileTree 
@@ -386,8 +387,6 @@ internal;NullTarget
 internal;OffScreenTarget 
 public;OffScreenViewport 
 public;OffScreenViewportOptions
-beta;OidcBrowserClient 
-deprecated;OidcBrowserClient 
 public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 

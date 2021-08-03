@@ -6,7 +6,7 @@
  * @module Widget
  */
 
-import { ConditionalStringValue } from "../../ui-abstract";
+import { ConditionalStringValue } from "../items/ConditionalStringValue";
 import { BadgeType } from "../items/BadgeType";
 import { ProvidedItem } from "../items/ProvidedItem";
 import { WidgetState } from "./WidgetState";
@@ -41,7 +41,8 @@ export interface AbstractWidgetProps extends ProvidedItem {
   readonly isStatusBar?: boolean;
   /** Indicates whether this Widget should fill the available space in the Zone. */
   readonly fillZone?: boolean;
-  /** Indicates if widget can be popped out to a child window. @beta */
+  /** Indicates if widget can be popped out to a child window.
+   * @beta */
   readonly canPopout?: boolean;
   /** Indicates if widget can be in floating state. */
   readonly isFloatingStateSupported?: boolean;

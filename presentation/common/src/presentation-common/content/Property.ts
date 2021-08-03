@@ -6,7 +6,7 @@
  * @module Content
  */
 
-import { PropertyInfo, PropertyInfoJSON, RelationshipPath, RelationshipPathJSON } from "../EC";
+import { ClassInfoJSON, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON } from "../EC";
 
 /**
  * Data structure that describes one step of property
@@ -52,7 +52,17 @@ export namespace Property {
   export function toJSON(prop: Property): PropertyJSON {
     return {
       property: PropertyInfo.toJSON(prop.property),
-      relatedClassPath: [],
+      // eslint-disable-next-line deprecation/deprecation
+      relatedClassPath: prop.relatedClassPath.map((classInfo) => RelatedClassInfo.toJSON(classInfo)),
+    };
+  }
+
+  /** Serialize [[Property]] to compressed JSON */
+  export function toCompressedJSON(prop: Property, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyJSON<string> {
+    return {
+      property: PropertyInfo.toCompressedJSON(prop.property, classesMap),
+      // eslint-disable-next-line deprecation/deprecation
+      relatedClassPath: prop.relatedClassPath.map((classInfo) => RelatedClassInfo.toCompressedJSON(classInfo, classesMap)),
     };
   }
 
@@ -60,7 +70,8 @@ export namespace Property {
   export function fromJSON(json: PropertyJSON): Property {
     return {
       property: PropertyInfo.fromJSON(json.property),
-      relatedClassPath: [],
+      // eslint-disable-next-line deprecation/deprecation
+      relatedClassPath: json.relatedClassPath.map((classInfo) => RelatedClassInfo.fromJSON(classInfo)),
     };
   }
 }
@@ -69,8 +80,8 @@ export namespace Property {
  * JSON representation of [[Property]]
  * @public
  */
-export interface PropertyJSON {
-  property: PropertyInfoJSON;
+export interface PropertyJSON<TClassInfoJSON = ClassInfoJSON> {
+  property: PropertyInfoJSON<TClassInfoJSON>;
   /** @deprecated See [[Property.relatedClassPath]] */
-  relatedClassPath: RelationshipPathJSON;
+  relatedClassPath: RelationshipPathJSON<TClassInfoJSON>;
 }

@@ -254,9 +254,15 @@ export class ViewCreator3d {
    * Get all PhysicalModel ids in the connection
    */
   private async _getAllModels(): Promise<Id64Array> {
-
-    const query = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false AND isNotSpatiallyLocated = false";
-    const models: Id64Array = await this._executeQuery(query);
+    let query = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false AND isNotSpatiallyLocated = false";
+    let models = [];
+    try {
+      models = await this._executeQuery(query);
+    } catch {
+      // possible that the isNotSpatiallyLocated property is not available in the iModel's schema
+      query = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
+      models = await this._executeQuery(query);
+    }
 
     return models;
   }

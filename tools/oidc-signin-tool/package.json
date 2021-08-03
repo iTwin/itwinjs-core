@@ -1,6 +1,6 @@
 {
   "name": "@bentley/oidc-signin-tool",
-  "version": "2.19.0-dev.11",
+  "version": "3.0.0-dev.14",
   "description": "OIDC Signin Helper",
   "main": "lib/index.js",
   "typings": "lib/index",
@@ -33,9 +33,10 @@
   "dependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/certa": "workspace:*",
-    "@bentley/config-loader": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
+    "dotenv": "^8.2.0",
+    "dotenv-expand": "^5.1.0",
     "openid-client": "^3.15.3",
     "puppeteer": "chrome-86"
   },
@@ -44,6 +45,7 @@
     "@bentley/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
+    "@types/dotenv": "^6.1.1",
     "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/puppeteer": "2.0.1",

@@ -39,12 +39,6 @@ beta;RequestQueryStringifyOptions
 beta;RequestTimeoutOptions
 beta;Response
 beta;ResponseError 
-internal;SamlAccessToken 
-deprecated;SamlAccessToken 
-internal;SamlAuthorizationToken 
-deprecated;SamlAuthorizationToken 
-internal;class SamlToken
-deprecated;class SamlToken
 beta;SasUrlExpired 
 internal;TokenPrefix(prefix: string): (constructor: any) => void
 internal;UrlDiscoveryClient 

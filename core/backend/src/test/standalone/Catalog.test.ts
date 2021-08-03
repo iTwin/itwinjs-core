@@ -733,8 +733,9 @@ describe("Catalog", () => {
       for (const templateElementId of templateToInstanceMap.keys()) {
         const templateElement = iModelDb.elements.getElement(templateElementId); // the element in the template model
         const instanceElement = iModelDb.elements.getElement(templateToInstanceMap.get(templateElementId)!); // the element instantiated from the template element
-        assert.isUndefined(templateElement.federationGuid);
+        assert.isDefined(templateElement.federationGuid);
         assert.isDefined(instanceElement.federationGuid);
+        assert.notStrictEqual(templateElement.federationGuid, instanceElement.federationGuid);
         assert.equal(templateElement.classFullName, instanceElement.classFullName);
         assert.equal(templateElement.parent?.id ? true : false, instanceElement.parent?.id ? true : false);
       }

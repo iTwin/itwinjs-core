@@ -15,10 +15,10 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, Code, CodeSpec, CreateEmptySnapshotIModelProps,
-  CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation, ElementAspectProps,
-  ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData, EntityProps,
-  EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, ChangesetIndexAndId, Code, CodeSpec,
+  CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation,
+  ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData,
+  EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps,
   IModelTileTreeProps, IModelVersion, LocalBriefcaseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
   ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
@@ -114,7 +114,7 @@ export abstract class IModelDb extends IModel {
   public readonly onChangesetApplied = new BeEvent<() => void>();
   /** @internal */
   public notifyChangesetApplied() {
-    this._changeSetId = this.nativeDb.getReversedChangeSetId() ?? this.nativeDb.getParentChangeSetId();
+    this.changeset = this.nativeDb.getParentChangeset();
     this.onChangesetApplied.raiseEvent();
   }
 
@@ -1087,7 +1087,17 @@ export abstract class IModelDb extends IModel {
    * @returns the Uint8Array or undefined if the texture image is not present.
    * @alpha
    */
-  public getTextureImage(props: TextureLoadProps): Uint8Array | undefined { return this.nativeDb.getTextureImage(props); }
+  public async getTextureImage(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<Uint8Array | undefined> {
+    requestContext.enter();
+    return new Promise<Uint8Array | undefined>((resolve, reject) => {
+      this.nativeDb.getTextureImage(props, (result) => {
+        if (result instanceof Error)
+          reject(result);
+        else
+          resolve(result);
+      });
+    });
+  }
 
   /** Query a "file property" from this iModel, as a string.
    * @returns the property string or undefined if the property is not present.
@@ -1180,7 +1190,7 @@ export abstract class IModelDb extends IModel {
           if (ret.error !== undefined)
             reject(new Error(ret.error.message));
           else
-            resolve(ret.result!); // eslint-disable-line @typescript-eslint/no-unnecessary-type-assertion
+            resolve(ret.result!);
         });
       }
     });
@@ -1189,8 +1199,18 @@ export abstract class IModelDb extends IModel {
   /** Get the mass properties for the supplied elements. */
   public async getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps> {
     requestContext.enter();
-    const resultString = this.nativeDb.getMassProperties(JSON.stringify(props));
-    return JSON.parse(resultString) as MassPropertiesResponseProps;
+    return new Promise<MassPropertiesResponseProps>((resolve, reject) => {
+      if (!this.isOpen) {
+        reject(new Error("not open"));
+      } else {
+        this.nativeDb.getMassProperties(JSON.stringify(props), (ret: IModelJsNative.ErrorStatusOrResult<IModelStatus, MassPropertiesResponseProps>) => {
+          if (ret.error !== undefined)
+            reject(new Error(ret.error.message));
+          else
+            resolve(ret.result!);
+        });
+      }
+    });
   }
 
   /** Get the IModel coordinate corresponding to each GeoCoordinate point in the input */
@@ -2173,12 +2193,6 @@ export class BriefcaseDb extends IModelDb {
   /** The Guid that identifies the *context* that owns this iModel. */
   public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
 
-  /** Id of the last ChangeSet that was applied to this iModel.
-   * @note An empty string indicates the first version.
-   */
-  public override get changeSetId(): string { return super.changeSetId!; } // string | undefined for the superclass, but required for BriefcaseDb
-  public override set changeSetId(csId: string) { this._changeSetId = csId; }
-
   /** Get the ConcurrencyControl for this iModel.
    * The concurrency control is used available *only* if the briefcase has been setup to synchronize changes with iModelHub (i.e., syncMode = SyncMode.PullAndPush),
    * and has been opened ReadWrite (i.e., openMode = OpenMode.ReadWrite)
@@ -2236,7 +2250,7 @@ export class BriefcaseDb extends IModelDb {
       // Sync the concurrencyControl cache so that it includes the schema lock we requested before the open
       await briefcaseDb.concurrencyControl.syncCache(requestContext);
       await briefcaseDb.pushChanges(requestContext, arg.description, ChangesType.Schema);
-      arg.briefcase.changeSetId = briefcaseDb.changeSetId;
+      arg.briefcase.changeSetId = briefcaseDb.changeset.id;
     } finally {
       briefcaseDb.close();
       requestContext.enter();
@@ -2274,11 +2288,13 @@ export class BriefcaseDb extends IModelDb {
     const file = { path: args.fileName, key: args.key };
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode);
+    const changeset = nativeDb.getParentChangeset();
     const token: IModelRpcProps = {
       key: file.key ?? Guid.createValue(),
       iModelId: nativeDb.getDbGuid(),
       contextId: nativeDb.queryProjectGuid(),
-      changeSetId: nativeDb.getReversedChangeSetId() ?? nativeDb.getParentChangeSetId(),
+      changeSetId: changeset.id,
+      changesetIndex: changeset.index,
       openMode,
     };
 
@@ -2315,7 +2331,7 @@ export class BriefcaseDb extends IModelDb {
    * @throws [[IModelError]] If the pull and merge fails.
    * @returns the new changeSetId of this BriefcaseDb after pulling
    */
-  public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<string> {
+  public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<ChangesetIndexAndId> {
     if (this.allowLocalChanges)
       this.concurrencyControl.onMergeChanges();
 
@@ -2328,12 +2344,15 @@ export class BriefcaseDb extends IModelDb {
         this.closeAndReopen(OpenMode.Readonly);
     }
 
-    IpcHost.notifyTxns(this, "notifyPulledChanges", this.changeSetId);
+    const changeset = this.nativeDb.getParentChangeset() as ChangesetIndexAndId;
+    this.changeset = changeset;
+    IpcHost.notifyTxns(this, "notifyPulledChanges", changeset);
 
-    this.changeSetId = this.nativeDb.getParentChangeSetId();
     this.initializeIModelDb();
-    return this.changeSetId;
+    return changeset;
   }
+
+  /* changeType argument is unused and will be removed in 3.0*/
 
   /** Push changes to iModelHub. Locks are released and codes are marked as used as part of a successful push.
    * If there are no changes, then locks are released and reserved codes are released.
@@ -2342,26 +2361,26 @@ export class BriefcaseDb extends IModelDb {
    * @throws [[IModelError]] If there are unsaved changes or the pull and merge fails.
    * @note This function is a no-op if there are no changes to push.
    */
-  public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType: ChangesType = ChangesType.Regular): Promise<void> {
-    requestContext.enter();
+  public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string, _unused?: any): Promise<ChangesetIndexAndId> {
     if (this.nativeDb.hasUnsavedChanges())
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes");
     if (!this.allowLocalChanges)
       throw new IModelError(BentleyStatus.ERROR, "Briefcase must be obtained with SyncMode.PullAndPush and opened ReadWrite");
     if (!this.nativeDb.hasPendingTxns()) {
       await this.concurrencyControl.onPushEmpty(requestContext);
-      return; // nothing to push
+      return this.changeset as ChangesetIndexAndId; // nothing to push
     }
 
     await this.concurrencyControl.onPushChanges(requestContext);
 
-    await BriefcaseManager.pushChanges(requestContext, this, description, changeType as number);
-    requestContext.enter();
-    this.changeSetId = this.nativeDb.getParentChangeSetId();
+    await BriefcaseManager.pushChanges(requestContext, this, description);
+    const changeset = this.nativeDb.getParentChangeset() as ChangesetIndexAndId;
+    this.changeset = changeset;
     this.initializeIModelDb();
 
-    IpcHost.notifyTxns(this, "notifyPushedChanges", this.changeSetId);
-    return this.concurrencyControl.onPushedChanges(requestContext);
+    IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
+    await this.concurrencyControl.onPushedChanges(requestContext);
+    return changeset;
   }
 
   /** Reverse a previously applied set of changes
@@ -2398,9 +2417,6 @@ export class BriefcaseDb extends IModelDb {
  */
 export class SnapshotDb extends IModelDb {
   public override get isSnapshot(): boolean { return true; }
-  /** @beta */
-  public get isV2Checkpoint(): boolean { return this._isV2Checkpoint; }
-  private _isV2Checkpoint: boolean;
   private _reattachDueTimestamp: number | undefined;
   private _createClassViewsOnClose?: boolean;
   /** The full path to the snapshot iModel file.
@@ -2410,9 +2426,9 @@ export class SnapshotDb extends IModelDb {
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
     const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
-    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), changeSetId: nativeDb.getParentChangeSetId(), openMode };
+    const changeset = nativeDb.getParentChangeset();
+    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), changeSetId: changeset.id, changesetIndex: changeset.index, openMode };
     super(nativeDb, iModelRpcProps, openMode);
-    this._isV2Checkpoint = false;
   }
 
   public static override findByKey(key: string): SnapshotDb {
@@ -2534,7 +2550,6 @@ export class SnapshotDb extends IModelDb {
       throw err;
     }
 
-    snapshot._isV2Checkpoint = true;
     snapshot.setReattachDueTimestamp(expiryTimestamp);
     return snapshot;
   }
@@ -2545,18 +2560,16 @@ export class SnapshotDb extends IModelDb {
    * @internal
    */
   public override async reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void> {
-    if (!this._isV2Checkpoint)
-      return;
-    if (this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
-      const { expiryTimestamp } = await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this._changeSetId! });
+    if (undefined !== this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
+      const { expiryTimestamp } = await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeSetId: this.changeset.id });
       this.setReattachDueTimestamp(expiryTimestamp);
     }
   }
 
   private setReattachDueTimestamp(expiryTimestamp: number) {
-    const expiresIn = expiryTimestamp - Date.now();
-
-    this._reattachDueTimestamp = Date.now() + expiresIn / 2;
+    const now = Date.now();
+    const expiresIn = expiryTimestamp - now;
+    this._reattachDueTimestamp = now + (expiresIn / 2);
   }
 
   /** @internal */
@@ -2607,9 +2620,6 @@ export class StandaloneDb extends IModelDb {
     const db = super.tryFindByKey(key);
     return db?.isStandaloneDb() ? db : undefined;
   }
-
-  /** This property is always undefined as a StandaloneDb does not accept nor generate changesets. */
-  public override get changeSetId() { return undefined; } // string | undefined for the superclass, but always undefined for StandaloneDb
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
     const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;

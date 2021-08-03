@@ -26,9 +26,15 @@ import { ChangedModels } from '@bentley/imodeljs-common';
 import { ChangedValueState } from '@bentley/imodeljs-common';
 import { ChangeOpCode } from '@bentley/imodeljs-common';
 import { ChangeSet } from '@bentley/imodelhub-client';
-import { ChangesType } from '@bentley/imodelhub-client';
+import { ChangesetFileProps } from '@bentley/imodeljs-common';
+import { ChangesetId } from '@bentley/imodeljs-common';
+import { ChangesetIndex } from '@bentley/imodeljs-common';
+import { ChangesetIndexAndId } from '@bentley/imodeljs-common';
+import { ChangesetIndexOrId } from '@bentley/imodeljs-common';
+import { ChangesetProps } from '@bentley/imodeljs-common';
+import { ChangesetRange } from '@bentley/imodeljs-common';
+import { ChangesetType } from '@bentley/imodeljs-common';
 import { ChannelRootAspectProps } from '@bentley/imodeljs-common';
-import { ClientAuthIntrospectionManager } from '@bentley/backend-itwin-client';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipVector } from '@bentley/geometry-core';
 import { CloudStorageContainerDescriptor } from '@bentley/imodeljs-common';
@@ -108,7 +114,6 @@ import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { InformationPartitionElementProps } from '@bentley/imodeljs-common';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
-import { IntrospectionClient } from '@bentley/backend-itwin-client';
 import { IpcAppNotifications } from '@bentley/imodeljs-common';
 import { IpcListener } from '@bentley/imodeljs-common';
 import { IpcSocketBackend } from '@bentley/imodeljs-common';
@@ -116,6 +121,8 @@ import { LightLocationProps } from '@bentley/imodeljs-common';
 import { LinePixels } from '@bentley/imodeljs-common';
 import { LineStyleProps } from '@bentley/imodeljs-common';
 import { LocalBriefcaseProps } from '@bentley/imodeljs-common';
+import { LocalDirName } from '@bentley/imodeljs-common';
+import { LocalFileName } from '@bentley/imodeljs-common';
 import { Lock } from '@bentley/imodelhub-client';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXYZ } from '@bentley/geometry-core';
@@ -185,7 +192,6 @@ import { SubCategoryAppearance } from '@bentley/imodeljs-common';
 import { SubCategoryProps } from '@bentley/imodeljs-common';
 import { SubjectProps } from '@bentley/imodeljs-common';
 import { SynchronizationConfigLinkProps } from '@bentley/imodeljs-common';
-import { TelemetryEvent } from '@bentley/telemetry-client';
 import { TelemetryManager } from '@bentley/telemetry-client';
 import { TextureLoadProps } from '@bentley/imodeljs-common';
 import { TextureMapProps } from '@bentley/imodeljs-common';
@@ -438,9 +444,7 @@ export enum BackendLoggerCategory {
     NativeApp = "imodeljs-backend.NativeApp",
     PromiseMemoizer = "imodeljs-backend.PromiseMemoizer",
     Relationship = "imodeljs-backend.Relationship",
-    Schemas = "imodeljs-backend.Schemas",
-    // @internal
-    UsageLogging = "imodeljs-backend.UlasUtilities"
+    Schemas = "imodeljs-backend.Schemas"
 }
 
 // @public
@@ -470,8 +474,6 @@ export class BriefcaseDb extends IModelDb {
     beforeClose(): void;
     // (undocumented)
     readonly briefcaseId: number;
-    get changeSetId(): string;
-    set changeSetId(csId: string);
     // @beta
     readonly concurrencyControl: ConcurrencyControl;
     get contextId(): GuidString;
@@ -481,8 +483,8 @@ export class BriefcaseDb extends IModelDb {
     static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext, _props: IModelRpcProps) => void>;
     static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     static open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb>;
-    pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<string>;
-    pushChanges(requestContext: AuthorizedClientRequestContext, description: string, changeType?: ChangesType): Promise<void>;
+    pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<ChangesetIndexAndId>;
+    pushChanges(requestContext: AuthorizedClientRequestContext, description: string, _unused?: any): Promise<ChangesetIndexAndId>;
     // @deprecated
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @deprecated
@@ -498,7 +500,7 @@ export class BriefcaseDb extends IModelDb {
 export interface BriefcaseDbArg {
     // (undocumented)
     briefcase: {
-        briefcaseId: number;
+        briefcaseId: BriefcaseId;
         iModelId: GuidString;
         changeSetId: ChangesetId;
     };
@@ -532,7 +534,7 @@ export class BriefcaseManager {
     static get cacheDir(): string;
     // @internal (undocumented)
     static changesetFromVersion(requestContext: AuthorizedClientRequestContext, version: IModelVersion, iModelId: string): Promise<ChangesetProps>;
-    // @beta
+    // @deprecated
     static create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString>;
     static deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void>;
     // @internal
@@ -564,7 +566,7 @@ export class BriefcaseManager {
     // @internal
     static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, mergeToVersion?: IModelVersion): Promise<void>;
     // @internal
-    static pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, changeType?: ChangesetType, relinquishCodesLocks?: boolean): Promise<void>;
+    static pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, _changeType?: ChangesetType, releaseLocks?: boolean): Promise<void>;
     // @internal @deprecated (undocumented)
     static reinstateChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reinstateToVersion?: IModelVersion): Promise<void>;
     static releaseBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void>;
@@ -645,17 +647,6 @@ export interface ChangesetArg extends IModelIdArg {
     changeset: ChangesetIndexOrId;
 }
 
-// @internal
-export interface ChangesetFileProps extends ChangesetProps {
-    pathname: LocalFileName;
-}
-
-// @internal
-export type ChangesetId = string;
-
-// @beta (undocumented)
-export type ChangesetIndex = number;
-
 // @internal (undocumented)
 export interface ChangesetIndexArg extends IModelIdArg {
     // (undocumented)
@@ -663,45 +654,8 @@ export interface ChangesetIndexArg extends IModelIdArg {
 }
 
 // @internal
-export type ChangesetIndexOrId = {
-    index: ChangesetIndex;
-    id: ChangesetId;
-} | {
-    index: ChangesetIndex;
-    id?: never;
-} | {
-    id: ChangesetId;
-    index?: never;
-};
-
-// @internal
-export interface ChangesetProps {
-    briefcaseId: number;
-    changesType: ChangesetType;
-    description: string;
-    id: ChangesetId;
-    index: ChangesetIndex;
-    parentId: ChangesetId;
-    pushDate: string;
-    size?: number;
-    userCreated: string;
-}
-
-// @beta
-export interface ChangesetRange {
-    end?: ChangesetIndex;
-    first: ChangesetIndex;
-}
-
-// @internal
 export interface ChangesetRangeArg extends IModelIdArg {
     range?: ChangesetRange;
-}
-
-// @public
-export enum ChangesetType {
-    Regular = 0,
-    Schema = 1
 }
 
 // @beta
@@ -780,7 +734,9 @@ export class CheckpointManager {
 
 // @public
 export interface CheckpointProps {
-    changeSetId: string;
+    changeSetId: ChangesetId;
+    // (undocumented)
+    changesetIndex?: ChangesetIndex;
     contextId: GuidString;
     // (undocumented)
     expectV2?: boolean;
@@ -2598,7 +2554,7 @@ export abstract class IModelDb extends IModel {
     getMassProperties(requestContext: ClientRequestContext, props: MassPropertiesRequestProps): Promise<MassPropertiesResponseProps>;
     getMetaData(classFullName: string): EntityMetaData;
     // @alpha
-    getTextureImage(props: TextureLoadProps): Uint8Array | undefined;
+    getTextureImage(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<Uint8Array | undefined>;
     get iModelId(): GuidString;
     importSchemas(requestContext: ClientRequestContext, schemaFileNames: string[]): Promise<void>;
     // @alpha
@@ -2835,8 +2791,6 @@ export class IModelHost {
     // (undocumented)
     static backendVersion: string;
     static get cacheDir(): string;
-    // @alpha (undocumented)
-    static get clientAuthIntrospectionManager(): ClientAuthIntrospectionManager | undefined;
     // @internal
     static get compressCachedTiles(): boolean;
     // (undocumented)
@@ -2850,13 +2804,11 @@ export class IModelHost {
     static get hubAccess(): BackendHubAccess;
     // @deprecated (undocumented)
     static get iModelClient(): IModelClient;
-    // @alpha (undocumented)
-    static get introspectionClient(): IntrospectionClient | undefined;
     // @deprecated (undocumented)
     static get isUsingIModelBankClient(): boolean;
     static get isValid(): boolean;
     // @internal (undocumented)
-    static loadNative(region: number, applicationType?: IModelJsNative.ApplicationType, iModelClient?: IModelClient): void;
+    static loadNative(): void;
     static get logTileLoadTimeThreshold(): number;
     static get logTileSizeThreshold(): number;
     static readonly onAfterStartup: BeEvent<() => void>;
@@ -2895,8 +2847,6 @@ export class IModelHost {
 // @public
 export class IModelHostConfiguration {
     appAssetsDir?: string;
-    // @internal
-    applicationType?: IModelJsNative.ApplicationType;
     // @deprecated
     briefcaseCacheDir?: string;
     cacheDir?: string;
@@ -2916,8 +2866,6 @@ export class IModelHostConfiguration {
     logTileLoadTimeThreshold: number;
     // @internal
     logTileSizeThreshold: number;
-    // @deprecated
-    nativePlatform?: any;
     // @beta
     restrictTileUrlsByClientIp?: boolean;
     // @beta
@@ -3509,12 +3457,6 @@ export class LinkPartition extends InformationPartitionElement {
     // @internal (undocumented)
     static get className(): string;
 }
-
-// @internal (undocumented)
-export type LocalDirName = string;
-
-// @internal (undocumented)
-export type LocalFileName = string;
 
 // @internal (undocumented)
 export class LocalhostIpcHost {
@@ -4206,8 +4148,6 @@ export class SnapshotDb extends IModelDb {
     static findByKey(key: string): SnapshotDb;
     // (undocumented)
     get isSnapshot(): boolean;
-    // @beta (undocumented)
-    get isV2Checkpoint(): boolean;
     // @internal
     static openCheckpointV1(fileName: string, checkpoint: CheckpointProps): SnapshotDb;
     // @internal
@@ -4376,7 +4316,6 @@ export enum SqliteValueType {
 
 // @public
 export class StandaloneDb extends IModelDb {
-    get changeSetId(): undefined;
     static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb;
     // @deprecated
     get filePath(): string;
@@ -4719,31 +4658,6 @@ export class UrlLink extends LinkElement implements UrlLinkProps {
     toJSON(): UrlLinkProps;
     // (undocumented)
     url?: string;
-}
-
-// @internal (undocumented)
-export class UsageLoggingUtilities {
-    // (undocumented)
-    static checkEntitlement(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, productId: number, hostName: string): IModelJsNative.Entitlement;
-    // (undocumented)
-    static configure(options: UsageLoggingUtilitiesOptions): void;
-    static postFeatureUsage(requestContext: AuthorizedClientRequestContext, featureId: string, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType, contextId?: GuidString, startTime?: Date, endTime?: Date, additionalData?: {
-        [key: string]: string;
-    }): Promise<void>;
-    static postFeatureUsageFromTelemetry(requestContext: AuthorizedClientRequestContext, telemetryEvent: TelemetryEvent, usageType: IModelJsNative.UsageType): Promise<void>;
-    static postUserUsage(requestContext: AuthorizedClientRequestContext, contextId: GuidString, authType: IModelJsNative.AuthType, hostName: string, usageType: IModelJsNative.UsageType): Promise<void>;
-    }
-
-// @internal (undocumented)
-export interface UsageLoggingUtilitiesOptions {
-    // (undocumented)
-    clientAuthManager?: ClientAuthIntrospectionManager;
-    // (undocumented)
-    hostApplicationId?: string;
-    // (undocumented)
-    hostApplicationVersion?: string;
-    // (undocumented)
-    iModelJsNative?: typeof IModelJsNative;
 }
 
 // @internal

@@ -14,7 +14,7 @@ import {
 import { EntityState } from "./EntityState";
 import { HitDetail } from "./HitDetail";
 import { IModelConnection } from "./IModelConnection";
-import { createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
+import { createOrbitGtTileTreeReference, createPrimaryTileTreeReference, createRealityTileTreeReference, TileTreeReference } from "./tile/internal";
 import { ViewState } from "./ViewState";
 
 /** Represents the front-end state of a [Model]($backend).
@@ -113,11 +113,41 @@ export abstract class GeometricModelState extends ModelState implements Geometri
   /** @internal */
   public createTileTreeReference(view: ViewState): TileTreeReference {
     // If this is a reality model, its tile tree is obtained from reality data service URL.
-    const url = this.jsonProperties.tilesetUrl;
-    if (undefined !== url) {
+
+    const orbitGtBlob = this.jsonProperties.orbitGtBlob;
+
+    // If this is an OrbitGt reality model, create it's reference
+    if(orbitGtBlob) {
+
       const spatialModel = this.asSpatialModel;
+
+      let orbitGtName = "";
+      if (orbitGtBlob.blobFileName !== "") {
+        if (orbitGtBlob.blobFileName[0] === "/")
+          orbitGtName = orbitGtBlob.blobFileName.substring(1);
+        else
+          orbitGtName = orbitGtBlob.blobFileName;
+      }
+
+      return createOrbitGtTileTreeReference({
+        iModel: this.iModel,
+        source: view,
+        modelId: this.id,
+        orbitGtBlob,
+        name: orbitGtName,
+        classifiers: undefined !== spatialModel ? spatialModel.classifiers : undefined,
+      });
+    }
+
+    // If this is a TileTree reality model, create it's reference
+    const tilesetUrl = this.jsonProperties.tilesetUrl;
+
+    if(tilesetUrl) {
+
+      const spatialModel = this.asSpatialModel;
+
       return createRealityTileTreeReference({
-        url,
+        url : tilesetUrl,
         iModel: this.iModel,
         source: view,
         modelId: this.id,

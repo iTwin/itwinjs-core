@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import * as os from "os";
 import * as path from "path";
 import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 /** @packageDocumentation
@@ -11,8 +10,8 @@ import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logg
  */
 import { ChangesType } from "@bentley/imodelhub-client";
 import {
-  BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative,
-  LockScope, SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
+  BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs,
+  LockScope, SnapshotDb, Subject, SubjectOwnsSubjects,
 } from "@bentley/imodeljs-backend";
 import { IModel, IModelError, LocalBriefcaseProps, OpenBriefcaseProps, SubjectProps } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -299,7 +298,10 @@ abstract class IModelDbBuilder {
     // TODO: Report outliers and then change the options to true
   }
 
-  public async enterRepositoryChannel(lockRoot: boolean = true) { return this._enterChannel(IModelDb.repositoryModelId, lockRoot); }
+  public async enterRepositoryChannel(lockRoot: boolean = true) {
+    return this._enterChannel(IModelDb.repositoryModelId, lockRoot);
+  }
+
   public async enterBridgeChannel(lockRoot: boolean = true) {
     assert(this._jobSubject !== undefined);
     return this._enterChannel(this._jobSubject.id, lockRoot);
@@ -329,16 +331,17 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     this._activityId = Guid.createValue();
   }
 
-  protected async _saveAndPushChanges(comment: string, changesType: ChangesType): Promise<void> {
+  protected async _saveAndPushChanges(pushComments: string, changeType: ChangesType): Promise<void> {
     assert(this._requestContext !== undefined);
     assert(this._imodel instanceof BriefcaseDb);
-
-    // TODO Each step below needs a retry loop
+    assert(this._imodel.txns !== undefined);
 
     await this._imodel.concurrencyControl.request(this._requestContext);
+    this._imodel.saveChanges();
     await this._imodel.pullAndMergeChanges(this._requestContext);
     this._imodel.saveChanges();
-    await this._pushChanges(comment, changesType);
+    const comment = this.getRevisionComment(pushComments);
+    await this._imodel.pushChanges(this._requestContext, comment, changeType);
   }
 
   protected override _onChangeChannel(newParentId: Id64String) {
@@ -455,21 +458,6 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
     return this._saveAndPushChanges(dataChangesDescription, ChangesType.Regular);
   }
 
-  /** Pushes any pending transactions to the hub. */
-  private async _pushChanges(pushComments: string, type: ChangesType) {
-    assert(this._requestContext !== undefined);
-    assert(this._imodel instanceof BriefcaseDb);
-    assert(this._imodel.txns !== undefined);
-
-    await this._imodel.pullAndMergeChanges(this._requestContext); // in case there are recent changes
-
-    // NB We must call BriefcaseDb.pushChanges to let it clear the locks, even if there are no pending changes.
-    //    Also, we must not bypass that and call the BriefcaseManager API directly.
-
-    const comment = this.getRevisionComment(pushComments);
-    return this._imodel.pushChanges(this._requestContext, comment, type);
-  }
-
   public async initialize() {
     if (undefined === this._serverArgs.getToken) {
       throw new IModelError(IModelStatus.BadArg, "getToken() undefined", Logger.logError, loggerCategory);
@@ -481,10 +469,6 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new IModelError(IModelStatus.BadRequest, "Failed to instantiate AuthorizedClientRequestContext", Logger.logError, loggerCategory);
     }
     assert(this._serverArgs.contextId !== undefined);
-    UsageLoggingUtilities.postUserUsage(this._requestContext, this._serverArgs.contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
-      .catch((err) => {
-        Logger.logError(loggerCategory, `Could not log user usage for bridge`, () => ({ errorStatus: err.status, errorMessage: err.message }));
-      });
   }
 
   /** This will download the briefcase, open it with the option to update the Db profile, close it, re-open with the option to upgrade core domain schemas */

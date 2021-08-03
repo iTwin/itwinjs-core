@@ -18,9 +18,8 @@ import { ScreenViewport, Viewport } from "../../Viewport";
 import {
   MapCartoRectangle, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
   RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
-  TileTreeSupplier,
+  TileTreeSupplier, WebMercatorTilingScheme,
 } from "../internal";
-import { WebMercatorTilingScheme } from "./MapTilingScheme";
 
 /** @internal */
 export interface ImageryTileContent extends TileContent {
@@ -222,7 +221,7 @@ class ImageryTileLoader extends RealityTileLoader {
     try {
       const textureParams = new RenderTexture.Params(undefined, RenderTexture.Type.FilteredTileSection);
 
-      return imageElementFromImageSource(imageSource)
+      return await imageElementFromImageSource(imageSource)
         .then((image) => isCanceled() ? undefined : system.createTextureFromImage(image, ImageSourceFormat.Png === imageSource.format, iModel, textureParams))
         .catch((_) => undefined);
     } catch (e) {
@@ -275,7 +274,7 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
     const rootRange = Range3d.createXYZXYZ(-Angle.piRadians, -Angle.piOver2Radians, 0, Angle.piRadians, Angle.piOver2Radians, 0);
     const rootTileProps = { contentId: rootTileId, range: rootRange, maximumSize: 0 };
     const loader = new ImageryTileLoader(imageryProvider, iModel);
-    const treeProps = { rootTile: rootTileProps, id: modelId, modelId, iModel, location: Transform.createIdentity(), priority: TileLoadPriority.Map, loader };
+    const treeProps = { rootTile: rootTileProps, id: modelId, modelId, iModel, location: Transform.createIdentity(), priority: TileLoadPriority.Map, loader, gcsConverterAvailable: false };
     return new ImageryMapTileTree(treeProps, loader);
   }
 }

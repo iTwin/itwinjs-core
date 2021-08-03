@@ -121,7 +121,14 @@ it("HelloSpirals", () => {
   testGeometryQueryRoundTrip(ck, clothoid);
   expect(ck.getNumErrors()).equals(0);
 });
-
+/**
+ * verify round trip write and read through multiple serialization forms:
+ * * Flatbuffer without signature
+ * * Flatbuffer with signature
+ * * IModelJson
+ * @param ck Checker for executing data checks
+ * @param g single [[GeometryQuery]] or array of [[GeometryQuery]] to go round trip
+ */
 function testGeometryQueryRoundTripGo(ck: Checker, g: GeometryQuery | GeometryQuery[] | undefined) {
   if (!g)
     return;
