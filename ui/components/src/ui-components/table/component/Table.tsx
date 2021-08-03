@@ -16,7 +16,7 @@ import { DisposableList, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
 import {
   CommonProps, Dialog, ElementResizeObserver, isNavigationKey, ItemKeyboardNavigator, LocalSettingsStorage,
-  Orientation, SortDirection, UiSettings, UiSettingsStatus, UiSettingsStorage,
+  Orientation, SortDirection, Timer, UiSettings, UiSettingsStatus, UiSettingsStorage,
 } from "@bentley/ui-core";
 import {
   MultiSelectionHandler, OnItemsDeselectedCallback, OnItemsSelectedCallback, SelectionHandler, SingleSelectionHandler,
@@ -310,6 +310,7 @@ export class Table extends React.Component<TableProps, TableState> {
   private _filterDescriptors?: TableFilterDescriptorCollection;
   private _filterRowShown = false;
   private _topRowIndex = 0;
+  private _pokeScrollTimer = new Timer(100);
 
   /** @internal */
   public override readonly state = initialState;
@@ -455,6 +456,7 @@ export class Table extends React.Component<TableProps, TableState> {
   public override componentWillUnmount() {
     this._isMounted = false;
     this._disposableListeners.dispose();
+    this._unsetPokeScrollTimeout();
   }
 
   private scrollToRow(rowIndex: number) {
@@ -629,9 +631,19 @@ export class Table extends React.Component<TableProps, TableState> {
     }
   };
 
+  private _queuePokeScroll = () => {
+    this._unsetPokeScrollTimeout();
+    this._pokeScrollTimer.setOnExecute(() => { this._pokeScrollAfterUpdate(); });
+    this._pokeScrollTimer.start();
+  };
+
+  private _unsetPokeScrollTimeout = (): void => {
+    this._pokeScrollTimer.stop();
+  };
+
   private _onRowsChanged = async () => {
     await this.updateRows();
-    this._pokeScrollAfterUpdate();
+    this._queuePokeScroll();
   };
 
   /** @internal */
@@ -1071,7 +1083,7 @@ export class Table extends React.Component<TableProps, TableState> {
     // Sort the column
     this.gridSortAsync(columnKey, directionEnum); // eslint-disable-line @typescript-eslint/no-floating-promises
 
-    this._pokeScrollAfterUpdate();
+    this._queuePokeScroll();
   };
 
   private getColumnIndexFromKey(columnKey: string): number {
@@ -1739,7 +1751,7 @@ export class Table extends React.Component<TableProps, TableState> {
           }
           <ElementResizeObserver watchedElement={this.state.gridContainer}
             render={({ width, height }) => {
-              setTimeout(() => this._pokeScrollAfterUpdate());
+              setTimeout(() => this._queuePokeScroll());
               return (
                 <ReactDataGrid
                   ref={this._gridRef}

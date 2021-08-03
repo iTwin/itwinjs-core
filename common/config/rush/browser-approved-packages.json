@@ -80,18 +80,6 @@
       ]
     },
     {
-      "name": "@bentley/config-loader",
-      "allowedCategories": [
-        "backend",
-        "common",
-        "extensions",
-        "frontend",
-        "integration-testing",
-        "internal",
-        "tools"
-      ]
-    },
-    {
       "name": "@bentley/context-registry-client",
       "allowedCategories": [
         "backend",
@@ -885,6 +873,10 @@
     {
       "name": "dotenv",
       "allowedCategories": [
+        "backend",
+        "common",
+        "extensions",
+        "frontend",
         "integration-testing",
         "internal",
         "tools"
@@ -893,6 +885,10 @@
     {
       "name": "dotenv-expand",
       "allowedCategories": [
+        "backend",
+        "common",
+        "extensions",
+        "frontend",
         "integration-testing",
         "internal",
         "tools"

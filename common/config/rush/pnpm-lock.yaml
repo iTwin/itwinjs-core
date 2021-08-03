@@ -11,7 +11,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/itwin-client': workspace:*
       '@types/chai': ^4.1.4
@@ -32,7 +31,6 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/itwin-client': link:../itwin
       '@types/chai': 4.2.21
@@ -51,16 +49,18 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
+      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
       deep-assign: ^2.0.0
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
       mocha: ^8.3.2
@@ -74,15 +74,17 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/itwin-client': link:../itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
+      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       mocha: 8.4.0
@@ -96,16 +98,18 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodeljs-common': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
+      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
       mocha: ^8.3.2
@@ -120,14 +124,16 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/context-registry-client': link:../context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
+      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       mocha: 8.4.0
@@ -141,7 +147,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/telemetry-client': workspace:*
@@ -163,7 +168,6 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/itwin-client': link:../itwin
       '@types/chai': 4.2.21
@@ -209,17 +213,16 @@ importers:
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@types/deep-assign': ^0.1.0
-      '@types/js-base64': ^2.3.1
       '@types/node': 10.14.1
       deep-assign: ^2.0.0
       eslint: ^7.11.0
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       rimraf: ^3.0.2
       typescript: ~4.3.0
     dependencies:
       '@bentley/context-registry-client': link:../context-registry
       deep-assign: 2.0.0
-      js-base64: 2.6.4
+      js-base64: 3.6.1
     devDependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
@@ -227,7 +230,6 @@ importers:
       '@bentley/frontend-authorization-client': link:../frontend-authorization
       '@bentley/itwin-client': link:../itwin
       '@types/deep-assign': 0.1.1
-      '@types/js-base64': 2.3.2
       '@types/node': 10.14.1
       eslint: 7.32.0
       rimraf: 3.0.2
@@ -238,11 +240,9 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
-      '@types/js-base64': ^2.3.1
       '@types/lodash': ^4.14.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -252,7 +252,7 @@ importers:
       chai: ^4.1.2
       deep-assign: ^2.0.0
       eslint: ^7.11.0
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       lodash: ^4.17.10
       mocha: ^8.3.2
       nock: ^12.0.3
@@ -267,7 +267,7 @@ importers:
       xpath: 0.0.27
     dependencies:
       deep-assign: 2.0.0
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       lodash: 4.17.21
       qs: 6.10.1
       superagent: 5.3.1
@@ -277,11 +277,9 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
-      '@types/js-base64': 2.3.2
       '@types/lodash': 4.14.172
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
@@ -303,16 +301,18 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
+      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
       mocha: ^8.3.2
@@ -324,16 +324,18 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/context-registry-client': link:../context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/imodelhub-client': link:../imodelhub
       '@bentley/itwin-client': link:../itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
+      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       mocha: 8.4.0
@@ -347,7 +349,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -355,11 +356,14 @@ importers:
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
+      '@types/dotenv': ^6.1.1
       '@types/jsonpath': ^0.2.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
       chai-as-promised: ^7
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
       jsonpath: ^1.1.1
@@ -373,7 +377,6 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/context-registry-client': link:../context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../../core/geometry
@@ -381,11 +384,14 @@ importers:
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
+      '@types/dotenv': 6.1.1
       '@types/jsonpath': 0.2.0
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       jsonpath: 1.1.1
@@ -400,7 +406,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/itwin-client': workspace:*
       '@types/chai': ^4.1.4
@@ -418,7 +423,6 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/itwin-client': link:../itwin
       '@types/chai': 4.2.21
@@ -437,15 +441,17 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@types/chai': ^4.1.4
+      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
       mocha: ^8.3.2
@@ -458,15 +464,17 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/itwin-client': link:../itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/telemetry-client': link:../telemetry
       '@types/chai': 4.2.21
+      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       mocha: 8.4.0
@@ -481,7 +489,6 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/ecschema-metadata': workspace:*
       '@bentley/eslint-plugin': workspace:*
@@ -497,10 +504,10 @@ importers:
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
+      '@types/dotenv': ^6.1.1
       '@types/formidable': ^1.0.31
       '@types/fs-extra': ^4.0.7
       '@types/glob': ^5.0.35
-      '@types/js-base64': ^2.3.1
       '@types/lru-cache': ^5.1.0
       '@types/mocha': ^8.2.2
       '@types/multiparty': ^0.0.31
@@ -513,13 +520,15 @@ importers:
       chai-as-promised: ^7
       cpx: ^1.5.0
       deep-assign: ^2.0.0
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       event-stream: ~4.0.1
       form-data: ^2.3.2
       fs-extra: ^8.1.0
       glob: ^7.1.2
       internal-tools: workspace:*
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       mkdirp: ^1.0.4
       mocha: ^8.3.2
       multiparty: ^4.2.1
@@ -544,7 +553,7 @@ importers:
       form-data: 2.5.1
       fs-extra: 8.1.0
       glob: 7.1.7
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       multiparty: 4.2.2
       semver: 5.7.1
       ws: 7.5.3
@@ -552,7 +561,6 @@ importers:
       '@bentley/backend-itwin-client': link:../backend-itwin-client
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/ecschema-metadata': link:../ecschema-metadata
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../geometry
@@ -565,10 +573,10 @@ importers:
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
       '@types/deep-assign': 0.1.1
+      '@types/dotenv': 6.1.1
       '@types/formidable': 1.2.3
       '@types/fs-extra': 4.0.12
       '@types/glob': 5.0.37
-      '@types/js-base64': 2.3.2
       '@types/lru-cache': 5.1.1
       '@types/mocha': 8.2.3
       '@types/multiparty': 0.0.31
@@ -580,6 +588,8 @@ importers:
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       cpx: 1.5.0
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       eslint: 7.32.0
       event-stream: 4.0.1
       internal-tools: link:../../tools/internal
@@ -600,7 +610,6 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
@@ -613,8 +622,8 @@ importers:
       '@bentley/usage-logging-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
+      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
-      '@types/js-base64': ^2.3.1
       '@types/jsonwebtoken': ^8.5.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -627,13 +636,15 @@ importers:
       chai: ^4.1.2
       cpx: ^1.5.0
       deep-assign: ^2.0.0
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       fs-write-stream-atomic: ^1.0.10
       got: ~11.8.2
       https-proxy-agent: ^5.0.0
       internal-tools: workspace:*
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       jsonwebtoken: ^8.5.0
       mocha: ^8.3.2
       nock: ^12.0.3
@@ -655,7 +666,7 @@ importers:
       fs-write-stream-atomic: 1.0.10
       got: 11.8.2
       https-proxy-agent: 5.0.0
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       jsonwebtoken: 8.5.1
       openid-client: 3.15.10
       proper-lockfile: 4.1.2
@@ -663,7 +674,6 @@ importers:
     devDependencies:
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
@@ -675,8 +685,8 @@ importers:
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
+      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
-      '@types/js-base64': 2.3.2
       '@types/jsonwebtoken': 8.5.4
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
@@ -686,6 +696,8 @@ importers:
       '@types/stream-buffers': 3.0.4
       chai: 4.3.4
       cpx: 1.5.0
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       mocha: 8.4.0
@@ -737,7 +749,6 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/flatbuffers': ~1.10.0
-      '@types/js-base64': ^2.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/semver': ^5.5.0
@@ -745,7 +756,7 @@ importers:
       chai: ^4.1.2
       eslint: ^7.11.0
       flatbuffers: ~1.12.0
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       mocha: ^8.3.2
       nyc: ^15.1.0
       rimraf: ^3.0.2
@@ -764,13 +775,12 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       '@types/chai': 4.2.21
       '@types/flatbuffers': 1.10.0
-      '@types/js-base64': 2.3.2
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/semver': 5.5.0
       chai: 4.3.4
       eslint: 7.32.0
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       mocha: 8.4.0
       nyc: 15.1.0
       rimraf: 3.0.2
@@ -1103,7 +1113,6 @@ importers:
       '@bentley/webgl-compatibility': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
-      '@types/js-base64': ^2.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/semver': ^5.5.0
@@ -1114,10 +1123,8 @@ importers:
       eslint: ^7.11.0
       fuse.js: ^3.3.0
       glob: ^7.1.2
-      js-base64: ^2.4.5
       mocha: ^8.3.2
       nyc: ^15.1.0
-      oidc-client: ^1.9.1
       rimraf: ^3.0.2
       semver: ^5.5.0
       sinon: ^9.0.2
@@ -1132,8 +1139,6 @@ importers:
       '@bentley/reality-data-client': link:../../clients/reality-data
       '@bentley/usage-logging-client': link:../../clients/usage-logging
       fuse.js: 3.6.1
-      js-base64: 2.6.4
-      oidc-client: 1.11.5
       semver: 5.7.1
       wms-capabilities: 0.4.0
       xml-js: 1.6.11
@@ -1156,7 +1161,6 @@ importers:
       '@bentley/webgl-compatibility': link:../webgl-compatibility
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
-      '@types/js-base64': 2.3.2
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/semver': 5.5.0
@@ -1332,7 +1336,6 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -1347,6 +1350,8 @@ importers:
       '@types/object-hash': ^1.3.0
       chai: ^4.1.2
       cpx: ^1.5.0
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
       mocha: ^8.3.2
@@ -1360,7 +1365,6 @@ importers:
       '@bentley/backend-itwin-client': link:../backend-itwin-client
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../geometry
@@ -1375,6 +1379,8 @@ importers:
       '@types/object-hash': 1.3.4
       chai: 4.3.4
       cpx: 1.5.0
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       mocha: 8.4.0
@@ -1474,16 +1480,18 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/presentation-common': workspace:*
       '@types/chai': ^4.1.4
+      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
-      '@types/js-base64': ^2.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/ws': ^6.0.4
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx: ^1.5.0
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       mocha: ^8.3.2
       rimraf: ^3.0.2
       typescript: ~4.3.0
@@ -1500,16 +1508,18 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/presentation-common': link:../../presentation/common
       '@types/chai': 4.2.21
+      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
-      '@types/js-base64': 2.3.2
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/ws': 6.0.4
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       cpx: 1.5.0
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       eslint: 7.32.0
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       mocha: 8.4.0
       rimraf: 3.0.2
       typescript: 4.3.5
@@ -1925,7 +1935,6 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/i18next': ^8.4.2
       '@types/i18next-browser-languagedetector': ^2.0.1
-      '@types/js-base64': ^2.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       body-parser: ^1.18.2
@@ -1939,7 +1948,6 @@ importers:
       i18next: ^10.2.2
       i18next-browser-languagedetector: ^2.1.0
       i18next-xhr-backend: ^2.0.1
-      js-base64: ^2.4.5
       mocha: ^8.3.2
       rimraf: ^3.0.2
       save: ^2.3.3
@@ -1966,7 +1974,6 @@ importers:
       i18next: 10.6.0
       i18next-browser-languagedetector: 2.2.4
       i18next-xhr-backend: 2.0.1
-      js-base64: 2.6.4
       save: 2.4.0
       webpack: 4.42.0
     devDependencies:
@@ -1979,7 +1986,6 @@ importers:
       '@types/fs-extra': 4.0.12
       '@types/i18next': 8.4.6
       '@types/i18next-browser-languagedetector': 2.0.2
-      '@types/js-base64': 2.3.2
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       cpx: 1.5.0
@@ -2009,7 +2015,6 @@ importers:
       '@types/fs-extra': ^4.0.7
       '@types/i18next': ^8.4.2
       '@types/i18next-browser-languagedetector': ^2.0.1
-      '@types/js-base64': ^2.3.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       body-parser: ^1.18.2
@@ -2023,7 +2028,7 @@ importers:
       i18next: ^10.2.2
       i18next-browser-languagedetector: ^2.1.0
       i18next-xhr-backend: ^2.0.1
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       mocha: ^8.3.2
       rimraf: ^3.0.2
       save: ^2.3.3
@@ -2048,7 +2053,7 @@ importers:
       i18next: 10.6.0
       i18next-browser-languagedetector: 2.2.4
       i18next-xhr-backend: 2.0.1
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       save: 2.4.0
       webpack: 4.42.0
     devDependencies:
@@ -2061,7 +2066,6 @@ importers:
       '@types/fs-extra': 4.0.12
       '@types/i18next': 8.4.6
       '@types/i18next-browser-languagedetector': 2.0.2
-      '@types/js-base64': 2.3.2
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       cpx: 1.5.0
@@ -2074,7 +2078,6 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/extension-webpack-tools': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -2100,7 +2103,6 @@ importers:
       svg-sprite-loader: 4.2.1
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/extension-webpack-tools': link:../../tools/extension-webpack
       '@types/node': 10.14.1
@@ -2224,7 +2226,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
@@ -2247,12 +2248,15 @@ importers:
       '@bentley/product-settings-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
+      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/serve-handler': ~6.1.0
       chai: ^4.1.2
       chai-as-promised: ^7
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
@@ -2291,7 +2295,6 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/extension-webpack-tools': link:../../tools/extension-webpack
@@ -2300,10 +2303,13 @@ importers:
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
+      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/serve-handler': 6.1.1
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       eslint: 7.32.0
       glob: 7.1.7
       internal-tools: link:../../tools/internal
@@ -2323,7 +2329,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/ecschema-metadata': workspace:*
       '@bentley/ecschema-rpcinterface-common': workspace:*
       '@bentley/eslint-plugin': workspace:*
@@ -2366,7 +2371,6 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/ecschema-metadata': link:../../core/ecschema-metadata
       '@bentley/ecschema-rpcinterface-common': link:../../core/ecschema-rpc/common
       '@bentley/geometry-core': link:../../core/geometry
@@ -2411,7 +2415,6 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
@@ -2421,16 +2424,18 @@ importers:
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
+      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
-      '@types/js-base64': ^2.3.1
       '@types/mocha': ^8.2.2
       chai: ^4.1.2
       cpx: ^1.5.0
       deep-assign: ^2.0.0
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
       internal-tools: workspace:*
-      js-base64: ^2.4.5
+      js-base64: ^3.6.1
       mocha: ^8.3.2
       nock: ^12.0.3
       nyc: ^15.1.0
@@ -2447,20 +2452,21 @@ importers:
       chai: 4.3.4
       deep-assign: 2.0.0
       fs-extra: 8.1.0
-      js-base64: 2.6.4
+      js-base64: 3.6.1
       mocha: 8.4.0
       nock: 12.0.3
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
+      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
-      '@types/js-base64': 2.3.2
       '@types/mocha': 8.2.3
       cpx: 1.5.0
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       nyc: 15.1.0
@@ -2473,7 +2479,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
@@ -2489,10 +2494,13 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
+      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
@@ -2527,13 +2535,15 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
+      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       eslint: 7.32.0
       glob: 7.1.7
       internal-tools: link:../../tools/internal
@@ -2550,7 +2560,6 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-backend': workspace:*
@@ -2575,6 +2584,7 @@ importers:
       '@types/chai-subset': 1.3.1
       '@types/cpx': '1.5'
       '@types/deep-equal': ^1
+      '@types/dotenv': ^6.1.1
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -2592,6 +2602,8 @@ importers:
       cpx: ^1.5.0
       cross-env: ^5.1.4
       deep-equal: ^1
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       faker: ^4.1.0
       ignore-styles: ^5.0.1
@@ -2658,13 +2670,15 @@ importers:
       xmlhttprequest: 1.8.0
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
+      '@types/dotenv': 6.1.1
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.14
       '@types/testing-library__react-hooks': 3.4.1
       cache-require-paths: 0.3.0
       cross-env: 5.2.1
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       eslint: 7.32.0
       ignore-styles: 5.0.1
       internal-tools: link:../../tools/internal
@@ -2740,7 +2754,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
@@ -2785,7 +2798,6 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../../core/geometry
@@ -3261,7 +3273,6 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
@@ -3280,6 +3291,7 @@ importers:
       '@bentley/react-scripts': 4.0.3
       '@bentley/ui-abstract': workspace:*
       '@types/body-parser': ^1.17.0
+      '@types/dotenv': ^6.1.1
       '@types/express': ^4.16.1
       '@types/node': 10.14.1
       body-parser: ^1.18.2
@@ -3287,6 +3299,8 @@ importers:
       chrome-launcher: ^0.10.5
       cpx: ^1.5.0
       cross-env: ^5.1.4
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
       express: ^4.16.3
@@ -3316,17 +3330,19 @@ importers:
       body-parser: 1.19.0
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/perf-tools': link:../../tools/perf-tools
       '@bentley/react-scripts': 4.0.3_react@16.14.0+typescript@4.3.5
       '@types/body-parser': 1.19.1
+      '@types/dotenv': 6.1.1
       '@types/express': 4.17.13
       '@types/node': 10.14.1
       child_process: 1.0.2
       chrome-launcher: 0.10.7
       cpx: 1.5.0
       cross-env: 5.2.1
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       electron: 11.4.11
       eslint: 7.32.0
       express: 4.17.1
@@ -3343,7 +3359,6 @@ importers:
       '@bentley/backend-webpack-tools': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
@@ -3367,12 +3382,15 @@ importers:
       '@bentley/react-scripts': 4.0.3
       '@bentley/ui-abstract': workspace:*
       '@bentley/webgl-compatibility': workspace:*
+      '@types/dotenv': ^6.1.1
       '@types/express': ^4.16.1
       '@types/fs-extra': ^4.0.7
       body-parser: ^1.18.2
       child_process: ^1.0.2
       cpx: ^1.5.0
       cross-env: ^5.1.4
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
       express: ^4.16.3
@@ -3413,14 +3431,16 @@ importers:
     devDependencies:
       '@bentley/backend-webpack-tools': link:../../tools/backend-webpack
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/react-scripts': 4.0.3_react@16.14.0+typescript@4.3.5
+      '@types/dotenv': 6.1.1
       '@types/express': 4.17.13
       '@types/fs-extra': 4.0.12
       child_process: 1.0.2
       cpx: 1.5.0
       cross-env: 5.2.1
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       electron: 11.4.11
       eslint: 7.32.0
       express: 4.17.1
@@ -3470,7 +3490,6 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-backend': workspace:*
@@ -3491,7 +3510,6 @@ importers:
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodeljs-backend': link:../../core/backend
       '@bentley/imodeljs-common': link:../../core/common
@@ -3739,7 +3757,6 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
@@ -3761,12 +3778,15 @@ importers:
       '@itwin/itwinui-css': ^0.24.0
       '@itwin/itwinui-react': ^1.14.0
       '@types/bunyan': ^1.8.4
+      '@types/dotenv': ^6.1.1
       '@types/react': 16.9.43
       '@types/react-dom': ^16.8.0
       '@types/react-select': 3.0.26
       autoprefixer: ^8.6.5
       cpx: ^1.5.0
       cross-env: ^5.1.4
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
       npm-run-all: ^4.1.5
@@ -3805,16 +3825,18 @@ importers:
       semver: 5.7.1
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/react-scripts': 4.0.3_react@16.14.0+typescript@4.3.5
       '@types/bunyan': 1.8.7
+      '@types/dotenv': 6.1.1
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.14
       '@types/react-select': 3.0.26
       autoprefixer: 8.6.5
       cpx: 1.5.0
       cross-env: 5.2.1
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       electron: 11.4.11
       eslint: 7.32.0
       npm-run-all: 4.1.5
@@ -3831,7 +3853,6 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
@@ -3869,6 +3890,7 @@ importers:
       '@bentley/ui-ninezone': workspace:*
       '@itwin/itwinui-css': ^0.24.0
       '@itwin/itwinui-react': ^1.14.0
+      '@types/dotenv': ^6.1.1
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 10.14.1
       '@types/react': 16.9.43
@@ -3953,10 +3975,10 @@ importers:
     devDependencies:
       '@axe-core/react': 4.2.2
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/logger-config': link:../../core/logger-config
       '@bentley/react-scripts': 4.0.3_react@16.14.0+typescript@4.3.5
+      '@types/dotenv': 6.1.1
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
       '@types/react': 16.9.43
@@ -4176,33 +4198,6 @@ importers:
       electron: 11.4.11
       eslint: 7.32.0
       nyc: 15.1.0
-      rimraf: 3.0.2
-      typescript: 4.3.5
-
-  ../../tools/config-loader:
-    specifiers:
-      '@bentley/build-tools': workspace:*
-      '@bentley/eslint-plugin': workspace:*
-      '@types/json5': 0.0.30
-      '@types/node': 10.14.1
-      chalk: ^3.0.0
-      dotenv: ^8.2.0
-      dotenv-expand: ^5.1.0
-      eslint: ^7.11.0
-      json5: ^2.1.0
-      rimraf: ^3.0.2
-      typescript: ~4.3.0
-    dependencies:
-      chalk: 3.0.0
-      dotenv: 8.6.0
-      dotenv-expand: 5.1.0
-      json5: 2.2.0
-    devDependencies:
-      '@bentley/build-tools': link:../build
-      '@bentley/eslint-plugin': link:../eslint-plugin
-      '@types/json5': 0.0.30
-      '@types/node': 10.14.1
-      eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.3.5
 
@@ -4458,8 +4453,8 @@ importers:
       react-dev-utils: 11.0.4
       readline: 1.3.0
       resolve-url-loader: 3.1.2
-      sass: 1.37.2
-      sass-loader: 10.2.0_sass@1.37.2+webpack@4.42.0
+      sass: 1.37.3
+      sass-loader: 10.2.0_sass@1.37.3+webpack@4.42.0
       source-map-loader: 1.1.3_webpack@4.42.0
       style-loader: 1.3.0_webpack@4.42.0
       svg-sprite-loader: 4.2.1_webpack@4.42.0
@@ -4485,17 +4480,19 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/itwin-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
+      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
       chai: ^4.1.2
       chai-as-promised: ^7
+      dotenv: ^8.2.0
+      dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
       mocha: ^8.3.2
@@ -4506,9 +4503,10 @@ importers:
     dependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/certa': link:../certa
-      '@bentley/config-loader': link:../config-loader
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/itwin-client': link:../../clients/itwin
+      dotenv: 8.6.0
+      dotenv-expand: 5.1.0
       openid-client: 3.15.10
       puppeteer: 5.3.1
     devDependencies:
@@ -4516,6 +4514,7 @@ importers:
       '@bentley/eslint-plugin': link:../eslint-plugin
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
+      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
@@ -4998,7 +4997,6 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/config-loader': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
@@ -5098,7 +5096,6 @@ importers:
     devDependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/config-loader': link:../../tools/config-loader
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/geometry-core': link:../../core/geometry
@@ -8849,7 +8846,7 @@ packages:
       eslint-plugin-react-hooks: 4.2.0_eslint@7.32.0
       eslint-plugin-testing-library: 3.10.2_eslint@7.32.0+typescript@4.3.5
       eslint-webpack-plugin: 2.5.4_eslint@7.32.0+webpack@4.44.2
-      fast-sass-loader: 2.0.0_sass@1.37.2+webpack@4.44.2
+      fast-sass-loader: 2.0.0_sass@1.37.3+webpack@4.44.2
       file-loader: 6.1.1_webpack@4.44.2
       fs-extra: 9.1.0
       html-webpack-plugin: 4.5.0_webpack@4.44.2
@@ -8873,8 +8870,8 @@ packages:
       react-refresh: 0.8.3
       resolve: 1.18.1
       resolve-url-loader: 3.1.2
-      sass: 1.37.2
-      sass-loader: 10.2.0_sass@1.37.2+webpack@4.44.2
+      sass: 1.37.3
+      sass-loader: 10.2.0_sass@1.37.3+webpack@4.44.2
       semver: 7.3.2
       source-map-loader: 1.1.3_webpack@4.44.2
       speed-measure-webpack-plugin: 1.5.0_webpack@4.44.2
@@ -8949,7 +8946,7 @@ packages:
       eslint-plugin-react-hooks: 4.2.0_eslint@7.32.0
       eslint-plugin-testing-library: 3.10.2_eslint@7.32.0+typescript@4.3.5
       eslint-webpack-plugin: 2.5.4_eslint@7.32.0+webpack@4.44.2
-      fast-sass-loader: 2.0.0_sass@1.37.2+webpack@4.44.2
+      fast-sass-loader: 2.0.0_sass@1.37.3+webpack@4.44.2
       file-loader: 6.1.1_webpack@4.44.2
       fs-extra: 9.1.0
       html-webpack-plugin: 4.5.0_webpack@4.44.2
@@ -8973,8 +8970,8 @@ packages:
       react-refresh: 0.8.3
       resolve: 1.18.1
       resolve-url-loader: 3.1.2
-      sass: 1.37.2
-      sass-loader: 10.2.0_sass@1.37.2+webpack@4.44.2
+      sass: 1.37.3
+      sass-loader: 10.2.0_sass@1.37.3+webpack@4.44.2
       semver: 7.3.2
       source-map-loader: 1.1.3_webpack@4.44.2
       speed-measure-webpack-plugin: 1.5.0_webpack@4.44.2
@@ -10501,10 +10498,6 @@ packages:
       '@types/sizzle': 2.3.3
     dev: false
 
-  /@types/js-base64/2.3.2:
-    resolution: {integrity: sha512-iGjZEnheu9n53fhlU+QLovdKHsdwPJ79iammNM0opTEp18zcJ/nNAIthuMilJoDPNUQHoqRAJdDNI5rxHY4nkA==}
-    dev: true
-
   /@types/jsdom/12.2.4:
     resolution: {integrity: sha512-q+De3S/Ri6U9uPx89YA1XuC+QIBgndIfvBaaJG0pRT8Oqa75k4Mr7G9CRZjIvlbLGIukO/31DFGFJYlQBmXf/A==}
     dependencies:
@@ -10515,10 +10508,6 @@ packages:
 
   /@types/json-schema/7.0.9:
     resolution: {integrity: sha512-qcUXuemtEu+E5wZSJHNxUXeCZhAfXKQ41D+duX+VYPde7xyEVZci+/oXKJL13tnRs9lR2pr4fod59GT6/X1/yQ==}
-
-  /@types/json5/0.0.30:
-    resolution: {integrity: sha512-sqm9g7mHlPY/43fcSNrCYfOeX9zkTTK+euO5E6+CVijSMm5tTjkVdwdqRkY3ljjIAf8679vps5jKUoJBCLsMDA==}
-    dev: true
 
   /@types/jsonpath/0.2.0:
     resolution: {integrity: sha512-v7qlPA0VpKUlEdhghbDqRoKMxFB3h3Ch688TApBJ6v+XLDdvWCGLJIYiPKGZnS6MAOie+IorCfNYVHOPIHSWwQ==}
@@ -12784,7 +12773,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001248
-      electron-to-chromium: 1.3.793
+      electron-to-chromium: 1.3.794
     dev: true
 
   /browserslist/4.11.1:
@@ -12792,7 +12781,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001248
-      electron-to-chromium: 1.3.793
+      electron-to-chromium: 1.3.794
       node-releases: 1.1.73
       pkg-up: 2.0.0
 
@@ -12802,7 +12791,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001248
-      electron-to-chromium: 1.3.793
+      electron-to-chromium: 1.3.794
       escalade: 3.1.1
       node-releases: 1.1.73
 
@@ -12813,7 +12802,7 @@ packages:
     dependencies:
       caniuse-lite: 1.0.30001248
       colorette: 1.2.2
-      electron-to-chromium: 1.3.793
+      electron-to-chromium: 1.3.794
       escalade: 3.1.1
       node-releases: 1.1.73
 
@@ -12938,7 +12927,7 @@ packages:
       promise-inflight: 1.0.1
       rimraf: 3.0.2
       ssri: 8.0.1
-      tar: 6.1.3
+      tar: 6.1.4
       unique-filename: 1.1.1
 
   /cache-base/1.0.1:
@@ -14702,8 +14691,8 @@ packages:
     requiresBuild: true
     dev: true
 
-  /electron-to-chromium/1.3.793:
-    resolution: {integrity: sha512-l9NrGV6Mr4ov5mayYPvIWcwklNw5ROmy6rllzz9dCACw9nKE5y+s5uQk+CBJMetxrWZ6QJFsvEfG6WDcH2IGUg==}
+  /electron-to-chromium/1.3.794:
+    resolution: {integrity: sha512-lN6h2N16+B64/DDNefd2qvehTJl/LDZ/ORXKL2JHaLGhVxjj7ybuA/oVprKtTNvmOTgzUrpP02HhgoS27E2rGA==}
 
   /electron/11.4.11:
     resolution: {integrity: sha512-DyarEH2IJpx5KfE42vF+uq7jyfHDrDRUsXXZyc69tR/GOO0DGuFE6/BHlTaywgPbCS4Sa5/ffEGlG6xq9+eRAQ==}
@@ -15666,7 +15655,7 @@ packages:
   /fast-safe-stringify/2.0.8:
     resolution: {integrity: sha512-lXatBjf3WPjmWD6DpIZxkeSsCOwqI0maYMpgDlx8g4U2qi4lbjA9oH/HD2a87G+KfsUmo5WbJFmqBZlPxtptag==}
 
-  /fast-sass-loader/2.0.0_sass@1.37.2+webpack@4.44.2:
+  /fast-sass-loader/2.0.0_sass@1.37.3+webpack@4.44.2:
     resolution: {integrity: sha512-q9q59bL8XvforoQw+qpwiLPDWGMZ2MfrwuOjvFKyGvON9uawOaNc7QDHKxjfqRM/gs1htXywQVqxjcTMcHDesw==}
     peerDependencies:
       sass: 1.x
@@ -15677,7 +15666,7 @@ packages:
       co: 4.6.0
       fs-extra: 3.0.1
       loader-utils: 1.4.0
-      sass: 1.37.2
+      sass: 1.37.3
       webpack: 4.44.2
     dev: true
 
@@ -18429,6 +18418,9 @@ packages:
 
   /js-base64/2.6.4:
     resolution: {integrity: sha512-pZe//GGmwJndub7ZghVHz7vjb2LgC1m8B07Au3eYqeqv9emhESByMXxaEgkUkEqJe87oBbSniGYoQNIBklc7IQ==}
+
+  /js-base64/3.6.1:
+    resolution: {integrity: sha512-Frdq2+tRRGLQUIQOgsIGSCd1VePCS2fsddTG5dTCqR0JHgltXWfsxnY0gIXPoMeRmdom6Oyq+UMOFg5suduOjQ==}
 
   /js-tokens/3.0.2:
     resolution: {integrity: sha1-mGbfOVECEw449/mWvOtlRDIJwls=}
@@ -22443,7 +22435,7 @@ packages:
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}
     dependencies:
-      '@babel/runtime': 7.14.8
+      '@babel/runtime': 7.9.0
 
   /regex-cache/0.4.4:
     resolution: {integrity: sha512-nVIZwtCjkC9YgvWkpM55B5rBhBYRZhAaJbgcFYXXsHnbZ9UZI9nnVWYZpBlCqv9ho2eZryPnWrZGsOdPwVWXWQ==}
@@ -22987,7 +22979,7 @@ packages:
   /sanitize.css/10.0.0:
     resolution: {integrity: sha512-vTxrZz4dX5W86M6oVWVdOVe72ZiPs41Oi7Z6Km4W5Turyz28mrXSJhhEBZoRtzJWIv3833WKVwLSDWWkEfupMg==}
 
-  /sass-loader/10.2.0_sass@1.37.2+webpack@4.42.0:
+  /sass-loader/10.2.0_sass@1.37.3+webpack@4.42.0:
     resolution: {integrity: sha512-kUceLzC1gIHz0zNJPpqRsJyisWatGYNFRmv2CKZK2/ngMJgLqxTbXwe/hJ85luyvZkgqU3VlJ33UVF2T/0g6mw==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
@@ -23006,13 +22998,13 @@ packages:
       klona: 2.0.4
       loader-utils: 2.0.0
       neo-async: 2.6.2
-      sass: 1.37.2
+      sass: 1.37.3
       schema-utils: 3.1.1
       semver: 7.3.5
       webpack: 4.42.0
     dev: false
 
-  /sass-loader/10.2.0_sass@1.37.2+webpack@4.44.2:
+  /sass-loader/10.2.0_sass@1.37.3+webpack@4.44.2:
     resolution: {integrity: sha512-kUceLzC1gIHz0zNJPpqRsJyisWatGYNFRmv2CKZK2/ngMJgLqxTbXwe/hJ85luyvZkgqU3VlJ33UVF2T/0g6mw==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
@@ -23031,14 +23023,14 @@ packages:
       klona: 2.0.4
       loader-utils: 2.0.0
       neo-async: 2.6.2
-      sass: 1.37.2
+      sass: 1.37.3
       schema-utils: 3.1.1
       semver: 7.3.5
       webpack: 4.44.2
     dev: true
 
-  /sass/1.37.2:
-    resolution: {integrity: sha512-+XMg8QOg7OGLo4F5R3fLYEti/3MxFkyX0NxYbqWycU8xYMAhPDN5FuCO2ZJudnM1wcnZ3CeJRnpqUBZpLOitCQ==}
+  /sass/1.37.3:
+    resolution: {integrity: sha512-6rHg+pRK74lxbDM9xfhQ3So9vikEOTmJvRcjZEWVvH7u/oNXsye6LjL9Ed5mxvMwauw77ZtKX5b8fH6CICAsew==}
     engines: {node: '>=8.9.0'}
     hasBin: true
     dependencies:
@@ -24269,8 +24261,8 @@ packages:
       yallist: 3.1.1
     dev: false
 
-  /tar/6.1.3:
-    resolution: {integrity: sha512-3rUqwucgVZXTeyJyL2jqtUau8/8r54SioM1xj3AmTX3HnWQdj2AydfJ2qYYayPyIIznSplcvU9mhBb7dR2XF3w==}
+  /tar/6.1.4:
+    resolution: {integrity: sha512-kcPWrO8S5ABjuZ/v1xQHP8xCEvj1dQ1d9iAb6Qs4jLYzaAIYWwST2IQpz7Ud8VNYRI+fGhFjrnzRKmRggKWg3g==}
     engines: {node: '>= 10'}
     dependencies:
       chownr: 2.0.0

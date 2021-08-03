@@ -28,7 +28,8 @@ import { JointOptions } from "../../curve/internalContexts/PolygonOffsetContext"
 import { CurveFactory } from "../../curve/CurveFactory";
 import { LineSegment3d } from "../../curve/LineSegment3d";
 import { Arc3d } from "../../curve/Arc3d";
-
+import { Sample } from "../../serialization/GeometrySamples";
+import { SweepContour } from "../../solid/SweepContour";
 describe("OffsetByClip", () => {
   it("LongLineString", () => {
     const ck = new Checker();
@@ -187,10 +188,15 @@ describe("OffsetByClip", () => {
     // const largeClipRegion = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
     //   "./src/test/testInputs/clipping/arnoldasLaneClipper/largeClipRegion.imjs", "utf8")));
     if (fullRoadMesh instanceof IndexedPolyface) {
+      const meshRangeA = fullRoadMesh.range();
+      fullRoadMesh.tryTranslateInPlace(-meshRangeA.low.x, -meshRangeA.low.y, -meshRangeA.low.z);
       const meshRange = fullRoadMesh.range();
-      const x0 = -meshRange.low.x;
+      const rangeRectangle = Sample.createRectangleXY(meshRange.low.x, meshRange.low.y,
+           meshRange.xLength (), meshRange.yLength(), meshRange.low.z);
+      let x0 = -meshRange.low.x;
       const y0 = -meshRange.low.y;
       const dx = meshRange.xLength();
+      const dy = meshRange.yLength();
       // Extract the boundary of the upward facing mesh ..
       const boundary = PolyfaceQuery.boundaryOfVisibleSubset(fullRoadMesh, 0, Vector3d.unitZ(), Angle.createDegrees(2.0));
       if (boundary){
@@ -210,9 +216,10 @@ describe("OffsetByClip", () => {
                 (pointA: Point3d, pointB: Point3d) => { return pointB.x - pointA.x >= 0.0 && pointB.y - pointA.y >= 0.0; },
                 (ls: LineString3d) => rightSideChains.push(ls));
           }
-          // we expect only one right side chain ..
+          const offsetA = 3.0;
+          for (const offsetB of [0.0, -1.0]) {          // we expect only one right side chain ..
           for (const ls of rightSideChains) {
-            const clipper = ClipUtilities.createXYOffsetClipFromLineString(ls.packedPoints, 1.0, 0.0, meshRange.low.z - 1, meshRange.high.z + 1);
+              const clipper = ClipUtilities.createXYOffsetClipFromLineString(ls.packedPoints, offsetA, offsetB, meshRange.low.z - 1, meshRange.high.z + 1);
             const builders = ClippedPolyfaceBuilders.create(true, true, true);
             // first method: clip the whole polyface at once ....
             PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(fullRoadMesh, clipper, builders);
@@ -220,6 +227,12 @@ describe("OffsetByClip", () => {
             const clipB = builders.builderB?.claimPolyface();
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipA, x0 + 3 * dx, y0);
             GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipB, x0 + 2.8 * dx, y0);
+              {
+                const clipResult: GrowableXYZArray[] = [];
+                clipper.polygonClip(rangeRectangle, clipResult);
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipResult, x0, y0 + dy);
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, rangeRectangle, x0, y0 + dy);
+              }
             const num0 = fullRoadMesh.facetCount;
             if (ck.testDefined(clipA) && clipA
               && ck.testDefined(clipB) && clipB) {
@@ -227,21 +240,22 @@ describe("OffsetByClip", () => {
               // (The motivation for this problem was that there were many, many unnecessary interior edges)
               const numA = clipA.facetCount;
               const numB = clipB.facetCount;
-              ck.testLE(numA, 4.5 * num0);
-              ck.testLE(numB, 4.5 * num0);
-              ck.testLE(num0, 2 * numA);
-              ck.testLE(num0, 2 * numB);
+                ck.testLE(numA, 8 * num0);
+                ck.testLE(numB, 8 * num0);
+                // ck.testLE(num0, 2 * numA);
+                // ck.testLE(num0, 2 * numB);
             }
+              x0 += 4.0 * dx;
             // second method clip the polyface one facet at a time.
             // This indeed produces full facets !!!!
             const visitor = fullRoadMesh.createVisitor();
             for (; visitor.moveToNextFacet();){
               const clipResult: GrowableXYZArray[] = [];
               clipper.polygonClip(visitor.point.getPoint3dArray(), clipResult);
-              for (const q of clipResult){
-                GeometryCoreTestIO.captureCloneGeometry(allGeometry, q, x0 + 4.0 * dx, y0);
+                GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipResult, x0, y0);
               }
             }
+              x0 += 10.0 * dx;
           }
         }
       }
@@ -249,6 +263,52 @@ describe("OffsetByClip", () => {
 
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "ArnoldasLaneClip");
+  });
+  it("ExcessEdgesAroundAnnulus", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const x0 = 0;
+    let y0 = 0;
+    const clipper = UnionOfConvexClipPlaneSets.createEmpty();
+    for (const annulusA of
+        [
+        Sample.createAnnulusPolyline(4, Point3d.create(4, 2, 0), 2, 2.6,
+          Angle.createDegrees(100), Angle.createDegrees(170), true),
+        Sample.createAnnulusPolyline(4, Point3d.create(6, 6, 0), 2, 2.6,
+          Angle.createDegrees(-80), Angle.createDegrees(45), true),
+
+        ]){
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry, annulusA, x0, y0);
+          const contourA = SweepContour.createForPolygon(annulusA);
+          const clipperA = contourA!.sweepToUnionOfConvexClipPlaneSets()!;
+          clipper.takeConvexSets(clipperA);
+          }
+
+    const grid = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0),
+      Vector3d.create(1.0, 0, 0),
+      Vector3d.create(0, 2.0, 0),
+      11, 11, false, false, false, false);
+    const builders = ClippedPolyfaceBuilders.create(true, true, true);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, grid, x0, y0);
+      // first method: clip the whole polyface at once ....
+    PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(grid, clipper, builders);
+    y0 += 10;
+    const clipA = builders.builderA?.claimPolyface();
+    const clipB = builders.builderB?.claimPolyface();
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipA, x0, y0 += 10);
+
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipB, x0, y0 += 10);
+
+    const rectangle = Sample.createRectangleXY(0, 0, 5, 8, 0);
+    const clipShapes: GrowableXYZArray[] = [];
+    clipper.polygonClip(rectangle, clipShapes);
+    for (const shape of clipShapes) {
+      shape.push(shape.getPoint3dAtUncheckedPointIndex(0));
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape, x0, y0);
+    }
+
+    expect(ck.getNumErrors()).equals(0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "ExcessEdgesAroundAnnulus");
   });
 
   it("InwardCornerClip", () => {
