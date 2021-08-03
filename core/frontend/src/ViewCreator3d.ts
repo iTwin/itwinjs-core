@@ -100,6 +100,8 @@ export class ViewCreator3d {
         modelExtents = modelExtents.union(Range3d.fromJSON(props));
     }
 
+    if (modelExtents == null) modelExtents = this._imodel.projectExtents;
+
     let originX = modelExtents.low.x;
     let originY = modelExtents.low.y;
     const originZ = modelExtents.low.z;
