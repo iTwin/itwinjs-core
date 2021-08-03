@@ -91,8 +91,15 @@ export class ViewCreator3d {
     const categories: Id64Array = await this._getAllCategories();
 
     // model extents
+    let modelExtents: Range3d = this._imodel.projectExtents;
     const modelProps = await this._imodel.models.queryModelRanges(models);
-    const modelExtents = Range3d.fromJSON(modelProps[0]);
+
+    if (modelProps.length > 0) {
+      modelExtents = new Range3d();
+      for (const props of modelProps)
+        modelExtents = modelExtents.union(Range3d.fromJSON(props));
+    }
+
     let originX = modelExtents.low.x;
     let originY = modelExtents.low.y;
     const originZ = modelExtents.low.z;
