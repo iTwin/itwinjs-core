@@ -63,7 +63,6 @@
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
-    "@bentley/config-loader": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
