@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/frontend-application-insights-client",
+      "comment": "Removed references to the deleted config-loader package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/frontend-application-insights-client",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}

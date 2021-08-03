@@ -2,6 +2,18 @@
   "name": "@bentley/imodeljs-frontend",
   "entries": [
     {
+      "version": "2.19.1",
+      "tag": "@bentley/imodeljs-frontend_v2.19.1",
+      "date": "Thu, 29 Jul 2021 20:01:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Viewport.zoomToElements includes only 2d or 3d elements based on view type."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.0",
       "tag": "@bentley/imodeljs-frontend_v2.19.0",
       "date": "Mon, 26 Jul 2021 12:21:25 GMT",

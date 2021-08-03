@@ -7,8 +7,23 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import { Config } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
 import { getTestAccessToken, TestBrowserAuthorizationClientConfiguration, TestUsers, TestUtility } from "../index";
+import * as fs from "fs";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 const assert = chai.assert;
 const expect = chai.expect;
