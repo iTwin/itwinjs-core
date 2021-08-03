@@ -8,6 +8,24 @@ publish: false
 Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
 Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
+## Client Library Package Changes
+
+TODO: This need a lot more work before it's ready
+
+### Authentication
+
+SAML support has officially been dropped as a supported workflow. All related APIs for SAML have been removed.
+
+|Removed in @bentley/backend-itwin-client |Use from |
+|OidcDelegationClientConfiguration| DelegationAuthorizationClientConfiguration|
+|OidcDelegationClient|DelegationAuthorizationClient|
+
+|Removed in @bentley/imodeljs-frontend |Use from |
+|OidcBrowserClient|BrowserAuthorizationClient|
+|IOidcFrontendClient|FrontendAuthorizationClient|
+|isIOidcFrontendClient|FrontendAuthorizationClient|
+|OidcFrontendClientConfiguration|BrowserAuthorizationClientConfiguration|
+
 ## User Interface Package Changes
 
 Several changes were made in the @bentley/ui-* packages.

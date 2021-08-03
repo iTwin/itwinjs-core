@@ -25,7 +25,6 @@
   },
   "dependencies": {
     "@bentley/bentleyjs-core": "workspace:*",
-    "@bentley/config-loader": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
     "@bentley/imodeljs-backend": "workspace:*",
     "@bentley/itwin-client": "workspace:*",

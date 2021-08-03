@@ -8,7 +8,6 @@ import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 import * as http from "http";
 import * as path from "path";
 import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
@@ -17,9 +16,25 @@ import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-ed
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import * as testCommands from "./TestEditCommands";
+import * as fs from "fs";
 
 import serveHandler = require("serve-handler");
 /* eslint-disable no-console */
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));

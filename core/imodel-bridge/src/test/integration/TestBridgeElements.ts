@@ -38,6 +38,16 @@ export enum Materials {
 
 const loggerCategory: string = TestBridgeLoggerCategory.Bridge;
 
+function toNumber(val: any): number {
+  if (val === undefined)
+    return 0.0;
+  if (typeof(val) == "number")
+    return val;
+  if (typeof(val) == "string")
+    return parseFloat(val);
+  throw new IModelError(IModelStatus.BadRequest, `expected number. got ${val}`);
+}
+
 export class TestBridgePhysicalElement extends PhysicalElement implements TestBridgePhysicalProps {
   /** @internal */
   public static override get className(): string { return "TestBridgePhysicalElement"; }
@@ -67,9 +77,9 @@ export class TestBridgePhysicalElement extends PhysicalElement implements TestBr
 
     if (tile.hasOwnProperty("Placement") && tile.Placement.hasOwnProperty("Origin")) {
       const xyz: XYZProps = {
-        x: tile.Placement.Origin.x,
-        y: tile.Placement.Origin.y,
-        z: tile.Placement.Origin.z,
+        x: toNumber(tile.Placement.Origin.x),
+        y: toNumber(tile.Placement.Origin.y),
+        z: toNumber(tile.Placement.Origin.z),
       };
       origin = xyz;
     } else {
@@ -78,9 +88,9 @@ export class TestBridgePhysicalElement extends PhysicalElement implements TestBr
 
     if (tile.hasOwnProperty("Placement") && tile.Placement.hasOwnProperty("Angles")) {
       const yawp: YawPitchRollProps = {
-        yaw: tile.Placement.Angles.yaw,
-        pitch: tile.Placement.Angles.pitch,
-        roll: tile.Placement.Angles.roll,
+        yaw: toNumber(tile.Placement.Angles.yaw),
+        pitch: toNumber(tile.Placement.Angles.pitch),
+        roll: toNumber(tile.Placement.Angles.roll),
       };
       angles = yawp;
     } else {
