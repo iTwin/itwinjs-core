@@ -84,6 +84,7 @@ Some of these have alternatives in the same package, while others have alternati
 |StandardEditorNames | StandardEditorNames in @bentley/ui-abstract
 |StandardTypeNames | StandardTypeNames in @bentley/ui-abstract
 |StandardTypeConverterTypeNames | StandardTypeNames in @bentley/ui-abstract
+|Timeline | TimelineComponent in @bentley/ui-components
 
 |Removed from @bentley/ui-framework |Use instead
 |-----|-----
