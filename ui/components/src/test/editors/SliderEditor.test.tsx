@@ -64,7 +64,7 @@ describe("<SliderEditor />", () => {
     const editorParams: BasePropertyEditorParams[] = [];
     const formatTooltip = (_value: number): string => "";
     const formatTick = (tick: number): string => tick.toFixed(0);
-    const getTickCount = (): number => 2;
+    const getTickCount = (): number => 2; // 2 segments actually 3 ticks
     const getTickValues = (): number[] => [1, 100];
     const sliderParams: SliderEditorParams = {
       type: PropertyEditorParamTypes.Slider,
@@ -342,7 +342,7 @@ describe("<SliderEditor />", () => {
     const editorParams: BasePropertyEditorParams[] = [];
     const formatTooltip = (value: number): string => value.toFixed(2);
     const formatTick = (value: number): string => value.toFixed(1);
-    const getTickCount = (): number => 2;
+    const getTickCount = (): number => 2; // 2 segment / 3 ticks 0-50-100
     const sliderParams: SliderEditorParams = {
       type: PropertyEditorParamTypes.Slider,
       size: 100,
@@ -374,7 +374,7 @@ describe("<SliderEditor />", () => {
     const maxLabel = component.container.ownerDocument.querySelector("span.iui-slider-max");
     expect(maxLabel?.querySelector(".icon-placeholder")).to.exist;
     const ticks = component.container.ownerDocument.querySelectorAll("span.iui-slider-tick");
-    expect(ticks.length).to.eq(2);
+    expect(ticks.length).to.eq(3);
     component.unmount();
     cleanup();
   });
@@ -382,7 +382,7 @@ describe("<SliderEditor />", () => {
     const editorParams: BasePropertyEditorParams[] = [];
     const formatTooltip = (value: number): string => value.toFixed(2);
     const formatTick = (value: number): string => value.toFixed(1);
-    const getTickCount = (): number => 2;
+    const getTickCount = (): number => 1;
     const sliderParams: SliderEditorParams = {
       type: PropertyEditorParamTypes.Slider,
       size: 100,
@@ -502,7 +502,7 @@ describe("<SliderEditor />", () => {
 
   it("should render Editor Params w/ticks and default labels", async () => {
     const editorParams: BasePropertyEditorParams[] = [];
-    const getTickCount = (): number => 5;  // four segments
+    const getTickCount = (): number => 4;  // four segments
     // const getTickValues = (): number[] => [1, 100];
     const sliderParams: SliderEditorParams = {
       type: PropertyEditorParamTypes.Slider,

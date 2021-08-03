@@ -46,14 +46,14 @@ describe("Slider", () => {
   it("should render with showTicks, showTickLabels & getTickCount", () => {
     const spyMethod = sinon.spy();
     const component = render(<Slider min={0} max={100} values={[50]} showTicks={true} getTickCount={() => { spyMethod(); return 10; }} />);
-    expect(component.getByTestId("core-slider-ticks")).to.exist;
+    expect(component.container.querySelectorAll(".iui-slider-tick").length).to.eq(11); // 10 even spaces but actually 11 ticks
     spyMethod.calledOnce.should.true;
   });
 
   it("should render with showTicks & getTickValues", () => {
     const spyMethod = sinon.spy();
     const component = render(<Slider min={0} max={50} values={[20]} showTicks={true} getTickValues={() => { spyMethod(); return [0, 10, 20, 30, 40, 50]; }} />);
-    expect(component.getByTestId("core-slider-ticks")).to.exist;
+    expect(component.container.querySelectorAll(".iui-slider-tick").length).to.eq(6);
     spyMethod.calledOnce.should.true;
   });
 
@@ -79,12 +79,12 @@ describe("Slider", () => {
 
   it("should render with multiple values", () => {
     const component = render(<Slider min={0} max={100} values={[30, 70]} />);
-    expect(component.getAllByTestId("core-slider-handle").length).to.eq(2);
+    expect(component.container.querySelectorAll(".iui-slider-thumb").length).to.eq(2);
   });
 
   it("should render with multiple values & formatTooltip", () => {
     const component = render(<Slider min={0} max={100} values={[30, 70]} formatTooltip={(value) => `*${value.toString()}*`} />);
-    expect(component.getAllByTestId("core-slider-handle").length).to.eq(2);
+    expect(component.container.querySelectorAll(".iui-slider-thumb").length).to.eq(2);
   });
 
   it("should render with showTooltip and tooltipBelow", () => {
@@ -99,10 +99,10 @@ describe("Slider", () => {
     const spyOnChange = sinon.spy();
     const component = render(<Slider min={0} max={100} values={[50]} onChange={spyOnChange} />);
 
-    const handles = component.container.querySelectorAll(".core-slider-handle");
+    const handles = component.container.querySelectorAll(".iui-slider-container");
     expect(handles.length).to.eq(1);
-    fireEvent.mouseDown(handles[0]);
-    fireEvent.mouseUp(handles[0]);
+    fireEvent.pointerDown(handles[0]);
+    fireEvent.pointerUp(handles[0]);
     await TestUtils.flushAsyncOperations();
     expect(spyOnChange.calledOnce).to.be.true;
   });

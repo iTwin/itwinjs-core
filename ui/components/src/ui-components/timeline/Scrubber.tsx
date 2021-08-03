@@ -59,12 +59,11 @@ export function RailToolTip({ showToolTip, percent, tooltipText }: {
 }) {
 
   return (
-    <div className="rail-tool-tip">
-      {showToolTip && <div className="tooltip-rail" style={{ left: `${Math.round(percent * 100)}% ` }}>
-        <div className="tooltip">
+    <div className="components-timeline-tooltip-container">
+      {showToolTip &&
+        <div className="components-timeline-tooltip" style={{ left: `${Math.round(percent * 100)}% ` }}>
           <span className="tooltip-text">{tooltipText}</span>
-        </div>
-      </div>}
+        </div>}
     </div>
   );
 }
@@ -79,6 +78,37 @@ export function CustomThumb() {
       <div /><div /><div />
     </div>
   );
+}
+
+/**
+ * @internal
+ */
+export function useFocusedThumb(sliderContainer: HTMLDivElement | undefined) {
+  const [thumbElement, setThumbElement] = React.useState<HTMLDivElement>();
+
+  React.useLayoutEffect(() => {
+    // istanbul ignore else
+    if (sliderContainer) {
+      const element = sliderContainer.querySelector(".iui-slider-thumb");
+      if (element && thumbElement !== element) {
+        setThumbElement(element as HTMLDivElement);
+      }
+    }
+  }, [sliderContainer, thumbElement]);
+
+  const [thumbHasFocus, setThumbHasFocus] = React.useState(false);
+
+  const handleThumbFocus = React.useCallback(() => {
+    setThumbHasFocus(true);
+  }, []);
+
+  const handleThumbBlur = React.useCallback(() => {
+    setThumbHasFocus(false);
+  }, []);
+
+  useEventListener("focus", handleThumbFocus, thumbElement);
+  useEventListener("blur", handleThumbBlur, thumbElement);
+  return thumbHasFocus;
 }
 
 /** Properties for Scrubber/Slider used on timeline control
@@ -139,26 +169,19 @@ export function Scrubber(props: ScrubberProps) {
     setShowRailTooltip(false);
   }, []);
 
-  /* const handlePointerMove = React.useCallback((event: React.PointerEvent) => {
+  const handlePointerMove = React.useCallback((event: React.PointerEvent) => {
     sliderContainer &&
       setPointerPercent(getPercentageOfRectangle(sliderContainer.getBoundingClientRect(), event.clientX));
   }, [sliderContainer]);
- */
-  const handlePointerMove = React.useCallback((event: Event) => {
-    sliderContainer &&
-      setPointerPercent(getPercentageOfRectangle(sliderContainer.getBoundingClientRect(), (event as PointerEvent).clientX));
-  }, [sliderContainer]);
 
-  useEventListener("pointermove", handlePointerMove, sliderContainer);
-  useEventListener("pointerenter", handlePointerEnter, sliderContainer);
-  useEventListener("pointerleave", handlePointerLeave, sliderContainer);
+  const thumbHasFocus = useFocusedThumb(sliderContainer);
 
   const tickLabel = React.useMemo(() => {
-    const showTip = isPlaying || showRailTooltip;
-    const percent = isPlaying ? currentDuration / totalDuration : pointerPercent;
+    const showTip = isPlaying || showRailTooltip || thumbHasFocus;
+    const percent = (isPlaying || thumbHasFocus) ? currentDuration / totalDuration : pointerPercent;
     const tooltipText = generateToolTipText(!!showTime, percent, 0, totalDuration, startDate, endDate, timeZoneOffset);
     return (<RailToolTip showToolTip={showTip} percent={percent} tooltipText={tooltipText} />);
-  }, [isPlaying, showRailTooltip, currentDuration, totalDuration, pointerPercent, startDate, endDate, timeZoneOffset, showTime]);
+  }, [isPlaying, showRailTooltip, currentDuration, totalDuration, pointerPercent, startDate, endDate, timeZoneOffset, showTime, thumbHasFocus]);
 
   return (
     <Slider ref={sliderRef}
@@ -174,13 +197,11 @@ export function Scrubber(props: ScrubberProps) {
       tooltipProps={tooltipProps}
       thumbProps={thumbProps}
       tickLabels={tickLabel}
+      railContainerProps={{
+        onPointerEnter: handlePointerEnter,
+        onPointerMove: handlePointerMove,
+        onPointerLeave: handlePointerLeave,
+      }}
     />
   );
 }
-/* ------------------------
-    railContainerProps={{
-    onPointerEnter: handlePointerEnter,
-    onPointerMove: handlePointerMove,
-    onPointerLeave: handlePointerLeave,
-  }}
-  --------------------------- */

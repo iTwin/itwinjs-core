@@ -222,41 +222,6 @@ $bottom-position: 4px;
   }
 }
 
-.tooltip {
-  position: absolute;
-  top: -20px;
-  display: inline-block;
-  border-bottom: 1px dotted #222;
-  margin-left: 22px;
-  font-size: 14px;
-
-  .tooltip-text {
-    width: 100px;
-    background-color: #222;
-    color: #fff;
-    // opacity: 0.8;
-    text-align: center;
-    border-radius: 6px;
-    padding: 8px 0;
-    position: absolute;
-    z-index: 1;
-    bottom: 150%;
-    left: 50%;
-    margin-left: -60px;
-
-    &:after {
-      content: "";
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      margin-left: -5px;
-      border-width: 5px;
-      border-style: solid;
-      border-color: #222 transparent transparent transparent;
-    }
-  }
-}
-
 .solar-timeline-wrapper> .header> .speed-container:hover> .speed {
   opacity: 1;
   width: 80px;

@@ -162,8 +162,8 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
           const count = sliderParams.getTickCount ? sliderParams.getTickCount() : 0;
           if (count) {
             tickLabels = [];
-            const increment = (max - min) / (count - 1);
-            for (let i = 0; i < count; i++) {
+            const increment = (max - min) / count;
+            for (let i = 0; i <= count; i++) {
               const value = (i * increment) + min;
               if (sliderParams.showTickLabels) {
                 const label = sliderParams.formatTick ? sliderParams.formatTick(value) : this.internalFormatTooltip(value, step);

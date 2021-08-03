@@ -53,6 +53,10 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 |Tooltip | Tooltip
 |TooltipPlacement | Placement
 
+#### Slider
+
+The deprecated [Slider]($ui-core) was a wrapper around the react-compound-slider which does not work properly in popout window. To alleviate this issue, the deprecated `Slider`will now wrap the  `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
+
 ### Deprecated with alternatives elsewhere
 
 A few constructs were deprecated in @bentley/ui-core package.

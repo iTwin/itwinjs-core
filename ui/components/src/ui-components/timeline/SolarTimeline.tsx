@@ -27,7 +27,7 @@ import { SpeedTimeline } from "./SpeedTimeline";
 import { DatePicker } from "../datepicker/DatePicker";
 import { TimeField, TimeSpec } from "../datepicker/TimeField";
 import { adjustDateToTimezone } from "../common/DateUtils";
-import { CustomThumb, getPercentageOfRectangle, RailToolTip } from "./Scrubber";
+import { CustomThumb, getPercentageOfRectangle, RailToolTip, useFocusedThumb } from "./Scrubber";
 
 // cSpell:ignore millisec solarsettings showticks shadowcolor solartimeline datepicker millisecs
 
@@ -93,13 +93,15 @@ function Timeline(props: TimelineProps) {
 
   const { formatTick, formatTime, onChange, onUpdate, dayStartMs, sunSetOffsetMs, sunRiseOffsetMs, currentTimeOffsetMs, isPlaying } = props;
 
+  const thumbHasFocus = useFocusedThumb(sliderContainer);
+
   const tickLabel = React.useMemo(() => {
-    const showTip = isPlaying || showRailTooltip;
+    const showTip = isPlaying || showRailTooltip || thumbHasFocus;
     const totalDuration = sunSetOffsetMs - sunRiseOffsetMs;
-    const percent = isPlaying ? (currentTimeOffsetMs - sunRiseOffsetMs) / totalDuration : pointerPercent;
-    const tooltipText = formatTime(isPlaying ? (dayStartMs + currentTimeOffsetMs) : (dayStartMs + (sunRiseOffsetMs + (pointerPercent * totalDuration))));
+    const percent = (isPlaying || thumbHasFocus) ? (currentTimeOffsetMs - sunRiseOffsetMs) / totalDuration : pointerPercent;
+    const tooltipText = formatTime((isPlaying || thumbHasFocus) ? (dayStartMs + currentTimeOffsetMs) : (dayStartMs + (sunRiseOffsetMs + (pointerPercent * totalDuration))));
     return (<RailToolTip showToolTip={showTip} percent={percent} tooltipText={tooltipText} />);
-  }, [isPlaying, showRailTooltip, sunSetOffsetMs, sunRiseOffsetMs, currentTimeOffsetMs, pointerPercent, formatTime, dayStartMs]);
+  }, [isPlaying, showRailTooltip, thumbHasFocus, sunSetOffsetMs, sunRiseOffsetMs, currentTimeOffsetMs, pointerPercent, formatTime, dayStartMs]);
 
   const className = classnames("solar-slider", props.className, formatTick && "showticks");
   const sunRiseFormat = formatTime(dayStartMs + sunRiseOffsetMs);

@@ -20,20 +20,42 @@ div.components-timeline-thumb.iui-slider-thumb {
   top: 4px;
 }
 
-.tooltip-rail {
-  div.tooltip {
-    @include uicore-z-index(tooltip);
-  }
-}
-
-.scrubber-rail {
-  position: absolute;
+.components-timeline-tooltip-container {
   width: 100%;
-  top: 50%;
-  transform: translateY(-50%);
-  height: 4px;
-  cursor: pointer;
-  background: $buic-background-5,
+  position: absolute;
+  div.components-timeline-tooltip {
+    @include uicore-z-index(tooltip);
+    position: absolute;
+    top: -8px;
+    display: inline-block;
+    transform: translateX(-50px);
+    border-bottom: 1px dotted #222;
+    font-size: 14px;
+
+    .tooltip-text {
+      width: 100px;
+      background-color: #222;
+      color: #fff;
+      // opacity: 0.8;
+      text-align: center;
+      border-radius: 6px;
+      padding: 8px 0;
+      position: absolute;
+      z-index: 1;
+      bottom: 150%;
+
+      &:after {
+        content: "";
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        margin-left: -5px;
+        border-width: 5px;
+        border-style: solid;
+        border-color: #222 transparent transparent transparent;
+      }
+    }
+  }
 }
 
 .scrubber-handle {
