@@ -94,9 +94,8 @@ export class ViewCreator3d {
     const modelExtents = new Range3d();
     const modelProps = await this._imodel.models.queryModelRanges(models);
 
-    if (modelProps.length > 0)
-      for (const props of modelProps)
-        modelExtents.union(Range3d.fromJSON(props), modelExtents);
+    for (const props of modelProps)
+      modelExtents.union(Range3d.fromJSON(props), modelExtents);
 
     if (modelExtents.isNull)
       modelExtents.setFrom(this._imodel.projectExtents);
