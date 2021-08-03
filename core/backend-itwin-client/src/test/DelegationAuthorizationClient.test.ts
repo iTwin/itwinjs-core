@@ -6,7 +6,7 @@
 import * as chai from "chai";
 import * as path from "path";
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { AccessToken, SamlAccessToken } from "@bentley/itwin-client";
+import { AccessToken } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration } from "../oidc/DelegationAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
@@ -48,22 +48,6 @@ describe("DelegationAuthorizationClient (#integration)", () => {
 
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
     jwt = await agentClient.getAccessToken(requestContext);
-  });
-
-  it("should get valid SAML delegation tokens", async () => {
-
-    const delegationConfiguration: DelegationAuthorizationClientConfiguration = {
-      clientId: Config.App.getString("imjs_delegation_test_client_id"),
-      clientSecret: Config.App.getString("imjs_delegation_test_client_secret"),
-      scope: Config.App.getString("imjs_default_relying_party_uri"),
-    };
-
-    const delegationClient = new DelegationAuthorizationClient(delegationConfiguration);
-    const saml: SamlAccessToken = await delegationClient.getSamlFromJwt(requestContext, jwt); // eslint-disable-line deprecation/deprecation
-    const str = saml.toTokenString();
-    chai.assert.isTrue(str.length > 10);
-    // Note: No SAML support for existing clients anymore. Testing any further requires a new client that
-    // only works with SAML.
   });
 
   it("should get valid OIDC delegation tokens", async () => {
