@@ -6,6 +6,7 @@
     "event-stream": "~4.0.1",
     "flatbuffers": "~1.12.0",
     "lint-staged": "^10.2.11",
+    "immer": "9.0.2",
     "object-is": "1.0.2",
     "ssri": "^6.0.1",
     "tsutils": "~3.17.1",

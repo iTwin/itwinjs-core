@@ -621,7 +621,7 @@ export class CurveChainWireOffsetContext {
         const sign = g1.sweep.sweepRadians * g1.matrixRef.coffs[8] >= 0.0 ? 1.0 : -1.0;
         const r = g1.matrixRef.columnXMagnitude();
         const r1 = r - sign * distanceLeft;
-        if (!Geometry.isSmallMetricDistance(r1)) {
+        if (!Geometry.isSmallMetricDistance(r1) && r * r1 > 0.0) {
           const factor = r1 / r;
           const matrix = g1.matrixClone();
           matrix.scaleColumnsInPlace(factor, factor, 1.0);

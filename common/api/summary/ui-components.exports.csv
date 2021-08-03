@@ -8,7 +8,7 @@ beta;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNod
 beta;ActionButtonRendererProps
 internal;ActionItem({ item, addGroupSeparator }:
 public;ActiveMatchInfo
-alpha;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
+public;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
 beta;AlphaSlider 
 beta;AlphaSliderProps 
 public;AnimationFractionChangeHandler = (animationFraction: number) => void
@@ -237,8 +237,6 @@ beta;GridCategoryItem
 internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
-public;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
-deprecated;hasFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;HexadecimalTypeConverter 
 public;HighlightableTreeNodeProps
@@ -477,14 +475,8 @@ alpha;SolarTimeline
 public;SortComparer
 public;SparseArray
 internal;SparseTree
-beta;StandardEditorNames
-deprecated;StandardEditorNames
 public;StandardRotationChangeEvent 
 public;StandardRotationChangeEventArgs
-beta;StandardTypeConverterTypeNames
-deprecated;StandardTypeConverterTypeNames
-beta;StandardTypeNames
-deprecated;StandardTypeNames
 beta;StepFunctionProp = number | ((direction: string) => number | undefined)
 public;StringOperatorProcessor
 public;StringTypeConverter 
@@ -535,6 +527,7 @@ public;TimelinePausePlayArgs
 internal;TimelineProps 
 deprecated;TimelineProps 
 public;TimelineScale
+public;toDateString: (date: Date, timeZoneOffset?: number | undefined) => string
 beta;ToggleEditor 
 beta;TogglePropertyEditor 
 internal;toNode: 
@@ -557,6 +550,7 @@ beta;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
 internal;ToolbarWithOverflowDirectionContext: React.Context
 beta;ToolbarWithOverflowProps 
 internal;toRxjsObservable
+public;toTimeString: (date: Date, timeZoneOffset?: number | undefined) => string
 internal;toToolbarPopupRelativePosition(expandsTo: Direction, alignment: ToolbarPanelAlignment): RelativePosition
 public;TreeActions
 beta;TreeCellUpdatedArgs

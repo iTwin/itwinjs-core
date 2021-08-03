@@ -207,14 +207,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@bentley/projectshare-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/rbac-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/react-scripts",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
@@ -263,6 +255,14 @@
       "allowedCategories": [ "tools" ]
     },
     {
+      "name": "@itwin/itwinui-css",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "@itwin/itwinui-react",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
       "name": "@microsoft/api-extractor",
       "allowedCategories": [ "tools" ]
     },
@@ -296,6 +296,10 @@
     },
     {
       "name": "@typescript-eslint/parser",
+      "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "@typescript-eslint/typescript-estree",
       "allowedCategories": [ "tools" ]
     },
     {
@@ -1029,30 +1033,6 @@
     {
       "name": "tsconfig-paths",
       "allowedCategories": [ "frontend", "tools" ]
-    },
-    {
-      "name": "tslib",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "tslint",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "tslint-consistent-codestyle",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "tslint-eslint-rules",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "tslint-etc",
-      "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "tsutils",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "typedoc",

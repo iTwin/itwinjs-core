@@ -11,8 +11,9 @@
 import "./AnalysisAnimationToolSettings.scss";
 import * as React from "react";
 import { Icon } from "@bentley/ui-core";
-import { ConfigurableCreateInfo, ContentViewManager, ToolUiProvider, UiFramework } from "@bentley/ui-framework";
+import { ConfigurableCreateInfo, ContentViewManager, ToolUiProvider } from "@bentley/ui-framework";
 import { Direction, Item, Toolbar } from "@bentley/ui-ninezone";
+import { IModelApp } from "@bentley/imodeljs-frontend";
 
 /** State for [[AnalysisAnimationToolSettings]] */
 interface AnimationState {
@@ -24,15 +25,19 @@ interface AnimationState {
   animationSliderValue: string;
 }
 
+interface Props {
+  isHorizontal?: boolean;
+}
+
 /** ToolSetting for AnalysisAnimationTool
  * @public
  */
-export class AnalysisAnimationToolSettings extends React.Component<{}, AnimationState> {
+export class AnalysisAnimationToolSettings extends React.Component<Props, AnimationState> {
   private _timeLastCycle = 0;
   private _unmounted = false;
   private _requestFrame = 0;
 
-  constructor(props: {}) {
+  constructor(props: Props) {
     super(props);
     this.state = {
       animationDuration: 3000,  // 3 seconds
@@ -40,7 +45,7 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
       animationSliderValue: "0",
       isAnimating: false,
       isAnimationPaused: false,
-      isLooping: true,
+      isLooping: false,
     };
   }
 
@@ -150,52 +155,58 @@ export class AnalysisAnimationToolSettings extends React.Component<{}, Animation
   };
 
   public override render(): React.ReactNode {
+    const containerClassName = this.props.isHorizontal ? "toolSettings-horizontal" : "toolSettings-rectangular";
+    const className = this.props.isHorizontal ? "toolSettings-label-editor" : "toolSettings-row";
     return (
-      <div>
-        <div className="toolSettingsRow">
-          {UiFramework.translate("tools.AnalysisAnimation.ToolSettings.duration")}
+      <div className={containerClassName}>
+        <div className={className}>
+          {IModelApp.i18n.translate("SampleApp:tools.AnalysisAnimation.ToolSettings.duration")}
           <input type="number" min="1" max="30" step="1" value={(this.state.animationDuration / 1000).toString()}
             className="toolSettings-animationDuration" id="animationDuration" onChange={this._handleDurationChange} />
-          {UiFramework.translate("tools.AnalysisAnimation.ToolSettings.seconds")}
+          {IModelApp.i18n.translate("SampleApp:tools.AnalysisAnimation.ToolSettings.seconds")}
         </div>
-        <div className="toolSettingsRow">
+        <div className={className}>
           <input id="animationLoop" type="checkbox" checked={this.state.isLooping} onChange={this._handleLoopChange} />
-          {UiFramework.translate("tools.AnalysisAnimation.ToolSettings.loop")}
+          {IModelApp.i18n.translate("SampleApp:tools.AnalysisAnimation.ToolSettings.loop")}
         </div>
-        <div className="toolSettingsRow toolSettings-stretch">
-          <input type="range" min="0" max={this.state.animationDuration.toString()} value={this.state.elapsedTime.toString()}
-            className="toolSettings-sliderStretch" id="animationSlider" onChange={this._handleSliderChange} />
-        </div>
-        <div className="toolSettingsRow toolSettings-toolbar">
-          <Toolbar
-            expandsTo={Direction.Bottom}
-            items={
-              <>
-                <Item
-                  isActive={this.state.isAnimating && !this.state.isAnimationPaused}
-                  title={UiFramework.translate("tools.AnalysisAnimation.ToolSettings.play")}
-                  key="animationPlay"
-                  onClick={this._startAnimation}
-                  icon={<Icon iconSpec="icon-media-controls-circular-play" />}
-                />
-                <Item
-                  isActive={this.state.isAnimationPaused}
-                  title={UiFramework.translate("tools.AnalysisAnimation.ToolSettings.pause")}
-                  key="animationPause"
-                  onClick={this._pauseAnimation}
-                  icon={<Icon iconSpec="icon-media-controls-circular-pause" />}
-                />
-                <Item
-                  isActive={!this.state.isAnimating}
-                  title={UiFramework.translate("tools.AnalysisAnimation.ToolSettings.stop")}
-                  key="animationStop"
-                  onClick={this._stopAnimation}
-                  icon={<Icon iconSpec="icon-media-controls-circular-stop" />}
-                />
-              </>
-            }
-          />
-        </div>
+        {this.state.isLooping && (
+          <>
+            <div className={className}>
+              <input type="range" min="0" max={this.state.animationDuration.toString()} value={this.state.elapsedTime.toString()}
+                className="toolSettings-sliderStretch" id="animationSlider" onChange={this._handleSliderChange} />
+            </div>
+            <div className={className}>
+              <Toolbar
+                expandsTo={Direction.Bottom}
+                items={
+                  <>
+                    <Item
+                      isActive={this.state.isAnimating && !this.state.isAnimationPaused}
+                      title={IModelApp.i18n.translate("SampleApp:tools.AnalysisAnimation.ToolSettings.play")}
+                      key="animationPlay"
+                      onClick={this._startAnimation}
+                      icon={<Icon iconSpec="icon-media-controls-circular-play" />}
+                    />
+                    <Item
+                      isActive={this.state.isAnimationPaused}
+                      title={IModelApp.i18n.translate("SampleApp:tools.AnalysisAnimation.ToolSettings.pause")}
+                      key="animationPause"
+                      onClick={this._pauseAnimation}
+                      icon={<Icon iconSpec="icon-media-controls-circular-pause" />}
+                    />
+                    <Item
+                      isActive={!this.state.isAnimating}
+                      title={IModelApp.i18n.translate("SampleApp:tools.AnalysisAnimation.ToolSettings.stop")}
+                      key="animationStop"
+                      onClick={this._stopAnimation}
+                      icon={<Icon iconSpec="icon-media-controls-circular-stop" />}
+                    />
+                  </>
+                }
+              />
+            </div>
+          </>
+        )}
       </div >
     );
   }
@@ -209,6 +220,8 @@ export class AnalysisAnimationToolSettingsProvider extends ToolUiProvider {
     super(info, options);
 
     this.toolSettingsNode = <AnalysisAnimationToolSettings />;
+    this.horizontalToolSettingNodes = [
+      { labelNode: null, editorNode: <AnalysisAnimationToolSettings isHorizontal /> }];
   }
 
   public execute(): void {

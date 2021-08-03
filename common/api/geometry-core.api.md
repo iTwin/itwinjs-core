@@ -84,6 +84,7 @@ export class Angle implements BeJSONFunctions {
     static createDegrees(degrees: number): Angle;
     static createDegreesAdjustPositive(degrees: number): Angle;
     static createDegreesAdjustSigned180(degrees: number): Angle;
+    static createInterpolate(angle0: Angle, fraction: number, angle1: Angle): Angle;
     static createRadians(radians: number): Angle;
     get degrees(): number;
     static readonly degreesPerRadian: number;
@@ -2013,6 +2014,7 @@ export class Geometry {
     static inverseMetricDistance(a: number): number | undefined;
     static inverseMetricDistanceSquared(a: number): number | undefined;
     static isAlmostEqualNumber(a: number, b: number): boolean;
+    static isAlmostEqualOptional(a: number | undefined, b: number | undefined, tolerance: number): boolean;
     static isAlmostEqualXAndY(a: XAndY, b: XAndY): boolean;
     static isArrayOfNumberArray(json: any, numNumberArray: number, minEntries?: number): boolean;
     static isDistanceWithinTol(distance: number, tol?: number): boolean;
@@ -2053,8 +2055,10 @@ export class Geometry {
     static resolveValue<T>(value: T | undefined, defaultValue: T): T;
     static restrictToInterval(x: number, a: number, b: number): number;
     static safeDivideFraction(numerator: number, denominator: number, defaultResult: number): number;
+    static readonly smallAngleDegrees = 5.7e-11;
     static readonly smallAngleRadians = 1e-12;
     static readonly smallAngleRadiansSquared = 1e-24;
+    static readonly smallAngleSeconds = 2e-7;
     static readonly smallFraction = 1e-10;
     static readonly smallMetricDistance = 0.000001;
     static readonly smallMetricDistanceSquared = 1e-12;
@@ -4970,8 +4974,10 @@ export class Sample {
     static appendVariableSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number, xFactor: number): Point3d[];
     static convertPointsToSegments(points: Point3d[], forceClosure?: boolean): LineSegment3d[];
     static createAllGeometryQueryTypes(): GeometryQuery[];
+    static createAnnulusPolyline(edgesPerQuadrant: number, center: Point3d, r0: number, r1: number, theta0: Angle, theta1: Angle, addClosure: boolean): Point3d[];
     static createArcRegions(): Loop[];
     static createArcs(radiusRatio?: number, sweep?: AngleSweep): Arc3d[];
+    static createArcStrokes(edgesPerQuadrant: number, center: Point3d, r0: number, theta0: Angle, theta1: Angle, addClosure?: boolean): Point3d[];
     static createBagOfCurves(): BagOfCurves[];
     static createBidirectionalSawtooth(origin: Point3d, dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhaseOutbound: number, dyFinal: number, dxLowReturn: number, riseXReturn: number, riseYReturn: number, dxHighReturn: number): Point3d[];
     static createBoxes(capped?: boolean): Box[];
@@ -5007,6 +5013,7 @@ export class Sample {
     static createMap4ds(): Map4d[];
     static createMatrix3dArray(): Matrix3d[];
     static createMatrix4ds(includeIrregular?: boolean): Matrix4d[];
+    static createMeshInAnnulus(edgesPerQuadrant: number, center: Point3d, r0: number, r1: number, theta0: Angle, theta1: Angle): IndexedPolyface | undefined;
     static createMessyRigidTransform(fixedPoint?: Point3d): Transform;
     static createMixedBsplineCurves(): BSplineCurve3dBase[];
     static createNonZeroVectors(): Vector3d[];
@@ -5604,6 +5611,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray[]): void;
     setInvisible(invisible: boolean): void;
+    takeConvexSets(source: UnionOfConvexClipPlaneSets): void;
     toJSON(): UnionOfConvexClipPlaneSetsProps;
     transformInPlace(transform: Transform): void;
 }

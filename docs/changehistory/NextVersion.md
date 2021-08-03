@@ -3,38 +3,105 @@ publish: false
 ---
 # NextVersion
 
-## Decoration graphics enhancements
+## Build tools changes
 
-### Visible edges
+Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
+Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
-Graphics produced by a [GraphicBuilder]($frontend) can now produce edges for surfaces. By default, edges are only produced for graphics of type [GraphicType.Scene]($frontend), and only if the [Viewport]($frontend)'s [ViewFlags]($common) specify that edges should be displayed. To generate edges for other types of graphics, or to prevent them from being generated, override [GraphicBuilderOptions.generateEdges]($frontend) or [GraphicBuilder.wantEdges]($frontend) when creating the graphic. Note that surfaces will z-fight with their edges to a degree unless the graphic is also pickable - see [GraphicBuilderOptions.pickable]($frontend).
+## User Interface Package Changes
 
-### Solid primitives in decorations
+Several changes were made in the @bentley/ui-* packages.
+Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
+A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
+Some older deprecated components, enums and interfaces were removed. These also have alternatives.
 
-Decoration graphics can now be produced from [SolidPrimitive]($geometry-core)s - e.g., spheres, cones, slabs, swept surfaces, and so on - using [GraphicBuilder.addSolidPrimitive]($frontend).
+## Viewport.zoomToElements improvements
 
-## Presentation changes
+[Viewport.zoomToElements]($frontend) accepts any number of element Ids and fits the viewport to the union of their [Placement]($common)s. A handful of shortcomings of the previous implementation have been addressed:
 
-Added [RelatedPropertiesSpecificationNew.skipIfDuplicate]($presentation-common) attribute to allow specification to be overriden by specifications from higher priority content modifiers. Set this attribute to all related properties' specifications in the default BisCore ruleset.
+* Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
+* Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
 
-## Dictionary enhancements
+### Deprecated Several ui-core Components in Favor of iTwinUI-react Components
 
-[Dictionary.keys]($bentleyjs-core) and [Dictionary.values]($bentleyjs-core) enable iteration of the dictionary's keys and values in the same manner as a standard Map.
+Several UI components in the @bentley/ui-core package have been deprecated.
+Developers should use equivalent components in @itwin/itwinui-react instead.
 
-[Dictionary.findOrInsert]($bentleyjs-core) returns the existing value associated with a key, or - if none yet exists - inserts a new value with that key. It also returns a flag indicating whether or not a new value was inserted. This allows the following code that requires two lookups of the key:
+|Deprecated in @bentley/ui-core|Use from @itwin/itwinui-react instead
+|-----|-----
+|Button | Button
+|ButtonSize | `size` prop for itwinui-react Button
+|ButtonType | `styleType` prop for itwinui-react Button
+|Checkbox | Checkbox
+|ExpandableBlock | ExpandableBlock
+|Headline| Headline
+|HorizontalTabs | HorizontalTabs
+|Input | Input
+|LabeledInput | LabeledInput
+|LabeledSelect | LabeledSelect
+|LabeledTextarea | LabeledTextarea
+|LabeledToggle | ToggleSwitch with `labelPosition="right"` prop
+|LeadingText | Leading
+|ProgressBar | ProgressLinear
+|ProgressSpinner | ProgressRadial
+|Radio | Radio
+|Select | Select
+|SelectOption | SelectOption
+|SmallText | Small
+|Spinner | ProgressRadial with `indeterminate` prop
+|SpinnerSize | `size` prop in ProgressRadialProps
+|SplitButton | SplitButton
+|Subheading | Subheading
+|Textarea | Textarea
+|Tile | Tile
+|Title | Title
+|Toggle | ToggleSwitch
+|Tooltip | Tooltip
+|TooltipPlacement | Placement
 
-```ts
-let value = dictionary.get(key);
-let inserted = undefined !== value;
-if (undefined === value)
-  inserted = dictionary.insert(key, value = newValue);
+### Deprecated with alternatives elsewhere
 
-alert(`${value} was ${inserted ? "inserted" : "already present"}`);
-```
+A few constructs were deprecated in @bentley/ui-core package.
+Some were copied to the @bentley/ui-abstract package.
+Some have replacements within the @bentley/ui-core package.
 
-To be replaced with a more efficient version that requires only one lookup:
+|Deprecated|Use instead
+|-----|-----
+|DialogButtonDef in @bentley/ui-core | DialogButtonDef in @bentley/ui-abstract
+|DialogButtonStyle in @bentley/ui-core | DialogButtonStyle in @bentley/ui-abstract
+|DialogButtonType in @bentley/ui-core | DialogButtonType in @bentley/ui-abstract
+|LocalUiSettings in @bentley/ui-core | LocalSettingsStorage in @bentley/ui-core
+|SessionUiSettings in @bentley/ui-core | SessionSettingsStorage in @bentley/ui-core
 
-```ts
-const result = dictionary.findOrInsert(key, value);
-alert(`${result.value} was ${result.inserted ? "inserted" : "already present"}`);
-```
+### Older Deprecated items removed
+
+Some older deprecated components, enums and interfaces were removed.
+Some of these have alternatives in the same package, while others have alternatives in a different package.
+
+|Removed from @bentley/ui-core |Use instead
+|-----|-----
+|LoadingPromptProps.isDeterministic | LoadingPromptProps.isDeterminate in @bentley/ui-core
+|NumericInput component | NumberInput component in @bentley/ui-core
+|TabsProps.onClickLabel | TabsProps.onActivateTab in @bentley/ui-core
+
+|Removed from @bentley/ui-components |Use instead
+|-----|-----
+|hasFlag function | hasSelectionModeFlag function in @bentley/ui-components
+|StandardEditorNames | StandardEditorNames in @bentley/ui-abstract
+|StandardTypeNames | StandardTypeNames in @bentley/ui-abstract
+|StandardTypeConverterTypeNames | StandardTypeNames in @bentley/ui-abstract
+
+|Removed from @bentley/ui-framework |Use instead
+|-----|-----
+|COLOR_THEME_DEFAULT | SYSTEM_PREFERRED_COLOR_THEME in @bentley/ui-framework is used as default color theme
+|FunctionKey | FunctionKey in @bentley/ui-abstract
+|IModelAppUiSettings | UserSettingsStorage in @bentley/ui-framework
+|reactElement in ContentControl | ContentControl.reactNode
+|reactElement in NavigationAidControl | NavigationAidControl.reactNode
+|reactElement in NavigationWidgetDef | NavigationWidgetDef.reactNode
+|reactElement in ToolWidgetDef | ToolWidgetDef.reactNode
+|reactElement in WidgetControl | WidgetControl.reactNode
+|reactElement in WidgetDef | WidgetDef.reactNode
+|ReactMessage | ReactMessage in @bentley/ui-core
+|SpecialKey | SpecialKey in @bentley/ui-abstract
+|WidgetState | WidgetState in @bentley/ui-abstract

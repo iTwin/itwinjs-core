@@ -1449,7 +1449,10 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
       const floatingWidget = state.widgets[location.floatingWidgetId];
       // popout widget can only have a single widgetTab so if that is the case just convert floating container to popout container
       if (floatingWidget.tabs.length === 1) {
-        return convertFloatingWidgetContainerToPopout(state, location.floatingWidgetId);
+        return produce(convertFloatingWidgetContainerToPopout(state, location.floatingWidgetId), (draft)=> {
+          const popoutTab = draft.tabs[widgetTabId];
+          initSizeAndPositionProps(popoutTab, "preferredPopoutWidgetSize", preferredSizeAndPosition);
+        });
       }
 
       // remove the tab from the floating container and create a new popout container
