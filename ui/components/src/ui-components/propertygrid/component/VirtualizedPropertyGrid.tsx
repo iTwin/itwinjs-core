@@ -15,7 +15,9 @@ import { areEqual, ListChildComponentProps, VariableSizeList } from "react-windo
 import { assert } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { Orientation, RatioChangeResult } from "@bentley/ui-core";
-import { FilteredType, MutableCategorizedPrimitiveProperty, MutableGridCategory } from "../../../ui-components";
+import { FilteredType } from "../dataproviders/filterers/PropertyDataFiltererBase";
+import { MutableCategorizedPrimitiveProperty } from "../internal/flat-items/MutableCategorizedPrimitiveProperty";
+import { MutableGridCategory } from "../internal/flat-items/MutableGridCategory";
 import { ConditionalAutoSizer } from "../../common/ConditionalAutoSizer";
 import { HighlightingComponentProps } from "../../common/HighlightingComponentProps";
 import { createContextWithMandatoryProvider } from "../../common/UseContextWithMandatoryProvider";
@@ -364,7 +366,7 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
 
                   return (
                     <PropertyGridInternalContextProvider value={renderContext}>
-                      <div className="components-virtualized-property-grid">
+                      <div className={classnames("components-virtualized-property-grid", "components-smallEditor-host")}>
                         <VariableSizeList
                           className={classnames("components-property-grid-wrapper", "ReactWindow__VariableSizeList", this.props.className)}
                           width={width}

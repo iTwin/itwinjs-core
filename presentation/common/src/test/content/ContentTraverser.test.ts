@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import { Content } from "../../presentation-common/content/Content";
 import {
-  addFieldHierarchy, FIELD_NAMES_SEPARATOR, FieldHierarchy, IContentVisitor, ProcessFieldHierarchiesProps, ProcessMergedValueProps,
+  addFieldHierarchy, createFieldHierarchies, FIELD_NAMES_SEPARATOR, FieldHierarchy, IContentVisitor, ProcessFieldHierarchiesProps, ProcessMergedValueProps,
   ProcessPrimitiveValueProps, StartArrayProps, StartCategoryProps, StartContentProps, StartFieldProps, StartItemProps, StartStructProps,
   traverseContent, traverseContentItem, traverseFieldHierarchy,
 } from "../../presentation-common/content/ContentTraverser";
@@ -1265,6 +1265,29 @@ describe("addFieldHierarchy", () => {
     }, {
       field: sibling2,
       childFields: [],
+    }]);
+  });
+
+});
+
+describe("createFieldHierarchies", () => {
+
+  it("creates field hierarchy with all nested fields under parent field's child fields even though their categories differ, when `ignoreCategories` parameter is set to true", () => {
+    const nestedFields = [createTestSimpleContentField(), createTestSimpleContentField()];
+    const nestedContentField = createTestNestedContentField({ nestedFields });
+    const fieldHierarchies = createFieldHierarchies([nestedContentField], true);
+
+    expect(fieldHierarchies).to.deep.eq([{
+      field: nestedContentField,
+      childFields: [
+        {
+          field: nestedFields[0],
+          childFields: [],
+        }, {
+          field: nestedFields[1],
+          childFields: [],
+        },
+      ],
     }]);
   });
 

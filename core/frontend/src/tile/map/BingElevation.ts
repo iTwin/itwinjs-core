@@ -12,7 +12,7 @@ import { Cartographic, ColorDef, FillFlags, LinePixels, QParams3d, QPoint3d, Ren
 import { request, RequestOptions, Response } from "@bentley/itwin-client";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
-import { Mesh, MeshArgs } from "../../render-primitives";
+import { Mesh, MeshArgs } from "../../render/primitives/mesh/MeshPrimitives";
 import { DisplayParams } from "../../render/primitives/DisplayParams";
 import { Triangle } from "../../render/primitives/Primitives";
 import { VertexKey } from "../../render/primitives/VertexKey";

@@ -14,10 +14,9 @@ import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
-import { GeographicTilingScheme, MapCartoRectangle, MapTilingScheme, TerrainMeshProvider, TileAvailability } from "../internal";
-import { Tile } from "../Tile";
-import { MapTile, MapTileProjection } from "./MapTile";
-import { QuadId } from "./QuadId";
+import {
+  GeographicTilingScheme, MapCartoRectangle, MapTile, MapTileProjection, MapTilingScheme, QuadId, TerrainMeshProvider, Tile, TileAvailability,
+} from "../internal";
 
 /** @internal */
 enum QuantizedMeshExtensionIds {

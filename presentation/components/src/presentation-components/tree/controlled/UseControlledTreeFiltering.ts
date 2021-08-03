@@ -8,13 +8,30 @@
 
 import { useCallback, useEffect, useMemo, useState } from "react";
 import {
-  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, PagedTreeNodeLoader, TreeModelSource,
+  AbstractTreeNodeLoaderWithProvider, ActiveMatchInfo, HighlightableTreeProps, ITreeNodeLoaderWithProvider, LoadedNodeHierarchy, PagedTreeNodeLoader, TreeModelSource,
   useDebouncedAsyncValue,
 } from "@bentley/ui-components";
 import { FilteredPresentationTreeDataProvider, IFilteredPresentationTreeDataProvider } from "../FilteredDataProvider";
 import { IPresentationTreeDataProvider } from "../IPresentationTreeDataProvider";
+import { Observable } from "rxjs/internal/Observable";
+import { of } from "rxjs";
 
 const FILTERED_DATA_PAGE_SIZE = 20;
+
+class FilteringInProgressNodeLoader extends AbstractTreeNodeLoaderWithProvider<IPresentationTreeDataProvider> {
+  constructor(dataProvider: IPresentationTreeDataProvider) {
+    super(new TreeModelSource(), dataProvider);
+  }
+
+  protected load(): Observable<LoadedNodeHierarchy> {
+    const loadedNodeHierarchy: LoadedNodeHierarchy = {
+      hierarchyItems: [],
+      offset: 0,
+      parentId: "",
+    };
+    return of(loadedNodeHierarchy);
+  }
+}
 
 /**
  * Parameters for [[useControlledTreeFiltering]] hook
@@ -51,11 +68,14 @@ export const useControlledTreeFiltering = useControlledPresentationTreeFiltering
  */
 export function useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps) {
   const { filteredNodeLoader, isFiltering, matchesCount } = useFilteredNodeLoader(props.nodeLoader, props.filter);
+  const filteringInProgressNodeLoader = useMemo(() => {
+    return isFiltering ? new FilteringInProgressNodeLoader(props.nodeLoader.dataProvider) : undefined;
+  }, [isFiltering, props.nodeLoader.dataProvider]);
   const nodeHighlightingProps = useNodeHighlightingProps(props.filter, filteredNodeLoader, props.activeMatchIndex);
   return {
     nodeHighlightingProps,
-    filteredNodeLoader: filteredNodeLoader || props.nodeLoader,
-    filteredModelSource: filteredNodeLoader ? filteredNodeLoader.modelSource : props.nodeLoader.modelSource,
+    filteredNodeLoader: filteredNodeLoader || filteringInProgressNodeLoader || props.nodeLoader,
+    filteredModelSource: filteredNodeLoader?.modelSource || filteringInProgressNodeLoader?.modelSource || props.nodeLoader.modelSource,
     isFiltering,
     matchesCount,
   };

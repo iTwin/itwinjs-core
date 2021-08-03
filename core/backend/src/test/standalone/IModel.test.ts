@@ -37,6 +37,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import sinon = require("sinon");
 import { IModelHubBackend } from "../../IModelHubBackend";
 import { V2CheckpointManager } from "../../CheckpointManager";
+import { Base64 } from "js-base64";
 
 // spell-checker: disable
 

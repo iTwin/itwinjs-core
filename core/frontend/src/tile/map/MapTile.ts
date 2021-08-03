@@ -16,8 +16,10 @@ import { RenderGraphic } from "../../render/RenderGraphic";
 import { RenderMemory } from "../../render/RenderMemory";
 import { RenderRealityMeshGeometry, RenderSystem, TerrainTexture } from "../../render/RenderSystem";
 import { ViewingSpace } from "../../ViewingSpace";
-import { ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, Tile, TileContent, TileDrawArgs, TileLoadStatus, TileParams, TileTreeLoadStatus, TraversalSelectionContext } from "../internal";
-import { TileGraphicType } from "../TileTreeReference";
+import {
+  ImageryMapTile, MapCartoRectangle, MapTileLoader, MapTileTree, QuadId, RealityTile, Tile, TileContent, TileDrawArgs, TileGraphicType,
+  TileLoadStatus, TileParams, TileTreeLoadStatus, TraversalSelectionContext,
+} from "../internal";
 
 /** @internal */
 export class PlanarTilePatch {
@@ -629,7 +631,6 @@ export class MapTile extends RealityTile {
 
 /** @internal */
 export class UpsampledMapTile extends MapTile {
-  public get isLoadable() { return false; }
   public override get isUpsampled() { return true; }
   public override get isEmpty() { return false; }
   public override get loadableTile(): RealityTile {
@@ -666,4 +667,8 @@ export class UpsampledMapTile extends MapTile {
   public override get isQueued(): boolean { return this.loadableTile.isQueued; }
   public override get isNotFound(): boolean { return this.loadableTile.isNotFound; }
   public override get isReady(): boolean { return (this._geometry !== undefined || this.loadableTile.loadStatus === TileLoadStatus.Ready) && this.baseImageryIsReady; }
+  public override markUsed(args: TileDrawArgs): void {
+    args.markUsed(this);
+    args.markUsed(this.loadableTile);
+  }
 }

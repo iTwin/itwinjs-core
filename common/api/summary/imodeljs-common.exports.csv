@@ -48,6 +48,7 @@ alpha;BRepGeometryFunction = (info: BRepGeometryInfo) => void
 alpha;BRepGeometryInfo
 alpha;BRepGeometryOperation
 alpha;BRepHollowProps
+alpha;BRepOffsetProps
 public;BRepPrimitive
 alpha;BRepRoundProps
 alpha;BRepThickenProps
