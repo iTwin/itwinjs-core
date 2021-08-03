@@ -35,7 +35,7 @@
     "@bentley/certa": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
-    "dotenv": "^8.2.0",
+    "dotenv": "^10.0.0",
     "dotenv-expand": "^5.1.0",
     "openid-client": "^3.15.3",
     "puppeteer": "chrome-86"
@@ -45,7 +45,6 @@
     "@bentley/eslint-plugin": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",
-    "@types/dotenv": "^6.1.1",
     "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "@types/puppeteer": "2.0.1",
