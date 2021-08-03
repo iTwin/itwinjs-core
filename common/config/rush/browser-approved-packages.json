@@ -39,10 +39,6 @@
       "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
-      "name": "@bentley/config-loader",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/context-registry-client",
       "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
     },
@@ -460,11 +456,11 @@
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "electron",

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-rpcinterface-tests",
-  "version": "3.0.0-dev.8",
+  "version": "3.0.0-dev.14",
   "description": "Integration tests for the Schema RPC Interface",
   "author": {
     "name": "Bentley Systems, Inc.",
@@ -29,7 +29,6 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/certa": "workspace:*",
-    "@bentley/config-loader": "workspace:*",
     "@bentley/ecschema-metadata": "workspace:*",
     "@bentley/ecschema-rpcinterface-common": "workspace:*",
     "@bentley/geometry-core": "workspace:*",

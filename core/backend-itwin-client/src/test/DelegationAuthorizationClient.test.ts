@@ -6,11 +6,26 @@
 import * as chai from "chai";
 import * as path from "path";
 import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
 import { AccessToken } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration } from "../oidc/DelegationAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
+import * as fs from "fs";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 

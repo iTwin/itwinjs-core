@@ -4617,7 +4617,7 @@ export namespace IModelConnection {
     export class Elements {
         // @internal
         constructor(_iModel: IModelConnection);
-        getPlacements(elementIds: Iterable<Id64String>): Promise<Array<Placement & {
+        getPlacements(elementIds: Iterable<Id64String>, options?: Readonly<GetPlacementsOptions>): Promise<Array<Placement & {
             elementId: Id64String;
         }>>;
         getProps(arg: Id64Arg): Promise<ElementProps[]>;
@@ -4625,6 +4625,9 @@ export namespace IModelConnection {
         queryIds(params: EntityQueryParams): Promise<Id64Set>;
         queryProps(params: EntityQueryParams): Promise<ElementProps[]>;
         get rootSubjectId(): Id64String;
+    }
+    export interface GetPlacementsOptions {
+        type?: "3d" | "2d";
     }
     export class Models implements Iterable<ModelState> {
         [Symbol.iterator](): Iterator<ModelState>;

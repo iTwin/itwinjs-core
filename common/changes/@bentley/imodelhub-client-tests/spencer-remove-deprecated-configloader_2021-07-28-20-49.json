@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodelhub-client-tests",
+      "comment": "Removed references to the deleted config-loader package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodelhub-client-tests",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}
