@@ -1,6 +1,11 @@
 # Change Log - @bentley/ecschema-rpcinterface-tests
 
-This log was last generated on Mon, 26 Jul 2021 16:18:31 GMT and should not be manually modified.
+This log was last generated on Thu, 29 Jul 2021 20:01:11 GMT and should not be manually modified.
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+_Version update only_
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
@@ -8,6 +13,11 @@ Mon, 26 Jul 2021 12:21:25 GMT
 ### Updates
 
 - Update mocha output file to be named the same as the package.
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
 
 ## 2.18.2
 Mon, 26 Jul 2021 16:18:31 GMT
@@ -46,7 +56,6 @@ _Version update only_
 
 ## 2.16.10
 Thu, 22 Jul 2021 20:23:44 GMT
-
 
 _Version update only_
 

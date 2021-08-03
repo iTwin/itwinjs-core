@@ -8,12 +8,37 @@ publish: false
 Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
 Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
+## Client Library Package Changes
+
+TODO: This need a lot more work before it's ready
+
+### Authentication
+
+SAML support has officially been dropped as a supported workflow. All related APIs for SAML have been removed.
+
+|Removed in @bentley/backend-itwin-client |Use from |
+|OidcDelegationClientConfiguration| DelegationAuthorizationClientConfiguration|
+|OidcDelegationClient|DelegationAuthorizationClient|
+
+|Removed in @bentley/imodeljs-frontend |Use from |
+|OidcBrowserClient|BrowserAuthorizationClient|
+|IOidcFrontendClient|FrontendAuthorizationClient|
+|isIOidcFrontendClient|FrontendAuthorizationClient|
+|OidcFrontendClientConfiguration|BrowserAuthorizationClientConfiguration|
+
 ## User Interface Package Changes
 
 Several changes were made in the @bentley/ui-* packages.
 Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
 A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
 Some older deprecated components, enums and interfaces were removed. These also have alternatives.
+
+## Viewport.zoomToElements improvements
+
+[Viewport.zoomToElements]($frontend) accepts any number of element Ids and fits the viewport to the union of their [Placement]($common)s. A handful of shortcomings of the previous implementation have been addressed:
+
+* Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
+* Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
 
 ### Deprecated Several ui-core Components in Favor of iTwinUI-react Components
 

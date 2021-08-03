@@ -2,6 +2,18 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.19.1",
+      "tag": "@bentley/ui-components_v2.19.1",
+      "date": "Thu, 29 Jul 2021 20:01:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "`ControlledTree`: Fix tree background not being rendered."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.0",
       "tag": "@bentley/ui-components_v2.19.0",
       "date": "Mon, 26 Jul 2021 12:21:25 GMT",
@@ -24,6 +36,18 @@
           },
           {
             "comment": "Add option prop to set time zone offset for date and time display in the TimelineComponent."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@bentley/ui-components_v2.18.3",
+      "date": "Wed, 28 Jul 2021 17:16:30 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed scrolling in Table component"
           }
         ]
       }

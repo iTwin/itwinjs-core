@@ -150,7 +150,6 @@ import { IModelTileTreeId } from '@bentley/imodeljs-common';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { IModelVersionProps } from '@bentley/imodeljs-common';
-import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
@@ -297,8 +296,6 @@ import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
 import { UsageLoggingClient } from '@bentley/usage-logging-client';
 import { UsageType } from '@bentley/usage-logging-client';
-import { User } from 'oidc-client';
-import { UserManagerSettings } from 'oidc-client';
 import { Vector2d } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -4620,7 +4617,7 @@ export namespace IModelConnection {
     export class Elements {
         // @internal
         constructor(_iModel: IModelConnection);
-        getPlacements(elementIds: Iterable<Id64String>): Promise<Array<Placement & {
+        getPlacements(elementIds: Iterable<Id64String>, options?: Readonly<GetPlacementsOptions>): Promise<Array<Placement & {
             elementId: Id64String;
         }>>;
         getProps(arg: Id64Arg): Promise<ElementProps[]>;
@@ -4628,6 +4625,9 @@ export namespace IModelConnection {
         queryIds(params: EntityQueryParams): Promise<Id64Set>;
         queryProps(params: EntityQueryParams): Promise<ElementProps[]>;
         get rootSubjectId(): Id64String;
+    }
+    export interface GetPlacementsOptions {
+        type?: "3d" | "2d";
     }
     export class Models implements Iterable<ModelState> {
         [Symbol.iterator](): Iterator<ModelState>;
@@ -6810,25 +6810,6 @@ export interface OffScreenViewportOptions {
     view: ViewState;
     viewRect: ViewRect;
 }
-
-// @beta @deprecated
-export class OidcBrowserClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
-    constructor(_configuration: OidcFrontendClientConfiguration);
-    // (undocumented)
-    protected _accessToken?: AccessToken;
-    dispose(): void;
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    // @internal
-    protected getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: FrontendRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext?: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
-    protected signInSilent(requestContext: ClientRequestContext): Promise<User>;
-    signOut(requestContext?: ClientRequestContext): Promise<void>;
-    }
 
 // @public
 export type OnFlashedIdChangedEventArgs = {

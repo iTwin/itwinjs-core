@@ -4,12 +4,27 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { IModelReadRpcInterface, IModelTileRpcInterface, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import DisplayPerfRpcInterface from "../common/DisplayPerfRpcInterface";
 import "./DisplayPerfRpcImpl"; // just to get the RPC implementation registered
+import * as fs from "fs";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 export async function initializeBackend() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));

@@ -23,21 +23,6 @@ const loggerCategory = BackendITwinClientLoggerCategory.Authorization;
 export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientConfiguration;
 
 /**
- * Configuration of clients for agent or service applications.
- * @see [[AgentAuthorizationClient]] for notes on registering an application
- * @deprecated Use [[AgentAuthorizationClient]] instead
- * @beta
- */
-export type OidcAgentClientConfiguration = AgentAuthorizationClientConfiguration;
-
-/**
- * Utility to generate OIDC/OAuth tokens for agent or agent applications
- * @deprecated Use [[AgentAuthorizationClient]] instead
- * @beta
- */
-export type OidcAgentClient = AgentAuthorizationClient;
-
-/**
  * Utility to generate OIDC/OAuth tokens for agent or agent applications
  * * The application must register a client using the
  * [self service registration page](https://developer.bentley.com/register/).

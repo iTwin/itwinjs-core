@@ -866,6 +866,18 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
     }
   }
 
+  /** Options controlling the results produced by [[IModelConnection.Elements.getPlacements]].
+   * @public
+   */
+  export interface GetPlacementsOptions {
+    /** The types of elements for which to query [Placement]($common)s:
+     *  - "2d": Include only [GeometricElement2d]($backend)s.
+     *  - "3d": Include only [GeometricElement3d]($backend)s.
+     *  - `undefined`: Include both 2d and 3d [GeometricElement]($backend)s.
+     */
+    type?: "3d" | "2d";
+  }
+
   /** The collection of Elements for an [[IModelConnection]]. */
   export class Elements {
     /** @internal */
@@ -913,10 +925,11 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
 
     /** Obtain the [Placement]($common)s of a set of [GeometricElement]($backend)s.
      * @param elementIds The Ids of the elements whose placements are to be queried.
+     * @param options Options customizing how the placements are queried.
      * @returns an array of placements, each having an additional `elementId` property identifying the element from which the placement was obtained.
      * @note Any Id that does not identify a geometric element with a valid bounding box and origin is omitted from the returned array.
      */
-    public async getPlacements(elementIds: Iterable<Id64String>): Promise<Array<Placement & { elementId: Id64String }>> {
+    public async getPlacements(elementIds: Iterable<Id64String>, options?: Readonly<GetPlacementsOptions>): Promise<Array<Placement & { elementId: Id64String }>> {
       let ids: Id64String[];
       if (typeof elementIds === "string")
         ids = [elementIds];
@@ -928,29 +941,49 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
       if (ids.length === 0)
         return [];
 
-      const ecsql = `
-        SELECT * FROM (
-          SELECT
-            ECInstanceId,
-            Origin.x as x, Origin.y as y, Origin.z as z,
-            BBoxLow.x as lx, BBoxLow.y as ly, BBoxLow.z as lz,
-            BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
-            Yaw, Pitch, Roll,
-            NULL as Rotation
-          FROM bis.GeometricElement3d
-          WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
-          UNION ALL
-          SELECT
-            ECInstanceId,
-            Origin.x, Origin.y, NULL,
-            BBoxLow.x, BBoxLow.y, NULL,
-            BBoxHigh.x, BBoxHigh.y, NULL,
-            NULL, NULL, NULL,
-            Rotation
-          FROM bis.GeometricElement2d
-          WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL
-        ) WHERE ECInstanceId IN (${ids.join(",")})
-      `;
+      const select3d = `
+        SELECT
+          ECInstanceId,
+          Origin.x as x, Origin.y as y, Origin.z as z,
+          BBoxLow.x as lx, BBoxLow.y as ly, BBoxLow.z as lz,
+          BBoxHigh.x as hx, BBoxHigh.y as hy, BBoxHigh.z as hz,
+          Yaw, Pitch, Roll,
+          NULL as Rotation
+        FROM bis.GeometricElement3d
+        WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
+
+      // Note: For the UNION ALL statement, the column aliases in select2d are ignored - so they
+      // must match those in select3d.
+      const select2d = `
+        SELECT
+          ECInstanceId,
+          Origin.x as x, Origin.y as y, NULL as z,
+          BBoxLow.x as lx, BBoxLow.y as ly, NULL as lz,
+          BBoxHigh.x as hx, BBoxHigh.y as hy, NULL as hz,
+          NULL as yaw, NULL as pitch, NULL as roll,
+          Rotation
+        FROM bis.GeometricElement2d
+        WHERE Origin IS NOT NULL AND BBoxLow IS NOT NULL AND BBoxHigh IS NOT NULL`;
+
+      const idCriterion = `ECInstanceId IN (${ids.join(",")})`;
+
+      let ecsql;
+      switch (options?.type) {
+        case "3d":
+          ecsql = `${select3d} AND ${idCriterion}`;
+          break;
+        case "2d":
+          ecsql = `${select2d} AND ${idCriterion}`;
+          break;
+        default:
+          ecsql = `
+            SELECT * FROM (
+              ${select3d}
+              UNION ALL
+              ${select2d}
+            ) WHERE ${idCriterion}`;
+          break;
+      }
 
       const placements = new Array<Placement & { elementId: Id64String}>();
       for await (const row of this._iModel.query(ecsql)) {
