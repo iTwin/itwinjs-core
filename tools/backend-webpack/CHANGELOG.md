@@ -1,9 +1,24 @@
 # Change Log - @bentley/backend-webpack-tools
 
-This log was last generated on Mon, 26 Jul 2021 16:18:31 GMT and should not be manually modified.
+This log was last generated on Tue, 03 Aug 2021 18:26:23 GMT and should not be manually modified.
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+_Version update only_
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
 
 _Version update only_
 

@@ -1,6 +1,6 @@
 {
   "name": "@bentley/backend-application-insights-client",
-  "version": "3.0.0-dev.8",
+  "version": "3.0.0-dev.14",
   "description": "iModel.js Backend Application Insights Client",
   "main": "lib/backend-application-insights-client.js",
   "typings": "lib/backend-application-insights-client",
@@ -35,12 +35,11 @@
     "applicationinsights": "^1.7.5"
   },
   "peerDependencies": {
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.8"
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.14"
   },
   "devDependencies": {
     "@bentley/build-tools": "workspace:*",
     "@bentley/certa": "workspace:*",
-    "@bentley/config-loader": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@types/chai": "^4.1.4",
