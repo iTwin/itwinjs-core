@@ -15,10 +15,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "@bentley/backend-application-insights-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/backend-itwin-client",
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
@@ -36,7 +32,7 @@
     },
     {
       "name": "@bentley/certa",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/context-registry-client",
@@ -73,10 +69,6 @@
     {
       "name": "@bentley/extension-webpack-tools",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
-    },
-    {
-      "name": "@bentley/frontend-application-insights-client",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/frontend-authorization-client",
@@ -261,10 +253,6 @@
     {
       "name": "@microsoft/api-extractor",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "@microsoft/applicationinsights-web",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "@openid/appauth",
@@ -456,11 +444,11 @@
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "electron",
@@ -640,7 +628,7 @@
     },
     {
       "name": "js-base64",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
       "name": "jsdom",
@@ -653,10 +641,6 @@
     {
       "name": "json-schema-faker",
       "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "json5",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "jsonc-parser",
