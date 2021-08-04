@@ -37,7 +37,7 @@
     "@bentley/itwin-client": "workspace:*",
     "dotenv": "^8.2.0",
     "dotenv-expand": "^5.1.0",
-    "openid-client": "^3.15.3",
+    "openid-client": "^4.7.4",
     "puppeteer": "chrome-86"
   },
   "devDependencies": {
