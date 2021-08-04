@@ -21,7 +21,7 @@ import { useAnalysisAnimationDataProvider } from "../hooks/useAnalysisAnimationD
 export interface ViewOverlayProps {
   viewport: ScreenViewport;
   onPlayPause?: (playing: boolean) => void; // callback with play/pause button is pressed
-  featureOptions: { [key: string]: any };
+  featureOptions?: { [key: string]: any };
 }
 
 /**

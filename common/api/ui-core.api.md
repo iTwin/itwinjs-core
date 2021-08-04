@@ -30,7 +30,6 @@ import * as React from 'react';
 import * as ReactAutosuggest from 'react-autosuggest';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { SelectComponentsConfig } from 'react-select/src/components/index';
-import { SliderModeFunction } from 'react-compound-slider';
 import { ToggleSwitchProps } from '@itwin/itwinui-react';
 import { ValueType } from 'react-select/src/types';
 
@@ -1955,7 +1954,7 @@ export interface SizeProps {
     readonly width: number;
 }
 
-// @public
+// @public @deprecated
 export function Slider(props: SliderProps): JSX.Element;
 
 // @public
@@ -1972,7 +1971,7 @@ export interface SliderProps extends CommonProps {
     maxImage?: React.ReactNode;
     min: number;
     minImage?: React.ReactNode;
-    mode?: number | SliderModeFunction;
+    mode?: number | (() => number);
     onChange?: (values: ReadonlyArray<number>) => void;
     onSlideEnd?: (values: ReadonlyArray<number>) => void;
     onSlideStart?: (values: ReadonlyArray<number>) => void;
@@ -2509,6 +2508,9 @@ export function useDisposable<TDisposable extends IDisposable>(createDisposable:
 
 // @public
 export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void;
+
+// @internal
+export function useEventListener(eventName: string, handler: (event: Event) => void, element: HTMLElement | Document | undefined): void;
 
 // @internal
 export function useLayoutResizeObserver(inElement: HTMLElement | null, onResize?: (width?: number, height?: number) => void): (number | undefined)[];
