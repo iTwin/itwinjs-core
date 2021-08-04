@@ -1,6 +1,13 @@
 # Change Log - @bentley/extension-cli
 
-This log was last generated on Tue, 03 Aug 2021 18:26:23 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Aug 2021 20:29:34 GMT and should not be manually modified.
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+### Updates
+
+- Update tar dependency.
 
 ## 2.19.2
 Tue, 03 Aug 2021 18:26:23 GMT
