@@ -40,9 +40,9 @@ export function isNoSelectionActive(): boolean {
   if (!UiFramework.frameworkStateKey)
     selectionCount = UiFramework.store.getState()[UiFramework.frameworkStateKey].frameworkState.sessionState.numItemsSelected;
 
-  // istanbul ignore next
-  if (activeContentControl && activeContentControl.viewport
-    && (activeContentControl.viewport.view.iModel.selectionSet.size > 0 || selectionCount > 0))
+  // istanbul ignore if
+  if (activeContentControl && /* istanbul ignore next */ activeContentControl.viewport
+    && (/* istanbul ignore next */ activeContentControl.viewport.view.iModel.selectionSet.size > 0 || /* istanbul ignore next */ selectionCount > 0))
     return false;
   return true;
 }

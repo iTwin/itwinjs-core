@@ -72,8 +72,8 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
 
       // istanbul ignore next
       if ((this.state.isActive !== newState.isActive) ||
-        (this.state.isEnabled !== newState.isEnabled) ||
-        (this.state.isVisible !== newState.isVisible)) {
+        ( /* istanbul ignore next */ this.state.isEnabled !== newState.isEnabled) ||
+        ( /* istanbul ignore next */ this.state.isVisible !== newState.isVisible)) {
         this.setState({
           isActive: newState.isActive,
           isEnabled: newState.isEnabled,

@@ -111,7 +111,8 @@ export class ContentViewManager {
           if (activeContentControl) {
             // istanbul ignore next
             const doSetActiveView =
-              forceEventProcessing || (!activeContentControl.viewport || (oldContentControl && !oldContentControl.viewport));
+              forceEventProcessing || (!activeContentControl.viewport ||
+                (/* istanbul ignore next */ oldContentControl && /* istanbul ignore next */ !oldContentControl.viewport));
 
             // istanbul ignore else
             if (doSetActiveView) {

@@ -626,8 +626,6 @@ export enum HttpStatus {
 
 // @public
 export namespace Id64 {
-    // @deprecated
-    export function forEach(arg: Id64Arg, callback: (id: Id64String) => void): void;
     export function fromJSON(prop?: string): Id64String;
     export function fromLocalAndBriefcaseIds(localId: number, briefcaseId: number): Id64String;
     export function fromString(val: string): Id64String;
@@ -646,11 +644,9 @@ export namespace Id64 {
     export function isTransientId64(id: string): boolean;
     export function isValid(id: Id64String): boolean;
     export function isValidId64(id: string): boolean;
-    export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
     const invalid = "0";
+    export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
     export function iterable(ids: Id64Arg): Iterable<Id64String>;
-    // @deprecated
-    export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean;
     export function iterator(ids: Id64Arg): Iterator<Id64String>;
     export function sizeOf(arg: Id64Arg): number;
     export function toIdSet(arg: Id64Arg, makeCopy?: boolean): Id64Set;
@@ -1017,12 +1013,6 @@ export class IndexMap<T> {
     protected readonly _maximumSize: number;
     toArray(): T[];
 }
-
-// @internal @deprecated
-export const isElectronMain: boolean;
-
-// @internal @deprecated
-export const isElectronRenderer: boolean;
 
 // @public
 export function isIDisposable(obj: unknown): obj is IDisposable;
