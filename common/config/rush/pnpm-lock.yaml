@@ -5,45 +5,6 @@ importers:
   .:
     specifiers: {}
 
-  ../../clients/backend-application-insights:
-    specifiers:
-      '@bentley/backend-itwin-client': workspace:*
-      '@bentley/bentleyjs-core': workspace:*
-      '@bentley/build-tools': workspace:*
-      '@bentley/certa': workspace:*
-      '@bentley/eslint-plugin': workspace:*
-      '@bentley/itwin-client': workspace:*
-      '@types/chai': ^4.1.4
-      '@types/mocha': ^8.2.2
-      '@types/node': 10.14.1
-      applicationinsights: ^1.7.5
-      chai: ^4.1.2
-      eslint: ^7.11.0
-      mocha: ^8.3.2
-      rimraf: ^3.0.2
-      source-map-loader: ^1.0.0
-      typescript: ~4.3.0
-      webpack: 4.42.0
-    dependencies:
-      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
-      '@bentley/bentleyjs-core': link:../../core/bentley
-      applicationinsights: 1.8.10
-    devDependencies:
-      '@bentley/build-tools': link:../../tools/build
-      '@bentley/certa': link:../../tools/certa
-      '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/itwin-client': link:../itwin
-      '@types/chai': 4.2.21
-      '@types/mocha': 8.2.3
-      '@types/node': 10.14.1
-      chai: 4.3.4
-      eslint: 7.32.0
-      mocha: 8.4.0
-      rimraf: 3.0.2
-      source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.3.5
-      webpack: 4.42.0
-
   ../../clients/context-registry:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
@@ -136,45 +97,6 @@ importers:
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
-      mocha: 8.4.0
-      rimraf: 3.0.2
-      source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.3.5
-      webpack: 4.42.0
-
-  ../../clients/frontend-application-insights:
-    specifiers:
-      '@bentley/bentleyjs-core': workspace:*
-      '@bentley/build-tools': workspace:*
-      '@bentley/certa': workspace:*
-      '@bentley/eslint-plugin': workspace:*
-      '@bentley/itwin-client': workspace:*
-      '@bentley/telemetry-client': workspace:*
-      '@microsoft/applicationinsights-web': ^2.5.5
-      '@types/chai': ^4.1.4
-      '@types/mocha': ^8.2.2
-      '@types/node': 10.14.1
-      chai: ^4.1.2
-      eslint: ^7.11.0
-      mocha: ^8.3.2
-      rimraf: ^3.0.2
-      source-map-loader: ^1.0.0
-      typescript: ~4.3.0
-      webpack: 4.42.0
-    dependencies:
-      '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/telemetry-client': link:../telemetry
-      '@microsoft/applicationinsights-web': 2.6.4
-    devDependencies:
-      '@bentley/build-tools': link:../../tools/build
-      '@bentley/certa': link:../../tools/certa
-      '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/itwin-client': link:../itwin
-      '@types/chai': 4.2.21
-      '@types/mocha': 8.2.3
-      '@types/node': 10.14.1
-      chai: 4.3.4
-      eslint: 7.32.0
       mocha: 8.4.0
       rimraf: 3.0.2
       source-map-loader: 1.1.3_webpack@4.42.0
@@ -3851,7 +3773,6 @@ importers:
   ../../test-apps/ui-test-app:
     specifiers:
       '@axe-core/react': ^4.1.1
-      '@bentley/backend-application-insights-client': workspace:*
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
@@ -3859,7 +3780,6 @@ importers:
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
-      '@bentley/frontend-application-insights-client': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/frontend-devtools': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -3927,13 +3847,11 @@ importers:
       typescript: ~4.3.0
       webpack: 4.42.0
     dependencies:
-      '@bentley/backend-application-insights-client': link:../../clients/backend-application-insights
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/express-server': link:../../core/express-server
-      '@bentley/frontend-application-insights-client': link:../../clients/frontend-application-insights
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/frontend-devtools': link:../../core/frontend-devtools
       '@bentley/geometry-core': link:../../core/geometry
@@ -8828,7 +8746,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.12.3
-      '@bentley/webpack-tools-core': 2.19.1_webpack@4.44.2
+      '@bentley/webpack-tools-core': 2.19.2_webpack@4.44.2
       '@pmmmwh/react-refresh-webpack-plugin': 0.4.3_9f0995138d24e525eb86c097d82409c0
       '@svgr/webpack': 5.5.0
       '@typescript-eslint/eslint-plugin': 4.26.0_6ad60615926498459560d09cafa37edc
@@ -8928,7 +8846,7 @@ packages:
         optional: true
     dependencies:
       '@babel/core': 7.12.3
-      '@bentley/webpack-tools-core': 2.19.1_webpack@4.44.2
+      '@bentley/webpack-tools-core': 2.19.2_webpack@4.44.2
       '@pmmmwh/react-refresh-webpack-plugin': 0.4.3_9f0995138d24e525eb86c097d82409c0
       '@svgr/webpack': 5.5.0
       '@typescript-eslint/eslint-plugin': 4.26.0_6ad60615926498459560d09cafa37edc
@@ -9020,8 +8938,8 @@ packages:
     resolution: {integrity: sha512-yVPl8DLeD0sczWp1AFnKR+4+whQRvYgJupToQUOFUrlCGeVCvzyJw+mp38ciO3tRdWYZmW/k7lOx/by1hAiyrg==}
     dev: true
 
-  /@bentley/webpack-tools-core/2.19.1_webpack@4.44.2:
-    resolution: {integrity: sha512-QE0vgzY1mXRQekUr0qQQIwBbcs2ohfzXuZ+0jlwXzaq8urDbA1OQT0Yi+kFsyxiO0Q3T32d7HojfFBWsbasOLA==}
+  /@bentley/webpack-tools-core/2.19.2_webpack@4.44.2:
+    resolution: {integrity: sha512-JxL7HHYPprxxipTbLTVhDLpB8aUiN+l82vzYtYdR+HRisiPzRY+6iE5V0ZDbUEsgpX0ucTssdoe3AV2G1TJNeA==}
     peerDependencies:
       webpack: 4.42.0
     dependencies:
@@ -9597,78 +9515,6 @@ packages:
       resolve: 1.8.1
       source-map: 0.6.1
       typescript: 4.3.5
-    dev: false
-
-  /@microsoft/applicationinsights-analytics-js/2.6.4:
-    resolution: {integrity: sha512-BHx3U6H4j3ddtl2wSJNt+kX2jG+qsvH4mNnimFJjZ4Mq9dheD3o6ghnBH8gQjIb5Up09JdyV5itsTZf1aC84Dg==}
-    dependencies:
-      '@microsoft/applicationinsights-common': 2.6.4
-      '@microsoft/applicationinsights-core-js': 2.6.4
-      '@microsoft/applicationinsights-shims': 2.0.0
-      '@microsoft/dynamicproto-js': 1.1.4
-    dev: false
-
-  /@microsoft/applicationinsights-channel-js/2.6.4:
-    resolution: {integrity: sha512-ps9ZglUw8nzou9/CxmfRgHO7aGjhopu9YqsadbQL6yz/q8LSj1w30+ADa3gSMYCEEy8FQrDo5e5UebDEnX/w+A==}
-    dependencies:
-      '@microsoft/applicationinsights-common': 2.6.4
-      '@microsoft/applicationinsights-core-js': 2.6.4
-      '@microsoft/applicationinsights-shims': 2.0.0
-      '@microsoft/dynamicproto-js': 1.1.4
-    dev: false
-
-  /@microsoft/applicationinsights-common/2.6.4:
-    resolution: {integrity: sha512-/YLrKpxXL8zusjzu8GTYPuRrKw0OzUD4rLh8mxSlUZWK+SLOE/1loizJIesmd6OLgcgmOTrd1iZFVsuxn20b/g==}
-    dependencies:
-      '@microsoft/applicationinsights-core-js': 2.6.4
-      '@microsoft/applicationinsights-shims': 2.0.0
-      '@microsoft/dynamicproto-js': 1.1.4
-    dev: false
-
-  /@microsoft/applicationinsights-core-js/2.6.4:
-    resolution: {integrity: sha512-rYxfJzl4aLXFGOLsRoJqyKj5qfhQTz1u/eXSo6N6gIIr/D+RCVNJZKVzeBh3xOOytm4UBGRshK0QFZJlIQL3Kw==}
-    dependencies:
-      '@microsoft/applicationinsights-shims': 2.0.0
-      '@microsoft/dynamicproto-js': 1.1.4
-    dev: false
-
-  /@microsoft/applicationinsights-dependencies-js/2.6.4:
-    resolution: {integrity: sha512-mJ/yTe00HPlUpQCmQWGhY3ronlkhsPgIYBWjxstN4NHRO4Qt17/ITxFoRa+r50J8Sf4ouc4qBoEFSVc56x80bg==}
-    dependencies:
-      '@microsoft/applicationinsights-common': 2.6.4
-      '@microsoft/applicationinsights-core-js': 2.6.4
-      '@microsoft/applicationinsights-shims': 2.0.0
-      '@microsoft/dynamicproto-js': 1.1.4
-    dev: false
-
-  /@microsoft/applicationinsights-properties-js/2.6.4:
-    resolution: {integrity: sha512-SdIR3gVX46N0RdC0zV/pXKoCxwT+2+79ek6hVXvXa2o2I+JfgYEAxb1Q8flYNGEdlFd/Ge7BHcJLqFvjat1t4Q==}
-    dependencies:
-      '@microsoft/applicationinsights-common': 2.6.4
-      '@microsoft/applicationinsights-core-js': 2.6.4
-      '@microsoft/applicationinsights-shims': 2.0.0
-      '@microsoft/dynamicproto-js': 1.1.4
-    dev: false
-
-  /@microsoft/applicationinsights-shims/2.0.0:
-    resolution: {integrity: sha512-OaKew7f7acuNFgKYjMSPrRTRQi93xUyONWeeCeBlJSx7oRNJaL0TqbTvW6j5GHnSr3mhinPtAQ+rCQWASBnOrg==}
-    dev: false
-
-  /@microsoft/applicationinsights-web/2.6.4:
-    resolution: {integrity: sha512-/lBngt78Q7YNs8Llu1xz22f9oT5Rr2lo1QmSSSSKal30HL6kkzkP14J2E6+0+O5dRmyTDgOSiEePt6AhF8NFzg==}
-    dependencies:
-      '@microsoft/applicationinsights-analytics-js': 2.6.4
-      '@microsoft/applicationinsights-channel-js': 2.6.4
-      '@microsoft/applicationinsights-common': 2.6.4
-      '@microsoft/applicationinsights-core-js': 2.6.4
-      '@microsoft/applicationinsights-dependencies-js': 2.6.4
-      '@microsoft/applicationinsights-properties-js': 2.6.4
-      '@microsoft/applicationinsights-shims': 2.0.0
-      '@microsoft/dynamicproto-js': 1.1.4
-    dev: false
-
-  /@microsoft/dynamicproto-js/1.1.4:
-    resolution: {integrity: sha512-Ot53G927ykMF8cQ3/zq4foZtdk+Tt1YpX7aUTHxBU7UHNdkEiBvBfZSq+rnlUmKCJ19VatwPG4mNzvcGpBj4og==}
     dev: false
 
   /@microsoft/node-core-library/3.18.2:
