@@ -6,7 +6,6 @@ import { expect } from "chai";
 import { it } from "mocha";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent, IDisposable } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
   LabelDefinition, LabelGroupingNodeKey, Node, PartialHierarchyModification, RegisteredRuleset, RulesetVariable, StandardNodeTypes,
@@ -15,8 +14,7 @@ import {
 import { Presentation, PresentationManager, RulesetManager, RulesetVariablesManager } from "@bentley/presentation-frontend";
 import { PrimitiveValue, PropertyRecord } from "@bentley/ui-abstract";
 import {
-  from, MutableTreeModel, PagedTreeNodeLoader, TreeDataChangesListener, TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput,
-  TreeModelSource, TreeNodeItem,
+  from, MutableTreeModel, PagedTreeNodeLoader, TreeModel, TreeModelNode, TreeModelNodeEditingInfo, TreeModelNodeInput, TreeModelSource,
 } from "@bentley/ui-components";
 import { act, cleanup, renderHook } from "@testing-library/react-hooks";
 import { IPresentationTreeDataProvider } from "../../../presentation-components";
@@ -51,6 +49,9 @@ describe("usePresentationNodeLoader", () => {
     onRulesetModified = mocks.rulesetsManager.object.onRulesetModified;
     onRulesetVariableChanged = mocks.rulesetVariablesManager.object.onVariableChanged;
     mocks.presentationManager.setup((x) => x.stateTracker).returns(() => undefined);
+    mocks.presentationManager
+      .setup(async (x) => x.getNodesAndCount(moq.It.isAny()))
+      .returns(async () => ({ count: 0, nodes: [] }));
     Presentation.setPresentationManager(mocks.presentationManager.object);
   });
 
@@ -473,49 +474,6 @@ describe("usePresentationNodeLoader", () => {
       expect(result.current.nodeLoader).to.not.eq(oldNodeLoader);
       presentationManagerMock.verifyAll();
     });
-  });
-
-  it("uses supplied dataProvider", () => {
-    // dispatch function from useState hook does not work with mocked object because it is function
-    const dataProvider: IPresentationTreeDataProvider = {
-      imodel: imodelMock.object,
-      rulesetId: "",
-      onTreeNodeChanged: new BeEvent<TreeDataChangesListener>(),
-      dispose: () => { },
-      getFilteredNodePaths: async () => [],
-      getNodeKey: (node: TreeNodeItem) => (node as any).__key,
-      getNodesCount: async () => 0,
-      getNodes: async () => [],
-      loadHierarchy: async () => { },
-    };
-    const { result } = renderHook(
-      (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-      { initialProps: { ...initialProps, dataProvider } },
-    );
-    expect(result.current.nodeLoader.dataProvider).to.be.eq(dataProvider);
-  });
-
-  it("uses supplied disposable dataProvider and disposes it on unmount", () => {
-    // dispatch function from useState hook does not work with mocked object because it is function
-    const dataProvider: IPresentationTreeDataProvider & IDisposable = {
-      imodel: imodelMock.object,
-      rulesetId: "",
-      onTreeNodeChanged: new BeEvent<TreeDataChangesListener>(),
-      getFilteredNodePaths: async () => [],
-      getNodeKey: (node: TreeNodeItem) => (node as any).__key,
-      getNodesCount: async () => 0,
-      getNodes: async () => [],
-      loadHierarchy: async () => { },
-      dispose: sinon.spy(),
-    };
-    const { result, unmount } = renderHook(
-      (props: PresentationTreeNodeLoaderProps) => usePresentationTreeNodeLoader(props),
-      { initialProps: { ...initialProps, dataProvider } },
-    );
-    expect(result.current.nodeLoader.dataProvider).to.be.eq(dataProvider);
-    expect(dataProvider.dispose).to.not.be.called;
-    unmount();
-    expect(dataProvider.dispose).to.be.calledOnce;
   });
 });
 
