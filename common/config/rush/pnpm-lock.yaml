@@ -265,7 +265,7 @@ importers:
       superagent: ^5.2.2
       typescript: ~4.3.0
       webpack: 4.42.0
-      xmldom: ^0.5.0
+      xmldom: ^0.6.0
       xpath: 0.0.27
     dependencies:
       deep-assign: 2.0.0
@@ -273,7 +273,7 @@ importers:
       lodash: 4.17.21
       qs: 6.10.1
       superagent: 5.3.1
-      xmldom: 0.5.0
+      xmldom: 0.6.0
       xpath: 0.0.27
     devDependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
@@ -900,7 +900,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^9.0.2
       typescript: ~4.3.0
-      xmldom: ^0.5.0
+      xmldom: ^0.6.0
       xmlhttprequest: ^1.8.0
     dependencies:
       almost-equal: 1.1.0
@@ -931,7 +931,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       typescript: 4.3.5
-      xmldom: 0.5.0
+      xmldom: 0.6.0
       xmlhttprequest: 1.8.0
 
   ../../core/ecschema-locaters:
@@ -954,7 +954,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       typescript: ~4.3.0
-      xmldom: ^0.5.0
+      xmldom: ^0.6.0
     dependencies:
       glob: 7.1.7
     devDependencies:
@@ -975,7 +975,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 4.3.5
-      xmldom: 0.5.0
+      xmldom: 0.6.0
 
   ../../core/ecschema-metadata:
     specifiers:
@@ -1005,7 +1005,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^9.0.2
       typescript: ~4.3.0
-      xmldom: ^0.5.0
+      xmldom: ^0.6.0
       xmlhttprequest: ^1.8.0
     dependencies:
       almost-equal: 1.1.0
@@ -1035,7 +1035,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       typescript: 4.3.5
-      xmldom: 0.5.0
+      xmldom: 0.6.0
       xmlhttprequest: 1.8.0
 
   ../../core/ecschema-rpc/common:
@@ -4368,7 +4368,7 @@ importers:
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
       typescript: ~4.3.0
-      xmldom: ^0.5.0
+      xmldom: ^0.6.0
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
@@ -4385,7 +4385,7 @@ importers:
       chalk: 3.0.0
       commander: 2.20.3
       fs-extra: 8.1.0
-      xmldom: 0.5.0
+      xmldom: 0.6.0
     devDependencies:
       '@bentley/build-tools': link:../build
       '@bentley/eslint-plugin': link:../eslint-plugin
@@ -11601,7 +11601,7 @@ packages:
       jws: 3.2.2
       underscore: 1.13.1
       uuid: 3.4.0
-      xmldom: 0.5.0
+      xmldom: 0.6.0
       xpath.js: 1.1.0
     transitivePeerDependencies:
       - debug
@@ -26092,8 +26092,8 @@ packages:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
     dev: true
 
-  /xmldom/0.5.0:
-    resolution: {integrity: sha512-Foaj5FXVzgn7xFzsKeNIde9g6aFBxTPi37iwsno8QvApmtg7KYrr+OPyRHcJF7dud2a5nGRBXK3n0dL62Gf7PA==}
+  /xmldom/0.6.0:
+    resolution: {integrity: sha512-iAcin401y58LckRZ0TkI4k0VSM1Qg0KGSc3i8rU+xrxe19A/BN1zHyVSJY7uoutVlaTSzYyk/v5AmkewAP7jtg==}
     engines: {node: '>=10.0.0'}
 
   /xmlhttprequest/1.8.0:
