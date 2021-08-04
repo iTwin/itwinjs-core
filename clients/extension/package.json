@@ -1,6 +1,6 @@
 {
   "name": "@bentley/extension-client",
-  "version": "3.0.0-dev.9",
+  "version": "3.0.0-dev.15",
   "description": "IModel.js Extension Client",
   "main": "lib/extension-client.js",
   "typings": "lib/extension-client",
@@ -43,7 +43,6 @@
   "devDependencies": {
     "@bentley/build-tools": "workspace:*",
     "@bentley/certa": "workspace:*",
-    "@bentley/config-loader": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/oidc-signin-tool": "workspace:*",
@@ -51,6 +50,8 @@
     "@types/mocha": "^8.2.2",
     "@types/node": "10.14.1",
     "chai": "^4.1.2",
+    "dotenv": "^10.0.0",
+    "dotenv-expand": "^5.1.0",
     "eslint": "^7.11.0",
     "internal-tools": "workspace:*",
     "mocha": "^8.3.2",

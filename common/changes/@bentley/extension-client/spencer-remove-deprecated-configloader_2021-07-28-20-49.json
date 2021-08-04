@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/extension-client",
+      "comment": "Removed references to the deleted config-loader package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/extension-client",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}
