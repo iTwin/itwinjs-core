@@ -92,11 +92,6 @@ export interface ModelsTreeProps {
    * @alpha
    */
   modelsVisibilityHandler?: ModelsVisibilityHandler;
-  /**
-   * Custom data provider to use for testing
-   * @internal
-   */
-  dataProvider?: IPresentationTreeDataProvider;
 }
 
 /**
@@ -181,7 +176,6 @@ function useModelsTreeNodeLoader(props: ModelsTreeProps) {
 
   const { nodeLoader, onItemsRendered } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
-    dataProvider: props.dataProvider,
     ruleset: rulesets.general,
     appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
     pagingSize: PAGING_SIZE,
@@ -189,7 +183,6 @@ function useModelsTreeNodeLoader(props: ModelsTreeProps) {
   });
   const { nodeLoader: searchNodeLoader, onItemsRendered: onSearchItemsRendered } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
-    dataProvider: props.dataProvider,
     ruleset: rulesets.search,
     pagingSize: PAGING_SIZE,
     enableHierarchyAutoUpdate: props.enableHierarchyAutoUpdate,

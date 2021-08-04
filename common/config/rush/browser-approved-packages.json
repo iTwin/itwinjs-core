@@ -21,12 +21,6 @@
       ]
     },
     {
-      "name": "@bentley/backend-application-insights-client",
-      "allowedCategories": [
-        "internal"
-      ]
-    },
-    {
       "name": "@bentley/backend-itwin-client",
       "allowedCategories": [
         "backend",
@@ -70,7 +64,6 @@
     {
       "name": "@bentley/certa",
       "allowedCategories": [
-        "backend",
         "common",
         "edit",
         "frontend",
@@ -151,12 +144,6 @@
       "allowedCategories": [
         "extensions",
         "frontend",
-        "internal"
-      ]
-    },
-    {
-      "name": "@bentley/frontend-application-insights-client",
-      "allowedCategories": [
         "internal"
       ]
     },
@@ -536,12 +523,6 @@
       ]
     },
     {
-      "name": "@microsoft/applicationinsights-web",
-      "allowedCategories": [
-        "common"
-      ]
-    },
-    {
       "name": "@openid/appauth",
       "allowedCategories": [
         "backend"
@@ -875,8 +856,6 @@
       "allowedCategories": [
         "backend",
         "common",
-        "extensions",
-        "frontend",
         "integration-testing",
         "internal",
         "tools"
@@ -887,8 +866,6 @@
       "allowedCategories": [
         "backend",
         "common",
-        "extensions",
-        "frontend",
         "integration-testing",
         "internal",
         "tools"
@@ -1201,7 +1178,6 @@
       "allowedCategories": [
         "backend",
         "common",
-        "frontend",
         "integration-testing",
         "internal"
       ]
@@ -1226,12 +1202,6 @@
       "name": "json-schema-faker",
       "allowedCategories": [
         "common"
-      ]
-    },
-    {
-      "name": "json5",
-      "allowedCategories": [
-        "tools"
       ]
     },
     {

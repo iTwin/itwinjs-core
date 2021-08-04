@@ -890,8 +890,6 @@ export interface CategoryTreeProps {
     allViewports?: boolean;
     // @internal
     categoryVisibilityHandler?: CategoryVisibilityHandler;
-    // @internal
-    dataProvider?: IPresentationTreeDataProvider;
     enablePreloading?: boolean;
     // @alpha
     filterInfo?: VisibilityTreeFilterInfo;
@@ -3932,8 +3930,6 @@ export enum ModelsTreeNodeType {
 // @public
 export interface ModelsTreeProps {
     activeView?: Viewport;
-    // @internal
-    dataProvider?: IPresentationTreeDataProvider;
     // @beta
     enableElementsClassGrouping?: ClassGroupingOption;
     // @alpha
@@ -5461,8 +5457,6 @@ export function SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.
 
 // @public
 export interface SpatialContainmentTreeProps {
-    // @internal
-    dataProvider?: IPresentationTreeDataProvider;
     // @beta
     enableElementsClassGrouping?: ClassGroupingOption;
     enablePreloading?: boolean;
