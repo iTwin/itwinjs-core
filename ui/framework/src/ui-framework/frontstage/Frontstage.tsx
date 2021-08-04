@@ -407,6 +407,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       const activeTabIndex = openWidgetId ? zones.widgets[openWidgetId].tabIndex : 0;
       const draggedWidget = runtimeProps.nineZone.zones.draggedWidget;
       const disabledResizeHandles = zonesManager.getDisabledResizeHandles(zoneId, zones);
+      // istanbul ignore next
       const zoneRuntimeProps: ZoneRuntimeProps = {
         activeTabIndex,
         disabledResizeHandles,

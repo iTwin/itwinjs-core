@@ -161,10 +161,12 @@ export function Scrubber(props: ScrubberProps) {
 
   const [showRailTooltip, setShowRailTooltip] = React.useState(false);
 
+  // istanbul ignore next
   const handlePointerEnter = React.useCallback(() => {
     setShowRailTooltip(true);
   }, []);
 
+  // istanbul ignore next
   const handlePointerLeave = React.useCallback(() => {
     setShowRailTooltip(false);
   }, []);

@@ -57,6 +57,14 @@ describe("Slider", () => {
     spyMethod.calledOnce.should.true;
   });
 
+  it("should render with showTicks & getTickValues & format tick", () => {
+    const spyMethod = sinon.spy();
+    const component = render(<Slider min={0} max={50} values={[20]} showTicks={true} getTickValues={() => { spyMethod(); return [0, 10, 20, 30, 40, 50]; }} formatTick={(value) => `*${value.toString()}*`} />);
+    expect(component.container.querySelectorAll(".iui-slider-tick").length).to.eq(6);
+    spyMethod.calledOnce.should.true;
+    expect(component.queryByText("*20*")).not.to.be.null;
+  });
+
   it("should render with showTicks & includeTicksInWidth", () => {
     const component = render(<Slider min={0} max={100} values={[50]} showTicks={true} getTickCount={() => 10} includeTicksInWidth={true} />);
     expect(component.container.querySelector(".core-slider-includeTicksInWidth")).not.to.be.null;
@@ -79,6 +87,21 @@ describe("Slider", () => {
 
   it("should render with multiple values", () => {
     const component = render(<Slider min={0} max={100} values={[30, 70]} />);
+    expect(component.container.querySelectorAll(".iui-slider-thumb").length).to.eq(2);
+  });
+
+  it("should render with multiple values with mode 2", () => {
+    const component = render(<Slider min={0} max={100} mode={2} values={[30, 70]} />);
+    expect(component.container.querySelectorAll(".iui-slider-thumb").length).to.eq(2);
+  });
+
+  it("should render with multiple values with mode via function", () => {
+    const component = render(<Slider min={0} max={100} mode={() => 2} values={[30, 70]} />);
+    expect(component.container.querySelectorAll(".iui-slider-thumb").length).to.eq(2);
+  });
+
+  it("should render with multiple values with reversed true", () => {
+    const component = render(<Slider min={0} max={100} reversed values={[30, 70]} />);
     expect(component.container.querySelectorAll(".iui-slider-thumb").length).to.eq(2);
   });
 

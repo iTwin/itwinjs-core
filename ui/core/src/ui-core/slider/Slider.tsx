@@ -133,8 +133,8 @@ export function Slider(props: SliderProps) {
   const tooltipProps = React.useCallback((_index: number, val: number) => {
     const content = internalFormatTooltip(val);
     if (!showTooltip)
-      return { placement: tooltipBelow ? "bottom" : "top", content, visible: false } as Partial<Omit<TooltipProps, "children">>;
-    return { placement: tooltipBelow ? "bottom" : "top", content } as Partial<Omit<TooltipProps, "children">>;
+      return { visible: false };
+    return { placement: tooltipBelow ? "bottom" : "top", content };
   }, [internalFormatTooltip, showTooltip, tooltipBelow]);
 
   const tickLabels = React.useMemo(() => {
@@ -154,7 +154,7 @@ export function Slider(props: SliderProps) {
             ticks.push("");
           }
         }
-      } else if (getTickValues) {
+      } else /* istanbul ignore else */ if (getTickValues) {
         return getTickValues().map((val: number) => formatTick ? formatTick(val) : internalFormatTooltip(val));
       }
     }
