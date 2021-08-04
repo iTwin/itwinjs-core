@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-metadata",
+      "comment": "switch to xmldom@0.6.0 which correctly escapes entities in attributes when serializing",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-metadata",
+  "email": "MichaelBelousov@users.noreply.github.com"
+}
