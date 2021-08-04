@@ -20,6 +20,7 @@ import {
   ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, TreeDataChangesListener, TreeDataProvider, TreeDataProviderRaw, TreeNodeItem,
 } from "../../../ui-components/tree/TreeDataProvider";
 import { extractSequence } from "../../common/ObservableTestHelpers";
+import { ResolvablePromise } from "../../test-helpers/misc";
 import { createRandomMutableTreeModelNode, createRandomTreeNodeItem, createRandomTreeNodeItems } from "./RandomTreeNodesHelpers";
 
 /* eslint-disable @typescript-eslint/promise-function-async */
@@ -87,19 +88,15 @@ describe("TreeNodeLoader", () => {
   });
 
   describe("getDataProvider", () => {
-
     it("returns data provider", () => {
       expect(treeNodeLoader.dataProvider).to.be.eq(dataProviderMock.object);
     });
-
   });
 
   describe("modelSource", () => {
-
     it("returns model source", () => {
       expect(treeNodeLoader.modelSource).to.be.eq(modelSourceMock.object);
     });
-
   });
 
   describe("loadNode", () => {
@@ -124,6 +121,7 @@ describe("TreeNodeLoader", () => {
     it("loads all children for node", async () => {
       rootWithChildren.isLoading = false;
 
+      dataProviderMock.setup((x) => x.getNodesCount(rootWithChildren.item)).returns(async () => childNodes.length);
       dataProviderMock.setup((x) => x.getNodes(rootWithChildren.item, moq.It.isAny())).returns(async () => childNodes);
 
       const loadResultObs = treeNodeLoader.loadNode(rootWithChildren, 0);
@@ -157,11 +155,8 @@ describe("TreeNodeLoader", () => {
         const loadedIds = await extractLoadedNodeIds(loadObs);
         expect(loadedIds).to.be.deep.eq(["1", "1-1", "1-2", "2"]);
       });
-
     });
-
   });
-
 });
 
 describe("PagedTreeNodeLoader", () => {
@@ -183,27 +178,21 @@ describe("PagedTreeNodeLoader", () => {
   });
 
   describe("[get] pageSize", () => {
-
     it("returns page size", () => {
       expect(pagedTreeNodeLoader.pageSize).to.be.eq(pageSize);
     });
-
   });
 
   describe("[get] dataProvider", () => {
-
     it("return data provider", () => {
       expect(pagedTreeNodeLoader.dataProvider).to.be.eq(dataProviderMock.object);
     });
-
   });
 
   describe("modelSource", () => {
-
     it("returns model source", () => {
       expect(pagedTreeNodeLoader.modelSource).to.be.eq(modelSourceMock.object);
     });
-
   });
 
   describe("loadNode", () => {
@@ -233,6 +222,7 @@ describe("PagedTreeNodeLoader", () => {
     it("loads child nodes page when asking for first child", async () => {
       rootWithChildren.isLoading = false;
 
+      dataProviderMock.setup((x) => x.getNodesCount(rootWithChildren.item)).returns(async () => childItems.length);
       dataProviderMock.setup((x) => x.getNodes(rootWithChildren.item, moq.It.isAny())).returns(async () => childItems);
 
       const loadResultObs = pagedTreeNodeLoader.loadNode(rootWithChildren, 0);
@@ -243,6 +233,7 @@ describe("PagedTreeNodeLoader", () => {
     it("loads children of auto expanded node", async () => {
       rootWithChildren.item.autoExpand = true;
 
+      dataProviderMock.setup((x) => x.getNodesCount(rootWithChildren.item)).returns(async () => childItems.length);
       dataProviderMock.setup((x) => x.getNodes(rootWithChildren.item, moq.It.isAny())).returns(async () => childItems);
 
       const loadResultObs = pagedTreeNodeLoader.loadNode(treeRootNode, 0);
@@ -295,9 +286,7 @@ describe("PagedTreeNodeLoader", () => {
 });
 
 describe("TreeDataSource", () => {
-
   describe("constructor", () => {
-
     it("handles dataProvider onTreeNodeChanged event", () => {
       const onTreeNodeChangedEvent = new BeEvent<TreeDataChangesListener>();
       const dataProviderMock = moq.Mock.ofType<ITreeDataProvider>();
@@ -309,11 +298,9 @@ describe("TreeDataSource", () => {
       onTreeNodeChangedEvent.raiseEvent([]);
       expect(spy).to.be.called;
     });
-
   });
 
   describe("dispose", () => {
-
     it("stops listening from dataProvider onTreeNodeChanges event", () => {
       const onTreeNodeChangedEvent = new BeEvent<TreeDataChangesListener>();
       const spy = sinon.spy(onTreeNodeChangedEvent, "removeListener");
@@ -325,11 +312,9 @@ describe("TreeDataSource", () => {
       treeDataSource.dispose();
       expect(spy).to.be.called;
     });
-
   });
 
   describe("requestItems", () => {
-
     describe("using TreeDataProviderRaw", () => {
       const rawProvider = [
         {
@@ -392,7 +377,24 @@ describe("TreeDataSource", () => {
         const result = await extractSequence(rxjsFrom(request));
         expect(result[0].loadedItems).to.be.empty;
       });
+    });
 
+    describe("using ITreeDataProvider interface", () => {
+      it("avoids loading stale data from the data provider", async () => {
+        const getNodesCountPromise = new ResolvablePromise();
+        const dataProvider: ITreeDataProvider = {
+          getNodesCount: sinon.fake(() => getNodesCountPromise),
+          getNodes: sinon.fake(),
+        };
+
+        const subscription = new TreeDataSource(dataProvider).requestItems(undefined, 0, 1, true).subscribe();
+        expect(dataProvider.getNodesCount).to.have.been.calledOnce;
+
+        // Simulating unsubscribing from TreeDataSource in between getNodesCount call and getNodes call
+        subscription.unsubscribe();
+        await getNodesCountPromise.resolve(1);
+        expect(dataProvider.getNodes).not.to.have.been.called;
+      });
     });
 
     describe("using TreeDataProviderMethod", () => {
@@ -414,7 +416,6 @@ describe("TreeDataSource", () => {
         const result = await extractSequence(rxjsFrom(request));
         expect(result[0].loadedItems).to.be.deep.eq(nodeItems);
       });
-
     });
 
     describe("using TreeDataProviderPromise", () => {
@@ -480,11 +481,9 @@ describe("TreeDataSource", () => {
         const result = await extractSequence(rxjsFrom(request));
         expect(result[0].loadedItems).to.be.empty;
       });
-
     });
 
     describe("using Unknown tree data provider", () => {
-
       const waitForCompleteOrError = async <T extends {}>(observable: RxjsObservable<T>) => {
         return new Promise<void>((resolve, reject) => {
           observable.subscribe({
@@ -500,15 +499,11 @@ describe("TreeDataSource", () => {
         const request = dataSource.requestItems(undefined, 0, 5, false);
         await expect(waitForCompleteOrError(request)).to.eventually.be.rejected;
       });
-
     });
-
   });
-
 });
 
 describe("handleLoadedNodeHierarchy", () => {
-
   function convertToTreeModelNodeInput(item: TreeNodeItemData): TreeModelNodeInput {
     let numChildren: number | undefined;
     if (item.children) {
