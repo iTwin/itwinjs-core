@@ -15,12 +15,11 @@ importers:
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
       deep-assign: ^2.0.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -40,11 +39,10 @@ importers:
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -65,11 +63,10 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -89,11 +86,10 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -229,11 +225,10 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -252,11 +247,10 @@ importers:
       '@bentley/itwin-client': link:../itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -278,13 +272,12 @@ importers:
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
-      '@types/dotenv': ^6.1.1
       '@types/jsonpath': ^0.2.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
       chai-as-promised: ^7
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -306,13 +299,12 @@ importers:
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
-      '@types/dotenv': 6.1.1
       '@types/jsonpath': 0.2.0
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -368,11 +360,10 @@ importers:
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@types/chai': ^4.1.4
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -391,11 +382,10 @@ importers:
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/telemetry-client': link:../telemetry
       '@types/chai': 4.2.21
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -426,7 +416,6 @@ importers:
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
-      '@types/dotenv': ^6.1.1
       '@types/formidable': ^1.0.31
       '@types/fs-extra': ^4.0.7
       '@types/glob': ^5.0.35
@@ -442,7 +431,7 @@ importers:
       chai-as-promised: ^7
       cpx: ^1.5.0
       deep-assign: ^2.0.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       event-stream: ~4.0.1
@@ -495,7 +484,6 @@ importers:
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
       '@types/deep-assign': 0.1.1
-      '@types/dotenv': 6.1.1
       '@types/formidable': 1.2.3
       '@types/fs-extra': 4.0.12
       '@types/glob': 5.0.37
@@ -510,7 +498,7 @@ importers:
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       cpx: 1.5.0
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       event-stream: 4.0.1
@@ -544,7 +532,6 @@ importers:
       '@bentley/usage-logging-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
-      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
       '@types/jsonwebtoken': ^8.5.0
       '@types/mocha': ^8.2.2
@@ -558,7 +545,7 @@ importers:
       chai: ^4.1.2
       cpx: ^1.5.0
       deep-assign: ^2.0.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
@@ -607,7 +594,6 @@ importers:
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
-      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
       '@types/jsonwebtoken': 8.5.4
       '@types/mocha': 8.2.3
@@ -618,7 +604,7 @@ importers:
       '@types/stream-buffers': 3.0.4
       chai: 4.3.4
       cpx: 1.5.0
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -1272,7 +1258,7 @@ importers:
       '@types/object-hash': ^1.3.0
       chai: ^4.1.2
       cpx: ^1.5.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -1301,7 +1287,7 @@ importers:
       '@types/object-hash': 1.3.4
       chai: 4.3.4
       cpx: 1.5.0
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -1402,7 +1388,6 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/presentation-common': workspace:*
       '@types/chai': ^4.1.4
-      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -1410,7 +1395,7 @@ importers:
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx: ^1.5.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       js-base64: ^3.6.1
@@ -1430,7 +1415,6 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/presentation-common': link:../../presentation/common
       '@types/chai': 4.2.21
-      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
@@ -1438,7 +1422,7 @@ importers:
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       cpx: 1.5.0
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       js-base64: 3.6.1
@@ -2172,14 +2156,13 @@ importers:
       '@bentley/product-settings-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
-      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/serve-handler': ~6.1.0
       chai: ^4.1.2
       chai-as-promised: ^7
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
@@ -2227,12 +2210,11 @@ importers:
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
-      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/serve-handler': 6.1.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       glob: 7.1.7
@@ -2270,14 +2252,13 @@ importers:
       '@bentley/presentation-frontend': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx: ^1.5.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       mocha: ^8.3.2
@@ -2309,7 +2290,7 @@ importers:
       '@bentley/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       mocha: 8.4.0
       openid-client: 4.7.4
@@ -2320,7 +2301,6 @@ importers:
       '@bentley/imodeljs-backend': link:../../core/backend
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
@@ -2348,13 +2328,12 @@ importers:
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
-      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       chai: ^4.1.2
       cpx: ^1.5.0
       deep-assign: ^2.0.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
@@ -2385,11 +2364,10 @@ importers:
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
-      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       cpx: 1.5.0
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -2418,12 +2396,11 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
-      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
@@ -2462,11 +2439,10 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
-      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       glob: 7.1.7
@@ -2508,7 +2484,6 @@ importers:
       '@types/chai-subset': 1.3.1
       '@types/cpx': '1.5'
       '@types/deep-equal': ^1
-      '@types/dotenv': ^6.1.1
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -2526,7 +2501,7 @@ importers:
       cpx: ^1.5.0
       cross-env: ^5.1.4
       deep-equal: ^1
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       faker: ^4.1.0
@@ -2595,13 +2570,12 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/dotenv': 6.1.1
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.14
       '@types/testing-library__react-hooks': 3.4.1
       cache-require-paths: 0.3.0
       cross-env: 5.2.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       ignore-styles: 5.0.1
@@ -2696,14 +2670,13 @@ importers:
       '@bentley/telemetry-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx: ^1.5.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -2737,7 +2710,7 @@ importers:
       '@bentley/telemetry-client': link:../../clients/telemetry
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       mocha: 8.4.0
       openid-client: 4.7.4
@@ -2748,7 +2721,6 @@ importers:
       '@bentley/presentation-backend': link:../../presentation/backend
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
@@ -3215,7 +3187,6 @@ importers:
       '@bentley/react-scripts': 4.0.3
       '@bentley/ui-abstract': workspace:*
       '@types/body-parser': ^1.17.0
-      '@types/dotenv': ^6.1.1
       '@types/express': ^4.16.1
       '@types/node': 10.14.1
       body-parser: ^1.18.2
@@ -3223,7 +3194,7 @@ importers:
       chrome-launcher: ^0.10.5
       cpx: ^1.5.0
       cross-env: ^5.1.4
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
@@ -3258,14 +3229,13 @@ importers:
       '@bentley/perf-tools': link:../../tools/perf-tools
       '@bentley/react-scripts': 4.0.3_react@16.14.0+typescript@4.3.5
       '@types/body-parser': 1.19.1
-      '@types/dotenv': 6.1.1
       '@types/express': 4.17.13
       '@types/node': 10.14.1
       child_process: 1.0.2
       chrome-launcher: 0.10.7
       cpx: 1.5.0
       cross-env: 5.2.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       electron: 11.4.10
       eslint: 7.32.0
@@ -3306,14 +3276,13 @@ importers:
       '@bentley/react-scripts': 4.0.3
       '@bentley/ui-abstract': workspace:*
       '@bentley/webgl-compatibility': workspace:*
-      '@types/dotenv': ^6.1.1
       '@types/express': ^4.16.1
       '@types/fs-extra': ^4.0.7
       body-parser: ^1.18.2
       child_process: ^1.0.2
       cpx: ^1.5.0
       cross-env: ^5.1.4
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
@@ -3357,13 +3326,12 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/react-scripts': 4.0.3_react@16.14.0+typescript@4.3.5
-      '@types/dotenv': 6.1.1
       '@types/express': 4.17.13
       '@types/fs-extra': 4.0.12
       child_process: 1.0.2
       cpx: 1.5.0
       cross-env: 5.2.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       electron: 11.4.10
       eslint: 7.32.0
@@ -3702,14 +3670,13 @@ importers:
       '@itwin/itwinui-css': ^0.24.0
       '@itwin/itwinui-react': ^1.12.0
       '@types/bunyan': ^1.8.4
-      '@types/dotenv': ^6.1.1
       '@types/react': 16.9.43
       '@types/react-dom': ^16.8.0
       '@types/react-select': 3.0.26
       autoprefixer: ^8.6.5
       cpx: ^1.5.0
       cross-env: ^5.1.4
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
@@ -3752,14 +3719,13 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/react-scripts': 4.0.3_react@16.14.0+typescript@4.3.5
       '@types/bunyan': 1.8.7
-      '@types/dotenv': 6.1.1
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.14
       '@types/react-select': 3.0.26
       autoprefixer: 8.6.5
       cpx: 1.5.0
       cross-env: 5.2.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       electron: 11.4.10
       eslint: 7.32.0
@@ -3812,7 +3778,6 @@ importers:
       '@bentley/ui-ninezone': workspace:*
       '@itwin/itwinui-css': ^0.24.0
       '@itwin/itwinui-react': ^1.12.0
-      '@types/dotenv': ^6.1.1
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 10.14.1
       '@types/react': 16.9.43
@@ -3824,7 +3789,7 @@ importers:
       classnames: ^2.3.1
       cpx: ^1.5.0
       cross-env: ^5.1.4
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
@@ -3900,7 +3865,6 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/logger-config': link:../../core/logger-config
       '@bentley/react-scripts': 4.0.3_react@16.14.0+typescript@4.3.5
-      '@types/dotenv': 6.1.1
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
       '@types/react': 16.9.43
@@ -3911,7 +3875,7 @@ importers:
       '@types/semver': 5.5.0
       cpx: 1.5.0
       cross-env: 5.2.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       electron: 11.4.10
       eslint: 7.32.0
@@ -4409,13 +4373,12 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
       chai: ^4.1.2
       chai-as-promised: ^7
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -4429,7 +4392,7 @@ importers:
       '@bentley/certa': link:../certa
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/itwin-client': link:../../clients/itwin
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.7.4
       puppeteer: 5.3.1
@@ -4438,7 +4401,6 @@ importers:
       '@bentley/eslint-plugin': link:../eslint-plugin
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
@@ -10196,12 +10158,6 @@ packages:
       '@types/trusted-types': 2.0.2
     dev: true
 
-  /@types/dotenv/6.1.1:
-    resolution: {integrity: sha512-ftQl3DtBvqHl9L16tpqqzA4YzCSXZfi7g8cQceTz5rOlYtk/IZbFjAv3mLOQlNIgOaylCQWQoBdDQHPgEBJPHg==}
-    dependencies:
-      '@types/node': 10.14.1
-    dev: true
-
   /@types/enzyme/3.9.3:
     resolution: {integrity: sha512-jDKoZiiMA3lGO3skSO7dfqEHNvmiTLLV+PHD9EBQVlJANJvpY6qq1zzjRI24ZOtG7F+CS7BVWDXKewRmN8PjHQ==}
     dependencies:
@@ -14460,14 +14416,14 @@ packages:
   /dotenv-expand/5.1.0:
     resolution: {integrity: sha512-YXQl1DSa4/PQyRfgrv6aoNjhasp/p4qs9FjJ4q4cQk+8m4r6k4ZSiEyytKG8f8W9gi8WsQtIObNmKd+tMzNTmA==}
 
+  /dotenv/10.0.0:
+    resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
+    engines: {node: '>=10'}
+
   /dotenv/8.2.0:
     resolution: {integrity: sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==}
     engines: {node: '>=8'}
     dev: true
-
-  /dotenv/8.6.0:
-    resolution: {integrity: sha512-IrPdXQsk2BbzvCBGBOTmmSH5SodmqZNt4ERAZDmW4CT+tL8VtvinqywuANaFu4bOMWki16nqf0e4oC0QIaDr/g==}
-    engines: {node: '>=10'}
 
   /dottie/2.0.2:
     resolution: {integrity: sha512-fmrwR04lsniq/uSr8yikThDTrM7epXHBAAjH9TbeH3rEA8tdCO7mRzB9hdmdGyJCxF8KERo9CITcm3kGuoyMhg==}
