@@ -244,6 +244,7 @@ describe("TileMetadata", () => {
           useProjectExtents: true === expected.projectExtents,
           disableMagnification: false,
           alwaysSubdivideIncompleteTiles: false,
+          optimizeBRepProcessing: false,
         };
 
         expect(TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.deep.equal(options);
@@ -322,6 +323,7 @@ describe("TileMetadata", () => {
         noPatterns?: boolean;
         externalTextures?: boolean;
         projectExtents?: boolean;
+        optimizeBReps?: boolean;
       };
     }
 
@@ -338,6 +340,7 @@ describe("TileMetadata", () => {
           useProjectExtents: true === expected.tileOptions.projectExtents,
           disableMagnification: false,
           alwaysSubdivideIncompleteTiles: false,
+          optimizeBRepProcessing: true === expected.tileOptions.optimizeBReps,
         };
         const parsed = parseTileTreeIdAndContentId(treeId, contentId);
 
@@ -367,6 +370,7 @@ describe("TileMetadata", () => {
         version: 25,
         projectExtents: true,
         externalTextures: true,
+        optimizeBReps: true,
       },
       modelId: "0x1d",
       treeId: {
