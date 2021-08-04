@@ -5,6 +5,7 @@
 @import "~@bentley/ui-core/lib/ui-core/base/base";
 @import "~@bentley/ui-core/lib/ui-core/icons/variables";
 @import "~@bentley/ui-core/lib/ui-core/inputs/variables";
+@import "~@bentley/ui-core/lib/ui-core/style/itwinui-overrides";
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@bentley/ui-core/lib/ui-core/style/variables";
 @import "~@bentley/ui-core/lib/ui-core/z-index";
@@ -75,3 +76,5 @@
 .uifw-app-button-small {
   margin-bottom: 6px;
 }
+
+@include itwinui-style-overrides;
