@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 import { AxisIndex, Matrix3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { DrawingViewState, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { Face } from "@bentley/ui-core";
-import { cleanup, fireEvent, render, wait } from "@testing-library/react";
+import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import { CubeHover, CubeNavigationAid, CubeNavigationHitBoxX, CubeNavigationHitBoxY, CubeNavigationHitBoxZ, FaceCell, NavCubeFace } from "../../ui-components/navigationaids/CubeNavigationAid";
 import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
 import TestUtils from "../TestUtils";
@@ -34,7 +34,7 @@ describe("CubeNavigationAid", () => {
   vp.setup((x) => x.rotation).returns(() => rotation);
 
   const waitForSpy = async (spy: sinon.SinonSpy, timeoutMillis: number = 1500) => {
-    return wait(() => {
+    return waitFor(() => {
       if (!spy.called)
         throw new Error("Waiting for spy timed out!");
     }, { timeout: timeoutMillis, interval: 10 });

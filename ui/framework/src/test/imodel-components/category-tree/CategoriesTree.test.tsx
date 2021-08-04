@@ -14,7 +14,7 @@ import { mockPresentationManager } from "@bentley/presentation-components/lib/te
 import { Presentation, PresentationManager, RulesetVariablesManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
-import { fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { CategoryTree, toggleAllCategories } from "../../../ui-framework/imodel-components/category-tree/CategoriesTree";
 import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
 import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
@@ -120,7 +120,7 @@ describe("CategoryTree", () => {
           viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
         />,
       );
-      await waitForElement(() => result.getByText("test-node"));
+      await waitFor(() => result.getByText("test-node"));
       expect(result.baseElement).to.matchSnapshot();
     });
 
@@ -131,7 +131,7 @@ describe("CategoryTree", () => {
           viewManager={viewManagerMock.object} iModel={imodelMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
         />,
       );
-      await waitForElement(() => result.getByText("test-node"));
+      await waitFor(() => result.getByText("test-node"));
     });
 
     it("takes open view from viewManager", async () => {
@@ -177,7 +177,7 @@ describe("CategoryTree", () => {
           viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
         />,
       );
-      const node = await waitForElement(() => result.getByTestId("tree-node"));
+      const node = await waitFor(() => result.getByTestId("tree-node"));
       const cb = node.querySelector("input");
       expect(cb!.checked).to.be.true;
     });
@@ -194,7 +194,7 @@ describe("CategoryTree", () => {
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
           />,
         );
-        const node = await waitForElement(() => result.getByTestId("tree-node"));
+        const node = await waitFor(() => result.getByTestId("tree-node"));
         const cb = node.querySelector("input");
         fireEvent.click(cb!);
         visibilityHandler.verify(async (x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), false), moq.Times.once());
@@ -210,7 +210,7 @@ describe("CategoryTree", () => {
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
           />,
         );
-        const node = await waitForElement(() => result.getByTestId("tree-node"));
+        const node = await waitFor(() => result.getByTestId("tree-node"));
         const cb = node.querySelector("input");
         fireEvent.click(cb!);
         visibilityHandler.verify(async (x) => x.changeVisibility(moq.It.isAny(), moq.It.isAny(), true), moq.Times.once());
@@ -249,7 +249,7 @@ describe("CategoryTree", () => {
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
           />,
         );
-        const node = await waitForElement(() => getSubCategoryNode(result.getAllByTestId("tree-node")));
+        const node = await waitFor(() => getSubCategoryNode(result.getAllByTestId("tree-node")));
         const cb = node.querySelector("input");
         expect(cb!.checked).to.be.true;
       });
@@ -263,7 +263,7 @@ describe("CategoryTree", () => {
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
           />,
         );
-        const node = await waitForElement(() => getSubCategoryNode(result.getAllByTestId("tree-node")));
+        const node = await waitFor(() => getSubCategoryNode(result.getAllByTestId("tree-node")));
         const cb = node.querySelector("input");
         fireEvent.click(cb!);
         visibilityHandler.verify(async (x) => x.changeVisibility(subcategoryNode, moq.It.isAny(), false), moq.Times.once());
@@ -278,7 +278,7 @@ describe("CategoryTree", () => {
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
           />,
         );
-        const node = await waitForElement(() => getSubCategoryNode(result.getAllByTestId("tree-node")));
+        const node = await waitFor(() => getSubCategoryNode(result.getAllByTestId("tree-node")));
         const cb = node.querySelector("input");
         fireEvent.click(cb!);
         visibilityHandler.verify(async (x) => x.changeVisibility(subcategoryNode, moq.It.isAny(), true), moq.Times.once());
@@ -303,7 +303,7 @@ describe("CategoryTree", () => {
         dataProvider.getFilteredNodePaths = async () => filterPromise;
 
         const result = render(<CategoryTree viewManager={viewManagerMock.object} iModel={imodelMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} filterInfo={{ filter: "filtered-node", activeMatchIndex: 0 }} />);
-        await waitForElement(() => result.getByText("filtered-node"));
+        await waitFor(() => result.getByText("filtered-node"));
       });
 
       it("invokes onFilterApplied callback", async () => {
@@ -316,7 +316,7 @@ describe("CategoryTree", () => {
         const spy = sinon.spy();
 
         const result = render(<CategoryTree viewManager={viewManagerMock.object} iModel={imodelMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} filterInfo={{ filter: "filtered-node", activeMatchIndex: 0 }} onFilterApplied={spy} />);
-        await waitForElement(() => result.getByText("filtered-node"));
+        await waitFor(() => result.getByText("filtered-node"));
 
         expect(spy).to.be.calledOnce;
       });
@@ -332,7 +332,7 @@ describe("CategoryTree", () => {
           filterInfo={{ filter: "filtered-node1", activeMatchIndex: 0 }}
         />);
 
-        await waitForElement(() => result.getByText("categoriesTree.noCategoryFound"));
+        await waitFor(() => result.getByText("categoriesTree.noCategoryFound"));
       });
     });
 

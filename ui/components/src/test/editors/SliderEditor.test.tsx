@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
 import { BasePropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue,
@@ -244,7 +244,7 @@ describe("<SliderEditor />", () => {
     const spyOnCommit = sinon.spy();
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
     expect(renderedComponent).not.to.be.undefined;
-    const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
+    const popupButton = await waitFor(() => renderedComponent.getByTestId("components-popup-button"));
     expect(popupButton).not.to.be.null;
 
     fireEvent.keyDown(popupButton, { key: SpecialKey.Enter });

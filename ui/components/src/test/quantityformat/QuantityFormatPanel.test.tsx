@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { act, fireEvent, render, wait } from "@testing-library/react";
+import { act, fireEvent, render, waitFor } from "@testing-library/react";
 import { IModelApp, MockRender, QuantityType } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
 import { QuantityFormatPanel } from "../../ui-components/quantityformat/QuantityFormatPanel";
@@ -460,7 +460,7 @@ describe("QuantityInput", () => {
     act(() => {
       fireEvent.change(sampleInput, {target: { value: "729.32" }});
     });
-    await wait(() => {
+    await waitFor(() => {
       fireEvent.keyDown(sampleInput, { key: "Enter", code: 13 });
       // renderedComponent.debug();
       renderedComponent.getByDisplayValue("729.32");
@@ -469,7 +469,7 @@ describe("QuantityInput", () => {
     act(() => {
       fireEvent.change(sampleInput, {target: { value: "a" }});
     });
-    await wait(() => {
+    await waitFor(() => {
       fireEvent.keyDown(sampleInput, { key: "Enter", code: 13 });
       renderedComponent.getByDisplayValue("0");
     });
@@ -506,7 +506,7 @@ describe("QuantityInput", () => {
     act(() => {
       fireEvent.change(primaryUnitLabel, {target: { value: "testfeet" }});
     });
-    await wait(() => {
+    await waitFor(() => {
       renderedComponent.getByText(/testfeet/);
       expect(spy).to.be.called;
       spy.resetHistory();
@@ -516,7 +516,7 @@ describe("QuantityInput", () => {
     act(() => {
       fireEvent.change(primaryUnitSelector, {target: { value: "Units.YRD:yd" }});
     });
-    await wait(() => {
+    await waitFor(() => {
       renderedComponent.getByTestId("unit-label-Units.YRD");
       expect(spy).to.be.called;
       spy.resetHistory();

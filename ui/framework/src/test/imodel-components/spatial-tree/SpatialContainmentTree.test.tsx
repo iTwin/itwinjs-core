@@ -14,7 +14,7 @@ import { mockPresentationManager } from "@bentley/presentation-components/lib/te
 import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
-import { render, waitForElement } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import { SpatialContainmentTree } from "../../../ui-framework";
 import TestUtils from "../../TestUtils";
 
@@ -80,7 +80,7 @@ describe("SpatialContainmentTree", () => {
       const result = render(
         <SpatialContainmentTree iModel={imodelMock.object} dataProvider={dataProvider} />,
       );
-      await waitForElement(() => result.getByText("test-node"), { container: result.container });
+      await waitFor(() => result.getByText("test-node"), { container: result.container });
       expect(result.baseElement).to.matchSnapshot();
     });
 
