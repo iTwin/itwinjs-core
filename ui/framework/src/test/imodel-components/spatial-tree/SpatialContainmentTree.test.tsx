@@ -6,14 +6,12 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
-import { BeEvent } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, KeySet, StandardNodeTypes } from "@bentley/presentation-common";
-import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
 import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
 import { render, waitForElement } from "@testing-library/react";
 import { SpatialContainmentTree } from "../../../ui-framework";
 import TestUtils from "../../TestUtils";
@@ -34,11 +32,14 @@ describe("SpatialContainmentTree", () => {
     sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
   });
 
+  afterEach(() => {
+    sinon.restore();
+  });
+
   describe("<SpatialContainmentTree />", () => {
     const imodelMock = moq.Mock.ofType<IModelConnection>();
     const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
     let presentationManagerMock: moq.IMock<PresentationManager>;
-    let dataProvider: IPresentationTreeDataProvider;
 
     const createKey = (id: string): ECInstancesNodeKey => {
       return {
@@ -49,17 +50,16 @@ describe("SpatialContainmentTree", () => {
     };
 
     beforeEach(() => {
-      dataProvider = {
-        imodel: imodelMock.object,
-        rulesetId: "",
-        onTreeNodeChanged: new BeEvent<TreeDataChangesListener>(),
-        dispose: () => { },
-        getFilteredNodePaths: async () => [],
-        getNodeKey: (node: TreeNodeItem) => (node as any).__key,
-        getNodesCount: async () => 1,
-        getNodes: async () => [{ __key: createKey("1"), label: PropertyRecord.fromString("test-node"), id: "1" }],
-        loadHierarchy: async () => { },
-      };
+      sinon.stub(PresentationTreeDataProvider.prototype, "imodel").get(() =>imodelMock.object);
+      sinon.stub(PresentationTreeDataProvider.prototype, "rulesetId").get(() => "");
+      sinon.stub(PresentationTreeDataProvider.prototype, "dispose");
+      sinon.stub(PresentationTreeDataProvider.prototype, "getFilteredNodePaths").resolves([]);
+      sinon.stub(PresentationTreeDataProvider.prototype, "getNodeKey").callsFake((node: any) => node.__key);
+      sinon.stub(PresentationTreeDataProvider.prototype, "getNodesCount").resolves(1);
+      sinon.stub(PresentationTreeDataProvider.prototype, "getNodes").callsFake(
+        async () => [{ __key: createKey("1"), label: PropertyRecord.fromString("test-node"), id: "1" }],
+      );
+      sinon.stub(PresentationTreeDataProvider.prototype, "loadHierarchy");
 
       const selectionChangeEvent = new SelectionChangeEvent();
       selectionManagerMock.setup((x) => x.selectionChange).returns(() => selectionChangeEvent);
@@ -77,13 +77,9 @@ describe("SpatialContainmentTree", () => {
     });
 
     it("renders", async () => {
-      const result = render(
-        <SpatialContainmentTree iModel={imodelMock.object} dataProvider={dataProvider} />,
-      );
+      const result = render(<SpatialContainmentTree iModel={imodelMock.object} />);
       await waitForElement(() => result.getByText("test-node"), { container: result.container });
       expect(result.baseElement).to.matchSnapshot();
     });
-
   });
-
 });
