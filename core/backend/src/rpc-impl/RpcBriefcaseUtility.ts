@@ -46,26 +46,28 @@ export class RpcBriefcaseUtility {
       myBriefcaseIds = await IModelHost.hubAccess.getMyBriefcaseIds({ requestContext, iModelId });
     }
 
-    const resolvers = args.fileNameResolvers ?? [(arg) => BriefcaseManager.getFileName(arg), (arg) => BriefcaseManager.getCompatibilityFileName(arg)]; // eslint-disable-line deprecation/deprecation
+    const resolvers = args.fileNameResolvers;
     // see if we can open any of the briefcaseIds we already acquired from iModelHub
-    for (const resolver of resolvers) {
-      for (const briefcaseId of myBriefcaseIds) {
-        const fileName = resolver({ briefcaseId, iModelId });
-        if (IModelJsFs.existsSync(fileName)) {
-          const briefcaseDb = BriefcaseDb.findByFilename(fileName);
-          if (briefcaseDb !== undefined)
-            return briefcaseDb as BriefcaseDb;
-          try {
-            if (args.forceDownload)
-              throw new Error(); // causes delete below
-            const db = await BriefcaseDb.open(requestContext, { fileName });
-            if (db.changeset.id !== tokenProps.changeSetId)
-              await BriefcaseManager.processChangesets(requestContext, db, { id: tokenProps.changeSetId! });
-            return db;
-          } catch (error) {
-            if (!(error instanceof IModelError && error.errorNumber === IModelStatus.AlreadyOpen))
-              // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
-              await BriefcaseManager.deleteBriefcaseFiles(fileName, args.requestContext);
+    if (resolvers) {
+      for (const resolver of resolvers) {
+        for (const briefcaseId of myBriefcaseIds) {
+          const fileName = resolver({ briefcaseId, iModelId });
+          if (IModelJsFs.existsSync(fileName)) {
+            const briefcaseDb = BriefcaseDb.findByFilename(fileName);
+            if (briefcaseDb !== undefined)
+              return briefcaseDb as BriefcaseDb;
+            try {
+              if (args.forceDownload)
+                throw new Error(); // causes delete below
+              const db = await BriefcaseDb.open(requestContext, { fileName });
+              if (db.changeset.id !== tokenProps.changeSetId)
+                await BriefcaseManager.processChangesets(requestContext, db, { id: tokenProps.changeSetId! });
+              return db;
+            } catch (error) {
+              if (!(error instanceof IModelError && error.errorNumber === IModelStatus.AlreadyOpen))
+                // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
+                await BriefcaseManager.deleteBriefcaseFiles(fileName, args.requestContext);
+            }
           }
         }
       }
@@ -157,7 +159,7 @@ export class RpcBriefcaseUtility {
       const request = {
         checkpoint,
         localFile: V1CheckpointManager.getFileName(checkpoint),
-        aliasFiles: [V1CheckpointManager.getCompatibilityFileName(checkpoint)],// eslint-disable-line deprecation/deprecation
+        aliasFiles: [],
       };
       db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb(request));
       requestContext.enter();
