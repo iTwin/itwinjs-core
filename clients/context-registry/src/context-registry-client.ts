@@ -3,6 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 export * from "./ContextRegistryClient";
+export * from "./ContextAccessProps";
 /** @docs-package-description
  * The context-registry-client package provides a means of interfacing with services relating to projects and other contexts which surround iModels.
  */
