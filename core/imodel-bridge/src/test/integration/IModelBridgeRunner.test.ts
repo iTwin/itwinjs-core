@@ -8,6 +8,7 @@ import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-clie
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { expect } from "chai";
 import * as path from "path";
+import * as fs from "fs";
 import { BridgeJobDefArgs, BridgeRunner } from "../../BridgeRunner";
 import { ServerArgs } from "../../IModelHubUtils";
 import { BridgeTestUtils, TestIModelInfo } from "../BridgeTestUtils";
@@ -92,6 +93,14 @@ describe("IModelBridgeFwk (#integration)", () => {
 
     // verify that a changed source changes the imodel
     IModelJsFs.copySync(path.join(KnownTestLocations.assetsDir, "TestBridge_v2.json"), targetPath, { overwrite: true });
+
+    try { // must cause the updated source file to have a different modified time than the original, or the test bridge will this it's unchanged and ignore it.
+      const time = new Date();
+      fs.utimesSync(targetPath, time, time);
+    } catch (err) {
+      fs.closeSync(fs.openSync(targetPath, "w"));
+    }
+
     await runBridge(bridgeJobDef, serverArgs, true);
 
     IModelJsFs.purgeDirSync(KnownTestLocations.outputDir);

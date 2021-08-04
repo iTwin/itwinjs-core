@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "3.0.0-dev.0",
+  "version": "3.0.0-dev.15",
   "description": "iModel.js UI core components",
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
@@ -35,10 +35,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.0",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.0",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.0",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.0",
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.15",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.15",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.15",
+    "@bentley/ui-abstract": "workspace:^3.0.0-dev.15",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
   },
@@ -104,6 +104,8 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
+    "@itwin/itwinui-css": "^0.24.0",
+    "@itwin/itwinui-react": "^1.12.0",
     "classnames": "^2.3.1",
     "dompurify": "^2.0.12",
     "lodash": "^4.17.10",

@@ -948,7 +948,7 @@ export class ViewClipByElementTool extends ViewClipTool {
 
   protected async doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange: boolean = false): Promise<boolean> {
     try {
-      const placements = await viewport.iModel.elements.getPlacements(ids);
+      const placements = await viewport.iModel.elements.getPlacements(ids, { type: viewport.view.is3d() ? "3d" : "2d" });
       if (0 === placements.length)
         return false;
 

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Incorporating iTwinUI-CSS and iTwinUI-React into iModel.js",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "51122937+DanEastBentley@users.noreply.github.com"
+}

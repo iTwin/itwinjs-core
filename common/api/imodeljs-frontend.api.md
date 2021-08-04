@@ -150,7 +150,6 @@ import { IModelTileTreeId } from '@bentley/imodeljs-common';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { IModelVersionProps } from '@bentley/imodeljs-common';
-import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
@@ -297,8 +296,6 @@ import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
 import { UsageLoggingClient } from '@bentley/usage-logging-client';
 import { UsageType } from '@bentley/usage-logging-client';
-import { User } from 'oidc-client';
-import { UserManagerSettings } from 'oidc-client';
 import { Vector2d } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -4620,7 +4617,7 @@ export namespace IModelConnection {
     export class Elements {
         // @internal
         constructor(_iModel: IModelConnection);
-        getPlacements(elementIds: Iterable<Id64String>): Promise<Array<Placement & {
+        getPlacements(elementIds: Iterable<Id64String>, options?: Readonly<GetPlacementsOptions>): Promise<Array<Placement & {
             elementId: Id64String;
         }>>;
         getProps(arg: Id64Arg): Promise<ElementProps[]>;
@@ -4628,6 +4625,9 @@ export namespace IModelConnection {
         queryIds(params: EntityQueryParams): Promise<Id64Set>;
         queryProps(params: EntityQueryParams): Promise<ElementProps[]>;
         get rootSubjectId(): Id64String;
+    }
+    export interface GetPlacementsOptions {
+        type?: "3d" | "2d";
     }
     export class Models implements Iterable<ModelState> {
         [Symbol.iterator](): Iterator<ModelState>;
@@ -5631,6 +5631,27 @@ export class MapTile extends RealityTile {
     tileFromQuadId(quadId: QuadId): MapTile | undefined;
 }
 
+// @internal (undocumented)
+export class MapTiledGraphicsProvider implements TiledGraphicsProvider {
+    constructor(_vp: Viewport);
+    // (undocumented)
+    readonly backgroundDrapeMap: MapTileTreeReference;
+    // (undocumented)
+    readonly backgroundMap: MapTileTreeReference;
+    // (undocumented)
+    detachFromDisplayStyle(): void;
+    // (undocumented)
+    forEachTileTreeRef(viewport: Viewport, func: (ref: TileTreeReference) => void): void;
+    // (undocumented)
+    getMapLayerImageryProvider(index: number, isOverlay: boolean): MapLayerImageryProvider | undefined;
+    // (undocumented)
+    mapLayerFromIds(mapTreeId: Id64String, layerTreeId: Id64String): MapLayerSettings | undefined;
+    // (undocumented)
+    readonly overlayMap: MapTileTreeReference;
+    // (undocumented)
+    setView(newView: ViewState): void;
+    }
+
 // @internal
 export class MapTileLoader extends RealityTileLoader {
     constructor(_iModel: IModelConnection, _modelId: Id64String, _groundBias: number, _terrainProvider: TerrainMeshProvider);
@@ -5690,7 +5711,7 @@ export abstract class MapTileProjection {
 
 // @internal (undocumented)
 export class MapTileTree extends RealityTileTree {
-    constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number, gcsConverterAvailable: boolean, sourceTilingScheme: MapTilingScheme, id: MapTreeId);
+    constructor(params: RealityTileTreeParams, ecefToDb: Transform, bimElevationBias: number, geodeticOffset: number, sourceTilingScheme: MapTilingScheme, id: MapTreeId);
     // (undocumented)
     addImageryLayer(tree: ImageryMapTileTree, settings: MapLayerSettings): void;
     // (undocumented)
@@ -5699,10 +5720,6 @@ export class MapTileTree extends RealityTileTree {
     baseTransparent: boolean;
     // (undocumented)
     bimElevationBias: number;
-    // (undocumented)
-    cartesianRange: Range3d;
-    // (undocumented)
-    cartesianTransitionDistance: number;
     // (undocumented)
     clearImageryLayers(): void;
     // (undocumented)
@@ -5724,7 +5741,7 @@ export class MapTileTree extends RealityTileTree {
     // (undocumented)
     getBaseRealityDepth(sceneContext: SceneContext): number;
     // (undocumented)
-    getCachedReprojectedPoints(gridPoints: Point3d[]): Point3d[] | undefined;
+    getCachedReprojectedPoints(gridPoints: Point3d[]): (Point3d | undefined)[] | undefined;
     // (undocumented)
     getChildHeightRange(quadId: QuadId, rectangle: MapCartoRectangle, parent: MapTile): Range1d | undefined;
     // (undocumented)
@@ -6794,25 +6811,6 @@ export interface OffScreenViewportOptions {
     viewRect: ViewRect;
 }
 
-// @beta @deprecated
-export class OidcBrowserClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
-    constructor(_configuration: OidcFrontendClientConfiguration);
-    // (undocumented)
-    protected _accessToken?: AccessToken;
-    dispose(): void;
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    // @internal
-    protected getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: FrontendRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext?: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
-    protected signInSilent(requestContext: ClientRequestContext): Promise<User>;
-    signOut(requestContext?: ClientRequestContext): Promise<void>;
-    }
-
 // @public
 export type OnFlashedIdChangedEventArgs = {
     readonly current: Id64String;
@@ -7514,7 +7512,7 @@ export class RealityModelTileTree extends RealityTileTree {
 // @internal (undocumented)
 export namespace RealityModelTileTree {
     // (undocumented)
-    export function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb?: Transform): Promise<TileTree | undefined>;
+    export function createRealityModelTileTree(url: string, iModel: IModelConnection, modelId: Id64String, tilesetToDb: Transform | undefined): Promise<TileTree | undefined>;
     // (undocumented)
     export abstract class Reference extends TileTreeReference {
         constructor(props: RealityModelTileTree.ReferenceBaseProps);
@@ -7572,6 +7570,8 @@ export namespace RealityModelTileTree {
         source: RealityModelSource;
         // (undocumented)
         tilesetToDbTransform?: TransformProps;
+        // (undocumented)
+        tilesetToEcefTransform?: TransformProps;
     }
     // (undocumented)
     export interface ReferenceProps extends ReferenceBaseProps {
@@ -7607,11 +7607,15 @@ export class RealityTile extends Tile {
     // (undocumented)
     protected get _anyChildNotFound(): boolean;
     // (undocumented)
+    readonly boundedByRegion: boolean | undefined;
+    // (undocumented)
     get channel(): TileRequestChannel;
     // (undocumented)
     computeLoadPriority(viewports: Iterable<Viewport>): number;
     // (undocumented)
     computeVisibilityFactor(args: TileDrawArgs): number;
+    // (undocumented)
+    disposeContents(): void;
     // (undocumented)
     forceSelectRealityTile(): boolean;
     // (undocumented)
@@ -7631,7 +7635,11 @@ export class RealityTile extends Tile {
     // (undocumented)
     get isPointCloud(): boolean;
     // (undocumented)
+    get isStepChild(): boolean;
+    // (undocumented)
     get loadableTile(): RealityTile;
+    // (undocumented)
+    protected loadAdditiveRefinementChildren(resolve: (children: Tile[]) => void): void;
     // (undocumented)
     protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void;
     // (undocumented)
@@ -7647,6 +7655,8 @@ export class RealityTile extends Tile {
     // (undocumented)
     preloadTilesInFrustum(args: TileDrawArgs, context: TraversalSelectionContext, preloadSizeModifier: number): void;
     // (undocumented)
+    produceGraphics(): RenderGraphic | undefined;
+    // (undocumented)
     purgeContents(olderThan: BeTimePoint): void;
     // (undocumented)
     readonly rangeCorners?: Point3d[];
@@ -7659,6 +7669,8 @@ export class RealityTile extends Tile {
     // (undocumented)
     get realityRoot(): RealityTileTree;
     // (undocumented)
+    protected _reprojectionTransform?: Transform;
+    // (undocumented)
     requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
     // (undocumented)
     protected selectRealityChildren(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
@@ -7667,8 +7679,12 @@ export class RealityTile extends Tile {
     // (undocumented)
     selectSecondaryTiles(_args: TileDrawArgs, _context: TraversalSelectionContext): void;
     // (undocumented)
+    setReprojection(rootReprojection: Transform): void;
+    // (undocumented)
     readonly transformToRoot?: Transform;
-}
+    // (undocumented)
+    get unprojectedGraphic(): RenderGraphic | undefined;
+    }
 
 // @internal (undocumented)
 export class RealityTileDrawArgs extends TileDrawArgs {
@@ -7731,6 +7747,8 @@ export interface RealityTileParams extends TileParams {
     // (undocumented)
     readonly additiveRefinement?: boolean;
     // (undocumented)
+    readonly boundedByRegion?: boolean;
+    // (undocumented)
     readonly noContentButTerminateOnSelection?: boolean;
     // (undocumented)
     readonly rangeCorners?: Point3d[];
@@ -7742,9 +7760,19 @@ export interface RealityTileParams extends TileParams {
 export class RealityTileTree extends TileTree {
     constructor(params: RealityTileTreeParams);
     // (undocumented)
+    cartesianRange: Range3d;
+    // (undocumented)
+    cartesianTransitionDistance: number;
+    // (undocumented)
     createTile(props: TileParams): RealityTile;
     // (undocumented)
+    doReprojectChildren(tile: Tile): boolean;
+    // (undocumented)
     draw(args: TileDrawArgs): void;
+    // (undocumented)
+    protected _ecefToDb?: Transform;
+    // (undocumented)
+    protected _gcsConverter: GeoConverter | undefined;
     // (undocumented)
     getBaseRealityDepth(_sceneContext: SceneContext): number;
     // (undocumented)
@@ -7770,9 +7798,13 @@ export class RealityTileTree extends TileTree {
     // (undocumented)
     prune(): void;
     // (undocumented)
+    reprojectAndResolveChildren(parent: Tile, children: Tile[], resolve: (children: Tile[] | undefined) => void): void;
+    // (undocumented)
     get rootTile(): RealityTile;
     // (undocumented)
     protected _rootTile: RealityTile;
+    // (undocumented)
+    protected _rootToEcef?: Transform;
     // (undocumented)
     selectRealityTiles(args: TileDrawArgs, displayedDescendants: RealityTile[][], preloadDebugBuilder?: GraphicBuilder): RealityTile[];
     // (undocumented)
@@ -7788,9 +7820,13 @@ export class RealityTileTree extends TileTree {
 // @internal (undocumented)
 export interface RealityTileTreeParams extends TileTreeParams {
     // (undocumented)
+    readonly gcsConverterAvailable: boolean;
+    // (undocumented)
     readonly loader: RealityTileLoader;
     // (undocumented)
     readonly rootTile: RealityTileParams;
+    // (undocumented)
+    readonly rootToEcef?: Transform;
     // (undocumented)
     readonly yAxisUp?: boolean;
 }
@@ -9924,6 +9960,8 @@ export abstract class Tile {
     get isDisplayable(): boolean;
     // @internal (undocumented)
     get isEmpty(): boolean;
+    // (undocumented)
+    protected isFrustumCulled(box: Frustum, args: TileDrawArgs, testClipIntersection: boolean, sphere?: BoundingSphere): boolean;
     get isLeaf(): boolean;
     // @internal (undocumented)
     protected _isLeaf: boolean;
@@ -11132,8 +11170,6 @@ export class UpsampledMapTile extends MapTile {
     // (undocumented)
     get isEmpty(): boolean;
     // (undocumented)
-    get isLoadable(): boolean;
-    // (undocumented)
     get isLoading(): boolean;
     // (undocumented)
     get isNotFound(): boolean;
@@ -11145,6 +11181,8 @@ export class UpsampledMapTile extends MapTile {
     get isUpsampled(): boolean;
     // (undocumented)
     get loadableTile(): RealityTile;
+    // (undocumented)
+    markUsed(args: TileDrawArgs): void;
 }
 
 // @public

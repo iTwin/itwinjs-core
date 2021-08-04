@@ -11,9 +11,7 @@ import { Range1d } from "@bentley/geometry-core";
 import { RequestOptions } from "@bentley/itwin-client";
 import { IModelConnection } from "../../IModelConnection";
 import { TerrainMeshPrimitive } from "../../render/primitives/mesh/TerrainMeshPrimitive";
-import { MapCartoRectangle, MapTile, Tile } from "../internal";
-import { MapTilingScheme } from "./MapTilingScheme";
-import { QuadId } from "./QuadId";
+import { MapCartoRectangle, MapTile, MapTilingScheme, QuadId, Tile } from "../internal";
 
 /** Abstract base class for terrain mesh providers responsible for producing geometry background map tiles.
  * @see [[EllipsoidTerrainMeshProvider]]

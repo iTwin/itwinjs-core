@@ -53,14 +53,12 @@ describe("MultiValueFilter", () => {
   reactDataGridColumns[1].filterableColumn = filterableColumn1;
   reactDataGridColumns[1].filterableColumn.columnFilterDescriptor.distinctFilter.addDistinctValue("multi-value 1");
 
+  const filterValueCount = 15;
   const getValidFilterValues = (_columnKey: string): any[] => {
-    const values: TableDistinctValue[] = [
-      { value: "multi-value 1", label: "Multi-Value 1" },
-      { value: "multi-value 2", label: "Multi-Value 2" },
-      { value: "multi-value 3", label: "Multi-Value 3" },
-      { value: "multi-value 4", label: "Multi-Value 4" },
-      { value: "multi-value 5", label: "Multi-Value 5" },
-    ];
+    const values: TableDistinctValue[] = [];
+    for (let index = 0; index < filterValueCount; index++) {
+      values.push({ value: `multi-value ${index + 1}`, label: `Multi-Value ${index + 1}` });
+    }
     return values;
   };
 
@@ -93,7 +91,7 @@ describe("MultiValueFilter", () => {
     expect(button).to.exist;
     fireEvent.click(button!);
 
-    expect(component.queryAllByTestId("core-chk-listboxitem-checkbox").length).to.eq(5);
+    expect(component.queryAllByTestId("core-chk-listboxitem-checkbox").length).to.eq(filterValueCount);
   });
 
   it("entering Search text limits values shown", async () => {
@@ -108,7 +106,7 @@ describe("MultiValueFilter", () => {
     const searchBox = component.queryByTestId("core-searchbox-input") as HTMLInputElement;
     expect(searchBox).to.exist;
 
-    let searchText = "1";
+    let searchText = "6";
     fireEvent.change(searchBox, { target: { value: searchText } });
     expect(searchBox.value).to.be.equal(searchText);
     await fakeTimers.tickAsync(500);
@@ -118,7 +116,7 @@ describe("MultiValueFilter", () => {
     fireEvent.change(searchBox, { target: { value: searchText } });
     expect(searchBox.value).to.be.equal(searchText);
     await fakeTimers.tickAsync(500);
-    expect(component.queryAllByTestId("core-chk-listboxitem-checkbox").length).to.eq(5);
+    expect(component.queryAllByTestId("core-chk-listboxitem-checkbox").length).to.eq(filterValueCount);
   });
 
   it("entering Search text limits values shown for caseSensitive", async () => {
@@ -131,7 +129,7 @@ describe("MultiValueFilter", () => {
     fireEvent.click(button!);
 
     const checkboxes = component.queryAllByTestId("core-chk-listboxitem-checkbox") as HTMLInputElement[];
-    expect(checkboxes.length).to.eq(5);
+    expect(checkboxes.length).to.eq(filterValueCount);
     testChecked(checkboxes, 1);   // Because we populated the distinctFilter with one entry for reactDataGridColumns[1]
 
     const searchBox = component.queryByTestId("core-searchbox-input") as HTMLInputElement;
@@ -147,7 +145,7 @@ describe("MultiValueFilter", () => {
     fireEvent.change(searchBox, { target: { value: searchText } });
     expect(searchBox.value).to.be.equal(searchText);
     await fakeTimers.tickAsync(500);
-    expect(component.queryAllByTestId("core-chk-listboxitem-checkbox").length).to.eq(5);
+    expect(component.queryAllByTestId("core-chk-listboxitem-checkbox").length).to.eq(filterValueCount);
   });
 
   it("checking a value then pressing Filter will filter results", async () => {
@@ -160,7 +158,7 @@ describe("MultiValueFilter", () => {
     fireEvent.click(button!);
 
     const checkboxes = component.queryAllByTestId("core-chk-listboxitem-checkbox");
-    expect(checkboxes.length).to.eq(5);
+    expect(checkboxes.length).to.eq(filterValueCount);
 
     fireEvent.click(checkboxes[0]);
     const filterButton = component.getByTestId("components-multi-value-button-filter");
@@ -179,10 +177,36 @@ describe("MultiValueFilter", () => {
     fireEvent.click(button!);
 
     const checkboxes = component.queryAllByTestId("core-chk-listboxitem-checkbox");
-    expect(checkboxes.length).to.eq(5);
+    expect(checkboxes.length).to.eq(filterValueCount);
 
-    fireEvent.click(checkboxes[0]);
-    fireEvent.click(checkboxes[1]);
+    // Test with less than 10
+    const testCount = 4;
+    for (let index = 0; index < testCount; index++) {
+      fireEvent.click(checkboxes[index]);
+    }
+    const filterButton = component.getByTestId("components-multi-value-button-filter");
+    fireEvent.click(filterButton);
+
+    spy.calledOnce.should.true;
+  });
+
+  it("checking multiple values then pressing Filter will filter results", async () => {
+    const spy = sinon.spy();
+    const component = render(<MultiValueFilter onChange={spy} column={reactDataGridColumns[0]} getValidFilterValues={getValidFilterValues} />);
+    expect(component.getByTestId("components-multi-value-filter")).to.exist;
+
+    const button = component.container.querySelector(".components-popup-button");
+    expect(button).to.exist;
+    fireEvent.click(button!);
+
+    const checkboxes = component.queryAllByTestId("core-chk-listboxitem-checkbox");
+    expect(checkboxes.length).to.eq(filterValueCount);
+
+    // Test with more than 10
+    const testCount = 12;
+    for (let index = 0; index < testCount; index++) {
+      fireEvent.click(checkboxes[index]);
+    }
     const filterButton = component.getByTestId("components-multi-value-button-filter");
     fireEvent.click(filterButton);
 
@@ -199,7 +223,7 @@ describe("MultiValueFilter", () => {
     fireEvent.click(button!);
 
     const checkboxes = component.queryAllByTestId("core-chk-listboxitem-checkbox") as HTMLInputElement[];
-    expect(checkboxes.length).to.eq(5);
+    expect(checkboxes.length).to.eq(filterValueCount);
     testChecked(checkboxes, 0);
 
     fireEvent.click(checkboxes[0]);
@@ -243,23 +267,23 @@ describe("MultiValueFilter", () => {
     fireEvent.click(button!);
 
     const checkboxes = component.queryAllByTestId("core-chk-listboxitem-checkbox") as HTMLInputElement[];
-    expect(checkboxes.length).to.eq(5);
+    expect(checkboxes.length).to.eq(filterValueCount);
     testChecked(checkboxes, 0);
 
     const selectAllButton = component.getByTestId("components-multi-value-filter-selectAll");
     fireEvent.click(selectAllButton);
-    testChecked(checkboxes, 5);
+    testChecked(checkboxes, filterValueCount);
 
     fireEvent.click(checkboxes[0]);
-    testChecked(checkboxes, 4);
+    testChecked(checkboxes, filterValueCount - 1);
 
     fireEvent.click(selectAllButton);
-    testChecked(checkboxes, 5);
+    testChecked(checkboxes, filterValueCount);
 
     fireEvent.click(checkboxes[0]);
-    testChecked(checkboxes, 4);
+    testChecked(checkboxes, filterValueCount - 1);
     fireEvent.click(checkboxes[0]);
-    testChecked(checkboxes, 5);
+    testChecked(checkboxes, filterValueCount);
 
     fireEvent.click(selectAllButton);
     testChecked(checkboxes, 0);

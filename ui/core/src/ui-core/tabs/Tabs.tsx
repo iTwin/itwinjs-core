@@ -27,11 +27,11 @@ export interface TabLabel {
   disabled?: boolean;
 }
 
-function isTabLabelWithIcon(item: string|TabLabel): item is TabLabel {
-  return (typeof item !== "string") && !!(item ).icon;
+function isTabLabelWithIcon(item: string | TabLabel): item is TabLabel {
+  return (typeof item !== "string") && !!(item).icon;
 }
 
-function isTabLabel(item: string|TabLabel): item is TabLabel {
+function isTabLabel(item: string | TabLabel): item is TabLabel {
   return (typeof item !== "string");
 }
 
@@ -39,19 +39,15 @@ function isTabLabel(item: string|TabLabel): item is TabLabel {
  * @public
  */
 export interface TabsProps extends React.AllHTMLAttributes<HTMLUListElement>, CommonProps {
-  /** Text shown for each tab @beta */
-  labels: Array <string|TabLabel>;
+  /** Text shown for each tab
+   * @beta */
+  labels: Array<string | TabLabel>;
   /** Handler for activating a tab */
   onActivateTab?: (index: number) => any;
   /** Index of the initial active tab */
   activeIndex?: number;
   /** Indicates whether the bar on the active tab is green instead of the default blue */
   green?: boolean;
-
-  /** Handler for clicking on a label
-   * @deprecated Use `onActivateTab` instead
-   */
-  onClickLabel?: (index: number) => any;
 }
 
 /** State for [[Tabs]] component
@@ -155,7 +151,6 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
   }
 
   private _activateTab = (index: number) => {
-    this.props.onClickLabel && this.props.onClickLabel(index);  // eslint-disable-line deprecation/deprecation
     this.props.onActivateTab && this.props.onActivateTab(index);
     this.setState({ activeIndex: index });
   };
@@ -168,7 +163,7 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
       this.props.className,
     );
 
-    const anyIconsPresent = (this.props.labels.reduce ((a, b) => a + (isTabLabelWithIcon(b) ? 1 : 0), 0)) > 0;
+    const anyIconsPresent = (this.props.labels.reduce((a, b) => a + (isTabLabelWithIcon(b) ? 1 : 0), 0)) > 0;
 
     return (
       <ul className={ulClassNames} style={this.props.style}
@@ -177,13 +172,13 @@ export class Tabs extends React.PureComponent<MainTabsProps, TabsState> {
       >
         {this.props.labels.map((label, index) => {
           let disabled;
-          let tooltipElement: JSX.Element|undefined;
-          let title: string|undefined;
-          let subLabel: string|undefined;
+          let tooltipElement: JSX.Element | undefined;
+          let title: string | undefined;
+          let subLabel: string | undefined;
           let tabId = "";
           let icon;
           if (isTabLabel(label)) {
-            icon = IconHelper.getIconReactNode (label.icon);
+            icon = IconHelper.getIconReactNode(label.icon);
             subLabel = label.subLabel;
             disabled = label.disabled;
             tabId = label.tabId;

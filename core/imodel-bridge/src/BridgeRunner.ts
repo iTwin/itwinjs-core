@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import * as os from "os";
 import * as path from "path";
 import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 /** @packageDocumentation
@@ -11,8 +10,8 @@ import { assert, BentleyStatus, Guid, GuidString, Id64String, IModelStatus, Logg
  */
 import { ChangesType } from "@bentley/imodelhub-client";
 import {
-  BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs, IModelJsNative,
-  LockScope, SnapshotDb, Subject, SubjectOwnsSubjects, UsageLoggingUtilities,
+  BackendRequestContext, BriefcaseDb, BriefcaseManager, ComputeProjectExtentsOptions, ConcurrencyControl, IModelDb, IModelJsFs,
+  LockScope, SnapshotDb, Subject, SubjectOwnsSubjects,
 } from "@bentley/imodeljs-backend";
 import { IModel, IModelError, LocalBriefcaseProps, OpenBriefcaseProps, SubjectProps } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -470,20 +469,23 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new IModelError(IModelStatus.BadRequest, "Failed to instantiate AuthorizedClientRequestContext", Logger.logError, loggerCategory);
     }
     assert(this._serverArgs.contextId !== undefined);
-    UsageLoggingUtilities.postUserUsage(this._requestContext, this._serverArgs.contextId, IModelJsNative.AuthType.OIDC, os.hostname(), IModelJsNative.UsageType.Trial)
-      .catch((err) => {
-        Logger.logError(loggerCategory, `Could not log user usage for bridge`, () => ({ errorStatus: err.status, errorMessage: err.message }));
-      });
+  }
+
+  private tryFindExistingBriefcase(): LocalBriefcaseProps | undefined {
+    if (this._bridgeArgs.argsJson === undefined || this._bridgeArgs.argsJson.briefcaseId === undefined || this._serverArgs.iModelId === undefined)
+      return undefined;
+    const briefcases = BriefcaseManager.getCachedBriefcases(this._serverArgs.iModelId);
+    for (const briefcase of briefcases) {
+      assert(briefcase.iModelId === this._serverArgs.iModelId);
+      if (briefcase.briefcaseId === this._bridgeArgs.argsJson.briefcaseId) {
+        return briefcase;
+      }
+    }
+    return undefined;
   }
 
   /** This will download the briefcase, open it with the option to update the Db profile, close it, re-open with the option to upgrade core domain schemas */
   public async acquire(): Promise<void> {
-    // ********
-    // ********
-    // ******** TODO: Where do we check if the briefcase is already on the local disk??
-    // ********
-    // ********
-
     // Can't actually get here with a null _requestContext, but this guard removes the need to instead use this._requestContext!
     if (this._requestContext === undefined)
       throw new Error("Must initialize AuthorizedClientRequestContext before using");
@@ -493,7 +495,11 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
       throw new Error("Must initialize IModelId before using");
     let props: LocalBriefcaseProps;
     if (this._bridgeArgs.argsJson && this._bridgeArgs.argsJson.briefcaseId) {
-      props = await BriefcaseManager.downloadBriefcase(this._requestContext, { briefcaseId: this._bridgeArgs.argsJson.briefcaseId, contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId });
+      const local = this.tryFindExistingBriefcase();
+      if (local !== undefined)
+        props = local;
+      else
+        props = await BriefcaseManager.downloadBriefcase(this._requestContext, { briefcaseId: this._bridgeArgs.argsJson.briefcaseId, contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId });
     } else {
       props = await BriefcaseManager.downloadBriefcase(this._requestContext, { contextId: this._serverArgs.contextId, iModelId: this._serverArgs.iModelId });
       if (this._bridgeArgs.argsJson) {

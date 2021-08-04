@@ -280,6 +280,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getTextureImage(tokenProps: IModelRpcProps, textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const db = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
-    return db.getTextureImage(textureLoadProps);
+    return db.getTextureImage(requestContext, textureLoadProps);
   }
 }

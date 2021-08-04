@@ -35,13 +35,6 @@
   },
   "projects": [
     {
-      "packageName": "@bentley/backend-application-insights-client",
-      "projectFolder": "clients/backend-application-insights",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/build-tools",
       "projectFolder": "tools/build",
       "reviewCategory": "tools",
@@ -77,13 +70,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/frontend-application-insights-client",
-      "projectFolder": "clients/frontend-application-insights",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/imodelhub-client",
       "projectFolder": "clients/imodelhub",
       "reviewCategory": "common",
@@ -100,20 +86,6 @@
     {
       "packageName": "@bentley/product-settings-client",
       "projectFolder": "clients/product-settings",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/projectshare-client",
-      "projectFolder": "clients/projectshare",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/rbac-client",
-      "projectFolder": "clients/rbac",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
@@ -142,13 +114,6 @@
     {
       "packageName": "@bentley/extension-cli",
       "projectFolder": "tools/extension-cli",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/config-loader",
-      "projectFolder": "tools/config-loader",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

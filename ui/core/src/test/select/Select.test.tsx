@@ -8,6 +8,8 @@ import * as React from "react";
 import { render } from "@testing-library/react";
 import { Select } from "../../ui-core";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("<Select />", () => {
   it("should render", () => {
     mount(<Select options={[]} />);

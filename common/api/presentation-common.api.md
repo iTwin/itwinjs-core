@@ -142,7 +142,6 @@ export interface CheckBoxRule extends RuleBase, ConditionContainer {
 
 // @public
 export interface ChildNodeRule extends NavigationRuleBase, ConditionContainer {
-    condition?: string;
     ruleType: RuleTypes.ChildNodes;
 }
 
@@ -363,6 +362,9 @@ export enum ContentSpecificationTypes {
 
 // @alpha (undocumented)
 export type ContentUpdateInfo = typeof UPDATE_FULL;
+
+// @internal
+export function createFieldHierarchies(fields: Field[], ignoreCategories?: Boolean): FieldHierarchy[];
 
 // @public
 export type CustomizationRule = InstanceLabelOverride | CheckBoxRule | GroupingRule | ImageIdOverride | LabelOverride | // eslint-disable-line deprecation/deprecation
@@ -1592,6 +1594,7 @@ export type NavigationRule = RootNodeRule | ChildNodeRule;
 
 // @public
 export interface NavigationRuleBase extends RuleBase {
+    condition?: string;
     customizationRules?: CustomizationRule[];
     specifications?: ChildNodeSpecification[];
     stopFurtherProcessing?: boolean;
