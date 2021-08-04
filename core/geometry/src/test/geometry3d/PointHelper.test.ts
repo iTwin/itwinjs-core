@@ -1103,7 +1103,7 @@ describe("PolygonAreas", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Point3dArray", "SmallConvexHullExample");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("cloneWithStartAndEndMultiplicity", () => {
+  it("cloneWithStartAndEndMultiplicity", () => {
     const ck = new Checker();
     const baseKnots = [0, 1, 2, 3, 4, 5];
     for (const target0 of [1, 2, 4]) {

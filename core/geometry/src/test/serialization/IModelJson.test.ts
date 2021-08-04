@@ -243,7 +243,7 @@ describe("CreateIModelJsonSamples", () => {
     ck.testTrue(mesh.isAlmostEqual(meshB), "confirm json round trip");
   });
   /* reread the files from several known sources */
-  it.only("ReadIModelJson", () => {
+  it("ReadIModelJson", () => {
     const ck = new Checker();
     const compareObj = new DeepCompare();
     const skipList = ["xyVectors", "readme", "README"];

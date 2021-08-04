@@ -151,7 +151,8 @@ export class NumberArray {
       result.push(q);
     return result;
   }
-  // Return a copy of the knots array, with multiplicity of first and last knots raised or lowered to expectedMultiplicity.
+
+/** Return a copy of the knots array, with multiplicity of first and last knots raised or lowered to expectedMultiplicity. */
 public static cloneWithStartAndEndMultiplicity(knots: number[] | undefined, target0: number, target1: number): number[] {
   const result: number[] = [];
   if (knots === undefined || knots.length === 0)
