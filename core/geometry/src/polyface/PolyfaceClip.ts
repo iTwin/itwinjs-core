@@ -13,6 +13,7 @@ import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
 import { LineString3d } from "../curve/LineString3d";
+import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
 import { PlaneAltitudeEvaluator } from "../Geometry";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
@@ -128,6 +129,8 @@ export class PolyfaceClip {
     const builderB = destination.builderB;
     const visitor = polyface.createVisitor(0);
     const cache = new GrowableXYZArrayCache();
+    const insideShards: GrowableXYZArray[] = [];
+    const outsideShards: GrowableXYZArray[] = [];
     const residualPolygons: ClipCandidate[] = [];
     let candidate: ClipCandidate | undefined;
     const  outsideParts: GrowableXYZArray[] = [];
@@ -139,25 +142,49 @@ export class PolyfaceClip {
         const convexSetIndex = candidate.nextConvexSetIndex;
         if (convexSetIndex >= numConvexSet) {
           // ths remnant polygon is OUT ...
-          this.addPolygonToBuilderAndDropToCache(candidate.points, builderB, cache);
+          if (candidate.points.length > 2)
+            outsideShards.push(candidate.points);
         } else {
           const clipper = allClippers.convexSets[convexSetIndex];
-          cache.dropAllToCache(outsideParts);
+          outsideParts.length = 0;    //  NO NO -- why isn't it empty from prior step cleanup?
           const insidePart = clipper.clipInsidePushOutside(candidate.points, outsideParts, cache);
-          if (insidePart){
-            this.addPolygonToBuilderAndDropToCache(insidePart, builderA, cache);
-          // Keep outside parts active for clip by later facets . . .
-          for (const outsidePolygon of outsideParts) {
-            residualPolygons.push(new ClipCandidate(outsidePolygon, convexSetIndex + 1));
-            }
-            outsideParts.length = 0;
+          if (insidePart) {
+            if (insidePart.length > 2)
+              insideShards.push(insidePart);
+            // Keep outside parts active for clip by later facets . . .
+            for (const outsidePolygon of outsideParts) {
+              residualPolygons.push(new ClipCandidate(outsidePolygon, convexSetIndex + 1));
+              }
           } else {
             // Nothing was insidePart.  The outside parts might be split by intermediate steps -- but all the pieces are there.
             candidate.nextConvexSetIndex++;
             residualPolygons.push(candidate);
           }
+          outsideParts.length = 0;
         }
       }
+      if (outsideShards.length === 0) {
+          builderA?.addPolygonGrowableXYZArray(visitor.point);
+      } else if (insideShards.length === 0) {
+        // the facet spanned clippers but is intact outside
+        builderB?.addPolygonGrowableXYZArray(visitor.point);
+      } else {
+        const insidePieces = RegionOps.polygonBooleanXYToLoops(insideShards, RegionBinaryOpType.Union, []);
+        if (insidePieces)
+          builderA?.addGeometryQuery(insidePieces);
+        const outsidePieces = RegionOps.polygonBooleanXYToLoops(outsideShards, RegionBinaryOpType.Union, []);
+        if (outsidePieces)
+          builderB?.addGeometryQuery(outsidePieces);
+
+          /*
+        for (const shard of insideShards)
+          this.addPolygonToBuilderAndDropToCache(shard, builderA, cache);
+          for (const shard of outsideShards)
+          this.addPolygonToBuilderAndDropToCache(shard, builderB, cache);
+        */
+      }
+      outsideShards.length = 0;
+      insideShards.length = 0;
     }
     cache.dropAllToCache(outsideParts);
     if (destination.buildClosureFaces) {

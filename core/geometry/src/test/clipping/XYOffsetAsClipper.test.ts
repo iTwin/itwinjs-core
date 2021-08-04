@@ -264,19 +264,19 @@ describe("OffsetByClip", () => {
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "ArnoldasLaneClip");
   });
-  it("ExcessEdgesAroundAnnulus", () => {
+  it.only("ExcessEdgesAroundAnnulus", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const x0 = 0;
+    let x0 = 0;
     let y0 = 0;
     const clipper = UnionOfConvexClipPlaneSets.createEmpty();
     for (const annulusA of
         [
-        Sample.createAnnulusPolyline(4, Point3d.create(4, 2, 0), 2, 2.6,
-          Angle.createDegrees(100), Angle.createDegrees(170), true),
+        Sample.createAnnulusPolyline(4, Point3d.create(4, 1.1, 0), 2, 2.6,
+          Angle.createDegrees(100), Angle.createDegrees(170), true), /* ,
         Sample.createAnnulusPolyline(4, Point3d.create(6, 6, 0), 2, 2.6,
           Angle.createDegrees(-80), Angle.createDegrees(45), true),
-
+*/
         ]){
           GeometryCoreTestIO.captureCloneGeometry(allGeometry, annulusA, x0, y0);
           const contourA = SweepContour.createForPolygon(annulusA);
@@ -284,27 +284,40 @@ describe("OffsetByClip", () => {
           clipper.takeConvexSets(clipperA);
           }
 
-    const grid = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0),
+    const grid0 = Sample.createTriangularUnitGridPolyface(Point3d.create(1, 2, 0),
       Vector3d.create(1.0, 0, 0),
       Vector3d.create(0, 2.0, 0),
-      11, 11, false, false, false, false);
-    const builders = ClippedPolyfaceBuilders.create(true, true, true);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, grid, x0, y0);
-      // first method: clip the whole polyface at once ....
-    PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(grid, clipper, builders);
-    y0 += 10;
-    const clipA = builders.builderA?.claimPolyface();
-    const clipB = builders.builderB?.claimPolyface();
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipA, x0, y0 += 10);
+      3,2, false, false, false, false);
+    const grid1 = Sample.createTriangularUnitGridPolyface(Point3d.create(0, 0, 0),
+      Vector3d.create(1.0, 0, 0),
+      Vector3d.create(0, 2.0, 0),
+      11, 6, false, false, false, false);
+    const grid2 = Sample.createTriangularUnitGridPolyface(Point3d.create(1, 2, 0),
+      Vector3d.create(1.0, 0, 0),
+      Vector3d.create(0, 2.0, 0),
+      4,3, false, false, false, false);
 
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipB, x0, y0 += 10);
+    for (const grid of [grid1 , grid0 /* , grid2 */]) {
+      y0 = 0.0;
+      const builders = ClippedPolyfaceBuilders.create(true, true, true);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, grid, x0, y0);
+        // first method: clip the whole polyface at once ....
+      PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(grid, clipper, builders);
+      y0 += 10;
+      const clipA = builders.builderA?.claimPolyface();
+      const clipB = builders.builderB?.claimPolyface();
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipA, x0, y0 += 10);
 
-    const rectangle = Sample.createRectangleXY(0, 0, 5, 8, 0);
-    const clipShapes: GrowableXYZArray[] = [];
-    clipper.polygonClip(rectangle, clipShapes);
-    for (const shape of clipShapes) {
-      shape.push(shape.getPoint3dAtUncheckedPointIndex(0));
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape, x0, y0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, clipB, x0, y0 += 10);
+
+      const rectangle = Sample.createRectangleXY(0, 0, 5, 8, 0);
+      const clipShapes: GrowableXYZArray[] = [];
+      clipper.polygonClip(rectangle, clipShapes);
+      for (const shape of clipShapes) {
+        shape.push(shape.getPoint3dAtUncheckedPointIndex(0));
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, shape, x0, y0);
+      }
+      x0 += 20;
     }
 
     expect(ck.getNumErrors()).equals(0);
