@@ -414,7 +414,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         dropTarget,
         getWidgetContentRef: this._getContentRef,
         ghostOutline,
-        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && /* istanbul ignore next */ (this.state.isUiVisible || !UiShowHideManager.showHideFooter)) ?
+        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && ( /* istanbul ignore next */ this.state.isUiVisible || /* istanbul ignore next */ !UiShowHideManager.showHideFooter)) ?
           /* istanbul ignore next */ false : !this.state.isUiVisible,
         isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
         openWidgetId,
