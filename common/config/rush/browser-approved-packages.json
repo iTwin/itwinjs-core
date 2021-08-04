@@ -275,6 +275,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@testing-library/user-event",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@typescript-eslint/eslint-plugin",
       "allowedCategories": [ "tools" ]
     },
