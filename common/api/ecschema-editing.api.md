@@ -47,6 +47,7 @@ import { Schema } from '@bentley/ecschema-metadata';
 import { SchemaContext } from '@bentley/ecschema-metadata';
 import { SchemaItem } from '@bentley/ecschema-metadata';
 import { SchemaItemKey } from '@bentley/ecschema-metadata';
+import { SchemaItemType } from '@bentley/ecschema-metadata';
 import { SchemaKey } from '@bentley/ecschema-metadata';
 import { StrengthDirection } from '@bentley/ecschema-metadata';
 import { StructArrayPropertyProps } from '@bentley/ecschema-metadata';
@@ -60,6 +61,12 @@ import { UnitSystemProps } from '@bentley/ecschema-metadata';
 
 // @beta
 export type AnyDiagnostic = IDiagnostic<AnyECType, any[]>;
+
+// @alpha
+export class BaseClassDelta extends SchemaItemChange {
+    get defaultChangeType(): ChangeType;
+    toString(): string;
+}
 
 // @beta
 export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]> implements IDiagnostic<TYPE, ARGS> {
@@ -75,6 +82,50 @@ export abstract class BaseDiagnostic<TYPE extends AnyECType, ARGS extends any[]>
 
 // @beta (undocumented)
 export type BaseRule<T extends AnyECType, U extends AnyECType> = IRule<T, U>;
+
+// @alpha
+export abstract class BaseSchemaChange implements ISchemaChange {
+    constructor(diagnostic: AnyDiagnostic);
+    get changeType(): ChangeType;
+    set changeType(changeType: ChangeType);
+    abstract get defaultChangeType(): ChangeType;
+    get diagnostic(): AnyDiagnostic;
+    protected getNameFromArgument(index: number, allowUndefined?: boolean, fullName?: boolean): string;
+    protected getStringFromArgument(index: number): string;
+    protected getValueFromArgument(index: number): any;
+    abstract get topLevelSchemaItem(): SchemaItem | Schema;
+    abstract toString(): string;
+}
+
+// @alpha
+export abstract class BaseSchemaChanges implements ISchemaChanges {
+    constructor(schema: Schema, anyECTypeName: string);
+    abstract addChange(change: ISchemaChange): void;
+    protected addChangeToMap<V extends ISchemaChanges>(changes: Map<string, V>, changesType: SchemaChangesConstructor, change: ISchemaChange, changeKey: string): void;
+    get ecTypeName(): string;
+    protected isCAContainerChangeForThis(diagnostic: AnyDiagnostic, ecTypeName: string | undefined): boolean;
+    protected isPropertyValueChangeForThis(diagnostic: AnyDiagnostic, ecTypeName: string): boolean;
+    get propertyValueChanges(): PropertyValueChange[];
+    get schema(): Schema;
+    }
+
+// @alpha
+export enum ChangeType {
+    // (undocumented)
+    Delta = 0,
+    // (undocumented)
+    Missing = 1
+}
+
+// @alpha
+export class ClassChanges extends SchemaItemChanges {
+    addChange(change: ISchemaChange): void;
+    get baseClassDelta(): BaseClassDelta | undefined;
+    get entityMixinChanges(): Map<string, EntityMixinChanges>;
+    get propertyChanges(): Map<string, PropertyChanges>;
+    get sourceConstraintChanges(): Map<string, RelationshipConstraintChanges>;
+    get targetConstraintChanges(): Map<string, RelationshipConstraintChanges>;
+    }
 
 // @beta
 export abstract class ClassDiagnostic<ARGS extends any[]> extends SchemaItemDiagnostic<AnyClass, ARGS> {
@@ -164,6 +215,20 @@ export function createSchemaItemDiagnosticClass<ITEM extends SchemaItem, ARGS ex
     };
     diagnosticType: DiagnosticType;
 };
+
+// @alpha
+export class CustomAttributeContainerChange extends BaseSchemaChange {
+    get changeKey(): string;
+    get defaultChangeType(): ChangeType;
+    get topLevelSchemaItem(): Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class CustomAttributeContainerChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    get customAttributeChanges(): CustomAttributeContainerChange[];
+    }
 
 // @beta
 export abstract class CustomAttributeContainerDiagnostic<ARGS extends any[]> extends BaseDiagnostic<CustomAttributeContainerProps, ARGS> {
@@ -507,6 +572,55 @@ export function diagnosticTypeToString(type: DiagnosticType): "CustomAttributeCo
 // @beta
 export const ECRuleSet: IRuleSet;
 
+// @alpha
+export class EntityMixinChange extends BaseSchemaChange {
+    get changeKey(): string;
+    get defaultChangeType(): ChangeType;
+    get topLevelSchemaItem(): Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class EntityMixinChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    get entityMixinChange(): EntityMixinChange[];
+    }
+
+// @alpha
+export class EnumerationChanges extends SchemaItemChanges {
+    addChange(change: ISchemaChange): void;
+    get enumeratorChanges(): Map<string, EnumeratorChanges>;
+    }
+
+// @alpha
+export class EnumeratorChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    get enumeratorDeltas(): EnumeratorDelta[];
+    get enumeratorMissing(): EnumeratorMissing | undefined;
+    }
+
+// @alpha
+export class EnumeratorDelta extends BaseSchemaChange {
+    get changeKey(): string;
+    get defaultChangeType(): ChangeType;
+    get topLevelSchemaItem(): Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class EnumeratorMissing extends BaseSchemaChange {
+    get changeKey(): string;
+    get defaultChangeType(): ChangeType;
+    get topLevelSchemaItem(): Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class FormatChanges extends SchemaItemChanges {
+    addChange(change: ISchemaChange): void;
+    get formatUnitChanges(): Map<string, FormatUnitChanges>;
+    }
+
 // @beta
 export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticReporter {
     constructor(suppressions?: Map<string, string[]>, i18n?: I18N);
@@ -514,6 +628,21 @@ export abstract class FormatDiagnosticReporter extends SuppressionDiagnosticRepo
     i18N?: I18N;
     protected abstract reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string): void;
     reportInternal(diagnostic: AnyDiagnostic): void;
+    }
+
+// @alpha
+export class FormatUnitChange extends BaseSchemaChange {
+    get changeKey(): string;
+    get defaultChangeType(): ChangeType;
+    get topLevelSchemaItem(): Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class FormatUnitChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    get formatUnitChanges(): FormatUnitChange[];
+    get unitLabelOverrideDeltas(): UnitLabelOverrideDelta[];
     }
 
 // @beta
@@ -620,14 +749,107 @@ export interface IRuleSuppressionSet {
     unitSystemRuleSuppressions?: Array<IRuleSuppressionMap<UnitSystem>>;
 }
 
+// @alpha
+export interface ISchemaChange {
+    changeType: ChangeType;
+    diagnostic: AnyDiagnostic;
+    topLevelSchemaItem: SchemaItem | Schema;
+    toString(): string;
+}
+
+// @alpha
+export interface ISchemaChanges {
+    // (undocumented)
+    addChange(change: ISchemaChange): void;
+    // (undocumented)
+    ecTypeName: string;
+    // (undocumented)
+    schema: Schema;
+}
+
+// @alpha
+export interface ISchemaComparer {
+    // (undocumented)
+    compareClasses(classA: AnyClass, classB: AnyClass | undefined): void;
+    // (undocumented)
+    compareConstants(constantA: Constant, constantB: Constant | undefined): void;
+    // (undocumented)
+    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass | undefined): void;
+    // (undocumented)
+    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps | undefined): void;
+    // (undocumented)
+    compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): void;
+    // (undocumented)
+    compareEnumerations(enumA: Enumeration, enumB: Enumeration | undefined): void;
+    // (undocumented)
+    compareFormats(formatA: Format, formatB: Format | undefined): void;
+    // (undocumented)
+    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit | undefined): void;
+    // (undocumented)
+    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity | undefined): void;
+    // (undocumented)
+    compareMixins(mixinA: Mixin, mixinB: Mixin | undefined): void;
+    // (undocumented)
+    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon | undefined): void;
+    // (undocumented)
+    compareProperties(propertyA: AnyProperty, propertyB: AnyProperty | undefined): void;
+    // (undocumented)
+    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory | undefined): void;
+    // (undocumented)
+    compareRelationshipClasses(relationshipClassA: RelationshipClass, relationshipClassB: RelationshipClass | undefined): void;
+    // (undocumented)
+    compareRelationshipConstraints(relationshipConstraintA: RelationshipConstraint, relationshipConstraintB: RelationshipConstraint | undefined): void;
+    // (undocumented)
+    compareSchemaItems(schemaItemA: SchemaItem, schemaItemB: SchemaItem | undefined): void;
+    // (undocumented)
+    compareSchemaProps(schemaA: Schema, schemaB: Schema): void;
+    // (undocumented)
+    compareSchemas(schemaA: Schema, schemaB: Schema): void;
+    // (undocumented)
+    compareUnits(unitA: Unit, unitB: Unit | undefined): void;
+}
+
+// @alpha
+export interface ISchemaCompareReporter {
+    // (undocumented)
+    report(schemaChanges: ISchemaChanges): void;
+}
+
 // @beta
 export type ISuppressionRule<T extends AnyECType, U = {}> = (diagnostic: AnyDiagnostic, ecDefinition: T, ...args: U[]) => Promise<boolean>;
+
+// @alpha
+export class KindOfQuantityChanges extends SchemaItemChanges {
+    addChange(change: ISchemaChange): void;
+    get presentationUnitChanges(): Map<string, PresentationUnitChanges>;
+    }
 
 // @beta
 export class LoggingDiagnosticReporter extends FormatDiagnosticReporter {
     // (undocumented)
     reportDiagnostic(diagnostic: AnyDiagnostic, messageText: string): void;
 }
+
+// @alpha
+export class PresentationUnitChange extends BaseSchemaChange {
+    get changeKey(): string;
+    get defaultChangeType(): ChangeType;
+    get topLevelSchemaItem(): Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class PresentationUnitChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    get presentationUnitChange(): PresentationUnitChange[];
+    }
+
+// @alpha
+export class PropertyChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    get customAttributeChanges(): Map<string, CustomAttributeContainerChanges>;
+    get propertyMissing(): PropertyMissing | undefined;
+    }
 
 // @beta
 export abstract class PropertyDiagnostic<ARGS extends any[]> extends BaseDiagnostic<AnyProperty, ARGS> {
@@ -646,12 +868,56 @@ export interface PropertyEditResults {
     propertyName?: string;
 }
 
+// @alpha
+export class PropertyMissing extends BaseSchemaChange {
+    get defaultChangeType(): ChangeType;
+    get topLevelSchemaItem(): Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class PropertyValueChange extends BaseSchemaChange {
+    get defaultChangeType(): ChangeType;
+    get topLevelSchemaItem(): Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class RelationshipConstraintChanges extends BaseSchemaChanges {
+    addChange(change: ISchemaChange): void;
+    get constraintClassChanges(): RelationshipConstraintClassChange[];
+    get customAttributeChanges(): Map<string, CustomAttributeContainerChanges>;
+    }
+
+// @alpha
+export class RelationshipConstraintClassChange extends BaseSchemaChange {
+    get defaultChangeType(): ChangeType;
+    get topLevelSchemaItem(): Schema | SchemaItem;
+    toString(): string;
+}
+
 // @beta
 export abstract class RelationshipConstraintDiagnostic<ARGS extends any[]> extends BaseDiagnostic<RelationshipConstraint, ARGS> {
     constructor(constraint: RelationshipConstraint, messageArgs: ARGS, category?: DiagnosticCategory);
     get diagnosticType(): DiagnosticType;
     get schema(): Schema;
 }
+
+// @alpha
+export class SchemaChanges extends BaseSchemaChanges {
+    constructor(schema: Schema);
+    addChange(change: ISchemaChange): void;
+    addDiagnostic(diagnostic: AnyDiagnostic): void;
+    get allDiagnostics(): AnyDiagnostic[];
+    get classChanges(): Map<string, ClassChanges>;
+    get customAttributeChanges(): Map<string, CustomAttributeContainerChanges>;
+    get enumerationChanges(): Map<string, EnumerationChanges>;
+    get formatChanges(): Map<string, FormatChanges>;
+    get kindOfQuantityChanges(): Map<string, KindOfQuantityChanges>;
+    get missingSchemaReferences(): SchemaReferenceMissing[];
+    get schemaItemChanges(): Map<string, SchemaItemChanges>;
+    get schemaReferenceDeltas(): SchemaReferenceDelta[];
+    }
 
 // @beta
 export const SchemaCompareCodes: {
@@ -1039,6 +1305,38 @@ export const SchemaCompareDiagnostics: {
 };
 
 // @alpha
+export enum SchemaCompareDirection {
+    // (undocumented)
+    Backward = 1,
+    // (undocumented)
+    Forward = 0
+}
+
+// @alpha
+export class SchemaComparer {
+    constructor(...reporters: ISchemaCompareReporter[]);
+    compareClasses(classA: AnyClass, classB: AnyClass | undefined): Promise<void>;
+    compareConstants(constantA: Constant, constantB: Constant | undefined): Promise<void>;
+    compareCustomAttributeClasses(customAttributeClassA: CustomAttributeClass, customAttributeClassB: CustomAttributeClass | undefined): Promise<void>;
+    compareCustomAttributeContainers(containerA: CustomAttributeContainerProps, containerB: CustomAttributeContainerProps | undefined): Promise<void>;
+    compareEntityClasses(entityA: EntityClass, entityB: EntityClass | undefined): Promise<void>;
+    compareEnumerations(enumA: Enumeration, enumB: Enumeration | undefined): Promise<void>;
+    compareFormats(formatA: Format, formatB: Format | undefined): Promise<void>;
+    compareInvertedUnits(invertedUnitA: InvertedUnit, invertedUnitB: InvertedUnit | undefined): Promise<void>;
+    compareKindOfQuantities(koqA: KindOfQuantity, koqB: KindOfQuantity | undefined): Promise<void>;
+    compareMixins(mixinA: Mixin, mixinB: Mixin | undefined): Promise<void>;
+    comparePhenomenons(phenomenonA: Phenomenon, phenomenonB: Phenomenon | undefined): Promise<void>;
+    compareProperties(propertyA: AnyProperty, propertyB: AnyProperty | undefined): Promise<void>;
+    comparePropertyCategories(categoryA: PropertyCategory, categoryB: PropertyCategory | undefined): Promise<void>;
+    compareRelationshipClasses(relationshipA: RelationshipClass, relationshipB: RelationshipClass | undefined): Promise<void>;
+    compareRelationshipConstraints(constraintA: RelationshipConstraint, constraintB: RelationshipConstraint | undefined): Promise<void>;
+    compareSchemaItems(schemaItemA: SchemaItem, schemaItemB: SchemaItem | undefined): Promise<void>;
+    compareSchemaProps(schemaA: Schema, schemaB: Schema): Promise<void>;
+    compareSchemas(schemaA: Schema, schemaB: Schema): Promise<void>;
+    compareUnits(unitA: Unit, unitB: Unit | undefined): Promise<void>;
+    }
+
+// @alpha
 export class SchemaContextEditor {
     constructor(schemaContext: SchemaContext);
     addCustomAttribute(schemaKey: SchemaKey, customAttribute: CustomAttribute): Promise<SchemaEditResults>;
@@ -1096,6 +1394,23 @@ export interface SchemaEditResults {
     schemaKey?: SchemaKey;
 }
 
+// @alpha
+export abstract class SchemaItemChange extends BaseSchemaChange {
+    // (undocumented)
+    get topLevelSchemaItem(): Schema | SchemaItem;
+}
+
+// @alpha
+export class SchemaItemChanges extends BaseSchemaChanges {
+    constructor(schema: Schema, schemaItemName: string, schemaItemType: SchemaItemType);
+    addChange(change: ISchemaChange): void;
+    get customAttributeChanges(): Map<string, CustomAttributeContainerChanges>;
+    // (undocumented)
+    protected getSchemaItemNameFromChange(change: ISchemaChange): string | undefined;
+    get schemaItemMissing(): SchemaItemMissing | undefined;
+    get schemaItemType(): SchemaItemType;
+    }
+
 // @beta
 export abstract class SchemaItemDiagnostic<TYPE extends SchemaItem, ARGS extends any[]> extends BaseDiagnostic<TYPE, ARGS> {
     constructor(ecDefinition: SchemaItem, messageArgs: ARGS, category?: DiagnosticCategory);
@@ -1111,6 +1426,26 @@ export interface SchemaItemEditResults {
     errorMessage?: string;
     // (undocumented)
     itemKey?: SchemaItemKey;
+}
+
+// @alpha
+export class SchemaItemMissing extends SchemaItemChange {
+    get defaultChangeType(): ChangeType;
+    toString(): string;
+}
+
+// @alpha
+export class SchemaReferenceDelta extends BaseSchemaChange {
+    get defaultChangeType(): ChangeType;
+    get topLevelSchemaItem(): Schema | SchemaItem;
+    toString(): string;
+}
+
+// @alpha
+export class SchemaReferenceMissing extends BaseSchemaChange {
+    get defaultChangeType(): ChangeType;
+    get topLevelSchemaItem(): Schema | SchemaItem;
+    toString(): string;
 }
 
 // @beta
@@ -1204,6 +1539,14 @@ export abstract class SuppressionDiagnosticReporter implements IDiagnosticReport
     protected abstract reportInternal(diagnostic: AnyDiagnostic): void;
     get suppressions(): Map<string, string[]> | undefined;
     }
+
+// @alpha
+export class UnitLabelOverrideDelta extends BaseSchemaChange {
+    get changeKey(): string;
+    get defaultChangeType(): ChangeType;
+    get topLevelSchemaItem(): Schema | SchemaItem;
+    toString(): string;
+}
 
 
 // (No @packageDocumentation comment for this package)
