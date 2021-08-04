@@ -2935,8 +2935,8 @@ export class InterpolationCurve3dOptions {
     set fitPoints(val: Point3d[]);
     get isChordLenKnots(): number;
     set isChordLenKnots(val: number);
-    get isChordLenTangent(): number;
-    set isChordLenTangent(val: number);
+    get isChordLenTangents(): number;
+    set isChordLenTangents(val: number);
     get isColinearTangents(): number;
     set isColinearTangents(val: number);
     get isNaturalTangents(): number;
@@ -2944,6 +2944,7 @@ export class InterpolationCurve3dOptions {
     get knots(): number[] | undefined;
     set knots(val: number[] | undefined);
     get order(): number;
+    set order(val: number);
     reverseInPlace(): void;
     get startTangent(): Vector3d | undefined;
     set startTangent(val: Vector3d | undefined);
@@ -2955,7 +2956,7 @@ export interface InterpolationCurve3dProps {
     endTangent?: XYZProps;
     fitPoints: XYZProps[];
     isChordLenKnots?: number;
-    isChordLenTangent?: number;
+    isChordLenTangents?: number;
     isColinearTangents?: number;
     isNaturalTangents?: number;
     knots?: number[];

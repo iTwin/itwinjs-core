@@ -19,7 +19,7 @@ import { XYZProps } from "../geometry3d/XYZProps";
 
 /**
  * fitPoints and end condition data for [[InterpolationCurve3d]]
- * * This is a "json compatible" version of the serializer-friendly [[InterpolationCurve3dOptions]]
+ * * This is a "json compatible" version of [[InterpolationCurve3dOptions]]
  * @public
  */
 export interface InterpolationCurve3dProps {
@@ -32,7 +32,7 @@ export interface InterpolationCurve3dProps {
   /** if !closed but first and last fitPoints are equal, pivot computed start/end tangent(s) so that they are colinear */
   isColinearTangents?: number;
   /** if !closed and start/endTangent is given, set its magnitude to the chord length (true) or Bessel (false) end condition */
-  isChordLenTangent?: number;
+  isChordLenTangents?: number;
   /** if !closed and start/endTangent is absent, compute it by natural (true) or Bessel (false) end condition */
   isNaturalTangents?: number;
   /** optional start tangent.  Use of the tangent magnitude may be indicated by other flags. */
@@ -53,13 +53,18 @@ export interface InterpolationCurve3dProps {
  */
 export class InterpolationCurve3dOptions {
   /**
-   *
+   * Constructor. Supplies default values for flags.
    * @param fitPoints points to CAPTURE
    * @param knots array to CAPTURE
    */
   public constructor(fitPoints?: Point3d[], knots?: number[]) {
     this._fitPoints = fitPoints ? fitPoints : [];
     this._knots = knots;
+    this._order = 4;
+    this._isChordLenKnots = 1;
+    this._isColinearTangents = 0;
+    this._isChordLenTangents = 1;
+    this._isNaturalTangents = 1;
   }
 
   /** Order of the computed bspline.   (one more than degree) */
@@ -68,7 +73,7 @@ export class InterpolationCurve3dOptions {
   private _closed?: boolean;
   private _isChordLenKnots?: number;
   private _isColinearTangents?: number;
-  private _isChordLenTangent?: number;
+  private _isChordLenTangents?: number;
   private _isNaturalTangents?: number;
   /** optional start tangent, pointing into the curve. Tangent magnitude ignored. */
   private _startTangent?: Vector3d;
@@ -79,22 +84,23 @@ export class InterpolationCurve3dOptions {
   /** knots for curve fitting */
   private _knots?: number[];
 
-  /** `order` as property. There is no setter; order is always 4. */
+  /** `order` as property. Currently always 4. */
   public get order(): number { return Geometry.resolveNumber(this._order, 4); }
+  public set order(val: number) { this._order = val; }
   /** `closed` as property with default false */
   public get closed(): boolean { return Geometry.resolveValue(this._closed, false); }
   public set closed(val: boolean) { this._closed = val; }
   /** `isChordLenKnots` as property with default 0 */
-  public get isChordLenKnots(): number { return Geometry.resolveNumber(this._isChordLenKnots, 0); }
+  public get isChordLenKnots(): number { return Geometry.resolveNumber(this._isChordLenKnots, 1); }
   public set isChordLenKnots(val: number) { this._isChordLenKnots = val; }
   /** `isColinearTangents` as property with default 0 */
   public get isColinearTangents(): number { return Geometry.resolveNumber(this._isColinearTangents, 0); }
   public set isColinearTangents(val: number) { this._isColinearTangents = val; }
   /** `isChordLenTangent` as property with default 0 */
-  public get isChordLenTangent(): number { return Geometry.resolveNumber(this._isChordLenTangent, 0); }
-  public set isChordLenTangent(val: number) { this._isChordLenTangent = val; }
+  public get isChordLenTangents(): number { return Geometry.resolveNumber(this._isChordLenTangents, 1); }
+  public set isChordLenTangents(val: number) { this._isChordLenTangents = val; }
   /** `isNaturalTangents` as property with default 0 */
-  public get isNaturalTangents(): number { return Geometry.resolveNumber(this._isNaturalTangents, 0); }
+  public get isNaturalTangents(): number { return Geometry.resolveNumber(this._isNaturalTangents, 1); }
   public set isNaturalTangents(val: number) { this._isNaturalTangents = val; }
   /** access POSSIBLY UNDEFINED normalized start tangent pointing into curve. Setter CAPTURES. */
   public get startTangent(): Vector3d | undefined { return this._startTangent; }
@@ -127,7 +133,7 @@ export class InterpolationCurve3dOptions {
     this._closed = Geometry.resolveToUndefined(closed, false);
     this._isChordLenKnots = Geometry.resolveToUndefined(isChordLenKnots, 0);
     this._isColinearTangents = Geometry.resolveToUndefined(isColinearTangents, 0);
-    this._isChordLenTangent = Geometry.resolveToUndefined(isChordLenTangent, 0);
+    this._isChordLenTangents = Geometry.resolveToUndefined(isChordLenTangent, 0);
     this._isNaturalTangents = Geometry.resolveToUndefined(isNaturalTangents, 0);
     this._startTangent = startTangent;
     this._endTangent = endTangent;
@@ -147,8 +153,8 @@ export class InterpolationCurve3dOptions {
       props.isChordLenKnots = this._isChordLenKnots;
     if (this._isColinearTangents !== undefined)
       props.isColinearTangents = this._isColinearTangents;
-    if (this._isChordLenTangent !== undefined)
-      props.isChordLenTangent = this._isChordLenTangent;
+    if (this._isChordLenTangents !== undefined)
+      props.isChordLenTangents = this._isChordLenTangents;
     if (this._isNaturalTangents !== undefined)
       props.isNaturalTangents = this._isNaturalTangents;
     if (this._startTangent !== undefined)
@@ -164,7 +170,7 @@ export class InterpolationCurve3dOptions {
     clone._closed = this.closed;
     clone._isChordLenKnots = this.isChordLenKnots;
     clone._isColinearTangents = this.isColinearTangents;
-    clone._isChordLenTangent = this.isChordLenTangent;
+    clone._isChordLenTangents = this.isChordLenTangents;
     clone._isNaturalTangents = this.isNaturalTangents;
     clone._startTangent = this._startTangent?.clone();
     clone._endTangent = this._endTangent?.clone();
@@ -178,7 +184,7 @@ export class InterpolationCurve3dOptions {
     result._closed = source.closed;
     result._isChordLenKnots = source.isChordLenKnots;
     result._isColinearTangents = source.isColinearTangents;
-    result._isChordLenTangent = source.isChordLenTangent;
+    result._isChordLenTangents = source.isChordLenTangents;
     result._isNaturalTangents = source.isNaturalTangents;
     result._startTangent = source.startTangent ? Vector3d.fromJSON(source.startTangent) : undefined;
     result._endTangent = source.endTangent ? Vector3d.fromJSON(source.endTangent) : undefined;

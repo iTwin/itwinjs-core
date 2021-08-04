@@ -372,7 +372,7 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
    * @param options collection of point, knot and end condition data.
    */
   public static createFromInterpolationCurve3dOptions(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined {
-    return BSplineCurveOps.createThroughPoints (options.fitPoints, options.order? options.order : 4); // temporary
+    return BSplineCurveOps.createThroughPointsC2Cubic(options);
   }
 
   /**

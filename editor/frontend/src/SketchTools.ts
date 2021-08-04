@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Id64String } from "@bentley/bentleyjs-core";
-import { Angle, AngleSweep, Arc3d, BSplineCurve3d, CurveCollection, CurveFactory, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, IModelJson, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PointString3d, Ray3d, RegionOps, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
+import { Angle, AngleSweep, Arc3d, BSplineCurve3d, CurveCollection, CurveFactory, CurvePrimitive, FrameBuilder, Geometry, GeometryQuery, IModelJson, InterpolationCurve3dOptions, LineString3d, Loop, Matrix3d, Path, Plane3dByOriginAndUnitNormal, Point3d, PointString3d, Ray3d, RegionOps, Transform, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { Code, ColorDef, ElementGeometry, ElementGeometryInfo, FlatBufferGeometryStream, GeometricElementProps, GeometryParams, GeometryStreamProps, isPlacement3dProps, JsonGeometryStream, LinePixels, PlacementProps } from "@bentley/imodeljs-common";
 import { AccuDrawHintBuilder, AngleDescription, BeButton, BeButtonEvent, BeModifierKeys, CoreTools, DecorateContext, DynamicsContext, EventHandled, GraphicType, HitDetail, IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority, SnapDetail, TentativeOrAccuSnap, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod, ToolAssistanceInstruction, ToolAssistanceSection } from "@bentley/imodeljs-frontend";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
@@ -2054,7 +2054,9 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
       return BSplineCurve3d.createUniformKnots(pts, this.order);
 
     // TODO: InterpolationCurve3d, set end tangents using continuation curve...self-closure, etc.
-    return BSplineCurve3d.createThroughPoints(pts, this.order);
+    const opts = new InterpolationCurve3dOptions(pts);
+    // set opts.closed, opts.startTangent, opts.endTangent, etc.
+    return BSplineCurve3d.createFromInterpolationCurve3dOptions(opts);
   }
 
   protected override addConstructionGraphics(curve: CurvePrimitive, showCurve: boolean, context: DynamicsContext): void {
