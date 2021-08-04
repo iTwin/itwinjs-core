@@ -409,7 +409,8 @@ export class ListPickerBase extends React.PureComponent<ListPickerProps, ListPic
  * @beta
  */
 function ListPickerPopupItem(props: ListPickerProps) {
-  const icon = props.iconSpec ? /* istanbul ignore next */ (typeof props.iconSpec === "string" ? <Icon iconSpec={props.iconSpec} /> :
+  /* istanbul ignore next */
+  const icon = props.iconSpec ? (typeof props.iconSpec === "string" ? <Icon iconSpec={props.iconSpec} /> :
     <i className="icon uifw-item-svg-icon">{props.iconSpec}</i>) : <Icon iconSpec="icon-list" />;
 
   return (
