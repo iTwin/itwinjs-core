@@ -7,7 +7,7 @@ import { mount, ReactWrapper } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import * as ReactAutosuggest from "react-autosuggest";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { AutoSuggest, AutoSuggestData } from "../../ui-core";

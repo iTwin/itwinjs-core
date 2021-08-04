@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import * as sinon from "sinon";
 import * as React from "react";
 
@@ -17,7 +17,7 @@ describe("<FocusTrap />", () => {
 
   afterEach(() => {
     sandbox.restore();
-    cleanup();
+
   });
 
   it("renders correctly", () => {

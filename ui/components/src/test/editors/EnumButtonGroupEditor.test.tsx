@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { PrimitiveValue, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import { EnumButtonGroupEditor } from "../../ui-components/editors/EnumButtonGroupEditor";
@@ -17,8 +17,6 @@ import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
 // cSpell:ignore enumbuttongroup
 
 describe("<EnumButtonGroupEditor />", () => {
-  afterEach(cleanup);
-
   it("should render", () => {
     const renderedComponent = render(<EnumButtonGroupEditor setFocus={true} />);
     expect(renderedComponent).not.to.be.undefined;

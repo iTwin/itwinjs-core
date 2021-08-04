@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { BaseSolarDataProvider } from "../../ui-components/timeline/BaseSolarDataProvider";
 import { SolarTimeline } from "../../ui-components/timeline/SolarTimeline";
 import { SpeedTimeline } from "../../ui-components/timeline/SpeedTimeline";
@@ -34,7 +34,7 @@ describe("<SpeedTimeline />", () => {
   });
 
   afterEach(() => {
-    afterEach(cleanup);
+
   });
 
   it("should render", async () => {
@@ -69,7 +69,7 @@ describe("<SolarTimeline />", () => {
   });
 
   afterEach(() => {
-    afterEach(cleanup);
+
     rafSpy.resetHistory();
   });
 

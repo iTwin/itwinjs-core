@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
 import { InputEditorSizeParams, MultilineTextEditorParams, PropertyEditorInfo,
@@ -180,7 +180,7 @@ describe("<TextareaEditor />", () => {
     const propertyRecord = TestUtils.createPrimitiveStringProperty("Test", "MyValue", undefined, editorInfo);
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     expect(renderedComponent.container.querySelector(".components-textarea-editor")).to.not.be.empty;
-    cleanup();
+
   });
 
   it("calls onCancel on Escape on button", async () => {

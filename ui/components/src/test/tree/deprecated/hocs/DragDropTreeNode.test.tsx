@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { DragSourceProps, DropTargetProps } from "../../../../ui-components/dragdrop/DragDropDef";
 import { DragDropTreeNode, DragDropTreeNodeComponent } from "../../../../ui-components/tree/deprecated/hocs/DragDropTreeNode";
 
@@ -15,7 +15,7 @@ import { DragDropTreeNode, DragDropTreeNodeComponent } from "../../../../ui-comp
 
 describe("DragDropTreeNode", () => {
 
-  afterEach(cleanup);
+
 
   const createBubbledEvent = (type: string, props = {}) => {
     const event = new Event(type, { bubbles: true });

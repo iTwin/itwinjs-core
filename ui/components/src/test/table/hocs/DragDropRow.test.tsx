@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import {
   DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps,
 } from "../../../ui-components/dragdrop/DragDropDef";
@@ -20,7 +20,7 @@ describe("DragDropRow", () => {
     test: boolean;
   }
 
-  afterEach(cleanup);
+
 
   const RowWithDragDrop = DragDropRow<DragDropObject>();
   const DragDropObjectRow = wrapInTestContext(RowWithDragDrop);

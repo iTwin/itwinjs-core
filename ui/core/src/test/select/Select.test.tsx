@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { Select } from "../../ui-core";
 
 describe("<Select />", () => {
@@ -67,7 +67,7 @@ describe("<Select />", () => {
 });
 
 describe("<Select - React Testing Library />", () => {
-  afterEach(cleanup);
+
 
   it("focus into select with setFocus prop", () => {
     const component = render(<Select options={[]} setFocus={true} />);

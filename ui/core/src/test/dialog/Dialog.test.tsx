@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { Dialog, DialogButtonType } from "../../ui-core";
 import { DialogAlignment } from "../../ui-core/dialog/Dialog";
 import { GlobalDialog } from "../../ui-core/dialog/GlobalDialog";
@@ -14,7 +14,7 @@ import TestUtils from "../TestUtils";
 
 describe("Dialog", () => {
 
-  afterEach(cleanup);
+
 
   const createBubbledEvent = (type: string, props = {}) => {
     return TestUtils.createBubbledEvent(type, props);

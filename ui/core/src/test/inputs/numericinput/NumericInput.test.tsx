@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /* eslint-disable deprecation/deprecation */
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
@@ -73,7 +73,7 @@ describe("NumericInput", () => {
 });
 
 describe("<NumericInput - React Testing Library />", () => {
-  afterEach(cleanup);
+
 
   it("value should update with up/down buttons", () => {
     let updatedValue: number | null = 5;

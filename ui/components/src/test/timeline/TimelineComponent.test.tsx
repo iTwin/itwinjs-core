@@ -106,7 +106,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
 
   afterEach(() => {
     fakeTimers && fakeTimers.restore();
-    afterEach(cleanup);
+
     rafSpy.resetHistory();
   });
 

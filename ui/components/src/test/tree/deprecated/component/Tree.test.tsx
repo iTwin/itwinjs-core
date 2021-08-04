@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
-import { cleanup, fireEvent, render, RenderResult, waitFor, within } from "@testing-library/react";
+import { fireEvent, render, RenderResult, waitFor, within } from "@testing-library/react";
 import {
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, PageOptions, SelectionMode, TreeCellUpdatedArgs, TreeDataChangesListener,
   TreeDataProviderMethod, TreeDataProviderRaw, TreeNodeItem,
@@ -337,7 +337,7 @@ describe("Tree", () => {
           selectionLoadCanceledListener.resetHistory();
           selectionLoadFinishedListener.resetHistory();
           renderSpy.resetHistory();
-          cleanup();
+
         });
 
         const createPropsForDelayLoadedShiftSelection = () => {

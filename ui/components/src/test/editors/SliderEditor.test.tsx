@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import { cleanup, fireEvent, render, waitFor } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
 import { BasePropertyEditorParams, PropertyEditorParamTypes, PropertyRecord, PropertyValue,
@@ -199,7 +199,6 @@ describe("<SliderEditor />", () => {
     const propertyRecord = TestUtils.createNumericProperty("Test", 50, StandardEditorNames.Slider);
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     expect(renderedComponent.container.querySelector(".components-slider-editor")).to.not.be.empty;
-    cleanup();
   });
 
   it("calls onCommit for Change", async () => {
@@ -227,7 +226,7 @@ describe("<SliderEditor />", () => {
     await TestUtils.flushAsyncOperations();
 
     expect(spyOnCommit.calledOnce).to.be.true;
-    cleanup();
+
   });
 
   class MineDataController extends DataControllerBase {

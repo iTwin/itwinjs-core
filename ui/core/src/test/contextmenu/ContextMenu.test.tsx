@@ -7,14 +7,14 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { mount } from "enzyme";
 import { BadgeType, ConditionalBooleanValue, SpecialKey } from "@bentley/ui-abstract";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../ui-core";
 import { TildeFinder } from "../../ui-core/contextmenu/TildeFinder";
 import TestUtils from "../TestUtils";
 
 describe("ContextMenu", () => {
 
-  afterEach(cleanup);
+
 
   const createBubbledEvent = (type: string, props = {}) => {
     return TestUtils.createBubbledEvent(type, props);
