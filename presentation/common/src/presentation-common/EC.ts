@@ -275,12 +275,14 @@ export namespace RelatedClassInfo {
   }
 
   /** Deserialize [[RelatedClassInfo]] from compressed JSON */
-  export function fromCompressedJSON(compressedInfoJSON: RelatedClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfoJSON {
+  export function fromCompressedJSON(json: RelatedClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): RelatedClassInfo {
     return {
-      ...compressedInfoJSON,
-      sourceClassInfo: { id: compressedInfoJSON.sourceClassInfo, ...classesMap[compressedInfoJSON.sourceClassInfo] },
-      targetClassInfo: { id: compressedInfoJSON.targetClassInfo, ...classesMap[compressedInfoJSON.targetClassInfo] },
-      relationshipInfo: { id: compressedInfoJSON.relationshipInfo, ...classesMap[compressedInfoJSON.relationshipInfo] },
+      ...json,
+      sourceClassInfo: ClassInfo.fromJSON({ id: json.sourceClassInfo, ...classesMap[json.sourceClassInfo] }),
+      targetClassInfo: ClassInfo.fromJSON({ id: json.targetClassInfo, ...classesMap[json.targetClassInfo] }),
+      isPolymorphicTargetClass: json.isPolymorphicTargetClass ?? false,
+      relationshipInfo: ClassInfo.fromJSON({ id: json.relationshipInfo, ...classesMap[json.relationshipInfo] }),
+      isPolymorphicRelationship: json.isPolymorphicRelationship ?? false,
     };
   }
 

@@ -12,12 +12,12 @@ import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-cor
 import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@bentley/imodeljs-backend";
 import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
-  Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides,
-  DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions,
-  ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, getLocalesDirectory,
-  HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey,
-  NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationError, PresentationStatus, PresentationUnitSystem, RequestPriority,
-  Ruleset, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
+  Content, ContentDescriptorRequestOptions, ContentFlags, ContentRequestOptions, ContentSourcesRequestOptions, DefaultContentDisplayTypes, Descriptor,
+  DescriptorOverrides, DiagnosticsOptionsWithHandler, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup,
+  DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
+  getLocalesDirectory, HierarchyCompareInfo, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, KeySet, LabelDefinition,
+  LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationError, PresentationStatus,
+  PresentationUnitSystem, RequestPriority, Ruleset, SelectClassInfo, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
 import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
@@ -639,6 +639,19 @@ export class PresentationManager {
     Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Loading full hierarchy for `
       + `iModel "${requestContextOrOptions.imodel.iModelId}" and ruleset "${rulesetId}" `
       + `completed in ${((new Date()).getTime() - start.getTime()) / 1000} s.`);
+  }
+
+  /** @beta */
+  public async getContentSources(requestOptions: WithClientRequestContext<ContentSourcesRequestOptions<IModelDb>>): Promise<SelectClassInfo[]> {
+    const params = {
+      requestId: NativePlatformRequestTypes.GetContentSources,
+      rulesetId: "ElementProperties",
+      ...requestOptions,
+    };
+    const reviver = (key: string, value: any) => {
+      return key === "" ? SelectClassInfo.listFromCompressedJSON(value.sources, value.classesMap) : value;
+    };
+    return this.request(params, reviver);
   }
 
   /**
