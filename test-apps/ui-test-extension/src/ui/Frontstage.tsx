@@ -52,7 +52,7 @@ export class ExtensionFrontstage extends FrontstageProvider {
         contents: [
           {
             classId: IModelViewportControl,
-            applicationData: { viewState: this._getViewState, iModelConnection: UiFramework.getIModelConnection, disableDefaultViewOverlay: true },
+            applicationData: { viewState: this._getViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
             classId: "SampleExtensionContentControl",

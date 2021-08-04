@@ -5,13 +5,13 @@
 // cSpell:ignore droppable Sublayer Basemap
 
 import * as React from "react";
-import { NumberInput, Slider, Toggle } from "@bentley/ui-core";
+import { NumberInput, Toggle } from "@bentley/ui-core";
 import { ViewState3d } from "@bentley/imodeljs-frontend";
 import { BackgroundMapProps, BackgroundMapSettings, PlanarClipMaskMode, PlanarClipMaskPriority, TerrainHeightOriginMode, TerrainProps } from "@bentley/imodeljs-common";
 import { useSourceMapContext } from "./MapLayerManager";
 import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
-import { Select, SelectOption } from "@itwin/itwinui-react";
+import { Select, SelectOption, Slider } from "@itwin/itwinui-react";
 
 enum MapMaskingOption {
   None,
@@ -173,7 +173,7 @@ export function MapManagerSettings() {
       <div className="maplayers-settings-container">
 
         <span className="map-manager-settings-label">{transparencyLabel}</span>
-        <Slider min={0} max={100} showMinMax showTooltip values={[transparency * 100]} onChange={handleAlphaChange} step={1} />
+        <Slider min={0} max={100} values={[transparency * 100]} onChange={handleAlphaChange} step={1} />
 
         <span className="map-manager-settings-label">{locatableLabel}</span>
         {/* eslint-disable-next-line deprecation/deprecation */}

@@ -1080,7 +1080,7 @@ export class ComponentExamplesProvider {
 
   private static get sliderSamples(): ComponentExampleCategory {
     return {
-      title: "Slider",
+      title: "Deprecated Slider",
       examples: [
         createComponentExample("Slider", "Basic Slider",
           <Slider min={0} max={100} values={[50]} step={1} showTooltip />),

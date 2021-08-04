@@ -106,12 +106,11 @@
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
     "@itwin/itwinui-css": "^0.24.0",
-    "@itwin/itwinui-react": "^1.12.0",
+    "@itwin/itwinui-react": "^1.14.0",
     "classnames": "^2.3.1",
     "dompurify": "^2.0.12",
     "lodash": "^4.17.10",
     "react-autosuggest": "^10.0.2",
-    "react-compound-slider": "^2.5.0",
     "react-select": "3.1.0",
     "resize-observer-polyfill": "1.5.1",
     "svg-sprite-loader": "4.2.1"

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-core",
+      "comment": "Deprecated ui-core Slider. Wrapped with one from iTwinUi-react to remove dependency on react-compound-slider.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-core",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

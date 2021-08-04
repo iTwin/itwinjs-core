@@ -51,7 +51,7 @@
     "@bentley/ui-framework": "workspace:*",
     "@bentley/ui-ninezone": "workspace:*",
     "@itwin/itwinui-css": "^0.24.0",
-    "@itwin/itwinui-react": "^1.12.0",
+    "@itwin/itwinui-react": "^1.14.0",
     "@testing-library/react": "^8.0.1",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",
@@ -86,7 +86,6 @@
   "dependencies": {
     "classnames": "^2.3.1",
     "react-beautiful-dnd": "^13.0.0",
-    "react-compound-slider": "^2.5.0",
     "react-select": "3.1.0"
   },
   "peerDependencies": {
