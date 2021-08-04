@@ -9,7 +9,7 @@
 import "./Slider.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Slider as ItwinSlider, TooltipProps } from "@itwin/itwinui-react";
+import { Slider as ItwinSlider } from "@itwin/itwinui-react";
 import { CommonProps } from "../utils/Props";
 import { BodyText } from "../text/BodyText";
 
