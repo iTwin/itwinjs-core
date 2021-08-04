@@ -11,13 +11,13 @@
 import widowSettingsIconSvg from "@bentley/icons-generic/icons/window-settings.svg?sprite";
 import "./UiSettingsPage.scss";
 import * as React from "react";
-import { SettingsTabEntry, Slider } from "@bentley/ui-core";
+import { SettingsTabEntry } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ColorTheme, SYSTEM_PREFERRED_COLOR_THEME } from "../../theme/ThemeManager";
 import { UiShowHideManager } from "../../utils/UiShowHideManager";
 import { SyncUiEventArgs, SyncUiEventDispatcher, SyncUiEventId } from "../../syncui/SyncUiEventDispatcher";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
-import { Select, SelectOption, ToggleSwitch } from "@itwin/itwinui-react";
+import { Select, SelectOption, Slider, ToggleSwitch } from "@itwin/itwinui-react";
 
 /** UiSettingsPage displaying the active UI settings. This page lets users set the following settings.
  *
@@ -161,9 +161,8 @@ export function UiSettingsPage({ allowSettingUiFrameworkVersion }: { allowSettin
       }
       <SettingsItem title={widgetOpacityTitle.current} description={widgetOpacityDescription.current}
         settingUi={
-          <Slider values={[UiFramework.getWidgetOpacity()]} step={0.05} showTooltip onChange={onWidgetOpacityChange}
-            min={0.20} max={1.0} showMinMax formatMax={(v: number) => v.toFixed(1)}
-            showTicks getTickValues={() => [.20, .40, .60, .80, 1]} />
+          <Slider style={{ flex: "1" }} values={[UiFramework.getWidgetOpacity()]} step={0.05} onChange={onWidgetOpacityChange}
+            min={0.20} max={1.0} maxLabel="1.0" tickLabels={["", "", "", "", ""]} />
         }
       />
     </div>

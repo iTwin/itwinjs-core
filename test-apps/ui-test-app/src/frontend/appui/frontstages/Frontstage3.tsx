@@ -39,11 +39,11 @@ export class Frontstage3 extends FrontstageProvider {
         contents: [
           {
             classId: IModelViewportControl.id,
-            applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection, disableDefaultViewOverlay: true },
+            applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
             classId: App_IModelViewport.id,
-            applicationData: { label: "Content 2a", bgColor: "blue", disableDefaultViewOverlay: true },
+            applicationData: { label: "Content 2a", bgColor: "blue" },
           },
           {
             classId: "TableExampleContent",

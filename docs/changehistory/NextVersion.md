@@ -65,6 +65,7 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 |Radio | Radio
 |Select | Select
 |SelectOption | SelectOption
+|Slider | Slider
 |SmallText | Small
 |Spinner | ProgressRadial with `indeterminate` prop
 |SpinnerSize | `size` prop in ProgressRadialProps
@@ -76,6 +77,10 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 |Toggle | ToggleSwitch
 |Tooltip | Tooltip
 |TooltipPlacement | Placement
+
+#### Slider
+
+The deprecated [Slider]($ui-core) was a wrapper around the react-compound-slider which does not work properly in popout window. To alleviate this issue, the deprecated `Slider`will now wrap the  `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
 
 ### Deprecated with alternatives elsewhere
 
@@ -108,6 +113,7 @@ Some of these have alternatives in the same package, while others have alternati
 |StandardEditorNames | StandardEditorNames in @bentley/ui-abstract
 |StandardTypeNames | StandardTypeNames in @bentley/ui-abstract
 |StandardTypeConverterTypeNames | StandardTypeNames in @bentley/ui-abstract
+|Timeline | TimelineComponent in @bentley/ui-components
 
 |Removed from @bentley/ui-framework |Use instead
 |-----|-----
