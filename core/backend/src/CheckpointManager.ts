@@ -11,12 +11,11 @@
 import * as path from "path";
 import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { CheckpointV2Query } from "@bentley/imodelhub-client";
-import { BriefcaseIdValue, IModelError } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, ChangesetId, ChangesetIndex, IModelError } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
-import { ChangesetId } from "./BackendHubAccess";
 import { SnapshotDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelHubBackend } from "./IModelHubBackend";
@@ -40,7 +39,9 @@ export interface CheckpointProps {
   /** Id of the change set
    * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
    */
-  changeSetId: string;
+  changeSetId: ChangesetId;
+
+  changesetIndex?: ChangesetIndex;
 
   requestContext: AuthorizedClientRequestContext;
 }
@@ -141,7 +142,7 @@ export class V2CheckpointManager {
     }
   }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<string> {
+  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: string, expiryTimestamp: number }> {
     const args = await this.getCommandArgs(checkpoint);
     if (undefined === args.daemonDir || args.daemonDir === "")
       throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
@@ -155,7 +156,9 @@ export class V2CheckpointManager {
 
       throw new IModelError(attachResult.result, error);
     }
-    return BlobDaemon.getDbFileName(args);
+    const sasTokenExpiry = new URLSearchParams(args.auth).get("se");
+
+    return { filePath: BlobDaemon.getDbFileName(args), expiryTimestamp: sasTokenExpiry ? Date.parse(sasTokenExpiry) : 0 };
   }
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {
@@ -249,20 +252,25 @@ export class CheckpointManager {
       const db = SnapshotDb.openForApplyChangesets(targetFile);
       const nativeDb = db.nativeDb;
 
-      if (nativeDb.hasPendingTxns()) {
-        Logger.logWarning(loggerCategory, "Checkpoint with Txns found - deleting them", () => traceInfo);
-        nativeDb.deleteAllTxns();
-      }
-
-      if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Unassigned)
-        nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-
-      // Validate the native briefcase against the checkpoint meta-data
       try {
+        if (nativeDb.hasPendingTxns()) {
+          Logger.logWarning(loggerCategory, "Checkpoint with Txns found - deleting them", () => traceInfo);
+          nativeDb.deleteAllTxns();
+        }
+
+        if (nativeDb.getBriefcaseId() !== BriefcaseIdValue.Unassigned)
+          nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+
         CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
         // Apply change sets if necessary
-        if (nativeDb.getParentChangeSetId() !== checkpoint.changeSetId)
-          await BriefcaseManager.processChangesets(checkpoint.requestContext, db, checkpoint.changeSetId);
+        const parentChangeset = nativeDb.getParentChangeset();
+        if (parentChangeset.id !== checkpoint.changeSetId)
+          await BriefcaseManager.processChangesets(checkpoint.requestContext, db, { id: checkpoint.changeSetId, index: checkpoint.changesetIndex });
+        else {
+          // make sure the parent changeset index is saved in the file - old versions didn't have it.
+          parentChangeset.index = checkpoint.changesetIndex;
+          nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(parentChangeset));
+        }
       } finally {
         db.saveChanges();
         db.close();
@@ -303,7 +311,7 @@ export class CheckpointManager {
   public static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb) {
     const traceInfo = { contextId: checkpoint.contextId, iModelId: checkpoint.iModelId };
 
-    const dbChangeSetId = nativeDb.getParentChangeSetId();
+    const dbChangeset = nativeDb.getParentChangeset();
     const dbGuid = Guid.normalize(nativeDb.getDbGuid());
     if (dbGuid !== Guid.normalize(checkpoint.iModelId)) {
       if (nativeDb.isReadonly())
@@ -312,12 +320,14 @@ export class CheckpointManager {
       Logger.logWarning(loggerCategory, "iModelId is not properly set up in the checkpoint. Updated checkpoint to the correct iModelId.", () => ({ ...traceInfo, dbGuid }));
       nativeDb.setDbGuid(Guid.normalize(checkpoint.iModelId));
       // Required to reset the ChangeSetId because setDbGuid clears the value.
-      nativeDb.saveLocalValue("ParentChangeSetId", dbChangeSetId);
+      nativeDb.saveLocalValue("ParentChangeSetId", dbChangeset.id);
+      if (undefined !== dbChangeset.index)
+        nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(dbChangeset));
     }
 
     const dbContextGuid = Guid.normalize(nativeDb.queryProjectGuid());
     if (dbContextGuid !== Guid.normalize(checkpoint.contextId))
-      throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly setup in the checkpoint", Logger.logError, loggerCategory, () => ({ ...traceInfo, dbContextGuid }));
+      throw new IModelError(IModelStatus.ValidationFailed, "ContextId was not properly set up in the checkpoint");
   }
 
   /** @returns true if the file is the checkpoint requested */
@@ -332,7 +342,7 @@ export class CheckpointManager {
       return false;
     }
 
-    const isValid = checkpoint.iModelId === nativeDb.getDbGuid() && checkpoint.changeSetId === nativeDb.getParentChangeSetId();
+    const isValid = checkpoint.iModelId === nativeDb.getDbGuid() && checkpoint.changeSetId === nativeDb.getParentChangeset().id;
     nativeDb.closeIModel();
     if (!isValid)
       IModelJsFs.removeSync(fileName);

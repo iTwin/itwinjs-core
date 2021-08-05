@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/expandable/list";
 @import "~@bentley/ui-core/lib/ui-core/scrollbar";
+@import "~@bentley/ui-core/lib/ui-core/style/itwinui-overrides";
 
 .components-virtualized-property-grid-loader {
   height: 100%;
@@ -20,6 +21,8 @@
   > div {
     min-width: 0;
   }
+
+  @include small-itwinui-expandable-block;
 }
 
 .components-property-grid-wrapper {

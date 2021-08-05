@@ -9,6 +9,7 @@ public;AbstractStatusBarItemUtilities
 public;AbstractStatusBarLabelItem 
 public;AbstractToolbarProps
 public;AbstractWidgetProps 
+public;AbstractZoneLocation
 alpha;AccuDrawField
 alpha;AccuDrawGrabInputFocusEvent 
 alpha;AccuDrawMode

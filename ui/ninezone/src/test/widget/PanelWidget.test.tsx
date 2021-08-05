@@ -12,6 +12,8 @@ import {
 } from "../../ui-ninezone";
 import { NineZoneProvider } from "../Providers";
 
+/* eslint-disable jsdoc/require-jsdoc */
+
 export const defaultProps = {
   onBeforeTransition: () => { },
   onPrepareTransition: () => { },

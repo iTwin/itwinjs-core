@@ -3,8 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import "./index.scss";
-// Mobx demo
-import { configure as mobxConfigure } from "mobx";
 import * as React from "react";
 import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
@@ -13,7 +11,6 @@ import reactAxe from "@axe-core/react";
 import { ClientRequestContext, Config, Id64String, Logger, LogLevel, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
@@ -69,7 +66,7 @@ import { OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTo
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
 
-// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise mobx hypermodeling testapp urlps
+// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise hypermodeling testapp urlps
 // cSpell:ignore toggledraginteraction toggleframeworkversion set-drag-interaction set-framework-version
 
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
@@ -101,7 +98,7 @@ export const SampleAppActions = {
 };
 
 class SampleAppAccuSnap extends AccuSnap {
-  public getActiveSnapModes(): SnapMode[] {
+  public override getActiveSnapModes(): SnapMode[] {
     const snaps: SnapMode[] = [];
     if (SampleAppIModelApp.store.getState().frameworkState) {
       const snapMode = SampleAppIModelApp.store.getState().frameworkState.configurableUiState.snapMode;
@@ -203,9 +200,6 @@ export class SampleAppIModelApp {
     // register local commands.
     // register core commands not automatically registered
     ViewClipByPlaneTool.register();
-
-    // Mobx configuration
-    mobxConfigure({ enforceActions: "observed" });
 
     if (SampleAppIModelApp.testAppConfiguration?.reactAxeConsole) {
       if (process.env.NODE_ENV !== "production") {
@@ -337,8 +331,6 @@ export class SampleAppIModelApp {
     });
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `openViews: ${viewIdsParam}`);
 
-    SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
-
     // store the IModelConnection in the sample app store - this may trigger redux connected components
     UiFramework.setIModelConnection(iModelConnection, true);
     const viewStates: ViewState[] = [];
@@ -425,8 +417,6 @@ export class SampleAppIModelApp {
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
-
-      SyncUiEventDispatcher.initializeConnectionEvents(iModelConnection);
 
       // store the IModelConnection in the sample app store
       UiFramework.setIModelConnection(iModelConnection, true);
@@ -610,7 +600,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     Logger.logInfo(SampleAppIModelApp.loggerCategory(this), `Modal Frontstage close: title=${args.modalFrontstage.title} totalTime=${args.totalTime} engagementTime=${args.engagementTime} idleTime=${args.idleTime}`);
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     const oidcClient = IModelApp.authorizationClient;
     if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.addListener(this._onUserStateChanged);
@@ -618,7 +608,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     FrontstageManager.onModalFrontstageClosedEvent.addListener(this._handleModalFrontstageClosedEvent);
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     const oidcClient = IModelApp.authorizationClient;
     if (isFrontendAuthorizationClient(oidcClient))
       oidcClient.onUserStateChanged.removeListener(this._onUserStateChanged);
@@ -626,10 +616,11 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     FrontstageManager.onModalFrontstageClosedEvent.removeListener(this._handleModalFrontstageClosedEvent);
   }
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     return (
       <Provider store={SampleAppIModelApp.store} >
         <ThemeManager>
+          {/* eslint-disable-next-line deprecation/deprecation */}
           <BeDragDropContext>
             <SafeAreaContext.Provider value={SafeAreaInsets.All}>
               <AppDragInteraction>
@@ -643,6 +634,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
                 </AppFrameworkVersion>
               </AppDragInteraction>
             </SafeAreaContext.Provider>
+            {/* eslint-disable-next-line deprecation/deprecation */}
             <DragDropLayerRenderer />
           </BeDragDropContext>
         </ThemeManager>
@@ -733,13 +725,6 @@ async function main() {
 
   // Start the app.
   await SampleAppIModelApp.startup(opts);
-
-  // Add ApplicationInsights telemetry client
-  const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
-  if (iModelJsApplicationInsightsKey) {
-    const applicationInsightsClient = new FrontendApplicationInsightsClient(iModelJsApplicationInsightsKey);
-    IModelApp.telemetry.addClient(applicationInsightsClient);
-  }
 
   await SampleAppIModelApp.initialize();
 

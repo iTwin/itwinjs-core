@@ -325,6 +325,9 @@ export class FrontstageManager {
   public static readonly onWidgetExpandEvent = new UiEvent<WidgetEventArgs>();
 
   /** @internal */
+  public static readonly onWidgetDefsUpdatedEvent = new UiEvent<void>();
+
+  /** @internal */
   public static readonly onFrontstageNineZoneStateChangedEvent = new UiEvent<FrontstageNineZoneStateChangedEventArgs>();
 
   /** @internal */
@@ -538,10 +541,10 @@ export class FrontstageManager {
    */
   public static closeModalFrontstage(): void {
     // istanbul ignore else
-    if (FrontstageManager._modalFrontstages.length > 0){
+    if (FrontstageManager._modalFrontstages.length > 0) {
       const topMostStageItem = FrontstageManager._modalFrontstages[FrontstageManager._modalFrontstages.length - 1];
       if (topMostStageItem.modalFrontstage.notifyCloseRequest)
-        FrontstageManager.onCloseModalFrontstageRequestedEvent.emit (
+        FrontstageManager.onCloseModalFrontstageRequestedEvent.emit(
           {
             modalFrontstage: topMostStageItem.modalFrontstage,
             stageCloseFunc: FrontstageManager.popModalFrontstage,

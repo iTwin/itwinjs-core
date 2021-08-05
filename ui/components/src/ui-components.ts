@@ -22,9 +22,9 @@ export * from "./ui-components/common/selection/SelectionHandler";
 export * from "./ui-components/common/showhide/ShowHideDialog";
 export * from "./ui-components/common/showhide/ShowHideItem";
 export * from "./ui-components/common/showhide/ShowHideMenu";
-export * from "./ui-components/common/StandardTypeNames";
 export * from "./ui-components/common/UseAsyncValue";
 export * from "./ui-components/common/UseDebouncedAsyncValue";
+export * from "./ui-components/common/DateUtils";
 
 export * from "./ui-components/converters/TypeConverter";
 export * from "./ui-components/converters/TypeConverterManager";
@@ -62,7 +62,6 @@ export * from "./ui-components/editors/ImageCheckBoxEditor";
 export * from "./ui-components/editors/NumericInputEditor";
 export * from "./ui-components/editors/PropertyEditorManager";
 export * from "./ui-components/editors/SliderEditor";
-export * from "./ui-components/editors/StandardEditorNames";
 export * from "./ui-components/editors/TextEditor";
 export * from "./ui-components/editors/TextareaEditor";
 export * from "./ui-components/editors/ThemedEnumEditor";
@@ -102,7 +101,6 @@ export * from "./ui-components/timeline/ContextMenu";
 export * from "./ui-components/timeline/InlineEdit";
 export * from "./ui-components/timeline/PlayerButton";
 export * from "./ui-components/timeline/Scrubber";
-export * from "./ui-components/timeline/Timeline";
 export * from "./ui-components/timeline/TimelineComponent";
 export * from "./ui-components/timeline/SolarTimeline";
 export * from "./ui-components/timeline/BaseSolarDataProvider";
@@ -183,6 +181,7 @@ export * from "./ui-components/favorite/FavoritePropertyList";
 
 export * from "./ui-components/inputs/QuantityInput";
 export * from "./ui-components/inputs/ParsedInput";
+export * from "./ui-components/inputs/QuantityNumberInput";
 
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/SimpleTreeDataProvider";

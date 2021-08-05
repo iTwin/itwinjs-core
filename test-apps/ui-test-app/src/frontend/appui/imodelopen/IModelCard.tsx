@@ -4,8 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import "./IModelCard.scss";
 import * as React from "react";
-import { Spinner, SpinnerSize } from "@bentley/ui-core";
 import { IModelInfo, UiFramework } from "@bentley/ui-framework";
+import { ProgressRadial } from "@itwin/itwinui-react";
 
 // import { IModelViewPicker } from "./IModelViewPicker";
 
@@ -36,7 +36,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
   };
 
   // called when this component is first loaded
-  public async componentDidMount() {
+  public override async componentDidMount() {
     // we don't get the thumbnail until it's needed.
     if (!this.props.iModel.thumbnail)
       this.startRetrieveThumbnail(this.props.iModel); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -70,7 +70,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     if (this.state.waitingForThumbnail) {
       return (
         <div className="preview-loader">
-          <Spinner size={SpinnerSize.Large} />
+          <ProgressRadial size="large" indeterminate />
         </div>
       );
     } else if (this.props.iModel.thumbnail) {
@@ -90,7 +90,7 @@ export class IModelCard extends React.Component<IModelCardProps, IModelCardState
     }
   }
 
-  public render() {
+  public override render() {
     return (
       <div className="imodel-card" >
         <div className="imodel-card-content" >

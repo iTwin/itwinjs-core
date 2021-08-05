@@ -12,14 +12,14 @@ API for creating a 3D default view for an iModel.
 Either takes in a list of modelIds, or displays all 3D models by default.
 */
 
-import { Id64Array, Id64String, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { Id64Array, Id64String, IModelStatus } from "@bentley/bentleyjs-core";
 import { Camera, CategorySelectorProps, Code, DisplayStyle3dProps, IModel, IModelError, IModelReadRpcInterface, ModelSelectorProps, RenderMode, ViewDefinition3dProps, ViewQueryParams, ViewStateProps } from "@bentley/imodeljs-common";
 import { Range3d } from "@bentley/geometry-core";
 import { StandardViewId } from "./StandardView";
 import { IModelConnection } from "./IModelConnection";
 import { ViewState } from "./ViewState";
 import { SpatialViewState } from "./SpatialViewState";
-import { Environment, loggerCategory } from "./imodeljs-frontend";
+import { Environment } from "./DisplayStyleState";
 
 /** Options for creating a [[ViewState3d]] via [[ViewCreator3d]].
  *  @public
@@ -64,7 +64,7 @@ export class ViewCreator3d {
 
     const models = modelIds ? modelIds : await this._getAllModels();
     if (models === undefined || models.length === 0)
-      throw new IModelError(IModelStatus.BadModel, "ViewCreator3d.createDefaultView: no 3D models found in iModel", Logger.logError, loggerCategory, () => ({ models }));
+      throw new IModelError(IModelStatus.BadModel, "ViewCreator3d.createDefaultView: no 3D models found in iModel");
 
     const props = await this._createViewStateProps(models, options);
     const viewState = SpatialViewState.createFromProps(props, this._imodel);
@@ -91,8 +91,15 @@ export class ViewCreator3d {
     const categories: Id64Array = await this._getAllCategories();
 
     // model extents
+    const modelExtents = new Range3d();
     const modelProps = await this._imodel.models.queryModelRanges(models);
-    const modelExtents = Range3d.fromJSON(modelProps[0]);
+
+    for (const props of modelProps)
+      modelExtents.union(Range3d.fromJSON(props), modelExtents);
+
+    if (modelExtents.isNull)
+      modelExtents.setFrom(this._imodel.projectExtents);
+
     let originX = modelExtents.low.x;
     let originY = modelExtents.low.y;
     const originZ = modelExtents.low.z;
@@ -254,9 +261,15 @@ export class ViewCreator3d {
    * Get all PhysicalModel ids in the connection
    */
   private async _getAllModels(): Promise<Id64Array> {
-
-    const query = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false AND isNotSpatiallyLocated = false";
-    const models: Id64Array = await this._executeQuery(query);
+    let query = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false AND isNotSpatiallyLocated = false";
+    let models = [];
+    try {
+      models = await this._executeQuery(query);
+    } catch {
+      // possible that the isNotSpatiallyLocated property is not available in the iModel's schema
+      query = "SELECT ECInstanceId FROM Bis.GeometricModel3D WHERE IsPrivate = false AND IsTemplate = false";
+      models = await this._executeQuery(query);
+    }
 
     return models;
   }

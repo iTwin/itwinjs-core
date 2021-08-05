@@ -23,7 +23,7 @@ With the [iTwin.js Software architecture](./SoftwareArchitecture.md), from the s
 
 ## iTwin.js vs. iModelHub
 
-It is important to understand that iTwin.js applications do not *run on [iModelHub](./iModelHub/index)*. Instead, they can run *anywhere else*. iTwin.js applications always work on a copy of an iModel in a *briefcase*, obtained from iModelHub, and process it locally, making them *infinitely scalable*.
+It is important to understand that iTwin.js applications do not *run on [iModelHub](./iModelHub/index)*. Instead, they can run *anywhere else*. iTwin.js applications always work on a copy of an iModel, either a *briefcase* or *checkpoint* obtained from iModelHub, or a [snapshot iModel](./backend/AccessingIModels.md) created by an iTwin.js application, and process it locally. This makes them *infinitely scalable*.
 
 iTwin.js applications can be:
 

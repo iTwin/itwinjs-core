@@ -111,7 +111,10 @@
     "PoweredBy": "Powered by"
   },
   "RealityModelTypes": {
-    "OrbitGTPointCloud": "OrbitGT Point Cloud"
+    "OrbitGTPointCloud": "Web Ready Point Cloud",
+    "RealityMesh3DTiles": "Web Ready 3D Scalable Mesh",
+    "Terrain3DTiles": "Web Ready Terrain Scalable Mesh",
+    "Cesium3DTiles": "Cesium 3D Tiles"
   },
   "RealityModelNames": {
     "OSMBuildings": "OpenStreetMap Buildings"
@@ -159,5 +162,8 @@
       "LoadTileTokenError": "An authentication error occurred while loading tiles for layer '{{layerName}}'",
       "FetchTooltipTokenError": "An authentication error occurred while fetching tooltip for layer '{{layerName}}'"
     }
+  },
+  "TooltipInfo": {
+    "Name": "Name:"
   }
 }

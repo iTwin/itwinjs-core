@@ -6,7 +6,6 @@ import * as fs from "fs";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
 import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
 import { ElectronHost, ElectronHostOptions } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import { IModelHost, IModelHostConfiguration, LocalhostIpcHost } from "@bentley/imodeljs-backend";
@@ -20,9 +19,24 @@ import { DtaRpcInterface } from "../common/DtaRpcInterface";
 import { FakeTileCacheService } from "./FakeTileCacheService";
 import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
 
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
+
 class DisplayTestAppRpc extends DtaRpcInterface {
 
-  public async readExternalSavedViews(bimFileName: string): Promise<string> {
+  public override async readExternalSavedViews(bimFileName: string): Promise<string> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
@@ -36,7 +50,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return jsonStr ?? "";
   }
 
-  public async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
+  public override async writeExternalSavedViews(bimFileName: string, namedViews: string): Promise<void> {
     if (ProcessDetector.isMobileAppBackend && process.env.DOCS) {
       const docPath = process.env.DOCS;
       bimFileName = path.join(docPath, bimFileName);
@@ -46,7 +60,7 @@ class DisplayTestAppRpc extends DtaRpcInterface {
     return this.writeExternalFile(esvFileName, namedViews);
   }
 
-  public async writeExternalFile(fileName: string, content: string): Promise<void> {
+  public override async writeExternalFile(fileName: string, content: string): Promise<void> {
     const filePath = this.getFilePath(fileName);
     if (!fs.existsSync(filePath))
       this.createFilePath(filePath);
@@ -92,7 +106,7 @@ export const getRpcInterfaces = (): RpcInterfaceDefinition[] => {
     DtaRpcInterface,
     IModelReadRpcInterface,
     IModelTileRpcInterface,
-    IModelWriteRpcInterface,
+    IModelWriteRpcInterface, // eslint-disable-line deprecation/deprecation
     SnapshotIModelRpcInterface,
   ];
 
@@ -137,9 +151,6 @@ const setupStandaloneConfiguration = () => {
 
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
-
-  if (undefined !== process.env.SVT_DISABLE_IDLE_WORK)
-    configuration.doIdleWork = false;
 
   if (undefined !== process.env.SVT_DEBUG_SHADERS)
     configuration.debugShaders = true;

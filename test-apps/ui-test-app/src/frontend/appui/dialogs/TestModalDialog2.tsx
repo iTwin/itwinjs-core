@@ -7,7 +7,8 @@ import * as React from "react";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { ColorPickerButton } from "@bentley/ui-components";
-import { Dialog, DialogButtonType } from "@bentley/ui-core";
+import { Dialog } from "@bentley/ui-core";
+import { DialogButtonType } from "@bentley/ui-abstract";
 
 export interface TestModalDialog2Props {
   opened: boolean;
@@ -25,7 +26,7 @@ export interface TestModalDialog2State {
 }
 
 export class TestModalDialog2 extends React.Component<TestModalDialog2Props, TestModalDialog2State> {
-  public readonly state: Readonly<TestModalDialog2State>;
+  public override readonly state: Readonly<TestModalDialog2State>;
 
   constructor(props: TestModalDialog2Props) {
     super(props);
@@ -61,7 +62,7 @@ export class TestModalDialog2 extends React.Component<TestModalDialog2Props, Tes
     IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, msg));
   };
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
 
     return (
       <Dialog

@@ -10,7 +10,8 @@ import "./PopupButton.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
-import { Button, ButtonType, CommonDivProps, CommonProps, Div, Icon, Popup, UiCore } from "@bentley/ui-core";
+import { CommonDivProps, CommonProps, Div, Icon, Popup, UiCore } from "@bentley/ui-core";
+import { Button } from "@itwin/itwinui-react";
 
 /** Properties for [[PopupButton]] component
  * @alpha
@@ -59,19 +60,19 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
   private _buttonRef = React.createRef<HTMLDivElement>();
 
   /** @internal */
-  public readonly state: Readonly<PopupButtonState> = {
+  public override readonly state: Readonly<PopupButtonState> = {
     showPopup: false,
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     if (this.props.setFocus && this._buttonRef.current)
       this._buttonRef.current.focus();
     this._buttonRef.current?.addEventListener("keydown", this._handleKeyDown);
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     // istanbul ignore next
     if (this._buttonRef.current)
       this._buttonRef.current.removeEventListener("keydown", this._handleKeyDown);
@@ -112,7 +113,7 @@ export class PopupButton extends React.PureComponent<PopupButtonProps, PopupButt
   };
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const showArrow = this.props.showArrow ?? false;
     const showShadow = this.props.showShadow ?? false;
     const moveFocus = this.props.moveFocus ?? true;
@@ -183,7 +184,7 @@ export function PopupOkCancelButtons(props: OkCancelProps) {
       <Button
         className={classnames("components-popup-large-button", "components-popup-ok-button")}
         data-testid="components-popup-ok-button"
-        buttonType={ButtonType.Primary}
+        styleType="cta"
         title={UiCore.translate("dialog.ok")}
         onClick={props.onOk}
       >

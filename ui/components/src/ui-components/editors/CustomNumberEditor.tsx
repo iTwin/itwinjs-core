@@ -39,7 +39,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   private _inputElement = React.createRef<HTMLInputElement>();
 
   /** @internal */
-  public readonly state: Readonly<CustomNumberEditorState> = {
+  public override readonly state: Readonly<CustomNumberEditorState> = {
     inputValue: "",
   };
 
@@ -126,18 +126,18 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -249,7 +249,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
   };
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const minSize = this.state.size ? this.state.size : 8;
     const minWidthStyle: React.CSSProperties = {
       minWidth: `${minSize * 0.75}em`,
@@ -263,12 +263,11 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
     const className = classnames("components-cell-editor", "components-customnumber-editor", this.props.className);
 
-    const inputProps: InputProps = {
+    const inputProps: Omit<InputProps, "size"> = {    // eslint-disable-line deprecation/deprecation
       className,
       style: this.props.style ? this.props.style : minWidthStyle,
       readOnly,
       disabled,
-      size: this.state.size,
       maxLength: this.state.maxLength,
       value: this.state.inputValue,
       onChange: this._updateInputValue,
@@ -276,7 +275,6 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       onFocus: this._onFocus,
       setFocus: this.shouldSetFocus(),
       nativeKeyHandler: this._onKeyPress,
-      ref: this._inputElement,
     };
 
     let reactNode: React.ReactNode;
@@ -285,14 +283,18 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
       reactNode = (
         <IconInput
           {...inputProps}
+          ref={this._inputElement}
           icon={icon}
           data-testid="components-customnumber-editor"
         />
       );
     } else {
+      // NEEDSWORK: still using ui-core Input component because of `nativeKeyHandler` prop
       reactNode = (
+        // eslint-disable-next-line deprecation/deprecation
         <Input
           {...inputProps}
+          ref={this._inputElement}
           data-testid="components-customnumber-editor"
         />
       );
@@ -310,7 +312,7 @@ export class CustomNumberPropertyEditor extends PropertyEditorBase {
   public get reactNode(): React.ReactNode {
     return <CustomNumberEditor />;
   }
-  public get containerHandlesEscape(): boolean {
+  public override get containerHandlesEscape(): boolean {
     return false;
   }
 }

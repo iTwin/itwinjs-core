@@ -244,7 +244,8 @@ export class ViewFlags {
     }
     return true;
   }
-  /** @internal */
+
+  /** Returns true if the edges of surfaces should be displayed, based on [[RenderMode]] and the [[visibleEdges]] flag. */
   public edgesRequired(): boolean {
     return edgesRequired(this.renderMode, this.visibleEdges);
   }

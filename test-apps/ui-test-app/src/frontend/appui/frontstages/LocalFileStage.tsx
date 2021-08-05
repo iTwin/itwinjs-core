@@ -10,7 +10,7 @@ import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { OpenDialogOptions } from "electron";
 
-import { Button, ButtonSize, ButtonType, FillCentered, Headline } from "@bentley/ui-core";
+import { FillCentered } from "@bentley/ui-core";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageManager,
   FrontstageProps, FrontstageProvider, ToolWidget, UiFramework, Widget, Zone,
@@ -19,6 +19,7 @@ import { SampleAppIModelApp } from "../..";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { IModelViewPicker } from "../imodelopen/IModelViewPicker";
 import { LocalFileSupport } from "../LocalFileSupport";
+import { Button, Headline } from "@itwin/itwinui-react";
 
 class LocalFileOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -77,8 +78,9 @@ export class LocalFileOpenFrontstage extends FrontstageProvider {
 /** Define a ToolWidget with Buttons to display in the TopLeft zone.
  */
 class FrontstageToolWidget extends React.Component {
-  public render() {
+  public override render() {
     return (
+      // eslint-disable-next-line deprecation/deprecation
       <ToolWidget
         appButton={AppTools.backstageToggleCommand}
       />
@@ -100,11 +102,11 @@ interface LocalFilePageState {
 class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageState> {
   private _input: HTMLInputElement | null = null;
 
-  public readonly state: Readonly<LocalFilePageState> = {
+  public override readonly state: Readonly<LocalFilePageState> = {
     iModelConnection: undefined,
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     if (!this.state.iModelConnection) {
       if (ElectronApp.isValid) {
         this._handleElectronFileOpen(); // eslint-disable-line @typescript-eslint/no-floating-promises
@@ -177,7 +179,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
       this.props.onViewsSelected(this.state.iModelConnection, idsSelected);
   };
 
-  public render() {
+  public override render() {
     if (!this.state.iModelConnection) {
       const title = UiFramework.i18n.translate("SampleApp:localFileStage.localFile");
 
@@ -192,7 +194,7 @@ class LocalFilePage extends React.Component<LocalFilePageProps, LocalFilePageSta
                 type="file" accept=".bim,.ibim" onChange={this._handleFileInputChange}
                 style={{ display: "none" }} />
             }
-            <Button size={ButtonSize.Large} buttonType={ButtonType.Primary} onClick={this._handleButtonClick}>
+            <Button size="large" styleType="cta" onClick={this._handleButtonClick}>
               {UiFramework.i18n.translate("SampleApp:localFileStage.selectFile")}
             </Button>
           </FillCentered >

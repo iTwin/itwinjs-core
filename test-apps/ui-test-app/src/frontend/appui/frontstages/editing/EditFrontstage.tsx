@@ -23,7 +23,7 @@ import { ModelCreationWidget } from "../../widgets/editing/ModelCreationWidget";
 import { VisibilityTreeWidgetControl } from "../../widgets/VisibilityTreeWidget";
 import { Orientation } from "@bentley/ui-core";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 import sketchIconSvg from "../../icons/draw.svg?sprite";
 

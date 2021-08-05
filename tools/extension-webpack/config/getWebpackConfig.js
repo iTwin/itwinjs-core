@@ -9,12 +9,13 @@ const path = require("path");
 const webpack = require("webpack");
 const TerserPlugin = require("terser-webpack-plugin");
 const getCSSModuleLocalIdent = require("react-dev-utils/getCSSModuleLocalIdent");
-const { paths } = require("@bentley/webpack-tools-core/lib/utils/paths");
+const { getPaths } = require("@bentley/webpack-tools-core/lib/utils/paths");
 const { FrontendDefaultsPlugin, IModeljsLibraryImportsPlugin } = require("@bentley/webpack-tools-core");
 const ForkTsCheckerWebpackPlugin = require("react-dev-utils/ForkTsCheckerWebpackPlugin");
 const typescriptFormatter = require("react-dev-utils/typescriptFormatter");
 const postcssNormalize = require("postcss-normalize");
 
+const paths = getPaths();
 const appPackageJson = require(paths.appPackageJson);
 
 // Source maps are resource heavy and can cause out of memory issue for large source files.

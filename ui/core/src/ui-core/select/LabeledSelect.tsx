@@ -6,6 +6,8 @@
  * @module Select
  */
 
+/* eslint-disable deprecation/deprecation */
+
 import classnames from "classnames";
 import * as React from "react";
 import { LabeledComponentProps, MessagedComponentProps } from "../inputs/LabeledComponentProps";
@@ -13,14 +15,16 @@ import { Select, SelectProps } from "./Select";
 
 /** Properties for [[LabeledSelect]] components
  * @public
+ * @deprecated Use LabeledSelectProps in itwinui-react instead
  */
 export interface LabeledSelectProps extends SelectProps, LabeledComponentProps, MessagedComponentProps { }
 
 /** Dropdown wrapper that allows for additional styling and labelling
  * @public
+ * @deprecated Use LabeledSelect in itwinui-react instead
  */
 export class LabeledSelect extends React.PureComponent<LabeledSelectProps> {
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     const { label, status, className, style,
       inputClassName, inputStyle,
       labelClassName, labelStyle,

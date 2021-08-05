@@ -6,6 +6,8 @@
 import { assert } from "@bentley/bentleyjs-core";
 import * as Rules from "../../../Validation/ECRules";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("ECRules Tests", () => {
 
   it("DiagnosticCodes must be unique.", () => {

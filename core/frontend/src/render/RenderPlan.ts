@@ -8,7 +8,7 @@
 
 import { ClipVector, Point3d, Vector3d } from "@bentley/geometry-core";
 import {
-  AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, Frustum, GlobeMode, Gradient, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
+  AmbientOcclusion, AnalysisStyle, ClipStyle, ColorDef, Frustum, GlobeMode, HiddenLine, Hilite, LightSettings, MonochromeMode, Npc, RenderTexture,
   ThematicDisplay, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { FlashSettings } from "../FlashSettings";
@@ -111,8 +111,8 @@ export function createRenderPlanFromViewport(vp: Viewport): RenderPlan {
   }
 
   let analysisTexture;
-  if (undefined !== analysisStyle && undefined !== analysisStyle.scalarThematicSettings)
-    analysisTexture = vp.target.renderSystem.getGradientTexture(Gradient.Symb.createThematic(analysisStyle.scalarThematicSettings), vp.iModel);
+  if (analysisStyle?.scalar)
+    analysisTexture = vp.target.renderSystem.getGradientTexture(analysisStyle.scalar.gradient, vp.iModel);
 
   return {
     is3d,

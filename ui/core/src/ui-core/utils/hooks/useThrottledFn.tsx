@@ -32,5 +32,6 @@ export function useThrottledFn<T extends (...args: any) => any>(
   options: ThrottleSettings = defaultOptions,
 ) {
   const throttledFunction = throttle(functionToThrottle, waitTime, options);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   return React.useCallback(throttledFunction, dependencies);
 }

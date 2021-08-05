@@ -19,6 +19,7 @@ import { VisibilityTreeFilterInfo } from "./Common";
  * @alpha
  */
 export const useVisibilityTreeRenderer = (iconsEnabled: boolean, descriptionsEnabled: boolean) => {
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const nodeRenderer = React.useCallback(createVisibilityTreeNodeRenderer(iconsEnabled, descriptionsEnabled), [iconsEnabled, descriptionsEnabled]);
   return React.useCallback((props: TreeRendererProps) => (
     <TreeRenderer

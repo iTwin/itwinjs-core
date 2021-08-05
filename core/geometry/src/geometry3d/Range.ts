@@ -129,7 +129,7 @@ export class Range3d extends RangeBase implements LowAndHighXYZ, BeJSONFunctions
   }
 
   /** Returns true if this and other have equal low and high parts, or both are null ranges. */
-  public isAlmostEqual(other: Range3d, tol?: number): boolean {
+  public isAlmostEqual(other: Readonly<Range3d>, tol?: number): boolean {
     return (this.low.isAlmostEqual(other.low, tol) && this.high.isAlmostEqual(other.high, tol))
       || (this.isNull && other.isNull);
   }
@@ -839,7 +839,7 @@ export class Range1d extends RangeBase {
     this.setDirect(low, high);
   }
   /** Returns true if this and other have equal low and high parts, or both are null ranges. */
-  public isAlmostEqual(other: Range1d): boolean {
+  public isAlmostEqual(other: Readonly<Range1d>): boolean {
     return (Geometry.isSameCoordinate(this.low, other.low) && Geometry.isSameCoordinate(this.high, other.high))
       || (this.isNull && other.isNull);
   }

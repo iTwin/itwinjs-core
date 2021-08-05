@@ -33,7 +33,6 @@ export interface DtaConfiguration {
   dpiAwareLOD?: boolean; // default OFF
   disableEdges?: boolean; // default OFF
   useWebGL2?: boolean; // default ON
-  doIdleWork?: boolean; // default ON
   debugShaders?: boolean; // default OFF
   alwaysLoadEdges?: boolean; // default OFF
   minimumSpatialTolerance?: number; // default undefined (no minimum)

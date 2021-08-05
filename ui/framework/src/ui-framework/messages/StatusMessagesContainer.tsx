@@ -34,20 +34,30 @@ export interface StatusMessagesContainerProps {
  * @internal
  */
 export function StatusMessagesContainer(props: StatusMessagesContainerProps) {
+  const [containerElement, setContainerElement] = React.useState<HTMLDivElement | null>(null);
+  const isMountedRef = React.useRef(false);
+
+  React.useEffect(() => {
+    if (!isMountedRef.current && containerRef.current) {
+      isMountedRef.current = true;
+      setContainerElement(containerRef.current);
+    }
+  }, []);
+
   const messages = props.messages;
   const containerRef = React.useRef<HTMLDivElement>(null);
-  const [, height] = useLayoutResizeObserver(containerRef);
+  const [, height] = useLayoutResizeObserver(containerElement);
   const [addScroll, setAddScroll] = React.useState(false);
 
   React.useLayoutEffect(() => {
     // istanbul ignore else
-    if (containerRef.current) {
+    if (containerElement) {
       // istanbul ignore next
-      const windowHeight = containerRef.current.ownerDocument.defaultView?.innerHeight ?? 800;
+      const windowHeight = containerElement.ownerDocument.defaultView?.innerHeight ?? 800;
       const maxHeight = Math.floor(windowHeight * .66);
       setAddScroll((height ?? 0) >= maxHeight);
     }
-  }, [height]);
+  }, [height, containerElement]);
 
   if (!(props.activityMessageInfo && props.isActivityMessageVisible) && props.messages.length === 0)
     return null;

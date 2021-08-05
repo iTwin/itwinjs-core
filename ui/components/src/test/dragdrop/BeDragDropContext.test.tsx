@@ -10,6 +10,7 @@ describe("BeDragDropContext", () => {
 
   afterEach(cleanup);
   it("should render", () => {
+    // eslint-disable-next-line deprecation/deprecation
     render(<BeDragDropContext> Test </BeDragDropContext>);
   });
 });

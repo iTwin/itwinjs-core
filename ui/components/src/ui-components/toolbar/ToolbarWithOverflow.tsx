@@ -334,6 +334,7 @@ export function ToolbarWithOverflow(props: ToolbarWithOverflowProps) {
     }
     return acc;
   }, []);
+  // eslint-disable-next-line react-hooks/exhaustive-deps
   const overflowPanelItems = overflowItemKeys ? availableItems.reduce<Array<[string, React.ReactNode]>>((acc, child, index) => {
     const key = getChildKey(child, index);
     if (overflowItemKeys.indexOf(key) >= 0) {

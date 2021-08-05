@@ -15,9 +15,7 @@ import {
   TerrainProviderName,
 } from "@bentley/imodeljs-common";
 import { ApproximateTerrainHeights } from "../../ApproximateTerrainHeights";
-import { BackgroundMapGeometry } from "../../BackgroundMapGeometry";
 import { TerrainDisplayOverrides } from "../../DisplayStyleState";
-import { GeoConverter } from "../../GeoServices";
 import { HitDetail } from "../../HitDetail";
 import { IModelApp } from "../../IModelApp";
 import { IModelConnection } from "../../IModelConnection";
@@ -46,12 +44,14 @@ import {
   TileDrawArgs,
   TileLoadPriority,
   TileParams,
+  TileTree,
+  TileTreeLoadStatus,
   TileTreeOwner,
   TileTreeReference,
   TileTreeSupplier,
-  UpsampledMapTile, WebMercatorTilingScheme,
+  UpsampledMapTile,
+  WebMercatorTilingScheme,
 } from "../internal";
-import { TileTree, TileTreeLoadStatus } from "../TileTree";
 
 const scratchPoint = Point3d.create();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
@@ -65,9 +65,7 @@ export class MapTileTree extends RealityTileTree {
   public maxEarthEllipsoid: Ellipsoid;
   public globeMode: GlobeMode;
   public globeOrigin: Point3d;
-  public cartesianRange: Range3d;
-  public cartesianTransitionDistance: number;
-  private _gcsConverter: GeoConverter | undefined;
+
   private _mercatorTilingScheme: MapTilingScheme;
   public useDepthBuffer: boolean;
   public isOverlay: boolean;
@@ -76,17 +74,16 @@ export class MapTileTree extends RealityTileTree {
   public baseTransparent: boolean;
   public mapTransparent: boolean;
 
-  constructor(params: RealityTileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, public geodeticOffset: number, gcsConverterAvailable: boolean, public sourceTilingScheme: MapTilingScheme, id: MapTreeId) {
+  constructor(params: RealityTileTreeParams, public ecefToDb: Transform, public bimElevationBias: number, public geodeticOffset: number, public sourceTilingScheme: MapTilingScheme, id: MapTreeId) {
     super(params);
     this._mercatorTilingScheme = new WebMercatorTilingScheme();
     this._mercatorFractionToDb = this._mercatorTilingScheme.computeMercatorFractionToDb(ecefToDb, bimElevationBias, params.iModel, id.applyTerrain);
     const quadId = new QuadId(0, 0, 0);
-    this.cartesianRange = BackgroundMapGeometry.getCartesianRange(this.iModel);
     this.globeOrigin = this.ecefToDb.getOrigin().clone();
     this.earthEllipsoid = Ellipsoid.createCenterMatrixRadii(this.globeOrigin, this.ecefToDb.matrix, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.equator, Constant.earthRadiusWGS84.polar);
     const globalHeightRange = id.applyTerrain ? ApproximateTerrainHeights.instance.globalHeightRange : Range1d.createXX(0, 0);
     const globalRectangle = MapCartoRectangle.create();
-    this.cartesianTransitionDistance = this.cartesianRange.diagonal().magnitudeXY() * .25;      // Transition distance from elliptical to cartesian.
+
     this.globeMode = id.globeMode;
     this.isOverlay = id.isOverlay;
     this.useDepthBuffer = id.useDepthBuffer;
@@ -112,7 +109,7 @@ export class MapTileTree extends RealityTileTree {
       range = Range3d.createArray(MapTile.computeRangeCorners(corners, Vector3d.create(0, 0, 1), 0, scratchCorners, globalHeightRange));
     }
     this._rootTile = this.createGlobeChild({ contentId: quadId.contentId, maximumSize: 0, range }, quadId, range.corners(), globalRectangle, rootPatch, undefined);
-    this._gcsConverter = gcsConverterAvailable ? params.iModel.geoServices.getConverter("WGS84") : undefined;
+
   }
   public tileFromQuadId(quadId: QuadId): MapTile | undefined {
     return (this._rootTile as MapTile).tileFromQuadId(quadId);
@@ -134,11 +131,11 @@ export class MapTileTree extends RealityTileTree {
     this.imageryTrees.length = 0;
     this._layerSettings.clear();
   }
-  public get isTransparent() {
+  public override get isTransparent() {
     return this.mapTransparent || this.baseTransparent;
   }
 
-  public get maxDepth() {
+  public override get maxDepth() {
     let maxDepth = this.loader.maxDepth;
     this.imageryTrees?.forEach((imageryTree) => maxDepth = Math.max(maxDepth, imageryTree.maxDepth));
 
@@ -167,7 +164,7 @@ export class MapTileTree extends RealityTileTree {
   public static maxGlobeDisplayDepth = 8;
   public static minDisplayableDepth = 3;
   public get mapLoader() { return this.loader as MapTileLoader; }
-  public getBaseRealityDepth(sceneContext: SceneContext) {
+  public override getBaseRealityDepth(sceneContext: SceneContext) {
     // If the view has ever had global scope then preload low level (global) tiles.
     return (sceneContext.viewport.view.maxGlobalScopeFactor > 1) ? MapTileTree.minDisplayableDepth : -1;
   }
@@ -182,8 +179,7 @@ export class MapTileTree extends RealityTileTree {
 
     return false;  // Display as globe if more than 100 KM from project.
   }
-
-  public doReprojectChildren(tile: Tile): boolean {
+  public override doReprojectChildren(tile: Tile): boolean {
     if (this._gcsConverter === undefined)
       return false;
 
@@ -246,7 +242,7 @@ export class MapTileTree extends RealityTileTree {
     return childCorners;
   }
 
-  public getCachedReprojectedPoints(gridPoints: Point3d[]): Point3d[] | undefined {
+  public getCachedReprojectedPoints(gridPoints: Point3d[]): (Point3d | undefined)[] | undefined {
     const requestProps = [];
     for (const gridPoint of gridPoints)
       requestProps.push({
@@ -260,7 +256,7 @@ export class MapTileTree extends RealityTileTree {
     if (iModelCoordinates.missing)
       return undefined;
 
-    return iModelCoordinates.result.map((result) => Point3d.fromJSON(result!.p));
+    return iModelCoordinates.result.map((result) => !result || result.s ? undefined  : Point3d.fromJSON(result.p));
   }
 
   // Minimize reprojection requests by requesting this corners tile and a grid that will include all points for 4 levels of descendants.
@@ -293,12 +289,15 @@ export class MapTileTree extends RealityTileTree {
 
   // Get the corners for planar children -- This generally will resolve immediately, but may require an asynchronous request for reprojecting the corners.
   public getPlanarChildCorners(tile: MapTile, columnCount: number, rowCount: number, resolve: (childCorners: Point3d[][]) => void) {
-    const resolveCorners = (points: Point3d[], reprojected: Point3d[] | undefined = undefined) => {
+    const resolveCorners = (points: Point3d[], reprojected: (Point3d | undefined)[] | undefined = undefined) => {
       for (let i = 0; i < points.length; i++) {
         const gridPoint = points[i];
         this._mercatorFractionToDb.multiplyPoint3d(gridPoint, scratchCorner);
         if (this.globeMode !== GlobeMode.Ellipsoid || this.cartesianRange.containsPoint(scratchCorner)) {
-          (reprojected ? reprojected[i] : scratchCorner).clone(gridPoint);
+          if (reprojected !== undefined && reprojected[i] !== undefined)
+            reprojected[i]!.clone(gridPoint);
+          else
+            scratchCorner.clone(gridPoint);
         } else {
           this._mercatorTilingScheme.fractionToCartographic(gridPoint.x, gridPoint.y, MapTileTree._scratchCarto);
           this.earthEllipsoid.radiansToPoint(MapTileTree._scratchCarto.longitude, Cartographic.parametricLatitudeFromGeodeticLatitude(MapTileTree._scratchCarto.latitude), gridPoint);
@@ -310,7 +309,7 @@ export class MapTileTree extends RealityTileTree {
       resolve(this.getChildCornersFromGridPoints(points, columnCount, rowCount));
     };
 
-    let reprojectedPoints: Point3d[] | undefined;
+    let reprojectedPoints: (Point3d | undefined)[] | undefined;
     const gridPoints = this.getMercatorFractionChildGridPoints(tile, columnCount, rowCount);
     if (this.doReprojectChildren(tile)) {
       reprojectedPoints = this.getCachedReprojectedPoints(gridPoints);
@@ -391,7 +390,7 @@ class MapTileTreeProps implements RealityTileTreeParams {
   public iModel: IModelConnection;
   public get priority(): TileLoadPriority { return this.loader.priority; }
 
-  public constructor(modelId: Id64String, loader: MapTileLoader, iModel: IModelConnection) {
+  public constructor(modelId: Id64String, loader: MapTileLoader, iModel: IModelConnection, public gcsConverterAvailable: boolean) {
     this.id = this.modelId = modelId;
     this.loader = loader;
     this.iModel = iModel;
@@ -427,7 +426,7 @@ class MapTreeSupplier implements TileTreeSupplier {
                       cmp = compareBooleans(lhs.applyTerrain, rhs.applyTerrain);
                       if (0 === cmp) {
                         if (lhs.applyTerrain) {
-                        // Terrain-only settings.
+                          // Terrain-only settings.
                           cmp = compareStrings(lhs.terrainProviderName, rhs.terrainProviderName);
                           if (0 === cmp) {
                             cmp = compareNumbers(lhs.terrainHeightOrigin, rhs.terrainHeightOrigin);
@@ -438,7 +437,7 @@ class MapTreeSupplier implements TileTreeSupplier {
                             }
                           }
                         } else {
-                        // Non-Terrain (flat) settings.
+                          // Non-Terrain (flat) settings.
                           cmp = compareNumbers(lhs.mapGroundBias, rhs.mapGroundBias);
                           if (0 === cmp)
                             cmp = compareBooleans(lhs.useDepthBuffer, rhs.useDepthBuffer);
@@ -491,7 +490,7 @@ class MapTreeSupplier implements TileTreeSupplier {
     if (undefined === terrainProvider)
       return undefined;
     const loader = new MapTileLoader(iModel, modelId, bimElevationBias, terrainProvider);
-    const ecefToDb = iModel.backgroundMapLocation.getMapEcefToDb(bimElevationBias);
+    const ecefToDb = iModel.getMapEcefToDb(bimElevationBias);
 
     if (undefined === loader) {
       assert(false, "Invalid Terrain Provider");
@@ -500,8 +499,8 @@ class MapTreeSupplier implements TileTreeSupplier {
     if (id.maskModelIds)
       await iModel.models.load(CompressedId64Set.decompressSet(id.maskModelIds));
 
-    const treeProps = new MapTileTreeProps(modelId, loader, iModel);
-    return new MapTileTree(treeProps, ecefToDb, bimElevationBias, geodeticOffset, gcsConverterAvailable, terrainProvider.tilingScheme, id);
+    const treeProps = new MapTileTreeProps(modelId, loader, iModel, gcsConverterAvailable);
+    return new MapTileTree(treeProps, ecefToDb, bimElevationBias, geodeticOffset, terrainProvider.tilingScheme, id);
   }
 }
 
@@ -550,12 +549,12 @@ export class MapTileTreeReference extends TileTreeReference {
     if (this._settings.planarClipMask && this._settings.planarClipMask.isValid)
       this._planarClipMask = PlanarClipMaskState.create(this._settings.planarClipMask);
   }
-  public get isGlobal() { return true; }
+  public override get isGlobal() { return true; }
   public get baseColor(): ColorDef | undefined { return this._baseColor; }
-  public get planarclipMaskPriority(): number { return PlanarClipMaskPriority.BackgroundMap; }
+  public override get planarclipMaskPriority(): number { return PlanarClipMaskPriority.BackgroundMap; }
 
   /** Terrain  tiles do not contribute to the range used by "fit view". */
-  public unionFitRange(_range: Range3d): void { }
+  public override unionFitRange(_range: Range3d): void { }
   public get settings(): BackgroundMapSettings { return this._settings; }
   public set settings(settings: BackgroundMapSettings) {
     this._settings = settings;
@@ -610,11 +609,11 @@ export class MapTileTreeReference extends TileTreeReference {
       tree.clearLayers();
   }
 
-  public get castsShadows() {
+  public override get castsShadows() {
     return false;
   }
 
-  protected get _isLoadingComplete(): boolean {
+  protected override get _isLoadingComplete(): boolean {
     // Wait until drape tree is fully loaded too.
     for (const drapeTree of this._imageryTrees)
       if (!drapeTree.isLoadingComplete)
@@ -693,7 +692,7 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   /** Adds this reference's graphics to the scene. By default this invokes [[TileTree.drawScene]] on the referenced TileTree, if it is loaded. */
-  public addToScene(context: SceneContext): void {
+  public override addToScene(context: SceneContext): void {
     if (!context.viewFlags.backgroundMap)
       return;
 
@@ -718,7 +717,7 @@ export class MapTileTreeReference extends TileTreeReference {
     tree.clearImageryLayers();
   }
 
-  public createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
+  public override createDrawArgs(context: SceneContext): TileDrawArgs | undefined {
     const args = super.createDrawArgs(context);
     if (undefined === args)
       return undefined;
@@ -726,15 +725,15 @@ export class MapTileTreeReference extends TileTreeReference {
     return new RealityTileDrawArgs(args, args.worldToViewMap, args.frustumPlanes);
   }
 
-  protected getViewFlagOverrides(_tree: TileTree) {
+  protected override getViewFlagOverrides(_tree: TileTree) {
     return createViewFlagOverrides(false, this._settings.applyTerrain ? undefined : false);
   }
 
-  protected getSymbologyOverrides(_tree: TileTree) {
+  protected override getSymbologyOverrides(_tree: TileTree) {
     return this._symbologyOverrides;
   }
 
-  public discloseTileTrees(trees: DisclosedTileTreeSet): void {
+  public override discloseTileTrees(trees: DisclosedTileTreeSet): void {
     super.discloseTileTrees(trees);
     this._imageryTrees.forEach((imageryTree) => trees.disclose(imageryTree));
     if (this._planarClipMask)
@@ -756,7 +755,7 @@ export class MapTileTreeReference extends TileTreeReference {
     return imageryTree === undefined ? imageryTree : imageryTree.layerSettings;
   }
 
-  public async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
+  public override async getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined> {
     const tree = this.treeOwner.tileTree as MapTileTree;
     // eslint-disable-next-line @typescript-eslint/unbound-method
     if (undefined === tree || hit.iModel !== tree.iModel || tree.modelId !== hit.modelId || !hit.viewport || !hit.viewport.view.is3d)
@@ -799,7 +798,7 @@ export class MapTileTreeReference extends TileTreeReference {
   }
 
   /** Add logo cards to logo div. */
-  public addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
+  public override addLogoCards(cards: HTMLTableElement, vp: ScreenViewport): void {
     const tree = this.treeOwner.tileTree as MapTileTree;
     let logo;
     if (tree) {

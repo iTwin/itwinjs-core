@@ -10,7 +10,8 @@ import "./CardPopup.scss";
 import * as React from "react";
 import classnames from "classnames";
 import { CommonToolbarItem, OnCancelFunc, OnItemExecutedFunc, PropertyRecord, RelativePosition, SpecialKey } from "@bentley/ui-abstract";
-import { DivWithOutsideClick, FocusTrap, LeadingText, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
+import { DivWithOutsideClick, FocusTrap, Orientation, Point, Size, SizeProps } from "@bentley/ui-core";
+import { Leading } from "@itwin/itwinui-react";
 import { CursorPopup } from "../cursor/cursorpopup/CursorPopup";
 import { isReactContent, PopupContentType, PopupManager, PopupPropsBase } from "./PopupManager";
 import { PositionPopup } from "./PositionPopup";
@@ -38,7 +39,7 @@ interface CardPopupState {
  */
 export class CardPopup extends React.PureComponent<CardPopupProps, CardPopupState> {
   /** @internal */
-  public readonly state = {
+  public override readonly state = {
     size: new Size(-1, -1),
   };
 
@@ -63,7 +64,7 @@ export class CardPopup extends React.PureComponent<CardPopupProps, CardPopupStat
     }
   }
 
-  public render() {
+  public override render() {
     let point = PopupManager.getPopupPosition(this.props.el, this.props.pt, new Point(), this.state.size);
     const popupRect = CursorPopup.getPopupRect(point, this.props.offset, this.state.size, this.props.relativePosition);
     point = new Point(popupRect.left, popupRect.top);
@@ -99,11 +100,11 @@ export function Card(props: CardProps) {
   // istanbul ignore else
   if (props.title) {
     if (typeof props.title === "string")
-      titleNode = <LeadingText>{props.title}</LeadingText>;
+      titleNode = <Leading>{props.title}</Leading>;
     else {
       const propertyValueRendererManager = PropertyValueRendererManager.defaultManager;
       const titleValue = propertyValueRendererManager.render(props.title);
-      titleNode = <LeadingText>{titleValue}</LeadingText>;
+      titleNode = <Leading>{titleValue}</Leading>;
     }
   }
 

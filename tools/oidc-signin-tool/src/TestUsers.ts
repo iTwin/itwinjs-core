@@ -9,7 +9,7 @@ import { Config } from "@bentley/bentleyjs-core";
 
 /**
  * Interface for test user credentials
- * @alpha
+ * @internal
  */
 export interface TestUserCredentials {
   email: string;
@@ -18,7 +18,7 @@ export interface TestUserCredentials {
 
 /**
  * Configuration used by [[TestBrowserAuthorizationClient]]
- * @alpha
+ * @internal
  */
 export interface TestBrowserAuthorizationClientConfiguration {
   clientId: string;

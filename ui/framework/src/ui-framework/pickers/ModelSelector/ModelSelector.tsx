@@ -14,7 +14,7 @@ import { ModelProps, ModelQueryParams } from "@bentley/imodeljs-common";
 import { IModelApp, SpatialModelState, SpatialViewState, Viewport } from "@bentley/imodeljs-frontend";
 import { RegisteredRuleset } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
-import { LoadingSpinner, SpinnerSize } from "@bentley/ui-core";
+import { LoadingSpinner } from "@bentley/ui-core";
 import { ConfigurableCreateInfo } from "../../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../../configurableui/ConfigurableUiManager";
 import { UiFramework } from "../../UiFramework";
@@ -59,13 +59,13 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** @internal */
-  public async componentDidMount() {
+  public override async componentDidMount() {
     this._isMounted = true;
     await this.initialize();
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
@@ -298,11 +298,11 @@ export class ModelSelectorWidget extends React.Component<ModelSelectorWidgetProp
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     return (
       <div className="uifw-widget-picker" data-testid="model-selector-widget">
         {!this.state.activeRuleset && (
-          <LoadingSpinner size={SpinnerSize.Medium} />
+          <LoadingSpinner />
         )}
         {this.state.activeRuleset && (
           <>

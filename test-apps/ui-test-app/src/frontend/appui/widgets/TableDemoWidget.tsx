@@ -11,7 +11,7 @@ import {
 } from "./demodataproviders/demoTableDataProvider";
 import { TreeDragTypes } from "./demodataproviders/demoTreeDataProvider";
 import { RowDragLayer } from "./draglayers/RowDragLayer";
-import { Checkbox } from "@bentley/ui-core";
+import { Checkbox } from "@itwin/itwinui-react";
 
 export class TableDemoWidgetControl extends WidgetControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
@@ -35,10 +35,10 @@ interface State {
 }
 
 export class TableDemoWidget extends React.Component<Props, State> {
-  public readonly state: State = {
+  public override readonly state: State = {
     checked: false,
   };
-  public render() {
+  public override render() {
     DragDropLayerManager.registerTypeLayer(TableDragTypes.Row, RowDragLayer); // eslint-disable-line deprecation/deprecation
 
     let objectTypes: Array<string | symbol> = [];

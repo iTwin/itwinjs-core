@@ -12,7 +12,8 @@ import * as React from "react";
 import {
   PropertyEditorParams, PropertyEditorParamTypes, PropertyValue, PropertyValueFormat, SliderEditorParams, StandardEditorNames, StandardTypeNames,
 } from "@bentley/ui-abstract";
-import { Icon, Slider } from "@bentley/ui-core";
+import { Icon } from "@bentley/ui-core";
+import { Slider, TooltipProps } from "@itwin/itwinui-react";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
@@ -21,27 +22,18 @@ import { PopupButton, PopupContent, PopupOkCancelButtons } from "./PopupButton";
 interface SliderEditorState {
   value: number;
   isDisabled?: boolean;
-
   min: number;
   max: number;
-
   size?: number;
   step?: number;
-  mode?: number;
-  reversed?: boolean;
   showTooltip?: boolean;
   tooltipBelow?: boolean;
   formatTooltip?: (value: number) => string;
-
-  showMinMax?: boolean;
-  minIconSpec?: string;
-  maxIconSpec?: string;
-
-  showTicks?: boolean;
-  showTickLabels?: boolean;
-  formatTick?: (tick: number) => string;
-  getTickCount?: () => number;
-  getTickValues?: () => number[];
+  thumbMode?: "allow-crossing" | "inhibit-crossing";
+  trackDisplayMode?: "auto" | "none" | "odd-segments" | "even-segments";
+  minLabel?: React.ReactNode;
+  maxLabel?: React.ReactNode;
+  tickLabels?: React.ReactNode;
 }
 
 /** SliderEditor React component that is a property editor with numeric input & up/down buttons
@@ -53,7 +45,7 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
   private _divElement = React.createRef<HTMLDivElement>();
 
   /** @internal */
-  public readonly state: Readonly<SliderEditorState> = {
+  public override readonly state: Readonly<SliderEditorState> = {
     value: 0,
     min: 0,
     max: 100,
@@ -88,7 +80,7 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
   }
 
   private _handleChange = (values: readonly number[]): void => {
-    const newValue = values.length === 1 ? values[0] : /* istanbul ignore next */ 0;
+    const newValue = values[0];
 
     // istanbul ignore else
     if (this._isMounted)
@@ -98,22 +90,32 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
   }
+
+  private internalFormatTooltip = (value: number, step = 1) => {
+    if (Number.isInteger(step))
+      return value.toFixed(0);
+
+    const stepString = step.toString();
+    const decimalIndex = stepString.indexOf(".");
+    const numDecimals = step.toString().length - (decimalIndex + 1);
+    return value.toFixed(numDecimals);
+  };
 
   private async setStateFromProps() {
     const record = this.props.propertyRecord;
@@ -128,19 +130,14 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
     let min = 0;
     let max = 100;
     let step: number | undefined;
-    let mode: number | undefined;
-    let reversed: boolean | undefined;
     let showTooltip: boolean | undefined;
     let tooltipBelow: boolean | undefined;
     let formatTooltip: ((value: number) => string) | undefined;
-    let showMinMax: boolean | undefined;
-    let minIconSpec: string | undefined;
-    let maxIconSpec: string | undefined;
-    let showTicks: boolean | undefined;
-    let showTickLabels: boolean | undefined;
-    let formatTick: ((tick: number) => string) | undefined;
-    let getTickCount: (() => number) | undefined;
-    let getTickValues: (() => number[]) | undefined;
+    let tickLabels: string[] | undefined;
+    let minLabel: React.ReactNode | undefined;
+    let maxLabel: React.ReactNode | undefined;
+    let trackDisplayMode: "auto" | "none" | "odd-segments" | "even-segments" | undefined;
+    let thumbMode: "allow-crossing" | "inhibit-crossing" | undefined;
 
     const isDisabled = record ? record.isDisabled : undefined;
 
@@ -152,19 +149,33 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
         max = sliderParams.maximum;
         size = sliderParams.size;
         step = sliderParams.step;
-        mode = sliderParams.mode;
-        reversed = sliderParams.reversed;
+        thumbMode = 1 === sliderParams.mode ? "allow-crossing" : "inhibit-crossing";
+        trackDisplayMode = !sliderParams.reversed ? "auto" : "odd-segments";
         showTooltip = sliderParams.showTooltip;
         tooltipBelow = sliderParams.tooltipBelow;
         formatTooltip = sliderParams.formatTooltip;
-        showMinMax = sliderParams.showMinMax;
-        minIconSpec = sliderParams.minIconSpec;
-        maxIconSpec = sliderParams.maxIconSpec;
-        showTicks = sliderParams.showTicks;
-        showTickLabels = sliderParams.showTickLabels;
-        formatTick = sliderParams.formatTick;
-        getTickCount = sliderParams.getTickCount;
-        getTickValues = sliderParams.getTickValues;
+
+        minLabel = !sliderParams.showMinMax ? "" : sliderParams.minIconSpec ? <Icon iconSpec={sliderParams.minIconSpec} /> : undefined;
+        maxLabel = !sliderParams.showMinMax ? "" : sliderParams.maxIconSpec ? <Icon iconSpec={sliderParams.maxIconSpec} /> : undefined;
+
+        if (sliderParams.showTicks) {
+          const count = sliderParams.getTickCount ? sliderParams.getTickCount() : 0;
+          if (count) {
+            tickLabels = [];
+            const increment = (max - min) / count;
+            for (let i = 0; i <= count; i++) {
+              const value = (i * increment) + min;
+              if (sliderParams.showTickLabels) {
+                const label = sliderParams.formatTick ? sliderParams.formatTick(value) : this.internalFormatTooltip(value, step);
+                tickLabels.push(label);
+              } else {
+                tickLabels.push("");
+              }
+            }
+          } else if (sliderParams.getTickValues) {
+            tickLabels = sliderParams.getTickValues().map((val: number) => sliderParams.formatTick ? sliderParams.formatTick(val) : this.internalFormatTooltip(val, step));
+          }
+        }
       }
     }
 
@@ -173,9 +184,12 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
       this.setState({
         value: initialValue, isDisabled,
         size,
-        min, max, step, mode,
-        reversed, showTooltip, tooltipBelow, formatTooltip, showMinMax, minIconSpec, maxIconSpec,
-        showTicks, showTickLabels, formatTick, getTickCount, getTickValues,
+        min, max, step, trackDisplayMode,
+        showTooltip, tooltipBelow, formatTooltip,
+        minLabel,
+        maxLabel,
+        tickLabels,
+        thumbMode,
       });
   }
 
@@ -216,17 +230,19 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
     }
   };
 
+  private tooltipProps = (_index: number, val: number) => {
+    const content = this.state.formatTooltip ? this.state.formatTooltip(val) : this.internalFormatTooltip(val, this.state.step);
+    return { placement: this.state.tooltipBelow ? "bottom" : "top", content, visible: this.state.showTooltip } as Partial<Omit<TooltipProps, "children">>;
+  };
+
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const className = classnames("components-cell-editor", "components-slider-editor", this.props.className);
     const minSize = this.state.size ? this.state.size : 100;
     const style: React.CSSProperties = {
       ...this.props.style,
       minWidth: `${minSize}px`,
     };
-
-    const minImage = this.state.minIconSpec ? <Icon iconSpec={this.state.minIconSpec} /> : undefined;
-    const maxImage = this.state.maxIconSpec ? <Icon iconSpec={this.state.maxIconSpec} /> : undefined;
 
     const popupContent = (
       <Slider
@@ -236,21 +252,14 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
         min={this.state.min}
         max={this.state.max}
         step={this.state.step}
+        thumbMode={this.state.thumbMode}
+        trackDisplayMode={this.state.trackDisplayMode}
         disabled={this.state.isDisabled}
-        reversed={this.state.reversed}
-        showTooltip={this.state.showTooltip}
-        tooltipBelow={this.state.tooltipBelow}
-        formatTooltip={this.state.formatTooltip}
-        showMinMax={this.state.showMinMax}
-        minImage={minImage}
-        maxImage={maxImage}
-        showTicks={this.state.showTicks}
-        showTickLabels={this.state.showTickLabels}
-        formatTick={this.state.formatTick}
-        getTickCount={this.state.getTickCount}
-        getTickValues={this.state.getTickValues}
+        minLabel={this.state.minLabel}
+        maxLabel={this.state.maxLabel}
+        tooltipProps={this.tooltipProps}
+        tickLabels={this.state.tickLabels}
         onChange={this._handleChange}
-        includeTicksInWidth={true}
       />
     );
 

@@ -29,11 +29,11 @@ class AnalysisTimelineProvider {
   }
 
   public update(time: number, vp: Viewport): void {
-    vp.analysisFraction = time / 100;
+    vp.displayStyle.settings.analysisFraction = time / 100;
   }
 
   public getCurrentTime(vp: Viewport): number {
-    return vp.analysisFraction * 100;
+    return vp.displayStyle.settings.analysisFraction * 100;
   }
 }
 
@@ -215,7 +215,7 @@ class TimelinePanel extends ToolBarDropDown {
     this._element.style.display = "none";
   }
 
-  public get onViewChanged(): Promise<void> {
+  public override get onViewChanged(): Promise<void> {
     // Change the provider before invoking update
     this._provider = this.createProvider();
     if (this._isPlaying)

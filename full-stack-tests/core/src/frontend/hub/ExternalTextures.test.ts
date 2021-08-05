@@ -88,9 +88,10 @@ describe("external texture requests (#integration)", () => {
 
     loadTextures();
 
-    await waitUntil(() => {
-      return extTexLoader.numActiveRequests === 0 && extTexLoader.numPendingRequests === 0;
-    });
+    await IModelApp.renderSystem.waitForAllExternalTextures();
+    expect(extTexLoader.numActiveRequests).to.equal(0);
+    expect(extTexLoader.numPendingRequests).to.equal(0);
+    await IModelApp.renderSystem.waitForAllExternalTextures(); // check that the wait method works properly when no requests exist.
 
     const numExpectedGoodRequests = texNames.length - numExpectedBadRequests;
     expect(finishedTexRequests.length).to.equal(numExpectedGoodRequests);
@@ -137,11 +138,3 @@ describe("external texture requests (#integration)", () => {
     await testDownsamplingTextures();
   });
 });
-
-async function waitUntil(condition: () => boolean): Promise<void> {
-  if (condition())
-    return;
-
-  await new Promise<void>((resolve: any) => setTimeout(resolve, 100));
-  return waitUntil(condition);
-}

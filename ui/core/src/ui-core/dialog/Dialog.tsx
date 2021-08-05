@@ -9,39 +9,15 @@
 import "./Dialog.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { DialogButtonDef, DialogButtonType, SpecialKey } from "@bentley/ui-abstract";
 import { DivWithOutsideClick } from "../base/DivWithOutsideClick";
 import { UiCore } from "../UiCore";
 import { CommonProps } from "../utils/Props";
 import { Omit } from "../utils/typeUtils";
 import { FocusTrap } from "../focustrap/FocusTrap";
+import { Button } from "@itwin/itwinui-react";
 
 // cspell:ignore focustrap
-
-/** Enum for button types. Determines button label, and default button style.
- * @public
- */
-export enum DialogButtonType {
-  None = "",
-  Close = "close",
-  OK = "ok",
-  Cancel = "cancel",
-  Yes = "yes",
-  No = "no",
-  Retry = "retry",
-  Next = "next",
-  Previous = "previous"
-}
-
-/** Enum for button style.
- * @public
- */
-export enum DialogButtonStyle {
-  None = "",
-  Primary = "uicore-buttons-primary",
-  Hollow = "uicore-buttons-hollow",
-  Blue = "uicore-buttons-blue",
-}
 
 /** Enum for dialog alignment
  * @public
@@ -50,24 +26,6 @@ export enum DialogAlignment {
   TopLeft = "top-left", Top = "top", TopRight = "top-right",
   Left = "left", Center = "center", Right = "right",
   BottomLeft = "bottom-left", Bottom = "bottom", BottomRight = "bottom-right",
-}
-
-/** Interface for a dialog button in a button cluster
- * @public
- */
-export interface DialogButtonDef {
-  /** type of button */
-  type: DialogButtonType;
-  /** Triggered on button click */
-  onClick: () => void;
-  /** Which button style to decorate button width */
-  buttonStyle?: DialogButtonStyle;
-  /** Disable the button */
-  disabled?: boolean;
-  /** Custom label */
-  label?: string;
-  /** Custom CSS class */
-  className?: string;
 }
 
 /** Properties for the [[Dialog]] component
@@ -180,7 +138,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
   };
 
   /** @internal */
-  public readonly state: Readonly<DialogState>;
+  public override readonly state: Readonly<DialogState>;
 
   constructor(props: DialogProps) {
     super(props);
@@ -199,14 +157,14 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
     return this._parentDocument.defaultView ?? window;
   }
 
-  public componentWillUnmount(): void {
+  public override componentWillUnmount(): void {
     const parentWindow = this.getParentWindow();
     parentWindow.removeEventListener("pointerup", this._handlePointerUp, true);
     parentWindow.removeEventListener("pointermove", this._handlePointerMove, true);
     this._parentDocument.removeEventListener("keyup", this._handleKeyUp, true);
   }
 
-  public componentDidMount(): void {
+  public override componentDidMount(): void {
     const parentWindow = this.getParentWindow();
     parentWindow.addEventListener("pointerup", this._handlePointerUp, true);
     this._parentDocument.addEventListener("keyup", this._handleKeyUp, true);
@@ -217,7 +175,7 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
       this._parentDocument = containerDiv.ownerDocument;
   };
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     const {
       opened, title, footer, buttonCluster, onClose, onEscape, onOutsideClick, // eslint-disable-line @typescript-eslint/no-unused-vars
       minWidth, minHeight, x, y, width, height, maxHeight, maxWidth,
@@ -274,11 +232,11 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
 
     const headerElement = header || (
       <div
-        className={
-          classnames(
-            "core-dialog-head",
-            { "core-dialog-movable": movable })
-        }
+        className={classnames(
+          "core-dialog-head",
+          { "core-dialog-movable": movable },
+          { "core-dialog-modal": modal }
+        )}
         data-testid="core-dialog-head"
         onPointerDown={this._handleStartMove}>
         <div className={"core-dialog-title"} data-testid="core-dialog-title" style={titleStyle}>{title}</div>
@@ -406,42 +364,42 @@ export class Dialog extends React.Component<DialogProps, DialogState> {
         switch (button.type) {
           case DialogButtonType.OK:
             buttonText = UiCore.translate("dialog.ok");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "iui-cta");
             break;
           case DialogButtonType.Retry:
             buttonText = UiCore.translate("dialog.retry");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "iui-cta");
             break;
           case DialogButtonType.Yes:
             buttonText = UiCore.translate("dialog.yes");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "iui-cta");
             break;
           case DialogButtonType.No:
             buttonText = UiCore.translate("dialog.no");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
+            buttonClass = classnames(buttonClass, button.buttonStyle);
             break;
           case DialogButtonType.Cancel:
             buttonText = UiCore.translate("dialog.cancel");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
+            buttonClass = classnames(buttonClass, button.buttonStyle);
             break;
           case DialogButtonType.Close:
             buttonText = UiCore.translate("dialog.close");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-hollow");
+            buttonClass = classnames(buttonClass, button.buttonStyle);
             break;
           case DialogButtonType.Next:
             buttonText = UiCore.translate("dialog.next");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "iui-cta");
             break;
           case DialogButtonType.Previous:
             buttonText = UiCore.translate("dialog.previous");
-            buttonClass = classnames(buttonClass, button.buttonStyle || "uicore-buttons-primary");
+            buttonClass = classnames(buttonClass, button.buttonStyle || "iui-cta");
             break;
         }
 
         if (button.label)
           buttonText = button.label;
 
-        buttons.push(<button className={buttonClass} disabled={button.disabled} key={index.toString()} onClick={button.onClick}>{buttonText}</button>);
+        buttons.push(<Button className={buttonClass} disabled={button.disabled} key={index.toString()} onClick={button.onClick}>{buttonText}</Button>);
       });
     }
     return buttons;

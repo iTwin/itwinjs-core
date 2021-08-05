@@ -39,6 +39,13 @@ describe("DialogProperty", () => {
       expect(item.editorPosition.rowPriority).to.eq(1);
       expect(item.editorPosition.columnIndex).to.eq(2);
     });
+    it("to DialogPropertyItem test", () => {
+      const item = colorProperty.item;
+      expect(item.propertyName).to.eq("color");
+      expect(item.value.value).to.eq("yellow");
+      expect(item.value.displayValue).to.eq("Yellow");
+    });
+
   });
   describe("Non-string types", () => {
     it("Number property test", () => {

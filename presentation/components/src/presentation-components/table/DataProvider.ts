@@ -11,7 +11,7 @@ import memoize from "micro-memoize";
 import { assert } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import {
-  Content, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item, NestedContentValue,
+  Content, createFieldHierarchies, DefaultContentDisplayTypes, Descriptor, DescriptorOverrides, Field, FieldDescriptorType, InstanceKey, Item, NestedContentValue,
   PresentationError, PresentationStatus, ProcessFieldHierarchiesProps, RelationshipMeaning, Ruleset, SortDirection, StartItemProps,
   traverseContentItem, Value, ValuesDictionary,
 } from "@bentley/presentation-common";
@@ -156,7 +156,7 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
     this.invalidateCache({ descriptorConfiguration: true, content: true });
   }
 
-  protected invalidateCache(props: CacheInvalidationProps): void {
+  protected override invalidateCache(props: CacheInvalidationProps): void {
     super.invalidateCache(props);
 
     if (props.descriptor) {
@@ -186,12 +186,12 @@ export class PresentationTableDataProvider extends ContentDataProvider implement
    * Tells the data provider to _not_ request descriptor and instead configure
    * content using `getDescriptorOverrides()` call
    */
-  protected shouldConfigureContentDescriptor(): boolean { return false; }
+  protected override shouldConfigureContentDescriptor(): boolean { return false; }
 
   /**
    * Provides content configuration for the property grid
    */
-  protected getDescriptorOverrides(): DescriptorOverrides {
+  protected override getDescriptorOverrides(): DescriptorOverrides {
     const overrides = super.getDescriptorOverrides();
     if (this._sortColumnKey && this._sortDirection !== UiSortDirection.NoSort) {
       overrides.sorting = {
@@ -429,8 +429,8 @@ class CellsBuilder extends PropertyRecordsBuilder {
     return this._cells;
   }
 
-  public processFieldHierarchies(props: ProcessFieldHierarchiesProps): void {
-    props.hierarchies.forEach((hierarchy) => {
+  public override processFieldHierarchies(props: ProcessFieldHierarchiesProps): void {
+    props.hierarchies.forEach((hierarchy, index) => {
       const mergedCellsCount = this._mergedCellCounts[hierarchy.field.name];
       if (mergedCellsCount) {
         // if the field wants to be merged with subsequent fields, instead of rendering value of
@@ -439,6 +439,8 @@ class CellsBuilder extends PropertyRecordsBuilder {
         const expandedNestedContentField = this._sameInstanceFields[hierarchy.field.name];
         expandedNestedContentField.name = hierarchy.field.name;
         hierarchy.field = expandedNestedContentField;
+        const updatedFieldHierarchy = createFieldHierarchies([expandedNestedContentField], true);
+        props.hierarchies.splice(index, 1, ...updatedFieldHierarchy);
       }
     });
   }
@@ -462,7 +464,7 @@ class CellsBuilder extends PropertyRecordsBuilder {
     };
   }
 
-  public startItem(props: StartItemProps): boolean {
+  public override startItem(props: StartItemProps): boolean {
     this._cells = [];
     return super.startItem(props);
   }

@@ -31,6 +31,8 @@ import { IDiagnosticReporter } from "./DiagnosticReporter";
 import { IRuleSet } from "./Rules";
 import { IRuleSuppressionMap, IRuleSuppressionSet, ISuppressionRule } from "./RuleSuppressionSet";
 
+/* eslint-disable deprecation/deprecation */
+
 interface RuleSetArray {
   [name: string]: IRuleSet;
 }
@@ -41,6 +43,7 @@ interface RuleSetArray {
  * objects returned from failing rules using [[IDiagnosticReporter]] implementations registered
  * with an instance of this class.
  * @beta
+ * @deprecated Moved to the ecschema-editing package.
  */
 export class SchemaValidationVisitor implements ISchemaPartVisitor {
   private _reporters: IDiagnosticReporter[] = [];

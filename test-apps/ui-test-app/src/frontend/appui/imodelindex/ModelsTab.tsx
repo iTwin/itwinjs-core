@@ -11,8 +11,9 @@ import { NodeKey, RegisteredRuleset } from "@bentley/presentation-common";
 import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { Presentation } from "@bentley/presentation-frontend";
 import { DelayLoadedTreeNodeItem, DEPRECATED_Tree, TreeNodeItem } from "@bentley/ui-components";
-import { Checkbox, CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@bentley/ui-core";
+import { CheckBoxState, CheckListBox, CheckListBoxItem, LoadingSpinner } from "@bentley/ui-core";
 import { UiFramework } from "@bentley/ui-framework";
+import { Button, Checkbox } from "@itwin/itwinui-react";
 
 interface ModelInfo {
   name: string;
@@ -129,7 +130,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
   }
 
   /** Load document codes when we mount */
-  public async componentDidMount() {
+  public override async componentDidMount() {
 
     this._isMounted = true;
 
@@ -160,7 +161,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     this.setState((prevState) => ({ initialized: true, models: _models, showToast: !prevState.docCodes }));
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
 
     if (this._ruleset)
@@ -562,7 +563,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     } else if (this.props.showFlatList && !this.state.showTree) {
       return (
         <div className="models-list-container">
-          <button className="showtree-button" onClick={this._onShowTree}>Show Tree</button>
+          <Button className="showtree-button" styleType="high-visibility" onClick={this._onShowTree}>Show Tree</Button>
           <CheckListBox>
             {this.state.models.map((model: ModelInfo, i: number) => (
               <CheckListBoxItem key={i} label={model.name} checked={model.checked} onClick={() => this._onModelCheckboxClick(model)} />
@@ -573,7 +574,7 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     } else {
       return (
         <div className="models-tree-container">
-          {/* eslint-disable-next-line react/jsx-pascal-case */}
+          {/* eslint-disable-next-line react/jsx-pascal-case, deprecation/deprecation */}
           {<DEPRECATED_Tree selectedNodes={this._getSelectedNodes()} dataProvider={this._dataProvider} onCheckboxClick={this._onCheckboxClick} />}
         </div>
       );
@@ -596,11 +597,11 @@ export class ModelsTab extends React.Component<ModelsProps, ModelsState> {
     );
   }
 
-  public render() {
+  public override render() {
     return (
       <div className="modelstab-container">
         {this.renderContent()}
-        {this.state.initialized && <button className="open-button" disabled={!this._isOkButtonEnabled()} type="button" onClick={this._onOpen.bind(this)}>{UiFramework.translate("iModelIndex.enteriModel")}</button>}
+        {this.state.initialized && <Button className="open-button" styleType="high-visibility" disabled={!this._isOkButtonEnabled()} onClick={this._onOpen.bind(this)}>{UiFramework.translate("iModelIndex.enteriModel")}</Button>}
         {this.state.showToast && this.renderToastMessage()}
       </div>
     );

@@ -4,8 +4,17 @@
 *--------------------------------------------------------------------------------------------*/
 import "./Scrubber.scss";
 import * as React from "react";
-import { GetTrackProps, Handles, Rail, Slider, SliderItem, Tracks } from "react-compound-slider";
-import { CommonProps } from "@bentley/ui-core";
+import { Slider } from "@itwin/itwinui-react";
+import { CommonProps, useEventListener } from "@bentley/ui-core";
+import { toDateString, toTimeString } from "../common/DateUtils";
+
+/**
+ * @internal
+ */
+export function getPercentageOfRectangle(rect: DOMRect, pointer: number) {
+  const position = Math.min(rect.right, Math.max(rect.left, pointer));
+  return (position - rect.left) / rect.width;
+}
 
 // istanbul ignore next - WIP
 const formatDuration = (value: number) => {
@@ -19,215 +28,87 @@ const formatDuration = (value: number) => {
   return `${addZero(minutes)}:${addZero(seconds)}`;
 };
 
-const formatDate = (startDate: Date, endDate: Date, fraction: number) => {
+const formatDate = (startDate: Date, endDate: Date, fraction: number, timeZoneOffset?: number) => {
   const delta = (endDate.getTime() - startDate.getTime()) * fraction;
   const date = new Date(startDate.getTime() + delta);
-  return date.toLocaleDateString();
+  return toDateString(date, timeZoneOffset);
 };
 
 // istanbul ignore next - WIP
-const formatTime = (startDate: Date, endDate: Date, fraction: number) => {
+const formatTime = (startDate: Date, endDate: Date, fraction: number, timeZoneOffset?: number) => {
   const delta = (endDate.getTime() - startDate.getTime()) * fraction;
   const date = new Date(startDate.getTime() + delta);
-  return date.toLocaleTimeString();
+  return ` ${toTimeString(date, timeZoneOffset)}`;
 };
 
-// *******************************************************
-// TOOLTIP RAIL
-// *******************************************************
-interface TooltipRailProps {
-  activeHandleID?: string;
-  getRailProps: (props: object) => object;
-  getEventData: (e: Event) => object;
-  startDate?: Date;
-  endDate?: Date;
-  showTime?: boolean;
-  isPlaying: boolean;  // used to not show tooltip at mouse location if timeline is playing
+function generateToolTipText(showTime: boolean, percent: number, min: number, max: number, startDate?: Date, endDate?: Date, timeZoneOffset = 0) {
+  if (startDate && endDate)
+    return `${formatDate(startDate, endDate, percent, timeZoneOffset)}${showTime ? formatTime(startDate, endDate, percent, timeZoneOffset) : ""} `;
+
+  const val = Math.round(min + ((max - min) * percent));
+  return formatDuration(val);
 }
 
-interface TooltipRailState {
-  value: number | null;
-  percent: number | null;
-}
+/**
+ * @internal
+ */
+export function RailToolTip({ showToolTip, percent, tooltipText }: {
+  showToolTip: boolean;
+  percent: number;
+  tooltipText: string;
+}) {
 
-class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
-
-  public static defaultProps = {
-    disabled: false,
-  };
-
-  constructor(props: TooltipRailProps) {
-    super(props);
-
-    this.state = { value: null, percent: null };
-  }
-
-  public componentDidMount() {
-    //  document.addEventListener("mousedown", this._onMouseDown);
-  }
-
-  // istanbul ignore next - WIP
-  private _onMouseEnter = () => {
-    document.addEventListener("mousemove", this._onMouseMove);
-  };
-
-  // istanbul ignore next - WIP
-  private _onMouseLeave = () => {
-    this.setState({ value: null, percent: null });
-    document.removeEventListener("mousemove", this._onMouseMove);
-  };
-
-  // istanbul ignore next - WIP
-  private _onMouseMove = (e: Event) => {
-    const { activeHandleID, getEventData } = this.props;
-
-    if (activeHandleID) {
-      this.setState({ value: null, percent: null });
-    } else {
-      this.setState(getEventData(e));
-    }
-  };
-
-  // istanbul ignore next - WIP
-  public render() {
-    const { value, percent } = this.state;
-    const { activeHandleID, getRailProps, isPlaying, startDate, endDate, showTime } = this.props;
-    let toolTip = "";
-
-    if (startDate && endDate && showTime)
-      toolTip = `${formatDate(startDate, endDate, percent! / 100)} ${formatTime(startDate, endDate, percent! / 100)}`;
-    else if (startDate && endDate)
-      toolTip = formatDate(startDate, endDate, percent! / 100);
-    else
-      toolTip = formatDuration(value!);
-
-    return (
-      <>
-        {!activeHandleID && value && !isPlaying ? (
-          <div className="tooltip-rail" style={{ left: `${percent}%` }}>
-            <div className="tooltip">
-              <span className="tooltip-text">{toolTip}</span>
-            </div>
-          </div>
-        ) : null}
-        <div
-          className="rail"
-          {...getRailProps({
-            onMouseEnter: this._onMouseEnter,
-            onMouseLeave: this._onMouseLeave,
-          })}
-        />
-        <div className="rail-center" />
-      </>
-    );
-  }
-}
-
-// *******************************************************
-// HANDLE COMPONENT
-// *******************************************************
-interface HandleProps {
-  key: string;
-  handle: SliderItem;
-  disabled?: boolean;
-  showTooltipWhenPlaying?: boolean;
-  showTooltipOnMouseOver?: boolean;
-  startDate?: Date;
-  endDate?: Date;
-  showTime?: boolean;
-  domain: number[];
-  getHandleProps: (id: string, config: object) => object;
-}
-
-interface HandleState {
-  mouseOver: boolean;
-}
-
-class Handle extends React.Component<HandleProps, HandleState> {
-  public static defaultProps = {
-    disabled: false,
-  };
-
-  constructor(props: HandleProps) {
-    super(props);
-
-    this.state = { mouseOver: false };
-  }
-
-  // istanbul ignore next - WIP
-  private _onMouseEnter = () => {
-    this.setState({ mouseOver: true });
-  };
-
-  // istanbul ignore next - WIP
-  private _onMouseLeave = () => {
-    this.setState({ mouseOver: false });
-  };
-
-  // istanbul ignore next - WIP
-  public render() {
-    const {
-      domain: [min, max],
-      handle: { id, value, percent },
-      showTooltipWhenPlaying,
-      showTooltipOnMouseOver,
-      showTime,
-      startDate,
-      endDate,
-      getHandleProps,
-    } = this.props;
-    const { mouseOver } = this.state;
-    let toolTip = "";
-
-    if (startDate && endDate && showTime)
-      toolTip = `${formatDate(startDate, endDate, percent / 100)} ${formatTime(startDate, endDate, percent / 100)}`;
-    else if (startDate && endDate)
-      toolTip = formatDate(startDate, endDate, percent / 100);
-    else
-      toolTip = formatDuration(value);
-
-    return (
-      <>
-        {(showTooltipWhenPlaying || (mouseOver && showTooltipOnMouseOver)) &&
-          <div className="tooltip-rail" style={{ left: `${percent}%` }}>
-            <div className="tooltip">
-              <span className="tooltip-text">{toolTip}</span>
-            </div>
-          </div>
-        }
-        <div
-          role="slider"
-          aria-valuemin={min}
-          aria-valuemax={max}
-          aria-valuenow={value}
-          className="scrubber-handle"
-          style={{ left: `${percent}%` }}
-          {...getHandleProps(id, {
-            onMouseEnter: this._onMouseEnter,
-            onMouseLeave: this._onMouseLeave,
-          })}>
-          <div /><div /><div />
-        </div>
-      </>
-    );
-  }
-}
-
-// *******************************************************
-// TRACK COMPONENT
-// *******************************************************
-interface ITrackProps {
-  source: SliderItem;
-  target: SliderItem;
-  getTrackProps: GetTrackProps;
-}
-
-function Track({ source, target, getTrackProps }: ITrackProps) {
   return (
-    <div className="scrubber-track" style={{ left: `${source.percent}%`, width: `${target.percent - source.percent}%` }}
-      {...getTrackProps()}
-    />
+    <div className="components-timeline-tooltip-container">
+      {showToolTip &&
+        <div className="components-timeline-tooltip" style={{ left: `${Math.round(percent * 100)}% ` }}>
+          <span className="tooltip-text">{tooltipText}</span>
+        </div>}
+    </div>
   );
+}
+
+/**
+ * Custom Timeline Thumb
+ * @internal
+ */
+export function CustomThumb() {
+  return (
+    <div className="scrubber-handle">
+      <div /><div /><div />
+    </div>
+  );
+}
+
+/**
+ * @internal
+ */
+export function useFocusedThumb(sliderContainer: HTMLDivElement | undefined) {
+  const [thumbElement, setThumbElement] = React.useState<HTMLDivElement>();
+
+  React.useLayoutEffect(() => {
+    // istanbul ignore else
+    if (sliderContainer) {
+      const element = sliderContainer.querySelector(".iui-slider-thumb");
+      if (element && thumbElement !== element) {
+        setThumbElement(element as HTMLDivElement);
+      }
+    }
+  }, [sliderContainer, thumbElement]);
+
+  const [thumbHasFocus, setThumbHasFocus] = React.useState(false);
+
+  const handleThumbFocus = React.useCallback(() => {
+    setThumbHasFocus(true);
+  }, []);
+
+  const handleThumbBlur = React.useCallback(() => {
+    setThumbHasFocus(false);
+  }, []);
+
+  useEventListener("focus", handleThumbFocus, thumbElement);
+  useEventListener("blur", handleThumbBlur, thumbElement);
+  return thumbHasFocus;
 }
 
 /** Properties for Scrubber/Slider used on timeline control
@@ -243,68 +124,86 @@ export interface ScrubberProps extends CommonProps {
   showTime?: boolean;
   onChange?: (values: ReadonlyArray<number>) => void;
   onUpdate?: (values: ReadonlyArray<number>) => void;
-  onSlideStart?: () => void;
+  timeZoneOffset?: number;
 }
 
 /** Scrubber/Slider for timeline control
  * @internal
  */
-export class Scrubber extends React.Component<ScrubberProps> {
+export function Scrubber(props: ScrubberProps) {
+  const { startDate, endDate, showTime, isPlaying, totalDuration, timeZoneOffset,
+    currentDuration, className, onChange, onUpdate } = props;
 
-  public render() {
-    const { currentDuration, totalDuration, onChange, onUpdate, onSlideStart, isPlaying, inMiniMode, startDate, endDate, showTime } = this.props;
-    const domain = [0, totalDuration];
-    const showTooltip = isPlaying && inMiniMode;
-    const showMouseTooltip = !isPlaying && inMiniMode;
+  const thumbProps = () => {
+    return {
+      className: "components-timeline-thumb",
+      children: <CustomThumb />,
+    };
+  };
 
-    return (
-      <Slider
-        className={this.props.className}
-        mode={1}
-        step={1}
-        domain={domain}
-        onUpdate={onUpdate}
-        onChange={onChange}
-        onSlideStart={onSlideStart}
-        values={[currentDuration]}
-      >
-        <Rail>
-          {(railProps) => <TooltipRail {...railProps} isPlaying={isPlaying} startDate={startDate} endDate={endDate} showTime={showTime} />}
-        </Rail>
-        <Handles>
-          {({ handles, getHandleProps }) => (
-            <div className="slider-handles">
-              {handles.map((handle) => (
-                <Handle
-                  key={handle.id}
-                  showTooltipWhenPlaying={showTooltip}
-                  showTooltipOnMouseOver={showMouseTooltip}
-                  startDate={startDate}
-                  endDate={endDate}
-                  handle={handle}
-                  domain={domain}
-                  showTime={showTime}
-                  getHandleProps={getHandleProps}
-                />
-              ))}
-            </div>
-          )}
-        </Handles>
-        <Tracks right={false}>
-          {({ tracks, getTrackProps }) => (
-            <div className="slider-tracks">
-              {tracks.map(({ id, source, target }) => (
-                <Track
-                  key={id}
-                  source={source}
-                  target={target}
-                  getTrackProps={getTrackProps}
-                />
-              ))}
-            </div>
-          )}
-        </Tracks>
-      </Slider>
-    );
-  }
+  const sliderRef = React.useRef<HTMLDivElement>(null);
+  const [sliderContainer, setSliderContainer] = React.useState<HTMLDivElement>();
+  const [pointerPercent, setPointerPercent] = React.useState(0);
+
+  React.useLayoutEffect(() => {
+    // istanbul ignore else
+    if (sliderRef.current) {
+      const container = sliderRef.current.querySelector(".iui-slider-container");
+      if (container && sliderContainer !== container) {
+        setSliderContainer(container as HTMLDivElement);
+      }
+    }
+  }, [sliderContainer]);
+
+  const tooltipProps = React.useCallback(() => {
+    return { visible: false };
+  }, []);
+
+  const [showRailTooltip, setShowRailTooltip] = React.useState(false);
+
+  // istanbul ignore next
+  const handlePointerEnter = React.useCallback(() => {
+    setShowRailTooltip(true);
+  }, []);
+
+  // istanbul ignore next
+  const handlePointerLeave = React.useCallback(() => {
+    setShowRailTooltip(false);
+  }, []);
+
+  const handlePointerMove = React.useCallback((event: React.PointerEvent) => {
+    sliderContainer &&
+      setPointerPercent(getPercentageOfRectangle(sliderContainer.getBoundingClientRect(), event.clientX));
+  }, [sliderContainer]);
+
+  const thumbHasFocus = useFocusedThumb(sliderContainer);
+
+  const tickLabel = React.useMemo(() => {
+    const showTip = isPlaying || showRailTooltip || thumbHasFocus;
+    const percent = (isPlaying || thumbHasFocus) ? currentDuration / totalDuration : pointerPercent;
+    const tooltipText = generateToolTipText(!!showTime, percent, 0, totalDuration, startDate, endDate, timeZoneOffset);
+    return (<RailToolTip showToolTip={showTip} percent={percent} tooltipText={tooltipText} />);
+  }, [isPlaying, showRailTooltip, currentDuration, totalDuration, pointerPercent, startDate, endDate, timeZoneOffset, showTime, thumbHasFocus]);
+
+  return (
+    <Slider ref={sliderRef}
+      className={className}
+      step={1}
+      min={0}
+      max={totalDuration}
+      minLabel=""
+      maxLabel=""
+      onUpdate={onUpdate}
+      onChange={onChange}
+      values={[currentDuration]}
+      tooltipProps={tooltipProps}
+      thumbProps={thumbProps}
+      tickLabels={tickLabel}
+      railContainerProps={{
+        onPointerEnter: handlePointerEnter,
+        onPointerMove: handlePointerMove,
+        onPointerLeave: handlePointerLeave,
+      }}
+    />
+  );
 }

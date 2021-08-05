@@ -14,7 +14,7 @@ import { NodeKey } from "@bentley/presentation-common";
 import { DEPRECATED_treeWithFilteringSupport } from "@bentley/presentation-components";
 import { DEPRECATED_Tree, FilteringInput, SelectionMode, TreeNodeItem } from "@bentley/ui-components";
 import {
-  CheckBoxInfo, CheckBoxState, ContextMenuItem, GlobalContextMenu, ImageCheckBox, isPromiseLike, LoadingSpinner, NodeCheckboxRenderProps, SpinnerSize, UiCore,
+  CheckBoxInfo, CheckBoxState, ContextMenuItem, GlobalContextMenu, ImageCheckBox, isPromiseLike, LoadingSpinner, NodeCheckboxRenderProps, UiCore,
 } from "@bentley/ui-core";
 import { UiFramework } from "../../UiFramework";
 import { ListItem, ListItemType } from "../ListPicker";
@@ -22,7 +22,8 @@ import { CategoryModelTreeProps, CategoryModelTreeState, Groups } from "./ModelS
 
 /**
  * Tree which displays and manages models or categories contained in an iModel.
- * @internal @deprecated
+ * @internal
+ * @deprecated
  */
 // istanbul ignore next
 export class CategoryModelTree extends React.Component<CategoryModelTreeProps, CategoryModelTreeState> {
@@ -49,7 +50,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   }
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     if (this.props.activeView) {
       this.props.activeView.onViewedModelsChanged.addListener(
@@ -62,7 +63,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   }
 
   /** @internal */
-  public componentDidUpdate(
+  public override componentDidUpdate(
     prevProps: CategoryModelTreeProps,
     _prevState: CategoryModelTreeState,
   ) {
@@ -85,7 +86,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
@@ -273,7 +274,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     const listClassName = classnames("uifw-modelselector", "show");
     return (
       <div className={listClassName}>
@@ -474,7 +475,7 @@ export class CategoryModelTree extends React.Component<CategoryModelTreeProps, C
   };
 
   private _getSpinner() {
-    return <LoadingSpinner size={SpinnerSize.Large} />;
+    return <LoadingSpinner size="large" />;
   }
 
   private _getTree() {

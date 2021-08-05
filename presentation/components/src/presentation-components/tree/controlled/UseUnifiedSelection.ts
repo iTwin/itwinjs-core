@@ -72,23 +72,23 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
     this._modelSource = params.nodeLoader.modelSource;
     const name = params.name ?? `Tree_${this._dataProvider.rulesetId}_${Guid.createValue()}`;
     this._selectionHandler = params.selectionHandler
-      ? params.selectionHandler // istanbul ignore next
-      : new SelectionHandler({ manager: Presentation.selection, name, imodel: this._dataProvider.imodel, rulesetId: this._dataProvider.rulesetId });
+      ? params.selectionHandler
+      : /* istanbul ignore next */ new SelectionHandler({ manager: Presentation.selection, name, imodel: this._dataProvider.imodel, rulesetId: this._dataProvider.rulesetId });
     this._selectionHandler.onSelect = this.onSelect.bind(this);
     this._unregisterModelChangedListener = this._modelSource.onModelChanged.addListener((args) => this.selectNodes(args[1]));
     this.selectNodes();
   }
 
-  public get modelSource() { return this._modelSource; }
+  public override get modelSource() { return this._modelSource; }
 
-  public dispose() {
+  public override dispose() {
     super.dispose();
     this._cancelled.next();
     this._selectionHandler.dispose();
     this._unregisterModelChangedListener();
   }
 
-  public onSelectionModified({ modifications }: TreeSelectionModificationEventArgs) {
+  public override onSelectionModified({ modifications }: TreeSelectionModificationEventArgs) {
     const withUnifiedSelection = toRxjsObservable(modifications).pipe(
       takeUntil(this._cancelled),
       tap({
@@ -107,7 +107,7 @@ export class UnifiedSelectionTreeEventHandler extends TreeEventHandler implement
     return super.onSelectionModified({ modifications: withUnifiedSelection });
   }
 
-  public onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs) {
+  public override onSelectionReplaced({ replacements }: TreeSelectionReplacementEventArgs) {
     let firstEmission = true;
     const withUnifiedSelection = toRxjsObservable(replacements).pipe(
       takeUntil(this._cancelled),

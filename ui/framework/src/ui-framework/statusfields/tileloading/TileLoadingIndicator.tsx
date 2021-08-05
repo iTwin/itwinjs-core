@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { LoadingBar } from "@bentley/ui-core";
+import { ProgressLinear } from "@itwin/itwinui-react";
 import { UiFramework } from "../../UiFramework";
 import { StatusFieldProps } from "../StatusFieldProps";
 
@@ -77,7 +77,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     this._removeOnRenderListener = vp.onRender.addListener(onRenderUpdate, this);
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     // istanbul ignore next
     if (!IModelApp.viewManager)
       return;
@@ -95,7 +95,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     }
   }
 
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     // istanbul ignore next
     if (!IModelApp.viewManager)
       return;
@@ -110,7 +110,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
   }
 
   /** Renders TileLoadingIndicator */
-  public render() {
+  public override render() {
     const classes = classnames(
       "uifw-tile-loading-bar",
       this.state.enabled && "uifw-tile-loading-bar-visible",
@@ -120,7 +120,7 @@ export class TileLoadingIndicator extends React.PureComponent<StatusFieldProps, 
     return (
       <div className={classes} style={this.props.style}>
         <span>{this.state.label}</span>
-        <LoadingBar percent={this.state.progress} barHeight={5} />
+        <ProgressLinear value={this.state.progress} />
       </div>
     );
   }

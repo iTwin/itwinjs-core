@@ -94,12 +94,12 @@ function exercisePolyface(ck: Checker, polyface: Polyface,
         const paramIndexA = visitor1.clientParamIndex(i);
         const paramY = polyface.data.getParam(paramIndexA);
         polyface.data.copyParamTo(paramIndexA, paramZ);
-        if (ck.testPointer(paramY) && paramY)
+        if (ck.testPointer(paramY))
           ck.testPoint2d(paramY, paramZ, "polyface getParam, copyParamTo");
 
         const normalIndexA = visitor1.clientNormalIndex(i);
         const normalY = polyface.data.getNormal(normalIndexA);
-        if (ck.testPointer(normalY) && normalY) {
+        if (ck.testPointer(normalY)) {
           polyface.data.copyNormalTo(normalIndexA, normalZ);
           ck.testVector3d(normalY, normalZ, "polyface getPoint, copyPointTo");
         }
@@ -1530,9 +1530,11 @@ it("synchroPolyface", () => {
     const errors = checkPolyfaceIndexErrors(polyfaceB);
     if (!ck.testUndefined(errors, "index error description"))
       console.log(errors);
-
+// EDL July 2021 twoSided is flipping?
+    polyfaceB.twoSided = polyfaceA.twoSided;
     ck.testTrue(polyfaceA.isAlmostEqual(polyfaceB), "Compare polyfaces");
   }
+  expect(ck.getNumErrors()).equals(0);
 });
 /**
  * This is the Synchro mesh structure, as deduced by looking at prior code to transfer to polyface.

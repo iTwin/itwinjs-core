@@ -16,7 +16,7 @@ import { NodeKey } from "@bentley/presentation-common";
 import { ExtensionStatusBarWidgetControl } from "./statusbar/StatusBar";
 import { GenericTool } from "./tools/GenericTool";
 
-/* eslint-disable react/jsx-key */
+/* eslint-disable react/jsx-key, deprecation/deprecation */
 
 export class ExtensionFrontstage extends FrontstageProvider {
   public static get id() {
@@ -52,7 +52,7 @@ export class ExtensionFrontstage extends FrontstageProvider {
         contents: [
           {
             classId: IModelViewportControl,
-            applicationData: { viewState: this._getViewState, iModelConnection: UiFramework.getIModelConnection, disableDefaultViewOverlay: true },
+            applicationData: { viewState: this._getViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
             classId: "SampleExtensionContentControl",

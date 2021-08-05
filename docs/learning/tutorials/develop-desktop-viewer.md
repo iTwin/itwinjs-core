@@ -22,12 +22,10 @@
 ## Build
 
 - Open the cloned repo in VS Code
-- Edit [./src/backend/main.ts](https://github.com/imodeljs/desktop-starter/blob/master/src/backend/main.ts#L55)
-- Replace `REPLACE_WITH_CLIENT_ID` with your Client ID
-  - Ex: `const clientId = "native-XXXXXXXXXXXXXXXXXXX";`
-- Remove the `assert` on the next line that verifies the Client ID is set
+- Edit [./src/backend/main.ts](https://github.com/imodeljs/desktop-starter/blob/master/src/backend/main.ts#L46)
+- Edit `getClientId` to return your Client ID by replacing `REPLACE_WITH_CLIENT_ID`
+  - Ex: `return "native-XXXXXXXXXXXXXXXXXXX";`
 - `npm install`
-- `npm run build`
 
 ## Run
 

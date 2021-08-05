@@ -5,7 +5,7 @@
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { PropertyValueFormat } from "@bentley/ui-abstract";
-import { CheckBoxState, ImageCheckBox, Input, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@bentley/ui-core";
+import { CheckBoxState, ImageCheckBox, NodeCheckboxRenderProps, useDisposable, WebFontIcon } from "@bentley/ui-core";
 import {
   AbstractTreeNodeLoaderWithProvider, ControlledTree, DelayLoadedTreeNodeItem, HighlightableTreeProps, ITreeDataProvider,
   MutableTreeModel,
@@ -14,6 +14,7 @@ import {
   TreeNodeRenderer, TreeNodeRendererProps, TreeRenderer, TreeRendererProps, useVisibleTreeNodes,
 } from "@bentley/ui-components";
 import { MapLayerSettings, MapSubLayerProps, MapSubLayerSettings } from "@bentley/imodeljs-common";
+import { Input } from "@itwin/itwinui-react";
 import { StyleMapLayerSettings } from "../Interfaces";
 import { SubLayersDataProvider } from "./SubLayersDataProvider";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
@@ -175,7 +176,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
     this._removeModelChangedListener = this.modelSource.onModelChanged.addListener(this.onModelChanged);
   }
 
-  public dispose() {
+  public override dispose() {
     this._removeModelChangedListener();
     super.dispose();
   }
@@ -271,7 +272,7 @@ class SubLayerCheckboxHandler extends TreeEventHandler {
   }
 
   /** Changes nodes checkboxes states until event is handled or handler is disposed */
-  public onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs) {
+  public override onCheckboxStateChanged({ stateChanges }: TreeCheckboxStateChangeEventArgs) {
     // call base checkbox handling
     const baseHandling = super.onCheckboxStateChanged({ stateChanges });
 

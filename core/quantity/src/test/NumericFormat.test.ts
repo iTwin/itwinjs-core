@@ -8,6 +8,9 @@ import { FormatterSpec } from "../Formatter/FormatterSpec";
 import { Formatter } from "../Formatter/Formatter";
 import { BasicUnit } from "../Unit";
 import { TestUnitsProvider } from "./TestUtils/TestHelper";
+import { FormatTraits, FormatType } from "../imodeljs-quantity";
+import { DecimalPrecision } from "../Formatter/FormatEnums";
+import { UnitProps } from "../Interfaces";
 
 describe("Numeric Formats tests:", () => {
   it("Feet to 4 Decimal places w/trailing zeros ", async () => {
@@ -78,6 +81,49 @@ describe("Numeric Formats tests:", () => {
     for (const testEntry of testQuantityData) {
       const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
       const spec = await FormatterSpec.create("test", format, unitsProvider, unit);
+
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      assert.strictEqual(formattedValue, testEntry.result);
+      // eslint-disable-next-line no-console
+      // console.log(testEntry.magnitude.toString() + " " + testEntry.unit.label + " => " + formattedValue);
+    }
+  });
+
+  it("Clone Feet Format and reset to 2 Decimal places and no label", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      formatTraits: ["keepSingleZero", "applyRounding", "showUnitLabel"],
+      precision: 4,
+      type: "Decimal",
+      uomSeparator: " ",
+      thousandSeparator: ",",
+      decimalSeparator: ".",
+    };
+
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
+
+    const clonedFormat = format.clone({
+      showOnlyPrimaryUnit: true,
+      traits: format.formatTraits & ~FormatTraits.ShowUnitLabel,
+      precision: DecimalPrecision.Two,
+    });
+    const testQuantityData = [
+      { magnitude: -12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.54" },
+      { magnitude: 12.5416666666667, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.54" },
+      { magnitude: 3000.99999999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "3001" },
+      { magnitude: 1.05000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "1.05" },
+      { magnitude: 12345789, unit: { name: "Units.FT", label: "FT", contextId: "Units.LENGTH" }, result: "12345789" },
+      { magnitude: 10000000, unit: { name: "Units.FT", label: "FT", contextId: "Units.LENGTH" }, result: "10000000" },
+      { magnitude: 100000, unit: { name: "Units.FT", label: "FT", contextId: "Units.LENGTH" }, result: "100000" },
+      { magnitude: 0.00000, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "0" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", clonedFormat, unitsProvider, unit);
 
       const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
       assert.strictEqual(formattedValue, testEntry.result);
@@ -578,4 +624,125 @@ describe("Numeric Formats tests:", () => {
     }
   });
 
+  it("Clone Feet (fractional) and set to decimal (precision 4)", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      formatTraits: ["keepSingleZero", "showUnitLabel", "fractionDash"],
+      precision: 8,
+      type: "Fractional",
+      uomSeparator: " ",
+    };
+
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
+
+    const clonedFormat = format.clone({
+      showOnlyPrimaryUnit: true,
+      traits: format.formatTraits & ~FormatTraits.ShowUnitLabel,
+      type: FormatType.Decimal,
+      precision: DecimalPrecision.Four,
+    });
+    const testQuantityData = [
+      { magnitude: -12.125, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.125" },
+      { magnitude: 12.125, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.125" },
+      { magnitude: 12.25, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.25" },
+      { magnitude: 12.50, unit: { name: "Units.FT", label: "FT", contextId: "Units.LENGTH" }, result: "12.5" },
+      { magnitude: 12.625, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.625" },
+      { magnitude: 12.75, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.75" },
+      { magnitude: 12.875, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.875" },
+      { magnitude: 11.9999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "11.9999" },
+      { magnitude: 99.9999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "99.9999" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", clonedFormat, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      assert.strictEqual(formattedValue, testEntry.result);
+      // eslint-disable-next-line no-console
+      // console.log(`${testEntry.magnitude.toString()} ${testEntry.unit.label} => ${formattedValue}`);
+    }
+  });
+
+  it("Clone Feet (fractional) and set to decimal (precision 2)", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      formatTraits: ["keepSingleZero", "showUnitLabel", "fractionDash"],
+      precision: 8,
+      type: "Fractional",
+      uomSeparator: " ",
+    };
+
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
+
+    const clonedFormat = format.clone({
+      showOnlyPrimaryUnit: true,
+      traits: format.formatTraits & ~FormatTraits.ShowUnitLabel,
+      type: FormatType.Decimal,
+      precision: DecimalPrecision.Two,
+    });
+    const testQuantityData = [
+      { magnitude: -12.125, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "-12.13" },
+      { magnitude: 12.125, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.13" },
+      { magnitude: 12.25, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.25" },
+      { magnitude: 12.50, unit: { name: "Units.FT", label: "FT", contextId: "Units.LENGTH" }, result: "12.5" },
+      { magnitude: 12.625, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.63" },
+      { magnitude: 12.75, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.75" },
+      { magnitude: 12.875, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12.88" },
+      { magnitude: 11.9999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "12" },
+      { magnitude: 99.9999, unit: { name: "Units.FT", label: "ft", contextId: "Units.LENGTH" }, result: "100" },
+    ];
+
+    for (const testEntry of testQuantityData) {
+      const unit = new BasicUnit(testEntry.unit.name, testEntry.unit.label, testEntry.unit.contextId);
+      const spec = await FormatterSpec.create("test", clonedFormat, unitsProvider, unit);
+      const formattedValue = Formatter.formatQuantity(testEntry.magnitude, spec);
+      assert.strictEqual(formattedValue, testEntry.result);
+      // eslint-disable-next-line no-console
+      // console.log(`${testEntry.magnitude.toString()} ${testEntry.unit.label} => ${formattedValue}`);
+    }
+  });
+
+  it("Clone and set properties ", async () => {
+    const unitsProvider = new TestUnitsProvider();
+
+    const formatData = {
+      formatTraits: ["keepSingleZero", "showUnitLabel", "fractionDash"],
+      precision: 8,
+      type: "Fractional",
+      uomSeparator: " ",
+    };
+
+    const format = new Format("test");
+    await format.fromJSON(unitsProvider, formatData).catch(() => { });
+    assert.isTrue(!format.hasUnits);
+
+    const primaryUnit: UnitProps = {
+      name: "Units.FT",
+      label: "ft",
+      phenomenon: "Units.LENGTH",
+      isValid: true,
+      alternateLabels: [`'`, "feet", "foot"],
+      system: "Units.USCUSTOM",
+    };
+
+    const clonedFormat = format.clone({
+      showOnlyPrimaryUnit: true,
+      traits: format.formatTraits & ~FormatTraits.ShowUnitLabel,
+      type: FormatType.Decimal,
+      precision: DecimalPrecision.Two,
+      primaryUnit: {
+        unit: primaryUnit,
+        label: "foot",
+      },
+    });
+
+    assert.strictEqual(clonedFormat.units?.length, 1);
+    assert.strictEqual(clonedFormat.units![0][1], "foot");
+  });
 });

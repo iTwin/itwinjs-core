@@ -10,7 +10,7 @@ import "./SpatialContainmentTree.scss";
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { Ruleset } from "@bentley/presentation-common";
-import { IPresentationTreeDataProvider, UnifiedSelectionTreeEventHandler, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
+import { UnifiedSelectionTreeEventHandler, usePresentationTreeNodeLoader } from "@bentley/presentation-components";
 import { ControlledTree, SelectionMode, useVisibleTreeNodes } from "@bentley/ui-components";
 import { useDisposable } from "@bentley/ui-core";
 import { connectIModelConnection } from "../../redux/connectIModel";
@@ -38,11 +38,6 @@ export interface SpatialContainmentTreeProps {
    * @beta
    */
   enableElementsClassGrouping?: ClassGroupingOption;
-  /**
-   * Used for testing
-   * @internal
-   */
-  dataProvider?: IPresentationTreeDataProvider;
 }
 
 /**
@@ -52,7 +47,6 @@ export interface SpatialContainmentTreeProps {
 export function SpatialContainmentTree(props: SpatialContainmentTreeProps) {
   const { nodeLoader } = usePresentationTreeNodeLoader({
     imodel: props.iModel,
-    dataProvider: props.dataProvider,
     ruleset: (!props.enableElementsClassGrouping) ? RULESET_SPATIAL_BREAKDOWN : /* istanbul ignore next */ RULESET_SPATIAL_BREAKDOWN_GROUPED_BY_CLASS,
     appendChildrenCountForGroupingNodes: (props.enableElementsClassGrouping === ClassGroupingOption.YesWithCounts),
     pagingSize: PAGING_SIZE,

@@ -23,27 +23,27 @@ variables:
   - group: iModel.js Integration Test Users
 
 jobs:
-  - job: Node_12_x
+  - job: Node_14_x
     condition: succeeded()
     pool:
       vmImage: ubuntu-latest
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
+          Node_Version: 14.x
+  - job: Node_12_x
+    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
+    pool:
+      vmImage: ubuntu-latest
+    steps:
+      - template: templates/integration-test-steps.yaml
+        parameters:
           Node_Version: 12.x
-  - job: Node_10_x
+  - job: Node_12_17
     condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
     pool:
       vmImage: ubuntu-latest
     steps:
       - template: templates/integration-test-steps.yaml
         parameters:
-          Node_Version: 10.x
-  - job: Node_10_17
-    condition: and(succeeded(), ne(variables['Build.Reason'], 'PullRequest'))
-    pool:
-      vmImage: ubuntu-latest
-    steps:
-      - template: templates/integration-test-steps.yaml
-        parameters:
-          Node_Version: 10.17.0
+          Node_Version: 12.17.0

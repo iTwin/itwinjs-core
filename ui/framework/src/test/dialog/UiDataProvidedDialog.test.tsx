@@ -6,7 +6,7 @@ import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
 import { /* ModelessDialogManager, */ UiDataProvidedDialog } from "../../ui-framework";
 import { DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertyItem, DialogPropertySyncItem, PropertyChangeResult, PropertyChangeStatus, PropertyDescription, StandardTypeNames } from "@bentley/ui-abstract";
-import TestUtils from "../TestUtils";
+import TestUtils, { getButtonWithText, handleError } from "../TestUtils";
 import { expect } from "chai";
 import sinon = require("sinon");
 
@@ -51,12 +51,12 @@ class TestUiDataProvider extends DialogLayoutDataProvider {
   }
 
   // called to apply a single property value change.
-  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+  public override applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
     this.processChangesInUi([updatedValue]);
   };
 
   /** Called by UI to inform data provider of changes.  */
-  public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
+  public override processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
     if (properties.length > 0) {
       for (const prop of properties) {
         if (prop.propertyName === TestUiDataProvider.userPropertyName) {
@@ -74,7 +74,7 @@ class TestUiDataProvider extends DialogLayoutDataProvider {
   }
 
   /** Used Called by UI to request available properties when UI is manually created. */
-  public supplyDialogItems(): DialogItem[] | undefined {
+  public override supplyDialogItems(): DialogItem[] | undefined {
     const items: DialogItem[] = [];
 
     items.push({ value: this._userValue, property: TestUiDataProvider._getUserDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } });
@@ -110,7 +110,7 @@ class TestUiDataProvider extends DialogLayoutDataProvider {
     this.fireSyncPropertiesEvent([syncItem]);
   }
 
-  public supplyButtonData(): DialogButtonDef[] | undefined {
+  public override supplyButtonData(): DialogButtonDef[] | undefined {
     const buttons: DialogButtonDef[] = [];
 
     if (this.currentPageIndex > 0 && this.currentPageIndex < this.numberOfPages)
@@ -146,15 +146,20 @@ describe("UiDataProvidedDialog", () => {
         isModal={true}
       />;
       const component = render(reactNode);
-      let nextButton = component.getByText("dialog.next");
-      fireEvent.click(nextButton);
-      const previousButton = component.getByText("dialog.previous");
-      fireEvent.click(previousButton);
-      nextButton = component.getByText("dialog.next");
-      fireEvent.click(nextButton);
-      const cancelButton = component.getByText("dialog.cancel");
-      fireEvent.click(cancelButton);
-      const okButton = component.getByText("dialog.ok") as HTMLButtonElement;
+      let nextButton = getButtonWithText(component.container, "dialog.next", handleError);
+      expect(nextButton).to.not.be.undefined;
+      fireEvent.click(nextButton!);
+      const previousButton = getButtonWithText(component.container, "dialog.previous", handleError);
+      expect(previousButton).to.not.be.undefined;
+      fireEvent.click(previousButton!);
+      nextButton = getButtonWithText(component.container, "dialog.next", handleError);
+      expect(nextButton).to.not.be.undefined;
+      fireEvent.click(nextButton!);
+      const cancelButton = getButtonWithText(component.container, "dialog.cancel", handleError);
+      expect(cancelButton).to.not.be.undefined;
+      fireEvent.click(cancelButton!);
+      const okButton = getButtonWithText(component.container, "dialog.ok", handleError) as HTMLButtonElement;
+      expect(okButton).to.not.be.undefined;
       fireEvent.click(okButton);
       const inputs = component.container.querySelectorAll("input");
       expect(okButton.disabled).to.be.true;
@@ -188,15 +193,20 @@ describe("UiDataProvidedDialog", () => {
         id="my-test-id"
       />;
       const component = render(reactNode);
-      let nextButton = component.getByText("dialog.next");
-      fireEvent.click(nextButton);
-      const previousButton = component.getByText("dialog.previous");
-      fireEvent.click(previousButton);
-      nextButton = component.getByText("dialog.next");
-      fireEvent.click(nextButton);
-      const cancelButton = component.getByText("dialog.cancel");
-      fireEvent.click(cancelButton);
-      const okButton = component.getByText("dialog.ok") as HTMLButtonElement;
+      let nextButton = getButtonWithText(component.container, "dialog.next", handleError);
+      expect(nextButton).to.not.be.undefined;
+      fireEvent.click(nextButton!);
+      const previousButton = getButtonWithText(component.container, "dialog.previous", handleError);
+      expect(previousButton).to.not.be.undefined;
+      fireEvent.click(previousButton!);
+      nextButton = getButtonWithText(component.container, "dialog.next", handleError);
+      expect(nextButton).to.not.be.undefined;
+      fireEvent.click(nextButton!);
+      const cancelButton = getButtonWithText(component.container, "dialog.cancel", handleError);
+      expect(cancelButton).to.not.be.undefined;
+      fireEvent.click(cancelButton!);
+      const okButton = getButtonWithText(component.container, "dialog.ok", handleError) as HTMLButtonElement;
+      expect(okButton).to.not.be.undefined;
       fireEvent.click(okButton);
       const inputs = component.container.querySelectorAll("input");
       expect(okButton.disabled).to.be.true;

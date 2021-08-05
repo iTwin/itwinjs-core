@@ -389,8 +389,8 @@ export class RealityDataClient extends WsgClient {
    * Creates an instance of RealityDataServicesClient.
    */
   public constructor() {
-    super("v2.5");
-    // this.baseUrl = "https://api.bentley.com/contextshare";
+    super("v1");
+    this.baseUrl = "https://api.bentley.com/contextshare";
   }
 
   /**

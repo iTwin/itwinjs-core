@@ -7,8 +7,17 @@ import { renderHook } from "@testing-library/react-hooks";
 import { addPanelWidget, addTab, createNineZoneState, NineZoneContext, TabIdContext } from "@bentley/ui-ninezone";
 import { useWidgetDirection } from "../../ui-framework";
 import { FrameworkVersion } from "../../ui-framework/hooks/useFrameworkVersion";
+import TestUtils from "../TestUtils";
 
 describe("useWidgetDirection", () => {
+  before(async () => {
+    await TestUtils.initializeUiFramework();
+  });
+
+  after(() => {
+    TestUtils.terminateUiFramework();
+  });
+
   it("should return 'vertical'", () => {
     const nineZone = createNineZoneState();
     const { result } = renderHook(() => useWidgetDirection(), {

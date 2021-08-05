@@ -24,10 +24,10 @@ The iTwin.js library is organized into the following separately downloadable [np
   - ($backend-itwin-client)
 - ($common)
 - ($ecschema-metadata)
+- ($ecschema-editing)
 - ($i18n)
 - ($bentley)
 - ($geometry)
-- ($ecschema-metadata)
 - ($logger-config)
 
 ## iTwin.js Client Packages
@@ -38,8 +38,6 @@ The iTwin.js library is organized into the following separately downloadable [np
 - ($imodelhub-client)
 - ($itwin-client)
 - ($product-settings-client)
-- ($projectshare-client)
-- ($rbac-client)
 - ($reality-data-client)
 - ($usage-logging-client)
 

@@ -3,30 +3,36 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
+import { assert } from "@bentley/bentleyjs-core";
 import { ComboBox, ComboBoxEntry, createButton, createCheckBox, createComboBox, createLabeledNumericInput, createSlider, LabeledNumericInput, Slider } from "@bentley/frontend-devtools";
-import { Point3d, Range1d, Vector3d } from "@bentley/geometry-core";
+import { Point3d, Range1d } from "@bentley/geometry-core";
 import {
   calculateSolarDirectionFromAngles, ColorByName, ColorDef, ThematicDisplay, ThematicDisplayMode, ThematicDisplayProps,
   ThematicDisplaySensorProps, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
 } from "@bentley/imodeljs-common";
 import { Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
 
-export class ThematicDisplayEditor {
-  private static _defaultSettings: ThematicDisplayProps = {
-    displayMode: ThematicDisplayMode.Height,
-    gradientSettings: {
-      mode: ThematicGradientMode.Smooth,
-      marginColor: ColorByName.blanchedAlmond,
-      colorScheme: ThematicGradientColorScheme.BlueRed,
-    },
-    axis: [0.0, 0.0, 1.0],
-    sunDirection: calculateSolarDirectionFromAngles({ azimuth: 315.0, elevation: 45.0 }).toJSON(),
-    sensorSettings: {
-      sensors: [],
-      distanceCutoff: 0,
-    },
-  };
+type Required<T> = {
+  [P in keyof T]-?: T[P];
+};
 
+const defaultSettings: Required<ThematicDisplayProps> = {
+  displayMode: ThematicDisplayMode.Height,
+  gradientSettings: {
+    mode: ThematicGradientMode.Smooth,
+    marginColor: ColorByName.blanchedAlmond,
+    colorScheme: ThematicGradientColorScheme.BlueRed,
+  },
+  axis: [0.0, 0.0, 1.0],
+  range: [0, 1],
+  sunDirection: calculateSolarDirectionFromAngles({ azimuth: 315.0, elevation: 45.0 }).toJSON(),
+  sensorSettings: {
+    sensors: [],
+    distanceCutoff: 0,
+  },
+};
+
+export class ThematicDisplayEditor {
   // create a 32x32 grid of sensors spread evenly within the extents of the project
   private _createSensorGrid(sensors: ThematicDisplaySensorProps[]) {
     const sensorGridXLength = 32;
@@ -64,7 +70,7 @@ export class ThematicDisplayEditor {
     }
 
     const extents = this._vp.view.iModel.projectExtents;
-    ThematicDisplayEditor._defaultSettings.range = { low: extents.zLow, high: extents.zHigh };
+    defaultSettings.range = { low: extents.zLow, high: extents.zHigh };
 
     const sensorZ = extents.low.z + (extents.high.z - extents.low.z) / 2.0;
     const sensorLow = extents.low.cloneAsPoint3d();
@@ -149,7 +155,7 @@ export class ThematicDisplayEditor {
 
   public updateDefaultRange() {
     const extents = this._vp.view.iModel.projectExtents;
-    ThematicDisplayEditor._defaultSettings.range = { low: extents.zLow, high: extents.zHigh };
+    defaultSettings.range = { low: extents.zLow, high: extents.zHigh };
   }
 
   public constructor(vp: Viewport, parent: HTMLElement) {
@@ -169,11 +175,9 @@ export class ThematicDisplayEditor {
 
     const enableThematicDisplay = (enabled: boolean) => {
       const extents = this._vp.view.iModel.projectExtents;
-      ThematicDisplayEditor._defaultSettings.range = { low: extents.zLow, high: extents.zHigh };
-
-      const sensors = ThematicDisplayEditor._defaultSettings.sensorSettings!.sensors!;
-
-      ThematicDisplayEditor._defaultSettings.sensorSettings!.distanceCutoff = extents.xLength() / 25.0;
+      defaultSettings.range = { low: extents.zLow, high: extents.zHigh };
+      const sensors = defaultSettings.sensorSettings.sensors!;
+      defaultSettings.sensorSettings.distanceCutoff = extents.xLength() / 25.0;
 
       const sensorZ = extents.low.z + (extents.high.z - extents.low.z) / 2.0;
       const sensorLow = extents.low.cloneAsPoint3d();
@@ -193,7 +197,7 @@ export class ThematicDisplayEditor {
       this._resetSensorEntries(4);
 
       const displaySettings = (this._vp.view as ViewState3d).getDisplayStyle3d().settings;
-      displaySettings.thematic = ThematicDisplay.fromJSON(ThematicDisplayEditor._defaultSettings);
+      displaySettings.thematic = ThematicDisplay.fromJSON(defaultSettings);
       const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
       vf.thematicDisplay = enabled;
       this._vp.viewFlags = vf;
@@ -231,7 +235,7 @@ export class ThematicDisplayEditor {
           props.range = { low: 0.0, high: 90.0 };
         } else if (ThematicDisplayMode.Slope === prevDisplayMode) {
           this.updateDefaultRange();
-          const range1d = Range1d.fromJSON(ThematicDisplayEditor._defaultSettings.range);
+          const range1d = Range1d.fromJSON(defaultSettings.range);
           props.range = { low: range1d.low, high: range1d.high };
         }
         return props;
@@ -337,7 +341,7 @@ export class ThematicDisplayEditor {
       name: "Low range: ",
     });
 
-    const defaultAxis = Point3d.fromJSON(ThematicDisplayEditor._defaultSettings.axis);
+    const defaultAxis = Point3d.fromJSON(defaultSettings.axis);
 
     const spanAxis = document.createElement("span");
     spanAxis.style.display = "flex";
@@ -669,23 +673,27 @@ export class ThematicDisplayEditor {
     this._update(view);
   }
 
+  private getThematicSettings(view: ViewState): ThematicDisplay {
+    assert(view.is3d());
+    return view.displayStyle.settings.thematic;
+  }
+
   private getThematicSettingsProps(view: ViewState): ThematicDisplayProps {
-    const grabSettings = (v: ViewState) => (v as ViewState3d).getDisplayStyle3d().settings.thematic;
-    return grabSettings(view)!.toJSON();
+    return this.getThematicSettings(view).toJSON();
   }
 
   private updateThematicDisplayUI(view: ViewState) {
-    const props = this.getThematicSettingsProps(view);
+    const settings = this.getThematicSettings(view);
 
-    let range = Range1d.fromJSON(props.range);
+    let range = settings.range;
     if (range.isNull) {
       this.updateDefaultRange();
-      range = Range1d.fromJSON(ThematicDisplayEditor._defaultSettings.range);
+      range = Range1d.fromJSON(defaultSettings.range);
     }
     this._thematicRangeLow.input.value = range.low.toString();
     this._thematicRangeHigh.input.value = range.high.toString();
 
-    this._thematicDisplayMode.select.value = (props.displayMode === undefined || props.displayMode === null) ? ThematicDisplayEditor._defaultSettings.displayMode!.toString() : props.displayMode.toString();
+    this._thematicDisplayMode.select.value = settings.displayMode.toString();
 
     const displayMode = Number.parseInt(this._thematicDisplayMode.select.value, 10);
     if (ThematicDisplayMode.Height === displayMode) {
@@ -694,46 +702,42 @@ export class ThematicDisplayEditor {
       ThematicDisplayEditor._setComboBoxEntries(this._thematicGradientMode, ThematicDisplayEditor._gradientModeEntriesForOthers);
     }
 
-    this._thematicGradientMode.select.value = (props.gradientSettings === undefined || props.gradientSettings === null) ? ThematicDisplayEditor._defaultSettings.gradientSettings!.mode!.toString() : props.gradientSettings.mode!.toString();
-    this._thematicStepCount.input.value = (props.gradientSettings === undefined || props.gradientSettings === null) ? ThematicDisplayEditor._defaultSettings.gradientSettings!.stepCount!.toString() : props.gradientSettings.stepCount!.toString();
-    this._thematicColorScheme.select.value = (props.gradientSettings === undefined || props.gradientSettings === null) ? ThematicDisplayEditor._defaultSettings.gradientSettings!.colorScheme!.toString() : props.gradientSettings.colorScheme!.toString();
-    this._thematicColorMix.slider.value = (props.gradientSettings === undefined || props.gradientSettings === null) ? ThematicDisplayEditor._defaultSettings.gradientSettings!.colorMix!.toString() : props.gradientSettings.colorMix!.toString();
+    this._thematicGradientMode.select.value = settings.gradientSettings.mode.toString();
+    this._thematicStepCount.input.value = settings.gradientSettings.stepCount.toString();
+    this._thematicColorScheme.select.value = settings.gradientSettings.colorScheme.toString();
+    this._thematicColorMix.slider.value = settings.gradientSettings.colorMix.toString();
 
-    const axis = (props.axis === undefined || props.axis === null) ? Point3d.fromJSON(ThematicDisplayEditor._defaultSettings.axis) : Point3d.fromJSON(props.axis);
-    this._thematicAxisX.input.value = axis.x.toString();
-    this._thematicAxisY.input.value = axis.y.toString();
-    this._thematicAxisZ.input.value = axis.z.toString();
+    this._thematicAxisX.input.value = settings.axis.x.toString();
+    this._thematicAxisY.input.value = settings.axis.y.toString();
+    this._thematicAxisZ.input.value = settings.axis.z.toString();
 
-    const sunDir = (props.sunDirection === undefined || props.sunDirection === null) ? Vector3d.fromJSON(ThematicDisplayEditor._defaultSettings.sunDirection) : Vector3d.fromJSON(props.sunDirection);
-    this._thematicSunDirX.input.value = sunDir.x.toString();
-    this._thematicSunDirY.input.value = sunDir.y.toString();
-    this._thematicSunDirZ.input.value = sunDir.z.toString();
+    this._thematicSunDirX.input.value = settings.sunDirection.x.toString();
+    this._thematicSunDirY.input.value = settings.sunDirection.y.toString();
+    this._thematicSunDirZ.input.value = settings.sunDirection.z.toString();
 
-    if (undefined !== props.sensorSettings) {
-      if (undefined !== props.sensorSettings.distanceCutoff)
-        this._thematicDistanceCutoff.input.value = props.sensorSettings.distanceCutoff.toString();
-      const sensors = props.sensorSettings.sensors;
-      if (undefined !== sensors && sensors.length > 0) {
-        if (this._thematicSensor.select.length < 1)
-          this._resetSensorEntries(sensors.length);
-        const selectedSensor = this._thematicSensor.select.options.selectedIndex;
-        const pos = Point3d.fromJSON(sensors[selectedSensor].position);
-        this._thematicSensorX.input.value = pos.x.toString();
-        this._thematicSensorY.input.value = pos.y.toString();
-        this._thematicSensorZ.input.value = pos.z.toString();
-        this._thematicSensorValue.input.value = sensors[selectedSensor].value!.toString();
-      }
+    this._thematicDistanceCutoff.input.value = settings.sensorSettings.distanceCutoff.toString();
+    const sensors = settings.sensorSettings.sensors;
+    if (sensors.length > 0) {
+      if (this._thematicSensor.select.length < 1)
+        this._resetSensorEntries(sensors.length);
+
+      const selectedSensor = this._thematicSensor.select.options.selectedIndex;
+      const pos = Point3d.fromJSON(sensors[selectedSensor].position);
+      this._thematicSensorX.input.value = pos.x.toString();
+      this._thematicSensorY.input.value = pos.y.toString();
+      this._thematicSensorZ.input.value = pos.z.toString();
+      this._thematicSensorValue.input.value = sensors[selectedSensor].value.toString();
     }
   }
 
-  private updateThematicDisplay(updateFunction: (view: any) => ThematicDisplayProps) {
+  private updateThematicDisplay(updateFunction: (view: ViewState) => ThematicDisplayProps) {
     const props = updateFunction(this._vp.view);
     (this._vp.view as ViewState3d).getDisplayStyle3d().settings.thematic = ThematicDisplay.fromJSON(props);
     this.sync();
   }
 
   private resetThematicDisplay(): void {
-    const thematicDisplay = ThematicDisplay.fromJSON(ThematicDisplayEditor._defaultSettings);
+    const thematicDisplay = ThematicDisplay.fromJSON(defaultSettings);
     (this._vp.view as ViewState3d).getDisplayStyle3d().settings.thematic = thematicDisplay;
     this._resetSensorEntries(thematicDisplay.sensorSettings.sensors.length);
     this.sync();

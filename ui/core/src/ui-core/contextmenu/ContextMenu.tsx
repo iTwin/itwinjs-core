@@ -71,6 +71,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   private _lastDirection: ContextMenuDirection | undefined = ContextMenuDirection.BottomRight;
   private _lastSelectedIndex: number = 0;
   private _injectedChildren: React.ReactNode;
+  private _parentWindowHeight: number = 0;
+  private _parentWindowWidth: number = 0;
 
   public static defaultProps: Partial<ContextMenuProps> = {
     direction: ContextMenuDirection.BottomRight,
@@ -82,7 +84,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   };
 
   /** @internal */
-  public readonly state: Readonly<ContextMenuState>;
+  public override readonly state: Readonly<ContextMenuState>;
   constructor(props: ContextMenuProps) {
     super(props);
     this.state = {
@@ -159,7 +161,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
       this.props.onOutsideClick(event);
   };
 
-  public render(): JSX.Element {
+  public override render(): JSX.Element {
     const {
       opened, direction, onOutsideClick, onSelect, onEsc, autoflip, edgeLimit, hotkeySelect, // eslint-disable-line @typescript-eslint/no-unused-vars
       selectedIndex, floating, parentMenu, parentSubmenu, children, className, ignoreNextKeyUp, // eslint-disable-line @typescript-eslint/no-unused-vars
@@ -297,7 +299,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   }
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     const parentWindow = this.getWindow();
     parentWindow.addEventListener("focus", this._handleFocusChange);
     parentWindow.addEventListener("mouseup", this._handleFocusChange);
@@ -309,7 +311,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     const parentWindow = this.getWindow();
     parentWindow.removeEventListener("focus", this._handleFocusChange);
     parentWindow.removeEventListener("mouseup", this._handleFocusChange);
@@ -320,6 +322,11 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     const parentWindow = this.getWindow();
 
     let renderDirection = parentMenu === undefined ? this.state.direction : direction;
+
+    if (parentWindow.innerHeight === this._parentWindowHeight && parentWindow.innerWidth === this._parentWindowWidth)
+      return;
+    this._parentWindowHeight = parentWindow.innerHeight;
+    this._parentWindowWidth = parentWindow.innerWidth;
 
     // check if menu should flip
     if (parentWindow && autoflip && parentMenu === undefined) {
@@ -443,7 +450,7 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     this.setState({ selectedIndex });
   };
 
-  public componentDidUpdate(prevProps: ContextMenuProps) {
+  public override componentDidUpdate(prevProps: ContextMenuProps) {
     if (prevProps.selectedIndex !== this.props.selectedIndex) {
       this.setState((_, props) => ({ selectedIndex: props.selectedIndex! }));
     }

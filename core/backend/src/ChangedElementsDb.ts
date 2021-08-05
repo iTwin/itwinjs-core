@@ -10,7 +10,7 @@ import { DbResult, IDisposable, IModelStatus, OpenMode } from "@bentley/bentleyj
 import { ChangeData, ChangedElements, ChangedModels, IModelError } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ChangeSummaryExtractContext, ChangeSummaryManager } from "./ChangeSummaryManager";
+import { BriefcaseManager } from "./BriefcaseManager";
 import { ECDbOpenMode } from "./ECDb";
 import { IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
@@ -101,9 +101,13 @@ export class ChangedElementsDb implements IDisposable {
    */
   public async processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     requestContext.enter();
-    const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
-    const changesets = await ChangeSummaryManager.downloadChangesets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
+
+    const iModelId = briefcase.iModelId;
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, requestContext })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, requestContext })).index;
+    const changesets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
     requestContext.enter();
+
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
     const status = this.nativeDb.processChangesets(
@@ -129,9 +133,13 @@ export class ChangedElementsDb implements IDisposable {
    */
   public async processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult> {
     requestContext.enter();
-    const changeSummaryContext = new ChangeSummaryExtractContext(briefcase);
-    const changesets = await ChangeSummaryManager.downloadChangesets(requestContext, changeSummaryContext, options.startChangesetId, options.endChangesetId);
+
+    const iModelId = briefcase.iModelId;
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.startChangesetId }, requestContext })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: options.endChangesetId }, requestContext })).index;
+    const changesets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
     requestContext.enter();
+
     // ChangeSets need to be processed from newest to oldest
     changesets.reverse();
     // Close briefcase before doing processing and rolling briefcase

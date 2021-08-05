@@ -18,7 +18,6 @@ describe("IModelOpen (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
   let testIModelId: GuidString;
   let testContextId: GuidString;
-  let testChangeSetId: string;
 
   before(async () => {
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
@@ -26,7 +25,6 @@ describe("IModelOpen (#integration)", () => {
     requestContext.enter();
 
     testIModelId = await HubUtility.getTestIModelId(requestContext, HubUtility.testIModelNames.stadium);
-    testChangeSetId = await HubUtility.queryLatestChangeSetId(requestContext, testIModelId);
   });
 
   const deleteTestIModelCache = () => {
@@ -42,8 +40,6 @@ describe("IModelOpen (#integration)", () => {
     await expect(IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: badRequestContext, contextId: testContextId, iModelId: testIModelId }))
       .to.be.rejectedWith(BentleyError).to.eventually.have.property("status", 401);
 
-    await expect(IModelTestUtils.downloadAndOpenCheckpoint({ requestContext: badRequestContext, contextId: testContextId, iModelId: testIModelId, asOf: IModelVersion.asOfChangeSet(testChangeSetId).toJSON() }))
-      .to.be.rejectedWith(BentleyError).to.eventually.have.property("status", 401);
   });
 
   it("should be able to handle simultaneous open calls", async () => {
@@ -51,12 +47,11 @@ describe("IModelOpen (#integration)", () => {
     deleteTestIModelCache();
 
     const numTries = 100;
-    const version = IModelVersion.asOfChangeSet(testChangeSetId).toJSON();
 
     // Open iModel with no timeout, and ensure all promises resolve to the same briefcase
     const openPromises = new Array<Promise<SnapshotDb>>();
     for (let ii = 0; ii < numTries; ii++) {
-      const open = IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId, asOf: version });
+      const open = IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId });
       openPromises.push(open);
     }
     const iModels = await Promise.all(openPromises);

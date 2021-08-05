@@ -11,3 +11,4 @@
 !*.md
 # then ignore some stuff again
 lib/test
+lib/public/locales/en-PSEUDO

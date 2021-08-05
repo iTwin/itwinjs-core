@@ -208,10 +208,10 @@ export interface DataProvidersFactoryProps {
 export const DEFAULT_PROPERTY_GRID_RULESET: Ruleset;
 
 // @beta @deprecated
-export function DEPRECATED_controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithFilteringSupportProps, "filter" | "onFilterApplied" | "onMatchesCounted" | "activeMatchIndex" | "nodeLoader" | "onNodeLoaderChanged" | Exclude<keyof P, "visibleNodes">>>;
+export function DEPRECATED_controlledTreeWithFilteringSupport<P extends ControlledTreeWithVisibleNodesProps>(TreeComponent: React.FC<P>): React.FC<Omit<P & ControlledTreeWithFilteringSupportProps, "visibleNodes">>;
 
 // @beta @deprecated
-export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Pick<P & ControlledTreeWithVisibleNodesProps, "style" | "className" | "selectionMode" | "nodeHighlightingProps" | "nodeLoader" | "treeEvents" | "descriptionsEnabled" | "iconsEnabled" | "treeRenderer" | "spinnerRenderer" | "noDataRenderer" | "onItemsRendered" | Exclude<keyof P, "visibleNodes">>>;
+export function DEPRECATED_controlledTreeWithVisibleNodes<P extends ControlledTreeProps>(TreeComponent: React.FC<P>): React.FC<Omit<P & ControlledTreeWithVisibleNodesProps, "visibleNodes">>;
 
 // @public @deprecated
 export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeComponent: React.ComponentType<P>): React.ComponentType<P & TreeWithFilteringSupportProps>;
@@ -518,7 +518,7 @@ export interface PresentationTableDataProviderProps extends DiagnosticsProps {
 export class PresentationTreeDataProvider implements IPresentationTreeDataProvider, IDisposable {
     constructor(props: PresentationTreeDataProviderProps);
     dispose(): void;
-    getFilteredNodePaths: (filter: string) => Promise<NodePathElement[]>;
+    getFilteredNodePaths(filter: string): Promise<NodePathElement[]>;
     getNodeKey(node: TreeNodeItem): NodeKey;
     getNodes(parentNode?: TreeNodeItem, pageOptions?: PageOptions_2): Promise<DelayLoadedTreeNodeItem[]>;
     getNodesCount(parentNode?: TreeNodeItem): Promise<number>;
@@ -555,13 +555,19 @@ export interface PresentationTreeDataProviderProps extends DiagnosticsProps {
 
 // @public
 export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataProviderProps {
-    // @internal
-    dataProvider?: IPresentationTreeDataProvider;
     // @alpha
     enableHierarchyAutoUpdate?: boolean;
     pagingSize: number;
     // @alpha @deprecated
     preloadingEnabled?: boolean;
+}
+
+// @public
+export interface PresentationTreeNodeLoaderResult {
+    // (undocumented)
+    nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>;
+    // (undocumented)
+    onItemsRendered: (items: RenderedItemsRange) => void;
 }
 
 // @public
@@ -751,10 +757,7 @@ export function useFilteredNodeLoader(nodeLoader: AbstractTreeNodeLoaderWithProv
 export function useNodeHighlightingProps(filter: string | undefined, filteredNodeLoader?: ITreeNodeLoaderWithProvider<IFilteredPresentationTreeDataProvider>, activeMatchIndex?: number): HighlightableTreeProps | undefined;
 
 // @public
-export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): {
-    nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>;
-    onItemsRendered: (items: RenderedItemsRange) => void;
-};
+export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps): PresentationTreeNodeLoaderResult;
 
 // @public
 export function usePropertyDataProviderWithUnifiedSelection(props: PropertyDataProviderWithUnifiedSelectionProps): UsePropertyDataProviderWithUnifiedSelectionResult;

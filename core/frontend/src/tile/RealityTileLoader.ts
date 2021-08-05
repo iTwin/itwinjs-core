@@ -45,6 +45,7 @@ export abstract class RealityTileLoader {
   public abstract getRequestChannel(tile: Tile): TileRequestChannel;
   public abstract requestTileContent(tile: Tile, isCanceled: () => boolean): Promise<TileRequest.Response>;
   public abstract get maxDepth(): number;
+  public abstract get minDepth(): number;
   public abstract get priority(): TileLoadPriority;
   protected get _batchType(): BatchType { return BatchType.Primary; }
   protected get _loadEdges(): boolean { return true; }

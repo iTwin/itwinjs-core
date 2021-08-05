@@ -41,7 +41,6 @@ function configMockSettings() {
     return;
 
   Config.App.set("imjs_imodelhub_url", "https://api.bentley.com/imodelhub");
-  Config.App.set("imjs_rbac_url", "https://api.bentley.com/rbac");
   Config.App.set("imjs_buddi_resolve_url_using_region", 0);
   Config.App.set("imjs_url_prefix", "");
   Config.App.set("imjs_test_serviceAccount1_user_name", "test");
@@ -96,7 +95,7 @@ export class MockAccessToken extends AccessToken {
     super("");
   }
 
-  public getUserInfo(): UserInfo | undefined {
+  public override getUserInfo(): UserInfo | undefined {
     const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
     const email = { id: "testuser001@mailinator.com" };
     const profile = { firstName: "test", lastName: "user" };
@@ -105,7 +104,7 @@ export class MockAccessToken extends AccessToken {
     return new UserInfo(id, email, profile, organization, featureTracking);
   }
 
-  public toTokenString() { return ""; }
+  public override toTokenString() { return ""; }
 }
 
 export type RequestBehaviorOptionsList =
@@ -161,13 +160,6 @@ export class IModelHubUrlMock {
   public static getUrl(): string {
     configMockSettings();
     return Config.App.get("imjs_imodelhub_url", "");
-  }
-}
-
-export class RbacUrlMock {
-  public static getUrl(): string {
-    configMockSettings();
-    return Config.App.get("imjs_rbac_url", "");
   }
 }
 

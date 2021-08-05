@@ -5,8 +5,9 @@
 import "./IModelList.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { SearchBox, Toggle } from "@bentley/ui-core";
+import { SearchBox } from "@bentley/ui-core";
 import { IModelInfo } from "@bentley/ui-framework";
+import { Button, ToggleSwitch } from "@itwin/itwinui-react";
 import { IModelCard } from "./IModelCard";
 import { ProjectDialog } from "./ProjectDialog";
 
@@ -65,7 +66,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
       this.props.onIModelSelected(iModelInfo);
   };
 
-  public componentDidMount() {
+  public override componentDidMount() {
     this.setState((_, props) => {
       if (props.iModels && 1 === props.iModels.length)
         return { currentIModel: props.iModels[0] };
@@ -91,7 +92,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>This device</td>
         <td onClick={this._onIModelClick.bind(this, iModelInfo)}>{iModelInfo.createdDate.toLocaleString()}</td>
         <td>
-          <Toggle className="toggle-offline" showCheckmark={true} />
+          <ToggleSwitch className="toggle-offline" />
         </td>
       </tr>
     );
@@ -137,7 +138,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
         <div className="cards-empty">
           <div className="fade-in-fast">
             There are no iModels associated to this project.
-            <button onClick={this._onShowProjectsSelector}>Search for active projects in your Organization?</button>
+            <Button styleType="cta" onClick={this._onShowProjectsSelector}>Search for active projects in your Organization?</Button>
           </div>
           {this.state.showProjectDialog && <ProjectDialog onClose={this._onProjectsSelectorClose} />}
         </div>
@@ -156,7 +157,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
     }
   }
 
-  public render() {
+  public override render() {
     const classThumbnails = classnames("viewtype icon icon-placeholder", !this.state.showDetails && "active");
     const classList = classnames("viewtype icon icon-list", this.state.showDetails && "active");
     return (

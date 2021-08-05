@@ -88,7 +88,6 @@ interface WithOnRenderProps {
 
 /** @internal */
 export const withOnRender = <P extends {}, C>(
-  // tslint:disable-next-line:variable-name
   Component: React.JSXElementConstructor<P> & C,
 ) => {
   type Props = JSX.LibraryManagedAttributes<C, P & WithOnRenderProps>;

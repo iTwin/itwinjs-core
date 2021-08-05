@@ -8,11 +8,12 @@
 
 import * as React from "react";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import { Button, ButtonType, FillCentered } from "@bentley/ui-core";
+import { FillCentered } from "@bentley/ui-core";
 import { Indicator, StatusBarFieldId, StatusFieldProps } from "@bentley/ui-framework";
 import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
 import { ColorPickerPopup } from "@bentley/ui-components";
 import { ColorDef } from "@bentley/imodeljs-common";
+import { Button } from "@itwin/itwinui-react";
 
 interface SampleStatusFieldState {
   target: HTMLElement | null;
@@ -32,7 +33,7 @@ export class SampleStatusField extends React.Component<StatusFieldProps, SampleS
     this._className = this.constructor.name;
   }
 
-  public render() {
+  public override render() {
     const isOpen = this.props.openWidget === this._className;
 
     return (
@@ -65,7 +66,7 @@ export class SampleStatusField extends React.Component<StatusFieldProps, SampleS
         <FillCentered>
           <div style={{ display: "flex", flexDirection: "column" }}>
             <ColorPickerPopup initialColor={colorDef} />
-            <Button buttonType={ButtonType.Blue}>{IModelApp.i18n.translate("SampleApp:statusFields.sampleButton")}</Button>
+            <Button styleType="high-visibility" size="small">{IModelApp.i18n.translate("SampleApp:statusFields.sampleButton")}</Button>
           </div>
         </FillCentered>
       </div>

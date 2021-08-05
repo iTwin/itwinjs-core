@@ -14,7 +14,9 @@ import { RpcProtocol } from "../core/RpcProtocol";
 import { OpenAPIInfo, OpenAPIParameter, RpcOpenAPIDescription } from "./OpenAPI";
 import { WebAppRpcLogging } from "./WebAppRpcLogging";
 import { WebAppRpcRequest } from "./WebAppRpcRequest";
-import { CommonLoggerCategory, RpcInterface, RpcManager } from "../../imodeljs-common";
+import { CommonLoggerCategory } from "../../CommonLoggerCategory";
+import { RpcInterface } from "../../RpcInterface";
+import { RpcManager } from "../../RpcManager";
 import { RpcRoutingToken } from "../core/RpcRoutingToken";
 import { Logger } from "@bentley/bentleyjs-core";
 
@@ -79,7 +81,7 @@ export interface HttpServerResponse extends Writable {
  * @public
  */
 export abstract class WebAppRpcProtocol extends RpcProtocol {
-  public preserveStreams = true;
+  public override preserveStreams = true;
 
   private _initialized: Promise<void> | undefined;
 
@@ -151,7 +153,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   public readonly requestType = WebAppRpcRequest;
 
   /** Supplies the status corresponding to a protocol-specific code value. */
-  public getStatus(code: number): RpcRequestStatus {
+  public override getStatus(code: number): RpcRequestStatus {
     switch (code) {
       case 404: return RpcRequestStatus.NotFound;
       case 202: return RpcRequestStatus.Pending;
@@ -166,7 +168,7 @@ export abstract class WebAppRpcProtocol extends RpcProtocol {
   }
 
   /** Supplies the protocol-specific code corresponding to a status value. */
-  public getCode(status: RpcRequestStatus): number {
+  public override getCode(status: RpcRequestStatus): number {
     switch (status) {
       case RpcRequestStatus.NotFound: return 404;
       case RpcRequestStatus.Pending: return 202;

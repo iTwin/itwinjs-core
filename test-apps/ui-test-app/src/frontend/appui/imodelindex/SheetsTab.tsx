@@ -11,6 +11,7 @@ import { IModelConnection, ViewState } from "@bentley/imodeljs-frontend";
 import { LoadingBar, SearchBox, Timer } from "@bentley/ui-core";
 import { UiFramework } from "@bentley/ui-framework";
 import { ViewsList } from "./ViewsList";
+import { Button } from "@itwin/itwinui-react";
 
 /** @internal */
 export interface SheetsProps {
@@ -49,11 +50,11 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
     this.state = { detailsView: false, filter: "", showPrompt: false, percent: 0, selectedViews: [], isOpenDisabled: true };
   }
 
-  public componentDidMount() {
+  public override componentDidMount() {
     this._updateHeaderContent();
   }
 
-  public componentWillUnmount(): void {
+  public override componentWillUnmount(): void {
     this._timer.stop();
   }
 
@@ -123,7 +124,7 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
     );
   }
 
-  public render() {
+  public override render() {
     const label = UiFramework.translate("iModelIndex.enteriModel");
     return (
       <div className="viewstab-container">
@@ -140,7 +141,7 @@ export class SheetsTab extends React.Component<SheetsProps, SheetsState> {
           onViewsSelected={this._onSheetViewsSelected.bind(this)}
           filter={this.state.filter}
           onViewsInitialized={this._onViewsInitialized.bind(this)} />
-        <button className="open-button" disabled={this.state.isOpenDisabled} type="button" onClick={this._onOpen.bind(this)}>{label}</button>
+        <Button className="open-button" disabled={this.state.isOpenDisabled} styleType="high-visibility" onClick={this._onOpen.bind(this)}>{label}</Button>
         {this.state.showPrompt && this._onRenderPrompt()}
       </div>
     );

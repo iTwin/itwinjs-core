@@ -86,15 +86,15 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
   }
 
   /** Load views when we mount */
-  public async componentDidMount() {
+  public override async componentDidMount() {
     if (this.props.iModelConnection) {
       await this.loadViews(this.props.iModelConnection);
     }
   }
 
-  public async componentDidUpdate(nextProps: ViewsListProps) {
+  public override async componentDidUpdate(nextProps: ViewsListProps) {
     // if no incoming imodel exists or either the incoming imodel's id or changeset id is different from the current imodel then clear cache
-    if (!nextProps.iModelConnection || (this.props.iModelConnection && (this.props.iModelConnection.iModelId !== nextProps.iModelConnection.iModelId || this.props.iModelConnection.changeSetId !== nextProps.iModelConnection.changeSetId))) {
+    if (!nextProps.iModelConnection || (this.props.iModelConnection && (this.props.iModelConnection.iModelId !== nextProps.iModelConnection.iModelId || this.props.iModelConnection.changeset.id !== nextProps.iModelConnection.changeset.id))) {
       // Clear cache
       this._viewDefCache = undefined;
       // if incoming imodel exists then load new views
@@ -281,7 +281,7 @@ export class ViewsList extends React.Component<ViewsListProps, ViewsListState> {
   }
 
   /** Render list of views */
-  public render() {
+  public override render() {
     const className = classnames("vl-content", this.props.className);
     return (
       <div className={className}>

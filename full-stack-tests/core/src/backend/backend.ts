@@ -8,7 +8,6 @@ import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 import * as http from "http";
 import * as path from "path";
 import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
@@ -17,9 +16,25 @@ import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-ed
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import * as testCommands from "./TestEditCommands";
+import * as fs from "fs";
 
 import serveHandler = require("serve-handler");
 /* eslint-disable no-console */
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
@@ -71,14 +86,14 @@ async function init() {
 /** A FileNameResolver for resolving test iModel files from core/backend */
 class BackendTestAssetResolver extends FileNameResolver {
   /** Resolve a base file name to a full path file name in the core/backend/lib/test/assets/ directory. */
-  public tryResolveFileName(inFileName: string): string {
+  public override tryResolveFileName(inFileName: string): string {
     if (path.isAbsolute(inFileName)) {
       return inFileName;
     }
     return path.join(__dirname, "../../../../core/backend/lib/test/assets/", inFileName);
   }
   /** Resolve a key (for testing FileNameResolver) */
-  public tryResolveKey(fileKey: string): string | undefined {
+  public override tryResolveKey(fileKey: string): string | undefined {
     switch (fileKey) {
       case "test-key": return this.tryResolveFileName("test.bim");
       case "test2-key": return this.tryResolveFileName("test2.bim");

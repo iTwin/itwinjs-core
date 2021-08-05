@@ -23,6 +23,7 @@ describe("DiagnosticClasses tests", () => {
   }
 
   it("EC Diagnostic messages have valid arg place holders.", async () => {
+    /* eslint-disable-next-line deprecation/deprecation */
     for (const [key, value] of Object.entries(ECDiagnostics)) {
       const params = getMessageArgsHolders(value.prototype.messageText);
       let index = 0;

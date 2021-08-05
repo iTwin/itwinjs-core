@@ -32,6 +32,8 @@ export function FrameworkVersion(props: FrameworkVersionProps) { // eslint-disab
 
   React.useEffect(() => {
     const version = props.version;
+    // ensure UiFramework.uiVersion matches as non-react extensions may need to know target UI version.
+    UiFramework.setUiVersion(props.version);
     // istanbul ignore else
     if (currentVersion.current !== version) {
       const oldVersion = currentVersion.current;

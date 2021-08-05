@@ -7,9 +7,11 @@
  */
 
 import * as React from "react";
-import { DialogButtonType, GlobalDialog, GlobalDialogProps } from "@bentley/ui-core";
+import { GlobalDialog, GlobalDialogProps } from "@bentley/ui-core";
 import { UiComponents } from "../../UiComponents";
 import { ShowHideID, ShowHideItem } from "./ShowHideItem";
+import { DialogButtonType } from "@bentley/ui-abstract";
+import { Checkbox } from "@itwin/itwinui-react";
 
 /** Properties for the [[ShowHideDialog]] component
  * @public
@@ -34,7 +36,7 @@ interface ShowHideDialogState<T extends ShowHideID> {
  */
 export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<ShowHideDialogProps<T>, ShowHideDialogState<T>> {
   /** @internal */
-  public readonly state: ShowHideDialogState<T>;
+  public override readonly state: ShowHideDialogState<T>;
   constructor(props: ShowHideDialogProps<T>) {
     super(props);
     this.state = {
@@ -43,7 +45,7 @@ export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<Sh
   }
 
   /** @internal */
-  public componentDidUpdate(oldProps: ShowHideDialogProps<T>) {
+  public override componentDidUpdate(oldProps: ShowHideDialogProps<T>) {
     if (this.props.initialHidden && oldProps.initialHidden !== this.props.initialHidden) {
       this.setState((_, props) => ({ hiddenColumns: props.initialHidden || /* istanbul ignore next */[] }));
     }
@@ -77,7 +79,7 @@ export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<Sh
   };
 
   /** @internal */
-  public render(): React.ReactNode {
+  public override render(): React.ReactNode {
     const { opened, items, initialHidden, onClose, onShowHideChange, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     return (
       <GlobalDialog
@@ -102,7 +104,7 @@ export class ShowHideDialog<T extends ShowHideID> extends React.PureComponent<Sh
           const id = `show-hide-dialog-input-${index}`;
           return (
             <div key={index}>
-              <input data-testid={id} id={id} type="checkbox" checked={visible} onChange={() => undefined} onClick={sel} />
+              <Checkbox data-testid={id} id={id} checked={visible} onChange={() => undefined} onClick={sel} />
               <label htmlFor={id}>{label}</label>
             </div>
           );

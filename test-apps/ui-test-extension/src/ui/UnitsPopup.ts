@@ -3,9 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { DialogButtonType } from "@bentley/ui-core";
 import {
-  DialogButtonDef,
+  DialogButtonDef, DialogButtonType,
   DialogItem, DialogItemValue,
   DialogLayoutDataProvider, DialogPropertySyncItem, PropertyDescription,
 } from "@bentley/ui-abstract";
@@ -53,7 +52,7 @@ export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
     }
   };
 
-  public supplyButtonData(): DialogButtonDef[] | undefined {
+  public override supplyButtonData(): DialogButtonDef[] | undefined {
     const buttons: DialogButtonDef[] = [];
     buttons.push({ type: DialogButtonType.OK, onClick: this._handleOK });
     buttons.push({ type: DialogButtonType.Cancel, onClick: () => { } });
@@ -102,11 +101,11 @@ export class UnitsPopupUiDataProvider extends DialogLayoutDataProvider {
     this._optionsValue = { value: option };
   }
 
-  public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+  public override applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
     this.option = updatedValue.value.value;
   };
 
-  public supplyDialogItems(): DialogItem[] | undefined {
+  public override supplyDialogItems(): DialogItem[] | undefined {
     const items = [{ value: this._optionsValue, property: UnitsPopupUiDataProvider._getEnumAsPicklistDescription(), editorPosition: { rowPriority: 0, columnIndex: 2 } }];
     return items;
   }

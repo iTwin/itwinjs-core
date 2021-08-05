@@ -21,6 +21,11 @@ export interface StringParam {
   guid?: GuidString;
 }
 
+/** parameter Index (1-based), or name of the parameter (including the initial ':', '@' or '$')
+ * @public
+ */
+export type BindParameter = number | string;
+
 /** Executes SQLite SQL statements.
  *
  * A statement must be prepared before it can be executed, and it must be released when no longer needed.
@@ -103,7 +108,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    *  @throws [IModelError]($common) if the value is of an unsupported type or in
    *  case of other binding errors.
    */
-  public bindValue(parameter: number | string, value: any): void {
+  public bindValue(parameter: BindParameter, value: any): void {
     let stat: DbResult;
     if (value === undefined || value === null) {
       stat = this._stmt!.bindNull(parameter);
@@ -127,6 +132,53 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
 
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error in bindValue");
+  }
+
+  private checkBind(stat: DbResult) {
+    if (stat !== DbResult.BE_SQLITE_OK)
+      throw new IModelError(stat, "SQLite Bind error");
+  }
+  /** Bind an integer parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   *  @param val integer to bind.
+   */
+  public bindInteger(parameter: BindParameter, val: number) {
+    this.checkBind(this._stmt!.bindInteger(parameter, val));
+  }
+  /** Bind a double parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   *  @param val double to bind.
+   */
+  public bindDouble(parameter: BindParameter, val: number) {
+    this.checkBind(this._stmt!.bindDouble(parameter, val));
+  }
+  /** Bind a string parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   *  @param val string to bind.
+   */
+  public bindString(parameter: BindParameter, val: string) {
+    this.checkBind(this._stmt!.bindString(parameter, val));
+  }
+  /** Bind an Id64String parameter as a 64-bit integer
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   *  @param val Id to bind.
+   */
+  public bindId(parameter: BindParameter, id: Id64String) {
+    this.checkBind(this._stmt!.bindId(parameter, id));
+  }
+  /** Bind a Guid parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   *  @param val Guid to bind.
+   */
+  public bindGuid(parameter: BindParameter, guid: GuidString) {
+    this.checkBind(this._stmt!.bindGuid(parameter, guid));
+  }
+  /** Bind a blob parameter
+   *  @param parameter Index (1-based) or name of the parameter (including the initial ':', '@' or '$')
+   *  @param val blob to bind.
+   */
+  public bindBlob(parameter: BindParameter, blob: Uint8Array) {
+    this.checkBind(this._stmt!.bindBlob(parameter, blob));
   }
 
   /** Bind values to all parameters in the statement.
@@ -163,7 +215,7 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * @throws [IModelError]($common) in case of errors
    */
   public clearBindings(): void {
-    const stat: DbResult = this._stmt!.clearBindings();
+    const stat = this._stmt!.clearBindings();
     if (stat !== DbResult.BE_SQLITE_OK)
       throw new IModelError(stat, "Error in clearBindings");
   }
@@ -189,6 +241,31 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    */
   public getValue(columnIx: number): SqliteValue { return new SqliteValue(this._stmt!, columnIx); }
 
+  /** Get a value as a blob
+   * @param colIndex Index of SQL column in query result (0-based)
+   */
+  public getValueBlob(colIndex: number): Uint8Array { return this._stmt!.getValueBlob(colIndex); }
+  /** Get a value as a double
+  * @param colIndex Index of SQL column in query result (0-based)
+  */
+  public getValueDouble(colIndex: number): number { return this._stmt!.getValueDouble(colIndex); }
+  /** Get a value as a integer
+  * @param colIndex Index of SQL column in query result (0-based)
+  */
+  public getValueInteger(colIndex: number): number { return this._stmt!.getValueInteger(colIndex); }
+  /** Get a value as a string
+  * @param colIndex Index of SQL column in query result (0-based)
+  */
+  public getValueString(colIndex: number): string { return this._stmt!.getValueString(colIndex); }
+  /** Get a value as an Id
+  * @param colIndex Index of SQL column in query result (0-based)
+  */
+  public getValueId(colIndex: number): Id64String { return this._stmt!.getValueId(colIndex); }
+  /** Get a value as a Guid
+  * @param colIndex Index of SQL column in query result (0-based)
+  */
+  public getValueGuid(colIndex: number): GuidString { return this._stmt!.getValueGuid(colIndex); }
+
   /** Get the current row.
    * The returned row is formatted as JavaScript object where every SELECT clause item becomes a property in the JavaScript object.
    *
@@ -203,11 +280,11 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
    * [SqliteValueType.Blob]($backend) | Uint8Array
    */
   public getRow(): any {
-    const colCount: number = this.getColumnCount();
+    const colCount = this.getColumnCount();
     const row: object = {};
     const duplicatePropNames = new Map<string, number>();
     for (let i = 0; i < colCount; i++) {
-      const sqliteValue: SqliteValue = this.getValue(i);
+      const sqliteValue = this.getValue(i);
       if (!sqliteValue.isNull) {
         const propName: string = SqliteStatement.determineResultRowPropertyName(duplicatePropNames, sqliteValue);
         let val: any;
@@ -236,10 +313,10 @@ export class SqliteStatement implements IterableIterator<any>, IDisposable {
   }
 
   private static determineResultRowPropertyName(duplicatePropNames: Map<string, number>, sqliteValue: SqliteValue): string {
-    let jsName: string = ECJsNames.toJsName(sqliteValue.columnName);
+    let jsName = ECJsNames.toJsName(sqliteValue.columnName);
 
     // now check duplicates. If there are, append a numeric suffix to the duplicates
-    let suffix: number | undefined = duplicatePropNames.get(jsName);
+    let suffix = duplicatePropNames.get(jsName);
     if (suffix === undefined)
       duplicatePropNames.set(jsName, 0);
     else {

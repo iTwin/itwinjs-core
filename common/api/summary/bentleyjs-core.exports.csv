@@ -65,10 +65,6 @@ beta;IModelHubStatus
 public;IModelStatus
 public;IndexedValue
 public;IndexMap
-internal;isElectronMain: boolean
-deprecated;isElectronMain: boolean
-internal;isElectronRenderer: boolean
-deprecated;isElectronRenderer: boolean
 public;isIDisposable(obj: unknown): obj is IDisposable
 public;isInstanceOf
 public;JsonUtils

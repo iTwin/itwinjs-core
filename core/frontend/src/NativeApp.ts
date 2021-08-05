@@ -14,7 +14,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { AccessToken, AccessTokenProps, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
-import { IModelApp } from "./imodeljs-frontend";
+import { IModelApp } from "./IModelApp";
 import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 

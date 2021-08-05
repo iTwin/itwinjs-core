@@ -12,13 +12,14 @@ import {
   DialogPropertySyncItem,
   PropertyChangeResult, PropertyChangeStatus, PropertyDescription, RelativePosition, StandardTypeNames,
 } from "@bentley/ui-abstract";
-import { Button, Point } from "@bentley/ui-core";
+import { Point } from "@bentley/ui-core";
 import { AccuDrawPopupManager } from "../../ui-framework/accudraw/AccuDrawPopupManager";
 import { PopupManager, PopupRenderer } from "../../ui-framework/popup/PopupManager";
 import { MenuItemProps } from "../../ui-framework/shared/MenuItem";
 import TestUtils, { storageMock } from "../TestUtils";
 import { FrameworkUiAdmin, KeyinEntry } from "../../ui-framework/uiadmin/FrameworkUiAdmin";
 import { fireEvent, render } from "@testing-library/react";
+import { Button } from "@itwin/itwinui-react";
 const myLocalStorage = storageMock();
 function requestNextAnimation() { }
 
@@ -312,7 +313,7 @@ describe("PopupManager", () => {
 
       PopupManager.showCard(content.documentElement, "Title", toolbarProps, wrapper.container, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
-      expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(1);
+      expect(wrapper.container.querySelectorAll(".iui-text-leading").length).to.eq(1);
       expect(wrapper.container.querySelectorAll("div.components-toolbar-overflow-sizer").length).to.eq(1);
 
       const buttonNodes = wrapper.container.querySelectorAll("button");
@@ -326,18 +327,18 @@ describe("PopupManager", () => {
       const record = TestUtils.createPrimitiveStringProperty("record", "Title");
       PopupManager.showCard(content.documentElement, record, toolbarProps, wrapper.container, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
-      expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(1);
+      expect(wrapper.container.querySelectorAll(".iui-text-leading").length).to.eq(1);
       PopupManager.hideCard();
 
       PopupManager.showCard(content.documentElement, undefined, undefined, wrapper.container, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
-      expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(0);
+      expect(wrapper.container.querySelectorAll(".iui-text-leading").length).to.eq(0);
       PopupManager.hideCard();
 
       const reactContent = { reactNode: <Button>Label</Button> };
       PopupManager.showCard(reactContent, undefined, undefined, wrapper.container, new Point(150, 250), new Point(8, 8), spyItemExecuted, spyCancel, RelativePosition.TopRight);
       expect(wrapper.container.querySelectorAll("div.uifw-card-content").length).to.eq(1);
-      expect(wrapper.container.querySelectorAll("span.uicore-text-leading").length).to.eq(0);
+      expect(wrapper.container.querySelectorAll(".iui-text-leading").length).to.eq(0);
       PopupManager.hideCard();
     });
 
@@ -365,7 +366,7 @@ describe("PopupManager", () => {
           this._sourceValue.value = option;
         }
 
-        public applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
+        public override applyUiPropertyChange = (updatedValue: DialogPropertySyncItem): void => {
           if (updatedValue.propertyName === TestUiDataProvider._sourcePropertyName) {
             this.source = updatedValue.value.value ? updatedValue.value.value as string : "";
             spyChange(this.source);
@@ -373,7 +374,7 @@ describe("PopupManager", () => {
         };
 
         /** Called by UI to inform data provider of changes.  */
-        public processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
+        public override processChangesInUi(properties: DialogPropertyItem[]): PropertyChangeResult {
           if (properties.length > 0) {
             for (const prop of properties) {
               this.applyUiPropertyChange(prop);
@@ -383,7 +384,7 @@ describe("PopupManager", () => {
         }
 
         /** Used Called by UI to request available properties when UI is manually created. */
-        public supplyDialogItems(): DialogItem[] | undefined {
+        public override supplyDialogItems(): DialogItem[] | undefined {
           return [
             { value: this._sourceValue, property: TestUiDataProvider._getSourceDescription(), editorPosition: { rowPriority: 1, columnIndex: 1 } },
           ];

@@ -10,9 +10,9 @@ import "./ToggleEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { PropertyValue, PropertyValueFormat, StandardEditorNames, StandardTypeNames } from "@bentley/ui-abstract";
-import { Toggle } from "@bentley/ui-core";
 import { PropertyEditorProps, TypeEditor } from "./EditorContainer";
 import { PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 
 /** @internal */
 interface ToggleEditorState {
@@ -28,7 +28,7 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
   private _inputElement = React.createRef<HTMLInputElement>();
 
   /** @internal */
-  public readonly state: Readonly<ToggleEditorState> = {
+  public override readonly state: Readonly<ToggleEditorState> = {
     toggleValue: false,
     isDisabled: false,
   };
@@ -56,38 +56,51 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
     return document.activeElement === this._inputElement.current;
   }
 
-  private _updateToggleValue = (toggleValue: boolean): any => {
+  private _updateToggleValue = (e: React.ChangeEvent<HTMLInputElement>): any => {
     // istanbul ignore else
     if (this._isMounted) {
+      // istanbul ignore else
+      if (this._isMounted) {
+        let toggleValue: boolean = false;
 
-      this.setState({
-        toggleValue,
-      }, async () => {
-        // istanbul ignore else
-        if (this.props.propertyRecord && this.props.onCommit) {
-          const propertyValue = await this.getPropertyValue();
+        // istanbul ignore if
+        if (e.target.checked !== undefined)   // Needed for unit test environment
+          toggleValue = e.target.checked;
+        else {
           // istanbul ignore else
-          if (propertyValue !== undefined) {
-            this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue: propertyValue });
-          }
+          if (e.target.value !== undefined && typeof e.target.value === "boolean")
+            toggleValue = e.target.value;
         }
-      });
+
+        this.setState({
+          toggleValue,
+        }, async () => {
+          // istanbul ignore else
+          if (this.props.propertyRecord && this.props.onCommit) {
+            const propertyValue = await this.getPropertyValue();
+            // istanbul ignore else
+            if (propertyValue !== undefined) {
+              this.props.onCommit({ propertyRecord: this.props.propertyRecord, newValue: propertyValue });
+            }
+          }
+        });
+      }
     }
   };
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this._isMounted = true;
     this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
   /** @internal */
-  public componentWillUnmount() {
+  public override componentWillUnmount() {
     this._isMounted = false;
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyEditorProps) {
+  public override componentDidUpdate(prevProps: PropertyEditorProps) {
     if (this.props.propertyRecord !== prevProps.propertyRecord) {
       this.setStateFromProps(); // eslint-disable-line @typescript-eslint/no-floating-promises
     }
@@ -114,18 +127,18 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
   }
 
   /** @internal */
-  public render() {
-    const className = classnames("components-cell-editor", this.props.className);
-    const inOn = this.state.toggleValue;
+  public override render() {
+    const className = classnames("components-cell-editor", "components-toggle-editor", this.props.className);
+    const isChecked = this.state.toggleValue;
     const isDisabled = !!this.state.isDisabled;
 
     return (
-      <Toggle
+      <ToggleSwitch
         ref={this._inputElement}
         onBlur={this.props.onBlur}
         className={className}
         style={this.props.style}
-        isOn={inOn}
+        checked={isChecked}
         disabled={isDisabled}
         onChange={this._updateToggleValue}
         data-testid="components-toggle-editor"
@@ -139,6 +152,11 @@ export class ToggleEditor extends React.PureComponent<PropertyEditorProps, Toggl
  * @beta
  */
 export class TogglePropertyEditor extends PropertyEditorBase {
+  // istanbul ignore next
+  public override get containerHandlesBlur(): boolean {
+    return false;
+  }
+
   public get reactNode(): React.ReactNode {
     return <ToggleEditor />;
   }

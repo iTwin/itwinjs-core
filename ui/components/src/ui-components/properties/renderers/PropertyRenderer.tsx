@@ -47,7 +47,8 @@ export interface SharedRendererProps {
   isSelectable?: boolean;
   /** Width of the whole property element */
   width?: number;
-  /** Array of action button renderers @beta */
+  /** Array of action button renderers
+   * @beta */
   actionButtonRenderers?: ActionButtonRenderer[];
   /** Is resize handle hovered */
   isResizeHandleHovered?: boolean;
@@ -69,13 +70,17 @@ export interface PropertyRendererProps extends SharedRendererProps {
   propertyValueRendererManager?: PropertyValueRendererManager;
   /** Multiplier of how much the property is indented to the right */
   indentation?: number;
-  /** Indicates property is being edited @beta */
+  /** Indicates property is being edited
+   * @beta */
   isEditing?: boolean;
-  /** Called when property edit is committed. @beta */
+  /** Called when property edit is committed.
+   * @beta */
   onEditCommit?: (args: PropertyUpdatedArgs) => void;
-  /** Called when property edit is cancelled. @beta */
+  /** Called when property edit is cancelled.
+   * @beta */
   onEditCancel?: () => void;
-  /** Props used for highlighting. @beta */
+  /** Props used for highlighting.
+   * @beta */
   highlight?: HighlightingComponentProps;
 }
 
@@ -92,7 +97,7 @@ interface PropertyRendererState {
  */
 export class PropertyRenderer extends React.Component<PropertyRendererProps, PropertyRendererState> {
   /** @internal */
-  public readonly state: Readonly<PropertyRendererState> = {
+  public override readonly state: Readonly<PropertyRendererState> = {
     displayValue: UiComponents.translate("general.loading"),
   };
 
@@ -140,12 +145,12 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
   }
 
   /** @internal */
-  public componentDidMount() {
+  public override componentDidMount() {
     this.updateDisplayValue(this.props);
   }
 
   /** @internal */
-  public componentDidUpdate(prevProps: PropertyRendererProps) {
+  public override componentDidUpdate(prevProps: PropertyRendererProps) {
     if (prevProps.propertyRecord !== this.props.propertyRecord ||
       prevProps.isEditing !== this.props.isEditing ||
       prevProps.orientation !== this.props.orientation)
@@ -153,7 +158,7 @@ export class PropertyRenderer extends React.Component<PropertyRendererProps, Pro
   }
 
   /** @internal */
-  public render() {
+  public override render() {
     const { children, propertyValueRendererManager, isEditing, onEditCommit, onEditCancel, ...props } = this.props; // eslint-disable-line @typescript-eslint/no-unused-vars
     const primitiveRendererProps: PrimitiveRendererProps = {
       ...props,

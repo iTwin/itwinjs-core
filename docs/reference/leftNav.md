@@ -13,6 +13,7 @@ packageClassification:  [
          "backend-itwin-client",
          "bentleyjs-core",
          "ecschema-metadata",
+         "ecschema-editing",
          "geometry-core",
          "logger-config",
          "frontend-devtools",
@@ -30,8 +31,6 @@ packageClassification:  [
        "imodelhub-client",
        "itwin-client",
        "product-settings-client",
-       "projectshare-client",
-       "rbac-client",
        "reality-data-client",
        "usage-logging-client"
      ]

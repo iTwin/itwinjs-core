@@ -286,7 +286,7 @@ describe("GraphicalEditingScope", () => {
           },
         };
 
-        return new IModelTileTree(params);
+        return new IModelTileTree(params, { edgesRequired: false, type: BatchType.Primary });
       }
 
       const expectTreeState = async (tree: IModelTileTree | IModelTileTree[], expectedState: "static" | "interactive" | "dynamic" | "disposed", expectedHiddenElementCount: number, expectedRange: Range3d) => {
