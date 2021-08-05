@@ -81,7 +81,7 @@ describe("MultilineTextRenderer", () => {
     sinon.restore();
     sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 15);
     rerender(<MultilineTextRenderer onHeightChanged={handleHeightChange} />);
-    expect(handleHeightChange).to.have.been.calledOnceWith(28);
+    expect(handleHeightChange).to.have.been.calledOnceWith(27);
   });
 
   it("reports element's height change", () => {
@@ -93,7 +93,7 @@ describe("MultilineTextRenderer", () => {
     sinon.restore();
     sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 5);
     rerender(<MultilineTextRenderer onHeightChanged={handleHeightChange} />);
-    expect(handleHeightChange).to.have.been.calledWith(28);
+    expect(handleHeightChange).to.have.been.calledWith(27);
     expect(handleHeightChange).to.have.been.calledTwice;
   });
 
