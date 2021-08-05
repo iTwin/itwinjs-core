@@ -23,7 +23,7 @@ import { IMatch } from '@bentley/ui-abstract';
 import { InputActionMeta } from 'react-select/src/types';
 import { InputProps as InputProps_2 } from '@itwin/itwinui-react';
 import { KeyboardEventHandler } from 'react-select/src/types';
-import { Matrix3d } from '@bentley/geometry-core';
+import { MessageSeverity as MessageSeverity_2 } from '@bentley/ui-abstract';
 import { PointProps as PointProps_2 } from '@bentley/ui-abstract';
 import { ProgressRadialProps } from '@itwin/itwinui-react';
 import * as PropTypes from 'prop-types';
@@ -456,36 +456,6 @@ export enum Corner {
 export type CrossAxisArrowKeyFunc = (forward: boolean) => void;
 
 // @public
-export class Cube extends React.PureComponent<CubeProps> {
-    // (undocumented)
-    render(): React.ReactNode;
-}
-
-// @internal (undocumented)
-export class CubeFace extends React.Component<CubeFaceProps> {
-    // (undocumented)
-    render(): React.ReactNode;
-}
-
-// @internal (undocumented)
-export interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
-    // (undocumented)
-    face: Face;
-    // (undocumented)
-    rotMatrix: Matrix3d;
-}
-
-// @public
-export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
-    // (undocumented)
-    faces?: {
-        [key: string]: React.ReactNode;
-    };
-    // (undocumented)
-    rotMatrix: Matrix3d;
-}
-
-// @public
 export class Dialog extends React.Component<DialogProps, DialogState> {
     constructor(props: DialogProps);
     // (undocumented)
@@ -761,24 +731,6 @@ export interface ExpansionToggleProps extends CommonProps {
     isExpanded?: boolean;
     // (undocumented)
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
-}
-
-// @public
-export enum Face {
-    // (undocumented)
-    Back = "back",
-    // (undocumented)
-    Bottom = "bottom",
-    // (undocumented)
-    Front = "front",
-    // (undocumented)
-    Left = "left",
-    // (undocumented)
-    None = "",
-    // (undocumented)
-    Right = "right",
-    // (undocumented)
-    Top = "top"
 }
 
 // @beta @deprecated
@@ -1327,7 +1279,7 @@ export interface MessageBoxProps extends CommonProps {
     onClose?: () => void;
     onEscape?: () => void;
     opened: boolean;
-    severity: MessageSeverity;
+    severity: MessageSeverity_2;
     title?: string | JSX.Element;
     width?: string | number;
 }
@@ -1335,7 +1287,7 @@ export interface MessageBoxProps extends CommonProps {
 // @public
 export class MessageContainer extends React.PureComponent<MessageContainerProps> {
     // (undocumented)
-    static getIconClassName(severity: MessageSeverity, hollow?: boolean): string;
+    static getIconClassName(severity: MessageSeverity_2, hollow?: boolean): string;
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1343,7 +1295,7 @@ export class MessageContainer extends React.PureComponent<MessageContainerProps>
 // @public
 export interface MessageContainerProps extends CommonProps {
     // (undocumented)
-    severity: MessageSeverity;
+    severity: MessageSeverity_2;
 }
 
 // @public
@@ -1362,7 +1314,7 @@ export interface MessageRendererProps extends ClassNameProps {
     useSpan?: boolean;
 }
 
-// @public
+// @public @deprecated
 export enum MessageSeverity {
     // (undocumented)
     Error = 4,

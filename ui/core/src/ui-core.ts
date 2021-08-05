@@ -89,6 +89,7 @@ export * from "./ui-core/loading/LoadingStatus";
 export * from "./ui-core/loading/Spinner";
 
 export * from "./ui-core/messagebox/MessageBox";
+export * from "./ui-core/messagebox/MessageSeverity";
 
 export * from "./ui-core/notification/MessageRenderer";
 export * from "./ui-core/notification/MessageType";

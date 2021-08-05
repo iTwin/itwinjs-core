@@ -8,9 +8,7 @@
 
 import "./EditorContainer.scss";
 import * as React from "react";
-import { BeDuration } from "@bentley/bentleyjs-core";
-import { IModelApp, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
-import { PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
+import { PropertyRecord, PropertyValue, SpecialKey, UiAbstract } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { AsyncErrorMessage, PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
@@ -183,15 +181,12 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
   private displayOutputMessage(errorMessage: AsyncErrorMessage | undefined) {
     // istanbul ignore else
     if (errorMessage && this._editorRef) {
-      const details = new NotifyMessageDetails(errorMessage.priority, errorMessage.briefMessage, errorMessage.detailedMessage, errorMessage.msgType, errorMessage.alertType);
       const htmlElement = this._editorRef && this._editorRef.htmlElement;
-      if (errorMessage.displayTime !== undefined)
-        details.displayTime = BeDuration.fromMilliseconds(errorMessage.displayTime);
       // istanbul ignore else
       if (htmlElement)
-        details.setInputFieldTypeDetails(htmlElement);
-      if (IModelApp.notifications)
-        IModelApp.notifications.outputMessage(details);
+        UiAbstract.messageProducer.displayInputFieldMessage(htmlElement, errorMessage.severity, errorMessage.briefMessage, errorMessage.detailedMessage);
+      else
+        UiAbstract.messageProducer.displayMessage(errorMessage.severity, errorMessage.briefMessage, errorMessage.detailedMessage, errorMessage.messageType);
     }
   }
 

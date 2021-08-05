@@ -16,7 +16,7 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
-import { getClassName, UiError } from "@bentley/ui-abstract";
+import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";
 import { UiComponents } from "@bentley/ui-components";
 import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@bentley/ui-core";
 import { BackstageManager } from "./backstage/BackstageManager";
@@ -204,6 +204,9 @@ export class UiFramework {
     UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
     });
+
+    // Initialize the MessageProducer interface in UiAbstract for Editor notifications
+    UiAbstract.messageProducer = IModelApp.notifications;
 
     UiFramework._initialized = true;
 

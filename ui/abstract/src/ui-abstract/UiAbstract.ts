@@ -8,6 +8,7 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { I18N } from "@bentley/imodeljs-i18n";
+import { MessageProducer } from "./notification/MessageProducer";
 import { getClassName } from "./utils/getClassName";
 import { UiError } from "./utils/UiError";
 
@@ -18,6 +19,7 @@ import { UiError } from "./utils/UiError";
 export class UiAbstract {
   private static _initialized = false;
   private static _i18n?: I18N;
+  private static _messageProducer?: MessageProducer;
 
   /**
    * Registers the I18N service namespace for UiAbstract
@@ -74,6 +76,16 @@ export class UiAbstract {
     const className = getClassName(obj);
     const category = UiAbstract.packageName + (className ? `.${className}` : "");
     return category;
+  }
+
+  /** The MessageProducer used to display messages. */
+  public static get messageProducer(): MessageProducer {
+    if (!UiAbstract._messageProducer)
+      throw new UiError(UiAbstract.loggerCategory(this), "UiAbstract.MessageProducer not set");
+    return UiAbstract._messageProducer;
+  }
+  public static set messageProducer(mp: MessageProducer) {
+    UiAbstract._messageProducer = mp;
   }
 
 }

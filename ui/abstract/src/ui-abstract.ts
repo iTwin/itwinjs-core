@@ -32,6 +32,9 @@ export * from "./ui-abstract/items/ProvidedItem";
 export * from "./ui-abstract/items/RelativePosition";
 export * from "./ui-abstract/items/StageUsage";
 
+export * from "./ui-abstract/notification/MessageProducer";
+export * from "./ui-abstract/notification/MessageSeverity";
+
 export * from "./ui-abstract/properties/Description";
 export * from "./ui-abstract/properties/EditorParams";
 export * from "./ui-abstract/properties/PrimitiveTypes";

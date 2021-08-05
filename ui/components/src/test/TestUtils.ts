@@ -5,11 +5,12 @@
 import { ColorByName } from "@bentley/imodeljs-common";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, ImageCheckBoxParams, ParseResults,
-  Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValueFormat,
-  StandardEditorNames, StandardTypeNames, StructValue,
+  ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, DisplayMessageType,
+  ImageCheckBoxParams, MessageProducer, MessageSeverity, ParseResults,
+  Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
+  StandardEditorNames, StandardTypeNames, StructValue, UiAbstract,
 } from "@bentley/ui-abstract";
-import { ColumnDescription, CompositeFilterDescriptorCollection, FilterableTable, UiComponents } from "../ui-components";
+import { AsyncValueProcessingResult, ColumnDescription, CompositeFilterDescriptorCollection, DataControllerBase, FilterableTable, UiComponents } from "../ui-components";
 import { TableFilterDescriptorCollection } from "../ui-components/table/columnfiltering/TableFilterDescriptorCollection";
 
 // cSpell:ignore buttongroup
@@ -35,6 +36,13 @@ export class TestUtils {
 
       await UiComponents.initialize(TestUtils.i18n);
       TestUtils._uiComponentsInitialized = true;
+
+      const mp: MessageProducer = {
+        displayMessage: (_severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string, _messageType?: DisplayMessageType.Toast): void => {},
+        displayInputFieldMessage: (_inputField: HTMLElement, _severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string): void => {},
+        closeInputFieldMessage: (): void => {},
+      };
+      UiAbstract.messageProducer = mp;
     }
   }
 
@@ -433,6 +441,13 @@ export class TestFilterableTable implements FilterableTable {
   /** Gets ECExpression to get property display value. */
   public getPropertyDisplayValueExpression(property: string): string {
     return property;
+  }
+}
+
+/** @internal */
+export class MineDataController extends DataControllerBase {
+  public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
+    return { encounteredError: true, errorMessage: { severity: MessageSeverity.Error, briefMessage: "Test"} };
   }
 }
 

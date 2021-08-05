@@ -115,12 +115,16 @@ public;ControlledTree(props: ControlledTreeProps): JSX.Element
 public;ControlledTreeProps 
 public;ConvertedPrimitives
 internal;convertPrimitiveRecordToString(record: PropertyRecord): string | Promise
+public;Cube 
+internal;CubeFace 
+internal;CubeFaceProps 
 internal;CubeHover
 public;CubeNavigationAid 
 public;CubeNavigationAidProps 
 public;CubeNavigationHitBoxX
 public;CubeNavigationHitBoxY
 public;CubeNavigationHitBoxZ
+public;CubeProps 
 public;CubeRotationChangeEvent 
 public;CubeRotationChangeEventArgs
 internal;CustomItem({ item, addGroupSeparator }:
@@ -192,6 +196,7 @@ public;ErrorObserver
 public;EventsMuteContext 
 deprecated;EventsMuteContext 
 beta;ExtendedTreeNodeRendererProps 
+public;Face
 internal;FaceCell 
 internal;FaceCellProps 
 beta;FavoritePropertiesRenderer

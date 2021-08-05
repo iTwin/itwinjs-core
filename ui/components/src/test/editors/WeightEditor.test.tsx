@@ -6,13 +6,12 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { PrimitiveValue, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
+import { PrimitiveValue, SpecialKey } from "@bentley/ui-abstract";
 import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import { WeightEditor } from "../../ui-components/editors/WeightEditor";
-import TestUtils from "../TestUtils";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import TestUtils, { MineDataController } from "../TestUtils";
+import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 
 describe("<WeightEditor />", () => {
   afterEach(cleanup);
@@ -82,12 +81,6 @@ describe("<WeightEditor />", () => {
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     expect(renderedComponent.getByTestId("components-weightpicker-button")).to.exist;
   });
-
-  class MineDataController extends DataControllerBase {
-    public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
-    }
-  }
 
   it("should not commit if DataController fails to validate", async () => {
     PropertyEditorManager.registerDataController("myData", MineDataController);

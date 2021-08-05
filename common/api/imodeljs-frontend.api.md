@@ -66,6 +66,7 @@ import { DialogProperty } from '@bentley/ui-abstract';
 import { DialogPropertyItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { Dictionary } from '@bentley/bentleyjs-core';
+import { DisplayMessageType } from '@bentley/ui-abstract';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
@@ -177,6 +178,8 @@ import { Matrix4d } from '@bentley/geometry-core';
 import { MeshEdges } from '@bentley/imodeljs-common';
 import { MeshPolyline } from '@bentley/imodeljs-common';
 import { MeshPolylineList } from '@bentley/imodeljs-common';
+import { MessageProducer } from '@bentley/ui-abstract';
+import { MessageSeverity } from '@bentley/ui-abstract';
 import { ModelGeometryChanges } from '@bentley/imodeljs-common';
 import { ModelGeometryChangesProps } from '@bentley/imodeljs-common';
 import { ModelIdAndGeometryGuid } from '@bentley/imodeljs-common';
@@ -6648,10 +6651,12 @@ export abstract class NotificationHandler {
 }
 
 // @public
-export class NotificationManager {
+export class NotificationManager implements MessageProducer {
     clearToolTip(): void;
     closeInputFieldMessage(): void;
     closePointerMessage(): void;
+    displayInputFieldMessage(inputField: HTMLElement, severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string): void;
+    displayMessage(severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string, messageType?: DisplayMessageType): void;
     endActivityMessage(_reason: ActivityMessageEndReason): boolean;
     get isToolTipOpen(): boolean;
     get isToolTipSupported(): boolean;
@@ -6949,11 +6954,8 @@ export enum OutputMessagePriority {
 // @public
 export enum OutputMessageType {
     Alert = 4,
-    // (undocumented)
     InputField = 3,
-    // (undocumented)
     Pointer = 1,
-    // (undocumented)
     Sticky = 2,
     Toast = 0
 }

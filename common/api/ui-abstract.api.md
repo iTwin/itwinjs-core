@@ -1132,6 +1132,14 @@ export interface DialogRow {
 }
 
 // @public
+export enum DisplayMessageType {
+    Alert = 4,
+    InputField = 3,
+    Sticky = 2,
+    Toast = 0
+}
+
+// @public
 export interface EditorPosition {
     columnIndex: number;
     // @deprecated
@@ -1370,6 +1378,29 @@ export function matchesSubString(word: string, wordToMatchAgainst: string): IMat
 
 // @internal
 export function matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null;
+
+// @public
+export interface MessageProducer {
+    closeInputFieldMessage(): void;
+    displayInputFieldMessage(inputField: HTMLElement, severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string): void;
+    displayMessage(severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string, messageType?: DisplayMessageType): void;
+}
+
+// @public
+export enum MessageSeverity {
+    // (undocumented)
+    Error = 4,
+    // (undocumented)
+    Fatal = 5,
+    // (undocumented)
+    Information = 1,
+    // (undocumented)
+    None = 0,
+    // (undocumented)
+    Question = 2,
+    // (undocumented)
+    Warning = 3
+}
 
 // @public
 export interface MultilineTextEditorParams extends BasePropertyEditorParams {
@@ -1986,6 +2017,8 @@ export class UiAbstract {
     static get initialized(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
+    static get messageProducer(): MessageProducer;
+    static set messageProducer(mp: MessageProducer);
     // @internal (undocumented)
     static get packageName(): string;
     static terminate(): void;

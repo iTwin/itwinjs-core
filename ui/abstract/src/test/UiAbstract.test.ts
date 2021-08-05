@@ -7,6 +7,8 @@ import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiAbstract } from "../ui-abstract/UiAbstract";
 import TestUtils from "./TestUtils";
+import { DisplayMessageType, MessageProducer } from "../ui-abstract/notification/MessageProducer";
+import { MessageSeverity } from "../ui-abstract/notification/MessageSeverity";
 
 describe("UiAbstract", () => {
 
@@ -48,6 +50,20 @@ describe("UiAbstract", () => {
     await UiAbstract.initialize(TestUtils.i18n);
     spyLogger.calledOnce.should.true;
     (Logger.logInfo as any).restore();
+  });
+
+  it("messageProducer should throw Error without being set", () => {
+    expect(() => UiAbstract.messageProducer).to.throw(Error);
+  });
+
+  it("messageProducer should return set object", () => {
+    const mp: MessageProducer = {
+      displayMessage: (_severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string, _messageType?: DisplayMessageType.Toast): void => {},
+      displayInputFieldMessage: (_inputField: HTMLElement, _severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string): void => {},
+      closeInputFieldMessage: (): void => {},
+    };
+    UiAbstract.messageProducer = mp;
+    expect(UiAbstract.messageProducer).to.eq(mp);
   });
 
 });

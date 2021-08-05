@@ -21,9 +21,9 @@ import * as CSS from 'csstype';
 import { CSSProperties } from 'react';
 import { CustomButtonDefinition } from '@bentley/ui-abstract';
 import { DateFormatter } from '@bentley/ui-abstract';
+import { DisplayMessageType } from '@bentley/ui-abstract';
 import { DndComponentClass } from 'react-dnd';
 import { EnumerationChoice } from '@bentley/ui-abstract';
-import { Face } from '@bentley/ui-core';
 import { FormatProps } from '@bentley/imodeljs-quantity';
 import { FormatterSpec } from '@bentley/imodeljs-quantity';
 import { GenericUiEventArgs } from '@bentley/ui-abstract';
@@ -42,6 +42,7 @@ import { InputProps } from '@itwin/itwinui-react';
 import * as Inspire from 'inspire-tree';
 import { LinkElementsInfo } from '@bentley/ui-abstract';
 import { Matrix3d } from '@bentley/geometry-core';
+import { MessageSeverity } from '@bentley/ui-abstract';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { NodeCheckboxProps as NodeCheckboxProps_2 } from '@bentley/ui-core';
 import { NodeCheckboxRenderer } from '@bentley/ui-core';
@@ -50,9 +51,6 @@ import { Omit } from '@bentley/ui-core';
 import { OnItemExecutedFunc } from '@bentley/ui-abstract';
 import { OptionType } from '@bentley/ui-core';
 import { Orientation } from '@bentley/ui-core';
-import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
-import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
-import { OutputMessageType } from '@bentley/imodeljs-frontend';
 import { ParseResults } from '@bentley/ui-abstract';
 import { Point2d } from '@bentley/geometry-core';
 import { Point3d } from '@bentley/geometry-core';
@@ -169,17 +167,13 @@ export class ArrayPropertyValueRenderer implements IPropertyValueRenderer {
 // @beta
 export interface AsyncErrorMessage {
     // (undocumented)
-    alertType?: OutputMessageAlert;
-    // (undocumented)
     briefMessage: string;
     // (undocumented)
     detailedMessage?: string;
     // (undocumented)
-    displayTime?: number;
+    messageType?: DisplayMessageType;
     // (undocumented)
-    msgType?: OutputMessageType;
-    // (undocumented)
-    priority: OutputMessagePriority;
+    severity: MessageSeverity;
 }
 
 // @beta
@@ -1120,6 +1114,26 @@ export namespace ConvertedPrimitives {
 // @internal
 export function convertPrimitiveRecordToString(record: PropertyRecord): string | Promise<string>;
 
+// @public
+export class Cube extends React.PureComponent<CubeProps> {
+    // (undocumented)
+    render(): React.ReactNode;
+}
+
+// @internal (undocumented)
+export class CubeFace extends React.Component<CubeFaceProps> {
+    // (undocumented)
+    render(): React.ReactNode;
+}
+
+// @internal (undocumented)
+export interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
+    // (undocumented)
+    face: Face;
+    // (undocumented)
+    rotMatrix: Matrix3d;
+}
+
 // @internal (undocumented)
 export enum CubeHover {
     // (undocumented)
@@ -1182,6 +1196,16 @@ export enum CubeNavigationHitBoxZ {
     None = 0,
     // (undocumented)
     Top = 1
+}
+
+// @public
+export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
+    // (undocumented)
+    faces?: {
+        [key: string]: React.ReactNode;
+    };
+    // (undocumented)
+    rotMatrix: Matrix3d;
 }
 
 // @public
@@ -1794,6 +1818,24 @@ export interface ExtendedTreeNodeRendererProps extends TreeNodeRendererProps {
     descriptionEnabled?: boolean;
     imageLoader?: ITreeImageLoader;
     nodeEditorRenderer?: TreeNodeEditorRenderer;
+}
+
+// @public
+export enum Face {
+    // (undocumented)
+    Back = "back",
+    // (undocumented)
+    Bottom = "bottom",
+    // (undocumented)
+    Front = "front",
+    // (undocumented)
+    Left = "left",
+    // (undocumented)
+    None = "",
+    // (undocumented)
+    Right = "right",
+    // (undocumented)
+    Top = "top"
 }
 
 // @internal (undocumented)
