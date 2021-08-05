@@ -1,6 +1,13 @@
 # Change Log - @bentley/itwin-client
 
-This log was last generated on Tue, 03 Aug 2021 18:26:23 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Aug 2021 20:29:34 GMT and should not be manually modified.
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+### Updates
+
+- switch to xmldom@0.6.0 which correctly escapes entities in attributes when serializing
 
 ## 2.19.2
 Tue, 03 Aug 2021 18:26:23 GMT

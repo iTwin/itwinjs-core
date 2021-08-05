@@ -1704,7 +1704,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
 }
 
 // @public
-export function DefaultViewOverlay({ viewport, onPlayPause }: ViewOverlayProps): JSX.Element;
+export function DefaultViewOverlay({ viewport, onPlayPause, featureOptions }: ViewOverlayProps): JSX.Element | null;
 
 // @public
 export class DialogChangedEvent extends UiEvent<DialogChangedEventArgs> {
@@ -3069,7 +3069,9 @@ export class IModelViewportControl extends ViewportContentControl {
     // (undocumented)
     protected _alwaysUseSuppliedViewState: boolean;
     // (undocumented)
-    protected _disableDefaultViewOverlay: boolean;
+    protected _featureOptions: {
+        [key: string]: boolean | string;
+    };
     protected getImodelConnectedViewportReactElement(): React.ReactNode;
     protected getImodelViewportReactElement(iModelConnection: IModelConnection, viewState: ViewStateProp): React.ReactNode;
     protected getNoContentReactElement(_options: IModelViewportControlOptions): React.ReactNode;
@@ -3095,7 +3097,9 @@ export interface IModelViewportControlOptions {
     alwaysUseSuppliedViewState?: boolean;
     bgColor?: string;
     deferNodeInitialization?: boolean;
-    disableDefaultViewOverlay?: boolean;
+    featureOptions?: {
+        [key: string]: any;
+    };
     iModelConnection?: IModelConnection | (() => IModelConnection);
     supplyViewOverlay?: (_viewport: ScreenViewport) => React.ReactNode;
     viewState?: ViewStateProp;
@@ -6900,6 +6904,10 @@ export interface ViewLayout {
 
 // @public
 export interface ViewOverlayProps {
+    // (undocumented)
+    featureOptions?: {
+        [key: string]: any;
+    };
     // (undocumented)
     onPlayPause?: (playing: boolean) => void;
     // (undocumented)

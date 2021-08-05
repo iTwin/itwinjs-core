@@ -1703,7 +1703,7 @@ export class Table extends React.Component<TableProps, TableState> {
         itemKeyboardNavigator.itemCount = this.state.rowsCount;
         itemKeyboardNavigator.crossAxisArrowKeyHandler = handleCrossAxisArrowKey;
 
-        const processedRow = this._cellSelectionHandler.processedItem ? this._cellSelectionHandler.processedItem.rowIndex /* istanbul ignore next */ : 0;
+        const processedRow = this._cellSelectionHandler.processedItem ? this._cellSelectionHandler.processedItem.rowIndex : /* istanbul ignore next */ 0;
         keyDown ?
           itemKeyboardNavigator.handleKeyDownEvent(e, processedRow) :
           itemKeyboardNavigator.handleKeyUpEvent(e, processedRow);
