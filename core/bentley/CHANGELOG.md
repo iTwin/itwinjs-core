@@ -1,6 +1,21 @@
 # Change Log - @bentley/bentleyjs-core
 
-This log was last generated on Mon, 26 Jul 2021 16:18:31 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Aug 2021 20:29:34 GMT and should not be manually modified.
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+_Version update only_
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+_Version update only_
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
@@ -9,6 +24,11 @@ Mon, 26 Jul 2021 12:21:25 GMT
 
 - Add Dictionary.findOrInsert, keys, and values.
 - async return value rather than fulfilled promise
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
 
 ## 2.18.2
 Mon, 26 Jul 2021 16:18:31 GMT
@@ -51,8 +71,6 @@ Mon, 28 Jun 2021 16:20:10 GMT
 - Add CompressedId64Set.sortAndCompress.
 - Add Mutable<T>.
 - Promote BeUiEvent to public.
-
-_Version update only_
 
 ## 2.16.10
 Thu, 22 Jul 2021 20:23:44 GMT
@@ -480,7 +498,7 @@ Thu, 28 May 2020 22:48:59 GMT
 ### Updates
 
 - Added FailedToGetProductSettings error
-- Setup Guid.normalize() for internal use.
+- Setup Guid.normalize() for internal use. 
 - channel rules
 
 ## 2.0.0
@@ -488,12 +506,12 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Monitor progress of downloading briefcases, ability to cancel download of briefcases.
+- Monitor progress of downloading briefcases, ability to cancel download of briefcases. 
 - Update Config.App documentation to reflect the removal of the config.json file
 - Added ContextDoesNotExist error
 - BUG273249
-- Updated docs.
-- Updated error text.
+- Updated docs. 
+- Updated error text. 
 - added raw log method that bypass catogory check
 - order imports.
 - Add a type guard for `IDisposable`
@@ -527,7 +545,7 @@ Wed, 22 Jan 2020 19:24:11 GMT
 
 ### Updates
 
-- VSS$257397: Temporary fix for checking electron renderer.
+- VSS$257397: Temporary fix for checking electron renderer. 
 - Upgrade to TypeScript 3.7.2.
 
 ## 1.10.0
@@ -542,7 +560,7 @@ Tue, 10 Dec 2019 18:08:56 GMT
 
 ### Updates
 
-- Setup OidcDesktopClient for Electron use cases.
+- Setup OidcDesktopClient for Electron use cases. 
 - Added non-static wait and executeAfter to BeDuration
 - Fix warnings from static analysis
 - Added `BeDuration.race` for common timeout operations.
@@ -595,7 +613,7 @@ Mon, 01 Jul 2019 19:04:29 GMT
 ### Updates
 
 - Added OneAtATimeActivity class
-- Introduced AsyncMutex - a utility to run async blocks of code in sequence.
+- Introduced AsyncMutex - a utility to run async blocks of code in sequence. 
 - Update to TypeScript 3.5
 
 ## 1.0.0
@@ -622,10 +640,10 @@ Mon, 13 May 2019 15:52:05 GMT
 - Logged the fields in ClientRequestContext
 - Logging fixes.
 - Put sourcemap in npm package.
-- Fixed logger to not mutate incoming objects.
+- Fixed logger to not mutate incoming objects. 
 - Improved performance logging
 - Added functions for iterating and obtaining the number of elements of a collection of Id64s represented as an Id64Arg.
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Use TextDecoder to decode binary utf-8 strings if supported.
 - Upgrade TypeDoc dependency to 0.14.2
 
@@ -661,7 +679,7 @@ Mon, 14 Jan 2019 23:09:10 GMT
 
 ### Updates
 
-- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current.
+- Removed IModelDb's cache of accessToken. For long running operations like AutoPush, the user must explicitly supply an IAccessTokenManager to keep the token current. 
 
 ## 0.185.0
 Fri, 11 Jan 2019 18:29:00 GMT
@@ -768,7 +786,7 @@ Fri, 16 Nov 2018 21:45:44 GMT
 
 ### Updates
 
-- Changes to debug utilities.
+- Changes to debug utilities. 
 - Fluentd Bunnyan Logger added
 
 ## 0.166.0

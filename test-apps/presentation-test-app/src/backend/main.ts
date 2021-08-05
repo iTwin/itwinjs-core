@@ -6,7 +6,6 @@ import "./SampleRpcImpl"; // just to get the RPC implementation registered
 import { app as electron } from "electron";
 import * as path from "path";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
 import { IModelHost } from "@bentley/imodeljs-backend";
 import { RpcConfiguration, RpcInterfaceDefinition } from "@bentley/imodeljs-common";
 // __PUBLISH_EXTRACT_START__ Presentation.Backend.Initialization
@@ -15,6 +14,22 @@ import { Presentation, PresentationManagerMode } from "@bentley/presentation-bac
 import rpcs from "../common/Rpcs";
 // __PUBLISH_EXTRACT_END__
 import { PresentationBackendLoggerCategory, PresentationBackendNativeLoggerCategory } from "@bentley/presentation-backend"; // eslint-disable-line no-duplicate-imports
+import * as fs from "fs";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   loadEnv(path.join(__dirname, "..", "..", ".env"));

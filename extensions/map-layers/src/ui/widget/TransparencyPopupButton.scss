@@ -11,12 +11,12 @@
   flex-direction: row;
 
   .map-transparency-slider-container {
-    display: flex;
-    align-items: center;
+    display: block;
     width: 160px;
     height: 2.5em;
     margin-left: 1em;
     margin-right: 1em;
+    margin-top: 6px;
   }
 }
 

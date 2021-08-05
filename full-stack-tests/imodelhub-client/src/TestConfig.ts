@@ -4,8 +4,23 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { Config } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
+import * as fs from "fs";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 loadEnv(path.join(__dirname, "..", ".env"));
 // Increase the timeout since iModel creation is taking longer

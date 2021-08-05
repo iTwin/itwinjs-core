@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/expandable/list";
 @import "~@bentley/ui-core/lib/ui-core/scrollbar";
+@import "~@bentley/ui-core/lib/ui-core/style/itwinui-overrides";
 
 .components-virtualized-property-grid-loader {
   height: 100%;
@@ -14,6 +15,8 @@
 
 .components-virtualized-property-grid {
   user-select: none;
+
+  @include small-itwinui-expandable-block;
 }
 
 .components-property-grid-wrapper {

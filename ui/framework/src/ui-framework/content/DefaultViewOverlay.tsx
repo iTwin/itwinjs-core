@@ -21,6 +21,7 @@ import { useAnalysisAnimationDataProvider } from "../hooks/useAnalysisAnimationD
 export interface ViewOverlayProps {
   viewport: ScreenViewport;
   onPlayPause?: (playing: boolean) => void; // callback with play/pause button is pressed
+  featureOptions?: { [key: string]: any };
 }
 
 /**
@@ -29,33 +30,61 @@ export interface ViewOverlayProps {
  * @public
  */
 // istanbul ignore next
-export function DefaultViewOverlay({ viewport, onPlayPause }: ViewOverlayProps) {
+export function DefaultViewOverlay({ viewport, onPlayPause, featureOptions }: ViewOverlayProps) {
   const solarDataTimelineProvider = useSolarDataProvider(viewport);
   const analysisAnimationTimelineDataProvider = useAnalysisAnimationDataProvider(viewport);
   const scheduleTimelineDataProvider = useScheduleAnimationDataProvider(viewport);
   const currentViewport = useActiveViewport();
-  const timelineDataProvider = scheduleTimelineDataProvider ? scheduleTimelineDataProvider : analysisAnimationTimelineDataProvider;
-  const isCurrentViewport = currentViewport === viewport;
-  return (
-    <div className="uifw-view-overlay">
-      {isCurrentViewport && !timelineDataProvider && solarDataTimelineProvider &&
+
+  if (!currentViewport)
+    return null;
+
+  // Solar gets first shot
+  if (solarDataTimelineProvider && !!featureOptions?.defaultViewOverlay?.enableSolarTimelineViewOverlay) {
+    return (
+      <div className="uifw-view-overlay">
         <div className="uifw-animation-overlay">
           <SolarTimeline dataProvider={solarDataTimelineProvider} />
         </div>
-      }
-      {isCurrentViewport && timelineDataProvider &&
+      </div>
+    );
+  }
+
+  if (analysisAnimationTimelineDataProvider && !!featureOptions?.defaultViewOverlay?.enableAnalysisTimelineViewOverlay) {
+    return (
+      <div className="uifw-view-overlay">
         <div className="uifw-animation-overlay">
           <TimelineComponent
-            startDate={timelineDataProvider.start}
-            endDate={timelineDataProvider.end}
-            initialDuration={timelineDataProvider.initialDuration}
-            totalDuration={timelineDataProvider.duration}
+            startDate={analysisAnimationTimelineDataProvider.start}
+            endDate={analysisAnimationTimelineDataProvider.end}
+            initialDuration={analysisAnimationTimelineDataProvider.initialDuration}
+            totalDuration={analysisAnimationTimelineDataProvider.duration}
             minimized={true}
-            onChange={timelineDataProvider.onAnimationFractionChanged}
+            onChange={analysisAnimationTimelineDataProvider.onAnimationFractionChanged}
             onPlayPause={onPlayPause}
           />
         </div>
-      }
-    </div>
-  );
+      </div>
+    );
+  }
+
+  if (scheduleTimelineDataProvider && !!featureOptions?.defaultViewOverlay?.enableScheduleAnimationViewOverlay) {
+    return (
+      <div className="uifw-view-overlay">
+        <div className="uifw-animation-overlay">
+          <TimelineComponent
+            startDate={scheduleTimelineDataProvider.start}
+            endDate={scheduleTimelineDataProvider.end}
+            initialDuration={scheduleTimelineDataProvider.initialDuration}
+            totalDuration={scheduleTimelineDataProvider.duration}
+            minimized={true}
+            onChange={scheduleTimelineDataProvider.onAnimationFractionChanged}
+            onPlayPause={onPlayPause}
+          />
+        </div>
+      </div>
+    );
+  }
+
+  return null;
 }

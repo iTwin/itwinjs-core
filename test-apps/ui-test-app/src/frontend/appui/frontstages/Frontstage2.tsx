@@ -43,7 +43,7 @@ export class Frontstage2 extends FrontstageProvider {
         contents: [
           {
             classId: "UiFramework.IModelViewportControl",
-            applicationData: { label: "Content 1a", bgColor: "black", disableDefaultViewOverlay: true },
+            applicationData: { label: "Content 1a", bgColor: "black" },
           },
           {
             classId: TreeExampleContentControl,
@@ -51,7 +51,7 @@ export class Frontstage2 extends FrontstageProvider {
           },
           {
             classId: "TestApp.IModelViewport",
-            applicationData: { label: "Content 3a", bgColor: "black", disableDefaultViewOverlay: true },
+            applicationData: { label: "Content 3a", bgColor: "black" },
           },
           {
             classId: HorizontalPropertyGridContentControl,
@@ -65,7 +65,7 @@ export class Frontstage2 extends FrontstageProvider {
       <Frontstage id="Test2"
         defaultTool={CoreTools.selectElementCommand}
         defaultLayout={contentLayoutDef} contentGroup={myContentGroup}
-        isInFooterMode={false} applicationData={{ key: "value", disableDefaultViewOverlay: true }}
+        isInFooterMode={false} applicationData={{ key: "value" }}
 
         contentManipulationTools={
           <Zone
