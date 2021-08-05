@@ -75,7 +75,7 @@ export const MultilineTextRenderer: React.FC<MultilineTextRenderer> = (props) =>
     }
 
     if (numRerenders === 1 || !contentOverflows) {
-      const currentHeight = Math.max(divRef.current.offsetHeight, 28);
+      const currentHeight = Math.max(divRef.current.offsetHeight, 27);
       if (currentHeight !== previousHeightRef.current) {
         props.onHeightChanged?.(currentHeight);
         previousHeightRef.current = currentHeight;

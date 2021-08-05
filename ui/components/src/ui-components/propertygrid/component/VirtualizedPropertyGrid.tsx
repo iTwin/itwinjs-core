@@ -228,10 +228,10 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
    * @returns current height of node.
    */
   private calculateNodeHeight(node: FlatGridItem) {
-    const categoryHeaderHeight = 46;
-    const categoryHeaderPadding = 11;
-    const categoryPropertyHeight = 28;
-    const bottomBorderPadding = 11;
+    const categoryHeaderHeight = 32;
+    const categoryHeaderPadding = 4;
+    const categoryPropertyHeight = 27;
+    const bottomBorderPadding = 4;
     const verticalPrimitivePropertyHeight = 59;
 
     return getPropertyHeight(this.state) + node.lastInNumberOfCategories * bottomBorderPadding;

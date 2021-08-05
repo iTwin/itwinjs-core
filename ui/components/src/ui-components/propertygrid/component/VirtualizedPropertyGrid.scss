@@ -29,7 +29,7 @@
 
   .nested-border-middle {
     height: 100%;
-    padding: 0 12px;
+    padding: 0 4px;
     box-sizing: border-box;
     border-left: 1px solid var(--iui-color-background-4);
     border-right: 1px solid var(--iui-color-background-4);
@@ -37,7 +37,7 @@
 
   .nested-border-bottom {
     border-bottom: 1px solid var(--iui-color-background-4);
-    padding-bottom: 11px;
+    padding-bottom: 4px;
   }
 
   .components--clickable {
@@ -72,7 +72,7 @@
 }
 
 .virtualized-grid-node-category {
-  padding-top: 11px;
+  padding-top: 4px;
 
   .iui-expandable-content {
     // We are rendering virtualized content below the expandable block
@@ -81,7 +81,7 @@
 }
 
 .virtualized-grid-node-custom-category {
-  padding-top: 11px;
+  padding-top: 4px;
 }
 
 .virtualized-grid-node-content {
