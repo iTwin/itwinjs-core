@@ -1,6 +1,21 @@
 # Change Log - @bentley/map-layers
 
-This log was last generated on Wed, 28 Jul 2021 17:16:30 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Aug 2021 20:29:34 GMT and should not be manually modified.
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+_Version update only_
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+_Version update only_
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
@@ -108,7 +123,7 @@ Mon, 24 May 2021 15:58:39 GMT
 
 ### Updates
 
-- Fix 'npm run cover' that would never complete.
+- Fix 'npm run cover' that would never complete. 
 - Exposed the map masking option in the map layers settings UI.
 - Move map tile trees to Viewport to handle synching correctly
 - Update to latest classnames package
@@ -183,7 +198,7 @@ Tue, 09 Mar 2021 20:28:13 GMT
 
 ### Updates
 
-- Restored base layer visibility button in map manager.
+- Restored base layer visibility button in map manager. 
 - Updated to use TypeScript 4.1
 - begin rename project from iModel.js to iTwin.js
 
@@ -208,7 +223,7 @@ Thu, 18 Feb 2021 22:10:13 GMT
 ### Updates
 
 - Provide default props to map-layers widget when used as an extension.
-- ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted.
+- ArcGIS token-based authentification support: MapLayerManager now monitor provider status and display a warning icon when there is a authentifiation error while loading tiles.  User is allowed to provide credentials without the need to fully re-attach the layer.  Invalid credentials feedback is now provided.  It is now possible to save an ArcGIS layer requiring authentification in the settings service, althoug redentials wont be persisted. 
 
 ## 2.11.2
 Thu, 18 Feb 2021 02:50:59 GMT

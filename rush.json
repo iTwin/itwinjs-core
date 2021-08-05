@@ -35,13 +35,6 @@
   },
   "projects": [
     {
-      "packageName": "@bentley/backend-application-insights-client",
-      "projectFolder": "clients/backend-application-insights",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/build-tools",
       "projectFolder": "tools/build",
       "reviewCategory": "tools",
@@ -73,13 +66,6 @@
       "packageName": "@bentley/frontend-authorization-client",
       "projectFolder": "clients/frontend-authorization",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/frontend-application-insights-client",
-      "projectFolder": "clients/frontend-application-insights",
-      "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -128,13 +114,6 @@
     {
       "packageName": "@bentley/extension-cli",
       "projectFolder": "tools/extension-cli",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/config-loader",
-      "projectFolder": "tools/config-loader",
       "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

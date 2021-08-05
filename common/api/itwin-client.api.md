@@ -366,52 +366,6 @@ export class ResponseError extends BentleyError {
     status?: number;
 }
 
-// @internal @deprecated
-export class SamlAccessToken extends SamlToken {
-    static fromJson(jsonObj: any): SamlAccessToken | undefined;
-    static fromSamlAssertion(samlAssertion: string): SamlAccessToken;
-    static fromSamlTokenString(accessTokenStr: string, includesPrefix?: IncludePrefix): SamlAccessToken;
-    static fromTokenString(tokenStr: string): SamlAccessToken;
-    toTokenString(includePrefix?: IncludePrefix): string;
-}
-
-// @internal @deprecated
-export class SamlAuthorizationToken extends SamlToken {
-    static fromSamlAssertion(samlAssertion: string): SamlAuthorizationToken;
-    toTokenString(includePrefix?: IncludePrefix): string;
-}
-
-// @internal @deprecated
-export abstract class SamlToken {
-    protected constructor();
-    // (undocumented)
-    protected _expiresAt?: Date;
-    // (undocumented)
-    getExpiresAt(): Date | undefined;
-    // (undocumented)
-    protected getSaml(): string | undefined;
-    // (undocumented)
-    getSamlAssertion(): string | undefined;
-    // (undocumented)
-    getStartsAt(): Date | undefined;
-    // (undocumented)
-    getUserInfo(): UserInfo | undefined;
-    // (undocumented)
-    protected parseSamlAssertion(): boolean;
-    // (undocumented)
-    protected _saml?: string;
-    // (undocumented)
-    protected _samlAssertion?: string;
-    // (undocumented)
-    setUserInfo(userInfo: UserInfo): void;
-    // (undocumented)
-    protected _startsAt?: Date;
-    // (undocumented)
-    protected _userInfo?: UserInfo;
-    // (undocumented)
-    protected _x509Certificate?: string;
-}
-
 // @beta
 export class SasUrlExpired extends BentleyError {
     constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);

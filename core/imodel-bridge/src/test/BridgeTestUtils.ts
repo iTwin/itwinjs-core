@@ -6,7 +6,6 @@
 import { assert } from "chai";
 import * as path from "path";
 import { BentleyLoggerCategory, DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
 import { ChangeSet, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
   BackendLoggerCategory, ECSqlStatement, ExternalSourceAspect, IModelDb, IModelHost, IModelHostConfiguration, IModelHubBackend, IModelJsFs, NativeLoggerCategory,
@@ -22,6 +21,22 @@ import { HubUtility } from "./integration/HubUtility";
 import { CodeSpecs, RectangleTile, SmallSquareTile } from "./integration/TestBridgeElements";
 import { ModelNames } from "./integration/TestiModelBridge";
 import { KnownTestLocations } from "./KnownTestLocations";
+import * as fs from "fs";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 export class TestIModelInfo {
   private _name: string;

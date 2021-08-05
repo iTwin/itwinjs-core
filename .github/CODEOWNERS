@@ -36,8 +36,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/bentleyjs-core/                        @imodeljs/admins
 /common/**/build-tools/                           @calebmshafer @wgoehrig
 /common/**/certa/                                 @calebmshafer @wgoehrig
-/common/**/config-loader.*                        @calebmshafer @wgoehrig
-/common/**/config-loader/                         @calebmshafer @wgoehrig
 
 # Covers most client libraries, all others with more specific reviewers should be after these two lines
 /common/**/*-client.*                             @calebmshafer @ramanujam-raman
@@ -179,7 +177,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /tools/backend-webpack @calebmshafer @wgoehrig
 /tools/build @calebmshafer @wgoehrig
 /tools/certa @calebmshafer @wgoehrig
-/tools/config-loader @calebmshafer @wgoehrig
 /tools/extension-webpack @calebmshafer @wgoehrig
 /tools/oidc-signin-tool @calebmshafer @wgoehrig
 /tools/webpack-core @calebmshafer @wgoehrig

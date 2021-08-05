@@ -787,7 +787,7 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
           viewManager.dropViewport(this._vp, true);
         }
         // istanbul ignore else
-        if (this._canvasElement && (this.props.canvasSizeOverride || (/* istanbul ignore next */ this._canvasElement.clientWidth !== 0 && /* istanbul ignore next */ this._canvasElement.clientHeight !== 0))) {
+        if (this._canvasElement && (this.props.canvasSizeOverride || ( /* istanbul ignore next */ this._canvasElement.clientWidth !== 0 && /* istanbul ignore next */ this._canvasElement.clientHeight !== 0))) {
           const previousView = viewManager.selectedView;
           this._vp = screenViewport.create(this._canvasElement, this.props.view.clone());
           this.customizeViewport(this._vp);

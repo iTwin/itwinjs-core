@@ -8,6 +8,24 @@ publish: false
 Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
 Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
+## Client Library Package Changes
+
+TODO: This need a lot more work before it's ready
+
+### Authentication
+
+SAML support has officially been dropped as a supported workflow. All related APIs for SAML have been removed.
+
+|Removed in @bentley/backend-itwin-client |Use from |
+|OidcDelegationClientConfiguration| DelegationAuthorizationClientConfiguration|
+|OidcDelegationClient|DelegationAuthorizationClient|
+
+|Removed in @bentley/imodeljs-frontend |Use from |
+|OidcBrowserClient|BrowserAuthorizationClient|
+|IOidcFrontendClient|FrontendAuthorizationClient|
+|isIOidcFrontendClient|FrontendAuthorizationClient|
+|OidcFrontendClientConfiguration|BrowserAuthorizationClientConfiguration|
+
 ## User Interface Package Changes
 
 Several changes were made in the @bentley/ui-* packages.
@@ -47,6 +65,7 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 |Radio | Radio
 |Select | Select
 |SelectOption | SelectOption
+|Slider | Slider
 |SmallText | Small
 |Spinner | ProgressRadial with `indeterminate` prop
 |SpinnerSize | `size` prop in ProgressRadialProps
@@ -58,6 +77,10 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 |Toggle | ToggleSwitch
 |Tooltip | Tooltip
 |TooltipPlacement | Placement
+
+#### Slider
+
+The deprecated [Slider]($ui-core) was a wrapper around the react-compound-slider which does not work properly in popout window. To alleviate this issue, the deprecated `Slider`will now wrap the  `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
 
 ### Deprecated with alternatives elsewhere
 
@@ -90,6 +113,7 @@ Some of these have alternatives in the same package, while others have alternati
 |StandardEditorNames | StandardEditorNames in @bentley/ui-abstract
 |StandardTypeNames | StandardTypeNames in @bentley/ui-abstract
 |StandardTypeConverterTypeNames | StandardTypeNames in @bentley/ui-abstract
+|Timeline | TimelineComponent in @bentley/ui-components
 
 |Removed from @bentley/ui-framework |Use instead
 |-----|-----

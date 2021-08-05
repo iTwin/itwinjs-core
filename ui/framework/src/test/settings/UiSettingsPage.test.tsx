@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { getUiSettingsManagerEntry, UiSettingsPage } from "../../ui-framework/settings/ui/UiSettingsPage";
 import TestUtils, { handleError, selectChangeValueByText, storageMock, stubScrollIntoView } from "../TestUtils";
 import { UiFramework } from "../../ui-framework/UiFramework";
@@ -79,10 +80,11 @@ describe("UiSettingsPage", () => {
   it("renders without version option (V1) set widget opacity", async () => {
     const wrapper = render(<UiSettingsPage allowSettingUiFrameworkVersion={false} />);
     expect(wrapper).not.to.be.undefined;
-    const handles = wrapper.container.querySelectorAll(".core-slider-handle");
-    expect(handles.length).to.eq(1);
-    fireEvent.mouseDown(handles[0]);
-    fireEvent.mouseUp(handles[0]);
+    const thumb = wrapper.container.ownerDocument.querySelector(".iui-slider-thumb");
+    expect(thumb).to.exist;
+    fireEvent.keyDown(thumb!, { key: SpecialKey.ArrowRight });
+    await TestUtils.flushAsyncOperations();
+
     await TestUtils.flushAsyncOperations();
     // trigger sync event processing
     UiFramework.setWidgetOpacity(.5);

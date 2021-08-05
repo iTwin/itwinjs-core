@@ -1,13 +1,28 @@
 # Change Log - @bentley/imodel-bridge
 
-This log was last generated on Wed, 28 Jul 2021 17:16:30 GMT and should not be manually modified.
+This log was last generated on Wed, 04 Aug 2021 20:29:34 GMT and should not be manually modified.
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+_Version update only_
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+_Version update only_
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
 
 ### Updates
 
-- connector framework should commit local changes before calling BriefcaseDb.pullAndMergeChanges() to prevent a potential merge from failing.
+- connector framework should commit local changes before calling BriefcaseDb.pullAndMergeChanges() to prevent a potential merge from failing. 
 - Safely delete elements with embedding relationships
 
 ## 2.18.3
@@ -216,7 +231,7 @@ Thu, 28 Jan 2021 13:39:27 GMT
 ### Updates
 
 - Add option to disable automatic element deletion
-- Separated out API to upgrade iModels.
+- Separated out API to upgrade iModels. 
 
 ## 2.10.3
 Fri, 08 Jan 2021 18:34:03 GMT
@@ -449,7 +464,7 @@ Fri, 10 Jul 2020 17:23:14 GMT
 ### Updates
 
 - First working version
-- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades.
+- Setup BriefcaseDb.open() to allow profile and domain schema validation and upgrades. 
 
 ## 2.2.1
 Tue, 07 Jul 2020 14:44:52 GMT

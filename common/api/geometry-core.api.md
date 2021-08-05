@@ -84,6 +84,7 @@ export class Angle implements BeJSONFunctions {
     static createDegrees(degrees: number): Angle;
     static createDegreesAdjustPositive(degrees: number): Angle;
     static createDegreesAdjustSigned180(degrees: number): Angle;
+    static createInterpolate(angle0: Angle, fraction: number, angle1: Angle): Angle;
     static createRadians(radians: number): Angle;
     get degrees(): number;
     static readonly degreesPerRadian: number;
@@ -4969,8 +4970,10 @@ export class Sample {
     static appendVariableSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number, xFactor: number): Point3d[];
     static convertPointsToSegments(points: Point3d[], forceClosure?: boolean): LineSegment3d[];
     static createAllGeometryQueryTypes(): GeometryQuery[];
+    static createAnnulusPolyline(edgesPerQuadrant: number, center: Point3d, r0: number, r1: number, theta0: Angle, theta1: Angle, addClosure: boolean): Point3d[];
     static createArcRegions(): Loop[];
     static createArcs(radiusRatio?: number, sweep?: AngleSweep): Arc3d[];
+    static createArcStrokes(edgesPerQuadrant: number, center: Point3d, r0: number, theta0: Angle, theta1: Angle, addClosure?: boolean): Point3d[];
     static createBagOfCurves(): BagOfCurves[];
     static createBidirectionalSawtooth(origin: Point3d, dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhaseOutbound: number, dyFinal: number, dxLowReturn: number, riseXReturn: number, riseYReturn: number, dxHighReturn: number): Point3d[];
     static createBoxes(capped?: boolean): Box[];
@@ -5006,6 +5009,7 @@ export class Sample {
     static createMap4ds(): Map4d[];
     static createMatrix3dArray(): Matrix3d[];
     static createMatrix4ds(includeIrregular?: boolean): Matrix4d[];
+    static createMeshInAnnulus(edgesPerQuadrant: number, center: Point3d, r0: number, r1: number, theta0: Angle, theta1: Angle): IndexedPolyface | undefined;
     static createMessyRigidTransform(fixedPoint?: Point3d): Transform;
     static createMixedBsplineCurves(): BSplineCurve3dBase[];
     static createNonZeroVectors(): Vector3d[];
@@ -5603,6 +5607,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray[]): void;
     setInvisible(invisible: boolean): void;
+    takeConvexSets(source: UnionOfConvexClipPlaneSets): void;
     toJSON(): UnionOfConvexClipPlaneSetsProps;
     transformInPlace(transform: Transform): void;
 }

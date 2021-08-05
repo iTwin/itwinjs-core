@@ -14,7 +14,6 @@ export * from "./UserInfo";
 export * from "./WsgClient";
 export * from "./WsgQuery";
 export * from "./ImsAuthorizationClient";
-export * from "./SamlToken";
 export * from "./ChunkedQueryContext";
 
 /** @docs-package-description
