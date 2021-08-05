@@ -540,7 +540,26 @@ More on synchronization using connectors could be found [here](https://communiti
 ## Visualizing the result
 
 ## ECSQL
+See this article on [ECSQL](https://www.itwinjs.org/learning/ecsqltutorial/)
+<figure>
+  <iframe style="height:40vh;width:60vw;" src="https://www.itwinjs.org/console/?imodel=House%20Sample%20Bak&query=SELECT%20Element.Id%20FROM%20bis.ExternalSourceAspect%20WHERE%20Identifier=%27197359%27">
+  </iframe>
+</figure>
 
+Some sample queries that is helpful to debug connector output
+
+1. Get the iModel Element id from the identifier from a given source file
+   ```
+    SELECT Element.Id FROM bis.ExternalSourceAspect WHERE Identifier='<Element Id from File>'
+   ```
+2. List of all known repositories (links to files in an iModel)
+   ```
+   SELECT UserLabel, Url FROM bis.repositoryLink
+   ```
+3. List of all physical partitions present in the iModel
+   ```
+   SELECT * from bis.physicalpartition
+   ```
 ## Logs
 
 See this article on [Logging](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/common/Logging.md)
