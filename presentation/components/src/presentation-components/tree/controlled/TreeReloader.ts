@@ -56,11 +56,11 @@ class TreeReloader extends PagedTreeNodeLoader<IPresentationTreeDataProvider> {
   public reloadTree(): Observable<never> {
     const previouslyExpandedNodes = collectExpandedNodes(undefined, this.previousTreeModel);
     return concat(
-      // We need to know root node count before continueing
+      // We need to know root node count before continuing
       this.loadNode(this.modelSource.getModel().getRootNode(), 0),
       from(previouslyExpandedNodes)
         .pipe(
-          // Process expanded nodes recursively, depth first
+          // Process expanded nodes recursively, breadth first
           expand((expandedNode) => {
             const node = this.modelSource.getModel().getNode(expandedNode.id);
             if (node !== undefined) {
@@ -91,9 +91,9 @@ class TreeReloader extends PagedTreeNodeLoader<IPresentationTreeDataProvider> {
               Math.min(expandedNode.index + this.pageSize, parentNode.numChildren - 1),
             ])
               .pipe(
-                // For each guess, load the corresponding page. concatMap ensures we are loading one page at a time.
+                // For each guess, load the corresponding page
                 concatMap((index) => this.loadNode(parentNode, index)),
-                // Stop making guesses when the node is found.
+                // Stop making guesses when the node is found
                 map(() => this.modelSource.getModel().getNode(expandedNode.id)),
                 filter((loadedNode) => loadedNode !== undefined),
                 take(1),
