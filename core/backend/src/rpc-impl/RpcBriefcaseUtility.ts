@@ -46,7 +46,8 @@ export class RpcBriefcaseUtility {
       myBriefcaseIds = await IModelHost.hubAccess.getMyBriefcaseIds({ requestContext, iModelId });
     }
 
-    const resolvers = args.fileNameResolvers;
+    const resolvers = args.fileNameResolvers ?? [(arg) => BriefcaseManager.getFileName(arg)];
+
     // see if we can open any of the briefcaseIds we already acquired from iModelHub
     if (resolvers) {
       for (const resolver of resolvers) {
