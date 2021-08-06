@@ -95,8 +95,11 @@ export function usePresentationTreeNodeLoader(
     ],
   );
 
-  const [{ modelSource, rulesetRegistration, dataProvider }, setTreeNodeLoaderState] = useResettableState<TreeNodeLoaderState>(
-    {
+  const [
+    { modelSource, rulesetRegistration, dataProvider },
+    setTreeNodeLoaderState,
+  ] = useResettableState<TreeNodeLoaderState>(
+    () => ({
       modelSource: new TreeModelSource(),
       rulesetRegistration: new RulesetRegistrationHelper(dataProviderProps.ruleset),
       dataProvider: new PresentationTreeDataProvider({
@@ -105,7 +108,7 @@ export function usePresentationTreeNodeLoader(
           ? dataProviderProps.ruleset
           : /* istanbul ignore next */ dataProviderProps.ruleset.id,
       }),
-    },
+    }),
     [dataProviderProps],
   );
   React.useEffect(() => { return () => rulesetRegistration.dispose(); }, [rulesetRegistration]);
@@ -141,15 +144,11 @@ interface TreeNodeLoaderState {
  * Resets state to `initialValue` when dependencies change. Avoid using in new places because this hook is only intended
  * for use in poorly designed custom hooks.
  */
-function useResettableState<T>(initialValue: T, dependencies: unknown[]): [T, React.Dispatch<React.SetStateAction<T>>] {
-  const stateRef = React.useRef(initialValue);
+function useResettableState<T>(initialValue: () => T, dependencies: unknown[]): [T, React.Dispatch<React.SetStateAction<T>>] {
+  const stateRef = React.useRef<T>() as React.MutableRefObject<T>;
   const propsChangedRef = React.useRef(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
-  React.useMemo(() => propsChangedRef.current = true, dependencies);
-  if (propsChangedRef.current) {
-    stateRef.current = initialValue;
-    propsChangedRef.current = false;
-  }
+  React.useMemo(() => stateRef.current = initialValue(), dependencies);
 
   const [_, setState] = React.useState({});
   const setNewStateRef = React.useRef((action: T | ((previousState: T) => T)) => {
