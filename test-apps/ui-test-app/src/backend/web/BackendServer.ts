@@ -5,7 +5,7 @@
 import { EnvMacroSubst, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager, IModelError, IModelStatus } from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager} from "@bentley/imodeljs-common";
 import { getSupportedRpcs } from "../../common/rpcs";
 import { loggerCategory } from "../../common/TestAppConfiguration";
 
