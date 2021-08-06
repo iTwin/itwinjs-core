@@ -114,7 +114,7 @@ internal;matchesPrefix: IFilter
 internal;matchesStrictPrefix: IFilter
 internal;matchesSubString(word: string, wordToMatchAgainst: string): IMatch[] | null
 internal;matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null
-public;MessageProducer
+public;MessagePresenter
 public;MessageSeverity
 public;MultilineTextEditorParams 
 public;OnCancelFunc = () => void

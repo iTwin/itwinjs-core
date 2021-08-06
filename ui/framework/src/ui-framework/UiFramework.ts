@@ -205,8 +205,8 @@ export class UiFramework {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
     });
 
-    // Initialize the MessageProducer interface in UiAbstract for Editor notifications
-    UiAbstract.messageProducer = IModelApp.notifications;
+    // Initialize the MessagePresenter interface in UiAbstract for Editor notifications
+    UiAbstract.messagePresenter = IModelApp.notifications;
 
     UiFramework._initialized = true;
 

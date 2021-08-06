@@ -7,7 +7,7 @@
  */
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Point2d, XAndY } from "@bentley/geometry-core";
-import { DisplayMessageType, MessageProducer, MessageSeverity, RelativePosition } from "@bentley/ui-abstract";
+import { DisplayMessageType, MessagePresenter, MessageSeverity, RelativePosition } from "@bentley/ui-abstract";
 import { IModelApp } from "./IModelApp";
 import { ToolAssistanceInstructions } from "./tools/ToolAssistance";
 
@@ -174,7 +174,7 @@ export class ActivityMessageDetails {
  * non-interactive sessions, these messages may be saved to a log file or simply discarded.
  * @public
  */
-export class NotificationManager implements MessageProducer {
+export class NotificationManager implements MessagePresenter {
   public readonly toolTipLocation = new Point2d();
 
   /** Output a prompt, given an i18n key.

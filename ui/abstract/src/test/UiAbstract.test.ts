@@ -7,7 +7,7 @@ import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { UiAbstract } from "../ui-abstract/UiAbstract";
 import TestUtils from "./TestUtils";
-import { DisplayMessageType, MessageProducer } from "../ui-abstract/notification/MessageProducer";
+import { DisplayMessageType, MessagePresenter } from "../ui-abstract/notification/MessagePresenter";
 import { MessageSeverity } from "../ui-abstract/notification/MessageSeverity";
 
 describe("UiAbstract", () => {
@@ -52,18 +52,18 @@ describe("UiAbstract", () => {
     (Logger.logInfo as any).restore();
   });
 
-  it("messageProducer should throw Error without being set", () => {
-    expect(() => UiAbstract.messageProducer).to.throw(Error);
+  it("messagePresenter should throw Error without being set", () => {
+    expect(() => UiAbstract.messagePresenter).to.throw(Error);
   });
 
-  it("messageProducer should return set object", () => {
-    const mp: MessageProducer = {
+  it("messagePresenter should return set object", () => {
+    const mp: MessagePresenter = {
       displayMessage: (_severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string, _messageType?: DisplayMessageType.Toast): void => {},
       displayInputFieldMessage: (_inputField: HTMLElement, _severity: MessageSeverity, _briefMessage: HTMLElement | string, _detailedMessage?: HTMLElement | string): void => {},
       closeInputFieldMessage: (): void => {},
     };
-    UiAbstract.messageProducer = mp;
-    expect(UiAbstract.messageProducer).to.eq(mp);
+    UiAbstract.messagePresenter = mp;
+    expect(UiAbstract.messagePresenter).to.eq(mp);
   });
 
 });

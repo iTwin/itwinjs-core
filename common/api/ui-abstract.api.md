@@ -1380,7 +1380,7 @@ export function matchesSubString(word: string, wordToMatchAgainst: string): IMat
 export function matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null;
 
 // @public
-export interface MessageProducer {
+export interface MessagePresenter {
     closeInputFieldMessage(): void;
     displayInputFieldMessage(inputField: HTMLElement, severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string): void;
     displayMessage(severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string, messageType?: DisplayMessageType): void;
@@ -2017,8 +2017,8 @@ export class UiAbstract {
     static get initialized(): boolean;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
-    static get messageProducer(): MessageProducer;
-    static set messageProducer(mp: MessageProducer);
+    static get messagePresenter(): MessagePresenter;
+    static set messagePresenter(mp: MessagePresenter);
     // @internal (undocumented)
     static get packageName(): string;
     static terminate(): void;

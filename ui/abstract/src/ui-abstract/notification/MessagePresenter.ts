@@ -22,10 +22,10 @@ export enum DisplayMessageType {
   Alert = 4,
 }
 
-/** MessageProducer interface functions display messages.
+/** MessagePresenter interface functions display messages.
  * @public
  */
-export interface MessageProducer {
+export interface MessagePresenter {
   /**
    * Displays a notification message.
    * @param severity          The severity of the message.

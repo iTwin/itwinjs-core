@@ -184,9 +184,9 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
       const htmlElement = this._editorRef && this._editorRef.htmlElement;
       // istanbul ignore else
       if (htmlElement)
-        UiAbstract.messageProducer.displayInputFieldMessage(htmlElement, errorMessage.severity, errorMessage.briefMessage, errorMessage.detailedMessage);
+        UiAbstract.messagePresenter.displayInputFieldMessage(htmlElement, errorMessage.severity, errorMessage.briefMessage, errorMessage.detailedMessage);
       else
-        UiAbstract.messageProducer.displayMessage(errorMessage.severity, errorMessage.briefMessage, errorMessage.detailedMessage, errorMessage.messageType);
+        UiAbstract.messagePresenter.displayMessage(errorMessage.severity, errorMessage.briefMessage, errorMessage.detailedMessage, errorMessage.messageType);
     }
   }
 

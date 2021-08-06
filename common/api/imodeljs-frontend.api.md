@@ -178,7 +178,7 @@ import { Matrix4d } from '@bentley/geometry-core';
 import { MeshEdges } from '@bentley/imodeljs-common';
 import { MeshPolyline } from '@bentley/imodeljs-common';
 import { MeshPolylineList } from '@bentley/imodeljs-common';
-import { MessageProducer } from '@bentley/ui-abstract';
+import { MessagePresenter } from '@bentley/ui-abstract';
 import { MessageSeverity } from '@bentley/ui-abstract';
 import { ModelGeometryChanges } from '@bentley/imodeljs-common';
 import { ModelGeometryChangesProps } from '@bentley/imodeljs-common';
@@ -6651,7 +6651,7 @@ export abstract class NotificationHandler {
 }
 
 // @public
-export class NotificationManager implements MessageProducer {
+export class NotificationManager implements MessagePresenter {
     clearToolTip(): void;
     closeInputFieldMessage(): void;
     closePointerMessage(): void;
