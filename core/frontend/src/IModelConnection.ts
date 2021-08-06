@@ -98,11 +98,6 @@ export abstract class IModelConnection extends IModel {
   /** Type guard for instanceof [[BriefcaseConnection]] */
   public isBriefcaseConnection(): this is BriefcaseConnection { return false; }
 
-  /** Type guard for instanceof [[RemoteBriefcaseConnection]]
-   * @deprecated use BriefcaseConnection with an IpcApp
-   */
-  public isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection { return false; } // eslint-disable-line deprecation/deprecation
-
   /** Type guard for instanceof [[CheckpointConnection]]
    * @beta
   */
@@ -597,13 +592,13 @@ export abstract class IModelConnection extends IModel {
   public get projectCenterAltitude(): number | undefined {
     if (undefined === this._projectCenterAltitude) {
       const elevationProvider = new BingElevationProvider();
-      this._projectCenterAltitude =  elevationProvider.getHeightValue(this.projectExtents.center, this);
+      this._projectCenterAltitude = elevationProvider.getHeightValue(this.projectExtents.center, this);
       this._projectCenterAltitude.then((projectCenterAltitude) => {
         this._projectCenterAltitude = projectCenterAltitude;
         this.onMapElevationLoaded.raiseEvent(this);
       }).catch((_error) => this._projectCenterAltitude = 0.0);
     }
-    return  ("number" === typeof this._projectCenterAltitude) ? this._projectCenterAltitude : undefined;
+    return ("number" === typeof this._projectCenterAltitude) ? this._projectCenterAltitude : undefined;
   }
 }
 
@@ -743,15 +738,6 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
   /** The collection of loaded ModelState objects for an [[IModelConnection]]. */
   export class Models implements Iterable<ModelState> {
     private _loaded = new Map<string, ModelState>();
-
-    /** The set of loaded models for this IModelConnection, indexed by Id.
-     * @deprecated Use `for..of` to iterate and getLoaded() to look up by Id.
-     */
-    public get loaded(): Map<string, ModelState> { return this._loaded; }
-    public set loaded(loaded: Map<string, ModelState>) {
-      this._loaded = loaded;
-      assert(false, "there is no reason to replace the map of loaded models");
-    }
 
     /** An iterator over all currently-loaded models. */
     public [Symbol.iterator](): Iterator<ModelState> {
@@ -985,9 +971,9 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
           break;
       }
 
-      const placements = new Array<Placement & { elementId: Id64String}>();
+      const placements = new Array<Placement & { elementId: Id64String }>();
       for await (const row of this._iModel.query(ecsql)) {
-        const origin =  [row.x, row.y, row.z];
+        const origin = [row.x, row.y, row.z];
         const bbox = {
           low: { x: row.lx, y: row.ly, z: row.lz },
           high: { x: row.hx, y: row.hy, z: row.hz },
