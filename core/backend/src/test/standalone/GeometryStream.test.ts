@@ -2480,12 +2480,9 @@ describe("BRepGeometry", () => {
       onResult,
       parameters: { distance: 0.25 },
     };
-    try {
-      imodel.createBRepGeometry(createProps);
-      assert(false); // Expect exception creating sheet body from invalid loop...
-    } catch (error) {
-      assert(true);
-    }
+
+    // Expect exception creating sheet body from invalid loop (imprint error)...
+    expect(() => imodel.createBRepGeometry(createProps)).to.throw(Error, "Solid kernel severe error: 942");
   });
 
   it("catch solid kernel severe error - worker thread", async () => {
@@ -2506,12 +2503,8 @@ describe("BRepGeometry", () => {
     };
 
     const requestContext = new BackendRequestContext();
-    try {
-      await imodel.getMassProperties(requestContext, requestProps);
-      assert(false); // Expect exception creating sheet body from invalid loop...
-    } catch (error) {
-      assert(true);
-    }
+    // Expect exception creating sheet body from invalid loop (imprint error)...
+    await expect(imodel.getMassProperties(requestContext, requestProps)).to.be.rejectedWith(Error, "Solid kernel severe error: 942");
   });
 });
 
