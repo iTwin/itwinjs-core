@@ -146,7 +146,6 @@ interface TreeNodeLoaderState {
  */
 function useResettableState<T>(initialValue: () => T, dependencies: unknown[]): [T, React.Dispatch<React.SetStateAction<T>>] {
   const stateRef = React.useRef<T>() as React.MutableRefObject<T>;
-  const propsChangedRef = React.useRef(true);
   // eslint-disable-next-line react-hooks/exhaustive-deps
   React.useMemo(() => stateRef.current = initialValue(), dependencies);
 
