@@ -739,6 +739,9 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
   export class Models implements Iterable<ModelState> {
     private _loaded = new Map<string, ModelState>();
 
+    /** @internal */
+    public get loaded(): Map<string, ModelState> { return this._loaded; }
+
     /** An iterator over all currently-loaded models. */
     public [Symbol.iterator](): Iterator<ModelState> {
       return this._loaded.values()[Symbol.iterator]();
