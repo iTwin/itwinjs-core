@@ -262,6 +262,7 @@ export class RegionOpsFaceToFaceSearch {
     binaryOp: RegionBinaryOpType,
     dataB: MultiLineStringDataVariant[],
     opB: RegionGroupOpType,
+    purgeSliverExteriorFaces: boolean
   ): HalfEdgeGraph | undefined {
     const graph = new HalfEdgeGraph();
     const baseMask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
@@ -290,6 +291,8 @@ export class RegionOpsFaceToFaceSearch {
     const context = new RegularizationContext(graph);
     context.regularizeGraph(true, true);
     callbacks.runClassificationSweep(binaryOp);
+    if (purgeSliverExteriorFaces)
+      callbacks.unmaskMaskedNullFaces(HalfEdgeMask.EXTERIOR);
     return graph;
   }
 }
@@ -554,6 +557,25 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     }
     this.graph.dropMask(faceHasBeenVisitedMask);
     this.graph.dropMask(nodeHasBeenVisitedMask);
+
+  }
+  // search the graph for faces with
+  // .. exactly 2 edges
+  // .. both with given mask
+  // .. at least one mate is not exterior.
+  // .. clear that mark
+  public unmaskMaskedNullFaces(mask: number) {
+    for (const nodeA of this.graph.allHalfEdges) {
+      const nodeB = nodeA.faceSuccessor;
+      if (nodeB.faceSuccessor === nodeA) {
+        if (nodeA.getMask(mask) && nodeB.getMask(mask)) {
+          if (!nodeA.edgeMate.getMask(mask) || !nodeB.edgeMate.getMask(mask)) {
+            nodeA.clearMask(mask);
+            nodeB.clearMask(mask);
+          }
+        }
+      }
+    }
 
   }
   private getInOut(): boolean {

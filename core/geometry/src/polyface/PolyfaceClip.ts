@@ -12,14 +12,19 @@
 import { ClipPlane } from "../clipping/ClipPlane";
 import { ConvexClipPlaneSet } from "../clipping/ConvexClipPlaneSet";
 import { UnionOfConvexClipPlaneSets } from "../clipping/UnionOfConvexClipPlaneSets";
+import { AnyRegion } from "../curve/CurveChain";
 import { LineString3d } from "../curve/LineString3d";
+import { Loop } from "../curve/Loop";
 import { RegionBinaryOpType, RegionOps } from "../curve/RegionOps";
+import { UnionRegion } from "../curve/UnionRegion";
 import { PlaneAltitudeEvaluator } from "../Geometry";
+import { FrameBuilder } from "../geometry3d/FrameBuilder";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { IndexedXYZCollectionPolygonOps, PolygonOps } from "../geometry3d/PolygonOps";
 import { Range1d, Range2d, Range3d } from "../geometry3d/Range";
 import { GrowableXYZArrayCache } from "../geometry3d/ReusableObjectCache";
+import { Transform } from "../geometry3d/Transform";
 import { SweepContour } from "../solid/SweepContour";
 import { ChainMergeContext } from "../topology/ChainMerge";
 import { RangeSearch } from "./multiclip/RangeSearch";
@@ -124,7 +129,7 @@ export class PolyfaceClip {
    * * This does not consider params, normals, colors.  Just points.
    * @internal
    */
-  public static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders) {
+  public static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelector: number = 0) {
     const builderA = destination.builderA;
     const builderB = destination.builderB;
     const visitor = polyface.createVisitor(0);
@@ -169,19 +174,19 @@ export class PolyfaceClip {
         // the facet spanned clippers but is intact outside
         builderB?.addPolygonGrowableXYZArray(visitor.point);
       } else {
-        const insidePieces = RegionOps.polygonBooleanXYToLoops(insideShards, RegionBinaryOpType.Union, []);
-        if (insidePieces)
-          builderA?.addGeometryQuery(insidePieces);
-        const outsidePieces = RegionOps.polygonBooleanXYToLoops(outsideShards, RegionBinaryOpType.Union, []);
-        if (outsidePieces)
-          builderB?.addGeometryQuery(outsidePieces);
+        const localToWorld = FrameBuilder.createRightHandedFrame(undefined, visitor.point);
+        let worldToLocal: Transform | undefined;
+        if (outputSelector === 1 && localToWorld !== undefined
+          && undefined !== (worldToLocal = localToWorld.inverse())) {
+          this.cleanupAndAddRegion(builderA, insideShards, worldToLocal, localToWorld);
 
-          /*
+          this.cleanupAndAddRegion(builderB, outsideShards, worldToLocal, localToWorld);
+        } else {
         for (const shard of insideShards)
           this.addPolygonToBuilderAndDropToCache(shard, builderA, cache);
           for (const shard of outsideShards)
-          this.addPolygonToBuilderAndDropToCache(shard, builderB, cache);
-        */
+            this.addPolygonToBuilderAndDropToCache(shard, builderB, cache);
+        }
       }
       outsideShards.length = 0;
       insideShards.length = 0;
@@ -193,7 +198,31 @@ export class PolyfaceClip {
       }
     }
   }
-
+  private static addRegion(builder: PolyfaceBuilder | undefined, region: AnyRegion | undefined) {
+    if (builder !== undefined && region !== undefined) {
+      if (region instanceof Loop && region.children.length === 1 && region.children[0] instanceof LineString3d) {
+        builder.addPolygonGrowableXYZArray(region.children[0].packedPoints);
+      } else if (region instanceof UnionRegion) {
+        for (const child of region.children)
+          this.addRegion(builder, child);
+      }
+    }
+  }
+  // WARNING: shards are transformed into local system, not reverted!!!
+  private static cleanupAndAddRegion(builder: PolyfaceBuilder | undefined, shards: GrowableXYZArray[],
+  worldToLocal: Transform | undefined, localToWorld: Transform | undefined) {
+    if (builder !== undefined && shards.length > 0) {
+      if (worldToLocal)
+        GrowableXYZArray.multiplyTransformInPlace(worldToLocal, shards);
+      const outsidePieces = RegionOps.polygonBooleanXYToLoops(shards, RegionBinaryOpType.Union, []);
+      if (outsidePieces && outsidePieces.children.length > 0){
+        if (localToWorld)
+          outsidePieces.tryTransformInPlace(localToWorld);
+        RegionOps.consolidateAdjacentPrimitives(outsidePieces);
+          this.addRegion(builder, outsidePieces);
+      }
+    }
+  }
   private static addPolygonToBuilderAndDropToCache(polygon: GrowableXYZArray | undefined, builder: PolyfaceBuilder | undefined, cache: GrowableXYZArrayCache) {
     if (polygon) {
       if (builder)
