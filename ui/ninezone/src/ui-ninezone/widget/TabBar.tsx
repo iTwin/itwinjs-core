@@ -19,6 +19,7 @@ import { TabBarButtons } from "./Buttons";
 import { FloatingWidgetIdContext } from "./FloatingWidget";
 import { WidgetTabs } from "./Tabs";
 import { WidgetIdContext } from "./Widget";
+import { useDoubleClick } from "../widget-panels/Grip";
 
 /** @internal */
 export interface WidgetTabBarProps {
@@ -31,6 +32,14 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
   const id = React.useContext(WidgetIdContext);
   const floatingWidgetId = React.useContext(FloatingWidgetIdContext);
   const widgetId = floatingWidgetId === undefined ? id : floatingWidgetId;
+  const handleDoubleClick = React.useCallback(() => {
+    floatingWidgetId && dispatch({
+      type: "FLOATING_WIDGET_CLEAR_USER_SIZED",
+      id: floatingWidgetId,
+    });
+  }, [dispatch, floatingWidgetId]);
+  const handleActionAreaClick = useDoubleClick(handleDoubleClick);
+
   const onDrag = React.useCallback<NonNullable<UseDragWidgetArgs["onDrag"]>>((dragBy) => {
     floatingWidgetId !== undefined && dispatch({
       type: "WIDGET_DRAG",
@@ -39,6 +48,8 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
     });
   }, [dispatch, floatingWidgetId]);
   const onDragEnd = React.useCallback<NonNullable<UseDragWidgetArgs["onDragEnd"]>>((dragTarget) => {
+    floatingWidgetId !== undefined && handleActionAreaClick();
+
     let target: WidgetTargetState = {
       type: "floatingWidget",
     };
@@ -55,7 +66,7 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
       floatingWidgetId,
       target,
     });
-  }, [dispatch, floatingWidgetId]);
+  }, [dispatch, floatingWidgetId, handleActionAreaClick]);
   const handleWidgetDragStart = useDragWidget({
     widgetId,
     onDrag,
@@ -72,11 +83,12 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
       id: floatingWidgetId,
     });
   }, [dispatch, floatingWidgetId]);
-  const ref = useDrag(handleDragStart, undefined, undefined, handleTouchStart);
+  const ref = useDrag(handleDragStart, undefined, undefined, handleTouchStart, handleDoubleClick);
   const className = classnames(
     "nz-widget-tabBar",
     props.separator && "nz-separator",
   );
+
   return (
     <div
       className={className}
@@ -100,9 +112,26 @@ export function useDrag<T extends HTMLElement>(
   onDrag?: (position: Point) => void,
   onDragEnd?: () => void,
   onTouchStart?: () => void,
+  onDoubleClick?: () => void,
 ) {
+  const doubleClickTimer = React.useRef(new Timer(300));
+  const clickCount = React.useRef(0);
   const dragStartTimer = React.useRef<Timer>(new Timer(300));
   const initialPointerPosition = React.useRef<Point>();
+
+  React.useEffect(() => {
+    const handleExecute = () => {
+      if (clickCount.current === 2)
+        onDoubleClick && onDoubleClick();
+      clickCount.current = 0;
+    };
+    const timer = doubleClickTimer.current;
+    timer.setOnExecute(handleExecute);
+    return () => {
+      timer.setOnExecute(undefined);
+    };
+  }, [onDoubleClick]);
+
   const handlePointerDown = React.useCallback((args: PointerCaptorArgs, e: PointerCaptorEvent) => {
     initialPointerPosition.current = new Point(args.clientX, args.clientY);
     dragStartTimer.current.start();
@@ -118,10 +147,13 @@ export function useDrag<T extends HTMLElement>(
     onDrag && onDrag(new Point(args.clientX, args.clientY));
   }, [onDragStart, onDrag]);
   const handlePointerUp = React.useCallback(() => {
+    clickCount.current++;
+    doubleClickTimer.current.start();
     dragStartTimer.current.stop();
     initialPointerPosition.current = undefined;
     onDragEnd && onDragEnd();
   }, [onDragEnd]);
+
   React.useEffect(() => {
     const listener = () => {
       assert(!!initialPointerPosition.current);

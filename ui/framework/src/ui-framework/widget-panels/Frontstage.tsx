@@ -280,12 +280,14 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
     const preferredPanelWidgetSize = saveTab ? saveTab.preferredPanelWidgetSize : widgetDef.preferredPanelSize;
     const preferredFloatingWidgetSize = saveTab ? saveTab.preferredFloatingWidgetSize : undefined;
     const preferredPopoutWidgetSize = saveTab ? saveTab.preferredPopoutWidgetSize : undefined;
+    const userSized = saveTab ? saveTab.userSized : undefined;
     state = addTab(state, widgetDef.id, {
       label,
       canPopout: widgetDef.canPopout,
       preferredPanelWidgetSize,
       preferredFloatingWidgetSize,
       preferredPopoutWidgetSize,
+      userSized,
     });
     tabs.push(widgetDef.id);
   }
@@ -690,6 +692,7 @@ export function packNineZoneState(state: NineZoneState): SavedNineZoneState {
         preferredFloatingWidgetSize: tab.preferredFloatingWidgetSize,
         preferredPopoutWidgetSize: tab.preferredPopoutWidgetSize,
         allowedPanelTargets: tab.allowedPanelTargets,
+        userSized: tab.userSized,
       };
     }
   });

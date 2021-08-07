@@ -25,6 +25,7 @@ export interface TabState {
   readonly preferredPanelWidgetSize?: "fit-content";
   readonly allowedPanelTargets?: PanelSide[];
   readonly canPopout?: boolean;
+  readonly userSized?: boolean;
 }
 
 /** @internal future */
@@ -43,6 +44,7 @@ export interface FloatingWidgetState {
   readonly bounds: RectangleProps;
   readonly id: WidgetState["id"];
   readonly home: FloatingWidgetHomeState;
+  readonly userSized?: boolean;
 }
 
 /** @internal future */
@@ -247,6 +249,12 @@ export interface FloatingWidgetBringToFrontAction {
 }
 
 /** @internal future */
+export interface FloatingWidgetClearUserSizedAction {
+  readonly type: "FLOATING_WIDGET_CLEAR_USER_SIZED";
+  readonly id: FloatingWidgetState["id"];
+}
+
+/** @internal future */
 export interface FloatingWidgetSendBackAction {
   readonly type: "FLOATING_WIDGET_SEND_BACK";
   readonly id: FloatingWidgetState["id"];
@@ -350,6 +358,7 @@ export type NineZoneActionTypes =
   FloatingWidgetResizeAction |
   FloatingWidgetBringToFrontAction |
   FloatingWidgetSendBackAction |
+  FloatingWidgetClearUserSizedAction |
   PopoutWidgetSendBackAction |
   PanelWidgetDragStartAction |
   WidgetDragAction |
@@ -498,6 +507,11 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     case "FLOATING_WIDGET_RESIZE": {
       const { resizeBy } = action;
       const floatingWidget = state.floatingWidgets.byId[action.id];
+      // if this is not a tool settings widget then set the userSized flag
+      if (!isToolSettingsFloatingWidget(state, action.id)) {
+        floatingWidget.userSized = true;
+      }
+
       assert(!!floatingWidget);
       const bounds = Rectangle.create(floatingWidget.bounds);
       const newBounds = bounds.inset(-resizeBy.left, -resizeBy.top, -resizeBy.right, -resizeBy.bottom);
@@ -507,8 +521,15 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const size = newBounds.getSize();
       const tab = state.tabs[widget.activeTabId];
       initSizeProps(tab, "preferredFloatingWidgetSize", size);
+      tab.userSized = true;
       return;
     }
+
+    case "FLOATING_WIDGET_CLEAR_USER_SIZED": {
+      floatingWidgetClearUserSizedFlag(state, action.id);
+      return;
+    }
+
     case "FLOATING_WIDGET_BRING_TO_FRONT": {
       floatingWidgetBringToFront(state, action.id);
       return;
@@ -700,6 +721,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           bounds: containedBounds.toProps(),
           id: target.newFloatingWidgetId,
           home: state.draggedTab.home,
+          userSized: tab.userSized,
         };
         state.floatingWidgets.allIds.push(target.newFloatingWidgetId);
         state.widgets[target.newFloatingWidgetId] = {
@@ -761,6 +783,15 @@ export function floatingWidgetBringToFront(state: Draft<NineZoneState>, floating
   const idIndex = state.floatingWidgets.allIds.indexOf(floatingWidgetId);
   const spliced = state.floatingWidgets.allIds.splice(idIndex, 1);
   state.floatingWidgets.allIds.push(spliced[0]);
+}
+
+/** @internal */
+export function floatingWidgetClearUserSizedFlag(state: Draft<NineZoneState>, floatingWidgetId: FloatingWidgetState["id"]) {
+  const floatingWidget = state.floatingWidgets.byId[floatingWidgetId];
+  floatingWidget.userSized = false;
+  const widget = state.widgets[floatingWidgetId];
+  const tab = state.tabs[widget.activeTabId];
+  tab.userSized = false;
 }
 
 /** Removes tab from the UI, but keeps the tab state.
@@ -1449,7 +1480,7 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
       const floatingWidget = state.widgets[location.floatingWidgetId];
       // popout widget can only have a single widgetTab so if that is the case just convert floating container to popout container
       if (floatingWidget.tabs.length === 1) {
-        return produce(convertFloatingWidgetContainerToPopout(state, location.floatingWidgetId), (draft)=> {
+        return produce(convertFloatingWidgetContainerToPopout(state, location.floatingWidgetId), (draft) => {
           const popoutTab = draft.tabs[widgetTabId];
           initSizeAndPositionProps(popoutTab, "preferredPopoutWidgetSize", preferredSizeAndPosition);
         });
