@@ -127,9 +127,12 @@ export class PolyfaceClip {
   /** Clip each facet of polyface to the the clippers.
    * * Add inside, outside fragments to builderA, builderB
    * * This does not consider params, normals, colors.  Just points.
+   * * outputSelect determines how the clip output is structured
+   *   * 0 outputs all shards -- this may have many interior edges.
+   *   * 1 stitches shards together to get cleaner facets.
    * @internal
    */
-  public static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelector: number = 0) {
+  public static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelector: number = 1) {
     const builderA = destination.builderA;
     const builderB = destination.builderB;
     const visitor = polyface.createVisitor(0);
