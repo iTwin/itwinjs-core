@@ -8,13 +8,26 @@
 
 import * as React from "react";
 
-/** Stores current ref value in a state.
+/** Hook used to store an HTMLElement in state by using ref callback returned from hook.
+ * *Example:*
+ * ``` tsx
+ *  const [divElementRef, divElement] = useRefState<HTMLDivElement>();
+ *  const ownerDoc = divElement?.ownerDocument ?? document;
+ *
+ *  return (
+ *    <div ref={divElementRef} >
+ *      ....
+ *    </div>
+ *  );
+ * ```
+ * }
+
  * @internal
  */
 export function useRefState<T>(): [React.Ref<T>, T | undefined] {
-  const [state, setState] = React.useState<T>();
+  const [element, setElement] = React.useState<T>();
   const ref = React.useCallback((instance: T | null) => {
-    setState(instance || undefined);
-  }, []); // eslint-disable-line react-hooks/exhaustive-deps
-  return [ref, state];
+    setElement(instance || undefined);
+  }, []);
+  return [ref, element];
 }

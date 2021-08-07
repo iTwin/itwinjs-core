@@ -20,6 +20,7 @@ interface EnumEditorState {
   selectValue: string | number;
   valueIsNumber: boolean;
   options: SelectOption<string>[];
+  parentDiv: HTMLDivElement | null;
 }
 
 /** EnumEditor React component that is a property editor with select input
@@ -35,6 +36,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
     selectValue: "",
     valueIsNumber: false,
     options: [],
+    parentDiv: null,
   };
 
   public async getPropertyValue(): Promise<PropertyValue | undefined> {
@@ -148,7 +150,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
 
     // istanbul ignore else
     if (this._isMounted)
-      this.setState({ selectValue: initialValue, valueIsNumber, options });
+      this.setState({ selectValue: initialValue, valueIsNumber, options, parentDiv: this._divElement.current });
   }
 
   /** @internal */
@@ -167,7 +169,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
           className={className}
           style={this.props.style ? this.props.style : minWidthStyle}
           value={selectValue}
-          popoverProps={{ appendTo: () => document.body }}
+          popoverProps={{ appendTo: () => this.state.parentDiv ? this.state.parentDiv.ownerDocument.body : document.body }}
           onChange={this._updateSelectValue}
           data-testid="components-select-editor"
           options={this.state.options}
