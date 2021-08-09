@@ -484,9 +484,9 @@ export class BriefcaseManager {
   }
 
   /** Attempt to push a ChangeSet to iModelHub */
-  private static async pushChangeset(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, releaseLocks: boolean): Promise<void> {
-    const changesetProps = db.nativeDb.startCreateChangeset();
-    changesetProps.briefcaseId = db.briefcaseId;
+  private static async pushChangeset(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseDb, description: string, releaseLocks: boolean): Promise<void> {
+    const changesetProps = briefcase.nativeDb.startCreateChangeset();
+    changesetProps.briefcaseId = briefcase.briefcaseId;
     changesetProps.description = description;
     changesetProps.size = IModelJsFs.lstatSync(changesetProps.pathname)!.size;
 
@@ -495,10 +495,10 @@ export class BriefcaseManager {
     if (auth)
       requestContext.accessToken = await auth.getAccessToken();
 
-    const csIndex = await IModelHost.hubAccess.pushChangeset({ requestContext, iModelId: db.iModelId, changesetProps });
-    db.nativeDb.completeCreateChangeset({ index: csIndex });
+    const csIndex = await IModelHost.hubAccess.pushChangeset({ requestContext, iModelId: briefcase.iModelId, changesetProps });
+    briefcase.nativeDb.completeCreateChangeset({ index: csIndex });
     if (releaseLocks)
-      await IModelHost.hubAccess.releaseAllLocks({ requestContext, iModelId: db.iModelId, briefcaseId: db.briefcaseId, csIndex });
+      await IModelHost.hubAccess.releaseAllLocks({ requestContext, briefcase });
   }
 
   /** Attempt to pull merge and push once */
