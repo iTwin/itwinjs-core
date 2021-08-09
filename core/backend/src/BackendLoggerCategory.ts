@@ -48,7 +48,6 @@ export enum BackendLoggerCategory {
   LinearReferencing = "imodeljs-backend.LinearReferencing",
 
   /** The logger category used by the following classes:
-   * - [[AutoPush]]
    * - BriefcaseManager
    * - [[IModelDb]]
    */

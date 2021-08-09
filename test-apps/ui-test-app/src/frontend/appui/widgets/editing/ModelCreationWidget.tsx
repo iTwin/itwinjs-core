@@ -5,7 +5,7 @@
 import * as React from "react";
 import {
   EditingFunctions,
-  IModelApp, MessageBoxIconType, MessageBoxType, NotifyMessageDetails, OutputMessagePriority, SpatialViewState,
+  IModelApp, MessageBoxIconType, MessageBoxType, NotifyMessageDetails, OutputMessagePriority, RemoteBriefcaseConnection, SpatialViewState,
 } from "@bentley/imodeljs-frontend";
 import { ConfigurableCreateInfo, ConfigurableUiManager, UiFramework, WidgetControl } from "@bentley/ui-framework";
 import { ActiveSettingsManager } from "../../../api/ActiveSettingsManager";
@@ -45,7 +45,7 @@ export class ModelCreationComponent extends React.Component<{}, ModelCreationCom
   /* eslint-disable deprecation/deprecation */
   private async createNewModel() {
     const iModel = UiFramework.getIModelConnection();
-    if (iModel === undefined || !iModel.isRemoteBriefcaseConnection())
+    if (iModel === undefined || !(iModel instanceof RemoteBriefcaseConnection))
       return;
     const modelName = this.modelName;
     if (modelName === "")

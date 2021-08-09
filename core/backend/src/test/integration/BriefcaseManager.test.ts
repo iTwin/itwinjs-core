@@ -5,12 +5,10 @@
 
 import { assert, expect } from "chai";
 import * as os from "os";
-import * as path from "path";
 import * as readline from "readline";
 import { BriefcaseStatus, GuidString, IModelStatus, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { UserCancelledError } from "@bentley/itwin-client";
-import { V1CheckpointManager } from "../../CheckpointManager";
 import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelHost, IModelJsFs } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
@@ -149,63 +147,6 @@ describe("BriefcaseManager (#integration)", () => {
     const iModelNoVer = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: noVersionsTestIModelId });
     assert.exists(iModelNoVer);
     assert(iModelNoVer.iModelId === noVersionsTestIModelId, "Correct iModel not found");
-  });
-
-  it("should find checkpoints from previous versions", async () => {
-    const arg = { requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId };
-    let checkpoint = await IModelTestUtils.openCheckpointUsingRpc(arg);
-    // eslint-disable-next-line deprecation/deprecation
-    const compatName = V1CheckpointManager.getCompatibilityFileName({ ...arg, changeSetId: checkpoint.changeset.id });
-    let checkpointName = checkpoint.pathName;
-    checkpoint.close();
-
-    if (compatName !== checkpointName) {
-      IModelJsFs.recursiveMkDirSync(path.dirname(compatName)); // make sure the old path exists
-      IModelJsFs.copySync(checkpointName, compatName); // move the file from where we put it in the new location to the old location
-      IModelJsFs.removeSync(checkpointName); // make sure we don't find this file
-      checkpoint = await IModelTestUtils.openCheckpointUsingRpc(arg); // now try opening it, and we should find the old file
-      checkpointName = checkpoint.pathName;
-      checkpoint.close();
-      assert.equal(checkpointName, compatName, "checkpoint should be found in old location");
-    }
-
-    IModelJsFs.removeSync(compatName); // now delete old file and make sure we don't use it
-    checkpoint = await IModelTestUtils.openCheckpointUsingRpc(arg);
-    checkpointName = checkpoint.pathName;
-    checkpoint.close();
-    assert.notEqual(checkpointName, compatName, "checkpoint should be found in new location");
-  });
-
-  it("should find briefcases from previous versions", async () => {
-    HubMock.startup("previous version");
-    const iModelId = await HubUtility.createIModel(managerRequestContext, testContextId, "prevIModel");
-
-    const arg = { requestContext, contextId: testContextId, iModelId };
-    let briefcase = await IModelTestUtils.openBriefcaseUsingRpc(arg);
-    // eslint-disable-next-line deprecation/deprecation
-    const compatName = BriefcaseManager.getCompatibilityFileName({ ...arg, briefcaseId: briefcase.briefcaseId });
-    const compatLocksFile = path.join(path.dirname(compatName), `${path.basename(compatName, ".bim")}.cctl.bim`);
-    let briefcaseName = briefcase.pathName;
-    briefcase.close();
-
-    if (compatName !== briefcaseName) {
-      IModelJsFs.recursiveMkDirSync(path.dirname(compatName)); // make sure the old path exists
-      IModelJsFs.copySync(briefcaseName, compatName); // move the file from where we put it in the new location to the old location
-      IModelJsFs.copySync(`${briefcaseName}-locks`, compatLocksFile); // copy the locks file to its old name too
-      IModelJsFs.removeSync(briefcaseName); // make sure we don't find this file
-      briefcase = await IModelTestUtils.openBriefcaseUsingRpc(arg); // now try opening it, and we should find the old file
-      briefcaseName = briefcase.pathName;
-      briefcase.close();
-      assert.equal(briefcaseName, compatName, "briefcase should be found in old location");
-      assert.isFalse(IModelJsFs.existsSync(compatLocksFile)); // we should have deleted it
-    }
-
-    IModelJsFs.removeSync(compatName); // now delete old file and make sure we don't use it
-    briefcase = await IModelTestUtils.openBriefcaseUsingRpc(arg);
-    briefcaseName = briefcase.pathName;
-    briefcase.close();
-    assert.notEqual(briefcaseName, compatName, "briefcase should be found in new location");
-    HubMock.shutdown();
   });
 
   it("Open iModels with various names causing potential issues on Windows/Unix", async () => {
