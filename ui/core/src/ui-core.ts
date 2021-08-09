@@ -222,10 +222,6 @@ export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
  * Components for working with a Context Menu.
  */
 /**
- * @docs-group-description Cube
- * Component for 3D Cube.
- */
-/**
  * @docs-group-description Dialog
  * Components for working with a Dialog or MessageBox.
  */

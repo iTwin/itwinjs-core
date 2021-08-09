@@ -60,6 +60,14 @@ export * from "./ui-imodel-components/viewport/ViewportComponentEvents";
  * Classes and components for working with and picking a Color.
  */
 /**
+ * @docs-group-description Common
+ * Common classes used across various UI components.
+ */
+/**
+ * @docs-group-description Cube
+ * Component for 3D Cube.
+ */
+/**
  * @docs-group-description Inputs
  * Input Components that format and parse input for IModelApps.
  */
@@ -70,6 +78,10 @@ export * from "./ui-imodel-components/viewport/ViewportComponentEvents";
 /**
  * @docs-group-description NavigationAids
  * Classes and components for working with Navigation Aids.
+ */
+/**
+ * @docs-group-description PropertyEditors
+ * Classes and components for working with Property Editors.
  */
 /**
  * @docs-group-description QuantityFormat

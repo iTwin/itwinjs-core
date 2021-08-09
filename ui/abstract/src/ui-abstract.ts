@@ -88,6 +88,10 @@ export * from "./ui-abstract/widget/WidgetState";
  * Classes for working with an Item in a Toolbar, Widget, Backstage or Context Menu
  */
 /**
+ * @docs-group-description Notification
+ * Interfaces and enums for working with a message
+ */
+/**
  * @docs-group-description Properties
  * Properties system for data input and formatting.
  */
