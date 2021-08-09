@@ -242,9 +242,24 @@ The appropriate balancing of these two conflicting goals is not an easy task. Ho
 
 See this article on [Importing a schema and bootstrapping definitions](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
 
+Sometimes BIS domain schemas are not adequate to capture all the data in the
+authoring application. The flow chart below can be used to assist in deciding
+which schema methodology to use.
+
+![Schema Methodology Decision](./schemadecision.png)
+
 ### Dynamic Schemas
 
-Sometimes BIS domain schemas are not adequate to capture all the data in the authoring application. To avoid losing data, iTwin Connector may dynamically create application-specific schemas whose classes descend from the most appropriate BIS domain classes.
+When the format for incoming data in the native source is not completely known,
+it is not possible to map the data to a fixed schema.
+A solution for this scenario is called Dynamic Schema. To avoid losing data,
+iTwin Connector may dynamically create application-specific schemas whose classes
+descend from the most appropriate BIS domain classes.
+
+For example, if the native source allows for user defined classes or user-defined
+properties, then as the classes and properties are read from the native source,
+they can be added to an iModel schema in-memory and real-time (a.k.a. dynamically).
+In effect, each native source file has its own unique schema.
 
 As an iModel Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that can be used by subsequent executions. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](https://github.com/imodeljs/imodeljs/tree/master/docs/bis/intro/schema-versioning-and-generations.md)
 
@@ -488,11 +503,15 @@ Use this method to import any domain schema that is required to publish your dat
 
 #### ImportDynamicSchema
 
-When the format for incoming data in the native source is not completely known, it is not possible to map the data to a fixed schema. A solution for this scenario is called Dynamic Schema. For example, if the native source allows for user defined classes or user defined properties, then as the classes and properties are read from the native source, they can be added to an iModel schema in-memory and real-time (a.k.a. dynamically). In effect, each native source file has its own unique schema.
+For background on when to use a dynamic schema, please checkout [Dynamic Schemas](#dynamic-schemas)
 
 #### UpdateExistingData
 
-This method is the main workhorse of your connector. When this method is called, models should be created and available for insertion of elements and definitions should be created (if that is the desired work flow). Note: in the example below definition elements are being inserted to the definition model at this point as well. Physical elements and Group elements can now be converted.
+This method is the main workhorse of your connector. When this method is called,
+models should be created and available for insertion of elements and definitions
+should be created (if that is the desired work flow). Note: in the example below
+definition elements are being inserted to the definition model at this point as well.
+Physical elements and Group elements can now be converted.
 
 ```JavaScript
   public async updateExistingData() {
