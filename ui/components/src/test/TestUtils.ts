@@ -2,10 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ColorByName } from "@bentley/imodeljs-common";
 import { I18N } from "@bentley/imodeljs-i18n";
 import {
-  ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, ColorEditorParams, CustomFormattedNumberParams, DisplayMessageType,
+  ArrayValue, BasePropertyEditorParams, ButtonGroupEditorParams, CustomFormattedNumberParams, DisplayMessageType,
   ImageCheckBoxParams, MessagePresenter, MessageSeverity, ParseResults,
   Primitives, PrimitiveValue, PropertyDescription, PropertyEditorInfo, PropertyEditorParamTypes, PropertyRecord, PropertyValue, PropertyValueFormat,
   StandardEditorNames, StandardTypeNames, StructValue, UiAbstract,
@@ -267,65 +266,6 @@ export class TestUtils {
       } as ImageCheckBoxParams,
       ],
     };
-    propertyRecord.isReadonly = false;
-    return propertyRecord;
-  }
-  public static createColorProperty(propertyName: string, colorValue: number) {
-
-    const value: PrimitiveValue = {
-      displayValue: "",
-      value: colorValue,
-      valueFormat: PropertyValueFormat.Primitive,
-    };
-
-    const description: PropertyDescription = {
-      name: propertyName,
-      displayLabel: propertyName,
-      typename: StandardTypeNames.Number,
-      editor: {
-        name: "color-picker",
-        params: [
-          {
-            type: PropertyEditorParamTypes.ColorData,
-            colorValues: [
-              ColorByName.blue as number,
-              ColorByName.red as number,
-              ColorByName.green as number,
-              ColorByName.yellow as number,
-              ColorByName.black as number,
-              ColorByName.gray as number,
-              ColorByName.purple as number,
-              ColorByName.pink as number,
-            ],
-            numColumns: 2,
-          } as ColorEditorParams,
-        ],
-      },
-    };
-
-    const propertyRecord = new PropertyRecord(value, description);
-    propertyRecord.isReadonly = false;
-    return propertyRecord;
-  }
-
-  public static createWeightProperty(propertyName: string, weight: number) {
-
-    const value: PrimitiveValue = {
-      displayValue: "",
-      value: weight,
-      valueFormat: PropertyValueFormat.Primitive,
-    };
-
-    const description: PropertyDescription = {
-      name: propertyName,
-      displayLabel: propertyName,
-      typename: StandardTypeNames.Number,
-      editor: {
-        name: StandardEditorNames.WeightPicker,
-      },
-    };
-
-    const propertyRecord = new PropertyRecord(value, description);
     propertyRecord.isReadonly = false;
     return propertyRecord;
   }

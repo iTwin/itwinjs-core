@@ -6,7 +6,6 @@ import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
 import { fireEvent, render } from "@testing-library/react";
-import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
 import { ParsedInput } from "../../ui-components/inputs/ParsedInput";
 import { ParseResults, SpecialKey } from "@bentley/ui-abstract";
@@ -44,22 +43,13 @@ function formatCelsiusValue(temperature: number): string {
 }
 
 describe("ParsedInput", () => {
-  const rnaDescriptorToRestore = Object.getOwnPropertyDescriptor(IModelApp, "requestNextAnimation")!;
-  function requestNextAnimation() { }
 
   before(async () => {
-    // Avoid requestAnimationFrame exception during test by temporarily replacing function that calls it.
-    Object.defineProperty(IModelApp, "requestNextAnimation", {
-      get: () => requestNextAnimation,
-    });
     await TestUtils.initializeUiComponents();
-    await MockRender.App.startup();
   });
 
   after(async () => {
-    await MockRender.App.shutdown();
     TestUtils.terminateUiComponents();
-    Object.defineProperty(IModelApp, "requestNextAnimation", rnaDescriptorToRestore);
   });
 
   it("should process format and parse function", () => {

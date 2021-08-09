@@ -11,7 +11,7 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import { FillCentered } from "@bentley/ui-core";
 import { Indicator, StatusBarFieldId, StatusFieldProps } from "@bentley/ui-framework";
 import { Dialog, FooterPopup, TitleBar } from "@bentley/ui-ninezone";
-import { ColorPickerPopup } from "@bentley/ui-components";
+import { ColorPickerPopup } from "@bentley/ui-imodel-components";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { Button } from "@itwin/itwinui-react";
 

@@ -46,6 +46,7 @@ The iTwin.js library is organized into the following separately downloadable [np
 - ($ui-abstract)
 - ($ui-core)
 - ($ui-components)
+- ($ui-imodel-components)
 - ($ui-ninezone)
 - ($ui-framework)
 

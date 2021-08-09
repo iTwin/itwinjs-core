@@ -102,6 +102,7 @@
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/ui-core": "workspace:*",
     "@bentley/ui-components": "workspace:*",
+    "@bentley/ui-imodel-components": "workspace:*",
     "@bentley/ui-ninezone": "workspace:*",
     "@bentley/ui-framework": "workspace:*",
     "@bentley/map-layers": "workspace:*",

@@ -8,7 +8,7 @@ import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
-import { ViewportComponent } from "@bentley/ui-components";
+import { ViewportComponent } from "@bentley/ui-imodel-components";
 import { MyAppFrontend } from "../../api/MyAppFrontend";
 import SelectionScopePicker from "./SelectionScopePicker";
 import ViewDefinitionSelector from "./ViewDefinitionSelector";

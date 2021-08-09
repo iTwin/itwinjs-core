@@ -6,7 +6,7 @@ import * as React from "react";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { DialogPropertySyncItem } from "@bentley/ui-abstract";
-import { ColorPickerButton, ColorSwatch, WeightPickerButton } from "@bentley/ui-components";
+import { ColorPickerButton, ColorSwatch, WeightPickerButton } from "@bentley/ui-imodel-components";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, SyncToolSettingsPropertiesEventArgs, ToolSettingsEntry, ToolSettingsGrid, ToolSettingsManager,
   ToolUiProvider,
