@@ -17,6 +17,7 @@ import { Slider, Tooltip } from "@itwin/itwinui-react";
 import { ColorByName, ColorDef, HSVColor } from "@bentley/imodeljs-common";
 import { RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
 import { BodyText, CommonProps, Popup } from "@bentley/ui-core";
+import { adjustDateToTimezone, DatePicker, TimeField, TimeSpec, UiComponents } from "@bentley/ui-components";
 import { HueSlider } from "../color/HueSlider";
 import { SaturationPicker } from "../color/SaturationPicker";
 import { ColorSwatch } from "../color/Swatch";
@@ -25,7 +26,6 @@ import { PlayButton } from "./PlayerButton";
 import { SpeedTimeline } from "./SpeedTimeline";
 import { CustomThumb, getPercentageOfRectangle, RailToolTip, useFocusedThumb } from "./Scrubber";
 import { UiIModelComponents } from "../UiIModelComponents";
-import { adjustDateToTimezone, DatePicker, TimeField, TimeSpec } from "@bentley/ui-components";
 
 // cSpell:ignore millisec solarsettings showticks shadowcolor solartimeline datepicker millisecs
 
@@ -172,31 +172,31 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   private _unmounted = false;
   private _timeLastCycle = 0;
   private _totalPlayTime = 0;
-  private _settingsPopupTitle = UiIModelComponents.i18n.translate("UiIModelComponents:solarsettings.shadowcolor");
-  private _playLabel = UiIModelComponents.i18n.translate("UiIModelComponents:solartimeline.play");
-  private _settingLabel = UiIModelComponents.i18n.translate("UiIModelComponents:solartimeline.settings");
-  private _loopLabel = UiIModelComponents.i18n.translate("UiIModelComponents:timeline.repeat");
-  private _speedLabel = UiIModelComponents.i18n.translate("UiIModelComponents:solartimeline.speed");
-  private _dateTimeLabel = UiIModelComponents.i18n.translate("UiIModelComponents:solartimeline.dateTime");
+  private _settingsPopupTitle = UiIModelComponents.translate("solarsettings.shadowcolor");
+  private _playLabel = UiIModelComponents.translate("solartimeline.play");
+  private _settingLabel = UiIModelComponents.translate("solartimeline.settings");
+  private _loopLabel = UiIModelComponents.translate("timeline.repeat");
+  private _speedLabel = UiIModelComponents.translate("solartimeline.speed");
+  private _dateTimeLabel = UiIModelComponents.translate("solartimeline.dateTime");
 
   private _months = [
-    UiIModelComponents.i18n.translate("UiIModelComponents:month.short.january"),
-    UiIModelComponents.i18n.translate("UiIModelComponents:month.short.february"),
-    UiIModelComponents.i18n.translate("UiIModelComponents:month.short.march"),
-    UiIModelComponents.i18n.translate("UiIModelComponents:month.short.april"),
-    UiIModelComponents.i18n.translate("UiIModelComponents:month.short.may"),
-    UiIModelComponents.i18n.translate("UiIModelComponents:month.short.june"),
-    UiIModelComponents.i18n.translate("UiIModelComponents:month.short.july"),
-    UiIModelComponents.i18n.translate("UiIModelComponents:month.short.august"),
-    UiIModelComponents.i18n.translate("UiIModelComponents:month.short.september"),
-    UiIModelComponents.i18n.translate("UiIModelComponents:month.short.october"),
-    UiIModelComponents.i18n.translate("UiIModelComponents:month.short.november"),
-    UiIModelComponents.i18n.translate("UiIModelComponents:month.short.december"),
+    UiComponents.translate("month.short.january"),
+    UiComponents.translate("month.short.february"),
+    UiComponents.translate("month.short.march"),
+    UiComponents.translate("month.short.april"),
+    UiComponents.translate("month.short.may"),
+    UiComponents.translate("month.short.june"),
+    UiComponents.translate("month.short.july"),
+    UiComponents.translate("month.short.august"),
+    UiComponents.translate("month.short.september"),
+    UiComponents.translate("month.short.october"),
+    UiComponents.translate("month.short.november"),
+    UiComponents.translate("month.short.december"),
   ];
 
-  private _timeLabel = UiIModelComponents.translate("datepicker.time");
-  private _amLabel = UiIModelComponents.i18n.translate("UiIModelComponents:time.am");
-  private _pmLabel = UiIModelComponents.i18n.translate("UiIModelComponents:time.pm");
+  private _timeLabel = UiComponents.translate("datepicker.time");
+  private _amLabel = UiComponents.translate("time.am");
+  private _pmLabel = UiComponents.translate("time.pm");
   private readonly _presetColors = [
     ColorDef.create(ColorByName.grey),
     ColorDef.create(ColorByName.lightGrey),

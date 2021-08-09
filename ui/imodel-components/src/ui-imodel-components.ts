@@ -7,17 +7,18 @@
 
 export { UiIModelComponents } from "./ui-imodel-components/UiIModelComponents";
 
-export * from "./ui-imodel-components/color/Swatch";
-export * from "./ui-imodel-components/color/HueSlider";
 export * from "./ui-imodel-components/color/AlphaSlider";
-export * from "./ui-imodel-components/color/SaturationPicker";
 export * from "./ui-imodel-components/color/ColorPickerButton";
 export * from "./ui-imodel-components/color/ColorPickerDialog";
 export * from "./ui-imodel-components/color/ColorPickerPanel";
 export * from "./ui-imodel-components/color/ColorPickerPopup";
 export * from "./ui-imodel-components/color/getCSSColorFromDef";
+export * from "./ui-imodel-components/color/HueSlider";
+export * from "./ui-imodel-components/color/SaturationPicker";
+export * from "./ui-imodel-components/color/Swatch";
 
 export * from "./ui-imodel-components/editors/ColorEditor";
+export * from "./ui-imodel-components/editors/WeightEditor";
 
 export * from "./ui-imodel-components/inputs/QuantityInput";
 export * from "./ui-imodel-components/inputs/QuantityNumberInput";

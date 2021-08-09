@@ -10,13 +10,13 @@ import "./TimelineComponent.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { GenericUiEventArgs, UiAdmin } from "@bentley/ui-abstract";
-import { UiIModelComponents } from "../UiIModelComponents";
 import { ContextMenu, ContextMenuDirection, ContextMenuItem } from "@bentley/ui-core";
+import { toDateString, toTimeString, UiComponents } from "@bentley/ui-components";
+import { UiIModelComponents } from "../UiIModelComponents";
 import { InlineEdit } from "./InlineEdit";
 import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "./interfaces";
 import { PlayButton, PlayerButton } from "./PlayerButton";
 import { Scrubber } from "./Scrubber";
-import { toDateString, toTimeString } from "@bentley/ui-components";
 
 // cspell:ignore millisec
 
@@ -421,7 +421,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
       <>
         {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
         <span data-testid="timeline-settings" className="timeline-settings icon icon-more-vertical-2" ref={(element) => this._settings = element} onClick={this._onSettingsClick}
-          role="button" tabIndex={-1} title={UiIModelComponents.translate("button.label.settings")}
+          role="button" tabIndex={-1} title={UiComponents.translate("button.label.settings")}
         ></span>
         <ContextMenu opened={this.state.isSettingsOpen} onOutsideClick={this._onCloseSettings} direction={ContextMenuDirection.BottomRight} data-testid="timeline-contextmenu-div">
           {this.state.includeRepeat && <ContextMenuItem icon={this.state.repeat && "icon icon-checkmark"} onSelect={this._onRepeatChanged}>{this._repeatLabel}</ContextMenuItem>}
