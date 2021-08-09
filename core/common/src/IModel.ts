@@ -206,7 +206,7 @@ export class EcefLocation implements EcefLocationProps {
   private _transform: Transform;
 
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
-  public getTransform(): Transform { return this._transform;  }
+  public getTransform(): Transform { return this._transform; }
 
   /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
   constructor(props: EcefLocationProps) {
@@ -480,12 +480,6 @@ export abstract class IModel implements IModelProps {
 
   /** @public */
   public changeset: ChangesetIdWithIndex;
-
-  /** The Id of the last changeset that was applied to this iModel.
-   * @note An empty string indicates the first version
-   * @deprecated use changeset.id
-   */
-  public get changeSetId() { return this.changeset.id; }
 
   /** The [[OpenMode]] used for this IModel. */
   public readonly openMode: OpenMode;

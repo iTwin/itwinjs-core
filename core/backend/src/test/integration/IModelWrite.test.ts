@@ -578,7 +578,7 @@ describe("IModelWriteTest (#integration)", () => {
     const otherBriefcaseLockReq = ConcurrencyControl.Request.getElementLock(elid1, LockScope.Exclusive);
     await IModelHost.hubAccess.acquireLocks({
       requestContext: adminRequestContext, briefcase: {
-        briefcaseId: rwIModel.briefcaseId, changeSetId: rwIModel.changeset.id, iModelId: rwIModel.iModelId,
+        briefcaseId: rwIModel.briefcaseId, changeset: rwIModel.changeset, iModelId: rwIModel.iModelId,
       }, locks: [otherBriefcaseLockReq],
     });
 
@@ -1019,7 +1019,7 @@ describe("IModelWriteTest (#integration)", () => {
     await BriefcaseDb.upgradeSchemas(managerRequestContext, managerBriefcaseProps);
 
     // Validate state after upgrade
-    let schemaLock = await IModelHost.hubAccess.querySchemaLock({ requestContext: managerRequestContext, briefcase: managerBriefcaseProps });
+    let schemaLock = await IModelHost.hubAccess.querySchemaLock({ requestContext: managerRequestContext, iModelId: managerBriefcaseProps.iModelId });
     assert.isFalse(schemaLock); // Validate no schema locks held by the hub
     iModel = await BriefcaseDb.open(managerRequestContext, { fileName: managerBriefcaseProps.fileName });
     managerRequestContext.enter();
@@ -1064,7 +1064,7 @@ describe("IModelWriteTest (#integration)", () => {
     superRequestContext.enter();
 
     // Ensure there are no schema locks
-    schemaLock = await IModelHost.hubAccess.querySchemaLock({ requestContext: superRequestContext, briefcase: superBriefcaseProps });
+    schemaLock = await IModelHost.hubAccess.querySchemaLock({ requestContext: superRequestContext, iModelId: managerBriefcaseProps.iModelId });
     assert.isFalse(schemaLock); // Validate no schema locks held by the hub
 
     await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, contextId: projectId, iModelId });

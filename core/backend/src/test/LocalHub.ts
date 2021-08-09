@@ -5,7 +5,7 @@
 
 import { join } from "path";
 import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
 import { LockProps, LockScope } from "../BackendHubAccess";
 import { BriefcaseId, BriefcaseManager } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
@@ -193,6 +193,10 @@ export class LocalHub {
     return changeset.index;
   }
 
+  public getIndexFromChangeset(changeset: ChangesetIndexOrId): number {
+    return changeset.index ?? this.getChangesetIndex(changeset.id);
+
+  }
   /** Get the index of a changeset by its Id */
   public getChangesetIndex(id: ChangesetId): number {
     if (id === "")
@@ -371,7 +375,7 @@ export class LocalHub {
 
   /** "download" a checkpoint */
   public downloadCheckpoint(arg: { changeset: ChangesetIndexOrId, targetFile: LocalFileName }) {
-    const index = arg.changeset.index ?? this.getChangesetIndex(arg.changeset.id);
+    const index = this.getIndexFromChangeset(arg.changeset);
     const prev = this.queryPreviousCheckpoint(index);
     IModelJsFs.copySync(join(this.checkpointDir, this.checkpointNameFromIndex(prev)), arg.targetFile);
     return this.getChangesetByIndex(prev).id;
@@ -448,8 +452,8 @@ export class LocalHub {
     });
   }
 
-  private reserveLock(currStatus: LockStatus, props: LockProps, briefcase: { changeSetId: ChangesetId, briefcaseId: BriefcaseId }) {
-    if (props.scope === LockScope.Exclusive && currStatus.lastCsIndex && (currStatus.lastCsIndex > this.getChangesetIndex(briefcase.changeSetId)))
+  private reserveLock(currStatus: LockStatus, props: LockProps, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
+    if (props.scope === LockScope.Exclusive && currStatus.lastCsIndex && (currStatus.lastCsIndex > this.getIndexFromChangeset(briefcase.changeset)))
       throw new IModelError(IModelHubStatus.PullIsRequired, "Pull is required");
 
     const wantShared = props.scope === LockScope.Shared;
@@ -498,7 +502,7 @@ export class LocalHub {
     });
   }
 
-  public requestLock(props: LockProps, briefcase: { changeSetId: ChangesetId, briefcaseId: BriefcaseId }) {
+  public requestLock(props: LockProps, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
     if (props.scope === LockScope.None)
       throw new Error("cannot request lock for LockScope.None");
 
@@ -520,8 +524,8 @@ export class LocalHub {
     }
   }
 
-  public releaseLock(arg: { props: LockProps, csIndex: ChangesetIndex, briefcaseId: BriefcaseId }) {
-    const lockId = arg.props.entityId;
+  public releaseLock(props: LockProps, arg: { briefcaseId: BriefcaseId, changeset: ChangesetIdWithIndex }) {
+    const lockId = props.entityId;
     const lockStatus = this.queryLockStatus(lockId);
     switch (lockStatus.scope) {
       case LockScope.None:
@@ -530,7 +534,7 @@ export class LocalHub {
       case LockScope.Exclusive:
         if (lockStatus.briefcaseId !== arg.briefcaseId)
           throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock not held by this briefcase");
-        this.updateLockChangeset(lockId, arg.csIndex);
+        this.updateLockChangeset(lockId, this.getIndexFromChangeset(arg.changeset));
         this.clearLock(lockId);
         break;
 

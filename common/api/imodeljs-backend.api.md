@@ -28,6 +28,7 @@ import { ChangeOpCode } from '@bentley/imodeljs-common';
 import { ChangeSet } from '@bentley/imodelhub-client';
 import { ChangesetFileProps } from '@bentley/imodeljs-common';
 import { ChangesetId } from '@bentley/imodeljs-common';
+import { ChangesetIdWithIndex } from '@bentley/imodeljs-common';
 import { ChangesetIndex } from '@bentley/imodeljs-common';
 import { ChangesetIndexAndId } from '@bentley/imodeljs-common';
 import { ChangesetIndexOrId } from '@bentley/imodeljs-common';
@@ -343,9 +344,9 @@ export interface BackendHubAccess {
     queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
     queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
     queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
-    querySchemaLock: (arg: BriefcaseDbArg) => Promise<boolean>;
-    releaseAllCodes: (arg: BriefcaseIdArg) => Promise<void>;
-    releaseAllLocks: (arg: BriefcaseIdArg & ChangesetIndexArg) => Promise<void>;
+    querySchemaLock: (arg: IModelIdArg) => Promise<boolean>;
+    releaseAllCodes: (arg: BriefcaseDbArg) => Promise<void>;
+    releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
     releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
 }
 
@@ -436,7 +437,7 @@ export interface BriefcaseDbArg {
     briefcase: {
         briefcaseId: BriefcaseId;
         iModelId: GuidString;
-        changeSetId: ChangesetId;
+        changeset: ChangesetIdWithIndex;
     };
     // (undocumented)
     requestContext?: AuthorizedClientRequestContext;
@@ -567,7 +568,7 @@ export interface ChangesetArg extends IModelIdArg {
 // @internal (undocumented)
 export interface ChangesetIndexArg extends IModelIdArg {
     // (undocumented)
-    csIndex: ChangesetIndex;
+    changeset: ChangesetIdWithIndex;
 }
 
 // @internal
@@ -2848,11 +2849,11 @@ export class IModelHubBackend {
         iModelName: string;
     }): Promise<GuidString | undefined>;
     // (undocumented)
-    static querySchemaLock(arg: BriefcaseDbArg): Promise<boolean>;
+    static querySchemaLock(arg: IModelIdArg): Promise<boolean>;
     // (undocumented)
-    static releaseAllCodes(arg: BriefcaseIdArg): Promise<void>;
+    static releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
     // (undocumented)
-    static releaseAllLocks(arg: BriefcaseIdArg & ChangesetIndexArg): Promise<void>;
+    static releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
     static releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
     // (undocumented)
     static setIModelClient(client?: IModelClient): void;
