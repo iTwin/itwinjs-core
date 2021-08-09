@@ -26,19 +26,20 @@ SAML support has officially been dropped as a supported workflow. All related AP
 |isIOidcFrontendClient|FrontendAuthorizationClient|
 |OidcFrontendClientConfiguration|BrowserAuthorizationClientConfiguration|
 
-## User Interface Package Changes
-
-Several changes were made in the @bentley/ui-* packages.
-Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
-A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
-Some older deprecated components, enums and interfaces were removed. These also have alternatives.
-
 ## Viewport.zoomToElements improvements
 
 [Viewport.zoomToElements]($frontend) accepts any number of element Ids and fits the viewport to the union of their [Placement]($common)s. A handful of shortcomings of the previous implementation have been addressed:
 
 * Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
 * Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
+
+## User Interface Package Changes
+
+Several changes were made in the @bentley/ui-* packages.
+Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
+A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
+Some older deprecated components, enums and interfaces were removed. These also have alternatives.
+A new @bentley/ui-imodel-components package has been added, and some items were moved from @bentley/ui-core and @bentley/ui-components into this new package.
 
 ### Deprecated Several ui-core Components in Favor of iTwinUI-react Components
 
@@ -80,7 +81,7 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 
 #### Slider
 
-The deprecated [Slider]($ui-core) was a wrapper around the react-compound-slider which does not work properly in popout window. To alleviate this issue, the deprecated `Slider`will now wrap the  `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
+The deprecated [Slider]($ui-core) was a wrapper around the react-compound-slider, which does not work properly in popout windows. To alleviate this issue, the deprecated `Slider` will now wrap the `Slider` component from @itwin/itwinui-react. This results in a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored; use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
 
 ### Deprecated with alternatives elsewhere
 
@@ -129,3 +130,20 @@ Some of these have alternatives in the same package, while others have alternati
 |ReactMessage | ReactMessage in @bentley/ui-core
 |SpecialKey | SpecialKey in @bentley/ui-abstract
 |WidgetState | WidgetState in @bentley/ui-abstract
+
+### New @bentley/ui-imodel-components package
+
+A new @bentley/ui-imodel-components package has been added, and some items were moved from @bentley/ui-core and @bentley/ui-components into this new package.
+The ui-imodel-components package contains React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages.
+Dependencies on these other iTwin.js packages have been removed from ui-core and ui-components.
+The items moved to ui-imodel-components are related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
+
+The following items were moved into the ui-imodel-components package. For a complete list, see [iTwin.js Documentation](https://www.itwinjs.org/reference/ui-imodel-components/all).
+
+* ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorPropertyEditor, ColorSwatch
+* Cube, CubeNavigationAid, CubeRotationChangeEventArgs
+* DrawingNavigationAid
+* QuantityInput, QuantityNumberInput
+* TimelineComponent, TimelineDataProvider, TimelineMenuItemProps
+* ViewportComponent, ViewportComponentEvents
+* LineWeightSwatch, WeightPickerButton, WeightPropertyEditor

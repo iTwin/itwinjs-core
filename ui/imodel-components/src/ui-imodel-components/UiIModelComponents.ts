@@ -14,7 +14,7 @@ import { getClassName, UiError } from "@bentley/ui-abstract";
 import { UiComponents } from "@bentley/ui-components";
 
 /**
- * Manages the I18N service for the ui-components package.
+ * Manages the I18N service for the ui-imodel-components package.
  * @public
  */
 export class UiIModelComponents {

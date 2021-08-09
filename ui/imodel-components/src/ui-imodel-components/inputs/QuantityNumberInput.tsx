@@ -15,7 +15,7 @@ import { IModelApp, QuantityFormatsChangedArgs, QuantityTypeArg } from "@bentley
 import { DecimalPrecision, FormatterSpec, FormatTraits, FormatType, Parser, ParserSpec, UnitConversionSpec, UnitProps } from "@bentley/imodeljs-quantity";
 import { Input, InputProps } from "@itwin/itwinui-react";
 
-/** Step function prototype for [[NumberInput]] component
+/** Step function prototype for [[QuantityNumberInput]] component
  * @beta
  */
 export type StepFunctionProp = number | ((direction: string) => number | undefined);
