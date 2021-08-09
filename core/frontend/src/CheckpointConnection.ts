@@ -43,15 +43,11 @@ export class CheckpointConnection extends IModelConnection {
    * Open a readonly IModelConnection to an iModel over RPC.
    */
   public static async openRemote(contextId: string, iModelId: string, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
-    return this.open(contextId, iModelId, OpenMode.Readonly, version); // eslint-disable-line deprecation/deprecation
+    return this.open(contextId, iModelId, OpenMode.Readonly, version);
   }
 
-  /** Open a CheckpointConnection to a checkpoint of an iModel.
-   * @deprecated use openRemote
-   * @note this function will be removed in a future release to remove the openMode argument. All CheckpointConnections must be readonly.
-   * If you're using a writeable connection, your application must use IpcApp/IpcHost and BriefcaseConnection.
-   */
-  public static async open(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
+  /**  NOTE: openMode argument to be removed when RemoteBriefcaseConnection is removed. */
+  protected static async open(contextId: string, iModelId: string, openMode: OpenMode = OpenMode.Readonly, version: IModelVersion = IModelVersion.latest()): Promise<CheckpointConnection> {
     const routingContext = IModelRoutingContext.current || IModelRoutingContext.default;
 
     const requestContext = await AuthorizedFrontendRequestContext.create();

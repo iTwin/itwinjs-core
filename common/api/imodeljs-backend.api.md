@@ -240,67 +240,10 @@ export class AnnotationElement2d extends GraphicalElement2d {
     static get className(): string;
 }
 
-// @beta @deprecated
-export interface AppActivityMonitor {
-    isIdle: boolean;
-}
-
 // @public
 export class AuthorizedBackendRequestContext extends AuthorizedClientRequestContext {
     constructor(accessToken: AccessToken, activityId?: string);
     static create(activityId?: string): Promise<AuthorizedBackendRequestContext>;
-}
-
-// @beta @deprecated
-export class AutoPush {
-    constructor(iModel: BriefcaseDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor);
-    get autoSchedule(): boolean;
-    set autoSchedule(v: boolean);
-    cancel(): void;
-    get durationOfLastPushMillis(): number;
-    get endOfLastPushMillis(): number;
-    event: BeEvent<AutoPushEventHandler>;
-    get iModel(): BriefcaseDb;
-    get lastError(): any | undefined;
-    // (undocumented)
-    reserveCodes(): Promise<void>;
-    // (undocumented)
-    scheduleNextAutoPushIfNecessary(): void;
-    scheduleNextPush(intervalSeconds?: number): void;
-    get state(): AutoPushState;
-    static validateAutoPushParams(params: any): void;
-}
-
-// @beta @deprecated
-export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void;
-
-// @beta @deprecated
-export enum AutoPushEventType {
-    // (undocumented)
-    PushCancelled = 3,
-    // (undocumented)
-    PushFailed = 2,
-    // (undocumented)
-    PushFinished = 1,
-    // (undocumented)
-    PushStarted = 0
-}
-
-// @beta @deprecated
-export interface AutoPushParams {
-    autoSchedule: boolean;
-    pushIntervalSecondsMax: number;
-    pushIntervalSecondsMin: number;
-}
-
-// @beta @deprecated
-export enum AutoPushState {
-    // (undocumented)
-    NotRunning = 0,
-    // (undocumented)
-    Pushing = 2,
-    // (undocumented)
-    Scheduled = 1
 }
 
 // @public
@@ -360,15 +303,6 @@ export class AzureBlobStorage extends CloudStorageService {
     obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
     // (undocumented)
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
-}
-
-// @beta @deprecated
-export class BackendActivityMonitor implements AppActivityMonitor {
-    constructor(idleIntervalSeconds?: number);
-    // (undocumented)
-    idleIntervalSeconds: number;
-    // (undocumented)
-    get isIdle(): boolean;
 }
 
 // @internal
@@ -517,17 +451,6 @@ export interface BriefcaseIdArg extends IModelIdArg {
     briefcaseId: number;
 }
 
-// @public @deprecated (undocumented)
-export enum BriefcaseIdValue {
-    // @internal @deprecated (undocumented)
-    DeprecatedStandalone = 1,
-    FirstValid = 2,
-    Illegal = 4294967295,
-    LastValid = 16777205,
-    Max = 16777216,
-    Standalone = 0
-}
-
 // @public
 export class BriefcaseManager {
     static acquireNewBriefcaseId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number>;
@@ -549,15 +472,9 @@ export class BriefcaseManager {
     static getChangedElementsPathName(iModelId: GuidString): string;
     // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): string;
-    // @internal @deprecated
-    static getCompatibilityFileName(briefcase: BriefcaseProps): string;
-    // @internal @deprecated
-    static getCompatibilityPath(iModelId: GuidString): string;
     static getFileName(briefcase: BriefcaseProps): string;
     static getIModelPath(iModelId: GuidString): string;
-    static initialize(cacheRootDir: string, compatibilityDir?: string): void;
-    // @deprecated
-    static isStandaloneBriefcaseId(id: BriefcaseId): boolean;
+    static initialize(cacheRootDir: string): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal (undocumented)
     static logUsage(requestContext: ClientRequestContext, token: IModelRpcOpenProps): void;
@@ -1314,13 +1231,6 @@ export abstract class Document extends InformationContentElement {
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
     // @internal (undocumented)
-    static get className(): string;
-}
-
-// @internal @deprecated
-export abstract class DocumentCarrier extends InformationCarrierElement {
-    constructor(props: ElementProps, iModel: IModelDb);
-    // (undocumented)
     static get className(): string;
 }
 
@@ -2342,8 +2252,6 @@ export abstract class GeometricModel3d extends GeometricModel implements Geometr
     // @internal (undocumented)
     static get className(): string;
     readonly isNotSpatiallyLocated: boolean;
-    // @deprecated (undocumented)
-    get iSpatiallyLocated(): boolean;
     readonly isPlanProjection: boolean;
     get isSpatiallyLocated(): boolean;
     // @internal (undocumented)
@@ -2504,10 +2412,6 @@ export abstract class IModelDb extends IModel {
     // @internal
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
-    // @deprecated
-    clearSqliteStatementCache(): void;
-    // @deprecated
-    clearStatementCache(): void;
     close(): void;
     get codeSpecs(): CodeSpecs;
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
@@ -2802,10 +2706,6 @@ export class IModelHost {
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     // @internal
     static get hubAccess(): BackendHubAccess;
-    // @deprecated (undocumented)
-    static get iModelClient(): IModelClient;
-    // @deprecated (undocumented)
-    static get isUsingIModelBankClient(): boolean;
     static get isValid(): boolean;
     // @internal (undocumented)
     static loadNative(): void;
@@ -2847,8 +2747,6 @@ export class IModelHost {
 // @public
 export class IModelHostConfiguration {
     appAssetsDir?: string;
-    // @deprecated
-    briefcaseCacheDir?: string;
     cacheDir?: string;
     compressCachedTiles?: boolean;
     // (undocumented)
@@ -3027,8 +2925,6 @@ export class IModelJsFs {
     static readFileSync(pathname: string): string | Buffer;
     static recursiveFindSync(rootDir: string, pattern: RegExp): string[];
     static recursiveMkDirSync(dirPath: string): void;
-    // @deprecated
-    static recusiveFindSync(rootDir: string, pattern: RegExp): string[];
     static removeSync(pathname: string): void;
     static rmdirSync(pathname: string): void;
     static unlinkSync(pathname: string): void;
@@ -3141,13 +3037,6 @@ export interface IModelTransformOptions {
     noProvenance?: boolean;
     targetScopeElementId?: Id64String;
     wasSourceIModelCopiedToTarget?: boolean;
-}
-
-// @internal @deprecated
-export abstract class InformationCarrierElement extends Element {
-    constructor(props: ElementProps, iModel: IModelDb);
-    // (undocumented)
-    static get className(): string;
 }
 
 // @public
@@ -3833,14 +3722,6 @@ export class PlanCallout extends Callout {
 
 // @public
 export class Platform {
-    // @deprecated
-    static get isDesktop(): boolean;
-    // @deprecated
-    static get isElectron(): boolean;
-    // @deprecated
-    static get isMobile(): boolean;
-    // @deprecated
-    static get isNodeJs(): boolean;
     // @internal (undocumented)
     static load(): typeof IModelJsNative;
     static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp";
@@ -4142,8 +4023,6 @@ export class SnapshotDb extends IModelDb {
     beforeClose(): void;
     static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotDb;
     static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb;
-    // @deprecated
-    get filePath(): string;
     // (undocumented)
     static findByKey(key: string): SnapshotDb;
     // (undocumented)
@@ -4317,8 +4196,6 @@ export enum SqliteValueType {
 // @public
 export class StandaloneDb extends IModelDb {
     static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb;
-    // @deprecated
-    get filePath(): string;
     // (undocumented)
     static findByKey(key: string): StandaloneDb;
     // (undocumented)
@@ -4522,22 +4399,6 @@ export class TitleText extends DetailingSymbol {
     static get className(): string;
 }
 
-// @public @deprecated (undocumented)
-export enum TxnAction {
-    // (undocumented)
-    Abandon = 2,
-    // (undocumented)
-    Commit = 1,
-    // (undocumented)
-    Merge = 5,
-    // (undocumented)
-    None = 0,
-    // (undocumented)
-    Reinstate = 4,
-    // (undocumented)
-    Reverse = 3
-}
-
 // @public
 export interface TxnChangedEntities {
     // @deprecated
@@ -4665,8 +4526,6 @@ export class V1CheckpointManager {
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
     // (undocumented)
     static getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb>;
-    // @deprecated
-    static getCompatibilityFileName(checkpoint: CheckpointProps): string;
     // (undocumented)
     static getFileName(checkpoint: CheckpointProps): string;
     // (undocumented)

@@ -96,14 +96,6 @@ export class IModelHostConfiguration {
    */
   public cacheDir?: string;
 
-  /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/iModelJs/cache/")`
-   * If overriding this, ensure it's set to a folder with complete access - it may have to be deleted and recreated.
-   * @deprecated Use [[IModelHostConfiguration.cacheDir]] instead to specify the root of all caches.
-   * - Using this new option will cause a new cache structure and invalidate existing caches - i.e., the cache will be
-   *   re-created in a new location on disk, and the existing cache may have to be manually cleaned out.
-   * - If [[IModelHostConfiguration.cacheDir]] is also specified, this setting will take precedence for the briefcase cache
-   */
-  public briefcaseCacheDir?: string;
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
 
@@ -310,20 +302,6 @@ export class IModelHost {
    */
   public static get hubAccess(): BackendHubAccess { return this._hubAccess; }
 
-  /**
-   *  @deprecated access to IModelHub should generally be through other higher level apis.
-   * For internal methods, use [[hubAccess]]] api.
-   * If you really need to call the IModelClient api directly, use [[IModelHubBackend.iModelClient]]
-   */
-  public static get iModelClient(): IModelClient {
-    return IModelHubBackend.iModelClient;
-  }
-
-  /** @deprecated use [[hubAccess]] api */
-  public static get isUsingIModelBankClient(): boolean {
-    return IModelHubBackend.isUsingIModelBankClient;
-  }
-
   private static _isValid = false;
   /** Returns true if IModelHost is started.  */
   public static get isValid() { return this._isValid; }
@@ -386,7 +364,7 @@ export class IModelHost {
 
     this.setupCacheDirs(configuration);
     IModelHubBackend.setIModelClient(configuration.imodelClient);
-    BriefcaseManager.initialize(this._briefcaseCacheDir, path.join(this._cacheDir, "bc", "v4_0"));
+    BriefcaseManager.initialize(this._briefcaseCacheDir);
 
     IModelHost.setupRpcRequestContext();
 
@@ -449,12 +427,7 @@ export class IModelHost {
 
   private static setupCacheDirs(configuration: IModelHostConfiguration) {
     this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
-
-    // Set up the briefcaseCacheDir, defaulting to the the legacy/deprecated value
-    if (configuration.briefcaseCacheDir) // eslint-disable-line deprecation/deprecation
-      this._briefcaseCacheDir = path.normalize(configuration.briefcaseCacheDir); // eslint-disable-line deprecation/deprecation
-    else
-      this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
+    this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
@@ -563,26 +536,6 @@ export class Platform {
   public static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp" {
     return process.platform as any;
   }
-
-  /** Query if this is an electron backend
-   * @deprecated use ProcessDetector.isElectronAppBackend
-   */
-  public static get isElectron(): boolean { return ProcessDetector.isElectronAppBackend; }
-
-  /** Query if this is a desktop backend
-   * @deprecated use ProcessDetector.isElectronAppBackend
-   */
-  public static get isDesktop(): boolean { return ProcessDetector.isElectronAppBackend; }
-
-  /** Query if this is a mobile backend
-   * @deprecated use ProcessDetector.isMobileAppBackend
-   */
-  public static get isMobile(): boolean { return ProcessDetector.isMobileAppBackend; }
-
-  /** Query if this is backend running in Node.js
-   * @deprecated use ProcessDetector.isNodeProcess
-   */
-  public static get isNodeJs(): boolean { return ProcessDetector.isNodeProcess; }
 
   /** @internal */
   public static load(): typeof IModelJsNative {

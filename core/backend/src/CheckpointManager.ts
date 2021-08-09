@@ -183,15 +183,6 @@ export class V1CheckpointManager {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "checkpoints");
   }
 
-  /** for backwards compatibility to find checkpoints downloaded from older versions of BriefcaseManager.
-   * @deprecated
-   */
-  public static getCompatibilityFileName(checkpoint: CheckpointProps): string {
-    const changeSetId = checkpoint.changeSetId || "first";
-    // eslint-disable-next-line deprecation/deprecation
-    return path.join(BriefcaseManager.getCompatibilityPath(checkpoint.iModelId), "FixedVersion", changeSetId, "bc.bim");
-  }
-
   public static getFileName(checkpoint: CheckpointProps): string {
     const changeSetId = checkpoint.changeSetId || "first";
     return path.join(this.getFolder(checkpoint.iModelId), `${changeSetId}.bim`);
