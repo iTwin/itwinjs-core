@@ -86,7 +86,7 @@ import { TreeProps } from '@bentley/ui-components';
 import { TreeSelectionModificationEventArgs } from '@bentley/ui-components';
 import { TreeSelectionReplacementEventArgs } from '@bentley/ui-components';
 import { TypeDescription } from '@bentley/presentation-common';
-import { ViewportProps } from '@bentley/ui-components';
+import { ViewportProps } from '@bentley/ui-imodel-components';
 import { VisibleTreeNodes } from '@bentley/ui-components';
 
 // @internal (undocumented)
