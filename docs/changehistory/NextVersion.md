@@ -45,13 +45,13 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @bentley/imodeljs-common
 
-| Removed                                       | Replacement                                                    |
-| --------------------------------------------- | -------------------------------------------------------------- |
-| `IModel.changeSetId`                          | `IModel.changeset.id`                                          |
-| `IMoldelVersion.fromJson`                     | `IMoldelVersion.fromJSON`                                      |
-| `IMoldelVersion.evaluateChangeSet`            | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IMoldelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IMoldelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| Removed                                      | Replacement                                                    |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| `IModel.changeSetId`                         | `IModel.changeset.id`                                          |
+| `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
+| `IModelVersion.evaluateChangeSet`            | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 
 ### @bentley/imodeljs-frontend
 
