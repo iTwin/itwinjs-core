@@ -1839,30 +1839,28 @@ export class WheelEventProcessor {
           lastEvent.point.setFrom(target);
         }
       }
-      const eyeHeight = view.getEyeCartographicHeight();
-      if (eyeHeight !== undefined && eyeHeight > 100000) {
-        status = view.globalZoom(target, zoomRatio);
-      } else {
-      const transform = Transform.createFixedPointAndMatrix(target, Matrix3d.createScale(zoomRatio, zoomRatio, zoomRatio));
-      const eye = view.getEyePoint();
-      const newEye = transform.multiplyPoint3d(eye);
-      const offset = eye.vectorTo(newEye);
+      status = view.globalZoom(target, zoomRatio);
+      if (ViewStatus.Success !== status ){
+        const transform = Transform.createFixedPointAndMatrix(target, Matrix3d.createScale(zoomRatio, zoomRatio, zoomRatio));
+        const eye = view.getEyePoint();
+        const newEye = transform.multiplyPoint3d(eye);
+        const offset = eye.vectorTo(newEye);
 
-      // when you're too close to an object, the wheel zoom operation will stop. We set a "bump distance" so you can blast through obstacles.
-      const bumpDist = Math.max(ToolSettings.wheelZoomBumpDistance, view.minimumFrontDistance());
-      if (offset.magnitude() < bumpDist) {
-        offset.scaleToLength(bumpDist, offset); // move bump distance, just to get to the other side.
-        target.addInPlace(offset);
-        newEye.setFrom(eye.plus(offset));
-        currentInputState.lastWheelEvent = undefined; // we need to search on the "other side" of what we were bumping into
+        // when you're too close to an object, the wheel zoom operation will stop. We set a "bump distance" so you can blast through obstacles.
+        const bumpDist = Math.max(ToolSettings.wheelZoomBumpDistance, view.minimumFrontDistance());
+        if (offset.magnitude() < bumpDist) {
+          offset.scaleToLength(bumpDist, offset); // move bump distance, just to get to the other side.
+          target.addInPlace(offset);
+          newEye.setFrom(eye.plus(offset));
+          currentInputState.lastWheelEvent = undefined; // we need to search on the "other side" of what we were bumping into
+        }
+        const zDir = view.getZVector();
+        target.setFrom(newEye.plusScaled(zDir, zDir.dotProduct(newEye.vectorTo(target))));
+
+        status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens, undefined, undefined, animationOptions);
       }
-      const zDir = view.getZVector();
-      target.setFrom(newEye.plusScaled(zDir, zDir.dotProduct(newEye.vectorTo(target))));
-
-      status = view.lookAtUsingLensAngle(newEye, target, view.getYVector(), view.camera.lens, undefined, undefined, animationOptions);
-    }
-    if (ViewStatus.Success === status)
-      vp.synchWithView(animationOptions);
+      if (ViewStatus.Success === status)
+        vp.synchWithView(animationOptions);
     } else {
       const targetNpc = vp.worldToNpc(target);
       const trans = Transform.createFixedPointAndMatrix(targetNpc, Matrix3d.createScale(zoomRatio, zoomRatio, 1));

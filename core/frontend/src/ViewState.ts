@@ -8,8 +8,8 @@
 
 import { assert, BeEvent, Id64, Id64Arg, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
 import {
-  Angle, AxisOrder, ClipVector, Constant, Geometry, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
-  PolyfaceBuilder, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, XYZ, YawPitchRollAngles,
+  Angle, AxisOrder, ClipVector, Constant, Geometry, LongitudeLatitudeNumber, LowAndHighXY, LowAndHighXYZ, Map4d, Matrix3d, Plane3dByOriginAndUnitNormal, Point2d, Point3d,
+  PolyfaceBuilder, Range2d, Range3d, Ray3d, StrokeOptions, Transform, Vector2d, Vector3d, XAndY, XYAndZ, XYZ, YawPitchRollAngles,
 } from "@bentley/geometry-core";
 import {
   AnalysisStyle, AxisAlignedBox3d, Camera, Cartographic, ColorDef,
@@ -94,6 +94,12 @@ class GridDecorator {
     context.drawStandardGrid(origin, matrix, spacing, gridsPerRef, isoGrid, orientation !== GridOrientationType.View ? fixedRepsAuto : undefined);
   }
 }
+
+const scratchCorners = Range3d.createNull().corners();
+const scratchRay = Ray3d.createZero();
+const unitRange2d = Range2d.createXYXY(0, 0, 1, 1);
+const scratchRange2d = Range2d.createNull();
+const scratchRange2dIntersect = Range2d.createNull();
 
 /** The front-end state of a [[ViewDefinition]] element.
  * A ViewState is typically associated with a [[Viewport]] to display the contents of the view on the screen. A ViewState being displayed by a Viewport is considered to be
@@ -444,10 +450,19 @@ export abstract class ViewState extends ElementState {
   }
 
   /** @internal */
-  public static getStandardViewMatrix(id: StandardViewId): Matrix3d { return StandardView.getStandardRotation(id); }
+  public static getStandardViewMatrix(id: StandardViewId): Matrix3d {
+    return StandardView.getStandardRotation(id);
+  }
 
   /** Orient this view to one of the [[StandardView]] rotations. */
-  public setStandardRotation(id: StandardViewId) { this.setRotation(ViewState.getStandardViewMatrix(id)); }
+  public setStandardRotation(id: StandardViewId) {
+    const worldToView = ViewState.getStandardViewMatrix(id);
+    const globeToWorld = this.getGlobeRotation();
+    if (globeToWorld)
+      return this.setRotation(worldToView.multiplyMatrixMatrix(globeToWorld));
+    else
+      this.setRotation(worldToView);
+  }
 
   /** Get the target point of the view. If there is no camera, center is returned. */
   public getTargetPoint(result?: Point3d): Point3d { return this.getCenter(result); }
@@ -1015,6 +1030,51 @@ export abstract class ViewState extends ElementState {
     normal.normalizeInPlace();
 
     return normal;
+  }
+  public getIsViewingProject(): boolean {
+    const worldToNpc =  this.computeWorldToNpc();
+    if (!worldToNpc || !worldToNpc.map)
+      return false;
+    const expandedRange = this.iModel.projectExtents.clone();
+    expandedRange.expandInPlace(10E3);
+    const corners = expandedRange.corners(scratchCorners);
+    worldToNpc.map.transform0.multiplyPoint3dArrayQuietNormalize(corners);
+    scratchRange2d.setNull();
+    corners.forEach((corner) => scratchRange2d.extendXY(corner.x, corner.y));
+    const intersection = scratchRange2d.intersect(unitRange2d, scratchRange2dIntersect);
+    if (!intersection || intersection.isNull)
+      return false;
+
+    const area = (intersection.high.x - intersection.low.x) * (intersection.high.y - intersection.low.y);
+    return area > 1.0E-2;
+  }
+
+  public getGlobeRotation(): Matrix3d | undefined {
+    if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid || this.getIsViewingProject())
+      return undefined;
+
+    const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
+    if (!backgroundMapGeometry)
+      return undefined;
+
+    const targetRay = Ray3d.create(this.getCenter(), this.getRotation().rowZ().negate(), scratchRay);
+    const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
+    const intersectFractions = new Array<number>(), intersectAngles = new Array<LongitudeLatitudeNumber>();
+    if (earthEllipsoid.intersectRay(targetRay, intersectFractions, undefined, intersectAngles) < 2)
+      return undefined;
+
+    let minIndex = 0, minFraction = -1.0E10;
+    for (let i = 0; i < intersectFractions.length; i++) {
+      const fraction = intersectFractions[i];
+      if (fraction < minFraction) {
+        minFraction = fraction;
+        minIndex = i;
+      }
+    }
+    const angles = intersectAngles[minIndex];
+    const pointAndDerivs = earthEllipsoid.radiansToPointAndDerivatives(angles.longitudeRadians, angles.latitudeRadians, false);
+    return Matrix3d.createRigidFromColumns(pointAndDerivs.vectorU, pointAndDerivs.vectorV, AxisOrder.XYZ)?.transpose();
+
   }
 
   /** A value that represents the global scope of the view -- a value greater than one indicates that the scope of this view is global (viewing most of Earth). */
@@ -1950,18 +2010,31 @@ export abstract class ViewState3d extends ViewState {
     const settings = this.getDisplayStyle3d().settings.getPlanProjectionSettings(modelId);
     return settings && settings.elevation ? settings.elevation : 0;
   }
+
   public globalZoom(target: Point3d, zoomRatio: number): ViewStatus {
     if (!this.iModel.ecefLocation)
       return ViewStatus.NotGeolocated;
 
-    const currentCamera = this.camera.eye;
+    const eye = this.camera.eye;
 
     const earthCenter = this.iModel.ecefLocation?.earthCenter;
-    const cameraToCenter = Vector3d.createStartEnd(currentCamera, earthCenter);
-    const cameraToTarget = Vector3d.createStartEnd(currentCamera, target);
+    const eyeToCenter = Vector3d.createStartEnd(eye, earthCenter);
+    const eyeToTarget = Vector3d.createStartEnd(eye, target);
+    const viewZ = this.getRotation().rowZ();
+    const perp0 = eyeToTarget.crossProduct(viewZ);
+    const targetPerp = perp0.unitCrossProduct(viewZ);
+    if (!targetPerp)
+      return ViewStatus.InvalidTargetPoint;
+
+    const centerDot = targetPerp.dotProduct(eyeToCenter);
+    // eslint-disable-next-line no-console
+    console.log(`CenterDot: ${  centerDot}`);
+    if (centerDot > 1000 && false)
+      return ViewStatus.InvalidTargetPoint;
+
     const centerToTarget = Vector3d.createStartEnd(earthCenter, target);
-    const cAngle  = cameraToCenter.angleTo(cameraToTarget);
-    const bDistance = zoomRatio * target.distance(currentCamera);
+    const cAngle  = eyeToCenter.angleTo(eyeToTarget);
+    const bDistance = zoomRatio * target.distance(eye);
     const cDistance = centerToTarget.magnitude();
     const b = - 2 * bDistance * Math.cos(cAngle.radians);
     const c = bDistance * bDistance - cDistance * cDistance;
@@ -1979,20 +2052,16 @@ export abstract class ViewState3d extends ViewState {
 
     const cSinRatio = Math.sin(cAngle.radians) / cDistance;
     const bAngle = Math.asin(cSinRatio * bDistance);
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const bSinRatio = Math.sin(bAngle) / bDistance;
-    const perp = cameraToCenter.crossProduct(centerToTarget);
+    const perp = eyeToCenter.crossProduct(centerToTarget);
     const parallel = perp.unitCrossProduct(centerToTarget);
     if (! parallel)
       return ViewStatus.InvalidTargetPoint;
 
     const newEye = earthCenter.plus2Scaled(centerToTarget, hypotenuse * Math.cos(bAngle) / centerToTarget.magnitude(), parallel, hypotenuse * Math.sin(bAngle));
-    const eyeToTarget = newEye.unitVectorTo(earthCenter)!;
-    const newFocusDistance = hypotenuse - Constant.earthRadiusWGS84.equator;
-    const newTarget = newEye.plusScaled(eyeToTarget, newFocusDistance);
+    const newEyeToTarget = newEye.unitVectorTo(earthCenter)!;
+    const newFocusDistance = Math.max(100, hypotenuse - Constant.earthRadiusWGS84.equator);
+    const newTarget = newEye.plusScaled(newEyeToTarget, newFocusDistance);
     const currExtents = this.getExtents();
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const currZ = this.getRotation().getRow(2), currTarget = this.getTargetPoint();
     const currFocusDistance = this.camera.focusDist;
     const extentScale = newFocusDistance / currFocusDistance;
     const newExtents = Vector2d.create(currExtents.x * extentScale, currExtents.y * extentScale);
