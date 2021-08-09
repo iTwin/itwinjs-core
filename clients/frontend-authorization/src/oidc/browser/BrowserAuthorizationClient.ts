@@ -7,9 +7,9 @@
  * @module BrowserAuthorization
  */
 
-import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
 import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, IDisposable, Logger } from "@bentley/bentleyjs-core";
 import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
 import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
 import { BrowserAuthorizationBase } from "./BrowserAuthorizationBase";
@@ -39,6 +39,8 @@ export interface BrowserAuthorizationClientConfiguration extends BrowserAuthoriz
   readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
   /** if true, do NOT attempt a silent signIn on startup of the application */
   readonly noSilentSignInOnAppStartup?: boolean;
+  /** The redirect URL used for silent sign in and renew. If not provided, will default to redirectUri. */
+  readonly silentRedirectUri?: string;
 }
 
 /**
@@ -100,6 +102,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       post_logout_redirect_uri: basicSettings.postSignoutRedirectUri, // eslint-disable-line @typescript-eslint/naming-convention
       response_type: basicSettings.responseType, // eslint-disable-line @typescript-eslint/naming-convention
       automaticSilentRenew: true,
+      silent_redirect_uri: basicSettings.silentRedirectUri ?? basicSettings.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
       userStore: new WebStorageStateStore({ store: window.localStorage }),
       prompt: basicSettings.prompt,
     };
