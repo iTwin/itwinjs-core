@@ -16,7 +16,7 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 
 /** [[MouseDownChangedEvent]] Args interface.
  * @public
- */
+ */
 export interface MouseDownChangedEventArgs {
   /** Indicates whether the mouse is down */
   mouseDown: boolean;
@@ -24,12 +24,12 @@ export interface MouseDownChangedEventArgs {
 
 /** Mouse Down Changed Event class.
  * @public
- */
+ */
 export class MouseDownChangedEvent extends UiEvent<MouseDownChangedEventArgs> { }
 
 /** [[ActiveContentChangedEvent]] Args interface.
  * @public
- */
+ */
 export interface ActiveContentChangedEventArgs {
   /** React node of the old content */
   oldContent?: React.ReactNode;
@@ -39,12 +39,12 @@ export interface ActiveContentChangedEventArgs {
 
 /** Active Content Changed Event class.
  * @public
- */
+ */
 export class ActiveContentChangedEvent extends UiEvent<ActiveContentChangedEventArgs> { }
 
 /** Content View Manager class.
  * @public
- */
+ */
 export class ContentViewManager {
   private static _mouseDown: boolean = false;
   private static _activeContent?: React.ReactNode;
@@ -109,9 +109,10 @@ export class ContentViewManager {
           // Only call setActiveView if going to or coming from a non-viewport ContentControl
           // istanbul ignore else
           if (activeContentControl) {
+            // istanbul ignore next
             const doSetActiveView =
               forceEventProcessing || (!activeContentControl.viewport ||
-              /* istanbul ignore next */ (oldContentControl && !oldContentControl.viewport));
+                (/* istanbul ignore next */ oldContentControl && /* istanbul ignore next */ !oldContentControl.viewport));
 
             // istanbul ignore else
             if (doSetActiveView) {

@@ -46,12 +46,6 @@ export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
  * @public
  */
 export class BriefcaseManager {
-  /** @internal
-   * @note temporary, will be removed in 3.0
-   * @deprecated
-   */
-  public static getCompatibilityPath(iModelId: GuidString): string { return path.join(this._compatibilityDir, iModelId, "bc"); }
-
   /** Get the local path of the folder storing files that are associated with an imodel */
   public static getIModelPath(iModelId: GuidString): string { return path.join(this._cacheDir, iModelId); }
 
@@ -79,32 +73,20 @@ export class BriefcaseManager {
     return path.join(this.getBriefcaseBasePath(briefcase.iModelId), `${briefcase.briefcaseId}.bim`);
   }
 
-  /** get the name for previous version of BriefcaseManager.
-   * @note temporary, will be removed in 3.0
-   * @deprecated
-   * @internal
-   */
-  public static getCompatibilityFileName(briefcase: BriefcaseProps): string {
-    // eslint-disable-next-line deprecation/deprecation
-    return path.join(this.getCompatibilityPath(briefcase.iModelId), briefcase.briefcaseId === 0 ? "PullOnly" : "PullAndPush", briefcase.briefcaseId.toString(), "bc.bim");
-  }
-
   private static setupCacheDir(cacheRootDir: string) {
     this._cacheDir = cacheRootDir;
     IModelJsFs.recursiveMkDirSync(this._cacheDir);
   }
 
-  private static _compatibilityDir: string;
   private static _initialized?: boolean;
   /** Initialize BriefcaseManager
    * @param cacheRootDir The root directory for storing a cache of downloaded briefcase files on the local computer.
    * Briefcases are stored relative to this path in sub-folders organized by IModelId.
    * @note It is perfectly valid for applications to store briefcases in locations they manage, outside of `cacheRootDir`.
    */
-  public static initialize(cacheRootDir: string, compatibilityDir?: string) {
+  public static initialize(cacheRootDir: string) {
     if (this._initialized)
       return;
-    this._compatibilityDir = compatibilityDir ?? "";
     this.setupCacheDir(cacheRootDir);
     IModelHost.onBeforeShutdown.addOnce(this.finalize, this);
     this._initialized = true;
@@ -152,15 +134,6 @@ export class BriefcaseManager {
   private static _cacheDir: string;
   /** Get the root directory for the briefcase cache */
   public static get cacheDir() { return this._cacheDir; }
-
-  /** Determine whether the supplied briefcaseId is a standalone briefcase
-   * @note this function returns true if the id is either unassigned or the value "DeprecatedStandalone"
-   * @deprecated use id === BriefcaseIdValue.Unassigned
-   */
-  public static isStandaloneBriefcaseId(id: BriefcaseId) {
-    // eslint-disable-next-line deprecation/deprecation
-    return id === BriefcaseIdValue.Unassigned || id === BriefcaseIdValue.DeprecatedStandalone;
-  }
 
   /** Determine whether the supplied briefcaseId is in the range of assigned BriefcaseIds issued by iModelHub
    * @note this does check whether the id was actually acquired by the caller.
@@ -418,6 +391,9 @@ export class BriefcaseManager {
   }
 
   private static async applySingleChangeset(db: IModelDb, changeSet: ChangesetFileProps, processOption: ChangeSetApplyOption) {
+    if (changeSet.changesType === ChangesetType.Schema)
+      db.clearCaches(); // for schema changesets, statement caches may become invalid. Do this *before* applying, in case db needs to be closed (open statements hold db open.)
+
     return db.nativeDb.applyChangeset(changeSet, processOption);
   }
 

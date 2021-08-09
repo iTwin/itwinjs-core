@@ -1163,11 +1163,6 @@ export abstract class ViewState3d extends ViewState {
   public readonly camera: Camera;
   /** Minimum distance for front plane */
   public forceMinFrontDist = 0.0;
-  /** This function is never called.
-   * @deprecated
-   */
-  public onRenderFrame(_viewport: Viewport): void { }
-
   /** Provides access to optional detail settings for this view. */
   public get details(): ViewDetails3d {
     return this._details;
@@ -2041,10 +2036,6 @@ export abstract class ViewState2d extends ViewState {
     return this.getViewedExtents();
   }
 
-  /** This function is never called.
-   * @deprecated
-   */
-  public onRenderFrame(_viewport: Viewport): void { }
   public override async load(): Promise<void> {
     await super.load();
     return this.iModel.models.load(this.baseModelId);

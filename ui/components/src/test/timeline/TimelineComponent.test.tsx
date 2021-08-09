@@ -12,6 +12,7 @@ import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from
 import { TimelineComponent, TimelineMenuItemProps } from "../../ui-components/timeline/TimelineComponent";
 import TestUtils from "../TestUtils";
 import { UiAdmin } from "@bentley/ui-abstract";
+import { createBoundingClientRect } from "../Utils";
 
 class TestTimelineDataProvider extends BaseTimelineDataProvider {
   public playing = false;
@@ -94,7 +95,14 @@ describe("<TimelineComponent showDuration={true} />", () => {
     return window.setTimeout(cb, 0);
   });
 
+  const getBoundingClientRect = Element.prototype.getBoundingClientRect;
+  const sliderContainerSize = createBoundingClientRect(10, 0, 1010, 60);
+
   before(async () => {
+    Element.prototype.getBoundingClientRect = () => sliderContainerSize;
+
+    if (!window.PointerEvent)
+      window.PointerEvent = window.MouseEvent as any;
     sinon.restore();
     // need to initialize to get localized strings
     await TestUtils.initializeUiComponents();
@@ -112,6 +120,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
 
   after(() => {
     sinon.restore();
+    Element.prototype.getBoundingClientRect = getBoundingClientRect;
   });
 
   it("should render without milestones - minimized", async () => {
@@ -159,6 +168,88 @@ describe("<TimelineComponent showDuration={true} />", () => {
     // await new Promise((r) => { setTimeout(r, 40); });
     expect(dataProvider.playing).to.be.false;
     expect(dataProvider.pointerCallbackCalled).to.be.true;
+  });
+
+  it("should show tooltip on pointer move", () => {
+    const spyOnChange = sinon.spy();
+    const dataProvider = new TestTimelineDataProvider();
+    expect(dataProvider.loop).to.be.false;
+    fakeTimers = sinon.useFakeTimers();
+
+    const renderedComponent = render(<TimelineComponent
+      startDate={dataProvider.start}
+      endDate={dataProvider.end}
+      initialDuration={10 * 1000}
+      totalDuration={40 * 1000}
+      minimized={true}
+      showDuration={true}
+      onChange={spyOnChange}
+      onSettingsChange={dataProvider.onPlaybackSettingChanged}
+      onPlayPause={dataProvider.onPlayPause} />);
+
+    expect(renderedComponent).not.to.be.undefined;
+    expect(renderedComponent.container.querySelector(".tooltip-text")).not.to.exist;
+    const thumb = renderedComponent.container.querySelector(".iui-slider-thumb");
+    expect(thumb).to.exist;
+    fireEvent.focus(thumb!, {});
+    expect(renderedComponent.container.querySelector(".tooltip-text")).to.exist;
+    fireEvent.blur(thumb!, {});
+    expect(renderedComponent.container.querySelector(".tooltip-text")).not.to.exist;
+    const sliderContainer = renderedComponent.container.querySelector(".iui-slider-container");
+    expect(sliderContainer).to.exist;
+
+    // tried following methods to get test coverage of onPointerMove onPointerLeave but could not get event to fire
+    // fireEvent(sliderContainer!, new MouseEvent("mouseenter", { bubbles: false, cancelable: false }));
+    // fireEvent(sliderContainer!, new MouseEvent("mouseleave", { bubbles: false, cancelable: false }));
+
+    // act(() => {
+    //   fireEvent.pointerEnter(sliderContainer!, {
+    //     pointerId: 5,
+    //     buttons: 1,
+    //     clientX: 210,
+    //   });
+    // });
+
+    // act(() => {
+    //   fireEvent.pointerLeave(sliderContainer!, {
+    //     pointerId: 5,
+    //     buttons: 1,
+    //     clientX: 410,
+    //   });
+    // });
+
+    act(() => {
+      fireEvent.pointerDown(thumb!, {
+        pointerId: 5,
+        buttons: 1,
+        clientX: 210,
+      });
+    });
+
+    act(() => {
+      fireEvent.pointerMove(sliderContainer!, {
+        pointerId: 5,
+        buttons: 1,
+        clientX: 210,
+      });
+    });
+
+    /* move thumb to 40% value on slider */
+    act(() => {
+      fireEvent.pointerMove(sliderContainer!, {
+        pointerId: 5,
+        buttons: 1,
+        clientX: 410,
+      });
+    });
+
+    act(() => {
+      fireEvent.pointerUp(sliderContainer!, {
+        pointerId: 5,
+        buttons: 1,
+        clientX: 410,
+      });
+    });
   });
 
   it("timeline with short duration", async () => {

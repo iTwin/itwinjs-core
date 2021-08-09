@@ -5,6 +5,7 @@
 @import "~@bentley/ui-core/lib/ui-core/base/base";
 @import "~@bentley/ui-core/lib/ui-core/icons/variables";
 @import "~@bentley/ui-core/lib/ui-core/inputs/variables";
+@import "~@bentley/ui-core/lib/ui-core/style/itwinui-overrides";
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
 @import "~@bentley/ui-core/lib/ui-core/style/variables";
 @import "~@bentley/ui-core/lib/ui-core/z-index";
@@ -76,48 +77,4 @@
   margin-bottom: 6px;
 }
 
-// Override some iTwinUI-css padding and minimums
-.iui-input {
-  min-height: $uicore-component-height-normal;
-  padding: $uicore-iui-input-padding;
-}
-
-.iui-select {
-  >.iui-select-button {
-    min-height: $uicore-component-height-normal;
-    padding-top: 2px;
-    padding-bottom: 2px;
-    padding-right: 24px;
-  }
-
-  >.iui-select-button::after {
-    right: 6px;
-  }
-}
-
-.iui-toggle-switch {
-  padding: 1px 0;
-}
-
-.iui-expandable-block {
-  > .iui-header {
-    padding: $iui-xs $iui-xs;
-
-    > .iui-icon {
-      width: $uicore-icons-x-small;
-      height: $uicore-icons-x-small;
-      margin-top: $iui-xs;
-    }
-  }
-
-  &.iui-expanded {
-    > .iui-content {
-      padding: 0;
-    }
-  }
-}
-
-.iui-toast {
-  margin: 0;
-  width: 100%;
-}
+@include itwinui-style-overrides;
