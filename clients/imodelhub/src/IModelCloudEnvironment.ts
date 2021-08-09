@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { Asset, Project } from "@bentley/context-registry-client";
+import { ContextContainerNTBD, Project } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { IModelClient } from "./IModelClient";
@@ -15,7 +15,7 @@ import { IModelClient } from "./IModelClient";
  */
 export interface ContextManagerClient {
   queryProjectByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Project>;
-  queryAssetByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Asset>;
+  getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD>;
 }
 
 /** All of the services that a frontend or other client app needs to find and access iModels.

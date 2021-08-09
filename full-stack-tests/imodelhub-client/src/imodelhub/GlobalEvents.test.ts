@@ -172,7 +172,6 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     chai.expect(event).to.be.instanceof(IModelCreatedEvent);
     chai.assert(!!event!.iModelId);
     chai.expect(event!.contextId).to.be.eq(projectId);
-    chai.expect(event!.contextTypeId).to.be.eq(ContextType.Project);
   });
 
   it("should update Global Event subscription", async () => {
@@ -350,6 +349,5 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     chai.expect(event).to.be.instanceof(IModelCreatedEvent);
     chai.assert(!!event!.iModelId);
     chai.expect(event!.contextId).to.be.eq(assetId);
-    chai.expect(event!.contextTypeId).to.be.eq(ContextType.Asset);
   });
 });

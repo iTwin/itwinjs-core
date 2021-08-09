@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import { ClientRequestContext, Config, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
-import { Asset, Project } from "@bentley/context-registry-client";
+import { ContextContainerNTBD, Project } from "@bentley/context-registry-client";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
@@ -245,12 +245,12 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
 
   await bootstrapBankProject(requestContext, assetName);
 
-  const asset: Asset = await getCloudEnv().contextMgr.queryAssetByName(requestContext, assetName);
+  const asset: ContextContainerNTBD = await getCloudEnv().contextMgr.getContextContainerByName(requestContext, assetName);
 
-  if (!asset || !asset.wsgId)
+  if (!asset || !asset.id)
     throw new Error(`Asset with name ${assetName} doesn't exist.`);
 
-  return asset.wsgId;
+  return asset.id;
 }
 
 export async function getProjectId(requestContext: AuthorizedClientRequestContext, projectName?: string): Promise<string> {

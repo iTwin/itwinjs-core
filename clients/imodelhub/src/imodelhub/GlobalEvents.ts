@@ -6,7 +6,6 @@
  * @module iModelHubClient
  */
 import { ClientRequestContext, GuidString, Logger } from "@bentley/bentleyjs-core";
-import { ContextType } from "@bentley/context-registry-client";
 import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, Response, WsgInstance } from "@bentley/itwin-client";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
@@ -52,8 +51,6 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   public projectId?: string;
   /** Id of the context ([[Project]] or [[Asset]]) that this iModel belongs to. */
   public contextId?: string;
-  /** Type of the context ([[Project]] or [[Asset]]) that this iModel belongs to. */
-  public contextTypeId?: ContextType;
 
   /** Construct this global event from object instance.
    * @param obj Object instance.
@@ -64,16 +61,6 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
     this.iModelId = obj.iModelId;
     this.projectId = obj.ProjectId;
     this.contextId = obj.ContextId;
-
-    const contextTypeId = obj.ContextTypeId as number;
-    switch (contextTypeId) {
-      case ContextType.Asset:
-      case ContextType.Project:
-        this.contextTypeId = contextTypeId;
-        break;
-      default:
-        this.contextTypeId = ContextType.Unknown;
-    }
   }
 }
 

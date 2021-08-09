@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Asset, ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ContextContainerNTBD, ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { ContextManagerClient } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
@@ -15,11 +15,8 @@ export class ContextRegistryClientWrapper implements ContextManagerClient {
       $filter: `Name+eq+'${name}'`,
     });
   }
-  public async queryAssetByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Asset> {
+  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD> {
     const client = new ContextRegistryClient();
-    return client.getAsset(requestContext, {
-      $select: "*",
-      $filter: `Name+eq+'${name}'`,
-    });
+    return client.getContextContainerByName(requestContext, name);
   }
 }

@@ -132,7 +132,7 @@ export class Project extends CommonAssetProjectContext {
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Asset", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class Asset extends CommonAssetProjectContext {
+class Asset extends CommonAssetProjectContext {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AssetType")
   public assetType?: string;
 }
