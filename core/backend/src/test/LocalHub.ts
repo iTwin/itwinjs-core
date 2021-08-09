@@ -195,8 +195,8 @@ export class LocalHub {
 
   public getIndexFromChangeset(changeset: ChangesetIndexOrId): number {
     return changeset.index ?? this.getChangesetIndex(changeset.id);
-
   }
+
   /** Get the index of a changeset by its Id */
   public getChangesetIndex(id: ChangesetId): number {
     if (id === "")
