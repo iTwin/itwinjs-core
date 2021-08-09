@@ -70,4 +70,84 @@ describe("ParsedInput", () => {
     expect(spyOnChange).to.not.have.been.called;
   });
 
+  it("should process blur", () => {
+    const initialTemperature = 20;  // 20 C
+    const spyOnChange = sinon.spy();
+
+    const wrapper = render(<ParsedInput onChange={spyOnChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const input = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(input.value).to.eq("20.0C");
+
+    // Blur does change
+    fireEvent.change(input, { target: { value: "10.0C" } });
+    fireEvent.blur(input);
+    expect(spyOnChange).to.have.been.called;
+  });
+
+  it("should process Escape keystroke", () => {
+    const initialTemperature = 20;  // 20 C
+    const spyOnChange = sinon.spy();
+
+    const wrapper = render(<ParsedInput onChange={spyOnChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const input = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(input.value).to.eq("20.0C");
+
+    // Escape does not change
+    fireEvent.change(input, { target: { value: "20.0C" } });
+    fireEvent.keyDown(input, { key: SpecialKey.Escape });
+    expect(spyOnChange).to.not.have.been.called;
+  });
+
+  it("should process keystrokes and initialValue prop change", () => {
+    const initialTemperature = 20;  // 20 C
+    const spyOnChange = sinon.spy();
+
+    const wrapper = render(<ParsedInput onChange={spyOnChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const input = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(input.value).to.eq("20.0C");
+
+    // Should process updated initialValue prop
+    const newTemperature = 100;  // 100 C
+    wrapper.rerender(<ParsedInput onChange={spyOnChange} initialValue={newTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const updatedInput = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(updatedInput.value).to.eq("100.0C");
+  });
+
+  it("should process keystrokes and initialValue prop change", () => {
+    const initialTemperature = 20;  // 20 C
+    const spyOnChange = sinon.spy();
+
+    const wrapper = render(<ParsedInput onChange={spyOnChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const input = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(input.value).to.eq("20.0C");
+
+    // Should process updated initialValue prop
+    const newTemperature = 100;  // 100 C
+    wrapper.rerender(<ParsedInput onChange={spyOnChange} initialValue={newTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const updatedInput = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(updatedInput.value).to.eq("100.0C");
+  });
+
+  it("should notify on bad input", () => {
+    const initialTemperature = 20;  // 20 C
+    const spyOnChange = sinon.spy();
+
+    const wrapper = render(<ParsedInput onChange={spyOnChange} initialValue={initialTemperature} formatValue={formatCelsiusValue} parseString={parseStringToCelsius} />);
+    expect(wrapper).not.to.be.undefined;
+    const input = wrapper.getByTestId("components-parsed-input") as HTMLInputElement;
+    expect(input.value).to.eq("20.0C");
+
+    // Should add "components-parsed-input-has-error" CSS class on bad input
+    fireEvent.change(input, { target: { value: "XYZ" } });
+    fireEvent.keyDown(input, { key: SpecialKey.Enter });
+    expect(spyOnChange).to.not.have.been.called;
+    expect(wrapper.container.querySelector(".components-parsed-input-has-error")).to.not.be.null;
+  });
+
 });

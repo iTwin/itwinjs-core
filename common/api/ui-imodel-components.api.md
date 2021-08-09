@@ -1173,6 +1173,27 @@ export interface ViewRotationChangeEventArgs {
 export type ViewStateProp = ViewState | (() => ViewState);
 
 // @beta
+export class WeightEditor extends React.PureComponent<PropertyEditorProps, WeightEditorState> implements TypeEditor {
+    constructor(props: PropertyEditorProps);
+    // @internal (undocumented)
+    componentDidMount(): void;
+    // @internal (undocumented)
+    componentDidUpdate(prevProps: PropertyEditorProps): void;
+    // @internal (undocumented)
+    componentWillUnmount(): void;
+    // (undocumented)
+    getPropertyValue(): Promise<PropertyValue | undefined>;
+    // (undocumented)
+    get hasFocus(): boolean;
+    // (undocumented)
+    get htmlElement(): HTMLElement | null;
+    // @internal (undocumented)
+    render(): JSX.Element;
+    // @internal (undocumented)
+    readonly state: Readonly<WeightEditorState>;
+}
+
+// @beta
 export class WeightPickerButton extends React.PureComponent<WeightPickerProps, WeightPickerState> {
     // @internal
     constructor(props: WeightPickerProps);
@@ -1198,6 +1219,12 @@ export interface WeightPickerProps extends React.ButtonHTMLAttributes<HTMLButton
     onLineWeightPick?: ((weight: number) => void) | undefined;
     readonly?: boolean;
     weights: number[];
+}
+
+// @beta
+export class WeightPropertyEditor extends PropertyEditorBase {
+    // (undocumented)
+    get reactNode(): React.ReactNode;
 }
 
 

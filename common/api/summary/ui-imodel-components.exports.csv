@@ -123,5 +123,7 @@ public;ViewportProps
 public;ViewRotationChangeEvent 
 public;ViewRotationChangeEventArgs
 public;ViewStateProp = ViewState | (() => ViewState)
+beta;WeightEditor 
 beta;WeightPickerButton 
 beta;WeightPickerProps 
+beta;WeightPropertyEditor 
