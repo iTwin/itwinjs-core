@@ -26,6 +26,7 @@ export const ScrollableWidgetContent = React.memo<ScrollableWidgetContentProps>(
   const scrollPosition = React.useRef(new Point());
   const ref = React.useRef<HTMLDivElement>(null);
   const onSave = React.useCallback(() => {
+    // istanbul ignore else
     if (!!ref.current)
       scrollPosition.current = new Point(ref.current.scrollLeft, ref.current.scrollTop);
   }, []);
