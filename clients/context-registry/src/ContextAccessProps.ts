@@ -34,6 +34,6 @@ export interface ContextRegistryNTBD {
   getContextContainerByName: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<ContextContainerNTBD>;
   /** Get a container by id */
   getContextContainerById: (requestContext: AuthorizedClientRequestContext, id: string) => Promise<ContextContainerNTBD>;
-  /** Get set of containers with matching regex pattern in the name */
-  getContextContainersByNamePattern: (requestContext: AuthorizedClientRequestContext, pattern: string) => Promise<ContextContainerNTBD[]>;
+  /** Get set of containers with names containing the search string, case insensitive */
+  getContextContainersByNameSubstring: (requestContext: AuthorizedClientRequestContext, searchString: string) => Promise<ContextContainerNTBD[]>;
 }

@@ -18,14 +18,37 @@ describe("ContextRegistryClient (#integration)", () => {
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
   });
 
-  it("should get a list of projects (#integration)", async () => {
+  it("should get a list of containers (#integration)", async () => {
     const containers: ContextContainerNTBD[] = await contextRegistry.getContextContainers(requestContext);
-    chai.expect(containers.length).greaterThan(0);
+
+    // At least one container
+    chai.expect(containers).to.not.be.empty;
   });
 
-  it("should get a project by name (#integration)", async () => {
-    const container: ContextContainerNTBD = await contextRegistry.getContextContainerByName(requestContext, TestConfig.projectName);
-    chai.expect(container.name).equals(TestConfig.projectName);
+  it("should get a container by name (#integration)", async () => {
+    const container: ContextContainerNTBD = await contextRegistry.getContextContainerByName(requestContext, TestConfig.containerName);
+
+    // Returned container matches searched name
+    chai.expect(container.name).equals(TestConfig.containerName);
+  });
+
+  it("should get a container by id (#integration)", async () => {
+    const container: ContextContainerNTBD = await contextRegistry.getContextContainerById(requestContext, TestConfig.containerId);
+
+    // Returned container matches searched id
+    chai.expect(container.id).equals(TestConfig.containerId);
+  });
+
+  it("should get a list of containers by name substring (#integration)", async () => {
+    const searchString = TestConfig.containerName.substr(1,5);
+    const containers: ContextContainerNTBD[] = await contextRegistry.getContextContainersByNameSubstring(requestContext, searchString);
+
+    // At least one container
+    chai.expect(containers).to.not.be.empty;
+    // Every container's name contains the search string, case insensitive
+    containers.forEach((container) => {
+      chai.expect(container).to.have.property("name").that.matches(new RegExp(`${searchString}`, "i"));
+    });
   });
 
 });

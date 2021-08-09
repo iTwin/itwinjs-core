@@ -35,7 +35,7 @@ export class Context extends WsgInstance implements ContextContainerNTBD {
   @ECJsonTypeMap.propertyToJson("ecdb", "wsgId")
   private _id: string = "";
   public get id(): string {
-    if (this._id) {
+    if (!this._id) {
       throw new Error("Missing the required id");
     }
     return this._id;
@@ -206,15 +206,15 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
     return containers[0];
   }
 
-  /** Gets all context containers (projects or assets) whose name matches the regex pattern given
+  /** Gets all context containers (projects or assets) whose name contains the search string, case insensitive
    * @param requestContext The client request context
-   * @param pattern The regex to compare against each name
-   * @returns Array of containers with names matching the pattern
+   * @param searchString The regex to compare against each name
+   * @returns Array of containers with names containing the searchString
    */
-  public async getContextContainersByNamePattern(requestContext: AuthorizedClientRequestContext, pattern: string): Promise<ContextContainerNTBD[]> {
+  public async getContextContainersByNameSubstring(requestContext: AuthorizedClientRequestContext, searchString: string): Promise<ContextContainerNTBD[]> {
     const queryOptions: RequestQueryOptions = {
       $select: "*",
-      $filter: `name+like+'${pattern}'`,
+      $filter: `name+like+'${searchString}'`,
     };
     // Only one context container
     return this.getContextContainerByQuery(requestContext, queryOptions);

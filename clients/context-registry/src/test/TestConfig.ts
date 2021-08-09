@@ -4,26 +4,19 @@
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import { ContextContainerNTBD } from "../ContextAccessProps";
-import { ContextRegistryClient } from "../ContextRegistryClient";
 
 /** Basic configuration used by all tests
  */
 export class TestConfig {
-  /** Name of project used by most tests */
-  public static readonly projectName: string = "iModelJsIntegrationTest";
+  /** Name of container used by some tests */
+  public static readonly containerName: string = "iModelJsIntegrationTest";
+
+  /** Id of container used by some tests */
+  public static readonly containerId: string = "ec002f93-f0c1-4ab3-a407-351848eba233";
 
   /** Login the specified user and return the AuthorizationToken */
   public static async getAuthorizedClientRequestContext(user: TestUserCredentials = TestUsers.regular): Promise<AuthorizedClientRequestContext> {
     const accessToken = await getAccessTokenFromBackend(user);
     return new AuthorizedClientRequestContext((accessToken as any) as AccessToken);
-  }
-
-  public static async queryProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<ContextContainerNTBD> {
-    const contextRegistry = new ContextRegistryClient();
-    const contextContainer: ContextContainerNTBD | undefined = await contextRegistry.getContextContainerByName(requestContext, projectName);
-    if (!contextContainer || !contextContainer.id)
-      throw new Error(`Project ${projectName} not found for user.`);
-    return contextContainer;
   }
 }
