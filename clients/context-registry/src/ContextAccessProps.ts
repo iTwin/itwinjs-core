@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module ContextRegistry
+ * SWB NOTE: Change module name?
+ * @module ContextRegistryNTBD
  */
 
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -11,22 +12,28 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 /** The iTwin context container
  * @beta
  */
-export interface ContextContainer {
-  name: string;
+// SWB NOTE: Name To Be Determined
+export interface ContextContainerNTBD {
+  name?: string;
   id: string;
-  containerNumber: string;
+  // SWB NOTE: Maybe change to containerCode, since it is not required to be a number?
+  containerNumber?: string;
 }
 
 /** Methods for accessing context containers
  * @beta
 */
-export interface ContextRegistry {
+// SWB NOTE: Rename?
+export interface ContextRegistryNTBD {
   /** Get all containers associated */
-  getContextContainers: (requestContext: AuthorizedClientRequestContext) => Promise<ContextContainer[]>;
+  // SWB NOTE: API features unaccounted for: paging, search by containerNumber, get favorites, get recently used
+  // SWB NOTE: For pagination example look at ui\framework\src\ui-framework\clientservices\DefaultProjectServices.ts ln 43
+
+  getContextContainers: (requestContext: AuthorizedClientRequestContext) => Promise<ContextContainerNTBD[]>;
   /** Get a container by name */
-  getContextContainerByName: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<ContextContainer>;
+  getContextContainerByName: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<ContextContainerNTBD>;
   /** Get a container by id */
-  getContextContainerById: (requestContext: AuthorizedClientRequestContext, id: string) => Promise<ContextContainer>;
+  getContextContainerById: (requestContext: AuthorizedClientRequestContext, id: string) => Promise<ContextContainerNTBD>;
   /** Get set of containers with matching regex pattern in the name */
-  getContextContainersByNamePattern: (requestContext: AuthorizedClientRequestContext, pattern: string) => Promise<ContextContainer[]>;
+  getContextContainersByNamePattern: (requestContext: AuthorizedClientRequestContext, pattern: string) => Promise<ContextContainerNTBD[]>;
 }

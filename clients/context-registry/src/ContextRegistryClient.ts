@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module ContextRegistry
+ * @module ContextRegistryNTBD
  */
-import * as deepAssign from "deep-assign";
 import { assert, Config } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
+import * as deepAssign from "deep-assign";
+import { ContextContainerNTBD, ContextRegistryNTBD } from "./ContextAccessProps";
 
 /** The iTwin context type.
  * @beta
@@ -23,15 +24,28 @@ export enum ContextType {
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Context", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class Context extends WsgInstance {
+export class Context extends WsgInstance implements ContextContainerNTBD {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.ContextTypeId")
   public contextTypeId?: ContextType;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
 
+  @ECJsonTypeMap.propertyToJson("wsg", "instanceId")
+  @ECJsonTypeMap.propertyToJson("ecdb", "wsgId")
+  private _id: string = "";
+  public get id(): string {
+    if (this._id) {
+      throw new Error("Missing the required id");
+    }
+    return this._id;
+  }
+  public set id(value: string) {
+    this._id = value;
+  }
+
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Number")
-  public number?: string; // eslint-disable-line id-blacklist
+  public containerNumber?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.UltimateRefId")
   public ultimateRefId?: string;
@@ -137,13 +151,86 @@ export interface ContextRegistryRequestQueryOptions extends RequestQueryOptions 
 /** Client API to access the context registry services.
  * @beta
  */
-export class ContextRegistryClient extends WsgClient {
+export class ContextRegistryClient extends WsgClient implements ContextRegistryNTBD {
   public static readonly searchKey: string = "CONNECTEDContextService.URL";
   public static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
 
   public constructor() {
     super("v2.5");
     this.baseUrl = "https://api.bentley.com/contextregistry";
+  }
+
+  /** Get all context containers accessible to the user
+   * @param requestContext The client request context
+   * @returns Array of containers, may be empty
+   */
+  public async getContextContainers(requestContext: AuthorizedClientRequestContext): Promise<ContextContainerNTBD[]> {
+    return this.getContextContainerByQuery(requestContext);
+  }
+
+  /** Get a context container via name
+   * @param requestContext The client request context
+   * @param name The unique name of the container
+   * @returns A container with matching name, otherwise throws an error
+  */
+  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD> {
+    const queryOptions: RequestQueryOptions = {
+      $select: "*",
+      $filter: `name+eq+'${name}'`,
+    };
+    // Only one context container// Only one context container
+    const containers = await this.getContextContainerByQuery(requestContext, queryOptions);
+    if (containers.length === 0)
+      throw new Error("Could not find a context container with the specified criteria that the user has access to");
+    else if (containers.length > 1)
+      throw new Error("More than one context container found with the specified criteria");
+    return containers[0];
+  }
+
+  /** Get a context container via id
+   * @param requestContext The client request context
+   * @param id The unique id/wsgId/ecId of the container
+   * @returns A container with matching id, otherwise throws an error
+   */
+  public async getContextContainerById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ContextContainerNTBD> {
+    const queryOptions: RequestQueryOptions = {
+      $select: "*",
+      $filter: `$id+eq+'${id}'`,
+    };
+    // Only one context container
+    const containers = await this.getContextContainerByQuery(requestContext, queryOptions);
+    if (containers.length === 0)
+      throw new Error("Could not find a context container with the specified criteria that the user has access to");
+    else if (containers.length > 1)
+      throw new Error("More than one context container found with the specified criteria");
+    return containers[0];
+  }
+
+  /** Gets all context containers (projects or assets) whose name matches the regex pattern given
+   * @param requestContext The client request context
+   * @param pattern The regex to compare against each name
+   * @returns Array of containers with names matching the pattern
+   */
+  public async getContextContainersByNamePattern(requestContext: AuthorizedClientRequestContext, pattern: string): Promise<ContextContainerNTBD[]> {
+    const queryOptions: RequestQueryOptions = {
+      $select: "*",
+      $filter: `name+like+'${pattern}'`,
+    };
+    // Only one context container
+    return this.getContextContainerByQuery(requestContext, queryOptions);
+  }
+
+  /** Gets all context containers (projects or assets) using the given query options
+   * @param requestContext The client request context
+   * @param queryOptions Use the mapped EC property names in the query strings and not the TypeScript property names.
+   * @returns Array of containers meeting the query's requirements
+   */
+  private async getContextContainerByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ContextContainerNTBD[]> {
+    requestContext.enter();
+    const projectContainers: ContextContainerNTBD[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", queryOptions);
+    const assetContainers: ContextContainerNTBD[] = await this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", queryOptions);
+
+    return projectContainers.concat(assetContainers);
   }
 
   /** @internal */

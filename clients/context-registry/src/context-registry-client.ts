@@ -9,6 +9,6 @@ export * from "./ContextAccessProps";
  */
 
 /**
- * @docs-group-description ContextRegistry
+ * @docs-group-description ContextRegistryNTBD
  * Classes for communicating with the context registry service.
  */
