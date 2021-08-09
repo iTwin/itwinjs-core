@@ -4,7 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
-import { ContextRegistryClient, Project } from "../ContextRegistryClient";
+import { ContextContainerNTBD } from "../ContextAccessProps";
+import { ContextRegistryClient } from "../ContextRegistryClient";
 
 /** Basic configuration used by all tests
  */
@@ -18,14 +19,11 @@ export class TestConfig {
     return new AuthorizedClientRequestContext((accessToken as any) as AccessToken);
   }
 
-  public static async queryProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
+  public static async queryProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<ContextContainerNTBD> {
     const contextRegistry = new ContextRegistryClient();
-    const project: Project | undefined = await contextRegistry.getProject(requestContext, {
-      $select: "*",
-      $filter: `Name+eq+'${projectName}'`,
-    });
-    if (!project || !project.wsgId)
+    const contextContainer: ContextContainerNTBD | undefined = await contextRegistry.getContextContainerByName(requestContext, projectName);
+    if (!contextContainer || !contextContainer.id)
       throw new Error(`Project ${projectName} not found for user.`);
-    return project;
+    return contextContainer;
   }
 }
