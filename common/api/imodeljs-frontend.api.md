@@ -1867,8 +1867,7 @@ export class CheckpointConnection extends IModelConnection {
     get isClosed(): boolean;
     // (undocumented)
     protected _isClosed?: boolean;
-    // @deprecated
-    static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<CheckpointConnection>;
+    protected static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<CheckpointConnection>;
     static openRemote(contextId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
     }
 
@@ -2146,8 +2145,6 @@ export class DecorateContext extends RenderContext {
     createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
     // @internal (undocumented)
     drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid?: boolean, _fixedRepetitions?: Point2d): void;
-    // @deprecated
-    get screenViewport(): ScreenViewport;
     setSkyBox(graphic: RenderGraphic): void;
     setViewBackground(graphic: RenderGraphic): void;
     get viewport(): ScreenViewport;
@@ -3464,8 +3461,6 @@ export class GeometricModel3dState extends GeometricModelState {
     // @internal (undocumented)
     get is3d(): boolean;
     readonly isNotSpatiallyLocated: boolean;
-    // @deprecated (undocumented)
-    get iSpatiallyLocated(): boolean;
     readonly isPlanProjection: boolean;
     get isSpatiallyLocated(): boolean;
     // @internal (undocumented)
@@ -4432,8 +4427,6 @@ export class IModelApp {
     // @internal
     static get hubAccess(): FrontendHubAccess;
     static get i18n(): I18N;
-    // @deprecated (undocumented)
-    static get iModelClient(): IModelClient;
     // @internal (undocumented)
     static get initialized(): boolean;
     // @internal (undocumented)
@@ -4570,8 +4563,6 @@ export abstract class IModelConnection extends IModel {
     abstract get isClosed(): boolean;
     get isOpen(): boolean;
     get isReadonly(): boolean;
-    // @deprecated
-    isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection;
     get isSnapshot(): boolean;
     isSnapshotConnection(): this is SnapshotConnection;
     loadFontMap(): Promise<FontMap>;
@@ -4639,9 +4630,8 @@ export namespace IModelConnection {
         getLoaded(id: string): ModelState | undefined;
         getProps(modelIds: Id64Arg): Promise<ModelProps[]>;
         load(modelIds: Id64Arg): Promise<void>;
-        // @deprecated
+        // @internal (undocumented)
         get loaded(): Map<string, ModelState>;
-        set loaded(loaded: Map<string, ModelState>);
         query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps>;
         queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]>;
         queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]>;
@@ -8590,7 +8580,7 @@ export class ScreenViewport extends Viewport {
     changeView(view: ViewState, opts?: ViewChangeOptions): void;
     clearViewUndo(): void;
     static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport;
-    // @deprecated
+    // @internal
     readonly decorationDiv: HTMLDivElement;
     // @internal (undocumented)
     dispose(): void;
@@ -11929,8 +11919,6 @@ export class ViewManager implements Iterable<ScreenViewport> {
     get dynamicsCursor(): string;
     // @internal (undocumented)
     endDynamicsMode(): void;
-    // @deprecated
-    forEachViewport(func: (vp: ScreenViewport) => void): void;
     // @internal
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
     // @internal
@@ -12780,8 +12768,6 @@ export abstract class ViewState2d extends ViewState {
     isSpatialView(): this is SpatialViewState;
     // (undocumented)
     load(): Promise<void>;
-    // @deprecated
-    onRenderFrame(_viewport: Viewport): void;
     // (undocumented)
     readonly origin: Point2d;
     // @internal (undocumented)
@@ -12888,8 +12874,6 @@ export abstract class ViewState3d extends ViewState {
     minimumFrontDistance(): number;
     moveCameraLocal(distance: Vector3d): ViewStatus;
     moveCameraWorld(distance: Vector3d): ViewStatus;
-    // @deprecated
-    onRenderFrame(_viewport: Viewport): void;
     readonly origin: Point3d;
     rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined;
     rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined>;
