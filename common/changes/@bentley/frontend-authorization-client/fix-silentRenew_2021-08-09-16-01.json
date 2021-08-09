@@ -2,7 +2,7 @@
   "changes": [
     {
       "packageName": "@bentley/frontend-authorization-client",
-      "comment": "Add silrent redirect uri to BrowserAuthClientConfig. If not provided default to redirectUri",
+      "comment": "Add silent redirect uri to BrowserAuthClientConfig. If not provided default to redirectUri",
       "type": "none"
     }
   ],
