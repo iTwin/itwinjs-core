@@ -321,13 +321,6 @@ export class ViewManager implements Iterable<ScreenViewport> {
     return this._viewports[Symbol.iterator]();
   }
 
-  /** Call the specified function on each [[Viewport]] registered with the ViewManager.
-   * @deprecated Use a `for..of` loop.
-   */
-  public forEachViewport(func: (vp: ScreenViewport) => void) {
-    this._viewports.forEach((vp) => func(vp));
-  }
-
   /** Force each registered [[Viewport]] to regenerate all of its cached [[Decorations]] on the next frame. If the decorator parameter is specified, only
    * the specified decorator will have its cached decorations invalidated for all viewports.
    * @see [[Viewport.invalidateCachedDecorations]] to manually remove a decorator's cached decorations from a viewport, forcing them to be regenerated.

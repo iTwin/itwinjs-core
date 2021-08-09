@@ -90,21 +90,14 @@ describe("IModelHost", () => {
     const config = new IModelHostConfiguration();
     const cacheSubDir = "imodels";
 
-    // Test legacy 1.0 cache location
-    config.briefcaseCacheDir = path.join(KnownLocations.tmpdir, "Bentley/IModelJs/cache/"); // eslint-disable-line deprecation/deprecation
-    await IModelHost.startup(config);
-    assert.strictEqual(config.briefcaseCacheDir, BriefcaseManager.cacheDir); // eslint-disable-line deprecation/deprecation
-
-    // Test 3.0 cache default location
+    // Test cache default location
     await IModelHost.shutdown();
-    config.briefcaseCacheDir = undefined; // eslint-disable-line deprecation/deprecation
     await IModelHost.startup(config);
     let expectedDir = path.join(IModelHost.cacheDir, cacheSubDir);
     assert.strictEqual(expectedDir, BriefcaseManager.cacheDir);
 
-    // Test 2.0 custom cache location
+    // Test custom cache location
     await IModelHost.shutdown();
-    config.briefcaseCacheDir = undefined; // eslint-disable-line deprecation/deprecation
     config.cacheDir = KnownLocations.tmpdir;
     await IModelHost.startup(config);
     expectedDir = path.join(KnownLocations.tmpdir, cacheSubDir);
