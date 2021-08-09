@@ -7,7 +7,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { fireEvent, render, RenderResult } from "@testing-library/react";
+import { fireEvent, render, RenderResult, waitFor } from "@testing-library/react";
 import { Popup, PopupProps } from "../../ui-core";
 import { createBoundingClientRect } from "../Utils";
 
@@ -207,16 +207,16 @@ describe("<Popup />", () => {
     const inputOne = component.getByTestId("input-one") as HTMLInputElement;
     expect(document.activeElement).to.eq(inputOne);
     const inputTwo = component.getByTestId("input-two") as HTMLInputElement;
-    fireEvent.focusIn(inputTwo);
-    expect(document.activeElement).to.eq(inputTwo);
+    inputTwo.focus();
+    expect(document.activeElement).to.eq(inputTwo as HTMLElement);
 
     // if we hit top - reset focus to bottom
-    fireEvent.focusIn(topDiv);
-    expect(document.activeElement).to.eq(inputTwo);
+    topDiv.focus();
+    expect(document.activeElement).to.eq(inputTwo as HTMLElement);
 
     // if we hit bottom - reset focus to top
-    fireEvent.focusIn(bottomDiv);
-    expect(document.activeElement).to.eq(inputOne);
+    bottomDiv.focus();
+    expect(document.activeElement).to.eq(inputOne as HTMLElement);
   });
 
   it("popup and moves focus to first available (button)", async () => {

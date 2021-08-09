@@ -628,6 +628,17 @@ describe("ContextMenu", () => {
       item.dispatchEvent(createBubbledEvent("click"));
       handleClick.should.have.been.calledOnce;
     });
+    it("onFocus handled correctly", () => {
+      const component = render(
+        <ContextMenu opened={true}>
+          <ContextSubMenu label="test" >
+            <ContextMenuItem> Test </ContextMenuItem>
+          </ContextSubMenu>
+        </ContextMenu>);
+      const item = component.getByTestId("core-context-menu-item");
+      item.focus();
+      expect(document.activeElement).to.eq(item);
+    });
     it("should support changing direction", () => {
       const wrapper = mount<ContextSubMenu>(
         <ContextSubMenu label="test" autoflip={true}>

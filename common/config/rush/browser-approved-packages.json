@@ -831,6 +831,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "react-dom-instance",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "react-highlight-words",
       "allowedCategories": [ "frontend" ]
     },
@@ -877,6 +881,10 @@
     {
       "name": "readline",
       "allowedCategories": [ "tools" ]
+    },
+    {
+      "name": "rect-dom-instance",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "recursive-readdir",

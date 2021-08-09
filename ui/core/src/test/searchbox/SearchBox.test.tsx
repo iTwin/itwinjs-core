@@ -118,15 +118,13 @@ describe("SearchBox", () => {
     });
 
     it("should set focus to input", () => {
-      const wrapper = mount(<SearchBox onValueChanged={() => { }} placeholder="Search" />);
-      const searchBox = wrapper.instance() as SearchBox;
+      const { getByRole, getByTestId} = render (<SearchBox onValueChanged={() => { }} placeholder="Search" />);
+      const searchBox = getByRole("searchbox");
       searchBox.focus();
 
-      const input = wrapper.find("input");
+      const inputElement = getByTestId("core-searchbox-input");
       const focusedElement = document.activeElement;
-
-      expect(input.instance()).to.eq(focusedElement);
-      wrapper.unmount();
+      expect(inputElement).to.eq(focusedElement);
     });
   });
 });

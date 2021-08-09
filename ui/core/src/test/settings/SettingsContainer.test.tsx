@@ -4,13 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
-import { fireEvent, render, waitFor } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { SettingsContainer, useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer } from "../../ui-core/settings/SettingsContainer";
 import { SettingsManager, SettingsTabEntry } from "../../ui-core/settings/SettingsManager";
 import TestUtils from "../TestUtils";
-import { doesNotReject } from "assert";
 
 // cSpell:ignore sublabel
 function TestModalSettingsPage({ settingsManager, title }: { settingsManager: SettingsManager, title: string }) {
