@@ -453,15 +453,20 @@ export async function* validateNavigationProperty(property: AnyProperty): AsyncI
     yield new Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin(property, [property.fullName, relationship.fullName]);
   }
 
-  let concreteClass = false;
+  let classSupported = false;
   if (thisConstraint.constraintClasses) {
     for (const constraintClass of thisConstraint.constraintClasses) {
       if (constraintClass.fullName === property.class.fullName)
-        concreteClass = true;
+        classSupported = true;
+      else {
+        const inheritedProp = await navProp.class.getInheritedProperty(navProp.name);
+        if (inheritedProp && constraintClass.fullName === inheritedProp.class.fullName)
+          classSupported = true;
+      }
     }
   }
 
-  if (!concreteClass)
+  if (!classSupported)
     yield new Diagnostics.NavigationClassMustBeAConstraintClassOfRelationship(property, [property.class.name, property.name, relationship.fullName, navigationClassSide]);
 
   if (thatConstraint.multiplicity === RelationshipMultiplicity.oneMany || thatConstraint.multiplicity === RelationshipMultiplicity.zeroMany) {
