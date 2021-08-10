@@ -23,25 +23,25 @@ import { XYZProps } from "../geometry3d/XYZProps";
  * @public
  */
 export interface InterpolationCurve3dProps {
-  /** Order of the computed bspline.   (one more than degree) */
+  /** order of the computed bspline (one more than degree) */
   order?: number;
-  /** true if the bspline construction should be periodic */
+  /** true if the B-spline construction should be periodic */
   closed?: boolean;
-  /** if closed and no knots: true = compute chord length knots, false = uniform */
+  /** if closed and no knots, compute chord length knots (true) or uniform knots (false) */
   isChordLenKnots?: number;
   /** if !closed but first and last fitPoints are equal, pivot computed start/end tangent(s) so that they are colinear */
   isColinearTangents?: number;
-  /** if !closed and start/endTangent is given, set its magnitude to the chord length (true) or Bessel (false) end condition */
+  /** if !closed and start/endTangent is given, set its magnitude to the first/last fit point chord length (true) or to the magnitude of the Bessel tangent (false) */
   isChordLenTangents?: number;
-  /** if !closed and start/endTangent is absent, compute it by natural (true) or Bessel (false) end condition */
+  /** if !closed and start/endTangent is absent, compute it using the natural end condition (true) or Bessel (false) */
   isNaturalTangents?: number;
-  /** optional start tangent.  Use of the tangent magnitude may be indicated by other flags. */
+  /** optional start tangent, pointing into curve. Magnitude is ignored. */
   startTangent?: XYZProps;
-  /** optional end tangent.  Use of the tangent magnitude may be indicated by other flags. */
+  /** optional end tangent, pointing into curve. Magnitude is ignored. */
   endTangent?: XYZProps;
-  /** Points that the curve must pass through */
+  /** points that the curve must pass through */
   fitPoints: XYZProps[];
-  /** parameters for curve fitting, one per fitPoint */
+  /** parameters for curve fitting, one per fit point */
   knots?: number[];
 }
 
@@ -67,48 +67,42 @@ export class InterpolationCurve3dOptions {
     this._isNaturalTangents = 1;
   }
 
-  /** Order of the computed bspline.   (one more than degree) */
   private _order?: number;
-  /** true if the bspline construction should be periodic */
   private _closed?: boolean;
   private _isChordLenKnots?: number;
   private _isColinearTangents?: number;
   private _isChordLenTangents?: number;
   private _isNaturalTangents?: number;
-  /** optional start tangent, pointing into the curve. Tangent magnitude ignored. */
   private _startTangent?: Vector3d;
-  /** optional end tangent, pointing into the curve. Tangent magnitude ignored. */
   private _endTangent?: Vector3d;
-  /** Points that the curve must pass through */
   private _fitPoints: Point3d[];
-  /** knots for curve fitting */
   private _knots?: number[];
 
-  /** `order` as property. Currently always 4. */
+  /** `order` as property with default 4 */
   public get order(): number { return Geometry.resolveNumber(this._order, 4); }
   public set order(val: number) { this._order = val; }
   /** `closed` as property with default false */
   public get closed(): boolean { return Geometry.resolveValue(this._closed, false); }
   public set closed(val: boolean) { this._closed = val; }
-  /** `isChordLenKnots` as property with default 0 */
+  /** `isChordLenKnots` as property with default 1 */
   public get isChordLenKnots(): number { return Geometry.resolveNumber(this._isChordLenKnots, 1); }
   public set isChordLenKnots(val: number) { this._isChordLenKnots = val; }
   /** `isColinearTangents` as property with default 0 */
   public get isColinearTangents(): number { return Geometry.resolveNumber(this._isColinearTangents, 0); }
   public set isColinearTangents(val: number) { this._isColinearTangents = val; }
-  /** `isChordLenTangent` as property with default 0 */
+  /** `isChordLenTangent` as property with default 1 */
   public get isChordLenTangents(): number { return Geometry.resolveNumber(this._isChordLenTangents, 1); }
   public set isChordLenTangents(val: number) { this._isChordLenTangents = val; }
-  /** `isNaturalTangents` as property with default 0 */
+  /** `isNaturalTangents` as property with default 1 */
   public get isNaturalTangents(): number { return Geometry.resolveNumber(this._isNaturalTangents, 1); }
   public set isNaturalTangents(val: number) { this._isNaturalTangents = val; }
-  /** access POSSIBLY UNDEFINED normalized start tangent pointing into curve. Setter CAPTURES. */
+  /** access POSSIBLY UNDEFINED start tangent. Setter CAPTURES. */
   public get startTangent(): Vector3d | undefined { return this._startTangent; }
   public set startTangent(val: Vector3d | undefined) { this._startTangent = val; }
-  /** access POSSIBLY UNDEFINED normalized end tangent pointing into curve. Setter CAPTURES. */
+  /** access POSSIBLY UNDEFINED end tangent. Setter CAPTURES. */
   public get endTangent(): Vector3d | undefined { return this._endTangent; }
   public set endTangent(val: Vector3d | undefined) { this._endTangent = val; }
-  /** access POINTER TO fitPoints. Setter CAPTURES. */
+  /** access POINTER TO fit points. Setter CAPTURES. */
   public get fitPoints(): Point3d[] { return this._fitPoints; }
   public set fitPoints(val: Point3d[]) { this._fitPoints = val; }
   /** access POSSIBLY UNDEFINED knots array. Setter CAPTURES. */

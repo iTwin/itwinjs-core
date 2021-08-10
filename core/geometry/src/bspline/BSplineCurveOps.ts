@@ -57,7 +57,7 @@ export class BSplineCurveOps {
       if (points instanceof IndexedXYZCollection) {
         rhs.push(points.getPoint3dAtUncheckedPointIndex(basePointIndex, xyz));
       } else {
-        rhs.push(points[basePointIndex]);
+        rhs.push(points[basePointIndex].clone());
       }
     }
     const poles = BandedSystem.solveBandedSystemMultipleRHS(numPoints, bw, matrix, 3, rhs.float64Data());
@@ -69,43 +69,36 @@ export class BSplineCurveOps {
 
   /**
    * Construct BSplineCurve3d that fit points using the C2 cubic algorithm.
-   * @param options curve definition, possibly modified
+   * @param options curve definition, unmodified
    */
   public static createThroughPointsC2Cubic(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined {
-    if (!this.C2CubicFit.validateOptions(options))
+    // Work on a copy rather than installing missing knots/tangents that could become stale when fit points change
+    const validatedOptions = options.clone();
+    if (!this.C2CubicFit.validateOptions(validatedOptions))
       return undefined;
 
-    const poles = this.C2CubicFit.constructPoles(options);
+    const poles = this.C2CubicFit.constructPoles(validatedOptions);
     if (undefined === poles)
       return undefined;
 
-    const knots = this.C2CubicFit.convertParamsToFullKnotVector(options);
+    const knots = this.C2CubicFit.convertParamsToFullKnotVector(validatedOptions);
     if (undefined === knots)
       return undefined;
 
-    if (!options.closed)
-      return BSplineCurve3d.create(poles, knots, options.order);
+    const interpolant = BSplineCurve3d.create(poles, knots, validatedOptions.order);
 
-    // periodically extend the poles array for the closed case
-    let wrappedPoles: Point3d[] = [];
-    if (poles instanceof Float64Array) {
-      for (let i = 0; i < poles.length; )
-        wrappedPoles.push(Point3d.create(poles[i++], poles[i++], poles[i++]));
-    } else {
-      wrappedPoles = poles; // copy reference
-    }
-    for (let i = 0; i < options.order - 1; ++i)
-      wrappedPoles.push(wrappedPoles[i].clone());
+    if (validatedOptions.closed)
+      interpolant?.setWrappable(BSplineWrapMode.OpenByAddingControlPoints);
 
-    const closedInterpolant = BSplineCurve3d.create(wrappedPoles, knots, options.order);
-    closedInterpolant?.setWrappable(BSplineWrapMode.OpenByAddingControlPoints);
-    return closedInterpolant;
+    return interpolant;
   }
 }
 
 export namespace BSplineCurveOps {
   /**
    * A helper class for creating C2 cubic fit curves.
+   * Knots herein are understood to be *interior* knots (including the start/end knot),
+   * so that there is one knot per fit point. In other words, the knots are fit parameters.
    * @private
    */
   export class C2CubicFit {
@@ -167,7 +160,7 @@ export namespace BSplineCurveOps {
         if (iRead === indices[iIndex])
           ++iIndex; // skip the duplicate
         else
-          newPts.push(options.fitPoints[iRead]);
+          newPts.push(options.fitPoints[iRead].clone());
       }
       options.fitPoints = newPts.getPoint3dArray();
 
@@ -487,7 +480,7 @@ export namespace BSplineCurveOps {
      *  This is the end condition used by ADSK for fit-splines with a given nonzero tangent.
      * @param dataPts array whose middle is the system rhs (augmented with first/last fitPoint at beginning/end);
      *                2nd or penultimate point is set by this function.
-     * @param options validated as per validateOptions
+     * @param options validated as per validateOptions, unmodified
      * @param atStart whether end condition is for start of curve (false: end of curve)
      */
     private static setChordLengthScaledEndCondition(dataPts: Point3d[], options: InterpolationCurve3dOptions, atStart: boolean): boolean {
@@ -534,7 +527,7 @@ export namespace BSplineCurveOps {
     /** Set the end condition for the linear system to the given tangent, scaled by bessel length.
      * @param dataPts array whose middle is the system rhs (augmented with first/last fitPoint at beginning/end);
      *                2nd or penultimate point is set by this function.
-     * @param options validated as per validateOptions
+     * @param options validated as per validateOptions, unmodified
      * @param atStart whether end condition is for start of curve (false: end of curve)
      */
     private static setBesselLengthScaledEndCondition(dataPts: Point3d[], options: InterpolationCurve3dOptions, atStart: boolean): boolean {
@@ -558,10 +551,49 @@ export namespace BSplineCurveOps {
       return true;
     }
 
+    /** Set the end condition for a physically closed (non-periodic) interpolant.
+     * @param dataPts array whose middle is the system rhs (augmented with first/last fitPoint at beginning/end);
+     *                2nd or penultimate point is set by this function.
+     * @param options validated as per validateOptions, unmodified
+     */
+    private static setPhysicallyClosedEndCondition(dataPts: Point3d[], options: InterpolationCurve3dOptions): boolean {
+      const numIntervals = options.fitPoints.length - 1;
+      if (!options.isColinearTangents
+          || numIntervals <= 2
+          || (undefined !== options.startTangent && undefined !== options.endTangent)
+          || options.isNaturalTangents
+          || !dataPts[0].isAlmostEqual(dataPts[numIntervals + 2])) {
+        return true;
+        }
+      // force parallel start/end tangents, using chord length scale for undefined tangents
+      if (undefined !== options.startTangent) { // start tangent is supplied; compute a parallel end tangent
+        const outwardStartTangent = Vector3d.createStartEnd(dataPts[1], dataPts[0]).normalize();
+        if (undefined !== outwardStartTangent) {
+          const endTangentMag = dataPts[numIntervals + 2].distance(dataPts[numIntervals + 1]);
+          dataPts[numIntervals + 2].plusScaled(outwardStartTangent, endTangentMag, dataPts[numIntervals + 1]);
+        }
+      } else if (undefined !== options.endTangent) {  // end tangent is supplied; compute a parallel start tangent
+        const outwardEndTangent = Vector3d.createStartEnd(dataPts[numIntervals + 1], dataPts[numIntervals + 2]).normalize();
+        if (undefined !== outwardEndTangent) {
+          const startTangentMag = dataPts[0].distance(dataPts[1]);
+          dataPts[0].plusScaled(outwardEndTangent, startTangentMag, dataPts[1]);
+        }
+      } else {  // pivot both supplied tangents into alignment
+        const commonTangent = Vector3d.createStartEnd(dataPts[numIntervals + 1], dataPts[1]).normalize();
+        if (undefined !== commonTangent) {
+          const startTangentMag = dataPts[0].distance(dataPts[1]);
+          dataPts[0].plusScaled(commonTangent, startTangentMag, dataPts[1]);
+          const endTangentMag = dataPts[numIntervals + 2].distance(dataPts[numIntervals + 1]);
+          dataPts[numIntervals + 2].plusScaled(commonTangent, -endTangentMag, dataPts[numIntervals + 1]);
+        }
+      }
+      return true;
+    }
+
     /** Set end conditions for the linear system to solve for the poles of the open interpolant, as per Farin 3e/4e.
      * @param dataPts array whose interior is the system rhs and whose first/last entries are the first/last fitPoints;
      *                points are inserted to become the 2nd and penultimate dataPts, the first/last rows of the system rhs.
-     * @param options validated as per validateOptions, possibly modified
+     * @param options validated as per validateOptions, unmodified
      */
     private static setEndConditions(dataPts: Point3d[], options: InterpolationCurve3dOptions): boolean {
       if (dataPts.length !== options.fitPoints.length)
@@ -597,38 +629,9 @@ export namespace BSplineCurveOps {
           succeeded = this.setBesselLengthScaledEndCondition(dataPts, options, false);
       }
 
-      if (!succeeded)
-        return false;
+      if (succeeded)
+        succeeded = this.setPhysicallyClosedEndCondition(dataPts, options);
 
-      // force parallel start/end tangents for physically closed (non-periodic) interpolant
-      const numIntervals = options.fitPoints.length - 1;
-      if (options.isColinearTangents
-            && numIntervals > 2
-            && (undefined === options.startTangent || undefined === options.endTangent)
-            && !options.isNaturalTangents
-            && dataPts[0].isAlmostEqual(dataPts[numIntervals + 2])) {
-        if (undefined !== options.startTangent) { // we computed the start tangent; pivot the end tangent
-          const outwardStartTangent = Vector3d.createStartEnd(dataPts[1], dataPts[0]).normalize();
-          if (undefined !== outwardStartTangent) {
-            const endTangentMag = dataPts[numIntervals + 2].distance(dataPts[numIntervals + 1]);
-            dataPts[numIntervals + 2].plusScaled(outwardStartTangent, endTangentMag, dataPts[numIntervals + 1]);
-          }
-        } else if (undefined !== options.endTangent) {  // we computed the end tangent; pivot the start tangent
-          const outwardEndTangent = Vector3d.createStartEnd(dataPts[numIntervals + 1], dataPts[numIntervals + 2]).normalize();
-          if (undefined !== outwardEndTangent) {
-            const startTangentMag = dataPts[0].distance(dataPts[1]);
-            dataPts[0].plusScaled(outwardEndTangent, startTangentMag, dataPts[1]);
-          }
-        } else {  // pivot both computed tangents into alignment
-          const commonTangent = Vector3d.createStartEnd(dataPts[numIntervals + 1], dataPts[1]).normalize();
-          if (undefined !== commonTangent) {
-            const startTangentMag = dataPts[0].distance(dataPts[1]);
-            dataPts[0].plusScaled(commonTangent, startTangentMag, dataPts[1]);
-            const endTangentMag = dataPts[numIntervals + 2].distance(dataPts[numIntervals + 1]);
-            dataPts[numIntervals + 2].plusScaled(commonTangent, -endTangentMag, dataPts[numIntervals + 1]);
-          }
-        }
-      }
       return succeeded;
     }
 
@@ -680,6 +683,29 @@ export namespace BSplineCurveOps {
     public static validateOptions(options: InterpolationCurve3dOptions): boolean {
       options.order = 4;
 
+      // ASSUME: The supplied knot array's interior knot count equals the fit point count.
+      //         Under this assumption, we remove any exterior knots so the two arrays align
+      //         *before* we start compressing fit points.
+      if (undefined !== options.knots) {
+        const numExtraKnots = options.knots.length - options.fitPoints.length;
+        switch (numExtraKnots) {
+          case 0:     // caller passed in interior knots
+            break;
+          case 4:     // modern exterior knot count
+          case 6:     // classic exterior knot count
+            for (let i = 0; i < numExtraKnots / 2; ++i) {
+              options.knots.pop();
+              options.knots.shift();
+            }
+            break;
+          default:    // other knot configurations are unusable
+            options.knots = undefined;
+            break;
+        }
+        this.normalizeKnots(options.knots);
+      }
+
+      // compress out duplicate fit points (and their corresponding knots)
       if (!this.removeDuplicateFitPoints(options))
         return false;
 
@@ -700,7 +726,7 @@ export namespace BSplineCurveOps {
       // append closure point if missing
       if (options.closed) {
         if (!hasClosurePoint) {
-          options.fitPoints.push(options.fitPoints[0]);
+          options.fitPoints.push(options.fitPoints[0].clone());
           if (undefined !== options.knots) {  // best guess: uniform knots
             options.knots.push(options.knots[options.knots.length - 1] + (options.knots[options.knots.length - 1] - options.knots[0]) / (options.knots.length - 1));
           }
@@ -711,27 +737,6 @@ export namespace BSplineCurveOps {
 
       if (options.fitPoints.length < 2)
         return false;
-
-      if (undefined !== options.knots) {
-        const numExtraKnots = options.knots.length - options.fitPoints.length;
-        switch (numExtraKnots) {
-          case 0:
-            break;
-          case 4:     // common exterior knot counts
-          case 6: {   // ...just ignore them:
-            for (let i = 0; i < numExtraKnots / 2; ++i) {
-              options.knots.pop();
-              options.knots.shift();
-            }
-            break;
-          }
-          default: {
-            options.knots = undefined;  // unusable
-            break;
-          }
-        }
-        this.normalizeKnots(options.knots);
-      }
 
       // ASSUME: tangents point INTO curve
       if (undefined !== options.startTangent) {
@@ -750,7 +755,7 @@ export namespace BSplineCurveOps {
       return true;
     }
 
-    /** Convert fit parameters to modern full cubic knot vector.
+    /** Return fit parameters augmented to a modern full cubic knot vector.
      * @param options validated as per validateOptions, unmodified
      **/
     public static convertParamsToFullKnotVector(options: InterpolationCurve3dOptions): number[] | undefined {
@@ -821,14 +826,15 @@ export namespace BSplineCurveOps {
         poles[iWrite++] = options.fitPoints[options.fitPoints.length - 1].y;
         poles[iWrite++] = options.fitPoints[options.fitPoints.length - 1].z;
       } else { // closed
-        poles = this.solveNearTridiagonal(options.fitPoints, alpha, beta, gamma);
-
-        if (undefined !== poles && poles.length > 1)
-          poles.unshift(poles.pop()!);  // shift poles right by one position to line up with the knots
+        if (undefined !== (poles = this.solveNearTridiagonal(options.fitPoints, alpha, beta, gamma))) {
+          if (poles.length > 2) {
+            poles.unshift(poles.pop()!);  // shift poles right to line up with the knots
+            for (let i = 0; i < options.order - 1; ++i)
+              poles.push(poles[i].clone()); // periodically extend (the modern way)
+          }
+        }
       }
       return poles;
     }
   }
 }
-
-// START HERE: when done, change BSplineCurve3d::createFromInterpolationCurve3dOptions to call C2Cubic variant
