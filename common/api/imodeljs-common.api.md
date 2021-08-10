@@ -8,7 +8,6 @@ import { AccessTokenProps } from '@bentley/itwin-client';
 import { Angle } from '@bentley/geometry-core';
 import { AngleProps } from '@bentley/geometry-core';
 import { AnyGeometryQuery } from '@bentley/geometry-core';
-import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuthStatus } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyError } from '@bentley/bentleyjs-core';
@@ -36,7 +35,6 @@ import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64Set } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
-import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelJson } from '@bentley/geometry-core';
 import { IModelStatus } from '@bentley/bentleyjs-core';
 import { IndexedPolyfaceVisitor } from '@bentley/geometry-core';
@@ -1101,8 +1099,6 @@ export class Code implements CodeProps {
     equals(other: Code): boolean;
     // (undocumented)
     static fromJSON(json?: any): Code;
-    // @deprecated (undocumented)
-    getValue(): string;
     static isEmpty(c: CodeProps): boolean;
     static isValid(c: CodeProps): boolean;
     scope: string;
@@ -1142,8 +1138,6 @@ export namespace CodeScopeSpec {
 
 // @public
 export class CodeSpec {
-    // @internal @deprecated
-    constructor(iModel: IModel, id: Id64String, name: string, scopeType?: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any);
     static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec;
     // @internal
     static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec;
@@ -1160,9 +1154,6 @@ export class CodeSpec {
     set scopeReq(req: CodeScopeSpec.ScopeRequirement);
     get scopeType(): CodeScopeSpec.Type;
     set scopeType(scopeType: CodeScopeSpec.Type);
-    // @deprecated
-    get specScopeType(): CodeScopeSpec.Type;
-    set specScopeType(scopeType: CodeScopeSpec.Type);
 }
 
 // @public
@@ -4139,8 +4130,6 @@ export abstract class IModel implements IModelProps {
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
     changeset: ChangesetIdWithIndex;
-    // @deprecated
-    get changeSetId(): string;
     get contextId(): GuidString | undefined;
     // @internal (undocumented)
     protected _contextId?: GuidString;
@@ -4351,17 +4340,9 @@ export interface IModelTileTreeProps extends TileTreeProps {
 // @public
 export class IModelVersion {
     static asOfChangeSet(changeSetId: string): IModelVersion;
-    // @deprecated
-    evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<ChangesetId>;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
-    // @deprecated
-    static fromJson(jsonObj: any): IModelVersion;
     getAsOfChangeSet(): ChangesetId | undefined;
-    // @internal @deprecated
-    static getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<ChangesetId>;
-    // @internal @deprecated
-    static getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<ChangesetId>;
     getName(): string | undefined;
     get isFirst(): boolean;
     get isLatest(): boolean;
