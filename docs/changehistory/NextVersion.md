@@ -122,7 +122,7 @@ A few constructs were deprecated in @bentley/ui-core package with alternatives e
 
 ### @bentley/extension-cli
 
-The cli tool has been deprecates due to an impending change of Extensions and the Extension Service. Please continue to use the 2.x version if you still require publishing Extensions.
+The cli tool has been deprecated due to an impending change of Extensions and the Extension Service. Please continue to use the 2.x version if you still require publishing Extensions.
 
 ### @bentley/config-loader
 
