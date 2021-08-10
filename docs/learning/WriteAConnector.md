@@ -309,11 +309,13 @@ If the source application data has a property that conceptually matches the BIS 
 
 #### CodeValues
 
-Next to ECClass.Name, CodeValue is the 2nd most important property in an iModel for the purposes of alignment.  Connectors should set CodeValue when a unique, human-readable identifier exists.
+Next to the name of the class, CodeValue is the 2nd most important property in an iModel for the purposes of alignment.  Connectors should set CodeValue when a unique, human-readable identifier exists.
 
 A common condition occurs where a property is generally readable and unique, but, an occasional duplicate code value occurs in the source data. Connector developers find that insertions are rejected due to duplicate CodeValues and simply forego setting CodeValue altogether - this practice is highly discouraged. It is strongly recommended that the duplicate code values are dealt with rather than skipping setting of the CodeValues. The duplicate CodeValue could be taken as a cue to clean the source data. For example, are both of these rooms really an "office" or is one "office 301" and the other "office 302" or is one room the "bursar's office" and the other the "registrar's office"? Alternatively, programmatically the connector developer can adjust the corresponding CodeScope and CodeSpec to ensure uniqueness.
 
 For some elements in some models, such an identifier may really not exist. For example, a simple geometric line element w/o additional business data would not have an obvious, unique and human-readable identifier and it would generally be detrimental to generate a CodeValue solely for the purpose of not leaving it blank. Additionally, generated CodeValues have a high chance of violating the “human readable” requirement. In such a case, this section should not be taken as a directive to generate such an identifier when it doesn't exist.
+
+Refer to [Element Codes](https://www.itwinjs.org/bis/intro/codes/) in the "Introduction to BIS" documentation.
 
 ### Sync
 
