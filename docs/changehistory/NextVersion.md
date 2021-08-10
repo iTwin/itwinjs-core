@@ -122,7 +122,11 @@ A few constructs were deprecated in @bentley/ui-core package with alternatives e
 
 ### @bentley/extension-cli
 
-Deprecated. It was unused and has been fully removed.
+The cli tool has been deprecates due to an impending change of Extensions and the Extension Service. Please continue to use the 2.x version if you still require publishing Extensions.
+
+### @bentley/config-loader
+
+The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using .env files will not be affected.
 
 #### Deprecated ui-core Components in Favor of iTwinUI-react Components
 
