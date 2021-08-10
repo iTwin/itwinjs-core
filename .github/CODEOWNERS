@@ -59,7 +59,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/eslint-plugin/                         @calebmshafer @paulius-valiunas
 /common/**/express-server.*                       @calebmshafer @wgoehrig
 /common/**/express-server/                        @calebmshafer @wgoehrig
-/common/**/extension-cli/                         @calebmshafer @paulius-valiunas
 /common/**/extension-webpack-tools/               @calebmshafer @wgoehrig
 /common/**/frontend-devtools.*                    @imodeljs/display @Ellord207
 /common/**/frontend-devtools/                     @imodeljs/display @Ellord207
@@ -164,7 +163,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /test-apps/imodel-from-geojson              @mgooding @pmconne
 /test-apps/imodel-from-orbitgt              @imodeljs/display
 /test-apps/imodel-from-reality-model        @imodeljs/display
-/test-apps/imodel-transformer               @MichaelBelousov @mgooding
+/test-apps/imodel-transformer               @MichaelBelousov @ColinKerr
 /test-apps/ninezone-test-app                @imodeljs/ui
 /test-apps/presentation-test-app            @imodeljs/presentation
 /test-apps/synchro-schedule-importer        @RBBentley @pmconne
@@ -179,7 +178,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /tools/webpack-core @calebmshafer @wgoehrig
 /tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig
 /tools/eslint-plugin @calebmshafer @paulius-valiunas
-/tools/extension-cli @calebmshafer @paulius-valiunas
 /tools/internal @calebmshafer @wgoehrig
 /tools/perf-tools @calebmshafer @wgoehrig
 

@@ -112,13 +112,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/extension-cli",
-      "projectFolder": "tools/extension-cli",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/bentleyjs-core",
       "projectFolder": "core/bentley",
       "reviewCategory": "common",
