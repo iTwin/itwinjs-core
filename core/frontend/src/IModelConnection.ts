@@ -13,7 +13,7 @@ import { Point3d, Range3d, Range3dProps, Transform, XYAndZ, XYZProps } from "@be
 import {
   AxisAlignedBox3d, Cartographic, CodeProps, CodeSpec, DbResult, EcefLocation, EcefLocationProps, ElementLoadOptions, ElementProps, EntityQueryParams, FontMap, FontMapProps,
   GeoCoordStatus, GeometryContainmentRequestProps, GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelError,
-  IModelReadRpcInterface, IModelStatus, IModelWriteRpcInterface, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
+  IModelReadRpcInterface, IModelStatus, mapToGeoServiceStatus, MassPropertiesRequestProps, MassPropertiesResponseProps,
   ModelProps, ModelQueryParams, Placement, Placement2d, Placement3d, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus, RpcManager, SnapRequestProps,
   SnapResponseProps, SnapshotIModelRpcInterface, TextureLoadProps, ThumbnailProps, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps,
 } from "@bentley/imodeljs-common";
@@ -1139,22 +1139,6 @@ export namespace IModelConnection { // eslint-disable-line no-redeclare
         throw new Error("Invalid thumbnail");
 
       return { format: intValues[1] === ImageSourceFormat.Jpeg ? "jpeg" : "png", width: intValues[2], height: intValues[3], image: new Uint8Array(val.buffer, 16, intValues[0]) };
-    }
-
-    /** Save a thumbnail for a view.
-     * @param viewId The id of the view for the thumbnail.
-     * @param thumbnail The thumbnail data to save.
-     * @returns A void Promise
-     * @throws `Error` exception if the thumbnail wasn't successfully saved.
-     */
-    public async saveThumbnail(viewId: Id64String, thumbnail: ThumbnailProps): Promise<void> {
-      const val = new Uint8Array(thumbnail.image.length + 24);  // include the viewId and metadata in the binary transfer by allocating a new buffer 24 bytes larger than the image size
-      new Uint32Array(val.buffer, 0, 4).set([thumbnail.image.length, thumbnail.format === "jpeg" ? ImageSourceFormat.Jpeg : ImageSourceFormat.Png, thumbnail.width, thumbnail.height]); // metadata at offset 0
-      const low32 = Id64.getLowerUint32(viewId);
-      const high32 = Id64.getUpperUint32(viewId);
-      new Uint32Array(val.buffer, 16, 2).set([low32, high32]); // viewId is 8 bytes starting at offset 16
-      val.set(thumbnail.image, 24); // image data at offset 24
-      return IModelWriteRpcInterface.getClientForRouting(this._iModel.routingContext.token).saveThumbnail(this._iModel.getRpcProps(), val); // eslint-disable-line deprecation/deprecation
     }
   }
 }

@@ -303,7 +303,7 @@ export class SampleAppIModelApp {
       await req.downloadPromise;
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
     } else {
-      iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
+      iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId);
     }
 
     SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -413,7 +413,7 @@ export class SampleAppIModelApp {
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
-        iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
+        iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
