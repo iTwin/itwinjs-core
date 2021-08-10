@@ -107,6 +107,7 @@ SAML support has officially been dropped as a supported workflow. All related AP
 Several changes were made in the @bentley/ui-* packages.
 Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
 A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
+A new @bentley/ui-imodel-components package has been added and contains items related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
 ### Deprecated ui-core Components in Favor of iTwinUI-react Components
 
