@@ -766,11 +766,19 @@ export class IModelTransformer extends IModelExportHandler {
     return Semver.gt(`${schemaKey.version.read}.${schemaKey.version.write}.${schemaKey.version.minor}`, Schema.toSemverString(versionInTarget));
   }
 
+  private _hasNativelyExportedAllSchemas = false;
+
   /** Override of [IModelExportHandler.onExportSchema]($backend) that serializes a schema to disk for [[processSchemas]] to import into
    * the target iModel when it is exported from the source iModel. */
-  protected override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
-    const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
-    IModelJsFs.writeFileSync(schemaPath, await schema.toXmlString());
+  protected override async onExportSchema(_schema: ECSchemaMetaData.Schema): Promise<void> {
+    // HACK: a bug in the native deserializer means we can't yet always read schemas serialized from this end
+    // so we invoke the native serializer as a workaround for now
+    if (!this._hasNativelyExportedAllSchemas) {
+      this._hasNativelyExportedAllSchemas = true;
+      this.targetDb.nativeDb.exportSchemas(this._schemaExportDir);
+    }
+    // const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
+    // IModelJsFs.writeFileSync(schemaPath, await schema.toXmlString());
   }
 
   // pending PR https://github.com/typescript-eslint/typescript-eslint/pull/3601 fixes the rule @typescript-eslint/return-await
@@ -787,6 +795,7 @@ export class IModelTransformer extends IModelExportHandler {
       requestContext.enter();
       IModelJsFs.mkdirSync(this._schemaExportDir);
       await this.exporter.exportSchemas();
+      this._hasNativelyExportedAllSchemas = false;
       requestContext.enter();
       const exportedSchemaFiles = IModelJsFs.readdirSync(this._schemaExportDir);
       if (exportedSchemaFiles.length === 0)

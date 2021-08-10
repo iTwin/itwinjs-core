@@ -1130,4 +1130,18 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
+  it("biscore update is valid", async () => {
+    const reqCtx = new BackendRequestContext();
+
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "FinallyFirstTest.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "FinallyFirstTest" } });
+
+    const targetDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    await transformer.processSchemas(reqCtx);
+
+    sourceDb.close();
+    targetDb.close();
+  });
 });
