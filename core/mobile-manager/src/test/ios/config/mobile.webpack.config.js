@@ -6,9 +6,25 @@
 const path = require("path");
 const webpack = require("webpack");
 const fs = require("fs");
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
+
 // 'is_ci_job' variable is set in ci job env. CI job already set all the environment variable required to run integration test
 if (!process.env.TF_BUILD) {
-  require("@bentley/config-loader").loadEnv(path.join(__dirname, "..", "..", ".env"));
+  loadEnv(path.join(__dirname, "..", "..", ".env"));
 }
 
 /** Find package root folder where package.json exist */

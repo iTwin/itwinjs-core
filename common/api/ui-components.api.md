@@ -1232,6 +1232,9 @@ export class CustomNumberPropertyEditor extends PropertyEditorBase {
     get reactNode(): React.ReactNode;
 }
 
+// @internal
+export function CustomThumb(): JSX.Element;
+
 // @beta
 export interface CustomToolbarItem extends CustomButtonDefinition {
     // (undocumented)
@@ -2164,6 +2167,9 @@ export function getCSSColorFromDef(colorDef: ColorDef): string;
 
 // @beta @deprecated
 export type GetCurrentlyEditedNode = () => BeInspireTreeNode<TreeNodeItem> | undefined;
+
+// @internal (undocumented)
+export function getPercentageOfRectangle(rect: DOMRect, pointer: number): number;
 
 // @internal (undocumented)
 export const getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection;
@@ -3838,6 +3844,13 @@ export interface QuantityProps extends CommonProps {
     ref?: React.Ref<HTMLInputElement>;
 }
 
+// @internal (undocumented)
+export function RailToolTip({ showToolTip, percent, tooltipText }: {
+    showToolTip: boolean;
+    percent: number;
+    tooltipText: string;
+}): JSX.Element;
+
 // @public
 export interface ReactDataGridColumn extends ReactDataGrid.Column<any> {
     // (undocumented)
@@ -3913,10 +3926,7 @@ export interface SaturationPickerProps extends React.HTMLAttributes<HTMLDivEleme
 }
 
 // @internal
-export class Scrubber extends React.Component<ScrubberProps> {
-    // (undocumented)
-    render(): JSX.Element;
-}
+export function Scrubber(props: ScrubberProps): JSX.Element;
 
 // @internal
 export interface ScrubberProps extends CommonProps {
@@ -3930,8 +3940,6 @@ export interface ScrubberProps extends CommonProps {
     isPlaying: boolean;
     // (undocumented)
     onChange?: (values: ReadonlyArray<number>) => void;
-    // (undocumented)
-    onSlideStart?: () => void;
     // (undocumented)
     onUpdate?: (values: ReadonlyArray<number>) => void;
     // (undocumented)
@@ -4209,7 +4217,7 @@ export class SliderEditor extends React.PureComponent<PropertyEditorProps, Slide
     render(): React.ReactNode;
     // @internal (undocumented)
     readonly state: Readonly<SliderEditorState>;
-}
+    }
 
 // @beta
 export class SliderPropertyEditor extends PropertyEditorBase {
@@ -4692,13 +4700,6 @@ export class ThemedEnumPropertyEditor extends PropertyEditorBase {
     get reactNode(): React.ReactNode;
 }
 
-// @internal @deprecated
-export class Timeline extends React.Component<TimelineProps, TimelineState> {
-    constructor(props: TimelineProps);
-    // (undocumented)
-    render(): JSX.Element;
-}
-
 // @public
 export class TimelineComponent extends React.Component<TimelineComponentProps, TimelineComponentState> {
     constructor(props: TimelineComponentProps);
@@ -4799,26 +4800,6 @@ export enum TimelinePausePlayAction {
 export interface TimelinePausePlayArgs extends GenericUiEventArgs {
     // (undocumented)
     timelineAction: TimelinePausePlayAction;
-}
-
-// @internal @deprecated
-export interface TimelineProps extends CommonProps {
-    // (undocumented)
-    endDate: Date;
-    // (undocumented)
-    isPlaying: boolean;
-    // (undocumented)
-    milestones?: Milestone[];
-    // (undocumented)
-    onChange?: (values: ReadonlyArray<number>) => void;
-    // (undocumented)
-    onSlideStart?: () => void;
-    // (undocumented)
-    onUpdate?: (values: ReadonlyArray<number>) => void;
-    // (undocumented)
-    selectedDate: Date;
-    // (undocumented)
-    startDate: Date;
 }
 
 // @public
@@ -5575,6 +5556,9 @@ export function useDebouncedAsyncValue<TReturn>(valueToBeResolved: undefined | (
     value: TReturn | undefined;
     inProgress: boolean;
 };
+
+// @internal (undocumented)
+export function useFocusedThumb(sliderContainer: HTMLDivElement | undefined): boolean;
 
 // @beta
 export function usePagedTreeNodeLoader<TDataProvider extends TreeDataProvider>(dataProvider: TDataProvider, pageSize: number, modelSource: TreeModelSource): PagedTreeNodeLoader<TDataProvider>;

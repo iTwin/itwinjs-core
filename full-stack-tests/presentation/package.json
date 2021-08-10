@@ -71,7 +71,6 @@
     "xmlhttprequest": "^1.8.0"
   },
   "devDependencies": {
-    "@bentley/config-loader": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@types/react": "16.9.43",
@@ -79,6 +78,8 @@
     "@types/testing-library__react-hooks": "^3.1.0",
     "cache-require-paths": "^0.3.0",
     "cross-env": "^5.1.4",
+    "dotenv": "^10.0.0",
+    "dotenv-expand": "^5.1.0",
     "eslint": "^7.11.0",
     "ignore-styles": "^5.0.1",
     "internal-tools": "workspace:*",

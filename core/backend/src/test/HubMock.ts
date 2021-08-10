@@ -9,7 +9,7 @@ import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetIndexArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps,
+  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps,
 } from "../BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
 import { SnapshotDb } from "../IModelDb";
@@ -77,14 +77,6 @@ export class HubMock {
     this._saveHubAccess = IModelHost.hubAccess;
     IModelHost.setHubAccess(this);
     HubUtility.contextId = Guid.createValue(); // all iModels for this test get the same "contextId"
-
-    sinon.stub(IModelVersion, "getLatestChangeSetId").callsFake(async (): Promise<GuidString> => {
-      throw new Error("this method is deprecated and cannot be used while IModelHub is mocked - use IModelHost.hubaccess.getChangesetIdFromVersion");
-    });
-
-    sinon.stub(IModelVersion, "getChangeSetFromNamedVersion").callsFake(async (): Promise<GuidString> => {
-      throw new Error("this method is deprecated and cannot be used while IModelHub is mocked - use IModelHost.hubaccess.getChangesetIdFromVersion");
-    });
 
     sinon.stub(IModelHubBackend, "iModelClient").get(() => {
       throw new Error("IModelHubAccess is mocked for this test - use only IModelHost.hubaccess functions");
@@ -208,14 +200,14 @@ export class HubMock {
     return this.findLocalHub(arg.checkpoint.iModelId).downloadCheckpoint({ changeset: { id: arg.checkpoint.changeSetId }, targetFile: arg.localFile });
   }
 
-  public static async releaseAllLocks(arg: BriefcaseIdArg & ChangesetIndexArg) {
-    const hub = this.findLocalHub(arg.iModelId);
-    const locks = hub.queryAllLocks(arg.briefcaseId);
+  public static async releaseAllLocks(arg: BriefcaseDbArg) {
+    const hub = this.findLocalHub(arg.briefcase.iModelId);
+    const locks = hub.queryAllLocks(arg.briefcase.briefcaseId);
     for (const props of locks)
-      hub.releaseLock({ props, csIndex: arg.csIndex, briefcaseId: arg.briefcaseId });
+      hub.releaseLock(props, arg.briefcase);
   }
 
-  public static async releaseAllCodes(_arg: BriefcaseIdArg) {
+  public static async releaseAllCodes(_arg: BriefcaseDbArg) {
   }
 
   public static async queryAllLocks(_arg: BriefcaseDbArg): Promise<LockProps[]> {
@@ -236,7 +228,7 @@ export class HubMock {
   public static async acquireSchemaLock(_arg: BriefcaseDbArg): Promise<void> {
   }
 
-  public static async querySchemaLock(_arg: BriefcaseDbArg): Promise<boolean> {
+  public static async querySchemaLock(_arg: IModelIdArg): Promise<boolean> {
     return false;
   }
 

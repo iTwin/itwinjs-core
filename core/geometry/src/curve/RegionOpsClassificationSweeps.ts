@@ -155,6 +155,7 @@ export class RegionOpsFaceToFaceSearch {
         facePathStack.push(mate);
         let faceNode = mate.faceSuccessor;
         mate.setMaskAroundFace(faceHasBeenVisited);
+        entryNode = mate;
         if (callbacks.enterFace(facePathStack, mate)) {
           for (; ;) {
             mate = faceNode.edgeMate;

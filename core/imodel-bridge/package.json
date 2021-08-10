@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodel-bridge",
-  "version": "3.0.0-dev.14",
+  "version": "3.0.0-dev.21",
   "description": "iModel.js bridge components",
   "main": "lib/imodel-bridge.js",
   "typings": "lib/imodel-bridge",
@@ -40,13 +40,13 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/backend-itwin-client": "workspace:^3.0.0-dev.14",
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.14",
-    "@bentley/context-registry-client": "workspace:^3.0.0-dev.14",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.14",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.14",
-    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.14",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.14"
+    "@bentley/backend-itwin-client": "workspace:^3.0.0-dev.21",
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.21",
+    "@bentley/context-registry-client": "workspace:^3.0.0-dev.21",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.21",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.21",
+    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.21",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.21"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -56,7 +56,6 @@
     "@bentley/backend-itwin-client": "workspace:*",
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
-    "@bentley/config-loader": "workspace:*",
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/geometry-core": "workspace:*",
@@ -71,6 +70,8 @@
     "@types/object-hash": "^1.3.0",
     "chai": "^4.1.2",
     "cpx": "^1.5.0",
+    "dotenv": "^10.0.0",
+    "dotenv-expand": "^5.1.0",
     "eslint": "^7.11.0",
     "internal-tools": "workspace:*",
     "mocha": "^8.3.2",

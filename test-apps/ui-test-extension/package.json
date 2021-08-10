@@ -57,7 +57,6 @@
     "@bentley/presentation-components": "workspace:*",
     "classnames": "^2.3.1",
     "react": "^16.8.0",
-    "react-compound-slider": "^2.5.0",
     "react-dom": "^16.8.0",
     "react-select": "3.1.0"
   },
