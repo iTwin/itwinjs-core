@@ -137,17 +137,6 @@ class Asset extends CommonAssetProjectContext {
   public assetType?: string;
 }
 
-/** Options to request iTwin contexts.
- * @beta
- */
-export interface ContextRegistryRequestQueryOptions extends RequestQueryOptions {
-  /** Set to true to request the most recently used projects */
-  isMRU?: boolean;
-
-  /** Set to true to request the favorite projects */
-  isFavorite?: boolean;
-}
-
 /** Client API to access the context registry services.
  * @beta
  */
@@ -261,7 +250,7 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to an array of projects.
    */
-  public async getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project[]> {
+  public async getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Project[]> {
     requestContext.enter();
     return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
   }
@@ -271,7 +260,7 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to the found project. Rejects if no projects, or more than one project is found.
    */
-  public async getProject(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project> {
+  public async getProject(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Project> {
     requestContext.enter();
     const projects: Project[] = await this.getProjects(requestContext, queryOptions);
     requestContext.enter();
@@ -288,7 +277,7 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Resolves to an array of invited projects.
    */
-  public async getInvitedProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project[]> {
+  public async getInvitedProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Project[]> {
     requestContext.enter();
     return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project?rbaconly=true", queryOptions);
   }

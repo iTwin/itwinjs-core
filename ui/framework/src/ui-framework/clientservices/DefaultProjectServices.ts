@@ -7,7 +7,8 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, ContextRegistryRequestQueryOptions, Project } from "@bentley/context-registry-client";
+import { RequestQueryOptions } from "@bentley/itwin-client";
+import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import { ProjectInfo, ProjectReadStatus, ProjectScope, ProjectServices } from "./ProjectServices";
@@ -43,7 +44,7 @@ export class DefaultProjectServices implements ProjectServices {
   public async getProjects(projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
 
-    const queryOptions: ContextRegistryRequestQueryOptions = {
+    const queryOptions: RequestQueryOptions = {
       $select: "*", // TODO: Get Name,Number,AssetType to work
       $top: top,
       $skip: skip,
@@ -55,11 +56,6 @@ export class DefaultProjectServices implements ProjectServices {
       if (projectScope === ProjectScope.Invited) {
         projectList = await this._connectClient.getInvitedProjects(requestContext, queryOptions);
       } else {
-        if (projectScope === ProjectScope.Favorites) {
-          queryOptions.isFavorite = true;
-        } else if (projectScope === ProjectScope.MostRecentlyUsed) {
-          queryOptions.isMRU = true;
-        }
         projectList = await this._connectClient.getProjects(requestContext, queryOptions);
       }
     } catch (e) {

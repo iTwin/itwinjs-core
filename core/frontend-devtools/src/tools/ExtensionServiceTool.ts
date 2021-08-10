@@ -105,14 +105,11 @@ export class ExtensionServiceTool extends Tool {
       }
       return project.wsgId;
     } else {
-      const asset = await contextRegistry.getAsset(requestContext, {
-        $select: "*",
-        $filter: `Name+eq+'${contextName}'`,
-      });
-      if (!asset || !asset.wsgId) {
+      const asset = await contextRegistry.getContextContainerByName(requestContext, contextName);
+      if (!asset || !asset.id) {
         return undefined;
       }
-      return asset.wsgId;
+      return asset.id;
     }
   }
 
