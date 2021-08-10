@@ -120,6 +120,10 @@ Several changes were made in the @bentley/ui-* packages.
 Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
 A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
 
+### @bentley/extension-cli
+
+Deprecated. It was unused and has been fully removed.
+
 #### Deprecated ui-core Components in Favor of iTwinUI-react Components
 
 Several UI components in the @bentley/ui-core package have been deprecated.
