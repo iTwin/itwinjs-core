@@ -525,6 +525,8 @@ Use this method to import any domain schema that is required to publish your dat
 
 #### ImportDynamicSchema
 
+Please refer to [Implement a Dynamic Schema](ImplementADynamicSchema.md#implement-a-dynamic-schema)
+
 For background on when to use a dynamic schema, please checkout [Dynamic Schemas](#dynamic-schemas)
 
 #### UpdateExistingData
