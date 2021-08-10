@@ -8,7 +8,7 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-import { ClientRequestContext, Config, Id64String, Logger, LogLevel, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64String, Logger, LogLevel, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
@@ -437,13 +437,11 @@ export class SampleAppIModelApp {
   public static async showSignedIn() {
     SampleAppIModelApp.iModelParams = SampleAppIModelApp._usingParams();
 
-    if (Config.App.has("imjs_uitestapp_imodel_name") && Config.App.has("imjs_uitestapp_imodel_project_name")) {
-      let viewId: string | undefined;
-      if (Config.App.has("imjs_uitestapp_imodel_viewId"))
-        viewId = Config.App.get("imjs_uitestapp_imodel_viewId");
+    if (process.env.imjs_uitestapp_imodel_name && process.env.imjs_uitestapp_imodel_project_name) {
+      const viewId: string | undefined = process.env.imjs_uitestapp_imodel_viewId;
 
-      const projectName = Config.App.getString("imjs_uitestapp_imodel_project_name");
-      const iModelName = Config.App.getString("imjs_uitestapp_imodel_name");
+      const projectName = process.env.imjs_uitestapp_imodel_project_name ?? "";
+      const iModelName = process.env.imjs_uitestapp_imodel_name ?? "";
 
       const requestContext = await AuthorizedFrontendRequestContext.create();
       const project = await (new ContextRegistryClient()).getProject(requestContext, {
@@ -493,7 +491,7 @@ export class SampleAppIModelApp {
   }
 
   public static isEnvVarOn(envVar: string): boolean {
-    return Config.App.has(envVar) && (Config.App.get(envVar) === "1" || Config.App.get(envVar) === "true");
+    return process.env[envVar] === "1" || process.env[envVar] === "true";
   }
 
   public static get allowWrite() {
@@ -678,7 +676,7 @@ async function main() {
   // retrieve, set, and output the global configuration variable
   SampleAppIModelApp.testAppConfiguration = {};
   const envVar = "imjs_TESTAPP_SNAPSHOT_FILEPATH";
-  SampleAppIModelApp.testAppConfiguration.snapshotPath = Config.App.has(envVar) && Config.App.get(envVar);
+  SampleAppIModelApp.testAppConfiguration.snapshotPath = process.env[envVar];
   SampleAppIModelApp.testAppConfiguration.startWithSnapshots = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_START_WITH_SNAPSHOTS");
   SampleAppIModelApp.testAppConfiguration.reactAxeConsole = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_REACT_AXE_CONSOLE");
   SampleAppIModelApp.testAppConfiguration.useLocalSettings = SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_USE_LOCAL_SETTINGS");

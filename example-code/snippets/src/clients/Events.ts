@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { ClientRequestContext, Config, Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { EventSAS, EventSubscription, IModelHubClient, IModelHubEvent } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
@@ -14,9 +14,9 @@ class MockAccessToken extends AccessToken {
 }
 
 const clientConfig: BackendAuthorizationClientConfiguration = {
-  clientId: Config.App.get("imjs_agent_test_client_id"),
-  clientSecret: Config.App.get("imjs_agent_test_client_secret"),
-  scope: Config.App.get("imjs_oidc_browser_test_scopes"),
+  clientId: process.env.imjs_agent_test_client_id ?? "",
+  clientSecret: process.env.imjs_agent_test_client_secret ?? "",
+  scope: process.env.imjs_oidc_browser_test_scopes ?? "",
 };
 
 const authorizationClient = new AgentAuthorizationClient(clientConfig);

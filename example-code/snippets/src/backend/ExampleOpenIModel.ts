@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, Config, OpenMode } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
 import { IModelError, IModelRpcProps, IModelStatus } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -36,8 +36,8 @@ function configureIModel() {
 
 // Call the above functions, to avoid lint errors.
 const cred = {
-  email: Config.App.getString("imjs_test_regular_user_name"),
-  password: Config.App.getString("imjs_test_regular_user_password"),
+  email: process.env.imjs_test_regular_user_name ?? "",
+  password: process.env.imjs_test_regular_user_password ?? "",
 };
 
 getUserAccessToken(cred).then((_accessToken: AccessToken) => { // eslint-disable-line @typescript-eslint/no-floating-promises

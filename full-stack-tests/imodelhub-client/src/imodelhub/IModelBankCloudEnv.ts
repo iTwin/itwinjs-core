@@ -8,7 +8,7 @@ import * as fsextra from "fs-extra";
 import * as http from "http";
 import * as https from "https";
 import * as path from "path";
-import { Config, Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
@@ -44,12 +44,12 @@ export function setIModelBankClient(_client: IModelBankClient) {
 }
 
 export function getIModelBankCloudEnv(): IModelCloudEnvironment {
-  if (Config.App.has("imjs_test_imodel_bank_run_orchestrator"))
+  if (process.env.imjs_test_imodel_bank_run_orchestrator)
     return launchLocalOrchestrator();
 
-  const orchestratorUrl: string = Config.App.get("imjs_test_imodel_bank_url", "");
+  const orchestratorUrl: string = process.env.imjs_test_imodel_bank_url ?? "";
 
-  const authScheme: string = String(Config.App.get("imjs_test_imodel_bank_auth_scheme")).toLowerCase();
+  const authScheme: string = (process.env.imjs_test_imodel_bank_auth_scheme ?? "").toLowerCase();
   const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient =>
     authorizationClientFactory(authScheme, userInfo, userCredentials);
 
@@ -92,10 +92,10 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
 
   const serverConfigFile = path.join(workDir, "local_orchestrator.config.json");
   fs.writeFileSync(serverConfigFile, JSON.stringify(cfg));
-  const loggingConfigFile = Config.App.get("imjs_test_imodel_bank_logging_config", "");
+  const loggingConfigFile = process.env.imjs_test_imodel_bank_logging_config ?? "";
   const backendRegistryFile = path.resolve(__dirname, "../assets/local_orchestrator.backend.registry.json");
 
-  const runOrchestratorJs = Config.App.get("imjs_test_imodel_bank_run_orchestrator");
+  const runOrchestratorJs = process.env.imjs_test_imodel_bank_run_orchestrator ?? "";
 
   const cmdargs = [
     runOrchestratorJs,
@@ -163,7 +163,7 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
     });
   }
 
-  const authScheme: string = String(Config.App.get("imjs_test_imodel_bank_auth_scheme")).toLowerCase();
+  const authScheme: string = (process.env.imjs_test_imodel_bank_auth_scheme ?? "").toLowerCase();
   const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient =>
     authorizationClientFactory(authScheme, userInfo, userCredentials);
 

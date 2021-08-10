@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
-import { Config } from "@bentley/bentleyjs-core";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
 import * as fs from "fs";
 
@@ -35,9 +34,9 @@ function isOfflineSet(): boolean {
  */
 export class TestConfig {
   /** Name of project used by most tests */
-  public static readonly projectName: string = Config.App.get("imjs_test_project_name", "iModelJsIntegrationTest");
-  public static readonly assetName: string = Config.App.get("imjs_test_asset_name", "iModelJsAssetTest");
+  public static readonly projectName: string = process.env.imjs_test_project_name ?? "iModelJsIntegrationTest";
+  public static readonly assetName: string = process.env.imjs_test_asset_name ?? "iModelJsAssetTest";
   public static readonly enableMocks: boolean = isOfflineSet();
-  public static readonly enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank") && !!JSON.parse(Config.App.get("imjs_test_imodel_bank"));
+  public static readonly enableIModelBank: boolean = process.env.imjs_test_imodel_bank !== undefined && !!JSON.parse(process.env.imjs_test_imodel_bank);
   public static readonly initializeiModelTimeout: number = 15 * 60 * 1000; // 15min
 }

@@ -187,7 +187,7 @@ async function generateIModelDbTiles(requestContext: AuthorizedClientRequestCont
 }
 
 describe("TilesGenerationPerformance", () => {
-  const config = require(Config.App.getString("imjs_tile_perf_config")); // eslint-disable-line @typescript-eslint/no-var-requires
+  const config = require(process.env.imjs_tile_perf_config ?? ""); // eslint-disable-line @typescript-eslint/no-var-requires
   const imodels: ConfigData[] = config.iModels;
 
   let requestContext: AuthorizedClientRequestContext;

@@ -10,7 +10,7 @@ import * as http from "http";
 import * as https from "https";
 import * as path from "path";
 import { UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Config, Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 import { IModelBankClient, IModelBankFileSystemContextClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
@@ -28,12 +28,12 @@ export const workDir = `${__dirname}/../../../lib/test/output/`;
 // set imjs_test_imodel_bank_logging_config=<somewhere>logging.config.json
 
 export function getIModelBankCloudEnv(): IModelCloudEnvironment {
-  if (Config.App.has("imjs_test_imodel_bank_run_orchestrator"))
+  if (process.env.imjs_test_imodel_bank_run_orchestrator)
     return launchLocalOrchestrator();
 
-  const orchestratorUrl: string = Config.App.get("imjs_test_imodel_bank_url", "");
+  const orchestratorUrl: string = process.env.imjs_test_imodel_bank_url ?? "";
 
-  const basicAuthentication: boolean = !!JSON.parse(Config.App.get("imjs_test_imodel_bank_basic_authentication"));
+  const basicAuthentication: boolean = !!JSON.parse(process.env.imjs_test_imodel_bank_basic_authentication ?? "");
   const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any) => {
     return basicAuthentication
       ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)
@@ -75,10 +75,10 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
 
   const serverConfigFile = path.join(workDir, "local_orchestrator.config.json");
   fs.writeFileSync(serverConfigFile, JSON.stringify(cfg));
-  const loggingConfigFile = Config.App.get("imjs_test_imodel_bank_logging_config", "");
+  const loggingConfigFile = process.env.imjs_test_imodel_bank_logging_config ?? "";
   const backendRegistryFile = path.resolve(__dirname, "../assets/local_orchestrator.backend.registry.json");
 
-  const runOrchestratorJs = Config.App.get("imjs_test_imodel_bank_run_orchestrator");
+  const runOrchestratorJs = process.env.imjs_test_imodel_bank_run_orchestrator ?? "";
 
   const cmdargs = [
     runOrchestratorJs,
@@ -146,7 +146,7 @@ function launchLocalOrchestrator(): IModelCloudEnvironment {
     });
   }
 
-  const basicAuthentication: boolean = !!JSON.parse(Config.App.get("imjs_test_imodel_bank_basic_authentication"));
+  const basicAuthentication: boolean = !!JSON.parse(process.env.imjs_test_imodel_bank_basic_authentication ?? "");
   const getAuthorizationClient = (userInfo: UserInfo | undefined, userCredentials: any) => {
     return basicAuthentication
       ? new IModelBankBasicAuthorizationClient(userInfo, userCredentials)

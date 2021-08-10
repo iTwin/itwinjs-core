@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
 import { IModelBankClient } from "@bentley/imodelhub-client";
 import {
   BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs,
@@ -58,7 +58,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async getCloudEnv(): Promise<CloudEnvProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     if (CloudEnv.cloudEnv.isIModelHub) {
-      const region = Config.App.get("imjs_buddi_resolve_url_using_region") || "0";
+      const region = process.env.imjs_buddi_resolve_url_using_region || "0";
       return { iModelHub: { region } };
     }
     const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl(requestContext);

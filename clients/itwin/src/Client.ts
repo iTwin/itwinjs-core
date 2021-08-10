@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iTwinServiceClients
  */
-import { ClientRequestContext, Config, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import * as deepAssign from "deep-assign";
 import { AuthorizedClientRequestContext } from "./AuthorizedClientRequestContext";
 import { ITwinClientLoggerCategory } from "./ITwinClientLoggerCategory";
@@ -89,19 +89,17 @@ export abstract class Client {
       return this._url;
 
     if (this.baseUrl) {
-      let prefix = Config.App.query("imjs_url_prefix");
+      let prefix = process.env.imjs_url_prefix;
 
       // Need to ensure the usage of the previous imjs_buddi_resolve_url_using_region to not break any
       // existing users relying on the behavior.
       // This needs to be removed...
       if (undefined === prefix) {
-        const region = Config.App.query("imjs_buddi_resolve_url_using_region");
+        const region = process.env.imjs_buddi_resolve_url_using_region;
         switch (region) {
-          case 102:
           case "102":
             prefix = "qa-";
             break;
-          case 103:
           case "103":
             prefix = "dev-";
             break;
@@ -210,7 +208,7 @@ export class UrlDiscoveryClient extends Client {
    * @returns URL of the discovery service.
    */
   public override async getUrl(): Promise<string> {
-    return Config.App.getString(UrlDiscoveryClient.configURL, "https://buddi.bentley.com/WebService");
+    return process.env[UrlDiscoveryClient.configURL] ?? "https://buddi.bentley.com/WebService";
   }
 
   /**
@@ -224,7 +222,7 @@ export class UrlDiscoveryClient extends Client {
 
     const urlBase: string = await this.getUrl();
     const url: string = `${urlBase}/GetUrl/`;
-    const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
+    const resolvedRegion = typeof regionId !== "undefined" ? regionId : process.env[UrlDiscoveryClient.configResolveUrlUsingRegion] ? Number(process.env[UrlDiscoveryClient.configResolveUrlUsingRegion]) : 0;
     const options: RequestOptions = {
       method: "GET",
       qs: {

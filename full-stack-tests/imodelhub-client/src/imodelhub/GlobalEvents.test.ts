@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Config, Guid } from "@bentley/bentleyjs-core";
+import { Guid } from "@bentley/bentleyjs-core";
 import { ContextType } from "@bentley/context-registry-client";
 import {
   ChangeSetCreatedEvent, GetEventOperationType, GlobalCheckpointCreatedEvent, GlobalCheckpointV2CreatedEvent, GlobalEventSAS, GlobalEventSubscription, GlobalEventType, HardiModelDeleteEvent, HubIModel,
@@ -132,8 +132,8 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     imodelHubClient = utils.getDefaultClient();
 
     serviceAccount1 = {
-      email: Config.App.getString("imjs_test_serviceAccount1_user_name"),
-      password: Config.App.getString("imjs_test_serviceAccount1_user_password"),
+      email: process.env.imjs_test_serviceAccount1_user_name ?? "",
+      password: process.env.imjs_test_serviceAccount1_user_password ?? "",
     };
     const serviceAccountAccessToken = await utils.login(serviceAccount1);
     serviceAccountRequestContext = new AuthorizedClientRequestContext(serviceAccountAccessToken);

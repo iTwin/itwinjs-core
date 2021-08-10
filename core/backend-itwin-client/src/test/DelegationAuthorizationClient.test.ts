@@ -5,7 +5,7 @@
 
 import * as chai from "chai";
 import * as path from "path";
-import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration } from "../oidc/DelegationAuthorizationClient";
@@ -41,8 +41,8 @@ describe("DelegationAuthorizationClient (#integration)", () => {
     validator = await HubAccessTestValidator.getInstance();
 
     const agentConfiguration: AgentAuthorizationClientConfiguration = {
-      clientId: Config.App.getString("imjs_agent_test_client_id"),
-      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
+      clientId: process.env.imjs_agent_test_client_id ?? "",
+      clientSecret: process.env.imjs_agent_test_client_secret ?? "",
       scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
     };
 
@@ -52,8 +52,8 @@ describe("DelegationAuthorizationClient (#integration)", () => {
 
   it("should get valid OIDC delegation tokens", async () => {
     const delegationConfiguration: DelegationAuthorizationClientConfiguration = {
-      clientId: Config.App.getString("imjs_delegation_test_client_id"),
-      clientSecret: Config.App.getString("imjs_delegation_test_client_secret"),
+      clientId:process.env.imjs_delegation_test_client_id ?? "",
+      clientSecret: process.env.imjs_delegation_test_client_secret ?? "",
       scope: "context-registry-service imodelhub rbac-service",
     };
 

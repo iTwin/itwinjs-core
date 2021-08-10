@@ -5,7 +5,7 @@
 import { assert, should } from "chai";
 import * as fs from "fs";
 import * as path from "path";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelBaseHandler } from "@bentley/imodelhub-client";
 import { ITwinClientLoggerCategory } from "@bentley/itwin-client";
 
@@ -38,7 +38,7 @@ Logger.initialize(
 // Note: Turn this off unless really necessary - it causes Error messages on the
 // console with the existing suite of tests, and this is quite misleading,
 // especially when diagnosing CI job failures.
-const loggingConfigFile: string = Config.App.get("imjs_test_logging_config", "");
+const loggingConfigFile: string = process.env.imjs_test_logging_config ?? "";
 if (!!loggingConfigFile) {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   Logger.configureLevels(require(loggingConfigFile));

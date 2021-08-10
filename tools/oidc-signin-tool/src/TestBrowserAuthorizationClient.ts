@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { assert, BeEvent, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
 import { AuthorizationParameters, Client, custom, generators, Issuer, OpenIDCallbackChecks, TokenSet } from "openid-client";
@@ -50,7 +50,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
 
   private async initialize() {
     if (undefined === this._deploymentRegion)
-      this._deploymentRegion = Config.App.has("imjs_buddi_resolve_url_using_region") ? Config.App.getNumber("imjs_buddi_resolve_url_using_region") : 0; // Defaults to PROD (for 3rd party users)
+      this._deploymentRegion = process.env.imjs_buddi_resolve_url_using_region !== undefined ? Number(process.env.imjs_buddi_resolve_url_using_region) : 0; // Defaults to PROD (for 3rd party users)
 
     const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
     this._imsUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSProfile.RP", this._deploymentRegion);

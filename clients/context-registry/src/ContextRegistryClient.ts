@@ -6,7 +6,7 @@
  * @module ContextRegistry
  */
 import * as deepAssign from "deep-assign";
-import { assert, Config } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 
 /** The iTwin context type.
@@ -158,15 +158,15 @@ export class ContextRegistryClient extends WsgClient {
    * @returns RelyingPartyUrl for the service.
    */
   protected getRelyingPartyUrl(): string {
-    if (Config.App.has(ContextRegistryClient.configRelyingPartyUri))
-      return `${Config.App.get(ContextRegistryClient.configRelyingPartyUri)}/`;
+    if (process.env[ContextRegistryClient.configRelyingPartyUri])
+      return `${process.env[ContextRegistryClient.configRelyingPartyUri]}/`;
 
-    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
-      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
+    if (process.env[WsgClient.configUseHostRelyingPartyUriAsFallback] ? Boolean(process.env[WsgClient.configUseHostRelyingPartyUriAsFallback]) : true ) {
+      if (process.env[WsgClient.configHostRelyingPartyUri])
+        return `${process.env[WsgClient.configHostRelyingPartyUri]}/`;
     }
 
-    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${ContextRegistryClient.configRelyingPartyUri}`);
+    throw new Error(`RelyingPartyUrl not set. Set the env variable using key ${ContextRegistryClient.configRelyingPartyUri}`);
   }
 
   /** Gets the iTwin project contexts that are accessible to the authorized user.

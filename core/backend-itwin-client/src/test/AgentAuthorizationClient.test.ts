@@ -6,7 +6,7 @@
 import * as chai from "chai";
 import { Client, Issuer } from "openid-client";
 import * as path from "path";
-import { BeDuration, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { BeDuration, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
@@ -42,8 +42,8 @@ describe("AgentAuthorizationClient (#integration)", () => {
     validator = await HubAccessTestValidator.getInstance();
 
     agentConfiguration = {
-      clientId: Config.App.getString("imjs_agent_test_client_id"),
-      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
+      clientId: process.env.imjs_agent_test_client_id ?? "",
+      clientSecret: process.env.imjs_agent_test_client_secret ?? "",
       scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
     };
 

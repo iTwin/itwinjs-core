@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { assert, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
 import {
   AuthorizedClientRequestContext, ChunkedQueryContext, DefaultWsgRequestOptionsProvider, FileHandler, HttpRequestOptions, RequestGlobalOptions, RequestOptions,
   RequestQueryOptions, WsgClient, WsgInstance, WsgRequestOptions,
@@ -150,15 +150,15 @@ export class IModelBaseHandler extends WsgClient {
    * @internal
    */
   protected getRelyingPartyUrl(): string {
-    if (Config.App.has(IModelBaseHandler.configRelyingPartyUri))
-      return `${Config.App.get(IModelBaseHandler.configRelyingPartyUri)}/`;
+    if (process.env[IModelBaseHandler.configRelyingPartyUri])
+      return `${process.env[IModelBaseHandler.configRelyingPartyUri]}/`;
 
-    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
-      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
+    if (process.env[WsgClient.configUseHostRelyingPartyUriAsFallback] ? Boolean(process.env[WsgClient.configUseHostRelyingPartyUriAsFallback]) : true) {
+      if (process.env[WsgClient.configHostRelyingPartyUri])
+        return `${process.env[WsgClient.configHostRelyingPartyUri]}/`;
     }
 
-    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${IModelBaseHandler.configRelyingPartyUri}`);
+    throw new Error(`RelyingPartyUrl not set. Set the env variable using key ${IModelBaseHandler.configRelyingPartyUri}`);
   }
 
   /**

@@ -6,7 +6,6 @@
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
-import { Config } from "@bentley/bentleyjs-core";
 import { getTestAccessToken, TestBrowserAuthorizationClientConfiguration, TestUsers, TestUtility } from "../index";
 import * as fs from "fs";
 
@@ -36,9 +35,9 @@ describe("Sign in (#integration)", () => {
 
   before(() => {
     oidcConfig = {
-      clientId: Config.App.getString("imjs_oidc_browser_test_client_id"),
-      redirectUri: Config.App.getString("imjs_oidc_browser_test_redirect_uri"),
-      scope: Config.App.getString("imjs_oidc_browser_test_scopes"),
+      clientId: process.env.imjs_oidc_browser_test_client_id ?? "",
+      redirectUri: process.env.imjs_oidc_browser_test_redirect_uri ?? "",
+      scope: process.env.imjs_oidc_browser_test_scopes ?? "",
     };
   });
 
@@ -69,7 +68,7 @@ describe("Sign in (#integration)", () => {
     const invalidUser = {
       email: "invalid@email.com",
       password: "invalid",
-      scope: Config.App.getString("imjs_oidc_browser_test_scopes"),
+      scope: process.env.imjs_oidc_browser_test_scopes ?? "",
     };
     await expect(getTestAccessToken(oidcConfig, invalidUser))
       .to.be.rejectedWith(Error, `Failed OIDC signin for ${invalidUser.email}.\nError: We didn't recognize the username or password you entered. Please try again.`);

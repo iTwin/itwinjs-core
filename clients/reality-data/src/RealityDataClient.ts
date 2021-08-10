@@ -6,7 +6,7 @@
 /** @packageDocumentation
  * @module RealityData
  */
-import { ClientRequestContext, Config, Guid } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid } from "@bentley/bentleyjs-core";
 import {
   AuthorizedClientRequestContext, ECJsonTypeMap, getArrayBuffer, getJson, RequestQueryOptions, WsgClient, WsgInstance,
 } from "@bentley/itwin-client";
@@ -406,15 +406,15 @@ export class RealityDataClient extends WsgClient {
    * @returns RelyingPartyUrl for the service.
    */
   protected getRelyingPartyUrl(): string {
-    if (Config.App.has(RealityDataClient.configRelyingPartyUri))
-      return `${Config.App.get(RealityDataClient.configRelyingPartyUri)}/`;
+    if (process.env[RealityDataClient.configRelyingPartyUri])
+      return `${process.env[RealityDataClient.configRelyingPartyUri]}/`;
 
-    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
-      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
+    if (process.env[WsgClient.configUseHostRelyingPartyUriAsFallback] ? Boolean(process.env[WsgClient.configUseHostRelyingPartyUriAsFallback]) : true) {
+      if (process.env[WsgClient.configHostRelyingPartyUri])
+        return `${process.env[WsgClient.configHostRelyingPartyUri]}/`;
     }
 
-    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${RealityDataClient.configRelyingPartyUri}`);
+    throw new Error(`RelyingPartyUrl not set. Set it env variable using key ${RealityDataClient.configRelyingPartyUri}`);
   }
 
   /**

@@ -5,7 +5,7 @@ import { assert } from "chai";
 *--------------------------------------------------------------------------------------------*/
 
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AuthorizedBackendRequestContext } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -23,8 +23,8 @@ describe("Agent iModel Download (#integration)", () => {
     // IModelTestUtils.setupDebugLogLevels();
 
     const agentConfiguration: AgentAuthorizationClientConfiguration = {
-      clientId: Config.App.getString("imjs_agent_test_client_id"),
-      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
+      clientId: process.env.imjs_agent_test_client_id ?? "",
+      clientSecret: process.env.imjs_agent_test_client_secret ?? "",
       scope: "imodelhub context-registry-service:read-only",
     };
 
