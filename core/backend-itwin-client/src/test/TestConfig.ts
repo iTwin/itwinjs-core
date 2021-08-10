@@ -4,10 +4,25 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import * as fs from "fs";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 

@@ -174,8 +174,10 @@ export * from "./ui-core/utils/shallowDiffers";
 export * from "./ui-core/utils/typeUtils";
 export * from "./ui-core/utils/isPromiseLike";
 export * from "./ui-core/utils/ScrollPositionMaintainer";
+
 export * from "./ui-core/utils/hooks/useDisposable";
 export * from "./ui-core/utils/hooks/useEffectSkipFirst";
+export * from "./ui-core/utils/hooks/useEventListener";
 export * from "./ui-core/utils/hooks/ResizeObserverPolyfill";
 export * from "./ui-core/utils/hooks/useOnOutsideClick";
 export * from "./ui-core/utils/hooks/useProximityToMouse";

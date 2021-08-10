@@ -3,11 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as fs from "fs";
-import * as os from "os";
 import * as path from "path";
-import { BackendApplicationInsightsClient } from "@bentley/backend-application-insights-client";
-import { Config, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
-import { IModelHost } from "@bentley/imodeljs-backend";
+import { Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { Presentation } from "@bentley/presentation-backend";
 import { initializeLogging, initializeWeb } from "./web/BackendServer";
 import { initializeElectron } from "./electron/ElectronMain";
@@ -23,12 +20,6 @@ import { initializeElectron } from "./electron/ElectronMain";
 
     if (!ProcessDetector.isElectronAppBackend) {
       initializeLogging();
-    }
-
-    const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
-    if (iModelJsApplicationInsightsKey) {
-      const applicationInsightsClient = new BackendApplicationInsightsClient({ applicationInsightsKey: iModelJsApplicationInsightsKey, backendMachineName: os.hostname(), backendApplicationId: IModelHost.applicationId, backendApplicationVersion: IModelHost.applicationVersion });
-      IModelHost.telemetry.addClient(applicationInsightsClient);
     }
 
     // invoke platform-specific initialization
