@@ -43,6 +43,18 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                        |
 | `TxnAction`                                                  | `TxnAction` in @bentley/imodeljs-common        |
 
+### @bentley/imodeljs-common
+
+| Removed                                      | Replacement                                                    |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| `Code.getValue`                              | `Code.value`                                                   |
+| `CodeSpec.specScopeType`                     | `CodeSpec.scopeType`                                           |
+| `IModel.changeSetId`                         | `IModel.changeset.id`                                          |
+| `IModelVersion.evaluateChangeSet`            | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
+| `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+
 ### @bentley/imodeljs-frontend
 
 | Removed                           | Replacement                                               |
