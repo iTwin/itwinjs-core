@@ -1103,6 +1103,25 @@ describe("PolygonAreas", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Point3dArray", "SmallConvexHullExample");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("cloneWithStartAndEndMultiplicity", () => {
+    const ck = new Checker();
+    const baseKnots = [0, 1, 2, 3, 4, 5];
+    for (const target0 of [1, 2, 4]) {
+      for (const target1 of [1, 2, 4]) {
+        const knotsA = NumberArray.cloneWithStartAndEndMultiplicity(baseKnots, target0, target1);
+        const knotsB = NumberArray.cloneWithStartAndEndMultiplicity(knotsA, 1, 1);
+        ck.testExactNumber(knotsA.length, baseKnots.length + target0 - 1 + target1 - 1);
+        const knot0 = baseKnots[0];
+        const knot1 = baseKnots[baseKnots.length - 1];
+        for (let k = 0; k < target0; k++)
+            ck.testExactNumber (knotsA[k], knot0, "multiplicity at start");
+        for (let k = knotsA.length - target1; k < knotsA.length; k++)
+          ck.testExactNumber (knotsA[k], knot1, "multiplicity at end");
+        ck.testNumberArray(baseKnots, knotsB, "round trip multiplicity");
+        }
+    }
+    expect(ck.getNumErrors()).equals(0);
+  });
 
 });
 

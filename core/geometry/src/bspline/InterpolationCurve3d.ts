@@ -8,7 +8,7 @@
 
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
-import { Point3dArray } from "../geometry3d/PointHelpers";
+import { NumberArray, Point3dArray } from "../geometry3d/PointHelpers";
 import { ProxyCurve } from "../curve/ProxyCurve";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { BSplineCurve3d } from "./BSplineCurve";
@@ -237,6 +237,7 @@ export class InterpolationCurve3d extends ProxyCurve {
   /**
    * Create an [[InterpolationCurve3d]] based on points, knots, and other properties in the [[InterpolationCurve3dProps]] or [[InterpolationCurve3dOptions]].
    * * This saves a COPY OF the options or props.
+   * * In the copy, start and end knot multiplicity squashes to 1
    * * Use createCapture () if the options or props can be used without copy
    */
   public static create(options: InterpolationCurve3dOptions | InterpolationCurve3dProps): InterpolationCurve3d | undefined {
@@ -246,6 +247,8 @@ export class InterpolationCurve3d extends ProxyCurve {
     } else {
       optionsCopy = InterpolationCurve3dOptions.create(options);
     }
+    if (optionsCopy.knots)
+      optionsCopy.knots = NumberArray.cloneWithStartAndEndMultiplicity(optionsCopy.knots, 1, 1);
     return InterpolationCurve3d.createCapture(optionsCopy);
   }
   /** Create an [[InterpolationCurve3d]]
