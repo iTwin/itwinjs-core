@@ -280,7 +280,7 @@ describe("OffsetByClip", () => {
     expect(ck.getNumErrors()).equals(0);
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "ArnoldasLaneClip");
   });
-  it.only("ExcessEdgesAroundAnnulus", () => {
+  it("ExcessEdgesAroundAnnulus", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     let x0 = 0;
@@ -501,7 +501,7 @@ describe("OffsetByClip", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "IncompletePaste");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("IncompletePasteWithDoublePoint", () => {
+  it("IncompletePasteWithDoublePoint", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const shard0: Point3d[] = [
