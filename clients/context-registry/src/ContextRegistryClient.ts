@@ -293,33 +293,6 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
     return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project?rbaconly=true", queryOptions);
   }
 
-  /** Gets a specific iTwin asset context.
-   * @param requestContext The client request context
-   * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
-   * @returns Resolves to the found asset. Rejects if no assets, or more than one asset is found.
-   */
-  public async getAsset(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset> {
-    requestContext.enter();
-    const assets: Asset[] = await this.getAssets(requestContext, queryOptions);
-    requestContext.enter();
-    if (assets.length === 0)
-      throw new Error("Could not find an asset with the specified criteria that the user has access to");
-    else if (assets.length > 1)
-      throw new Error("More than one asset found with the specified criteria");
-
-    return assets[0];
-  }
-
-  /** Gets the iTwin asset contexts that are accessible to the authorized user.
-   * @param requestContext The client request context
-   * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
-   * @returns Resolves to an array of assets.
-   */
-  public async getAssets(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset[]> {
-    requestContext.enter();
-    return this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Asset", queryOptions);
-  }
-
   /** Gets the iTwin team context that the authorized user belongs to.
    * @param requestContext The client request context
    * @returns Resolves to the found team. Rejects if no team or more than one team is found.
