@@ -892,23 +892,6 @@
       ]
     },
     {
-      "name": "Extension CLI Tests (Integration)",
-      "presentation": {
-        "group": "6_Misc"
-      },
-      "cwd": "${workspaceFolder}/tools/extension-cli",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "wip-test:integration"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients,tools}/*/lib/**/*.js"
-      ]
-    },
-    {
       "name": "imjs-importer.   See launch.json to give command line args",
       "presentation": {
         "group": "6_Misc"
