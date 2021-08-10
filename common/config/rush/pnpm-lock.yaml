@@ -4195,79 +4195,6 @@ importers:
       mocha: 8.4.0
       typescript: 4.3.5
 
-  ../../tools/extension-cli:
-    specifiers:
-      '@bentley/backend-itwin-client': workspace:*
-      '@bentley/bentleyjs-core': workspace:*
-      '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
-      '@bentley/ecschema-metadata': workspace:*
-      '@bentley/electron-manager': workspace:*
-      '@bentley/eslint-plugin': workspace:*
-      '@bentley/extension-client': workspace:*
-      '@bentley/geometry-core': workspace:*
-      '@bentley/imodelhub-client': workspace:*
-      '@bentley/imodeljs-backend': workspace:*
-      '@bentley/imodeljs-common': workspace:*
-      '@bentley/itwin-client': workspace:*
-      '@bentley/presentation-common': workspace:*
-      '@bentley/telemetry-client': workspace:*
-      '@types/chai': ^4.1.4
-      '@types/mocha': ^8.2.2
-      '@types/node': 10.14.1
-      '@types/node-fetch': ^2.5.10
-      '@types/rimraf': ^2.0.2
-      '@types/semver': ^5.5.0
-      '@types/tar': ^4.0.0
-      '@types/yargs': ^12.0.5
-      chai: ^4.1.2
-      electron: ^11.1.0
-      eslint: ^7.11.0
-      fast-sha256: 1.3.0
-      mocha: ^8.3.2
-      node-fetch: ^2.6.1
-      rimraf: ^3.0.2
-      semver: ^5.5.0
-      tar: ^6.1.3
-      typescript: ~4.3.0
-      yargs: ^16.0.0
-    dependencies:
-      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
-      '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/ecschema-metadata': link:../../core/ecschema-metadata
-      '@bentley/electron-manager': link:../../core/electron-manager
-      '@bentley/extension-client': link:../../clients/extension
-      '@bentley/geometry-core': link:../../core/geometry
-      '@bentley/imodelhub-client': link:../../clients/imodelhub
-      '@bentley/imodeljs-backend': link:../../core/backend
-      '@bentley/imodeljs-common': link:../../core/common
-      '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/presentation-common': link:../../presentation/common
-      '@bentley/telemetry-client': link:../../clients/telemetry
-      electron: 11.4.11
-      fast-sha256: 1.3.0
-      node-fetch: 2.6.1
-      rimraf: 3.0.2
-      semver: 5.7.1
-      tar: 6.1.6
-      yargs: 16.2.0
-    devDependencies:
-      '@bentley/build-tools': link:../build
-      '@bentley/eslint-plugin': link:../eslint-plugin
-      '@types/chai': 4.2.21
-      '@types/mocha': 8.2.3
-      '@types/node': 10.14.1
-      '@types/node-fetch': 2.5.12
-      '@types/rimraf': 2.0.5
-      '@types/semver': 5.5.0
-      '@types/tar': 4.0.5
-      '@types/yargs': 12.0.20
-      chai: 4.3.4
-      eslint: 7.32.0
-      mocha: 8.4.0
-      typescript: 4.3.5
-
   ../../tools/extension-webpack:
     specifiers:
       '@babel/core': 7.7.4
@@ -10346,12 +10273,6 @@ packages:
   /@types/minimatch/3.0.5:
     resolution: {integrity: sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==}
 
-  /@types/minipass/2.2.1:
-    resolution: {integrity: sha512-0bI74UwEJ+JjGqzkyoiCxLVGK5C3Vy5MYdDB6VCtUAulcrulHvqhIrQP9lh/gvMgaNzvvJljMW97rRHVvbTe8Q==}
-    dependencies:
-      '@types/node': 10.14.1
-    dev: true
-
   /@types/mocha/8.2.3:
     resolution: {integrity: sha512-ekGvFhFgrc2zYQoX4JeZPmVzZxw6Dtllga7iGHzfbYIYkAMUx/sAFP2GdFpLff+vdHXu5fl7WX9AT+TtqYcsyw==}
 
@@ -10647,13 +10568,6 @@ packages:
 
   /@types/tapable/1.0.8:
     resolution: {integrity: sha512-ipixuVrh2OdNmauvtT51o3d8z12p6LtFW9in7U79der/kwejjdNchQC5UMn5u/KxNoM7VHHOs/l8KS8uHxhODQ==}
-    dev: true
-
-  /@types/tar/4.0.5:
-    resolution: {integrity: sha512-cgwPhNEabHaZcYIy5xeMtux2EmYBitfqEceBUi2t5+ETy4dW6kswt6WX4+HqLeiiKOo42EXbGiDmVJ2x+vi37Q==}
-    dependencies:
-      '@types/minipass': 2.2.1
-      '@types/node': 10.14.1
     dev: true
 
   /@types/testing-library__react-hooks/3.4.1:
@@ -15441,10 +15355,6 @@ packages:
       sass: 1.37.5
       webpack: 4.44.2
     dev: true
-
-  /fast-sha256/1.3.0:
-    resolution: {integrity: sha512-n11RGP/lrWEFI/bWdygLxhI+pVeo1ZYIVwvvPkW7azl/rOy+F3HYRZ2K5zeE9mmkhQppyv9sQFx0JM9UabnpPQ==}
-    dev: false
 
   /fast-sort/3.0.2:
     resolution: {integrity: sha512-DIKDkHBt+IubEEU44/kEulX3SbIuufEHIhRfw0MCh7f/HLGWmR/Dk7xg2tapT28pVFqnEV1ZDtl6SeViAyVe4Q==}
