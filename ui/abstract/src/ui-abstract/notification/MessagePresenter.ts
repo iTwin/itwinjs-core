@@ -8,7 +8,7 @@
 
 import { MessageSeverity } from "./MessageSeverity";
 
-/** Describes the type and behavior of a notification message.
+/** Describes the type and behavior of a display message.
  * @public
  */
 export enum DisplayMessageType {
@@ -27,7 +27,7 @@ export enum DisplayMessageType {
  */
 export interface MessagePresenter {
   /**
-   * Displays a notification message.
+   * Displays a message.
    * @param severity          The severity of the message.
    * @param briefMessage      A short message that conveys the simplest explanation of the issue.
    * @param detailedMessage   An optional comprehensive message that explains the issue in detail and potentially offers a solution.
@@ -36,7 +36,7 @@ export interface MessagePresenter {
   displayMessage(severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string, messageType?: DisplayMessageType): void;
 
   /**
-   * Displays an input field notification message.
+   * Displays an input field message.
    * @param inputField        Input field to which the message pertains. The message will be shown just below this input field element.
    * @param severity          The severity of the message.
    * @param briefMessage      A short message that conveys the simplest explanation of the issue.

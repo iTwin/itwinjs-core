@@ -278,12 +278,12 @@ export class NotificationManager implements MessagePresenter {
   }
 
   /**
-      * Displays an input field notification message.
-      * @param inputField        Input field to which the message pertains. The message will be shown just below this input field element.
-      * @param severity          The severity of the message.
-      * @param briefMessage      A short message that conveys the simplest explanation of the issue.
-      * @param detailedMessage   An optional comprehensive message that explains the issue in detail and potentially offers a solution.
-      */
+   * Displays an input field notification message.
+   * @param inputField        Input field to which the message pertains. The message will be shown just below this input field element.
+   * @param severity          The severity of the message.
+   * @param briefMessage      A short message that conveys the simplest explanation of the issue.
+   * @param detailedMessage   An optional comprehensive message that explains the issue in detail and potentially offers a solution.
+   */
   public displayInputFieldMessage(inputField: HTMLElement, severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string): void {
     const details = new NotifyMessageDetails(this.convertSeverityToPriority(severity), briefMessage, detailedMessage);
     details.setInputFieldTypeDetails(inputField);
