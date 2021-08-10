@@ -177,6 +177,60 @@ A changeset represents a file containing changes corresponding to an iModel brie
 
 ### Getting started
 
+You'll need Node.js version 14.x refer to [Section 1 from iTwin.js Getting Started](https://www.itwinjs.org/getting-started/) for more details.
+
+The node packages and versions you'll need are listed here:
+
+```JSON
+    "dependencies": {
+        "@bentley/backend-itwin-client": "2.19.3",
+        "@bentley/bentleyjs-core": "2.19.3",
+        "@bentley/config-loader": "2.19.3",
+        "@bentley/ecschema-metadata": "2.19.3",
+        "@bentley/frontend-authorization-client": "2.19.3",
+        "@bentley/geometry-core": "2.19.3",
+        "@bentley/imodel-bridge": "2.19.3",
+        "@bentley/imodelhub-client": "2.19.3",
+        "@bentley/imodeljs-backend": "2.19.3",
+        "@bentley/imodeljs-common": "2.19.3",
+        "@bentley/imodeljs-i18n": "2.19.3",
+        "@bentley/itwin-client": "2.19.3",
+        "@bentley/logger-config": "2.19.3",
+        "@bentley/rbac-client": "2.19.3",
+        "@bentley/telemetry-client": "2.19.3",
+        "@bentley/ecschema-metadata": "2.19.3",
+        "@bentley/context-registry-client": "2.19.3",
+        "@types/sqlite3": "3.1.7",
+        "@types/xmldom": "0.1.31",
+        "bunyan": "1.8.15",
+        "bunyan-seq": "0.2.0",
+        "draco3d": "1.4.1",
+        "open": "7.4.2",
+        "request": "2.88.2",
+        "request-promise": "4.2.6",
+        "sqlite": "4.0.23",
+        "sqlite3": "5.0.2",
+        "three": "0.116.1",
+        "username": "5.1.0",
+        "xmldom": "0.3.0"
+    },
+    "devDependencies": {
+        "@bentley/build-tools": "2.19.3",
+        "@bentley/oidc-signin-tool": "2.19.3",
+        "@types/chai": "4.2.21",
+        "@types/jquery": "3.5.6",
+        "@types/mocha": "5.2.7",
+        "@types/node": "10.17.60",
+        "@types/object-hash": "1.3.4",
+        "babel-cli": "6.26.0",
+        "chai": "4.3.4",
+        "mocha": "5.2.0",
+        "nock": "12.0.3",
+        "tslint": "5.20.1",
+        "typescript": "3.9.10"
+    },
+```
+
 #### Connecting data to an iTwin
 
 ![iTwin Connector Steps](./imodel_connector_steps.png)
@@ -193,8 +247,9 @@ The sections below give a high level overview of the various parts that go into 
 
 Extraction of data from the input depends on the source format and the availablity of a library capable of understanding it. There are two strategies typically employed for data extraction.
 
-1. If the extraction library is compatible with TypeScript, write an extraction module and use that to connect the input data with the alignment phase.
-2. If a TypeScript binding is not available, extract the data into an intermediary format that can be then ingested by the alignment phase.
+1. If the extraction library is compatible with TypeScript, write an extraction module and use that to connect the input data with the alignment phase. This can be called from the [OpenSourceData](#opensourcedata) method in your connector.
+
+2. If a TypeScript binding is not available, extract the data into an intermediary format that can be then ingested by the alignment phase. In this case the intermediate format will be read in the [OpenSourceData](#opensourcedata) method in your connector.
 
 #### Data alignment
 
@@ -524,7 +579,7 @@ The ultimate purpose of a connector is to synchronize an iModel with the data in
 
 ### Analyzing the connector output
 
-As a connector developer, once the data is transformed into an iModel,  one needs tools to analyze the validity of the conversion. In the sections below, a few recommended tools are described which allow the developer to query the grpahical as well as non graphical data in an iModel.
+As a connector developer, once the data is transformed into an iModel, one needs tools to analyze the validity of the conversion. In the sections below, a few recommended tools are described which allow the developer to query the grpahical as well as non graphical data in an iModel.
 
 #### ECSQL
 
