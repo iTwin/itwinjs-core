@@ -2015,22 +2015,28 @@ export abstract class ViewState3d extends ViewState {
     if (!this.iModel.ecefLocation)
       return ViewStatus.NotGeolocated;
 
-    const eye = this.camera.eye;
-
+    const camera = this.camera;
+    const eye = camera.eye;
     const earthCenter = this.iModel.ecefLocation?.earthCenter;
     const eyeToCenter = Vector3d.createStartEnd(eye, earthCenter);
     const eyeToTarget = Vector3d.createStartEnd(eye, target);
-    const viewZ = this.getRotation().rowZ();
-    const perp0 = eyeToTarget.crossProduct(viewZ);
-    const targetPerp = perp0.unitCrossProduct(viewZ);
-    if (!targetPerp)
+    const rotation = this.getRotation();
+    const focalToWorld = Matrix3d.createRigidFromColumns(eyeToCenter.negate(), rotation.rowX(), AxisOrder.ZXY);
+    if (!focalToWorld)
       return ViewStatus.InvalidTargetPoint;
+    const focalVector = rotation.rowZ().scale(camera.focusDist);
+    focalToWorld.multiplyTransposeVectorInPlace(focalVector);
+    const startRamp = 30000;
+    const finishRamp = 100000;
+    let scale = 1.0;
+    if (focalVector.z > startRamp) {
+      scale = Math.max(0,  1.0 - (focalVector.z - startRamp) / (finishRamp - startRamp));
 
-    const centerDot = targetPerp.dotProduct(eyeToCenter);
+      focalVector.x *= scale;
+      focalVector.y *= scale;
+    }
     // eslint-disable-next-line no-console
-    console.log(`CenterDot: ${  centerDot}`);
-    if (centerDot > 1000 && false)
-      return ViewStatus.InvalidTargetPoint;
+    console.log(`Focal: ${focalVector.x}, ${focalVector.y}, ${focalVector.z}, Scale: ${scale}`);
 
     const centerToTarget = Vector3d.createStartEnd(earthCenter, target);
     const cAngle  = eyeToCenter.angleTo(eyeToTarget);
@@ -2058,15 +2064,17 @@ export abstract class ViewState3d extends ViewState {
       return ViewStatus.InvalidTargetPoint;
 
     const newEye = earthCenter.plus2Scaled(centerToTarget, hypotenuse * Math.cos(bAngle) / centerToTarget.magnitude(), parallel, hypotenuse * Math.sin(bAngle));
-    const newEyeToTarget = newEye.unitVectorTo(earthCenter)!;
-    const newFocusDistance = Math.max(100, hypotenuse - Constant.earthRadiusWGS84.equator);
-    const newTarget = newEye.plusScaled(newEyeToTarget, newFocusDistance);
-    const currExtents = this.getExtents();
-    const currFocusDistance = this.camera.focusDist;
-    const extentScale = newFocusDistance / currFocusDistance;
-    const newExtents = Vector2d.create(currExtents.x * extentScale, currExtents.y * extentScale);
+    const newEyeToCenter = Vector3d.createStartEnd(newEye, earthCenter);
+    const newFocalToWorld = Matrix3d.createRigidFromColumns(newEyeToCenter.negate(), rotation.rowX(), AxisOrder.ZXY);
+    if (!newFocalToWorld)
+      return ViewStatus.InvalidTargetPoint;
 
-    return this.lookAt(newEye, newTarget, this.getRotation().rowY(), newExtents);
+    const newFocalVector = newFocalToWorld.multiplyVector(focalVector.scale(zoomRatio));
+    const newCameraTarget = newEye.minus(newFocalVector);
+    const currExtents = this.getExtents();
+    const newExtents = Vector2d.create(currExtents.x * zoomRatio, currExtents.y * zoomRatio);
+
+    return this.lookAt(newEye, newCameraTarget, newFocalToWorld.columnY(), newExtents);
   }
 }
 
