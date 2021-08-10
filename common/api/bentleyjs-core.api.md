@@ -548,14 +548,6 @@ export interface EntryContainer<K, V> {
     readonly size: number;
 }
 
-// @alpha
-export class EnvMacroSubst {
-    static anyPropertyContainsEnvvars(obj: any, recurse: boolean): boolean;
-    static containsEnvvars(str: string): boolean;
-    static replace(str: string, defaultValues?: any): string;
-    static replaceInProperties(obj: any, recurse: boolean, defaultValues?: any): void;
-}
-
 // @beta
 export enum ExtensionStatus {
     // (undocumented)

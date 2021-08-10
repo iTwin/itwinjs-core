@@ -1,6 +1,6 @@
 sep=;
 Release Tag;API Item
-beta;AbandonedError 
+beta;AbandonedError
 internal;addClientRequestContext: (metaData: any) => void
 public;areEqualPossiblyUndefined
 public;asInstanceOf
@@ -12,7 +12,7 @@ public;base64StringToUint8Array(base64: string): Uint8Array
 public;BeDuration
 public;BeEvent
 public;BeEventList
-public;BentleyError 
+public;BentleyError
 public;BentleyLoggerCategory
 public;BentleyStatus
 public;BeTimePoint
@@ -22,7 +22,7 @@ public;ByteStream
 public;ChangeSetApplyOption
 beta;ChangeSetStatus
 public;ClientRequestContext
-public;ClientRequestContextProps 
+public;ClientRequestContextProps
 public;CloneFunction
 public;compareBooleans(a: boolean, b: boolean): number
 public;compareBooleansOrUndefined(lhs?: boolean, rhs?: boolean): number
@@ -41,14 +41,13 @@ public;DbOpcode
 public;DbResult
 public;Dictionary
 public;DictionaryEntry
-public;DisposableList 
+public;DisposableList
 public;dispose(disposable?: IDisposable): undefined
 public;disposeArray(list?: IDisposable[]): undefined
 public;DisposeFunc = () => void
 public;DuplicatePolicy
 public;Entry
 public;EntryContainer
-alpha;EnvMacroSubst
 beta;ExtensionStatus
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => any
@@ -79,17 +78,17 @@ public;LRUCache
 public;LRUDictionary
 public;LRUMap
 public;Mutable
-public;MutableCompressedId64Set 
+public;MutableCompressedId64Set
 public;ObservableSet
 beta;OneAtATimeAction
 public;OpenMode
 public;OrderedComparator
-public;OrderedId64Array 
+public;OrderedId64Array
 public;OrderedId64Iterable = Iterable
 public;OrderedId64Iterable
 public;OrderedSet
 public;partitionArray
-public;PerfLogger 
+public;PerfLogger
 public;PriorityQueue
 public;ProcessDetector
 public;ReadonlyOrderedSet
