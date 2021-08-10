@@ -109,7 +109,7 @@ describe("PolyfaceClip", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("UnionOfConvexClipPlaneSet.Disjoint", () => {
+  it.only("UnionOfConvexClipPlaneSet.Disjoint", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const edgeLength = 2.0;
@@ -1018,7 +1018,7 @@ describe("PolyfaceClip", () => {
     expect(ck.getNumErrors()).equals(0);
   });
 
-  it("ArnoldasSimpleClip", () => {
+  it.only("ArnoldasSimpleClip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     // make a rectangle clipper with interior planes ...
