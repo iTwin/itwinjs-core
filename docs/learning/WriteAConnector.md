@@ -638,6 +638,8 @@ See [Errors](https://www.itwinjs.org/reference/bentleyjs-core/errors/)
 
 ### Building a test for a connector
 
+For examples of connector tests, you can review the standalone and integration tests in the connector framework. These tests use the test framework, [mocha](https://www.npmjs.com/package/mocha) and the assertion library, [chai](https://www.npmjs.com/package/chai/v/4.2.0)
+
 ## Advanced Topics
 
 ### Job Subjects
