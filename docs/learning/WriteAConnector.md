@@ -270,11 +270,21 @@ The appropriate balancing of these two conflicting goals is not an easy task. Ho
 
 See this article on [Importing a schema and bootstrapping definitions](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
 
+There are roughly three degrees of customizations you may need to employ to connect and align your data to an iModel. These degrees range from no customization at all (i.e. using the out-of-the-box domain schemas used by many of the Bentley authored Connectors) to extending the domain shemas to introduce additional classes (or subclasses) and properties. Finally, the most extreme level of customization which is to add classes and properties programmatically as your data is read (a.k.a "dynamic schema").
+
+#### Domain Schemas
+
+Bentley has authored many "domain" schemas to support connectors for many of its authoring applications. For the most aligned data (i.e. data published from your connector uses the same classes and properties as data published from other connectors), it is best to use a domain schema.
+
+To see what domain schemas are available see [Released Domain Schemas](ReleasedDomainSchemas.md)
+
 Sometimes BIS domain schemas are not adequate to capture all the data in the
 authoring application. The flow chart below can be used to assist in deciding
 which schema methodology to use.
 
 ![Schema Methodology Decision](./schemadecision.png)
+
+#### Extending a Schema
 
 #### Dynamic Schemas
 
