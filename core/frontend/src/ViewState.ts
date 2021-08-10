@@ -2012,31 +2012,39 @@ export abstract class ViewState3d extends ViewState {
   }
 
   public globalZoom(target: Point3d, zoomRatio: number): ViewStatus {
-    if (!this.iModel.ecefLocation)
+    if (!this.iModel.ecefLocation || !this.isCameraEnabled)
       return ViewStatus.NotGeolocated;
 
     const camera = this.camera;
-    const eye = camera.eye;
+    let eye = camera.eye;
+    const rotation = this.getRotation();
     const earthCenter = this.iModel.ecefLocation?.earthCenter;
+    const startRamp = 30000;
+    const finishRamp = 100000;
+    const cartoEye = this.rootToCartographic(eye, ViewState3d._scratchGlobeCarto);
+    let focalVector = rotation.rowZ().scale(camera.focusDist);
+    if (!cartoEye)
+      return ViewStatus.NotGeolocated;    // Should never occur.
+
+    if (cartoEye.height > startRamp) {
+      const scale = Math.min(1, (cartoEye.height - startRamp) / (finishRamp - startRamp));
+      const focalPoint = eye.plusScaled(rotation.rowZ(), - camera.focusDist);
+      const earthToFocal = earthCenter.unitVectorTo(focalPoint);
+      if (earthToFocal) {
+        const centeredEye = focalPoint.plusScaled(earthToFocal, cartoEye.height);
+        eye = eye.interpolate(scale, centeredEye);
+        focalVector = Vector3d.createStartEnd(focalPoint, eye);
+      }
+    }
+
     const eyeToCenter = Vector3d.createStartEnd(eye, earthCenter);
     const eyeToTarget = Vector3d.createStartEnd(eye, target);
-    const rotation = this.getRotation();
+
     const focalToWorld = Matrix3d.createRigidFromColumns(eyeToCenter.negate(), rotation.rowX(), AxisOrder.ZXY);
     if (!focalToWorld)
       return ViewStatus.InvalidTargetPoint;
-    const focalVector = rotation.rowZ().scale(camera.focusDist);
-    focalToWorld.multiplyTransposeVectorInPlace(focalVector);
-    const startRamp = 30000;
-    const finishRamp = 100000;
-    let scale = 1.0;
-    if (focalVector.z > startRamp) {
-      scale = Math.max(0,  1.0 - (focalVector.z - startRamp) / (finishRamp - startRamp));
 
-      focalVector.x *= scale;
-      focalVector.y *= scale;
-    }
-    // eslint-disable-next-line no-console
-    console.log(`Focal: ${focalVector.x}, ${focalVector.y}, ${focalVector.z}, Scale: ${scale}`);
+    focalToWorld.multiplyTransposeVectorInPlace(focalVector);
 
     const centerToTarget = Vector3d.createStartEnd(earthCenter, target);
     const cAngle  = eyeToCenter.angleTo(eyeToTarget);
