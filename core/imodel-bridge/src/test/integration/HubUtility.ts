@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
 import { BriefcaseQuery, HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { IModelHubBackend } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -23,14 +23,14 @@ export class HubUtility {
   /**
    * Queries the project id by its name
    * @param requestContext The client request context
-   * @param projectName Name of project
+   * @param name Name of project
    * @throws If the project is not found, or there is more than one project with the supplied name
    */
-  public static async queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {
-    const project: Project | undefined = await HubUtility.queryProjectByName(requestContext, projectName);
-    if (!project)
-      throw new Error(`Project ${projectName} not found`);
-    return project.wsgId;
+  public static async getContextContainerIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
+    const container: ContextContainerNTBD | undefined = await HubUtility.getContextContainerByName(requestContext, name);
+    if (!container)
+      throw new Error(`Project ${name} not found`);
+    return container.id;
   }
 
   /**
@@ -47,12 +47,9 @@ export class HubUtility {
     return iModel.id;
   }
 
-  private static async queryProjectByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project | undefined> {
-    const project: Project = await getIModelProjectAbstraction().queryProject(requestContext, {
-      $select: "*",
-      $filter: `Name+eq+'${projectName}'`,
-    });
-    return project;
+  private static async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD | undefined> {
+    const container: ContextContainerNTBD = await getIModelProjectAbstraction().queryProject(requestContext, name);
+    return container;
   }
 
   /**
@@ -75,7 +72,7 @@ export class HubUtility {
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
   public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
-    const projectId: string = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const projectId: string = await HubUtility.getContextContainerIdByName(requestContext, projectName);
     const iModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
 
     return this.purgeAcquiredBriefcasesById(requestContext, iModelId, () => {
@@ -113,9 +110,9 @@ class TestIModelHubProject {
     return IModelHubBackend.iModelClient as IModelHubClient;
   }
 
-  public async queryProject(requestContext: AuthorizedClientRequestContext, query: any | undefined): Promise<Project> {
+  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD> {
     const client = TestIModelHubProject.connectClient;
-    return client.getProject(requestContext, query);
+    return client.getContextContainerByName(requestContext, name);
   }
   public async createIModel(requestContext: AuthorizedClientRequestContext, projectId: string, params: any): Promise<HubIModel> {
     const client = this.iModelHubClient;

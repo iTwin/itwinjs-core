@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { Project } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { BriefcaseQuery, Briefcase as HubBriefcase, IModelCloudEnvironment, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IModelHubFrontend, NativeApp, NativeAppAuthorization } from "@bentley/imodeljs-frontend";
@@ -13,6 +12,7 @@ import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-si
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
+import { ContextContainerNTBD } from "@bentley/context-registry-client";
 
 export class TestUtility {
   public static testContextName = "iModelJsIntegrationTest";
@@ -77,9 +77,9 @@ export class TestUtility {
 
   public static async queryContextIdByName(contextName: string): Promise<string> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const project: Project = await this.imodelCloudEnv.contextMgr.queryProjectByName(requestContext, contextName);
-    assert(project && project.wsgId);
-    return project.wsgId;
+    const container: ContextContainerNTBD = await this.imodelCloudEnv.contextMgr.getContextContainerByName(requestContext, contextName);
+    assert(container && container.id);
+    return container.id;
   }
 
   public static async queryIModelIdbyName(contextId: string, iModelName: string): Promise<string> {

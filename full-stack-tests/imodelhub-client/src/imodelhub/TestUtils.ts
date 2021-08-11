@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import { ClientRequestContext, Config, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
-import { ContextContainerNTBD, Project } from "@bentley/context-registry-client";
+import { ContextContainerNTBD } from "@bentley/context-registry-client";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
@@ -221,17 +221,17 @@ export async function bootstrapBankProject(requestContext: AuthorizedClientReque
     return;
 
   const bankContext = getCloudEnv().contextMgr as IModelBankFileSystemContextClient;
-  let project: Project | undefined;
+  let container: ContextContainerNTBD | undefined;
   try {
-    project = await bankContext.queryProjectByName(requestContext, projectName);
+    container = await bankContext.getContextContainerByName(requestContext, projectName);
   } catch (err) {
     if (err instanceof WsgError && err.errorNumber === WSStatus.InstanceNotFound) {
-      project = undefined;
+      container = undefined;
     } else {
       throw err;
     }
   }
-  if (!project)
+  if (!container)
     await bankContext.createContext(requestContext, projectName);
 
   bankProjects.push(projectName);
@@ -261,12 +261,12 @@ export async function getProjectId(requestContext: AuthorizedClientRequestContex
 
   await bootstrapBankProject(requestContext, projectName);
 
-  const project: Project = await getCloudEnv().contextMgr.queryProjectByName(requestContext, projectName);
+  const container: ContextContainerNTBD = await getCloudEnv().contextMgr.getContextContainerByName(requestContext, projectName);
 
-  if (!project || !project.wsgId)
+  if (!container || !container.id)
     throw new Error(`Project with name ${TestConfig.projectName} doesn't exist.`);
 
-  return project.wsgId;
+  return container.id;
 }
 
 /** iModels */

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IModelConnection, IModelHubFrontend, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp } from "..";
@@ -41,20 +41,20 @@ export class ExternalIModel {
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
 
     const connectClient = new ContextRegistryClient();
-    let project: Project;
+    let container: ContextContainerNTBD;
     try {
-      project = await connectClient.getProject(requestContext, { $filter: `Name+eq+'${projectName}'` });
+      container = await connectClient.getContextContainerByName(requestContext, projectName);
     } catch (e) {
       throw new Error(`Project with name "${projectName}" does not exist`);
     }
 
     const imodelQuery = new IModelQuery();
     imodelQuery.byName(imodelName);
-    const imodels = await IModelHubFrontend.iModelClient.iModels.get(requestContext, project.wsgId, imodelQuery);
+    const imodels = await IModelHubFrontend.iModelClient.iModels.get(requestContext, container.id, imodelQuery);
     if (imodels.length === 0) {
       throw new Error(`iModel with name "${imodelName}" does not exist in project "${projectName}"`);
     }
-    return { projectId: project.wsgId, imodelId: imodels[0].wsgId };
+    return { projectId: container.id, imodelId: imodels[0].wsgId };
   }
 
   /** Handle iModel open event */

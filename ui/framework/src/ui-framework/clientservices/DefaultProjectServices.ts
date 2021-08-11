@@ -8,7 +8,7 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { RequestQueryOptions } from "@bentley/itwin-client";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
 import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import { ProjectInfo, ProjectReadStatus, ProjectScope, ProjectServices } from "./ProjectServices";
@@ -34,9 +34,9 @@ export class DefaultProjectServices implements ProjectServices {
     this._connectClient = new ContextRegistryClient();
   }
 
-  private createProjectInfo(thisProject: Project): ProjectInfo {
+  private createProjectInfo(thisProject: ContextContainerNTBD): ProjectInfo {
     Logger.logTrace(UiFramework.loggerCategory(this), `Working on project '${thisProject.name}'`);
-    const thisProjectInfo: ProjectInfo = new ProjectInfoImpl(thisProject.name ? thisProject.name : "", thisProject.number ? thisProject.number : "", thisProject.wsgId);
+    const thisProjectInfo: ProjectInfo = new ProjectInfoImpl(thisProject.name ? thisProject.name : "", thisProject.containerNumber ? thisProject.containerNumber : "", thisProject.id);
     return thisProjectInfo;
   }
 
@@ -51,20 +51,21 @@ export class DefaultProjectServices implements ProjectServices {
       $filter: filter,
     };
 
-    let projectList: Project[];
+    // SWB DEBUG: Useless lines, used to force compiler to work
+    queryOptions.$top = top;
+    projectScope = projectScope.valueOf();
+    // SWB END DEBUG LINES
+
+    let containerList: ContextContainerNTBD[];
     try {
-      if (projectScope === ProjectScope.Invited) {
-        projectList = await this._connectClient.getInvitedProjects(requestContext, queryOptions);
-      } else {
-        projectList = await this._connectClient.getProjects(requestContext, queryOptions);
-      }
+      containerList = await this._connectClient.getContextContainers(requestContext);
     } catch (e) {
       alert(JSON.stringify(e));
       throw e;
     }
 
     const projects: ProjectInfo[] = [];
-    for (const thisProject of projectList) {
+    for (const thisProject of containerList) {
       projects.push(this.createProjectInfo(thisProject));
     }
     return projects;
