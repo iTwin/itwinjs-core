@@ -76,17 +76,14 @@ As explained in the [overview](../learning/imodel-connectors.md), a "Connector" 
 2. Aligns the source data with the BIS schema and preferably a domain schema, and
 3. Writes BIS data to an iModel.
 
-A complete list of available connectors can be found in [iTwin Services
-Community
-
-Wiki](<https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47595/supported-applications-and-file-formats>)
+A complete list of available connectors can be found in [iTwin Services Community Wiki](<https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47595/supported-applications-and-file-formats>)
 
 Examples of iTwin Connector include:
 
 ![Bentley iTwin Connectors](https://communities.bentley.com/resized-image/__size/650x450/__key/communityserver-wikis-components-files/00-00-00-05-55/Bentley.png)
 ![3rd Party iTwin Connectors](https://communities.bentley.com/resized-image/__size/650x450/__key/communityserver-wikis-components-files/00-00-00-05-55/3rdParty.PNG)
 
-See \[Section on iTwin Synchronization\](#ways-to-sync-data-to-an-itwin) for more details on existing connectors.
+See [Section on iTwin Synchronization](#ways-to-sync-data-to-an-itwin) for more details on existing connectors.
 
 However, in some instances, where a specific format is not covered, one can develop a new Connector using [iModel.js SDK](https://www.itwinjs.org/)
 
