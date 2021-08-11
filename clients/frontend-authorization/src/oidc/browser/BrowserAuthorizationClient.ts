@@ -102,7 +102,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       post_logout_redirect_uri: basicSettings.postSignoutRedirectUri, // eslint-disable-line @typescript-eslint/naming-convention
       response_type: basicSettings.responseType, // eslint-disable-line @typescript-eslint/naming-convention
       automaticSilentRenew: true,
-      silent_redirect_uri: basicSettings.silentRedirectUri ?? basicSettings.redirectUri, // eslint-disable-line @typescript-eslint/naming-convention
+      silent_redirect_uri: basicSettings.silentRedirectUri, // eslint-disable-line @typescript-eslint/naming-convention
       userStore: new WebStorageStateStore({ store: window.localStorage }),
       prompt: basicSettings.prompt,
     };
