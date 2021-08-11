@@ -43,6 +43,18 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                        |
 | `TxnAction`                                                  | `TxnAction` in @bentley/imodeljs-common        |
 
+### @bentley/imodeljs-common
+
+| Removed                                      | Replacement                                                    |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| `Code.getValue`                              | `Code.value`                                                   |
+| `CodeSpec.specScopeType`                     | `CodeSpec.scopeType`                                           |
+| `IModel.changeSetId`                         | `IModel.changeset.id`                                          |
+| `IModelVersion.evaluateChangeSet`            | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
+| `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+
 ### @bentley/imodeljs-frontend
 
 | Removed                           | Replacement                                               |
@@ -107,6 +119,14 @@ SAML support has officially been dropped as a supported workflow. All related AP
 Several changes were made in the @bentley/ui-* packages.
 Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
 A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
+
+### @bentley/extension-cli
+
+The cli tool has been deprecated due to an impending change of Extensions and the Extension Service. Please continue to use the 2.x version if you still require publishing Extensions.
+
+### @bentley/config-loader
+
+The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using .env files will not be affected.
 
 #### Deprecated ui-core Components in Favor of iTwinUI-react Components
 

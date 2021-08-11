@@ -44,7 +44,6 @@
   ],
   "devDependencies": {
     "@axe-core/react": "^4.1.1",
-    "@bentley/logger-config": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
@@ -115,8 +114,6 @@
     "react-beautiful-dnd": "^13.0.0",
     "react-select": "3.1.0",
     "redux": "^4.0.3",
-    "request": "^2.88.0",
-    "request-promise": "^4.2.0",
     "semver": "^5.5.0"
   },
   "browserslist": [
