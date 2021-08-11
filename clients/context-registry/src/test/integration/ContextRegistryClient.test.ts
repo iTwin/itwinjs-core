@@ -39,16 +39,16 @@ describe("ContextRegistryClient (#integration)", () => {
     chai.expect(container.id).equals(TestConfig.containerId);
   });
 
-  it("should get a list of containers by name substring (#integration)", async () => {
-    const searchString = TestConfig.containerName.substr(1,5);
-    const containers: ContextContainerNTBD[] = await contextRegistry.getContextContainersByNameSubstring(requestContext, searchString);
+  // it("should get a list of containers by name substring (#integration)", async () => {
+  //   const searchString = TestConfig.containerName.substr(1,5);
+  //   const containers: ContextContainerNTBD[] = await contextRegistry.getContextContainersByNameSubstring(requestContext, searchString);
 
-    // At least one container
-    chai.expect(containers).to.not.be.empty;
-    // Every container's name contains the search string, case insensitive
-    containers.forEach((container) => {
-      chai.expect(container).to.have.property("name").that.matches(new RegExp(`${searchString}`, "i"));
-    });
-  });
+  //   // At least one container
+  //   chai.expect(containers).to.not.be.empty;
+  //   // Every container's name contains the search string, case insensitive
+  //   containers.forEach((container) => {
+  //     chai.expect(container).to.have.property("name").that.matches(new RegExp(`${searchString}`, "i"));
+  //   });
+  // });
 
 });

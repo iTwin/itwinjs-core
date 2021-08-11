@@ -24,7 +24,7 @@ enum ContextType {
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Context", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class Context extends WsgInstance implements ContextContainerNTBD {
+class Context extends WsgInstance implements ContextContainerNTBD {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
 
@@ -164,7 +164,7 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
     return containers[0];
   }
 
-  /** Get a context container via id
+  /** !Currently unused: Get a context container via id
    * @param requestContext The client request context
    * @param id The unique id/wsgId/ecId of the container
    * @returns A container with matching id, otherwise throws an error
@@ -183,12 +183,12 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
     return containers[0];
   }
 
-  /** Gets all context containers (projects or assets) whose name contains the search string, case insensitive
+  /** !Currently unused: Gets all context containers (projects or assets) whose name contains the search string, case insensitive
    * @param requestContext The client request context
    * @param searchString The regex to compare against each name
    * @returns Array of containers with names containing the searchString
    */
-  public async getContextContainersByNameSubstring(requestContext: AuthorizedClientRequestContext, searchString: string): Promise<ContextContainerNTBD[]> {
+  private async getContextContainersByNameSubstring(requestContext: AuthorizedClientRequestContext, searchString: string): Promise<ContextContainerNTBD[]> {
     const queryOptions: RequestQueryOptions = {
       $select: "*",
       $filter: `name+like+'${searchString}'`,
