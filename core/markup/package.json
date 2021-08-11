@@ -3,6 +3,7 @@
   "version": "2.19.3",
   "description": "iModel.js markup package",
   "main": "lib/imodeljs-markup.js",
+  "typings": "lib/imodeljs-markup",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "scripts": {
