@@ -3,10 +3,26 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { Button, Checkbox, Input, ProgressLinear, ProgressRadial, Radio, Select, ToggleSwitch } from "@itwin/itwinui-react";
+import { Icon } from "@bentley/ui-core";
+import { Button, Checkbox, Input, ProgressLinear, ProgressRadial, Radio, Select, Slider, ToggleSwitch } from "@itwin/itwinui-react";
 import { ComponentExampleCategory } from "./ComponentExamples";
 import { createComponentExample } from "./ComponentExamplesProvider";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
+
+function WrappedSlider() {
+  const [currentValues, setCurrentValues] = React.useState([50]);
+  const handleValueChange = React.useCallback((values: readonly number[]) => {
+    IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Set slider value to ${values[0].toString()}`));
+    setCurrentValues([...values]);
+  }, []);
+
+  // since right panel div is display `flex` and not `block` we must tell slider to fill available width
+  const style: React.CSSProperties = { flex: "1" };
+
+  return (
+    <Slider style={style} min={0} max={100} values={currentValues} step={1} onChange={handleValueChange} />
+  );
+}
 
 export class ITwinUIExamplesProvider {
 
@@ -50,9 +66,50 @@ export class ITwinUIExamplesProvider {
     };
   }
 
+  private static get sliderSamples(): ComponentExampleCategory {
+    // since right panel div is display `flex` and not `block` we must tell slider to fill available width
+    const style: React.CSSProperties = { flex: "1" };
+
+    return {
+      title: "iTwinUI-react Slider",
+      examples: [
+        createComponentExample("Slider", "Basic Slider",
+          <Slider style={style} min={0} max={100} values={[50]} step={1} minLabel="" maxLabel="" />),
+        createComponentExample("Slider w/ tooltipBelow", "Slider with Tooltip Below",
+          <Slider style={style} min={0} max={100} values={[50]} step={1} minLabel="" maxLabel=""
+            tooltipProps={() => { return { placement: "bottom" }; }} />),
+        createComponentExample("Slider w/ min/max", "Slider with prop",
+          <Slider style={style} min={0} max={100} values={[50]} step={1} />),
+        createComponentExample("Slider w/ min/max", "Slider with formatMax prop",
+          <Slider style={style} min={0} max={1} values={[0.5]} step={0.01} maxLabel="1.0" />),
+        createComponentExample("Slider w/ min/max images", "Slider with minImage and maxImage props",
+          <Slider style={style} min={0} max={100} values={[50]} step={1}
+            minLabel={<Icon iconSpec="icon-placeholder" />} maxLabel={<Icon iconSpec="icon-placeholder" />} />),
+        createComponentExample("Slider w/ tick marks", "Slider with showTicks and getTickCount props",
+          <Slider style={style} min={0} max={5} values={[2.25]} step={.01}
+            tickLabels={["", "", "", "", "", "", "", "", "", "", ""]} />),
+        createComponentExample("Slider w/ multiple values", "Slider with array of values",
+          <Slider style={style} min={0} max={100} values={[30, 70]} step={5}
+            tickLabels={["", "", "", "", "", "", "", "", "", "", ""]} />),
+        createComponentExample("Slider multiple values tooltipBelow", "Slider with multiple values & tooltip below",
+          <Slider style={style} min={0} max={100} values={[20, 80]} step={5} thumbMode="allow-crossing"
+            tooltipProps={() => { return { placement: "bottom" }; }}
+            tickLabels={["", "", "", "", "", "", "", "", "", "", ""]} />),
+        createComponentExample("Slider w/ tick labels", "Slider with showTickLabels prop",
+          <Slider style={style} min={0} max={100} values={[50]} step={1}
+            tickLabels={["0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"]} />),
+        createComponentExample("Disabled Slider", "Slider with disabled prop",
+          <Slider style={style} min={0} max={100} values={[50]} step={1} disabled
+            tickLabels={["0", "10", "20", "30", "40", "50", "60", "70", "80", "90", "100"]} />),
+        createComponentExample("Wrapped Slider", "Slider that reports changes", <WrappedSlider />),
+      ],
+    };
+  }
+
   public static get categories(): ComponentExampleCategory[] {
     return [
       ITwinUIExamplesProvider.iTwinUIComponentSamples,
+      ITwinUIExamplesProvider.sliderSamples,
     ];
   }
 

@@ -131,11 +131,6 @@ export class DecorateContext extends RenderContext {
   private readonly _cache: DecorationsCache;
   private _curCacheableDecorator?: ViewportDecorator;
 
-  /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn.
-   * @deprecated use [[DecorateContext.viewport]].
-   */
-  public get screenViewport(): ScreenViewport { return this.viewport; }
-
   /** The [[ScreenViewport]] in which this context's [[Decorations]] will be drawn. */
   public override get viewport(): ScreenViewport {
     return super.viewport as ScreenViewport;
@@ -286,11 +281,8 @@ export class DecorateContext extends RenderContext {
     // an element decoration being added might already be on the decorationDiv, just marked for removal
     if (decoration[ELEMENT_MARKED_FOR_REMOVAL]) {
       decoration[ELEMENT_MARKED_FOR_REMOVAL] = false;
-      // SEE: decorationDiv doc comment
-      // eslint-disable-next-line deprecation/deprecation
-    } else if (decoration.parentElement !== this.screenViewport.decorationDiv) {
-      // eslint-disable-next-line deprecation/deprecation
-      this.screenViewport.decorationDiv.appendChild(decoration);
+    } else if (decoration.parentElement !== this.viewport.decorationDiv) {
+      this.viewport.decorationDiv.appendChild(decoration);
     }
   }
 

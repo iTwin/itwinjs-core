@@ -8,14 +8,14 @@ pr:
   drafts: false
   branches:
     include:
-    - master
-    - release/*
+      - master
+      - release/*
 
 jobs:
   - template: ci-core.yaml
     parameters:
       name: Node_14
-      nodeVersion: 14.17.0
+      nodeVersion: 14.17.4
       pool:
         name: $(name)
         demands:

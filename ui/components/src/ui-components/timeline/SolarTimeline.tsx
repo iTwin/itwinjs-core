@@ -12,10 +12,11 @@
 import "./SolarTimeline.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { GetHandleProps, Handles, Rail, Slider, SliderItem, Ticks } from "react-compound-slider";
+import { Slider, Tooltip } from "@itwin/itwinui-react";
+
 import { ColorByName, ColorDef, HSVColor } from "@bentley/imodeljs-common";
 import { RelativePosition, TimeDisplay } from "@bentley/ui-abstract";
-import { BodyText, CommonProps, ElementResizeObserver, Popup } from "@bentley/ui-core";
+import { BodyText, CommonProps, Popup } from "@bentley/ui-core";
 import { UiComponents } from "../../ui-components/UiComponents";
 import { HueSlider } from "../color/HueSlider";
 import { SaturationPicker } from "../color/SaturationPicker";
@@ -25,301 +26,119 @@ import { PlayButton } from "./PlayerButton";
 import { SpeedTimeline } from "./SpeedTimeline";
 import { DatePicker } from "../datepicker/DatePicker";
 import { TimeField, TimeSpec } from "../datepicker/TimeField";
-import { Tooltip } from "@itwin/itwinui-react";
 import { adjustDateToTimezone } from "../common/DateUtils";
+import { CustomThumb, getPercentageOfRectangle, RailToolTip, useFocusedThumb } from "./Scrubber";
 
 // cSpell:ignore millisec solarsettings showticks shadowcolor solartimeline datepicker millisecs
 
 const millisecPerMinute = 1000 * 60;
 const millisecPerHour = millisecPerMinute * 60;
-const millisecPerDay = millisecPerHour * 24;
-const scrubberIncrement = 1;
+// const millisecPerDay = millisecPerHour * 24;
 const defaultPlaybackDuration = 40 * 1000; // 40 seconds
 const addZero = (i: number) => {
   return (i < 10) ? `0${i}` : i;
 };
-
-// *******************************************************
-// HANDLE COMPONENT
-// *******************************************************
-interface HandleProps {
-  domain: number[];
-  handle: SliderItem;
-  getHandleProps: GetHandleProps;
-}
-
-class Handle extends React.Component<HandleProps> {
-  public override render() {
-    const {
-      domain: [min, max],
-      handle: { id, value, percent },
-      getHandleProps,
-    } = this.props;
-
-    return (
-      <div
-        className="solar-handle"
-        role="slider"
-        aria-valuemin={min}
-        aria-valuemax={max}
-        aria-valuenow={value}
-        style={{ left: `${percent}%` }}
-        {...getHandleProps(id)}>
-        <div /><div /><div />
-      </div>
-    );
-  }
-}
-
-// *******************************************************
-// TOOLTIP RAIL
-// *******************************************************
-interface TooltipRailProps {
-  activeHandleID: string;
-  getRailProps: (props: object) => object;
-  getEventData: (e: Event) => object;
-  formatTime: (millisec: number) => string;
-  dayStartMs: number;
-  sunrise: number; // offset from day start in milliseconds
-  sunset: number;  // offset from day start in milliseconds
-}
-
-interface TooltipRailState {
-  value: number | null;
-  percent: number | null;
-  tooltipTarget: HTMLDivElement | undefined;
-}
-
-class TooltipRail extends React.Component<TooltipRailProps, TooltipRailState> {
-
-  public static defaultProps = {
-    disabled: false,
-  };
-
-  constructor(props: TooltipRailProps) {
-    super(props);
-
-    this.state = {
-      value: null,
-      percent: null,
-      tooltipTarget: undefined,
-    };
-  }
-
-  private _onMouseEnter = () => {
-    document.addEventListener("mousemove", this._onMouseMove);
-  };
-
-  private _onMouseLeave = () => {
-    this.setState({ value: null, percent: null });
-    document.removeEventListener("mousemove", this._onMouseMove);
-  };
-
-  private _onMouseMove = (e: Event) => {
-    const { activeHandleID, getEventData } = this.props;
-
-    if (activeHandleID) {
-      this.setState({ value: null, percent: null });
-    } else {
-      this.setState(getEventData(e));
-    }
-  };
-
-  private _handleTooltipTarget = (element: HTMLDivElement | null) => {
-    this.setState({
-      tooltipTarget: element || undefined,
-    });
-  };
-
-  public override render() {
-    const { value, percent } = this.state;
-    const { formatTime, activeHandleID, getRailProps, dayStartMs, sunrise, sunset } = this.props;
-    const leftOffset = (sunrise / millisecPerDay) * 100;
-    const sunWidth = ((sunset - sunrise) / millisecPerDay) * 100;
-
-    return (
-      <>
-        {!activeHandleID && value ? (
-          <Tooltip
-            className="components-rail-tooltip"
-            visible
-            content={formatTime(dayStartMs + value)}
-          >
-            <div className="rail-tooltip" style={{ left: `${percent}%` }} />
-          </Tooltip>
-        ) : null}
-        <div className="rail-inner" />
-        <div
-          className="rail-outer"
-          {...getRailProps({
-            onMouseEnter: this._onMouseEnter,
-            onMouseLeave: this._onMouseLeave,
-          })}
-        />
-        <div className="rail-solar" style={{ left: `${leftOffset}%`, width: `${sunWidth}%` }} />
-      </>
-    );
-  }
-}
-
-// *******************************************************
-// TICK COMPONENT
-// *******************************************************
-interface TickProps {
-  tick: SliderItem;
-  count: number;
-  index: number;
-  width: number;
-  formatTick: (millisec: number) => string;
-}
-
-function Tick({ tick, count, formatTick }: TickProps) {
-  return (
-    <div>
-      <div className="tick-mark" style={{ left: `${tick.percent}%` }} />
-      <div className="tick-label" style={{ marginLeft: `${-(100 / count) / 2}%`, width: `${100 / count}%`, left: `${tick.percent}%` }}>
-        {formatTick(tick.value)}
-      </div>
-    </div>
-  );
-}
 
 interface TimelineProps extends CommonProps {
   dayStartMs: number;
   sunRiseOffsetMs: number;
   sunSetOffsetMs: number;
   currentTimeOffsetMs: number;
+  isPlaying: boolean;
   formatTick?: (millisec: number) => string;
   formatTime: (millisec: number) => string;
   onChange?: (values: ReadonlyArray<number>) => void;
   onUpdate?: (values: ReadonlyArray<number>) => void;
 }
+function Timeline(props: TimelineProps) {
+  const sliderRef = React.useRef<HTMLDivElement>(null);
+  const [sliderContainer, setSliderContainer] = React.useState<HTMLDivElement>();
+  const [pointerPercent, setPointerPercent] = React.useState(0);
 
-interface TimelineState {
-  sunriseTooltipTarget: HTMLSpanElement | undefined;
-  sunsetTooltipTarget: HTMLSpanElement | undefined;
-  timelineElement: HTMLDivElement | null;
-}
-
-class Timeline extends React.PureComponent<TimelineProps, TimelineState> {
-  private _timelineRef = React.createRef<HTMLDivElement>();
-  public override readonly state = {
-    sunriseTooltipTarget: undefined,
-    sunsetTooltipTarget: undefined,
-    timelineElement: null,
-  };
-
-  private _getTickValues = (width: number) => {
-    const tickValues: number[] = [];
-    let tickIncrement = millisecPerHour;
-    if (width > 600 && width < 900)
-      tickIncrement = millisecPerHour * 2;
-    else if (width <= 600)
-      tickIncrement = millisecPerHour * 4;
-
-    let tickValue = 0;
-    while (tickValue <= millisecPerDay) {
-      tickValues.push(tickValue);
-      tickValue += tickIncrement;
+  React.useLayoutEffect(() => {
+    // istanbul ignore else
+    if (sliderRef.current) {
+      const container = sliderRef.current.querySelector(".iui-slider-container");
+      if (container && sliderContainer !== container) {
+        setSliderContainer(container as HTMLDivElement);
+      }
     }
-    return tickValues;
+  }, [sliderContainer]);
+
+  const thumbProps = () => {
+    return {
+      className: "components-timeline-thumb",
+      children: <CustomThumb />,
+    };
   };
 
-  private _handleSunriseTooltipTarget = (element: HTMLSpanElement | null) => {
-    this.setState({
-      sunriseTooltipTarget: element || undefined,
-    });
-  };
+  const tooltipProps = React.useCallback(() => {
+    return { visible: false };
+  }, []);
 
-  private _handleSunsetTooltipTarget = (element: HTMLSpanElement | null) => {
-    this.setState({
-      sunsetTooltipTarget: element || undefined,
-    });
-  };
+  const [showRailTooltip, setShowRailTooltip] = React.useState(false);
 
-  /** @internal */
-  public override componentDidMount() {
-    this.setState({ timelineElement: this._timelineRef.current });
-  }
+  const handlePointerEnter = React.useCallback(() => {
+    setShowRailTooltip(true);
+  }, []);
 
-  public override render() {
-    const { formatTick, formatTime, onChange, onUpdate, dayStartMs, sunSetOffsetMs, sunRiseOffsetMs, currentTimeOffsetMs } = this.props;
-    const domain = [0, millisecPerDay];
-    const className = classnames("solar-slider", this.props.className, formatTick && "showticks");
-    const sunRiseFormat = formatTime(dayStartMs + sunRiseOffsetMs);
-    const sunSetFormat = formatTime(dayStartMs + sunSetOffsetMs);
-    return (
-      <div className={className}>
-        <Tooltip content={sunRiseFormat}>
-          <span className="sunrise">
-            &#x2600;
-          </span>
-        </Tooltip>
-        <div ref={this._timelineRef} className="ui-component-solar-slider-sizer">
-          <ElementResizeObserver watchedElement={this.state.timelineElement}
-            render={({ width }) => (
-              <Slider
-                mode={(curr, next) => {
-                  // hodgepodge way to get around type issue in react-compound-slider package
-                  const nextValue = ((next[0] as unknown) as MySliderModeValue).val;
-                  if (nextValue > sunSetOffsetMs || nextValue < sunRiseOffsetMs) {
-                    return curr;
-                  }
-                  return next;
-                }}
-                step={scrubberIncrement}
-                domain={domain}
-                rootStyle={{ position: "relative", height: "100%", flex: "1", margin: "0 10px" }}
-                onChange={onChange}
-                onUpdate={onUpdate}
-                values={[currentTimeOffsetMs]}>
-                <Rail>
-                  {(railProps) => <TooltipRail {...railProps} dayStartMs={dayStartMs} sunset={sunSetOffsetMs} sunrise={sunRiseOffsetMs} formatTime={formatTime} />}
-                </Rail>
-                <Handles>
-                  {({ handles, getHandleProps }) => (
-                    <div className="slider-handles">
-                      {handles.map((handle: SliderItem) => (
-                        <Handle
-                          key={handle.id}
-                          handle={handle}
-                          domain={[sunRiseOffsetMs, sunSetOffsetMs]}
-                          getHandleProps={getHandleProps}
-                        />
-                      ))}
-                    </div>
-                  )}
-                </Handles>
-                {formatTick && width &&
-                  <Ticks values={this._getTickValues(width)}>
-                    {({ ticks }) => (
-                      <div className="slider-ticks">
-                        {ticks.map((tick: any, index: number) => (
-                          <Tick
-                            key={tick.id}
-                            tick={tick}
-                            count={ticks.length}
-                            width={width}
-                            index={index}
-                            formatTick={formatTick}
-                          />
-                        ))}
-                      </div>
-                    )}
-                  </Ticks>
-                }
-              </Slider>
-            )}
-          />
-        </div>
-        <Tooltip content={sunSetFormat}>
-          <span className="sunset">
-            &#x263D;
-          </span>
-        </Tooltip>
-      </div>
-    );
-  }
+  const handlePointerLeave = React.useCallback(() => {
+    setShowRailTooltip(false);
+  }, []);
+
+  const handlePointerMove = React.useCallback((event: React.PointerEvent) => {
+    sliderContainer &&
+      setPointerPercent(getPercentageOfRectangle(sliderContainer.getBoundingClientRect(), event.clientX));
+  }, [sliderContainer]);
+
+  const { formatTick, formatTime, onChange, onUpdate, dayStartMs, sunSetOffsetMs, sunRiseOffsetMs, currentTimeOffsetMs, isPlaying } = props;
+
+  const thumbHasFocus = useFocusedThumb(sliderContainer);
+
+  const tickLabel = React.useMemo(() => {
+    const showTip = isPlaying || showRailTooltip || thumbHasFocus;
+    const totalDuration = sunSetOffsetMs - sunRiseOffsetMs;
+    const percent = (isPlaying || thumbHasFocus) ? (currentTimeOffsetMs - sunRiseOffsetMs) / totalDuration : pointerPercent;
+    const tooltipText = formatTime((isPlaying || thumbHasFocus) ? (dayStartMs + currentTimeOffsetMs) : (dayStartMs + (sunRiseOffsetMs + (pointerPercent * totalDuration))));
+    return (<RailToolTip showToolTip={showTip} percent={percent} tooltipText={tooltipText} />);
+  }, [isPlaying, showRailTooltip, thumbHasFocus, sunSetOffsetMs, sunRiseOffsetMs, currentTimeOffsetMs, pointerPercent, formatTime, dayStartMs]);
+
+  const className = classnames("solar-slider", props.className, formatTick && "showticks");
+  const sunRiseFormat = formatTime(dayStartMs + sunRiseOffsetMs);
+  const sunSetFormat = formatTime(dayStartMs + sunSetOffsetMs);
+  return (
+    <div className={className}>
+      <Tooltip content={sunRiseFormat}>
+        <span className="sunrise">
+          &#x2600;
+        </span>
+      </Tooltip>
+      <Slider ref={sliderRef}
+        className={className}
+        step={millisecPerMinute}
+        min={sunRiseOffsetMs}
+        max={sunSetOffsetMs}
+        minLabel=""
+        maxLabel=""
+        onUpdate={onUpdate}
+        onChange={onChange}
+        values={[currentTimeOffsetMs]}
+        tooltipProps={tooltipProps}
+        thumbProps={thumbProps}
+        tickLabels={tickLabel}
+        railContainerProps={{
+          onPointerEnter: handlePointerEnter,
+          onPointerMove: handlePointerMove,
+          onPointerLeave: handlePointerLeave,
+        }}
+      />
+      <Tooltip content={sunSetFormat}>
+        <span className="sunset">
+          &#x263D;
+        </span>
+      </Tooltip>
+    </div>
+  );
 }
 
 interface SolarTimelineComponentProps {
@@ -340,16 +159,9 @@ interface SolarTimelineComponentState {
   currentTimeOffsetMs: number;
   speed: number;
   loop: boolean;
-  isExpanded: boolean;
   shadowColor: ColorDef;
   duration: number;  // playback duration in milliseconds
   adjustedDuration: number;  // playback duration in milliseconds/ speed
-}
-
-/** create local type that can be used to retrieve slider values */
-interface MySliderModeValue {
-  key: string;
-  val: number;
 }
 
 /** Solar Timeline
@@ -367,8 +179,6 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
   private _settingLabel = UiComponents.i18n.translate("UiComponents:solartimeline.settings");
   private _loopLabel = UiComponents.i18n.translate("UiComponents:timeline.repeat");
   private _speedLabel = UiComponents.i18n.translate("UiComponents:solartimeline.speed");
-  private _expandLabel = UiComponents.i18n.translate("UiComponents:timeline.expand");
-  private _minimizeLabel = UiComponents.i18n.translate("UiComponents:timeline.minimize");
   private _dateTimeLabel = UiComponents.i18n.translate("UiComponents:solartimeline.dateTime");
 
   private _months = [
@@ -425,7 +235,6 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
       sunDeltaMs,
       currentTimeOffsetMs,
       speed,
-      isExpanded: false,
       loop: false,
       shadowColor,
       duration,
@@ -630,17 +439,6 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
     this.setState((prevState) => ({ loop: !prevState.loop }));
   };
 
-  private _onToggleDisplay = () => {
-    this.setState((prevState) => ({ isExpanded: !prevState.isExpanded }));
-  };
-
-  private _formatTick = (millisec: number) => {
-    const hour = millisec / millisecPerHour;
-    const abbrev = (hour < 12) ? this._amLabel : (hour === 24) ? this._amLabel : this._pmLabel;
-    const newHour = (hour === 0) ? 12 : (hour <= 12) ? hour : hour - 12;
-    return `${newHour}${abbrev}`;
-  };
-
   private _formatTime = (millisec: number) => {
     const date = new Date(millisec);
     // convert project date to browser locale date
@@ -672,7 +470,8 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
 
   public override render() {
     const { dataProvider } = this.props;
-    const { speed, loop, currentTimeOffsetMs, isExpanded, sunRiseOffsetMs, sunSetOffsetMs } = this.state;
+    const { speed, loop, currentTimeOffsetMs,
+      sunRiseOffsetMs, sunSetOffsetMs } = this.state;
     const localTime = this.getLocalTime(this.state.dayStartMs + this.state.currentTimeOffsetMs);
     const formattedTime = this._formatTime(dataProvider.dayStartMs + currentTimeOffsetMs);
     const formattedDate = `${this._months[localTime.getMonth()]}, ${localTime.getDate()}`;
@@ -681,20 +480,9 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
       width: `100%`,
       height: `100%`,
     };
-    const expandMinimizeLabel = isExpanded ? this._expandLabel : this._minimizeLabel;
 
     return (
-      <div className={classnames("solar-timeline-wrapper", isExpanded && "expanded")} >
-        <Timeline className="solar-timeline-expanded"
-          dayStartMs={dataProvider.dayStartMs}
-          sunSetOffsetMs={sunSetOffsetMs}
-          sunRiseOffsetMs={sunRiseOffsetMs}
-          currentTimeOffsetMs={currentTimeOffsetMs}
-          onChange={this._onChange}
-          onUpdate={this._onUpdate}
-          formatTime={this._formatTime}
-          formatTick={this._formatTick}
-        />
+      <div className={"solar-timeline-wrapper"} >
         <div className="header">
           <PlayButton tooltip={this._playLabel} className="play-button" isPlaying={this.state.isPlaying} onPlay={this._onPlay} onPause={this._onPause} />
           <button data-testid="solar-date-time-button" title={this._dateTimeLabel} className="current-date" ref={(element) => this._datePicker = element} onClick={this._onOpenDayPicker}>
@@ -720,6 +508,7 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
             onChange={this._onChange}
             onUpdate={this._onUpdate}
             formatTime={this._formatTime}
+            isPlaying={this.state.isPlaying}
           />
           <div className="speed-container">
             <span title={this._speedLabel}>{speed}x</span>
@@ -761,10 +550,6 @@ export class SolarTimeline extends React.PureComponent<SolarTimelineComponentPro
               </div>
             </div>
           </Popup>
-          {/* eslint-disable-next-line jsx-a11y/click-events-have-key-events */}
-          <span title={expandMinimizeLabel} data-testid="solar-timeline-toggle-expand" className="expanded-icon icon icon-chevron-up" onClick={this._onToggleDisplay}
-            role="button" tabIndex={-1}
-          ></span>
         </div>
       </div>
     );

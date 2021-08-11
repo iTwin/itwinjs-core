@@ -6,8 +6,6 @@
  * @module iModels
  */
 
-// cspell:ignore ulas postrc pollrc CANTOPEN
-
 import {
   assert, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
   IModelStatus, JsonUtils, Logger, OpenMode,
@@ -640,16 +638,6 @@ export abstract class IModelDb extends IModel {
     });
     return ids;
   }
-
-  /** Empty the ECSqlStatementCache for this iModel.
-   * @deprecated use clearCaches
-   */
-  public clearStatementCache(): void { this._statementCache.clear(); }
-
-  /** Empty the SqliteStatementCache for this iModel.
-   * @deprecated use clearCaches
-   */
-  public clearSqliteStatementCache(): void { this._sqliteStatementCache.clear(); }
 
   /** Clear all in-memory caches held in this IModelDb. */
   public clearCaches() {
@@ -1428,9 +1416,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public getSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T {
       const modeledElementProps = this._iModel.elements.getElementProps<ElementProps>(modeledElementId);
-      if (modeledElementProps.id === IModel.rootSubjectId) {
+      if (modeledElementProps.id === IModel.rootSubjectId)
         throw new IModelError(IModelStatus.NotFound, "Root subject does not have a sub-model");
-      }
       return this.getModel<T>(modeledElementProps.id!, modelClass);
     }
 
@@ -1443,9 +1430,9 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
      */
     public tryGetSubModel<T extends Model>(modeledElementId: Id64String | GuidString | Code, modelClass?: EntityClassType<Model>): T | undefined {
       const modeledElementProps = this._iModel.elements.tryGetElementProps(modeledElementId);
-      if ((undefined === modeledElementProps) || (IModel.rootSubjectId === modeledElementProps.id)) {
+      if ((undefined === modeledElementProps) || (IModel.rootSubjectId === modeledElementProps.id))
         return undefined;
-      }
+
       return this.tryGetModel<T>(modeledElementProps.id!, modelClass);
     }
 
@@ -2146,7 +2133,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
  */
 export class BriefcaseDb extends IModelDb {
   /** Manages local changes to this briefcase. */
-  public readonly txns = new TxnManager(this);
+  public readonly txns: TxnManager = new TxnManager(this);
 
   /** override superclass method */
   public override get isBriefcase(): boolean { return true; }
@@ -2221,7 +2208,12 @@ export class BriefcaseDb extends IModelDb {
 
   /** Upgrades the profile or domain schemas */
   private static async upgradeProfileOrDomainSchemas(arg: { requestContext: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps, upgradeOptions: UpgradeOptions, description: string }): Promise<void> {
-    const lockArg = { ...arg, ...arg.briefcase, csIndex: 0 };
+    const lockArg = {
+      briefcase: {
+        briefcaseId: arg.briefcase.briefcaseId, changeset: { id: arg.briefcase.changeSetId, index: arg.briefcase.changesetIndex }, iModelId: arg.briefcase.iModelId,
+      },
+      requestContext: arg.requestContext,
+    };
     const requestContext = arg.requestContext;
     // Lock schemas
     await IModelHost.hubAccess.acquireSchemaLock(lockArg);
@@ -2419,10 +2411,6 @@ export class SnapshotDb extends IModelDb {
   public override get isSnapshot(): boolean { return true; }
   private _reattachDueTimestamp: number | undefined;
   private _createClassViewsOnClose?: boolean;
-  /** The full path to the snapshot iModel file.
-   * @deprecated use pathName
-  */
-  public get filePath(): string { return this.pathName; }
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
     const openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
@@ -2607,10 +2595,6 @@ export class StandaloneDb extends IModelDb {
   public override get isStandalone(): boolean { return true; }
   /** Manages local changes to this briefcase. */
   public readonly txns: TxnManager;
-  /** The full path to the standalone iModel file.
-   * @deprecated use pathName
-   */
-  public get filePath(): string { return this.pathName; }
 
   public static override findByKey(key: string): StandaloneDb {
     return super.findByKey(key) as StandaloneDb;
