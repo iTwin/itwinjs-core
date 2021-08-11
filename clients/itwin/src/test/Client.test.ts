@@ -5,7 +5,7 @@
 
 import { Client } from "../Client";
 import { expect } from "chai";
-import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 
 class TestApiClient extends Client {
   public constructor() {
@@ -32,12 +32,11 @@ describe("Client", () => {
   });
 
   it("should apply prefix with config entry", async () => {
-    // eslint-disable-next-line dot-notation
-    process.env.
+    process.env.imjs_url_prefix = "test-";
     const requestContext = new ClientRequestContext();
     const url = await client.getUrl(requestContext);
     expect(url).to.equal("https://test-api.bentley.com/test-api");
     // eslint-disable-next-line dot-notation
-    process.env["imjs_url_prefix"] = undefined;
+    process.env.imjs_url_prefix = undefined;
   });
 });
