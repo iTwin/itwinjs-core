@@ -5,6 +5,7 @@
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import * as React from "react";
+import { findInstance } from "../ReactInstance";
 import * as sinon from "sinon";
 import { SearchBox } from "../../ui-core";
 import TestUtils from "../TestUtils";
@@ -118,10 +119,8 @@ describe("SearchBox", () => {
     });
 
     it("should set focus to input", () => {
-      const { getByRole, getByTestId} = render (<SearchBox onValueChanged={() => { }} placeholder="Search" />);
-      const searchBox = getByRole("searchbox");
-      searchBox.focus();
-
+      const { getByTestId } = render (<SearchBox onValueChanged={() => { }} placeholder="Search" />);
+      findInstance(getByTestId("core-searchbox-instance")).focus();
       const inputElement = getByTestId("core-searchbox-input");
       const focusedElement = document.activeElement;
       expect(inputElement).to.eq(focusedElement);

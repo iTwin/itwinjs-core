@@ -105,12 +105,14 @@ describe("ChildWindowManager", () => {
   it("no styles to styles", () => {
     const childDoc = new DOMParser().parseFromString(childHtml, "text/html");
     copyStyles(childDoc);
-    expect(document.styleSheets.length).to.eql(childDoc.styleSheets.length);
+    const childStyleSheetCount = childDoc.head.querySelectorAll("style").length;
+    const documentStyleSheetCount = document.head.querySelectorAll("style").length;
+    expect(documentStyleSheetCount).to.eql(childStyleSheetCount);
   });
 
   it("will copy styles", () => {
     const mainDoc = new DOMParser().parseFromString(mainHtml, "text/html");
-    const childDoc = new DOMParser().parseFromString(childHtml, "text/html");
+    const childDoc = new DOMParser().parseFromString(childHtml, "text/html");;
     copyStyles(childDoc, mainDoc);
     expect(childDoc.getElementById("__SVG_SPRITE_NODE__")).to.not.be.null;
     expect(mainDoc.styleSheets.length).to.eql(childDoc.styleSheets.length);

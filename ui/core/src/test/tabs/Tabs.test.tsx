@@ -9,6 +9,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 import { HorizontalTabs, Orientation, Tabs, VerticalTabs } from "../../ui-core";
+import { findInstance } from "../ReactInstance";
 
 describe("<Tabs />", () => {
   it("labels render correctly", () => {
@@ -192,7 +193,7 @@ describe("<Tabs />", () => {
     userEvent.type(label, "{arrowup}");
     expect(document.activeElement).to.eq(tabButtons[0]);
 
-    rerender (<Tabs orientation={Orientation.Horizontal} mainClassName="" labels={["label 1", "label 2", "label 3", "label 4"]} activeIndex={1} />)
+    rerender (<Tabs orientation={Orientation.Horizontal} mainClassName="" labels={["label 1", "label 2", "label 3", "label 4"]} activeIndex={1} />);
     tabButtons = getAllByRole("button");
     expect(tabButtons.length).to.eq(4);
     label = screen.getByText("label 2");
@@ -202,33 +203,29 @@ describe("<Tabs />", () => {
     expect(document.activeElement).to.eq(tabButtons[1]);
   });
 
-  // it.only("Supports updating activeIndex", async () => {
-  //   const wrapper = mount<Tabs>(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]}
-  //     activeIndex={0} />);
-  //   expect(wrapper.state().activeIndex).to.eq(0);
+  it("Supports updating activeIndex", async () => {
+    const { container, getByText, getAllByRole, rerender } = render (<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={0} />);
+    const tabsInstance = findInstance(container.firstChild);
+    expect(tabsInstance.state.activeIndex).to.eq(0);
 
-  //   const label = wrapper.find("a").at(0);
-  //   label.simulate("keydown", { key: "Home" });
-  //   const first = wrapper.find("a").at(0).getDOMNode();
-  //   expect(document.activeElement).contains(first);
+    const label = getByText("label 1");
+    userEvent.type(label, "{home}");
+    const tabButtons = getAllByRole("button");
+    expect(document.activeElement).to.eq(tabButtons[0]);
 
-  //   wrapper.setProps({ activeIndex: 1 });
-  //   wrapper.update();
-  //   expect(wrapper.state().activeIndex).to.eq(1);
-  //   const second = wrapper.find("a").at(1).getDOMNode();
-  //   expect(document.activeElement).contains(second);
+    rerender(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    expect(tabsInstance.state.activeIndex).to.eq(1);
+    expect(document.activeElement).to.eq(tabButtons[1]);
 
-  //   wrapper.setProps({ activeIndex: undefined });
-  //   expect(wrapper.state().activeIndex).to.eq(0);
+    rerender(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} />);
+    expect(document.activeElement).to.eq(tabButtons[0]);
 
-  //   document.documentElement.focus();
-  //   wrapper.setProps({ activeIndex: 2 });
-  //   expect(wrapper.state().activeIndex).to.eq(2);
+    document.documentElement.focus();
+    rerender(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={2} />);
+    expect(tabsInstance.state.activeIndex).to.eq(2);
 
-  //   wrapper.setProps({ activeIndex: 3 });
-  //   expect(wrapper.state().activeIndex).to.eq(0);
-
-  //   wrapper.unmount();
-  // });
+    rerender(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={3} />);
+    expect(tabsInstance.state.activeIndex).to.eq(0);
+  });
 
 });

@@ -19,8 +19,6 @@ describe("<Form />", () => {
     TestUtils.terminateUiCore();
   });
 
-
-
   stubScrollIntoView();
 
   /* eslint-disable @typescript-eslint/naming-convention */

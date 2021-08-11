@@ -19,7 +19,6 @@ const matches = [
 
 describe("<FilteredText />", () => {
 
-
   it("should render", async () => {
     const wrapper = render(<FilteredText value={"Hello World!"} />);
     const foundText = await wrapper.findAllByText("Hello World!");

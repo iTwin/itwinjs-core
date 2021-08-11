@@ -7,7 +7,7 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { fireEvent, render, RenderResult, waitFor } from "@testing-library/react";
+import { fireEvent, render, RenderResult } from "@testing-library/react";
 import { Popup, PopupProps } from "../../ui-core";
 import { createBoundingClientRect } from "../Utils";
 

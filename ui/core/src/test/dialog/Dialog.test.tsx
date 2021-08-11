@@ -15,8 +15,6 @@ import { DialogButtonType } from "@bentley/ui-abstract";
 
 describe("Dialog", () => {
 
-
-
   const createBubbledEvent = (type: string, props = {}) => {
     return TestUtils.createBubbledEvent(type, props);
   };

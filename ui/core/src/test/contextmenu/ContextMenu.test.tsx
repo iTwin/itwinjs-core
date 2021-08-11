@@ -14,8 +14,6 @@ import TestUtils from "../TestUtils";
 
 describe("ContextMenu", () => {
 
-
-
   const createBubbledEvent = (type: string, props = {}) => {
     return TestUtils.createBubbledEvent(type, props);
   };

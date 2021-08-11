@@ -13,8 +13,6 @@ import { Listbox, ListboxItem, ListboxValue } from "../../ui-core/listbox/Listbo
 describe("<ListBox />", () => {
   const listItems = ["London", "Paris", "Stockholm", "Berlin", "Mumbai", "Christchurch", "Johannesburg", "Beijing", "New York"];
 
-
-
   it("renders single item list", () => {
     const listBox = render(
       <Listbox id="test-list" className="map-manager-source-list" >

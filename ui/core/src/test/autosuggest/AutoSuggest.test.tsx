@@ -70,21 +70,21 @@ describe("AutoSuggest", () => {
 
     const inputNode: HTMLElement = input!;
     fireEvent.focusIn(inputNode);
-    fireEvent.change(inputNode, { target: { value: "abc" } })
+    fireEvent.change(inputNode, { target: { value: "abc" } });
     await TestUtils.flushAsyncOperations();
 
     let li = container.querySelectorAll("li");
     expect(li).not.to.be.null;
     expect(li?.length).to.eq(1);
 
-    fireEvent.change(inputNode, { target: { value: "lab" } })
+    fireEvent.change(inputNode, { target: { value: "lab" } });
     await TestUtils.flushAsyncOperations();
 
     li = container.querySelectorAll("li");
     expect(li).not.to.be.null;
     expect(li?.length).to.eq(3);
 
-    fireEvent.change(inputNode, { target: { value: "" } })
+    fireEvent.change(inputNode, { target: { value: "" } });
     await TestUtils.flushAsyncOperations();
 
     li = container.querySelectorAll("li");
@@ -101,10 +101,10 @@ describe("AutoSuggest", () => {
 
     const inputNode: HTMLElement = input!;
     fireEvent.focusIn(inputNode);
-    fireEvent.change(inputNode, { target: { value: "abc" } })
+    fireEvent.change(inputNode, { target: { value: "abc" } });
     await TestUtils.flushAsyncOperations();
 
-    let li = container.querySelectorAll("li");
+    const li = container.querySelectorAll("li");
     expect(li).not.to.be.null;
     expect(li?.length).to.eq(1);
 
@@ -142,7 +142,7 @@ describe("AutoSuggest", () => {
 
     const inputNode: HTMLElement = input!;
     fireEvent.focusIn(inputNode);
-    fireEvent.change(inputNode, { target: { value: "abc" } })
+    fireEvent.change(inputNode, { target: { value: "abc" } });
     await TestUtils.flushAsyncOperations();
 
     const li = container.querySelectorAll("li");
@@ -159,7 +159,7 @@ describe("AutoSuggest", () => {
 
     const inputNode: HTMLElement = input!;
     fireEvent.focusIn(inputNode);
-    fireEvent.change(inputNode, { target: { value: "abc" } })
+    fireEvent.change(inputNode, { target: { value: "abc" } });
     await TestUtils.flushAsyncOperations();
 
     const li = container.querySelectorAll("li");
@@ -241,7 +241,7 @@ describe("AutoSuggest", () => {
 
     const inputNode: HTMLElement = input!;
     fireEvent.focusIn(inputNode);
-    fireEvent.change(inputNode, { target: { value: "abc" } })
+    fireEvent.change(inputNode, { target: { value: "abc" } });
     await TestUtils.flushAsyncOperations();
 
     const li = container.querySelectorAll("li");

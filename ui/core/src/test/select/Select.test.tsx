@@ -70,7 +70,6 @@ describe("<Select />", () => {
 
 describe("<Select - React Testing Library />", () => {
 
-
   it("focus into select with setFocus prop", () => {
     const component = render(<Select options={[]} setFocus={true} />);
     const input = component.container.querySelector("select");

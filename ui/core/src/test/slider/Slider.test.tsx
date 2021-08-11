@@ -14,8 +14,6 @@ import TestUtils from "../TestUtils";
 
 describe("Slider", () => {
 
-
-
   it("should render", () => {
     const component = render(<Slider min={0} max={100} values={[50]} />);
     expect(component.queryByTestId("core-slider-min")).to.not.exist;
