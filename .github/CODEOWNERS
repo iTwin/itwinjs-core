@@ -59,7 +59,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/eslint-plugin/                         @calebmshafer @paulius-valiunas
 /common/**/express-server.*                       @calebmshafer @wgoehrig
 /common/**/express-server/                        @calebmshafer @wgoehrig
-/common/**/extension-cli/                         @calebmshafer @paulius-valiunas
 /common/**/extension-webpack-tools/               @calebmshafer @wgoehrig
 /common/**/frontend-devtools.*                    @imodeljs/display @Ellord207
 /common/**/frontend-devtools/                     @imodeljs/display @Ellord207
@@ -87,8 +86,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/linear-referencing-backend/            @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common.*            @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common/             @calebmshafer @diegoalexdiaz
-/common/**/logger-config.*                        @calebmshafer @swwilson-bsi @wgoehrig
-/common/**/logger-config/                         @calebmshafer @swwilson-bsi @wgoehrig
 /common/**/map-layers/                            @bsteinbk @mdastous-bentley
 /common/**/oidc-signin-tool/                      @calebmshafer @wgoehrig
 /common/**/orbitgt-core.*                         @imodeljs/display
@@ -125,7 +122,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /core/hypermodeling             @bbastings @imodeljs/display
 /core/i18n                      @wgoehrig @calebmshafer
 /core/imodel-bridge             @imodeljs/connectors
-/core/logger-config             @calebmshafer @swwilson-bsi @wgoehrig
 /core/markup                    @kabentley @pmconne @bbastings
 /core/orbitgt                   @imodeljs/display
 /core/quantity                  @bsteinbk @calebmshafer
@@ -182,7 +178,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /tools/webpack-core @calebmshafer @wgoehrig
 /tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig
 /tools/eslint-plugin @calebmshafer @paulius-valiunas
-/tools/extension-cli @calebmshafer @paulius-valiunas
 /tools/internal @calebmshafer @wgoehrig
 /tools/perf-tools @calebmshafer @wgoehrig
 
