@@ -15,6 +15,7 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 // SWB NOTE: Name To Be Determined
 export interface ContextContainerNTBD {
   name?: string;
+  // SWB NOTE: Should this be GuidString?
   id: string;
   // SWB NOTE: Maybe change to containerCode, since it is not required to be a number?
   containerNumber?: string;

@@ -25,9 +25,6 @@ export enum ContextType {
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Context", { schemaPropertyName: "schemaName", classPropertyName: "className" })
 export class Context extends WsgInstance implements ContextContainerNTBD {
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.ContextTypeId")
-  public contextTypeId?: ContextType;
-
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
 
@@ -43,7 +40,12 @@ export class Context extends WsgInstance implements ContextContainerNTBD {
   public set id(value: string) {
     this._id = value;
   }
+}
 
+/** Set of the original properties in the Project and Asset classes that are now deprecated
+ * @beta
+ */
+abstract class HiddenContext extends Context {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Number")
   public containerNumber?: string;
 
@@ -61,12 +63,10 @@ export class Context extends WsgInstance implements ContextContainerNTBD {
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AllowExternalTeamMembers")
   public allowExternalTeamMembers?: boolean;
-}
 
-/**
- * @beta
- */
-abstract class CommonContext extends Context {
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.ContextTypeId")
+  public contextTypeId?: ContextType;
+
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CountryCode")
   public countryCode?: string;
 
@@ -81,12 +81,7 @@ abstract class CommonContext extends Context {
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.LastModifiedBy")
   public lastModifiedBy?: string;
-}
 
-/**
- * @beta
- */
-abstract class CommonAssetProjectContext extends CommonContext {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Industry")
   public industry?: string;
 
@@ -110,7 +105,7 @@ abstract class CommonAssetProjectContext extends CommonContext {
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class Project extends CommonAssetProjectContext {
+class Project extends HiddenContext {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AssetId")
   public assetId?: string;
 
@@ -125,7 +120,7 @@ export class Project extends CommonAssetProjectContext {
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Asset", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-class Asset extends CommonAssetProjectContext {
+class Asset extends HiddenContext {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AssetType")
   public assetType?: string;
 }

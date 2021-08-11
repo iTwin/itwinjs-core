@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as fs from "fs";
@@ -29,18 +29,15 @@ loadEnv(path.join(__dirname, "..", "..", ".env"));
 /** Basic configuration used by all tests
  */
 export class TestConfig {
-  /** Query for the specified project */
-  public static async queryProjectId(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {
+  /** Query for the specified context container */
+  public static async getContextContainerIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
     const contextRegistry = new ContextRegistryClient();
-    const project: Project | undefined = await contextRegistry.getProject(requestContext, {
-      $select: "*",
-      $filter: `Name+eq+'${projectName}'`,
-    });
-    if (!project || !project.wsgId) {
+    const container: ContextContainerNTBD | undefined = await contextRegistry.getContextContainerByName(requestContext, name);
+    if (!container || !container.id) {
       const userInfo = requestContext.accessToken.getUserInfo();
-      throw new Error(`Project ${projectName} not found for user ${!userInfo ? "n/a" : userInfo.email}.`);
+      throw new Error(`Context container ${name} not found for user ${!userInfo ? "n/a" : userInfo.email}.`);
     }
-    return project.wsgId;
+    return container.id;
   }
 
   /** Query for the specified iModel */

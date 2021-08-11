@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { ContextContainerNTBD, Project } from "@bentley/context-registry-client";
+import { ContextContainerNTBD } from "@bentley/context-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { IModelClient } from "./IModelClient";
@@ -14,7 +14,6 @@ import { IModelClient } from "./IModelClient";
  * @internal
  */
 export interface ContextManagerClient {
-  queryProjectByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<Project>;
   getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD>;
 }
 

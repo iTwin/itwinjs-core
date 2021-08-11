@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 
@@ -14,8 +14,8 @@ function isOfflineSet(): boolean {
 /** Basic configuration used by all tests
  */
 export class TestConfig {
-  /** Name of project used by most tests */
-  public static readonly projectName: string = "iModelJsIntegrationTest";
+  /** Name of context containers (Projects or Assets) used by most tests */
+  public static readonly containerName: string = "iModelJsIntegrationTest";
   public static readonly enableMocks: boolean = isOfflineSet();
 
   /** Login the specified user and return the AuthorizationToken */
@@ -24,14 +24,11 @@ export class TestConfig {
     return new AuthorizedClientRequestContext((accessToken as any) as AccessToken);
   }
 
-  public static async queryProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<Project> {
+  public static async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD> {
     const contextRegistry = new ContextRegistryClient();
-    const project: Project | undefined = await contextRegistry.getProject(requestContext, {
-      $select: "*",
-      $filter: `Name+eq+'${projectName}'`,
-    });
-    if (!project || !project.wsgId)
-      throw new Error(`Project ${projectName} not found for user.`);
-    return project;
+    const container: ContextContainerNTBD | undefined = await contextRegistry.getContextContainerByName(requestContext, name);
+    if (!container || !container.id)
+      throw new Error(`Context container ${name} not found for user.`);
+    return container;
   }
 }

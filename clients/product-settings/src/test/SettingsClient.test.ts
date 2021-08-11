@@ -48,7 +48,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
   before(async () => {
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
-    projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+    projectId = (await TestConfig.getContextContainerByName(requestContext, TestConfig.contextContainerName)).id;
     chai.assert.isDefined(projectId);
     iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
     chai.assert.isDefined(iModelId);
@@ -291,7 +291,7 @@ describe("ConnectSettingsClient-Administrator (#integration)", () => {
 
     requestContext = await TestConfig.getAuthorizedClientRequestContext(TestUsers.super);
 
-    projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+    projectId = (await TestConfig.getContextContainerByName(requestContext, TestConfig.contextContainerName)).id;
     chai.assert.isDefined(projectId);
     iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
     chai.assert.isDefined(iModelId);
@@ -547,7 +547,7 @@ describe("Reading non-user settings from ordinary user (#integration)", () => {
     settingsClient = new ConnectSettingsClient("1001");
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
-    projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+    projectId = (await TestConfig.getContextContainerByName(requestContext, TestConfig.contextContainerName)).id;
     chai.assert.isDefined(projectId);
     iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
     chai.assert.isDefined(iModelId);
@@ -616,7 +616,7 @@ describe("ConnectSettingsClient-Shared (#integration)", () => {
   before(async () => {
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
-    projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+    projectId = (await TestConfig.getContextContainerByName(requestContext, TestConfig.contextContainerName)).id;
     chai.assert.isDefined(projectId);
     iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
     chai.assert.isDefined(iModelId);
@@ -843,7 +843,7 @@ describe("ConnectSettingsClient-User (#integration)", () => {
   before(async () => {
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
 
-    projectId = (await TestConfig.queryProject(requestContext, TestConfig.projectName)).wsgId;
+    projectId = (await TestConfig.getContextContainerByName(requestContext, TestConfig.contextContainerName)).id;
     chai.assert.isDefined(projectId);
     iModelId = (await TestConfig.queryIModel(requestContext, projectId)).wsgId;
     chai.assert.isDefined(iModelId);

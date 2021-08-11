@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
 import { Guid } from "@bentley/bentleyjs-core";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
@@ -32,8 +32,16 @@ export class ServerArgs {
 /** Helps with queries on Bentley Connect */
 export class ConnectUtils {
   public static async getContextId(contextName: string, requestContext: AuthorizedClientRequestContext): Promise<string> {
-    const project: Project = await (new ContextRegistryClient()).getProject(requestContext, { $select: "$id", $filter: `Name+like+'${contextName}'` }); // Throws if project not found
-    return project.wsgId;
+    const containers: ContextContainerNTBD[] = await (new ContextRegistryClient()).getContextContainersByNameSubstring(requestContext, contextName); // Throws if project not found
+
+    // No matching containers found
+    if (containers.length < 1)
+      throw Error(`Context container matching ${contextName} not found`);
+    else if (containers.length > 1)
+      // SWB NOTE: Error here?
+      throw Error(`Multiple context containers matching ${contextName} were found`);
+
+    return containers[0].id;
   }
 }
 

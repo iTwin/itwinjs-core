@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
+import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
 import { Briefcase, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetType } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -36,7 +36,7 @@ export class HubUtility {
 
     if (undefined !== HubUtility.contextId)
       return HubUtility.contextId;
-    return HubUtility.queryProjectIdByName(requestContext, HubUtility.testContextName);
+    return HubUtility.getContextContainerIdByName(requestContext, HubUtility.testContextName);
   }
 
   private static imodelCache = new Map<string, GuidString>();
@@ -51,17 +51,6 @@ export class HubUtility {
     return imodelId;
   }
 
-  private static async queryContextByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string | undefined> {
-    if (undefined !== HubUtility.contextId)
-      return HubUtility.contextId;
-
-    const project = await getIModelProjectAbstraction().queryProject(requestContext, {
-      $select: "*",
-      $filter: `Name+eq+'${projectName}'`,
-    });
-    return project.wsgId;
-  }
-
   public static async queryIModelByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString | undefined> {
     return IModelHost.hubAccess.queryIModelByName({ requestContext, contextId: projectId, iModelName });
   }
@@ -74,16 +63,20 @@ export class HubUtility {
   }
 
   /**
-   * Queries the project id by its name
+   * Queries the context container id by its name
    * @param requestContext The client request context
-   * @param projectName Name of project
-   * @throws If the project is not found, or there is more than one project with the supplied name
+   * @param name Name of context container
+   * @throws If the context container is not found, or there is more than one context container with the supplied name
    */
-  public static async queryProjectIdByName(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<string> {
-    const project = await HubUtility.queryContextByName(requestContext, projectName);
-    if (!project)
-      throw new Error(`Project ${projectName} not found`);
-    return project;
+  public static async getContextContainerIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
+    if (undefined !== HubUtility.contextId)
+      return HubUtility.contextId;
+
+    const container = await getIModelProjectAbstraction().getContextContainerByName(requestContext, name);
+    if (container === undefined || !container.id)
+      throw new Error(`Context container ${name} not found`);
+
+    return container.id;
   }
 
   /**
@@ -187,7 +180,7 @@ export class HubUtility {
    *  A standard hierarchy of folders is created below the supplied downloadDir
    */
   public static async downloadIModelByName(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, downloadDir: string, reDownload: boolean): Promise<void> {
-    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const projectId = await HubUtility.getContextContainerIdByName(requestContext, projectName);
 
     const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, iModelName);
     if (!iModelId)
@@ -198,7 +191,7 @@ export class HubUtility {
 
   /** Delete an IModel from the hub */
   public static async deleteIModel(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string): Promise<void> {
-    const contextId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const contextId = await HubUtility.getContextContainerIdByName(requestContext, projectName);
     const iModelId = await HubUtility.queryIModelIdByName(requestContext, contextId, iModelName);
 
     await IModelHost.hubAccess.deleteIModel({ requestContext, contextId, iModelId });
@@ -365,7 +358,7 @@ export class HubUtility {
    * It's assumed that the uploadDir contains a standard hierarchy of seed files and change sets.
    */
   public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, projectName: string, uploadDir: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
-    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const projectId = await HubUtility.getContextContainerIdByName(requestContext, projectName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
     const iModelId = await HubUtility.pushIModel(requestContext, projectId, seedPathname, iModelName, overwrite);
 
@@ -462,7 +455,7 @@ export class HubUtility {
    */
   public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
     assert.isTrue(this.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const projectId = await HubUtility.getContextContainerIdByName(requestContext, projectName);
     const iModelId = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
 
     return this.purgeAcquiredBriefcasesById(requestContext, iModelId, () => {
@@ -612,9 +605,9 @@ class TestIModelHubProject {
     return this._contextRegistryClient;
   }
 
-  public async queryProject(requestContext: AuthorizedClientRequestContext, query: any | undefined): Promise<Project> {
+  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD> {
     const client = TestIModelHubProject.contextClient;
-    return client.getProject(requestContext, query);
+    return client.getContextContainerByName(requestContext, name);
   }
 
   public async queryIModels(requestContext: AuthorizedClientRequestContext, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {
