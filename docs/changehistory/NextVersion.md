@@ -121,7 +121,7 @@ Some components in @bentley/ui-core were deprecated in favor of components in @i
 A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
 
 The @bentley/ui-* packages are now dependent on React version 17.
-**Applications using the ui packages must update React 17.**
+**Applications using the ui packages must update React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
 ### @bentley/extension-cli
 
