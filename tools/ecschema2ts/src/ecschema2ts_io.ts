@@ -9,7 +9,6 @@ import { ECObjectsError, ECObjectsStatus, ECVersion, ISchemaLocater, Schema, Sch
 import { FileSchemaKey, SchemaFileLocater, SchemaJsonFileLocater } from "@bentley/ecschema-locaters";
 import { DOMParser } from "xmldom";
 import { ECSchemaXmlContext, IModelHost } from "@bentley/imodeljs-backend";
-import { Config } from "@bentley/bentleyjs-core";
 import { ECSchemaToTs } from "./ecschema2ts";
 
 const unitsSchemaKey = new SchemaKey("Units", 1, 0, 0);
@@ -197,7 +196,6 @@ class SchemaDeserializer {
 
     // Needed to avoid crash in backend when calling IModelHost.startup.  This
     // can be removed once the backed is no longer need for de-serialization.
-    (Config as any)._appConfig = new (Config as any)();
     await IModelHost.startup();
 
     // add reference paths to the native context

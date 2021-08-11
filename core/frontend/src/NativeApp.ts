@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { BeEvent, Config, GuidString, Logger, SessionProps } from "@bentley/bentleyjs-core";
+import { BeEvent, GuidString, Logger, SessionProps } from "@bentley/bentleyjs-core";
 import {
   BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
   NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
@@ -190,7 +190,8 @@ export class NativeApp {
 
     NativeAppNotifyHandler.register(); // receives notifications from backend
 
-    Config.App.merge(await this.callNativeHost("getConfig"));
+    // Config.App.merge(await this.callNativeHost("getConfig"));
+    // TODO: ADDRESS ISSUE HERE W/ PROCESS.ENV ON FRONT END
     NativeApp.hookBrowserConnectivityEvents();
 
     // initialize current online state.

@@ -7,7 +7,7 @@
  */
 
 import { join } from "path";
-import { AuthStatus, BeEvent, ClientRequestContext, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
+import { AuthStatus, BeEvent, ClientRequestContext, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import {
   BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,

@@ -389,13 +389,6 @@ export class IModelHost {
 
     this.platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
 
-    // const introspectionClientId = Config.App.getString("imjs_introspection_client_id", "");
-    // const introspectionClientSecret = Config.App.getString("imjs_introspection_client_secret", "");
-    // if (introspectionClientId && introspectionClientSecret) {
-    //   const introspectionClient = new IntrospectionClient(introspectionClientId, introspectionClientSecret);
-    //   this._clientAuthIntrospectionManager = new ImsClientAuthIntrospectionManager(introspectionClient);
-    // }
-
     process.once("beforeExit", IModelHost.shutdown);
     IModelHost.onAfterStartup.raiseEvent();
   }

@@ -272,22 +272,11 @@ const logRequest = (req: sarequest.SuperAgentRequest): sarequest.SuperAgentReque
  */
 export async function request(requestContext: ClientRequestContext, url: string, options: RequestOptions): Promise<Response> {
   requestContext.enter();
-  let proxyUrl = "";
-  if (options.useCorsProxy === true) {
-    proxyUrl =  process.env.imjs_dev_cors_proxy_server ?? "";
-    if (proxyUrl === "")
-      proxyUrl = url;
-    else
-      proxyUrl = `${proxyUrl.replace(/\/$/, "")}/${url}`;
-  } else {
-    proxyUrl = url;
-  }
-
   if (!RequestGlobalOptions.online) {
     throw new ResponseError(503, "Service unavailable");
   }
 
-  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, proxyUrl);
+  let sareq: sarequest.SuperAgentRequest = sarequest(options.method, url);
   const retries = typeof options.retries === "undefined" ? RequestGlobalOptions.maxRetries : options.retries;
   sareq = sareq.retry(retries, options.retryCallback);
 
