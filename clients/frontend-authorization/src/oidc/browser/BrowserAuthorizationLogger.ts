@@ -17,7 +17,7 @@ import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthori
  * Thus, the best we can do is tie all logs originating from the library to a single logging category (derived from the name of this class).
  */
 export class BrowserAuthorizationLogger implements IOidcClientLogger {
-  public static initialized: boolean = false;
+  private static initialized: boolean = false;
 
   private constructor() {
   }
