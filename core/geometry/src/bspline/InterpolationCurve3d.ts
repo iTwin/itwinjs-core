@@ -8,7 +8,7 @@
 
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
-import { NumberArray, Point3dArray } from "../geometry3d/PointHelpers";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 import { ProxyCurve } from "../curve/ProxyCurve";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { BSplineCurve3d } from "./BSplineCurve";
@@ -27,13 +27,13 @@ export interface InterpolationCurve3dProps {
   order?: number;
   /** true if the B-spline construction should be periodic */
   closed?: boolean;
-  /** if closed and no knots, compute chord length knots (true) or uniform knots (false) */
+  /** if closed and no knots, compute chord length knots (1) or uniform knots (0). Chord length knots give best fit. */
   isChordLenKnots?: number;
-  /** if !closed but first and last fitPoints are equal, pivot computed start/end tangent(s) so that they are colinear */
+  /** if !closed but first and last fitPoints are equal, pivot computed start/end tangent(s) so that they are colinear (1) or leave them be (0). */
   isColinearTangents?: number;
-  /** if !closed and start/endTangent is given, set its magnitude to the first/last fit point chord length (true) or to the magnitude of the Bessel tangent (false) */
+  /** if !closed and start/endTangent is given, set its magnitude to the first/last fit point chord length (1) or to the magnitude of the Bessel tangent (0). Bessel gives best fit. */
   isChordLenTangents?: number;
-  /** if !closed and start/endTangent is absent, compute it using the natural end condition (true) or Bessel (false) */
+  /** if !closed and start/endTangent is absent, compute it using the natural end condition (1) or Bessel (0). Bessel gives best fit. */
   isNaturalTangents?: number;
   /** optional start tangent, pointing into curve. Magnitude is ignored. */
   startTangent?: XYZProps;
@@ -53,18 +53,13 @@ export interface InterpolationCurve3dProps {
  */
 export class InterpolationCurve3dOptions {
   /**
-   * Constructor. Supplies default values for flags.
+   * Constructor.
    * @param fitPoints points to CAPTURE
    * @param knots array to CAPTURE
    */
   public constructor(fitPoints?: Point3d[], knots?: number[]) {
     this._fitPoints = fitPoints ? fitPoints : [];
     this._knots = knots;
-    this._order = 4;
-    this._isChordLenKnots = 1;
-    this._isColinearTangents = 0;
-    this._isChordLenTangents = 1;
-    this._isNaturalTangents = 1;
   }
 
   private _order?: number;
@@ -78,23 +73,23 @@ export class InterpolationCurve3dOptions {
   private _fitPoints: Point3d[];
   private _knots?: number[];
 
-  /** `order` as property with default 4 */
+  /** `order` as property */
   public get order(): number { return Geometry.resolveNumber(this._order, 4); }
   public set order(val: number) { this._order = val; }
-  /** `closed` as property with default false */
+  /** `closed` as property */
   public get closed(): boolean { return Geometry.resolveValue(this._closed, false); }
   public set closed(val: boolean) { this._closed = val; }
-  /** `isChordLenKnots` as property with default 1 */
-  public get isChordLenKnots(): number { return Geometry.resolveNumber(this._isChordLenKnots, 1); }
+  /** `isChordLenKnots` as property */
+  public get isChordLenKnots(): number { return Geometry.resolveNumber(this._isChordLenKnots, 0); }
   public set isChordLenKnots(val: number) { this._isChordLenKnots = val; }
-  /** `isColinearTangents` as property with default 0 */
+  /** `isColinearTangents` as property */
   public get isColinearTangents(): number { return Geometry.resolveNumber(this._isColinearTangents, 0); }
   public set isColinearTangents(val: number) { this._isColinearTangents = val; }
-  /** `isChordLenTangent` as property with default 1 */
-  public get isChordLenTangents(): number { return Geometry.resolveNumber(this._isChordLenTangents, 1); }
+  /** `isChordLenTangent` as property */
+  public get isChordLenTangents(): number { return Geometry.resolveNumber(this._isChordLenTangents, 0); }
   public set isChordLenTangents(val: number) { this._isChordLenTangents = val; }
-  /** `isNaturalTangents` as property with default 1 */
-  public get isNaturalTangents(): number { return Geometry.resolveNumber(this._isNaturalTangents, 1); }
+  /** `isNaturalTangents` as property */
+  public get isNaturalTangents(): number { return Geometry.resolveNumber(this._isNaturalTangents, 0); }
   public set isNaturalTangents(val: number) { this._isNaturalTangents = val; }
   /** access POSSIBLY UNDEFINED start tangent. Setter CAPTURES. */
   public get startTangent(): Vector3d | undefined { return this._startTangent; }
@@ -237,7 +232,6 @@ export class InterpolationCurve3d extends ProxyCurve {
   /**
    * Create an [[InterpolationCurve3d]] based on points, knots, and other properties in the [[InterpolationCurve3dProps]] or [[InterpolationCurve3dOptions]].
    * * This saves a COPY OF the options or props.
-   * * In the copy, start and end knot multiplicity squashes to 1
    * * Use createCapture () if the options or props can be used without copy
    */
   public static create(options: InterpolationCurve3dOptions | InterpolationCurve3dProps): InterpolationCurve3d | undefined {
@@ -247,8 +241,6 @@ export class InterpolationCurve3d extends ProxyCurve {
     } else {
       optionsCopy = InterpolationCurve3dOptions.create(options);
     }
-    if (optionsCopy.knots)
-      optionsCopy.knots = NumberArray.cloneWithStartAndEndMultiplicity(optionsCopy.knots, 1, 1);
     return InterpolationCurve3d.createCapture(optionsCopy);
   }
   /** Create an [[InterpolationCurve3d]]

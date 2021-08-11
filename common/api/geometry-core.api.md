@@ -3632,6 +3632,7 @@ export class NullGeometryHandler extends GeometryHandler {
 
 // @public
 export class NumberArray {
+    static cloneWithStartAndEndMultiplicity(knots: number[] | undefined, target0: number, target1: number): number[];
     static create(source: number[] | Float64Array): number[];
     static createArrayWithMaxStepSize(low: number, high: number, step: number): number[];
     static isAlmostEqual(dataA: number[] | Float64Array | undefined, dataB: number[] | Float64Array | undefined, tolerance: number): boolean;

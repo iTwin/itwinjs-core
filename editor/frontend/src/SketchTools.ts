@@ -2055,7 +2055,10 @@ export class CreateBCurveTool extends CreateOrContinuePathTool {
 
     // TODO: InterpolationCurve3d, set end tangents using continuation curve...self-closure, etc.
     const opts = new InterpolationCurve3dOptions(pts);
-    // set opts.closed, opts.startTangent, opts.endTangent, etc.
+    // opts.closed = true;
+    // opts.startTangent = Vector3d.create(1,0,0);    // into curve!
+    // opts.endTangent = Vector3d.create(-1,0,0);     // into curve!
+    // etc.
     return BSplineCurve3d.createFromInterpolationCurve3dOptions(opts);
   }
 

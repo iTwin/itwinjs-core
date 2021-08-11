@@ -10,6 +10,7 @@
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
+import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
 import { BSplineWrapMode } from "../bspline/KnotVector";
@@ -52,7 +53,6 @@ import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
 import { InterpolationCurve3d as InterpolationCurve3d } from "../bspline/InterpolationCurve3d";
 import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
-import { NumberArray } from "../geometry3d/PointHelpers";
 // cspell:word bagof
 /* eslint-disable no-console*/
 /**
@@ -1899,10 +1899,10 @@ export namespace IModelJson {
     /** Convert strongly typed instance to tagged json */
     public handleInterpolationCurve3d(curve: InterpolationCurve3d): any {
       const props = curve.cloneProps();
-      if (props.order !== undefined)
-        props.knots = NumberArray.cloneWithStartAndEndMultiplicity(props.knots, props.order, props.order);
+      BSplineCurveOps.C2CubicFit.convertToJsonKnots(props);
       return { interpolationCurve: props };
     }
+
     /** Convert strongly typed instance to tagged json */
     public handleAkimaCurve3d(curve: AkimaCurve3d): any {
       return { akimaCurve: curve.cloneProps()};

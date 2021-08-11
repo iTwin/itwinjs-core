@@ -15,7 +15,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { BandedSystem } from "../numerics/BandedSystem";
 import { BSplineCurve3d } from "./BSplineCurve";
 import { BSplineWrapMode, KnotVector } from "./KnotVector";
-import { InterpolationCurve3dOptions } from "./InterpolationCurve3d";
+import { InterpolationCurve3dOptions, InterpolationCurve3dProps } from "./InterpolationCurve3d";
 
 /**
  * A class with static methods for creating B-spline curves.
@@ -72,7 +72,8 @@ export class BSplineCurveOps {
    * @param options curve definition, unmodified
    */
   public static createThroughPointsC2Cubic(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined {
-    // Work on a copy rather than installing missing knots/tangents that could become stale when fit points change
+    // Work on a copy rather than installing computed knots/tangents that could become stale when fit points change
+    // Knots/tangents that come in, however, are used without recomputation.
     const validatedOptions = options.clone();
     if (!this.C2CubicFit.validateOptions(validatedOptions))
       return undefined;
@@ -81,11 +82,11 @@ export class BSplineCurveOps {
     if (undefined === poles)
       return undefined;
 
-    const knots = this.C2CubicFit.convertParamsToFullKnotVector(validatedOptions);
-    if (undefined === knots)
+    const fullKnots = this.C2CubicFit.convertFitParamsToCubicKnotVector(validatedOptions.knots, validatedOptions.closed);
+    if (undefined === fullKnots)
       return undefined;
 
-    const interpolant = BSplineCurve3d.create(poles, knots, validatedOptions.order);
+    const interpolant = BSplineCurve3d.create(poles, fullKnots, validatedOptions.order);
 
     if (validatedOptions.closed)
       interpolant?.setWrappable(BSplineWrapMode.OpenByAddingControlPoints);
@@ -102,7 +103,7 @@ export namespace BSplineCurveOps {
    * @private
    */
   export class C2CubicFit {
-    /** Transform knots to span [0,1]
+    /** Transform fit parameters to span [0,1]
      * @param knots fit parameters, normalized in place
      */
     private static normalizeKnots(knots: number[] | undefined): boolean {
@@ -123,7 +124,7 @@ export namespace BSplineCurveOps {
     }
 
     /** Compute chord-length fit parameters for C2 cubic fit algorithm */
-    private static constructChordLengthParams(fitPoints: Point3d[]): number[] | undefined {
+    private static constructChordLengthParameters(fitPoints: Point3d[]): number[] | undefined {
       if (fitPoints.length < 2)
         return undefined;
       const params: number[] = [0.0];
@@ -135,7 +136,7 @@ export namespace BSplineCurveOps {
     }
 
     /** Compute uniform fit parameters for C2 cubic fit algorithm */
-    private static constructUniformParams(numParams: number): number[] | undefined {
+    private static constructUniformParameters(numParams: number): number[] | undefined {
       if (numParams < 2)
         return undefined;
       const knots = KnotVector.createUniformClamped(numParams + 2, 3, 0.0, 1.0);
@@ -178,15 +179,16 @@ export namespace BSplineCurveOps {
       return true;
     }
 
-    /** Construct the fit parameters for the c2 cubic fit algorithm
+    /** Construct fit parameters for the c2 cubic fit algorithm, if they are missing.
      * @param options validated as per validateOptions, possibly modified
+     * @return whether fit parameters are valid
      */
-     private static constructParams(options: InterpolationCurve3dOptions): boolean {
+     public static constructFitParameters(options: InterpolationCurve3dOptions): boolean {
       if (undefined === options.knots) {
         if (options.isChordLenKnots || !options.closed)
-          options.knots = this.constructChordLengthParams(options.fitPoints);
+          options.knots = this.constructChordLengthParameters(options.fitPoints);
         if (undefined === options.knots)
-          options.knots = this.constructUniformParams(options.fitPoints.length);
+          options.knots = this.constructUniformParameters(options.fitPoints.length);
       }
       return options.knots?.length === options.fitPoints.length;
     }
@@ -578,7 +580,7 @@ export namespace BSplineCurveOps {
           const startTangentMag = dataPts[0].distance(dataPts[1]);
           dataPts[0].plusScaled(outwardEndTangent, startTangentMag, dataPts[1]);
         }
-      } else {  // pivot both supplied tangents into alignment
+      } else {  // neither tangent is supplied, compute both along same vector
         const commonTangent = Vector3d.createStartEnd(dataPts[numIntervals + 1], dataPts[1]).normalize();
         if (undefined !== commonTangent) {
           const startTangentMag = dataPts[0].distance(dataPts[1]);
@@ -683,29 +685,10 @@ export namespace BSplineCurveOps {
     public static validateOptions(options: InterpolationCurve3dOptions): boolean {
       options.order = 4;
 
-      // ASSUME: The supplied knot array's interior knot count equals the fit point count.
-      //         Under this assumption, we remove any exterior knots so the two arrays align
-      //         *before* we start compressing fit points.
-      if (undefined !== options.knots) {
-        const numExtraKnots = options.knots.length - options.fitPoints.length;
-        switch (numExtraKnots) {
-          case 0:     // caller passed in interior knots
-            break;
-          case 4:     // modern exterior knot count
-          case 6:     // classic exterior knot count
-            for (let i = 0; i < numExtraKnots / 2; ++i) {
-              options.knots.pop();
-              options.knots.shift();
-            }
-            break;
-          default:    // other knot configurations are unusable
-            options.knots = undefined;
-            break;
-        }
-        this.normalizeKnots(options.knots);
-      }
+      // remove relevant exterior knots so knots and fit points align *before* we start compressing fit points.
+      options.knots = this.convertCubicKnotVectorToFitParams(options.knots, options.fitPoints.length, true);
 
-      // compress out duplicate fit points (and their corresponding knots)
+        // compress out duplicate fit points (and their corresponding knots)
       if (!this.removeDuplicateFitPoints(options))
         return false;
 
@@ -755,31 +738,75 @@ export namespace BSplineCurveOps {
       return true;
     }
 
-    /** Return fit parameters augmented to a modern full cubic knot vector.
-     * @param options validated as per validateOptions, unmodified
+    /** Converts a full cubic knot vector of expected length into fit parameters, by removing extraneous exterior knots.
+     * @param knots cubic knot vector, unmodified
+     * @param numFitPoints number of fit points
+     * @return fit parameters, or undefined if unexpected input
      **/
-    public static convertParamsToFullKnotVector(options: InterpolationCurve3dOptions): number[] | undefined {
-      const knots = options.knots?.slice();
+    public static convertCubicKnotVectorToFitParams(knots: number[] | undefined, numFitPoints: number, normalize?: boolean): number[] | undefined {
+      let params = knots?.slice();
+      if (undefined !== params) {
+        const numExtraKnots = params.length - numFitPoints;
+        switch (numExtraKnots) {
+          case 0: {   // ASSUME caller passed in interior knots
+            break;
+          }
+          case 4:     // modern full cubic knots
+          case 6: {   // legacy full cubic knots
+            for (let i = 0; i < numExtraKnots / 2; ++i) {
+              params.pop();
+              params.shift();
+            }
+            break;
+          }
+          default: {  // other knot configurations are unusable
+            params = undefined;
+            break;
+          }
+        }
+        if (normalize && !this.normalizeKnots(params))
+          params = undefined;
+      }
+      return params;
+    }
+
+    /** Return fit parameters augmented to a full cubic knot vector.
+     * @param params fit parameters, unmodified
+     * @param legacy whether to create a legacy (DGN) full knot vector, or modern vector with two less knots
+     **/
+    public static convertFitParamsToCubicKnotVector(params: number[] | undefined, closed?: boolean, legacy?: boolean): number[] | undefined {
+      const knots = params?.slice();
       if (undefined !== knots) {
-        if (options.closed) { // 2 additional wraparound knots beyond start and end
+        const numExtraKnots = legacy ? 6 : 4;
+        if (closed) {
           const iTail = knots.length - 2;
-          for (let iHead = 2; iHead <= 4; iHead += 2) {
+          for (let iHead = 2; iHead <= numExtraKnots; iHead += 2) {
             knots.unshift(knots[iTail] - 1.0);  // index is constant
             knots.push(1.0 + knots[iHead]);     // index increments by two
           }
-        } else {  // clamped: multiplicity 3 start and end knots
-          knots.unshift(0.0, 0.0);
-          knots.push(1.0, 1.0);
+        } else {
+          for (let i = 0; i < numExtraKnots / 2; ++i) {
+            knots.unshift(0.0);
+            knots.push(1.0);
+          }
         }
       }
       return knots;
+    }
+
+    /** Ensure full legacy knot vector for JSON export **/
+    public static convertToJsonKnots(props: InterpolationCurve3dProps) {
+      if (undefined !== props.knots) {
+        props.knots = this.convertCubicKnotVectorToFitParams(props.knots, props.fitPoints.length, false);
+        props.knots = this.convertFitParamsToCubicKnotVector(props.knots, props.closed, true);
+      }
     }
 
     /** Construct the control points for the c2 cubic fit algorithm
      * @param options validated as per validateOptions, possibly modified
      */
     public static constructPoles(options: InterpolationCurve3dOptions): Point3d[] | Float64Array | undefined {
-      if (!this.constructParams(options) || (undefined === options.knots))
+      if (!this.constructFitParameters(options) || (undefined === options.knots))
         return undefined;
 
       const numRow = options.fitPoints.length;
