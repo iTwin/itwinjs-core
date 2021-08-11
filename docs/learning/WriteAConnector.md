@@ -1,5 +1,5 @@
 ---
-title: iModel Connector Developer's Guide
+title: iModel Connector Developer Guide
 ---
 
 ## Table of Content
@@ -25,6 +25,8 @@ title: iModel Connector Developer's Guide
     - [Data Extraction](#data-extraction)
     - [Data alignment](#data-alignment)
     - [Schemas](#schemas)
+    - [Domain Schemas](#domain-schemas)
+  - [Extending a Schema](#extending-a-schema)
     - [Dynamic Schemas](#dynamic-schemas)
     - [Display Labels](#display-labels)
     - [CodeValues](#codevalues)
@@ -59,8 +61,6 @@ title: iModel Connector Developer's Guide
   - [Authentication](#authentication)
   - [Locks & Codes](#locks--codes)
   - [More information](#more-information)
-- [Bentley Authored Connectors](#bentley-authored-connectors)
-  - [Civil iModel Connector](#civil-imodel-connector)
 
 ## Introduction
 
@@ -68,11 +68,7 @@ title: iModel Connector Developer's Guide
 
 #### What is a connector
 
-iTwin connectors play an essential role in enabling a wide range of both
-Bentley and third-party design applications to contribute to an iTwin.
-Bentley iTwin Services provides connectors to support a wide array of
-design applications to ensure that all engineering data can be
-aggregated into a single digital twin environment inside an iModel.
+iTwin connectors play an essential role in enabling a wide range of both Bentley and third-party design applications to contribute to an iTwin. Bentley iTwin Services provides connectors to support a wide array of design applications to ensure that all engineering data can be aggregated into a single digital twin environment inside an iModel.
 
 As explained in the [overview](../learning/imodel-connectors.md), a "connector" is a program that:
 
@@ -90,36 +86,25 @@ Examples of iTwin Connector include:
 ![Bentley iTwin Connectors](https://communities.bentley.com/resized-image/__size/650x450/__key/communityserver-wikis-components-files/00-00-00-05-55/Bentley.png)
 ![3rd Party iTwin Connectors](https://communities.bentley.com/resized-image/__size/650x450/__key/communityserver-wikis-components-files/00-00-00-05-55/3rdParty.PNG)
 
-See \[Section on iTwin Synchronization\](#ways-to-sync-data-to-an-itwin)
-for more details on existing connectors.
+See \[Section on iTwin Synchronization\](#ways-to-sync-data-to-an-itwin) for more details on existing connectors.
 
-However, in some instances, where a specific format is not covered, one
-can develop a new connector using [iModel.js SDK](https://www.itwinjs.org/)
+However, in some instances, where a specific format is not covered, one can develop a new connector using [iModel.js SDK](https://www.itwinjs.org/)
 
 ![iModel Connector Backend](./imodel_connector_backend.png)
 
-The imodel-bridge package provided as part of the iModel.js SDK makes it
-easier to write an iTwin connector backend that brings custom data into
-a digital twin. To run this environment with the iModel.js library that
-this package depends on requires a JavaScript engine with es2017
-support.
+The imodel-bridge package provided as part of the iModel.js SDK makes it easier to write an iTwin connector backend that brings custom data into a digital twin. To run this environment with the iModel.js library that this package depends on requires a JavaScript engine with es2017 support.
 
-Note: Please keep in mind iModelBridge is sometimes used as a synonym
-for iTwin Connector since it bridges the gap between input data and a
-digital twin.
+Note: Please keep in mind iModelBridge is sometimes used as a synonym for iTwin Connector since it bridges the gap between input data and a digital twin.
 
 ### Who should read this guide?
 
-This guide explains how to write a new connector for a new format or
-data source.
+This guide explains how to write a new connector for a new format or data source.
 
-It is not relevant for someone trying to bring in data for which a
-connector already exists or is trying to federate data without it being
-part of the iTwin.
+It is not relevant for someone trying to bring in data for which a connector already exists or is trying to federate data without it being part of the iTwin.
 
 ### Ways to sync data to an iTwin
 
-[The iTwin Synchronizer portal](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47606/itwin-synchronizer-portal) and [iTwin Sychronizer client](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47597/itwin-synchronizer-client) provides synchronization mechanism to bring data into an iTwin through a connector
+[The iTwin Synchronizer portal](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47606/itwin-synchronizer-portal) and [iTwin Synchronizer client](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47597/itwin-synchronizer-client) provides synchronization mechanism to bring data into an iTwin through a connector
 
 The following are the various steps involved in that workflow.
 ![iTwin workflow](https://communities.bentley.com/resized-image/__size/650x340/__key/communityserver-wikis-components-files/00-00-00-05-55/pastedimage1591602805184v1.png)
@@ -128,11 +113,8 @@ More on synchronization using connectors could be found [here](https://communiti
 
 ### Preliminary Reading
 
-The guide assumes that you are somewhat familiar with iModel and iTwin
-concepts. A short summary of the releveant topics are provided when relevant.
-
-To understand the APIs, you will need to have an understanding of
-typescript.
+The guide assumes that you are somewhat familiar with iModel and iTwin concepts. A summary of the relevant topics is provided.
+To understand the APIs, you will need to have an understanding of typescript.
 
 ### Structure of the guide
 
@@ -159,7 +141,7 @@ An iTwin connector provides a workflow to easily synchronize information from va
 
 #### Briefcases
 
-[Briefcases](https://www.itwinjs.org/learning/glossary/#briefcase) are the local copies of iModel that users can acquire to work with the iModel. A connector will download a briefcase locally using the BridgeRunner and change their copy of iModel. Once all the work is done, the results are then pushed into the iModel. Please see the section on Execution sequence on the different steps involved.
+[Briefcases](https://www.itwinjs.org/learning/glossary/#briefcase) are the local copies of iModel that users can acquire to work with the iModel. A connector will download a briefcase locally using the BridgeRunner and change their copy of iModel. Once all the work is done, the results are then pushed into the iModel. Please see the section on [Execution sequence](#execution-sequence) on the different steps involved.
 
 For more information, please see
 
@@ -171,7 +153,7 @@ iModel uses BIS schemas to describe the persistence model of the digital twin. A
 
 #### Changeset
 
-A changeset represents a file containing changes corresponding to an iModel briefcase. For more information on changesets pleases see [ChangeSets](https://www.itwinjs.org/reference/imodelhub-client/imodelhubclient/changeset/)
+A changeset represents a file containing changes corresponding to an iModel briefcase. For more information on changesets, please see [ChangeSets](https://www.itwinjs.org/reference/imodelhub-client/imodelhubclient/changeset/)
 
 ## The basics of writing a connector
 
@@ -232,13 +214,13 @@ There are three main steps that a connector needs to undertake to bring data int
 - Transform and align the data to the digital twin.
 - Generate [changesets](https://github.com/imodeljs/imodeljs/blob/master/docs/learning/iModelHub/index.md#the-timeline-of-changes-to-an-imodel) and load data into an iModel.
 
-The sections below give a high level overview of the various parts that go into creating an iTwin Connector.
+The sections below give a high-level overview of the various parts that go into creating an iTwin Connector.
 
 #### Data Extraction
 
-Extraction of data from the input depends on the source format and the availablity of a library capable of understanding it. There are two strategies typically employed for data extraction.
+Extraction of data from the input depends on the source format and a library capable of understanding it. There are two strategies typically employed for data extraction.
 
-1. If the extraction library is compatible with TypeScript, write an extraction module and use that to connect the input data with the alignment phase. This can be called from the [OpenSourceData](#opensourcedata) method in your connector.
+1. If the extraction library is compatible with TypeScript, write an extraction module to connect the input data with the alignment phase. The [OpenSourceData](#opensourcedata) method in your Connector typically calls the extraction library.
 
 2. If a TypeScript binding is not available, extract the data into an intermediary format that can be then ingested by the alignment phase. In this case the intermediate format will be read in the [OpenSourceData](#opensourcedata) method in your connector.
 
@@ -275,7 +257,7 @@ which schema methodology to use.
 
 ![Schema Methodology Decision](./schemadecision.png)
 
-#### Extending a Schema
+### Extending a Schema
 
 #### Dynamic Schemas
 
@@ -584,11 +566,11 @@ The ultimate purpose of a connector is to synchronize an iModel with the data in
 
 ### Analyzing the connector output
 
-As a connector developer, once the data is transformed into an iModel, one needs tools to analyze the validity of the conversion. In the sections below, a few recommended tools are described which allow the developer to query the grpahical as well as non graphical data in an iModel.
+As a connector developer, once the data is transformed into an iModel, one needs tools to analyze the validity of the conversion. The sections below gives a summary of the recommended tools which allow a developer to query the graphical and non-graphical data in an iModel.
 
 #### ECSQL
 
-See this article on [ECSQL](https://www.itwinjs.org/learning/ecsqltutorial/)
+Please see this article on [ECSQL](https://www.itwinjs.org/learning/ecsqltutorial/) as pre requisite for this section. The iModelConsole instance below demonstrates how you can use ECSQL to find some of the transformed data in an iModel.
 
 <figure>
   <iframe style="height:40vh;width:60vw;" src="https://www.itwinjs.org/console/?imodel=House%20Sample%20Bak&query=SELECT%20Element.Id%20FROM%20bis.ExternalSourceAspect%20WHERE%20Identifier=%27197359%27">
@@ -617,7 +599,8 @@ Some sample queries that is helpful to debug connector output
 
 #### Visualizing the output
 
-<https://github.com/imodeljs/imodeljs/blob/master/test-apps/display-test-app/README.md>
+To get started, please build it using the instructions provided in the [display test app README](https://github.com/imodeljs/imodeljs/blob/master/test-apps/display-test-app/README.md)
+Once the application is built and running, use the briefcase icon to open the output from the Connector. Some of the [frontend developer tools](https://www.npmjs.com/package/@bentley/frontend-devtools/v/1.5.0) are also useful to analyze the data. E.g. fdt inspect element.
 
 ### Logs
 
@@ -708,7 +691,3 @@ For more indepth information please see:
 - [Insert a CategorySelector element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#CategorySelector)
 - [Insert a DisplayStyle3d element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#DisplayStyle3d)
 - [Insert a OrthographicViewDefinition element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#OrthographicViewDefinition)
-
-## Bentley Authored Connectors
-
-### Civil iModel Connector
