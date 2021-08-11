@@ -446,19 +446,16 @@ export class SampleAppIModelApp {
       const iModelName = Config.App.getString("imjs_uitestapp_imodel_name");
 
       const requestContext = await AuthorizedFrontendRequestContext.create();
-      const project = await (new ContextRegistryClient()).getProject(requestContext, {
-        $select: "*",
-        $filter: `Name+eq+'${projectName}'`,
-      });
+      const project = await (new ContextRegistryClient()).getContextContainerByName(requestContext, projectName);
 
-      const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.wsgId, new IModelQuery().byName(iModelName)))[0];
+      const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.id, new IModelQuery().byName(iModelName)))[0];
 
       if (viewId) {
         // open directly into the iModel (view)
-        await SampleAppIModelApp.openIModelAndViews(project.wsgId, iModel.wsgId, [viewId]);
+        await SampleAppIModelApp.openIModelAndViews(project.id, iModel.wsgId, [viewId]);
       } else {
         // open to the IModelIndex frontstage
-        await SampleAppIModelApp.showIModelIndex(project.wsgId, iModel.wsgId);
+        await SampleAppIModelApp.showIModelIndex(project.id, iModel.wsgId);
       }
     } else if (SampleAppIModelApp.iModelParams) {
       if (SampleAppIModelApp.iModelParams.viewIds && SampleAppIModelApp.iModelParams.viewIds.length > 0) {

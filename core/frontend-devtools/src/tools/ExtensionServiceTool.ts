@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ExtensionServiceExtensionLoader, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType, Tool } from "@bentley/imodeljs-frontend";
 
@@ -58,7 +58,7 @@ export class ExtensionServiceTool extends Tool {
     const contextName: string = args.slice(1).join(" ");
 
     if (args[0] === "project" || args[0] === "asset") {
-      ExtensionServiceTool.runWithName(contextName, args[0]).catch(() => { });
+      ExtensionServiceTool.runWithName(contextName).catch(() => { });
       return true;
     }
 
@@ -71,9 +71,9 @@ export class ExtensionServiceTool extends Tool {
     return false;
   }
 
-  private static async runWithName(contextName: string, contextType: "project" | "asset") {
+  private static async runWithName(contextName: string) {
     try {
-      const cid = await ExtensionServiceTool.getContextId(contextType, contextName);
+      const cid = await ExtensionServiceTool.getContextId(contextName);
 
       if (cid === undefined) {
         ExtensionServiceTool.showError(contextName);
@@ -88,26 +88,16 @@ export class ExtensionServiceTool extends Tool {
     }
   }
 
-  private static async getContextId(contextType: "project" | "asset", contextName: string): Promise<string | undefined> {
+  private static async getContextId(contextName: string): Promise<string | undefined> {
     const token = await IModelApp.authorizationClient?.getAccessToken();
     if (token === undefined)
       throw new Error("Authentication required");
 
     const requestContext = new AuthorizedClientRequestContext(token);
     const contextRegistry = new ContextRegistryClient();
-    if (contextType === "project") {
-      const project = await contextRegistry.getContextContainerByName(requestContext, contextName);
-      if (!project || !project.id) {
-        return undefined;
-      }
-      return project.id;
-    } else {
-      const asset = await contextRegistry.getContextContainerByName(requestContext, contextName);
-      if (!asset || !asset.id) {
-        return undefined;
-      }
-      return asset.id;
-    }
+    const container: ContextContainerNTBD = await contextRegistry.getContextContainerByName(requestContext, contextName);
+
+    return container.id;
   }
 
   private static showSuccess(contextName: string) {

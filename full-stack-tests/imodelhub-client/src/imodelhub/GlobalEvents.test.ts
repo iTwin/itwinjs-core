@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { Config, Guid } from "@bentley/bentleyjs-core";
-import { ContextType } from "@bentley/context-registry-client";
 import {
   ChangeSetCreatedEvent, GetEventOperationType, GlobalCheckpointCreatedEvent, GlobalCheckpointV2CreatedEvent, GlobalEventSAS, GlobalEventSubscription, GlobalEventType, HardiModelDeleteEvent, HubIModel,
   IModelClient, IModelCreatedEvent, IModelHubGlobalEvent, NamedVersionCreatedEvent, SoftiModelDeleteEvent,
@@ -16,6 +15,11 @@ import { TestConfig } from "../TestConfig";
 import * as utils from "./TestUtils";
 
 chai.should();
+
+enum ContextType {
+  Asset = 2,
+  Project = 3
+}
 
 function mockGetGlobalEvent(subscriptionId: string, eventBody: object, eventType?: string, timeout?: number, responseCode?: number, delay?: number) {
   if (!TestConfig.enableMocks)

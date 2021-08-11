@@ -13,7 +13,7 @@ import { ContextContainerNTBD, ContextRegistryNTBD } from "./ContextAccessProps"
 /** The iTwin context type.
  * @beta
  */
-export enum ContextType {
+enum ContextType {
   Unknown,
   Team = 1, // eslint-disable-line @typescript-eslint/no-shadow
   Asset = 2, // eslint-disable-line @typescript-eslint/no-shadow
