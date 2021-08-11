@@ -232,41 +232,4 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
 
     throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${ContextRegistryClient.configRelyingPartyUri}`);
   }
-
-  /** Gets the iTwin project contexts that are accessible to the authorized user.
-   * @param requestContext The client request context
-   * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
-   * @returns Resolves to an array of projects.
-   */
-  public async getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Project[]> {
-    requestContext.enter();
-    return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project", queryOptions);
-  }
-
-  /** Gets a specific iTwin project context.
-   * @param requestContext The client request context
-   * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
-   * @returns Resolves to the found project. Rejects if no projects, or more than one project is found.
-   */
-  public async getProject(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Project> {
-    requestContext.enter();
-    const projects: Project[] = await this.getProjects(requestContext, queryOptions);
-    requestContext.enter();
-    if (projects.length === 0)
-      throw new Error("Could not find a project with the specified criteria that the user has access to");
-    else if (projects.length > 1)
-      throw new Error("More than one project found with the specified criteria");
-
-    return projects[0];
-  }
-
-  /** Get the iTwin projects that the user has been "invited" to.
-   * @param token Delegation token of the authorized user.
-   * @param queryOptions Query options. Use the mapped EC property names in the query strings and not the TypeScript property names.
-   * @returns Resolves to an array of invited projects.
-   */
-  public async getInvitedProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Project[]> {
-    requestContext.enter();
-    return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project?rbaconly=true", queryOptions);
-  }
 }

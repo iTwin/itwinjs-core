@@ -32,16 +32,13 @@ export class ServerArgs {
 /** Helps with queries on Bentley Connect */
 export class ConnectUtils {
   public static async getContextId(contextName: string, requestContext: AuthorizedClientRequestContext): Promise<string> {
-    const containers: ContextContainerNTBD[] = await (new ContextRegistryClient()).getContextContainersByNameSubstring(requestContext, contextName); // Throws if project not found
+    const container: ContextContainerNTBD = await (new ContextRegistryClient()).getContextContainerByName(requestContext, contextName);
 
     // No matching containers found
-    if (containers.length < 1)
-      throw Error(`Context container matching ${contextName} not found`);
-    else if (containers.length > 1)
-      // SWB NOTE: Error here?
-      throw Error(`Multiple context containers matching ${contextName} were found`);
+    if (!container || !container.id)
+      throw new Error(`Context container ${contextName} not found`);
 
-    return containers[0].id;
+    return container.id;
   }
 }
 

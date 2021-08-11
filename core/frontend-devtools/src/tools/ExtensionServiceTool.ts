@@ -96,14 +96,11 @@ export class ExtensionServiceTool extends Tool {
     const requestContext = new AuthorizedClientRequestContext(token);
     const contextRegistry = new ContextRegistryClient();
     if (contextType === "project") {
-      const project = await contextRegistry.getProject(requestContext, {
-        $select: "*",
-        $filter: `Name+eq+'${contextName}'`,
-      });
-      if (!project || !project.wsgId) {
+      const project = await contextRegistry.getContextContainerByName(requestContext, contextName);
+      if (!project || !project.id) {
         return undefined;
       }
-      return project.wsgId;
+      return project.id;
     } else {
       const asset = await contextRegistry.getContextContainerByName(requestContext, contextName);
       if (!asset || !asset.id) {
