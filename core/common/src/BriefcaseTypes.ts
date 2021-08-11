@@ -7,7 +7,7 @@
  */
 
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ChangesetId, ChangesetIdWithIndex, ChangesetIndex } from "./ChangesetProps";
+import { ChangesetIdWithIndex } from "./ChangesetProps";
 import { IModelEncryptionProps, OpenDbKey } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
 
