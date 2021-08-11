@@ -459,12 +459,22 @@ describe("PropertyRule tests", () => {
   });
 
   describe("Validate NavigationProperty Tests", () => {
-    function createSchemaJson(baseRelationship: any, sourceConst: any, targetConst: any, sourceProperties: any, targetProperties: any, inherited: boolean, relationshipProperties?: any) {
-      let sourcePropsInherited: any;
-      let targetPropsInherited: any;
-      if (inherited) {
-        sourcePropsInherited = sourceProperties;
-        targetPropsInherited = targetProperties;
+    function createSchemaJson(baseRelationship: any, sourceConst: any, targetConst: any, sourceProperties: any, targetProperties: any, inheritanceLevel: any, relationshipProperties?: any) {
+      let sourcePropsInherited1: any;
+      let targetPropsInherited1: any;
+      let sourcePropsInherited2: any;
+      let targetPropsInherited2: any;
+      if (inheritanceLevel === 1) {
+        sourcePropsInherited1 = sourceProperties;
+        targetPropsInherited1 = targetProperties;
+      } else if (inheritanceLevel === 2) {
+        sourcePropsInherited2 = sourceProperties;
+        targetPropsInherited2 = targetProperties;
+      } else if (inheritanceLevel === 3) {
+        sourcePropsInherited1 = sourceProperties;
+        targetPropsInherited1 = targetProperties;
+        sourcePropsInherited2 = sourceProperties;
+        targetPropsInherited2 = targetProperties;
       }
 
       return createSchemaJsonWithItems({
@@ -483,12 +493,13 @@ describe("PropertyRule tests", () => {
         SourceBaseEntity1: {
           schemaItemType: "EntityClass",
           modifier: "abstract",
-          ...sourcePropsInherited,
+          ...sourcePropsInherited1,
         },
         SourceBaseEntity2: {
           schemaItemType: "EntityClass",
           baseClass: "TestSchema.SourceBaseEntity1",
           modifier: "abstract",
+          ...sourcePropsInherited2,
         },
         TestSourceEntity: {
           schemaItemType: "EntityClass",
@@ -498,12 +509,13 @@ describe("PropertyRule tests", () => {
         TargetBaseEntity1: {
           schemaItemType: "EntityClass",
           modifier: "abstract",
-          ...targetPropsInherited,
+          ...targetPropsInherited1,
         },
         TargetBaseEntity2: {
           schemaItemType: "EntityClass",
           baseClass: "TestSchema.TargetBaseEntity1",
           modifier: "abstract",
+          ...targetPropsInherited2,
         },
         TestTargetEntity: {
           schemaItemType: "EntityClass",
@@ -581,7 +593,7 @@ describe("PropertyRule tests", () => {
           baseClass: "TestSchema.TestRelationship2",
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(baseRelationshipJson, sourceJson, targetJson, propertyJson, undefined, false), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(baseRelationshipJson, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
         const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -629,7 +641,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, false), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
         const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -670,7 +682,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, false), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
         const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -718,7 +730,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, false), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
         const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -757,7 +769,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, false), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
         const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -805,7 +817,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, false), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
         const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -846,7 +858,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, false), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
         const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -894,7 +906,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, undefined, false, propertyJson), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, undefined, 0, propertyJson), new SchemaContext());
         const testProperty = (await testSchema.getItem<RelationshipClass>("TestRelationship2"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -933,7 +945,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, false), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
         const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -981,7 +993,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, undefined, false, propertyJson), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, undefined, 0, propertyJson), new SchemaContext());
         const testProperty = (await testSchema.getItem<RelationshipClass>("TestRelationship2"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -1022,7 +1034,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, false), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
         const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -1070,7 +1082,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, false), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 0), new SchemaContext());
         const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -1109,7 +1121,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, false), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
         const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -1157,7 +1169,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, false), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 0), new SchemaContext());
         const testProperty = (await testSchema.getItem<RelationshipClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -1166,7 +1178,7 @@ describe("PropertyRule tests", () => {
           expect(false, "Rule should have passed").true;
       });
 
-      it("Forward direction, relationship source constraint does include inherited property class, rule passes.", async () => {
+      it("Forward direction, relationship source constraint does include inherited (grandparent) property class, rule passes.", async () => {
         const sourceJson = {
           polymorphic: false,
           multiplicity: "(0..*)",
@@ -1196,7 +1208,7 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, true), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 1), new SchemaContext());
         const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);
@@ -1205,7 +1217,85 @@ describe("PropertyRule tests", () => {
           expect(false, "Rule should have passed").true;
       });
 
-      it("Backward direction, relationship target constraint does include inherited property class, rule passes.", async () => {
+      it("Forward direction, relationship source constraint does include inherited (parent) property class, rule passes.", async () => {
+        const sourceJson = {
+          polymorphic: false,
+          multiplicity: "(0..*)",
+          roleLabel: "Test Source roleLabel",
+          constraintClasses: [
+            "TestSchema.SourceBaseEntity2",
+          ],
+        };
+
+        const targetJson = {
+          polymorphic: false,
+          multiplicity: "(0..1)",
+          roleLabel: "Test Target roleLabel",
+          constraintClasses: [
+            "TestSchema.TargetBaseEntity2",
+          ],
+        };
+
+        const propertyJson = {
+          properties: [
+            {
+              name: "TestProperty",
+              type: "NavigationProperty",
+              relationshipName: "TestSchema.TestRelationship",
+              direction: "Forward",
+            },
+          ],
+        };
+
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 2), new SchemaContext());
+        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+
+        const results = Rules.validateNavigationProperty(testProperty);
+
+        for await (const _diagnostic of results)
+          expect(false, "Rule should have passed").true;
+      });
+
+      it("Forward direction, relationship source constraint does include inherited (parent and grandparent) property class, rule passes.", async () => {
+        const sourceJson = {
+          polymorphic: false,
+          multiplicity: "(0..*)",
+          roleLabel: "Test Source roleLabel",
+          constraintClasses: [
+            "TestSchema.SourceBaseEntity1",
+          ],
+        };
+
+        const targetJson = {
+          polymorphic: false,
+          multiplicity: "(0..1)",
+          roleLabel: "Test Target roleLabel",
+          constraintClasses: [
+            "TestSchema.TargetBaseEntity1",
+          ],
+        };
+
+        const propertyJson = {
+          properties: [
+            {
+              name: "TestProperty",
+              type: "NavigationProperty",
+              relationshipName: "TestSchema.TestRelationship",
+              direction: "Forward",
+            },
+          ],
+        };
+
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, propertyJson, undefined, 3), new SchemaContext());
+        const testProperty = (await testSchema.getItem<EntityClass>("TestSourceEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+
+        const results = Rules.validateNavigationProperty(testProperty);
+
+        for await (const _diagnostic of results)
+          expect(false, "Rule should have passed").true;
+      });
+
+      it("Backward direction, relationship target constraint does include inherited (grandparent) property class, rule passes.", async () => {
         const sourceJson = {
           polymorphic: false,
           multiplicity: "(0..1)",
@@ -1235,7 +1325,85 @@ describe("PropertyRule tests", () => {
           ],
         };
 
-        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, true), new SchemaContext());
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 1), new SchemaContext());
+        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+
+        const results = Rules.validateNavigationProperty(testProperty);
+
+        for await (const _diagnostic of results)
+          expect(false, "Rule should have passed").true;
+      });
+
+      it("Backward direction, relationship target constraint does include inherited (parent) property class, rule passes.", async () => {
+        const sourceJson = {
+          polymorphic: false,
+          multiplicity: "(0..1)",
+          roleLabel: "Test Source roleLabel",
+          constraintClasses: [
+            "TestSchema.SourceBaseEntity2",
+          ],
+        };
+
+        const targetJson = {
+          polymorphic: false,
+          multiplicity: "(0..*)",
+          roleLabel: "Test Target roleLabel",
+          constraintClasses: [
+            "TestSchema.TargetBaseEntity2",
+          ],
+        };
+
+        const propertyJson = {
+          properties: [
+            {
+              name: "TestProperty",
+              type: "NavigationProperty",
+              relationshipName: "TestSchema.TestRelationship",
+              direction: "Backward",
+            },
+          ],
+        };
+
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 2), new SchemaContext());
+        const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
+
+        const results = Rules.validateNavigationProperty(testProperty);
+
+        for await (const _diagnostic of results)
+          expect(false, "Rule should have passed").true;
+      });
+
+      it("Backward direction, relationship target constraint does include inherited (parent and grandparent) property class, rule passes.", async () => {
+        const sourceJson = {
+          polymorphic: false,
+          multiplicity: "(0..1)",
+          roleLabel: "Test Source roleLabel",
+          constraintClasses: [
+            "TestSchema.SourceBaseEntity1",
+          ],
+        };
+
+        const targetJson = {
+          polymorphic: false,
+          multiplicity: "(0..*)",
+          roleLabel: "Test Target roleLabel",
+          constraintClasses: [
+            "TestSchema.TargetBaseEntity1",
+          ],
+        };
+
+        const propertyJson = {
+          properties: [
+            {
+              name: "TestProperty",
+              type: "NavigationProperty",
+              relationshipName: "TestSchema.TestRelationship",
+              direction: "Backward",
+            },
+          ],
+        };
+
+        const testSchema = await Schema.fromJson(createSchemaJson(undefined, sourceJson, targetJson, undefined, propertyJson, 3), new SchemaContext());
         const testProperty = (await testSchema.getItem<EntityClass>("TestTargetEntity"))?.getPropertySync("TestProperty") as AnyProperty;
 
         const results = Rules.validateNavigationProperty(testProperty);

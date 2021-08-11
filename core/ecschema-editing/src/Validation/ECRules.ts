@@ -453,16 +453,27 @@ export async function* validateNavigationProperty(property: AnyProperty): AsyncI
     yield new Diagnostics.NavigationRelationshipAbstractConstraintEntityOrMixin(property, [property.fullName, relationship.fullName]);
   }
 
+  const isClassSupported = async (ecClass: ECClass, propertyName: string, constraintName: string): Promise<boolean> => {
+    if (constraintName === ecClass.fullName && undefined !== await ecClass.getProperty(propertyName))
+      return true;
+
+    const inheritedProp = await ecClass.getInheritedProperty(propertyName);
+    if (inheritedProp && constraintName === inheritedProp.class.fullName)
+      return true;
+
+    const baseClass = await ecClass.baseClass;
+    if (!baseClass)
+      return false;
+
+    return isClassSupported(baseClass, propertyName, constraintName);
+  };
+
   let classSupported = false;
   if (thisConstraint.constraintClasses) {
     for (const constraintClass of thisConstraint.constraintClasses) {
-      if (constraintClass.fullName === property.class.fullName)
-        classSupported = true;
-      else {
-        const inheritedProp = await navProp.class.getInheritedProperty(navProp.name);
-        if (inheritedProp && constraintClass.fullName === inheritedProp.class.fullName)
-          classSupported = true;
-      }
+      classSupported = await isClassSupported(property.class, property.name, constraintClass.fullName);
+      if (classSupported)
+        break;
     }
   }
 
