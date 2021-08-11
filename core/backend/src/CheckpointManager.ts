@@ -11,7 +11,7 @@
 import * as path from "path";
 import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import { CheckpointV2Query } from "@bentley/imodelhub-client";
-import { BriefcaseIdValue, ChangesetId, ChangesetIndex, IModelError } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, IModelError } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -28,22 +28,18 @@ const loggerCategory = BackendLoggerCategory.IModelDb;
  * @public
  */
 export interface CheckpointProps {
-  expectV2?: boolean;
+  readonly expectV2?: boolean;
 
   /** Context (Project or Asset) that the iModel belongs to */
-  contextId: GuidString;
+  readonly contextId: GuidString;
 
   /** Id of the iModel */
-  iModelId: GuidString;
+  readonly iModelId: GuidString;
 
-  /** Id of the change set
-   * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
-   */
-  changeSetId: ChangesetId;
+  /** changeset for the checkpoint */
+  readonly changeset: ChangesetIdWithIndex;
 
-  changesetIndex?: ChangesetIndex;
-
-  requestContext: AuthorizedClientRequestContext;
+  readonly requestContext: AuthorizedClientRequestContext;
 }
 
 /** Called to show progress during a download. If this function returns non-zero, the download is aborted.
@@ -62,15 +58,15 @@ export interface DownloadRequest {
    * no download is performed and `localFile` is updated to reflect the fact that the file exists with that name.
    * This can be used, for example, to look for checkpoints from previous versions if the naming strategy changes.
    */
-  aliasFiles?: string[];
+  readonly aliasFiles?: string[];
 
   /** Properties of the checkpoint to be downloaded */
-  checkpoint: CheckpointProps;
+  readonly checkpoint: CheckpointProps;
 
   /** If present, this function will be called to indicate progress as the briefcase is downloaded. If this
    * function returns a non-zero value, the download is aborted.
    */
-  onProgress?: ProgressFunction;
+  readonly onProgress?: ProgressFunction;
 }
 
 /** @internal */
@@ -114,11 +110,11 @@ export class Downloads {
 */
 export class V2CheckpointManager {
   private static async getCommandArgs(checkpoint: CheckpointProps): Promise<BlobDaemonCommandArg> {
-    const { requestContext, iModelId, changeSetId } = checkpoint;
+    const { requestContext, iModelId, changeset } = checkpoint;
 
     try {
       requestContext.enter();
-      const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeSetId).selectContainerAccessKey();
+      const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeset.id).selectContainerAccessKey();
       const checkpoints = await IModelHubBackend.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
       requestContext.enter();
       if (checkpoints.length < 1)
@@ -184,7 +180,7 @@ export class V1CheckpointManager {
   }
 
   public static getFileName(checkpoint: CheckpointProps): string {
-    const changeSetId = checkpoint.changeSetId || "first";
+    const changeSetId = checkpoint.changeset.id || "first";
     return path.join(this.getFolder(checkpoint.iModelId), `${changeSetId}.bim`);
   }
 
@@ -217,13 +213,13 @@ export class V1CheckpointManager {
 export class CheckpointManager {
   public static readonly onDownloadV1 = new BeEvent<(job: DownloadJob) => void>();
   public static readonly onDownloadV2 = new BeEvent<(job: DownloadJob) => void>();
-  public static getKey(checkpoint: CheckpointProps) { return `${checkpoint.iModelId}:${checkpoint.changeSetId}`; }
+  public static getKey(checkpoint: CheckpointProps) { return `${checkpoint.iModelId}:${checkpoint.changeset.id}`; }
 
   private static async doDownload(request: DownloadRequest): Promise<ChangesetId> {
     try {
       // first see if there's a V2 checkpoint available.
       const changesetId = await V2CheckpointManager.downloadCheckpoint(request);
-      Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeSetId}`);
+      Logger.logInfo(loggerCategory, `Downloaded v2 checkpoint: IModel=${request.checkpoint.iModelId}, changeset=${request.checkpoint.changeset.id}`);
       return changesetId;
     } catch (error) {
       if (error instanceof IModelError && error.errorNumber === IModelStatus.NotFound) // No V2 checkpoint available, try a v1 checkpoint
@@ -237,7 +233,7 @@ export class CheckpointManager {
   public static async updateToRequestedVersion(request: DownloadRequest) {
     const checkpoint = request.checkpoint;
     const targetFile = request.localFile;
-    const traceInfo = { contextId: checkpoint.contextId, iModelId: checkpoint.iModelId, changeSetId: checkpoint.changeSetId };
+    const traceInfo = { contextId: checkpoint.contextId, iModelId: checkpoint.iModelId, changeSetId: checkpoint.changeset.id };
     try {
       // Open checkpoint for write
       const db = SnapshotDb.openForApplyChangesets(targetFile);
@@ -255,11 +251,11 @@ export class CheckpointManager {
         CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
         // Apply change sets if necessary
         const parentChangeset = nativeDb.getParentChangeset();
-        if (parentChangeset.id !== checkpoint.changeSetId)
-          await BriefcaseManager.processChangesets(checkpoint.requestContext, db, { id: checkpoint.changeSetId, index: checkpoint.changesetIndex });
+        if (parentChangeset.id !== checkpoint.changeset.id)
+          await BriefcaseManager.processChangesets(checkpoint.requestContext, db, checkpoint.changeset);
         else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
-          parentChangeset.index = checkpoint.changesetIndex;
+          parentChangeset.index = checkpoint.changeset.index;
           nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(parentChangeset));
         }
       } finally {
@@ -333,7 +329,7 @@ export class CheckpointManager {
       return false;
     }
 
-    const isValid = checkpoint.iModelId === nativeDb.getDbGuid() && checkpoint.changeSetId === nativeDb.getParentChangeset().id;
+    const isValid = checkpoint.iModelId === nativeDb.getDbGuid() && checkpoint.changeset.id === nativeDb.getParentChangeset().id;
     nativeDb.closeIModel();
     if (!isValid)
       IModelJsFs.removeSync(fileName);

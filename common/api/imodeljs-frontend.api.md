@@ -1622,7 +1622,7 @@ export interface BlankConnectionProps {
 
 // @public
 export class BriefcaseConnection extends IModelConnection {
-    protected constructor(props: IModelConnectionProps);
+    protected constructor(props: IModelConnectionProps, openMode: OpenMode);
     close(): Promise<void>;
     get contextId(): GuidString;
     get editingScope(): GraphicalEditingScope | undefined;

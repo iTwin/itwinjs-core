@@ -900,9 +900,9 @@ export type ChangesetId = string;
 // @public
 export interface ChangesetIdWithIndex {
     // (undocumented)
-    id: ChangesetId;
+    readonly id: ChangesetId;
     // (undocumented)
-    index?: ChangesetIndex;
+    readonly index?: ChangesetIndex;
 }
 
 // @public
@@ -911,18 +911,18 @@ export type ChangesetIndex = number;
 // @public
 export interface ChangesetIndexAndId {
     // (undocumented)
-    id: ChangesetId;
+    readonly id: ChangesetId;
     // (undocumented)
-    index: ChangesetIndex;
+    readonly index: ChangesetIndex;
 }
 
 // @public
 export type ChangesetIndexOrId = ChangesetIndexAndId | {
-    index: ChangesetIndex;
-    id?: never;
+    readonly index: ChangesetIndex;
+    readonly id?: never;
 } | {
-    id: ChangesetId;
-    index?: never;
+    readonly id: ChangesetId;
+    readonly index?: never;
 };
 
 // @beta
@@ -4125,7 +4125,7 @@ export class ImdlHeader extends TileHeader {
 // @public
 export abstract class IModel implements IModelProps {
     // @internal
-    protected constructor(tokenProps: IModelRpcProps | undefined, openMode: OpenMode);
+    protected constructor(tokenProps?: IModelRpcProps);
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
     changeset: ChangesetIdWithIndex;
@@ -4164,7 +4164,9 @@ export abstract class IModel implements IModelProps {
     readonly onNameChanged: BeEvent<(previousName: string) => void>;
     readonly onProjectExtentsChanged: BeEvent<(previousExtents: AxisAlignedBox3d) => void>;
     readonly onRootSubjectChanged: BeEvent<(previousSubject: RootSubjectProps) => void>;
-    readonly openMode: OpenMode;
+    get openMode(): OpenMode;
+    // (undocumented)
+    protected _openMode: OpenMode;
     get projectExtents(): AxisAlignedBox3d;
     set projectExtents(extents: AxisAlignedBox3d);
     static readonly repositoryModelId: Id64String;
@@ -4284,11 +4286,9 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 
 // @public
 export interface IModelRpcOpenProps {
-    changeSetId?: ChangesetId;
-    changesetIndex?: ChangesetIndex;
+    readonly changeset?: ChangesetIdWithIndex;
     readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
-    openMode?: OpenMode;
 }
 
 // @public
@@ -4745,9 +4745,7 @@ export type LocalAlignedBox3d = Range3d;
 // @public
 export interface LocalBriefcaseProps {
     briefcaseId: number;
-    changeSetId: ChangesetId;
-    // (undocumented)
-    changesetIndex?: ChangesetIndex;
+    changeset: ChangesetIdWithIndex;
     contextId: GuidString;
     fileName: string;
     fileSize: number;

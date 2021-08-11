@@ -84,7 +84,7 @@ export abstract class IModelConnection extends IModel {
   /** @internal */
   public disableGCS(disable: boolean): void { this._gcsDisabled = disable; }
   /** The displayed extents of this iModel, initialized to [IModel.projectExtents]($common). The displayed extents can be made larger via
-   * [[expandDisplayedExtents]], but never smaller, to accomodate data sources like reality models that may exceed the project extents.
+   * [[expandDisplayedExtents]], but never smaller, to accommodate data sources like reality models that may exceed the project extents.
    * @note Do not modify these extents directly - use [[expandDisplayedExtents]] only.
    */
   public readonly displayedExtents: AxisAlignedBox3d;
@@ -92,7 +92,7 @@ export abstract class IModelConnection extends IModel {
   /** The maximum time (in milliseconds) to wait before timing out the request to open a connection to a new iModel */
   public static connectionTimeout: number = 10 * 60 * 1000;
 
-  /** The RPC routing for this connection.  */
+  /** The RPC routing for this connection. */
   public routingContext: IModelRoutingContext = IModelRoutingContext.default;
 
   /** Type guard for instanceof [[BriefcaseConnection]] */
@@ -117,7 +117,7 @@ export abstract class IModelConnection extends IModel {
    */
   public get isSnapshot(): boolean { return this.isSnapshotConnection(); }
 
-  /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection).  */
+  /** True if this is a [Blank Connection]($docs/learning/frontend/BlankConnection). */
   public get isBlank(): boolean { return this.isBlankConnection(); }
 
   /** Check the [[openMode]] of this IModelConnection to see if it was opened read-only. */
@@ -207,7 +207,7 @@ export abstract class IModelConnection extends IModel {
 
   /** @internal */
   protected constructor(iModelProps: IModelConnectionProps) {
-    super(iModelProps, iModelProps.openMode ?? OpenMode.Readonly);
+    super(iModelProps);
     super.initialize(iModelProps.name!, iModelProps);
     this.models = new IModelConnection.Models(this);
     this.elements = new IModelConnection.Elements(this);
@@ -430,7 +430,7 @@ export abstract class IModelConnection extends IModel {
   /** Obtain a summary of the geometry belonging to one or more [GeometricElement]($backend)s suitable for debugging and diagnostics.
    * @param requestProps Specifies the elements to query and options for how to format the output.
    * @returns A string containing the summary, typically consisting of multiple lines.
-   * @note Trying to parse the output to programatically inspect an element's geometry is not recommended.
+   * @note Trying to parse the output to programmatically inspect an element's geometry is not recommended.
    * @see [GeometryStreamIterator]($common) to more directly inspect a geometry stream.
    */
   public async getGeometrySummary(requestProps: GeometrySummaryRequestProps): Promise<string> {
@@ -562,14 +562,14 @@ export abstract class IModelConnection extends IModel {
   private _geodeticToSeaLevel?: number | Promise<number>;
   private _projectCenterAltitude?: number | Promise<number>;
 
-  /** Event called immediately after map elevation request is completed.  This occurs only in the case where background map terrain is displayed
-   * with either geiod or ground offset.   These require a query to BingElevation and therefore synching the view may be required
+  /** Event called immediately after map elevation request is completed. This occurs only in the case where background map terrain is displayed
+   * with either geoid or ground offset. These require a query to BingElevation and therefore synching the view may be required
    * when the request is completed.
    * @internal
    */
   public readonly onMapElevationLoaded = new BeEvent<(_imodel: IModelConnection) => void>();
 
-  /** The offset between sea level and the geodetic ellipsoid.  This will return undefined only if the request for the offset to Bing Elevation
+  /** The offset between sea level and the geodetic ellipsoid. This will return undefined only if the request for the offset to Bing Elevation
    * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
    * @internal
    */
@@ -585,7 +585,7 @@ export abstract class IModelConnection extends IModel {
     return ("number" === typeof this._geodeticToSeaLevel) ? this._geodeticToSeaLevel : undefined;
   }
 
-  /** The altitude (geodetic) at the project center.  This will return undefined only if the request for the offset to Bing Elevation
+  /** The altitude (geodetic) at the project center. This will return undefined only if the request for the offset to Bing Elevation
    * is required, and in this case the [[onMapElevationLoaded]] event is raised when the request is completed.
    * @internal
    */

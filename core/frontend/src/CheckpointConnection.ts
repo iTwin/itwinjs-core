@@ -6,7 +6,7 @@
  * @module IModelConnection
  */
 
-import { BentleyStatus, GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BentleyStatus, GuidString, Logger } from "@bentley/bentleyjs-core";
 import {
   IModelConnectionProps, IModelError, IModelReadRpcInterface, IModelRpcOpenProps, IModelVersion, RpcManager, RpcNotFoundResponse, RpcOperation,
   RpcRequest, RpcRequestEvent,
@@ -48,10 +48,10 @@ export class CheckpointConnection extends IModelConnection {
     const requestContext = await AuthorizedFrontendRequestContext.create();
     requestContext.enter();
 
-    const changeSetId = await IModelApp.hubAccess.getChangesetIdFromVersion({ requestContext, iModelId, version });
+    const changeset = { id: await IModelApp.hubAccess.getChangesetIdFromVersion({ requestContext, iModelId, version }) };
     requestContext.enter();
 
-    const iModelRpcProps: IModelRpcOpenProps = { contextId, iModelId, changeSetId, openMode: OpenMode.Readonly };
+    const iModelRpcProps: IModelRpcOpenProps = { contextId, iModelId, changeset };
     const openResponse = await this.callOpen(requestContext, iModelRpcProps, routingContext);
     requestContext.enter();
 
@@ -136,7 +136,7 @@ export class CheckpointConnection extends IModelConnection {
       const openResponse = await CheckpointConnection.callOpen(requestContext, iModelRpcProps, this.routingContext);
       // The new/reopened connection may have a new rpcKey and/or changeSetId, but the other IModelRpcTokenProps should be the same
       this._fileKey = openResponse.key;
-      this.changeset = { id: openResponse.changeSetId!, index: openResponse.changesetIndex };
+      this.changeset = openResponse.changeset!;
 
     } catch (error) {
       reject(error.message);
