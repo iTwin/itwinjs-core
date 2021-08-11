@@ -19,9 +19,9 @@
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "test": "",
     "test:integration": "npm run webpackTests && npm run test:integration:chrome",
-    "test:integration:chrome": "certa -r chrome",
-    "test:integration:electron": "certa -r electron",
-    "test:integration:node": "certa -r node",
+    "test:integration:chrome": "certa -r chrome --grep \"#integration\"",
+    "test:integration:electron": "certa -r electron --grep \"#integration\"",
+    "test:integration:node": "certa -r node --grep \"#integration\"",
     "copy:config": "internal-tools copy-config",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2"
   },

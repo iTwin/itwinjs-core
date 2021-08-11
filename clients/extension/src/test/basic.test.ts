@@ -5,7 +5,6 @@
 
 import * as chai from "chai";
 import { ExtensionStatus, Guid, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { ExtensionClient } from "../ExtensionClient";
@@ -44,8 +43,7 @@ describe("ExtensionClient (#integration)", () => {
     const modifyToken = await getAccessTokenFromBackend(TestUsers.regular, modifyOidcConfig);
     modifyRequestContext = new AuthorizedClientRequestContext(modifyToken);
 
-    const contextRegistry = new ContextRegistryClient();
-    teamId = (await contextRegistry.getTeam(modifyRequestContext)).wsgId;
+    teamId = "a8784902-682c-4c63-8d6e-093e57f91236";
   });
 
   after(async () => {

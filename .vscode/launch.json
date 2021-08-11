@@ -432,7 +432,9 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
-        "test:integration:chrome -- --debug"
+        "test:integration:chrome",
+        "--",
+        "--debug"
       ],
       "outFiles": [
         "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
@@ -1875,7 +1877,8 @@
       "type": "pickString",
       "options": [
         "product-settings",
-        "context-registry"
+        "context-registry",
+        "extension"
       ]
     }
   ]
