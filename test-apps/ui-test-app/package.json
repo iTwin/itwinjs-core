@@ -44,7 +44,6 @@
   ],
   "devDependencies": {
     "@axe-core/react": "^4.1.1",
-    "@bentley/logger-config": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/react-scripts": "4.0.3",

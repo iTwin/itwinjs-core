@@ -15,7 +15,6 @@ packageClassification:  [
          "ecschema-metadata",
          "ecschema-editing",
          "geometry-core",
-         "logger-config",
          "frontend-devtools",
          "hypermodeling-frontend",
          "webgl-compatibility"
