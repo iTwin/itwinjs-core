@@ -28,7 +28,6 @@ The iTwin.js library is organized into the following separately downloadable [np
 - ($i18n)
 - ($bentley)
 - ($geometry)
-- ($logger-config)
 
 ## iTwin.js Client Packages
 

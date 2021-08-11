@@ -193,3 +193,11 @@ The following items were moved into the ui-imodel-components package. For a comp
 * TimelineComponent, TimelineDataProvider, TimelineMenuItemProps
 * ViewportComponent, ViewportComponentEvents
 * LineWeightSwatch, WeightPickerButton, WeightPropertyEditor
+
+## @bentley/extension-cli
+
+The cli tool has been deprecated due to an impending change of Extensions and the Extension Service. Please continue to use the 2.x version if you still require publishing Extensions.
+
+## @bentley/config-loader
+
+The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using .env files will not be affected.
