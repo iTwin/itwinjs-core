@@ -106,13 +106,6 @@ abstract class CommonAssetProjectContext extends CommonContext {
   public timeZoneLocation?: string;
 }
 
-/** An iTwin context of type team. Represents an organization or team working on multiple projects.
- * @beta
- */
-@ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Team", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-export class Team extends CommonContext {
-}
-
 /** An iTwin context of type project. Represents time-constrained work done on an [[Asset]].
  * @beta
  */
@@ -280,22 +273,5 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
   public async getInvitedProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Project[]> {
     requestContext.enter();
     return this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Project?rbaconly=true", queryOptions);
-  }
-
-  /** Gets the iTwin team context that the authorized user belongs to.
-   * @param requestContext The client request context
-   * @returns Resolves to the found team. Rejects if no team or more than one team is found.
-   */
-  public async getTeam(requestContext: AuthorizedClientRequestContext): Promise<Team> {
-    requestContext.enter();
-    const teams = await this.getInstances<Team>(requestContext, Team, "/Repositories/BentleyCONNECT--Main/ConnectedContext/Team?isDefault=true");
-    requestContext.enter();
-
-    if (teams.length === 0)
-      throw new Error("Could not find a team for the current user");
-    if (teams.length > 1)
-      throw new Error("More than one default team found");
-
-    return teams[0];
   }
 }
