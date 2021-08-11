@@ -383,7 +383,6 @@ export class DataLocation extends WsgInstance {
  */
 export class RealityDataClient extends WsgClient {
   public static readonly searchKey: string = "RealityDataServices";
-  public static readonly configRelyingPartyUri = "imjs_reality_data_service_relying_party_uri";
 
   /**
    * Creates an instance of RealityDataServicesClient.
@@ -399,22 +398,6 @@ export class RealityDataClient extends WsgClient {
    */
   protected getUrlSearchKey(): string {
     return RealityDataClient.searchKey;
-  }
-
-  /**
-   * Gets theRelyingPartyUrl for the service.
-   * @returns RelyingPartyUrl for the service.
-   */
-  protected getRelyingPartyUrl(): string {
-    if (process.env[RealityDataClient.configRelyingPartyUri])
-      return `${process.env[RealityDataClient.configRelyingPartyUri]}/`;
-
-    if (process.env[WsgClient.configUseHostRelyingPartyUriAsFallback] ? Boolean(process.env[WsgClient.configUseHostRelyingPartyUriAsFallback]) : true) {
-      if (process.env[WsgClient.configHostRelyingPartyUri])
-        return `${process.env[WsgClient.configHostRelyingPartyUri]}/`;
-    }
-
-    throw new Error(`RelyingPartyUrl not set. Set it env variable using key ${RealityDataClient.configRelyingPartyUri}`);
   }
 
   /**

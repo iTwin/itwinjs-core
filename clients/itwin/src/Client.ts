@@ -186,7 +186,6 @@ export class AuthenticationError extends ResponseError {
  * @internal
  */
 export class UrlDiscoveryClient extends Client {
-  public static readonly configURL = "imjs_buddi_url";
   public static readonly configResolveUrlUsingRegion = "imjs_buddi_resolve_url_using_region";
   /**
    * Creates an instance of UrlDiscoveryClient.
@@ -208,7 +207,7 @@ export class UrlDiscoveryClient extends Client {
    * @returns URL of the discovery service.
    */
   public override async getUrl(): Promise<string> {
-    return process.env[UrlDiscoveryClient.configURL] ?? "https://buddi.bentley.com/WebService";
+    return "https://buddi.bentley.com/WebService";
   }
 
   /**

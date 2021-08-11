@@ -139,7 +139,6 @@ export interface ContextRegistryRequestQueryOptions extends RequestQueryOptions 
  */
 export class ContextRegistryClient extends WsgClient {
   public static readonly searchKey: string = "CONNECTEDContextService.URL";
-  public static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
 
   public constructor() {
     super("v2.5");
@@ -152,21 +151,6 @@ export class ContextRegistryClient extends WsgClient {
   protected override async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
     deepAssign(options, { headers: { "content-type": "application/json" } });
-  }
-
-  /** Gets theRelyingPartyUrl for the service.
-   * @returns RelyingPartyUrl for the service.
-   */
-  protected getRelyingPartyUrl(): string {
-    if (process.env[ContextRegistryClient.configRelyingPartyUri])
-      return `${process.env[ContextRegistryClient.configRelyingPartyUri]}/`;
-
-    if (process.env[WsgClient.configUseHostRelyingPartyUriAsFallback] ? Boolean(process.env[WsgClient.configUseHostRelyingPartyUriAsFallback]) : true ) {
-      if (process.env[WsgClient.configHostRelyingPartyUri])
-        return `${process.env[WsgClient.configHostRelyingPartyUri]}/`;
-    }
-
-    throw new Error(`RelyingPartyUrl not set. Set the env variable using key ${ContextRegistryClient.configRelyingPartyUri}`);
   }
 
   /** Gets the iTwin project contexts that are accessible to the authorized user.

@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
-import { ClientRequestContext, Config, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import { Asset, Project } from "@bentley/context-registry-client";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemContextClient,

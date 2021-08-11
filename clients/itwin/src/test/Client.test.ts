@@ -37,6 +37,6 @@ describe("Client", () => {
     const url = await client.getUrl(requestContext);
     expect(url).to.equal("https://test-api.bentley.com/test-api");
     // eslint-disable-next-line dot-notation
-    process.env.imjs_url_prefix = undefined;
+    delete process.env.imjs_url_prefix;
   });
 });

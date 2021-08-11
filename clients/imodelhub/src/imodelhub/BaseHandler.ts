@@ -70,7 +70,6 @@ export function addCsrfHeader(headerName: string = "X-XSRF-TOKEN", cookieName: s
 export class IModelBaseHandler extends WsgClient {
   protected override _url?: string;
   private _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
-  public static readonly configRelyingPartyUri = "imjs_imodelhub_relying_party_uri";
   protected _agent: any;
   protected _fileHandler: FileHandler | undefined;
   private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
@@ -142,23 +141,6 @@ export class IModelBaseHandler extends WsgClient {
    */
   public use(func: HttpRequestOptionsTransformer) {
     this._httpRequestOptionsTransformers.push(func);
-  }
-
-  /**
-   * Gets theRelyingPartyUrl for the service.
-   * @returns RelyingPartyUrl for the service.
-   * @internal
-   */
-  protected getRelyingPartyUrl(): string {
-    if (process.env[IModelBaseHandler.configRelyingPartyUri])
-      return `${process.env[IModelBaseHandler.configRelyingPartyUri]}/`;
-
-    if (process.env[WsgClient.configUseHostRelyingPartyUriAsFallback] ? Boolean(process.env[WsgClient.configUseHostRelyingPartyUriAsFallback]) : true) {
-      if (process.env[WsgClient.configHostRelyingPartyUri])
-        return `${process.env[WsgClient.configHostRelyingPartyUri]}/`;
-    }
-
-    throw new Error(`RelyingPartyUrl not set. Set the env variable using key ${IModelBaseHandler.configRelyingPartyUri}`);
   }
 
   /**
