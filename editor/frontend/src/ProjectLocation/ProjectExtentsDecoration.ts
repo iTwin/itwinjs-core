@@ -978,15 +978,17 @@ export class ProjectLocationSaveTool extends Tool {
       return false;
     }
 
-    if (deco.iModel.isReadonly)
-      return false;
+    if (deco.iModel.isReadonly) {
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("Readonly")));
+      return true;
+    }
 
     const extents = deco.getModifiedExtents();
     const ecefLocation = deco.getModifiedEcefLocation();
 
     if (undefined === extents && undefined === ecefLocation) {
       IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, translateMessage("NoChanges")));
-      return false;
+      return true;
     }
 
     // eslint-disable-next-line @typescript-eslint/no-floating-promises
