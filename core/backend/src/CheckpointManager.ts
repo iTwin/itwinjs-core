@@ -58,7 +58,7 @@ export interface DownloadRequest {
    * no download is performed and `localFile` is updated to reflect the fact that the file exists with that name.
    * This can be used, for example, to look for checkpoints from previous versions if the naming strategy changes.
    */
-  readonly aliasFiles?: string[];
+  readonly aliasFiles?: ReadonlyArray<string>;
 
   /** Properties of the checkpoint to be downloaded */
   readonly checkpoint: CheckpointProps;

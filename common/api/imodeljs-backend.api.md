@@ -1256,7 +1256,7 @@ export interface DownloadJob {
 
 // @internal
 export interface DownloadRequest {
-    readonly aliasFiles?: string[];
+    readonly aliasFiles?: ReadonlyArray<string>;
     readonly checkpoint: CheckpointProps;
     localFile: string;
     readonly onProgress?: ProgressFunction;
