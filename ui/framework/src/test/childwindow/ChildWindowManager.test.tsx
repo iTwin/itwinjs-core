@@ -112,7 +112,7 @@ describe("ChildWindowManager", () => {
 
   it("will copy styles", () => {
     const mainDoc = new DOMParser().parseFromString(mainHtml, "text/html");
-    const childDoc = new DOMParser().parseFromString(childHtml, "text/html");;
+    const childDoc = new DOMParser().parseFromString(childHtml, "text/html");
     copyStyles(childDoc, mainDoc);
     expect(childDoc.getElementById("__SVG_SPRITE_NODE__")).to.not.be.null;
     expect(mainDoc.styleSheets.length).to.eql(childDoc.styleSheets.length);
