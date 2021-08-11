@@ -2,10 +2,16 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+/*---------------------------------------------------------------------------------------------
+* Source file from https://github.com/arqex/react-dom-instance, updated to work with React 17
+* https://www.npmjs.com/package/react-dom-instance
+*--------------------------------------------------------------------------------------------*/
 const optionsDefault = {
   maxIteration: 4,
 };
-/** For testing only: updated from react-instance-dom to work with React 17 */
+/** For testing only
+ * @internal
+*/
 export function findInstance(node: any, opts?: any): any {
   const options = Object.assign({}, optionsDefault, opts);
 
