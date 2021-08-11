@@ -1296,36 +1296,6 @@ importers:
       rimraf: 3.0.2
       typescript: 4.3.5
 
-  ../../core/logger-config:
-    specifiers:
-      '@bentley/bentleyjs-core': workspace:*
-      '@bentley/build-tools': workspace:*
-      '@bentley/eslint-plugin': workspace:*
-      '@types/bunyan': ^1.8.4
-      '@types/bunyan-seq': ^0.2.0
-      '@types/node': 10.14.1
-      bunyan: ^1.8.12
-      bunyan-seq: ^0.2.0
-      eslint: ^7.11.0
-      request: ^2.88.0
-      request-promise: ^4.2.0
-      rimraf: ^3.0.2
-      typescript: ~4.3.0
-    devDependencies:
-      '@bentley/bentleyjs-core': link:../bentley
-      '@bentley/build-tools': link:../../tools/build
-      '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/bunyan': 1.8.7
-      '@types/bunyan-seq': 0.2.2
-      '@types/node': 10.14.1
-      bunyan: 1.8.15
-      bunyan-seq: 0.2.0
-      eslint: 7.32.0
-      request: 2.88.2
-      request-promise: 4.2.6_request@2.88.2
-      rimraf: 3.0.2
-      typescript: 4.3.5
-
   ../../core/markup:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
@@ -1833,7 +1803,6 @@ importers:
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-frontend': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/logger-config': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
@@ -1870,7 +1839,6 @@ importers:
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/logger-config': link:../../core/logger-config
       body-parser: 1.19.0
       chai: 4.3.4
       electron: 11.4.11
@@ -3386,7 +3354,6 @@ importers:
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/logger-config': workspace:*
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -3405,7 +3372,6 @@ importers:
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/logger-config': link:../../core/logger-config
       chai: 4.3.4
       yargs: 16.2.0
     devDependencies:
@@ -3761,7 +3727,6 @@ importers:
       '@bentley/imodeljs-markup': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/logger-config': workspace:*
       '@bentley/map-layers': workspace:*
       '@bentley/mobile-manager': workspace:*
       '@bentley/presentation-backend': workspace:*
@@ -3859,7 +3824,6 @@ importers:
       '@axe-core/react': 4.2.2
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/logger-config': link:../../core/logger-config
       '@bentley/react-scripts': 4.0.3_react@16.14.0+typescript@4.3.5
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1

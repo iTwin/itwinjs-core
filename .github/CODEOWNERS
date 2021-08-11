@@ -86,8 +86,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/linear-referencing-backend/            @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common.*            @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common/             @calebmshafer @diegoalexdiaz
-/common/**/logger-config.*                        @calebmshafer @swwilson-bsi @wgoehrig
-/common/**/logger-config/                         @calebmshafer @swwilson-bsi @wgoehrig
 /common/**/map-layers/                            @bsteinbk @mdastous-bentley
 /common/**/oidc-signin-tool/                      @calebmshafer @wgoehrig
 /common/**/orbitgt-core.*                         @imodeljs/display
@@ -124,7 +122,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /core/hypermodeling             @bbastings @imodeljs/display
 /core/i18n                      @wgoehrig @calebmshafer
 /core/imodel-bridge             @imodeljs/connectors
-/core/logger-config             @calebmshafer @swwilson-bsi @wgoehrig
 /core/markup                    @kabentley @pmconne @bbastings
 /core/orbitgt                   @imodeljs/display
 /core/quantity                  @bsteinbk @calebmshafer
