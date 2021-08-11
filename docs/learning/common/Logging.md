@@ -29,8 +29,6 @@ If a category name has a "." in it, then the part to the left is interpreted as 
 ## Controlling the Destination of Logging Messages
 
 The app controls how to handle log messages by supplying to [Logger.initialize]($bentleyjs-core) the functions that handle messages for each log level. These functions are called "streams". See the convenience method [Logger.initializeToConsole]($bentleyjs-core) for a simple way to direct logging output to the console.
-[BunyanLoggerConfig]($logger-config) will direct logging to the Bunyan logging system.
-[SeqLoggerConfig]($logger-config) will direct logging to the seq logging server. [FluentdBunyanLoggerConfig]($logger-config) will direct logging to fluentd.
 
 ## Controlling What is Logged
 
@@ -73,7 +71,7 @@ This approach is useful when you want to monitor the activity in a small number 
 
 ## Configuration Files
 
-A service typically initializes and configures logging in its startup logic. Configuration can be based on the configuration parameters of the service, which may be set by the deployment mechanism. The simplest way to do this is to use [LoggerLevelsConfig]($bentleyjs-core). This is normally used in conjunction with a stream config, for example, a [SeqConfig]($logger-config). Both are normally stored in a config file that is deployed with the service. Finally, some specific configuration parameters are normally set at runtime, based on deployment parameters using [EnvMacroSubst]($bentleyjs-core) to do macro substitution.
+A service typically initializes and configures logging in its startup logic. Configuration can be based on the configuration parameters of the service, which may be set by the deployment mechanism. The simplest way to do this is to use [LoggerLevelsConfig]($bentleyjs-core). This is normally used in conjunction with a stream config. Both are normally stored in a config file that is deployed with the service. Finally, some specific configuration parameters are normally set at runtime, based on deployment parameters using [EnvMacroSubst]($bentleyjs-core) to do macro substitution.
 
 *Example:*
 

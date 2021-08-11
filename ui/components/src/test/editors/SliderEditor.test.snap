@@ -11,9 +11,8 @@ exports[`<SliderEditor /> renders correctly 1`] = `
     onEnter={[Function]}
   >
     <PopupContent>
-      <Slider
+      <ForwardRef
         className="components-slider-editor-slider"
-        includeTicksInWidth={true}
         max={100}
         min={0}
         onChange={[Function]}
@@ -22,6 +21,7 @@ exports[`<SliderEditor /> renders correctly 1`] = `
             "minWidth": "100px",
           }
         }
+        tooltipProps={[Function]}
         values={
           Array [
             0,

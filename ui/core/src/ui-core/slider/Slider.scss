@@ -24,6 +24,10 @@ $uicore-slider-minmax-margin:   6px;
     margin-right: 4px;
   }
 
+  span.core-slider-minmax[data-testid="core-slider-max"] {
+    margin-left: 4px;
+  }
+
   &.core-slider-tickLabels {
     margin-bottom: 9px;
   }
@@ -40,82 +44,8 @@ $uicore-slider-minmax-margin:   6px;
   .core-slider {
     flex: 1;
     position: relative;
-
-    .core-slider-rail {
-      position: absolute;
-      display: flex;
-      align-items: center;
-      width: 100%;
-      height: $uicore-slider-rail-height;
-      padding: 4px 0;
-      top: 50%;
-      transform: translateY(-50%);
-      cursor: pointer;
-
-      >.core-slider-rail-inner {
-        height: $uicore-slider-rail-height;
-        width: 100%;
-        background: $buic-background-5;
-      }
-    }
-
-    .core-slider-track {
-      position: absolute;
-      display: flex;
-      align-items: center;
-      top: 50%;
-      transform: translateY(-50%);
-      height: $uicore-slider-rail-height;
-      padding: 4px 0;
-      cursor: pointer;
-
-      >.core-slider-track-inner {
-        height: $uicore-slider-rail-height;
-        width: 100%;
-        background: $buic-foreground-primary;
-      }
-    }
-
-    .core-slider-handle {
-      position: absolute;
-      top: 50%;
-      transform: translate(-50%, -50%);
-      width: $uicore-slider-handle-size;
-      height: $uicore-slider-handle-size;
-      cursor: pointer;
-      border-radius: 50%;
-      border-width: 1px;
-      border-style: solid;
-      border-color: $buic-background-control-stroke;
-      background: $buic-background-control;
-      box-sizing: border-box;
-      outline: none;
-      padding: 0;
-
-      &:hover:not(.core-disabled) {
-        border-color: $buic-foreground-focus;
-      }
-
-      &:focus, &:active {
-        @include uicore-buttons-button-focused;
-      }
-    }
-
-    .core-slider-tick-mark {
-      position: absolute;
-      top: 5px;
-      width: 1px;
-      height: 5px;
-      background-color: $buic-foreground-disabled;
-    }
-
-    .core-slider-tick-label {
-      position: absolute;
-      top: 10px;
-      font-size: 10px;
-      text-align: center;
-      color: $buic-foreground-body;
-    }
+    height: inherit;
+    margin-bottom: 2px;
   }
 
   &.core-disabled {

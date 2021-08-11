@@ -7,6 +7,10 @@
 $top-position: 6px;
 $bottom-position: 4px;
 
+.solar-slider.solar-timeline > .iui-slider-container {
+  height: 28px;
+}
+
 .solar-timeline-wrapper {
   box-sizing: border-box;
   background: $buic-background-2;
@@ -53,7 +57,8 @@ $bottom-position: 4px;
     }
 
     > .current-date {
-      margin-left: 20px;
+      min-width: 175px;
+      margin-left: 8px;
       margin-right: 4px;
       background: inherit;
       padding: 3px 4px;
@@ -69,7 +74,8 @@ $bottom-position: 4px;
       }
 
       > .icon-calendar {
-        margin-left: 6px;
+        flex-grow: 1;
+        margin-left: auto;
       }
     }
 
@@ -85,21 +91,6 @@ $bottom-position: 4px;
         opacity: 0;
         transition: all .2s linear;
         margin-right: 10px;
-      }
-    }
-
-    > .expanded-icon {
-      margin-left: 12px;
-      margin-right: 5px;
-      font-size: 12px;
-      transition: transform .5s ease;
-      cursor: pointer;
-
-      &:hover {
-        color: $buic-foreground-activehover;
-      }
-      &:focus {
-        outline: none;
       }
     }
 
@@ -136,7 +127,6 @@ $bottom-position: 4px;
     box-sizing: border-box;
     align-items: center;
     flex: 1;
-    height: 25px;
 
     .rail-outer {
       position: absolute;
@@ -217,86 +207,18 @@ $bottom-position: 4px;
     .sunrise,
     .sunset {
       font-size: 22px;
-      margin: 0 5px 2px 0;
       cursor: default;
+    }
+
+    .sunset {
+      margin: 0px 16px 2px 24px;
     }
 
     .sunrise {
       color: #ffcf00;
+      margin: 0 24px 0 8px;
     }
 
-    &.showticks {
-      position: relative;
-      display: none;
-      align-items: flex-start;
-      background: $buic-background-1;
-      border: 1px solid $buic-background-5;
-      box-sizing: border-box;
-      flex: 1;
-      height: 57px;
-
-      .rail-outer {
-        top: $top-position;
-        transform: none;
-      }
-
-      .rail-inner,
-      .rail-solar {
-        top: calc(#{$top-position} + 8px);
-        transform: none;
-      }
-
-      .solar-handle {
-        top: $top-position;
-        transform: translateX(-50%);
-      }
-
-      .rail-tooltip {
-        top: $top-position;
-        transform: none;
-      }
-
-      .sunrise,
-      .sunset {
-        font-size: 22px;
-        margin: 0 15px;
-      }
-    }
-  }
-}
-
-.tooltip {
-  position: absolute;
-  top: -20px;
-  display: inline-block;
-  border-bottom: 1px dotted #222;
-  margin-left: 22px;
-  font-size: 14px;
-
-  .tooltip-text {
-    width: 100px;
-    background-color: #222;
-    color: #fff;
-    // opacity: 0.8;
-    text-align: center;
-    border-radius: 6px;
-    padding: 8px 0;
-    position: absolute;
-    z-index: 1;
-    bottom: 150%;
-    left: 50%;
-    margin-left: -60px;
-
-    &:after {
-      content: "";
-      position: absolute;
-      top: 100%;
-      left: 50%;
-      margin-left: -5px;
-      border-width: 5px;
-      border-style: solid;
-      border-color: #222 transparent transparent transparent;
-    }
   }
 }
 
@@ -320,20 +242,12 @@ $bottom-position: 4px;
 
 .solar-timeline-wrapper .solar-timeline {
   display: flex;
-  margin: 0 30px;
 }
 
 .solar-timeline-wrapper.expanded {
   height: 100px;
 }
 
-.solar-timeline-wrapper.expanded .solar-timeline-expanded {
-  display: flex;
-}
-
-.solar-timeline-wrapper.expanded .solar-timeline {
-  display: none;
-}
 
 
 .shadow-settings-color-top {
@@ -441,7 +355,3 @@ $bottom-position: 4px;
   pointer-events: none;
 }
 
-div.ui-component-solar-slider-sizer {
-  width: 100%;
-  height: 100%;
-}

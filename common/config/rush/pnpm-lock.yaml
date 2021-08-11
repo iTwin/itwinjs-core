@@ -15,12 +15,11 @@ importers:
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
       deep-assign: ^2.0.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -40,11 +39,10 @@ importers:
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -65,11 +63,10 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -89,11 +86,10 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -185,7 +181,7 @@ importers:
       superagent: ^5.2.2
       typescript: ~4.3.0
       webpack: 4.42.0
-      xmldom: ^0.5.0
+      xmldom: ^0.6.0
       xpath: 0.0.27
     dependencies:
       deep-assign: 2.0.0
@@ -193,7 +189,7 @@ importers:
       lodash: 4.17.21
       qs: 6.10.1
       superagent: 5.3.1
-      xmldom: 0.5.0
+      xmldom: 0.6.0
       xpath: 0.0.27
     devDependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
@@ -229,11 +225,10 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -252,11 +247,10 @@ importers:
       '@bentley/itwin-client': link:../itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -278,13 +272,12 @@ importers:
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
-      '@types/dotenv': ^6.1.1
       '@types/jsonpath': ^0.2.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
       chai-as-promised: ^7
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -306,13 +299,12 @@ importers:
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
-      '@types/dotenv': 6.1.1
       '@types/jsonpath': 0.2.0
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -368,11 +360,10 @@ importers:
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@types/chai': ^4.1.4
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -391,11 +382,10 @@ importers:
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/telemetry-client': link:../telemetry
       '@types/chai': 4.2.21
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       chai: 4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -426,7 +416,6 @@ importers:
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
       '@types/deep-assign': ^0.1.0
-      '@types/dotenv': ^6.1.1
       '@types/formidable': ^1.0.31
       '@types/fs-extra': ^4.0.7
       '@types/glob': ^5.0.35
@@ -442,7 +431,7 @@ importers:
       chai-as-promised: ^7
       cpx: ^1.5.0
       deep-assign: ^2.0.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       event-stream: ~4.0.1
@@ -495,7 +484,6 @@ importers:
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
       '@types/deep-assign': 0.1.1
-      '@types/dotenv': 6.1.1
       '@types/formidable': 1.2.3
       '@types/fs-extra': 4.0.12
       '@types/glob': 5.0.37
@@ -510,7 +498,7 @@ importers:
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       cpx: 1.5.0
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       event-stream: 4.0.1
@@ -544,7 +532,6 @@ importers:
       '@bentley/usage-logging-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
-      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
       '@types/jsonwebtoken': ^8.5.0
       '@types/mocha': ^8.2.2
@@ -558,7 +545,7 @@ importers:
       chai: ^4.1.2
       cpx: ^1.5.0
       deep-assign: ^2.0.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
@@ -607,7 +594,6 @@ importers:
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
-      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
       '@types/jsonwebtoken': 8.5.4
       '@types/mocha': 8.2.3
@@ -618,7 +604,7 @@ importers:
       '@types/stream-buffers': 3.0.4
       chai: 4.3.4
       cpx: 1.5.0
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -737,7 +723,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^9.0.2
       typescript: ~4.3.0
-      xmldom: ^0.5.0
+      xmldom: ^0.6.0
       xmlhttprequest: ^1.8.0
     dependencies:
       almost-equal: 1.1.0
@@ -768,7 +754,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       typescript: 4.3.5
-      xmldom: 0.5.0
+      xmldom: 0.6.0
       xmlhttprequest: 1.8.0
 
   ../../core/ecschema-locaters:
@@ -791,7 +777,7 @@ importers:
       nyc: ^15.1.0
       rimraf: ^3.0.2
       typescript: ~4.3.0
-      xmldom: ^0.5.0
+      xmldom: ^0.6.0
     dependencies:
       glob: 7.1.7
     devDependencies:
@@ -812,7 +798,7 @@ importers:
       nyc: 15.1.0
       rimraf: 3.0.2
       typescript: 4.3.5
-      xmldom: 0.5.0
+      xmldom: 0.6.0
 
   ../../core/ecschema-metadata:
     specifiers:
@@ -842,7 +828,7 @@ importers:
       rimraf: ^3.0.2
       sinon: ^9.0.2
       typescript: ~4.3.0
-      xmldom: ^0.5.0
+      xmldom: ^0.6.0
       xmlhttprequest: ^1.8.0
     dependencies:
       almost-equal: 1.1.0
@@ -872,7 +858,7 @@ importers:
       rimraf: 3.0.2
       sinon: 9.2.4
       typescript: 4.3.5
-      xmldom: 0.5.0
+      xmldom: 0.6.0
       xmlhttprequest: 1.8.0
 
   ../../core/ecschema-rpc/common:
@@ -961,7 +947,7 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/presentation-common': link:../../presentation/common
       '@types/node': 10.14.1
-      electron: 11.4.10
+      electron: 11.4.11
       eslint: 7.32.0
       rimraf: 3.0.2
       typescript: 4.3.5
@@ -1272,7 +1258,7 @@ importers:
       '@types/object-hash': ^1.3.0
       chai: ^4.1.2
       cpx: ^1.5.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -1301,42 +1287,12 @@ importers:
       '@types/object-hash': 1.3.4
       chai: 4.3.4
       cpx: 1.5.0
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
       mocha: 8.4.0
       nyc: 15.1.0
-      rimraf: 3.0.2
-      typescript: 4.3.5
-
-  ../../core/logger-config:
-    specifiers:
-      '@bentley/bentleyjs-core': workspace:*
-      '@bentley/build-tools': workspace:*
-      '@bentley/eslint-plugin': workspace:*
-      '@types/bunyan': ^1.8.4
-      '@types/bunyan-seq': ^0.2.0
-      '@types/node': 10.14.1
-      bunyan: ^1.8.12
-      bunyan-seq: ^0.2.0
-      eslint: ^7.11.0
-      request: ^2.88.0
-      request-promise: ^4.2.0
-      rimraf: ^3.0.2
-      typescript: ~4.3.0
-    devDependencies:
-      '@bentley/bentleyjs-core': link:../bentley
-      '@bentley/build-tools': link:../../tools/build
-      '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/bunyan': 1.8.7
-      '@types/bunyan-seq': 0.2.2
-      '@types/node': 10.14.1
-      bunyan: 1.8.15
-      bunyan-seq: 0.2.0
-      eslint: 7.32.0
-      request: 2.88.2
-      request-promise: 4.2.6_request@2.88.2
       rimraf: 3.0.2
       typescript: 4.3.5
 
@@ -1402,7 +1358,6 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/presentation-common': workspace:*
       '@types/chai': ^4.1.4
-      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -1410,7 +1365,7 @@ importers:
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx: ^1.5.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       js-base64: ^3.6.1
@@ -1430,7 +1385,6 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/presentation-common': link:../../presentation/common
       '@types/chai': 4.2.21
-      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
@@ -1438,7 +1392,7 @@ importers:
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       cpx: 1.5.0
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       js-base64: 3.6.1
@@ -1744,7 +1698,7 @@ importers:
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
       cpx: 1.5.0
-      electron: 11.4.10
+      electron: 11.4.11
       eslint: 7.32.0
       mocha: 8.4.0
       rimraf: 3.0.2
@@ -1828,7 +1782,7 @@ importers:
       '@types/semver': 5.5.0
       chai: 4.3.4
       cpx: 1.5.0
-      electron: 11.4.10
+      electron: 11.4.11
       eslint: 7.32.0
       glob: 7.1.7
       mocha: 8.4.0
@@ -1849,7 +1803,6 @@ importers:
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-frontend': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/logger-config': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
@@ -1886,10 +1839,9 @@ importers:
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/logger-config': link:../../core/logger-config
       body-parser: 1.19.0
       chai: 4.3.4
-      electron: 11.4.10
+      electron: 11.4.11
       express: 4.17.1
       fs-extra: 8.1.0
       fuse.js: 3.6.1
@@ -1968,7 +1920,7 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       body-parser: 1.19.0
       chai: 4.3.4
-      electron: 11.4.10
+      electron: 11.4.11
       express: 4.17.1
       fs-extra: 8.1.0
       fuse.js: 3.6.1
@@ -2053,7 +2005,7 @@ importers:
       '@bentley/ui-framework': workspace:*
       '@bentley/ui-ninezone': workspace:*
       '@itwin/itwinui-css': ^0.24.0
-      '@itwin/itwinui-react': ^1.12.0
+      '@itwin/itwinui-react': ^1.14.0
       '@testing-library/react': ^8.0.1
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -2081,7 +2033,6 @@ importers:
       nyc: ^15.1.0
       react: ^16.8.0
       react-beautiful-dnd: ^13.0.0
-      react-compound-slider: ^2.5.0
       react-select: 3.1.0
       rimraf: ^3.0.2
       sinon: ^9.0.2
@@ -2091,7 +2042,6 @@ importers:
     dependencies:
       classnames: 2.3.1
       react-beautiful-dnd: 13.1.0_react@16.14.0
-      react-compound-slider: 2.5.0_react@16.14.0
       react-select: 3.1.0_react@16.14.0
     devDependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
@@ -2172,14 +2122,13 @@ importers:
       '@bentley/product-settings-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
-      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/serve-handler': ~6.1.0
       chai: ^4.1.2
       chai-as-promised: ^7
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
@@ -2214,7 +2163,7 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      electron: 11.4.10
+      electron: 11.4.11
       fs-extra: 8.1.0
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
@@ -2227,12 +2176,11 @@ importers:
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
-      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/serve-handler': 6.1.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       glob: 7.1.7
@@ -2270,14 +2218,13 @@ importers:
       '@bentley/presentation-frontend': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx: ^1.5.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       mocha: ^8.3.2
@@ -2309,7 +2256,7 @@ importers:
       '@bentley/presentation-frontend': link:../../presentation/frontend
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       mocha: 8.4.0
       openid-client: 4.7.4
@@ -2320,7 +2267,6 @@ importers:
       '@bentley/imodeljs-backend': link:../../core/backend
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
@@ -2348,13 +2294,12 @@ importers:
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
-      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       chai: ^4.1.2
       cpx: ^1.5.0
       deep-assign: ^2.0.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       fs-extra: ^8.1.0
@@ -2385,11 +2330,10 @@ importers:
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
       '@types/deep-assign': 0.1.1
-      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       cpx: 1.5.0
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       internal-tools: link:../../tools/internal
@@ -2418,12 +2362,11 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
-      '@types/dotenv': ^6.1.1
       '@types/fs-extra': ^4.0.7
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       chai: ^4.1.2
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
@@ -2454,7 +2397,7 @@ importers:
       '@bentley/imodeljs-markup': link:../../core/markup
       '@bentley/itwin-client': link:../../clients/itwin
       chai: 4.3.4
-      electron: 11.4.10
+      electron: 11.4.11
       fs-extra: 8.1.0
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
@@ -2462,11 +2405,10 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
-      '@types/dotenv': 6.1.1
       '@types/fs-extra': 4.0.12
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       glob: 7.1.7
@@ -2508,7 +2450,6 @@ importers:
       '@types/chai-subset': 1.3.1
       '@types/cpx': '1.5'
       '@types/deep-equal': ^1
-      '@types/dotenv': ^6.1.1
       '@types/faker': ^4.1.0
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -2526,7 +2467,7 @@ importers:
       cpx: ^1.5.0
       cross-env: ^5.1.4
       deep-equal: ^1
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       faker: ^4.1.0
@@ -2595,13 +2536,12 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/dotenv': 6.1.1
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.14
       '@types/testing-library__react-hooks': 3.4.1
       cache-require-paths: 0.3.0
       cross-env: 5.2.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       eslint: 7.32.0
       ignore-styles: 5.0.1
@@ -2650,7 +2590,7 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/mobile-manager': link:../../core/mobile-manager
       chai: 4.3.4
-      electron: 11.4.10
+      electron: 11.4.11
       express: 4.17.1
       semver: 5.7.1
       spdy: 4.0.2
@@ -2696,14 +2636,13 @@ importers:
       '@bentley/telemetry-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
       chai: ^4.1.2
       chai-as-promised: ^7
       cpx: ^1.5.0
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -2737,7 +2676,7 @@ importers:
       '@bentley/telemetry-client': link:../../clients/telemetry
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       mocha: 8.4.0
       openid-client: 4.7.4
@@ -2748,7 +2687,6 @@ importers:
       '@bentley/presentation-backend': link:../../presentation/backend
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
@@ -3215,7 +3153,6 @@ importers:
       '@bentley/react-scripts': 4.0.3
       '@bentley/ui-abstract': workspace:*
       '@types/body-parser': ^1.17.0
-      '@types/dotenv': ^6.1.1
       '@types/express': ^4.16.1
       '@types/node': 10.14.1
       body-parser: ^1.18.2
@@ -3223,7 +3160,7 @@ importers:
       chrome-launcher: ^0.10.5
       cpx: ^1.5.0
       cross-env: ^5.1.4
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
@@ -3258,16 +3195,15 @@ importers:
       '@bentley/perf-tools': link:../../tools/perf-tools
       '@bentley/react-scripts': 4.0.3_react@16.14.0+typescript@4.3.5
       '@types/body-parser': 1.19.1
-      '@types/dotenv': 6.1.1
       '@types/express': 4.17.13
       '@types/node': 10.14.1
       child_process: 1.0.2
       chrome-launcher: 0.10.7
       cpx: 1.5.0
       cross-env: 5.2.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 11.4.10
+      electron: 11.4.11
       eslint: 7.32.0
       express: 4.17.1
       npm-run-all: 4.1.5
@@ -3306,14 +3242,13 @@ importers:
       '@bentley/react-scripts': 4.0.3
       '@bentley/ui-abstract': workspace:*
       '@bentley/webgl-compatibility': workspace:*
-      '@types/dotenv': ^6.1.1
       '@types/express': ^4.16.1
       '@types/fs-extra': ^4.0.7
       body-parser: ^1.18.2
       child_process: ^1.0.2
       cpx: ^1.5.0
       cross-env: ^5.1.4
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
@@ -3357,15 +3292,14 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/react-scripts': 4.0.3_react@16.14.0+typescript@4.3.5
-      '@types/dotenv': 6.1.1
       '@types/express': 4.17.13
       '@types/fs-extra': 4.0.12
       child_process: 1.0.2
       cpx: 1.5.0
       cross-env: 5.2.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 11.4.10
+      electron: 11.4.11
       eslint: 7.32.0
       express: 4.17.1
       fs-extra: 8.1.0
@@ -3420,7 +3354,6 @@ importers:
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/logger-config': workspace:*
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
@@ -3439,7 +3372,6 @@ importers:
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/logger-config': link:../../core/logger-config
       chai: 4.3.4
       yargs: 16.2.0
     devDependencies:
@@ -3700,16 +3632,15 @@ importers:
       '@bentley/ui-components': workspace:*
       '@bentley/ui-core': workspace:*
       '@itwin/itwinui-css': ^0.24.0
-      '@itwin/itwinui-react': ^1.12.0
+      '@itwin/itwinui-react': ^1.14.0
       '@types/bunyan': ^1.8.4
-      '@types/dotenv': ^6.1.1
       '@types/react': 16.9.43
       '@types/react-dom': ^16.8.0
       '@types/react-select': 3.0.26
       autoprefixer: ^8.6.5
       cpx: ^1.5.0
       cross-env: ^5.1.4
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
@@ -3752,16 +3683,15 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/react-scripts': 4.0.3_react@16.14.0+typescript@4.3.5
       '@types/bunyan': 1.8.7
-      '@types/dotenv': 6.1.1
       '@types/react': 16.9.43
       '@types/react-dom': 16.9.14
       '@types/react-select': 3.0.26
       autoprefixer: 8.6.5
       cpx: 1.5.0
       cross-env: 5.2.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 11.4.10
+      electron: 11.4.11
       eslint: 7.32.0
       npm-run-all: 4.1.5
       postcss-flexbugs-fixes: 4.1.0
@@ -3797,7 +3727,6 @@ importers:
       '@bentley/imodeljs-markup': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
-      '@bentley/logger-config': workspace:*
       '@bentley/map-layers': workspace:*
       '@bentley/mobile-manager': workspace:*
       '@bentley/presentation-backend': workspace:*
@@ -3811,8 +3740,7 @@ importers:
       '@bentley/ui-framework': workspace:*
       '@bentley/ui-ninezone': workspace:*
       '@itwin/itwinui-css': ^0.24.0
-      '@itwin/itwinui-react': ^1.12.0
-      '@types/dotenv': ^6.1.1
+      '@itwin/itwinui-react': ^1.14.0
       '@types/lorem-ipsum': ^1.0.2
       '@types/node': 10.14.1
       '@types/react': 16.9.43
@@ -3824,7 +3752,7 @@ importers:
       classnames: ^2.3.1
       cpx: ^1.5.0
       cross-env: ^5.1.4
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       electron: ^11.1.0
       eslint: ^7.11.0
@@ -3835,7 +3763,6 @@ importers:
       null-loader: ^0.1.1
       react: ^16.8.0
       react-beautiful-dnd: ^13.0.0
-      react-compound-slider: ^2.5.0
       react-dom: ^16.8.0
       react-redux: ^7.2.0
       react-select: 3.1.0
@@ -3886,7 +3813,6 @@ importers:
       lorem-ipsum: 2.0.3
       react: 16.14.0
       react-beautiful-dnd: 13.1.0_react-dom@16.14.0+react@16.14.0
-      react-compound-slider: 2.5.0_react@16.14.0
       react-dom: 16.14.0_react@16.14.0
       react-redux: 7.2.4_react-dom@16.14.0+react@16.14.0
       react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
@@ -3898,9 +3824,7 @@ importers:
       '@axe-core/react': 4.2.2
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/logger-config': link:../../core/logger-config
       '@bentley/react-scripts': 4.0.3_react@16.14.0+typescript@4.3.5
-      '@types/dotenv': 6.1.1
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
       '@types/react': 16.9.43
@@ -3911,9 +3835,9 @@ importers:
       '@types/semver': 5.5.0
       cpx: 1.5.0
       cross-env: 5.2.1
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
-      electron: 11.4.10
+      electron: 11.4.11
       eslint: 7.32.0
       fs-extra: 8.1.0
       internal-tools: link:../../tools/internal
@@ -3949,7 +3873,6 @@ importers:
       cpx: ^1.5.0
       eslint: ^7.11.0
       react: ^16.8.0
-      react-compound-slider: ^2.5.0
       react-dom: ^16.8.0
       react-select: 3.1.0
       rimraf: ^3.0.2
@@ -3973,7 +3896,6 @@ importers:
       '@bentley/ui-ninezone': link:../../ui/ninezone
       classnames: 2.3.1
       react: 16.14.0
-      react-compound-slider: 2.5.0_react@16.14.0
       react-dom: 16.14.0_react@16.14.0
       react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
     devDependencies:
@@ -4119,7 +4041,7 @@ importers:
       '@types/puppeteer': 2.0.1
       '@types/uuid': 7.0.5
       '@types/yargs': 12.0.20
-      electron: 11.4.10
+      electron: 11.4.11
       eslint: 7.32.0
       nyc: 15.1.0
       rimraf: 3.0.2
@@ -4157,7 +4079,7 @@ importers:
       rimraf: ^3.0.2
       source-map-support: ^0.5.6
       typescript: ~4.3.0
-      xmldom: ^0.5.0
+      xmldom: ^0.6.0
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
@@ -4173,7 +4095,7 @@ importers:
       chalk: 3.0.0
       commander: 2.20.3
       fs-extra: 8.1.0
-      xmldom: 0.5.0
+      xmldom: 0.6.0
     devDependencies:
       '@bentley/build-tools': link:../build
       '@bentley/eslint-plugin': link:../eslint-plugin
@@ -4233,79 +4155,6 @@ importers:
       '@types/estree': 0.0.50
       '@types/node': 10.14.1
       '@typescript-eslint/typescript-estree': 4.26.1_typescript@4.3.5
-      eslint: 7.32.0
-      mocha: 8.4.0
-      typescript: 4.3.5
-
-  ../../tools/extension-cli:
-    specifiers:
-      '@bentley/backend-itwin-client': workspace:*
-      '@bentley/bentleyjs-core': workspace:*
-      '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
-      '@bentley/ecschema-metadata': workspace:*
-      '@bentley/electron-manager': workspace:*
-      '@bentley/eslint-plugin': workspace:*
-      '@bentley/extension-client': workspace:*
-      '@bentley/geometry-core': workspace:*
-      '@bentley/imodelhub-client': workspace:*
-      '@bentley/imodeljs-backend': workspace:*
-      '@bentley/imodeljs-common': workspace:*
-      '@bentley/itwin-client': workspace:*
-      '@bentley/presentation-common': workspace:*
-      '@bentley/telemetry-client': workspace:*
-      '@types/chai': ^4.1.4
-      '@types/mocha': ^8.2.2
-      '@types/node': 10.14.1
-      '@types/node-fetch': ^2.5.10
-      '@types/rimraf': ^2.0.2
-      '@types/semver': ^5.5.0
-      '@types/tar': ^4.0.0
-      '@types/yargs': ^12.0.5
-      chai: ^4.1.2
-      electron: ^11.1.0
-      eslint: ^7.11.0
-      fast-sha256: 1.3.0
-      mocha: ^8.3.2
-      node-fetch: ^2.6.1
-      rimraf: ^3.0.2
-      semver: ^5.5.0
-      tar: ^6.1.3
-      typescript: ~4.3.0
-      yargs: ^16.0.0
-    dependencies:
-      '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
-      '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/ecschema-metadata': link:../../core/ecschema-metadata
-      '@bentley/electron-manager': link:../../core/electron-manager
-      '@bentley/extension-client': link:../../clients/extension
-      '@bentley/geometry-core': link:../../core/geometry
-      '@bentley/imodelhub-client': link:../../clients/imodelhub
-      '@bentley/imodeljs-backend': link:../../core/backend
-      '@bentley/imodeljs-common': link:../../core/common
-      '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/presentation-common': link:../../presentation/common
-      '@bentley/telemetry-client': link:../../clients/telemetry
-      electron: 11.4.10
-      fast-sha256: 1.3.0
-      node-fetch: 2.6.1
-      rimraf: 3.0.2
-      semver: 5.7.1
-      tar: 6.1.3
-      yargs: 16.2.0
-    devDependencies:
-      '@bentley/build-tools': link:../build
-      '@bentley/eslint-plugin': link:../eslint-plugin
-      '@types/chai': 4.2.21
-      '@types/mocha': 8.2.3
-      '@types/node': 10.14.1
-      '@types/node-fetch': 2.5.12
-      '@types/rimraf': 2.0.5
-      '@types/semver': 5.5.0
-      '@types/tar': 4.0.5
-      '@types/yargs': 12.0.20
-      chai: 4.3.4
       eslint: 7.32.0
       mocha: 8.4.0
       typescript: 4.3.5
@@ -4377,8 +4226,8 @@ importers:
       react-dev-utils: 11.0.4
       readline: 1.3.0
       resolve-url-loader: 3.1.2
-      sass: 1.37.2
-      sass-loader: 10.2.0_sass@1.37.2+webpack@4.42.0
+      sass: 1.37.5
+      sass-loader: 10.2.0_sass@1.37.5+webpack@4.42.0
       source-map-loader: 1.1.3_webpack@4.42.0
       style-loader: 1.3.0_webpack@4.42.0
       svg-sprite-loader: 4.2.1_webpack@4.42.0
@@ -4409,13 +4258,12 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
-      '@types/dotenv': ^6.1.1
       '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
       chai: ^4.1.2
       chai-as-promised: ^7
-      dotenv: ^8.2.0
+      dotenv: ^10.0.0
       dotenv-expand: ^5.1.0
       eslint: ^7.11.0
       internal-tools: workspace:*
@@ -4429,7 +4277,7 @@ importers:
       '@bentley/certa': link:../certa
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/itwin-client': link:../../clients/itwin
-      dotenv: 8.6.0
+      dotenv: 10.0.0
       dotenv-expand: 5.1.0
       openid-client: 4.7.4
       puppeteer: 5.3.1
@@ -4438,7 +4286,6 @@ importers:
       '@bentley/eslint-plugin': link:../eslint-plugin
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
-      '@types/dotenv': 6.1.1
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/puppeteer': 2.0.1
@@ -4625,7 +4472,7 @@ importers:
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-core': workspace:*
       '@itwin/itwinui-css': ^0.24.0
-      '@itwin/itwinui-react': ^1.12.0
+      '@itwin/itwinui-react': ^1.14.0
       '@testing-library/react': ^8.0.1
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -4676,7 +4523,6 @@ importers:
       nyc: ^15.1.0
       raf: ^3.4.0
       react: ^16.8.0
-      react-compound-slider: ^2.5.0
       react-data-grid: 6.0.1
       react-dnd: ^11.1.3
       react-dnd-html5-backend: ^11.1.3
@@ -4714,7 +4560,6 @@ importers:
       inspire-tree: 5.0.2
       linkify-it: 2.2.0
       lodash: 4.17.21
-      react-compound-slider: 2.5.0_react@16.14.0
       react-data-grid: 6.0.1_react-dom@16.14.0+react@16.14.0
       react-dnd: 11.1.3_react-dom@16.14.0+react@16.14.0
       react-dnd-html5-backend: 11.1.3
@@ -4754,7 +4599,7 @@ importers:
       '@types/react-dom': 16.9.14
       '@types/react-highlight-words': 0.11.1
       '@types/react-select': 3.0.26
-      '@types/react-virtualized': 9.21.12
+      '@types/react-virtualized': 9.21.13
       '@types/react-virtualized-auto-sizer': 1.0.1
       '@types/react-window': 1.8.5
       '@types/sinon': 9.0.11
@@ -4803,7 +4648,7 @@ importers:
       '@bentley/react-scripts': 4.0.3
       '@bentley/ui-abstract': workspace:*
       '@itwin/itwinui-css': ^0.24.0
-      '@itwin/itwinui-react': ^1.12.0
+      '@itwin/itwinui-react': ^1.14.0
       '@testing-library/react': ^8.0.1
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -4842,7 +4687,6 @@ importers:
       raf: ^3.4.0
       react: ^16.8.0
       react-autosuggest: ^10.0.2
-      react-compound-slider: ^2.5.0
       react-dom: ^16.8.0
       react-select: 3.1.0
       react-test-renderer: ^16.13.1
@@ -4864,7 +4708,6 @@ importers:
       dompurify: 2.3.0
       lodash: 4.17.21
       react-autosuggest: 10.1.0_react@16.14.0
-      react-compound-slider: 2.5.0_react@16.14.0
       react-select: 3.1.0_react-dom@16.14.0+react@16.14.0
       resize-observer-polyfill: 1.5.1
       svg-sprite-loader: 4.2.1
@@ -4950,7 +4793,7 @@ importers:
       '@bentley/ui-core': workspace:*
       '@bentley/ui-ninezone': workspace:*
       '@itwin/itwinui-css': ^0.24.0
-      '@itwin/itwinui-react': ^1.12.0
+      '@itwin/itwinui-react': ^1.14.0
       '@testing-library/react': ^8.0.1
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -5101,7 +4944,7 @@ importers:
       '@bentley/ui-abstract': workspace:*
       '@bentley/ui-core': workspace:*
       '@itwin/itwinui-css': ^0.24.0
-      '@itwin/itwinui-react': ^1.12.0
+      '@itwin/itwinui-react': ^1.14.0
       '@testing-library/react': ^8.0.1
       '@testing-library/react-hooks': ^3.2.1
       '@types/chai': ^4.1.4
@@ -8774,7 +8617,7 @@ packages:
       eslint-plugin-react-hooks: 4.2.0_eslint@7.32.0
       eslint-plugin-testing-library: 3.10.2_eslint@7.32.0+typescript@4.3.5
       eslint-webpack-plugin: 2.5.4_eslint@7.32.0+webpack@4.44.2
-      fast-sass-loader: 2.0.0_sass@1.37.2+webpack@4.44.2
+      fast-sass-loader: 2.0.0_sass@1.37.5+webpack@4.44.2
       file-loader: 6.1.1_webpack@4.44.2
       fs-extra: 9.1.0
       html-webpack-plugin: 4.5.0_webpack@4.44.2
@@ -8798,8 +8641,8 @@ packages:
       react-refresh: 0.8.3
       resolve: 1.18.1
       resolve-url-loader: 3.1.2
-      sass: 1.37.2
-      sass-loader: 10.2.0_sass@1.37.2+webpack@4.44.2
+      sass: 1.37.5
+      sass-loader: 10.2.0_sass@1.37.5+webpack@4.44.2
       semver: 7.3.2
       source-map-loader: 1.1.3_webpack@4.44.2
       speed-measure-webpack-plugin: 1.5.0_webpack@4.44.2
@@ -8874,7 +8717,7 @@ packages:
       eslint-plugin-react-hooks: 4.2.0_eslint@7.32.0
       eslint-plugin-testing-library: 3.10.2_eslint@7.32.0+typescript@4.3.5
       eslint-webpack-plugin: 2.5.4_eslint@7.32.0+webpack@4.44.2
-      fast-sass-loader: 2.0.0_sass@1.37.2+webpack@4.44.2
+      fast-sass-loader: 2.0.0_sass@1.37.5+webpack@4.44.2
       file-loader: 6.1.1_webpack@4.44.2
       fs-extra: 9.1.0
       html-webpack-plugin: 4.5.0_webpack@4.44.2
@@ -8898,8 +8741,8 @@ packages:
       react-refresh: 0.8.3
       resolve: 1.18.1
       resolve-url-loader: 3.1.2
-      sass: 1.37.2
-      sass-loader: 10.2.0_sass@1.37.2+webpack@4.44.2
+      sass: 1.37.5
+      sass-loader: 10.2.0_sass@1.37.5+webpack@4.44.2
       semver: 7.3.2
       source-map-loader: 1.1.3_webpack@4.44.2
       speed-measure-webpack-plugin: 1.5.0_webpack@4.44.2
@@ -10196,12 +10039,6 @@ packages:
       '@types/trusted-types': 2.0.2
     dev: true
 
-  /@types/dotenv/6.1.1:
-    resolution: {integrity: sha512-ftQl3DtBvqHl9L16tpqqzA4YzCSXZfi7g8cQceTz5rOlYtk/IZbFjAv3mLOQlNIgOaylCQWQoBdDQHPgEBJPHg==}
-    dependencies:
-      '@types/node': 10.14.1
-    dev: true
-
   /@types/enzyme/3.9.3:
     resolution: {integrity: sha512-jDKoZiiMA3lGO3skSO7dfqEHNvmiTLLV+PHD9EBQVlJANJvpY6qq1zzjRI24ZOtG7F+CS7BVWDXKewRmN8PjHQ==}
     dependencies:
@@ -10400,12 +10237,6 @@ packages:
   /@types/minimatch/3.0.5:
     resolution: {integrity: sha512-Klz949h02Gz2uZCMGwDUSDS1YBlTdDDgbWHi+81l29tQALUtvz4rAYi5uoVhE5Lagoq6DeqAUlbrHvW/mXDgdQ==}
 
-  /@types/minipass/2.2.1:
-    resolution: {integrity: sha512-0bI74UwEJ+JjGqzkyoiCxLVGK5C3Vy5MYdDB6VCtUAulcrulHvqhIrQP9lh/gvMgaNzvvJljMW97rRHVvbTe8Q==}
-    dependencies:
-      '@types/node': 10.14.1
-    dev: true
-
   /@types/mocha/8.2.3:
     resolution: {integrity: sha512-ekGvFhFgrc2zYQoX4JeZPmVzZxw6Dtllga7iGHzfbYIYkAMUx/sAFP2GdFpLff+vdHXu5fl7WX9AT+TtqYcsyw==}
 
@@ -10425,8 +10256,8 @@ packages:
   /@types/node/10.14.1:
     resolution: {integrity: sha512-Rymt08vh1GaW4vYB6QP61/5m/CFLGnFZP++bJpWbiNxceNa6RBipDmb413jvtSf/R1gg5a/jQVl2jY4XVRscEA==}
 
-  /@types/node/12.20.18:
-    resolution: {integrity: sha512-YoTiIwdKxM3VLiY2sM05x4iGuTveYiCcDaUVmo1L5ndrXxPGW/NEoZu+pGcBirziomizcZsnsQoemikKcB2fRA==}
+  /@types/node/12.20.19:
+    resolution: {integrity: sha512-niAuZrwrjKck4+XhoCw6AAVQBENHftpXw9F4ryk66fTgYaKQ53R4FI7c9vUGGw5vQis1HKBHDR1gcYI/Bq1xvw==}
 
   /@types/node/8.10.54:
     resolution: {integrity: sha512-kaYyLYf6ICn6/isAyD4K1MyWWd5Q3JgH6bnMN089LUx88+s4W8GvK9Q6JMBVu5vsFFp7pMdSxdKmlBXwH/VFRg==}
@@ -10560,8 +10391,8 @@ packages:
       '@types/react': 16.9.43
     dev: true
 
-  /@types/react-virtualized/9.21.12:
-    resolution: {integrity: sha512-zt6EvLQPhnnSVnMGa5prpV4pROY9euU2k2aoAyuaiDdfSvrfvzxM9MhkpdVYKKfBVUqAlQpMeE/4DPhNGvp7Cg==}
+  /@types/react-virtualized/9.21.13:
+    resolution: {integrity: sha512-tCIQ5wDKj+QJ3sMzjPKSLY0AXsznt+ovAUcq+JCLjPBOcAHbPt4FraGT9HKYEFfmp9E6+ELuN49i5bWtuBmi3w==}
     dependencies:
       '@types/prop-types': 15.7.4
       '@types/react': 16.9.43
@@ -10701,13 +10532,6 @@ packages:
 
   /@types/tapable/1.0.8:
     resolution: {integrity: sha512-ipixuVrh2OdNmauvtT51o3d8z12p6LtFW9in7U79der/kwejjdNchQC5UMn5u/KxNoM7VHHOs/l8KS8uHxhODQ==}
-    dev: true
-
-  /@types/tar/4.0.5:
-    resolution: {integrity: sha512-cgwPhNEabHaZcYIy5xeMtux2EmYBitfqEceBUi2t5+ETy4dW6kswt6WX4+HqLeiiKOo42EXbGiDmVJ2x+vi37Q==}
-    dependencies:
-      '@types/minipass': 2.2.1
-      '@types/node': 10.14.1
     dev: true
 
   /@types/testing-library__react-hooks/3.4.1:
@@ -11374,7 +11198,7 @@ packages:
       jws: 3.2.2
       underscore: 1.13.1
       uuid: 3.4.0
-      xmldom: 0.5.0
+      xmldom: 0.6.0
       xpath.js: 1.1.0
     transitivePeerDependencies:
       - debug
@@ -12612,7 +12436,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001248
-      electron-to-chromium: 1.3.793
+      electron-to-chromium: 1.3.795
     dev: true
 
   /browserslist/4.14.2:
@@ -12621,7 +12445,7 @@ packages:
     hasBin: true
     dependencies:
       caniuse-lite: 1.0.30001248
-      electron-to-chromium: 1.3.793
+      electron-to-chromium: 1.3.795
       escalade: 3.1.1
       node-releases: 1.1.73
 
@@ -12632,7 +12456,7 @@ packages:
     dependencies:
       caniuse-lite: 1.0.30001248
       colorette: 1.2.2
-      electron-to-chromium: 1.3.793
+      electron-to-chromium: 1.3.795
       escalade: 3.1.1
       node-releases: 1.1.73
 
@@ -12757,7 +12581,7 @@ packages:
       promise-inflight: 1.0.1
       rimraf: 3.0.2
       ssri: 8.0.1
-      tar: 6.1.3
+      tar: 6.1.6
       unique-filename: 1.1.1
 
   /cache-base/1.0.1:
@@ -13968,10 +13792,6 @@ packages:
       es5-ext: 0.10.53
       type: 1.2.0
 
-  /d3-array/1.2.4:
-    resolution: {integrity: sha512-KHW6M86R+FUPYGb3R5XiYjXPq7VzwxZ22buHhAEVG5ztoEcZZMLov530mmccaqA1GghZArjQV46fuc8kUqhhHw==}
-    dev: false
-
   /damerau-levenshtein/1.0.7:
     resolution: {integrity: sha512-VvdQIPGdWP0SqFXghj79Wf/5LArmreyMsGLa6FG6iC4t3j7j5s71TrwWmT/4akbDQIqjfACkLZmjXhA7g2oUZw==}
 
@@ -14460,14 +14280,14 @@ packages:
   /dotenv-expand/5.1.0:
     resolution: {integrity: sha512-YXQl1DSa4/PQyRfgrv6aoNjhasp/p4qs9FjJ4q4cQk+8m4r6k4ZSiEyytKG8f8W9gi8WsQtIObNmKd+tMzNTmA==}
 
+  /dotenv/10.0.0:
+    resolution: {integrity: sha512-rlBi9d8jpv9Sf1klPjNfFAuWDjKLwTIJJ/VxtoTwIR6hnZxcEOQCZg2oIL3MWBYw5GpUDKOEnND7LXTbIpQ03Q==}
+    engines: {node: '>=10'}
+
   /dotenv/8.2.0:
     resolution: {integrity: sha512-8sJ78ElpbDJBHNeBzUbUVLsqKdccaa/BXF1uPTw3GrvQTBgrQrtObr2mUrE38vzYd8cEv+m/JBfDLioYcfXoaw==}
     engines: {node: '>=8'}
     dev: true
-
-  /dotenv/8.6.0:
-    resolution: {integrity: sha512-IrPdXQsk2BbzvCBGBOTmmSH5SodmqZNt4ERAZDmW4CT+tL8VtvinqywuANaFu4bOMWki16nqf0e4oC0QIaDr/g==}
-    engines: {node: '>=10'}
 
   /dottie/2.0.2:
     resolution: {integrity: sha512-fmrwR04lsniq/uSr8yikThDTrM7epXHBAAjH9TbeH3rEA8tdCO7mRzB9hdmdGyJCxF8KERo9CITcm3kGuoyMhg==}
@@ -14483,7 +14303,7 @@ packages:
     engines: {node: '>=0.10'}
     requiresBuild: true
     dependencies:
-      nan: 2.14.2
+      nan: 2.15.0
     dev: true
     optional: true
 
@@ -14521,17 +14341,17 @@ packages:
     requiresBuild: true
     dev: true
 
-  /electron-to-chromium/1.3.793:
-    resolution: {integrity: sha512-l9NrGV6Mr4ov5mayYPvIWcwklNw5ROmy6rllzz9dCACw9nKE5y+s5uQk+CBJMetxrWZ6QJFsvEfG6WDcH2IGUg==}
+  /electron-to-chromium/1.3.795:
+    resolution: {integrity: sha512-4TPxrLf9Fzsi4rVgTlDm+ubxoXm3/TN67/LGHx/a4UkVubKILa6L26O6eTnHewixG/knzU9L3lLmfL39eElwlQ==}
 
-  /electron/11.4.10:
-    resolution: {integrity: sha512-aQTRgRdHwCW68gxz9qvGCfOUvR4NBbdecLB/mEWX8fMncDFvPMmm+dq2D6zSWWVEKywmsj3+wMMVn3UV2Cl2CQ==}
+  /electron/11.4.11:
+    resolution: {integrity: sha512-DyarEH2IJpx5KfE42vF+uq7jyfHDrDRUsXXZyc69tR/GOO0DGuFE6/BHlTaywgPbCS4Sa5/ffEGlG6xq9+eRAQ==}
     engines: {node: '>= 8.6'}
     hasBin: true
     requiresBuild: true
     dependencies:
       '@electron/get': 1.12.4
-      '@types/node': 12.20.18
+      '@types/node': 12.20.19
       extract-zip: 1.7.0
     transitivePeerDependencies:
       - supports-color
@@ -15485,7 +15305,7 @@ packages:
   /fast-safe-stringify/2.0.8:
     resolution: {integrity: sha512-lXatBjf3WPjmWD6DpIZxkeSsCOwqI0maYMpgDlx8g4U2qi4lbjA9oH/HD2a87G+KfsUmo5WbJFmqBZlPxtptag==}
 
-  /fast-sass-loader/2.0.0_sass@1.37.2+webpack@4.44.2:
+  /fast-sass-loader/2.0.0_sass@1.37.5+webpack@4.44.2:
     resolution: {integrity: sha512-q9q59bL8XvforoQw+qpwiLPDWGMZ2MfrwuOjvFKyGvON9uawOaNc7QDHKxjfqRM/gs1htXywQVqxjcTMcHDesw==}
     peerDependencies:
       sass: 1.x
@@ -15496,13 +15316,9 @@ packages:
       co: 4.6.0
       fs-extra: 3.0.1
       loader-utils: 1.4.0
-      sass: 1.37.2
+      sass: 1.37.5
       webpack: 4.44.2
     dev: true
-
-  /fast-sha256/1.3.0:
-    resolution: {integrity: sha512-n11RGP/lrWEFI/bWdygLxhI+pVeo1ZYIVwvvPkW7azl/rOy+F3HYRZ2K5zeE9mmkhQppyv9sQFx0JM9UabnpPQ==}
-    dev: false
 
   /fast-sort/3.0.2:
     resolution: {integrity: sha512-DIKDkHBt+IubEEU44/kEulX3SbIuufEHIhRfw0MCh7f/HLGWmR/Dk7xg2tapT28pVFqnEV1ZDtl6SeViAyVe4Q==}
@@ -15917,7 +15733,7 @@ packages:
     requiresBuild: true
     dependencies:
       bindings: 1.5.0
-      nan: 2.14.2
+      nan: 2.15.0
     optional: true
 
   /fsevents/2.3.2:
@@ -19583,8 +19399,8 @@ packages:
       lru-cache: 4.1.5
     dev: true
 
-  /nan/2.14.2:
-    resolution: {integrity: sha512-M2ufzIiINKCuDfBSAUr1vWQ+vuVcA9kqx8JJUsbQi6yf1uGRyb7HfpdfUr5qLXf3B/t8dPvcjhKMmlfnP47EzQ==}
+  /nan/2.15.0:
+    resolution: {integrity: sha512-8ZtvEnA2c5aYCZYd1cvgdnU6cqwixRoYg70xPLWUws5ORTa/lnw+u4amixRS/Ac5U5mQVgp9pnlSUnbNWFaWZQ==}
     optional: true
 
   /nanoid/2.1.11:
@@ -21728,18 +21544,6 @@ packages:
       - react-native
     dev: false
 
-  /react-compound-slider/2.5.0_react@16.14.0:
-    resolution: {integrity: sha512-T84FtSI0bkQPmH5GaaHbL+2McOyIR6M5sqS80dqw/bHc5r2UKLYY64BWTbsL+XO0jlx7REuJJnZUBqo4eSRl7g==}
-    peerDependencies:
-      react: ^16.3.0
-    dependencies:
-      '@babel/runtime': 7.14.8
-      d3-array: 1.2.4
-      prop-types: 15.7.2
-      react: 16.14.0
-      warning: 3.0.0
-    dev: false
-
   /react-data-grid/6.0.1_react-dom@16.14.0+react@16.14.0:
     resolution: {integrity: sha512-a4OGEjWTOCJ64GvXwTXEHDEQ8iXZ8Xk30izUKyAVmP5q+Q2AOTMq/qUcHQwpL+XJ81/vTPTIhR//ELjjzYGwFQ==}
     peerDependencies:
@@ -22235,7 +22039,7 @@ packages:
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}
     dependencies:
-      '@babel/runtime': 7.9.0
+      '@babel/runtime': 7.14.8
 
   /regex-cache/0.4.4:
     resolution: {integrity: sha512-nVIZwtCjkC9YgvWkpM55B5rBhBYRZhAaJbgcFYXXsHnbZ9UZI9nnVWYZpBlCqv9ho2eZryPnWrZGsOdPwVWXWQ==}
@@ -22777,7 +22581,7 @@ packages:
   /sanitize.css/10.0.0:
     resolution: {integrity: sha512-vTxrZz4dX5W86M6oVWVdOVe72ZiPs41Oi7Z6Km4W5Turyz28mrXSJhhEBZoRtzJWIv3833WKVwLSDWWkEfupMg==}
 
-  /sass-loader/10.2.0_sass@1.37.2+webpack@4.42.0:
+  /sass-loader/10.2.0_sass@1.37.5+webpack@4.42.0:
     resolution: {integrity: sha512-kUceLzC1gIHz0zNJPpqRsJyisWatGYNFRmv2CKZK2/ngMJgLqxTbXwe/hJ85luyvZkgqU3VlJ33UVF2T/0g6mw==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
@@ -22796,13 +22600,13 @@ packages:
       klona: 2.0.4
       loader-utils: 2.0.0
       neo-async: 2.6.2
-      sass: 1.37.2
+      sass: 1.37.5
       schema-utils: 3.1.1
       semver: 7.3.5
       webpack: 4.42.0
     dev: false
 
-  /sass-loader/10.2.0_sass@1.37.2+webpack@4.44.2:
+  /sass-loader/10.2.0_sass@1.37.5+webpack@4.44.2:
     resolution: {integrity: sha512-kUceLzC1gIHz0zNJPpqRsJyisWatGYNFRmv2CKZK2/ngMJgLqxTbXwe/hJ85luyvZkgqU3VlJ33UVF2T/0g6mw==}
     engines: {node: '>= 10.13.0'}
     peerDependencies:
@@ -22821,14 +22625,14 @@ packages:
       klona: 2.0.4
       loader-utils: 2.0.0
       neo-async: 2.6.2
-      sass: 1.37.2
+      sass: 1.37.5
       schema-utils: 3.1.1
       semver: 7.3.5
       webpack: 4.44.2
     dev: true
 
-  /sass/1.37.2:
-    resolution: {integrity: sha512-+XMg8QOg7OGLo4F5R3fLYEti/3MxFkyX0NxYbqWycU8xYMAhPDN5FuCO2ZJudnM1wcnZ3CeJRnpqUBZpLOitCQ==}
+  /sass/1.37.5:
+    resolution: {integrity: sha512-Cx3ewxz9QB/ErnVIiWg2cH0kiYZ0FPvheDTVC6BsiEGBTZKKZJ1Gq5Kq6jy3PKtL6+EJ8NIoaBW/RSd2R6cZOA==}
     engines: {node: '>=8.9.0'}
     hasBin: true
     dependencies:
@@ -24046,8 +23850,8 @@ packages:
       inherits: 2.0.4
       readable-stream: 3.6.0
 
-  /tar/6.1.3:
-    resolution: {integrity: sha512-3rUqwucgVZXTeyJyL2jqtUau8/8r54SioM1xj3AmTX3HnWQdj2AydfJ2qYYayPyIIznSplcvU9mhBb7dR2XF3w==}
+  /tar/6.1.6:
+    resolution: {integrity: sha512-oaWyu5dQbHaYcyZCTfyPpC+VmI62/OM2RTUYavTk1MDr1cwW5Boi3baeYQKiZbY2uSQJGr+iMOzb/JFxLrft+g==}
     engines: {node: '>= 10'}
     dependencies:
       chownr: 2.0.0
@@ -25088,12 +24892,6 @@ packages:
       makeerror: 1.0.11
     dev: true
 
-  /warning/3.0.0:
-    resolution: {integrity: sha1-MuU3fLVy3kqwR1O9+IIcAe1gW3w=}
-    dependencies:
-      loose-envify: 1.4.0
-    dev: false
-
   /watchpack-chokidar2/2.0.1:
     resolution: {integrity: sha512-nCFfBIPKr5Sh61s4LPpy1Wtfi0HE8isJ3d2Yb5/Ppw2P2B/3eVSEBjKfN0fmHJSK14+31KwMKmcrzs2GM4P0Ww==}
     dependencies:
@@ -25721,8 +25519,8 @@ packages:
     resolution: {integrity: sha512-JZnDKK8B0RCDw84FNdDAIpZK+JuJw+s7Lz8nksI7SIuU3UXJJslUthsi+uWBUYOwPFwW7W7PRLRfUKpxjtjFCw==}
     dev: true
 
-  /xmldom/0.5.0:
-    resolution: {integrity: sha512-Foaj5FXVzgn7xFzsKeNIde9g6aFBxTPi37iwsno8QvApmtg7KYrr+OPyRHcJF7dud2a5nGRBXK3n0dL62Gf7PA==}
+  /xmldom/0.6.0:
+    resolution: {integrity: sha512-iAcin401y58LckRZ0TkI4k0VSM1Qg0KGSc3i8rU+xrxe19A/BN1zHyVSJY7uoutVlaTSzYyk/v5AmkewAP7jtg==}
     engines: {node: '>=10.0.0'}
 
   /xmlhttprequest/1.8.0:
