@@ -32,10 +32,12 @@ describe("Client", () => {
   });
 
   it("should apply prefix with config entry", async () => {
-    Config.App.set("imjs_url_prefix", "test-");
+    // eslint-disable-next-line dot-notation
+    process.env.
     const requestContext = new ClientRequestContext();
     const url = await client.getUrl(requestContext);
     expect(url).to.equal("https://test-api.bentley.com/test-api");
-    Config.App.remove("imjs_url_prefix");
+    // eslint-disable-next-line dot-notation
+    process.env["imjs_url_prefix"] = undefined;
   });
 });

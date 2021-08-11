@@ -203,7 +203,8 @@ describe("TilesGenerationPerformance", () => {
 
     csvResultPath = IModelTestUtils.prepareOutputFile("TilesGen", "TilesGen.results.csv");
 
-    Config.App.merge({ imjs_buddi_resolve_url_using_region: config.regionId }); // eslint-disable-line @typescript-eslint/naming-convention
+    // Config.App.merge({ imjs_buddi_resolve_url_using_region: config.regionId }); // eslint-disable-line @typescript-eslint/naming-convention
+    process.env.imjs_buddi_resolve_url_using_region = config.regionId;
     if (IModelJsFs.existsSync(config.iModelLocation)) {
       imodels.forEach((element) => element.localPath = path.join(config.iModelLocation, `${element.iModelName}.bim`));
       // delete the .tile file

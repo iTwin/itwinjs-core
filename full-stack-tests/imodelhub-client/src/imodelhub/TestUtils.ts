@@ -40,17 +40,17 @@ function configMockSettings() {
   if (!TestConfig.enableMocks)
     return;
 
-  Config.App.set("imjs_imodelhub_url", "https://api.bentley.com/imodelhub");
-  Config.App.set("imjs_buddi_resolve_url_using_region", 0);
-  Config.App.set("imjs_url_prefix", "");
-  Config.App.set("imjs_test_serviceAccount1_user_name", "test");
-  Config.App.set("imjs_test_serviceAccount1_user_password", "test");
-  Config.App.set("imjs_test_manager_user_name", "test");
-  Config.App.set("imjs_test_manager_user_password", "test");
+  process.env.imjs_imodelhub_url = "https://api.bentley.com/imodelhub";
+  process.env.imjs_buddi_resolve_url_using_region = "0";
+  process.env.imjs_url_prefix = "";
+  process.env.imjs_test_serviceAccount1_user_name = "test";
+  process.env.imjs_test_serviceAccount1_user_password = "test";
+  process.env.imjs_test_manager_user_name = "test";
+  process.env.imjs_test_manager_user_password = "test";
 }
 
 export function getExpectedFileHandlerUrlSchemes(): string[] {
-  const handler = Config.App.getString("imjs_test_imodel_bank_file_handler", "url");
+  const handler = process.env.imjs_test_imodel_bank_file_handler ?? "url";
   switch (handler.toLowerCase()) {
     case "localhost":
       return ["file://"];
@@ -159,7 +159,7 @@ let imodelBankClient: IModelBankClient;
 export class IModelHubUrlMock {
   public static getUrl(): string {
     configMockSettings();
-    return Config.App.get("imjs_imodelhub_url", "");
+    return process.env.imjs_imodelhub_url ?? "";
   }
 }
 

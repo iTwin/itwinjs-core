@@ -30,7 +30,7 @@ function loadEnv(envFile: string) {
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 const settings = new Settings(process.env);
-Config.App.set("imjs_buddi_resolve_url_using_region", settings.env);
+process.env.imjs_buddi_resolve_url_using_region = String(settings.env);
 void (async () => {
   RpcConfiguration.developmentMode = true;
 
