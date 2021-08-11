@@ -66,7 +66,6 @@ describe("BriefcaseTxns", () => {
 
       const expectCommit = async (...evts: TxnEvent[]) => expectEvents(["onCommit", ...evts, "onCommitted"]);
 
-
       const dictModelId = await imodel.models.getDictionaryModel();
       const category = await callFullStackTestIpc("createAndInsertSpatialCategory", imodel.key, dictModelId, Guid.createValue(), { color: 0 });
       await imodel.saveChanges();

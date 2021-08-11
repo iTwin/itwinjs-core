@@ -40,7 +40,6 @@ import { IModelStatus } from '@bentley/bentleyjs-core';
 import { IndexedPolyfaceVisitor } from '@bentley/geometry-core';
 import { IndexedValue } from '@bentley/bentleyjs-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
-import { LockLevel } from '@bentley/imodelhub-client';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
@@ -4374,52 +4373,6 @@ export type IModelVersionProps = {
     latest?: never;
     afterChangeSetId?: never;
 };
-
-// @internal @deprecated
-export abstract class IModelWriteRpcInterface extends RpcInterface {
-    // @deprecated (undocumented)
-    createAndInsertPhysicalModel(_tokenProps: IModelRpcProps, _newModelCode: CodeProps, _privateModel: boolean): Promise<Id64String>;
-    // @deprecated (undocumented)
-    createAndInsertSpatialCategory(_tokenProps: IModelRpcProps, _scopeModelId: Id64String, _categoryName: string, _appearance: SubCategoryAppearance.Props): Promise<Id64String>;
-    // @deprecated (undocumented)
-    deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<void>;
-    // (undocumented)
-    doConcurrencyControlRequest(_tokenProps: IModelRpcProps): Promise<void>;
-    static getClient(): IModelWriteRpcInterface;
-    static getClientForRouting(token: RpcRoutingToken): IModelWriteRpcInterface;
-    // @deprecated (undocumented)
-    getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]>;
-    // @deprecated (undocumented)
-    getParentChangeset(_iModelToken: IModelRpcProps): Promise<ChangesetId>;
-    // (undocumented)
-    hasPendingTxns(_iModelToken: IModelRpcProps): Promise<boolean>;
-    // (undocumented)
-    hasUnsavedChanges(_iModelToken: IModelRpcProps): Promise<boolean>;
-    static readonly interfaceName = "IModelWriteRpcInterface";
-    static interfaceVersion: string;
-    // (undocumented)
-    lockModel(_tokenProps: IModelRpcProps, _modelId: Id64String, _level: LockLevel): Promise<void>;
-    // @deprecated (undocumented)
-    openForWrite(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
-    // (undocumented)
-    pullAndMergeChanges(_tokenProps: IModelRpcProps): Promise<IModelConnectionProps>;
-    // @deprecated (undocumented)
-    pullMergePush(_tokenProps: IModelRpcProps, _comment: string, _doPush: boolean): Promise<GuidString>;
-    // (undocumented)
-    pushChanges(_tokenProps: IModelRpcProps, _description: string): Promise<IModelConnectionProps>;
-    // (undocumented)
-    requestResources(_tokenProps: IModelRpcProps, _elementIds: Id64Array, _modelIds: Id64Array, _opcode: DbOpcode): Promise<void>;
-    // (undocumented)
-    saveChanges(_iModelToken: IModelRpcProps, _description?: string): Promise<void>;
-    // (undocumented)
-    saveThumbnail(_iModelToken: IModelRpcProps, _val: Uint8Array): Promise<void>;
-    // (undocumented)
-    synchConcurrencyControlResourcesCache(_tokenProps: IModelRpcProps): Promise<void>;
-    // @deprecated (undocumented)
-    undoRedo(_rpc: IModelRpcProps, _undo: boolean): Promise<IModelStatus>;
-    // (undocumented)
-    updateProjectExtents(_iModelToken: IModelRpcProps, _newExtents: AxisAlignedBox3dProps): Promise<void>;
-}
 
 // @public
 export interface InformationPartitionElementProps extends ElementProps {

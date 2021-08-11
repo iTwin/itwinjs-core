@@ -48,7 +48,6 @@ if (ProcessDetector.isElectronAppFrontend) {
       let elemId: string;
 
       beforeEach(async () => {
-        // eslint-disable-next-line deprecation/deprecation
         const modelId = await callFullStackTestIpc("createAndInsertPhysicalModel", imodel.key, (await makeModelCode(imodel, imodel.models.repositoryModelId, Guid.createValue())));
         const dictId = await imodel.models.getDictionaryModel();
         const categoryId = await callFullStackTestIpc("createAndInsertSpatialCategory", imodel.key, dictId, Guid.createValue(), { color: 0 });

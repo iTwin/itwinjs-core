@@ -54,21 +54,24 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
 | `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 | `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
 
 ### @bentley/imodeljs-frontend
 
-| Removed                           | Replacement                                               |
-| --------------------------------- | --------------------------------------------------------- |
-| `CheckpointConnection.open`       | `CheckpointConnection.openRemote`                         |
-| `DecorateContext.screenViewport`  | `DecorateContext.viewport`                                |
-| `IModelApp.iModelClient`          | `IModelHubFrontend.iModelClient`                          |
-| `IModelConnection.Models.loaded`  | use `for..of` to iterate and `getLoaded` to look up by Id |
-| `IOidcFrontendClient`             | `FrontendAuthorizationClient`                             |
-| `isIOidcFrontendClient`           | `FrontendAuthorizationClient`                             |
-| `OidcBrowserClient`               | `BrowserAuthorizationClient`                              |
-| `OidcFrontendClientConfiguration` | `BrowserAuthorizationClientConfiguration`                 |
-| `ScreenViewport.decorationDiv`    | `DecorateContext.addHtmlDecoration`                       |
-| `ViewManager.forEachViewport`     | Use a `for..of` loop                                      |
+| Removed                                | Replacement                                               |
+| -------------------------------------- | --------------------------------------------------------- |
+| `CheckpointConnection.open`            | `CheckpointConnection.openRemote`                         |
+| `DecorateContext.screenViewport`       | `DecorateContext.viewport`                                |
+| `IModelApp.iModelClient`               | `IModelHubFrontend.iModelClient`                          |
+| `IModelConnection.Models.loaded`       | use `for..of` to iterate and `getLoaded` to look up by Id |
+| `IModelConnection.Views.saveThumbnail` | use IPC and `IModelDb.saveThumbnail`                      |
+| `IOidcFrontendClient`                  | `FrontendAuthorizationClient`                             |
+| `isIOidcFrontendClient`                | `FrontendAuthorizationClient`                             |
+| `OidcBrowserClient`                    | `BrowserAuthorizationClient`                              |
+| `OidcFrontendClientConfiguration`      | `BrowserAuthorizationClientConfiguration`                 |
+| `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
+| `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
+| `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
 
 ### @bentley/backend-itwin-client
 
