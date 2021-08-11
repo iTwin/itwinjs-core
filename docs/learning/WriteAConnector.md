@@ -25,6 +25,8 @@ title: iModel Connector Developer Guide
     - [Data Extraction](#data-extraction)
     - [Data alignment](#data-alignment)
     - [Schemas](#schemas)
+    - [Domain Schemas](#domain-schemas)
+  - [Extending a Schema](#extending-a-schema)
     - [Dynamic Schemas](#dynamic-schemas)
     - [Display Labels](#display-labels)
     - [CodeValues](#codevalues)
@@ -59,8 +61,6 @@ title: iModel Connector Developer Guide
   - [Authentication](#authentication)
   - [Locks & Codes](#locks--codes)
   - [More information](#more-information)
-- [Bentley Authored Connectors](#bentley-authored-connectors)
-  - [Civil iModel Connector](#civil-imodel-connector)
 
 ## Introduction
 
@@ -266,7 +266,7 @@ which schema methodology to use.
 
 ![Schema Methodology Decision](./schemadecision.png)
 
-#### Extending a Schema
+### Extending a Schema
 
 #### Dynamic Schemas
 
@@ -609,8 +609,7 @@ Some sample queries that is helpful to debug connector output
 #### Visualizing the output
 
 To get started, please build it using the instructions provided in the [display test app README](https://github.com/imodeljs/imodeljs/blob/master/test-apps/display-test-app/README.md)
-
-Once the application is built and running, use the briefcase icon to open the output from the connector.
+Once the application is built and running, use the briefcase icon to open the output from the Connector. Some of the [frontend developer tools](https://www.npmjs.com/package/@bentley/frontend-devtools/v/1.5.0) are also useful to analyze the data. E.g. fdt inspect element.
 
 ### Logs
 
@@ -701,7 +700,3 @@ For more indepth information please see:
 - [Insert a CategorySelector element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#CategorySelector)
 - [Insert a DisplayStyle3d element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#DisplayStyle3d)
 - [Insert a OrthographicViewDefinition element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#OrthographicViewDefinition)
-
-## Bentley Authored Connectors
-
-### Civil iModel Connector
