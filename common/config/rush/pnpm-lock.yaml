@@ -2049,7 +2049,6 @@ importers:
       '@types/react-select': 3.0.26
       '@types/sinon': ^9.0.0
       '@types/sinon-chai': ^3.2.0
-      '@types/testing-library__react-hooks': ^3.4.1
       '@wojtekmaj/enzyme-adapter-react-17': ^0.6.3
       chai: ^4.1.2
       chai-as-promised: ^7
@@ -2107,7 +2106,6 @@ importers:
       '@types/react-select': 3.0.26
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
-      '@types/testing-library__react-hooks': 3.4.1
       '@wojtekmaj/enzyme-adapter-react-17': 0.6.3_enzyme@3.11.0+react@17.0.2
       chai: 4.3.4
       chai-as-promised: 7.1.1_chai@4.3.4
@@ -4641,7 +4639,6 @@ importers:
       react-highlight-words: ^0.17.0
       react-select: 3.1.0
       react-select-event: 5.0.0
-      react-test-renderer: ^17.0.0
       react-virtualized: ^9.21.11
       react-virtualized-auto-sizer: ^1.0.0
       react-window: ^1.8.2
@@ -4692,7 +4689,7 @@ importers:
       '@bentley/ui-abstract': link:../abstract
       '@bentley/ui-core': link:../core
       '@testing-library/react': 12.0.0_react-dom@17.0.2+react@17.0.2
-      '@testing-library/react-hooks': 7.0.1_fc2bb8a5b006d3f25c5f84ea777e678d
+      '@testing-library/react-hooks': 7.0.1_react-dom@17.0.2+react@17.0.2
       '@testing-library/user-event': 13.2.1
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
@@ -4736,7 +4733,6 @@ importers:
       react-dnd-test-utils: 11.1.3_300bdb38f24996af518bfef290293b62
       react-dom: 17.0.2_react@17.0.2
       react-select-event: 5.0.0
-      react-test-renderer: 17.0.2_react@17.0.2
       rimraf: 3.0.2
       sinon: 9.2.4
       sinon-chai: 3.7.0_chai@4.3.4+sinon@9.2.4
