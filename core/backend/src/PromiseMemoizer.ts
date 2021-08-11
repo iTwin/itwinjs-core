@@ -29,7 +29,9 @@ export class QueryablePromise<T> {
   }
 }
 
+/** @internal */
 export type MemoizeFnType<T> = (...args: any[]) => Promise<T>;
+/** @internal */
 export type GenerateKeyFnType = (...args: any[]) => string;
 
 /** Utility to cache and retrieve results of long running asynchronous functions.
