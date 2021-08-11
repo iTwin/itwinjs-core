@@ -17,6 +17,8 @@ import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthori
  * Thus, the best we can do is tie all logs originating from the library to a single logging category (derived from the name of this class).
  */
 export class BrowserAuthorizationLogger implements IOidcClientLogger {
+  public static readonly initialized: boolean = false;
+
   private constructor() {
   }
 
@@ -57,7 +59,7 @@ export class BrowserAuthorizationLogger implements IOidcClientLogger {
   /** Initializes forwarding of OidcClient logs to the Bentley Logger */
   public static initializeLogger() {
     const logLevel = BrowserAuthorizationLogger.getLogLevel(FrontendAuthorizationClientLoggerCategory.Authorization);
-    if (!OidcClientLog.logger) {
+    if (!BrowserAuthorizationLogger.initialized) {
       OidcClientLog.logger = new BrowserAuthorizationLogger();
     }
 
