@@ -2208,7 +2208,12 @@ export class BriefcaseDb extends IModelDb {
 
   /** Upgrades the profile or domain schemas */
   private static async upgradeProfileOrDomainSchemas(arg: { requestContext: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps, upgradeOptions: UpgradeOptions, description: string }): Promise<void> {
-    const lockArg = { ...arg, ...arg.briefcase, csIndex: 0 };
+    const lockArg = {
+      briefcase: {
+        briefcaseId: arg.briefcase.briefcaseId, changeset: { id: arg.briefcase.changeSetId, index: arg.briefcase.changesetIndex }, iModelId: arg.briefcase.iModelId,
+      },
+      requestContext: arg.requestContext,
+    };
     const requestContext = arg.requestContext;
     // Lock schemas
     await IModelHost.hubAccess.acquireSchemaLock(lockArg);

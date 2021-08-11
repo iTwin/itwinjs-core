@@ -78,7 +78,7 @@ describe("IModel Connection with client credentials", () => {
   it("should successfully open an IModelConnection for read", async () => {
     const contextId = testContext.iModelWithChangesets!.contextId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    const changeSetId = (await testContext.iModelWithChangesets!.getConnection()).changeSetId;
+    const changeSetId = (await testContext.iModelWithChangesets!.getConnection()).changeset.id;
 
     const iModel: IModelConnection = await CheckpointConnection.openRemote(contextId, iModelId, undefined === changeSetId ? IModelVersion.latest() : IModelVersion.asOfChangeSet(changeSetId));
 
