@@ -317,12 +317,6 @@
       ]
     },
     {
-      "name": "@bentley/logger-config",
-      "allowedCategories": [
-        "internal"
-      ]
-    },
-    {
       "name": "@bentley/map-layers",
       "allowedCategories": [
         "internal"
