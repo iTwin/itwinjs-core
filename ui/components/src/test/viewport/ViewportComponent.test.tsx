@@ -120,8 +120,6 @@ describe("ViewportComponent", () => {
     viewRect = new ViewRect(0, 0, 100, 100);
   });
 
-
-
   it("should render with viewState", async () => {
     render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);
   });

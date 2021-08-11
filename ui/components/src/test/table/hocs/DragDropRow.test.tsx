@@ -20,8 +20,6 @@ describe("DragDropRow", () => {
     test: boolean;
   }
 
-
-
   const RowWithDragDrop = DragDropRow<DragDropObject>();
   const DragDropObjectRow = wrapInTestContext(RowWithDragDrop);
   const renderIntoDocument = createDnDRenderer(RowWithDragDrop);

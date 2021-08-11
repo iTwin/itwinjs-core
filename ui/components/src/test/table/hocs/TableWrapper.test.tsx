@@ -8,7 +8,6 @@ import { TableWrapper } from "../../../ui-components/table/hocs/TableWrapper";
 
 describe("TableWrapper", () => {
 
-
   it("should render", () => {
     render(<TableWrapper isOver={false} canDrop={true} />);
   });

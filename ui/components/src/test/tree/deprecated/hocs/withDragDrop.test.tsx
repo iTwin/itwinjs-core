@@ -41,8 +41,6 @@ export function createDnDRenderer(type?: any): typeof ReactTestUtils.renderIntoD
 
 describe("Tree withDragDrop HOC", () => {
 
-
-
   const TreeWithDragDrop = DEPRECATED_withTreeDragDrop(Tree);
   const DragDropTree = wrapInTestContext(TreeWithDragDrop);
 

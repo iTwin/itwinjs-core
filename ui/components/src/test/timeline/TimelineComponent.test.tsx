@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { act, cleanup, fireEvent, render } from "@testing-library/react";
+import { act, fireEvent, render } from "@testing-library/react";
 import { BaseTimelineDataProvider } from "../../ui-components/timeline/BaseTimelineDataProvider";
 import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../ui-components/timeline/interfaces";
 import { TimelineComponent, TimelineMenuItemProps } from "../../ui-components/timeline/TimelineComponent";

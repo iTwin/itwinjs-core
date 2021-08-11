@@ -15,8 +15,6 @@ import { DragDropTreeNode, DragDropTreeNodeComponent } from "../../../../ui-comp
 
 describe("DragDropTreeNode", () => {
 
-
-
   const createBubbledEvent = (type: string, props = {}) => {
     const event = new Event(type, { bubbles: true });
     Object.assign(event, props);

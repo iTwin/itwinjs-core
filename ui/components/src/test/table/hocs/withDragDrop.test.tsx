@@ -25,8 +25,6 @@ describe("Table withDragDrop HOC", () => {
 
   const renderIntoDocument = createDnDRenderer(TableWithDragDrop);
 
-
-
   const createRowItem = (index: number) => {
     const rowItem: RowItem = { key: index.toString(), cells: [] };
     for (const column of columns) {
