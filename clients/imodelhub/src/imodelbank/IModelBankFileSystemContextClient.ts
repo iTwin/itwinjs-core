@@ -6,7 +6,7 @@
  * @module iModelBankClient
  */
 import { IModelHubStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
-import { ContextContainerNTBD } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/context-registry-client";
 import { AuthorizedClientRequestContext, request, RequestOptions, Response, WsgError, WsgInstance } from "@bentley/itwin-client";
 import { ContextManagerClient } from "../IModelCloudEnvironment";
 import { IModelHubClientError } from "../imodelhub/Errors";
@@ -64,12 +64,12 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
     return props.map((value) => value.properties as IModelFileSystemContextProps);
   }
 
-  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD> {
+  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const props = await this.queryContextProps(requestContext, name);
     requestContext.enter();
 
     // Get first context
-    return props[0] as ContextContainerNTBD;
+    return props[0] as ITwin;
   }
 
   public async createContext(requestContext: AuthorizedClientRequestContext, name: string): Promise<void> {

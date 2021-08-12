@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ContextRegistryClient, ITwin } from "@bentley/context-registry-client";
 import { HubIModel, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
@@ -20,9 +20,9 @@ export class TestConfig {
     return new AuthorizedClientRequestContext((accessToken as any) as AccessToken);
   }
 
-  public static async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD> {
+  public static async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const contextRegistry = new ContextRegistryClient();
-    const container: ContextContainerNTBD | undefined = await contextRegistry.getContextContainerByName(requestContext, name);
+    const container: ITwin | undefined = await contextRegistry.getContextContainerByName(requestContext, name);
     if (!container || !container.id)
       throw new Error(`Context container ${name} not found for user.`);
     return container;

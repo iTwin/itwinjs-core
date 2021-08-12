@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ContextRegistryClient, ITwin } from "@bentley/context-registry-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ExtensionServiceExtensionLoader, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType, Tool } from "@bentley/imodeljs-frontend";
 
@@ -95,7 +95,7 @@ export class ExtensionServiceTool extends Tool {
 
     const requestContext = new AuthorizedClientRequestContext(token);
     const contextRegistry = new ContextRegistryClient();
-    const container: ContextContainerNTBD = await contextRegistry.getContextContainerByName(requestContext, contextName);
+    const container: ITwin = await contextRegistry.getContextContainerByName(requestContext, contextName);
 
     return container.id;
   }

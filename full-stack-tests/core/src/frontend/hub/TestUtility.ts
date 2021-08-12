@@ -12,7 +12,7 @@ import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-si
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
-import { ContextContainerNTBD } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/context-registry-client";
 
 export class TestUtility {
   public static testContextName = "iModelJsIntegrationTest";
@@ -77,7 +77,7 @@ export class TestUtility {
 
   public static async queryContextIdByName(contextName: string): Promise<string> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const container: ContextContainerNTBD = await this.imodelCloudEnv.contextMgr.getContextContainerByName(requestContext, contextName);
+    const container: ITwin = await this.imodelCloudEnv.contextMgr.getContextContainerByName(requestContext, contextName);
     assert(container && container.id);
     return container.id;
   }

@@ -8,7 +8,7 @@ import { IModelBankClient, IModelBankFileSystemContextClient, IModelClient, IMod
 import { IModelBankBasicAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankBasicAuthorizationClient";
 import { IModelBankDummyAuthorizationClient } from "@bentley/imodelhub-client/lib/imodelbank/IModelBankDummyAuthorizationClient";
 import { AuthorizedClientRequestContext, UserInfo, WsgError } from "@bentley/itwin-client";
-import { ContextContainerNTBD } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/context-registry-client";
 
 export class IModelBankCloudEnv implements IModelCloudEnvironment {
   public get isIModelHub(): boolean { return false; }
@@ -29,7 +29,7 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
   }
 
   public async bootstrapIModelBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
-    let container: ContextContainerNTBD | undefined;
+    let container: ITwin | undefined;
     try {
       container = await this.contextMgr.getContextContainerByName(requestContext, projectName);
       if (container === undefined)

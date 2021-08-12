@@ -6,7 +6,7 @@
 import * as path from "path";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwin, ContextRegistryClient } from "@bentley/context-registry-client";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
@@ -54,7 +54,7 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 
 // __PUBLISH_EXTRACT_END__
 
-async function getContextContainerIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD> {
+async function getContextContainerIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
   return (new ContextRegistryClient()).getContextContainerByName(requestContext, name);
 }
 

@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwin, ContextRegistryClient } from "@bentley/context-registry-client";
 import { Guid } from "@bentley/bentleyjs-core";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
@@ -32,7 +32,7 @@ export class ServerArgs {
 /** Helps with queries on Bentley Connect */
 export class ConnectUtils {
   public static async getContextId(contextName: string, requestContext: AuthorizedClientRequestContext): Promise<string> {
-    const container: ContextContainerNTBD = await (new ContextRegistryClient()).getContextContainerByName(requestContext, contextName);
+    const container: ITwin = await (new ContextRegistryClient()).getContextContainerByName(requestContext, contextName);
 
     // No matching containers found
     if (!container || !container.id)

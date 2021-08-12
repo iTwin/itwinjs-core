@@ -8,7 +8,7 @@
 import { assert, Config } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 import * as deepAssign from "deep-assign";
-import { ContextContainerNTBD, ContextRegistryNTBD } from "./ContextAccessProps";
+import { ContextRegistryNTBD, ITwin } from "./ContextAccessProps";
 
 /** The iTwin context type.
  * @beta
@@ -24,7 +24,7 @@ enum ContextType {
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Context", { schemaPropertyName: "schemaName", classPropertyName: "className" })
-class Context extends WsgInstance implements ContextContainerNTBD {
+class Context extends WsgInstance implements ITwin {
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Name")
   public name?: string;
 
@@ -40,14 +40,15 @@ class Context extends WsgInstance implements ContextContainerNTBD {
   public set id(value: string) {
     this._id = value;
   }
+
+  @ECJsonTypeMap.propertyToJson("wsg", "properties.Number")
+  public iTwinNumber?: string;
 }
 
 /** Set of the original properties in the Project and Asset classes that are now deprecated
  * @beta
  */
 abstract class HiddenContext extends Context {
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.Number")
-  public containerNumber?: string;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.UltimateRefId")
   public ultimateRefId?: string;
@@ -141,7 +142,7 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @param requestContext The client request context
    * @returns Array of containers, may be empty
    */
-  public async getContextContainers(requestContext: AuthorizedClientRequestContext): Promise<ContextContainerNTBD[]> {
+  public async getContextContainers(requestContext: AuthorizedClientRequestContext): Promise<ITwin[]> {
     return this.getContextContainerByQuery(requestContext);
   }
 
@@ -150,7 +151,7 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @param name The unique name of the container
    * @returns A container with matching name, otherwise throws an error
   */
-  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD> {
+  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const queryOptions: RequestQueryOptions = {
       $select: "*",
       $filter: `name+eq+'${name}'`,
@@ -169,7 +170,7 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @param id The unique id/wsgId/ecId of the container
    * @returns A container with matching id, otherwise throws an error
    */
-  public async getContextContainerById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ContextContainerNTBD> {
+  public async getContextContainerById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ITwin> {
     const queryOptions: RequestQueryOptions = {
       $select: "*",
       $filter: `$id+eq+'${id}'`,
@@ -188,7 +189,7 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @param searchString The regex to compare against each name
    * @returns Array of containers with names containing the searchString
    */
-  private async getContextContainersByNameSubstring(requestContext: AuthorizedClientRequestContext, searchString: string): Promise<ContextContainerNTBD[]> {
+  private async getContextContainersByNameSubstring(requestContext: AuthorizedClientRequestContext, searchString: string): Promise<ITwin[]> {
     const queryOptions: RequestQueryOptions = {
       $select: "*",
       $filter: `name+like+'${searchString}'`,
@@ -202,10 +203,10 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @param queryOptions Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Array of containers meeting the query's requirements
    */
-  private async getContextContainerByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ContextContainerNTBD[]> {
+  private async getContextContainerByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
     requestContext.enter();
-    const projectContainers: ContextContainerNTBD[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", queryOptions);
-    const assetContainers: ContextContainerNTBD[] = await this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", queryOptions);
+    const projectContainers: ITwin[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", queryOptions);
+    const assetContainers: ITwin[] = await this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", queryOptions);
 
     return projectContainers.concat(assetContainers);
   }

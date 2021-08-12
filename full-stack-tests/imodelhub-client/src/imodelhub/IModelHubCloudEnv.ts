@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwin, ContextRegistryClient } from "@bentley/context-registry-client";
 import { ContextManagerClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 
@@ -12,7 +12,7 @@ import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthor
 
 /** An implementation of IModelProjectAbstraction backed by a iModelHub/iTwin project */
 class TestContextManagerClient implements ContextManagerClient {
-  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD> {
+  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const client = new ContextRegistryClient();
     return client.getContextContainerByName(requestContext, name);
   }

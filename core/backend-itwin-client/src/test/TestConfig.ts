@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ContextRegistryClient, ITwin } from "@bentley/context-registry-client";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as fs from "fs";
@@ -32,7 +32,7 @@ export class TestConfig {
   /** Query for the specified context container */
   public static async getContextContainerIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
     const contextRegistry = new ContextRegistryClient();
-    const container: ContextContainerNTBD | undefined = await contextRegistry.getContextContainerByName(requestContext, name);
+    const container: ITwin | undefined = await contextRegistry.getContextContainerByName(requestContext, name);
     if (!container || !container.id) {
       const userInfo = requestContext.accessToken.getUserInfo();
       throw new Error(`Context container ${name} not found for user ${!userInfo ? "n/a" : userInfo.email}.`);

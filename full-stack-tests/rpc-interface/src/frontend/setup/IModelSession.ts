@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Config } from "@bentley/bentleyjs-core";
 import { AuthorizedFrontendRequestContext, CheckpointConnection } from "@bentley/imodeljs-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwin, ContextRegistryClient } from "@bentley/context-registry-client";
 import { IModelData } from "../../common/Settings";
 import { IModelVersion } from "@bentley/imodeljs-common";
 
@@ -36,7 +36,7 @@ export class IModelSession {
       if (!iModelData.projectName)
         throw new Error(`The iModel has no project name, so it cannot get the project.`);
       const client = new ContextRegistryClient();
-      const container: ContextContainerNTBD = await client.getContextContainerByName(requestContext, iModelData.projectName);
+      const container: ITwin = await client.getContextContainerByName(requestContext, iModelData.projectName);
       contextId = container.id;
     } else
       contextId = iModelData.projectId!;

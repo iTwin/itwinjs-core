@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ContextRegistryClient } from "../../ContextRegistryClient";
-import { ContextContainerNTBD } from "../../ContextAccessProps";
+import { ITwin } from "../../ContextAccessProps";
 import { TestConfig } from "../TestConfig";
 
 chai.should();
@@ -19,21 +19,21 @@ describe("ContextRegistryClient (#integration)", () => {
   });
 
   it("should get a list of containers (#integration)", async () => {
-    const containers: ContextContainerNTBD[] = await contextRegistry.getContextContainers(requestContext);
+    const containers: ITwin[] = await contextRegistry.getContextContainers(requestContext);
 
     // At least one container
     chai.expect(containers).to.not.be.empty;
   });
 
   it("should get a container by name (#integration)", async () => {
-    const container: ContextContainerNTBD = await contextRegistry.getContextContainerByName(requestContext, TestConfig.containerName);
+    const container: ITwin = await contextRegistry.getContextContainerByName(requestContext, TestConfig.containerName);
 
     // Returned container matches searched name
     chai.expect(container.name).equals(TestConfig.containerName);
   });
 
   it("should get a container by id (#integration)", async () => {
-    const container: ContextContainerNTBD = await contextRegistry.getContextContainerById(requestContext, TestConfig.containerId);
+    const container: ITwin = await contextRegistry.getContextContainerById(requestContext, TestConfig.containerId);
 
     // Returned container matches searched id
     chai.expect(container.id).equals(TestConfig.containerId);
@@ -41,7 +41,7 @@ describe("ContextRegistryClient (#integration)", () => {
 
   // it("should get a list of containers by name substring (#integration)", async () => {
   //   const searchString = TestConfig.containerName.substr(1,5);
-  //   const containers: ContextContainerNTBD[] = await contextRegistry.getContextContainersByNameSubstring(requestContext, searchString);
+  //   const containers: ITwin[] = await contextRegistry.getContextContainersByNameSubstring(requestContext, searchString);
 
   //   // At least one container
   //   chai.expect(containers).to.not.be.empty;

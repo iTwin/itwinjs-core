@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import { ClientRequestContext, Config, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
-import { ContextContainerNTBD } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/context-registry-client";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
@@ -221,7 +221,7 @@ export async function bootstrapBankProject(requestContext: AuthorizedClientReque
     return;
 
   const bankContext = getCloudEnv().contextMgr as IModelBankFileSystemContextClient;
-  let container: ContextContainerNTBD | undefined;
+  let container: ITwin | undefined;
   try {
     container = await bankContext.getContextContainerByName(requestContext, projectName);
   } catch (err) {
@@ -245,7 +245,7 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
 
   await bootstrapBankProject(requestContext, assetName);
 
-  const asset: ContextContainerNTBD = await getCloudEnv().contextMgr.getContextContainerByName(requestContext, assetName);
+  const asset: ITwin = await getCloudEnv().contextMgr.getContextContainerByName(requestContext, assetName);
 
   if (!asset || !asset.id)
     throw new Error(`Asset with name ${assetName} doesn't exist.`);
@@ -261,7 +261,7 @@ export async function getProjectId(requestContext: AuthorizedClientRequestContex
 
   await bootstrapBankProject(requestContext, projectName);
 
-  const container: ContextContainerNTBD = await getCloudEnv().contextMgr.getContextContainerByName(requestContext, projectName);
+  const container: ITwin = await getCloudEnv().contextMgr.getContextContainerByName(requestContext, projectName);
 
   if (!container || !container.id)
     throw new Error(`Project with name ${TestConfig.projectName} doesn't exist.`);

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwin, ContextRegistryClient } from "@bentley/context-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IModelConnection, IModelHubFrontend, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp } from "..";
@@ -41,7 +41,7 @@ export class ExternalIModel {
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
 
     const connectClient = new ContextRegistryClient();
-    let container: ContextContainerNTBD;
+    let container: ITwin;
     try {
       container = await connectClient.getContextContainerByName(requestContext, projectName);
     } catch (e) {

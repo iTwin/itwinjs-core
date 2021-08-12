@@ -8,7 +8,7 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { RequestQueryOptions } from "@bentley/itwin-client";
-import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ContextRegistryClient, ITwin } from "@bentley/context-registry-client";
 import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import { ProjectInfo, ProjectReadStatus, ProjectScope, ProjectServices } from "./ProjectServices";
@@ -34,9 +34,9 @@ export class DefaultProjectServices implements ProjectServices {
     this._connectClient = new ContextRegistryClient();
   }
 
-  private createProjectInfo(thisProject: ContextContainerNTBD): ProjectInfo {
+  private createProjectInfo(thisProject: ITwin): ProjectInfo {
     Logger.logTrace(UiFramework.loggerCategory(this), `Working on project '${thisProject.name}'`);
-    const thisProjectInfo: ProjectInfo = new ProjectInfoImpl(thisProject.name ? thisProject.name : "", thisProject.containerNumber ? thisProject.containerNumber : "", thisProject.id);
+    const thisProjectInfo: ProjectInfo = new ProjectInfoImpl(thisProject.name ? thisProject.name : "", thisProject.iTwinNumber ? thisProject.iTwinNumber : "", thisProject.id);
     return thisProjectInfo;
   }
 
@@ -56,7 +56,7 @@ export class DefaultProjectServices implements ProjectServices {
     projectScope = projectScope.valueOf();
     // SWB END DEBUG LINES
 
-    let containerList: ContextContainerNTBD[];
+    let containerList: ITwin[];
     try {
       containerList = await this._connectClient.getContextContainers(requestContext);
     } catch (e) {

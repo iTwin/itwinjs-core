@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { ContextContainerNTBD, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwin, ContextRegistryClient } from "@bentley/context-registry-client";
 import { BriefcaseQuery, HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { IModelHubBackend } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -27,7 +27,7 @@ export class HubUtility {
    * @throws If the project is not found, or there is more than one project with the supplied name
    */
   public static async getContextContainerIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
-    const container: ContextContainerNTBD | undefined = await HubUtility.getContextContainerByName(requestContext, name);
+    const container: ITwin | undefined = await HubUtility.getContextContainerByName(requestContext, name);
     if (!container)
       throw new Error(`Project ${name} not found`);
     return container.id;
@@ -47,8 +47,8 @@ export class HubUtility {
     return iModel.id;
   }
 
-  private static async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD | undefined> {
-    const container: ContextContainerNTBD = await getIModelProjectAbstraction().queryProject(requestContext, name);
+  private static async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin | undefined> {
+    const container: ITwin = await getIModelProjectAbstraction().queryProject(requestContext, name);
     return container;
   }
 
@@ -110,7 +110,7 @@ class TestIModelHubProject {
     return IModelHubBackend.iModelClient as IModelHubClient;
   }
 
-  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ContextContainerNTBD> {
+  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const client = TestIModelHubProject.connectClient;
     return client.getContextContainerByName(requestContext, name);
   }
