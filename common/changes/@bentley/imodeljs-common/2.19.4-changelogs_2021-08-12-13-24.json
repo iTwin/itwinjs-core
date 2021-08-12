@@ -3,9 +3,9 @@
     {
       "comment": "",
       "type": "none",
-      "packageName": "@bentley/rbac-client"
+      "packageName": "@bentley/imodeljs-common"
     }
   ],
-  "packageName": "@bentley/rbac-client",
+  "packageName": "@bentley/imodeljs-common",
   "email": "32379572+skirby1996@users.noreply.github.com"
 }

@@ -30,6 +30,7 @@ export * from "./Model";
 export * from "./NavigationRelationship";
 export * from "./Schema";
 export * from "./SqliteStatement";
+export * from "./SQLiteDb";
 export * from "./ViewDefinition";
 export * from "./BisCoreSchema";
 export * from "./ChangedElementsDb";

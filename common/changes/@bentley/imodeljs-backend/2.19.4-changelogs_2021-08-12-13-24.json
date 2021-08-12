@@ -3,9 +3,9 @@
     {
       "comment": "",
       "type": "none",
-      "packageName": "@bentley/projectshare-client"
+      "packageName": "@bentley/imodeljs-backend"
     }
   ],
-  "packageName": "@bentley/projectshare-client",
+  "packageName": "@bentley/imodeljs-backend",
   "email": "32379572+skirby1996@users.noreply.github.com"
 }

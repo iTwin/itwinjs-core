@@ -1,6 +1,14 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Wed, 04 Aug 2021 20:29:34 GMT and should not be manually modified.
+This log was last generated on Thu, 12 Aug 2021 13:09:26 GMT and should not be manually modified.
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+### Updates
+
+- clear statement cache before applying schema changesets
+- Tests for solid kernel severe error exceptions.
 
 ## 2.19.3
 Wed, 04 Aug 2021 20:29:34 GMT

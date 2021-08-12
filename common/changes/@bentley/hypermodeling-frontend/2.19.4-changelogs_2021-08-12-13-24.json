@@ -3,9 +3,9 @@
     {
       "comment": "",
       "type": "none",
-      "packageName": "@bentley/logger-config"
+      "packageName": "@bentley/hypermodeling-frontend"
     }
   ],
-  "packageName": "@bentley/logger-config",
+  "packageName": "@bentley/hypermodeling-frontend",
   "email": "32379572+skirby1996@users.noreply.github.com"
 }

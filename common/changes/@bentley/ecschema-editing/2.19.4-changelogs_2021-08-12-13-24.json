@@ -3,9 +3,9 @@
     {
       "comment": "",
       "type": "none",
-      "packageName": "@bentley/logger-config"
+      "packageName": "@bentley/ecschema-editing"
     }
   ],
-  "packageName": "@bentley/logger-config",
+  "packageName": "@bentley/ecschema-editing",
   "email": "32379572+skirby1996@users.noreply.github.com"
 }
