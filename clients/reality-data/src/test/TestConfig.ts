@@ -14,7 +14,7 @@ function isOfflineSet(): boolean {
 /** Basic configuration used by all tests
  */
 export class TestConfig {
-  /** Name of context containers (Projects or Assets) used by most tests */
+  /** Name of iTwins (Projects or Assets) used by most tests */
   public static readonly containerName: string = "iModelJsIntegrationTest";
   public static readonly enableMocks: boolean = isOfflineSet();
 
@@ -28,7 +28,7 @@ export class TestConfig {
     const contextRegistry = new ContextRegistryClient();
     const container: ITwin | undefined = await contextRegistry.getITwinByName(requestContext, name);
     if (!container || !container.id)
-      throw new Error(`Context container ${name} not found for user.`);
+      throw new Error(`ITwin ${name} not found for user.`);
     return container;
   }
 }

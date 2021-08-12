@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ITwin, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ContextRegistryClient, ITwin } from "@bentley/context-registry-client";
 import { Guid } from "@bentley/bentleyjs-core";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
@@ -36,7 +36,7 @@ export class ConnectUtils {
 
     // No matching containers found
     if (!container || !container.id)
-      throw new Error(`Context container ${contextName} not found`);
+      throw new Error(`ITwin ${contextName} not found`);
 
     return container.id;
   }

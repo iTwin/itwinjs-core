@@ -24,7 +24,7 @@ export class TestConfig {
     const contextRegistry = new ContextRegistryClient();
     const container: ITwin | undefined = await contextRegistry.getITwinByName(requestContext, name);
     if (!container || !container.id)
-      throw new Error(`Context container ${name} not found for user.`);
+      throw new Error(`ITwin ${name} not found for user.`);
     return container;
   }
 
@@ -32,7 +32,7 @@ export class TestConfig {
     const imodelHubClient: IModelClient = new IModelHubClient();
     const iModel: HubIModel = await imodelHubClient.iModel.get(requestContext, containerId);
     if (!iModel || !iModel.wsgId)
-      throw new Error(`Primary iModel not found for context container ${containerId}`);
+      throw new Error(`Primary iModel not found for iTwin ${containerId}`);
     return iModel;
   }
 }

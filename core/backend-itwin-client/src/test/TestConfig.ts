@@ -29,13 +29,13 @@ loadEnv(path.join(__dirname, "..", "..", ".env"));
 /** Basic configuration used by all tests
  */
 export class TestConfig {
-  /** Query for the specified context container */
+  /** Query for the specified iTwin */
   public static async getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
     const contextRegistry = new ContextRegistryClient();
     const container: ITwin | undefined = await contextRegistry.getITwinByName(requestContext, name);
     if (!container || !container.id) {
       const userInfo = requestContext.accessToken.getUserInfo();
-      throw new Error(`Context container ${name} not found for user ${!userInfo ? "n/a" : userInfo.email}.`);
+      throw new Error(`ITwin ${name} not found for user ${!userInfo ? "n/a" : userInfo.email}.`);
     }
     return container.id;
   }

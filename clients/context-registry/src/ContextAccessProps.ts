@@ -20,7 +20,7 @@ export interface ITwin {
   iTwinNumber?: string;
 }
 
-/** Methods for accessing context containers
+/** Methods for accessing iTwins
  * @beta
 */
 // SWB NOTE: Rename?

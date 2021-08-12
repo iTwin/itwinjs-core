@@ -63,10 +63,10 @@ export class HubUtility {
   }
 
   /**
-   * Queries the context container id by its name
+   * Queries the iTwin id by its name
    * @param requestContext The client request context
-   * @param name Name of context container
-   * @throws If the context container is not found, or there is more than one context container with the supplied name
+   * @param name Name of iTwin
+   * @throws If the iTwin is not found, or there is more than one iTwin with the supplied name
    */
   public static async getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
     if (undefined !== HubUtility.contextId)
@@ -74,7 +74,7 @@ export class HubUtility {
 
     const container = await getIModelProjectAbstraction().getITwinByName(requestContext, name);
     if (container === undefined || !container.id)
-      throw new Error(`Context container ${name} not found`);
+      throw new Error(`ITwin ${name} not found`);
 
     return container.id;
   }
