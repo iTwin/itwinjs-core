@@ -202,7 +202,7 @@ To see what domain schemas are available, see [Released Domain Schemas](Released
 
 Sometimes BIS domain schemas are not adequate to capture all the data in the authoring application. The flow chart below can be used to assist in deciding which schema methodology to use.
 
-![Schema Methodology Decision](./schemadecision.png)
+![Schema Methodology Decision](./SchemaDecision.PNG)
 
 #### Extending a Schema
 
