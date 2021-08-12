@@ -438,14 +438,16 @@ export class PolyfaceClip {
    * * if `destination.buildClosureFaces` is set, and also build closure facets
    * * This method parses  the variant input types and calls a more specific method.
    * * WARNING: The new mesh is "points only".
+   * * outputSelect applies only for UnionOfConvexClipPlaneSets -- see [[PolyfaceClip.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders]]
    */
-  public static clipPolyfaceInsideOutside(polyface: Polyface, clipper: ClipPlane | ConvexClipPlaneSet | UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders) {
+  public static clipPolyfaceInsideOutside(polyface: Polyface, clipper: ClipPlane | ConvexClipPlaneSet | UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders,
+    outputSelect: number = 0) {
     if (clipper instanceof ClipPlane) {
       this.clipPolyfaceClipPlaneToBuilders(polyface, clipper, destination);
     } else if (clipper instanceof ConvexClipPlaneSet) {
       this.clipPolyfaceConvexClipPlaneSetToBuilders(polyface, clipper, destination);
     } else if (clipper instanceof UnionOfConvexClipPlaneSets) {
-      this.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface, clipper, destination);
+      this.clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface, clipper, destination, outputSelect);
     }
   }
   /** Clip each facet of polyface to the ClipPlane or ConvexClipPlaneSet

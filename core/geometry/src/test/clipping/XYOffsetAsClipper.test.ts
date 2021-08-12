@@ -196,7 +196,7 @@ describe("OffsetByClip", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "OffsetByClip", "DiegoProblemCases");
   });
 // cspell:word arnoldas
-  it.only("ArnoldasLaneClip", () => {
+  it("ArnoldasLaneClip", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const fullRoadMesh = IModelJson.Reader.parse(JSON.parse(fs.readFileSync(
