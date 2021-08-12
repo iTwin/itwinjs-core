@@ -1877,8 +1877,7 @@
       "type": "pickString",
       "options": [
         "product-settings",
-        "context-registry",
-        "extension"
+        "context-registry"
       ]
     }
   ]
