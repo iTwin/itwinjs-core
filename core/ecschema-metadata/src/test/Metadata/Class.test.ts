@@ -128,7 +128,7 @@ describe("ECClass", () => {
       expect(await entityClass.getProperty("TestProp", true)).to.be.undefined;
     });
 
-    it("should do nothing if a property is already deleted", async () => {
+    it("should do nothing if a property is already deleted, synchronous", async () => {
       const primProp = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");
 
       expect([...entityClass.properties!].length).to.equal(1);
@@ -143,7 +143,7 @@ describe("ECClass", () => {
       expect(await entityClass.getProperty("TestProp")).to.be.undefined;
     });
 
-    it("should do nothing if a property is already deleted, synchronous", async () => {
+    it("should do nothing if a property is already deleted", async () => {
       const primProp = await (entityClass as ECClass as MutableClass).createPrimitiveProperty("TestProp");
 
       expect([...entityClass.properties!].length).to.equal(1);
