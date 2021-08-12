@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-markup",
+      "comment": "Added typings to markup package.json",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-markup",
+  "email": "3196604+StefanRetief@users.noreply.github.com"
+}
