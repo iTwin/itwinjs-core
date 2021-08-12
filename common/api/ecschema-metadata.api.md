@@ -2438,7 +2438,7 @@ export const SchemaCompareDiagnostics: {
         new (schema: Schema, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [string, any, any] | undefined;
@@ -2451,7 +2451,7 @@ export const SchemaCompareDiagnostics: {
         new (schema: Schema, messageArgs: [Schema], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [Schema] | undefined;
@@ -2464,7 +2464,7 @@ export const SchemaCompareDiagnostics: {
         new (schema: Schema, messageArgs: [Schema, string, string], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Schema;
             messageArgs?: [Schema, string, string] | undefined;
@@ -2477,7 +2477,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: SchemaItem;
             messageArgs?: [string, any, any] | undefined;
@@ -2489,7 +2489,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: SchemaItem;
             messageArgs?: [] | undefined;
@@ -2501,7 +2501,7 @@ export const SchemaCompareDiagnostics: {
         new (ecClass: AnyClass, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [string, any, any] | undefined;
@@ -2513,7 +2513,7 @@ export const SchemaCompareDiagnostics: {
         new (ecClass: AnyClass, messageArgs: [AnyClass | undefined, AnyClass | undefined], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyClass;
             messageArgs?: [AnyClass | undefined, AnyClass | undefined] | undefined;
@@ -2525,7 +2525,7 @@ export const SchemaCompareDiagnostics: {
         new (property: AnyProperty, messageArgs?: [string, any, any] | undefined, category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [string, any, any] | undefined;
@@ -2537,7 +2537,7 @@ export const SchemaCompareDiagnostics: {
         new (property: AnyProperty, messageArgs?: [] | undefined, category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: AnyProperty;
             messageArgs?: [] | undefined;
@@ -2549,7 +2549,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [Mixin], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: EntityClass;
             messageArgs?: [Mixin] | undefined;
@@ -2561,7 +2561,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Mixin;
             messageArgs?: [string, any, any] | undefined;
@@ -2573,7 +2573,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipClass;
             messageArgs?: [string, any, any] | undefined;
@@ -2585,7 +2585,7 @@ export const SchemaCompareDiagnostics: {
         new (constraint: RelationshipConstraint, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [string, any, any] | undefined;
@@ -2596,7 +2596,7 @@ export const SchemaCompareDiagnostics: {
         new (constraint: RelationshipConstraint, messageArgs: [AnyClass], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: RelationshipConstraint;
             messageArgs?: [AnyClass] | undefined;
@@ -2607,7 +2607,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeClass;
             messageArgs?: [string, any, any] | undefined;
@@ -2619,7 +2619,7 @@ export const SchemaCompareDiagnostics: {
         new (container: CustomAttributeContainerProps, messageArgs: [CustomAttribute], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: CustomAttributeContainerProps;
             messageArgs?: [CustomAttribute] | undefined;
@@ -2630,7 +2630,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [string, string, string] | undefined;
@@ -2642,7 +2642,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [AnyEnumerator], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [AnyEnumerator] | undefined;
@@ -2654,7 +2654,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [AnyEnumerator, string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Enumeration;
             messageArgs?: [AnyEnumerator, string, any, any] | undefined;
@@ -2666,7 +2666,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: KindOfQuantity;
             messageArgs?: [string, any, any] | undefined;
@@ -2678,7 +2678,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [Format | OverrideFormat], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: KindOfQuantity;
             messageArgs?: [Format | OverrideFormat] | undefined;
@@ -2690,7 +2690,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: PropertyCategory;
             messageArgs?: [string, any, any] | undefined;
@@ -2702,7 +2702,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, any, any], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
             messageArgs?: [string, any, any] | undefined;
@@ -2714,7 +2714,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
             messageArgs?: [Unit | InvertedUnit] | undefined;
@@ -2726,7 +2726,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [Unit | InvertedUnit, string | undefined, string | undefined], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
             messageArgs?: [Unit | InvertedUnit, string | undefined, string | undefined] | undefined;
@@ -2738,7 +2738,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Format;
             messageArgs?: [string, string, string] | undefined;
@@ -2750,7 +2750,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: InvertedUnit;
             messageArgs?: [string, string, string] | undefined;
@@ -2762,7 +2762,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: InvertedUnit;
             messageArgs?: [string, string, string] | undefined;
@@ -2774,7 +2774,7 @@ export const SchemaCompareDiagnostics: {
         new (ecDefinition: SchemaItem, messageArgs: [string, string, string], category?: DiagnosticCategory): {
             readonly code: string;
             readonly messageText: string;
-            readonly schema: Schema;
+            readonly schema: Schema; /** Required message parameters: CustomAttributeClass name */
             readonly diagnosticType: DiagnosticType;
             ecDefinition: Constant;
             messageArgs?: [string, string, string] | undefined;
