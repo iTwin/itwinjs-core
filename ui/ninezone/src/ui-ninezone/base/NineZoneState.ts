@@ -457,7 +457,9 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
       assert(!!floatingWidget);
       const newBounds = Rectangle.create(floatingWidget.bounds).offset(action.dragBy);
-      setRectangleProps(floatingWidget.bounds, newBounds);
+      const nzBounds = Rectangle.createFromSize(state.size);
+      const newContainedBounds = newBounds.containIn(nzBounds);
+      setRectangleProps(floatingWidget.bounds, newContainedBounds);
       return;
     }
     case "WIDGET_DRAG_END": {
@@ -1511,9 +1513,43 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
           tabs: [widgetTabId],
         };
       });
-
     }
   }
 
   return undefined;
+}
+
+/** Add a new Floating Panel with a single widget tab */
+export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string,
+  home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean): NineZoneState {
+  const location = findTab(state, widgetTabId);
+  if (location)
+    return state;
+
+  return produce(state, (draft) => {
+    const size = preferredSize || { height: 200, width: 300 };
+    const preferredPoint = preferredPosition ?? { x: (state.size.width - size.width) / 2, y: (state.size.height - size.height) / 2 };
+    const nzBounds = Rectangle.createFromSize(state.size);
+    const bounds = Rectangle.createFromSize(size).offset(preferredPoint);
+    const containedBounds = bounds.containIn(nzBounds);
+
+    // add new id to list of floatingWidgets
+    draft.floatingWidgets.allIds.push(floatingWidgetId);
+
+    // add new floating widget to array of widgets in the state
+    const floatedTab = draft.tabs[widgetTabId];
+    initSizeProps(floatedTab, "preferredFloatingWidgetSize", size);
+    draft.floatingWidgets.byId[floatingWidgetId] = {
+      bounds: containedBounds,
+      id: floatingWidgetId,
+      home,
+      userSized,
+    };
+    draft.widgets[floatingWidgetId] = {
+      activeTabId: widgetTabId,
+      id: floatingWidgetId,
+      minimized: false,
+      tabs: [widgetTabId],
+    };
+  });
 }
