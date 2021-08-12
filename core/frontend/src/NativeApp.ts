@@ -189,9 +189,6 @@ export class NativeApp {
     this._isValid = true;
 
     NativeAppNotifyHandler.register(); // receives notifications from backend
-
-    // Config.App.merge(await this.callNativeHost("getConfig"));
-    // TODO: ADDRESS ISSUE HERE W/ PROCESS.ENV ON FRONT END
     NativeApp.hookBrowserConnectivityEvents();
 
     // initialize current online state.
