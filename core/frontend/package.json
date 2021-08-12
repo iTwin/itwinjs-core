@@ -98,7 +98,6 @@
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/extension-client": "workspace:*",
     "@bentley/reality-data-client": "workspace:*",
-    "@bentley/usage-logging-client": "workspace:*",
     "fuse.js": "^3.3.0",
     "semver": "^5.5.0",
     "wms-capabilities": "0.4.0",

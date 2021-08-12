@@ -7,9 +7,9 @@
  */
 import { Logger } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { FeatureLogEntry, UsageLoggingClient, UsageLoggingClientLoggerCategory } from "@bentley/usage-logging-client";
+// import { FeatureLogEntry, UsageLoggingClient, UsageLoggingClientLoggerCategory } from "@bentley/usage-logging-client";
 
-const loggerCategory: string = UsageLoggingClientLoggerCategory.Client;
+// const loggerCategory: string = UsageLoggingClientLoggerCategory.Client;
 
 /**
  * Options for FeatureLogBatchClient
@@ -29,7 +29,7 @@ export interface FeatureLogBatchOptions {
  * @alpha
  */
 export class FeatureLogBatchClient {
-  private _queue: FeatureLogEntry[] = [];
+  // private _queue: FeatureLogEntry[] = [];
   private _options: FeatureLogBatchOptions;
   private _timerId: any | undefined = undefined; // used to clear the automatic batch submissions
 
@@ -46,25 +46,25 @@ export class FeatureLogBatchClient {
   constructor(
     private _getRequestContext: () => Promise<AuthorizedClientRequestContext>,
     options: Partial<FeatureLogBatchOptions> = {},
-    private _client: UsageLoggingClient = new UsageLoggingClient(),
+    // private _client: UsageLoggingClient = new UsageLoggingClient(),
   ) {
     this._options = { ...this._defaultOptions, ...options };
   }
   /** slices the queue of feature logs in batches limited by the maxBatchSize option then submit them using the UlasClient */
   private async _submitBatchedLogs() {
-    try {
-      // save off and empty queue to prevent new logs from being added during while loop
-      const queue = this._queue.slice();
-      this._queue = [];
+    // try {
+    //   // save off and empty queue to prevent new logs from being added during while loop
+    //   const queue = this._queue.slice();
+    //   this._queue = [];
 
-      while (queue.length > 0) {
-        const logs = queue.splice(0, this._options.maxBatchSize);
-        const context = await this._getRequestContext();
-        await this._client.logFeatureUsage(context, ...logs);
-      }
-    } catch (ex) {
-      Logger.logError(loggerCategory, "Error submitting feature log entries", () => ex);
-    }
+    //   while (queue.length > 0) {
+    //     const logs = queue.splice(0, this._options.maxBatchSize);
+    //     const context = await this._getRequestContext();
+    //     await this._client.logFeatureUsage(context, ...logs);
+    //   }
+    // } catch (ex) {
+    //   Logger.logError(loggerCategory, "Error submitting feature log entries", () => ex);
+    // }
   }
 
   /** starts the automatic batch submission based on the interval controlled by the maxBatchInterval option */
@@ -84,12 +84,12 @@ export class FeatureLogBatchClient {
   /** Pushes feature logs entries onto the queue for submission during next batch interval
    *  @param entries one or many feature log entries to be batched (see [[FeatureLogEntry]])
    */
-  public async queueLog(...entries: FeatureLogEntry[]) {
-    if (this._timerId === undefined)
-      this.setupAutomaticBatchSubmission();
+  // public async queueLog(...entries: FeatureLogEntry[]) {
+  //   if (this._timerId === undefined)
+  //     this.setupAutomaticBatchSubmission();
 
-    this._queue.push(...entries);
-    if (this._queue.length > this._options.maxBatchSize)
-      await this._submitBatchedLogs();
-  }
+  //   this._queue.push(...entries);
+  //   if (this._queue.length > this._options.maxBatchSize)
+  //     await this._submitBatchedLogs();
+  // }
 }

@@ -10,7 +10,7 @@ import { FeatureLogBatchClient } from "./FeatureLogBatchClient";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelConnection } from "./IModelConnection";
 import { Logger } from "@bentley/bentleyjs-core";
-import { FeatureLogEntry, UsageType } from "@bentley/usage-logging-client";
+// import { FeatureLogEntry, UsageType } from "@bentley/usage-logging-client";
 
 const loggerCategory: string = FrontendLoggerCategory.FeatureTracking;
 
@@ -42,23 +42,23 @@ export class FeatureTrackingManager {
    * See also
    *  - [[UsageLogEntry]]
    */
-  protected _usageType = UsageType.Beta;
+  // protected _usageType = UsageType.Beta;
 
   constructor() {
     this._client = new FeatureLogBatchClient(async () => AuthorizedFrontendRequestContext.create());
     this._hostName = typeof window !== "undefined" ? window.location.host : this._hostFallbackName;
   }
 
-  /** Expected to be overriden and if the intention is to post to ulas, return a FeatureLogEntry  */
-  protected trackFeature(_props: FeatureTrackingProps): FeatureLogEntry | undefined {
-    return undefined;
-  }
+  // /** Expected to be overriden and if the intention is to post to ulas, return a FeatureLogEntry  */
+  // protected trackFeature(_props: FeatureTrackingProps): FeatureLogEntry | undefined {
+  //   return undefined;
+  // }
 
   /** Basic tracking function to be overridden by an app. By default, iModelApp does not know the context to log track features.  */
   public track(props: FeatureTrackingProps) {
     Logger.logInfo(loggerCategory, `Tracking Feature:${props.featureName}`, () => ({ ...props }));
-    const entry = this.trackFeature(props);
-    // eslint-disable-next-line @typescript-eslint/no-floating-promises
-    if (undefined !== entry) this._client.queueLog(entry);
+    // const entry = this.trackFeature(props);
+    // // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    // if (undefined !== entry) this._client.queueLog(entry);
   }
 }
