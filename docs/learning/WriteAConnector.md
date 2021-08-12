@@ -76,7 +76,7 @@ As explained in the [overview](../learning/imodel-connectors.md), a "Connector" 
 2. Aligns the source data with the BIS schema and preferably a domain schema, and
 3. Writes BIS data to an iModel.
 
-A complete list of available connectors can be found in [iTwin Services Community Wiki](<https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47595/supported-applications-and-file-formats>)
+A complete list of available connectors can be found in [iTwin Services Community Wiki](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47595/supported-applications-and-file-formats)
 
 Examples of iTwin Connector include:
 
@@ -86,8 +86,6 @@ Examples of iTwin Connector include:
 See [Section on iTwin Synchronization](#ways-to-sync-data-to-an-itwin) for more details on existing connectors.
 
 However, in some instances, where a specific format is not covered, one can develop a new Connector using [iModel.js SDK](https://www.itwinjs.org/)
-
-![iModel Connector Backend](./imodel_connector_backend.png)
 
 The imodel-bridge package provided as part of the iModel.js SDK makes it easier to write an iTwin Connector backend that brings custom data into a digital twin. To run this environment with the iModel.js library that this package depends on requires a JavaScript engine with es2017 support.
 
@@ -125,7 +123,7 @@ An iTwin is an infrastructure digital twin. An iTwin incorporates different type
 
 #### iModelHub
 
-iModelHub is the control center for iModels. It is responsible for coordinating concurrent access to iModels and changes made to them in [ChangeSets](https://www.itwinjs.org/learning/glossary/#changeset). iModel connectors interact with iModelHub using the iModel.js API. The Connector SDK provides a framework through which a Connector can easily maintain this interaction. For more information about iModelHub, please see <https://www.itwinjs.org/learning/imodelhub/>
+iModelHub is for users who want their iModels hosted by Bentley in Azure. It is responsible for coordinating concurrent access to iModels and changes made to them in [ChangeSets](https://www.itwinjs.org/learning/glossary/#changeset). iModel connectors interact with iModelHub using the iModel.js API. The Connector SDK provides a framework through which a Connector can easily maintain this interaction. For more information about iModelHub, please see <https://www.itwinjs.org/learning/imodelhub/>
 
 #### iModel
 
@@ -134,6 +132,10 @@ An iModel is a specialized information container for exchanging data associated 
 iModels were created to facilitate the sharing and distribution of information regardless of the source and format of the data. iModels are an essential part of the digital twin world. But a digital twin means a lot more than just an iModel.
 
 An iTwin Connector provides a workflow to easily synchronize information from various third-party design applications or data repositories into an iModel.
+
+#### iTwin Stack
+
+iTwin Stack is a platform for building Infrastructure Digital Twins on private clouds. It enables digital and system integrators to build scalable and customizable Digital Twins. It is meant for organizations unable to use iTwin Platform.
 
 #### Briefcases
 
@@ -173,13 +175,15 @@ Extraction of data from the input depends on the source format and a library cap
 
 2. If a TypeScript binding is not available, extract the data into an intermediary format that can be then ingested by the alignment phase. In this case, the intermediate format will be read in the [OpenSourceData](#opensourcedata) method in your Connector.
 
+A two-process architecture may also be employed.
+
 #### Data alignment
 
 An iModel Connector must carefully transform the source data to BIS-based data in the iModel, and hence each Connector is written for a specific data source.
 
 - Mappings of data are _from_ source _into_ an iModel.
-- Typically, a Connector stores enough information about source data to detect the differences in it between job runs. In this manner, the Connector generates _changesets_ that are sent to iModelHub. This is the key difference between a Connector and a one-time converter.
-- Each job generates data in the iModel that is isolated from all other job's data. The resulting combined iModel is partitioned at the Subject level of the iModel; each Connector job has its own Subject.
+- Typically, a Connector stores enough information about source data to detect the differences in it between runs (connections). In this manner, the Connector generates _changesets_ that are sent to iModelHub. This is the key difference between a Connector and a one-time converter.
+- Each connection generates data in the iModel that is isolated from all other connection's data. The resulting combined iModel is partitioned at the Subject level of the iModel; each connection has its own Subject.
 
 For each iTwin Connector author, there will always be two conflicting goals:
 
@@ -318,35 +322,67 @@ Note: If the source data does not have stable, unique IDs, then the Connector wi
 
 #### Change detection
 
-Change detection is a way of detecting changes in the source data.
+The connector must use the supplied [Synchronizer](#synchronizer) class to synchronize individual items from the external source with Elements in the iModel. This applies to both definitions and geometric elements.
 
-If the source data is timestamped in some way, then the change-detection logic should be straightforward. The Connector has to save the highest timestamp at the end of the conversion and then look for source data with later timestamps the next time it runs.
+In its [ImportDefinitions](#importdefinitions) and [UpdateExistingData](#updateexistingdata) functions, the connector must do the following.
 
-If the source data is timestamped in some way, then the change-detection logic should be straightforward. The Connector has to save the highest timestamp at the end of the conversion and then look for source data with later timestamps the next time it runs.
+For each item found in the external source.
 
-If timestamps are not available, then the Connector will have to use some other means of recording and then comparing the state of the source data from run to run. If the conversion is cheap, then the source data can be converted again, and the results compared to the previous results, as stored in the iModel. Or, a cryptographic hash of the source data may be used to represent the source data. The hash could be stored along with the mappings and used to detect changes.
+Define a [[SourceItem]] object to capture the identifier, version, and checksum of the item.
 
-The change-detection algorithm implemented is
+```JavaScript
+    const sourceItem: SourceItem = {
+      id: <<identifies the item in the external source>>,
+      version: <<the item’s version number, if available>>,
+      checksum: <<the checksum of the item’s content>>,
+    };
+```
 
-- For each source data item:
-  - add source item's Id to the _source_items_seen_ set
-  - Look in the mappings for the corresponding data in the iModel (element, aspect, model)
-  - If found,
-    - Detect if the source item's current data has changed. If so,
-      - Convert the source item to BIS data.
-      - Update the corresponding data in the iModel
-  - Else,
-    - Convert the source data to BIS data
-    - Insert the new data into the iModel
-    - Add the source data item's Id to the mappings
+Then, check use [Synchronizer](#synchronizer) to see if the item was previously converted.
 
-Infer deletions:
+```JavaScript
+const results = this.synchronizer.detectChanges(scopeId, kind, sourceItem);
+```
 
-- For each source data item Id previously converted
-  - if item Id is not in _source_items_seen_
-    - Find the corresponding data in the iModel
-      - Delete the data in the iModel
-      - Remove the source data item's Id from the mappings
+If so, check to see if the item’s state is unchanged since the previous conversion. In that case, register the fact that the element in the iModel is still required and move on to the next item.
+
+```JavaScript
+    if (results.state === ItemState.Unchanged) {
+      assert(results.id !== undefined);
+      this.synchronizer.onElementSeen(results.id);
+      return results.id;
+    }
+```
+
+Otherwise, the item is new or if its state has changed. The connector must generate the appropriate BIS element representation of it.
+
+```JavaScript
+    const element = convert the item to BIS element …
+
+    if (results.id !== undefined) // in case this is an update
+      element.id = results.id;
+```
+
+Then ask Synchronizer to write the BIS element to the briefcase. Synchronizer will update the existing element if it exists or insert a new one if not.
+
+```JavaScript
+    const sync: SynchronizationResults = {
+      element,
+      itemState: results.state,
+    };
+    const status = this.synchronizer.updateIModel(sync, scopeId, sourceItem, kind);
+
+    if (status !== IModelStatus.Success)
+      throw new Error(`Failed to write ${sourceItem.id}. Status=${status}`);
+
+    return sync.element.id;
+
+}
+```
+
+Note that Synchronizer.updateIModel automatically adds an [[ExternalSourceAspect]] to the element, to keep track of the mapping between it and the external item.
+
+The framework will automatically detect and delete elements and models if the corresponding external items were not updated or declared as seen.
 
 ## Connector SDK
 
@@ -415,7 +451,7 @@ Methods
 
 The ConnectorRunner has a Synchronize method that runs your bridge module.
 
-``` JavaScript
+```JavaScript
     const bridgeJobDef = new BridgeJobDefArgs();
     bridgeJobDef.sourcePath = "c:\tmp\mynativefile.txt";
     bridgeJobDef.bridgeModule = "./HelloWorldConnector.js";
@@ -429,11 +465,13 @@ The ConnectorRunner has a Synchronize method that runs your bridge module.
 
 ### Synchronizer
 
+An ITwinConnector (or IModelBridge 2.x) has a private Synchronizer member which can be gotten or set via the synchronizer accessor. The Synchronizer helps comparing different states of an iModel and updating the iModel based on the results of those comparisons. Several public methods are available to facilitate your connector's interaction with the iModel: recordDocument, detectChanges, updateIModel, setExternalSourceAspect, insertResultsIntoIModel, onElementSeen. Visit the [Change detection](#change-detection) section to see examples of several of the Synchronizer's methods in use.
+
 ### Connector interface methods
 
 The connectorModule (bridgeModule) assigned to the BridgeJobDefArgs above must extend the IModelBridge class. This class has several methods that must be implemented to customize the behavior of your Connector.
 
-``` JavaScript
+```JavaScript
 class HelloWorldConnector extends IModelBridge {
 
 ```
@@ -615,12 +653,12 @@ For examples of Connector tests, you can review the standalone and integration t
 
 ### Job Subjects
 
-A Connector is required to create a uniquely named Subject element in the iModel. The job subject element should be a child of the root subject and must have a unique code.
+The FrameWork will automatically create a uniquely named Subject element in the iModel. The job subject element should be a child of the root subject and must have a unique code.
 
 A Connector is required to scope all of the subjects, definitions, and their models under its job subject element. That is,
 
-- Subjects and partitions that a bridge creates should be children of the job subject element,
-- The models and other elements that the bridge creates should be children of those subjects and partitions or in those models.
+- Subjects and partitions that a connector creates should be children of the job subject element,
+- The models and other elements that the connector creates should be children of those subjects and partitions or in those models.
 
 ### Schema merging
 
@@ -659,7 +697,7 @@ See this article on [AccessToken](https://github.com/imodeljs/imodeljs/tree/mast
 
 The Connector SDK takes care of acquiring locks and codes. It sets up the briefcase manager to run in "bulk insert" mode before calling UpdateExistingData. After UpdateExistingData finishes, it then goes to iModelHub to acquire all needed locks and to request all codes used before committing the local transaction. The entire conversion will fail and be rolled back if this step fails. Note that this is why it is so crucial that a Connector must not call SaveChanges directly.
 
-Models created by a Connector are exclusively locked by the job (that is, the job's briefcase) during the execution of a job. Likewise, elements created by a Connector are exclusively locked as well for the job duration. As long as the Connector writes elements only to models that it creates, then the framework will never fail to get the necessary access to the models and elements that a Connector inserts or updates.
+The connector’s channel root element is locked. No elements or models in the channel are locked. As long as the Connector writes elements only to models that it creates, then the framework will never fail to get the necessary access to the models and elements that a Connector inserts or updates.
 
 A Connector is required to scope all of the subjects and definitions and their models under a job-specific ["subject element"](#job-subjects) in the iModel. The only time a Connector should write to a common model, such as the dictionary model, is when it creates its job subject.
 
