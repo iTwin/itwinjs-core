@@ -27,4 +27,10 @@ export enum ViewStatus {
   InvalidLens,
   InvalidViewport,
   NotGeolocated,
+  NotCameraView,
+  NotEllipsoidGlobeMode,
+  NotOrthographicView,
+  DegenerateGeometry,
+  HeightBelowTransition,
+  NoTransitionRequired,
 }

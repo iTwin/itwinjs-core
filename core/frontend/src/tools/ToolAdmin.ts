@@ -1815,6 +1815,7 @@ export class WheelEventProcessor {
       animationTime: ScreenViewport.animation.time.wheel.milliseconds,
       easingFunction: Easing.Cubic.Out,
       onExtentsError: (err) => view.outputStatusMessage(err),
+      globeCenteringTarget: target,
     };
 
     const currentInputState = IModelApp.toolAdmin.currentInputState;
@@ -1839,8 +1840,8 @@ export class WheelEventProcessor {
           lastEvent.point.setFrom(target);
         }
       }
-      status = view.globalZoom(target, zoomRatio);
-      if (ViewStatus.Success !== status ){
+      status = view.zoomAboutGlobeTarget(target, zoomRatio);
+      if (ViewStatus.Success !== status) {
         const transform = Transform.createFixedPointAndMatrix(target, Matrix3d.createScale(zoomRatio, zoomRatio, zoomRatio));
         const eye = view.getEyePoint();
         const newEye = transform.multiplyPoint3d(eye);

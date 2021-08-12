@@ -9,6 +9,7 @@
 import { EasingFunction } from "@bentley/imodeljs-common";
 import { ViewStatus } from "./ViewStatus";
 import { MarginPercent } from "./MarginPercent";
+import { Point3d } from "@bentley/geometry-core";
 
 /** An object to animate a transition of a [[Viewport]].
  * Only one animator may be associated with a viewport at a time. Registering a new
@@ -51,4 +52,6 @@ export interface ViewChangeOptions extends ViewAnimationOptions {
   marginPercent?: MarginPercent;
   /** Function to be called when the extents are adjusted due to a limits error (view too larger or too small) */
   onExtentsError?: (status: ViewStatus) => ViewStatus;
+  /** If defined and the view is global it will be transitioned to a globe centric view about this point */
+  globeCenteringTarget?: Point3d;
 }

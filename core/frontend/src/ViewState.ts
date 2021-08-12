@@ -20,6 +20,7 @@ import {
 import { AuxCoordSystem2dState, AuxCoordSystem3dState, AuxCoordSystemState } from "./AuxCoordSys";
 import { CategorySelectorState } from "./CategorySelectorState";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState } from "./DisplayStyleState";
+import { DrawingViewState } from "./DrawingViewState";
 import { ElementState } from "./EntityState";
 import { Frustum2d } from "./Frustum2d";
 import { IModelApp } from "./IModelApp";
@@ -30,18 +31,17 @@ import { GraphicType } from "./render/GraphicBuilder";
 import { RenderClipVolume } from "./render/RenderClipVolume";
 import { RenderMemory } from "./render/RenderMemory";
 import { RenderScheduleState } from "./RenderScheduleState";
+import { SheetViewState } from "./SheetViewState";
+import { SpatialViewState } from "./SpatialViewState";
 import { StandardView, StandardViewId } from "./StandardView";
 import { DisclosedTileTreeSet, TileTreeReference } from "./tile/internal";
+import { ViewChangeOptions } from "./ViewAnimation";
 import { DecorateContext, SceneContext } from "./ViewContext";
 import { areaToEyeHeight, areaToEyeHeightFromGcs, GlobalLocation } from "./ViewGlobalLocation";
 import { ViewingSpace } from "./ViewingSpace";
-import { ViewChangeOptions } from "./ViewAnimation";
 import { Viewport } from "./Viewport";
-import { DrawingViewState } from "./DrawingViewState";
-import { SpatialViewState } from "./SpatialViewState";
-import { SheetViewState } from "./SheetViewState";
-import { ViewStatus } from "./ViewStatus";
 import { ViewPose, ViewPose2d, ViewPose3d } from "./ViewPose";
+import { ViewStatus } from "./ViewStatus";
 
 /** Describes the largest and smallest values allowed for the extents of a [[ViewState]].
  * Attempts to exceed these limits in any dimension will fail, preserving the previous extents.
@@ -2011,35 +2011,158 @@ export abstract class ViewState3d extends ViewState {
     return settings && settings.elevation ? settings.elevation : 0;
   }
 
-  public globalZoom(target: Point3d, zoomRatio: number): ViewStatus {
-    if (!this.iModel.ecefLocation || !this.isCameraEnabled)
+  /*  Return the point on the globe in directly front of the eye (or view center if camera off)
+   * @internal
+   */
+  public getEarthFocalPoint(): Point3d | undefined {
+    if (!this.iModel.ecefLocation || this.globeMode !== GlobeMode.Ellipsoid)
+      return undefined;
+
+    const backgroundMapGeometry = this.displayStyle.getBackgroundMapGeometry();
+    if (undefined === backgroundMapGeometry)
+      return undefined;
+
+    const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
+    const viewZ = this.getRotation().rowZ();
+    const center = this.getCenter();
+    const eye = this.isCameraEnabled() ? this.camera.getEyePoint() : center;
+    const eyeRay = Ray3d.create(eye, viewZ);
+    const fractions = new Array<number>(), points = new Array<Point3d>();
+    let fraction = -1.0E10, index = -1;
+    if (earthEllipsoid.intersectRay(eyeRay, fractions, points, undefined)) {
+      for (let i = 0; i < fractions.length; i++)
+        if (fractions[i] > fraction) {
+          fraction = fractions[i];
+          index = i;
+        }
+    }
+    return (index >= 0 && fraction < 0) ? points[index] : undefined;
+  }
+
+  public globalOrthographicZoom(target: Point3d, zoomRatio: number): ViewStatus {
+    if (!this.iModel.ecefLocation)
       return ViewStatus.NotGeolocated;
 
+    if (this.globeMode !== GlobeMode.Ellipsoid)
+      return ViewStatus.NotEllipsoidGlobeMode;
+
+    if (!this.isCameraEnabled)
+      return ViewStatus.NotOrthographicView;
+
+    const rotation = this.getRotation();
+    const viewZ = rotation.rowZ();
+    const earthCenter = this.iModel.ecefLocation.earthCenter;
+    const centerToTarget = Vector3d.createStartEnd(target, earthCenter);
+
+    rotation.multiplyVectorInPlace(centerToTarget);
+    const centerDistance = centerToTarget.magnitudeXY();
+    const currentTheta = Math.asin(centerDistance / Constant.earthRadiusWGS84.equator);
+    const newTheta = Math.asin(centerDistance * zoomRatio / Constant.earthRadiusWGS84.equator);
+    if (currentTheta === undefined || newTheta === undefined)
+      return ViewStatus.DegenerateGeometry;
+
+    const deltaTheta = newTheta - currentTheta;
+    const axis = viewZ.crossProduct(centerToTarget);
+    const newZ = Vector3d.createRotateVectorAroundVector(viewZ, axis, Angle.createRadians(deltaTheta));
+    if (!newZ)
+      return ViewStatus.DegenerateGeometry;
+
+    const extents = this.getExtents();
+    const newRotation = Matrix3d.createRigidFromColumns(newZ, rotation.rowY(), AxisOrder.ZYX);
+
+    if (!newRotation)
+      return ViewStatus.DegenerateGeometry;
+
+    newRotation.transposeInPlace();
+    const originToTarget = Vector3d.createStartEnd(this.getOrigin(), target);
+    rotation.multiplyVectorInPlace(originToTarget);
+    newRotation.multiplyTransposeVectorInPlace(originToTarget);
+
+    const newOrigin = target.plusScaled(originToTarget, zoomRatio);
+
+    this.setOrigin(newOrigin);
+    this.setRotation(newRotation);
+    this.setExtents(Vector3d.create(extents.x * zoomRatio, extents.y * zoomRatio, extents.z));
+
+    return ViewStatus.Success;
+  }
+
+  public transitionToGloballyCenteredCamera(target: Point3d): ViewStatus {
+    if (!this.iModel.ecefLocation)
+      return ViewStatus.NotGeolocated;
+
+    if (this.globeMode !== GlobeMode.Ellipsoid)
+      return ViewStatus.NotEllipsoidGlobeMode;
+
+    const startRamp = 30000;
+    const finishRamp = 1000000;
+    const extents = this.getExtents();
+    let height = extents.magnitudeXY();
+    let eye = this.getCenter();
+    if (this.isCameraEnabled()) {
+      eye = this.camera.eye;
+      const cartoEye = this.rootToCartographic(eye, ViewState3d._scratchGlobeCarto);
+
+      if (!cartoEye)
+        return ViewStatus.NotGeolocated;
+
+      height = cartoEye.height;
+    }
+    if (height < startRamp)
+      return ViewStatus.HeightBelowTransition;
+
+    const earthCenter = this.iModel.ecefLocation?.earthCenter;
+    const viewZ = this.getRotation().rowZ();
+    const centerToEye = earthCenter.unitVectorTo(eye);
+    if (!centerToEye)
+      return ViewStatus.DegenerateGeometry;
+
+    const axis = viewZ.unitCrossProduct(centerToEye);
+    if (!axis)
+      return ViewStatus.DegenerateGeometry;
+
+    const theta = viewZ.angleTo(centerToEye);
+
+    if (theta.isAlmostZero)
+      return ViewStatus.NoTransitionRequired;
+
+    const scale = Math.min(1, (height - startRamp) / (finishRamp - startRamp));
+    const transitionRotation = Matrix3d.createRotationAroundVector(axis, theta.cloneScaled(scale));
+    if (!transitionRotation)
+      return ViewStatus.DegenerateGeometry;
+
+    const transitionTransform = Transform.createFixedPointAndMatrix(target, transitionRotation);
+    const frustum = this.calculateFrustum();
+    if (!frustum)
+      return ViewStatus.DegenerateGeometry;
+
+    frustum.multiply(transitionTransform);
+    return this.setupFromFrustum(frustum);
+  }
+
+  /**
+   * Zoom by rotating around the earth center rather than explicitly moving the camera
+   * @alpha
+   */
+  public zoomAboutGlobeTarget(target: Point3d, zoomRatio: number): ViewStatus {
+    if (!this.iModel.ecefLocation)
+      return ViewStatus.NotGeolocated;
+
+    if (this.globeMode !== GlobeMode.Ellipsoid)
+      return ViewStatus.NotEllipsoidGlobeMode;
+
+    if (!this.isCameraEnabled)
+      return ViewStatus.NotCameraView;
+
     const camera = this.camera;
-    let eye = camera.eye;
+    const eye = camera.eye;
     const rotation = this.getRotation();
     const earthCenter = this.iModel.ecefLocation?.earthCenter;
-    const startRamp = 30000;
-    const finishRamp = 100000;
-    const cartoEye = this.rootToCartographic(eye, ViewState3d._scratchGlobeCarto);
-    let focalVector = rotation.rowZ().scale(camera.focusDist);
-    if (!cartoEye)
-      return ViewStatus.NotGeolocated;    // Should never occur.
-
-    if (cartoEye.height > startRamp) {
-      const scale = Math.min(1, (cartoEye.height - startRamp) / (finishRamp - startRamp));
-      const focalPoint = eye.plusScaled(rotation.rowZ(), - camera.focusDist);
-      const earthToFocal = earthCenter.unitVectorTo(focalPoint);
-      if (earthToFocal) {
-        const centeredEye = focalPoint.plusScaled(earthToFocal, cartoEye.height);
-        eye = eye.interpolate(scale, centeredEye);
-        focalVector = Vector3d.createStartEnd(focalPoint, eye);
-      }
-    }
-
+    const viewZ = rotation.rowZ();
     const eyeToCenter = Vector3d.createStartEnd(eye, earthCenter);
-    const eyeToTarget = Vector3d.createStartEnd(eye, target);
+    const focalVector = viewZ.scale(camera.focusDist);
 
+    const eyeToTarget = Vector3d.createStartEnd(eye, target);
     const focalToWorld = Matrix3d.createRigidFromColumns(eyeToCenter.negate(), rotation.rowX(), AxisOrder.ZXY);
     if (!focalToWorld)
       return ViewStatus.InvalidTargetPoint;
@@ -2054,7 +2177,7 @@ export abstract class ViewState3d extends ViewState {
     const c = bDistance * bDistance - cDistance * cDistance;
     const discriminant = b * b - 4 * c;     // a = 1;
     if (discriminant < 0)
-      return ViewStatus.InvalidTargetPoint;
+      return ViewStatus.DegenerateGeometry;
 
     const sqrtDiscriminant = Math.sqrt(discriminant);
     const root0 = (- b + sqrtDiscriminant) / 2;
@@ -2062,27 +2185,29 @@ export abstract class ViewState3d extends ViewState {
 
     const hypotenuse = Math.max(root0, root1);
     if (hypotenuse < 0)
-      return ViewStatus.InvalidTargetPoint;
+      return ViewStatus.DegenerateGeometry;
 
     const cSinRatio = Math.sin(cAngle.radians) / cDistance;
     const bAngle = Math.asin(cSinRatio * bDistance);
     const perp = eyeToCenter.crossProduct(centerToTarget);
     const parallel = perp.unitCrossProduct(centerToTarget);
     if (! parallel)
-      return ViewStatus.InvalidTargetPoint;
+      return ViewStatus.DegenerateGeometry;
 
     const newEye = earthCenter.plus2Scaled(centerToTarget, hypotenuse * Math.cos(bAngle) / centerToTarget.magnitude(), parallel, hypotenuse * Math.sin(bAngle));
     const newEyeToCenter = Vector3d.createStartEnd(newEye, earthCenter);
     const newFocalToWorld = Matrix3d.createRigidFromColumns(newEyeToCenter.negate(), rotation.rowX(), AxisOrder.ZXY);
     if (!newFocalToWorld)
-      return ViewStatus.InvalidTargetPoint;
+      return ViewStatus.DegenerateGeometry;
 
     const newFocalVector = newFocalToWorld.multiplyVector(focalVector.scale(zoomRatio));
     const newCameraTarget = newEye.minus(newFocalVector);
     const currExtents = this.getExtents();
     const newExtents = Vector2d.create(currExtents.x * zoomRatio, currExtents.y * zoomRatio);
 
-    return this.lookAt(newEye, newCameraTarget, newFocalToWorld.columnY(), newExtents);
+    const status = this.lookAt(newEye, newCameraTarget, newFocalToWorld.columnY(), newExtents);
+
+    return status;
   }
 }
 
