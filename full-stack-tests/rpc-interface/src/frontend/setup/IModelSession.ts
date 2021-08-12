@@ -36,7 +36,7 @@ export class IModelSession {
       if (!iModelData.projectName)
         throw new Error(`The iModel has no project name, so it cannot get the project.`);
       const client = new ContextRegistryClient();
-      const container: ITwin = await client.getContextContainerByName(requestContext, iModelData.projectName);
+      const container: ITwin = await client.getITwinByName(requestContext, iModelData.projectName);
       contextId = container.id;
     } else
       contextId = iModelData.projectId!;

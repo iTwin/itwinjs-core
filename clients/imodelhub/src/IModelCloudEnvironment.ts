@@ -14,7 +14,7 @@ import { IModelClient } from "./IModelClient";
  * @internal
  */
 export interface ContextManagerClient {
-  getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin>;
+  getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin>;
 }
 
 /** All of the services that a frontend or other client app needs to find and access iModels.

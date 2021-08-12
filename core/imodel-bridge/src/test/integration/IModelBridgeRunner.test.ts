@@ -37,7 +37,7 @@ describe("IModelBridgeFwk (#integration)", () => {
       Logger.logError("Error", `Failed with error: ${error}`);
     }
 
-    testProjectId = await HubUtility.getContextContainerIdByName(requestContext, "iModelJsIntegrationTest");
+    testProjectId = await HubUtility.getITwinIdByName(requestContext, "iModelJsIntegrationTest");
     const imodelName = `TestBridge_ReadWrite_${Guid.createValue()}`;
     const targetIModelId = await HubUtility.recreateIModel(requestContext, testProjectId, imodelName);
     expect(undefined !== targetIModelId);

@@ -26,8 +26,8 @@ export class HubUtility {
    * @param name Name of project
    * @throws If the project is not found, or there is more than one project with the supplied name
    */
-  public static async getContextContainerIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
-    const container: ITwin | undefined = await HubUtility.getContextContainerByName(requestContext, name);
+  public static async getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
+    const container: ITwin | undefined = await HubUtility.getITwinByName(requestContext, name);
     if (!container)
       throw new Error(`Project ${name} not found`);
     return container.id;
@@ -47,7 +47,7 @@ export class HubUtility {
     return iModel.id;
   }
 
-  private static async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin | undefined> {
+  private static async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin | undefined> {
     const container: ITwin = await getIModelProjectAbstraction().queryProject(requestContext, name);
     return container;
   }
@@ -72,7 +72,7 @@ export class HubUtility {
    * Purges all acquired briefcases for the specified iModel (and user), if the specified threshold of acquired briefcases is exceeded
    */
   public static async purgeAcquiredBriefcases(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string, acquireThreshold: number = 16): Promise<void> {
-    const projectId: string = await HubUtility.getContextContainerIdByName(requestContext, projectName);
+    const projectId: string = await HubUtility.getITwinIdByName(requestContext, projectName);
     const iModelId: GuidString = await HubUtility.queryIModelIdByName(requestContext, projectId, iModelName);
 
     return this.purgeAcquiredBriefcasesById(requestContext, iModelId, () => {
@@ -110,9 +110,9 @@ class TestIModelHubProject {
     return IModelHubBackend.iModelClient as IModelHubClient;
   }
 
-  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
+  public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const client = TestIModelHubProject.connectClient;
-    return client.getContextContainerByName(requestContext, name);
+    return client.getITwinByName(requestContext, name);
   }
   public async createIModel(requestContext: AuthorizedClientRequestContext, projectId: string, params: any): Promise<HubIModel> {
     const client = this.iModelHubClient;

@@ -12,7 +12,7 @@ import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bent
  */
 export class TestConfig {
   /** Name of container used by most tests */
-  public static readonly contextContainerName: string = "iModelJsIntegrationTest";
+  public static readonly iTwinName: string = "iModelJsIntegrationTest";
 
   /** Login the specified user and return the AuthorizationToken */
   public static async getAuthorizedClientRequestContext(user: TestUserCredentials = TestUsers.regular): Promise<AuthorizedClientRequestContext> {
@@ -20,9 +20,9 @@ export class TestConfig {
     return new AuthorizedClientRequestContext((accessToken as any) as AccessToken);
   }
 
-  public static async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
+  public static async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const contextRegistry = new ContextRegistryClient();
-    const container: ITwin | undefined = await contextRegistry.getContextContainerByName(requestContext, name);
+    const container: ITwin | undefined = await contextRegistry.getITwinByName(requestContext, name);
     if (!container || !container.id)
       throw new Error(`Context container ${name} not found for user.`);
     return container;

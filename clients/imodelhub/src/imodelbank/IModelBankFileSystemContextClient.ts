@@ -64,7 +64,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
     return props.map((value) => value.properties as IModelFileSystemContextProps);
   }
 
-  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
+  public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const props = await this.queryContextProps(requestContext, name);
     requestContext.enter();
 

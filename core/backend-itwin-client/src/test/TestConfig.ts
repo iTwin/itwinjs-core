@@ -30,9 +30,9 @@ loadEnv(path.join(__dirname, "..", "..", ".env"));
  */
 export class TestConfig {
   /** Query for the specified context container */
-  public static async getContextContainerIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
+  public static async getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
     const contextRegistry = new ContextRegistryClient();
-    const container: ITwin | undefined = await contextRegistry.getContextContainerByName(requestContext, name);
+    const container: ITwin | undefined = await contextRegistry.getITwinByName(requestContext, name);
     if (!container || !container.id) {
       const userInfo = requestContext.accessToken.getUserInfo();
       throw new Error(`Context container ${name} not found for user ${!userInfo ? "n/a" : userInfo.email}.`);

@@ -32,7 +32,7 @@ export class ServerArgs {
 /** Helps with queries on Bentley Connect */
 export class ConnectUtils {
   public static async getContextId(contextName: string, requestContext: AuthorizedClientRequestContext): Promise<string> {
-    const container: ITwin = await (new ContextRegistryClient()).getContextContainerByName(requestContext, contextName);
+    const container: ITwin = await (new ContextRegistryClient()).getITwinByName(requestContext, contextName);
 
     // No matching containers found
     if (!container || !container.id)

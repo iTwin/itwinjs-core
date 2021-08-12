@@ -19,21 +19,21 @@ describe("ContextRegistryClient (#integration)", () => {
   });
 
   it("should get a list of containers (#integration)", async () => {
-    const containers: ITwin[] = await contextRegistry.getContextContainers(requestContext);
+    const containers: ITwin[] = await contextRegistry.getITwins(requestContext);
 
     // At least one container
     chai.expect(containers).to.not.be.empty;
   });
 
   it("should get a container by name (#integration)", async () => {
-    const container: ITwin = await contextRegistry.getContextContainerByName(requestContext, TestConfig.containerName);
+    const container: ITwin = await contextRegistry.getITwinByName(requestContext, TestConfig.containerName);
 
     // Returned container matches searched name
     chai.expect(container.name).equals(TestConfig.containerName);
   });
 
   it("should get a container by id (#integration)", async () => {
-    const container: ITwin = await contextRegistry.getContextContainerById(requestContext, TestConfig.containerId);
+    const container: ITwin = await contextRegistry.getITwinById(requestContext, TestConfig.containerId);
 
     // Returned container matches searched id
     chai.expect(container.id).equals(TestConfig.containerId);
@@ -41,7 +41,7 @@ describe("ContextRegistryClient (#integration)", () => {
 
   // it("should get a list of containers by name substring (#integration)", async () => {
   //   const searchString = TestConfig.containerName.substr(1,5);
-  //   const containers: ITwin[] = await contextRegistry.getContextContainersByNameSubstring(requestContext, searchString);
+  //   const containers: ITwin[] = await contextRegistry.getITwinsByNameSubstring(requestContext, searchString);
 
   //   // At least one container
   //   chai.expect(containers).to.not.be.empty;

@@ -54,8 +54,8 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 
 // __PUBLISH_EXTRACT_END__
 
-async function getContextContainerIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
-  return (new ContextRegistryClient()).getContextContainerByName(requestContext, name);
+async function getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
+  return (new ContextRegistryClient()).getITwinByName(requestContext, name);
 }
 
 async function createIModel(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, seedFile: string) {
@@ -160,7 +160,7 @@ describe.skip("Bridge", async () => {
   before(async () => {
     await IModelHost.startup();
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
-    testProjectId = (await getContextContainerIdByName(requestContext, "iModelJsIntegrationTest")).id;
+    testProjectId = (await getITwinIdByName(requestContext, "iModelJsIntegrationTest")).id;
     seedPathname = path.join(KnownTestLocations.assetsDir, "empty.bim");
     imodelRepository = await createIModel(requestContext, testProjectId, "BridgeTest", seedPathname);
     await IModelHost.shutdown();

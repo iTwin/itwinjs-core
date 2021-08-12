@@ -43,7 +43,7 @@ export class ExternalIModel {
     const connectClient = new ContextRegistryClient();
     let container: ITwin;
     try {
-      container = await connectClient.getContextContainerByName(requestContext, projectName);
+      container = await connectClient.getITwinByName(requestContext, projectName);
     } catch (e) {
       throw new Error(`Project with name "${projectName}" does not exist`);
     }

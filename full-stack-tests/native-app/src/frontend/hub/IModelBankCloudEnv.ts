@@ -31,7 +31,7 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
   public async bootstrapIModelBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
     let container: ITwin | undefined;
     try {
-      container = await this.contextMgr.getContextContainerByName(requestContext, projectName);
+      container = await this.contextMgr.getITwinByName(requestContext, projectName);
       if (container === undefined)
         throw new Error("what happened?");
       await this.contextMgr.deleteContext(requestContext, container.id);

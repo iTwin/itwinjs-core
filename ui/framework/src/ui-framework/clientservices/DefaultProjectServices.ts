@@ -58,7 +58,7 @@ export class DefaultProjectServices implements ProjectServices {
 
     let containerList: ITwin[];
     try {
-      containerList = await this._connectClient.getContextContainers(requestContext);
+      containerList = await this._connectClient.getITwins(requestContext);
     } catch (e) {
       alert(JSON.stringify(e));
       throw e;

@@ -446,7 +446,7 @@ export class SampleAppIModelApp {
       const iModelName = Config.App.getString("imjs_uitestapp_imodel_name");
 
       const requestContext = await AuthorizedFrontendRequestContext.create();
-      const project = await (new ContextRegistryClient()).getContextContainerByName(requestContext, projectName);
+      const project = await (new ContextRegistryClient()).getITwinByName(requestContext, projectName);
 
       const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.id, new IModelQuery().byName(iModelName)))[0];
 

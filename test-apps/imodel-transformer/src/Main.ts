@@ -131,7 +131,7 @@ void (async () => {
       const sourceContextId = Guid.normalize(args.sourceContextId);
       const sourceIModelId = Guid.normalize(args.sourceIModelId);
       let sourceEndVersion = IModelVersion.latest();
-      const sourceContext = await contextRegistry.getContextContainerById(requestContext, sourceContextId);
+      const sourceContext = await contextRegistry.getITwinById(requestContext, sourceContextId);
       assert(undefined !== sourceContext);
       Logger.logInfo(loggerCategory, `sourceContextId=${sourceContextId}, name=${sourceContext.name}`);
       Logger.logInfo(loggerCategory, `sourceIModelId=${sourceIModelId}`);

@@ -223,7 +223,7 @@ export async function bootstrapBankProject(requestContext: AuthorizedClientReque
   const bankContext = getCloudEnv().contextMgr as IModelBankFileSystemContextClient;
   let container: ITwin | undefined;
   try {
-    container = await bankContext.getContextContainerByName(requestContext, projectName);
+    container = await bankContext.getITwinByName(requestContext, projectName);
   } catch (err) {
     if (err instanceof WsgError && err.errorNumber === WSStatus.InstanceNotFound) {
       container = undefined;
@@ -245,7 +245,7 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
 
   await bootstrapBankProject(requestContext, assetName);
 
-  const asset: ITwin = await getCloudEnv().contextMgr.getContextContainerByName(requestContext, assetName);
+  const asset: ITwin = await getCloudEnv().contextMgr.getITwinByName(requestContext, assetName);
 
   if (!asset || !asset.id)
     throw new Error(`Asset with name ${assetName} doesn't exist.`);
@@ -261,7 +261,7 @@ export async function getProjectId(requestContext: AuthorizedClientRequestContex
 
   await bootstrapBankProject(requestContext, projectName);
 
-  const container: ITwin = await getCloudEnv().contextMgr.getContextContainerByName(requestContext, projectName);
+  const container: ITwin = await getCloudEnv().contextMgr.getITwinByName(requestContext, projectName);
 
   if (!container || !container.id)
     throw new Error(`Project with name ${TestConfig.projectName} doesn't exist.`);

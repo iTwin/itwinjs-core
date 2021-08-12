@@ -142,8 +142,8 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @param requestContext The client request context
    * @returns Array of containers, may be empty
    */
-  public async getContextContainers(requestContext: AuthorizedClientRequestContext): Promise<ITwin[]> {
-    return this.getContextContainerByQuery(requestContext);
+  public async getITwins(requestContext: AuthorizedClientRequestContext): Promise<ITwin[]> {
+    return this.getITwinByQuery(requestContext);
   }
 
   /** Get a context container via name
@@ -151,13 +151,13 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @param name The unique name of the container
    * @returns A container with matching name, otherwise throws an error
   */
-  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
+  public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const queryOptions: RequestQueryOptions = {
       $select: "*",
       $filter: `name+eq+'${name}'`,
     };
     // Only one context container// Only one context container
-    const containers = await this.getContextContainerByQuery(requestContext, queryOptions);
+    const containers = await this.getITwinByQuery(requestContext, queryOptions);
     if (containers.length === 0)
       throw new Error("Could not find a context container with the specified criteria that the user has access to");
     else if (containers.length > 1)
@@ -170,13 +170,13 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @param id The unique id/wsgId/ecId of the container
    * @returns A container with matching id, otherwise throws an error
    */
-  public async getContextContainerById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ITwin> {
+  public async getITwinById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ITwin> {
     const queryOptions: RequestQueryOptions = {
       $select: "*",
       $filter: `$id+eq+'${id}'`,
     };
     // Only one context container
-    const containers = await this.getContextContainerByQuery(requestContext, queryOptions);
+    const containers = await this.getITwinByQuery(requestContext, queryOptions);
     if (containers.length === 0)
       throw new Error("Could not find a context container with the specified criteria that the user has access to");
     else if (containers.length > 1)
@@ -189,13 +189,13 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @param searchString The regex to compare against each name
    * @returns Array of containers with names containing the searchString
    */
-  private async getContextContainersByNameSubstring(requestContext: AuthorizedClientRequestContext, searchString: string): Promise<ITwin[]> {
+  private async getITwinsByNameSubstring(requestContext: AuthorizedClientRequestContext, searchString: string): Promise<ITwin[]> {
     const queryOptions: RequestQueryOptions = {
       $select: "*",
       $filter: `name+like+'${searchString}'`,
     };
     // Only one context container
-    return this.getContextContainerByQuery(requestContext, queryOptions);
+    return this.getITwinByQuery(requestContext, queryOptions);
   }
 
   /** Gets all context containers (projects or assets) using the given query options
@@ -203,7 +203,7 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @param queryOptions Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Array of containers meeting the query's requirements
    */
-  private async getContextContainerByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
+  private async getITwinByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
     requestContext.enter();
     const projectContainers: ITwin[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", queryOptions);
     const assetContainers: ITwin[] = await this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", queryOptions);

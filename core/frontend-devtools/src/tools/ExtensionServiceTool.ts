@@ -95,7 +95,7 @@ export class ExtensionServiceTool extends Tool {
 
     const requestContext = new AuthorizedClientRequestContext(token);
     const contextRegistry = new ContextRegistryClient();
-    const container: ITwin = await contextRegistry.getContextContainerByName(requestContext, contextName);
+    const container: ITwin = await contextRegistry.getITwinByName(requestContext, contextName);
 
     return container.id;
   }

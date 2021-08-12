@@ -8,8 +8,8 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 /** An implementation of IModelProjectAbstraction backed by an iTwin project */
 export class ContextRegistryClientWrapper implements ContextManagerClient {
-  public async getContextContainerByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
+  public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const client = new ContextRegistryClient();
-    return client.getContextContainerByName(requestContext, name);
+    return client.getITwinByName(requestContext, name);
   }
 }
