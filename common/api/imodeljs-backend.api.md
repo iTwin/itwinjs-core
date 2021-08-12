@@ -4131,6 +4131,25 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
 }
 
 // @public
+export class SQLiteDb implements IDisposable {
+    constructor();
+    abandonChanges(): void;
+    closeDb(): void;
+    createDb(pathName: string): void;
+    dispose(): void;
+    executeSQL(sql: string): DbResult;
+    get isOpen(): boolean;
+    // @internal (undocumented)
+    get nativeDb(): IModelJsNative.SQLiteDb;
+    openDb(pathName: string, openMode: OpenMode): void;
+    // @internal
+    prepareSqliteStatement(sql: string): SqliteStatement;
+    saveChanges(): void;
+    withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
+    withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
+}
+
+// @public
 export class SqliteStatement implements IterableIterator<any>, IDisposable {
     [Symbol.iterator](): IterableIterator<any>;
     constructor(_sql: string);
