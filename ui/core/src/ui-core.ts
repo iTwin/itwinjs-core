@@ -149,7 +149,7 @@ export * from "./ui-core/tooltip/Tooltip";
 
 export { ExpansionToggle, ExpansionToggleProps } from "./ui-core/tree/ExpansionToggle";
 export { TreeBranch, TreeBranchProps } from "./ui-core/tree/Branch";
-export { TreeNode, TreeNodeProps, NodeCheckboxProps, NodeCheckboxRenderer, NodeCheckboxRenderProps } from "./ui-core/tree/Node";
+export { TreeNode, TreeNodeProps, NodeCheckboxProps, NodeCheckboxRenderer, NodeCheckboxRenderProps, LEVEL_OFFSET } from "./ui-core/tree/Node";
 export { Tree, TreeProps } from "./ui-core/tree/Tree";
 export { TreeNodePlaceholder, TreeNodePlaceholderProps } from "./ui-core/tree/Placeholder";
 
