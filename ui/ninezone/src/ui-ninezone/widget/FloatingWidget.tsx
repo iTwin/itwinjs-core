@@ -95,7 +95,8 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
     isToolSettingsTab && "nz-floating-toolsettings"
   );
 
-  const isResizable = widget.isFloatingStateWindowResizable && !isToolSettingsTab;
+  // never allow resizing of toolsettings - always auto-fit them
+  const isResizable = (undefined === widget.isFloatingStateWindowResizable || widget.isFloatingStateWindowResizable) && !isToolSettingsTab;
 
   return (
     <Widget

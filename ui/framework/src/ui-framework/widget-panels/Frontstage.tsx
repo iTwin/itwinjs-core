@@ -254,6 +254,7 @@ export function addWidgets(state: NineZoneState, widgets: ReadonlyArray<WidgetDe
       label,
       preferredPanelWidgetSize: widget.preferredPanelSize,
       canPopout: widget.canPopout,
+      isFloatingStateWindowResizable: widget.isFloatingStateWindowResizable,
     });
     tabs.push(widget.id);
   }
@@ -290,6 +291,7 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       preferredFloatingWidgetSize,
       preferredPopoutWidgetSize,
       userSized,
+      isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
     });
     if (widgetDef.isFloatingStateSupported && widgetDef.defaultState === WidgetState.Floating) {
       const floatingContainerId = widgetDef.floatingContainerId ?? getUniqueId();
@@ -668,6 +670,7 @@ export function restoreNineZoneState(frontstageDef: FrontstageDef, saved: SavedN
         ...tab,
         label: getWidgetLabel(widgetDef?.label ?? "undefined"),
         canPopout: widgetDef?.canPopout,
+        isFloatingStateWindowResizable: widgetDef?.isFloatingStateWindowResizable,
       };
     }
     return;
@@ -728,7 +731,7 @@ export interface WidgetPanelsFrontstageState {
 }
 
 // We don't save tab labels or if widget is allowed to "pop-out".
-type SavedTabState = Omit<TabState, "label" | "canPopout">;
+type SavedTabState = Omit<TabState, "label" | "canPopout" | "isFloatingStateWindowResizable">;
 
 interface SavedTabsState {
   readonly [id: string]: SavedTabState;
@@ -743,6 +746,7 @@ function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {
     label: getWidgetLabel(widgetDef.label),
     canPopout: widgetDef.canPopout,
     preferredPanelWidgetSize: widgetDef.preferredPanelSize,
+    isFloatingStateWindowResizable: widgetDef.isFloatingStateWindowResizable,
   });
   nineZone.tabs[newTab.id] = newTab;
   if (widgetDef.tabLocation.widgetId in nineZone.widgets) {

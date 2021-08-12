@@ -26,6 +26,7 @@ export interface TabState {
   readonly allowedPanelTargets?: PanelSide[];
   readonly canPopout?: boolean;
   readonly userSized?: boolean;
+  readonly isFloatingStateWindowResizable?: boolean;
 }
 
 /** @internal future */
@@ -1313,6 +1314,7 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
           id: floatingWidgetId,
           minimized: false,
           tabs: [widgetTabId],
+          isFloatingStateWindowResizable: floatedTab.isFloatingStateWindowResizable,
         };
       });
     } else if (isPopoutLocation(location)) {
@@ -1528,8 +1530,9 @@ export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidget
   if (location)
     return state;
 
+  const tab = widgetTabId in state.tabs[widgetTabId] ? state.tabs[widgetTabId] : { preferredFloatingWidgetSize: undefined };
   return produce(state, (draft) => {
-    const size = preferredSize || { height: 200, width: 300 };
+    const size = { height: 200, width: 300, ...tab.preferredFloatingWidgetSize, ...preferredSize };
     const preferredPoint = preferredPosition ?? { x: (state.size.width - size.width) / 2, y: (state.size.height - size.height) / 2 };
     const nzBounds = Rectangle.createFromSize(state.size);
     const bounds = Rectangle.createFromSize(size).offset(preferredPoint);
