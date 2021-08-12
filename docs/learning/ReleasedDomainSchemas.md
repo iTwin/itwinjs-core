@@ -1,51 +1,49 @@
 # Released Domain Schemas
 
-- AecUnits.01.00.03.ecschema.xml
-- ArchitecturalPhysical.01.00.01.ecschema.xml
-- BuildingDataGroupBase.01.00.00.ecschema.xml
-- BuildingSpatial.01.00.00.ecschema.xml
-- BuildingSpatial.01.00.01.ecschema.xml
-- CifBridge.01.00.02.ecschema.xml
-- CifCommon.01.00.01.ecschema.xml
-- CifGeometricRules.01.00.01.ecschema.xml
-- CifHydraulicAnalysis.01.00.01.ecschema.xml
-- CifHydraulicResults.01.00.01.ecschema.xml
-- CifQuantityTakeoffs.01.00.00.ecschema.xml
-- CifRail.01.00.00.ecschema.xml
-- CifRoads.01.00.01.ecschema.xml
-- CifSubsurface.01.00.01.ecschema.xml
-- CifSubsurfaceConflictAnalysis.01.00.01.ecschema.xml
-- CifUnits.01.00.01.ecschema.xml
-- BridgeStructuralPhysical.02.00.00.ecschema.xml
-- DgnV8OpenRoadsDesigner.02.00.01.ecschema.xml
-- OpenBridgeModelerCE.01.00.00.ecschema.xml
-- RoadRailAlignment.02.00.02.ecschema.xml
-- RailPhysical.01.00.00.ecschema.xml
-- RoadPhysical.01.00.00.ecschema.xml
-- RoadRailPhysical.03.00.00.ecschema.xml
-- RoadRailUnits.01.00.01.ecschema.xml
-- ClassificationSystems.01.00.02.ecschema.xml
-- Construction.01.00.02.ecschema.xml
-- Analytical.01.00.00.ecschema.xml
-- BisCore.01.00.13.ecschema.xml
-- Functional.01.00.03.ecschema.xml
-- Generic.01.00.04.ecschema.xml
-- LinearReferencing.02.00.02.ecschema.xml
-- PhysicalMaterial.01.00.01.ecschema.xml
-- DistributionSystems.01.00.00.ecschema.xml
-- OpenPlantExtensions.01.00.00.ecschema.xml
-- PlantCustomAttributes.01.00.01.ecschema.xml
-- ProcessFunctional.01.00.01.ecschema.xml
-- ProcessPhysical.01.00.02.ecschema.xml
-- ProcessPidGraphical.01.00.02.ecschema.xml
-- PresentationRules.01.00.00.ecschema.xml
-- Profiles.01.00.00.ecschema.xml
-- QuantityTakeoffsAspects.01.00.01.ecschema.xml
-- PointCloud.01.00.00.ecschema.xml
-- Raster.01.00.00.ecschema.xml
-- ScalableMesh.01.00.01.ecschema.xml
-- ThreeMx.01.00.00.ecschema.xml
-- SpatialComposition.01.00.00.ecschema.xml
-- SpatialComposition.01.00.01.ecschema.xml
-- StructuralAnalysis.01.00.00.ecschema.xml
-- StructuralPhysical.01.00.00.ecschema.xml
+| Domain Schema                              | URL for npm package                                                              |
+| ------------------------------------------ | -------------------------------------------------------------------------------- |
+| AecUnits.ecschema.xml                      | <https://www.npmjs.com/package/@bentley/aec-units-schema>                        |
+| ArchitecturalPhysical.ecschema.xml         | <https://www.npmjs.com/package/@bentley/architectural-physical-schema>           |
+| BuildingDataGroupBase.ecschema.xml         | <https://www.npmjs.com/package/@bentley/building-data-group-base-schema>         |
+| BuildingSpatial.ecschema.xml               | <https://www.npmjs.com/package/@bentley/building-spatial-schema>                 |
+| CifBridge.ecschema.xml                     | <https://www.npmjs.com/package/@bentley/cif-bridge-schema>                       |
+| CifCommon.ecschema.xml                     | <https://www.npmjs.com/package/@bentley/cif-common-schema>                       |
+| CifGeometricRules.ecschema.xml             | <https://www.npmjs.com/package/@bentley/cif-geometric-rules-schema>              |
+| CifHydraulicAnalysis.ecschema.xml          | <https://www.npmjs.com/package/@bentley/cif-hydraulic-analysis-schema>           |
+| CifHydraulicResults.ecschema.xml           | <https://www.npmjs.com/package/@bentley/cif-hydraulic-results-schema>            |
+| CifQuantityTakeoffs.ecschema.xml           | <https://www.npmjs.com/package/@bentley/cif-quantity-takeoffs-schema>            |
+| CifRail.ecschema.xml                       | <https://www.npmjs.com/package/@bentley/cif-rail-schema>                         |
+| CifRoads.ecschema.xml                      | <https://www.npmjs.com/package/@bentley/cif-roads-schema>                        |
+| CifSubsurface.ecschema.xml                 | <https://www.npmjs.com/package/@bentley/cif-subsurface-schema>                   |
+| CifSubsurfaceConflictAnalysis.ecschema.xml | <https://www.npmjs.com/package/@bentley/cif-subsurface-conflict-analysis-schema> |
+| CifUnits.ecschema.xml                      | <https://www.npmjs.com/package/@bentley/cif-units-schema>                        |
+| BridgeStructuralPhysical.ecschema.xml      | <https://www.npmjs.com/package/@bentley/bridge-structural-physical-schema>       |
+| RoadRailAlignment.ecschema.xml             | <https://www.npmjs.com/package/@bentley/road-rail-alignment-schema>              |
+| RailPhysical.ecschema.xml                  | <https://www.npmjs.com/package/@bentley/rail-physical-schema>                    |
+| RoadPhysical.ecschema.xml                  | <https://www.npmjs.com/package/@bentley/road-physical-schema>                    |
+| RoadRailPhysical.ecschema.xml              | <https://www.npmjs.com/package/@bentley/road-rail-physical-schema>               |
+| RoadRailUnits.ecschema.xml                 | <https://www.npmjs.com/package/@bentley/road-rail-units-schema>                  |
+| ClassificationSystems.ecschema.xml         | <https://www.npmjs.com/package/@bentley/classification-systems-schema>           |
+| Construction.ecschema.xml                  | <https://www.npmjs.com/package/@bentley/construction-schema>                     |
+| Analytical.ecschema.xml                    | <https://www.npmjs.com/package/@bentley/analytical-schema>                       |
+| BisCore.ecschema.xml                       | <https://www.npmjs.com/package/@bentley/bis-core-schema>                         |
+| Functional.ecschema.xml                    | <https://www.npmjs.com/package/@bentley/functional-schema>                       |
+| Generic.ecschema.xml                       | <https://www.npmjs.com/package/@bentley/generic-schema>                          |
+| LinearReferencing.ecschema.xml             | <https://www.npmjs.com/package/@bentley/linear-referencing-schema>               |
+| PhysicalMaterial.ecschema.xml              | <https://www.npmjs.com/package/@bentley/physical-material-schema>                |
+| DistributionSystems.ecschema.xml           | <https://www.npmjs.com/package/@bentley/distribution-systems-schema>             |
+| OpenPlantExtensions.ecschema.xml           | <https://www.npmjs.com/package/@bentley/open-plant-extensions-schema>            |
+| PlantCustomAttributes.ecschema.xml         | <https://www.npmjs.com/package/@bentley/plant-custom-attributes-schema>          |
+| ProcessFunctional.ecschema.xml             | <https://www.npmjs.com/package/@bentley/process-functional-schema>               |
+| ProcessPhysical.ecschema.xml               | <https://www.npmjs.com/package/@bentley/process-physical-schema>                 |
+| ProcessPidGraphical.ecschema.xml           | <https://www.npmjs.com/package/@bentley/process-pid-graphical-schema>            |
+| PresentationRules.ecschema.xml             | <https://www.npmjs.com/package/@bentley/presentation-rules-schema>               |
+| Profiles.ecschema.xml                      | <https://www.npmjs.com/package/@bentley/profiles-schema>                         |
+| QuantityTakeoffsAspects.ecschema.xml       | <https://www.npmjs.com/package/@bentley/quantity-takeoffs-aspects-schema>        |
+| PointCloud.ecschema.xml                    | <https://www.npmjs.com/package/@bentley/point-cloud-schema>                      |
+| Raster.ecschema.xml                        | <https://www.npmjs.com/package/@bentley/raster-schema>                           |
+| ScalableMesh.ecschema.xml                  | <https://www.npmjs.com/package/@bentley/scalable-mesh-schema>                    |
+| ThreeMx.ecschema.xml                       | <https://www.npmjs.com/package/@bentley/three-mx-schema>                         |
+| SpatialComposition.ecschema.xml            | <https://www.npmjs.com/package/@bentley/spatial-composition-schema>              |
+| StructuralAnalysis.ecschema.xml            | <https://www.npmjs.com/package/@bentley/structural-analysis-schema>              |
+| StructuralPhysical.ecschema.xml            | <https://www.npmjs.com/package/@bentley/structural-physical-schema>              |
