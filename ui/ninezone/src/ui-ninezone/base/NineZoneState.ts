@@ -1540,7 +1540,7 @@ export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidget
     const floatedTab = draft.tabs[widgetTabId];
     initSizeProps(floatedTab, "preferredFloatingWidgetSize", size);
     draft.floatingWidgets.byId[floatingWidgetId] = {
-      bounds: containedBounds,
+      bounds: containedBounds.toProps(),
       id: floatingWidgetId,
       home,
       userSized,
