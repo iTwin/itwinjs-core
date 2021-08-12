@@ -48,12 +48,15 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
    * @alpha
    */
   enableHierarchyAutoUpdate?: boolean;
+}
 
-  /**
-   * Used for testing
-   * @internal
-   */
-  dataProvider?: IPresentationTreeDataProvider;
+/**
+ * Return type for [[usePresentationTreeNodeLoader]] hook.
+ * @public
+ */
+export interface PresentationTreeNodeLoaderResult {
+  nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>;
+  onItemsRendered: (items: RenderedItemsRange) => void;
 }
 
 /**
@@ -62,14 +65,19 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
  *
  * @public
  */
-export function usePresentationTreeNodeLoader(props: PresentationTreeNodeLoaderProps) {
+export function usePresentationTreeNodeLoader(
+  props: PresentationTreeNodeLoaderProps,
+): PresentationTreeNodeLoaderResult {
   interface Info {
     treeModel: MutableTreeModel | undefined;
   }
 
   const [info, setInfo] = useState<Info>({ treeModel: undefined });
-  // eslint-disable-next-line react-hooks/exhaustive-deps
-  const dataProvider = useDisposable(useCallback(() => createDataProvider(props), [info, ...Object.values(props)]));
+  const dataProvider = useDisposable(useCallback(
+    () => new PresentationTreeDataProvider(props),
+    // eslint-disable-next-line react-hooks/exhaustive-deps
+    [info, ...Object.values(props)],
+  ));
 
   let treeModelSeed = props.enableHierarchyAutoUpdate ? info.treeModel : undefined;
   // Set treeModelSeed to undefined if props have changed
@@ -305,18 +313,6 @@ function convertToTreeModelNodeInput(item: TreeNodeItemData): TreeModelNodeInput
 
 function getExpandedNodeKeys(modelSource: TreeModelSource, dataProvider: IPresentationTreeDataProvider) {
   return getExpandedNodeItems(modelSource).map((item) => dataProvider.getNodeKey(item));
-}
-
-function createDataProvider(props: PresentationTreeNodeLoaderProps): IPresentationTreeDataProvider {
-  let dataProvider: IPresentationTreeDataProvider;
-  if (props.dataProvider) {
-    dataProvider = props.dataProvider;
-  } else {
-    // eslint-disable-next-line @typescript-eslint/no-unused-vars
-    const { dataProvider: testDataProvider, ...providerProps } = props;
-    dataProvider = new PresentationTreeDataProvider(providerProps);
-  }
-  return dataProvider;
 }
 
 async function updateModelSourceAfterIModelChange(

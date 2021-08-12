@@ -34,14 +34,14 @@ export const IModelConnectedViewport = connectIModelConnectionAndViewState(null,
 
 /** [[IModelViewportControl]] options. These options are set in the applicationData property of the [[ContentProps]].
  * @beta
- */
+ */
 export interface IModelViewportControlOptions {
   /** ViewState or a function to return a ViewState */
   viewState?: ViewStateProp;
   /** IModelConnection of data in Viewport */
   iModelConnection?: IModelConnection | (() => IModelConnection);
-  /** Optional property to disable the use of the DefaultViewOverlay */
-  disableDefaultViewOverlay?: boolean;
+  /** Map of options that can be used to enable/disable features within the view */
+  featureOptions?: { [key: string]: any };
   /** Optional background color which may be used if viewState and iModelConnection are undefined */
   bgColor?: string;
   /** Optional property to always use the supplied `viewState` property instead of using viewport.view when set */
@@ -54,13 +54,13 @@ export interface IModelViewportControlOptions {
 
 /** iModel Viewport Control
  * @beta
- */
+ */
 // istanbul ignore next
 export class IModelViewportControl extends ViewportContentControl {
   public static get id() {
     return "UiFramework.IModelViewportControl";
   }
-  protected _disableDefaultViewOverlay: boolean;
+  protected _featureOptions: { [key: string]: boolean | string } = {};
   protected _viewState: ViewStateProp | undefined;
   protected _iModelConnection: IModelConnection | undefined;
   protected _alwaysUseSuppliedViewState: boolean;
@@ -69,7 +69,8 @@ export class IModelViewportControl extends ViewportContentControl {
   constructor(info: ConfigurableCreateInfo, protected _options: IModelViewportControlOptions) {
     super(info, _options);
 
-    this._disableDefaultViewOverlay = _options.disableDefaultViewOverlay ?? false;
+    if (_options.featureOptions)
+      this._featureOptions = _options.featureOptions;
     this._alwaysUseSuppliedViewState = _options.alwaysUseSuppliedViewState ?? false;
     this._userSuppliedViewOverlay = _options.supplyViewOverlay;
 
@@ -173,10 +174,7 @@ export class IModelViewportControl extends ViewportContentControl {
     if (this._userSuppliedViewOverlay)
       return this._userSuppliedViewOverlay(viewport);
 
-    if (this._disableDefaultViewOverlay)
-      return null;
-
-    return <DefaultViewOverlay viewport={viewport} />;
+    return <DefaultViewOverlay viewport={viewport} featureOptions={this._featureOptions} />;
   };
 
   /** Get the NavigationAidControl associated with this ContentControl */

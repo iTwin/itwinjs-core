@@ -1,0 +1,86 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+@import "../icons/variables";
+@import "../inputs/variables";
+@import "./themecolors";
+@import "./variables";
+@import "~@itwin/itwinui-css/scss/style/space";
+
+// Override some iTwinUI-css padding and minimums for iTwin.js applications
+
+@mixin small-itwinui-input {
+
+  .iui-input {
+    min-height: $uicore-component-height-normal !important;
+    padding: $uicore-iui-input-padding !important;
+  }
+
+}
+
+@mixin small-itwinui-select {
+
+  .iui-select {
+    >.iui-select-button {
+      min-height: $uicore-component-height-normal !important;
+      padding-top: 2px !important;
+      padding-bottom: 2px !important;
+      padding-right: 24px !important;
+    }
+
+    >.iui-select-button::after {
+      right: 6px !important;
+    }
+  }
+
+}
+
+@mixin small-itwinui-toggle-switch {
+
+  .iui-toggle-switch {
+    padding: 1px 0 !important;
+  }
+
+}
+
+@mixin small-itwinui-expandable-block {
+
+  .iui-expandable-block {
+    > .iui-header {
+      padding: $iui-xs $iui-xs !important;
+
+      > .iui-icon {
+        width: $uicore-icons-x-small !important;
+        height: $uicore-icons-x-small !important;
+        margin-top: $iui-xs !important;
+      }
+    }
+
+    &.iui-expanded {
+      > .iui-content {
+        padding: 0 !important;
+      }
+    }
+  }
+
+}
+
+@mixin adjust-itwinui-toast {
+
+  .iui-toast {
+    margin: 0 !important;
+    width: 100% !important;
+  }
+
+}
+
+@mixin itwinui-style-overrides {
+
+  @include small-itwinui-input;
+  @include small-itwinui-select;
+  @include small-itwinui-toggle-switch;
+  @include small-itwinui-expandable-block;
+  @include adjust-itwinui-toast;
+
+}
