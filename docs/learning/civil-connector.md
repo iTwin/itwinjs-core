@@ -21,7 +21,7 @@ title: Civil iModel Connector
   - [Target BIS schemas](#target-bis-schemas---v2-approach)
   - [Subject hierarchy](#subject-hierarchy---v2-approach)
   - [Definition Elements](#definition-elements---v2-approach)
-  - [Type Definitions](#type-definitions)
+    - [Type Definitions](#type-definitions)
   - [Quantity Takeoff mappings](#quantity-takeoff-mappings---v2-approach)
   - [Linear Referencing](#linear-referencing---v2-approach)
   - [Spatial Composition](#spatial-composition)
@@ -88,7 +88,7 @@ With x = 1 for the V1 approach and x = 2 for the V2 approach. If such Json attri
 In general, Definition elements are stored in one of two models in an iModel, depending on the case. Those models are:
 
 1) The global iModel's Dictionary model.
-2) The job's "Definitions" model.
+2) The Job's "Definitions" model.
 
 The following instance diagram depicts the location of the `bis:DefinitionPartition`s, leading those definition models, in light of an iModel's subject hierarchy:
 
@@ -127,6 +127,8 @@ A model in branch #1 is created for each model in a dgn file. If a model in a dg
 Models in branch #2 are created by following the expected hierarchy in the corresponding [BIS schemas](#Target-BIS-schemas) being target. This model hierarchy take advantage of the sub-modeling capabilities in BIS. These models are marked as private (that is, their `IsPrivate` model-property is set to `true`), preventing them from being displayed by default, in order to avoid visual confusion with models in branch #1. Furthermore, elements in branch #2 are typically associated with graphical elements in branch #1 via `bis:GraphicalElement3dRepresentsElement` relationships, as depicted in the following instance diagram.
 
 ![Civil iModel Connector - V1 approach - "represents" relationships](civil-connector-v1-represents.png)
+
+A job published to an iModel with the V1 approach cannot be converted to a V2 approach in place. Unmapping the job and recreating it with the desired approach is required.
 
 ### Target BIS schemas - V1 approach
 
@@ -182,13 +184,49 @@ The following diagram depicts the two branches for a particular job:
 
 ### Definition Elements - V1 approach
 
+Beyond the [general mappings](#definition-elements) provided for definition elements, two domains that the V1 approach depends on store their definition elements under the "Aligned" branch. The following table and instance diagram depicts the organization of these domain-level definition elements:
+
+| Domain | Definition Elements | Definition Partition |
+| ------ | ------------------- | ----- |
+| RoadRailAlignment | `Alignment`, `Linear`, `Vertical` categories | Road/Rail Domain Categories |
+| RoadRailPhysical | `Network`, `Corridor`, `Roadway`, `Railway` categories | Road/Rail Domain Categories |
+
+![Civil iModel Connector - V1 approach - Definition elements](civil-connector-v1-definition-elements.png)
+
 ### Quantity Takeoff mappings - V1 approach
 
 Under the V1 approach, `bis:ElementUniqueAspect`s from the `QuantityTakeoffsAspects` schema are only attached to the `bis:GraphicalElement3d` instances.
 
 ### Linear Referencing - V1 approach
 
+Instances of `rralign:Alignment` are created under the "Aligned" subject hierarchy, with the corresponding graphical representations.
+
+Actual linear locations are stored in the iModel by following the specifications set by the LinearReferencing BIS schema.
+
 ## V2 approach
+
+The "V2" approach was introduced as an alternative output from the Civil iModel Connector, taking advantage of more recent developments such as:
+
+* IFC 4x3's evolution on Road, Rail and Bridge domains.
+* New functionality capturing richer semantics released with Bentley's OpenRoads Designer v10.10.
+* New network topology functionality released with Bentley's OpenRail Designer v10.10.
+* New Spatial Composition paradigm in BIS schemas and iTwin services in general.
+
+As a result, not only new BIS schemas were introduced but also a new mapping algorithm was needed from the Civil iModel Connector. The highlights of the V2 approach include:
+
+* Normal 2D models from Civil Designer dgns are now mapped to `bis:SpatialLocationModel`s, with their `IsPlanProjection` property set to `true`.
+* 3D models from Civil Designer dgns are now mapped to `bis:PhysicalModel`s.
+* Elements from Civil Designer dgns are now directly mapped to either an aligned BIS class, or a class from the Generic BIS schema. No separate graphical representation elements are created anymore.
+* No dynamic schema is created based on Feature Definitions.
+* When semantics are present in the dgn dataset, a Spatial breakdown tree is created, storing those semantics in terms of the paradigms introduced by the SpatialComposition BIS schema. At the time of this writing, this is only possible with data from OpenRoads Designer and OpenBridge Modeler. Support for Spatial breakdown Other Civil Designer applications
+* Feature Definitions are now captured via appropriate subclasses of `bis:TypeDefinitionElement`. The richness of such subclasses depend on the presence of semantics in the dgn dataset.
+* Instances of `bis:PhysicalMaterial` are now created, capturing the understanding of construction materials by the Civil iModel Connector. The Feature Definition name is used as a last resource when the connector does not understand any specifics about the material associated to an element.
+* A Road network can be optionally inferred based on alignments and semantics available in an OpenRoads Designer dataset.
+* A Rail network can be optionally published based on topology data available in an OpenRail Designer dataset.
+
+The V2 approach is optional, only turned on via the `civil-imodel-connector-cifconverterv2` feature-flag.
+
+A job published to an iModel with the V2 approach cannot be converted to a V1 approach in place. Unmapping the job and recreating it with the desired approach is required.
 
 ### Target BIS schemas - V2 approach
 
@@ -215,6 +253,9 @@ Under the V1 approach, `bis:ElementUniqueAspect`s from the `QuantityTakeoffsAspe
 * NetworkTopology
 * RailNetwork
 * RoadNetwork
+
+#### Linearly-located attributions
+* RoadAttributions
 
 #### Properties from Bentley's Civil Designer applications
 * [CifCommon](https://www.itwinjs.org/bis/domains/cifcommon.ecschema/)
@@ -254,7 +295,13 @@ The following table and instance diagram depict the generated organization.
 
 ### Definition Elements - V2 approach
 
-### Type Definitions
+Beyond the [general mappings](#definition-elements) provided for definition elements, the V2 approach organizes domain-level definition elements in sub-models of the global DictionaryModel in an iModel, one sub-model per domain. Furthermore, when the category of an element is aligned via one of the domain-level categories in the target domains, the settings of the original `level` from the dgn file is preserved into a new `bis:SubCategory`, created as a child of the domain-level category.
+
+The following instance diagram shows an example this organization.
+
+![Civil iModel Connector - V2 approach - Definition elements](civil-connector-v2-definition-elements.png)
+
+#### Type Definitions
 
 The Civil iModel Connector, under the V2 approach, strongly relies on `bis:TypeDefinitionElement` instances in order to provide more granular classifications than the ones captured by the BIS class of an element.
 
@@ -270,8 +317,41 @@ Regarding material information, the Civil iModel Connector also creates instance
 
 ### Linear Referencing - V2 approach
 
+There are semantical differences between what the Civil Designer applications consider to be an `Alignment` compared to its IFC and the BIS (RoadRailAlignment schema) counterparts.
+
+An `Alignment` in Civil Designer applications corresponds to the 2D linear elements capturing plan or horizontal geometry. Such kind of Alignments can have a 3D representation if an active profile is assigned to them.
+
+In IFC and BIS, the concept of an `Alignment` directly targets the 3D representation, considering its geometry in plan as one of its parts, but not the Alignment in itself. The mapping logic followed by the Civil iModel Connector with respect to Alignments is depicted in the following table:
+
+| Concept in Civil Designer applications | Target BIS class | Target BIS Category |
+| --------------------------- | ---------------- | ------------------- |
+| 3d Alignment | `rralign:Alignment` | "Alignment" if Feature Definition starts with "Alignment" or a Corridor uses it as its centerline. Otherwise, "Linear". |
+| 3d Linear | `rralign:Alignment` | "Linear" |
+| Alignment | `rralign:HorizontalAlignment` | Same as parent rralign:Alignment |
+| Profile | `rralign:VerticalAlignment` | "VerticalAlignment" |
+
+When the Civil iModel Connector cannot find or reach the 3D representation of an Alignment from a dgn, it will create a child `bis:Subject` and `bis:SpatialLocationPartition` where it will create an `rralign:Alignment` instance associated with the `rralign:HorizontalAlignment` mapped to the 2D geometry from the dgn. The following instance diagram depicts this case.
+
+![Civil iModel Connector - V2 approach - Homeless Alignments](civil-connector-v2-homeless-alignments.png)
+
+Actual linear locations are stored in the iModel by following the specifications set by the LinearReferencing BIS schema.
+
 ### Spatial Composition
+
+BIS introduced an equivalent hierarchy to IFC's Spatial Structure via the SpatialComposition schema, decoupling semantics associated with a "Facility" and its parts from the actual physical objects composing it. The V2 approach introduces this new paradigm for OpenRoads Designer and OpenBridge Modeler data. As a result, the V2 approach targets the RoadSpatial and BridgeSpatial BIS schemas.
+
+In the case of OpenRoads Designer, this functionality depends on a new "corridor semantics" tool included in its v10.10 release. This new tool is able to estimate the correct semantics of the 3D meshes generated from a corridor and store them in the dgn file. The Civil iModel Connector then is able to create the Spatial breakdown of the roads in an OpenRoads Designer dataset by reading those semantics.
+
+Regarding OpenBridge Modeler, the Civil iModel Connector does not need of new functionality in order to produce the Spatial breakdown of bridges in an OpenBridge Modeler dataset. Therefore, this support works for datasets older than v10.10 too.
 
 ### Road Network
 
+The V2 approach brings support for the inferring of a road network from an OpenRoads Designer dataset. It achieves such goal by detecting intersections based on an analysis of alignments, combined with semantics captured by the new "corridor semantics" tool in v10.10.
+
+The result is a parallel modeling perspective captured in a child `bis:Subject` and related `bis:InformationRecordPartition` and `bis:SpatialLocationPartition` instances, as described [earlier](#subject-hierarchy---v2-approach). These partitions capture the topology elements and their graphical representations based on the RoadNetwork and NetworkTopology BIS schemas.
+
+Lastly, the Civil iModel Connector will also create instances of `rdatt:ThroughLaneCount`, linearly-located along the inferred network, capturing the number of lanes output from the new "corridor semantics" tool.
+
 ### Rail Network
+
+The V2 approach supports the new "Network Topology" feature in OpenRail Designer v10.10. The result is a parallel modeling perspective captured in a child `bis:Subject` and related `bis:InformationRecordPartition`, as described [earlier](#subject-hierarchy---v2-approach). This partition capture the topology elements based on the RailNetwork and NetworkTopology BIS schemas.
