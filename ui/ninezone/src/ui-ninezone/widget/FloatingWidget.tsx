@@ -37,9 +37,6 @@ export const FloatingWidget = React.memo<FloatingWidgetProps>(function FloatingW
   const { id, bounds, userSized } = props.floatingWidget;
   const { minimized, tabs } = props.widget;
   const isSingleTab = 1 === tabs.length;
-  const tabsState = React.useContext(TabsStateContext);
-  const tabState = tabsState[tabs[0]];
-  const isUserSized = !!tabState?.userSized || userSized;
 
   const style = React.useMemo(() => {
     const boundsRect = Rectangle.create(bounds);
@@ -98,6 +95,8 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
     isToolSettingsTab && "nz-floating-toolsettings"
   );
 
+  const isResizable = widget.isFloatingStateWindowResizable && !isToolSettingsTab;
+
   return (
     <Widget
       className={className}
@@ -105,7 +104,7 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
     >
       <WidgetTabBar separator={!widget.minimized} />
       <WidgetContentContainer />
-      {!isToolSettingsTab && <>
+      {isResizable && <>
         <FloatingWidgetHandle handle="left" />
         <FloatingWidgetHandle handle="top" />
         <FloatingWidgetHandle handle="right" />

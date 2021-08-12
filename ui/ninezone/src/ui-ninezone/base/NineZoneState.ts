@@ -37,6 +37,7 @@ export interface WidgetState {
   readonly id: string;
   readonly minimized: boolean;
   readonly tabs: ReadonlyArray<TabState["id"]>;
+  readonly isFloatingStateWindowResizable?: boolean;
 }
 
 /** @internal future */
@@ -889,9 +890,9 @@ function setWidgetActiveTabId(
 ) {
   state.widgets[widgetId].activeTabId = tabId;
   const floatingWidget = state.floatingWidgets.byId[widgetId];
-  if (floatingWidget && tabId) {
-    const size = Rectangle.create(floatingWidget.bounds).getSize();
+  if (floatingWidget && tabId && (tabId in state.tabs)) {
     const activeTab = state.tabs[tabId];
+    const size = Rectangle.create(floatingWidget.bounds).getSize();
     initSizeProps(activeTab, "preferredFloatingWidgetSize", size);
   }
 }
@@ -1521,7 +1522,8 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
 
 /** Add a new Floating Panel with a single widget tab */
 export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string,
-  home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean): NineZoneState {
+  home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps,
+  userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState {
   const location = findTab(state, widgetTabId);
   if (location)
     return state;
@@ -1534,22 +1536,31 @@ export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidget
     const containedBounds = bounds.containIn(nzBounds);
 
     // add new id to list of floatingWidgets
-    draft.floatingWidgets.allIds.push(floatingWidgetId);
+    if (!state.floatingWidgets.allIds.includes(floatingWidgetId))
+      draft.floatingWidgets.allIds.push(floatingWidgetId);
 
     // add new floating widget to array of widgets in the state
     const floatedTab = draft.tabs[widgetTabId];
     initSizeProps(floatedTab, "preferredFloatingWidgetSize", size);
-    draft.floatingWidgets.byId[floatingWidgetId] = {
-      bounds: containedBounds.toProps(),
-      id: floatingWidgetId,
-      home,
-      userSized,
-    };
-    draft.widgets[floatingWidgetId] = {
-      activeTabId: widgetTabId,
-      id: floatingWidgetId,
-      minimized: false,
-      tabs: [widgetTabId],
-    };
+    if (!(floatingWidgetId in state.floatingWidgets.byId)) {
+      draft.floatingWidgets.byId[floatingWidgetId] = {
+        bounds: containedBounds.toProps(),
+        id: floatingWidgetId,
+        home,
+        userSized,
+      };
+    }
+
+    if (floatingWidgetId in state.widgets) {
+      draft.widgets[floatingWidgetId].tabs.push(widgetTabId);
+    } else {
+      draft.widgets[floatingWidgetId] = {
+        activeTabId: widgetTabId,
+        id: floatingWidgetId,
+        minimized: false,
+        tabs: [widgetTabId],
+        isFloatingStateWindowResizable,
+      };
+    }
   });
 }

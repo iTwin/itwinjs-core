@@ -170,15 +170,38 @@ class TestUiProvider implements UiItemsProvider {
         label: "Add On 1",
         getWidgetContent: () => <FillCentered>Addon Widget in panel</FillCentered>, // eslint-disable-line react/display-name
         defaultState: WidgetState.Floating,
-        // floatingContainerId: "floating-addonWidget-container",
+        floatingContainerId: "floating-addonWidget-container",
+        isFloatingStateSupported: true,
+      });
+      widgets.push({
+        label: "Add On 2",
+        id: "addonWidget2",
+        getWidgetContent: () => <FillCentered>Addon Widget 2 in panel</FillCentered>, // eslint-disable-line react/display-name
+        defaultState: WidgetState.Floating,
+        floatingContainerId: "floating-addonWidget-container",
         isFloatingStateSupported: true,
       });
     }
+
     if (allowedStages.includes(stageId) && location === StagePanelLocation.Right && section === StagePanelSection.Middle) {
       widgets.push({
-        label: "Add On 2",
+        label: "Add On 3",
         id: "addonWidgetMiddle",
-        getWidgetContent: () => <FillCentered>Addon Widget in middle section</FillCentered>, // eslint-disable-line react/display-name
+        // eslint-disable-next-line react/display-name
+        getWidgetContent: () => {
+          return (<FillCentered>
+            <div style={{ margin: "5px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+              Addon Widget for rightMiddle section
+              <div>
+                (Not Resizable)
+              </div>
+            </div>
+          </FillCentered>);
+        },
+        defaultState: WidgetState.Floating,
+        isFloatingStateSupported: true,
+        defaultFloatingPosition: { x: 200, y: 200 },
+        isFloatingStateWindowResizable: false,
       });
     }
     return widgets;

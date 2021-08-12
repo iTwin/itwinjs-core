@@ -296,7 +296,7 @@ export function appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray<Wi
       const widgetContainerId = getWidgetId(side, panelZoneKeys[preferredWidgetIndex]);
       const homePanelInfo: FloatingWidgetHomeState = { side, widgetId: widgetContainerId, widgetIndex: 0 };
       const preferredPosition = widgetDef.defaultFloatingPosition;
-      state = addWidgetTabToFloatingPanel(state, floatingContainerId, widgetDef.id, homePanelInfo, preferredFloatingWidgetSize, preferredPosition, userSized);
+      state = addWidgetTabToFloatingPanel(state, floatingContainerId, widgetDef.id, homePanelInfo, preferredFloatingWidgetSize, preferredPosition, userSized, widgetDef.isFloatingStateWindowResizable);
     } else {
       tabs.push(widgetDef.id);
     }
@@ -1025,17 +1025,24 @@ export function useFrontstageManager(frontstageDef: FrontstageDef) {
 /** @internal */
 // istanbul ignore next
 export function useItemsManager(frontstageDef: FrontstageDef) {
+  const refreshNineZoneState = (def: FrontstageDef) => {
+    // Fired for both registered/unregistered. Update definitions and remove/add missing widgets.
+    def.updateWidgetDefs();
+    let state = def.nineZoneState;
+    if (!state)
+      return;
+    state = addMissingWidgets(def, state);
+    state = removeMissingWidgets(def, state);
+    def.nineZoneState = state;
+  };
+
   React.useEffect(() => {
     const remove = UiItemsManager.onUiProviderRegisteredEvent.addListener(() => {
-      // Fired for both registered/unregistered. Update definitions and remove/add missing widgets.
-      frontstageDef.updateWidgetDefs();
-      let state = frontstageDef.nineZoneState;
-      if (!state)
-        return;
-      state = addMissingWidgets(frontstageDef, state);
-      state = removeMissingWidgets(frontstageDef, state);
-      frontstageDef.nineZoneState = state;
+      refreshNineZoneState(frontstageDef);
     });
+    // Need to refresh anytime frontstageDef changes because uiItemsProvider may have added something to
+    // another stage before it was possibly unloaded in this stage.
+    refreshNineZoneState(frontstageDef);
     return remove;
   }, [frontstageDef]);
 }
