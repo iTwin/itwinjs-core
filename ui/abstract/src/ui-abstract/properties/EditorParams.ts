@@ -232,7 +232,6 @@ export interface SliderEditorParams extends BasePropertyEditorParams {
   /** The interaction mode. Default is 1. Possible values:
    * 1 - allows handles to cross each other.
    * 2 - keeps the sliders from crossing and separated by a step.
-   * 3 - makes the handles pushable and keep them a step apart.
    */
   mode?: number;
 

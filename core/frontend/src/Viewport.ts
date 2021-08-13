@@ -2688,8 +2688,7 @@ export class ScreenViewport extends Viewport {
   /** The canvas to display the view contents. */
   public readonly canvas: HTMLCanvasElement;
   /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators".
-   * @deprecated from public access, use DecorateContext.addHtmlDecoration
-   * it will be un-deprecated for internal usage only in a future release
+   * @internal
    */
   public readonly decorationDiv: HTMLDivElement;
   /** The HTMLDivElement used for toolTips. May be referenced from the DOM by class "overlay-tooltip". */

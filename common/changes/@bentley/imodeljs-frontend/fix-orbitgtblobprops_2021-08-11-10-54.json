@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-frontend",
+      "comment": "Orbit OPC OrbitGtBlobProps initialization and SAS token update.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-frontend",
+  "email": "81157354+LeePipBull@users.noreply.github.com"
+}

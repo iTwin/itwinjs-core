@@ -126,6 +126,7 @@ public;CubeRotationChangeEventArgs
 internal;CustomItem({ item, addGroupSeparator }:
 alpha;CustomNumberEditor 
 alpha;CustomNumberPropertyEditor 
+internal;CustomThumb(): JSX.Element
 beta;CustomToolbarItem 
 beta;DataController
 beta;class DataControllerBase 
@@ -232,6 +233,7 @@ public;from
 internal;getCSSColorFromDef(colorDef: ColorDef): string
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 deprecated;GetCurrentlyEditedNode = () => BeInspireTreeNode
+internal;getPercentageOfRectangle(rect: DOMRect, pointer: number): number
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 beta;GridCategoryItem 
 internal;GroupPopupItem({ item, addGroupSeparator }:
@@ -432,6 +434,7 @@ beta;QuantityInput({ initialValue, quantityType, readonly, className, style, onQ
 beta;QuantityNumberInput: (props: QuantityNumberInputProps) => JSX.Element | null
 beta;QuantityNumberInputProps 
 beta;QuantityProps 
+internal;RailToolTip({ showToolTip, percent, tooltipText }:
 public;ReactDataGridColumn 
 alpha;RenderedItemsRange
 public;ResultSelector 
@@ -440,7 +443,7 @@ public;RowItem
 public;RowProps
 beta;SaturationPicker({ onSaturationChange, hsv, className, style }: SaturationPickerProps): JSX.Element
 beta;SaturationPickerProps 
-internal;Scrubber 
+internal;Scrubber(props: ScrubberProps): JSX.Element
 internal;ScrubberProps 
 beta;SelectableContent(props: SelectableContentProps): JSX.Element
 beta;SelectableContentDefinition
@@ -514,8 +517,6 @@ beta;TextEditor
 beta;ThemedEnumEditor 
 beta;ThemedEnumEditorProps 
 beta;ThemedEnumPropertyEditor 
-internal;Timeline 
-deprecated;Timeline 
 public;TimelineComponent 
 public;TimelineComponentProps
 public;TimelineDataProvider
@@ -524,8 +525,6 @@ public;TimelineMenuItemOption = "replace" | "append" | "prefix"
 public;TimelineMenuItemProps
 public;TimelinePausePlayAction
 public;TimelinePausePlayArgs 
-internal;TimelineProps 
-deprecated;TimelineProps 
 public;TimelineScale
 public;toDateString: (date: Date, timeZoneOffset?: number | undefined) => string
 beta;ToggleEditor 
@@ -612,6 +611,7 @@ public;UiComponents
 public;Unsubscribable
 beta;useAsyncValue: 
 alpha;useDebouncedAsyncValue
+internal;useFocusedThumb(sliderContainer: HTMLDivElement | undefined): boolean
 beta;usePagedTreeNodeLoader
 beta;usePropertyData(props:
 beta;usePropertyGridEventHandler(props:

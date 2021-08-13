@@ -1,6 +1,18 @@
 # Change Log - @bentley/ecschema-editing
 
-This log was last generated on Tue, 03 Aug 2021 18:26:23 GMT and should not be manually modified.
+This log was last generated on Thu, 12 Aug 2021 13:09:26 GMT and should not be manually modified.
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+_Version update only_
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+### Updates
+
+- switch to xmldom@0.6.0 which correctly escapes entities in attributes when serializing
 
 ## 2.19.2
 Tue, 03 Aug 2021 18:26:23 GMT

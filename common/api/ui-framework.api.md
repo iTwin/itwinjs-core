@@ -95,7 +95,6 @@ import { OnCancelFunc } from '@bentley/ui-abstract';
 import { OnItemExecutedFunc } from '@bentley/ui-abstract';
 import { OnNumberCommitFunc } from '@bentley/ui-abstract';
 import { OnValueCommitFunc } from '@bentley/ui-abstract';
-import { OpenMode } from '@bentley/bentleyjs-core';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
@@ -1704,7 +1703,7 @@ export class DefaultToolSettingsProvider extends ToolUiProvider {
 }
 
 // @public
-export function DefaultViewOverlay({ viewport, onPlayPause }: ViewOverlayProps): JSX.Element;
+export function DefaultViewOverlay({ viewport, onPlayPause, featureOptions }: ViewOverlayProps): JSX.Element | null;
 
 // @public
 export class DialogChangedEvent extends UiEvent<DialogChangedEventArgs> {
@@ -3048,7 +3047,7 @@ export interface IModelServices {
     getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
     getUsers(iModelId: string): Promise<IModelUserInfo[]>;
     getVersions(iModelId: string): Promise<VersionInfo[]>;
-    openIModel(contextId: string, iModelId: string, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection>;
+    openIModel(contextId: string, iModelId: string, changeSetId?: string): Promise<IModelConnection>;
 }
 
 // @internal
@@ -3069,7 +3068,9 @@ export class IModelViewportControl extends ViewportContentControl {
     // (undocumented)
     protected _alwaysUseSuppliedViewState: boolean;
     // (undocumented)
-    protected _disableDefaultViewOverlay: boolean;
+    protected _featureOptions: {
+        [key: string]: boolean | string;
+    };
     protected getImodelConnectedViewportReactElement(): React.ReactNode;
     protected getImodelViewportReactElement(iModelConnection: IModelConnection, viewState: ViewStateProp): React.ReactNode;
     protected getNoContentReactElement(_options: IModelViewportControlOptions): React.ReactNode;
@@ -3095,7 +3096,9 @@ export interface IModelViewportControlOptions {
     alwaysUseSuppliedViewState?: boolean;
     bgColor?: string;
     deferNodeInitialization?: boolean;
-    disableDefaultViewOverlay?: boolean;
+    featureOptions?: {
+        [key: string]: any;
+    };
     iModelConnection?: IModelConnection | (() => IModelConnection);
     supplyViewOverlay?: (_viewport: ScreenViewport) => React.ReactNode;
     viewState?: ViewStateProp;
@@ -6900,6 +6903,10 @@ export interface ViewLayout {
 
 // @public
 export interface ViewOverlayProps {
+    // (undocumented)
+    featureOptions?: {
+        [key: string]: any;
+    };
     // (undocumented)
     onPlayPause?: (playing: boolean) => void;
     // (undocumented)

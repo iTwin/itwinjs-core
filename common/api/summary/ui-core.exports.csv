@@ -278,6 +278,7 @@ internal;shallowDiffers: (a:
 internal;Size 
 public;SizeProps
 public;Slider(props: SliderProps): JSX.Element
+deprecated;Slider(props: SliderProps): JSX.Element
 public;SliderProps 
 public;SmallText(props: TextProps): JSX.Element
 deprecated;SmallText(props: TextProps): JSX.Element
@@ -359,6 +360,7 @@ public;UnderlinedButton(props: UnderlinedButtonProps): JSX.Element
 public;UnderlinedButtonProps
 public;useDisposable
 public;useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void
+internal;useEventListener(eventName: string, handler: (event: Event) => void, element: HTMLElement | Document | undefined): void
 internal;useLayoutResizeObserver(inElement: HTMLElement | null, onResize?: (width?: number, height?: number) => void): (number | undefined)[]
 public;useOptionalDisposable
 internal;useProximityToMouse: (elementSet: WidgetElementSet, snap?: boolean, threshold?: number) => number

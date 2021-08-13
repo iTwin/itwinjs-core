@@ -61,5 +61,6 @@ __Note:__ You must navigate to your snapshot folder the first time you use the F
 
 ## Using the Edit frontstage to test editing an iModel
 
-To test editing an iModel, the '.env' file in the ui-test-app directory should set the variable imjs_TESTAPP_ALLOW_WRITE=1. Optionally this variable can be set in the command shell before starting the servers. Files from iModelHub can be edited. Also, standalone files marked as editable can be edited using
-the Electron application.
+To test editing an iModel, the '.env' file in the ui-test-app directory should set the variable imjs_TESTAPP_ALLOW_WRITE=1. Optionally this variable can be set in the command shell before starting the servers.
+
+> Note: Editing requires Briefcase files and IPC. Currently IPC is only supported in the Electron application.
