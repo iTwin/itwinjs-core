@@ -1239,63 +1239,6 @@ importers:
       rimraf: 3.0.2
       typescript: 4.3.5
 
-  ../../core/imodel-bridge:
-    specifiers:
-      '@bentley/backend-itwin-client': workspace:*
-      '@bentley/bentleyjs-core': workspace:*
-      '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
-      '@bentley/eslint-plugin': workspace:*
-      '@bentley/geometry-core': workspace:*
-      '@bentley/imodelhub-client': workspace:*
-      '@bentley/imodeljs-backend': workspace:*
-      '@bentley/imodeljs-common': workspace:*
-      '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
-      '@types/chai': ^4.1.4
-      '@types/mocha': ^8.2.2
-      '@types/node': 10.14.1
-      '@types/object-hash': ^1.3.0
-      chai: ^4.1.2
-      cpx: ^1.5.0
-      dotenv: ^10.0.0
-      dotenv-expand: ^5.1.0
-      eslint: ^7.11.0
-      internal-tools: workspace:*
-      mocha: ^8.3.2
-      nyc: ^15.1.0
-      object-hash: ^1.3.1
-      rimraf: ^3.0.2
-      typescript: ~4.3.0
-    dependencies:
-      object-hash: 1.3.1
-    devDependencies:
-      '@bentley/backend-itwin-client': link:../backend-itwin-client
-      '@bentley/bentleyjs-core': link:../bentley
-      '@bentley/build-tools': link:../../tools/build
-      '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/geometry-core': link:../geometry
-      '@bentley/imodelhub-client': link:../../clients/imodelhub
-      '@bentley/imodeljs-backend': link:../backend
-      '@bentley/imodeljs-common': link:../common
-      '@bentley/itwin-client': link:../../clients/itwin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@types/chai': 4.2.21
-      '@types/mocha': 8.2.3
-      '@types/node': 10.14.1
-      '@types/object-hash': 1.3.4
-      chai: 4.3.4
-      cpx: 1.5.0
-      dotenv: 10.0.0
-      dotenv-expand: 5.1.0
-      eslint: 7.32.0
-      internal-tools: link:../../tools/internal
-      mocha: 8.4.0
-      nyc: 15.1.0
-      rimraf: 3.0.2
-      typescript: 4.3.5
-
   ../../core/markup:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
