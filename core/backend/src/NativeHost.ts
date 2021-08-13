@@ -95,9 +95,6 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public async overrideInternetConnectivity(by: OverriddenBy, status: InternetConnectivityStatus): Promise<void> {
     NativeHost.overrideInternetConnectivity(by, status);
   }
-  public async getConfig(): Promise<any> {
-    return {...process.env};
-  }
   public async acquireNewBriefcaseId(iModelId: GuidString): Promise<number> {
     return BriefcaseManager.acquireNewBriefcaseId(await IModelHost.getAuthorizedContext(), iModelId);
   }

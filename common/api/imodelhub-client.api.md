@@ -669,8 +669,6 @@ export class IModelBaseHandler extends WsgClient {
     constructor(keepAliveDuration?: number, fileHandler?: FileHandler);
     // (undocumented)
     protected _agent: any;
-    // (undocumented)
-    static readonly configRelyingPartyUri = "imjs_imodelhub_relying_party_uri";
     delete(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, httpRequestOptions?: HttpRequestOptions): Promise<void>;
     deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions): Promise<void>;
     // (undocumented)
@@ -685,8 +683,6 @@ export class IModelBaseHandler extends WsgClient {
     getFileHandler(): FileHandler | undefined;
     getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    // @internal
-    protected getRelyingPartyUrl(): string;
     // @internal
     getUrl(requestContext: ClientRequestContext): Promise<string>;
     // @internal (undocumented)
