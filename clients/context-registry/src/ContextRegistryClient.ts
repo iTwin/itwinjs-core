@@ -138,7 +138,7 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
     this.baseUrl = "https://api.bentley.com/contextregistry";
   }
 
-  /** Get all context containers accessible to the user
+  /** Get all iTwins accessible to the user
    * @param requestContext The client request context
    * @returns Array of containers, may be empty
    */
@@ -146,7 +146,7 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
     return this.getITwinByQuery(requestContext);
   }
 
-  /** Get a context container via name
+  /** Get an iTwin via name
    * @param requestContext The client request context
    * @param name The unique name of the container
    * @returns A container with matching name, otherwise throws an error
@@ -156,16 +156,16 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
       $select: "*",
       $filter: `name+eq+'${name}'`,
     };
-    // Only one context container// Only one context container
+    // Only one iTwin
     const containers = await this.getITwinByQuery(requestContext, queryOptions);
     if (containers.length === 0)
-      throw new Error("Could not find a context container with the specified criteria that the user has access to");
+      throw new Error("Could not find an iTwin with the specified criteria that the user has access to");
     else if (containers.length > 1)
-      throw new Error("More than one context container found with the specified criteria");
+      throw new Error("More than one iTwin found with the specified criteria");
     return containers[0];
   }
 
-  /** !Currently unused: Get a context container via id
+  /** !Currently unused: Get an iTwin via id
    * @param requestContext The client request context
    * @param id The unique id/wsgId/ecId of the container
    * @returns A container with matching id, otherwise throws an error
@@ -175,16 +175,16 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
       $select: "*",
       $filter: `$id+eq+'${id}'`,
     };
-    // Only one context container
+    // Only one iTwin
     const containers = await this.getITwinByQuery(requestContext, queryOptions);
     if (containers.length === 0)
-      throw new Error("Could not find a context container with the specified criteria that the user has access to");
+      throw new Error("Could not find an iTwin with the specified criteria that the user has access to");
     else if (containers.length > 1)
-      throw new Error("More than one context container found with the specified criteria");
+      throw new Error("More than one iTwin found with the specified criteria");
     return containers[0];
   }
 
-  /** !Currently unused: Gets all context containers (projects or assets) whose name contains the search string, case insensitive
+  /** !Currently unused: Gets all iTwins (projects or assets) whose name contains the search string, case insensitive
    * @param requestContext The client request context
    * @param searchString The regex to compare against each name
    * @returns Array of containers with names containing the searchString
@@ -194,11 +194,11 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
       $select: "*",
       $filter: `name+like+'${searchString}'`,
     };
-    // Only one context container
+    // Only one iTwin
     return this.getITwinByQuery(requestContext, queryOptions);
   }
 
-  /** Gets all context containers (projects or assets) using the given query options
+  /** Gets all iTwins (projects or assets) using the given query options
    * @param requestContext The client request context
    * @param queryOptions Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Array of containers meeting the query's requirements
