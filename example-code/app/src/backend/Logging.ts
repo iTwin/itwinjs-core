@@ -14,6 +14,8 @@ export function initializeLogging(): void {
   // params might be specified as envvars.
   const config = require("./MyService.config.json");
 
+  Logger.initializeToConsole();
+
   // Configure log levels by category
   if ("loggerConfig" in config) {
     Logger.validateProps(config.loggerConfig);

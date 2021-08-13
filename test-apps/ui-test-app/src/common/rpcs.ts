@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import {
-  IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition,
+  IModelReadRpcInterface, IModelTileRpcInterface, RpcInterfaceDefinition,
   SnapshotIModelRpcInterface,
 } from "@bentley/imodeljs-common";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
@@ -12,21 +12,6 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
  * Returns a list of RPCs supported by this application
  */
 export function getSupportedRpcs(): RpcInterfaceDefinition[] {
-
-  if (process.env.imjs_TESTAPP_ALLOW_WRITE === "1") {
-    // eslint-disable-next-line no-console
-    console.log("Using ReadWrite RPC Interfaces");
-    return [
-      IModelReadRpcInterface,
-      IModelTileRpcInterface,
-      SnapshotIModelRpcInterface,
-      PresentationRpcInterface,
-      IModelWriteRpcInterface, // eslint-disable-line deprecation/deprecation
-    ];
-  }
-
-  // eslint-disable-next-line no-console
-  console.log("Using Readonly RPC Interfaces");
 
   return [
     IModelReadRpcInterface,

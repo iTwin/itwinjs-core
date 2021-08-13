@@ -61,7 +61,7 @@ export class PropertyCategoryBlock extends React.Component<PropertyCategoryBlock
         title={label}
         {...props}
       >
-        {children}
+        {category.expand && children}
       </ExpandableBlock>
     );
   }
