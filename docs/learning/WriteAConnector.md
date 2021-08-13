@@ -268,6 +268,14 @@ A Connector is usually dealing with two levels of provenance
 1. What is the identity and metadata of a file or repository synchronized into an iModel?
 2. What is the identity of the element within that repository?
 
+[RepositoryLink](https://www.itwinjs.org/reference/imodeljs-backend/elements/repositorylink/) is a specialization of a UrlLink which has a "Url" property pointing to an external resource or repository and a RepositoryGuid that identifies the external repository.
+
+[ExternalSource](https://www.itwinjs.org/reference/imodeljs-backend/elements/externalsource/) is an information container container found in a repository. A few use cases for ExternalSources are listed below:
+
+1. A MicroStation DGN file, for example, may contain multiple models which in turn contain elements. The repository link would point to the DGN file while the ExternalSource would refer the models within the DGN file,
+2. In many cases, the external file is not a container for multiple smaller models, so there would be a one-to-one correspondence between an ExternalSource and its RepositoryLink,
+3. In the latter case, when there is also no possibility for referencing, layering or otherwise superimposing files and or models, then a common practice is to duplicate elements across one or more files to acheive the effect of reference elements. In this case, one element may refer to multiple ExternalSources and this is done via an [ExternalSourceGroup](https://www.itwinjs.org/reference/imodeljs-backend/elements/externalsourcegroup/)
+
 ##### Case 1 : File metadata
 
 ExternalSource and ExternalSourceAttachments are used to describe the original external file reference hierarchy.
@@ -310,7 +318,7 @@ At the start of the Connector's updateExistingData function, examine all existin
 
 A Connector must also relate each physical model that it creates to the source document(s) that is used to make that model. Specifically, each Connector must create an ElementHasLinks ECRelationship from the InformationContentElement element representing the model to one or more RepositoryLink elements that describe the source document. When creating a physical partition model, link it to the RepositoryLink that corresponds to the source document. Synchronized.recordDocument in the Connector SDK provides the implementation for the above. Having a stable file identifier is critical to detect changes when the file is processed again by the connector. The connector provides this information in the SourceItem call.
 
-``` Javascript
+```Javascript
   public recordDocument(scope: Id64String, sourceItem: SourceItem, kind: string = "DocumentWithBeGuid", knownUrn: string = ""): SynchronizationResults {
     const key = scope + sourceItem.id.toLowerCase();
 ```
@@ -397,7 +405,7 @@ You'll need Node.js version ">=12.17.0 <15.0”. Please refer to [Section 1 from
 
 The node packages you'll need can be installed using
 
-``` Shell
+```Shell
 $npm install  @bentley/backend-itwin-client
 $npm install  @bentley/bentleyjs-core
 $npm install  @bentley/context-registry-client
@@ -604,7 +612,10 @@ As a Connector developer, once the data is transformed into an iModel, one needs
 
 Please see this article on [ECSQL](https://www.itwinjs.org/learning/ecsqltutorial/) as a prerequisite for this section. The iModelConsole instance below demonstrates how you can use ECSQL to find some of the transformed data in an iModel.
 
-[![Try ECSQL Yourself](./TryECSQL.PNG)](https://www.itwinjs.org/learning/ecsqltutorial/#step-3--run-an-ecsql-in-the-imodelconsole)
+<figure>
+  <iframe style="height:40vh;width:60vw;" src="https://www.itwinjs.org/console/?imodel=House%20Sample%20Bak&query=SELECT%20Element.Id%20FROM%20bis.ExternalSourceAspect%20WHERE%20Identifier=%27197359%27">
+  </iframe>
+</figure>
 
 Some sample queries that is helpful to debug Connector output
 
