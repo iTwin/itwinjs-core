@@ -15,6 +15,7 @@ import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthori
  * Utility to forward oidc-client logs to the Bentley logger
  * Because the logger used by the oidc-client library is static, we can't tie specific UserManager instances to different logging categories.
  * Thus, the best we can do is tie all logs originating from the library to a single logging category (derived from the name of this class).
+ * @beta
  */
 export class BrowserAuthorizationLogger implements IOidcClientLogger {
   private constructor() {
