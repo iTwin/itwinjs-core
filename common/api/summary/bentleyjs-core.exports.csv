@@ -36,6 +36,7 @@ public;CompressedId64Set = string
 public;CompressedId64Set
 public;ComputePriorityFunction
 public;Config
+deprecated;Config
 public;Constructor
 public;DbOpcode
 public;DbResult
