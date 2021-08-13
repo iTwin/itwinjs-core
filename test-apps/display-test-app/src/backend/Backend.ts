@@ -138,6 +138,9 @@ const setupStandaloneConfiguration = () => {
   if (undefined !== process.env.SVT_DISABLE_MAGNIFICATION)
     configuration.disableMagnification = true;
 
+  if (undefined !== process.env.SVT_DISABLE_BREP_CACHE)
+    configuration.disableBRepCache = true;
+
   if (undefined !== process.env.SVT_DEBUG_SHADERS)
     configuration.debugShaders = true;
 
