@@ -38,6 +38,12 @@
       }
     },
     {
+      "version": "2.18.4",
+      "tag": "@bentley/presentation-components_v2.18.4",
+      "date": "Tue, 10 Aug 2021 19:35:13 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.18.3",
       "tag": "@bentley/presentation-components_v2.18.3",
       "date": "Wed, 28 Jul 2021 17:16:30 GMT",
