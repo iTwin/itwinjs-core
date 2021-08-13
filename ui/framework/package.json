@@ -51,8 +51,8 @@
     "@bentley/ui-components": "workspace:^3.0.0-dev.24",
     "@bentley/ui-core": "workspace:^3.0.0-dev.24",
     "@bentley/ui-ninezone": "workspace:^3.0.0-dev.24",
-    "react": "^17.0.0",
-    "react-dom": "^17.0.0",
+    "react": "^16.8.6 || ^17.0.0",
+    "react-dom": "^16.8.6 || ^17.0.0",
     "react-redux": "^7.2.2",
     "redux": "^4.0.3"
   },
