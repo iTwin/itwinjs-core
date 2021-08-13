@@ -45,7 +45,7 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
 
     return new Promise<void>((resolve, reject) => {
       assert(this.config !== undefined);
-      MobileHost.device.authInit(this.getClientRequestContext(), { ...this.config, issuerUrl: this.issuerUrl }, (err?: string) => {
+      MobileHost.device.authInit({ ...this.config, issuerUrl: this.issuerUrl }, (err?: string) => {
         if (!err) {
           resolve();
         } else {
@@ -58,7 +58,7 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
   /** Start the sign-in process */
   public async signIn(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      MobileHost.device.authSignIn(this.getClientRequestContext(), (err?: string) => {
+      MobileHost.device.authSignIn((err?: string) => {
         if (!err) {
           resolve();
         } else {
@@ -71,7 +71,7 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
   /** Start the sign-out process */
   public async signOut(): Promise<void> {
     return new Promise<void>((resolve, reject) => {
-      MobileHost.device.authSignOut(this.getClientRequestContext(), (err?: string) => {
+      MobileHost.device.authSignOut((err?: string) => {
         if (!err) {
           resolve();
         } else {
@@ -84,7 +84,7 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
   /** return accessToken */
   public async refreshToken(): Promise<AccessToken> {
     return new Promise<AccessToken>((resolve, reject) => {
-      MobileHost.device.authGetAccessToken(this.getClientRequestContext(), (tokenString?: string, err?: string) => {
+      MobileHost.device.authGetAccessToken((tokenString?: string, err?: string) => {
         if (!err && tokenString) {
           resolve(AccessToken.fromJson(JSON.parse(tokenString) as AccessTokenProps));
         } else {
