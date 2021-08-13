@@ -260,7 +260,7 @@ export class IModelHubBackend {
   public static async downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
-    checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeSetId);
+    checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeset.id);
     const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
     const checkpoints = await this.iModelClient.checkpoints.get(requestContext, checkpoint.iModelId, checkpointQuery);
     if (checkpoints.length !== 1)
@@ -279,7 +279,7 @@ export class IModelHubBackend {
   public static async downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointV2Query();
-    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeSetId).selectContainerAccessKey();
+    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeset.id).selectContainerAccessKey();
     const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
     let checkpoints: CheckpointV2[] = [];
     try {

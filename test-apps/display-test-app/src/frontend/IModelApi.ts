@@ -2,10 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { OpenMode } from "@bentley/bentleyjs-core";
 import { HubIModel, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, IModelHubFrontend, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelHubFrontend } from "@bentley/imodeljs-frontend";
 
 export class IModelApi {
 
@@ -29,9 +28,8 @@ export class IModelApi {
     return undefined;
   }
 
-  /* eslint-disable deprecation/deprecation */
   /** Open the specified version of the IModel */
-  public static async openIModel(projectId: string, iModelId: string, changeSetId: string | undefined, openMode: OpenMode): Promise<RemoteBriefcaseConnection> {
-    return RemoteBriefcaseConnection.open(projectId, iModelId, openMode, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
+  public static async openIModel(projectId: string, iModelId: string, changeSetId: string | undefined): Promise<CheckpointConnection> {
+    return CheckpointConnection.openRemote(projectId, iModelId, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest());
   }
 }
