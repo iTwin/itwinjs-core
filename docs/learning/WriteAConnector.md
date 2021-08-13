@@ -111,6 +111,11 @@ More on synchronization using connectors could be found [here](https://communiti
 The guide assumes that you are somewhat familiar with iModel and iTwin concepts. A summary of the relevant topics is provided.
 To understand the APIs, you will need to have an understanding of typescript.
 
+Two foundational articles which are highly recommended for background knowledge of building connectors are:
+
+- [Intro to BIS - Information Hierarchy](https://www.itwinjs.org/bis/intro/information-hierarchy/)
+- [Intro to BIS - Fabric of the Universe](https://www.itwinjs.org/bis/intro/fabric-of-the-universe/)
+
 ### Structure of the guide
 
 ### Foundations
@@ -318,7 +323,7 @@ See [updateElementClass](https://github.com/imodeljs/itwin-Connector-sample/blob
 
 An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to store information about the element.
 
-Note: If the source data does not have stable, unique IDs, then the Connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
+Note: the [Federation GUID](https://www.itwinjs.org/bis/intro/element-fundamentals/#federationguid) is an optional property available for mapping external ids to elements in the iModel. The Code is also a helpful way of searching for an element based on external data. If the source data does not have stable, unique IDs, then the Connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
 
 #### Change detection
 
@@ -388,7 +393,7 @@ The framework will automatically detect and delete elements and models if the co
 
 ### Getting started
 
-You'll need Node.js version 14.x. Please refer to [Section 1 from iTwin.js Getting Started](https://www.itwinjs.org/getting-started/) for more details.
+You'll need Node.js version ">=12.17.0 <15.0”. Please refer to [Section 1 from iTwin.js Getting Started](https://www.itwinjs.org/getting-started/) for more details.
 
 The node packages and versions you'll need are listed here:
 
@@ -607,10 +612,7 @@ As a Connector developer, once the data is transformed into an iModel, one needs
 
 Please see this article on [ECSQL](https://www.itwinjs.org/learning/ecsqltutorial/) as a prerequisite for this section. The iModelConsole instance below demonstrates how you can use ECSQL to find some of the transformed data in an iModel.
 
-<figure>
-  <iframe style="height:40vh;width:60vw;" src="https://www.itwinjs.org/console/?imodel=House%20Sample%20Bak&query=SELECT%20Element.Id%20FROM%20bis.ExternalSourceAspect%20WHERE%20Identifier=%27197359%27">
-  </iframe>
-</figure>
+[![Try ECSQL Yourself](./TryECSQL.PNG)](https://www.itwinjs.org/learning/ecsqltutorial/#step-3--run-an-ecsql-in-the-imodelconsole)
 
 Some sample queries that is helpful to debug Connector output
 
