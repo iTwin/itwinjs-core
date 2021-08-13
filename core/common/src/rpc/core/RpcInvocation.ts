@@ -165,8 +165,7 @@ export class RpcInvocation {
     return a.key === b.key &&
       a.contextId === b.contextId &&
       a.iModelId === b.iModelId &&
-      (undefined === a.changeSetId || (a.changeSetId === b.changeSetId)) &&
-      a.openMode === b.openMode;
+      (undefined === a.changeset || (a.changeset.id === b.changeset?.id));
   }
 
   private async reject(error: any): Promise<any> {

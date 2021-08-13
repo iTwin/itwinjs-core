@@ -9,9 +9,23 @@ import { AuthorizationClient } from '@bentley/itwin-client';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
+import { Logger } from 'oidc-client';
 import { User } from 'oidc-client';
 import { UserManager } from 'oidc-client';
 import { UserManagerSettings } from 'oidc-client';
+
+// @beta (undocumented)
+export abstract class BrowserAuthorizationBase<TConfig> {
+    protected constructor(configuration: TConfig);
+    // (undocumented)
+    protected _advancedSettings?: UserManagerSettings;
+    // (undocumented)
+    protected _basicSettings: TConfig;
+    // @internal
+    setAdvancedSettings(settings: UserManagerSettings): void;
+    // (undocumented)
+    protected _userManager?: UserManager;
+}
 
 // @beta
 export class BrowserAuthorizationCallbackHandler extends BrowserAuthorizationBase<BrowserAuthorizationCallbackHandlerConfiguration> {
@@ -80,9 +94,31 @@ export interface BrowserAuthorizationClientConfiguration extends BrowserAuthoriz
     readonly scope: string;
 }
 
+// @internal
+export interface BrowserAuthorizationClientRedirectState {
+    // (undocumented)
+    successRedirectUrl: string;
+}
+
 // @public
 export interface BrowserAuthorizationClientRequestOptions {
     prompt?: "none" | "login" | "consent" | "select_account" | string;
+}
+
+// @beta
+export class BrowserAuthorizationLogger implements Logger {
+    // (undocumented)
+    debug(message?: any, ...optionalParams: any[]): void;
+    // (undocumented)
+    error(message?: any, ...optionalParams: any[]): void;
+    // (undocumented)
+    protected static getLogLevel(loggerCategory: string): number;
+    // (undocumented)
+    info(message?: any, ...optionalParams: any[]): void;
+    static initializeLogger(): void;
+    static reset(): void;
+    // (undocumented)
+    warn(message?: any, ...optionalParams: any[]): void;
 }
 
 // @beta (undocumented)
@@ -91,6 +127,11 @@ export interface FrontendAuthorizationClient extends AuthorizationClient {
     readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
     signIn(requestContext?: ClientRequestContext): Promise<void>;
     signOut(requestContext?: ClientRequestContext): Promise<void>;
+}
+
+// @beta
+export enum FrontendAuthorizationClientLoggerCategory {
+    Authorization = "frontend-authorization-client.Authorization"
 }
 
 // @beta
