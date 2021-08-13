@@ -432,10 +432,13 @@
       "runtimeExecutable": "npm",
       "runtimeArgs": [
         "run",
-        "test:integration:chrome -- --debug"
+        "test:integration:chrome",
+        "--",
+        "--debug"
       ],
       "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "outputCapture": "std",
       "attachSimplePort": 5858, // NB: This must match ports.debugging in clients/extension/certa.json
@@ -450,10 +453,11 @@
       },
       "type": "pwa-chrome",
       "request": "attach",
-      "port": 9223, // NB: This must match ports.frontendDebugging in core/markup/certa.json
+      "port": 9223, // NB: This must match ports.frontendDebugging in clients/extension/certa.json
       "timeout": 20000,
       "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
+        "${workspaceFolder}/{core,clients}/*/lib/**/*.js",
+        "${workspaceFolder}/tools/certa/lib/**/*.js"
       ],
       "cascadeTerminateToConfigurations": [
         "[NODE] Certa Test Runner for Extension Client Tests (Integration)"

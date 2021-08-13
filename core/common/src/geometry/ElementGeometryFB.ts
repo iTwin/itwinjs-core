@@ -338,6 +338,7 @@ export namespace EGFBAccessors {
 
   /**
    * @constructor
+   * @internal
    */
   export class Transform {
     bb: flatbuffers.ByteBuffer | null = null;
