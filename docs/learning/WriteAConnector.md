@@ -2,7 +2,7 @@
 title: iModel Connector Developer Guide
 ---
 
-## Table of Content
+## Table of Contents
 
 - [Table of Content](#table-of-content)
 - [Introduction](#introduction)
@@ -68,7 +68,7 @@ title: iModel Connector Developer Guide
 
 #### What is a Connector
 
-iTwin connectors play an essential role in enabling a wide range of both Bentley and third-party design applications to contribute to an iTwin. Bentley iTwin Services provides connectors to support a wide array of design applications to ensure that all engineering data can be aggregated into a single digital twin environment inside an iModel.
+iTwin Connectors play an essential role in enabling a wide range of both Bentley and third-party design applications to contribute to an iTwin. Bentley iTwin Services provides connectors to support a wide array of design applications to ensure that all engineering data can be aggregated into a single digital twin environment inside an iModel.
 
 As explained in the [overview](../learning/imodel-connectors.md), a "Connector" is a program that:
 
@@ -85,11 +85,11 @@ Examples of iTwin Connector include:
 
 See [Section on iTwin Synchronization](#ways-to-sync-data-to-an-itwin) for more details on existing connectors.
 
-However, in some instances, where a specific format is not covered, one can develop a new Connector using [iModel.js SDK](https://www.itwinjs.org/)
+However, in some instances, where a specific format is not covered, one can start to develop a new Connector using the [iModel.js SDK](https://github.com/imodeljs/imodeljs)
 
 The imodel-bridge package provided as part of the iModel.js SDK makes it easier to write an iTwin Connector backend that brings custom data into a digital twin. To run this environment with the iModel.js library that this package depends on requires a JavaScript engine with es2017 support.
 
-Note: Please keep in mind iModelBridge is sometimes used as a synonym for iTwin Connector since it bridges the gap between input data and a digital twin.
+Note: Please keep in mind iModelBridge is sometimes used as a synonym for iTwin Connector since it bridges the gap between input data and a digital twin. When discussing the classes, methods and properties of the SDK and especially in the code examples and snippets provided, this documentation will adhere to the actual names that are published to ensure it is working code. In future versions of the SDK, classes and methods will be renamed from "Bridge" to "Connector" to reflect the latest terminology. This documentation will be updated to match the new names when the new version is released.
 
 ### Who should read this guide?
 
