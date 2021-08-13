@@ -37,7 +37,7 @@ title: iModel Connector Developer Guide
     - [Change detection](#change-detection)
 - [Connector SDK](#connector-sdk)
   - [Getting started](#getting-started)
-  - [BridgeRunner (2.x) or ConnectorRunner (3.x)](#bridgerunner-2x-or-connectorrunner-3x)
+  - [BridgeRunner](#bridgerunner)
   - [Synchronizer](#synchronizer)
   - [Connector interface methods](#connector-interface-methods)
     - [InitializeJob](#initializejob)
@@ -441,11 +441,11 @@ The node packages and versions you'll need are listed here:
 
 The Connector SDK exposes its functionality through three main classes: BridgeRunner, Synchronizer, and iModelBridge Interface.
 
-### BridgeRunner (2.x) or ConnectorRunner (3.x)
+### BridgeRunner
 
 Constructor
 
-The ConnectorRunner has a constructor which takes a BridgeJobDefArgs as its lone parameter. The BridgeJobDefArgs has properties to describe the significant pieces to the Connector job:
+The BridgeRunner has a constructor which takes a BridgeJobDefArgs as its lone parameter. The BridgeJobDefArgs has properties to describe the significant pieces to the Connector job:
 
 1. sourcePath - your native data (i.e., where the data is coming from) has nothing to do with source code.
 2. outputDir - this is the target for your iModel (i.e., where the data is going to)
@@ -454,7 +454,7 @@ The ConnectorRunner has a constructor which takes a BridgeJobDefArgs as its lone
 
 Methods
 
-The ConnectorRunner has a Synchronize method that runs your bridge module.
+The BridgeRunner has a Synchronize method that runs your bridge module.
 
 ```JavaScript
     const bridgeJobDef = new BridgeJobDefArgs();
@@ -470,11 +470,11 @@ The ConnectorRunner has a Synchronize method that runs your bridge module.
 
 ### Synchronizer
 
-An ITwinConnector (or IModelBridge 2.x) has a private Synchronizer member which can be gotten or set via the synchronizer accessor. The Synchronizer helps comparing different states of an iModel and updating the iModel based on the results of those comparisons. Several public methods are available to facilitate your connector's interaction with the iModel: recordDocument, detectChanges, updateIModel, setExternalSourceAspect, insertResultsIntoIModel, onElementSeen. Visit the [Change detection](#change-detection) section to see examples of several of the Synchronizer's methods in use.
+An IModelBridge has a private Synchronizer member which can be gotten or set via the synchronizer accessor. The Synchronizer helps comparing different states of an iModel and updating the iModel based on the results of those comparisons. Several public methods are available to facilitate your connector's interaction with the iModel: recordDocument, detectChanges, updateIModel, setExternalSourceAspect, insertResultsIntoIModel, onElementSeen. Visit the [Change detection](#change-detection) section to see examples of several of the Synchronizer's methods in use.
 
 ### Connector interface methods
 
-The connectorModule (bridgeModule) assigned to the BridgeJobDefArgs above must extend the IModelBridge class. This class has several methods that must be implemented to customize the behavior of your Connector.
+The bridgeModule assigned to the BridgeJobDefArgs above must extend the IModelBridge class. This class has several methods that must be implemented to customize the behavior of your Connector.
 
 ```JavaScript
 class HelloWorldConnector extends IModelBridge {
@@ -528,7 +528,11 @@ Your source data may have non-graphical data best represented as definitions. Ty
     if (this._sourceDataState === ItemState.Unchanged) {
       return;
     }
-    this.insertCodeSpecs();
+    if (this.synchronizer.imodel.codeSpecs.hasName(CodeSpecs.Group)) {
+      return;
+    }
+    const spec = CodeSpec.create(this.synchronizer.imodel, CodeSpecs.Group, CodeScopeSpec.Type.Model);
+    this.synchronizer.imodel.codeSpecs.insert(spec);
   }
 
 ```
