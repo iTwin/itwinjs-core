@@ -4,8 +4,8 @@ public;class AbstractTreeNodeLoader
 public;class AbstractTreeNodeLoaderWithProvider
 beta;ActionButtonList 
 beta;ActionButtonListProps
-beta;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNode
-beta;ActionButtonRendererProps
+public;ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNode
+public;ActionButtonRendererProps
 internal;ActionItem({ item, addGroupSeparator }:
 public;ActiveMatchInfo
 public;adjustDateToTimezone(inDateTime: Date, utcOffset: number): Date
@@ -181,8 +181,8 @@ deprecated;DropTargetProps
 public;EditableTreeDataProvider 
 beta;EditableTreeProps
 deprecated;EditableTreeProps
-beta;EditorContainer 
-beta;EditorContainerProps 
+public;EditorContainer 
+public;EditorContainerProps 
 beta;EnumButtonGroupEditor 
 beta;EnumEditor 
 beta;EnumPropertyButtonGroupEditor 
@@ -234,15 +234,22 @@ internal;getCSSColorFromDef(colorDef: ColorDef): string
 beta;GetCurrentlyEditedNode = () => BeInspireTreeNode
 deprecated;GetCurrentlyEditedNode = () => BeInspireTreeNode
 internal;getPercentageOfRectangle(rect: DOMRect, pointer: number): number
+internal;getPropertyKey(propertyCategory: PropertyCategory, propertyRecord: PropertyRecord): string
 internal;getToolbarDirection: (expandsTo: Direction) => OrthogonalDirection
 beta;GridCategoryItem 
 internal;GroupPopupItem({ item, addGroupSeparator }:
 internal;handleLoadedNodeHierarchy(modelSource: TreeModelSource, loadedHierarchy: LoadedNodeHierarchy): void
 public;hasChildren: (node: TreeNodeItem) => boolean
+public;hasLinks: (record: PropertyRecord) => boolean
+deprecated;hasLinks: (record: PropertyRecord) => boolean
 public;hasSelectionModeFlag: (selectionMode: SelectionMode, flag: SelectionModeFlags) => boolean
 public;HexadecimalTypeConverter 
 public;HighlightableTreeNodeProps
 public;HighlightableTreeProps
+beta;HighlightedText(props: HighlightedTextProps): JSX.Element
+beta;HighlightedTextProps
+beta;HighlightInfo
+beta;HighlightingComponentProps
 beta;HighlightingEngine
 internal;HitBoxX
 deprecated;HitBoxX
@@ -299,6 +306,8 @@ beta;LabelPropertyDataFilterer
 public;LessGreaterOperatorProcessor
 beta;LineWeightSwatch 
 beta;LineWeightSwatchProps 
+alpha;LinksRenderer(props: LinksRendererProps): JSX.Element
+alpha;LinksRendererProps
 public;LoadedBinaryImage 
 public;LoadedImage
 public;LoadedNodeHierarchy
@@ -308,11 +317,14 @@ public;MapPayloadToInspireNodeCallback
 deprecated;MapPayloadToInspireNodeCallback
 internal;MenuItem
 deprecated;MenuItem
+public;MergedPropertyValueRenderer 
 internal;Milestone
 deprecated;Milestone
 public;MilestoneRange
 alpha;MiscFormatOptions(props: MiscFormatOptionsProps): JSX.Element
 alpha;MiscFormatOptionsProps 
+internal;MultilineTextPropertyValueRenderer 
+internal;MultilineTextRenderer: React.FC
 internal;MultiSelectionHandler
 beta;MutableCategorizedArrayProperty 
 beta;MutableCategorizedPrimitiveProperty 
@@ -400,7 +412,7 @@ public;PropertyDialogState
 public;PropertyEditingArgs
 beta;class PropertyEditorBase 
 beta;PropertyEditorManager
-beta;PropertyEditorProps 
+public;PropertyEditorProps 
 beta;PropertyFilterChangeEvent 
 beta;PropertyFilterChangesListener = () => void
 public;PropertyGrid 
@@ -419,11 +431,13 @@ beta;PropertyGridModelSource
 public;PropertyGridProps 
 internal;PropertyLabelRenderer 
 public;PropertyLabelRendererProps
+public;PropertyList 
+public;PropertyListProps 
 public;PropertyPopupState
 beta;class PropertyRecordDataFiltererBase 
 public;PropertyRenderer 
 public;PropertyRendererProps 
-beta;PropertyUpdatedArgs
+public;PropertyUpdatedArgs
 public;PropertyValueRendererContext
 public;PropertyValueRendererManager
 public;PropertyView 
@@ -437,6 +451,7 @@ beta;QuantityProps
 internal;RailToolTip({ showToolTip, percent, tooltipText }:
 public;ReactDataGridColumn 
 alpha;RenderedItemsRange
+public;renderLinks: (text: string, links: LinkElementsInfo, highlight?: ((text: string) => React.ReactNode) | undefined) => React.ReactNode
 public;ResultSelector 
 public;ResultSelectorProps 
 public;RowItem
@@ -488,8 +503,12 @@ public;Subscribable
 public;Subscription 
 public;Table 
 public;TableArrayValueRenderer 
+public;TableCell 
+public;TableCellContent 
+public;TableCellContentProps 
 beta;TableCellContextMenuArgs
 public;TableCellEditorState
+public;TableCellProps 
 public;TableCellUpdatedArgs
 internal;TableColumn 
 public;TableDataChangeEvent 
@@ -502,6 +521,8 @@ beta;TableDragDropType = {} | RowItem | TableDataProvider
 deprecated;TableDragDropType = {} | RowItem | TableDataProvider
 beta;TableDropTargetProps
 deprecated;TableDropTargetProps
+public;TableIconCellContent 
+public;TableIconCellContentProps
 public;TableNonPrimitiveValueRenderer 
 public;TableNonPrimitiveValueRendererProps 
 public;TableProps 
@@ -582,6 +603,9 @@ public;TreeModelRootNode
 public;TreeModelSource
 public;TreeNode 
 deprecated;TreeNode 
+beta;TreeNodeEditor(props: TreeNodeEditorProps): JSX.Element
+beta;TreeNodeEditorProps
+beta;TreeNodeEditorRenderer = (props: TreeNodeEditorProps) => React.ReactNode
 public;TreeNodeEventArgs
 public;TreeNodeIcon(props: TreeNodeIconProps): JSX.Element | null
 deprecated;TreeNodeIcon(props: TreeNodeIconProps): JSX.Element | null
@@ -606,11 +630,13 @@ public;TreeSelectionModificationEventArgs
 public;TreeSelectionReplacementEventArgs
 public;class TypeConverter 
 public;TypeConverterManager
-beta;TypeEditor
+public;TypeEditor
 public;UiComponents
 public;Unsubscribable
+public;UrlPropertyValueRenderer 
 beta;useAsyncValue: 
 alpha;useDebouncedAsyncValue
+public;useDragInteraction(onClick?: () => void, onOpenPanel?: () => void):
 internal;useFocusedThumb(sliderContainer: HTMLDivElement | undefined): boolean
 beta;usePagedTreeNodeLoader
 beta;usePropertyData(props:
@@ -649,6 +675,7 @@ beta;withBreadcrumbDetailsDragDrop
 deprecated;withBreadcrumbDetailsDragDrop
 beta;withBreadcrumbDragDrop
 deprecated;withBreadcrumbDragDrop
+public;withContextStyle: (node: React.ReactNode, context?: PropertyValueRendererContext | undefined) => React.ReactNode
 beta;withDragSource: 
 deprecated;withDragSource: 
 beta;WithDragSourceProps
@@ -657,5 +684,6 @@ beta;withDropTarget:
 deprecated;withDropTarget: 
 beta;WithDropTargetProps
 deprecated;WithDropTargetProps
+public;withLinks: (stringValue: string, links?: LinkElementsInfo | undefined, highlight?: ((text: string) => React.ReactNode) | undefined) => React.ReactNode
 beta;withTableDragDrop
 deprecated;withTableDragDrop

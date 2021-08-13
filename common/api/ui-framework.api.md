@@ -463,6 +463,9 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
 export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef;
 
 // @public
+export type AnyToolbarItemDef = AnyItemDef | CustomItemDef;
+
+// @public
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
 
 // @internal (undocumented)
@@ -4635,6 +4638,20 @@ export class SelectionContextToolDefinitions {
 export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "selectionCount">>;
 
 // @public
+export enum SelectionScope {
+    // (undocumented)
+    Assembly = 1,
+    // (undocumented)
+    Category = 3,
+    // (undocumented)
+    Element = 0,
+    // (undocumented)
+    Model = 4,
+    // (undocumented)
+    TopAssembly = 2
+}
+
+// @public
 export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
 
 // @public
@@ -6713,6 +6730,19 @@ export interface UiVisibilityEventArgs {
     visible: boolean;
 }
 
+// @alpha
+export function UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element;
+
+// @beta
+export interface UnitSystemSelectorProps {
+    // (undocumented)
+    availableUnitSystems: Set<UnitSystemKey>;
+    // (undocumented)
+    onUnitSystemSelected: (unitSystem: UnitSystemKey) => void;
+    // (undocumented)
+    selectedUnitSystemKey: UnitSystemKey;
+}
+
 // @internal (undocumented)
 export function useActiveFrontstageDef(): FrontstageDef | undefined;
 
@@ -6826,6 +6856,9 @@ export function useSyncDefinitions(frontstageDef: FrontstageDef): void;
 
 // @internal (undocumented)
 export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactNodeArray | React.ReactPortal | null | undefined;
+
+// @beta
+export const useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
 
 // @beta
 export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];
