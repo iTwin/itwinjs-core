@@ -18,6 +18,8 @@ import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthori
  * @beta
  */
 export class BrowserAuthorizationLogger implements IOidcClientLogger {
+  private static initialized: boolean = false;
+
   private constructor() {
   }
 
@@ -58,13 +60,14 @@ export class BrowserAuthorizationLogger implements IOidcClientLogger {
   /** Initializes forwarding of OidcClient logs to the Bentley Logger */
   public static initializeLogger() {
     const logLevel = BrowserAuthorizationLogger.getLogLevel(FrontendAuthorizationClientLoggerCategory.Authorization);
-    if (!OidcClientLog.logger) {
+    if (!BrowserAuthorizationLogger.initialized) {
       OidcClientLog.logger = new BrowserAuthorizationLogger();
     }
 
     if (OidcClientLog.level < logLevel) {
       OidcClientLog.level = logLevel;
     }
+    BrowserAuthorizationLogger.initialized = true;
   }
 
   /** Resets (or clears) forwarding of OidcClient logs to the Bentley Logger */
