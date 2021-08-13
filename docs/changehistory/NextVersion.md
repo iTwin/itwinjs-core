@@ -114,6 +114,12 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `SpecialKey`                           | `SpecialKey` in @bentley/ui-abstract                                                   |
 | `WidgetState`                          | `WidgetState` in @bentley/ui-abstract                                                  |
 
+### @bentley/bentleyjs-core
+
+| Removed                                | Replacement                                                                            |
+| -------------------------------------- | -------------------------------------------------------------------------------------- |
+| `Config`                  | Use `process.env` to access environment variables directly |
+
 ### User Interface Changes
 
 Several changes were made in the @bentley/ui-* packages.
