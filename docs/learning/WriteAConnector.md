@@ -304,7 +304,12 @@ imodel.elements.updateAspect(aspect)
 
 At the start of the Connector's updateExistingData function, examine all existing elements to ensure their sources are set. The code shown above can be used to update an existing element's ExternalSourceAspect.
 
-A Connector must also relate each physical model that it creates to the source document(s) that is used to make that model. Specifically, each Connector must create an ElementHasLinks ECRelationship from the InformationContentElement element representing the model to one or more RepositoryLink elements that describe the source document. When creating a physical partition model, link it to the RepositoryLink that corresponds to the source document.
+A Connector must also relate each physical model that it creates to the source document(s) that is used to make that model. Specifically, each Connector must create an ElementHasLinks ECRelationship from the InformationContentElement element representing the model to one or more RepositoryLink elements that describe the source document. When creating a physical partition model, link it to the RepositoryLink that corresponds to the source document. Synchronized.recordDocument in the Connector SDK provides the implementation for the above. Having a stable file identifier is critical to detect changes when the file is processed again by the connector. The connector provides this information in the SourceItem call.
+
+``` Javascript
+  public recordDocument(scope: Id64String, sourceItem: SourceItem, kind: string = "DocumentWithBeGuid", knownUrn: string = ""): SynchronizationResults {
+    const key = scope + sourceItem.id.toLowerCase();
+```
 
 ##### Case 2 : Id mapping
 
@@ -354,48 +359,36 @@ Infer deletions:
 
 You'll need Node.js version 14.x. Please refer to [Section 1 from iTwin.js Getting Started](https://www.itwinjs.org/getting-started/) for more details.
 
-The node packages and versions you'll need are listed here:
+The node packages you'll need can be installed using
 
-```JSON
-  "peerDependencies": {
-    "@bentley/backend-itwin-client": "^2.19.0",
-    "@bentley/bentleyjs-core": "^2.19.0",
-    "@bentley/context-registry-client": "^2.19.0",
-    "@bentley/geometry-core": "^2.19.0",
-    "@bentley/imodelhub-client": "^2.19.0",
-    "@bentley/imodeljs-backend": "^2.19.0",
-    "@bentley/imodeljs-common": "^2.19.0",
-    "@bentley/rbac-client": "^2.19.0"
-  },
-  "devDependencies": {
-    "@bentley/backend-itwin-client": "^2.19.0",
-    "@bentley/bentleyjs-core": "^2.19.0",
-    "@bentley/build-tools": "^2.19.0",
-    "@bentley/config-loader": "^2.19.0",
-    "@bentley/context-registry-client": "^2.19.0",
-    "@bentley/ecschema-metadata": "^2.19.0",
-    "@bentley/eslint-plugin": "^2.19.0",
-    "@bentley/geometry-core": "^2.19.0",
-    "@bentley/imodelhub-client": "^2.19.0",
-    "@bentley/imodeljs-backend": "^2.19.0",
-    "@bentley/imodeljs-common": "^2.19.0",
-    "@bentley/itwin-client": "^2.19.0",
-    "@bentley/oidc-signin-tool": "^2.19.0",
-    "@bentley/rbac-client": "^2.19.0",
-    "@bentley/telemetry-client": "^2.19.0",
-    "@types/chai": "^4.1.4",
-    "@types/mocha": "^8.2.2",
-    "@types/node": "10.14.1",
-    "@types/object-hash": "^1.3.0",
-    "chai": "^4.1.2",
-    "cpx": "^1.5.0",
-    "eslint": "^7.11.0",
-    "mocha": "^8.3.2",
-    "nyc": "^15.1.0",
-    "rimraf": "^3.0.2",
-    "typescript": "~4.3.0"
-  },
+``` Shell
+$npm install  @bentley/backend-itwin-client
+$npm install  @bentley/bentleyjs-core
+$npm install  @bentley/context-registry-client
+$npm install  @bentley/geometry-core
+$npm install  @bentley/imodelhub-client
+$npm install  @bentley/imodeljs-backend
+$npm install  @bentley/imodeljs-common
+$npm install  @bentley/rbac-client
 
+$npm install  --save-dev @bentley/backend-itwin-client
+$npm install  --save-dev @bentley/build-tools
+$npm install  --save-dev @bentley/config-loader
+$npm install  --save-dev @bentley/context-registry-client
+$npm install  --save-dev @bentley/ecschema-metadata
+$npm install  --save-dev @bentley/eslint-plugin
+$npm install  --save-dev @bentley/itwin-client
+$npm install  --save-dev @bentley/oidc-signin-tool
+$npm install  --save-dev @bentley/rbac-client
+$npm install  --save-dev @bentley/telemetry-client
+
+$npm install  --save-dev chai
+$npm install  --save-dev cpx
+$npm install  --save-dev eslint
+$npm install  --save-dev mocha
+$npm install  --save-dev nyc
+$npm install  --save-dev rimraf
+$npm install  --save-dev typescript
 ```
 
 The Connector SDK exposes its functionality through three main classes: BridgeRunner, Synchronizer, and iModelBridge Interface.
@@ -413,7 +406,7 @@ The ConnectorRunner has a constructor which takes a BridgeJobDefArgs as its lone
 
 Methods
 
-The ConnectorRunner has a Synchronize method that runs your bridge module.
+The ConnectorRunner has a Synchronize method that runs your Connector module.
 
 ``` JavaScript
     const bridgeJobDef = new BridgeJobDefArgs();
@@ -619,8 +612,8 @@ A Connector is required to create a uniquely named Subject element in the iModel
 
 A Connector is required to scope all of the subjects, definitions, and their models under its job subject element. That is,
 
-- Subjects and partitions that a bridge creates should be children of the job subject element,
-- The models and other elements that the bridge creates should be children of those subjects and partitions or in those models.
+- Subjects and partitions that a Connector creates should be children of the job subject element,
+- The models and other elements that the Connector creates should be children of those subjects and partitions or in those models.
 
 ### Schema merging
 
@@ -665,11 +658,7 @@ A Connector is required to scope all of the subjects and definitions and their m
 
 By following the job-subject scoping rule, many connectors can write data to a single iModel without conflicts or confusion.
 
-Job-subject scoping also prevents problems with locks and codes. The codes used by a Connector are scoped by the job subject, and there should be no risk of conflicts. The only reasons why reserving codes might fail are:
-
-- On the initial conversion, the job subject itself did not use a unique name. This is a bug in the Connector.
-- The Connector created elements with codes in models or scopes that it does not own. This is a bug in the Connector.
-- Temporary communications or server-side problems. In this case, the job can be retried later.
+Job-subject scoping also prevents problems with locks and codes. The codes used by a Connector are scoped by the job subject, and there should be no risk of conflicts and hence codes are not reserved.
 
 ### More information
 
