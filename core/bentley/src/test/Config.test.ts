@@ -6,6 +6,7 @@ import { assert } from "chai";
 import { Config } from "../Config";
 
 /* eslint-disable no-template-curly-in-string */
+/* eslint-disable deprecation/deprecation */
 
 describe("Config", () => {
 

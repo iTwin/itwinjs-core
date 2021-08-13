@@ -22,11 +22,13 @@ describe("Agent iModel Download (#integration)", () => {
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
 
+    /* eslint-disable deprecation/deprecation */
     const agentConfiguration: AgentAuthorizationClientConfiguration = {
       clientId: Config.App.getString("imjs_agent_test_client_id"),
       clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
       scope: "imodelhub context-registry-service:read-only",
     };
+    /* eslint-enable deprecation/deprecation */
 
     const agentClient = new AgentAuthorizationClient(agentConfiguration);
     const jwt = await agentClient.getAccessToken(new ClientRequestContext());

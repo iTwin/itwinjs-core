@@ -50,6 +50,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
 
   private async initialize() {
     if (undefined === this._deploymentRegion)
+      // eslint-disable-next-line deprecation/deprecation
       this._deploymentRegion = Config.App.has("imjs_buddi_resolve_url_using_region") ? Config.App.getNumber("imjs_buddi_resolve_url_using_region") : 0; // Defaults to PROD (for 3rd party users)
 
     const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();

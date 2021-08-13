@@ -187,6 +187,7 @@ async function generateIModelDbTiles(requestContext: AuthorizedClientRequestCont
 }
 
 describe("TilesGenerationPerformance", () => {
+  // eslint-disable-next-line deprecation/deprecation
   const config = require(Config.App.getString("imjs_tile_perf_config")); // eslint-disable-line @typescript-eslint/no-var-requires
   const imodels: ConfigData[] = config.iModels;
 
@@ -203,6 +204,7 @@ describe("TilesGenerationPerformance", () => {
 
     csvResultPath = IModelTestUtils.prepareOutputFile("TilesGen", "TilesGen.results.csv");
 
+    // eslint-disable-next-line deprecation/deprecation
     Config.App.merge({ imjs_buddi_resolve_url_using_region: config.regionId }); // eslint-disable-line @typescript-eslint/naming-convention
     if (IModelJsFs.existsSync(config.iModelLocation)) {
       imodels.forEach((element) => element.localPath = path.join(config.iModelLocation, `${element.iModelName}.bim`));

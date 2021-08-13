@@ -7,6 +7,8 @@ import { Config } from "@bentley/bentleyjs-core";
 import { loadEnv } from "@bentley/config-loader";
 import { RequestGlobalOptions } from "@bentley/itwin-client";
 
+/* eslint-disable deprecation/deprecation */
+
 loadEnv(path.join(__dirname, "..", ".env"));
 // Increase the timeout since iModel creation is taking longer
 RequestGlobalOptions.timeout.response = 60 * 1000; // 60 seconds in ms

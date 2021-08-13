@@ -261,6 +261,7 @@ export class ProjectShareClient extends WsgClient {
     this.baseUrl = "https://api.bentley.com/projectshare";
   }
 
+  /* eslint-disable deprecation/deprecation */
   protected getRelyingPartyUrl(): string {
     if (Config.App.has(ProjectShareClient.configRelyingPartyUri))
       return `${Config.App.get(ProjectShareClient.configRelyingPartyUri)}/`;
@@ -293,6 +294,7 @@ export class ProjectShareClient extends WsgClient {
 
     throw new Error(`Service URL not set. Set it in Config.App using key ${ProjectShareClient.configURL}`);
   }
+  /* eslint-enable deprecation/deprecation */
 
   /**
    * Gets the URL of the service.

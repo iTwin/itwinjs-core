@@ -45,9 +45,11 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
     // first, perform silent login
     NativeHost.authorization.setAccessToken(await TestUtility.getAccessToken(user));
 
+    // eslint-disable-next-line deprecation/deprecation
     const projectName = Config.App.get("imjs_test_project_name");
 
     if (CloudEnv.cloudEnv.isIModelHub) {
+      // eslint-disable-next-line deprecation/deprecation
       const region = Config.App.get("imjs_buddi_resolve_url_using_region") || "0";
       return { projectName, iModelHub: { region } };
     }

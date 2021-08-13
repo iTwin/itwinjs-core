@@ -2,6 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
+/* eslint-disable deprecation/deprecation */
+
 /** @packageDocumentation
  * @module Configuration
  */
@@ -19,7 +22,7 @@
  *  i.e. If the variable `appName='TestApp'`, a variable with a value of 'https://${appName}' will be expanded to `https://TestApp`.
  * > Does not recursively expand variables such as, `appName=${appName}`.
  *
- * @public
+ * @public @deprecated
  */
 export class Config {
   private static _appConfig?: Config;

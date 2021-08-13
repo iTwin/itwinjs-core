@@ -132,8 +132,8 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     imodelHubClient = utils.getDefaultClient();
 
     serviceAccount1 = {
-      email: Config.App.getString("imjs_test_serviceAccount1_user_name"),
-      password: Config.App.getString("imjs_test_serviceAccount1_user_password"),
+      email: Config.App.getString("imjs_test_serviceAccount1_user_name"), // eslint-disable-line deprecation/deprecation
+      password: Config.App.getString("imjs_test_serviceAccount1_user_password"), // eslint-disable-line deprecation/deprecation
     };
     const serviceAccountAccessToken = await utils.login(serviceAccount1);
     serviceAccountRequestContext = new AuthorizedClientRequestContext(serviceAccountAccessToken);

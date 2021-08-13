@@ -16,11 +16,13 @@ describe("UlasClient - OIDC Token (#integration)", () => {
   let accessToken: AccessToken;
 
   before(async () => {
+    /* eslint-disable deprecation/deprecation */
     const oidcConfig: TestBrowserAuthorizationClientConfiguration = {
       clientId: Config.App.getString("imjs_oidc_ulas_test_client_id"),
       redirectUri: Config.App.getString("imjs_oidc_ulas_test_redirect_uri"),
       scope: Config.App.getString("imjs_oidc_ulas_test_scopes"),
     };
+    /* eslint-enable deprecation/deprecation */
 
     // Need to cast to any and then back to AccessToken because of circular dependency with the oidc-signin-tool
     accessToken = (await getAccessTokenFromBackend(TestUsers.regular, oidcConfig) as any) as AccessToken;

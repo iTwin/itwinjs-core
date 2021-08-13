@@ -406,6 +406,7 @@ export class RealityDataClient extends WsgClient {
    * @returns RelyingPartyUrl for the service.
    */
   protected getRelyingPartyUrl(): string {
+    /* eslint-disable deprecation/deprecation */
     if (Config.App.has(RealityDataClient.configRelyingPartyUri))
       return `${Config.App.get(RealityDataClient.configRelyingPartyUri)}/`;
 
@@ -413,6 +414,7 @@ export class RealityDataClient extends WsgClient {
       if (Config.App.has(WsgClient.configHostRelyingPartyUri))
         return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
     }
+    /* eslint-enable deprecation/deprecation */
 
     throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${RealityDataClient.configRelyingPartyUri}`);
   }

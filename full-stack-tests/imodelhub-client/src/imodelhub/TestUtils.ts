@@ -40,6 +40,7 @@ function configMockSettings() {
   if (!TestConfig.enableMocks)
     return;
 
+  /* eslint-disable deprecation/deprecation */
   Config.App.set("imjs_imodelhub_url", "https://api.bentley.com/imodelhub");
   Config.App.set("imjs_rbac_url", "https://api.bentley.com/rbac");
   Config.App.set("imjs_buddi_resolve_url_using_region", 0);
@@ -48,9 +49,11 @@ function configMockSettings() {
   Config.App.set("imjs_test_serviceAccount1_user_password", "test");
   Config.App.set("imjs_test_manager_user_name", "test");
   Config.App.set("imjs_test_manager_user_password", "test");
+  /* eslint-enable deprecation/deprecation */
 }
 
 export function getExpectedFileHandlerUrlSchemes(): string[] {
+  // eslint-disable-next-line deprecation/deprecation
   const handler = Config.App.getString("imjs_test_imodel_bank_file_handler", "url");
   switch (handler.toLowerCase()) {
     case "localhost":
@@ -160,6 +163,7 @@ let imodelBankClient: IModelBankClient;
 export class IModelHubUrlMock {
   public static getUrl(): string {
     configMockSettings();
+    // eslint-disable-next-line deprecation/deprecation
     return Config.App.get("imjs_imodelhub_url", "");
   }
 }
@@ -167,6 +171,7 @@ export class IModelHubUrlMock {
 export class RbacUrlMock {
   public static getUrl(): string {
     configMockSettings();
+    // eslint-disable-next-line deprecation/deprecation
     return Config.App.get("imjs_rbac_url", "");
   }
 }

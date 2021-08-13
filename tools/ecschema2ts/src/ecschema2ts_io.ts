@@ -197,6 +197,7 @@ class SchemaDeserializer {
 
     // Needed to avoid crash in backend when calling IModelHost.startup.  This
     // can be removed once the backed is no longer need for de-serialization.
+    // eslint-disable-next-line deprecation/deprecation
     (Config as any)._appConfig = new (Config as any)();
     await IModelHost.startup();
 

@@ -54,6 +54,7 @@ export class TestContext {
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
     // Setup environment
+    // eslint-disable-next-line deprecation/deprecation
     Config.App.set("imjs_buddi_resolve_url_using_region", this.settings.env);
 
     if (undefined !== this.settings.oidcClientId) {

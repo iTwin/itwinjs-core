@@ -16,6 +16,7 @@ module.exports = (async () => {
   // Need to create a new one on the backend to properly setup dotenv
   const settings = new Settings(process.env);
 
+  // eslint-disable-next-line deprecation/deprecation
   Config.App.set("imjs_buddi_resolve_url_using_region", settings.env);
 
   exposeBackendCallbacks();

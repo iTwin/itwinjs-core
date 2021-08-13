@@ -14,6 +14,7 @@ import { Config } from "@bentley/bentleyjs-core";
  */
 export function getSupportedRpcs(): RpcInterfaceDefinition[] {
 
+  // eslint-disable-next-line deprecation/deprecation
   if (Config.App.has("imjs_TESTAPP_ALLOW_WRITE") && (Config.App.get("imjs_TESTAPP_ALLOW_WRITE") === "1")) {
     // eslint-disable-next-line no-console
     console.log("Using ReadWrite RPC Interfaces");

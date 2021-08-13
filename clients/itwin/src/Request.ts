@@ -274,6 +274,7 @@ export async function request(requestContext: ClientRequestContext, url: string,
   requestContext.enter();
   let proxyUrl = "";
   if (options.useCorsProxy === true) {
+    // eslint-disable-next-line deprecation/deprecation
     proxyUrl = Config.App.get("imjs_dev_cors_proxy_server", "");
     if (proxyUrl === "")
       proxyUrl = url;

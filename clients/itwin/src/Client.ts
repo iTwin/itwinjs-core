@@ -89,12 +89,14 @@ export abstract class Client {
       return this._url;
 
     if (this.baseUrl) {
+      // eslint-disable-next-line deprecation/deprecation
       let prefix = Config.App.query("imjs_url_prefix");
 
       // Need to ensure the usage of the previous imjs_buddi_resolve_url_using_region to not break any
       // existing users relying on the behavior.
       // This needs to be removed...
       if (undefined === prefix) {
+        // eslint-disable-next-line deprecation/deprecation
         const region = Config.App.query("imjs_buddi_resolve_url_using_region");
         switch (region) {
           case 102:
@@ -210,7 +212,7 @@ export class UrlDiscoveryClient extends Client {
    * @returns URL of the discovery service.
    */
   public override async getUrl(): Promise<string> {
-    return Config.App.getString(UrlDiscoveryClient.configURL, "https://buddi.bentley.com/WebService");
+    return Config.App.getString(UrlDiscoveryClient.configURL, "https://buddi.bentley.com/WebService"); // eslint-disable-line deprecation/deprecation
   }
 
   /**
@@ -224,6 +226,7 @@ export class UrlDiscoveryClient extends Client {
 
     const urlBase: string = await this.getUrl();
     const url: string = `${urlBase}/GetUrl/`;
+    // eslint-disable-next-line deprecation/deprecation
     const resolvedRegion = typeof regionId !== "undefined" ? regionId : Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
     const options: RequestOptions = {
       method: "GET",

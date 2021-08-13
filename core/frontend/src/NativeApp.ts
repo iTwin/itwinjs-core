@@ -190,6 +190,7 @@ export class NativeApp {
 
     NativeAppNotifyHandler.register(); // receives notifications from backend
 
+    // eslint-disable-next-line deprecation/deprecation
     Config.App.merge(await this.callNativeHost("getConfig"));
     NativeApp.hookBrowserConnectivityEvents();
 

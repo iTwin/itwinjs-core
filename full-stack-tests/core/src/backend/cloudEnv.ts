@@ -17,6 +17,7 @@ export class CloudEnv {
   }
 
   public static async initialize(): Promise<void> {
+    // eslint-disable-next-line deprecation/deprecation
     const enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank") && !!JSON.parse(Config.App.get("imjs_test_imodel_bank"));
     if (!enableIModelBank) {
       this._cloudEnv = new IModelHubBackendCloudEnv();

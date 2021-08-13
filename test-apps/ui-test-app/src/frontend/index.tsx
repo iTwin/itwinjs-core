@@ -64,6 +64,8 @@ import { ToolWithDynamicSettings } from "./tools/ToolWithDynamicSettings";
 import { ToolWithSettings } from "./tools/ToolWithSettings";
 import { OpenComponentExamplesPopoutTool, OpenCustomPopoutTool, OpenViewPopoutTool, UiProviderTool } from "./tools/UiProviderTool";
 
+/* eslint-disable deprecation/deprecation */
+
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
 

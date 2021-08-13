@@ -12,6 +12,8 @@ import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from 
 import { DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration } from "../oidc/DelegationAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
 
+/* eslint-disable deprecation/deprecation */
+
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 
 chai.should();

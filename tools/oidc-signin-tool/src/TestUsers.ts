@@ -4,6 +4,8 @@
 *--------------------------------------------------------------------------------------------*/
 import { Config } from "@bentley/bentleyjs-core";
 
+/* eslint-disable deprecation/deprecation */
+
 // Keep the dependencies of this file to only ones that can be used from both the frontend and backend.  This allows the same class for
 // test users to be used in either case.
 
