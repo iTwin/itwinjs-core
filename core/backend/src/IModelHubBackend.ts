@@ -16,7 +16,7 @@ import {
 import { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import {
-  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetIndexArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps,
+  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps,
 } from "./BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -330,14 +330,14 @@ export class IModelHubBackend {
     return checkpoints[0].changeSetId!;
   }
 
-  public static async releaseAllLocks(arg: BriefcaseIdArg & ChangesetIndexArg) {
+  public static async releaseAllLocks(arg: BriefcaseDbArg) {
     const requestContext = await this.getRequestContext(arg);
-    return this.iModelClient.locks.deleteAll(requestContext, arg.iModelId, arg.briefcaseId);
+    return this.iModelClient.locks.deleteAll(requestContext, arg.briefcase.iModelId, arg.briefcase.briefcaseId);
   }
 
-  public static async releaseAllCodes(arg: BriefcaseIdArg) {
+  public static async releaseAllCodes(arg: BriefcaseDbArg) {
     const requestContext = await this.getRequestContext(arg);
-    return this.iModelClient.codes.deleteAll(requestContext, arg.iModelId, arg.briefcaseId);
+    return this.iModelClient.codes.deleteAll(requestContext, arg.briefcase.iModelId, arg.briefcase.briefcaseId);
   }
 
   public static async queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]> {
@@ -358,7 +358,7 @@ export class IModelHubBackend {
     lock.lockLevel = reqLock.scope as number;
     lock.lockType = LockType.Element;
     lock.objectId = reqLock.entityId;
-    lock.releasedWithChangeSet = arg.briefcase.changeSetId;
+    lock.releasedWithChangeSet = arg.briefcase.changeset.id;
     lock.seedFileId = arg.briefcase.iModelId;
     return lock;
   }
@@ -376,8 +376,8 @@ export class IModelHubBackend {
     await this.acquireLocks({ ...arg, locks: [ConcurrencyControl.Request.schemaLock] });
   }
 
-  public static async querySchemaLock(arg: BriefcaseDbArg): Promise<boolean> {
-    const locks = await this.iModelClient.locks.get(await this.getRequestContext(arg), arg.briefcase.iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
+  public static async querySchemaLock(arg: IModelIdArg): Promise<boolean> {
+    const locks = await this.iModelClient.locks.get(await this.getRequestContext(arg), arg.iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
     return locks.length > 0;
   }
 }
