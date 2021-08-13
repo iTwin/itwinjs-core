@@ -1,6 +1,11 @@
 # Change Log - @bentley/ui-abstract
 
-This log was last generated on Thu, 12 Aug 2021 13:09:26 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Aug 2021 21:48:09 GMT and should not be manually modified.
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:09 GMT
+
+_Version update only_
 
 ## 2.19.4
 Thu, 12 Aug 2021 13:09:26 GMT
@@ -542,7 +547,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - In source documentation. Some learning docs & API changes.
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Started ui-components Learning doc section
-- Update doc tags for automatic UI creation
+- Update doc tags for automatic UI creation 
 - Refactor to remove duplicate ComponentGenerator instantiation. Rename files and components to remove React reference.
 - Update auto-generated dialog items to work with the Tool Settings Bar.
 - Add ConditionalBoolean support for isHidden and isDisabled properties.
