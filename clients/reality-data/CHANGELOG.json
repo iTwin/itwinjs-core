@@ -5,11 +5,13 @@
       "version": "2.19.4",
       "tag": "@bentley/reality-data-client_v2.19.4",
       "date": "Thu, 12 Aug 2021 13:09:26 GMT",
-      "none": [
-        {
-          "comment": "revert imodeljs#1574 to use contextshare url instead of apim"
-        }
-      ]
+      "comments": {
+        "none": [
+          {
+            "comment": "revert imodeljs#1574 to use contextshare url instead of apim"
+          }
+        ]
+      }
     },
     {
       "version": "2.19.3",
