@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BeDuration, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
   BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, RequestNewBriefcaseProps, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
@@ -61,8 +61,8 @@ export class RpcBriefcaseUtility {
               if (args.forceDownload)
                 throw new Error(); // causes delete below
               const db = await BriefcaseDb.open(requestContext, { fileName });
-              if (db.changeset.id !== tokenProps.changeSetId)
-                await BriefcaseManager.processChangesets(requestContext, db, { id: tokenProps.changeSetId! });
+              if (db.changeset.id !== tokenProps.changeset?.id)
+                await BriefcaseManager.processChangesets(requestContext, db, tokenProps.changeset!);
               return db;
             } catch (error) {
               if (!(error instanceof IModelError && error.errorNumber === IModelStatus.AlreadyOpen))
@@ -133,8 +133,7 @@ export class RpcBriefcaseUtility {
     const checkpoint: CheckpointProps = {
       iModelId: tokenProps.iModelId!,
       contextId: tokenProps.contextId!,
-      changeSetId: tokenProps.changeSetId!,
-      changesetIndex: tokenProps.changesetIndex,
+      changeset: tokenProps.changeset!,
       requestContext,
     };
 
@@ -180,23 +179,4 @@ export class RpcBriefcaseUtility {
     return (await this.open({ requestContext, tokenProps, syncMode, timeout })).toJSON();
   }
 
-  /** Close the briefcase if necessary */
-  public static async close(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps): Promise<boolean> {
-    // Close is a no-op for ReadOnly connections
-    if (OpenMode.Readonly === tokenProps.openMode)
-      return true;
-
-    // For read-write connections, close the briefcase and delete local copies of it
-    const briefcaseDb = BriefcaseDb.tryFindByKey(tokenProps.key);
-    if (!briefcaseDb)
-      return false;
-
-    const fileName = briefcaseDb.pathName;
-    if (!briefcaseDb.isOpen)
-      return false;
-
-    briefcaseDb.close();
-    await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
-    return true;
-  }
 }

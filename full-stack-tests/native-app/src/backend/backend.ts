@@ -10,8 +10,8 @@ import * as path from "path";
 import { BentleyLoggerCategory, ClientRequestContext, Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
-import { BackendLoggerCategory, IModelHostConfiguration, IModelJsFs, IpcHandler, NativeHost, NativeLoggerCategory } from "@bentley/imodeljs-backend";
-import { RpcConfiguration } from "@bentley/imodeljs-common";
+import { BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHostConfiguration, IModelJsFs, IpcHandler, NativeHost, NativeLoggerCategory } from "@bentley/imodeljs-backend";
+import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { TestUtility } from "@bentley/oidc-signin-tool";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
@@ -84,6 +84,21 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   public async endOfflineScope(): Promise<void> {
     nock.cleanAll();
   }
+
+  public async createChangeSummary(iModelRpcProps: IModelRpcProps): Promise<string> {
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    return ChangeSummaryManager.createChangeSummary(requestContext, BriefcaseDb.findByKey(iModelRpcProps.key));
+  }
+
+  public async deleteChangeCache(tokenProps: IModelRpcProps): Promise<void> {
+    if (!tokenProps.iModelId)
+      throw new Error("iModelToken is invalid");
+
+    const changesPath = BriefcaseManager.getChangeCachePathName(tokenProps.iModelId);
+    if (IModelJsFs.existsSync(changesPath))
+      IModelJsFs.unlinkSync(changesPath);
+  }
+
 }
 
 async function init() {

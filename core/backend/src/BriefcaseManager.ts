@@ -121,7 +121,7 @@ export class BriefcaseManager {
             const fileName = path.join(bcPath, briefcaseName);
             const fileSize = IModelJsFs.lstatSync(fileName)?.size ?? 0;
             const db = IModelDb.openDgnDb({ path: fileName }, OpenMode.Readonly);
-            briefcaseList.push({ fileName, contextId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changeSetId: db.getParentChangeset().id, fileSize });
+            briefcaseList.push({ fileName, contextId: db.queryProjectGuid(), iModelId: db.getDbGuid(), briefcaseId: db.getBriefcaseId(), changeset: db.getParentChangeset(), fileSize });
             db.closeIModel();
           } catch (_err) {
           }
@@ -187,8 +187,7 @@ export class BriefcaseManager {
         requestContext,
         contextId: request.contextId,
         iModelId: request.iModelId,
-        changeSetId: changeset.id,
-        changesetIndex: changeset.index,
+        changeset,
       },
       onProgress: request.onProgress,
     };
@@ -200,8 +199,7 @@ export class BriefcaseManager {
       briefcaseId,
       iModelId: request.iModelId,
       contextId: request.contextId,
-      changeSetId: args.checkpoint.changeSetId,
-      changesetIndex: args.checkpoint.changesetIndex,
+      changeset: args.checkpoint.changeset,
       fileSize,
     };
 
@@ -214,7 +212,7 @@ export class BriefcaseManager {
     }
     try {
       nativeDb.resetBriefcaseId(briefcaseId);
-      if (nativeDb.getParentChangeset().id !== args.checkpoint.changeSetId)
+      if (nativeDb.getParentChangeset().id !== args.checkpoint.changeset.id)
         throw new IModelError(IModelStatus.InvalidId, `Downloaded briefcase has wrong changesetId: ${fileName}`);
     } finally {
       nativeDb.closeIModel();
@@ -576,7 +574,7 @@ export class BriefcaseManager {
       "7a6424d1-2114-4e89-b13b-43670a38ccd4", // Feature: "iModel Use"
       token.contextId,
       token.iModelId,
-      token.changeSetId,
+      token.changeset?.id,
     );
     IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
