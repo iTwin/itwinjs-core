@@ -78,11 +78,6 @@ As explained in the [overview](../learning/imodel-connectors.md), a "Connector" 
 
 A complete list of available connectors can be found in [iTwin Services Community Wiki](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47595/supported-applications-and-file-formats)
 
-Examples of iTwin Connector include:
-
-![Bentley iTwin Connectors](https://communities.bentley.com/resized-image/__size/650x450/__key/communityserver-wikis-components-files/00-00-00-05-55/Bentley.png)
-![3rd Party iTwin Connectors](https://communities.bentley.com/resized-image/__size/650x450/__key/communityserver-wikis-components-files/00-00-00-05-55/3rdParty.PNG)
-
 See [Section on iTwin Synchronization](#ways-to-sync-data-to-an-itwin) for more details on existing connectors.
 
 However, in some instances, where a specific format is not covered, one can start to develop a new Connector using the [iModel.js SDK](https://github.com/imodeljs/imodeljs)
@@ -99,7 +94,7 @@ It is not relevant for someone trying to bring in data for which a Connector alr
 
 ### Ways to sync data to an iTwin
 
-[The iTwin Synchronizer portal](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47606/itwin-synchronizer-portal) and [iTwin Synchronizer client](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47597/itwin-synchronizer-client) provides synchronization mechanism to bring data into an iTwin through a Connector
+[The iTwin Synchronizer portal](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47606/itwin-synchronizer-portal) and [iTwin Synchronizer client](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47597/itwin-synchronizer-client) provides synchronization mechanism to bring data into an iTwin through a Connector. Lastly, the [iTwin Snapshot Application](https://www.itwinjs.org/learning/tutorials/itwin-snapshot-app/) is a free tool for developers to create a read-only, static "snapshot" of an iModel and visualize it.
 
 The following are the various steps involved in that workflow.
 ![iTwin workflow](https://communities.bentley.com/resized-image/__size/650x340/__key/communityserver-wikis-components-files/00-00-00-05-55/pastedimage1591602805184v1.png)
