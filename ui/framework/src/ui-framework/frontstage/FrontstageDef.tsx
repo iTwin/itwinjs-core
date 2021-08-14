@@ -13,7 +13,7 @@ import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
 import {
   dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPopoutLocation, isPopoutWidgetLocation,
-  NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow,
+  NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow, setFloatingWidgetBounds,
 } from "@bentley/ui-ninezone";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupManager } from "../content/ContentGroup";
@@ -31,7 +31,7 @@ import { Frontstage, FrontstageProps } from "./Frontstage";
 import { FrontstageManager } from "./FrontstageManager";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
-import { PointProps, SizeProps } from "@bentley/ui-core";
+import { PointProps, RectangleProps, SizeProps } from "@bentley/ui-core";
 import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
 import { setImmediate } from "timers";
@@ -595,7 +595,7 @@ export class FrontstageDef {
 
   /** Create a new floating panel that contains the widget specified by its Id. Supported only when in
    *  UI 2.0 or higher.
-   * @param widgetId case sensitive Wigdet Id
+   * @param widgetId case sensitive Widget Id
    * @param point Position of top left corner of floating panel in pixels. If undefined {x:50, y:100} is used.
    * @param size defines the width and height of the floating panel. If undefined and widget has been floated before
    * the previous size is used, else {height:400, width:400} is used.
@@ -710,7 +710,15 @@ export class FrontstageDef {
     }
   }
 
-  /** Method used to possibly change a Popout Wigdet back to a docked widget if the user was the one closing the popout's child
+  /** @internal */
+  public setFloatingWidgetBounds(floatingWidgetId: string, bounds: RectangleProps) {
+    if (this.nineZoneState) {
+      const newState = setFloatingWidgetBounds(this.nineZoneState, floatingWidgetId, bounds);
+      this._nineZoneState = newState; // set without triggering new render
+    }
+  }
+
+  /** Method used to possibly change a Popout Widget back to a docked widget if the user was the one closing the popout's child
    * window (i.e. UiFramework.childWindowManager.isClosingChildWindow === false).
    *  @internal
    */
@@ -730,7 +738,7 @@ export class FrontstageDef {
   /** Finds the container with the specified widget and re-docks all widgets
    * back to the panel zone location that was used when the floating container
    * was generated. Supported only when in UI 2.0 or higher.
-   * @param widgetId  case sensitive Wigdet Id.
+   * @param widgetId  case sensitive Widget Id.
    * @beta
    */
   public dockWidgetContainer(widgetId: string) {

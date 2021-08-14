@@ -72,11 +72,25 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
     onDrag,
     onDragEnd,
   });
+
+  const containerRef = React.useRef<HTMLDivElement>(null);
   const handleDragStart = React.useCallback((initialPointerPosition: Point) => {
+    /* if floating widget extract the bounding rect and update state in case bounds are set by content.
+      This is needed so the drag operation can keep widget inside ninezone container. */
+    if (floatingWidgetId) {
+      const containerRect = containerRef.current?.closest(".nz-widget-floatingWidget")?.getBoundingClientRect();
+      if (containerRect) {
+        dispatch({
+          type: "FLOATING_WIDGET_SET_BOUNDS",
+          id: floatingWidgetId,
+          bounds: { left: containerRect.left, top: containerRect.top, right: containerRect.right, bottom: containerRect.bottom },
+        });
+      }
+    }
     handleWidgetDragStart({
       initialPointerPosition,
     });
-  }, [handleWidgetDragStart]);
+  }, [dispatch, floatingWidgetId, handleWidgetDragStart]);
   const handleTouchStart = React.useCallback(() => {
     floatingWidgetId && dispatch({
       type: "FLOATING_WIDGET_BRING_TO_FRONT",
@@ -90,7 +104,7 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
   );
 
   return (
-    <div
+    <div ref={containerRef}
       className={className}
     >
       <div

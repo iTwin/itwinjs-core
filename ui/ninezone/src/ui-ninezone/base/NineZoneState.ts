@@ -245,6 +245,13 @@ export interface FloatingWidgetResizeAction {
 }
 
 /** @internal future */
+export interface FloatingWidgetSetBoundsAction {
+  readonly type: "FLOATING_WIDGET_SET_BOUNDS";
+  readonly id: FloatingWidgetState["id"];
+  readonly bounds: RectangleProps;
+}
+
+/** @internal future */
 export interface FloatingWidgetBringToFrontAction {
   readonly type: "FLOATING_WIDGET_BRING_TO_FRONT";
   readonly id: FloatingWidgetState["id"];
@@ -358,6 +365,7 @@ export type NineZoneActionTypes =
   PanelTogglePinnedAction |
   PanelInitializeAction |
   FloatingWidgetResizeAction |
+  FloatingWidgetSetBoundsAction |
   FloatingWidgetBringToFrontAction |
   FloatingWidgetSendBackAction |
   FloatingWidgetClearUserSizedAction |
@@ -1518,8 +1526,19 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
       });
     }
   }
-
   return undefined;
+}
+
+/**
+ * @internal
+ */
+export function setFloatingWidgetBounds(state: NineZoneState, floatingWidgetId: string, bounds: RectangleProps) {
+  if (floatingWidgetId in state.floatingWidgets.byId) {
+    return produce(state, (draft) => {
+      draft.floatingWidgets.byId[floatingWidgetId].bounds = bounds;
+    });
+  }
+  return state;
 }
 
 /** Add a new Floating Panel with a single widget tab */

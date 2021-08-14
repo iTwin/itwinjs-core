@@ -159,6 +159,10 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef) {
       frontstageDef.popoutWidget(tabId);
       return;
     }
+    if (action.type === "FLOATING_WIDGET_SET_BOUNDS") {
+      frontstageDef.setFloatingWidgetBounds(action.id, action.bounds);
+      return;
+    }
     const nineZoneState = frontstageDef.nineZoneState;
     if (!nineZoneState)
       return;

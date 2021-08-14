@@ -92,7 +92,8 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
     "nz-widget-floatingWidget",
     dragged && "nz-dragged",
     props.className,
-    isToolSettingsTab && "nz-floating-toolsettings"
+    isToolSettingsTab && "nz-floating-toolsettings",
+    floatingWidgetId
   );
 
   // never allow resizing of toolsettings - always auto-fit them
