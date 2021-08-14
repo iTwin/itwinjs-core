@@ -248,60 +248,6 @@
         "[NODE] Certa Test Runner for HyperModeling Tests"
       ]
     },
-    {
-      "name": "IModelBridgeFwk Tests (all)",
-      "presentation": {
-        "group": "0_CoreTests",
-        "order": 5
-      },
-      "cwd": "${workspaceFolder}/core/imodel-bridge",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:all"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "IModelBridgeFwk Tests (standalone)",
-      "presentation": {
-        "group": "0_CoreTests",
-        "order": 5
-      },
-      "cwd": "${workspaceFolder}/core/imodel-bridge",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:standalone"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
-    {
-      "name": "IModelBridgeFwk Tests (integration)",
-      "presentation": {
-        "group": "0_CoreTests",
-        "order": 6
-      },
-      "cwd": "${workspaceFolder}/core/imodel-bridge",
-      "type": "pwa-node",
-      "request": "launch",
-      "runtimeExecutable": "npm",
-      "runtimeArgs": [
-        "run",
-        "test:integration"
-      ],
-      "outFiles": [
-        "${workspaceFolder}/{core,clients}/*/lib/**/*.js"
-      ]
-    },
     { /* PARTIAL */
       "name": "[NODE] Certa Test Runner for Markup Tests",
       "presentation": {

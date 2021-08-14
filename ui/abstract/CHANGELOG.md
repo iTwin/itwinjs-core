@@ -30,6 +30,11 @@ Mon, 26 Jul 2021 12:21:25 GMT
 - remove internal barrel-import usage
 - Stop delivering pseudo-localized strings
 
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
+
 ## 2.18.3
 Wed, 28 Jul 2021 17:16:30 GMT
 
@@ -537,7 +542,7 @@ Wed, 06 May 2020 13:17:49 GMT
 - In source documentation. Some learning docs & API changes.
 - TOC for UI 2.0 Docs, @alpha to @beta, Components Examples
 - Started ui-components Learning doc section
-- Update doc tags for automatic UI creation 
+- Update doc tags for automatic UI creation
 - Refactor to remove duplicate ComponentGenerator instantiation. Rename files and components to remove React reference.
 - Update auto-generated dialog items to work with the Tool Settings Bar.
 - Add ConditionalBoolean support for isHidden and isDisabled properties.
