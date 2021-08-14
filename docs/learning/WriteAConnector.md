@@ -1,5 +1,5 @@
 ---
-title: iModel Connector Developer Guide
+title: iTwin Connector Developer Guide
 ---
 
 ## Table of Contents
@@ -80,9 +80,9 @@ A complete list of available connectors can be found in [iTwin Services Communit
 
 See [Section on iTwin Synchronization](#ways-to-sync-data-to-an-itwin) for more details on existing connectors.
 
-However, in some instances, where a specific format is not covered, one can start to develop a new Connector using the [iModel.js SDK](https://github.com/imodeljs/imodeljs)
+However, in some instances, where a specific format is not covered, one can start to develop a new Connector using the [iTwin.js SDK](https://github.com/imodeljs/imodeljs)
 
-The imodel-bridge package provided as part of the iModel.js SDK makes it easier to write an iTwin Connector backend that brings custom data into a digital twin. To run this environment with the iModel.js library that this package depends on requires a JavaScript engine with es2017 support.
+The imodel-bridge package provided as part of the iTwin.js SDK makes it easier to write an iTwin Connector backend that brings custom data into a digital twin. To run this environment with the iTwin.js library that this package depends on requires a JavaScript engine with es2017 support.
 
 Note: Please keep in mind iModelBridge is sometimes used as a synonym for iTwin Connector since it bridges the gap between input data and a digital twin. When discussing the classes, methods and properties of the SDK and especially in the code examples and snippets provided, this documentation will adhere to the actual names that are published to ensure it is working code. In future versions of the SDK, classes and methods will be renamed from "Bridge" to "Connector" to reflect the latest terminology. This documentation will be updated to match the new names when the new version is released.
 
@@ -94,7 +94,7 @@ It is not relevant for someone trying to bring in data for which a Connector alr
 
 ### Ways to sync data to an iTwin
 
-[The iTwin Synchronizer portal](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47606/itwin-synchronizer-portal) and [iTwin Synchronizer client](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47597/itwin-synchronizer-client) provides synchronization mechanism to bring data into an iTwin through a Connector. Lastly, the [iTwin Snapshot Application](https://www.itwinjs.org/learning/tutorials/itwin-snapshot-app/) is a free tool for developers to create a read-only, static "snapshot" of an iModel and visualize it.
+[The iTwin Synchronizer portal](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47606/itwin-synchronizer-portal) and [iTwin Synchronizer client](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47597/itwin-synchronizer-client) provide a two different [Ways to sync your data to an iTwin](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47596/ways-to-sync-your-data-to-an-itwin#LimPortal) Lastly, the [iTwin Snapshot Application](https://www.itwinjs.org/learning/tutorials/itwin-snapshot-app/) is a free tool for developers to create a read-only, static "snapshot" of an iModel and visualize it.
 
 The following are the various steps involved in that workflow.
 ![iTwin workflow](https://communities.bentley.com/resized-image/__size/650x340/__key/communityserver-wikis-components-files/00-00-00-05-55/pastedimage1591602805184v1.png)
@@ -123,7 +123,7 @@ An iTwin is an infrastructure digital twin. An iTwin incorporates different type
 
 #### iModelHub
 
-iModelHub is for users who want their iModels hosted by Bentley in Azure. It is responsible for coordinating concurrent access to iModels and changes made to them in [ChangeSets](https://www.itwinjs.org/learning/glossary/#changeset). iModel connectors interact with iModelHub using the iModel.js API. The Connector SDK provides a framework through which a Connector can easily maintain this interaction. For more information about iModelHub, please see <https://www.itwinjs.org/learning/imodelhub/>
+iModelHub is for users who want their iModels hosted by Bentley in Azure. It is responsible for coordinating concurrent access to iModels and changes made to them in [ChangeSets](https://www.itwinjs.org/learning/glossary/#changeset). iTwin Connectors interact with iModelHub using the iTwin.js API. The Connector SDK provides a framework through which a Connector can easily maintain this interaction. For more information about iModelHub, please see <https://www.itwinjs.org/learning/imodelhub/>
 
 #### iModel
 
@@ -179,7 +179,7 @@ A two-process architecture may also be employed.
 
 #### Data alignment
 
-An iModel Connector must carefully transform the source data to BIS-based data in the iModel, and hence each Connector is written for a specific data source.
+An iTwin Connector must carefully transform the source data to BIS-based data in the iModel, and hence each Connector is written for a specific data source.
 
 - Mappings of data are _from_ source _into_ an iModel.
 - Typically, a Connector stores enough information about source data to detect the differences in it between runs (connections). In this manner, the Connector generates _changesets_ that are sent to iModelHub. This is the key difference between a Connector and a one-time converter.
@@ -202,7 +202,7 @@ There are roughly three degrees of customizations you may need to employ to conn
 
 Bentley has authored many "domain" schemas to support connectors for many of its authoring applications. For the most aligned data (i.e., data published from your Connector uses the same classes and properties as data published from other connectors), it is best to use a domain schema.
 
-To see what domain schemas are available, see [Released Domain Schemas](ReleasedDomainSchemas.md)
+To see what domains exist in BIS, see [Domains](https://www.itwinjs.org/bis/domains/)
 
 Sometimes BIS domain schemas are not adequate to capture all the data in the authoring application. The flow chart below can be used to assist in deciding which schema methodology to use.
 
@@ -216,13 +216,13 @@ When the format for incoming data in the native source is not completely known, 
 
 For example, if the native source allows for user-defined classes or properties, then as the classes and properties are read from the native source, they can be added to an iModel schema in-memory and real-time (a.k.a. dynamically). In effect, each native source file has its unique schema.
 
-As an iModel Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that subsequent executions can use. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](https://github.com/imodeljs/imodeljs/tree/master/docs/bis/intro/schema-versioning-and-generations.md)
+As an iTwin Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that subsequent executions can use. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](https://github.com/imodeljs/imodeljs/tree/master/docs/bis/intro/schema-versioning-and-generations.md)
 
-The `DynamicSchema` custom attribute should be set on customer-specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes,` enabling iModelHub to detect dynamic schemas programmatically. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
+The [DynamicSchema](../bis/domains/corecustomattributes.ecschema/#dynamicschema) custom attribute should be set on customer-specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes,` enabling iModelHub to detect dynamic schemas programmatically. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
 
 #### Display Labels
 
-Wherever practical, the Elements generated from an iModel Connector should be identifiable through an optimal "Display Label."
+Wherever practical, the Elements generated from an iTwin Connector should be identifiable through an optimal "Display Label."
 
 As discussed in [Element Fundamentals](https://github.com/imodeljs/imodeljs/tree/master/docs/bis/intro/element-fundamentals.md), the Display Labels are created through the following logic:
 
@@ -234,7 +234,7 @@ As discussed in [Element Fundamentals](https://github.com/imodeljs/imodeljs/tree
 
 iTwin Connector data transformations should be written considering the Display Label logic; UserLabel is the appropriate property for a Connector to set to control the Display Label (CodeValue should never be set for anything other than coding purposes).
 
-_But what value should an iModel Connector set UserLabel to?_ There are two goals to consider in the generation of UserLabels. Those goals, in priority order, are:
+_But what value should an iTwin Connector set UserLabel to?_ There are two goals to consider in the generation of UserLabels. Those goals, in priority order, are:
 
 1. Consistency with source application label usage.
 2. Consistency with BIS domain default labeling strategy.
@@ -270,7 +270,7 @@ A Connector is usually dealing with two levels of provenance
 
 [RepositoryLink](https://www.itwinjs.org/reference/imodeljs-backend/elements/repositorylink/) is a specialization of a UrlLink which has a "Url" property pointing to an external resource or repository and a RepositoryGuid that identifies the external repository.
 
-[ExternalSource](https://www.itwinjs.org/reference/imodeljs-backend/elements/externalsource/) is an information container container found in a repository. A few use cases for ExternalSources are listed below:
+[ExternalSource](https://www.itwinjs.org/reference/imodeljs-backend/elements/externalsource/) is an information container found in a repository. A few use cases for ExternalSources are listed below:
 
 1. A MicroStation DGN file, for example, may contain multiple models which in turn contain elements. The repository link would point to the DGN file while the ExternalSource would refer the models within the DGN file,
 2. In many cases, the external file is not a container for multiple smaller models, so there would be a one-to-one correspondence between an ExternalSource and its RepositoryLink,
@@ -409,22 +409,19 @@ The node packages you'll need can be installed using
 $npm install  @bentley/backend-itwin-client
 $npm install  @bentley/bentleyjs-core
 $npm install  @bentley/context-registry-client
+$npm install  @bentley/ecschema-metadata
 $npm install  @bentley/geometry-core
 $npm install  @bentley/imodelhub-client
 $npm install  @bentley/imodeljs-backend
 $npm install  @bentley/imodeljs-common
+$npm install  @bentley/itwin-client
 $npm install  @bentley/rbac-client
+$npm install  @bentley/telemetry-client
 
-$npm install  --save-dev @bentley/backend-itwin-client
 $npm install  --save-dev @bentley/build-tools
 $npm install  --save-dev @bentley/config-loader
-$npm install  --save-dev @bentley/context-registry-client
-$npm install  --save-dev @bentley/ecschema-metadata
 $npm install  --save-dev @bentley/eslint-plugin
-$npm install  --save-dev @bentley/itwin-client
 $npm install  --save-dev @bentley/oidc-signin-tool
-$npm install  --save-dev @bentley/rbac-client
-$npm install  --save-dev @bentley/telemetry-client
 
 $npm install  --save-dev chai
 $npm install  --save-dev cpx
@@ -434,6 +431,8 @@ $npm install  --save-dev nyc
 $npm install  --save-dev rimraf
 $npm install  --save-dev typescript
 ```
+
+Also refer to [Supported Platforms](SupportedPlatforms.md#supported-platforms)
 
 The Connector SDK exposes its functionality through three main classes: BridgeRunner, Synchronizer, and iModelBridge Interface.
 
@@ -588,12 +587,12 @@ const error =`Unable to find model Id for ${undefined === groupModelId ? ModelNa
 
 ### Execution Sequence
 
-The ultimate purpose of a Connector is to synchronize an iModel with the data in one or more source documents. The synchronization step involves authorization, communicating with an iModel server, converting data, and concurrency control. iModel.js defines a framework in which the Connector itself can focus on the tasks of extraction, alignment, and change-detection. The other functions are handled by classes provided by iModel.js. The framework is implemented by the BridgeRunner class. A BridgeRunner conducts the overall synchronization process. It loads and calls functions on a Connector at the appropriate points in the sequence. The process may be summarized as follows:
+The ultimate purpose of a Connector is to synchronize an iModel with the data in one or more source documents. The synchronization step involves authorization, communicating with an iModel server, converting data, and concurrency control. iTwin.js defines a framework in which the Connector itself can focus on the tasks of extraction, alignment, and change-detection. The other functions are handled by classes provided by iTwin.js. The framework is implemented by the BridgeRunner class. A BridgeRunner conducts the overall synchronization process. It loads and calls functions on a Connector at the appropriate points in the sequence. The process may be summarized as follows:
 
 - BridgeRunner: [Opens a local briefcase copy](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/IModelDb.md) of the iModel that is to be updated.
 - Import or Update Schema
   - Connector: Possibly [import an appropriate BIS schema into the briefcase](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/SchemasAndElementsInTypeScript.md#importing-the-schema) or upgrade an existing schema.
-  - BridgeRunner: [Push](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModelServer.
+  - BridgeRunner: [Push](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModel server.
 - Convert Changed Data
   - Connector:
     - Opens to the data source.
@@ -639,7 +638,7 @@ Some sample queries that is helpful to debug Connector output
 
 #### Visualizing the output
 
-To get started, please build it using the instructions provided in the [display test app README](https://github.com/imodeljs/imodeljs/blob/master/test-apps/display-test-app/README.md)
+To get started, please build it using the instructions provided in the [iTwin Desktop Viewer](https://www.itwinjs.org/learning/tutorials/develop-desktop-viewer/)
 Once the application is built and running, use the briefcase icon to open the output from the Connector. Some of the [frontend developer tools](https://www.npmjs.com/package/@bentley/frontend-devtools/v/1.5.0) are also useful to analyze the data. E.g. fdt inspect element.
 
 ### Logs
@@ -658,7 +657,7 @@ For examples of Connector tests, you can review the standalone and integration t
 
 ### Job Subjects
 
-The FrameWork will automatically create a uniquely named Subject element in the iModel. The job subject element should be a child of the root subject and must have a unique code.
+The Framework will automatically create a uniquely named Subject element in the iModel. The job subject element should be a child of the root subject and must have a unique code.
 
 A Connector is required to scope all of the subjects, definitions, and their models under its job subject element. That is,
 
@@ -675,17 +674,17 @@ For the basics of coordinate systems in iModels, please see <https://www.itwinjs
 
 All coordinates and distances in an iModel must be stored in meters, and so the Connector must transform source data coordinates and distances into meters.
 
-For any iModel, a Connector should
+Before converting any source data, a Connector should account for the presence of an existing coordinate system and/or global origin in the iModel. The following conditions should be considered:
 
-1. If the iModel has coordinate system information, reproject the existing data into the coordinate system of the iModel. Similarly, if the iModel has a global origin, the Connector must subtract that global origin from the source data as part of the conversion.
+1. If the iModel has coordinate system information, transform the source data into the coordinate system of the iModel. Otherwise, initialize the iModel with the coordinate system appropriate to the source data.
 
-2. If the iModel does not have coordinate system information, initialize the iModel with the coordinate system appropriate to the input data.
+2. If the iModel has a global origin, the Connector must subtract that global origin from the source data as part of the conversion.
 
 Generally, for iModels primarily generated from connectors that deal with building data, a coordinate transform with linear transformation like ECEF will be better.
 
 ### Dealing with geometry
 
-Please see the section on [GeometryStream](https://www.itwinjs.org/learning/common/geometrystream/) to understand the persistence of iModel geometry. Inside a Connector, the input data geometry needs to be transformed and persisted as a geometrystream stored with the element. The [geometry library](https://www.itwinjs.org/learning/geometry/) provided as a part of iModel.js will aid in the heavy lifting of complex calculations.
+Please see the section on [GeometryStream](https://www.itwinjs.org/learning/common/geometrystream/) to understand the persistence of iModel geometry. Inside a Connector, the input data geometry needs to be transformed and persisted as a geometrystream stored with the element. The [geometry library](https://www.itwinjs.org/learning/geometry/) provided as a part of iTwin.js will aid in the heavy lifting of complex calculations.
 
 Typical workflow to create iModel geometry is
 
