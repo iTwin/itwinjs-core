@@ -41,6 +41,11 @@ describe("AgentAuthorizationClient (#integration)", () => {
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
 
+    if (process.env.imjs_agent_test_client_id === undefined)
+      throw new Error("Could not find imjs_agent_test_client_id");
+    if (process.env.imjs_agent_test_client_secret === undefined)
+      throw new Error("Could not find imjs_agent_test_client_secret");
+
     agentConfiguration = {
       clientId: process.env.imjs_agent_test_client_id ?? "",
       clientSecret: process.env.imjs_agent_test_client_secret ?? "",

@@ -13,6 +13,13 @@ class MockAccessToken extends AccessToken {
   public override toTokenString() { return ""; }
 }
 
+if (process.env.imjs_agent_test_client_id === undefined)
+  throw new Error("Could not find imjs_agent_test_client_id");
+if (process.env.imjs_agent_test_client_secret === undefined)
+  throw new Error("Could not find imjs_agent_test_client_secret");
+if (process.env.imjs_oidc_browser_test_scopes === undefined)
+  throw new Error("Could not find imjs_oidc_browser_test_scopes");
+
 const clientConfig: BackendAuthorizationClientConfiguration = {
   clientId: process.env.imjs_agent_test_client_id ?? "",
   clientSecret: process.env.imjs_agent_test_client_secret ?? "",

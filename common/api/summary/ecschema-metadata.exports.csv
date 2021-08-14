@@ -60,8 +60,8 @@ beta;Diagnostics:
 deprecated;Diagnostics:
 beta;DiagnosticType
 deprecated;DiagnosticType
-beta;diagnosticTypeToString(type: DiagnosticType): "Schema" | "None" | "Property" | "RelationshipConstraint" | "CustomAttributeContainer" | "SchemaItem"
-deprecated;diagnosticTypeToString(type: DiagnosticType): "Schema" | "None" | "Property" | "RelationshipConstraint" | "CustomAttributeContainer" | "SchemaItem"
+beta;diagnosticTypeToString(type: DiagnosticType): "Schema" | "None" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint" | "SchemaItem"
+deprecated;diagnosticTypeToString(type: DiagnosticType): "Schema" | "None" | "CustomAttributeContainer" | "Property" | "RelationshipConstraint" | "SchemaItem"
 beta;class ECClass 
 beta;ECClassModifier
 public;ECName
@@ -168,7 +168,7 @@ beta;class PropertyDiagnostic
 deprecated;class PropertyDiagnostic
 beta;PropertyProps
 beta;PropertyType
-beta;propertyTypeToString(type: PropertyType): "PrimitiveArrayProperty" | "PrimitiveProperty" | "StructArrayProperty" | "StructProperty" | "NavigationProperty"
+beta;propertyTypeToString(type: PropertyType): "PrimitiveProperty" | "StructProperty" | "StructArrayProperty" | "NavigationProperty" | "PrimitiveArrayProperty"
 beta;PropertyTypeUtils
 beta;RelationshipClass 
 beta;RelationshipClassProps 

@@ -69,6 +69,13 @@ export class TestUsers {
    *  - imjs_oidc_browser_test_scopes
    */
   public static getTestBrowserAuthorizationClientConfiguration(): TestBrowserAuthorizationClientConfiguration {
+    if (process.env.imjs_oidc_browser_test_client_id === undefined)
+      throw new Error("Could not find imjs_oidc_browser_test_client_id");
+    if (process.env.imjs_oidc_browser_test_redirect_uri === undefined)
+      throw new Error("Could not find imjs_oidc_browser_test_redirect_uri");
+    if (process.env.imjs_oidc_browser_test_scopes === undefined)
+      throw new Error("Could not find imjs_oidc_browser_test_scopes");
+
     return {
       clientId: process.env.imjs_oidc_browser_test_client_id ?? "",
       redirectUri: process.env.imjs_oidc_browser_test_redirect_uri ?? "",

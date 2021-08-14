@@ -40,6 +40,11 @@ describe("DelegationAuthorizationClient (#integration)", () => {
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
 
+    if (process.env.imjs_agent_test_client_id === undefined)
+      throw new Error("Could not find imjs_agent_test_client_id");
+    if (process.env.imjs_agent_test_client_secret === undefined)
+      throw new Error("Could not find imjs_agent_test_client_secret");
+
     const agentConfiguration: AgentAuthorizationClientConfiguration = {
       clientId: process.env.imjs_agent_test_client_id ?? "",
       clientSecret: process.env.imjs_agent_test_client_secret ?? "",
@@ -51,6 +56,11 @@ describe("DelegationAuthorizationClient (#integration)", () => {
   });
 
   it("should get valid OIDC delegation tokens", async () => {
+    if (process.env.imjs_delegation_test_client_id === undefined)
+      throw new Error("Could not find imjs_delegation_test_client_id");
+    if (process.env.imjs_delegation_test_client_secret === undefined)
+      throw new Error("Could not find imjs_delegation_test_client_secret");
+
     const delegationConfiguration: DelegationAuthorizationClientConfiguration = {
       clientId:process.env.imjs_delegation_test_client_id ?? "",
       clientSecret: process.env.imjs_delegation_test_client_secret ?? "",
