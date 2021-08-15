@@ -18,11 +18,15 @@ describe("InterpolationCurve3d", () => {
   it.only("HelloWorld", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
+    const circleRadius = 1.0;
     const circlePoints = Sample.createUnitCircle(8);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, circlePoints, 0, 0, 0);
     const fitParams = [0, 0.03, 0.1, 0.17, 0.3, 0.44, 0.72, 1.0];
     const startTan = Vector3d.create(1,1,0);
-    const endTan = Vector3d.create(1,-1,0);
+    const endTan = Vector3d.create(1, -1, 0);
+    let x0 = 0;
+    const delta = 2.25 * circleRadius;
+    const y0 = 0;
     for (const curve of [
       InterpolationCurve3d.create({ fitPoints: circlePoints, isColinearTangents: 0, isNaturalTangents: 0 }),
       InterpolationCurve3d.create({ fitPoints: circlePoints, isColinearTangents: 0, isNaturalTangents: 1 }),
@@ -74,15 +78,17 @@ describe("InterpolationCurve3d", () => {
       ]) {
       if (ck.testType(curve, InterpolationCurve3d)) {
         if (ck.testType(curve.options, InterpolationCurve3dOptions)) {
-          for (const fitPt of curve.options.fitPoints) {
-            const detail = curve.closestPoint(fitPt, false);
+          for (const fitPoint of curve.options.fitPoints) {
+            const detail = curve.closestPoint(fitPoint, false);
             if (ck.testPointer(detail)) {
-              ck.testPoint3d(fitPt, detail.point, "fit point interpolated");
+              if (!ck.testPoint3d(fitPoint, detail.point, "fit point interpolated"))
+                GeometryCoreTestIO.createAndCaptureXYMarker(allGeometry, 0, fitPoint, 0.4, x0, y0);
             }
           }
         }
-        GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, 0, 0, 0);
-        testGeometryQueryRoundTrip(ck, curve);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, x0 += delta, y0, 0);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve.proxyCurve, x0, y0 + delta, 0);
+        // testGeometryQueryRoundTrip(ck, curve);
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "InterpolationCurve3d", "HelloWorld");
