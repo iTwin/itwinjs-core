@@ -123,7 +123,7 @@ An iTwin is an infrastructure digital twin. An iTwin incorporates different type
 
 #### iModelHub
 
-iModelHub is for users who want their iModels hosted by Bentley in Azure. It is responsible for coordinating concurrent access to iModels and changes made to them in [ChangeSets](https://www.itwinjs.org/learning/glossary/#changeset). iTwin Connectors interact with iModelHub using the iTwin.js API. The Connector SDK provides a framework through which a Connector can easily maintain this interaction. For more information about iModelHub, please see <https://www.itwinjs.org/learning/imodelhub/>
+iModelHub is for users who want their iModels hosted by Bentley in Azure. It is responsible for coordinating concurrent access to iModels and changes made to them in [ChangeSets](./glossary#changeset). iTwin Connectors interact with iModelHub using the iTwin.js API. The Connector SDK provides a framework through which a Connector can easily maintain this interaction. For more information about iModelHub, please see [iModelHub](./iModelHub/index)
 
 #### iModel
 
@@ -139,11 +139,7 @@ iTwin Stack is a platform for building Infrastructure Digital Twins on private c
 
 #### Briefcases
 
-[Briefcases](https://www.itwinjs.org/learning/glossary/#briefcase) are the local copies of iModel that users can acquire to work with the iModel. A Connector will download a briefcase locally using the BridgeRunner and change their copy of iModel. Once all the work is done, the results are then pushed into the iModel. Please see the section on [Execution sequence](#execution-sequence) on the different steps involved.
-
-For more information, please see
-
-<https://www.itwinjs.org/learning/imodelhub/briefcases/>
+[Briefcases](./glossary#briefcase) are the local copies of iModel that users can acquire to work with the iModel. A Connector will download a briefcase locally using the BridgeRunner and change their copy of iModel. Once all the work is done, the results are then pushed into the iModel. Please see the section on [Execution sequence](#execution-sequence) on the different steps involved.
 
 #### Element
 
@@ -670,7 +666,7 @@ Schemas that have been released for production use in end-user workflows evolve 
 
 ### Units and Coordinate systems
 
-For the basics of coordinate systems in iModels, please see <https://www.itwinjs.org/learning/geolocation/>
+For the basics of coordinate systems in iModels, please see [Geolocation](./geolocation)
 
 All coordinates and distances in an iModel must be stored in meters, and so the Connector must transform source data coordinates and distances into meters.
 
