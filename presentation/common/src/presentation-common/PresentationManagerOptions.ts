@@ -113,6 +113,15 @@ export interface ContentRequestOptions<TIModel, TRulesetVariable = RulesetVariab
 }
 
 /**
+ * Request type for content sources requests.
+ * @beta
+ */
+export interface ContentSourcesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+  /** Full names of classes to get content sources for. */
+  classes: string[];
+}
+
+/**
  * Request type for content descriptor requests
  * @public
  */
