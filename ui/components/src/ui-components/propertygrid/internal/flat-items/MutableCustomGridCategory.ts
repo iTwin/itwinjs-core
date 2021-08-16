@@ -62,7 +62,7 @@ export class MutableCustomGridCategory extends MutableFlatPropertyGridItem imple
   }
 
   public override set lastInNumberOfCategories(value: number) {
-    this._lastInNumberOfCategories = value + 2;
+    this._lastInNumberOfCategories = value + 1;
   }
 
   public getSelf() {

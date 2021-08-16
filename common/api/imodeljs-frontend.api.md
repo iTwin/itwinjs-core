@@ -1625,7 +1625,7 @@ export interface BlankConnectionProps {
 
 // @public
 export class BriefcaseConnection extends IModelConnection {
-    protected constructor(props: IModelConnectionProps);
+    protected constructor(props: IModelConnectionProps, openMode: OpenMode);
     close(): Promise<void>;
     get contextId(): GuidString;
     get editingScope(): GraphicalEditingScope | undefined;
@@ -1870,7 +1870,6 @@ export class CheckpointConnection extends IModelConnection {
     get isClosed(): boolean;
     // (undocumented)
     protected _isClosed?: boolean;
-    protected static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<CheckpointConnection>;
     static openRemote(contextId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
     }
 
@@ -2551,33 +2550,6 @@ export class DynamicsContext extends RenderContext {
     changeDynamics(): void;
     createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder;
     }
-
-// @alpha @deprecated
-export class EditingFunctions {
-    constructor(connection: IModelConnection);
-    get categories(): EditingFunctions.CategoryEditor;
-    get codes(): EditingFunctions.Codes;
-    get models(): EditingFunctions.ModelEditor;
-    }
-
-// @alpha @deprecated (undocumented)
-export namespace EditingFunctions {
-    // @deprecated
-    export class CategoryEditor {
-        constructor(c: IModelConnection);
-        createAndInsertSpatialCategory(scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String>;
-        }
-    export class Codes {
-        constructor(c: IModelConnection);
-        makeCode(specName: string, scope: Id64String, value: string): Promise<CodeProps>;
-        makeModelCode(scope: Id64String, value: string): Promise<CodeProps>;
-    }
-    // @deprecated
-    export class ModelEditor {
-        constructor(c: IModelConnection);
-        createAndInsertPhysicalModel(newModelCode: CodeProps, privateModel?: boolean): Promise<Id64String>;
-        }
-}
 
 // @public
 export namespace EditManipulator {
@@ -4650,7 +4622,6 @@ export namespace IModelConnection {
         load(viewDefinitionId: Id64String): Promise<ViewState>;
         queryDefaultViewId(): Promise<Id64String>;
         queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]>;
-        saveThumbnail(viewId: Id64String, thumbnail: ThumbnailProps): Promise<void>;
     }
     export interface ViewSpec {
         class: string;
@@ -7821,20 +7792,6 @@ export interface RealityTileTreeParams extends TileTreeParams {
     readonly rootToEcef?: Transform;
     // (undocumented)
     readonly yAxisUp?: boolean;
-}
-
-// @public @deprecated (undocumented)
-export class RemoteBriefcaseConnection extends CheckpointConnection {
-    // @internal
-    attachChangeCache(): Promise<void>;
-    // @internal
-    changeCacheAttached(): Promise<boolean>;
-    // (undocumented)
-    static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<RemoteBriefcaseConnection>;
-    pullAndMergeChanges(): Promise<void>;
-    pushChanges(description: string): Promise<void>;
-    saveChanges(description?: string): Promise<void>;
-    updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
 }
 
 // @public

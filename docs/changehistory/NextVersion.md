@@ -15,6 +15,22 @@ Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@be
 * Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
 * Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
 
+## Breaking changes
+
+### Continued transition to `ChangesetIndex`
+
+Every Changeset has both an Id (a string hash of its content and parent changeset) and an Index (a small integer representing its relative position on the iModel's timeline.) Either value can be used to uniquely identify a changeset. However, it is often necessary to compare two changeset identifiers to determine relative order, or to supply a range of changesets of interest. In this case, Id is not useful and must be converted to an index via a round-trip to an iModelHub server. Unfortunately, much of the iModel.js api uses only [ChangesetId]($common) to identify a changeset. That was unfortunate, since [ChangesetIndex]($common) is frequently needed and `ChangesetId` is rarely useful. For this reason we are migrating the api to prefer `ChangesetIndex` over several releases.
+
+In version 2.19, we introduced the type [ChangesetIdWithIndex]($common) to begin that migration. However, for 2.x compatibility we could not use it several places where it would have been helpful:
+
+* [IModelRpcOpenProps]($common)
+* [CheckpointProps]($backend)
+* [LocalBriefcaseProps]($common)
+
+Each of these interfaces originally had only a member `changeSetId: string`, In 2.19, for backwards compatibility, a new member `changeSetIndex?: number` was added. In V3 those two members are now replaced with a single member `changeset: ChangesetIdWithIndex`. Note that this is a breaking change, and you may have to adjust your code. To get the changeset Id, use `changeset.id`. To get the changeset Index, use `changeset.index` (may be undefined). In V4, this will become `changeset: ChangesetIndexAndId` and index will be required.
+
+> Note: "Changeset" is one word. Apis should not use a capital "S" when referring to them.
+
 ## Removal of previously deprecated APIs
 
 In this 3.0 major release, we have removed several APIs that were previously marked as deprecated in 2.x. Generally, the reason for the deprecation as well as the alternative suggestions can be found in the 2.x release notes. They are summarized here for quick reference.
@@ -54,21 +70,24 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
 | `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
 | `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
 
 ### @bentley/imodeljs-frontend
 
-| Removed                           | Replacement                                               |
-| --------------------------------- | --------------------------------------------------------- |
-| `CheckpointConnection.open`       | `CheckpointConnection.openRemote`                         |
-| `DecorateContext.screenViewport`  | `DecorateContext.viewport`                                |
-| `IModelApp.iModelClient`          | `IModelHubFrontend.iModelClient`                          |
-| `IModelConnection.Models.loaded`  | use `for..of` to iterate and `getLoaded` to look up by Id |
-| `IOidcFrontendClient`             | `FrontendAuthorizationClient`                             |
-| `isIOidcFrontendClient`           | `FrontendAuthorizationClient`                             |
-| `OidcBrowserClient`               | `BrowserAuthorizationClient`                              |
-| `OidcFrontendClientConfiguration` | `BrowserAuthorizationClientConfiguration`                 |
-| `ScreenViewport.decorationDiv`    | `DecorateContext.addHtmlDecoration`                       |
-| `ViewManager.forEachViewport`     | Use a `for..of` loop                                      |
+| Removed                                | Replacement                                               |
+| -------------------------------------- | --------------------------------------------------------- |
+| `CheckpointConnection.open`            | `CheckpointConnection.openRemote`                         |
+| `DecorateContext.screenViewport`       | `DecorateContext.viewport`                                |
+| `IModelApp.iModelClient`               | `IModelHubFrontend.iModelClient`                          |
+| `IModelConnection.Models.loaded`       | use `for..of` to iterate and `getLoaded` to look up by Id |
+| `IModelConnection.Views.saveThumbnail` | use IPC and `IModelDb.saveThumbnail`                      |
+| `IOidcFrontendClient`                  | `FrontendAuthorizationClient`                             |
+| `isIOidcFrontendClient`                | `FrontendAuthorizationClient`                             |
+| `OidcBrowserClient`                    | `BrowserAuthorizationClient`                              |
+| `OidcFrontendClientConfiguration`      | `BrowserAuthorizationClientConfiguration`                 |
+| `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
+| `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
+| `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
 
 ### @bentley/backend-itwin-client
 

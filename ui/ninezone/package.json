@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-ninezone",
-  "version": "3.0.0-dev.23",
+  "version": "3.0.0-dev.27",
   "description": "iModel.js Nine-zone React UI components",
   "main": "lib/ui-ninezone.js",
   "typings": "lib/ui-ninezone",
@@ -33,9 +33,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.23",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.23",
-    "@bentley/ui-core": "workspace:^3.0.0-dev.23",
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.27",
+    "@bentley/ui-abstract": "workspace:^3.0.0-dev.27",
+    "@bentley/ui-core": "workspace:^3.0.0-dev.27",
     "react": "^16.8.0",
     "react-dom": "^16.8.0"
   },
@@ -92,7 +92,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@itwin/itwinui-css": "^0.25.0",
+    "@itwin/itwinui-css": "^0.24.0",
     "@itwin/itwinui-react": "^1.14.0",
     "classnames": "^2.3.1",
     "immer": "9.0.2",

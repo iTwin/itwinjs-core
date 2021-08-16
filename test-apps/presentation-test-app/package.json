@@ -48,7 +48,7 @@
     "@bentley/ui-core": "workspace:*",
     "@bentley/ui-components": "workspace:*",
     "@bentley/ui-imodel-components": "workspace:*",
-    "@itwin/itwinui-css": "^0.25.0",
+    "@itwin/itwinui-css": "^0.24.0",
     "@itwin/itwinui-react": "^1.14.0",
     "react": "^16.8.0",
     "react-dom": "^16.8.0",

@@ -95,7 +95,6 @@ import { OnCancelFunc } from '@bentley/ui-abstract';
 import { OnItemExecutedFunc } from '@bentley/ui-abstract';
 import { OnNumberCommitFunc } from '@bentley/ui-abstract';
 import { OnValueCommitFunc } from '@bentley/ui-abstract';
-import { OpenMode } from '@bentley/bentleyjs-core';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
@@ -3048,7 +3047,7 @@ export interface IModelServices {
     getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
     getUsers(iModelId: string): Promise<IModelUserInfo[]>;
     getVersions(iModelId: string): Promise<VersionInfo[]>;
-    openIModel(contextId: string, iModelId: string, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection>;
+    openIModel(contextId: string, iModelId: string, changeSetId?: string): Promise<IModelConnection>;
 }
 
 // @internal

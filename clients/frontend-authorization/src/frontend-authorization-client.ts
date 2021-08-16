@@ -3,9 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 export * from "./FrontendAuthorizationClient";
+export * from "./FrontendAuthorizationClientLoggerCategory";
 
+export * from "./oidc/browser/BrowserAuthorizationBase";
 export * from "./oidc/browser/BrowserAuthorizationCallbackHandler";
 export * from "./oidc/browser/BrowserAuthorizationClient";
+export * from "./oidc/browser/BrowserAuthorizationClientRedirectState";
+export * from "./oidc/browser/BrowserAuthorizationLogger";
 
 /** @docs-package-description
  * The frontend-authorization-client package contains classes and structures relevant to user authentication/authorization in frontend applications, with specific implementations for web browser use-cases.

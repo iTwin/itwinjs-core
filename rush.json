@@ -182,13 +182,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodel-bridge",
-      "projectFolder": "core/imodel-bridge",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/imodeljs-frontend",
       "projectFolder": "core/frontend",
       "reviewCategory": "frontend",
