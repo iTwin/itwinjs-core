@@ -184,13 +184,13 @@ For each iTwin Connector author, there will always be two conflicting goals:
 
 The appropriate balancing of these two conflicting goals is not an easy task. However, where clear BIS schema types exist, they should always be used.
 
-#### Schemas
+##### Schemas
 
 See this article on [Importing a schema and bootstrapping definitions](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
 
 There are roughly three degrees of customizations you may need to employ to connect and align your data to an iModel. These degrees range from no customization at all (i.e., using the out-of-the-box domain schemas used by many of the Bentley authored Connectors) to extending the domain schemas to introduce additional classes (or subclasses) and properties. Finally, the most extreme level of customization which is to add classes and properties programmatically as your data is read (a.k.a, "dynamic schema").
 
-#### Domain Schemas
+###### Domain Schemas
 
 Bentley has authored many "domain" schemas to support connectors for many of its authoring applications. For the most aligned data (i.e., data published from your Connector uses the same classes and properties as data published from other connectors), it is best to use a domain schema.
 
@@ -200,9 +200,7 @@ Sometimes BIS domain schemas are not adequate to capture all the data in the aut
 
 ![Schema Methodology Decision](./SchemaDecision.PNG)
 
-#### Extending a Schema
-
-#### Dynamic Schemas
+###### Dynamic Schemas
 
 When the format for incoming data in the native source is not completely known, it is not possible to map the data to a fixed schema. A solution for this scenario is called Dynamic Schema. To avoid losing data, iTwin Connector may dynamically create application-specific schemas whose classes descend from the most appropriate BIS domain classes.
 
@@ -212,7 +210,7 @@ As an iTwin Connector always runs multiple times to keep an iModel synchronized,
 
 The [DynamicSchema](https://www.itwinjs.org/bis/domains/corecustomattributes.ecschema/#dynamicschema) custom attribute should be set on customer-specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes,` enabling iModelHub to detect dynamic schemas programmatically. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
 
-#### Display Labels
+##### Display Labels
 
 Wherever practical, the Elements generated from an iTwin Connector should be identifiable through an optimal "Display Label."
 
@@ -233,7 +231,7 @@ _But what value should an iTwin Connector set UserLabel to?_ There are two goals
 
 If the source application data has a property that conceptually matches the BIS UserLabel property, that value should always be transformed to UserLabel.
 
-#### CodeValues
+##### CodeValues
 
 Next to the name of the class, CodeValue is the 2nd most important property in an iModel for alignment.  Connectors should set CodeValue when a unique, human-readable identifier exists.
 
@@ -243,9 +241,9 @@ For some elements in some models, such an identifier may really not exist. For e
 
 Refer to [Element Codes](https://www.itwinjs.org/bis/intro/codes/) in the "Introduction to BIS" documentation.
 
-### Sync
+#### Sync
 
-#### Detecting and pushing changes
+##### Detecting and pushing changes
 
 Rather than starting over when the source data changes, a Connector should be able to detect and convert only the differences. That makes for compact, meaningful changesets, which are added to the iModel's [timeline](https://github.com/imodeljs/imodeljs/blob/master/docs/learning/iModelHub/index.md#the-timeline-of-changes-to-an-imodel).
 
@@ -253,7 +251,7 @@ In the case of source data that was previously converted and has changed, the Co
 
 To do incremental updates, a Connector must do Id mapping and change detection. The following sections describe how this is implemented.
 
-#### Provenance and External Repository
+##### Provenance and External Repository
 
 A Connector is usually dealing with two levels of provenance
 
@@ -268,7 +266,7 @@ A Connector is usually dealing with two levels of provenance
 2. In many cases, the external file is not a container for multiple smaller models, so there would be a one-to-one correspondence between an ExternalSource and its RepositoryLink,
 3. In the latter case, when there is also no possibility for referencing, layering or otherwise superimposing files and or models, then a common practice is to duplicate elements across one or more files to acheive the effect of reference elements. In this case, one element may refer to multiple ExternalSources and this is done via an [ExternalSourceGroup](https://www.itwinjs.org/reference/imodeljs-backend/elements/externalsourcegroup/)
 
-##### Case 1 : File metadata
+###### Case 1 : File metadata
 
 ExternalSource and ExternalSourceAttachments are used to describe the original external file reference hierarchy.
 
@@ -315,7 +313,7 @@ A Connector must also relate each physical model that it creates to the source d
     const key = scope + sourceItem.id.toLowerCase();
 ```
 
-##### Case 2 : Id mapping
+###### Case 2 : Id mapping
 
 Id mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data. If the source data has stable, unique IDs, then Id mapping could be straightforward.
 
@@ -325,7 +323,7 @@ An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema
 
 Note: the [Federation GUID](https://www.itwinjs.org/bis/intro/element-fundamentals/#federationguid) is an optional property available for mapping external ids to elements in the iModel. The Code is also a helpful way of searching for an element based on external data. If the source data does not have stable, unique IDs, then the Connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
 
-#### Change detection
+##### Change detection
 
 The connector must use the supplied [Synchronizer](#synchronizer) class to synchronize individual items from the external source with Elements in the iModel. This applies to both definitions and geometric elements.
 
