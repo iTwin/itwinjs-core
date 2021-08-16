@@ -455,6 +455,7 @@ importers:
       typescript: ~4.3.0
       webpack: 4.42.0
       ws: ^7.5.3
+      xmldom: ^0.6.0
     dependencies:
       '@azure/storage-blob': 10.4.0
       '@bentley/context-registry-client': link:../../clients/context-registry
@@ -468,6 +469,7 @@ importers:
       multiparty: 4.2.2
       semver: 5.7.1
       ws: 7.5.3
+      xmldom: 0.6.0
     devDependencies:
       '@bentley/backend-itwin-client': link:../backend-itwin-client
       '@bentley/bentleyjs-core': link:../bentley
@@ -832,6 +834,7 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       almost-equal: 1.1.0
+    optionalDependencies:
       xmldom: 0.6.0
     devDependencies:
       '@bentley/bentleyjs-core': link:../bentley
