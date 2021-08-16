@@ -772,7 +772,7 @@ export class IModelTransformer extends IModelExportHandler {
    * the target iModel when it is exported from the source iModel. */
   protected override async onExportSchema(_schema: ECSchemaMetaData.Schema): Promise<void> {
     // HACK: a bug in the native deserializer means we can't yet always read schemas serialized from this end
-    // so we invoke the native serializer as a workaround for now
+    // so we invoke the native serializer as a workaround for now, pending a fix in the native deserializer
     if (!this._hasNativelyExportedAllSchemas) {
       this._hasNativelyExportedAllSchemas = true;
       this.targetDb.nativeDb.exportSchemas(this._schemaExportDir);
@@ -973,16 +973,16 @@ export class TemplateModelCloner extends IModelTransformer {
     targetElementProps.federationGuid = Guid.createValue(); // clone from template should create a new federationGuid
     targetElementProps.code = Code.createEmpty(); // clone from template should not maintain codes
     if (sourceElement instanceof GeometricElement3d) {
-      const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
+      const placement = Placement3d.fromJSON((targetElementProps ).placement);
       if (placement.isValid) {
-        placement.multiplyTransform(this._transform3d!);
-        (targetElementProps as GeometricElement3dProps).placement = placement;
+        placement.multiplyTransform(this._transform3d);
+        (targetElementProps ).placement = placement;
       }
     } else if (sourceElement instanceof GeometricElement2d) {
-      const placement = Placement2d.fromJSON((targetElementProps as GeometricElement2dProps).placement);
+      const placement = Placement2d.fromJSON((targetElementProps ).placement);
       if (placement.isValid) {
-        placement.multiplyTransform(this._transform3d!);
-        (targetElementProps as GeometricElement2dProps).placement = placement;
+        placement.multiplyTransform(this._transform3d);
+        (targetElementProps ).placement = placement;
       }
     }
     this._sourceIdToTargetIdMap!.set(sourceElement.id, Id64.invalid); // keep track of (source) elementIds from the template model, but the target hasn't been inserted yet
