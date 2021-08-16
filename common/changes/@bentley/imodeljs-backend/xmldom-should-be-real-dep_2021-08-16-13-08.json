@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "transformer API needs xmldom as a dependency explicitly since it is now optional in ecschema-metadata",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend",
+  "email": "MichaelBelousov@users.noreply.github.com"
+}
