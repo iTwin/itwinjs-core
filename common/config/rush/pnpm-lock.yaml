@@ -4481,7 +4481,7 @@ importers:
       react-highlight-words: 0.17.0_react@17.0.2
       react-select: 3.1.0_react-dom@17.0.2+react@17.0.2
       react-virtualized: 9.22.3_react-dom@17.0.2+react@17.0.2
-      react-virtualized-auto-sizer: 1.0.5_react-dom@16.14.0+react@16.14.0
+      react-virtualized-auto-sizer: 1.0.6_react-dom@17.0.2+react@17.0.2
       react-window: 1.8.6_react-dom@17.0.2+react@17.0.2
       rxjs: 6.6.7
       shortid: 2.2.16
@@ -9795,7 +9795,6 @@ packages:
     dependencies:
       defer-to-connect: 2.0.1
 
-      '@babel/runtime': 7.14.8
   /@testing-library/dom/8.1.0:
     resolution: {integrity: sha512-kmW9alndr19qd6DABzQ978zKQ+J65gU2Rzkl8hriIetPnwpesRaK4//jEQyYh8fEALmGhomD/LBQqt+o+DL95Q==}
     engines: {node: '>=12'}
@@ -21607,7 +21606,7 @@ packages:
       prop-types: 15.7.2
       react: 17.0.2
 
-  /react-virtualized-auto-sizer/1.0.5_react-dom@16.14.0+react@16.14.0:
+  /react-virtualized-auto-sizer/1.0.6_react-dom@17.0.2+react@17.0.2:
     resolution: {integrity: sha512-7tQ0BmZqfVF6YYEWcIGuoR3OdYe8I/ZFbNclFlGOC3pMqunkYF/oL30NCjSGl9sMEb17AnzixDz98Kqc3N76HQ==}
     engines: {node: '>8.0.0'}
     peerDependencies:
