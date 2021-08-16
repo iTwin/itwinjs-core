@@ -11,12 +11,12 @@ import { IModelRpcProps, IpcListener, RemoveFunction } from "@bentley/imodeljs-c
 import { IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import { I18N, I18NNamespace } from "@bentley/imodeljs-i18n";
 import {
-  Content, ContentDescriptorRequestOptions, ContentRequestOptions, Descriptor, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
-  DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties, ElementPropertiesRequestOptions, ExtendedContentRequestOptions,
-  ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType, HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions,
-  InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PartialHierarchyModification,
-  PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem, RegisteredRuleset, RpcRequestsHandler, Ruleset,
-  RulesetVariable, UpdateInfo, VariableValueTypes,
+  Content, ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, ContentSourcesRpcResult, Descriptor,
+  DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DisplayValueGroup, DistinctValuesRequestOptions, ElementProperties,
+  ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, FieldDescriptor, FieldDescriptorType,
+  HierarchyCompareInfoJSON, HierarchyCompareOptions, HierarchyRequestOptions, InstanceKey, Item, KeySet, LabelDefinition, LabelRequestOptions, Node,
+  NodeKey, NodePathElement, Paged, PartialHierarchyModification, PresentationError, PresentationIpcEvents, PresentationStatus, PresentationUnitSystem,
+  RegisteredRuleset, RpcRequestsHandler, Ruleset, RulesetVariable, SelectClassInfo, UpdateInfo, VariableValueTypes,
 } from "@bentley/presentation-common";
 import * as moq from "@bentley/presentation-common/lib/test/_helpers/Mocks";
 import {
@@ -616,6 +616,46 @@ describe("PresentationManager", () => {
         .verifiable();
       const result = await manager.getNodePaths(options, keyArray, 1);
       expect(result).to.be.deep.equal(value);
+      rpcRequestsHandlerMock.verifyAll();
+    });
+
+  });
+
+  describe("getContentSources", () => {
+
+    it("requests content sources from proxy", async () => {
+      const classes = ["test.class1"];
+      const options: ContentSourcesRequestOptions<IModelConnection> = {
+        imodel: testData.imodelMock.object,
+        classes,
+      };
+      const rpcRequestsHandlerResponse: ContentSourcesRpcResult = {
+        sources: [{
+          selectClassInfo: "0x123",
+          isSelectPolymorphic: true,
+          navigationPropertyClasses: [],
+          pathToPrimaryClass: [],
+          relatedInstanceClasses: [],
+          relatedPropertyPaths: [],
+        }],
+        classesMap: {
+          "0x123": { name: "class_name", label: "Class Label" },
+        },
+      };
+      const expectedResult: SelectClassInfo[] = [{
+        selectClassInfo: { id: "0x123", name: "class_name", label: "Class Label" },
+        isSelectPolymorphic: true,
+        navigationPropertyClasses: [],
+        pathToPrimaryClass: [],
+        relatedInstanceClasses: [],
+        relatedPropertyPaths: [],
+      }];
+      rpcRequestsHandlerMock
+        .setup(async (x) => x.getContentSources(toIModelTokenOptions(options)))
+        .returns(async () => rpcRequestsHandlerResponse)
+        .verifiable();
+      const actualResult = await manager.getContentSources(options);
+      expect(actualResult).to.deep.eq(expectedResult);
       rpcRequestsHandlerMock.verifyAll();
     });
 

@@ -10040,6 +10040,8 @@ export class TileAdmin {
     // @internal (undocumented)
     onTilesElided(numElided: number): void;
     readonly onTileTreeLoad: BeEvent<(tileTree: TileTreeOwner) => void>;
+    // @internal (undocumented)
+    readonly optimizeBRepProcessing: boolean;
     // @internal
     process(): void;
     // @internal
@@ -10101,6 +10103,8 @@ export namespace TileAdmin {
         maximumMajorTileFormatVersion?: number;
         minimumSpatialTolerance?: number;
         mobileRealityTileMinToleranceRatio?: number;
+        // @internal
+        optimizeBRepProcessing?: boolean;
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;
