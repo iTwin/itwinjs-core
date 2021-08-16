@@ -973,16 +973,16 @@ export class TemplateModelCloner extends IModelTransformer {
     targetElementProps.federationGuid = Guid.createValue(); // clone from template should create a new federationGuid
     targetElementProps.code = Code.createEmpty(); // clone from template should not maintain codes
     if (sourceElement instanceof GeometricElement3d) {
-      const placement = Placement3d.fromJSON((targetElementProps ).placement);
+      const placement = Placement3d.fromJSON((targetElementProps as GeometricElement3dProps).placement);
       if (placement.isValid) {
-        placement.multiplyTransform(this._transform3d);
-        (targetElementProps ).placement = placement;
+        placement.multiplyTransform(this._transform3d!);
+        (targetElementProps as GeometricElement3dProps).placement = placement;
       }
     } else if (sourceElement instanceof GeometricElement2d) {
-      const placement = Placement2d.fromJSON((targetElementProps ).placement);
+      const placement = Placement2d.fromJSON((targetElementProps as GeometricElement2dProps).placement);
       if (placement.isValid) {
-        placement.multiplyTransform(this._transform3d);
-        (targetElementProps ).placement = placement;
+        placement.multiplyTransform(this._transform3d!);
+        (targetElementProps as GeometricElement2dProps).placement = placement;
       }
     }
     this._sourceIdToTargetIdMap!.set(sourceElement.id, Id64.invalid); // keep track of (source) elementIds from the template model, but the target hasn't been inserted yet
