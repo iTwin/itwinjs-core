@@ -8,7 +8,7 @@ import * as enzyme from "enzyme";
 import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import * as moq from "typemoq";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { PrimitiveValue, PropertyConverterInfo, PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey } from "@bentley/ui-abstract";
@@ -31,7 +31,7 @@ describe("Table", () => {
 
   afterEach(() => {
     sandbox.restore();
-    cleanup();
+
   });
 
   before(async () => {

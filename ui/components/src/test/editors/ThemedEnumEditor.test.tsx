@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
 import { PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
@@ -20,8 +20,6 @@ describe("<ThemedEnumEditor />", () => {
   after(() => {
     TestUtils.terminateUiComponents();
   });
-
-  afterEach(cleanup);
 
   it("should render", () => {
     const wrapper = mount(<ThemedEnumEditor />);

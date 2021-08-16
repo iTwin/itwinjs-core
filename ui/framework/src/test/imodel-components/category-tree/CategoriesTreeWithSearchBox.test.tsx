@@ -14,7 +14,7 @@ import { mockPresentationManager } from "@bentley/presentation-components/lib/te
 import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { TreeNodeItem } from "@bentley/ui-components";
-import { fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { CategoryTreeWithSearchBox } from "../../../ui-framework/imodel-components/category-tree/CategoriesTreeWithSearchBox";
 import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
 import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
@@ -122,7 +122,7 @@ describe("CategoryTreeWithSearchBox", () => {
           viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} categoryVisibilityHandler={visibilityHandler.object}
         />,
       );
-      await waitForElement(() => result.getByText("test-node"));
+      await waitFor(() => result.getByText("test-node"));
       expect(result.baseElement).to.matchSnapshot();
     });
 
@@ -134,7 +134,7 @@ describe("CategoryTreeWithSearchBox", () => {
           viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} categoryVisibilityHandler={visibilityHandler.object} showAll={showAll}
         />,
       );
-      await waitForElement(() => result.getByText("test-node"));
+      await waitFor(() => result.getByText("test-node"));
       showAll.emit();
       // let event listener to complete
       await TestUtils.flushAsyncOperations();
@@ -149,7 +149,7 @@ describe("CategoryTreeWithSearchBox", () => {
           viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} categoryVisibilityHandler={visibilityHandler.object} hideAll={hideAll}
         />,
       );
-      await waitForElement(() => result.getByText("test-node"));
+      await waitFor(() => result.getByText("test-node"));
       hideAll.emit();
       // let event listener to complete
       await TestUtils.flushAsyncOperations();
@@ -189,9 +189,9 @@ describe("CategoryTreeWithSearchBox", () => {
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} categoryVisibilityHandler={visibilityHandler.object} showSearchBox={true}
           />,
         );
-        await waitForElement(() => result.getByText("test-node"));
+        await waitFor(() => result.getByText("test-node"));
         applyFilter(result.container);
-        await waitForElement(() => result.getByText("filtered-node"));
+        await waitFor(() => result.getByText("filtered-node"));
       });
 
       it("enables all filtered categories", async () => {
@@ -201,9 +201,9 @@ describe("CategoryTreeWithSearchBox", () => {
             viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} categoryVisibilityHandler={visibilityHandler.object} showSearchBox={true} showAll={showAll}
           />,
         );
-        await waitForElement(() => result.getByText("test-node"));
+        await waitFor(() => result.getByText("test-node"));
         applyFilter(result.container);
-        await waitForElement(() => result.getByText("filtered-node"));
+        await waitFor(() => result.getByText("filtered-node"));
         showAll.emit();
         await TestUtils.flushAsyncOperations();
         expect(enableCategoryStub).to.be.calledWith(viewManagerMock.object, imodelMock.object, ["filter-node-id"], true);
