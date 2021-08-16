@@ -8,10 +8,9 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-import { ClientRequestContext, Config, Id64String, Logger, LogLevel, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Config, Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
@@ -304,7 +303,7 @@ export class SampleAppIModelApp {
       await req.downloadPromise;
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
     } else {
-      iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
+      iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId);
     }
 
     SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -414,7 +413,7 @@ export class SampleAppIModelApp {
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
-        iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
+        iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -726,13 +725,6 @@ async function main() {
 
   // Start the app.
   await SampleAppIModelApp.startup(opts);
-
-  // Add ApplicationInsights telemetry client
-  const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
-  if (iModelJsApplicationInsightsKey) {
-    const applicationInsightsClient = new FrontendApplicationInsightsClient(iModelJsApplicationInsightsKey);
-    IModelApp.telemetry.addClient(applicationInsightsClient);
-  }
 
   await SampleAppIModelApp.initialize();
 

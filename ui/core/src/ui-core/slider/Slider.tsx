@@ -9,10 +9,7 @@
 import "./Slider.scss";
 import classnames from "classnames";
 import * as React from "react";
-import {
-  Slider as CompoundSlider, GetRailProps, GetTrackProps, Handles, Rail, SliderItem, SliderModeFunction, Ticks, Tracks,
-} from "react-compound-slider";
-import { Tooltip } from "@itwin/itwinui-react";
+import { Slider as ItwinSlider } from "@itwin/itwinui-react";
 import { CommonProps } from "../utils/Props";
 import { BodyText } from "../text/BodyText";
 
@@ -38,12 +35,8 @@ export interface SliderProps extends CommonProps {
   /** The interaction mode. Default is 1. Possible values:
     * 1 - allows handles to cross each other.
     * 2 - keeps the sliders from crossing and separated by a step.
-    * 3 - makes the handles pushable and keep them a step apart.
-    * function - SliderModeFunction that will be passed the current values and the incoming update.
-    *  Your function should return what the mode should be set as.
     */
-  mode?: number | SliderModeFunction;
-
+  mode?: number | (() => number);
   /** Indicates whether the display of the Slider values is reversed. */
   reversed?: boolean;
   /** Indicates whether the Slider is disabled. */
@@ -89,30 +82,27 @@ export interface SliderProps extends CommonProps {
     *  Called with the values at each update (caution: high-volume updates when dragging).
     */
   onUpdate?: (values: ReadonlyArray<number>) => void;
-  /** Function triggered with ontouchstart or onmousedown on a handle. */
+  /** No longer available use onUpdate. */
   onSlideStart?: (values: ReadonlyArray<number>) => void;
-  /** Function triggered on ontouchend or onmouseup on a handle. */
+  /** No longer available use onChange. */
   onSlideEnd?: (values: ReadonlyArray<number>) => void;
 }
 
 /**
   * Slider React component displays a range slider.
-  * The Slider component uses various components from the
-  * [react-compound-slider](https://www.npmjs.com/package/react-compound-slider)
-  * package internally.
   * @public
+  * @deprecated Use Slider in itwinui-react instead
   */
 export function Slider(props: SliderProps) {
   const { className, style, min, max, values, step, mode,
     formatMin, formatMax,
-    onChange, onUpdate, onSlideStart, onSlideEnd,
+    onChange, onUpdate,
     showTicks, showTickLabels, formatTick, getTickCount, getTickValues, includeTicksInWidth,
     reversed, disabled,
     showMinMax, minImage, maxImage,
     showTooltip, tooltipBelow, formatTooltip,
   } = props;
-  const domain = [min, max];
-  const multipleValues = values.length > 1;
+
   const containerClassNames = classnames(
     "core-slider-container",
     className,
@@ -140,88 +130,67 @@ export function Slider(props: SliderProps) {
     return value.toFixed(numDecimals);
   }, [formatTooltip, step]);
 
+  const tooltipProps = React.useCallback((_index: number, val: number) => {
+    const content = internalFormatTooltip(val);
+    if (!showTooltip)
+      return { visible: false };
+    return { placement: tooltipBelow ? "bottom" : "top", content };
+  }, [internalFormatTooltip, showTooltip, tooltipBelow]);
+
+  const tickLabels = React.useMemo(() => {
+    let ticks: string[] | undefined;
+
+    if (showTicks) {
+      const count = getTickCount ? getTickCount() : 0;
+      if (count) {
+        ticks = [];
+        const increment = (max - min) / count;
+        for (let i = 0; i <= count; i++) {
+          const value = (i * increment) + min;
+          if (showTickLabels) {
+            const label = formatTick ? formatTick(value) : internalFormatTooltip(value);
+            ticks.push(label);
+          } else {
+            ticks.push("");
+          }
+        }
+      } else /* istanbul ignore else */ if (getTickValues) {
+        return getTickValues().map((val: number) => formatTick ? formatTick(val) : internalFormatTooltip(val));
+      }
+    }
+    return ticks;
+  }, [formatTick, getTickCount, getTickValues, internalFormatTooltip, max, min, showTickLabels, showTicks]);
+
+  const thumbMode = React.useMemo(() => {
+    let inMode = 1;
+    if (typeof mode === "function")
+      inMode = mode();
+
+    return 1 === inMode ? "allow-crossing" : "inhibit-crossing";
+  }, [mode]);
+
   return (
     <div className={containerClassNames} style={style}>
       {showMinMax &&
         <MinMax value={min} testId="core-slider-min" image={minImage} format={formatMin} />
       }
-      <CompoundSlider
-        domain={domain}
-        step={step}
-        mode={mode}
+      <ItwinSlider
+        className={sliderClassNames}
         values={values}
-        reversed={reversed}
+        min={min}
+        max={max}
+        step={step}
+        thumbMode={thumbMode}
+        trackDisplayMode={!reversed ? "auto" : "odd-segments"
+        }
         disabled={disabled}
+        minLabel=""
+        maxLabel=""
+        tooltipProps={tooltipProps}
+        tickLabels={tickLabels}
         onChange={onChange}
         onUpdate={onUpdate}
-        onSlideStart={onSlideStart}
-        onSlideEnd={onSlideEnd}
-        className={sliderClassNames}
-        data-testid="core-slider"
-      >
-        <Rail>
-          {({ getRailProps }) =>
-            <Rails getRailProps={getRailProps} />
-          }
-        </Rail>
-        <Tracks right={false} left={!multipleValues}>
-          {({ tracks, activeHandleID, getEventData, getTrackProps }) => (
-            <div className="slider-tracks">
-              {tracks.map(({ id, source, target }) => (
-                <TooltipTrack
-                  key={id}
-                  source={source}
-                  target={target}
-                  activeHandleID={activeHandleID}
-                  getEventData={getEventData}
-                  getTrackProps={getTrackProps}
-                  showTooltip={showTooltip ?? true}
-                  tooltipBelow={tooltipBelow}
-                  formatTooltip={internalFormatTooltip}
-                  multipleValues={multipleValues}
-                />
-              ))}
-            </div>
-          )}
-        </Tracks>
-        {showTicks &&
-          <Ticks values={getTickValues && getTickValues()} count={getTickCount && getTickCount()}>
-            {({ ticks }) => (
-              <div className="slider-ticks" data-testid="core-slider-ticks">
-                {ticks.map((tick: any, index: number) => (
-                  <Tick
-                    key={tick.id}
-                    tick={tick}
-                    count={ticks.length}
-                    index={index}
-                    formatTick={formatTick}
-                    showTickLabels={showTickLabels}
-                  />
-                ))}
-              </div>
-            )}
-          </Ticks>
-        }
-        <Handles>
-          {({ handles, activeHandleID, getHandleProps }) => (
-            <div className="slider-handles">
-              {handles.map((handle: SliderItem) => (
-                <Handle
-                  key={handle.id}
-                  domain={domain}
-                  handle={handle}
-                  isActive={handle.id === activeHandleID}
-                  getHandleProps={getHandleProps}
-                  showTooltip={showTooltip}
-                  tooltipBelow={tooltipBelow}
-                  formatTooltip={internalFormatTooltip}
-                  disabled={disabled}
-                />
-              ))}
-            </div>
-          )}
-        </Handles>
-      </CompoundSlider>
+      />
       {showMinMax &&
         <MinMax value={max} testId="core-slider-max" image={maxImage} format={formatMax} />
       }
@@ -249,203 +218,4 @@ function MinMax(props: MinMaxProps) {
     element = <BodyText className="core-slider-minmax" data-testid={testId}>{displayValue}</BodyText>;
 
   return element;
-}
-
-/** Properties for [[Rails]] component */
-interface RailsProps {
-  getRailProps: GetRailProps;
-}
-
-/** Rails component for Slider */
-function Rails(props: RailsProps) {
-  const { getRailProps } = props;
-
-  return (
-    <div className="core-slider-rail" {...getRailProps()}>
-      <div className="core-slider-rail-inner" />
-    </div>
-  );
-}
-
-/** Properties for [[TooltipTrack]] component */
-interface TooltipTrackProps {
-  source: SliderItem;
-  target: SliderItem;
-  getTrackProps: GetTrackProps;
-  activeHandleID: string;
-  getEventData: (e: Event) => object;
-  showTooltip?: boolean;
-  tooltipBelow?: boolean;
-  formatTooltip: (value: number) => string;
-  multipleValues?: boolean;
-}
-
-/** State for [[TooltipTrack]] component */
-interface TooltipTrackState {
-  percent: number | null;
-}
-
-/** TooltipTrack component for Slider */
-function TooltipTrack(props: TooltipTrackProps) {
-  const { source, target, activeHandleID, showTooltip, tooltipBelow,
-    multipleValues, formatTooltip, getTrackProps, getEventData,
-  } = props;
-
-  const [percent, setPercent] = React.useState(null as number | null);
-  // istanbul ignore next
-  const onPointerMove = (e: React.PointerEvent) => {
-    if (activeHandleID) {
-      setPercent(null);
-    } else {
-      const state = getEventData(e.nativeEvent) as TooltipTrackState;
-      setPercent(state.percent);
-    }
-  };
-
-  // istanbul ignore next
-  const onPointerLeave = () => {
-    setPercent(null);
-  };
-
-  let tooltipText = "";
-  if (multipleValues) {
-    const sourceValue = formatTooltip(source.value);
-    const targetValue = formatTooltip(target.value);
-    tooltipText = `${sourceValue} : ${targetValue}`;
-  }
-
-  // istanbul ignore next
-  return (
-    <>
-      <div
-        className="core-slider_track-tooltip-container"
-        style={{ left: `${percent}%` }}
-      />
-      <Tooltip
-        placement={tooltipBelow ? "bottom" : "top"}
-        visible={!activeHandleID && percent !== null && showTooltip && multipleValues}
-        content={tooltipText}
-      >
-        <div
-          className="core-slider-track"
-          data-testid="core-slider-track"
-          style={{ left: `${source.percent}%`, width: `${target.percent - source.percent}%` }}
-          onPointerMove={onPointerMove} onPointerLeave={onPointerLeave}
-          {...getTrackProps()}
-        >
-          <div className="core-slider-track-inner" />
-        </div>
-      </Tooltip>
-    </>
-  );
-}
-
-/** Properties for [[Tick]] component */
-interface TickProps {
-  tick: SliderItem;
-  count: number;
-  index: number;
-  formatTick?: (value: number) => string;
-  showTickLabels?: boolean;
-}
-
-/** Tick component for Slider */
-function Tick(props: TickProps) {
-  const { tick, count, showTickLabels, formatTick } = props;
-  return (
-    <div>
-      <div className="core-slider-tick-mark" style={{ left: `${tick.percent}%` }} />
-      {showTickLabels &&
-        <div className="core-slider-tick-label" style={{ marginLeft: `${-(100 / count) / 2}%`, width: `${100 / count}%`, left: `${tick.percent}%` }}>
-          {formatTick !== undefined ? formatTick(tick.value) : tick.value}
-        </div>
-      }
-    </div>
-  );
-}
-
-/** Properties for [[Handle]] component */
-interface HandleProps {
-  key: string;
-  handle: SliderItem;
-  isActive: boolean;
-  disabled?: boolean;
-  domain: number[];
-  getHandleProps: (id: string, config: object) => object;
-  showTooltip?: boolean;
-  tooltipBelow?: boolean;
-  formatTooltip?: (value: number) => string;
-}
-
-/** Handle component for Slider */
-function Handle(props: HandleProps) {
-  const {
-    domain: [min, max],
-    handle: { id, value, percent },
-    isActive,
-    disabled,
-    getHandleProps,
-    showTooltip,
-    tooltipBelow,
-    formatTooltip,
-  } = props;
-
-  const [mouseOver, setMouseOver] = React.useState(false);
-  const [focused, setFocused] = React.useState(false);
-
-  // istanbul ignore next
-  const onMouseEnter = () => {
-    setMouseOver(true);
-  };
-
-  // istanbul ignore next
-  const onMouseLeave = () => {
-    setMouseOver(false);
-  };
-
-  // istanbul ignore next
-  const onFocus = () => {
-    setFocused(true);
-  };
-
-  // istanbul ignore next
-  const onBlur = () => {
-    setFocused(false);
-  };
-
-  const classNames = classnames(
-    "core-slider-handle",
-    disabled && "core-disabled",
-  );
-
-  const tooltip = formatTooltip ? formatTooltip(value) : /* istanbul ignore next */ value.toString();
-
-  // istanbul ignore next
-  return (
-    <>
-      <Tooltip
-        placement={tooltipBelow ? "bottom" : "top"}
-        visible={(mouseOver || isActive || focused) && !disabled && showTooltip}
-        content={tooltip}
-      >
-        <div
-          aria-valuemin={min}
-          aria-valuemax={max}
-          aria-valuenow={value}
-          aria-disabled={disabled}
-          aria-label={tooltip}
-          className={classNames}
-          data-testid="core-slider-handle"
-          role="slider"
-          tabIndex={disabled ? -1 : 0}
-          style={{ left: `${percent}%` }}
-          {...getHandleProps(id, {
-            onMouseEnter,
-            onMouseLeave,
-            onFocus,
-            onBlur,
-          })} />
-      </Tooltip>
-    </>
-  );
 }

@@ -12,7 +12,7 @@ import { assert, DbOpcode, DbResult, Id64, Id64String, IModelStatus, OpenMode, R
 import { CodeQuery, CodeState, HubCode, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
 import { ChannelConstraintError, CodeProps, ElementProps, IModelError, ModelProps } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { BriefcaseIdArg, ChangesetIndexArg, LockProps, LockScope } from "./BackendHubAccess";
+import { BriefcaseDbArg, LockProps, LockScope } from "./BackendHubAccess";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Element, Subject } from "./Element";
 import { ChannelRootAspect } from "./ElementAspect";
@@ -448,7 +448,7 @@ export class ConcurrencyControl {
     this._cache.deleteFile();
 
     // NEEDS_WORK - release but don't update
-    const arg: BriefcaseIdArg & ChangesetIndexArg = { requestContext, briefcaseId: this.iModel.briefcaseId, iModelId: this.iModel.iModelId, csIndex: 0 };
+    const arg: BriefcaseDbArg = { requestContext, briefcase: this.iModel };
     await Promise.all([IModelHost.hubAccess.releaseAllLocks(arg), IModelHost.hubAccess.releaseAllCodes(arg)]);
     requestContext.enter();
     return this.openOrCreateCache(requestContext); // re-create after we know that locks and codes were deleted.

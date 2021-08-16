@@ -2,6 +2,42 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.19.5",
+      "tag": "@bentley/ui-components_v2.19.5",
+      "date": "Fri, 13 Aug 2021 21:48:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.4",
+      "tag": "@bentley/ui-components_v2.19.4",
+      "date": "Thu, 12 Aug 2021 13:09:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.3",
+      "tag": "@bentley/ui-components_v2.19.3",
+      "date": "Wed, 04 Aug 2021 20:29:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.2",
+      "tag": "@bentley/ui-components_v2.19.2",
+      "date": "Tue, 03 Aug 2021 18:26:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.1",
+      "tag": "@bentley/ui-components_v2.19.1",
+      "date": "Thu, 29 Jul 2021 20:01:11 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "`ControlledTree`: Fix tree background not being rendered."
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.0",
       "tag": "@bentley/ui-components_v2.19.0",
       "date": "Mon, 26 Jul 2021 12:21:25 GMT",
@@ -24,6 +60,39 @@
           },
           {
             "comment": "Add option prop to set time zone offset for date and time display in the TimelineComponent."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.4",
+      "tag": "@bentley/ui-components_v2.18.4",
+      "date": "Tue, 10 Aug 2021 19:35:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@bentley/ui-components_v2.18.3",
+      "date": "Wed, 28 Jul 2021 17:16:30 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Fixed scrolling in Table component"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.2",
+      "tag": "@bentley/ui-components_v2.18.2",
+      "date": "Mon, 26 Jul 2021 16:18:31 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "`ControlledTree`: Fix tree background not being rendered."
+          },
+          {
+            "comment": "Workaround for react-data-grid blank grid after scroll and update"
           }
         ]
       }
@@ -60,6 +129,18 @@
           },
           {
             "comment": "Add props to the TimelineComponent that will allow apps to pass a set of items to be prefixed, appended, or to replace the context menu entries."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.3",
+      "tag": "@bentley/ui-components_v2.17.3",
+      "date": "Mon, 26 Jul 2021 16:08:36 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Workaround for react-data-grid blank grid after scroll and update"
           }
         ]
       }
@@ -114,6 +195,18 @@
           },
           {
             "comment": "`VirtualizedPropertyGridWithDataProvider`: Fix loading animation overflowing its parent container."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.16.10",
+      "tag": "@bentley/ui-components_v2.16.10",
+      "date": "Thu, 22 Jul 2021 20:23:45 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Workaround for react-data-grid blank grid after scroll and update"
           }
         ]
       }

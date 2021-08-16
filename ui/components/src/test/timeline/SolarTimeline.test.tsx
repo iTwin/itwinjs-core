@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { BaseSolarDataProvider } from "../../ui-components/timeline/BaseSolarDataProvider";
 import { SolarTimeline } from "../../ui-components/timeline/SolarTimeline";
 import { SpeedTimeline } from "../../ui-components/timeline/SpeedTimeline";
@@ -34,7 +34,7 @@ describe("<SpeedTimeline />", () => {
   });
 
   afterEach(() => {
-    afterEach(cleanup);
+
   });
 
   it("should render", async () => {
@@ -69,7 +69,7 @@ describe("<SolarTimeline />", () => {
   });
 
   afterEach(() => {
-    afterEach(cleanup);
+
     rafSpy.resetHistory();
   });
 
@@ -143,7 +143,7 @@ describe("<SolarTimeline />", () => {
       fakeTimers.tick(500);
       fakeTimers.restore();
       // the following sets up a MutationObserver which triggers when the DOM is updated
-      const update1Button = await waitForElement(() => renderedComponent.getByTestId("play-button"));
+      const update1Button = await waitFor(() => renderedComponent.getByTestId("play-button"));
       if (update1Button) {
         expect(dataProvider.timeChangeCallbackCalled).to.be.true;
         expect(renderedComponent.container.getElementsByClassName("icon-media-controls-pause").length).to.eq(1);
@@ -151,7 +151,7 @@ describe("<SolarTimeline />", () => {
       // hit play/pause button to pause animation
       fireEvent.click(playButton);
       // the following sets up a MutationObserver which triggers when the DOM is updated
-      const update2Button = await waitForElement(() => renderedComponent.getByTestId("play-button"));
+      const update2Button = await waitFor(() => renderedComponent.getByTestId("play-button"));
       if (update2Button)
         expect(renderedComponent.container.getElementsByClassName("icon-media-controls-play").length).to.eq(1);
     } catch {

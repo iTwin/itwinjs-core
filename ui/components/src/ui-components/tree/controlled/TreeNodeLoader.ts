@@ -10,6 +10,7 @@ import { Observable as RxjsObservable } from "rxjs/internal/Observable";
 import { defer } from "rxjs/internal/observable/defer";
 import { from } from "rxjs/internal/observable/from";
 import { of } from "rxjs/internal/observable/of";
+import { concatAll } from "rxjs/internal/operators/concatAll";
 import { concatMap } from "rxjs/internal/operators/concatMap";
 import { finalize } from "rxjs/internal/operators/finalize";
 import { map } from "rxjs/internal/operators/map";
@@ -440,27 +441,33 @@ export class TreeDataSource implements IDisposable {
     numItems: number,
     requestNumChildren: boolean,
   ): RxjsObservable<TreeDataSourceResult> {
-    return defer(async (): Promise<TreeDataSourceResult> => {
+    // During each async operation there is a chance that data provider will become stale. Create an opportunity to
+    // unsubscribe after each async operation so that we stop interacting with the stale data provider immediately.
+    return defer(async () => {
       if (isTreeDataProviderInterface(this._dataProvider)) {
-        let numChildren: number | undefined;
-        if (requestNumChildren) {
-          numChildren = await this._dataProvider.getNodesCount(parent);
-        }
-
-        return {
-          loadedItems: (await this._dataProvider.getNodes(parent, numItems !== 0 ? { size: numItems, start: firstItemIndex } : undefined)),
-          numChildren,
-        };
+        const dataProvider = this._dataProvider;
+        return from(requestNumChildren ? dataProvider.getNodesCount(parent) : [undefined])
+          .pipe(
+            concatMap(async (numChildren) => {
+              const pageOptions = numItems !== 0 ? { size: numItems, start: firstItemIndex } : undefined;
+              return {
+                loadedItems: await dataProvider.getNodes(parent, pageOptions),
+                numChildren,
+              };
+            }),
+          );
       }
 
-      const loadedItems = await this.getItems(parent);
-
-      return {
-        loadedItems: numItems !== 0 ? loadedItems.slice(firstItemIndex, firstItemIndex + numItems) : loadedItems,
-        numChildren: loadedItems.length,
-      };
+      return from(this.getItems(parent))
+        .pipe(
+          map((loadedItems) => ({
+            loadedItems: numItems !== 0 ? loadedItems.slice(firstItemIndex, firstItemIndex + numItems) : loadedItems,
+            numChildren: loadedItems.length,
+          })),
+        );
     })
       .pipe(
+        concatAll(),
         publish(),
         refCount(),
       );

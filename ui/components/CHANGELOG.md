@@ -1,6 +1,33 @@
 # Change Log - @bentley/ui-components
 
-This log was last generated on Mon, 26 Jul 2021 12:21:25 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Aug 2021 21:48:09 GMT and should not be manually modified.
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:09 GMT
+
+_Version update only_
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+_Version update only_
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+_Version update only_
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+### Updates
+
+- `ControlledTree`: Fix tree background not being rendered.
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
@@ -13,6 +40,26 @@ Mon, 26 Jul 2021 12:21:25 GMT
 - `MutableTreeModel`: `removeChild` method now accepts child index for the second parameter.
 - Workaround for react-data-grid blank grid after scroll and update
 - Add option prop to set time zone offset for date and time display in the TimelineComponent.
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+### Updates
+
+- Fixed scrolling in Table component
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+### Updates
+
+- `ControlledTree`: Fix tree background not being rendered.
+- Workaround for react-data-grid blank grid after scroll and update
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
@@ -31,6 +78,13 @@ Fri, 09 Jul 2021 18:11:24 GMT
 - `ControlledTree`: Accept and forward size props to `TreeRenderer`.
 - Clean up timeline and fix test coverage.
 - Add props to the TimelineComponent that will allow apps to pass a set of items to be prefixed, appended, or to replace the context menu entries.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+### Updates
+
+- Workaround for react-data-grid blank grid after scroll and update
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
@@ -58,6 +112,13 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - `TreeRenderer`: Fix tree nodes being loaded repeatedly in some cases.
 - `VirtualizedPropertyGrid`: Remove top and bottom padding.
 - `VirtualizedPropertyGridWithDataProvider`: Fix loading animation overflowing its parent container.
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+### Updates
+
+- Workaround for react-data-grid blank grid after scroll and update
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT

@@ -3,7 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 @import "./list.scss";
+@import "~@bentley/ui-core/lib/ui-core/style/itwinui-overrides";
 
 .uicore-expandable-blocks-list {
   @include uicore-expandable-blocks-list;
+
+  @include small-itwinui-expandable-block;
 }

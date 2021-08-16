@@ -175,7 +175,6 @@ describe("DgnDbWorker", () => {
     expect(cancel.every((x) => x.isAborted || x.isSkipped)).to.be.true;
     expect(resolve.isOk || resolve.isSkipped || resolve.isAborted).to.be.true;
     expect(reject.isError || reject.isSkipped).to.be.true;
-    expect(workers.some((x) => x.isAborted)).to.be.true;
   });
 
   it("cancels a snap request", async () => {

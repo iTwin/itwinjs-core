@@ -22,6 +22,7 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { IMatch } from '@bentley/ui-abstract';
 import { InputActionMeta } from 'react-select/src/types';
 import { InputProps as InputProps_2 } from '@itwin/itwinui-react';
+import { Interaction } from 'scheduler/tracing';
 import { KeyboardEventHandler } from 'react-select/src/types';
 import { Matrix3d } from '@bentley/geometry-core';
 import { ProgressRadialProps } from '@itwin/itwinui-react';
@@ -30,7 +31,6 @@ import * as React from 'react';
 import * as ReactAutosuggest from 'react-autosuggest';
 import { RelativePosition } from '@bentley/ui-abstract';
 import { SelectComponentsConfig } from 'react-select/src/components/index';
-import { SliderModeFunction } from 'react-compound-slider';
 import { ToggleSwitchProps } from '@itwin/itwinui-react';
 import { ValueType } from 'react-select/src/types';
 
@@ -615,7 +615,7 @@ export interface DivProps extends CommonDivProps {
 
 // @public
 export const DivWithOutsideClick: {
-    new (props: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>): {
+    new (props: (CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps) | Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>): {
         outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
         isInCorePopup(element: HTMLElement): boolean;
@@ -649,7 +649,7 @@ export const DivWithOutsideClick: {
         componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
         UNSAFE_componentWillUpdate?(nextProps: Readonly<CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    new (props: CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps, context?: any): {
+    new (props: CommonDivProps & import("../hocs/withOnOutsideClick").WithOnOutsideClickProps, context: any): {
         outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
         isInCorePopup(element: HTMLElement): boolean;
@@ -1955,7 +1955,7 @@ export interface SizeProps {
     readonly width: number;
 }
 
-// @public
+// @public @deprecated
 export function Slider(props: SliderProps): JSX.Element;
 
 // @public
@@ -1972,7 +1972,7 @@ export interface SliderProps extends CommonProps {
     maxImage?: React.ReactNode;
     min: number;
     minImage?: React.ReactNode;
-    mode?: number | SliderModeFunction;
+    mode?: number | (() => number);
     onChange?: (values: ReadonlyArray<number>) => void;
     onSlideEnd?: (values: ReadonlyArray<number>) => void;
     onSlideStart?: (values: ReadonlyArray<number>) => void;
@@ -2511,6 +2511,9 @@ export function useDisposable<TDisposable extends IDisposable>(createDisposable:
 export function useEffectSkipFirst(callback: () => (void | (() => void | undefined)) | void, deps?: any[]): void;
 
 // @internal
+export function useEventListener(eventName: string, handler: (event: Event) => void, element: HTMLElement | Document | undefined): void;
+
+// @internal
 export function useLayoutResizeObserver(inElement: HTMLElement | null, onResize?: (width?: number, height?: number) => void): (number | undefined)[];
 
 // @public
@@ -2589,7 +2592,7 @@ export interface WidgetOpacityContextProps {
 
 // @public
 export const withIsPressed: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>) => {
-    new (props: Readonly<ComponentProps & WithIsPressedProps>): {
+    new (props: (ComponentProps & WithIsPressedProps) | Readonly<ComponentProps & WithIsPressedProps>): {
         handleOnPointerDown: () => void;
         handleOnPointerUp: () => void;
         handleOnMouseLeave: () => void;
@@ -2618,7 +2621,7 @@ export const withIsPressed: <ComponentProps extends {}>(Component: React.Compone
         componentWillUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): void;
         UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithIsPressedProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    new (props: ComponentProps & WithIsPressedProps, context?: any): {
+    new (props: ComponentProps & WithIsPressedProps, context: any): {
         handleOnPointerDown: () => void;
         handleOnPointerUp: () => void;
         handleOnMouseLeave: () => void;
@@ -2658,7 +2661,7 @@ export interface WithIsPressedProps {
 
 // @public
 export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>, defaultOnOutsideClick?: ((event: MouseEvent) => any) | undefined, useCapture?: boolean, usePointerEvents?: boolean) => {
-    new (props: Readonly<ComponentProps & WithOnOutsideClickProps>): {
+    new (props: (ComponentProps & WithOnOutsideClickProps) | Readonly<ComponentProps & WithOnOutsideClickProps>): {
         outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
         isInCorePopup(element: HTMLElement): boolean;
@@ -2692,7 +2695,7 @@ export const withOnOutsideClick: <ComponentProps extends {}>(Component: React.Co
         componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
         UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithOnOutsideClickProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    new (props: ComponentProps & WithOnOutsideClickProps, context?: any): {
+    new (props: ComponentProps & WithOnOutsideClickProps, context: any): {
         outsideClickContainerDiv?: HTMLDivElement | null | undefined;
         isDownOutside: boolean;
         isInCorePopup(element: HTMLElement): boolean;
@@ -2737,7 +2740,7 @@ export interface WithOnOutsideClickProps {
 
 // @public
 export const withTimeout: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>) => {
-    new (props: Readonly<ComponentProps & WithTimeoutProps>): {
+    new (props: (ComponentProps & WithTimeoutProps) | Readonly<ComponentProps & WithTimeoutProps>): {
         timer: Timer;
         componentDidMount(): void;
         componentDidUpdate(_prevProps: Readonly<ComponentProps & WithTimeoutProps>): void;
@@ -2764,7 +2767,7 @@ export const withTimeout: <ComponentProps extends {}>(Component: React.Component
         componentWillUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): void;
         UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithTimeoutProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    new (props: ComponentProps & WithTimeoutProps, context?: any): {
+    new (props: ComponentProps & WithTimeoutProps, context: any): {
         timer: Timer;
         componentDidMount(): void;
         componentDidUpdate(_prevProps: Readonly<ComponentProps & WithTimeoutProps>): void;

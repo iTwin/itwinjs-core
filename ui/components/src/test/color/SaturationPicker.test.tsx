@@ -7,7 +7,7 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { HSVColor } from "@bentley/imodeljs-common";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { SaturationPicker } from "../../ui-components/color/SaturationPicker";
 import TestUtils from "../TestUtils";
 
@@ -35,8 +35,6 @@ describe("<SaturationPicker />", () => {
     Object.assign(event, props);
     return event;
   };
-
-  afterEach(cleanup);
 
   it("picker should render", () => {
     const renderedComponent = render(<div style={satDivStyle}><SaturationPicker hsv={hsv} /></div>);

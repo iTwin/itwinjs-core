@@ -36,8 +36,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/bentleyjs-core/                        @imodeljs/admins
 /common/**/build-tools/                           @calebmshafer @wgoehrig
 /common/**/certa/                                 @calebmshafer @wgoehrig
-/common/**/config-loader.*                        @calebmshafer @wgoehrig
-/common/**/config-loader/                         @calebmshafer @wgoehrig
 
 # Covers most client libraries, all others with more specific reviewers should be after these two lines
 /common/**/*-client.*                             @calebmshafer @ramanujam-raman
@@ -61,7 +59,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/eslint-plugin/                         @calebmshafer @paulius-valiunas
 /common/**/express-server.*                       @calebmshafer @wgoehrig
 /common/**/express-server/                        @calebmshafer @wgoehrig
-/common/**/extension-cli/                         @calebmshafer @paulius-valiunas
 /common/**/extension-webpack-tools/               @calebmshafer @wgoehrig
 /common/**/frontend-devtools.*                    @imodeljs/display @Ellord207
 /common/**/frontend-devtools/                     @imodeljs/display @Ellord207
@@ -69,8 +66,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/geometry-core/                         @bbastings @EarlinLutz @mgooding @RBBentley
 /common/**/hypermodeling-frontend.*               @imodeljs/display @bbastings
 /common/**/hypermodeling-frontend/                @imodeljs/display @bbastings
-/common/**/imodel-bridge.*                        @imodeljs/connectors
-/common/**/imodel-bridge/                         @imodeljs/connectors
 /common/**/imodeljs-backend.*                     @imodeljs/admins
 /common/**/imodeljs-backend/                      @imodeljs/admins
 /common/**/imodeljs-common.*                      @imodeljs/admins @imodeljs/display
@@ -89,8 +84,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/linear-referencing-backend/            @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common.*            @calebmshafer @diegoalexdiaz
 /common/**/linear-referencing-common/             @calebmshafer @diegoalexdiaz
-/common/**/logger-config.*                        @calebmshafer @swwilson-bsi @wgoehrig
-/common/**/logger-config/                         @calebmshafer @swwilson-bsi @wgoehrig
 /common/**/map-layers/                            @bsteinbk @mdastous-bentley
 /common/**/oidc-signin-tool/                      @calebmshafer @wgoehrig
 /common/**/orbitgt-core.*                         @imodeljs/display
@@ -126,8 +119,6 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /core/geometry                  @bbastings @EarlinLutz @mgooding @RBBentley
 /core/hypermodeling             @bbastings @imodeljs/display
 /core/i18n                      @wgoehrig @calebmshafer
-/core/imodel-bridge             @imodeljs/connectors
-/core/logger-config             @calebmshafer @swwilson-bsi @wgoehrig
 /core/markup                    @kabentley @pmconne @bbastings
 /core/orbitgt                   @imodeljs/display
 /core/quantity                  @bsteinbk @calebmshafer
@@ -169,7 +160,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /test-apps/imodel-from-geojson              @mgooding @pmconne
 /test-apps/imodel-from-orbitgt              @imodeljs/display
 /test-apps/imodel-from-reality-model        @imodeljs/display
-/test-apps/imodel-transformer               @MichaelBelousov @mgooding
+/test-apps/imodel-transformer               @MichaelBelousov @ColinKerr
 /test-apps/ninezone-test-app                @imodeljs/ui
 /test-apps/presentation-test-app            @imodeljs/presentation
 /test-apps/synchro-schedule-importer        @RBBentley @pmconne
@@ -179,13 +170,11 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /tools/backend-webpack @calebmshafer @wgoehrig
 /tools/build @calebmshafer @wgoehrig
 /tools/certa @calebmshafer @wgoehrig
-/tools/config-loader @calebmshafer @wgoehrig
 /tools/extension-webpack @calebmshafer @wgoehrig
 /tools/oidc-signin-tool @calebmshafer @wgoehrig
 /tools/webpack-core @calebmshafer @wgoehrig
 /tools/ecschema2ts @calebmshafer @ColinKerr @wgoehrig
 /tools/eslint-plugin @calebmshafer @paulius-valiunas
-/tools/extension-cli @calebmshafer @paulius-valiunas
 /tools/internal @calebmshafer @wgoehrig
 /tools/perf-tools @calebmshafer @wgoehrig
 

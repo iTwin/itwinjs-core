@@ -3,6 +3,7 @@
 exports[`SearchBox renders renders correctly 1`] = `
 <div
   className="core-searchbox"
+  data-testid="core-searchbox-instance"
 >
   <input
     data-testid="core-searchbox-input"

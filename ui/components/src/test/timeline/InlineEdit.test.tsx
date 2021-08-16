@@ -6,12 +6,12 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { InlineEdit } from "../../ui-components/timeline/InlineEdit";
 
 describe("<InlineEdit />", () => {
   afterEach(() => {
-    afterEach(cleanup);
+
   });
 
   it("trigger call to componentDidUpdate", async () => {

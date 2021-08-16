@@ -150,7 +150,6 @@ import { IModelTileTreeId } from '@bentley/imodeljs-common';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
 import { IModelVersion } from '@bentley/imodeljs-common';
 import { IModelVersionProps } from '@bentley/imodeljs-common';
-import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IndexedPolyface } from '@bentley/geometry-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
 import { InternetConnectivityStatus } from '@bentley/imodeljs-common';
@@ -297,8 +296,6 @@ import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
 import { UsageLoggingClient } from '@bentley/usage-logging-client';
 import { UsageType } from '@bentley/usage-logging-client';
-import { User } from 'oidc-client';
-import { UserManagerSettings } from 'oidc-client';
 import { Vector2d } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -1625,7 +1622,7 @@ export interface BlankConnectionProps {
 
 // @public
 export class BriefcaseConnection extends IModelConnection {
-    protected constructor(props: IModelConnectionProps);
+    protected constructor(props: IModelConnectionProps, openMode: OpenMode);
     close(): Promise<void>;
     get contextId(): GuidString;
     get editingScope(): GraphicalEditingScope | undefined;
@@ -1870,8 +1867,6 @@ export class CheckpointConnection extends IModelConnection {
     get isClosed(): boolean;
     // (undocumented)
     protected _isClosed?: boolean;
-    // @deprecated
-    static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<CheckpointConnection>;
     static openRemote(contextId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
     }
 
@@ -2149,8 +2144,6 @@ export class DecorateContext extends RenderContext {
     createGraphicBuilder(type: GraphicType, transform?: Transform, id?: Id64String): GraphicBuilder;
     // @internal (undocumented)
     drawStandardGrid(gridOrigin: Point3d, rMatrix: Matrix3d, spacing: XAndY, gridsPerRef: number, _isoGrid?: boolean, _fixedRepetitions?: Point2d): void;
-    // @deprecated
-    get screenViewport(): ScreenViewport;
     setSkyBox(graphic: RenderGraphic): void;
     setViewBackground(graphic: RenderGraphic): void;
     get viewport(): ScreenViewport;
@@ -2554,33 +2547,6 @@ export class DynamicsContext extends RenderContext {
     changeDynamics(): void;
     createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder;
     }
-
-// @alpha @deprecated
-export class EditingFunctions {
-    constructor(connection: IModelConnection);
-    get categories(): EditingFunctions.CategoryEditor;
-    get codes(): EditingFunctions.Codes;
-    get models(): EditingFunctions.ModelEditor;
-    }
-
-// @alpha @deprecated (undocumented)
-export namespace EditingFunctions {
-    // @deprecated
-    export class CategoryEditor {
-        constructor(c: IModelConnection);
-        createAndInsertSpatialCategory(scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String>;
-        }
-    export class Codes {
-        constructor(c: IModelConnection);
-        makeCode(specName: string, scope: Id64String, value: string): Promise<CodeProps>;
-        makeModelCode(scope: Id64String, value: string): Promise<CodeProps>;
-    }
-    // @deprecated
-    export class ModelEditor {
-        constructor(c: IModelConnection);
-        createAndInsertPhysicalModel(newModelCode: CodeProps, privateModel?: boolean): Promise<Id64String>;
-        }
-}
 
 // @public
 export namespace EditManipulator {
@@ -3467,8 +3433,6 @@ export class GeometricModel3dState extends GeometricModelState {
     // @internal (undocumented)
     get is3d(): boolean;
     readonly isNotSpatiallyLocated: boolean;
-    // @deprecated (undocumented)
-    get iSpatiallyLocated(): boolean;
     readonly isPlanProjection: boolean;
     get isSpatiallyLocated(): boolean;
     // @internal (undocumented)
@@ -4435,8 +4399,6 @@ export class IModelApp {
     // @internal
     static get hubAccess(): FrontendHubAccess;
     static get i18n(): I18N;
-    // @deprecated (undocumented)
-    static get iModelClient(): IModelClient;
     // @internal (undocumented)
     static get initialized(): boolean;
     // @internal (undocumented)
@@ -4573,8 +4535,6 @@ export abstract class IModelConnection extends IModel {
     abstract get isClosed(): boolean;
     get isOpen(): boolean;
     get isReadonly(): boolean;
-    // @deprecated
-    isRemoteBriefcaseConnection(): this is RemoteBriefcaseConnection;
     get isSnapshot(): boolean;
     isSnapshotConnection(): this is SnapshotConnection;
     loadFontMap(): Promise<FontMap>;
@@ -4620,7 +4580,7 @@ export namespace IModelConnection {
     export class Elements {
         // @internal
         constructor(_iModel: IModelConnection);
-        getPlacements(elementIds: Iterable<Id64String>): Promise<Array<Placement & {
+        getPlacements(elementIds: Iterable<Id64String>, options?: Readonly<GetPlacementsOptions>): Promise<Array<Placement & {
             elementId: Id64String;
         }>>;
         getProps(arg: Id64Arg): Promise<ElementProps[]>;
@@ -4628,6 +4588,9 @@ export namespace IModelConnection {
         queryIds(params: EntityQueryParams): Promise<Id64Set>;
         queryProps(params: EntityQueryParams): Promise<ElementProps[]>;
         get rootSubjectId(): Id64String;
+    }
+    export interface GetPlacementsOptions {
+        type?: "3d" | "2d";
     }
     export class Models implements Iterable<ModelState> {
         [Symbol.iterator](): Iterator<ModelState>;
@@ -4639,9 +4602,8 @@ export namespace IModelConnection {
         getLoaded(id: string): ModelState | undefined;
         getProps(modelIds: Id64Arg): Promise<ModelProps[]>;
         load(modelIds: Id64Arg): Promise<void>;
-        // @deprecated
+        // @internal (undocumented)
         get loaded(): Map<string, ModelState>;
-        set loaded(loaded: Map<string, ModelState>);
         query(queryParams: ModelQueryParams): AsyncIterableIterator<ModelProps>;
         queryModelRanges(modelIds: Id64Arg): Promise<Range3dProps[]>;
         queryProps(queryParams: ModelQueryParams): Promise<ModelProps[]>;
@@ -4657,7 +4619,6 @@ export namespace IModelConnection {
         load(viewDefinitionId: Id64String): Promise<ViewState>;
         queryDefaultViewId(): Promise<Id64String>;
         queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]>;
-        saveThumbnail(viewId: Id64String, thumbnail: ThumbnailProps): Promise<void>;
     }
     export interface ViewSpec {
         class: string;
@@ -6811,25 +6772,6 @@ export interface OffScreenViewportOptions {
     viewRect: ViewRect;
 }
 
-// @beta @deprecated
-export class OidcBrowserClient extends ImsAuthorizationClient implements FrontendAuthorizationClient {
-    constructor(_configuration: OidcFrontendClientConfiguration);
-    // (undocumented)
-    protected _accessToken?: AccessToken;
-    dispose(): void;
-    getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
-    // @internal
-    protected getUserManagerSettings(requestContext: FrontendRequestContext): Promise<UserManagerSettings>;
-    get hasExpired(): boolean;
-    get hasSignedIn(): boolean;
-    initialize(requestContext: FrontendRequestContext): Promise<void>;
-    get isAuthorized(): boolean;
-    readonly onUserStateChanged: BeEvent<(token: AccessToken | undefined) => void>;
-    signIn(requestContext?: ClientRequestContext, successRedirectUrl?: string): Promise<void>;
-    protected signInSilent(requestContext: ClientRequestContext): Promise<User>;
-    signOut(requestContext?: ClientRequestContext): Promise<void>;
-    }
-
 // @public
 export type OnFlashedIdChangedEventArgs = {
     readonly current: Id64String;
@@ -7850,20 +7792,6 @@ export interface RealityTileTreeParams extends TileTreeParams {
     readonly yAxisUp?: boolean;
 }
 
-// @public @deprecated (undocumented)
-export class RemoteBriefcaseConnection extends CheckpointConnection {
-    // @internal
-    attachChangeCache(): Promise<void>;
-    // @internal
-    changeCacheAttached(): Promise<boolean>;
-    // (undocumented)
-    static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<RemoteBriefcaseConnection>;
-    pullAndMergeChanges(): Promise<void>;
-    pushChanges(description: string): Promise<void>;
-    saveChanges(description?: string): Promise<void>;
-    updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
-}
-
 // @public
 export abstract class RenderClipVolume {
     protected constructor(clipVector: ClipVector);
@@ -8609,7 +8537,7 @@ export class ScreenViewport extends Viewport {
     changeView(view: ViewState, opts?: ViewChangeOptions): void;
     clearViewUndo(): void;
     static create(parentDiv: HTMLDivElement, view: ViewState): ScreenViewport;
-    // @deprecated
+    // @internal
     readonly decorationDiv: HTMLDivElement;
     // @internal (undocumented)
     dispose(): void;
@@ -11952,8 +11880,6 @@ export class ViewManager implements Iterable<ScreenViewport> {
     get dynamicsCursor(): string;
     // @internal (undocumented)
     endDynamicsMode(): void;
-    // @deprecated
-    forEachViewport(func: (vp: ScreenViewport) => void): void;
     // @internal
     getDecorationGeometry(hit: HitDetail): GeometryStreamProps | undefined;
     // @internal
@@ -12803,8 +12729,6 @@ export abstract class ViewState2d extends ViewState {
     isSpatialView(): this is SpatialViewState;
     // (undocumented)
     load(): Promise<void>;
-    // @deprecated
-    onRenderFrame(_viewport: Viewport): void;
     // (undocumented)
     readonly origin: Point2d;
     // @internal (undocumented)
@@ -12911,8 +12835,6 @@ export abstract class ViewState3d extends ViewState {
     minimumFrontDistance(): number;
     moveCameraLocal(distance: Vector3d): ViewStatus;
     moveCameraWorld(distance: Vector3d): ViewStatus;
-    // @deprecated
-    onRenderFrame(_viewport: Viewport): void;
     readonly origin: Point3d;
     rootToCartographic(root: XYAndZ, result?: Cartographic): Cartographic | undefined;
     rootToCartographicFromGcs(root: XYAndZ, result?: Cartographic): Promise<Cartographic | undefined>;

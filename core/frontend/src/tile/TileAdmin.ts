@@ -595,7 +595,7 @@ export class TileAdmin {
   private getTileRequestProps(tile: IModelTile) {
     const tree = tile.iModelTree;
     const tokenProps = tree.iModel.getRpcProps();
-    let guid = tree.geometryGuid || tokenProps.changeSetId || "first";
+    let guid = tree.geometryGuid || tokenProps.changeset?.id || "first";
     if (tree.contentIdQualifier)
       guid = `${guid}_${tree.contentIdQualifier}`;
 
