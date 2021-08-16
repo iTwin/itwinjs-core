@@ -23,7 +23,6 @@ export * from "./EmphasizeElementsProps";
 export * from "./EntityState";
 export * from "./FeatureLogBatchClient";
 export * from "./FeatureOverrideProvider";
-export * from "./FeatureTrackingManager";
 export * from "./FlashSettings";
 export * from "./FrontendLoggerCategory";
 export * from "./FrontendRequestContext";
