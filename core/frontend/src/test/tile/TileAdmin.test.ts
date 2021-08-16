@@ -603,8 +603,8 @@ describe("TileAdmin", () => {
   });
 
   describe("options", () => {
-    before(async () => await MockRender.App.startup());
-    after(async () => await MockRender.App.shutdown());
+    before(async () => MockRender.App.startup());
+    after(async () => MockRender.App.shutdown());
 
     it("uses expected defaults", () => {
       const admin = IModelApp.tileAdmin;
