@@ -529,6 +529,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
     );
   });
   it("onPlayPause called for TimerPausePlay event", () => {
+    fakeTimers = sinon.useFakeTimers();  // added
     const dataProvider = new TestTimelineDataProvider();
     const spyOnPlayPause = sinon.spy();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars
