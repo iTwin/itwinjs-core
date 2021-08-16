@@ -6,9 +6,9 @@
  * @module ContextRegistry
  */
 import { assert, Config } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 import * as deepAssign from "deep-assign";
-import { ITwin, ITwinAccess } from "./ITwinAccessProps";
+import { ITwin, ITwinAccess, ITwinQueryArg } from "./ITwinAccessProps";
 
 /** The iTwin context. Currently supported context types are [[Project]] and [[Asset]].
  * @beta
@@ -116,7 +116,7 @@ class Asset extends HiddenContext {
 /** A set of query options containing favorite and most recently used
  * @beta
  */
-class HiddenQueryOptions implements RequestQueryOptions {
+class HiddenQueryOptions {
   // The public Project API (at time of writing) supports $search but not $filter
   // instead the currently used API supports $filter but not $search
   public $filter?: string;
@@ -142,10 +142,14 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
 
   /** Get iTwins accessible to the user
    * @param requestContext The client request context
-   * @param queryOptions Options for paging or filtering
+   * @param arg Options for paging or filtering
    * @returns Array of iTwins, may be empty
    */
-  public async getAll(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
+  public async getAll(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]> {
+    const queryOptions: HiddenQueryOptions = {
+      $top: arg.top,
+      $skip: arg.skip,
+    };
     return this.getByQuery(requestContext, queryOptions);
   }
 
@@ -155,32 +159,37 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    * @returns Array of matching iTwins, may be empty
    */
   public async getAllByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin[]> {
-    const query: HiddenQueryOptions = {
+    const queryOptions: HiddenQueryOptions = {
       $filter: `name+eq+'${name}'`,
     };
-    return this.getByQuery(requestContext, query);
+    return this.getByQuery(requestContext, queryOptions);
   }
 
   /** Get favorited iTwins
    * @param requestContext The client request context
-   * @param queryOptions Options for paging or filtering
+   * @param arg Options for paging or filtering
    * @returns Array of favorited iTwins, may be empty
   */
-  public async getFavorites(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
-    const expandedQuery: HiddenQueryOptions = queryOptions ? queryOptions : {};
-    expandedQuery.isFavorite = true;
-
-    return this.getByQuery(requestContext, expandedQuery);
+  public async getFavorites(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]> {
+    const queryOptions: HiddenQueryOptions = {
+      $top: arg.top,
+      $skip: arg.skip,
+      isFavorite: true,
+    };
+    return this.getByQuery(requestContext, queryOptions);
   }
 
   /** Get the most recently used iTwins
    * @param requestContext The client request context
-   * @param queryOptions Options for paging or filtering
+   * @param arg Options for paging or filtering
    * @returns Array of most recently used iTwins, may be empty
    */
-  public async getRecentlyUsed(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
-    const expandedQuery: HiddenQueryOptions = queryOptions ? queryOptions : {};
-    expandedQuery.isMRU = true;
+  public async getRecentlyUsed(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]> {
+    const queryOptions: HiddenQueryOptions = {
+      $top: arg.top,
+      $skip: arg.skip,
+      isMRU: true,
+    };
 
     return this.getByQuery(requestContext, queryOptions);
   }
@@ -192,7 +201,7 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    * @throws If no matching iTwin found, or multiple matching iTwin found
    */
   public async getById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ITwin> {
-    const queryOptions: RequestQueryOptions = {
+    const queryOptions: HiddenQueryOptions = {
       $filter: `$id+eq+'${id}'`, // At time of writing $filter is supported, this may not be the case in the future
     };
     // Only one iTwin
