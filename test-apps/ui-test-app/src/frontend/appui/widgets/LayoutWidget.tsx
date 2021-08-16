@@ -3,11 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
+import { IModelApp, NotifyMessageDetails, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 import {
-  FrontstageManager, StagePanelState, useActiveFrontstageDef,
+  FrontstageDef, FrontstageManager, StagePanelState, useActiveFrontstageDef,
 } from "@bentley/ui-framework";
 import { SpecialKey, StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
-import { NumberInput, Select } from "@bentley/ui-core";
+import { NumberInput, RectangleProps, Select } from "@bentley/ui-core";
 import { Button, Input } from "@itwin/itwinui-react";
 
 function usePanelDef(location: StagePanelLocation) {
@@ -484,6 +485,132 @@ export function LayoutInfo() {
       <SelectPanelInfo />
       <br />
       <SelectWidgetInfo />
+    </WidgetContent>
+  );
+}
+
+function FloatingWidgetSelect({
+  id,
+  onChange,
+  allIds,
+}: {
+  id?: string;
+  onChange?(id: string): void;
+  allIds: string[];
+}) {
+  const [options, setOptions] = React.useState<Array<string>>([]);
+  React.useEffect(() => {
+
+    if (0 === allIds.length) {
+      setOptions([]);
+      return;
+    }
+    const newOptions = [];
+    for (const floatingWidgetId of allIds) {
+      newOptions.push(floatingWidgetId);
+    }
+    setOptions(newOptions);
+  }, [allIds]);
+
+  return (
+    // eslint-disable-next-line deprecation/deprecation
+    <Select
+      options={options}
+      defaultValue={id}
+      onChange={(e) => {
+        onChange && onChange(e.target.value);
+      }}
+    />
+  );
+}
+
+function getFloatingWidgetContainerBounds(frontstageDef: FrontstageDef | undefined, floatingWidgetId: string | undefined) {
+  const defaultBounds = { left: 0, right: 0, top: 0, bottom: 0 };
+  const foundBounds = frontstageDef?.getFloatingWidgetContainerBounds(floatingWidgetId ?? "");
+  return foundBounds ?? defaultBounds;
+}
+
+export function FloatingLayoutInfo() {
+  const frontstageDef = useActiveFrontstageDef();
+  const [floatingIds, setFloatingIds] = React.useState(() => frontstageDef ? frontstageDef.getFloatingWidgetContainerIds() : []);
+  const [floatingWidgetId, setFloatingWidgetId] = React.useState<string | undefined>(floatingIds?.length ? floatingIds[0] : undefined);
+  const [bounds, setBounds] = React.useState<RectangleProps>(() => getFloatingWidgetContainerBounds(frontstageDef, floatingWidgetId));
+  React.useEffect(() => {
+    return FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener((e) => {
+      if (e.frontstageDef === frontstageDef) {
+        const allIds = frontstageDef ? frontstageDef.getFloatingWidgetContainerIds() : [];
+        setFloatingIds(allIds);
+        let widgetId = floatingWidgetId;
+        if (!floatingWidgetId || !allIds.includes(floatingWidgetId)) {
+          widgetId = allIds.length ? allIds[0] : undefined;
+          setFloatingWidgetId(widgetId);
+        }
+        // give time for DOM to be updated
+        setImmediate(() => {
+          setBounds(getFloatingWidgetContainerBounds(frontstageDef, widgetId));
+        });
+      }
+    });
+  }, [frontstageDef, floatingWidgetId]);
+
+  const handleWidgetIdChanged = React.useCallback((widgetId: string) => {
+    setFloatingWidgetId(widgetId);
+    setBounds(getFloatingWidgetContainerBounds(frontstageDef, widgetId));
+  }, [frontstageDef]);
+
+  const handleBoundsChanged = React.useCallback((side: "left" | "top" | "bottom" | "right", value: number) => {
+    if (floatingWidgetId && frontstageDef) {
+      const newBounds = { ...bounds };
+      switch (side) {
+        case "left":
+          newBounds.left = value;
+          break;
+        case "right":
+          newBounds.right = value;
+          break;
+        case "top":
+          newBounds.top = value;
+          break;
+        case "bottom":
+          newBounds.bottom = value;
+          break;
+      }
+      // setBounds(newBounds);
+      frontstageDef.setFloatingWidgetContainerBounds(floatingWidgetId, newBounds);
+    }
+  }, [bounds, floatingWidgetId, frontstageDef]);
+
+  const [widgetIdToLocate, setWidgetIdToLocate] = React.useState<string | undefined>();
+  const handleSetWidgetIdToLocate = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    setWidgetIdToLocate(e.target.value);
+  }, []);
+
+  const handleLookup = React.useCallback(() => {
+    if (widgetIdToLocate && frontstageDef) {
+      const containerId = frontstageDef.getFloatingWidgetContainerIdByWidgetId(widgetIdToLocate);
+      const briefMessage = containerId ? `ContainerId='${containerId}' for WidgetId='${widgetIdToLocate}'` :
+        `No Floating Container found for WidgetId='${widgetIdToLocate}'`;
+      const info = new NotifyMessageDetails(OutputMessagePriority.Info, briefMessage, undefined, OutputMessageType.Toast);
+      IModelApp.notifications.outputMessage(info);
+    }
+  }, [frontstageDef, widgetIdToLocate]);
+
+  return (
+    <WidgetContent>
+      <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", rowGap: "4px", columnGap: "8px" }} >
+        <span>Container Id:</span>
+        <FloatingWidgetSelect allIds={floatingIds} id={floatingWidgetId} onChange={handleWidgetIdChanged} />
+        <span>Left:</span>
+        <NumberInput containerStyle={{ width: "60px" }} value={bounds.left} step={5} onChange={(value) => handleBoundsChanged("left", value ?? 0)} />
+        <span>Top:</span>
+        <NumberInput containerStyle={{ width: "60px" }} value={bounds.top} step={5} onChange={(value) => handleBoundsChanged("top", value ?? 0)} />
+        <span>Right:</span>
+        <NumberInput containerStyle={{ width: "60px" }} value={bounds.right} step={5} onChange={(value) => handleBoundsChanged("right", value ?? 0)} />
+        <span>Bottom:</span>
+        <NumberInput containerStyle={{ width: "60px" }} value={bounds.bottom} step={5} onChange={(value) => handleBoundsChanged("bottom", value ?? 0)} />
+        <Input placeholder="Enter Widget Id to find" onChange={handleSetWidgetIdToLocate} defaultValue={widgetIdToLocate} />
+        <Button styleType="high-visibility" style={{ width: "300px" }} disabled={!widgetIdToLocate} onClick={handleLookup} >Lookup ContainerId</Button>
+      </div>
     </WidgetContent>
   );
 }

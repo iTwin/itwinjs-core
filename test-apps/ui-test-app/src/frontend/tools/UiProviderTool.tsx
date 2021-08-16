@@ -168,7 +168,7 @@ class TestUiProvider implements UiItemsProvider {
       widgets.push({
         id: "addonWidget",
         label: "Add On 1",
-        getWidgetContent: () => <FillCentered>Addon Widget in panel</FillCentered>, // eslint-disable-line react/display-name
+        getWidgetContent: () => <FillCentered>Addon Widget  (id: addonWidget)</FillCentered>, // eslint-disable-line react/display-name
         defaultState: WidgetState.Floating,
         floatingContainerId: "floating-addonWidget-container",
         isFloatingStateSupported: true,
@@ -176,7 +176,7 @@ class TestUiProvider implements UiItemsProvider {
       widgets.push({
         label: "Add On 2",
         id: "addonWidget2",
-        getWidgetContent: () => <FillCentered>Addon Widget 2 in panel</FillCentered>, // eslint-disable-line react/display-name
+        getWidgetContent: () => <FillCentered>Addon Widget 2 (id: addonWidget2)</FillCentered>, // eslint-disable-line react/display-name
         defaultState: WidgetState.Floating,
         floatingContainerId: "floating-addonWidget-container",
         isFloatingStateSupported: true,
@@ -191,7 +191,7 @@ class TestUiProvider implements UiItemsProvider {
         getWidgetContent: () => {
           return (<FillCentered>
             <div style={{ margin: "5px", display: "flex", flexDirection: "column", alignItems: "center" }}>
-              Addon Widget for rightMiddle section
+              Widget id: addonWidgetMiddle
               <div>
                 (Not Resizable)
               </div>

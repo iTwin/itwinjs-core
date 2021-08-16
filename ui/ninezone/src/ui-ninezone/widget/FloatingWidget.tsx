@@ -12,7 +12,7 @@ import * as React from "react";
 import { CommonProps, Point, PointProps, Rectangle, useRefs } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
 import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
-import { NineZoneDispatchContext, TabsStateContext } from "../base/NineZone";
+import { NineZoneDispatchContext } from "../base/NineZone";
 import { FloatingWidgetState, toolSettingsTabId, WidgetState } from "../base/NineZoneState";
 import { WidgetContentContainer } from "./ContentContainer";
 import { WidgetTabBar } from "./TabBar";
@@ -93,15 +93,15 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
     dragged && "nz-dragged",
     props.className,
     isToolSettingsTab && "nz-floating-toolsettings",
-    floatingWidgetId
   );
 
-  // never allow resizing of toolsettings - always auto-fit them
+  // never allow resizing of tool settings - always auto-fit them
   const isResizable = (undefined === widget.isFloatingStateWindowResizable || widget.isFloatingStateWindowResizable) && !isToolSettingsTab;
 
   return (
     <Widget
       className={className}
+      widgetId={floatingWidgetId}
       style={props.style}
     >
       <WidgetTabBar separator={!widget.minimized} />
@@ -116,7 +116,7 @@ const FloatingWidgetComponent = React.memo<CommonProps>(function FloatingWidgetC
         <FloatingWidgetHandle handle="bottomLeft" />
         <FloatingWidgetHandle handle="bottomRight" />
       </>}
-    </Widget>
+    </Widget >
   );
 });
 

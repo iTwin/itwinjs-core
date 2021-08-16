@@ -13,7 +13,7 @@ import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
 import {
   dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPopoutLocation, isPopoutWidgetLocation,
-  NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow, setFloatingWidgetBounds,
+  NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
 } from "@bentley/ui-ninezone";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupManager } from "../content/ContentGroup";
@@ -614,9 +614,9 @@ export class FrontstageDef {
         // istanbul ignore else
         if (state) {
           this.nineZoneState = state;
-          setImmediate(() => {
+          setTimeout(() => {
             popoutWidgetContainerId && UiFramework.childWindowManager.closeChildWindow(popoutWidgetContainerId, true);
-          });
+          }, 600);
         }
       }
     }
@@ -711,10 +711,13 @@ export class FrontstageDef {
   }
 
   /** @internal */
-  public setFloatingWidgetBounds(floatingWidgetId: string, bounds: RectangleProps) {
+  public setFloatingWidgetBoundsInternal(floatingWidgetId: string, bounds: RectangleProps, inhibitNineZoneStateChangedEvent = false) {
     if (this.nineZoneState) {
-      const newState = setFloatingWidgetBounds(this.nineZoneState, floatingWidgetId, bounds);
-      this._nineZoneState = newState; // set without triggering new render
+      const newState = setFloatingWidgetContainerBounds(this.nineZoneState, floatingWidgetId, bounds);
+      if (inhibitNineZoneStateChangedEvent)
+        this._nineZoneState = newState; // set without triggering new render
+      else
+        this.nineZoneState = newState;
     }
   }
 
@@ -754,5 +757,46 @@ export class FrontstageDef {
         }
       }
     }
+  }
+
+  public setFloatingWidgetContainerBounds(floatingWidgetId: string, bounds: RectangleProps) {
+    if (!this.nineZoneState || !(floatingWidgetId in this.nineZoneState.floatingWidgets.byId))
+      return false;
+
+    this.setFloatingWidgetBoundsInternal(floatingWidgetId, bounds);
+    return true;
+  }
+
+  public getFloatingWidgetContainerIds(): string[] {
+    if (!this.nineZoneState)
+      return [];
+
+    return [...this.nineZoneState.floatingWidgets.allIds];
+  }
+
+  public getFloatingWidgetContainerIdByWidgetId(widgetId: string): string | undefined {
+    if (!this.nineZoneState)
+      return undefined;
+
+    const location = findTab(this.nineZoneState, widgetId);
+    if (location && isFloatingLocation(location)) {
+      return location.floatingWidgetId;
+    }
+    return undefined;
+  }
+
+  public getFloatingWidgetContainerBounds(floatingWidgetId: string | undefined) {
+    if (!floatingWidgetId)
+      return undefined;
+
+    if (this.nineZoneState && (floatingWidgetId in this.nineZoneState.floatingWidgets.byId)) {
+      const foundWidget = document.querySelector(`div.nz-widget-floatingWidget[data-widget-id='${floatingWidgetId}']`);
+      if (foundWidget) {
+        const domRect = foundWidget.getBoundingClientRect();
+        return { left: domRect.left, right: domRect.right, top: domRect.top, bottom: domRect.bottom };
+      }
+      return this.nineZoneState.floatingWidgets.byId[floatingWidgetId].bounds;
+    }
+    return undefined;
   }
 }

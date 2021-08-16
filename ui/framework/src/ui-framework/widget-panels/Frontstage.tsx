@@ -160,7 +160,7 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef) {
       return;
     }
     if (action.type === "FLOATING_WIDGET_SET_BOUNDS") {
-      frontstageDef.setFloatingWidgetBounds(action.id, action.bounds);
+      frontstageDef.setFloatingWidgetBoundsInternal(action.id, action.bounds, true);
       return;
     }
     const nineZoneState = frontstageDef.nineZoneState;
@@ -741,8 +741,16 @@ interface SavedTabsState {
   readonly [id: string]: SavedTabState;
 }
 
+// // We don't save if widget is allowed to "pop-out" or if floating widget can be resized.
+// type SavedWidgetState = Omit<WidgetState, | "canPopout" | "isFloatingStateWindowResizable">;
+//
+// interface SavedWidgetsState {
+//   readonly [id: string]: SavedWidgetState;
+// }
+
 interface SavedNineZoneState extends Omit<NineZoneState, "tabs"> {
   readonly tabs: SavedTabsState;
+  //  readonly widgets: SavedWidgetsState;
 }
 
 function addRemovedTab(nineZone: Draft<NineZoneState>, widgetDef: WidgetDef) {

@@ -30,6 +30,7 @@ function createSavedNineZoneState(args?: Partial<NineZoneState>) {
   return {
     ...createNineZoneState(args),
     tabs: {},
+    widgets: {},
   };
 }
 
