@@ -32,7 +32,6 @@ import { RelationshipClass } from "./RelationshipClass";
 import { SchemaItem } from "./SchemaItem";
 import { Unit } from "./Unit";
 import { UnitSystem } from "./UnitSystem";
-import { DOMParser, XMLSerializer } from "xmldom";
 
 const SCHEMAURL3_2_JSON = "https://dev.bentley.com/json_schemas/ec/32/ecschema";
 const SCHEMAURL3_2_XML = "http://www.bentley.com/schemas/Bentley.ECXML.3.2";
@@ -505,6 +504,19 @@ export class Schema implements CustomAttributeContainerProps {
    * @alpha
    */
   public async toXmlString() {
+    /* eslint-disable @typescript-eslint/naming-convention */
+    let DOMParser: typeof import("xmldom").DOMParser;
+    let XMLSerializer: typeof import("xmldom").XMLSerializer;
+    /* eslint-enable @typescript-eslint/naming-convention */
+    try {
+      const xmlDom = await import("xmldom");
+      DOMParser = xmlDom.DOMParser;
+      XMLSerializer = xmlDom.XMLSerializer;
+    } catch (_importErr) {
+      throw Error(
+        "Could not find the 'xmldom' package, which is an optional dependency, consumers of @bentley/ecschema-metadata "
+        + "that want to use [toXmlString] must include the optional dependency themselves");
+    }
     const xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`, "application/xml");
     const filledDoc = await this.toXml(xmlDoc);
     const schemaText = new XMLSerializer().serializeToString(filledDoc);
