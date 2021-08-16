@@ -63,11 +63,12 @@ export class BackendTileGenerator {
     maximumMajorTileFormatVersion: CurrentImdlVersion.Major,
     enableInstancing: true,
     enableImprovedElision: true,
-    useProjectExtents: false,
+    useProjectExtents: true,
     disableMagnification: false,
     ignoreAreaPatterns: false,
-    enableExternalTextures: false,
+    enableExternalTextures: true,
     alwaysSubdivideIncompleteTiles: false,
+    optimizeBRepProcessing: false,
   };
   private readonly _stats: Stats = {
     modelCount: 0,
