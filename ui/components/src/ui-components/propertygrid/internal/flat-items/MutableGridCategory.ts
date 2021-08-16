@@ -116,7 +116,10 @@ export class MutableGridCategory extends MutableFlatPropertyGridItem implements 
    * @internal
    */
   public override get lastInNumberOfCategories(): number {
-    return super.lastInNumberOfCategories;
+    if (this.isExpanded && this.getChildren().length > 0)
+      return 0;
+
+    return this._lastInNumberOfCategories - 1;
   }
 
   public override set lastInNumberOfCategories(value: number) {
