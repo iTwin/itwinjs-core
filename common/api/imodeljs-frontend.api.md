@@ -11150,6 +11150,7 @@ export interface ViewAnimationOptions {
 // @public
 export interface ViewChangeOptions extends ViewAnimationOptions {
     animateFrustumChange?: boolean;
+    globeCenteringTarget?: Point3d;
     marginPercent?: MarginPercent;
     noSaveInUndo?: boolean;
     onExtentsError?: (status: ViewStatus) => ViewStatus;
@@ -12593,12 +12594,16 @@ export abstract class ViewState extends ElementState {
     getAuxiliaryCoordinateSystemId(): Id64String;
     getCenter(result?: Point3d): Point3d;
     abstract getExtents(): Vector3d;
+    // (undocumented)
+    getGlobeRotation(): Matrix3d | undefined;
     getGridOrientation(): GridOrientationType;
     getGridSettings(vp: Viewport, origin: Point3d, rMatrix: Matrix3d, orientation: GridOrientationType): void;
     // (undocumented)
     getGridSpacing(): XAndY;
     // (undocumented)
     getGridsPerRef(): number;
+    // (undocumented)
+    getIsViewingProject(): boolean;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     // @beta
     getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
@@ -12787,6 +12792,8 @@ export abstract class ViewState3d extends ViewState {
     getCartographicHeight(point: XYAndZ): number | undefined;
     getDisplayStyle3d(): DisplayStyle3dState;
     // (undocumented)
+    getEarthFocalPoint(): Point3d | undefined;
+    // (undocumented)
     getExtents(): Vector3d;
     // (undocumented)
     getEyeCartographicHeight(): number | undefined;
@@ -12807,6 +12814,8 @@ export abstract class ViewState3d extends ViewState {
     // (undocumented)
     getRotation(): Matrix3d;
     getTargetPoint(result?: Point3d): Point3d;
+    // (undocumented)
+    globalOrthographicZoom(target: Point3d, zoomRatio: number): ViewStatus;
     get globalScopeFactor(): number;
     // (undocumented)
     globalViewTransition(): number;
@@ -12855,6 +12864,8 @@ export abstract class ViewState3d extends ViewState {
     supportsCamera(): boolean;
     // (undocumented)
     toJSON(): ViewDefinition3dProps;
+    // (undocumented)
+    transitionToGloballyCenteredCamera(target: Point3d): ViewStatus;
     turnCameraOff(): void;
     verifyFocusPlane(): void;
 }
@@ -12864,7 +12875,11 @@ export enum ViewStatus {
     // (undocumented)
     AlreadyAttached = 2,
     // (undocumented)
+    DegenerateGeometry = 20,
+    // (undocumented)
     DrawFailure = 4,
+    // (undocumented)
+    HeightBelowTransition = 21,
     // (undocumented)
     InvalidLens = 14,
     // (undocumented)
@@ -12887,6 +12902,16 @@ export enum ViewStatus {
     ModelNotFound = 6,
     // (undocumented)
     NotAttached = 3,
+    // (undocumented)
+    NotCameraView = 17,
+    // (undocumented)
+    NotEllipsoidGlobeMode = 18,
+    // (undocumented)
+    NotGeolocated = 16,
+    // (undocumented)
+    NotOrthographicView = 19,
+    // (undocumented)
+    NoTransitionRequired = 22,
     // (undocumented)
     NotResized = 5,
     // (undocumented)
