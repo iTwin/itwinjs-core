@@ -21,7 +21,6 @@ export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EmphasizeElementsProps";
 export * from "./EntityState";
-export * from "./FeatureLogBatchClient";
 export * from "./FeatureOverrideProvider";
 export * from "./FlashSettings";
 export * from "./FrontendLoggerCategory";
