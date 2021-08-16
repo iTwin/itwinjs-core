@@ -601,4 +601,23 @@ describe("TileAdmin", () => {
       expect(isLinked(tile)).to.be.false;
     });
   });
+
+  describe("options", () => {
+    before(async () => await MockRender.App.startup());
+    after(async () => await MockRender.App.shutdown());
+
+    it("uses expected defaults", () => {
+      const admin = IModelApp.tileAdmin;
+      expect(admin.optimizeBRepProcessing).to.be.false;
+      expect(admin.enableImprovedElision).to.be.true;
+      expect(admin.ignoreAreaPatterns).to.be.false;
+      expect(admin.enableExternalTextures).to.be.true;
+      expect(admin.disableMagnification).to.be.false;
+      expect(admin.alwaysRequestEdges).to.be.false;
+      expect(admin.alwaysSubdivideIncompleteTiles).to.be.false;
+      expect(admin.minimumSpatialTolerance).to.equal(0);
+      expect(admin.useProjectExtents).to.be.true;
+      expect(admin.maximumLevelsToSkip).to.equal(1);
+    });
+  });
 });
