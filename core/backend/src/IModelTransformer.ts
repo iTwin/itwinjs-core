@@ -777,8 +777,6 @@ export class IModelTransformer extends IModelExportHandler {
       this._hasNativelyExportedAllSchemas = true;
       this.targetDb.nativeDb.exportSchemas(this._schemaExportDir);
     }
-    // const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
-    // IModelJsFs.writeFileSync(schemaPath, await schema.toXmlString());
   }
 
   // pending PR https://github.com/typescript-eslint/typescript-eslint/pull/3601 fixes the rule @typescript-eslint/return-await
