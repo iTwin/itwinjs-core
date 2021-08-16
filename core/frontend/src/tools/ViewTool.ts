@@ -1092,12 +1092,14 @@ class ViewPan extends HandleWithInertia {
     const tool = this.viewTool;
     const vp = tool.viewport!;
     const view = vp.view;
-    const dist = vp.npcToWorld(thisPtNpc).vectorTo(vp.npcToWorld(this._lastPtNpc));
+    const lastWorld = vp.npcToWorld(this._lastPtNpc);
+    const dist = vp.npcToWorld(thisPtNpc).vectorTo(lastWorld);
 
     if (view.is3d()) {
       if (ViewStatus.Success !== view.moveCameraWorld(dist))
         return false;
       this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
+      view.transitionToGloballyCenteredCamera(lastWorld);
     } else {
       view.setOrigin(view.getOrigin().plus(dist));
     }
@@ -1207,6 +1209,8 @@ class ViewRotate extends HandleWithInertia {
       const worldTransform = Transform.createFixedPointAndMatrix(worldPt, worldMatrix);
       const frustum = this._frustum.transformBy(worldTransform);
       view.setupFromFrustum(frustum);
+      if (view.is3d())
+        view.transitionToGloballyCenteredCamera(view.getCenter());
       this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
       vp.setupFromView();
     }
