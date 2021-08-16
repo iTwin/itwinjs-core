@@ -133,10 +133,6 @@ iModels were created to facilitate the sharing and distribution of information r
 
 An iTwin Connector provides a workflow to easily synchronize information from various third-party design applications or data repositories into an iModel.
 
-#### iTwin Stack
-
-iTwin Stack is a platform for building Infrastructure Digital Twins on private clouds. It enables digital and system integrators to build scalable and customizable Digital Twins. It is meant for organizations unable to use iTwin Platform.
-
 #### Briefcases
 
 [Briefcases](./glossary#briefcase) are the local copies of iModel that users can acquire to work with the iModel. A Connector will download a briefcase locally using the BridgeRunner and change their copy of iModel. Once all the work is done, the results are then pushed into the iModel. Please see the section on [Execution sequence](#execution-sequence) on the different steps involved.
@@ -214,7 +210,7 @@ For example, if the native source allows for user-defined classes or properties,
 
 As an iTwin Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that subsequent executions can use. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](https://github.com/imodeljs/imodeljs/tree/master/docs/bis/intro/schema-versioning-and-generations.md)
 
-The [DynamicSchema](../bis/domains/corecustomattributes.ecschema/#dynamicschema) custom attribute should be set on customer-specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes,` enabling iModelHub to detect dynamic schemas programmatically. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
+The [DynamicSchema](https://www.itwinjs.org/bis/domains/corecustomattributes.ecschema/#dynamicschema) custom attribute should be set on customer-specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes,` enabling iModelHub to detect dynamic schemas programmatically. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
 
 #### Display Labels
 
