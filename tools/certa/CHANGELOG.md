@@ -27,6 +27,11 @@ Mon, 26 Jul 2021 12:21:25 GMT
 
 _Version update only_
 
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
+
 ## 2.18.3
 Wed, 28 Jul 2021 17:16:30 GMT
 
@@ -246,7 +251,7 @@ Fri, 18 Dec 2020 18:24:01 GMT
 ### Updates
 
 - Fix occasional hang in Electron when a timeout occurs loading the app
-- Upgraded electron version. 
+- Upgraded electron version.
 
 ## 2.9.9
 Sun, 13 Dec 2020 19:00:03 GMT

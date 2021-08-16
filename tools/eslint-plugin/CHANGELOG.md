@@ -31,6 +31,11 @@ Mon, 26 Jul 2021 12:21:25 GMT
 - Whitespace changes
 - enforce use of typed return-await alternative with try/catch handling
 
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
+
 ## 2.18.3
 Wed, 28 Jul 2021 17:16:30 GMT
 
