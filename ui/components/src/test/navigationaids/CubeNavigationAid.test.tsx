@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 import { AxisIndex, Matrix3d, Transform, Vector3d } from "@bentley/geometry-core";
 import { DrawingViewState, IModelConnection, ScreenViewport } from "@bentley/imodeljs-frontend";
 import { Face } from "@bentley/ui-core";
-import { cleanup, fireEvent, render, wait } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { CubeHover, CubeNavigationAid, CubeNavigationHitBoxX, CubeNavigationHitBoxY, CubeNavigationHitBoxZ, FaceCell, NavCubeFace } from "../../ui-components/navigationaids/CubeNavigationAid";
 import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
 import TestUtils from "../TestUtils";
@@ -19,8 +19,6 @@ describe("CubeNavigationAid", () => {
   before(async () => {
     await TestUtils.initializeUiComponents();
   });
-
-  afterEach(cleanup);
 
   let rotation = Matrix3d.createIdentity();
 
@@ -34,7 +32,7 @@ describe("CubeNavigationAid", () => {
   vp.setup((x) => x.rotation).returns(() => rotation);
 
   const waitForSpy = async (spy: sinon.SinonSpy, timeoutMillis: number = 1500) => {
-    return wait(() => {
+    return waitFor(() => {
       if (!spy.called)
         throw new Error("Waiting for spy timed out!");
     }, { timeout: timeoutMillis, interval: 10 });
@@ -64,8 +62,6 @@ describe("CubeNavigationAid", () => {
   };
 
   describe("<CubeNavigationAid />", () => {
-    afterEach(cleanup);
-
     it("should render", () => {
       render(<CubeNavigationAid iModelConnection={connection.object} />);
     });
@@ -274,8 +270,6 @@ describe("CubeNavigationAid", () => {
       expect(mat2.isIdentity).is.false;
     });
     describe("onViewRotationChangeEvent", () => {
-      afterEach(cleanup);
-
       beforeEach(() => {
         rotation = Matrix3d.createIdentity();
       });
@@ -301,8 +295,6 @@ describe("CubeNavigationAid", () => {
     });
   });
   describe("<NavCubeFace />", () => {
-    afterEach(cleanup);
-
     it("should render", () => {
       render(<NavCubeFace face={Face.Top} label="test" hoverMap={{}} onFaceCellClick={sinon.fake()} onFaceCellHoverChange={sinon.fake()} />);
     });
@@ -340,8 +332,6 @@ describe("CubeNavigationAid", () => {
       expect(faceCell).to.exist;
     });
     describe("onFaceCellClick", () => {
-      afterEach(cleanup);
-
       it("should be called when cell is clicked", () => {
         const cellClick = sinon.spy();
         const pos = Vector3d.create(1, 1, 1);
@@ -373,8 +363,6 @@ describe("CubeNavigationAid", () => {
       });
     });
     describe("onFaceCellHoverChange", () => {
-      afterEach(cleanup);
-
       it("should be called when cell is hovered", () => {
         const cellHover = sinon.spy();
         const pos = Vector3d.create(1, 1, 1);

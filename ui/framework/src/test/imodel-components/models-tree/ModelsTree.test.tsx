@@ -19,7 +19,7 @@ import {
 } from "@bentley/presentation-testing";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { SelectionMode, TreeNodeItem } from "@bentley/ui-components";
-import { fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { ModelsTree, RULESET_MODELS, RULESET_MODELS_GROUPED_BY_CLASS } from "../../../ui-framework/imodel-components/models-tree/ModelsTree";
 import { ModelsTreeNodeType, ModelsVisibilityHandler } from "../../../ui-framework/imodel-components/models-tree/ModelsVisibilityHandler";
 import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
@@ -118,7 +118,7 @@ describe("ModelsTree", () => {
         setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node"), isCheckboxVisible: true }]);
         visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} />);
-        await waitForElement(() => result.getByText("test-node"), { container: result.container });
+        await waitFor(() => result.getByText("test-node"), { container: result.container });
         expect(result.baseElement).to.matchSnapshot();
       });
 
@@ -127,7 +127,7 @@ describe("ModelsTree", () => {
         visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} />);
-        await waitForElement(() => result.getByText("model"));
+        await waitFor(() => result.getByText("model"));
         const nodes = result.getAllByTestId("tree-node");
         expect(nodes.length).to.eq(4);
         nodes.forEach((node) => expect(isNodeChecked(node)).to.be.false);
@@ -138,7 +138,7 @@ describe("ModelsTree", () => {
         visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible" }));
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} />);
-        await waitForElement(() => result.getByText("model"));
+        await waitFor(() => result.getByText("model"));
         const nodes = result.getAllByTestId("tree-node");
         expect(nodes.length).to.eq(4);
         nodes.forEach((node) => expect(isNodeChecked(node)).to.be.true);
@@ -150,7 +150,7 @@ describe("ModelsTree", () => {
 
         visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden", isDisabled: false })).verifiable(moq.Times.exactly(2));
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} />);
-        await waitForElement(() => {
+        await waitFor(() => {
           const renderedNode = result.getByTestId("tree-node");
           if (isNodeChecked(renderedNode))
             throw new Error("expecting unchecked node");
@@ -161,7 +161,7 @@ describe("ModelsTree", () => {
         visibilityHandlerMock.reset();
         visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible", isDisabled: false })).verifiable(moq.Times.exactly(2));
         visibilityChangeEvent.raiseEvent();
-        await waitForElement(() => {
+        await waitFor(() => {
           const renderedNode = result.getByTestId("tree-node");
           if (!isNodeChecked(renderedNode))
             throw new Error("expecting checked node");
@@ -176,11 +176,11 @@ describe("ModelsTree", () => {
 
         visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible" }));
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} />);
-        const renderedNode = await waitForElement(() => result.getByTestId("tree-node"));
+        const renderedNode = await result.findByTestId("tree-node");
         expect(renderedNode.querySelectorAll("input").length).to.eq(1);
 
         result.rerender(<ModelsTree iModel={imodelMock.object} />);
-        const rerenderedNode = await waitForElement(() => result.getByTestId("tree-node"));
+        const rerenderedNode = await result.findByTestId("tree-node");
         expect(rerenderedNode.querySelectorAll("input").length).to.eq(0);
       });
 
@@ -191,7 +191,7 @@ describe("ModelsTree", () => {
         visibilityHandlerMock.setup(async (x) => x.changeVisibility(node, moq.It.isAny(), true)).returns(async () => { }).verifiable();
 
         const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} />);
-        await waitForElement(() => result.getByText("model"));
+        await result.findByText("model");
         const renderedNode = result.getByTestId("tree-node");
         const cb = renderedNode.querySelector("input");
         fireEvent.click(cb!);
@@ -206,7 +206,7 @@ describe("ModelsTree", () => {
           visibilityHandlerMock.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "hidden" }));
 
           const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} selectionMode={SelectionMode.Extended} />);
-          await waitForElement(() => result.getByText("element"));
+          await result.findByText("element");
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
@@ -221,7 +221,7 @@ describe("ModelsTree", () => {
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Element;
 
           const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
-          await waitForElement(() => result.getByText("element"));
+          await result.findByText("element");
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
@@ -238,7 +238,7 @@ describe("ModelsTree", () => {
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Model;
 
           const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
-          await waitForElement(() => result.getAllByText("model"));
+          await result.findAllByText("model");
 
           const renderedNodes = result.queryAllByTestId("tree-node");
           expect(renderedNodes.length).to.be.eq(2);
@@ -257,7 +257,7 @@ describe("ModelsTree", () => {
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Subject;
 
           const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
-          await waitForElement(() => result.getByText("subject"));
+          await result.findByText("subject");
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
@@ -273,7 +273,7 @@ describe("ModelsTree", () => {
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Unknown;
 
           const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
-          await waitForElement(() => result.getByText("element"));
+          await result.findByText("element");
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
@@ -288,7 +288,7 @@ describe("ModelsTree", () => {
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => (type === ModelsTreeNodeType.Grouping);
 
           const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
-          await waitForElement(() => result.getByText("grouping"));
+          await  result.findByText("grouping");
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
@@ -303,7 +303,7 @@ describe("ModelsTree", () => {
           const predicate = (_key: NodeKey, type: ModelsTreeNodeType) => type === ModelsTreeNodeType.Model;
 
           const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} selectionMode={SelectionMode.Extended} selectionPredicate={predicate} />);
-          await waitForElement(() => result.getByText("category"));
+          await result.findByText("category");
 
           const renderedNode = result.getByTestId("tree-node");
           fireEvent.click(renderedNode);
@@ -332,14 +332,14 @@ describe("ModelsTree", () => {
 
         it("filters nodes", async () => {
           const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} filterInfo={{ filter: "filtered-node", activeMatchIndex: 0 }} />);
-          await waitForElement(() => result.getByText("filtered-node"));
+          await result.findByText("filtered-node");
         });
 
         it("invokes onFilterApplied callback", async () => {
           const spy = sinon.spy();
 
           const result = render(<ModelsTree iModel={imodelMock.object} modelsVisibilityHandler={visibilityHandlerMock.object} filterInfo={{ filter: "filtered-node", activeMatchIndex: 0 }} onFilterApplied={spy} />);
-          await waitForElement(() => result.getByText("filtered-node"));
+          await result.findByText("filtered-node");
 
           expect(spy).to.be.calledOnce;
         });
@@ -385,7 +385,7 @@ describe("ModelsTree", () => {
 
     it("renders component with real data and no active viewport", async () => {
       const result = render(<ModelsTree iModel={imodel} />);
-      await waitForElement(() => result.getByText("Joe's house.bim"), { timeout: 60 * 1000 });
+      await waitFor(() => result.getByText("Joe's house.bim"), { timeout: 60 * 1000 });
       expect(result.container).to.matchSnapshot();
     });
   });

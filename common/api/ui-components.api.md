@@ -40,6 +40,7 @@ import { immerable } from 'immer';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InputProps } from '@itwin/itwinui-react';
 import * as Inspire from 'inspire-tree';
+import { Interaction } from 'scheduler/tracing';
 import { LinkElementsInfo } from '@bentley/ui-abstract';
 import { Matrix3d } from '@bentley/geometry-core';
 import { NoChildrenProps } from '@bentley/ui-core';

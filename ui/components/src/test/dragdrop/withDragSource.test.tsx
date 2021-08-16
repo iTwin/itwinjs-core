@@ -8,7 +8,7 @@ import * as React from "react";
 import { ConnectDragSource } from "react-dnd";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { DragSourceArguments, DragSourceProps, withDragSource } from "../../ui-components";
 import { createDnDRenderer } from "../tree/deprecated/hocs/withDragDrop.test";
 
@@ -21,7 +21,6 @@ describe("withDragSource", () => {
       return <div> test </div>;
     }
   }
-  afterEach(cleanup);
 
   describe("Wrapped component", () => {
     const testDragSource = withDragSource(TestComponent); // eslint-disable-line deprecation/deprecation
