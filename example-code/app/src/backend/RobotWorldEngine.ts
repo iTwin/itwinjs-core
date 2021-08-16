@@ -7,7 +7,7 @@ import { ClientRequestContext, DbResult, Id64String } from "@bentley/bentleyjs-c
 import { Angle, Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { BriefcaseDb, ECSqlStatement, Element, IModelDb, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import {
-  Code, FeatureGates, IModelReadRpcInterface, IModelWriteRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
+  Code, FeatureGates, IModelReadRpcInterface, RpcInterfaceDefinition, RpcManager, TestRpcManager,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface } from "../common/RobotWorldRpcInterface";
@@ -125,8 +125,6 @@ export class RobotWorldEngine {
     RpcManager.registerImpl(RobotWorldWriteRpcInterface, RobotWorldWriteRpcImpl); // register impls that we don't want in the doc example
     this.registerImpls();
     const interfaces = this.chooseInterfacesToExpose();
-    if (this._features.check("robot.imodel.readwrite"))  // choose additional interfaces that we don't want in the doc example
-      interfaces.push(IModelWriteRpcInterface); // eslint-disable-line deprecation/deprecation
     TestRpcManager.initialize(interfaces);
 
     // __PUBLISH_EXTRACT_START__ Schema.registerSchema

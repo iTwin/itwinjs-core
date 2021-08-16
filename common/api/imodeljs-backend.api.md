@@ -415,7 +415,7 @@ export class BriefcaseDb extends IModelDb {
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
-    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext, _props: IModelRpcProps) => void>;
+    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext, _args: OpenBriefcaseProps) => void>;
     static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     static open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<ChangesetIndexAndId>;
@@ -652,15 +652,13 @@ export class CheckpointManager {
 
 // @public
 export interface CheckpointProps {
-    changeSetId: ChangesetId;
+    readonly changeset: ChangesetIdWithIndex;
+    readonly contextId: GuidString;
     // (undocumented)
-    changesetIndex?: ChangesetIndex;
-    contextId: GuidString;
+    readonly expectV2?: boolean;
+    readonly iModelId: GuidString;
     // (undocumented)
-    expectV2?: boolean;
-    iModelId: GuidString;
-    // (undocumented)
-    requestContext: AuthorizedClientRequestContext;
+    readonly requestContext: AuthorizedClientRequestContext;
 }
 
 // @public
@@ -1258,10 +1256,10 @@ export interface DownloadJob {
 
 // @internal
 export interface DownloadRequest {
-    aliasFiles?: string[];
-    checkpoint: CheckpointProps;
+    readonly aliasFiles?: ReadonlyArray<string>;
+    readonly checkpoint: CheckpointProps;
     localFile: string;
-    onProgress?: ProgressFunction;
+    readonly onProgress?: ProgressFunction;
 }
 
 // @internal (undocumented)
@@ -2405,7 +2403,7 @@ export class IModelCloneContext {
 // @public
 export abstract class IModelDb extends IModel {
     // @internal
-    protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps, openMode: OpenMode);
+    protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps);
     abandonChanges(): void;
     // @internal
     protected beforeClose(): void;
@@ -4128,6 +4126,25 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
     modelSelectorId: Id64String;
     // @internal (undocumented)
     toJSON(): SpatialViewDefinitionProps;
+}
+
+// @public
+export class SQLiteDb implements IDisposable {
+    constructor();
+    abandonChanges(): void;
+    closeDb(): void;
+    createDb(pathName: string): void;
+    dispose(): void;
+    executeSQL(sql: string): DbResult;
+    get isOpen(): boolean;
+    // @internal (undocumented)
+    get nativeDb(): IModelJsNative.SQLiteDb;
+    openDb(pathName: string, openMode: OpenMode): void;
+    // @internal
+    prepareSqliteStatement(sql: string): SqliteStatement;
+    saveChanges(): void;
+    withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
+    withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
 }
 
 // @public

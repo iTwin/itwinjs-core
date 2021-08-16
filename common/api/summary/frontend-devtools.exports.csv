@@ -206,6 +206,7 @@ beta;ToggleSkyboxTool
 beta;ToggleTerrainTool 
 beta;ToggleTileRequestDecorationTool 
 beta;ToggleTileTreeBoundsDecorationTool 
+beta;ToggleToolTipsTool 
 beta;ToggleViewAttachmentBoundariesTool 
 beta;ToggleViewAttachmentClipShapesTool 
 beta;ToggleViewAttachmentsTool 
@@ -219,3 +220,5 @@ beta;UnsharpenEffect
 beta;ViewportAddRealityModel 
 beta;ViewportTileSizeModifierTool 
 beta;class ViewportToggleTool 
+beta;VignetteConfig 
+beta;VignetteEffect 

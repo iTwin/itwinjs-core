@@ -2,6 +2,18 @@
   "name": "@bentley/ui-components",
   "entries": [
     {
+      "version": "2.19.5",
+      "tag": "@bentley/ui-components_v2.19.5",
+      "date": "Fri, 13 Aug 2021 21:48:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.4",
+      "tag": "@bentley/ui-components_v2.19.4",
+      "date": "Thu, 12 Aug 2021 13:09:26 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.3",
       "tag": "@bentley/ui-components_v2.19.3",
       "date": "Wed, 04 Aug 2021 20:29:34 GMT",
@@ -51,6 +63,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.18.4",
+      "tag": "@bentley/ui-components_v2.18.4",
+      "date": "Tue, 10 Aug 2021 19:35:13 GMT",
+      "comments": {}
     },
     {
       "version": "2.18.3",
