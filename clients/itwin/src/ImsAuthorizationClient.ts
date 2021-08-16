@@ -14,7 +14,7 @@ export class ImsAuthorizationClient extends Client {
 
   public constructor() {
     super();
-    this._url = process.env.imjs_itwin_platform_authority;
+    this._url = process.env.IMJS_ITWIN_PLATFORM_AUTHORITY;
   }
 
   /**

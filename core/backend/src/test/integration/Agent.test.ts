@@ -11,8 +11,8 @@ import { IModelTestUtils } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
 // Configuration needed
-//    imjs_agent_test_client_id
-//    imjs_agent_test_client_secret
+//    IMJS_AGENT_TEST_CLIENT_ID
+//    IMJS_AGENT_TEST_CLIENT_SECRET
 
 describe("Agent iModel Download (#integration)", () => {
   let testProjectId: string;
@@ -22,14 +22,14 @@ describe("Agent iModel Download (#integration)", () => {
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
 
-    if (process.env.imjs_agent_test_client_id === undefined)
-      throw new Error("Could not find imjs_agent_test_client_id");
-    if (process.env.imjs_agent_test_client_secret === undefined)
-      throw new Error("Could not find imjs_agent_test_client_secret");
+    if (process.env.IMJS_AGENT_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_ID");
+    if (process.env.IMJS_AGENT_TEST_CLIENT_SECRET === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_SECRET");
 
     const agentConfiguration: AgentAuthorizationClientConfiguration = {
-      clientId: process.env.imjs_agent_test_client_id ?? "",
-      clientSecret: process.env.imjs_agent_test_client_secret ?? "",
+      clientId: process.env.IMJS_AGENT_TEST_CLIENT_ID ?? "",
+      clientSecret: process.env.IMJS_AGENT_TEST_CLIENT_SECRET ?? "",
       scope: "imodelhub context-registry-service:read-only",
     };
 

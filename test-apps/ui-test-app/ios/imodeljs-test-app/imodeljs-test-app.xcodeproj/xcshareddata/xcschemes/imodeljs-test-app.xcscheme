@@ -52,7 +52,7 @@
       </BuildableProductRunnable>
       <EnvironmentVariables>
          <EnvironmentVariable
-            key = "imjs_buddi_resolve_url_using_region"
+            key = "IMJS_BUDDI_RESOLVE_URL_USING_REGION"
             value = "102"
             isEnabled = "YES">
          </EnvironmentVariable>

@@ -89,13 +89,13 @@ export abstract class Client {
       return this._url;
 
     if (this.baseUrl) {
-      let prefix = process.env.imjs_url_prefix;
+      let prefix = process.env.IMJS_URL_PREFIX;
 
-      // Need to ensure the usage of the previous imjs_buddi_resolve_url_using_region to not break any
+      // Need to ensure the usage of the previous IMJS_BUDDI_RESOLVE_URL_USING_REGION to not break any
       // existing users relying on the behavior.
       // This needs to be removed...
       if (undefined === prefix) {
-        const region = process.env.imjs_buddi_resolve_url_using_region;
+        const region = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION;
         switch (region) {
           case "102":
             prefix = "qa-";
@@ -186,7 +186,7 @@ export class AuthenticationError extends ResponseError {
  * @internal
  */
 export class UrlDiscoveryClient extends Client {
-  public static readonly configResolveUrlUsingRegion = "imjs_buddi_resolve_url_using_region";
+  public static readonly configResolveUrlUsingRegion = "IMJS_BUDDI_RESOLVE_URL_USING_REGION";
   /**
    * Creates an instance of UrlDiscoveryClient.
    */

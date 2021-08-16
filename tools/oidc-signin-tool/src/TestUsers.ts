@@ -32,54 +32,54 @@ export class TestUsers {
   /** User with the typical permissions of the regular/average user - Co-Admin: No, Connect-Services-Admin: No */
   public static get regular(): TestUserCredentials {
     return {
-      email: process.env.imjs_test_regular_user_name ?? "",
-      password: process.env.imjs_test_regular_user_password ?? "",
+      email: process.env.IMJS_TEST_REGULAR_USER_NAME ?? "",
+      password: process.env.IMJS_TEST_REGULAR_USER_PASSWORD ?? "",
     };
   }
 
   /** User with typical permissions of the project administrator - Co-Admin: Yes, Connect-Services-Admin: No */
   public static get manager(): TestUserCredentials {
     return {
-      email: process.env.imjs_test_manager_user_name ?? "",
-      password: process.env.imjs_test_manager_user_password ?? "",
+      email: process.env.IMJS_TEST_MANAGER_USER_NAME ?? "",
+      password: process.env.IMJS_TEST_MANAGER_USER_PASSWORD ?? "",
     };
   }
 
   /** User with the typical permissions of the connected services administrator - Co-Admin: No, Connect-Services-Admin: Yes */
   public static get super(): TestUserCredentials {
     return {
-      email: process.env.imjs_test_super_user_name ?? "",
-      password: process.env.imjs_test_super_user_password ?? "",
+      email: process.env.IMJS_TEST_SUPER_USER_NAME ?? "",
+      password: process.env.IMJS_TEST_SUPER_USER_PASSWORD ?? "",
     };
   }
 
   /** User with the typical permissions of the connected services administrator - Co-Admin: Yes, Connect-Services-Admin: Yes */
   public static get superManager(): TestUserCredentials {
     return {
-      email: process.env.imjs_test_super_manager_user_name ?? "",
-      password: process.env.imjs_test_super_manager_user_password ?? "",
+      email: process.env.IMJS_TEST_SUPER_MANAGER_USER_NAME ?? "",
+      password: process.env.IMJS_TEST_SUPER_MANAGER_USER_PASSWORD ?? "",
     };
   }
 
   /**
    * Gets the default iModel.js OIDC SPA client registration available at the config variables:
    *
-   *  - imjs_oidc_browser_test_client_id
-   *  - imjs_oidc_browser_test_redirect_uri
-   *  - imjs_oidc_browser_test_scopes
+   *  - IMJS_OIDC_BROWSER_TEST_CLIENT_ID
+   *  - IMJS_OIDC_BROWSER_TEST_REDIRECT_URI
+   *  - IMJS_OIDC_BROWSER_TEST_SCOPES
    */
   public static getTestBrowserAuthorizationClientConfiguration(): TestBrowserAuthorizationClientConfiguration {
-    if (process.env.imjs_oidc_browser_test_client_id === undefined)
-      throw new Error("Could not find imjs_oidc_browser_test_client_id");
-    if (process.env.imjs_oidc_browser_test_redirect_uri === undefined)
-      throw new Error("Could not find imjs_oidc_browser_test_redirect_uri");
-    if (process.env.imjs_oidc_browser_test_scopes === undefined)
-      throw new Error("Could not find imjs_oidc_browser_test_scopes");
+    if (process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_OIDC_BROWSER_TEST_CLIENT_ID");
+    if (process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI === undefined)
+      throw new Error("Could not find IMJS_OIDC_BROWSER_TEST_REDIRECT_URI");
+    if (process.env.IMJS_OIDC_BROWSER_TEST_SCOPES === undefined)
+      throw new Error("Could not find IMJS_OIDC_BROWSER_TEST_SCOPES");
 
     return {
-      clientId: process.env.imjs_oidc_browser_test_client_id ?? "",
-      redirectUri: process.env.imjs_oidc_browser_test_redirect_uri ?? "",
-      scope: process.env.imjs_oidc_browser_test_scopes ?? "",
+      clientId: process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
     };
   }
 }

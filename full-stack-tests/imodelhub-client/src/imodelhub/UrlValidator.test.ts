@@ -38,7 +38,7 @@ Logger.initialize(
 // Note: Turn this off unless really necessary - it causes Error messages on the
 // console with the existing suite of tests, and this is quite misleading,
 // especially when diagnosing CI job failures.
-const loggingConfigFile: string = process.env.imjs_test_logging_config ?? "";
+const loggingConfigFile: string = process.env.IMJS_TEST_LOGGING_CONFIG ?? "";
 if (!!loggingConfigFile) {
   // eslint-disable-next-line @typescript-eslint/no-var-requires
   Logger.configureLevels(require(loggingConfigFile));

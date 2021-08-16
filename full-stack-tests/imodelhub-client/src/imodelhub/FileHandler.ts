@@ -14,7 +14,7 @@ export function createFileHandler(useDownloadBuffer?: boolean) {
 }
 
 export function createIModelBankFileHandler(useDownloadBuffer?: boolean) {
-  const handler = process.env.imjs_test_imodel_bank_file_handler ?? "url";
+  const handler = process.env.IMJS_TEST_IMODEL_BANK_FILE_HANDLER ?? "url";
   switch (handler.toLowerCase()) {
     case "azure":
       return new AzureFileHandler(useDownloadBuffer);

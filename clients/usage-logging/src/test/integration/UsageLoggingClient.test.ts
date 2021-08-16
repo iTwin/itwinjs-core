@@ -16,17 +16,17 @@ describe("UlasClient - OIDC Token (#integration)", () => {
   let accessToken: AccessToken;
 
   before(async () => {
-    if (process.env.imjs_oidc_ulas_test_client_id === undefined)
-      throw new Error("Could not find imjs_oidc_ulas_test_client_id");
-    if (process.env.imjs_oidc_ulas_test_redirect_uri === undefined)
-      throw new Error("Could not find imjs_oidc_ulas_test_redirect_uri");
-    if (process.env.imjs_oidc_ulas_test_scopes === undefined)
-      throw new Error("Could not find imjs_oidc_ulas_test_scopes");
+    if (process.env.IMJS_OIDC_ULAS_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_OIDC_ULAS_TEST_CLIENT_ID");
+    if (process.env.IMJS_OIDC_ULAS_TEST_REDIRECT_URI === undefined)
+      throw new Error("Could not find IMJS_OIDC_ULAS_TEST_REDIRECT_URI");
+    if (process.env. IMJS_OIDC_ULAS_TEST_SCOPES === undefined)
+      throw new Error("Could not find  IMJS_OIDC_ULAS_TEST_SCOPES");
 
     const oidcConfig: TestBrowserAuthorizationClientConfiguration = {
-      clientId: process.env.imjs_oidc_ulas_test_client_id ?? "",
-      redirectUri: process.env.imjs_oidc_ulas_test_redirect_uri ?? "",
-      scope: process.env.imjs_oidc_ulas_test_scopes ?? "",
+      clientId: process.env.IMJS_OIDC_ULAS_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_ULAS_TEST_REDIRECT_URI ?? "",
+      scope: process.env. IMJS_OIDC_ULAS_TEST_SCOPES ?? "",
     };
 
     // Need to cast to any and then back to AccessToken because of circular dependency with the oidc-signin-tool

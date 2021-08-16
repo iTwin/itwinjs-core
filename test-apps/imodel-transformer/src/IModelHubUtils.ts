@@ -44,7 +44,7 @@ export namespace IModelHubUtils {
     } else if ("dev" === arg) {
       value = "103";
     }
-    process.env.imjs_buddi_resolve_url_using_region = String(value);
+    process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(value);
   }
 
   export async function queryIModelId(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString | undefined> {

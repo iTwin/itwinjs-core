@@ -437,11 +437,11 @@ export class SampleAppIModelApp {
   public static async showSignedIn() {
     SampleAppIModelApp.iModelParams = SampleAppIModelApp._usingParams();
 
-    if (process.env.imjs_uitestapp_imodel_name && process.env.imjs_uitestapp_imodel_project_name) {
-      const viewId: string | undefined = process.env.imjs_uitestapp_imodel_viewId;
+    if (process.env.IMJS_UITESTAPP_IMODEL_NAME && process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME) {
+      const viewId: string | undefined = process.env.IMJS_UITESTAPP_IMODEL_VIEWID;
 
-      const projectName = process.env.imjs_uitestapp_imodel_project_name ?? "";
-      const iModelName = process.env.imjs_uitestapp_imodel_name ?? "";
+      const projectName = process.env.IMJS_UITESTAPP_IMODEL_PROJECT_NAME ?? "";
+      const iModelName = process.env.IMJS_UITESTAPP_IMODEL_NAME ?? "";
 
       const requestContext = await AuthorizedFrontendRequestContext.create();
       const project = await (new ContextRegistryClient()).getProject(requestContext, {
@@ -495,7 +495,7 @@ export class SampleAppIModelApp {
   }
 
   public static get allowWrite() {
-    return SampleAppIModelApp.isEnvVarOn("imjs_TESTAPP_ALLOW_WRITE");
+    return SampleAppIModelApp.isEnvVarOn("IMJS_TESTAPP_ALLOW_WRITE");
   }
 
   public static setTestProperty(value: string, immediateSync = false) {
@@ -683,7 +683,7 @@ async function main() {
   Logger.logInfo("Configuration", JSON.stringify(SampleAppIModelApp.testAppConfiguration)); // eslint-disable-line no-console
 
   let rpcParams: BentleyCloudRpcParams;
-  if (process.env.imjs_gp_backend) {
+  if (process.env.IMJS_GP_BACKEND) {
     const urlClient = new UrlDiscoveryClient();
     const requestContext = new ClientRequestContext();
     const orchestratorUrl = await urlClient.discoverUrl(requestContext, "iModelJsOrchestrator.K8S", undefined);

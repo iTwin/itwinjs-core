@@ -34,17 +34,17 @@ describe("Sign in (#integration)", () => {
   let oidcConfig: TestBrowserAuthorizationClientConfiguration;
 
   before(() => {
-    if (process.env.imjs_oidc_browser_test_client_id === undefined)
-      throw new Error("Could not find imjs_oidc_browser_test_client_id");
-    if (process.env.imjs_oidc_browser_test_redirect_uri === undefined)
-      throw new Error("Could not find imjs_oidc_browser_test_redirect_uri");
-    if (process.env.imjs_oidc_browser_test_scopes === undefined)
-      throw new Error("Could not find imjs_oidc_browser_test_scopes");
+    if (process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_OIDC_BROWSER_TEST_CLIENT_ID");
+    if (process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI === undefined)
+      throw new Error("Could not find IMJS_OIDC_BROWSER_TEST_REDIRECT_URI");
+    if (process.env.IMJS_OIDC_BROWSER_TEST_SCOPES === undefined)
+      throw new Error("Could not find IMJS_OIDC_BROWSER_TEST_SCOPES");
 
     oidcConfig = {
-      clientId: process.env.imjs_oidc_browser_test_client_id ?? "",
-      redirectUri: process.env.imjs_oidc_browser_test_redirect_uri ?? "",
-      scope: process.env.imjs_oidc_browser_test_scopes ?? "",
+      clientId: process.env.IMJS_OIDC_BROWSER_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_BROWSER_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
     };
   });
 
@@ -75,7 +75,7 @@ describe("Sign in (#integration)", () => {
     const invalidUser = {
       email: "invalid@email.com",
       password: "invalid",
-      scope: process.env.imjs_oidc_browser_test_scopes ?? "",
+      scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
     };
     await expect(getTestAccessToken(oidcConfig, invalidUser))
       .to.be.rejectedWith(Error, `Failed OIDC signin for ${invalidUser.email}.\nError: We didn't recognize the username or password you entered. Please try again.`);

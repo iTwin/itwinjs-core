@@ -36,8 +36,8 @@ function configureIModel() {
 
 // Call the above functions, to avoid lint errors.
 const cred = {
-  email: process.env.imjs_test_regular_user_name ?? "",
-  password: process.env.imjs_test_regular_user_password ?? "",
+  email: process.env.IMJS_TEST_REGULAR_USER_NAME ?? "",
+  password: process.env.IMJS_TEST_REGULAR_USER_PASSWORD ?? "",
 };
 
 getUserAccessToken(cred).then((_accessToken: AccessToken) => { // eslint-disable-line @typescript-eslint/no-floating-promises

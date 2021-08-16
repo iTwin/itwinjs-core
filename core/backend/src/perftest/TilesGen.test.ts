@@ -187,9 +187,9 @@ async function generateIModelDbTiles(requestContext: AuthorizedClientRequestCont
 }
 
 describe("TilesGenerationPerformance", () => {
-  if (process.env.imjs_tile_perf_config === undefined)
-    throw new Error("Could not find imjs_tile_perf_config");
-  const config = require(process.env.imjs_tile_perf_config); // eslint-disable-line @typescript-eslint/no-var-requires
+  if (process.env.IMJS_TILE_PERF_CONFIG === undefined)
+    throw new Error("Could not find IMJS_TILE_PERF_CONFIG");
+  const config = require(process.env.IMJS_TILE_PERF_CONFIG); // eslint-disable-line @typescript-eslint/no-var-requires
   const imodels: ConfigData[] = config.iModels;
 
   let requestContext: AuthorizedClientRequestContext;
@@ -205,7 +205,7 @@ describe("TilesGenerationPerformance", () => {
 
     csvResultPath = IModelTestUtils.prepareOutputFile("TilesGen", "TilesGen.results.csv");
 
-    process.env.imjs_buddi_resolve_url_using_region = config.regionId;
+    process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = config.regionId;
     if (IModelJsFs.existsSync(config.iModelLocation)) {
       imodels.forEach((element) => element.localPath = path.join(config.iModelLocation, `${element.iModelName}.bim`));
       // delete the .tile file

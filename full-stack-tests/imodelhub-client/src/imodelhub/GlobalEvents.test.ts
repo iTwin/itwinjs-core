@@ -132,8 +132,8 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     imodelHubClient = utils.getDefaultClient();
 
     serviceAccount1 = {
-      email: process.env.imjs_test_serviceAccount1_user_name ?? "",
-      password: process.env.imjs_test_serviceAccount1_user_password ?? "",
+      email: process.env.IMJS_TEST_SERVICEACCOUNT1_USER_NAME ?? "",
+      password: process.env.IMJS_TEST_SERVICEACCOUNT1_USER_PASSWORD ?? "",
     };
     const serviceAccountAccessToken = await utils.login(serviceAccount1);
     serviceAccountRequestContext = new AuthorizedClientRequestContext(serviceAccountAccessToken);

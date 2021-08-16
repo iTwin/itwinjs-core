@@ -16,7 +16,7 @@ export class CloudEnv {
   }
 
   public static async initialize(): Promise<void> {
-    const enableIModelBank: boolean = process.env.imjs_test_imodel_bank !== undefined && !!JSON.parse(process.env.imjs_test_imodel_bank);
+    const enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);
     if (!enableIModelBank) {
       this._cloudEnv = new IModelHubBackendCloudEnv();
     } else {

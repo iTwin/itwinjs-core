@@ -40,14 +40,14 @@ describe("DelegationAuthorizationClient (#integration)", () => {
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
 
-    if (process.env.imjs_agent_test_client_id === undefined)
-      throw new Error("Could not find imjs_agent_test_client_id");
-    if (process.env.imjs_agent_test_client_secret === undefined)
-      throw new Error("Could not find imjs_agent_test_client_secret");
+    if (process.env.IMJS_AGENT_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_ID");
+    if (process.env.IMJS_AGENT_TEST_CLIENT_SECRET === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_SECRET");
 
     const agentConfiguration: AgentAuthorizationClientConfiguration = {
-      clientId: process.env.imjs_agent_test_client_id ?? "",
-      clientSecret: process.env.imjs_agent_test_client_secret ?? "",
+      clientId: process.env.IMJS_AGENT_TEST_CLIENT_ID ?? "",
+      clientSecret: process.env.IMJS_AGENT_TEST_CLIENT_SECRET ?? "",
       scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
     };
 
@@ -56,14 +56,14 @@ describe("DelegationAuthorizationClient (#integration)", () => {
   });
 
   it("should get valid OIDC delegation tokens", async () => {
-    if (process.env.imjs_delegation_test_client_id === undefined)
-      throw new Error("Could not find imjs_delegation_test_client_id");
-    if (process.env.imjs_delegation_test_client_secret === undefined)
-      throw new Error("Could not find imjs_delegation_test_client_secret");
+    if (process.env.IMJS_DELEGATION_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_DELEGATION_TEST_CLIENT_ID");
+    if (process.env.IMJS_DELEGATION_TEST_CLIENT_SECRET === undefined)
+      throw new Error("Could not find IMJS_DELEGATION_TEST_CLIENT_SECRET");
 
     const delegationConfiguration: DelegationAuthorizationClientConfiguration = {
-      clientId:process.env.imjs_delegation_test_client_id ?? "",
-      clientSecret: process.env.imjs_delegation_test_client_secret ?? "",
+      clientId:process.env.IMJS_DELEGATION_TEST_CLIENT_ID ?? "",
+      clientSecret: process.env.IMJS_DELEGATION_TEST_CLIENT_SECRET ?? "",
       scope: "context-registry-service imodelhub rbac-service",
     };
 

@@ -59,10 +59,10 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
     // first, perform silent login
     NativeHost.authorization.setAccessToken(await TestUtility.getAccessToken(user));
 
-    const projectName = process.env.imjs_test_project_name ?? "";
+    const projectName = process.env.IMJS_TEST_PROJECT_NAME ?? "";
 
     if (CloudEnv.cloudEnv.isIModelHub) {
-      const region = process.env.imjs_buddi_resolve_url_using_region || "0";
+      const region = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION || "0";
       return { projectName, iModelHub: { region } };
     }
     const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl(ClientRequestContext.current as AuthorizedClientRequestContext);

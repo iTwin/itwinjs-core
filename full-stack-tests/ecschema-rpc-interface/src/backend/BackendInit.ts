@@ -30,7 +30,7 @@ module.exports = (async () => {
   // Need to create a new one on the backend to properly setup dotenv
   const settings = new Settings(process.env);
 
-  process.env.imjs_buddi_resolve_url_using_region = String(settings.env);
+  process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(settings.env);
 
   exposeBackendCallbacks();
 })();

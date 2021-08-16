@@ -49,7 +49,7 @@ export class SampleApp {
 
     // Configure a CORS proxy in development mode.
     if (process.env.NODE_ENV === "development")
-      process.env.imjs_dev_cors_proxy_server = `http://${window.location.hostname}:3001`; // By default, this will run on port 3001
+      process.env.IMJS_DEV_CORS_PROXY_SERVER = `http://${window.location.hostname}:3001`; // By default, this will run on port 3001
 
     readyPromises.push(this.initializePresentation());
     readyPromises.push(UiComponents.initialize(IModelApp.i18n));

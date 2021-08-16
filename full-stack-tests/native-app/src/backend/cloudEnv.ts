@@ -7,7 +7,7 @@ import { getIModelBankCloudEnv } from "./IModelBankBackendCloudEnv";
 import { IModelHubBackendCloudEnv } from "./IModelHubBackendCloudEnv";
 
 export class CloudEnv {
-  public static readonly enableIModelBank: boolean = process.env.imjs_test_imodel_bank !== undefined && !!JSON.parse(process.env.imjs_test_imodel_bank);
+  public static readonly enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);
   private static _cloudEnv: IModelCloudEnvironment | undefined;
 
   public static get cloudEnv(): IModelCloudEnvironment {

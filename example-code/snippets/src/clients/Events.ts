@@ -13,17 +13,17 @@ class MockAccessToken extends AccessToken {
   public override toTokenString() { return ""; }
 }
 
-if (process.env.imjs_agent_test_client_id === undefined)
-  throw new Error("Could not find imjs_agent_test_client_id");
-if (process.env.imjs_agent_test_client_secret === undefined)
-  throw new Error("Could not find imjs_agent_test_client_secret");
-if (process.env.imjs_oidc_browser_test_scopes === undefined)
-  throw new Error("Could not find imjs_oidc_browser_test_scopes");
+if (process.env.IMJS_AGENT_TEST_CLIENT_ID === undefined)
+  throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_ID");
+if (process.env.IMJS_AGENT_TEST_CLIENT_SECRET === undefined)
+  throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_SECRET");
+if (process.env.IMJS_OIDC_BROWSER_TEST_SCOPES === undefined)
+  throw new Error("Could not find IMJS_OIDC_BROWSER_TEST_SCOPES");
 
 const clientConfig: BackendAuthorizationClientConfiguration = {
-  clientId: process.env.imjs_agent_test_client_id ?? "",
-  clientSecret: process.env.imjs_agent_test_client_secret ?? "",
-  scope: process.env.imjs_oidc_browser_test_scopes ?? "",
+  clientId: process.env.IMJS_AGENT_TEST_CLIENT_ID ?? "",
+  clientSecret: process.env.IMJS_AGENT_TEST_CLIENT_SECRET ?? "",
+  scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
 };
 
 const authorizationClient = new AgentAuthorizationClient(clientConfig);

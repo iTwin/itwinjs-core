@@ -378,7 +378,7 @@ export function TokenPrefix(prefix: string): (constructor: any) => void;
 export class UrlDiscoveryClient extends Client {
     constructor();
     // (undocumented)
-    static readonly configResolveUrlUsingRegion = "imjs_buddi_resolve_url_using_region";
+    static readonly configResolveUrlUsingRegion = "IMJS_BUDDI_RESOLVE_URL_USING_REGION";
     discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string>;
     getUrl(): Promise<string>;
     protected getUrlSearchKey(): string;
