@@ -232,7 +232,7 @@ describe("tile tree", () => {
     expect(tree.contentIdQualifier).not.to.be.undefined;
   });
 
-  it("should include checksum on schedule script contents", async () => {
+  it.only("should include checksum on schedule script contents", async () => {
     const treeId: PrimaryTileTreeId = {
       type: BatchType.Primary,
       edgesRequired: false,
@@ -265,7 +265,7 @@ describe("tile tree", () => {
     expect(tree.contentIdQualifier).to.equal(`${scriptChecksum}${extentsChecksum}`);
   });
 
-  it("should update checksum after purge when schedule script contents change", async () => {
+  it.only("should update checksum after purge when schedule script contents change", async () => {
     const treeId: PrimaryTileTreeId = {
       type: BatchType.Primary,
       edgesRequired: false,
