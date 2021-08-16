@@ -8,13 +8,11 @@ import React from "react";
 import sinon from "sinon";
 import { PrimitiveValue, SpecialKey } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyEditorManager, PropertyUpdatedArgs } from "@bentley/ui-components";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { WeightEditor } from "../../ui-imodel-components/editors/WeightEditor";
 import { MineDataController, TestUtils } from "../TestUtils";
 
 describe("<WeightEditor />", () => {
-  afterEach(cleanup);
-
   it("should render", () => {
     const renderedComponent = render(<WeightEditor setFocus={true} />);
     expect(renderedComponent).not.to.be.undefined;
@@ -51,7 +49,7 @@ describe("<WeightEditor />", () => {
     // console.log(portalDiv.outerHTML);
     // =================================
 
-    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-weightpicker-popup-lines"));
+    const popupDiv = await waitFor(() => renderedComponent.getByTestId("components-weightpicker-popup-lines"));
     // renderedComponent.debug();  // show content of portal
     expect(popupDiv).not.to.be.undefined;
     if (popupDiv) {

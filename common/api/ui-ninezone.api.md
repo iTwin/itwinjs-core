@@ -7,6 +7,7 @@
 import { CommonProps } from '@bentley/ui-core';
 import * as CSS from 'csstype';
 import { Draft } from 'immer';
+import { Interaction } from 'scheduler/tracing';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { Omit } from '@bentley/ui-core';
 import { OmitChildrenProp } from '@bentley/ui-core';
@@ -3531,7 +3532,7 @@ export const widgetZoneIds: ReadonlyArray<WidgetZoneId>;
 
 // @alpha
 export const withContainIn: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>) => {
-    new (props: Readonly<ComponentProps & WithContainInProps>): {
+    new (props: (ComponentProps & WithContainInProps) | Readonly<ComponentProps & WithContainInProps>): {
         ref: React.RefObject<HTMLDivElement>;
         readonly containFn: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
         getContainerBounds(): Rectangle;
@@ -3560,7 +3561,7 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
         componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
         UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    new (props: ComponentProps & WithContainInProps, context?: any): {
+    new (props: ComponentProps & WithContainInProps, context: any): {
         ref: React.RefObject<HTMLDivElement>;
         readonly containFn: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
         getContainerBounds(): Rectangle;

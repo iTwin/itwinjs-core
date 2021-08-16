@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { ColorByName } from "@bentley/imodeljs-common";
 import { PrimitiveValue, SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyEditorManager, PropertyUpdatedArgs } from "@bentley/ui-components";
@@ -16,7 +16,6 @@ import { MineDataController, TestUtils } from "../TestUtils";
 // cspell:ignore colorpicker
 
 describe("<ColorEditor />", () => {
-  afterEach(cleanup);
 
   it("should render", () => {
     const renderedComponent = render(<ColorEditor setFocus={true} />);
@@ -55,7 +54,7 @@ describe("<ColorEditor />", () => {
     expect(pickerButton.tagName).to.be.equal("BUTTON");
     fireEvent.click(pickerButton);
 
-    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-popup-colors"));
+    const popupDiv = renderedComponent.getByTestId("components-colorpicker-popup-colors");
     expect(popupDiv).not.to.be.undefined;
     if (popupDiv) {
       const firstColorButton = popupDiv.firstChild as HTMLElement;
@@ -72,7 +71,6 @@ describe("<ColorEditor />", () => {
     const propertyRecord = TestUtils.createNumericProperty("Test", 50, StandardEditorNames.ColorPicker);
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     expect(renderedComponent.getByTestId("components-colorpicker-button")).to.exist;
-    cleanup();
   });
 
   it("should not commit if DataController fails to validate", async () => {

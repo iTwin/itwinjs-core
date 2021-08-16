@@ -32,6 +32,7 @@ import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
 import { immerable } from 'immer';
 import * as Inspire from 'inspire-tree';
+import { Interaction } from 'scheduler/tracing';
 import { LinkElementsInfo } from '@bentley/ui-abstract';
 import { MessageSeverity } from '@bentley/ui-abstract';
 import { NoChildrenProps } from '@bentley/ui-core';

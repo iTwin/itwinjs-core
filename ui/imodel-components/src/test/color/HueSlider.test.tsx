@@ -7,7 +7,7 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { HSVColor } from "@bentley/imodeljs-common";
-import { cleanup, fireEvent, render } from "@testing-library/react"; // , waitForElement
+import { fireEvent, render } from "@testing-library/react"; // , waitForElement
 import { TestUtils } from "../TestUtils";
 import { HueSlider } from "../../ui-imodel-components/color/HueSlider";
 
@@ -31,8 +31,6 @@ describe("<HueSlider />", () => {
   const hueDivStyle: React.CSSProperties = {
     height: `120px`,
   };
-
-  afterEach(cleanup);
 
   it("horizontal slider should render", () => {
     const renderedComponent = render(<HueSlider hsv={hsv} isHorizontal={true} />);

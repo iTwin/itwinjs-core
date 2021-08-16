@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { mount, shallow } from "enzyme";
 import React from "react";
 import * as sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import {
   IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParamTypes, SpecialKey,
 } from "@bentley/ui-abstract";
@@ -22,8 +22,6 @@ const numVal = 3.345689;
 const displayVal = "3.35";
 
 describe("<CustomNumberEditor />", () => {
-  afterEach(cleanup);
-
   it("should render", () => {
 
     const record = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal);
