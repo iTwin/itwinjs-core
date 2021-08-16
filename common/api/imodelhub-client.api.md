@@ -1186,6 +1186,8 @@ export class UserStatisticsQuery extends WsgQuery {
 
 // @public
 export class Version extends WsgInstance {
+    applicationId?: string;
+    applicationName?: string;
     changeSetId?: string;
     createdDate?: string;
     description?: string;
@@ -1223,6 +1225,7 @@ export class VersionQuery extends InstanceIdQuery {
     byChangeSet(changeSetId: string): this;
     byName(name: string): this;
     notHidden(): this;
+    selectApplicationData(): this;
     // @internal @deprecated
     selectThumbnailId(...sizes: ThumbnailSize[]): this;
 }
