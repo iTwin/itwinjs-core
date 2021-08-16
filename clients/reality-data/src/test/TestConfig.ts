@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ContextRegistryClient, ITwin } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 
@@ -15,7 +15,7 @@ function isOfflineSet(): boolean {
  */
 export class TestConfig {
   /** Name of iTwins (Projects or Assets) used by most tests */
-  public static readonly containerName: string = "iModelJsIntegrationTest";
+  public static readonly iTwinName: string = "iModelJsIntegrationTest";
   public static readonly enableMocks: boolean = isOfflineSet();
 
   /** Login the specified user and return the AuthorizationToken */
@@ -25,10 +25,14 @@ export class TestConfig {
   }
 
   public static async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
-    const contextRegistry = new ContextRegistryClient();
-    const container: ITwin | undefined = await contextRegistry.getITwinByName(requestContext, name);
-    if (!container || !container.id)
-      throw new Error(`ITwin ${name} not found for user.`);
-    return container;
+    const iTwinAccessClient = new ITwinAccessClient();
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAllByName(requestContext, name);
+
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${name} was not found for user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${name} were found for the user.`);
+
+    return iTwinList[0];
   }
 }

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, ITwin } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as fs from "fs";
@@ -31,13 +31,18 @@ loadEnv(path.join(__dirname, "..", "..", ".env"));
 export class TestConfig {
   /** Query for the specified iTwin */
   public static async getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
-    const contextRegistry = new ContextRegistryClient();
-    const container: ITwin | undefined = await contextRegistry.getITwinByName(requestContext, name);
-    if (!container || !container.id) {
+    const iTwinAccessClient = new ITwinAccessClient();
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAllByName(requestContext, name);
+
+    if (iTwinList.length === 0) {
       const userInfo = requestContext.accessToken.getUserInfo();
       throw new Error(`ITwin ${name} not found for user ${!userInfo ? "n/a" : userInfo.email}.`);
+    } else if (iTwinList.length > 1) {
+      const userInfo = requestContext.accessToken.getUserInfo();
+      throw new Error(`Multiple iTwins named ${name} were found for user ${!userInfo ? "n/a" : userInfo.email}.`);
     }
-    return container.id;
+
+    return iTwinList[0].id;
   }
 
   /** Query for the specified iModel */

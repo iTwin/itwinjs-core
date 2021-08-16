@@ -118,10 +118,12 @@ class Asset extends HiddenContext {
  */
 class HiddenQueryOptions implements RequestQueryOptions {
   // The public Project API (at time of writing) supports $search but not $filter
-  // currently used API supports $filter but not $search
+  // instead the currently used API supports $filter but not $search
   public $filter?: string;
   public $top?: number;
   public $skip?: number;
+
+  // Hidden custom query options
   public isFavorite?: boolean;
   public isMRU?: boolean;
 }
@@ -191,14 +193,15 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    */
   public async getById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ITwin> {
     const queryOptions: RequestQueryOptions = {
-      $filter: `$id+eq+'${id}'`,
+      $filter: `$id+eq+'${id}'`, // At time of writing $filter is supported, this may not be the case in the future
     };
     // Only one iTwin
     const iTwins = await this.getByQuery(requestContext, queryOptions);
     if (iTwins.length === 0)
-      throw new Error("Could not find an iTwin with the specified criteria that the user has access to");
+      throw new Error(`ITwin with an id ${id} was not found for the user.`);
     else if (iTwins.length > 1)
-      throw new Error("More than one iTwin found with the specified criteria");
+      throw new Error(`Multiple iTwins with id ${id} were found for the user.`);
+
     return iTwins[0];
   }
 

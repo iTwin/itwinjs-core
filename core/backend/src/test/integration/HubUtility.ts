@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, ITwin } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 import { Briefcase, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetType } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -72,11 +72,11 @@ export class HubUtility {
     if (undefined !== HubUtility.contextId)
       return HubUtility.contextId;
 
-    const container = await getIModelProjectAbstraction().getITwinByName(requestContext, name);
-    if (container === undefined || !container.id)
-      throw new Error(`ITwin ${name} not found`);
+    const iTwin = await getIModelProjectAbstraction().getITwinByName(requestContext, name);
+    if (iTwin === undefined || !iTwin.id)
+      throw new Error(`ITwin ${name} was not found for the user.`);
 
-    return container.id;
+    return iTwin.id;
   }
 
   /**
@@ -597,17 +597,24 @@ class TestIModelHubProject {
     return IModelHubBackend.iModelClient as IModelHubClient;
   }
 
-  private static _contextRegistryClient?: ContextRegistryClient;
+  private static _iTwinAccessClient?: ITwinAccessClient;
 
-  private static get contextClient(): ContextRegistryClient {
-    if (this._contextRegistryClient === undefined)
-      this._contextRegistryClient = new ContextRegistryClient();
-    return this._contextRegistryClient;
+  private static get contextClient(): ITwinAccessClient {
+    if (this._iTwinAccessClient === undefined)
+      this._iTwinAccessClient = new ITwinAccessClient();
+    return this._iTwinAccessClient;
   }
 
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const client = TestIModelHubProject.contextClient;
-    return client.getITwinByName(requestContext, name);
+    const iTwinList: ITwin[] = await client.getAllByName(requestContext, name);
+
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${name} was not found for the user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${name} were found for the user.`);
+
+    return iTwinList[0];
   }
 
   public async queryIModels(requestContext: AuthorizedClientRequestContext, projectId: string, query: IModelQuery | undefined): Promise<HubIModel[]> {

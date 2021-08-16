@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, ITwin } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 import { HubIModel, IModelClient, IModelHubClient } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
@@ -21,18 +21,22 @@ export class TestConfig {
   }
 
   public static async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
-    const contextRegistry = new ContextRegistryClient();
-    const container: ITwin | undefined = await contextRegistry.getITwinByName(requestContext, name);
-    if (!container || !container.id)
-      throw new Error(`ITwin ${name} not found for user.`);
-    return container;
+    const iTwinAccessClient = new ITwinAccessClient();
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAllByName(requestContext, name);
+
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${name} was not found for the user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${name} were found for the user.`);
+
+    return iTwinList[0];
   }
 
-  public static async queryIModel(requestContext: AuthorizedClientRequestContext, containerId: GuidString): Promise<HubIModel> {
+  public static async queryIModel(requestContext: AuthorizedClientRequestContext, iTwinId: GuidString): Promise<HubIModel> {
     const imodelHubClient: IModelClient = new IModelHubClient();
-    const iModel: HubIModel = await imodelHubClient.iModel.get(requestContext, containerId);
+    const iModel: HubIModel = await imodelHubClient.iModel.get(requestContext, iTwinId);
     if (!iModel || !iModel.wsgId)
-      throw new Error(`Primary iModel not found for iTwin ${containerId}`);
+      throw new Error(`Primary iModel not found for iTwin ${iTwinId}.`);
     return iModel;
   }
 }

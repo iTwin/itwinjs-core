@@ -6,7 +6,7 @@
 import * as path from "path";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ITwin, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
@@ -54,8 +54,15 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 
 // __PUBLISH_EXTRACT_END__
 
-async function getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
-  return (new ContextRegistryClient()).getITwinByName(requestContext, name);
+async function getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
+  const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAllByName(requestContext, name);
+
+  if (iTwinList.length === 0)
+    throw new Error(`ITwin ${name} was not found for the user.`);
+  else if (iTwinList.length > 1)
+    throw new Error(`Multiple iTwins named ${name} were found for the user.`);
+
+  return iTwinList[0];
 }
 
 async function createIModel(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, seedFile: string) {
@@ -160,7 +167,7 @@ describe.skip("Bridge", async () => {
   before(async () => {
     await IModelHost.startup();
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.superManager);
-    testProjectId = (await getITwinIdByName(requestContext, "iModelJsIntegrationTest")).id;
+    testProjectId = (await getITwinByName(requestContext, "iModelJsIntegrationTest")).id;
     seedPathname = path.join(KnownTestLocations.assetsDir, "empty.bim");
     imodelRepository = await createIModel(requestContext, testProjectId, "BridgeTest", seedPathname);
     await IModelHost.shutdown();

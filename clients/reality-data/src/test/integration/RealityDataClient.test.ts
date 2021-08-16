@@ -29,7 +29,7 @@ describe("RealityServicesClient Normal (#integration)", () => {
   before(async () => {
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
     Logger.logInfo(LOG_CATEGORY, `ActivityId: ${requestContext.activityId}`);
-    projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.containerName)).id;
+    projectId = (await TestConfig.getITwinByName(requestContext, TestConfig.iTwinName)).id;
     chai.assert.isDefined(projectId);
   });
 

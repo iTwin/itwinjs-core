@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient, ITwin } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ExtensionServiceExtensionLoader, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType, Tool } from "@bentley/imodeljs-frontend";
 
@@ -88,16 +88,21 @@ export class ExtensionServiceTool extends Tool {
     }
   }
 
-  private static async getContextId(contextName: string): Promise<string | undefined> {
+  private static async getContextId(contextName: string): Promise<string> {
     const token = await IModelApp.authorizationClient?.getAccessToken();
     if (token === undefined)
       throw new Error("Authentication required");
 
     const requestContext = new AuthorizedClientRequestContext(token);
-    const contextRegistry = new ContextRegistryClient();
-    const container: ITwin = await contextRegistry.getITwinByName(requestContext, contextName);
+    const iTwinAccessClient = new ITwinAccessClient();
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAllByName(requestContext, contextName);
 
-    return container.id;
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${contextName} was not found for the user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${contextName} were found for the user.`);
+
+    return iTwinList[0].id;
   }
 
   private static showSuccess(contextName: string) {

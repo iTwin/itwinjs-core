@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, Logger } from "@bentley/bentleyjs-core";
-import { ITwin, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 import { BriefcaseQuery, HubIModel, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { IModelHubBackend } from "@bentley/imodeljs-backend";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -27,10 +27,10 @@ export class HubUtility {
    * @throws If the project is not found, or there is more than one project with the supplied name
    */
   public static async getITwinIdByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<string> {
-    const container: ITwin | undefined = await HubUtility.getITwinByName(requestContext, name);
-    if (!container)
-      throw new Error(`Project ${name} not found`);
-    return container.id;
+    const iTwin: ITwin | undefined = await HubUtility.getITwinByName(requestContext, name);
+    if (!iTwin)
+      throw new Error(`ITwin ${name} was not found for the user.`);
+    return iTwin.id;
   }
 
   /**
@@ -48,8 +48,8 @@ export class HubUtility {
   }
 
   private static async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin | undefined> {
-    const container: ITwin = await getIModelProjectAbstraction().queryProject(requestContext, name);
-    return container;
+    const iTwin: ITwin = await getIModelProjectAbstraction().getITwinByName(requestContext, name);
+    return iTwin;
   }
 
   /**
@@ -98,12 +98,12 @@ class TestIModelHubProject {
   public get isIModelHub(): boolean { return true; }
   public terminate(): void { }
 
-  private static _contextRegistryClient?: ContextRegistryClient;
+  private static _iTwinAccessClient?: ITwinAccessClient;
 
-  private static get connectClient(): ContextRegistryClient {
-    if (this._contextRegistryClient === undefined)
-      this._contextRegistryClient = new ContextRegistryClient();
-    return this._contextRegistryClient;
+  private static get connectClient(): ITwinAccessClient {
+    if (this._iTwinAccessClient === undefined)
+      this._iTwinAccessClient = new ITwinAccessClient();
+    return this._iTwinAccessClient;
   }
 
   public get iModelHubClient(): IModelHubClient {
@@ -112,7 +112,14 @@ class TestIModelHubProject {
 
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const client = TestIModelHubProject.connectClient;
-    return client.getITwinByName(requestContext, name);
+    const iTwinList: ITwin[] = await client.getAllByName(requestContext, name);
+
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${name} was not found for the user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${name} were found for the user.`);
+
+    return iTwinList[0];
   }
   public async createIModel(requestContext: AuthorizedClientRequestContext, projectId: string, params: any): Promise<HubIModel> {
     const client = this.iModelHubClient;

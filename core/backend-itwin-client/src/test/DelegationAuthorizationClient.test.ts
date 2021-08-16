@@ -59,7 +59,7 @@ describe("DelegationAuthorizationClient (#integration)", () => {
 
     const delegationClient = new DelegationAuthorizationClient(delegationConfiguration);
     const delegationJwt = await delegationClient.getJwtFromJwt(requestContext, jwt);
-    await validator.validateContextRegistryAccess(delegationJwt);
+    await validator.validateITwinClientAccess(delegationJwt);
     await validator.validateIModelHubAccess(delegationJwt);
   });
 

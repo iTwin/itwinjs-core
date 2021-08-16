@@ -33,7 +33,7 @@ export class HubAccessTestValidator {
     return HubAccessTestValidator._singletonInstance;
   }
 
-  public async validateContextRegistryAccess(accessToken: AccessToken) {
+  public async validateITwinClientAccess(accessToken: AccessToken) {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
     const projectId = await TestConfig.getITwinIdByName(requestContext, this._testProjectName);
     chai.expect(projectId).to.be.equal(this._testProjectId);

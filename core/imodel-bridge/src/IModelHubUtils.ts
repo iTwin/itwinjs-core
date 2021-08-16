@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ContextRegistryClient, ITwin } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 import { Guid } from "@bentley/bentleyjs-core";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
@@ -32,13 +32,14 @@ export class ServerArgs {
 /** Helps with queries on Bentley Connect */
 export class ConnectUtils {
   public static async getContextId(contextName: string, requestContext: AuthorizedClientRequestContext): Promise<string> {
-    const container: ITwin = await (new ContextRegistryClient()).getITwinByName(requestContext, contextName);
+    const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAllByName(requestContext, contextName);
 
-    // No matching containers found
-    if (!container || !container.id)
-      throw new Error(`ITwin ${contextName} not found`);
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${contextName} was not found for the user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${contextName} were found for the user.`);
 
-    return container.id;
+    return iTwinList[0].id;
   }
 }
 
