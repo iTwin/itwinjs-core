@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodelhub-client",
-  "version": "3.0.0-dev.21",
+  "version": "3.0.0-dev.27",
   "description": "iModel.js iModelHub Client",
   "main": "lib/imodelhub-client.js",
   "typings": "lib/imodelhub-client",
@@ -38,9 +38,9 @@
     "js-base64": "^3.6.1"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.21",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.21",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.21"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.27",
+    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.27",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.27"
   },
   "devDependencies": {
     "@bentley/bentleyjs-core": "workspace:*",

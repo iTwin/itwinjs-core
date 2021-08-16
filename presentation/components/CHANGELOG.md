@@ -1,6 +1,16 @@
 # Change Log - @bentley/presentation-components
 
-This log was last generated on Wed, 04 Aug 2021 20:29:34 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Aug 2021 21:48:09 GMT and should not be manually modified.
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:09 GMT
+
+_Version update only_
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+_Version update only_
 
 ## 2.19.3
 Wed, 04 Aug 2021 20:29:34 GMT
@@ -23,6 +33,11 @@ Mon, 26 Jul 2021 12:21:25 GMT
 ### Updates
 
 - remove internal barrel-import usage
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
 
 ## 2.18.3
 Wed, 28 Jul 2021 17:16:30 GMT
