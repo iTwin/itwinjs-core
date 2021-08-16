@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geonames-extension",
+      "comment": "Removed references to the deleted config-loader package",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geonames-extension",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}

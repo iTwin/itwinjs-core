@@ -17,6 +17,7 @@ import {
   UserCancelledError,
 } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
+import { Base64 } from "js-base64";
 
 const loggerCategory: string = "mobile.filehandler";
 

@@ -35,13 +35,6 @@
   },
   "projects": [
     {
-      "packageName": "@bentley/backend-application-insights-client",
-      "projectFolder": "clients/backend-application-insights",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/build-tools",
       "projectFolder": "tools/build",
       "reviewCategory": "tools",
@@ -73,13 +66,6 @@
       "packageName": "@bentley/frontend-authorization-client",
       "projectFolder": "clients/frontend-authorization",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/frontend-application-insights-client",
-      "projectFolder": "clients/frontend-application-insights",
-      "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -122,20 +108,6 @@
       "packageName": "@bentley/usage-logging-client",
       "projectFolder": "clients/usage-logging",
       "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/extension-cli",
-      "projectFolder": "tools/extension-cli",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/config-loader",
-      "projectFolder": "tools/config-loader",
-      "reviewCategory": "tools",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -210,13 +182,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodel-bridge",
-      "projectFolder": "core/imodel-bridge",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/imodeljs-frontend",
       "projectFolder": "core/frontend",
       "reviewCategory": "frontend",
@@ -241,13 +206,6 @@
       "packageName": "@bentley/imodeljs-i18n",
       "projectFolder": "core/i18n",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/logger-config",
-      "projectFolder": "core/logger-config",
-      "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },

@@ -16,7 +16,6 @@ export * from "./DecorationsCache";
 export * from "./DevTools";
 export * from "./DisplayStyleState";
 export * from "./DrawingViewState";
-export * from "./EditingFunctions";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EmphasizeElementsProps";
@@ -76,7 +75,6 @@ export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
 export * from "./WebViewerApp";
-export * from "./oidc/OidcBrowserClient";
 export * from "./extension/Extension";
 export * from "./extension/ExtensionAdmin";
 export * from "./extension/loaders/ExtensionServiceExtensionLoader";
@@ -198,10 +196,6 @@ export * from "./LocalhostIpcApp";
 /**
  * @docs-group-description NativeApp
  * Classes for working with Native Applications
- */
-/**
- * @docs-group-description OIDC
- * Classes for working with the OpenID Connect (OIDC) protocol
  */
 /**
  * @docs-group-description Utils

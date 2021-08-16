@@ -2307,6 +2307,20 @@ export class ToggleTileTreeBoundsDecorationTool extends Tool {
 }
 
 // @beta
+export class ToggleToolTipsTool extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...args: string[]): boolean;
+    // (undocumented)
+    run(enable?: boolean): boolean;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
 export class ToggleViewAttachmentBoundariesTool extends ViewportToggleTool {
     // (undocumented)
     protected toggle(vp: Viewport, enable?: boolean): void;
@@ -2437,6 +2451,40 @@ export abstract class ViewportToggleTool extends Tool {
     run(enable?: boolean): boolean;
     // (undocumented)
     protected abstract toggle(vp: Viewport, enable?: boolean): void;
+}
+
+// @beta
+export class VignetteConfig extends Tool {
+    // (undocumented)
+    static get maxArgs(): number;
+    // (undocumented)
+    static get minArgs(): number;
+    // (undocumented)
+    parseAndRun(...input: string[]): boolean;
+    static roundness: number;
+    // (undocumented)
+    run(width?: number, height?: number, roundness?: number, smoothness?: number): boolean;
+    static readonly size: Float32Array;
+    static smoothness: number;
+    // (undocumented)
+    static toolId: string;
+}
+
+// @beta
+export class VignetteEffect extends AddEffectTool {
+    // (undocumented)
+    protected defineEffect(builder: ScreenSpaceEffectBuilder): void;
+    // (undocumented)
+    protected get effectName(): string;
+    // (undocumented)
+    protected get source(): {
+        vertex: string;
+        fragment: string;
+    };
+    // (undocumented)
+    protected get textureCoordFromPosition(): boolean;
+    // (undocumented)
+    static toolId: string;
 }
 
 

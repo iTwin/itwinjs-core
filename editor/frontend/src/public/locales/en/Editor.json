@@ -158,6 +158,7 @@
         "NotAllowed": "A valid geographic coordinate reference system already exists",
         "NotGeolocated": "Not geolocated",
         "NoChanges": "No changes to project extents or geolocation to save",
+        "Readonly": "iModel is read-only",
         "ProjectExtents": "Project Extents",
         "LargeProjectExtents": "Project Extents Too Large",
         "ModifyProjectExtents": "Modify Project Extents",

@@ -71,7 +71,7 @@ describe("PropertyGridModelSource", () => {
         },
         expectedLastItemData: {
           "Cat1_Cat1-1_Array1-1-1_Struct1-1-1-2_1": { isLastInRootCategory: true, lastInNumberOfCategories: 2 },
-          "Cat2": { isLastInRootCategory: true, lastInNumberOfCategories: 1 },
+          "Cat2": { isLastInRootCategory: true, lastInNumberOfCategories: 0 },
         },
       },
       changedPropertyKey: "Cat2",
@@ -122,7 +122,7 @@ describe("PropertyGridModelSource", () => {
         },
         expectedLastItemData: {
           "Cat1_Cat1-1_Array1-1-1_Struct1-1-1-2_1": { isLastInRootCategory: true, lastInNumberOfCategories: 2 },
-          "Cat2_Cat2-1_Cat2-1-1": { isLastInRootCategory: true, lastInNumberOfCategories: 3 },
+          "Cat2_Cat2-1_Cat2-1-1": { isLastInRootCategory: true, lastInNumberOfCategories: 2 },
         },
       },
     };

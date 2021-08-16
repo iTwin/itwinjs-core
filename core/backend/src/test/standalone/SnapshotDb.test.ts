@@ -24,7 +24,7 @@ describe("SnapshotDb.reattachDaemon", () => {
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     const requestContext = {} as any;
 
-    const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext, contextId: "fakeContextId", iModelId: "fake1", changeSetId: "fakeChangeSetId" });
+    const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext, contextId: "fakeContextId", iModelId: "fake1", changeset: { id: "fakeChangeSetId" } });
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("testFilePath1");
 
@@ -36,7 +36,7 @@ describe("SnapshotDb.reattachDaemon", () => {
     expect(attachStub.secondCall.firstArg.requestContext).to.equal(requestContext);
     expect(attachStub.secondCall.firstArg.contextId).to.equal("fakeContextId");
     expect(attachStub.secondCall.firstArg.iModelId).to.equal("fakeIModelId");
-    expect(attachStub.secondCall.firstArg.changeSetId).to.equal("fakeChangeSetId");
+    expect(attachStub.secondCall.firstArg.changeset.id).to.equal("fakeChangeSetId");
   });
 
   it("should not reattach if SAS key is fresh", async () => {
@@ -51,7 +51,7 @@ describe("SnapshotDb.reattachDaemon", () => {
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     const requestContext = {} as any;
 
-    const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext, contextId: "fakeContextId", iModelId: "fake1", changeSetId: "fakeChangeSetId" });
+    const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext, contextId: "fakeContextId", iModelId: "fake1", changeset: { id: "fakeChangeSetId" } });
     expect(openDgnDbStub.calledOnce).to.be.true;
     expect(openDgnDbStub.firstCall.firstArg.path).to.equal("testFilePath1");
     expect(attachStub.calledOnce).to.be.true;
@@ -72,7 +72,7 @@ describe("SnapshotDb.reattachDaemon", () => {
     sinon.stub(IModelDb.prototype, "initializeIModelDb" as any);
     const requestContext = {} as any;
 
-    const snapshot = SnapshotDb.openCheckpointV1("fakeFilePath", { requestContext, contextId: "fakeContextId", iModelId: "fake1", changeSetId: "fakeChangeSetId" });
+    const snapshot = SnapshotDb.openCheckpointV1("fakeFilePath", { requestContext, contextId: "fakeContextId", iModelId: "fake1", changeset: { id: "fakeChangeSetId" } });
     const nowStub = sinon.stub(Date, "now");
     await snapshot.reattachDaemon({} as any);
     expect(nowStub.called).to.be.false;

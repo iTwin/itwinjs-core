@@ -9,19 +9,18 @@ import * as moq from "typemoq";
 import { BeEvent, BeUiEvent, Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, SpatialViewState, SubCategoriesCache, ViewManager, Viewport } from "@bentley/imodeljs-frontend";
 import { ECInstancesNodeKey, KeySet, LabelDefinition, NodePathElement, StandardNodeTypes } from "@bentley/presentation-common";
-import { IPresentationTreeDataProvider } from "@bentley/presentation-components";
+import { PresentationTreeDataProvider } from "@bentley/presentation-components";
 import { mockPresentationManager } from "@bentley/presentation-components/lib/test/_helpers/UiComponents";
 import { Presentation, PresentationManager, SelectionChangeEvent, SelectionManager } from "@bentley/presentation-frontend";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { TreeDataChangesListener, TreeNodeItem } from "@bentley/ui-components";
+import { TreeNodeItem } from "@bentley/ui-components";
 import { fireEvent, render, waitForElement } from "@testing-library/react";
 import { CategoryTreeWithSearchBox } from "../../../ui-framework/imodel-components/category-tree/CategoriesTreeWithSearchBox";
 import { CategoryVisibilityHandler } from "../../../ui-framework/imodel-components/category-tree/CategoryVisibilityHandler";
-import TestUtils from "../../TestUtils";
 import { VisibilityChangeListener } from "../../../ui-framework/imodel-components/VisibilityTreeEventHandler";
+import TestUtils from "../../TestUtils";
 
 describe("CategoryTreeWithSearchBox", () => {
-
   before(async () => {
     await TestUtils.initializeUiFramework();
   });
@@ -36,6 +35,10 @@ describe("CategoryTreeWithSearchBox", () => {
     // have non-zero size and render the virtualized list
     sinon.stub(HTMLElement.prototype, "offsetHeight").get(() => 200);
     sinon.stub(HTMLElement.prototype, "offsetWidth").get(() => 200);
+  });
+
+  afterEach(() => {
+    sinon.restore();
   });
 
   const imodelMock = moq.Mock.ofType<IModelConnection>();
@@ -85,21 +88,17 @@ describe("CategoryTreeWithSearchBox", () => {
   describe("<CategoryTreeWithSearchBox />", () => {
     const visibilityHandler = moq.Mock.ofType<CategoryVisibilityHandler>();
     let enableCategoryStub: sinon.SinonStub<[ViewManager, IModelConnection, string[], boolean, boolean, (boolean | undefined)?], void>;
-    let dataProvider: IPresentationTreeDataProvider;
 
     beforeEach(() => {
       enableCategoryStub = sinon.stub(CategoryVisibilityHandler, "enableCategory");
-      dataProvider = {
-        imodel: imodelMock.object,
-        rulesetId: "",
-        onTreeNodeChanged: new BeEvent<TreeDataChangesListener>(),
-        dispose: () => { },
-        getFilteredNodePaths: async () => [],
-        getNodeKey: (node: TreeNodeItem) => (node as any).__key,
-        getNodesCount: async () => 0,
-        getNodes: async () => [],
-        loadHierarchy: async () => { },
-      };
+      sinon.stub(PresentationTreeDataProvider.prototype, "imodel").get(() => imodelMock.object);
+      sinon.stub(PresentationTreeDataProvider.prototype, "rulesetId").get(() => "");
+      sinon.stub(PresentationTreeDataProvider.prototype, "dispose");
+      sinon.stub(PresentationTreeDataProvider.prototype, "getFilteredNodePaths").resolves([]);
+      sinon.stub(PresentationTreeDataProvider.prototype, "getNodeKey").callsFake((node: any) => node.__key);
+      sinon.stub(PresentationTreeDataProvider.prototype, "getNodesCount").resolves(0);
+      sinon.stub(PresentationTreeDataProvider.prototype, "getNodes").resolves([]);
+      sinon.stub(PresentationTreeDataProvider.prototype, "loadHierarchy");
 
       visibilityHandler.reset();
       visibilityHandler.setup((x) => x.onVisibilityChange).returns(() => new BeEvent<VisibilityChangeListener>());
@@ -107,15 +106,20 @@ describe("CategoryTreeWithSearchBox", () => {
     });
 
     const setupDataProvider = (nodes: TreeNodeItem[]) => {
-      dataProvider.getNodesCount = async () => nodes.length;
-      dataProvider.getNodes = async () => nodes.map((n) => ({ __key: createKey(n.id), ...n }));
+      (PresentationTreeDataProvider.prototype.getNodesCount as any).restore();
+      sinon.stub(PresentationTreeDataProvider.prototype, "getNodesCount").resolves(nodes.length);
+
+      (PresentationTreeDataProvider.prototype.getNodes as any).restore();
+      sinon.stub(PresentationTreeDataProvider.prototype,"getNodes").callsFake(
+        async () => nodes.map((n) => ({ __key: createKey(n.id), ...n })),
+      );
     };
 
     it("should match snapshot", async () => {
       setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
       const result = render(
         <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
-          viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object}
+          viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} categoryVisibilityHandler={visibilityHandler.object}
         />,
       );
       await waitForElement(() => result.getByText("test-node"));
@@ -127,7 +131,7 @@ describe("CategoryTreeWithSearchBox", () => {
       const showAll = new BeUiEvent<void>();
       const result = render(
         <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
-          viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} showAll={showAll}
+          viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} categoryVisibilityHandler={visibilityHandler.object} showAll={showAll}
         />,
       );
       await waitForElement(() => result.getByText("test-node"));
@@ -142,7 +146,7 @@ describe("CategoryTreeWithSearchBox", () => {
       const hideAll = new BeUiEvent<void>();
       const result = render(
         <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
-          viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} hideAll={hideAll}
+          viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} categoryVisibilityHandler={visibilityHandler.object} hideAll={hideAll}
         />,
       );
       await waitForElement(() => result.getByText("test-node"));
@@ -153,19 +157,23 @@ describe("CategoryTreeWithSearchBox", () => {
     });
 
     describe("filtering", () => {
-
       beforeEach(() => {
         setupDataProvider([{ id: "test", label: PropertyRecord.fromString("test-node") }]);
-        const getFilteredNodePathsPromise = Promise.resolve<NodePathElement[]>([{
+        const filteredNodes: NodePathElement[] = [{
           children: [],
           index: 0,
           node: {
             key: createKey("filter-node-id"),
             label: LabelDefinition.fromLabelString("filtered-node"),
           },
-        }]);
-        dataProvider.getFilteredNodePaths = async () => getFilteredNodePathsPromise;
-        dataProvider.getNodeKey = (node: TreeNodeItem) => (node as any)["__presentation-components/key"];
+        }];
+        (PresentationTreeDataProvider.prototype.getFilteredNodePaths as any).restore();
+        sinon.stub(PresentationTreeDataProvider.prototype, "getFilteredNodePaths").resolves(filteredNodes);
+
+        (PresentationTreeDataProvider.prototype.getNodeKey as any).restore();
+        sinon.stub(PresentationTreeDataProvider.prototype, "getNodeKey").callsFake(
+          (node: TreeNodeItem) => (node as any)["__presentation-components/key"],
+        );
       });
 
       const applyFilter = (container: HTMLElement) => {
@@ -178,7 +186,7 @@ describe("CategoryTreeWithSearchBox", () => {
       it("filters tree", async () => {
         const result = render(
           <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
-            viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} showSearchBox={true}
+            viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} categoryVisibilityHandler={visibilityHandler.object} showSearchBox={true}
           />,
         );
         await waitForElement(() => result.getByText("test-node"));
@@ -190,7 +198,7 @@ describe("CategoryTreeWithSearchBox", () => {
         const showAll = new BeUiEvent<void>();
         const result = render(
           <CategoryTreeWithSearchBox // eslint-disable-line deprecation/deprecation
-            viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} dataProvider={dataProvider} categoryVisibilityHandler={visibilityHandler.object} showSearchBox={true} showAll={showAll}
+            viewManager={viewManagerMock.object} iModel={imodelMock.object} activeView={viewportMock.object} categoryVisibilityHandler={visibilityHandler.object} showSearchBox={true} showAll={showAll}
           />,
         );
         await waitForElement(() => result.getByText("test-node"));
@@ -200,9 +208,6 @@ describe("CategoryTreeWithSearchBox", () => {
         await TestUtils.flushAsyncOperations();
         expect(enableCategoryStub).to.be.calledWith(viewManagerMock.object, imodelMock.object, ["filter-node-id"], true);
       });
-
     });
-
   });
-
 });
