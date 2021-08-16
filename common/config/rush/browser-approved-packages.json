@@ -859,10 +859,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "rect-dom-instance",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "recursive-readdir",
       "allowedCategories": [ "tools" ]
     },
