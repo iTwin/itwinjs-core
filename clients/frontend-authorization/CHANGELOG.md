@@ -1,6 +1,13 @@
 # Change Log - @bentley/frontend-authorization-client
 
-This log was last generated on Thu, 12 Aug 2021 13:09:26 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Aug 2021 21:48:08 GMT and should not be manually modified.
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:08 GMT
+
+### Updates
+
+- Add explicit check for BrowserAuthorizationLogger initialization, instead of inferring the initialization state from the oidc-client library
 
 ## 2.19.4
 Thu, 12 Aug 2021 13:09:26 GMT
@@ -191,7 +198,7 @@ Fri, 02 Apr 2021 13:18:42 GMT
 
 ### Updates
 
-- Simplified WebViewerApp authorization.
+- Simplified WebViewerApp authorization. 
 
 ## 2.13.0
 Tue, 09 Mar 2021 20:28:13 GMT
@@ -475,11 +482,11 @@ Wed, 06 May 2020 13:17:49 GMT
 
 ### Updates
 
-- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API.
-- Removed/moved some properties from AuthorizationClient interface.
+- Fixed setup of UserInfo from browser clients, and more cleanups to AccessToken API. 
+- Removed/moved some properties from AuthorizationClient interface. 
 - react to changes in imodeljs-clients
 - FrontendAuthorizationClient does not extend IDisposable.
-- Fixed FrontendAuthorizationClient type guard.
+- Fixed FrontendAuthorizationClient type guard. 
 - Renamed OIDC constructs for consistency; Removed SAML support.
 - create new package from imodeljs-clients
 - Upgrade to Rush 5.23.2

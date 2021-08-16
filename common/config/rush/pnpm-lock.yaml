@@ -2012,7 +2012,7 @@ importers:
       '@types/enzyme': 3.9.3
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-beautiful-dnd': 12.1.4
       '@types/react-select': 3.0.26
       '@types/sinon': 9.0.11
@@ -2479,7 +2479,7 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-dom': 17.0.9
       '@types/testing-library__react-hooks': 3.4.1
       cache-require-paths: 0.3.0
@@ -2881,7 +2881,7 @@ importers:
       '@types/enzyme': 3.9.3
       '@types/faker': 4.1.12
       '@types/mocha': 8.2.3
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-dom': 17.0.9
       '@types/sinon': 9.0.11
       '@types/sinon-chai': 3.2.5
@@ -3513,13 +3513,13 @@ importers:
       raf-schd: 4.0.3
       react: 17.0.2
       react-dom: 17.0.2_react@17.0.2
-      react-markdown: 5.0.3_9280ae23271fd1e8184f767af1a90e55
+      react-markdown: 5.0.3_d94f33b06fdce27140dc5b0a474a21a8
       react-router-dom: 5.2.0_react@17.0.2
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.3.5
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-dom': 17.0.9
       '@types/react-router-dom': 5.1.8
       typescript: 4.3.5
@@ -3598,7 +3598,7 @@ importers:
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.3.5
       '@types/bunyan': 1.8.7
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-dom': 17.0.9
       '@types/react-select': 3.0.26
       autoprefixer: 8.6.5
@@ -3738,7 +3738,7 @@ importers:
       '@bentley/react-scripts': 4.0.3_react@17.0.2+typescript@4.3.5
       '@types/lorem-ipsum': 1.0.2
       '@types/node': 10.14.1
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-beautiful-dnd': 12.1.4
       '@types/react-dom': 17.0.9
       '@types/react-redux': 7.1.18
@@ -3813,7 +3813,7 @@ importers:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/extension-webpack-tools': link:../../tools/extension-webpack
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-select': 3.0.26
       cpx: 1.5.0
       eslint: 7.32.0
@@ -4505,7 +4505,7 @@ importers:
       '@types/linkify-it': 2.1.0
       '@types/lodash': 4.14.172
       '@types/mocha': 8.2.3
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-data-grid': 4.0.2
       '@types/react-dom': 17.0.9
       '@types/react-highlight-words': 0.16.3
@@ -4641,7 +4641,7 @@ importers:
       '@types/lodash': 4.14.172
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-autosuggest': 10.1.2
       '@types/react-dom': 17.0.9
       '@types/react-select': 3.0.26
@@ -4808,7 +4808,7 @@ importers:
       '@types/lodash': 4.14.172
       '@types/mocha': 8.2.3
       '@types/node': 10.14.1
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-dom': 17.0.9
       '@types/react-redux': 7.1.18
       '@types/rimraf': 2.0.5
@@ -4915,7 +4915,7 @@ importers:
       '@types/chai-spies': 1.0.3
       '@types/enzyme': 3.9.3
       '@types/mocha': 8.2.3
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-dom': 17.0.9
       '@types/sinon': 9.0.11
       '@types/uuid': 7.0.5
@@ -9811,7 +9811,7 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.15.3
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-dom': 17.0.9
       '@types/react-test-renderer': 17.0.1
       react: 17.0.2
@@ -9833,7 +9833,7 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.15.3
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-dom': 17.0.9
       '@types/react-test-renderer': 17.0.1
       react: 17.0.2
@@ -9855,7 +9855,7 @@ packages:
         optional: true
     dependencies:
       '@babel/runtime': 7.15.3
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-dom': 17.0.9
       '@types/react-test-renderer': 17.0.1
       react: 17.0.2
@@ -10066,7 +10066,7 @@ packages:
     resolution: {integrity: sha512-jDKoZiiMA3lGO3skSO7dfqEHNvmiTLLV+PHD9EBQVlJANJvpY6qq1zzjRI24ZOtG7F+CS7BVWDXKewRmN8PjHQ==}
     dependencies:
       '@types/cheerio': 0.22.30
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
     dev: true
 
   /@types/eslint/7.2.14:
@@ -10150,7 +10150,7 @@ packages:
   /@types/hoist-non-react-statics/3.3.1:
     resolution: {integrity: sha512-iMIqiko6ooLrTh1joXodJK5X9xeEALT1kM5G3ZLhD3hszxBdIEd5C75U834D9mLcINgD4OyZf5uQXjkuYydWvA==}
     dependencies:
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       hoist-non-react-statics: 3.3.2
 
   /@types/html-minifier-terser/5.1.2:
@@ -10333,37 +10333,37 @@ packages:
   /@types/react-autosuggest/10.1.2:
     resolution: {integrity: sha512-K23lmXhC3Bbd8y/jm5+wYrw/NAeN4U/wlHTgAEBIwLOyQKFCFYA3ONKte9P21L+RGIXRP8UlzHOSRtmIZw5Nqw==}
     dependencies:
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
     dev: true
 
   /@types/react-beautiful-dnd/12.1.4:
     resolution: {integrity: sha512-Ky29sKev1uEisGwj7d3zz9tO1Ig93fK0f7uQYK0IF7kOJ3iwK5MpKBiUofXceeCSfNagVzNypnTedzZOu9tLIw==}
     dependencies:
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
     dev: true
 
   /@types/react-data-grid/4.0.2:
     resolution: {integrity: sha512-no7HnLfm5CSLicuLixZjgsfq0myt6+aBxyVCIo9XiJdNLiZUC0uogMa2f4wq+xdTaslYHeyzwsVL6KF0B765Yg==}
     dependencies:
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
     dev: true
 
   /@types/react-dom/17.0.9:
     resolution: {integrity: sha512-wIvGxLfgpVDSAMH5utdL9Ngm5Owu0VsGmldro3ORLXV8CShrL8awVj06NuEXFQ5xyaYfdca7Sgbk/50Ri1GdPg==}
     dependencies:
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
 
   /@types/react-highlight-words/0.16.3:
     resolution: {integrity: sha512-ZarU4+/R593xctDXy/SkyWeS/dg5sG8TxZ2DATd2EdDKHlfqCPnOYzHEo/7XaYpCoSCgk5Sp1sVNhnOzC/ezJg==}
     dependencies:
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
     dev: true
 
   /@types/react-redux/7.1.18:
     resolution: {integrity: sha512-9iwAsPyJ9DLTRH+OFeIrm9cAbIj1i2ANL3sKQFATqnPWRbg+jEFXyZOKHiQK/N86pNRXbb4HRxAxo0SIX1XwzQ==}
     dependencies:
       '@types/hoist-non-react-statics': 3.3.1
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       hoist-non-react-statics: 3.3.2
       redux: 4.1.1
 
@@ -10371,7 +10371,7 @@ packages:
     resolution: {integrity: sha512-03xHyncBzG0PmDmf8pf3rehtjY0NpUj7TIN46FrT5n1ZWHPZvXz32gUyNboJ+xsL8cpg8bQVLcllptcQHvocrw==}
     dependencies:
       '@types/history': 4.7.9
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-router': 5.1.16
     dev: true
 
@@ -10379,13 +10379,13 @@ packages:
     resolution: {integrity: sha512-8d7nR/fNSqlTFGHti0R3F9WwIertOaaA1UEB8/jr5l5mDMOs4CidEgvvYMw4ivqrBK+vtVLxyTj2P+Pr/dtgzg==}
     dependencies:
       '@types/history': 4.7.9
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
     dev: true
 
   /@types/react-select/3.0.26:
     resolution: {integrity: sha512-rAaiD0SFkBi3PUwp1DrJV04CobPl2LuZXF+kv6MKw8kaeGo82xTOZzjM8DDi4lrdkqGbInZiE2QO9nIJm3bqgw==}
     dependencies:
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/react-dom': 17.0.9
       '@types/react-transition-group': 4.4.2
     dev: true
@@ -10393,40 +10393,40 @@ packages:
   /@types/react-table/7.7.2:
     resolution: {integrity: sha512-NwB78t3YV5pZ1NK3m2vylb/d0DKVyWH4y4GMCtlE4tg2n5ENM4ejzKnT46YKuqG2cPjWc+PIxuRVMd5OYX1z4A==}
     dependencies:
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
 
   /@types/react-test-renderer/17.0.1:
     resolution: {integrity: sha512-3Fi2O6Zzq/f3QR9dRnlnHso9bMl7weKCviFmfF6B4LS1Uat6Hkm15k0ZAQuDz+UBq6B3+g+NM6IT2nr5QgPzCw==}
     dependencies:
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
 
   /@types/react-transition-group/4.4.2:
     resolution: {integrity: sha512-KibDWL6nshuOJ0fu8ll7QnV/LVTo3PzQ9aCPnRUYPfX7eZohHwLIdNHj7pftanREzHNP4/nJa8oeM73uSiavMQ==}
     dependencies:
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
     dev: true
 
   /@types/react-virtualized-auto-sizer/1.0.1:
     resolution: {integrity: sha512-GH8sAnBEM5GV9LTeiz56r4ZhMOUSrP43tAQNSRVxNexDjcNKLCEtnxusAItg1owFUFE6k0NslV26gqVClVvong==}
     dependencies:
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
     dev: true
 
   /@types/react-virtualized/9.21.13:
     resolution: {integrity: sha512-tCIQ5wDKj+QJ3sMzjPKSLY0AXsznt+ovAUcq+JCLjPBOcAHbPt4FraGT9HKYEFfmp9E6+ELuN49i5bWtuBmi3w==}
     dependencies:
       '@types/prop-types': 15.7.4
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
     dev: true
 
   /@types/react-window/1.8.5:
     resolution: {integrity: sha512-V9q3CvhC9Jk9bWBOysPGaWy/Z0lxYcTXLtLipkt2cnRj1JOSFNF7wqGpkScSXMgBwC+fnVRg/7shwgddBG5ICw==}
     dependencies:
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
     dev: true
 
-  /@types/react/17.0.17:
-    resolution: {integrity: sha512-nrfi7I13cAmrd0wje8czYpf5SFbryczCtPzFc6ijqvdjKcyA3tCvGxwchOUlxb2ucBPuJ9Y3oUqKrRqZvrz0lw==}
+  /@types/react/17.0.18:
+    resolution: {integrity: sha512-YTLgu7oS5zvSqq49X5Iue5oAbVGhgPc5Au29SJC4VeE17V6gASoOxVkUDy9pXFMRFxCWCD9fLeweNFizo3UzOg==}
     dependencies:
       '@types/prop-types': 15.7.4
       '@types/scheduler': 0.16.2
@@ -15409,6 +15409,7 @@ packages:
 
   /flatten/1.0.3:
     resolution: {integrity: sha512-dVsPA/UwQ8+2uoFe5GHtiBMu48dWLTdsuEd7CKGlZlD78r1TTWBvDuFaFGKCo/ZfEr95Uk56vZoX86OsHkUeIg==}
+    deprecated: flatten is deprecated in favor of utility frameworks such as lodash.
 
   /flush-write-stream/1.1.1:
     resolution: {integrity: sha512-3Z4XhFZ3992uIq0XOqb9AreonueSYphE6oYbpt5+3u06JWklbsPkNv3ZKkP9Bz/r+1MWCaMoSQ28P85+1Yc77w==}
@@ -21424,14 +21425,14 @@ packages:
     resolution: {integrity: sha512-fBASbA6LnOU9dOU2eW7aQ8xmYBSXUIWr+UmF9b1efZBazGNO+rcXT/icdKnYm2pTwcRylVUYwW7H1PHfLekVzA==}
     dev: false
 
-  /react-markdown/5.0.3_9280ae23271fd1e8184f767af1a90e55:
+  /react-markdown/5.0.3_d94f33b06fdce27140dc5b0a474a21a8:
     resolution: {integrity: sha512-jDWOc1AvWn0WahpjW6NK64mtx6cwjM4iSsLHJPNBqoAgGOVoIdJMqaKX4++plhOtdd4JksdqzlDibgPx6B/M2w==}
     peerDependencies:
       '@types/react': '>=16'
       react: '>=16'
     dependencies:
       '@types/mdast': 3.0.7
-      '@types/react': 17.0.17
+      '@types/react': 17.0.18
       '@types/unist': 2.0.6
       html-to-react: 1.4.5_react@17.0.2
       mdast-add-list-metadata: 1.0.1
@@ -21805,7 +21806,7 @@ packages:
   /regenerator-transform/0.14.5:
     resolution: {integrity: sha512-eOf6vka5IO151Jfsw2NO9WpGX58W6wWmefK3I1zEGr0lOD0u8rwPaNqQL1aRxUaxLeKO3ArNh3VYg1KbaD+FFw==}
     dependencies:
-      '@babel/runtime': 7.9.0
+      '@babel/runtime': 7.15.3
 
   /regex-cache/0.4.4:
     resolution: {integrity: sha512-nVIZwtCjkC9YgvWkpM55B5rBhBYRZhAaJbgcFYXXsHnbZ9UZI9nnVWYZpBlCqv9ho2eZryPnWrZGsOdPwVWXWQ==}
