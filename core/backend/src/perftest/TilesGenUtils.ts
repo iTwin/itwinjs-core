@@ -68,7 +68,7 @@ export class BackendTileGenerator {
     ignoreAreaPatterns: false,
     enableExternalTextures: true,
     alwaysSubdivideIncompleteTiles: false,
-    optimizeBRepProcessing: true,
+    optimizeBRepProcessing: false,
   };
   private readonly _stats: Stats = {
     modelCount: 0,

@@ -264,7 +264,7 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   ignoreAreaPatterns: false,
   enableExternalTextures: true,
   useProjectExtents: true,
-  optimizeBRepProcessing: true,
+  optimizeBRepProcessing: false,
   disableMagnification: false,
   alwaysSubdivideIncompleteTiles: false,
 });

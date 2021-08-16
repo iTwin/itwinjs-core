@@ -948,7 +948,7 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
     useProjectExtents?: boolean;
 
     /** When producing facets from BRep entities, use an optimized pipeline to improve performance.
-     * Default value: true
+     * Default value: false
      * @internal
      */
     optimizeBRepProcessing?: boolean;

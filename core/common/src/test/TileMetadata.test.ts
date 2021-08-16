@@ -84,7 +84,7 @@ describe("TileMetadata", () => {
       // inputs
       id: IModelTileTreeId;
       ignoreProjectExtents?: true;
-      noOptimizeBReps?: true;
+      optimizeBReps?: true;
       maxVersion?: number;
       // expected
       baseId: string;
@@ -95,7 +95,7 @@ describe("TileMetadata", () => {
     const kExtents = TreeFlags.UseProjectExtents;
     const kBReps = TreeFlags.OptimizeBRepProcessing;
     const kPriority = TreeFlags.EnforceDisplayPriority;
-    const kDefaults = kExtents | kBReps;
+    const kDefaults = kExtents;
     const kAll = kDefaults | kPriority;
 
     const testCases: TestCase[] = [
@@ -113,32 +113,32 @@ describe("TileMetadata", () => {
         id: primaryId(true),
         ignoreProjectExtents: true,
         baseId: "",
-        flags: kBReps,
+        flags: kNone,
       },
       {
         id: primaryId(true),
-        noOptimizeBReps: true,
+        optimizeBReps: true,
         baseId: "",
-        flags: kExtents,
+        flags: kExtents | kBReps,
       },
       {
         id: primaryId(true),
-        noOptimizeBReps: true,
+        optimizeBReps: true,
         ignoreProjectExtents: true,
         baseId: "",
-        flags: kNone,
+        flags: kBReps,
       },
       {
         id: primaryId(false),
         ignoreProjectExtents: true,
         baseId: "E:0_",
-        flags: kBReps,
+        flags: kNone,
       },
       {
         id: primaryId(false, true),
         ignoreProjectExtents: true,
         baseId: "E:0_",
-        flags: kPriority | kBReps,
+        flags: kPriority,
       },
       {
         id: primaryId(true, true),
@@ -164,7 +164,7 @@ describe("TileMetadata", () => {
         id: primaryId(false, false, undefined, { id: "0xfde" }),
         ignoreProjectExtents: true,
         baseId: "A:0xfde_#ffffffff_E:0_",
-        flags: kBReps,
+        flags: kNone,
       },
       {
         id: primaryId(false, false, "clippy", { id: "0x5c", node: 32 }),
@@ -213,6 +213,13 @@ describe("TileMetadata", () => {
         id: classifierId(),
         ignoreProjectExtents: true,
         baseId: "CP:1.000000_",
+        flags: kNone,
+      },
+      {
+        id: classifierId(),
+        ignoreProjectExtents: true,
+        optimizeBReps: true,
+        baseId: "CP:1.000000_",
         flags: kBReps,
       },
       // Volume classifiers always use project extents.
@@ -228,7 +235,7 @@ describe("TileMetadata", () => {
       const options = {
         ...defaultTileOptions,
         useProjectExtents: true !== test.ignoreProjectExtents,
-        optimizeBRepProcessing: true !== test.noOptimizeBReps,
+        optimizeBRepProcessing: true === test.optimizeBReps,
       };
 
       if (undefined !== test.maxVersion)
