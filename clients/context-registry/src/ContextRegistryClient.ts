@@ -3,22 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
- * @module ContextRegistryNTBD
+ * @module ContextRegistry
  */
 import { assert, Config } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 import * as deepAssign from "deep-assign";
-import { ContextRegistryNTBD, ITwin } from "./ContextAccessProps";
-
-/** The iTwin context type.
- * @beta
- */
-enum ContextType {
-  Unknown,
-  Team = 1, // eslint-disable-line @typescript-eslint/no-shadow
-  Asset = 2, // eslint-disable-line @typescript-eslint/no-shadow
-  Project = 3, // eslint-disable-line @typescript-eslint/no-shadow
-}
+import { ITwin, ITwinAccess } from "./ITwinAccessProps";
 
 /** The iTwin context. Currently supported context types are [[Project]] and [[Asset]].
  * @beta
@@ -64,9 +54,6 @@ abstract class HiddenContext extends Context {
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.AllowExternalTeamMembers")
   public allowExternalTeamMembers?: boolean;
-
-  @ECJsonTypeMap.propertyToJson("wsg", "properties.ContextTypeId")
-  public contextTypeId?: ContextType;
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.CountryCode")
   public countryCode?: string;
@@ -126,10 +113,23 @@ class Asset extends HiddenContext {
   public assetType?: string;
 }
 
+/** A set of query options containing favorite and most recently used
+ * @beta
+ */
+class HiddenQueryOptions implements RequestQueryOptions {
+  // The public Project API (at time of writing) supports $search but not $filter
+  // currently used API supports $filter but not $search
+  public $filter?: string;
+  public $top?: number;
+  public $skip?: number;
+  public isFavorite?: boolean;
+  public isMRU?: boolean;
+}
+
 /** Client API to access the context registry services.
  * @beta
  */
-export class ContextRegistryClient extends WsgClient implements ContextRegistryNTBD {
+export class ITwinAccessClient extends WsgClient implements ITwinAccess {
   public static readonly searchKey: string = "CONNECTEDContextService.URL";
   public static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
 
@@ -138,77 +138,81 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
     this.baseUrl = "https://api.bentley.com/contextregistry";
   }
 
-  /** Get all iTwins accessible to the user
+  /** Get iTwins accessible to the user
    * @param requestContext The client request context
-   * @returns Array of containers, may be empty
+   * @param queryOptions Options for paging or filtering
+   * @returns Array of iTwins, may be empty
    */
-  public async getITwins(requestContext: AuthorizedClientRequestContext): Promise<ITwin[]> {
-    return this.getITwinByQuery(requestContext);
+  public async getAll(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
+    return this.getByQuery(requestContext, queryOptions);
   }
 
-  /** Get an iTwin via name
+  /** Get all iTwins with matching name
    * @param requestContext The client request context
-   * @param name The unique name of the container
-   * @returns A container with matching name, otherwise throws an error
-  */
-  public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
-    const queryOptions: RequestQueryOptions = {
-      $select: "*",
+   * @param name The name to match
+   * @returns Array of matching iTwins, may be empty
+   */
+  public async getAllByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin[]> {
+    const query: HiddenQueryOptions = {
       $filter: `name+eq+'${name}'`,
     };
-    // Only one iTwin
-    const containers = await this.getITwinByQuery(requestContext, queryOptions);
-    if (containers.length === 0)
-      throw new Error("Could not find an iTwin with the specified criteria that the user has access to");
-    else if (containers.length > 1)
-      throw new Error("More than one iTwin found with the specified criteria");
-    return containers[0];
+    return this.getByQuery(requestContext, query);
   }
 
-  /** !Currently unused: Get an iTwin via id
+  /** Get favorited iTwins
    * @param requestContext The client request context
-   * @param id The unique id/wsgId/ecId of the container
-   * @returns A container with matching id, otherwise throws an error
+   * @param queryOptions Options for paging or filtering
+   * @returns Array of favorited iTwins, may be empty
+  */
+  public async getFavorites(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
+    const expandedQuery: HiddenQueryOptions = queryOptions ? queryOptions : {};
+    expandedQuery.isFavorite = true;
+
+    return this.getByQuery(requestContext, expandedQuery);
+  }
+
+  /** Get the most recently used iTwins
+   * @param requestContext The client request context
+   * @param queryOptions Options for paging or filtering
+   * @returns Array of most recently used iTwins, may be empty
    */
-  public async getITwinById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ITwin> {
+  public async getRecentlyUsed(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
+    const expandedQuery: HiddenQueryOptions = queryOptions ? queryOptions : {};
+    expandedQuery.isMRU = true;
+
+    return this.getByQuery(requestContext, queryOptions);
+  }
+
+  /** Get an iTwin via id
+   * @param requestContext The client request context
+   * @param id The unique id/wsgId/ecId of the iTwin
+   * @returns An iTwin with matching id
+   * @throws If no matching iTwin found, or multiple matching iTwin found
+   */
+  public async getById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ITwin> {
     const queryOptions: RequestQueryOptions = {
-      $select: "*",
       $filter: `$id+eq+'${id}'`,
     };
     // Only one iTwin
-    const containers = await this.getITwinByQuery(requestContext, queryOptions);
-    if (containers.length === 0)
+    const iTwins = await this.getByQuery(requestContext, queryOptions);
+    if (iTwins.length === 0)
       throw new Error("Could not find an iTwin with the specified criteria that the user has access to");
-    else if (containers.length > 1)
+    else if (iTwins.length > 1)
       throw new Error("More than one iTwin found with the specified criteria");
-    return containers[0];
-  }
-
-  /** !Currently unused: Gets all iTwins (projects or assets) whose name contains the search string, case insensitive
-   * @param requestContext The client request context
-   * @param searchString The regex to compare against each name
-   * @returns Array of containers with names containing the searchString
-   */
-  private async getITwinsByNameSubstring(requestContext: AuthorizedClientRequestContext, searchString: string): Promise<ITwin[]> {
-    const queryOptions: RequestQueryOptions = {
-      $select: "*",
-      $filter: `name+like+'${searchString}'`,
-    };
-    // Only one iTwin
-    return this.getITwinByQuery(requestContext, queryOptions);
+    return iTwins[0];
   }
 
   /** Gets all iTwins (projects or assets) using the given query options
    * @param requestContext The client request context
    * @param queryOptions Use the mapped EC property names in the query strings and not the TypeScript property names.
-   * @returns Array of containers meeting the query's requirements
+   * @returns Array of iTwins meeting the query's requirements
    */
-  private async getITwinByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
+  private async getByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: HiddenQueryOptions): Promise<ITwin[]> {
     requestContext.enter();
-    const projectContainers: ITwin[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", queryOptions);
-    const assetContainers: ITwin[] = await this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", queryOptions);
+    const projectITwins: ITwin[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", queryOptions);
+    const assetITwins: ITwin[] = await this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", queryOptions);
 
-    return projectContainers.concat(assetContainers);
+    return projectITwins.concat(assetITwins);
   }
 
   /** @internal */
@@ -223,14 +227,14 @@ export class ContextRegistryClient extends WsgClient implements ContextRegistryN
    * @returns RelyingPartyUrl for the service.
    */
   protected getRelyingPartyUrl(): string {
-    if (Config.App.has(ContextRegistryClient.configRelyingPartyUri))
-      return `${Config.App.get(ContextRegistryClient.configRelyingPartyUri)}/`;
+    if (Config.App.has(ITwinAccessClient.configRelyingPartyUri))
+      return `${Config.App.get(ITwinAccessClient.configRelyingPartyUri)}/`;
 
     if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
       if (Config.App.has(WsgClient.configHostRelyingPartyUri))
         return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
     }
 
-    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${ContextRegistryClient.configRelyingPartyUri}`);
+    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${ITwinAccessClient.configRelyingPartyUri}`);
   }
 }

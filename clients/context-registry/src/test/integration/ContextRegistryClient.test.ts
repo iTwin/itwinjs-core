@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { ContextRegistryClient } from "../../ContextRegistryClient";
-import { ITwin } from "../../ContextAccessProps";
+import { ITwinAccessClient } from "../../ContextRegistryClient";
+import { ITwin } from "../../ITwinAccessProps";
 import { TestConfig } from "../TestConfig";
 
 chai.should();
 describe("ContextRegistryClient (#integration)", () => {
-  const contextRegistry: ContextRegistryClient = new ContextRegistryClient();
+  const iTwinAccessClient: ITwinAccessClient = new ITwinAccessClient();
   let requestContext: AuthorizedClientRequestContext;
 
   before(async function () {
@@ -18,37 +18,28 @@ describe("ContextRegistryClient (#integration)", () => {
     requestContext = await TestConfig.getAuthorizedClientRequestContext();
   });
 
-  it("should get a list of containers (#integration)", async () => {
-    const containers: ITwin[] = await contextRegistry.getITwins(requestContext);
+  it("should get a list of iTwins (#integration)", async () => {
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext);
 
-    // At least one container
-    chai.expect(containers).to.not.be.empty;
+    // At least one iTwin
+    chai.expect(iTwinList).to.not.be.empty;
   });
 
-  it("should get a container by name (#integration)", async () => {
-    const container: ITwin = await contextRegistry.getITwinByName(requestContext, TestConfig.containerName);
+  it("should get a list of iTwins by name (#integration)", async () => {
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAllByName(requestContext, TestConfig.iTwinName);
 
-    // Returned container matches searched name
-    chai.expect(container.name).equals(TestConfig.containerName);
+    // At least one iTwin
+    chai.expect(iTwinList).to.not.be.empty;
+    // All items match the name
+    iTwinList.forEach((iTwin) => {
+      chai.expect(iTwin).property("name").equal(TestConfig.iTwinName);
+    });
   });
 
-  it("should get a container by id (#integration)", async () => {
-    const container: ITwin = await contextRegistry.getITwinById(requestContext, TestConfig.containerId);
+  it("should get an iTwin by id (#integration)", async () => {
+    const iTwin: ITwin = await iTwinAccessClient.getById(requestContext, TestConfig.iTwinId);
 
-    // Returned container matches searched id
-    chai.expect(container.id).equals(TestConfig.containerId);
+    // Returned iTwin matches searched id
+    chai.expect(iTwin.id).equals(TestConfig.iTwinId);
   });
-
-  // it("should get a list of containers by name substring (#integration)", async () => {
-  //   const searchString = TestConfig.containerName.substr(1,5);
-  //   const containers: ITwin[] = await contextRegistry.getITwinsByNameSubstring(requestContext, searchString);
-
-  //   // At least one container
-  //   chai.expect(containers).to.not.be.empty;
-  //   // Every container's name contains the search string, case insensitive
-  //   containers.forEach((container) => {
-  //     chai.expect(container).to.have.property("name").that.matches(new RegExp(`${searchString}`, "i"));
-  //   });
-  // });
-
 });
