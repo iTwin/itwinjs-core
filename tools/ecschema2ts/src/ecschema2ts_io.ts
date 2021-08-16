@@ -194,8 +194,6 @@ class SchemaDeserializer {
     if (!fs.existsSync(schemaFilePath))
       throw new ECObjectsError(ECObjectsStatus.UnableToLocateSchema, `Unable to locate schema XML file at ${schemaFilePath}`);
 
-    // Needed to avoid crash in backend when calling IModelHost.startup.  This
-    // can be removed once the backed is no longer need for de-serialization.
     await IModelHost.startup();
 
     // add reference paths to the native context
