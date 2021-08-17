@@ -8,10 +8,10 @@ import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bent
 /** Basic configuration used by all tests
  */
 export class TestConfig {
-  /** Name of container used by some tests */
+  /** Name of the iTwin used by some tests */
   public static readonly iTwinName: string = "iModelJsIntegrationTest";
 
-  /** Id of container used by some tests */
+  /** Id of the iTwin used by some tests */
   public static readonly iTwinId: string = "ec002f93-f0c1-4ab3-a407-351848eba233";
 
   /** Login the specified user and return the AuthorizationToken */

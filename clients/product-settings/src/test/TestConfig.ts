@@ -11,7 +11,7 @@ import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bent
 /** Basic configuration used by all tests
  */
 export class TestConfig {
-  /** Name of container used by most tests */
+  /** Name of the iTwin used by most tests */
   public static readonly iTwinName: string = "iModelJsIntegrationTest";
 
   /** Login the specified user and return the AuthorizationToken */
