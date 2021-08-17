@@ -1,0 +1,17 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="CloneTest" alias="ct" version="01.00.01" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1">
+
+  <ECSchemaReference name="BisCore" version="01.00.00" alias="bis"/>
+
+  <ECEntityClass typeName="PhysicalType">
+    <BaseClass>bis:PhysicalType</BaseClass>
+    <ECProperty propertyName="Double1" typeName="double"/>
+    <ECProperty propertyName="Double2" typeName="double"/>
+    <ECProperty propertyName="Double3" typeName="double"/>
+    <ECProperty propertyName="Double4" typeName="double"/>
+    <ECProperty propertyName="Double5" typeName="double"/>
+    <ECProperty propertyName="String1" typeName="string"/>
+    <ECProperty propertyName="String2" typeName="string"/>
+  </ECEntityClass>
+
+</ECSchema>

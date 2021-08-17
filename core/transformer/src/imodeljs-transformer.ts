@@ -2,59 +2,15 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-export * from "./BriefcaseManager";
-export * from "./Category";
-export * from "./ChangeSummaryManager";
-export * from "./CheckpointManager";
-export * from "./ClassRegistry";
-export * from "./CodeSpecs";
-export * from "./ConcurrencyControl";
-export * from "./DisplayStyle";
-export * from "./ECDb";
-export * from "./ECSchemaXmlContext";
-export * from "./ECSqlStatement";
-export * from "./Element";
-export * from "./ElementAspect";
-export * from "./Entity";
-export * from "./ExportGraphics";
-export * from "./ExternalSource";
-export * from "./IModelJsFs";
-export * from "./BackendHubAccess";
-export * from "./Relationship";
-export * from "./Texture";
-export * from "./TxnManager";
-export * from "./LineStyle";
 export * from "./BackendLoggerCategory";
-export * from "./Material";
-export * from "./Model";
-export * from "./NavigationRelationship";
-export * from "./Schema";
-export * from "./SqliteStatement";
-export * from "./SQLiteDb";
-export * from "./ViewDefinition";
-export * from "./BisCoreSchema";
-export * from "./ChangedElementsDb";
-export * from "./domains/FunctionalSchema";
-export * from "./domains/FunctionalElements";
-export * from "./domains/GenericSchema";
-export * from "./domains/GenericElements";
-export { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-export * from "./BackendRequestContext";
-export * from "./IModelCloneContext";
-export * from "./IModelHost";
-export * from "./IModelHubBackend";
-export * from "./IModelSchemaLoader";
-export * from "./IpcHost";
-export * from "./NativeAppStorage";
-export * from "./NativeHost";
-export * from "./CloudStorageBackend";
-export * from "./AliCloudStorageService";
-export * from "./DevTools";
-export * from "./LocalhostIpcHost";
-export * from "./ElementGraphics";
-export * from "./IModelDb"; // must be last
+export * from "./IModelExporter";
+export * from "./IModelImporter";
+export * from "./IModelTransformer";
 
 /** @docs-package-description
+ * THIS MUST BE CHANGED XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
+ * THIS MUST BE CHANGED XXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXXx
+ *
  * The imodeljs-backend package always runs on the computer with a local Briefcase.
  *
  * It contains classes that [backend code]($docs/learning/backend/index.md) can use to work with directly with iModels.

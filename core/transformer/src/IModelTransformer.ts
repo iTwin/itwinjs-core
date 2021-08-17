@@ -15,6 +15,7 @@ import {
   IModelError, ModelProps, Placement2d, Placement3d, PrimitiveTypeCode, PropertyMetaData,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { ECSqlStatement } from "./ECSqlStatement";
 import {
@@ -25,14 +26,15 @@ import { ChannelRootAspect, ElementAspect, ElementMultiAspect, ElementUniqueAspe
 import { ExternalSource, ExternalSourceAttachment, SynchronizationConfigLink } from "./ExternalSource";
 import { IModelCloneContext } from "./IModelCloneContext";
 import { IModelDb } from "./IModelDb";
-import { IModelExporter, IModelExportHandler } from "./IModelExporter";
-import { KnownLocations } from "./IModelHost";
-import { IModelImporter } from "./IModelImporter";
-import { IModelJsFs } from "./IModelJsFs";
 import { DefinitionModel, Model } from "./Model";
+import { Schema } from "./Schema";
+import { KnownLocations } from "./IModelHost";
+import { IModelJsFs } from "./IModelJsFs";
 import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
 import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
-import { Schema } from "./Schema";
+
+import { IModelExporter, IModelExportHandler } from "./IModelExporter";
+import { IModelImporter } from "./IModelImporter";
 
 const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
 

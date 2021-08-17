@@ -1,0 +1,29 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+/** @packageDocumentation
+ * @module Logging
+ */
+
+/** Logger categories used by this package
+ * @note All logger categories in this package start with the `imodeljs-backend` prefix.
+ * @see [Logger]($bentley)
+ * @public
+ */
+export enum BackendLoggerCategory {
+  /** The logger category used by the [IModelExporter]($backend) class.
+   * @beta
+   */
+  IModelExporter = "imodeljs-backend.IModelExporter",
+
+  /** The logger category used by the [IModelImporter]($backend) class.
+   * @beta
+   */
+  IModelImporter = "imodeljs-backend.IModelImporter",
+
+  /** The logger category used by the [IModelTransformer]($backend) class.
+   * @beta
+   */
+  IModelTransformer = "imodeljs-backend.IModelTransformer",
+}
