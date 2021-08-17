@@ -14,82 +14,76 @@
 }
 
 .components-virtualized-property-grid {
-  padding: 0;
   user-select: none;
-  color: $buic-foreground-body;
-
-  > div {
-    min-width: 0;
-  }
 
   @include small-itwinui-expandable-block;
 }
 
 .components-property-grid-wrapper {
-  width: 100%;
-  height: 100%;
-  overflow-y: auto;
-
   @include uicore-touch-scrolling;
   @include uicore-scrollbar();
 }
 
-@mixin components-property-list {
-  width: 100%;
+.virtualized-grid-node {
+  background: var(--iui-color-background-1);
 
-  .components--selected {
-    background-color: $buic-row-selection;
-    outline: 1px solid $buic-foreground-primary;
+  .nested-border-middle {
+    height: 100%;
+    padding: 0 4px;
+    box-sizing: border-box;
+    border-left: 1px solid var(--iui-color-background-4);
+    border-right: 1px solid var(--iui-color-background-4);
+  }
+
+  .nested-border-bottom {
+    border-bottom: 1px solid var(--iui-color-background-4);
+    padding-bottom: 4px;
   }
 
   .components--clickable {
     cursor: pointer;
+    box-sizing: border-box;
+
+    &:not(.components--selected) {
+      &:hover {
+        // Highlight the whole row in expandable block
+        margin: 0 -12px;
+        // Compensate the negative margin by adding padding
+        padding: 0 12px;
+
+        background: $buic-row-hover;
+      }
+    }
+  }
+
+  .components--selected {
+    // Highlight the whole row in expandable block
+    margin: 0 -12px;
+    // Compensate the negative margin by adding padding (minus one for border)
+    padding: 0px 11px;
+
+    background-color: $buic-row-selection;
+    border: 1px solid $buic-foreground-primary;
 
     &:hover {
       background: $buic-row-hover;
     }
   }
+}
 
-  .components--hoverable:hover {
-    background-color: $buic-row-hover;
+.virtualized-grid-node-category {
+  padding-top: 4px;
+
+  .iui-expandable-content {
+    // We are rendering virtualized content below the expandable block
+    display: none;
   }
 }
 
-.components-property-list--horizontal {
-  @include components-property-list;
-
-  display: grid;
-  grid-row-gap: 1px; // A gap of 10px is too wasteful
-  overflow: hidden;
-}
-
-.components-property-list--vertical {
-  @include components-property-list;
-  // margin-top: -13px;
-}
-
-.virtualized-grid-node-content:not(.virtualized-grid-node-custom-category) > .uicore-expandable-blocks-block.is-expanded {
-  border-bottom: none;
+.virtualized-grid-node-custom-category {
+  padding-top: 4px;
 }
 
 .virtualized-grid-node-content {
-  &.virtualized-grid-node-category, &.virtualized-grid-node-custom-category {
-    padding-bottom: 3px;
-  }
-}
-
-.virtualized-grid-node-content {
-  padding: 3px 3px 0px 3px;
-}
-
-.virtualized-grid-node .nested-border-middle {
-  border-left: 1px solid $buic-background-control-stroke;
-  border-right: 1px solid $buic-background-control-stroke;
-  margin-left: 3px;
-  margin-right: 3px;
-}
-
-.virtualized-grid-node .nested-border-bottom {
-  border-bottom: 1px solid $buic-background-control-stroke;
-  margin-bottom: 3px;
+  height: 100%;
 }

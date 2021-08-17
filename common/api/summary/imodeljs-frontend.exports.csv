@@ -135,10 +135,6 @@ public;DrawingModelState
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
-alpha;EditingFunctions
-deprecated;EditingFunctions
-alpha;EditingFunctions
-deprecated;EditingFunctions
 public;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
@@ -455,8 +451,6 @@ internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
-public;RemoteBriefcaseConnection 
-deprecated;RemoteBriefcaseConnection 
 public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics

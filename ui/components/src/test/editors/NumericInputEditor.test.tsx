@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
 import { BasePropertyEditorParams, InputEditorSizeParams, PropertyEditorParamTypes,
@@ -24,8 +24,6 @@ describe("<NumericInputEditor />", () => {
   beforeEach(() => {
     sinon.restore();
   });
-
-  afterEach(cleanup);
 
   after(() => {
     TestUtils.terminateUiComponents();
@@ -61,8 +59,6 @@ describe("<NumericInputEditor />", () => {
     expect(incrementor.length).to.eq(2);
     fireEvent.click(incrementor[0]);
     expect(input.value).to.eq("6");
-
-    cleanup();
   });
 
   it("componentDidUpdate updates the value", async () => {
@@ -134,7 +130,6 @@ describe("<NumericInputEditor />", () => {
     const propertyRecord = TestUtils.createNumericProperty("Test", 123, StandardEditorNames.NumericInput);
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     expect(renderedComponent.container.querySelector(".components-numeric-input-editor")).to.not.be.empty;
-    cleanup();
   });
 
   it("calls onCommit for Enter", async () => {
