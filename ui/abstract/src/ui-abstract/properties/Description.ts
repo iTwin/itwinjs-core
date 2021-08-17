@@ -9,6 +9,8 @@
 import {
   BasePropertyEditorParams, ColorEditorParams, ImageCheckBoxParams, PropertyEditorParams, PropertyEditorParamTypes, RangeEditorParams, SuppressLabelEditorParams,
 } from "./EditorParams";
+import { StandardEditorNames } from "./StandardEditorNames";
+import { StandardTypeNames } from "./StandardTypeNames";
 
 // cSpell:ignore Picklist
 
@@ -105,9 +107,9 @@ export class PropertyDescriptionHelper {
     return {
       name,
       displayLabel: label,
-      typename: "number",
+      typename: StandardTypeNames.Number,
       editor: {
-        name: "weight-picker",
+        name: StandardEditorNames.WeightPicker,
         params: additionalParams,
       },
     };
@@ -125,14 +127,14 @@ export class PropertyDescriptionHelper {
     } as RangeEditorParams, ...additionalParams];
 
     const editor = {
-      name: "numeric-input",
+      name: StandardEditorNames.NumericInput,
       params: editorParams,
     };
 
     return {
       name,
       displayLabel: label,
-      typename: "number",
+      typename: StandardTypeNames.Number,
       editor,
     };
   }
@@ -148,7 +150,7 @@ export class PropertyDescriptionHelper {
     return {
       name,
       displayLabel: label,
-      typename: "string",
+      typename: StandardTypeNames.String,
       editor,
     };
   }
@@ -166,7 +168,7 @@ export class PropertyDescriptionHelper {
     return {
       name,
       displayLabel: label,
-      typename: "enum",
+      typename: StandardTypeNames.Enum,
       editor,
       enum: {
         choices,
@@ -191,9 +193,9 @@ export class PropertyDescriptionHelper {
     return {
       name,
       displayLabel: label,
-      typename: "number",
+      typename: StandardTypeNames.Number,
       editor: {
-        name: "color-picker",
+        name: StandardEditorNames.ColorPicker,
         params: editorParams,
       },
     };
@@ -206,9 +208,9 @@ export class PropertyDescriptionHelper {
     return {
       name,
       displayLabel: label,
-      typename: "boolean",
+      typename: StandardTypeNames.Boolean,
       editor: {
-        name: "toggle",
+        name: StandardEditorNames.Toggle,
         params: additionalParams,
       },
     };
@@ -227,9 +229,9 @@ export class PropertyDescriptionHelper {
     return {
       name,
       displayLabel: label,
-      typename: "boolean",
+      typename: StandardTypeNames.Boolean,
       editor: {
-        name: "image-check-box",
+        name: StandardEditorNames.ImageCheckBox,
         params: editorParams,
       },
     };
@@ -246,7 +248,7 @@ export class PropertyDescriptionHelper {
     return {
       name,
       displayLabel: label,
-      typename: "boolean",
+      typename: StandardTypeNames.Boolean,
       editor,
     };
   }
@@ -267,7 +269,7 @@ export class PropertyDescriptionHelper {
     return {
       name,
       displayLabel: "",
-      typename: "boolean",
+      typename: StandardTypeNames.Boolean,
       editor,
     };
   }

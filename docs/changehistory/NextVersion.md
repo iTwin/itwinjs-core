@@ -140,21 +140,22 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `Config`                               | Use `process.env` to access environment variables directly |
 | `EnvMacroSubst`                        | *eliminated*  |
 
+<!---
+User Interface Changes - section to comment below
+-->
+
 ### User Interface Changes
 
 Several changes were made in the @bentley/ui-* packages.
 Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
 A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
+A new @bentley/ui-imodel-components package has been added and contains items related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
 
-### @bentley/extension-cli
+The @bentley/ui-* and @bentley/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
-The cli tool has been deprecated due to an impending change of Extensions and the Extension Service. Please continue to use the 2.x version if you still require publishing Extensions.
+For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
 
-### @bentley/config-loader
-
-The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using .env files will not be affected.
-
-#### Deprecated ui-core Components in Favor of iTwinUI-react Components
+### Deprecated ui-core Components in Favor of iTwinUI-react Components
 
 Several UI components in the @bentley/ui-core package have been deprecated.
 Developers should use equivalent components in @itwin/itwinui-react instead.
@@ -192,11 +193,11 @@ Developers should use equivalent components in @itwin/itwinui-react instead.
 | Tooltip                        | Tooltip                                        |
 | TooltipPlacement               | Placement                                      |
 
-##### Slider
+#### Slider
 
 The deprecated [Slider]($ui-core) was a wrapper around the react-compound-slider that does not work properly in popout windows. To eliminate this issue, the deprecated `Slider`will now wrap the  `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
 
-#### Deprecated with alternatives elsewhere
+### Deprecated with alternatives elsewhere
 
 A few constructs were deprecated in @bentley/ui-core package.
 Some were copied to the @bentley/ui-abstract package.
@@ -209,3 +210,32 @@ Some have replacements within the @bentley/ui-core package.
 | DialogButtonType in @bentley/ui-core  | DialogButtonType in @bentley/ui-abstract   |
 | LocalUiSettings in @bentley/ui-core   | LocalSettingsStorage in @bentley/ui-core   |
 | SessionUiSettings in @bentley/ui-core | SessionSettingsStorage in @bentley/ui-core |
+
+### New @bentley/ui-imodel-components package
+
+A new @bentley/ui-imodel-components package has been added, and some items were moved from @bentley/ui-core and @bentley/ui-components into this new package.
+The ui-imodel-components package contains React components that depend on the imodeljs-frontend, imodeljs-common or imodeljs-quantity packages.
+Dependencies on these other iTwin.js packages have been removed from ui-core and ui-components.
+The items moved to ui-imodel-components are related to Color, Cube, LineWeight, Navigation Aids, Quantity Inputs, Timeline and Viewport.
+
+The following items were moved into the ui-imodel-components package. For a complete list, see [iTwin.js Documentation](https://www.itwinjs.org/reference/ui-imodel-components/all).
+
+* ColorPickerButton, ColorPickerDialog, ColorPickerPopup, ColorPropertyEditor, ColorSwatch
+* Cube, CubeNavigationAid, CubeRotationChangeEventArgs
+* DrawingNavigationAid
+* QuantityInput, QuantityNumberInput
+* TimelineComponent, TimelineDataProvider, TimelineMenuItemProps
+* ViewportComponent, ViewportComponentEvents
+* LineWeightSwatch, WeightPickerButton, WeightPropertyEditor
+
+<!---
+User Interface Changes - section above this point
+-->
+
+## @bentley/extension-cli
+
+The cli tool has been deprecated due to an impending change of Extensions and the Extension Service. Please continue to use the 2.x version if you still require publishing Extensions.
+
+## @bentley/config-loader
+
+The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using .env files will not be affected.

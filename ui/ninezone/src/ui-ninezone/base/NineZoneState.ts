@@ -8,7 +8,8 @@
 
 // Cspell:ignore popout
 import { castDraft, Draft, produce } from "immer";
-import { Point, PointProps, Rectangle, RectangleProps, SizeProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { Point, Rectangle, RectangleProps, SizeProps } from "@bentley/ui-core";
 import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "@bentley/bentleyjs-core";
 import { getUniqueId } from "./NineZone";

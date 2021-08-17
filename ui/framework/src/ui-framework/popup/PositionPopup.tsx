@@ -9,7 +9,8 @@
 import "./PositionPopup.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonDivProps, CommonProps, Div, PointProps, Size, SizeProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { CommonDivProps, CommonProps, Div, Size, SizeProps } from "@bentley/ui-core";
 
 /** @alpha */
 export interface PositionPopupProps extends CommonProps {
