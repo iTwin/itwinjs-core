@@ -71,6 +71,8 @@ import { IModelConnection } from '@bentley/imodeljs-frontend';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { ItemField } from '@bentley/imodeljs-frontend';
+import { ITwin } from '@bentley/context-registry-client';
+import { ITwinAccess } from '@bentley/context-registry-client';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
@@ -3021,7 +3023,7 @@ export interface IModelInfo {
     // (undocumented)
     name: string;
     // (undocumented)
-    projectInfo: ProjectInfo;
+    projectInfo: ITwin;
     // (undocumented)
     status: string;
     // (undocumented)
@@ -3043,7 +3045,7 @@ export enum IModelScope {
 // @internal
 export interface IModelServices {
     getChangeSets(iModelId: string): Promise<ChangeSetInfo[]>;
-    getIModels(projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]>;
+    getIModels(projectInfo: ITwin, top: number, skip: number): Promise<IModelInfo[]>;
     getThumbnail(projectId: string, iModelId: string): Promise<string | undefined>;
     getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
     getUsers(iModelId: string): Promise<IModelUserInfo[]>;
@@ -4367,45 +4369,6 @@ export interface PresentationSelectionScope {
     id: string;
     // (undocumented)
     label: string;
-}
-
-// @internal
-export interface ProjectInfo {
-    // (undocumented)
-    name: string;
-    // (undocumented)
-    projectNumber: string;
-    // (undocumented)
-    readStatus: ProjectReadStatus;
-    // (undocumented)
-    wsgId: string;
-}
-
-// @internal
-export enum ProjectReadStatus {
-    // (undocumented)
-    DoneReading = 2,
-    // (undocumented)
-    NotRead = 0,
-    // (undocumented)
-    Reading = 1
-}
-
-// @internal
-export enum ProjectScope {
-    // (undocumented)
-    All = 3,
-    // (undocumented)
-    Favorites = 0,
-    // (undocumented)
-    Invited = 2,
-    // (undocumented)
-    MostRecentlyUsed = 1
-}
-
-// @internal
-export interface ProjectServices {
-    getProjects(projectScope: ProjectScope, top: number, skip: number, filter?: string): Promise<ProjectInfo[]>;
 }
 
 // @public @deprecated
@@ -6561,11 +6524,13 @@ export class UiFramework {
     static initialize(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
     static get initialized(): boolean;
     // @internal
-    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, projectServices?: ProjectServices, iModelServices?: IModelServices): Promise<void>;
+    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, iTwinAccessService?: ITwinAccess, iModelServices?: IModelServices): Promise<void>;
     // @alpha
     static get isContextMenuOpen(): boolean;
     // (undocumented)
     static isMobile(): boolean;
+    // @internal (undocumented)
+    static get iTwinAccessService(): ITwinAccess;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal
@@ -6579,8 +6544,6 @@ export class UiFramework {
     static postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: {
         [key: string]: any;
     }): Promise<void>;
-    // @internal (undocumented)
-    static get projectServices(): ProjectServices;
     // @alpha
     static registerUserSettingsProvider(entry: UserSettingsProvider): boolean;
     // (undocumented)
