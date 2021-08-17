@@ -13,7 +13,7 @@ import { CommonProps } from "@bentley/ui-core";
 import { AsyncErrorMessage, PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** Arguments for the Property Updated event callback
- * @beta
+ * @public
  */
 export interface PropertyUpdatedArgs {
   /** The property being updated. */
@@ -23,7 +23,7 @@ export interface PropertyUpdatedArgs {
 }
 
 /** Properties for a property editor component
- * @beta
+ * @public
  */
 export interface PropertyEditorProps extends CommonProps {
   /** The property being updated. */
@@ -39,7 +39,7 @@ export interface PropertyEditorProps extends CommonProps {
 }
 
 /** [[EditorContainer]] React component properties
- * @beta
+ * @public
  */
 export interface EditorContainerProps extends CommonProps {
   /** The property being updated. */
@@ -63,7 +63,7 @@ interface CloneProps extends PropertyEditorProps {
 }
 
 /** Interface implemented by React based type editors
- * @beta
+ * @public
  */
 export interface TypeEditor {
   getPropertyValue: () => Promise<PropertyValue | undefined>;
@@ -73,7 +73,7 @@ export interface TypeEditor {
 
 /**
  * EditorContainer React component used by the Table, Tree and PropertyGrid for cell editing.
- * @beta
+ * @public
  */
 export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
