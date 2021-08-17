@@ -54,8 +54,8 @@ then start the Electron frontend in another shell using:
 
 You can now open snapshot files using ui-test-app. These are the relevant environment variables to set before using `npm run start:servers`:
 
-* imjs_TESTAPP_SNAPSHOT_FILEPATH - set to folder containing .bim or .ibim files (required)
-* imjs_TESTAPP_START_WITH_SNAPSHOTS - set to 1 to start with File Open dialog (optional)
+* IMJS_TESTAPP_SNAPSHOT_FILEPATH - set to folder containing .bim or .ibim files (required)
+* IMJS_TESTAPP_START_WITH_SNAPSHOTS - set to 1 to start with File Open dialog (optional)
 
 __Note:__ You must navigate to your snapshot folder the first time you use the File Open dialog. To open other files, click the "Home" button in the upper-left then click "Open Local File". You still need to sign-in.
 
