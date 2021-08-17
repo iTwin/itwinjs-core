@@ -31,8 +31,8 @@ describe("Entities tests", () => {
     let entity = await schema?.getItem("testEntity");
     expect(entity?.schemaItemType).to.eql(SchemaItemType.EntityClass);
 
-    /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
-    const delRes = await testEditor.entities.delete(entity?.key!);
+    const key = entity?.key as SchemaItemKey;
+    const delRes = await testEditor.entities.delete(key);
     expect(delRes.itemKey).to.eql(entity?.key);
 
     // Should get undefined since class is deleted
@@ -43,8 +43,8 @@ describe("Entities tests", () => {
   it("should not be able to delete entity class if it is not in schema", async () => {
     const schema = await testEditor.schemaContext.getCachedSchema(testKey);
     const className = "testEntity";
-    /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
-    const classKey = new SchemaItemKey(className, schema?.schemaKey!);
+    const key = schema?.schemaKey as SchemaKey;
+    const classKey = new SchemaItemKey(className, key);
     const entity = await schema?.getItem(className);
     expect(entity).to.be.undefined;
 

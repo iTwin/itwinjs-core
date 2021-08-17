@@ -115,8 +115,8 @@ describe("Relationship tests from an existing schema", () => {
     let relationship = await testSchema.getItem("TestRelationship");
     expect(relationship).to.eql(relClass);
 
-    /* eslint-disable @typescript-eslint/no-non-null-asserted-optional-chain */
-    const delRes = await testEditor.relationships.delete(relationship?.key!);
+    const key = relationship?.key as SchemaItemKey;
+    const delRes = await testEditor.relationships.delete(key);
     expect(delRes.itemKey).to.eql(result.itemKey);
 
     relationship = await testSchema.getItem("TestRelationship");
