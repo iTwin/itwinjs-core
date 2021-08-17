@@ -97,7 +97,7 @@ export class Tree extends React.PureComponent<TreeProps> {
       elems.push(collection.item(i)!);
     return elems;
   }
-
+  // istanbul ignore next
   public setFocusByClassName(selector: string): boolean {
     let status = false;
     if (this._treeElement.current) {

@@ -15,7 +15,7 @@ import {
   SpatialViewState, StandardViewId, TentativePoint, ViewManager, Viewport, ViewRect, ViewState,
 } from "@bentley/imodeljs-frontend";
 import { Face } from "@bentley/ui-core";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { ViewportComponent } from "../../ui-components";
 import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
 import TestUtils from "../TestUtils";
@@ -119,8 +119,6 @@ describe("ViewportComponent", () => {
     nearestVisibleGeometryPoint = Point3d.create(30, 30);
     viewRect = new ViewRect(0, 0, 100, 100);
   });
-
-  afterEach(cleanup);
 
   it("should render with viewState", async () => {
     render(<ViewportComponent imodel={imodelMock.object} viewState={viewState} viewManagerOverride={viewManager.object} screenViewportOverride={ScreenViewportMock} />);

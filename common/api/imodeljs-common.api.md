@@ -8215,6 +8215,8 @@ export interface TileOptions {
     // (undocumented)
     readonly maximumMajorTileFormatVersion: number;
     // (undocumented)
+    readonly optimizeBRepProcessing: boolean;
+    // (undocumented)
     readonly useProjectExtents: boolean;
 }
 
@@ -8298,6 +8300,8 @@ export enum TreeFlags {
     EnforceDisplayPriority = 2,
     // (undocumented)
     None = 0,
+    // (undocumented)
+    OptimizeBRepProcessing = 4,
     // (undocumented)
     UseProjectExtents = 1
 }

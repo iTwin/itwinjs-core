@@ -7,14 +7,12 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { ColorDef } from "@bentley/imodeljs-common";
-import { cleanup, fireEvent, render } from "@testing-library/react"; // , waitForElement
+import { fireEvent, render } from "@testing-library/react"; // , waitForElement
 import { ColorSwatch } from "../../ui-components/color/Swatch";
 import TestUtils from "../TestUtils";
 
 describe("<ColorSwatch />", () => {
   const colorDef = ColorDef.from(255, 0, 0, 255);
-
-  afterEach(cleanup);
 
   it("should render", () => {
     const renderedComponent = render(<ColorSwatch colorDef={colorDef} />);

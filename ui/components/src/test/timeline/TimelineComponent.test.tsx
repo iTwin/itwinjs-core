@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
-import { act, cleanup, fireEvent, render } from "@testing-library/react";
+import { act, fireEvent, render } from "@testing-library/react";
 import { BaseTimelineDataProvider } from "../../ui-components/timeline/BaseTimelineDataProvider";
 import { PlaybackSettings, TimelinePausePlayAction, TimelinePausePlayArgs } from "../../ui-components/timeline/interfaces";
 import { TimelineComponent, TimelineMenuItemProps } from "../../ui-components/timeline/TimelineComponent";
@@ -114,7 +114,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
 
   afterEach(() => {
     fakeTimers && fakeTimers.restore();
-    afterEach(cleanup);
+
     rafSpy.resetHistory();
   });
 
@@ -529,6 +529,7 @@ describe("<TimelineComponent showDuration={true} />", () => {
     );
   });
   it("onPlayPause called for TimerPausePlay event", () => {
+    fakeTimers = sinon.useFakeTimers();  // added
     const dataProvider = new TestTimelineDataProvider();
     const spyOnPlayPause = sinon.spy();
     // eslint-disable-next-line @typescript-eslint/no-unused-vars

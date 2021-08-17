@@ -76,6 +76,7 @@ export function DEPRECATED_treeWithFilteringSupport<P extends TreeProps>(TreeCom
 
     private _asyncsTracker = new AsyncTasksTracker();
 
+    // istanbul ignore next
     public static get displayName() { return `WithFilteringSupport(${getDisplayName(TreeComponent)})`; }
 
     public constructor(props: CombinedProps, context?: any) {

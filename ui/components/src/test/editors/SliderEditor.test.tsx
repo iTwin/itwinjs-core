@@ -5,7 +5,7 @@
 
 import { expect } from "chai";
 import { mount, shallow } from "enzyme";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
 import {
@@ -196,7 +196,6 @@ describe("<SliderEditor />", () => {
     const propertyRecord = TestUtils.createNumericProperty("Test", 50, StandardEditorNames.Slider);
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={() => { }} onCancel={() => { }} />);
     expect(renderedComponent.container.querySelector(".components-slider-editor")).to.not.be.empty;
-    cleanup();
   });
 
   it("calls onCommit for Change", async () => {
@@ -223,7 +222,7 @@ describe("<SliderEditor />", () => {
     await TestUtils.flushAsyncOperations();
 
     expect(spyOnCommit.calledOnce).to.be.true;
-    cleanup();
+
   });
 
   it("should render Editor Params reversed track coloring", async () => {
@@ -252,7 +251,6 @@ describe("<SliderEditor />", () => {
     expect((track as HTMLElement).style.right).to.eq("0%");
     expect((track as HTMLElement).style.left).to.eq("50%");
     component.unmount();
-    cleanup();
   });
 
   it("should render Editor Params reversed track coloring", async () => {
@@ -281,7 +279,6 @@ describe("<SliderEditor />", () => {
     expect((track as HTMLElement).style.left).to.eq("0%");
     expect((track as HTMLElement).style.right).to.eq("50%");
     component.unmount();
-    cleanup();
   });
 
   it("should render Editor Params w/decimal step", async () => {
@@ -308,7 +305,6 @@ describe("<SliderEditor />", () => {
     await TestUtils.flushAsyncOperations();
     expect(component.container.ownerDocument.querySelector(".iui-tooltip")?.textContent).to.eq("3.0");
     component.unmount();
-    cleanup();
   });
 
   it("should render Editor Params w/decimal step", async () => {
@@ -335,7 +331,6 @@ describe("<SliderEditor />", () => {
     await TestUtils.flushAsyncOperations();
     expect(component.container.ownerDocument.querySelector(".iui-tooltip")?.textContent).to.eq("3.0");
     component.unmount();
-    cleanup();
   });
 
   it("should render Editor Params w/ticks no tick labels", async () => {
@@ -376,7 +371,6 @@ describe("<SliderEditor />", () => {
     const ticks = component.container.ownerDocument.querySelectorAll("span.iui-slider-tick");
     expect(ticks.length).to.eq(3);
     component.unmount();
-    cleanup();
   });
   it("should render Editor Params w/ticks", async () => {
     const editorParams: BasePropertyEditorParams[] = [];
@@ -417,7 +411,6 @@ describe("<SliderEditor />", () => {
     expect(ticks[0]?.textContent).to.eq("1.0");
     expect(ticks[1]?.textContent).to.eq("100.0");
     component.unmount();
-    cleanup();
   });
 
   it("should render Editor Params w/defined ticks values", async () => {
@@ -456,7 +449,6 @@ describe("<SliderEditor />", () => {
     expect(ticks[2]?.textContent).to.eq("100");
 
     component.unmount();
-    cleanup();
   });
 
   it("should render Editor Params w/defined formatted ticks values", async () => {
@@ -497,7 +489,6 @@ describe("<SliderEditor />", () => {
     expect(ticks[2]?.textContent).to.eq("100.0");
 
     component.unmount();
-    cleanup();
   });
 
   it("should render Editor Params w/ticks and default labels", async () => {
@@ -539,7 +530,6 @@ describe("<SliderEditor />", () => {
     expect(ticks[4]?.textContent).to.eq("100");
 
     component.unmount();
-    cleanup();
   });
 
   it("should render Editor Params icon labels", async () => {
@@ -574,7 +564,6 @@ describe("<SliderEditor />", () => {
     expect(component.container.ownerDocument.querySelector("span.iui-slider-min")?.querySelector(".icon-placeholder")).to.exist;
     expect(component.container.ownerDocument.querySelector("span.iui-slider-max")?.querySelector(".icon-placeholder")).to.exist;
     component.unmount();
-    cleanup();
   });
 
   it("should render Editor Params string labels", async () => {
@@ -601,7 +590,6 @@ describe("<SliderEditor />", () => {
     expect(component.container.ownerDocument.querySelector("span.iui-slider-min")?.textContent).to.eq("1");
     expect(component.container.ownerDocument.querySelector("span.iui-slider-max")?.textContent).to.eq("100");
     component.unmount();
-    cleanup();
   });
 
   it("should render Editor Params and trigger handleChange callback", async () => {
@@ -636,7 +624,6 @@ describe("<SliderEditor />", () => {
     expect(component.container.ownerDocument.querySelector(".iui-tooltip")?.textContent).to.eq("55");
 
     component.unmount();
-    cleanup();
   });
 
   class MineDataController extends DataControllerBase {
@@ -653,7 +640,7 @@ describe("<SliderEditor />", () => {
     const spyOnCommit = sinon.spy();
     const renderedComponent = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={spyOnCommit} onCancel={() => { }} />);
     expect(renderedComponent).not.to.be.undefined;
-    const popupButton = await waitForElement(() => renderedComponent.getByTestId("components-popup-button"));
+    const popupButton = await waitFor(() => renderedComponent.getByTestId("components-popup-button"));
     expect(popupButton).not.to.be.null;
 
     fireEvent.keyDown(popupButton, { key: SpecialKey.Enter });

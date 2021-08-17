@@ -3,10 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { mount } from "enzyme";
+import { render, screen } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import * as React from "react";
 import * as sinon from "sinon";
 import { expect } from "chai";
 import { HorizontalTabs, Orientation, Tabs, VerticalTabs } from "../../ui-core";
+import { findInstance } from "../ReactInstance";
 
 describe("<Tabs />", () => {
   it("labels render correctly", () => {
@@ -38,127 +41,116 @@ describe("<Tabs />", () => {
   ///
 
   it("Home key puts focus on 1st tab", () => {
-    const wrapper = mount(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
-    const label = wrapper.find("a").at(1);
-    label.simulate("keydown", { key: "Home" });
-    const first = wrapper.find("a").at(0).getDOMNode();
+    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const label = screen.getByText("label 1");
+    userEvent.type(label, "{home}");
+    const first = getAllByRole("button")[0];
     expect(document.activeElement).to.eq(first);
   });
 
   it("End key puts focus on last tab", () => {
-    const wrapper = mount(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
-    const label = wrapper.find("a").at(1);
-    label.simulate("keydown", { key: "End" });
-    const last = wrapper.find("a").at(2).getDOMNode();
+    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const label = screen.getByText("label 1");
+    userEvent.type(label, "{end}");
+    const last = getAllByRole("button")[2];
     expect(document.activeElement).to.eq(last);
-    wrapper.unmount();
   });
 
   ///
 
   it("Up key in Vertical puts focus on previous tab", () => {
-    const wrapper = mount(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
-    const label = wrapper.find("a").at(1);
-    label.simulate("keydown", { key: "ArrowUp" });
-    const first = wrapper.find("a").at(0).getDOMNode();
-    expect(document.activeElement).to.eq(first);
-    wrapper.unmount();
+    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const label = screen.getByText("label 2");
+    userEvent.type(label, "{arrowup}");
+    const previous = getAllByRole("button")[0];
+    expect(document.activeElement).to.eq(previous);
   });
 
   it("Down key in Vertical puts focus on next tab", () => {
-    const wrapper = mount(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
-    const label = wrapper.find("a").at(1);
-    label.simulate("keydown", { key: "ArrowDown" });
-    const last = wrapper.find("a").at(2).getDOMNode();
-    expect(document.activeElement).to.eq(last);
-    wrapper.unmount();
+    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const label = screen.getByText("label 2");
+    userEvent.type(label, "{arrowdown}");
+    const nextTab = getAllByRole("button")[2];
+    expect(document.activeElement).to.eq(nextTab);
   });
 
   it("Left key in Horizontal puts focus on previous tab", () => {
     // eslint-disable-next-line deprecation/deprecation
-    const wrapper = mount(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
-    const label = wrapper.find("a").at(1);
-    label.simulate("keyup", { key: "ArrowLeft" });
-    const first = wrapper.find("a").at(0).getDOMNode();
-    expect(document.activeElement).to.eq(first);
-    wrapper.unmount();
+    const { getAllByRole } = render (<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const label = screen.getByText("label 2");
+    userEvent.type(label, "{arrowleft}");
+    const previous = getAllByRole("button")[0];
+    expect(document.activeElement).to.eq(previous);
   });
 
   it("Right key in Horizontal puts focus on next tab", () => {
     // eslint-disable-next-line deprecation/deprecation
-    const wrapper = mount(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
-    const label = wrapper.find("a").at(1);
-    label.simulate("keyup", { key: "ArrowRight" });
-    const last = wrapper.find("a").at(2).getDOMNode();
-    expect(document.activeElement).to.eq(last);
-    wrapper.unmount();
+    const { getAllByRole } = render (<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const label = screen.getByText("label 2");
+    userEvent.type(label, "{arrowright}");
+    const nextTab = getAllByRole("button")[2];
+    expect(document.activeElement).to.eq(nextTab);
   });
 
   ///
 
   it("Up key in Vertical puts focus on last tab when on first", () => {
-    const wrapper = mount(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={0} />);
-    const label = wrapper.find("a").at(0);
-    label.simulate("keydown", { key: "ArrowUp" });
-    const last = wrapper.find("a").at(2).getDOMNode();
+    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const label = screen.getByText("label 1");
+    userEvent.type(label, "{arrowup}");
+    const last = getAllByRole("button")[2];
     expect(document.activeElement).to.eq(last);
-    wrapper.unmount();
   });
 
   it("Down key in Vertical puts focus on first tab when on last", () => {
-    const wrapper = mount(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={2} />);
-    const label = wrapper.find("a").at(2);
-    label.simulate("keydown", { key: "ArrowDown" });
-    const first = wrapper.find("a").at(0).getDOMNode();
+    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const label = screen.getByText("label 3");
+    userEvent.type(label, "{arrowdown}");
+    const first = getAllByRole("button")[0];
     expect(document.activeElement).to.eq(first);
-    wrapper.unmount();
   });
 
   it("Left key in Horizontal puts focus on last tab when on first", () => {
     // eslint-disable-next-line deprecation/deprecation
-    const wrapper = mount(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={0} />);
-    const label = wrapper.find("a").at(0);
-    label.simulate("keyup", { key: "ArrowLeft" });
-    const last = wrapper.find("a").at(2).getDOMNode();
+    const { getAllByRole } = render (<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const label = screen.getByText("label 1");
+    userEvent.type(label, "{arrowleft}");
+    const last = getAllByRole("button")[2];
     expect(document.activeElement).to.eq(last);
-    wrapper.unmount();
   });
 
   it("Right key in Horizontal puts focus on first tab when on last", () => {
     // eslint-disable-next-line deprecation/deprecation
-    const wrapper = mount(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={2} />);
-    const label = wrapper.find("a").at(2);
-    label.simulate("keyup", { key: "ArrowRight" });
-    const first = wrapper.find("a").at(0).getDOMNode();
+    const { getAllByRole } = render (<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const label = screen.getByText("label 3");
+    userEvent.type(label, "{arrowright}");
+    const first = getAllByRole("button")[0];
     expect(document.activeElement).to.eq(first);
-    wrapper.unmount();
   });
 
   ///
 
   it("Left/Right key in Vertical does nothing", () => {
-    const wrapper = mount(<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
-    const label = wrapper.find("a").at(1);
-    label.simulate("keyup", { key: "ArrowLeft" });
-    let node = wrapper.find("a").at(0).getDOMNode();
-    expect(document.activeElement).to.not.eq(node);
-    label.simulate("keyup", { key: "ArrowRight" });
-    node = wrapper.find("a").at(2).getDOMNode();
-    expect(document.activeElement).to.not.eq(node);
-    wrapper.unmount();
+    const { getAllByRole } = render (<VerticalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const label = screen.getByText("label 2");
+    userEvent.type(label, "{arrowleft}");
+    const first = getAllByRole("button")[0];
+    expect(document.activeElement).to.not.eq(first);
+    userEvent.type(label, "{arrowleft}");
+    const last = getAllByRole("button")[2];
+    expect(document.activeElement).to.not.eq(last);
   });
 
   it("Up/Down key in Horizontal does nothing", () => {
     // eslint-disable-next-line deprecation/deprecation
-    const wrapper = mount(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
-    const label = wrapper.find("a").at(1);
-    label.simulate("keydown", { key: "ArrowUp" });
-    let node = wrapper.find("a").at(0).getDOMNode();
-    expect(document.activeElement).to.not.eq(node);
-    label.simulate("keydown", { key: "ArrowDown" });
-    node = wrapper.find("a").at(2).getDOMNode();
-    expect(document.activeElement).to.not.eq(node);
-    wrapper.unmount();
+    const { getAllByRole } = render (<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    const label = screen.getByText("label 2");
+    userEvent.type(label, "{arrowup}");
+    const first = getAllByRole("button")[0];
+    expect(document.activeElement).to.not.eq(first);
+    userEvent.type(label, "{arrowdown}");
+    const last = getAllByRole("button")[2];
+    expect(document.activeElement).to.not.eq(last);
   });
 
   ///
@@ -192,52 +184,48 @@ describe("<Tabs />", () => {
   ///
 
   it("Supports updating labels & orientation", () => {
-    const wrapper = mount<Tabs>(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
-    expect(wrapper.state().activeIndex).to.eq(1);
-    expect(wrapper.props().orientation).to.eq(Orientation.Vertical);
-    expect(wrapper.props().labels.length).to.eq(3);
+    const { container, getAllByRole, rerender } = render(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    container.focus();
+    let tabButtons = getAllByRole("button");
+    expect(tabButtons.length).to.eq(3);
+    let label = screen.getByText("label 2");
+    // verify they're vertical by using arrow up to change focus
+    userEvent.type(label, "{arrowup}");
+    expect(document.activeElement).to.eq(tabButtons[0]);
 
-    wrapper.setProps({ orientation: Orientation.Horizontal });
-    expect(wrapper.props().orientation).to.eq(Orientation.Horizontal);
-
-    wrapper.setProps({ labels: ["label 1", "label 2", "label 3", "label 4"] });
-    expect(wrapper.props().labels.length).to.eq(4);
-
-    const label = wrapper.find("a").at(1);
-    label.simulate("keyup", { key: "ArrowRight" });
-    const next = wrapper.find("a").at(2).getDOMNode();
-    expect(document.activeElement).to.eq(next);
-
-    wrapper.unmount();
+    rerender (<Tabs orientation={Orientation.Horizontal} mainClassName="" labels={["label 1", "label 2", "label 3", "label 4"]} activeIndex={1} />);
+    tabButtons = getAllByRole("button");
+    expect(tabButtons.length).to.eq(4);
+    label = screen.getByText("label 2");
+    userEvent.type(label, "{enter}"); // focus in the tab
+    userEvent.type(label, "{arrowup}");
+    // arrow up does not change focus because they're horizontal
+    expect(document.activeElement).to.eq(tabButtons[1]);
   });
 
   it("Supports updating activeIndex", async () => {
-    const wrapper = mount<Tabs>(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]}
-      activeIndex={0} />);
-    expect(wrapper.state().activeIndex).to.eq(0);
+    const { container, getByText, getAllByRole, rerender } = render (<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={0} />);
+    const tabsInstance = findInstance(container.firstChild);
+    expect(tabsInstance.state.activeIndex).to.eq(0);
 
-    const label = wrapper.find("a").at(0);
-    label.simulate("keydown", { key: "Home" });
-    const first = wrapper.find("a").at(0).getDOMNode();
-    expect(document.activeElement).to.eq(first);
+    const label = getByText("label 1");
+    userEvent.type(label, "{home}");
+    const tabButtons = getAllByRole("button");
+    expect(document.activeElement).to.eq(tabButtons[0]);
 
-    wrapper.setProps({ activeIndex: 1 });
-    wrapper.update();
-    expect(wrapper.state().activeIndex).to.eq(1);
-    const second = wrapper.find("a").at(1).getDOMNode();
-    expect(document.activeElement).to.eq(second);
+    rerender(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
+    expect(tabsInstance.state.activeIndex).to.eq(1);
+    expect(document.activeElement).to.eq(tabButtons[1]);
 
-    wrapper.setProps({ activeIndex: undefined });
-    expect(wrapper.state().activeIndex).to.eq(0);
+    rerender(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} />);
+    expect(document.activeElement).to.eq(tabButtons[0]);
 
     document.documentElement.focus();
-    wrapper.setProps({ activeIndex: 2 });
-    expect(wrapper.state().activeIndex).to.eq(2);
+    rerender(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={2} />);
+    expect(tabsInstance.state.activeIndex).to.eq(2);
 
-    wrapper.setProps({ activeIndex: 3 });
-    expect(wrapper.state().activeIndex).to.eq(0);
-
-    wrapper.unmount();
+    rerender(<Tabs orientation={Orientation.Vertical} mainClassName="" labels={["label 1", "label 2", "label 3"]} activeIndex={3} />);
+    expect(tabsInstance.state.activeIndex).to.eq(0);
   });
 
 });
