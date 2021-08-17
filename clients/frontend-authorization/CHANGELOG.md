@@ -1,6 +1,13 @@
 # Change Log - @bentley/frontend-authorization-client
 
-This log was last generated on Thu, 12 Aug 2021 13:09:26 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Aug 2021 21:48:08 GMT and should not be manually modified.
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:08 GMT
+
+### Updates
+
+- Add explicit check for BrowserAuthorizationLogger initialization, instead of inferring the initialization state from the oidc-client library
 
 ## 2.19.4
 Thu, 12 Aug 2021 13:09:26 GMT
@@ -28,6 +35,11 @@ Mon, 26 Jul 2021 12:21:25 GMT
 ### Updates
 
 - match default BrowserAuthorizationCallbackHandler userstore to value of BrowserAuthorizationClient's userstore
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
 
 ## 2.18.3
 Wed, 28 Jul 2021 17:16:30 GMT

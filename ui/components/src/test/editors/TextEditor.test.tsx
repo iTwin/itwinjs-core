@@ -9,12 +9,11 @@ import sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import {
-  IconEditorParams, InputEditorSizeParams, PropertyConverterInfo, PropertyEditorInfo, PropertyEditorParamTypes,
+  IconEditorParams, InputEditorSizeParams, MessageSeverity, PropertyConverterInfo, PropertyEditorInfo, PropertyEditorParamTypes,
   PropertyRecord, PropertyValue, SpecialKey,
 } from "@bentley/ui-abstract";
-import { MockRender, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import { TextEditor } from "../../ui-components/editors/TextEditor";
-import TestUtils from "../TestUtils";
+import TestUtils, { MineDataController } from "../TestUtils";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 
@@ -160,19 +159,11 @@ describe("<TextEditor />", () => {
   describe("Needs IModelApp", () => {
     before(async () => {
       await TestUtils.initializeUiComponents();
-      await MockRender.App.startup();
     });
 
     after(async () => {
-      await MockRender.App.shutdown();
       TestUtils.terminateUiComponents();
     });
-
-    class MineDataController extends DataControllerBase {
-      public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-        return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test" } };
-      }
-    }
 
     it("should not commit if DataController fails to validate", async () => {
       PropertyEditorManager.registerDataController("myData", MineDataController);
@@ -195,7 +186,7 @@ describe("<TextEditor />", () => {
 
     class MineDataController2 extends DataControllerBase {
       public override async commitValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-        return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test" } };
+        return { encounteredError: true, errorMessage: { severity: MessageSeverity.Error, briefMessage: "Test" } };
       }
     }
 

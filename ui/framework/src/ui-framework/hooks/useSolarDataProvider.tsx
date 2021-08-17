@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { SolarDataProvider } from "@bentley/ui-components";
+import { SolarDataProvider } from "@bentley/ui-imodel-components";
 import { IModelApp, ScreenViewport, Viewport } from "@bentley/imodeljs-frontend";
 import { SolarTimelineDataProvider } from "../timeline/SolarTimelineDataProvider";
 

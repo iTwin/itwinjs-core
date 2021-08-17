@@ -21,8 +21,8 @@ import { BackstageItem } from '@bentley/ui-abstract';
 import { BackstageItemsManager } from '@bentley/ui-abstract';
 import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@bentley/ui-abstract';
 import { BadgeType } from '@bentley/ui-abstract';
-import { BaseSolarDataProvider } from '@bentley/ui-components';
-import { BaseTimelineDataProvider } from '@bentley/ui-components';
+import { BaseSolarDataProvider } from '@bentley/ui-imodel-components';
+import { BaseTimelineDataProvider } from '@bentley/ui-imodel-components';
 import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
@@ -68,13 +68,14 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { IFilteredPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { IMatch } from '@bentley/ui-abstract';
 import { IModelConnection } from '@bentley/imodeljs-frontend';
+import { Interaction } from 'scheduler/tracing';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { ItemField } from '@bentley/imodeljs-frontend';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
-import { MessageSeverity } from '@bentley/ui-core';
+import { MessageSeverity } from '@bentley/ui-abstract';
 import { MessageType } from '@bentley/ui-core';
 import { NestedStagePanelKey } from '@bentley/ui-ninezone';
 import { NestedStagePanelsManagerProps } from '@bentley/ui-ninezone';
@@ -95,17 +96,16 @@ import { OnCancelFunc } from '@bentley/ui-abstract';
 import { OnItemExecutedFunc } from '@bentley/ui-abstract';
 import { OnNumberCommitFunc } from '@bentley/ui-abstract';
 import { OnValueCommitFunc } from '@bentley/ui-abstract';
-import { OpenMode } from '@bentley/bentleyjs-core';
 import { Orientation } from '@bentley/ui-core';
 import { OutputMessageAlert } from '@bentley/imodeljs-frontend';
 import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { OutputMessageType } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
 import { PanelSide } from '@bentley/ui-ninezone';
-import { PlaybackSettings } from '@bentley/ui-components';
+import { PlaybackSettings } from '@bentley/ui-imodel-components';
 import { Point } from '@bentley/ui-core';
 import { Point2d } from '@bentley/geometry-core';
-import { PointProps } from '@bentley/ui-core';
+import { PointProps } from '@bentley/ui-abstract';
 import { Primitives } from '@bentley/ui-abstract';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyRecord } from '@bentley/ui-abstract';
@@ -127,7 +127,7 @@ import { SettingsTabEntry } from '@bentley/ui-core';
 import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 import { SnapMode } from '@bentley/imodeljs-frontend';
-import { SolarDataProvider } from '@bentley/ui-components';
+import { SolarDataProvider } from '@bentley/ui-imodel-components';
 import { SpecialKey } from '@bentley/ui-abstract';
 import { StagePanelLocation as StagePanelLocation_2 } from '@bentley/ui-abstract';
 import { StagePanelSection as StagePanelSection_2 } from '@bentley/ui-abstract';
@@ -177,7 +177,7 @@ import { ViewFlagProps } from '@bentley/imodeljs-common';
 import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
-import { ViewStateProp } from '@bentley/ui-components';
+import { ViewStateProp } from '@bentley/ui-imodel-components';
 import { ViewStateProps } from '@bentley/imodeljs-common';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
 import { WidgetState } from '@bentley/ui-abstract';
@@ -3004,7 +3004,7 @@ export const IModelConnectedNavigationWidget: import("react-redux").ConnectedCom
 export const IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent<typeof SpatialContainmentTree, any>;
 
 // @beta
-export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@bentley/ui-components").ViewportProps & import("@bentley/presentation-components").ViewWithUnifiedSelectionProps>, any>;
+export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@bentley/ui-imodel-components").ViewportProps & import("@bentley/presentation-components").ViewWithUnifiedSelectionProps>, any>;
 
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
@@ -3048,7 +3048,7 @@ export interface IModelServices {
     getUser(iModelId: string, userId: string): Promise<IModelUserInfo[]>;
     getUsers(iModelId: string): Promise<IModelUserInfo[]>;
     getVersions(iModelId: string): Promise<VersionInfo[]>;
-    openIModel(contextId: string, iModelId: string, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection>;
+    openIModel(contextId: string, iModelId: string, changeSetId?: string): Promise<IModelConnection>;
 }
 
 // @internal
@@ -7574,7 +7574,7 @@ export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>
 
 // @public
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React.JSXElementConstructor<P> & C) => {
-    new (props: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>): {
+    new (props: JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>> | Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>): {
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;
@@ -7599,7 +7599,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
         componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, nextState: Readonly<{}>, nextContext: any): void;
         UNSAFE_componentWillUpdate?(nextProps: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    new (props: JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>, context?: any): {
+    new (props: JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>, context: any): {
         render(): JSX.Element;
         context: any;
         setState<K extends never>(state: {} | ((prevState: Readonly<{}>, props: Readonly<JSX.LibraryManagedAttributes<C, Subtract<P, InjectedWithSafeAreaProps>>>) => {} | Pick<{}, K> | null) | Pick<{}, K> | null, callback?: (() => void) | undefined): void;

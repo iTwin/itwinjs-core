@@ -19,6 +19,7 @@ export interface DtaConfiguration {
   ignoreAreaPatterns?: boolean; // default false
   enableExternalTextures?: boolean; // default true
   disableMagnification?: boolean;
+  disableBRepCache?: boolean; // default true
   preserveShaderSourceCode?: boolean;
   useProjectExtents?: boolean; // default ON
   maxTilesToSkip?: number;

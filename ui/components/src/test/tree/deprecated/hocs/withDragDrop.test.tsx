@@ -8,7 +8,7 @@ import ReactTestUtils from "react-dom/test-utils";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { DEPRECATED_Tree as Tree } from "../../../../ui-components";
 import {
   DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps,
@@ -40,8 +40,6 @@ export function createDnDRenderer(type?: any): typeof ReactTestUtils.renderIntoD
 }
 
 describe("Tree withDragDrop HOC", () => {
-
-  afterEach(cleanup);
 
   const TreeWithDragDrop = DEPRECATED_withTreeDragDrop(Tree);
   const DragDropTree = wrapInTestContext(TreeWithDragDrop);

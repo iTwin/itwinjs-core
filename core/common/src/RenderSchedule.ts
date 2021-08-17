@@ -1047,7 +1047,13 @@ export namespace RenderSchedule {
     public addElementTimeline(elementIds: CompressedId64Set | Iterable<Id64String>): ElementTimelineBuilder {
       const batchId = this._obtainNextBatchId();
       let ids: CompressedId64Set;
+
+      // It's far too easy to accidentally pass a single Id (compiler can't help).
+      if (typeof elementIds === "string" && Id64.isValidId64(elementIds))
+        elementIds = [elementIds];
+
       if (typeof elementIds === "string") {
+        // Already compressed.
         ids = elementIds;
       } else {
         const sorted = Array.from(elementIds);
