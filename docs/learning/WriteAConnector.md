@@ -629,7 +629,7 @@ Some sample queries that is helpful to debug Connector output
 #### Visualizing the output
 
 To get started, please build it using the instructions provided in the [iTwin Desktop Viewer](./tutorials/index#develop-desktop-viewer)
-Once the application is built and running, use the briefcase icon to open the output from the Connector. Some of the [frontend developer tools](https://www.npmjs.com/package/@bentley/frontend-devtools/v/1.5.0) are also useful to analyze the data. E.g. fdt inspect element.
+Once the application is built and running, use the briefcase icon to open the output from the Connector.
 
 ### Logs
 
