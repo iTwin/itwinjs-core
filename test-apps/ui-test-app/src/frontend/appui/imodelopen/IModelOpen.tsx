@@ -6,15 +6,16 @@ import "./IModelOpen.scss";
 import "./Common.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { ActivityMessagePopup, IModelInfo, ProjectInfo, ProjectScope, UiFramework } from "@bentley/ui-framework";
+import { ActivityMessagePopup, IModelInfo, UiFramework } from "@bentley/ui-framework";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ProjectDropdown } from "./ProjectDropdown";
-import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@bentley/imodeljs-frontend";
+import { ActivityMessageDetails, ActivityMessageEndReason, AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Button } from "@itwin/itwinui-react";
+import { ITwin } from "@bentley/context-registry-client";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {
@@ -26,9 +27,9 @@ interface IModelOpenState {
   isLoadingProjects: boolean;
   isLoadingiModels: boolean;
   isLoadingiModel: boolean;
-  recentProjects?: ProjectInfo[];
+  recentProjects?: ITwin[];
   iModels?: IModelInfo[];
-  currentProject?: ProjectInfo;
+  currentProject?: ITwin;
   prompt: string;
   isNavigationExpanded: boolean;
 }
@@ -50,8 +51,11 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     };
   }
 
-  public override componentDidMount() {
+  public override async componentDidMount(): Promise<void> {
     if (this.props.initialIModels && this.props.initialIModels.length > 0) {
+      const currentProject = this.props.initialIModels[0].projectInfo;
+      currentProject.id = "";
+
       this.setState({
         isLoadingProjects: false,
         isLoadingiModels: false,
@@ -63,19 +67,19 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
       return;
     }
 
-    UiFramework.projectServices.getProjects(ProjectScope.MostRecentlyUsed, 40, 0).then((projectInfos: ProjectInfo[]) => { // eslint-disable-line @typescript-eslint/no-floating-promises
-      this.setState({
-        isLoadingProjects: false,
-        isLoadingiModels: true,
-        recentProjects: projectInfos,
-      });
-      if (projectInfos.length > 0)
-        this._selectProject(projectInfos[0]);
+    const requestContext = await AuthorizedFrontendRequestContext.create();
+    const projectInfos: ITwin[] = await UiFramework.iTwinAccessService.getAll(requestContext, {top:40, skip:0}); // eslint-disable-line @typescript-eslint/no-floating-promises
+    this.setState({
+      isLoadingProjects: false,
+      isLoadingiModels: true,
+      recentProjects: projectInfos,
     });
+    if (projectInfos.length > 0)
+      this._selectProject(projectInfos[0]);
   }
 
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.
-  private async startRetrieveIModels(project: ProjectInfo) {
+  private async startRetrieveIModels(project: ITwin) {
     this.setState({
       prompt: "Fetching iModel information...",
       isLoadingiModels: true,
@@ -95,7 +99,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     this.setState({ isNavigationExpanded: expanded });
   };
 
-  private _selectProject(project: ProjectInfo) {
+  private _selectProject(project: ITwin) {
     this.startRetrieveIModels(project); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
