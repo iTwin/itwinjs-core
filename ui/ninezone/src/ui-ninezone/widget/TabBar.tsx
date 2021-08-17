@@ -78,7 +78,9 @@ export const WidgetTabBar = React.memo(function WidgetTabBar(props: WidgetTabBar
     /* if floating widget extract the bounding rect and update state in case bounds are set by content.
       This is needed so the drag operation can keep widget inside ninezone container. */
     if (floatingWidgetId) {
+      // istanbul ignore next
       const containerRect = containerRef.current?.closest(".nz-widget-floatingWidget")?.getBoundingClientRect();
+      // istanbul ignore else
       if (containerRect) {
         dispatch({
           type: "FLOATING_WIDGET_SET_BOUNDS",
@@ -135,6 +137,7 @@ export function useDrag<T extends HTMLElement>(
 
   React.useEffect(() => {
     const handleExecute = () => {
+      // istanbul ignore else
       if (clickCount.current === 2)
         onDoubleClick && onDoubleClick();
       clickCount.current = 0;

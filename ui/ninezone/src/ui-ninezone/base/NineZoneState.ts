@@ -520,6 +520,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const { resizeBy } = action;
       const floatingWidget = state.floatingWidgets.byId[action.id];
       // if this is not a tool settings widget then set the userSized flag
+      // istanbul ignore else
       if (!isToolSettingsFloatingWidget(state, action.id)) {
         floatingWidget.userSized = true;
       }
@@ -1547,10 +1548,12 @@ export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidget
   home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps,
   userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState {
   const location = findTab(state, widgetTabId);
-  if (location)
+  if (location || !(widgetTabId in state.tabs))
     return state;
 
-  const tab = widgetTabId in state.tabs[widgetTabId] ? state.tabs[widgetTabId] : { preferredFloatingWidgetSize: undefined };
+  // tab must be defined but not placed in a container (ie not in panel, floating, or popout)
+  const tab = state.tabs[widgetTabId];
+
   return produce(state, (draft) => {
     const size = { height: 200, width: 300, ...tab.preferredFloatingWidgetSize, ...preferredSize };
     const preferredPoint = preferredPosition ?? { x: (state.size.width - size.width) / 2, y: (state.size.height - size.height) / 2 };
