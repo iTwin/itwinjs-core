@@ -132,7 +132,7 @@ export class BGFBReader {
     const knots = header.knotsArray();
       const options = new InterpolationCurve3dOptions(Point3dArray.clonePoint3dArray(xyzArray), knots ? NumberArray.create(knots) : undefined);
       const startTangent = header.startTangent();
-      const endTangent = header.startTangent();
+      const endTangent = header.endTangent();
       options.captureOptionalProps(
         header.order(),
         header.closed(),

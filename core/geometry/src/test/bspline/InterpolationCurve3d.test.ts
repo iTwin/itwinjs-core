@@ -27,6 +27,7 @@ describe("InterpolationCurve3d", () => {
     let x0 = 0;
     const delta = 2.25 * circleRadius;
     const y0 = 0;
+    let  count = 0;
     for (const curve of [
       InterpolationCurve3d.create({ fitPoints: circlePoints, isColinearTangents: 0, isNaturalTangents: 0 }),
       InterpolationCurve3d.create({ fitPoints: circlePoints, isColinearTangents: 0, isNaturalTangents: 1 }),
@@ -75,7 +76,9 @@ describe("InterpolationCurve3d", () => {
       InterpolationCurve3d.create({ fitPoints: circlePoints, knots: fitParams, startTangent: startTan, endTangent: endTan, isChordLenTangents: 0 }),
       InterpolationCurve3d.create({ fitPoints: circlePoints, knots: fitParams, startTangent: startTan, endTangent: endTan, isChordLenTangents: 1 }),
       InterpolationCurve3d.create({ fitPoints: circlePoints, knots: fitParams, closed: true}),
-      ]) {
+    ]) {
+      console.log(`InterpolationCurve index ${count}`);
+      count++;
       if (ck.testType(curve, InterpolationCurve3d)) {
         if (ck.testType(curve.options, InterpolationCurve3dOptions)) {
           for (const fitPoint of curve.options.fitPoints) {
@@ -88,7 +91,7 @@ describe("InterpolationCurve3d", () => {
         }
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, x0 += delta, y0, 0);
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve.proxyCurve, x0, y0 + delta, 0);
-        // testGeometryQueryRoundTrip(ck, curve);
+        testGeometryQueryRoundTrip(ck, curve);
       }
     }
     GeometryCoreTestIO.saveGeometry(allGeometry, "InterpolationCurve3d", "HelloWorld");

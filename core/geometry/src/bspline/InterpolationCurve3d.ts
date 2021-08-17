@@ -8,7 +8,7 @@
 
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
-import { Point3dArray } from "../geometry3d/PointHelpers";
+import { NumberArray, Point3dArray } from "../geometry3d/PointHelpers";
 import { ProxyCurve } from "../curve/ProxyCurve";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
 import { BSplineCurve3d } from "./BSplineCurve";
@@ -179,20 +179,38 @@ export class InterpolationCurve3dOptions {
     result._endTangent = source.endTangent ? Vector3d.fromJSON(source.endTangent) : undefined;
     return result;
   }
-
+  // ugh.
+  // vector equality test with awkward rule that 000 matches undefined.
+  private static areAlmostEqualAllow000AsUndefined(a: Vector3d | undefined, b: Vector3d | undefined): boolean{
+    if (a !== undefined && a.maxAbs() === 0)
+      a = undefined;
+    if (b !== undefined && b.maxAbs() === 0)
+      b = undefined;
+    if (a !== undefined && b !== undefined)
+      return a.isAlmostEqual(b);
+    return a === undefined && b === undefined;
+}
   public static areAlmostEqual(dataA: InterpolationCurve3dOptions | undefined, dataB: InterpolationCurve3dOptions | undefined): boolean {
     if (dataA === undefined && dataB === undefined)
       return true;
     if (dataA !== undefined && dataB !== undefined) {
-      return Geometry.areEqualAllowUndefined(dataA.order, dataB.order)
+      if ( Geometry.areEqualAllowUndefined(dataA.order, dataB.order)
         && Geometry.areEqualAllowUndefined(dataA.closed, dataB.closed)
         && Geometry.areEqualAllowUndefined(dataA.isChordLenKnots, dataB.isChordLenKnots)
         && Geometry.areEqualAllowUndefined(dataA.isColinearTangents, dataB.isColinearTangents)
         && Geometry.areEqualAllowUndefined(dataA.isNaturalTangents, dataB.isNaturalTangents)
-        && Geometry.areEqualAllowUndefined(dataA.startTangent, dataB.startTangent)
-        && Geometry.areEqualAllowUndefined(dataA.endTangent, dataB.endTangent)
-        && Geometry.almostEqualArrays(dataA.fitPoints, dataB.fitPoints, (a: Point3d, b: Point3d) => a.isAlmostEqual(b))
-        && Geometry.almostEqualNumberArrays(dataA.knots, dataB.knots, (a: number, b: number) => a === b);
+        && this.areAlmostEqualAllow000AsUndefined(dataA.startTangent, dataB.startTangent)
+        && this.areAlmostEqualAllow000AsUndefined(dataA.endTangent, dataB.endTangent)
+        && Geometry.almostEqualArrays(dataA.fitPoints, dataB.fitPoints, (a: Point3d, b: Point3d) => a.isAlmostEqual(b))) {
+        if (Geometry.almostEqualNumberArrays(dataA.knots, dataB.knots, (a: number, b: number) => a === b))
+          return true;
+        if (dataA.knots === undefined && dataB.knots === undefined)
+          return true;
+        /* alas .. need to allow tricky mismatch of end replication? */
+        const knotA = NumberArray.cloneWithStartAndEndMultiplicity(dataA.knots, 1, 1);
+        const knotB = NumberArray.cloneWithStartAndEndMultiplicity(dataB.knots, 1, 1);
+        return Geometry.almostEqualNumberArrays(knotA, knotB, (a: number, b: number) => Geometry.isAlmostEqualNumber(a, b));
+      }
     }
     return false;
   }

@@ -149,15 +149,7 @@ export class BGFBWriter {
     const knotOffset = props.knots ? this.writeDoubleArray(props.knots) : 0;
 
       // REMARK: some native or flatbuffer quirk made startTangent a point and endTangent a vector.
-    const startTangentOffset = props.startTangent ?
-      BGFBAccessors.DPoint3d.createDPoint3d(this.builder,
-          XYZ.x(props.startTangent), XYZ.y(props.startTangent), XYZ.z(props.startTangent))
-            : 0;
-    const endTangentOffset = props.endTangent ?
-      BGFBAccessors.DVector3d.createDVector3d(this.builder,
-        XYZ.x(props.endTangent), XYZ.y(props.endTangent), XYZ.z(props.endTangent))
-          : 0;
-      BGFBAccessors.InterpolationCurve.startInterpolationCurve(this.builder);
+  BGFBAccessors.InterpolationCurve.startInterpolationCurve(this.builder);
     BGFBAccessors.InterpolationCurve.addFitPoints(this.builder, fitPointsOffset);
     if (props.order)
       BGFBAccessors.InterpolationCurve.addOrder(this.builder, props.order);
@@ -171,10 +163,16 @@ export class BGFBWriter {
       BGFBAccessors.InterpolationCurve.addIsChordLenKnots(this.builder, props.isChordLenKnots);
     if (props.isNaturalTangents)
       BGFBAccessors.InterpolationCurve.addIsNaturalTangents(this.builder, props.isNaturalTangents);
-    if (startTangentOffset !== 0)
-      BGFBAccessors.InterpolationCurve.addStartTangent(this.builder, startTangentOffset);
-    if (endTangentOffset !== 0)
-      BGFBAccessors.InterpolationCurve.addEndTangent(this.builder, endTangentOffset);
+    if (props.startTangent !== undefined) {
+      const startTangentOffset = BGFBAccessors.DPoint3d.createDPoint3d(this.builder,
+          XYZ.x(props.startTangent), XYZ.y(props.startTangent), XYZ.z(props.startTangent));
+          BGFBAccessors.InterpolationCurve.addStartTangent(this.builder, startTangentOffset);
+    }
+    if (props.endTangent !== undefined) {
+      const endTangentOffset = BGFBAccessors.DPoint3d.createDPoint3d(this.builder,
+          XYZ.x(props.endTangent), XYZ.y(props.endTangent), XYZ.z(props.endTangent));
+          BGFBAccessors.InterpolationCurve.addEndTangent(this.builder, endTangentOffset);
+          }
     if (knotOffset !== 0)
       BGFBAccessors.InterpolationCurve.addKnots(this.builder, knotOffset);
     const headerOffset = BGFBAccessors.InterpolationCurve.endInterpolationCurve(this.builder);
