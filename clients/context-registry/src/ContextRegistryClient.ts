@@ -32,7 +32,7 @@ class Context extends WsgInstance implements ITwin {
   }
 
   @ECJsonTypeMap.propertyToJson("wsg", "properties.Number")
-  public iTwinNumber?: string;
+  public code?: string;
 }
 
 /** Set of the original properties in the Project and Asset classes that are now deprecated
@@ -147,8 +147,8 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    */
   public async getAll(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]> {
     const queryOptions: HiddenQueryOptions = {
-      $top: arg.top,
-      $skip: arg.skip,
+      $top: arg?.top,
+      $skip: arg?.skip,
     };
     return this.getByQuery(requestContext, queryOptions);
   }
@@ -172,8 +172,8 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
   */
   public async getFavorites(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]> {
     const queryOptions: HiddenQueryOptions = {
-      $top: arg.top,
-      $skip: arg.skip,
+      $top: arg?.top,
+      $skip: arg?.skip,
       isFavorite: true,
     };
     return this.getByQuery(requestContext, queryOptions);
@@ -186,8 +186,8 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    */
   public async getRecentlyUsed(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]> {
     const queryOptions: HiddenQueryOptions = {
-      $top: arg.top,
-      $skip: arg.skip,
+      $top: arg?.top,
+      $skip: arg?.skip,
       isMRU: true,
     };
 

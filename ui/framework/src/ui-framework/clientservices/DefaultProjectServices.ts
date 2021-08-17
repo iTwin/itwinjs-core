@@ -8,7 +8,7 @@
 
 import { Logger } from "@bentley/bentleyjs-core";
 import { RequestQueryOptions } from "@bentley/itwin-client";
-import { ContextRegistryClient, ITwin } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 import { AuthorizedFrontendRequestContext } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import { ProjectInfo, ProjectReadStatus, ProjectScope, ProjectServices } from "./ProjectServices";
@@ -28,15 +28,15 @@ class ProjectInfoImpl implements ProjectInfo {
  */
 // istanbul ignore next
 export class DefaultProjectServices implements ProjectServices {
-  private _connectClient: ContextRegistryClient;
+  private _connectClient: ITwinAccessClient;
 
   constructor() {
-    this._connectClient = new ContextRegistryClient();
+    this._connectClient = new ITwinAccessClient();
   }
 
   private createProjectInfo(thisProject: ITwin): ProjectInfo {
     Logger.logTrace(UiFramework.loggerCategory(this), `Working on project '${thisProject.name}'`);
-    const thisProjectInfo: ProjectInfo = new ProjectInfoImpl(thisProject.name ? thisProject.name : "", thisProject.iTwinNumber ? thisProject.iTwinNumber : "", thisProject.id);
+    const thisProjectInfo: ProjectInfo = new ProjectInfoImpl(thisProject.name ? thisProject.name : "", thisProject.code ? thisProject.code : "", thisProject.id);
     return thisProjectInfo;
   }
 
@@ -56,16 +56,16 @@ export class DefaultProjectServices implements ProjectServices {
     projectScope = projectScope.valueOf();
     // SWB END DEBUG LINES
 
-    let containerList: ITwin[];
+    let iTwinList: ITwin[];
     try {
-      containerList = await this._connectClient.getITwins(requestContext);
+      iTwinList = await this._connectClient.getAll(requestContext);
     } catch (e) {
       alert(JSON.stringify(e));
       throw e;
     }
 
     const projects: ProjectInfo[] = [];
-    for (const thisProject of containerList) {
+    for (const thisProject of iTwinList) {
       projects.push(this.createProjectInfo(thisProject));
     }
     return projects;

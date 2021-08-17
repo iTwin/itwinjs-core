@@ -9,7 +9,7 @@ import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { ClientRequestContext, Config, Id64String, Logger, LogLevel, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
@@ -446,7 +446,14 @@ export class SampleAppIModelApp {
       const iModelName = Config.App.getString("imjs_uitestapp_imodel_name");
 
       const requestContext = await AuthorizedFrontendRequestContext.create();
-      const project = await (new ContextRegistryClient()).getITwinByName(requestContext, projectName);
+      const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAllByName(requestContext, projectName);
+
+      if (iTwinList.length === 0)
+        throw new Error(`ITwin ${projectName} was not found for the user.`);
+      else if (iTwinList.length > 1)
+        throw new Error(`Multiple iTwins named ${projectName} were found for the user.`);
+
+      const project: ITwin = iTwinList[0];
 
       const iModel = (await (new IModelHubClient()).iModels.get(requestContext, project.id, new IModelQuery().byName(iModelName)))[0];
 

@@ -3,14 +3,21 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ITwin, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 import { ContextManagerClient } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 /** An implementation of IModelProjectAbstraction backed by an iTwin project */
 export class ContextRegistryClientWrapper implements ContextManagerClient {
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
-    const client = new ContextRegistryClient();
-    return client.getITwinByName(requestContext, name);
+    const client = new ITwinAccessClient();
+    const iTwinList: ITwin[] = await client.getAllByName(requestContext, name);
+
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${name} was not found for the user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${name} were found for the user.`);
+
+    return iTwinList[0];
   }
 }

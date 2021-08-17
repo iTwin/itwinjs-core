@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<testsuites name="Mocha Tests" time="3.1290" tests="2" failures="1">
+  <testsuite name="Root Suite" timestamp="2021-08-16T23:03:15" tests="0" time="0.0000" failures="0">
+  </testsuite>
+  <testsuite name="Schema RPC Interface" timestamp="2021-08-16T23:03:15" tests="2" time="3.1290" failures="1">
+    <testcase name="Schema RPC Interface &quot;before all&quot; hook for &quot;should get schema keys&quot;" time="3.1290" classname="&quot;before all&quot; hook for &quot;should get schema keys&quot;">
+      <failure message="Failed to open test iModel. Error: Argument iModelId is null or undefined" type="Error"><![CDATA[Error: Failed to open test iModel. Error: Argument iModelId is null or undefined
+    at IModelSession.open (D:\iModel_Core\imodeljs\full-stack-tests\ecschema-rpc-interface\src\frontend\setup\IModelSession.ts:33:13)
+    at Context.<anonymous> (D:\iModel_Core\imodeljs\full-stack-tests\ecschema-rpc-interface\src\frontend\SchemaRpcInterface.test.ts:23:14)]]></failure>
+    </testcase>
+  </testsuite>
+</testsuites>

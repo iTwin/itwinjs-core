@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { ITwin, ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, IModelConnection, IModelHubFrontend, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp } from "..";
@@ -40,21 +40,21 @@ export class ExternalIModel {
 
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
 
-    const connectClient = new ContextRegistryClient();
-    let container: ITwin;
-    try {
-      container = await connectClient.getITwinByName(requestContext, projectName);
-    } catch (e) {
-      throw new Error(`Project with name "${projectName}" does not exist`);
-    }
+    const connectClient = new ITwinAccessClient();
+    const iTwinList: ITwin[] = await connectClient.getAllByName(requestContext, projectName);
+
+    if (iTwinList.length === 0)
+      throw new Error(`ITwin ${projectName} was not found for the user.`);
+    else if (iTwinList.length > 1)
+      throw new Error(`Multiple iTwins named ${projectName} were found for the user.`);
 
     const imodelQuery = new IModelQuery();
     imodelQuery.byName(imodelName);
-    const imodels = await IModelHubFrontend.iModelClient.iModels.get(requestContext, container.id, imodelQuery);
+    const imodels = await IModelHubFrontend.iModelClient.iModels.get(requestContext, iTwinList[0].id, imodelQuery);
     if (imodels.length === 0) {
       throw new Error(`iModel with name "${imodelName}" does not exist in project "${projectName}"`);
     }
-    return { projectId: container.id, imodelId: imodels[0].wsgId };
+    return { projectId: iTwinList[0].id, imodelId: imodels[0].wsgId };
   }
 
   /** Handle iModel open event */

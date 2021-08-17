@@ -31,12 +31,12 @@ export interface ITwinQueryArg {
 export interface ITwinAccess {
   /** Get iTwins associated with the requester */
   getAll: (requestContext: AuthorizedClientRequestContext, queryOptions?: ITwinQueryArg) => Promise<ITwin[]>;
-  /** Get all iTWins with the exact name */
+  /** Get all iTwins with the exact name */
   getAllByName: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<ITwin[]>;
   /** Get favorited iTwins associated with the requester */
   getFavorites: (requestContext: AuthorizedClientRequestContext, queryOptions?: ITwinQueryArg) => Promise<ITwin[]>;
   /** Get recently used iTwins associated with the requester */
   getRecentlyUsed: (requestContext: AuthorizedClientRequestContext, queryOptions?: ITwinQueryArg) => Promise<ITwin[]>;
-  /** Get an iTwin with exact id */
+  /** Get an iTwin with the exact id */
   getById: (requestContext: AuthorizedClientRequestContext, id: string) => Promise<ITwin>;
 }

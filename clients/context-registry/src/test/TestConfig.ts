@@ -9,10 +9,10 @@ import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bent
  */
 export class TestConfig {
   /** Name of container used by some tests */
-  public static readonly containerName: string = "iModelJsIntegrationTest";
+  public static readonly iTwinName: string = "iModelJsIntegrationTest";
 
   /** Id of container used by some tests */
-  public static readonly containerId: string = "ec002f93-f0c1-4ab3-a407-351848eba233";
+  public static readonly iTwinId: string = "ec002f93-f0c1-4ab3-a407-351848eba233";
 
   /** Login the specified user and return the AuthorizationToken */
   public static async getAuthorizedClientRequestContext(user: TestUserCredentials = TestUsers.regular): Promise<AuthorizedClientRequestContext> {

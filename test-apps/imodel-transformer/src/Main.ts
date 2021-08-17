@@ -6,7 +6,7 @@
 import * as path from "path";
 import * as Yargs from "yargs";
 import { assert, Guid, GuidString, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { ContextRegistryClient } from "@bentley/context-registry-client";
+import { ITwinAccessClient } from "@bentley/context-registry-client";
 import { Version } from "@bentley/imodelhub-client";
 import {
   BackendLoggerCategory, BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
@@ -111,14 +111,14 @@ void (async () => {
     }
 
     let requestContext: AuthorizedClientRequestContext | BackendRequestContext;
-    let contextRegistry: ContextRegistryClient | undefined;
+    let iTwinAccessClient: ITwinAccessClient | undefined;
     let sourceDb: IModelDb;
     let targetDb: IModelDb;
     let processChanges = false;
 
     if (args.sourceContextId || args.targetContextId) {
       requestContext = await IModelHubUtils.getAuthorizedClientRequestContext();
-      contextRegistry = new ContextRegistryClient();
+      iTwinAccessClient = new ITwinAccessClient();
     } else {
       requestContext = new BackendRequestContext();
     }
@@ -126,12 +126,12 @@ void (async () => {
     if (args.sourceContextId) {
       // source is from iModelHub
       assert(requestContext instanceof AuthorizedClientRequestContext);
-      assert(undefined !== contextRegistry);
+      assert(undefined !== iTwinAccessClient);
       assert(undefined !== args.sourceIModelId);
       const sourceContextId = Guid.normalize(args.sourceContextId);
       const sourceIModelId = Guid.normalize(args.sourceIModelId);
       let sourceEndVersion = IModelVersion.latest();
-      const sourceContext = await contextRegistry.getITwinById(requestContext, sourceContextId);
+      const sourceContext = await iTwinAccessClient.getById(requestContext, sourceContextId);
       assert(undefined !== sourceContext);
       Logger.logInfo(loggerCategory, `sourceContextId=${sourceContextId}, name=${sourceContext.name}`);
       Logger.logInfo(loggerCategory, `sourceIModelId=${sourceIModelId}`);
