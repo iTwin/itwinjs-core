@@ -22,15 +22,21 @@ import {
   DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingGraphicRepresentsElement, DrawingViewDefinition, ECSqlStatement, Element,
   ElementAspect, ElementMultiAspect, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementRefersToElements,
   ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceIsInRepository, FunctionalModel, FunctionalSchema, GeometricElement3d,
-  GeometryPart, GroupModel, IModelDb, IModelExporter, IModelExportHandler, IModelImporter, IModelJsFs, IModelTransformer, InformationPartitionElement,
+  GeometryPart, GroupModel, IModelDb, IModelJsFs, InformationPartitionElement,
   InformationRecordModel, LinkElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject,
   PhysicalPartition, Platform, Relationship, RelationshipProps, RenderMaterialElement, RepositoryLink, SnapshotDb, SpatialCategory,
   SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture, ViewDefinition,
 } from "../imodeljs-backend";
+import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../imodeljs-transformer";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { Base64 } from "js-base64";
 
-/** IModelTransformer utilities shared by both standalone and integration tests. */
+/**
+ * IModelTransformer utilities shared by both standalone and integration tests.
+ * These were copied from imodeljs-backend when the packages were split, but several generic utilieis
+ * being used by tests in imodeljs-backend had to be merged into IModelTestUtils, so keep the duplication in mind
+ * and hopefully in the future we can deduplicate them
+ */
 export namespace IModelTransformerUtils {
 
   const uniqueAspectGuid: GuidString = Guid.createValue();
