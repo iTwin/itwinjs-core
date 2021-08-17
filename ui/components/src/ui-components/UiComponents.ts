@@ -8,7 +8,6 @@
 
 import { enablePatches } from "immer";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
 import { getClassName, UiError } from "@bentley/ui-abstract";
 import { UiCore } from "@bentley/ui-core";
@@ -23,16 +22,16 @@ export class UiComponents {
 
   /**
    * Registers the I18N service namespace for UiComponents. Also initializes UiCore.
-   * @param i18n The internationalization service created by the application. Defaults to IModelApp.i18n.
+   * @param i18n The internationalization service created by the application.
    */
-  public static async initialize(i18n?: I18N): Promise<void> {
+  public static async initialize(i18n: I18N): Promise<void> {
     if (UiComponents._initialized) {
       Logger.logInfo(UiComponents.loggerCategory(UiComponents), `UiComponents.initialize already called`);
       return;
     }
 
     enablePatches();
-    UiComponents._i18n = i18n || IModelApp.i18n;
+    UiComponents._i18n = i18n;
     await UiComponents._i18n.registerNamespace(UiComponents.i18nNamespace).readFinished;
 
     await UiCore.initialize(UiComponents._i18n);

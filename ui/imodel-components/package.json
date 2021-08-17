@@ -1,0 +1,147 @@
+{
+  "name": "@bentley/ui-imodel-components",
+  "version": "3.0.0-dev.28",
+  "description": "iModel.js UI IModel Components",
+  "main": "lib/ui-imodel-components.js",
+  "typings": "lib/ui-imodel-components",
+  "imodeljsSharedLibrary": true,
+  "license": "MIT",
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/ui/imodel-components"
+  },
+  "scripts": {
+    "compile": "npm run build",
+    "copy:assets": "cpx \"./src/**/*.*css\" ./lib && cpx \"./public/**/*\" ./lib/public",
+    "pseudolocalize": "betools pseudolocalize --englishDir ./public/locales/en --out ./lib/public/locales/en-PSEUDO",
+    "build": "npm run copy:assets && npm run pseudolocalize && tsc 1>&2",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "cover": "nyc npm test",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/ui/ui-imodel-components/file.json --tsIndexFile=./ui-imodel-components.ts --onlyJson",
+    "lint": "eslint -f visualstudio \"./src/**/*.{ts,tsx}\" 1>&2",
+    "extract-api": "betools extract-api --entry=ui-imodel-components",
+    "test": "mocha --config ../.mocharc.json \"./lib/test/**/*.test.js\"",
+    "test:watch": "npm test -- --reporter min --watch-extensions ts,tsx --watch"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.28",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.28",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.28",
+    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.28",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.28",
+    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.28",
+    "@bentley/ui-abstract": "workspace:^3.0.0-dev.28",
+    "@bentley/ui-core": "workspace:^3.0.0-dev.28",
+    "@bentley/ui-components": "workspace:^3.0.0-dev.28",
+    "react": "^16.8.6 || ^17.0.0",
+    "react-dom": "^16.8.6 || ^17.0.0"
+  },
+  "//devDependencies": [
+    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
+    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
+  ],
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/geometry-core": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
+    "@bentley/imodeljs-frontend": "workspace:*",
+    "@bentley/imodeljs-i18n": "workspace:*",
+    "@bentley/imodeljs-quantity": "workspace:*",
+    "@bentley/ui-abstract": "workspace:*",
+    "@bentley/ui-core": "workspace:*",
+    "@bentley/ui-components": "workspace:*",
+    "@testing-library/react": "^12.0.0",
+    "@testing-library/react-hooks": "^3.2.1",
+    "@testing-library/user-event": "^13.2.1",
+    "@types/chai": "^4.1.4",
+    "@types/chai-as-promised": "^7",
+    "@types/chai-jest-snapshot": "^1.3.0",
+    "@types/chai-spies": "^1.0.0",
+    "@types/chai-string": "^1.4.1",
+    "@types/enzyme": "3.9.3",
+    "@types/faker": "^4.1.0",
+    "@types/lodash": "^4.14.0",
+    "@types/mocha": "^8.2.2",
+    "@types/react": "^17.0.0",
+    "@types/react-dom": "^17.0.0",
+    "@types/sinon": "^9.0.0",
+    "@types/sinon-chai": "^3.2.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "chai-jest-snapshot": "^2.0.0",
+    "chai-spies": "1.0.0",
+    "chai-string": "^1.5.0",
+    "cpx": "^1.5.0",
+    "enzyme": "^3.4.0",
+    "@wojtekmaj/enzyme-adapter-react-17": "^0.6.3",
+    "enzyme-to-json": "^3.3.4",
+    "eslint": "^7.11.0",
+    "faker": "^4.1.0",
+    "ignore-styles": "^5.0.1",
+    "jsdom": "^16.7.0",
+    "jsdom-global": "3.0.2",
+    "mocha": "^8.3.2",
+    "nyc": "^15.1.0",
+    "raf": "^3.4.0",
+    "react": "^17.0.0",
+    "react-dom": "^17.0.0",
+    "react-test-renderer": "^17.0.0",
+    "rimraf": "^3.0.2",
+    "sinon": "^9.0.2",
+    "sinon-chai": "^3.2.0",
+    "ts-node": "^7.0.1",
+    "tsconfig-paths": "^3.3.2",
+    "typemoq": "^2.1.0",
+    "typescript": "~4.3.0",
+    "xmlhttprequest": "^1.8.0"
+  },
+  "//dependencies": [
+    "NOTE: these dependencies should be only for things that DO NOT APPEAR IN THE API",
+    "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
+  ],
+  "dependencies": {
+    "@bentley/icons-generic-webfont": "^1.0.15",
+    "@itwin/itwinui-css": "^0.25.0",
+    "@itwin/itwinui-react": "^1.14.0",
+    "callable-instance2": "1.0.0",
+    "classnames": "^2.3.1",
+    "eventemitter2": "^5.0.1",
+    "immer": "9.0.2",
+    "immutable": "^3.8.2",
+    "ts-key-enum": "^2.0.0"
+  },
+  "nyc": {
+    "extends": "./node_modules/@bentley/build-tools/.nycrc",
+    "require": [
+      "ignore-styles",
+      "jsdom-global/register",
+      "source-map-support/register",
+      "ts-node/register"
+    ],
+    "check-coverage": true,
+    "statements": 99.9,
+    "branches": 99.9,
+    "functions": 100,
+    "lines": 99.9
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": [
+      "plugin:@bentley/ui",
+      "plugin:@bentley/jsdoc"
+    ]
+  }
+}

@@ -34,7 +34,6 @@
   },
   "peerDependencies": {
     "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.28",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.28",
     "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.28"
   },
   "//devDependencies": [
@@ -45,7 +44,6 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
     "@types/chai": "^4.1.4",
     "@types/chai-as-promised": "^7",

@@ -9,7 +9,8 @@
 import "./Tab.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { CommonProps, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { DragHandle } from "../../../base/DragHandle";
 import { HorizontalAnchor, HorizontalAnchorHelpers, VerticalAnchor, VerticalAnchorHelpers } from "../../Stacked";
 

@@ -34,8 +34,6 @@ export * from "./ui-core/contextmenu/ContextSubMenu";
 export * from "./ui-core/contextmenu/GlobalContextMenu";
 export * from "./ui-core/contextmenu/PopupContextMenu";
 
-export * from "./ui-core/cube/Cube";
-
 export * from "./ui-core/dialog/Dialog";
 export * from "./ui-core/dialog/DialogButtonDef";
 export * from "./ui-core/dialog/GlobalDialog";
@@ -91,6 +89,7 @@ export * from "./ui-core/loading/LoadingStatus";
 export * from "./ui-core/loading/Spinner";
 
 export * from "./ui-core/messagebox/MessageBox";
+export * from "./ui-core/messagebox/MessageSeverity";
 
 export * from "./ui-core/notification/MessageRenderer";
 export * from "./ui-core/notification/MessageType";
@@ -160,11 +159,13 @@ export * from "./ui-core/uisettings/SessionSettingsStorage";
 
 export * from "./ui-core/utils/IconHelper";
 export * from "./ui-core/utils/Point";
+export * from "./ui-core/utils/PointProps";
 export * from "./ui-core/utils/Props";
 export * from "./ui-core/utils/Rectangle";
 export * from "./ui-core/utils/Size";
 export * from "./ui-core/utils/Timer";
 export * from "./ui-core/utils/UiEvent";
+export * from "./ui-core/utils/UiGeometry";
 export * from "./ui-core/utils/flattenChildren";
 export * from "./ui-core/utils/getBestBWContrastColor";
 export * from "./ui-core/utils/getCssVariable";
@@ -219,10 +220,6 @@ export * from "./ui-core/utils/hooks/useWidgetOpacityContext";
 /**
  * @docs-group-description ContextMenu
  * Components for working with a Context Menu.
- */
-/**
- * @docs-group-description Cube
- * Component for 3D Cube.
  */
 /**
  * @docs-group-description Dialog

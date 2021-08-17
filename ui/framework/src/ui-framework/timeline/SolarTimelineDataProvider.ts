@@ -8,7 +8,7 @@
 
 import { Cartographic, ColorByName, ColorDef, SolarShadowSettings } from "@bentley/imodeljs-common";
 import { DisplayStyle3dState, ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
-import { BaseSolarDataProvider } from "@bentley/ui-components";
+import { BaseSolarDataProvider } from "@bentley/ui-imodel-components";
 
 // the interface and class are in alpha state - it may change after usability testing - test coverage not complete
 /* istanbul ignore file */

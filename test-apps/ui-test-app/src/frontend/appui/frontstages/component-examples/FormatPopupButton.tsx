@@ -10,7 +10,7 @@ import * as React from "react";
 import { FormatProps } from "@bentley/imodeljs-quantity";
 import { RelativePosition, SpecialKey } from "@bentley/ui-abstract";
 import { Popup, WebFontIcon } from "@bentley/ui-core";
-import { FormatPanel, FormatPanelProps, UiComponents } from "@bentley/ui-components";
+import { FormatPanel, FormatPanelProps, UiIModelComponents } from "@bentley/ui-imodel-components";
 import "./FormatPopupButton.scss";
 import { Button } from "@itwin/itwinui-react";
 
@@ -29,7 +29,7 @@ export function FormatPopupButton(props: FormatPopupButtonProps) {
   const [isSettingsOpen, setIsSettingsOpen] = React.useState(false);
   const [showFocusOutline, setShowFocusOutline] = React.useState(false);
   const [formatProps, setFormatProps] = React.useState(props.initialFormat);
-  const toolTipLabelRef = React.useRef(UiComponents.translate("QuantityFormat.popupButton.setFormat"));
+  const toolTipLabelRef = React.useRef(UiIModelComponents.translate("QuantityFormat.popupButton.setFormat"));
 
   const buttonRef = React.useRef<HTMLButtonElement>(null);
   const handleCloseSetting = React.useCallback(() => {

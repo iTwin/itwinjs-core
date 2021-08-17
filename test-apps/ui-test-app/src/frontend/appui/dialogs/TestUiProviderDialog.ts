@@ -6,7 +6,7 @@ import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp, LengthDescription, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import {
   ColorEditorParams, DialogButtonDef, DialogButtonType, DialogItem, DialogItemValue, DialogLayoutDataProvider, DialogPropertySyncItem, InputEditorSizeParams, PropertyDescription,
-  PropertyEditorParamTypes, SuppressLabelEditorParams,
+  PropertyEditorParamTypes, StandardEditorNames, StandardTypeNames, SuppressLabelEditorParams,
 } from "@bentley/ui-abstract";
 
 enum ColorOptions {
@@ -151,9 +151,9 @@ export class TestUiProvider extends DialogLayoutDataProvider {
     return {
       name: TestUiProvider._weightName,
       displayLabel: "Weight",
-      typename: "number",
+      typename: StandardTypeNames.Number,
       editor: {
-        name: "weight-picker",
+        name: StandardEditorNames.WeightPicker,
       },
     };
   };
@@ -174,8 +174,8 @@ export class TestUiProvider extends DialogLayoutDataProvider {
     return {
       name: TestUiProvider._lockToggleName,
       displayLabel: "Lock",
-      typename: "boolean",
-      editor: { name: "toggle" },
+      typename: StandardTypeNames.Boolean,
+      editor: { name: StandardEditorNames.Toggle },
     };
   };
 
@@ -215,7 +215,7 @@ export class TestUiProvider extends DialogLayoutDataProvider {
     return {
       name: TestUiProvider._stateName,
       displayLabel: "State",
-      typename: "string",
+      typename: StandardTypeNames.String,
       editor: {
         params: [{
           type: PropertyEditorParamTypes.InputEditorSize,

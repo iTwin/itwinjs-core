@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import {
-  ECClassModifier, EntityClass, EntityClassProps, SchemaContext, SchemaItemType, SchemaKey,
+  ECClassModifier, EntityClass, EntityClassProps, SchemaContext, SchemaItemKey, SchemaItemType, SchemaKey,
 } from "@bentley/ecschema-metadata";
 import { SchemaContextEditor } from "../../Editing/Editor";
 
@@ -23,6 +23,33 @@ describe("Entities tests", () => {
     await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None);
     const schema = await testEditor.schemaContext.getCachedSchema(testKey);
     expect((await schema?.getItem("testEntity"))?.schemaItemType).to.eql(SchemaItemType.EntityClass);
+  });
+
+  it("should delete an entity class", async () => {
+    await testEditor.entities.create(testKey, "testEntity", ECClassModifier.None);
+    const schema = await testEditor.schemaContext.getCachedSchema(testKey);
+    let entity = await schema?.getItem("testEntity");
+    expect(entity?.schemaItemType).to.eql(SchemaItemType.EntityClass);
+
+    const key = entity?.key as SchemaItemKey;
+    const delRes = await testEditor.entities.delete(key);
+    expect(delRes.itemKey).to.eql(entity?.key);
+
+    // Should get undefined since class is deleted
+    entity = await schema?.getItem("testEntity");
+    expect(entity).to.be.undefined;
+  });
+
+  it("should not be able to delete entity class if it is not in schema", async () => {
+    const schema = await testEditor.schemaContext.getCachedSchema(testKey);
+    const className = "testEntity";
+    const key = schema?.schemaKey as SchemaKey;
+    const classKey = new SchemaItemKey(className, key);
+    const entity = await schema?.getItem(className);
+    expect(entity).to.be.undefined;
+
+    const delRes = await testEditor.entities.delete(classKey);
+    expect(delRes).to.eql({});
   });
 
   it("should create a new entity class with a base class", async () => {

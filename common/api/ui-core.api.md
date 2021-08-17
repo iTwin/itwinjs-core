@@ -24,7 +24,8 @@ import { InputActionMeta } from 'react-select/src/types';
 import { InputProps as InputProps_2 } from '@itwin/itwinui-react';
 import { Interaction } from 'scheduler/tracing';
 import { KeyboardEventHandler } from 'react-select/src/types';
-import { Matrix3d } from '@bentley/geometry-core';
+import { MessageSeverity as MessageSeverity_2 } from '@bentley/ui-abstract';
+import { PointProps as PointProps_2 } from '@bentley/ui-abstract';
 import { ProgressRadialProps } from '@itwin/itwinui-react';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
@@ -456,36 +457,6 @@ export enum Corner {
 export type CrossAxisArrowKeyFunc = (forward: boolean) => void;
 
 // @public
-export class Cube extends React.PureComponent<CubeProps> {
-    // (undocumented)
-    render(): React.ReactNode;
-}
-
-// @internal (undocumented)
-export class CubeFace extends React.Component<CubeFaceProps> {
-    // (undocumented)
-    render(): React.ReactNode;
-}
-
-// @internal (undocumented)
-export interface CubeFaceProps extends React.AllHTMLAttributes<HTMLDivElement> {
-    // (undocumented)
-    face: Face;
-    // (undocumented)
-    rotMatrix: Matrix3d;
-}
-
-// @public
-export interface CubeProps extends React.AllHTMLAttributes<HTMLDivElement>, CommonProps {
-    // (undocumented)
-    faces?: {
-        [key: string]: React.ReactNode;
-    };
-    // (undocumented)
-    rotMatrix: Matrix3d;
-}
-
-// @public
 export class Dialog extends React.Component<DialogProps, DialogState> {
     constructor(props: DialogProps);
     // (undocumented)
@@ -761,24 +732,6 @@ export interface ExpansionToggleProps extends CommonProps {
     isExpanded?: boolean;
     // (undocumented)
     onClick?: (e: React.MouseEvent<HTMLDivElement>) => void;
-}
-
-// @public
-export enum Face {
-    // (undocumented)
-    Back = "back",
-    // (undocumented)
-    Bottom = "bottom",
-    // (undocumented)
-    Front = "front",
-    // (undocumented)
-    Left = "left",
-    // (undocumented)
-    None = "",
-    // (undocumented)
-    Right = "right",
-    // (undocumented)
-    Top = "top"
 }
 
 // @beta @deprecated
@@ -1330,7 +1283,7 @@ export interface MessageBoxProps extends CommonProps {
     onClose?: () => void;
     onEscape?: () => void;
     opened: boolean;
-    severity: MessageSeverity;
+    severity: MessageSeverity_2;
     title?: string | JSX.Element;
     width?: string | number;
 }
@@ -1338,7 +1291,7 @@ export interface MessageBoxProps extends CommonProps {
 // @public
 export class MessageContainer extends React.PureComponent<MessageContainerProps> {
     // (undocumented)
-    static getIconClassName(severity: MessageSeverity, hollow?: boolean): string;
+    static getIconClassName(severity: MessageSeverity_2, hollow?: boolean): string;
     // (undocumented)
     render(): JSX.Element;
 }
@@ -1346,7 +1299,7 @@ export class MessageContainer extends React.PureComponent<MessageContainerProps>
 // @public
 export interface MessageContainerProps extends CommonProps {
     // (undocumented)
-    severity: MessageSeverity;
+    severity: MessageSeverity_2;
 }
 
 // @public
@@ -1365,7 +1318,7 @@ export interface MessageRendererProps extends ClassNameProps {
     useSpan?: boolean;
 }
 
-// @public
+// @public @deprecated
 export enum MessageSeverity {
     // (undocumented)
     Error = 4,
@@ -1475,18 +1428,18 @@ export function percentInRange(percent: number): number;
 export function placementToPosition(placement: TooltipPlacement | undefined): RelativePosition;
 
 // @internal
-export class Point implements PointProps {
+export class Point implements PointProps_2 {
     constructor(x?: number, y?: number);
-    static create(pointProps: PointProps): Point;
+    static create(pointProps: PointProps_2): Point;
     // (undocumented)
-    equals(other: PointProps): boolean;
-    getDistanceTo(other: PointProps): number;
-    getManhattanDistanceTo(other: PointProps): number;
-    getOffsetTo(other: PointProps): Point;
+    equals(other: PointProps_2): boolean;
+    getDistanceTo(other: PointProps_2): number;
+    getManhattanDistanceTo(other: PointProps_2): number;
+    getOffsetTo(other: PointProps_2): Point;
     // (undocumented)
     multiply(factor: number): Point;
     // (undocumented)
-    offset(offset: PointProps): Point;
+    offset(offset: PointProps_2): Point;
     // (undocumented)
     offsetX(offset: number): Point;
     // (undocumented)
@@ -1496,14 +1449,14 @@ export class Point implements PointProps {
     // (undocumented)
     setY(y: number): Point;
     // (undocumented)
-    toProps(): PointProps;
+    toProps(): PointProps_2;
     // (undocumented)
     readonly x: number;
     // (undocumented)
     readonly y: number;
 }
 
-// @public
+// @public @deprecated
 export interface PointProps {
     // (undocumented)
     readonly x: number;
@@ -1721,18 +1674,20 @@ export class Rectangle implements RectangleProps {
     containIn(other: RectangleProps): Rectangle;
     // (undocumented)
     contains(other: RectangleProps): boolean;
-    containsPoint(point: PointProps): boolean;
+    containsPoint(point: PointProps_2): boolean;
+    containsXY(x: number, y: number): boolean;
     // (undocumented)
     containVerticallyIn(other: RectangleProps): Rectangle;
     static create(props: RectangleProps): Rectangle;
     static createFromSize(size: SizeProps): Rectangle;
+    static createXYXY(xA: number, yA: number, xB: number, yB: number): Rectangle;
     equals(other: RectangleProps): boolean;
     // (undocumented)
     getCorner(corner: Corner): Point;
     // (undocumented)
     getHeight(): number;
     getHorizontalSegmentBounds(segmentId: number, numberOfSegments: number): Rectangle;
-    getShortestDistanceToPoint(point: PointProps): number;
+    getShortestDistanceToPoint(point: PointProps_2): number;
     // (undocumented)
     getSize(): Size;
     getVerticalSegmentBounds(segmentId: number, numberOfSegments: number): Rectangle;
@@ -1743,14 +1698,14 @@ export class Rectangle implements RectangleProps {
     intersects(other: RectangleProps): boolean;
     // (undocumented)
     readonly left: number;
-    offset(offset: PointProps): Rectangle;
+    offset(offset: PointProps_2): Rectangle;
     offsetX(offset: number): Rectangle;
     offsetY(offset: number): Rectangle;
     outerMergeWith(other: RectangleProps): Rectangle;
     // (undocumented)
     readonly right: number;
     setHeight(height: number): Rectangle;
-    setPosition(position: PointProps): Rectangle;
+    setPosition(position: PointProps_2): Rectangle;
     setSize(size: SizeProps): Rectangle;
     setWidth(width: number): Rectangle;
     // (undocumented)
@@ -2439,6 +2394,12 @@ export class UiCore {
 
 // @public
 export class UiEvent<TEventArgs> extends BeUiEvent<TEventArgs> {
+}
+
+// @internal
+export class UiGeometry {
+    static clamp(value: number, min: number, max: number): number;
+    static hypotenuseXY(x: number, y: number): number;
 }
 
 // @public

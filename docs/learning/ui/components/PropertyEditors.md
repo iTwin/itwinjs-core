@@ -25,7 +25,7 @@ The following is a list of the provided property editors:
 
 - [BasicPropertyEditor]($ui-components) - registered for the "text" and "string" type names
 - [BooleanPropertyEditor]($ui-components) - registered for the "bool" and "boolean" type names
-- [ColorPropertyEditor]($ui-components) - registered for the "number" type name and "color-picker" editor name
+- [ColorPropertyEditor]($ui-imodel-components) - registered for the "number" type name and "color-picker" editor name
 - [EnumPropertyButtonGroupEditor]($ui-components) - registered for the "enum" type name and the "enum-buttongroup" editor name
 - [EnumPropertyEditor]($ui-components) - registered for the "enum" type name
 - [ImageCheckBoxPropertyEditor]($ui-components) - registered for the "bool" and "boolean" type names and "image-check-box" editor name
@@ -34,7 +34,7 @@ The following is a list of the provided property editors:
 - [TextareaPropertyEditor]($ui-components) - registered for the "text" and "string" type names and "multi-line" editor name
 - [ThemedEnumPropertyEditor]($ui-components) - registered for the "enum" type name and "themed-enum" editor name
 - [TogglePropertyEditor]($ui-components) - registered for the "bool" and "boolean" type names and "toggle" editor name
-- [WeightPropertyEditor]($ui-components) - registered for the "number" type name and "weight-picker" editor name
+- [WeightPropertyEditor]($ui-imodel-components) - registered for the "number" type name and "weight-picker" editor name
 
 **Note**: `PropertyEditorManager.registerEditor` is called by the system for these delivered property editors.
 

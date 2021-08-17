@@ -6,7 +6,8 @@
  * @module Zone
  */
 
-import { Point, PointProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { Point } from "@bentley/ui-core";
 import { HorizontalAnchor, VerticalAnchor } from "../../widget/Stacked";
 import { WidgetZoneId } from "./Zones";
 
