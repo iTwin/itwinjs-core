@@ -5,7 +5,7 @@
 import * as React from "react";
 import sinon from "sinon";
 import { expect } from "chai";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import TestUtils from "../TestUtils";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { ColorPickerDialog } from "../../ui-components";
@@ -19,8 +19,6 @@ describe("ColorPickerDialog", () => {
   after(() => {
     TestUtils.terminateUiComponents();
   });
-
-  afterEach(cleanup);
 
   describe("renders", () => {
     it("should render", () => {

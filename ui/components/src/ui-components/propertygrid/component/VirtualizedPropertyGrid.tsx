@@ -228,33 +228,27 @@ export class VirtualizedPropertyGrid extends React.Component<VirtualizedProperty
    * @returns current height of node.
    */
   private calculateNodeHeight(node: FlatGridItem) {
-    const spaceAfterCollapsedCategory = !node.isExpanded ? 3 : 0;
-    const categoryHeight = 33 + spaceAfterCollapsedCategory;
+    const categoryHeaderHeight = 32;
+    const categoryHeaderPadding = 4;
     const categoryPropertyHeight = 27;
-    const verticalPrimitivePropertyHeight = 48;
+    const bottomBorderPadding = 4;
+    const verticalPrimitivePropertyHeight = 59;
 
-    const marginAfterLastRootCategoryItem = node.isLastInRootCategory ? 8 : 0;
-
-    const marginAfterEachBorder = 3;
-    const bordersAndMarginAfterLastCategoryItem = (node.lastInNumberOfCategories * marginAfterEachBorder);
-
-    let currentHeight = getPropertyHeight(this.state);
-    currentHeight += bordersAndMarginAfterLastCategoryItem;
-    currentHeight += marginAfterLastRootCategoryItem;
-    return currentHeight;
+    return getPropertyHeight(this.state) + node.lastInNumberOfCategories * bottomBorderPadding;
 
     function getPropertyHeight(state: VirtualizedPropertyGridState) {
       const dynamicHeight = state.dynamicNodeHeights.get(node.key);
       if (dynamicHeight !== undefined) {
         if (node instanceof MutableCustomGridCategory) {
-          return node.isExpanded ? dynamicHeight + categoryHeight : categoryHeight;
+          return categoryHeaderHeight + categoryHeaderPadding
+            + (node.isExpanded ? dynamicHeight + bottomBorderPadding : 0);
         }
 
-        return dynamicHeight + (state.orientation === Orientation.Vertical ? 15 : 0);
+        return dynamicHeight + (state.orientation === Orientation.Vertical ? 31 : 0);
       }
 
       if (node.type === FlatGridItemType.Category) {
-        return categoryHeight;
+        return categoryHeaderHeight + categoryHeaderPadding;
       }
 
       if (state.orientation === Orientation.Vertical && node.type === FlatGridItemType.Primitive) {
@@ -423,7 +417,7 @@ const FlatGridItemNode = React.memo(
           return (
             <FlatItemNestedBorderWrapper
               borderCount={node.depth}
-              bottomBorderCount={lastInNumberOfCategories - 1}
+              bottomBorderCount={lastInNumberOfCategories}
               className={wrapperClassName}
             >
               <PropertyCategoryBlock
@@ -531,7 +525,7 @@ const CustomCategoryContent: React.FC<CustomCategoryContentProps> = (props) => {
     () => {
       assert(divRef.current !== null);
       const contentHeight = divRef.current.getBoundingClientRect().height;
-      onHeightChanged(contentHeight);
+      onHeightChanged(contentHeight + 13);
     },
     [props.gridContext.orientation, onHeightChanged],
   );

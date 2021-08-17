@@ -6,7 +6,10 @@
  * @module Content
  */
 
-import { ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON } from "../EC";
+import { Id64String } from "@bentley/bentleyjs-core";
+import {
+  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, RelatedClassInfo, RelatedClassInfoJSON, RelationshipPath, RelationshipPathJSON,
+} from "../EC";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
 import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
 
@@ -17,16 +20,31 @@ import { Field, FieldDescriptor, FieldJSON, getFieldByName } from "./Fields";
 export interface SelectClassInfo {
   /** Information about the ECClass */
   selectClassInfo: ClassInfo;
+
   /** Is the class handled polymorphically */
   isSelectPolymorphic: boolean;
-  /** Relationship path to the [Primary class]($docs/learning/presentation/Content/Terminology#primary-class) */
+
+  /**
+   * Relationship path to the [Primary class]($docs/learning/presentation/Content/Terminology#primary-class).
+   * @deprecated Use [[pathFromInputToSelectClass]]
+   */
   pathToPrimaryClass: RelationshipPath;
+  /** Relationship path from input class to the select class. */
+  pathFromInputToSelectClass?: RelationshipPath;
+
   /** Relationship paths to [Related property]($docs/learning/presentation/Content/Terminology#related-properties) classes */
   relatedPropertyPaths: RelationshipPath[];
+
   /** Relationship paths to navigation property classes */
   navigationPropertyClasses: RelatedClassInfo[];
-  /** Relationship paths to [Related instance]($docs/learning/presentation/Content/Terminology#related-instance) classes */
+
+  /**
+   * Relationship paths to [Related instance]($docs/learning/presentation/Content/Terminology#related-instance) classes.
+   * @deprecated Use [[relatedInstancePaths]]
+   */
   relatedInstanceClasses: RelatedClassInfo[];
+  /** Relationship paths to [related instance]($docs/learning/presentation/Content/Terminology#related-instance) classes. */
+  relatedInstancePaths?: RelationshipPath[];
 }
 
 /**
@@ -36,10 +54,14 @@ export interface SelectClassInfo {
 export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
   selectClassInfo: TClassInfoJSON;
   isSelectPolymorphic: boolean;
+  /** @deprecated Use [[pathFromInputToSelectClass]] */
   pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
+  pathFromInputToSelectClass?: RelationshipPathJSON<TClassInfoJSON>;
   relatedPropertyPaths: RelationshipPathJSON<TClassInfoJSON>[];
   navigationPropertyClasses: RelatedClassInfoJSON<TClassInfoJSON>[];
+  /** @deprecated Use [[relatedInstancePaths]] */
   relatedInstanceClasses: RelatedClassInfoJSON<TClassInfoJSON>[];
+  relatedInstancePaths?: RelationshipPathJSON<TClassInfoJSON>[];
 }
 
 /** @public */
@@ -47,40 +69,63 @@ export namespace SelectClassInfo {
   /** Deserialize [[SelectClassInfo]] from JSON */
   export function fromJSON(json: SelectClassInfoJSON): SelectClassInfo {
     return {
-      ...json,
       selectClassInfo: ClassInfo.fromJSON(json.selectClassInfo),
-      pathToPrimaryClass: json.pathToPrimaryClass.map((p) => RelatedClassInfo.fromJSON(p)),
-      relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => (rp.map((p) => RelatedClassInfo.fromJSON(p)))),
-      navigationPropertyClasses: json.navigationPropertyClasses.map((p) => RelatedClassInfo.fromJSON(p)),
-      relatedInstanceClasses: json.relatedInstanceClasses.map((p) => RelatedClassInfo.fromJSON(p)),
+      isSelectPolymorphic: json.isSelectPolymorphic,
+      // eslint-disable-next-line deprecation/deprecation
+      pathToPrimaryClass: json.pathToPrimaryClass.map(RelatedClassInfo.fromJSON),
+      ...(json.pathFromInputToSelectClass ? { pathFromInputToSelectClass: json.pathFromInputToSelectClass.map(RelatedClassInfo.fromJSON) } : undefined),
+      relatedPropertyPaths: json.relatedPropertyPaths.map((rp) => rp.map(RelatedClassInfo.fromJSON)),
+      navigationPropertyClasses: json.navigationPropertyClasses.map(RelatedClassInfo.fromJSON),
+      // eslint-disable-next-line deprecation/deprecation
+      relatedInstanceClasses: json.relatedInstanceClasses.map(RelatedClassInfo.fromJSON),
+      ...(json.relatedInstancePaths ? { relatedInstancePaths: json.relatedInstancePaths.map((rip) => rip.map(RelatedClassInfo.fromJSON)) } : undefined),
     };
   }
 
   /** Deserialize [[SelectClassInfo]] from compressed JSON */
-  export function fromCompressedJSON(compressedSelectClass: SelectClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfoJSON {
+  export function fromCompressedJSON(json: SelectClassInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfo {
     return {
-      ...compressedSelectClass,
-      selectClassInfo: {id: compressedSelectClass.selectClassInfo, ...classesMap[compressedSelectClass.selectClassInfo]},
-      navigationPropertyClasses: compressedSelectClass.navigationPropertyClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
-      relatedInstanceClasses: compressedSelectClass.relatedInstanceClasses.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
-      pathToPrimaryClass: compressedSelectClass.pathToPrimaryClass.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
-      relatedPropertyPaths: compressedSelectClass.relatedPropertyPaths.map((path) => path.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap))),
+      selectClassInfo: { id: json.selectClassInfo, ...classesMap[json.selectClassInfo] },
+      isSelectPolymorphic: json.isSelectPolymorphic,
+      navigationPropertyClasses: json.navigationPropertyClasses.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)),
+      // eslint-disable-next-line deprecation/deprecation
+      relatedInstanceClasses: json.relatedInstanceClasses.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)),
+      ...(json.relatedInstancePaths ? { relatedInstancePaths: json.relatedInstancePaths.map((rip) => rip.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))) } : undefined),
+      // eslint-disable-next-line deprecation/deprecation
+      pathToPrimaryClass: json.pathToPrimaryClass.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)),
+      ...(json.pathFromInputToSelectClass ? { pathFromInputToSelectClass: json.pathFromInputToSelectClass.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap)) } : undefined),
+      relatedPropertyPaths: json.relatedPropertyPaths.map((path) => path.map((item) => RelatedClassInfo.fromCompressedJSON(item, classesMap))),
     };
   }
 
   /** Serialize [[SelectClassInfo]] to compressed JSON */
   export function toCompressedJSON(selectClass: SelectClassInfo, classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfoJSON<string> {
-    const { id, ...leftOverInfo } = selectClass.selectClassInfo;
-    classesMap[id] = leftOverInfo;
+    const { id, ...leftOverClassInfo } = selectClass.selectClassInfo;
+    classesMap[id] = leftOverClassInfo;
 
     return {
-      ...selectClass,
       selectClassInfo: id,
+      isSelectPolymorphic: selectClass.isSelectPolymorphic,
+      // eslint-disable-next-line deprecation/deprecation
       relatedInstanceClasses: selectClass.relatedInstanceClasses.map((instanceClass) => RelatedClassInfo.toCompressedJSON(instanceClass, classesMap)),
+      ...(selectClass.relatedInstancePaths ? { relatedInstancePaths: selectClass.relatedInstancePaths.map((rip) => rip.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap))) } : undefined),
       navigationPropertyClasses: selectClass.navigationPropertyClasses.map((propertyClass) => RelatedClassInfo.toCompressedJSON(propertyClass, classesMap)),
+      // eslint-disable-next-line deprecation/deprecation
       pathToPrimaryClass: selectClass.pathToPrimaryClass.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap)),
+      ...(selectClass.pathFromInputToSelectClass ? { pathFromInputToSelectClass: selectClass.pathFromInputToSelectClass.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap)) } : undefined),
       relatedPropertyPaths: selectClass.relatedPropertyPaths.map((path) => path.map((relatedClass) => RelatedClassInfo.toCompressedJSON(relatedClass, classesMap))),
     };
+  }
+
+  /**
+   * Deserialize [[SelectClassInfo]] list from JSON
+   * @param json JSON or JSON serialized to string to deserialize from
+   * @returns Deserialized [[SelectClassInfo]] objects list
+   *
+   * @internal
+   */
+  export function listFromCompressedJSON(json: SelectClassInfoJSON<Id64String>[], classesMap: { [id: string]: CompressedClassInfoJSON }): SelectClassInfo[] {
+    return json.map((sci) => fromCompressedJSON(sci, classesMap));
   }
 }
 
@@ -161,8 +206,9 @@ export interface DescriptorJSON {
  * Serialized [[Descriptor]] JSON representation.
  * @public
  */
-export type CompressedDescriptorJSON = Omit<DescriptorJSON, "selectClasses" | "fields"> & {
+export type CompressedDescriptorJSON = Omit<DescriptorJSON, "selectClasses" | "fields" | "categories"> & {
   selectClasses: SelectClassInfoJSON<string>[];
+  categories: CategoryDescriptionJSON[];
   classesMap: { [id: string]: CompressedClassInfoJSON };
   fields: FieldJSON<string>[];
 };
@@ -306,12 +352,8 @@ export class Descriptor implements DescriptorSource {
     const classesMap: { [id: string]: CompressedClassInfoJSON } = {};
     const selectClasses: SelectClassInfoJSON<string>[] = this.selectClasses.map((selectClass) => SelectClassInfo.toCompressedJSON(selectClass, classesMap));
     const fields: FieldJSON<string>[] = this.fields.map((field) => field.toCompressedJSON(classesMap));
-
-    return Object.assign({},
-      this.sortingField !== undefined && { sortingFieldName: this.sortingField.name },
-      this.sortDirection !== undefined && { sortDirection: this.sortDirection },
-      this.filterExpression !== undefined && { filterExpression: this.filterExpression },
-      this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo }, {
+    return Object.assign(
+      {
         connectionId: this.connectionId,
         inputKeysHash: this.inputKeysHash,
         contentOptions: this.contentOptions,
@@ -321,7 +363,11 @@ export class Descriptor implements DescriptorSource {
         fields,
         selectClasses,
         classesMap,
-      }
+      },
+      this.sortingField !== undefined && { sortingFieldName: this.sortingField.name },
+      this.sortDirection !== undefined && { sortDirection: this.sortDirection },
+      this.filterExpression !== undefined && { filterExpression: this.filterExpression },
+      this.selectionInfo !== undefined && { selectionInfo: this.selectionInfo },
     );
   }
 
@@ -332,50 +378,47 @@ export class Descriptor implements DescriptorSource {
     if (typeof json === "string")
       return JSON.parse(json, Descriptor.reviver);
     if (isCompressedDescriptorJSON(json))
-      json = Descriptor.fromCompressedJSON(json);
+      return Descriptor.fromCompressedJSON(json);
     return json.categories
       ? this.fromJSONWithCategories(json as DescriptorJSON & { categories: CategoryDescriptionJSON[] })
       : this.fromJSONWithoutCategories(json as DescriptorJSON & { categories: undefined });
   }
 
   private static fromJSONWithCategories(json: DescriptorJSON & { categories: CategoryDescriptionJSON[] }): Descriptor {
-    const descriptor = Object.create(Descriptor.prototype);
     const categories = CategoryDescription.listFromJSON(json.categories);
     const fields = this.getFieldsFromJSON(json.fields, (fieldJson) => Field.fromJSON(fieldJson, categories));
-    const sortingField = json.sortingFieldName ? getFieldByName(fields, json.sortingFieldName, true) : undefined;
-    return Object.assign(descriptor, json, {
+    return new Descriptor({
+      ...json,
       selectClasses: json.selectClasses.map(SelectClassInfo.fromJSON),
       categories,
       fields,
-      sortingField,
+      sortingField: getFieldByName(fields, json.sortingFieldName, true),
     });
   }
 
   private static fromJSONWithoutCategories(json: DescriptorJSON & { categories: undefined }): Descriptor {
-    const descriptor = Object.create(Descriptor.prototype);
     const fields = this.getFieldsFromJSON(json.fields, /* eslint-disable-line deprecation/deprecation */ Field.fromJSON);
-    const sortingField = json.sortingFieldName ? getFieldByName(fields, json.sortingFieldName, true) : undefined;
-    return Object.assign(descriptor, json, {
+    return new Descriptor({
+      ...json,
       selectClasses: json.selectClasses.map(SelectClassInfo.fromJSON),
       categories: this.getCategoriesFromFields(fields),
       fields,
-      sortingField,
+      sortingField: getFieldByName(fields, json.sortingFieldName, true),
     });
   }
 
-  private static fromCompressedJSON(json: CompressedDescriptorJSON): DescriptorJSON {
+  private static fromCompressedJSON(json: CompressedDescriptorJSON): Descriptor {
     const { classesMap, ...leftOverJson } = json;
-
-    const decompressedSelectClasses = json.selectClasses.map((compressedSelectClass) => SelectClassInfo.fromCompressedJSON(compressedSelectClass, classesMap));
-    const decompressedFieldJSON: FieldJSON[] = json.fields.map((compressedFieldJSON) => Field.fromCompressedJSON(compressedFieldJSON, classesMap)).filter((decompressedJson): decompressedJson is FieldJSON => !!decompressedJson);
-
-    const descriptorJSON: DescriptorJSON = {
+    const categories = CategoryDescription.listFromJSON(json.categories);
+    const selectClasses = SelectClassInfo.listFromCompressedJSON(json.selectClasses, classesMap);
+    const fields = this.getFieldsFromJSON(json.fields, (fieldJson) => Field.fromCompressedJSON(fieldJson, classesMap, categories));
+    return new Descriptor({
       ...leftOverJson,
-      selectClasses: decompressedSelectClasses,
-      fields: decompressedFieldJSON,
-    };
-
-    return descriptorJSON;
+      selectClasses,
+      categories,
+      fields,
+      sortingField: getFieldByName(fields, json.sortingFieldName, true),
+    });
   }
 
   private static getFieldsFromJSON(json: FieldJSON[], factory: (json: FieldJSON) => Field | undefined): Field[] {

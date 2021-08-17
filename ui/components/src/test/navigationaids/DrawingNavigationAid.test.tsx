@@ -9,7 +9,7 @@ import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { AxisIndex, Matrix3d, Point3d, Vector3d } from "@bentley/geometry-core";
 import { DrawingViewState, IModelConnection, ScreenViewport, ViewManager, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
-import { cleanup, fireEvent, render, wait } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { DrawingNavigationAid, DrawingNavigationCanvas, MapMode } from "../../ui-components/navigationaids/DrawingNavigationAid";
 import { ViewportComponentEvents } from "../../ui-components/viewport/ViewportComponentEvents";
 import { TestUtils } from "../TestUtils";
@@ -17,7 +17,6 @@ import { TestUtils } from "../TestUtils";
 // cspell:ignore unrotate
 
 describe("DrawingNavigationAid", () => {
-
   before(async () => {
     sinon.restore();
     await TestUtils.initializeUiComponents();
@@ -59,13 +58,11 @@ describe("DrawingNavigationAid", () => {
   }
 
   const waitForSpy = async (spy: sinon.SinonSpy, options: { timeout: number } = { timeout: 250 }) => {
-    return wait(() => {
+    return waitFor(() => {
       if (!spy.called)
         throw new Error("Waiting for spy timed out!");
     }, { timeout: options.timeout, interval: 10 });
   };
-
-  afterEach(cleanup);
 
   describe("<DrawingNavigationAid />", () => {
     it("should render", () => {

@@ -13,6 +13,7 @@ import {
 } from "@bentley/bentleyjs-core";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
 import {
+  ChangesetIdWithIndex,
   Code, CodeProps, ElementProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, PhysicalElementProps, RelatedElement,
   RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
@@ -209,7 +210,7 @@ export class IModelTestUtils {
       tokenProps: {
         contextId: args.contextId,
         iModelId: args.iModelId,
-        changeSetId: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).id,
+        changeset: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)),
       },
       requestContext: args.requestContext,
       syncMode: args.briefcaseId === 0 ? SyncMode.PullOnly : SyncMode.PullAndPush,
@@ -236,7 +237,7 @@ export class IModelTestUtils {
       contextId: args.contextId,
       iModelId: args.iModelId,
       requestContext: args.requestContext,
-      changeSetId: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)).id,
+      changeset: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)),
     };
 
     return V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) });
@@ -252,8 +253,7 @@ export class IModelTestUtils {
       tokenProps: {
         contextId: args.contextId,
         iModelId: args.iModelId,
-        changeSetId: changeset.id,
-        changesetIndex: changeset.index,
+        changeset,
       },
       requestContext: args.requestContext,
       syncMode: SyncMode.FixedVersion,
@@ -339,12 +339,12 @@ export class IModelTestUtils {
     }
   }
 
-  public static generateChangeSetId(): string {
+  public static generateChangeSetId(): ChangesetIdWithIndex {
     let result = "";
     for (let i = 0; i < 20; ++i) {
       result += Math.floor(Math.random() * 256).toString(16).padStart(2, "0");
     }
-    return result;
+    return { id: result };
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */

@@ -135,8 +135,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
     return token.key === values.key &&
       token.contextId === values.contextId &&
       token.iModelId === values.iModelId &&
-      token.changeSetId === values.changeSetId &&
-      token.openMode === values.openMode;
+      token.changeset?.id === values.changeset?.id;
   }
 
   public async op17() {

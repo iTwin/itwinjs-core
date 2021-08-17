@@ -5,8 +5,7 @@
 
 import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
-import { OpenMode } from "@bentley/bentleyjs-core";
-import { IModelApp, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { CheckpointConnection, IModelApp } from "@bentley/imodeljs-frontend";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestContext } from "../setup/TestContext";
 
@@ -23,8 +22,8 @@ describe("Basic Scenarios", async () => {
     IModelApp.authorizationClient = new TestFrontendAuthorizationClient(accessToken);
   });
 
-  async function openIModelAndQueryPage(contextId: string, iModelId: string, openMode: OpenMode) {
-    const iModel = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode); // eslint-disable-line deprecation/deprecation
+  async function openIModelAndQueryPage(contextId: string, iModelId: string) {
+    const iModel = await CheckpointConnection.openRemote(contextId, iModelId);
     expect(iModel).to.exist;
     expect(iModel.elements).to.exist;
 
@@ -36,19 +35,17 @@ describe("Basic Scenarios", async () => {
 
   it("should successfully open a new IModel with changesets for read and Get Properties for an Element TestCase:819342", async () => {
     const contextId = testContext.contextId;
-    const openMode = OpenMode.Readonly;
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    await openIModelAndQueryPage(contextId!, iModelId, openMode);
+    await openIModelAndQueryPage(contextId!, iModelId);
   });
 
   // imodeljs does not allow this -- changesetid must be non-empty for routing purposes.
   it.skip("should successfully open a new IModel without changesets for read and Get Properties for an Element TestCase:872675", async () => {
     const contextId = testContext.contextId;
-    const openMode = OpenMode.Readonly;
 
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    await openIModelAndQueryPage(contextId!, iModelId, openMode);
+    await openIModelAndQueryPage(contextId!, iModelId);
   });
 
   it("should open iModel and Execute Query TestCase:819343", async () => {
