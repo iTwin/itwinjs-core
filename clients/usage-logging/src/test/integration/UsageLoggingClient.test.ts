@@ -20,13 +20,13 @@ describe("UlasClient - OIDC Token (#integration)", () => {
       throw new Error("Could not find IMJS_OIDC_ULAS_TEST_CLIENT_ID");
     if (process.env.IMJS_OIDC_ULAS_TEST_REDIRECT_URI === undefined)
       throw new Error("Could not find IMJS_OIDC_ULAS_TEST_REDIRECT_URI");
-    if (process.env. IMJS_OIDC_ULAS_TEST_SCOPES === undefined)
+    if (process.env.IMJS_OIDC_ULAS_TEST_SCOPES === undefined)
       throw new Error("Could not find  IMJS_OIDC_ULAS_TEST_SCOPES");
 
     const oidcConfig: TestBrowserAuthorizationClientConfiguration = {
       clientId: process.env.IMJS_OIDC_ULAS_TEST_CLIENT_ID ?? "",
       redirectUri: process.env.IMJS_OIDC_ULAS_TEST_REDIRECT_URI ?? "",
-      scope: process.env. IMJS_OIDC_ULAS_TEST_SCOPES ?? "",
+      scope: process.env.IMJS_OIDC_ULAS_TEST_SCOPES ?? "",
     };
 
     // Need to cast to any and then back to AccessToken because of circular dependency with the oidc-signin-tool

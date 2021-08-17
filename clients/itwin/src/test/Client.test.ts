@@ -36,7 +36,6 @@ describe("Client", () => {
     const requestContext = new ClientRequestContext();
     const url = await client.getUrl(requestContext);
     expect(url).to.equal("https://test-api.bentley.com/test-api");
-    // eslint-disable-next-line dot-notation
     delete process.env.IMJS_URL_PREFIX;
   });
 });
