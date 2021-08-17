@@ -22,7 +22,7 @@ title: Bentley Civil iModel Connector
   - [Subject hierarchy](#subject-hierarchy---v2-approach)
   - [Definition Elements](#definition-elements---v2-approach)
     - [Type Definitions](#type-definitions)
-  - [Code Values](#code-values-v2-approach)
+  - [Code Values](#code-values---v2-approach)
   - [Quantity Takeoff mappings](#quantity-takeoff-mappings---v2-approach)
   - [Linear Referencing](#linear-referencing---v2-approach)
   - [Spatial Composition](#spatial-composition)
