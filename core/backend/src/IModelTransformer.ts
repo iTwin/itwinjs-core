@@ -772,6 +772,7 @@ export class IModelTransformer extends IModelExportHandler {
    * the target iModel when it is exported from the source iModel. */
   protected override async onExportSchema(_schema: ECSchemaMetaData.Schema): Promise<void> {
     // HACK: when the native serializer gets support for individual schema export, this will stop exporting all at once
+    // and instead export the asked for schema, which will prevent warnings from trying to import already existing schemas
     if (!this._hasNativelyExportedAllSchemas) {
       this._hasNativelyExportedAllSchemas = true;
       this.targetDb.nativeDb.exportSchemas(this._schemaExportDir);
