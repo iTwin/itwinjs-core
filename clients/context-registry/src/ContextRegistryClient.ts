@@ -221,10 +221,34 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    */
   private async getByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: HiddenQueryOptions): Promise<ITwin[]> {
     requestContext.enter();
-    const projectITwins: ITwin[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", queryOptions);
-    const assetITwins: ITwin[] = await this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", queryOptions);
+    // Skip a project object on Odd skips
+    const projectQuery = queryOptions;
+    projectQuery.$skip = Math.ceil(queryOptions.$skip / 2);
 
-    return projectITwins.concat(assetITwins);
+    // Skip an asset object on Even skips
+    const assetQuery = queryOptions;
+    assetQuery.$skip = Math.floor(queryOptions.$skip / 2);
+
+    const projectITwins: ITwin[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", projectQuery);
+    const assetITwins: ITwin[] = await this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", assetQuery);
+
+    return projectITwins
+      // Fill half if there are enough assets, or fill where there are not enough assets
+      // if slice end > array.length, it returns the full array no error
+      .slice(0,
+        Math.max(
+          (queryOptions.$top / 2) + (queryOptions.$top % 2), // Add an extra project if top is Odd
+          queryOptions.$top - assetITwins.length
+        )
+      ).concat(assetITwins
+        // Fill half if there are enough projects, or fill where there are not enough projects
+        .slice(0,
+          Math.max(
+            queryOptions.$top / 2,
+            queryOptions.$top - projectITwins.length
+          )
+        )
+      );
   }
 
   /** @internal */
