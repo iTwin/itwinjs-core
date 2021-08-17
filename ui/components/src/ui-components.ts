@@ -44,6 +44,7 @@ export * from "./ui-components/datepicker/DateField";
 export * from "./ui-components/datepicker/DatePicker";
 export * from "./ui-components/datepicker/DatePickerPopupButton";
 export * from "./ui-components/datepicker/IntlFormatter";
+export * from "./ui-components/datepicker/TimeField";
 
 export * from "./ui-components/dragdrop/DragDropDef";
 export * from "./ui-components/dragdrop/withDragSource";
@@ -51,7 +52,6 @@ export * from "./ui-components/dragdrop/withDropTarget";
 export * from "./ui-components/dragdrop/BeDragDropContext";
 
 export * from "./ui-components/editors/BooleanEditor";
-export * from "./ui-components/editors/ColorEditor";
 export * from "./ui-components/editors/CustomNumberEditor";
 export * from "./ui-components/editors/DateTimeEditor";
 export * from "./ui-components/editors/EditorContainer";
@@ -66,17 +66,18 @@ export * from "./ui-components/editors/TextEditor";
 export * from "./ui-components/editors/TextareaEditor";
 export * from "./ui-components/editors/ThemedEnumEditor";
 export * from "./ui-components/editors/ToggleEditor";
-export * from "./ui-components/editors/WeightEditor";
+
+export * from "./ui-components/favorite/FavoritePropertiesRenderer";
+export * from "./ui-components/favorite/FavoritePropertyList";
 
 export * from "./ui-components/filtering/FilteringInput";
 export * from "./ui-components/filtering/ResultSelector";
 
-export * from "./ui-components/navigationaids/CubeNavigationAid";
-export * from "./ui-components/navigationaids/DrawingNavigationAid";
+export * from "./ui-components/iconpicker/IconPickerButton";
+
+export * from "./ui-components/inputs/ParsedInput";
 
 export * from "./ui-components/oidc/SignIn";
-
-export * from "./ui-components/selectable-content/SelectableContent";
 
 export * from "./ui-components/properties/ValueRendererManager";
 export * from "./ui-components/properties/renderers/NonPrimitivePropertyRenderer";
@@ -85,32 +86,6 @@ export * from "./ui-components/properties/renderers/PropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyView";
 export * from "./ui-components/properties/renderers/ActionButtonList";
 export * from "./ui-components/properties/renderers/ActionButtonRenderer";
-
-export * from "./ui-components/quantityformat/FormatPanel";
-export * from "./ui-components/quantityformat/FormatPrecision";
-export * from "./ui-components/quantityformat/FormatSample";
-export * from "./ui-components/quantityformat/FormatType";
-export * from "./ui-components/quantityformat/FormatUnitLabel";
-export * from "./ui-components/quantityformat/FormatUnits";
-export * from "./ui-components/quantityformat/MiscFormatOptions";
-export * from "./ui-components/quantityformat/QuantityFormatPanel";
-
-export * from "./ui-components/timeline/interfaces";
-export * from "./ui-components/timeline/BaseTimelineDataProvider";
-export * from "./ui-components/timeline/ContextMenu";
-export * from "./ui-components/timeline/InlineEdit";
-export * from "./ui-components/timeline/PlayerButton";
-export * from "./ui-components/timeline/Scrubber";
-export * from "./ui-components/timeline/TimelineComponent";
-export * from "./ui-components/timeline/SolarTimeline";
-export * from "./ui-components/timeline/BaseSolarDataProvider";
-
-export * from "./ui-components/toolbar/Toolbar";
-export * from "./ui-components/toolbar/ToolbarWithOverflow";
-export * from "./ui-components/toolbar/PopupItem";
-export * from "./ui-components/toolbar/PopupItemWithDrag";
-export * from "./ui-components/toolbar/Item";
-export * from "./ui-components/toolbar/utilities/Direction";
 
 export * from "./ui-components/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 export * from "./ui-components/properties/renderers/label/PrimitivePropertyLabelRenderer";
@@ -154,34 +129,22 @@ export * from "./ui-components/propertygrid/dataproviders/filterers/DisplayValue
 export * from "./ui-components/propertygrid/dataproviders/filterers/LabelPropertyDataFilterer";
 export * from "./ui-components/propertygrid/dataproviders/filterers/PropertyDataFiltererBase";
 
-export * from "./ui-components/color/Swatch";
-export * from "./ui-components/color/HueSlider";
-export * from "./ui-components/color/AlphaSlider";
-export * from "./ui-components/color/SaturationPicker";
-export * from "./ui-components/color/ColorPickerButton";
-export * from "./ui-components/color/ColorPickerDialog";
-export * from "./ui-components/color/ColorPickerPanel";
-export * from "./ui-components/color/ColorPickerPopup";
-export * from "./ui-components/color/getCSSColorFromDef";
-
-export * from "./ui-components/iconpicker/IconPickerButton";
-
-export * from "./ui-components/lineweight/Swatch";
-export * from "./ui-components/lineweight/WeightPickerButton";
+export * from "./ui-components/selectable-content/SelectableContent";
 
 export * from "./ui-components/table/TableDataProvider";
 export * from "./ui-components/table/SimpleTableDataProvider";
 export * from "./ui-components/table/columnfiltering/ColumnFiltering";
+export * from "./ui-components/table/columnfiltering/TableFilterDescriptorCollection";
 export * from "./ui-components/table/component/Table";
 export * from "./ui-components/table/component/TableColumn";
 export * from "./ui-components/table/hocs/withDragDrop";
 
-export * from "./ui-components/favorite/FavoritePropertiesRenderer";
-export * from "./ui-components/favorite/FavoritePropertyList";
-
-export * from "./ui-components/inputs/QuantityInput";
-export * from "./ui-components/inputs/ParsedInput";
-export * from "./ui-components/inputs/QuantityNumberInput";
+export * from "./ui-components/toolbar/Toolbar";
+export * from "./ui-components/toolbar/ToolbarWithOverflow";
+export * from "./ui-components/toolbar/PopupItem";
+export * from "./ui-components/toolbar/PopupItemWithDrag";
+export * from "./ui-components/toolbar/Item";
+export * from "./ui-components/toolbar/utilities/Direction";
 
 export * from "./ui-components/tree/TreeDataProvider";
 export * from "./ui-components/tree/SimpleTreeDataProvider";
@@ -206,11 +169,8 @@ export * from "./ui-components/tree/controlled/component/TreeNodeRenderer";
 export * from "./ui-components/tree/controlled/component/TreeRenderer";
 export * from "./ui-components/tree/controlled/internal/SparseTree";
 
-export * from "./ui-components/viewport/ViewportComponent";
-export * from "./ui-components/viewport/ViewportComponentEvents";
-
 /** @docs-package-description
- * The ui-components package contains React components that are data-oriented, such as PropertyGrid, Table, Tree and Viewport.
+ * The ui-components package contains React components that are data-oriented, such as PropertyGrid, Table and Tree.
  * For more information, see [learning about ui-components]($docs/learning/ui/components/index.md).
  */
 /**
@@ -220,10 +180,6 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
 /**
  * @docs-group-description Breadcrumb
  * Classes and components for working with a Breadcrumb.
- */
-/**
- * @docs-group-description Color
- * Classes and components for working with and picking a Color.
  */
 /**
  * @docs-group-description Date
@@ -247,15 +203,7 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
  */
 /**
  * @docs-group-description Inputs
- * Input Components that format and parse input for IModelApps.
- */
-/**
- * @docs-group-description LineWeight
- * Classes and components for working with and picking a Line Weight.
- */
-/**
- * @docs-group-description NavigationAids
- * Classes and components for working with Navigation Aids.
+ * Input Components that format and parse input.
  */
 /**
  * @docs-group-description OIDC
@@ -278,16 +226,8 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
  * Classes and components for working with a PropertyGrid.
  */
 /**
- * @docs-group-description QuantityFormat
- * Classes and components for working with a Quantity Formats.
- */
-/**
  * @docs-group-description Table
  * Classes and components for working with a Table.
- */
-/**
- * @docs-group-description Timeline
- * Classes and components that provide a timeline
  */
 /**
  * @docs-group-description Toolbar
@@ -300,8 +240,4 @@ export * from "./ui-components/viewport/ViewportComponentEvents";
 /**
  * @docs-group-description TypeConverters
  * Classes for working with Type Converters.
- */
-/**
- * @docs-group-description Viewport
- * Classes and components for working with a Viewport.
  */

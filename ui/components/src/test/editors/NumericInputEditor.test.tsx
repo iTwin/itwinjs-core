@@ -8,13 +8,14 @@ import { mount, shallow } from "enzyme";
 import { fireEvent, render } from "@testing-library/react";
 import sinon from "sinon";
 import * as React from "react";
-import { BasePropertyEditorParams, InputEditorSizeParams, PropertyEditorParamTypes,
-  PropertyRecord, PropertyValue, RangeEditorParams, SpecialKey, StandardEditorNames } from "@bentley/ui-abstract";
+import {
+  BasePropertyEditorParams, InputEditorSizeParams, PropertyEditorParamTypes,
+  RangeEditorParams, SpecialKey, StandardEditorNames,
+} from "@bentley/ui-abstract";
 import { NumericInputEditor } from "../../ui-components/editors/NumericInputEditor";
-import TestUtils from "../TestUtils";
+import TestUtils, { MineDataController } from "../TestUtils";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 
 describe("<NumericInputEditor />", () => {
   before(async () => {
@@ -167,12 +168,6 @@ describe("<NumericInputEditor />", () => {
 
     expect(input.value).to.eq("124");
   });
-
-  class MineDataController extends DataControllerBase {
-    public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
-    }
-  }
 
   it("should not commit if DataController fails to validate", async () => {
     PropertyEditorManager.registerDataController("myData", MineDataController);

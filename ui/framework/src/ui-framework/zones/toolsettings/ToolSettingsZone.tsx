@@ -7,7 +7,8 @@
  */
 
 import * as React from "react";
-import { CommonProps, PointProps, RectangleProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { CommonProps, RectangleProps } from "@bentley/ui-core";
 import {
   ResizeHandle, TitleBarButton, ToolSettings, ToolSettingsTab, WidgetZoneId, Zone, ZoneManagerProps, ZoneTargetType,
 } from "@bentley/ui-ninezone";

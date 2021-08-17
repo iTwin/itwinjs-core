@@ -566,6 +566,25 @@
       ]
     },
     {
+      "name": "[UI] Tests: IModel Components",
+      "presentation": {
+        "group": "4_UI"
+      },
+      "cwd": "${workspaceFolder}/ui/imodel-components",
+      "type": "pwa-node",
+      "request": "launch",
+      "program": "${workspaceFolder}/ui/imodel-components/node_modules/mocha/bin/_mocha",
+      "args": [
+        "--config",
+        "../.mocharc.json",
+        "--no-timeouts",
+        "lib/test/**/*.test.js"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/{core,ui}/*/lib/**/*.js"
+      ]
+    },
+    {
       "name": "[UI] Tests: Framework",
       "presentation": {
         "group": "4_UI"
