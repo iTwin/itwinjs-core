@@ -1111,9 +1111,6 @@ export function LeadingText(props: TextProps): JSX.Element;
 // @public @deprecated
 export function LeadingText2(props: TextProps): JSX.Element;
 
-// @beta
-export const LEVEL_OFFSET = 20;
-
 // @internal
 export class Line {
     constructor(p1?: Point, p2?: Point);

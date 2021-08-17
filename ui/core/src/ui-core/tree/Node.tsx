@@ -29,7 +29,7 @@ export type NodeCheckboxRenderProps = Omit<CheckboxProps, "onChange" | "onClick"
 export type NodeCheckboxRenderer = (props: NodeCheckboxRenderProps) => React.ReactNode;
 
 /** Number of pixels the node gets offset per each hierarchy level
- * @beta
+ * @internal
  */
 export const LEVEL_OFFSET = 20;
 
