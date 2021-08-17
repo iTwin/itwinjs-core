@@ -15,6 +15,7 @@ export class ImsAuthorizationClient extends Client {
 
   public constructor() {
     super();
+    // eslint-disable-next-line deprecation/deprecation
     this._url = Config.App.query("imjs_itwin_platform_authority");
   }
 

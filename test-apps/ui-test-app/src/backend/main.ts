@@ -25,6 +25,7 @@ import { initializeElectron } from "./electron/ElectronMain";
       initializeLogging();
     }
 
+    // eslint-disable-next-line deprecation/deprecation
     const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
     if (iModelJsApplicationInsightsKey) {
       const applicationInsightsClient = new BackendApplicationInsightsClient({ applicationInsightsKey: iModelJsApplicationInsightsKey, backendMachineName: os.hostname(), backendApplicationId: IModelHost.applicationId, backendApplicationVersion: IModelHost.applicationVersion, clientAuthManager: IModelHost.clientAuthIntrospectionManager });

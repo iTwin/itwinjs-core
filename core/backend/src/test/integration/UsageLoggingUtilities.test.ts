@@ -25,12 +25,13 @@ describe.skip("UsageLoggingUtilities - OIDC Token (#integration)", () => {
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
-
+    /* eslint-disable deprecation/deprecation */
     const oidcConfig: TestBrowserAuthorizationClientConfiguration = {
       clientId: Config.App.getString("imjs_oidc_ulas_test_client_id"),
       redirectUri: Config.App.getString("imjs_oidc_ulas_test_redirect_uri"),
       scope: Config.App.getString("imjs_oidc_ulas_test_scopes"),
     };
+    /* eslint-enable deprecation/deprecation */
     const accessToken = await getTestAccessToken(oidcConfig, TestUsers.regular);
     requestContext = new AuthorizedBackendRequestContext(accessToken);
   });

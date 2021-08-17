@@ -248,6 +248,7 @@ export class AzureFileHandler implements FileHandler {
 
     // suppress azcopy for smaller file as it take longer to spawn and exit then it take Http downloader to download it.
     if (useAzcopy && fileSize) {
+      // eslint-disable-next-line deprecation/deprecation
       const minFileSize = Config.App.getNumber("imjs_az_min_filesize_threshold", 500 * 1024 * 1024 /** 500 Mb */);
       if (fileSize < minFileSize)
         useAzcopy = false;

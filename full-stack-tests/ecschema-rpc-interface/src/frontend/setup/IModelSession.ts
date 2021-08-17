@@ -24,6 +24,7 @@ export class IModelSession {
 
   public async open(): Promise<CheckpointConnection> {
     try {
+      // eslint-disable-next-line deprecation/deprecation
       const env = Config.App.get("imjs_buddi_resolve_url_using_region");
       // eslint-disable-next-line no-console
       console.log(`Environment: ${env}`);

@@ -8,6 +8,7 @@ import { getIModelBankCloudEnv } from "./IModelBankBackendCloudEnv";
 import { IModelHubBackendCloudEnv } from "./IModelHubBackendCloudEnv";
 
 export class CloudEnv {
+  // eslint-disable-next-line deprecation/deprecation
   public static readonly enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank") && !!JSON.parse(Config.App.get("imjs_test_imodel_bank"));
   private static _cloudEnv: IModelCloudEnvironment | undefined;
 

@@ -381,7 +381,7 @@ export class IModelHost {
     initializeRpcBackend();
 
     if (this._platform === undefined) {
-      const region = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
+      const region = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0); // eslint-disable-line deprecation/deprecation
       try {
         this.loadNative(region, configuration.applicationType, configuration.imodelClient);
       } catch (error) {
@@ -441,8 +441,8 @@ export class IModelHost {
 
     this.platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
 
-    const introspectionClientId = Config.App.getString("imjs_introspection_client_id", "");
-    const introspectionClientSecret = Config.App.getString("imjs_introspection_client_secret", "");
+    const introspectionClientId = Config.App.getString("imjs_introspection_client_id", ""); // eslint-disable-line deprecation/deprecation
+    const introspectionClientSecret = Config.App.getString("imjs_introspection_client_secret", ""); // eslint-disable-line deprecation/deprecation
     if (introspectionClientId && introspectionClientSecret) {
       const introspectionClient = new IntrospectionClient(introspectionClientId, introspectionClientSecret);
       this._clientAuthIntrospectionManager = new ImsClientAuthIntrospectionManager(introspectionClient);

@@ -13,11 +13,13 @@ class MockAccessToken extends AccessToken {
   public override toTokenString() { return ""; }
 }
 
+/* eslint-disable deprecation/deprecation */
 const clientConfig: BackendAuthorizationClientConfiguration = {
   clientId: Config.App.get("imjs_agent_test_client_id"),
   clientSecret: Config.App.get("imjs_agent_test_client_secret"),
   scope: Config.App.get("imjs_oidc_browser_test_scopes"),
 };
+/* eslint-enable deprecation/deprecation */
 
 const authorizationClient = new AgentAuthorizationClient(clientConfig);
 const imodelHubClient: IModelHubClient = new IModelHubClient();

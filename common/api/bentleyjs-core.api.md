@@ -281,7 +281,7 @@ export namespace CompressedId64Set {
 // @public (undocumented)
 export type ComputePriorityFunction<T> = (value: T) => number;
 
-// @public
+// @public @deprecated
 export class Config {
     addEnvVarsStartingWith(prefix: string): void;
     static get App(): Config;

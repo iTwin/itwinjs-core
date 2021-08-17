@@ -18,6 +18,8 @@ import { workDir } from "./TestConstants";
 import { createIModelBankFileHandler } from "./FileHandler";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
 
+/* eslint-disable deprecation/deprecation */
+
 // To run tests with imodel-bank integration:
 // set NODE_EXTRA_CA_CERTS=D:\dev\imodeljs\full-stack-tests\rpc\local_dev_server.crt
 // set imjs_test_imodel_bank to true to run tests with imodel-bank. Then either:

@@ -46,6 +46,7 @@ export class RbacClient extends WsgClient {
    * @returns RelyingPartyUrl for the service.
    */
   protected getRelyingPartyUrl(): string {
+    /* eslint-disable deprecation/deprecation */
     if (Config.App.has(RbacClient.configRelyingPartyUri))
       return `${Config.App.get(RbacClient.configRelyingPartyUri)}/`;
 
@@ -53,6 +54,7 @@ export class RbacClient extends WsgClient {
       if (Config.App.has(WsgClient.configHostRelyingPartyUri))
         return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
     }
+    /* eslint-enable deprecation/deprecation */
 
     throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${RbacClient.configRelyingPartyUri}`);
   }

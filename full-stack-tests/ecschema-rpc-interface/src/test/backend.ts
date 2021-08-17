@@ -15,7 +15,7 @@ import { getRpcInterfaces, Settings } from "../common/Settings";
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 const settings = new Settings(process.env);
-Config.App.set("imjs_buddi_resolve_url_using_region", settings.env);
+Config.App.set("imjs_buddi_resolve_url_using_region", settings.env); // eslint-disable-line deprecation/deprecation
 void (async () => {
   RpcConfiguration.developmentMode = true;
 

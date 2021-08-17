@@ -52,10 +52,12 @@ function configureIModel() {
 }
 
 // Call the above functions, to avoid lint errors.
+/* eslint-disable deprecation/deprecation */
 const cred = {
   email: Config.App.getString("imjs_test_regular_user_name"),
   password: Config.App.getString("imjs_test_regular_user_password"),
 };
+/* eslint-enable deprecation/deprecation */
 
 getUserAccessToken(cred).then((_accessToken: AccessToken) => { // eslint-disable-line @typescript-eslint/no-floating-promises
 });

@@ -15,6 +15,7 @@ export function createFileHandler(useDownloadBuffer?: boolean) {
 }
 
 export function createIModelBankFileHandler(useDownloadBuffer?: boolean) {
+  // eslint-disable-next-line deprecation/deprecation
   const handler = Config.App.getString("imjs_test_imodel_bank_file_handler", "url");
   switch (handler.toLowerCase()) {
     case "azure":

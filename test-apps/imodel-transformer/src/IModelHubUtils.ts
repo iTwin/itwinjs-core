@@ -44,6 +44,7 @@ export namespace IModelHubUtils {
     } else if ("dev" === arg) {
       value = "103";
     }
+    // eslint-disable-next-line deprecation/deprecation
     Config.App.set("imjs_buddi_resolve_url_using_region", value);
   }
 
