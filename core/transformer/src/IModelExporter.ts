@@ -12,16 +12,18 @@ import { CodeSpec, FontProps, IModel, IModelError } from "@bentley/imodeljs-comm
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BisCoreSchema } from "./BisCoreSchema";
-import { BriefcaseManager } from "./BriefcaseManager";
-import { ECSqlStatement } from "./ECSqlStatement";
-import { Element, GeometricElement, RecipeDefinitionElement, RepositoryLink } from "./Element";
-import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
-import { BriefcaseDb, IModelDb } from "./IModelDb";
-import { IModelHost } from "./IModelHost";
-import { IModelSchemaLoader } from "./IModelSchemaLoader";
-import { DefinitionModel, Model } from "./Model";
-import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
+import {
+  BisCoreSchema,
+  BriefcaseManager,
+  ECSqlStatement,
+  Element, GeometricElement, RecipeDefinitionElement, RepositoryLink,
+  ElementAspect, ElementMultiAspect, ElementUniqueAspect,
+  BriefcaseDb, IModelDb,
+  IModelHost,
+  IModelSchemaLoader,
+  DefinitionModel, Model,
+  ElementRefersToElements, Relationship, RelationshipProps
+} from "@bentley/imodeljs-backend";
 
 const loggerCategory = BackendLoggerCategory.IModelExporter;
 

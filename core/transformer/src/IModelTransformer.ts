@@ -17,21 +17,22 @@ import {
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { ECSqlStatement } from "./ECSqlStatement";
+
 import {
-  DefinitionElement, DefinitionPartition, Element, FolderLink, GeometricElement2d, GeometricElement3d, InformationPartitionElement,
+  ECSqlStatement, DefinitionElement, DefinitionPartition, Element, FolderLink, GeometricElement2d, GeometricElement3d, InformationPartitionElement,
   RecipeDefinitionElement, Subject,
-} from "./Element";
-import { ChannelRootAspect, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect } from "./ElementAspect";
-import { ExternalSource, ExternalSourceAttachment, SynchronizationConfigLink } from "./ExternalSource";
-import { IModelCloneContext } from "./IModelCloneContext";
-import { IModelDb } from "./IModelDb";
-import { DefinitionModel, Model } from "./Model";
-import { Schema } from "./Schema";
-import { KnownLocations } from "./IModelHost";
-import { IModelJsFs } from "./IModelJsFs";
-import { ElementOwnsExternalSourceAspects } from "./NavigationRelationship";
-import { ElementRefersToElements, Relationship, RelationshipProps } from "./Relationship";
+  ChannelRootAspect, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect,
+  ExternalSource,
+  ExternalSourceAttachment, SynchronizationConfigLink,
+  IModelCloneContext,
+  IModelDb,
+  DefinitionModel, Model,
+  Schema,
+  KnownLocations,
+  IModelJsFs,
+  ElementOwnsExternalSourceAspects,
+  ElementRefersToElements, Relationship, RelationshipProps
+} from "@bentley/imodeljs-backend";
 
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";
@@ -445,7 +446,7 @@ export class IModelTransformer extends IModelExportHandler {
       targetElementProps = this.onTransformElement(sourceElement);
     }
     // if an existing remapping was not yet found, check by Code as long as the CodeScope is valid (invalid means a missing predecessor so not worth checking)
-    if (!Id64.isValidId64(targetElementId) && Id64.isValidId64(targetElementProps.code.scope)) {
+    if ((targetElementId === undefined || !Id64.isValidId64(targetElementId)) && Id64.isValidId64(targetElementProps.code.scope)) {
       targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
       if (undefined !== targetElementId) {
         const targetElement: Element = this.targetDb.elements.getElement(targetElementId);

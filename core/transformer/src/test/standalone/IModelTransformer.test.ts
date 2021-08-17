@@ -16,7 +16,7 @@ import {
   IModelExportHandler, IModelHost, IModelJsFs, IModelSchemaLoader, IModelTransformer, InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb,
   SpatialCategory, Subject,
-} from "../../imodeljs-backend";
+} from "@bentley/imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 import {
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, PhysicalModelConsolidator,

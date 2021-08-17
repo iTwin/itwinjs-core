@@ -11,11 +11,7 @@ import {
   PropertyMetaData, RelatedElement,
 } from "@bentley/imodeljs-common";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { ElementAspect, ElementMultiAspect } from "./ElementAspect";
-import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
-import { Model } from "./Model";
-import { Relationship, RelationshipProps, SourceAndTarget } from "./Relationship";
+import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget } from "@bentley/imodeljs-backend";
 
 const loggerCategory: string = BackendLoggerCategory.IModelImporter;
 
