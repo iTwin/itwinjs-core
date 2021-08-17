@@ -221,16 +221,29 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    */
   private async getByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: HiddenQueryOptions): Promise<ITwin[]> {
     requestContext.enter();
-    // Skip a project object on Odd skips
     const projectQuery = queryOptions;
-    projectQuery.$skip = Math.ceil(queryOptions.$skip / 2);
-
-    // Skip an asset object on Even skips
     const assetQuery = queryOptions;
-    assetQuery.$skip = Math.floor(queryOptions.$skip / 2);
+
+    if (queryOptions?.$skip && (projectQuery && assetQuery)) {
+      // Skip a project object on Odd skips
+      projectQuery.$skip =
+      queryOptions?.$skip
+        ? Math.ceil(queryOptions.$skip / 2)
+        : undefined;
+
+      // Skip an asset object on Even skips
+      assetQuery.$skip =
+      queryOptions?.$skip
+        ? Math.floor(queryOptions.$skip / 2)
+        : undefined;
+    }
 
     const projectITwins: ITwin[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", projectQuery);
     const assetITwins: ITwin[] = await this.getInstances<Asset>(requestContext, Asset, "/Repositories/BentleyCONNECT--Main/ConnectedContext/asset/", assetQuery);
+
+    if (!queryOptions?.$top) {
+      return projectITwins.concat(assetITwins);
+    }
 
     return projectITwins
       // Fill half if there are enough assets, or fill where there are not enough assets
