@@ -14,7 +14,7 @@ import {
   BackendLoggerCategory, BackendRequestContext, CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, IModelCloneContext, IModelDb, IModelExporter,
   IModelExportHandler, IModelJsFs, IModelSchemaLoader, IModelTransformer, InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector,
-  OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, SnapshotDb,
+  OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb,
   SpatialCategory, Subject,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -23,6 +23,7 @@ import {
   RecordingIModelImporter, TestIModelTransformer,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import * as Semver from "semver";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -1133,13 +1134,30 @@ describe("IModelTransformer", () => {
   it("biscore update is valid", async () => {
     const reqCtx = new BackendRequestContext();
 
-    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "FinallyFirstTest.bim");
-    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "FinallyFirstTest" } });
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "BisCoreUpdate.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "BisCoreUpdate" } });
 
+    // this target has an old biscore, so we know that transforming an empty (which starts with a fresh, updated biscore)
+    // will cause an empty biscore
     const targetDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+
+    assert(
+      Semver.lt(
+        Schema.toSemverString(targetDb.querySchemaVersion("BisCore")!),
+        Schema.toSemverString(sourceDb.querySchemaVersion("BisCore")!)),
+      "The targetDb must have a less up-to-date version of the BisCore schema than the source"
+    );
 
     const transformer = new IModelTransformer(sourceDb, targetDb);
     await transformer.processSchemas(reqCtx);
+    targetDb.saveChanges();
+
+    assert(
+      Semver.eq(
+        Schema.toSemverString(targetDb.querySchemaVersion("BisCore")!),
+        Schema.toSemverString(sourceDb.querySchemaVersion("BisCore")!)),
+      "The targetDb must now have an equivalent BisCore schema because it was updated"
+    );
 
     sourceDb.close();
     targetDb.close();
