@@ -8,8 +8,8 @@ import {
   FrontstageDef, FrontstageManager, StagePanelState, useActiveFrontstageDef,
 } from "@bentley/ui-framework";
 import { SpecialKey, StagePanelLocation, WidgetState } from "@bentley/ui-abstract";
-import { NumberInput, RectangleProps, Select } from "@bentley/ui-core";
-import { Button, Input } from "@itwin/itwinui-react";
+import { NumberInput, RectangleProps } from "@bentley/ui-core";
+import { Button, Input, Select, SelectOption } from "@itwin/itwinui-react";
 
 function usePanelDef(location: StagePanelLocation) {
   const frontstageDef = useActiveFrontstageDef();
@@ -85,19 +85,18 @@ function PanelSelect({
   location: StagePanelLocation;
   onChange(location: StagePanelLocation): void;
 }) {
-  const [options] = React.useState([
-    StagePanelLocation[StagePanelLocation.Left],
-    StagePanelLocation[StagePanelLocation.Top],
-    StagePanelLocation[StagePanelLocation.Right],
-    StagePanelLocation[StagePanelLocation.Bottom],
+  const [options] = React.useState<Array<SelectOption<string>>>([
+    { label: StagePanelLocation[StagePanelLocation.Left], value: StagePanelLocation[StagePanelLocation.Left] },
+    { label: StagePanelLocation[StagePanelLocation.Top], value: StagePanelLocation[StagePanelLocation.Top] },
+    { label: StagePanelLocation[StagePanelLocation.Right], value: StagePanelLocation[StagePanelLocation.Right] },
+    { label: StagePanelLocation[StagePanelLocation.Bottom], value: StagePanelLocation[StagePanelLocation.Bottom] },
   ]);
   return (
-    // eslint-disable-next-line deprecation/deprecation
-    <Select
+    <Select style={{ width: "160px" }}
       options={options}
-      defaultValue={StagePanelLocation[location]}
-      onChange={(e) => {
-        const newLocation = StagePanelLocation[e.target.value as keyof typeof StagePanelLocation];
+      value={StagePanelLocation[location]}
+      onChange={(value) => {
+        const newLocation = StagePanelLocation[value as keyof typeof StagePanelLocation];
         onChange(newLocation);
       }}
     />
@@ -112,7 +111,7 @@ function WidgetSelect({
   onChange(id: string): void;
 }) {
   const frontstageDef = useActiveFrontstageDef();
-  const [options, setOptions] = React.useState<Array<string>>([]);
+  const [options, setOptions] = React.useState<Array<SelectOption<string>>>([]);
   React.useEffect(() => {
     if (!frontstageDef) {
       setOptions([]);
@@ -120,20 +119,19 @@ function WidgetSelect({
     }
     const newOptions = [];
     for (const zoneDef of frontstageDef.zoneDefs) {
-      newOptions.push(...zoneDef.widgetDefs.map((w) => w.id));
+      newOptions.push(...zoneDef.widgetDefs.map((w) => ({ label: w.id, value: w.id })));
     }
     for (const panelDef of frontstageDef.panelDefs) {
-      newOptions.push(...panelDef.widgetDefs.map((w) => w.id));
+      newOptions.push(...panelDef.widgetDefs.map((w) => ({ label: w.id, value: w.id })));
     }
     setOptions(newOptions);
   }, [frontstageDef]);
   return (
-    // eslint-disable-next-line deprecation/deprecation
-    <Select
+    <Select style={{ width: "160px" }}
       options={options}
-      defaultValue={id}
-      onChange={(e) => {
-        onChange(e.target.value);
+      value={id}
+      onChange={(value) => {
+        onChange(value);
       }}
     />
   );
@@ -277,19 +275,18 @@ function PanelStateSelect({
   state: StagePanelState | undefined;
   onChange(state: StagePanelState): void;
 }) {
-  const [options] = React.useState([
-    StagePanelState[StagePanelState.Open],
-    StagePanelState[StagePanelState.Minimized],
-    StagePanelState[StagePanelState.Off],
+  const [options] = React.useState<Array<SelectOption<string>>>([
+    { label: StagePanelState[StagePanelState.Open], value: StagePanelState[StagePanelState.Open] },
+    { label: StagePanelState[StagePanelState.Minimized], value: StagePanelState[StagePanelState.Minimized] },
+    { label: StagePanelState[StagePanelState.Off], value: StagePanelState[StagePanelState.Off] },
   ]);
   return (
-    // eslint-disable-next-line deprecation/deprecation
-    <Select
+    <Select style={{ width: "160px" }}
       placeholder="State"
       options={options}
       value={state === undefined ? "placeholder" : StagePanelState[state]}
-      onChange={(e) => {
-        const newState = StagePanelState[e.target.value as keyof typeof StagePanelState];
+      onChange={(value) => {
+        const newState = StagePanelState[value as keyof typeof StagePanelState];
         onChange(newState);
       }}
     />
@@ -304,19 +301,18 @@ function WidgetStateSelect({
   onChange(state: WidgetState): void;
 }) {
   const [options] = React.useState([
-    WidgetState[WidgetState.Open],
-    WidgetState[WidgetState.Closed],
-    WidgetState[WidgetState.Hidden],
-    WidgetState[WidgetState.Unloaded],
+    { label: WidgetState[WidgetState.Open], value: WidgetState[WidgetState.Open] },
+    { label: WidgetState[WidgetState.Closed], value: WidgetState[WidgetState.Closed] },
+    { label: WidgetState[WidgetState.Hidden], value: WidgetState[WidgetState.Hidden] },
+    { label: WidgetState[WidgetState.Unloaded], value: WidgetState[WidgetState.Unloaded] },
   ]);
   return (
-    // eslint-disable-next-line deprecation/deprecation
-    <Select
+    <Select style={{ width: "160px" }}
       placeholder="State"
       options={options}
       value={state === undefined ? "placeholder" : WidgetState[state]}
-      onChange={(e) => {
-        const newState = WidgetState[e.target.value as keyof typeof WidgetState];
+      onChange={(value) => {
+        const newState = WidgetState[value as keyof typeof WidgetState];
         onChange(newState);
       }}
     />
@@ -498,7 +494,7 @@ function FloatingWidgetSelect({
   onChange?(id: string): void;
   allIds: string[];
 }) {
-  const [options, setOptions] = React.useState<Array<string>>([]);
+  const [options, setOptions] = React.useState<Array<SelectOption<string>>>([]);
   React.useEffect(() => {
 
     if (0 === allIds.length) {
@@ -507,18 +503,17 @@ function FloatingWidgetSelect({
     }
     const newOptions = [];
     for (const floatingWidgetId of allIds) {
-      newOptions.push(floatingWidgetId);
+      newOptions.push({ label: floatingWidgetId, value: floatingWidgetId });
     }
     setOptions(newOptions);
   }, [allIds]);
 
   return (
-    // eslint-disable-next-line deprecation/deprecation
-    <Select
+    <Select style={{ width: "360px" }}
       options={options}
-      defaultValue={id}
-      onChange={(e) => {
-        onChange && onChange(e.target.value);
+      value={id}
+      onChange={(value) => {
+        onChange && onChange(value);
       }}
     />
   );
@@ -597,19 +592,19 @@ export function FloatingLayoutInfo() {
 
   return (
     <WidgetContent>
-      <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", rowGap: "4px", columnGap: "8px" }} >
-        <span>Container Id:</span>
+      <div style={{ display: "grid", gridTemplateColumns: "auto 1fr", rowGap: "4px", columnGap: "8px", alignItems: "center" }} >
+        <span style={{ textAlign: "end" }} >Container Id:</span>
         <FloatingWidgetSelect allIds={floatingIds} id={floatingWidgetId} onChange={handleWidgetIdChanged} />
-        <span>Left:</span>
-        <NumberInput containerStyle={{ width: "60px" }} value={bounds.left} step={5} onChange={(value) => handleBoundsChanged("left", value ?? 0)} />
-        <span>Top:</span>
-        <NumberInput containerStyle={{ width: "60px" }} value={bounds.top} step={5} onChange={(value) => handleBoundsChanged("top", value ?? 0)} />
-        <span>Right:</span>
-        <NumberInput containerStyle={{ width: "60px" }} value={bounds.right} step={5} onChange={(value) => handleBoundsChanged("right", value ?? 0)} />
-        <span>Bottom:</span>
-        <NumberInput containerStyle={{ width: "60px" }} value={bounds.bottom} step={5} onChange={(value) => handleBoundsChanged("bottom", value ?? 0)} />
+        <span style={{ textAlign: "end" }} >Left:</span>
+        <NumberInput containerStyle={{ width: "80px" }} value={bounds.left} step={5} onChange={(value) => handleBoundsChanged("left", value ?? 0)} />
+        <span style={{ textAlign: "end" }} >Top:</span>
+        <NumberInput containerStyle={{ width: "80px" }} value={bounds.top} step={5} onChange={(value) => handleBoundsChanged("top", value ?? 0)} />
+        <span style={{ textAlign: "end" }} >Right:</span>
+        <NumberInput containerStyle={{ width: "80px" }} value={bounds.right} step={5} onChange={(value) => handleBoundsChanged("right", value ?? 0)} />
+        <span style={{ textAlign: "end" }} >Bottom:</span>
+        <NumberInput containerStyle={{ width: "80px" }} value={bounds.bottom} step={5} onChange={(value) => handleBoundsChanged("bottom", value ?? 0)} />
         <Input placeholder="Enter Widget Id to find" onChange={handleSetWidgetIdToLocate} defaultValue={widgetIdToLocate} />
-        <Button styleType="high-visibility" style={{ width: "300px" }} disabled={!widgetIdToLocate} onClick={handleLookup} >Lookup ContainerId</Button>
+        <Button styleType="high-visibility" style={{ width: "160px" }} disabled={!widgetIdToLocate} onClick={handleLookup} >Lookup ContainerId</Button>
       </div>
     </WidgetContent>
   );

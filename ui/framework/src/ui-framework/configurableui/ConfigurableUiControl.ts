@@ -45,7 +45,7 @@ export class ConfigurableBase implements ConfigurableUiElement {
   public get uniqueId(): string { return this._uniqueId; }
 
   /** allow options set via appData to be seen by API calls */
-  public get options(): any { return this._appDataOptions; }
+  public get applicationData(): any { return this._appDataOptions; }
 
   /** Gets the class Id of configurable element */
   public get classId(): string { return this._classId; }
