@@ -10,10 +10,10 @@ import {
   AxisAlignedBox3d, Base64EncodedString, ElementAspectProps, ElementProps, EntityProps, IModel, IModelError, ModelProps, PrimitiveTypeCode,
   PropertyMetaData, RelatedElement,
 } from "@bentley/imodeljs-common";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget } from "@bentley/imodeljs-backend";
 
-const loggerCategory: string = BackendLoggerCategory.IModelImporter;
+const loggerCategory: string = TransformerLoggerCategory.IModelImporter;
 
 /** Options provided to the [[IModelImporter]] constructor.
  * @beta

@@ -20,18 +20,16 @@ import {
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AccessToken, AccessTokenProps, AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { TestUserCredentials, TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
-import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
-import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
-import { ClassRegistry } from "../ClassRegistry";
-import { Drawing, PhysicalElement, Subject } from "../Element";
 import {
-  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, InformationPartitionElement, Model,
-  PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
-} from "../imodeljs-backend";
-import { DrawingModel } from "../Model";
-import { ElementDrivesElement, RelationshipProps } from "../Relationship";
-import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
-import { Schema, Schemas } from "../Schema";
+  BackendLoggerCategory, BriefcaseDb, BriefcaseManager, CheckpointProps, ClassRegistry, Drawing, DrawingModel, Element, ElementDrivesElement,
+  IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, InformationPartitionElement,
+  Model, PhysicalElement, PhysicalModel, PhysicalPartition, RelationshipProps,
+  Schema, Schemas, SnapshotDb, SpatialCategory, Subject, SubjectOwnsPartitionElements, V1CheckpointManager,
+} from "@bentley/imodeljs-backend";
+import {
+  DownloadAndOpenArgs,
+  RpcBriefcaseUtility,
+} from "@bentley/imodeljs-backend/lib/rpc-impl/RpcBriefcaseUtility";
 import { HubMock } from "./HubMock";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";

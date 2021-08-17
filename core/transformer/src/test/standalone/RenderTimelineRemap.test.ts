@@ -9,8 +9,9 @@ import {
   Code, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps,
 } from "@bentley/imodeljs-common";
 import {
-  GenericSchema, IModelTransformer, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements,
+  GenericSchema, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements,
 } from "@bentley/imodeljs-backend";
+import { IModelTransformer } from "../../imodeljs-transformer";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("RenderTimeline Remap", () => {

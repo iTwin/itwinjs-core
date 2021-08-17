@@ -11,10 +11,14 @@ import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { ChangesetType, Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  BackendLoggerCategory, BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements,
-  ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelJsNative, IModelTransformer, NativeLoggerCategory,
+  BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements,
+  ExternalSourceAspect, GenericSchema, IModelDb, IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory,
   PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "@bentley/imodeljs-backend";
+import {
+  IModelExporter,
+  IModelTransformer, TransformerLoggerCategory,
+} from "../../imodeljs-transformer";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
@@ -37,9 +41,9 @@ describe("IModelTransformerHub (#integration)", () => {
     if (false) {
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
-      Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelExporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelImporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelTransformer, LogLevel.Trace);
       Logger.setLevel(NativeLoggerCategory.Changeset, LogLevel.Trace);
     }
   });

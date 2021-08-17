@@ -11,7 +11,7 @@
  * @see [Logger]($bentley)
  * @public
  */
-export enum BackendLoggerCategory {
+export enum TransformerLoggerCategory {
   /** The logger category used by the [IModelExporter]($backend) class.
    * @beta
    */

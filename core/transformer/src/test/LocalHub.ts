@@ -6,11 +6,7 @@
 import { join } from "path";
 import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
-import { LockProps, LockScope } from "../BackendHubAccess";
-import { BriefcaseId, BriefcaseManager } from "../BriefcaseManager";
-import { IModelDb } from "../IModelDb";
-import { IModelJsFs } from "../IModelJsFs";
-import { SQLiteDb } from "../SQLiteDb";
+import { BriefcaseId, BriefcaseManager, IModelDb, IModelJsFs, LockProps, LockScope, SQLiteDb } from "@bentley/imodeljs-backend";
 
 // cspell:ignore rowid
 

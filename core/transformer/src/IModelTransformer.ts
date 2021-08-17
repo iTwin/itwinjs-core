@@ -16,28 +16,28 @@ import {
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
+import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
 
 import {
-  ECSqlStatement, DefinitionElement, DefinitionPartition, Element, FolderLink, GeometricElement2d, GeometricElement3d, InformationPartitionElement,
-  RecipeDefinitionElement, Subject,
-  ChannelRootAspect, ElementAspect, ElementMultiAspect, ElementUniqueAspect, ExternalSourceAspect,
-  ExternalSource,
-  ExternalSourceAttachment, SynchronizationConfigLink,
-  IModelCloneContext,
+  ChannelRootAspect, DefinitionElement, DefinitionModel, DefinitionPartition, ECSqlStatement, Element, ElementAspect, ElementMultiAspect,
+  ElementOwnsExternalSourceAspects, ElementRefersToElements,
+  ElementUniqueAspect, ExternalSource, ExternalSourceAspect, ExternalSourceAttachment, FolderLink,
+  GeometricElement2d,
+  GeometricElement3d, IModelCloneContext,
   IModelDb,
-  DefinitionModel, Model,
-  Schema,
-  KnownLocations,
   IModelJsFs,
-  ElementOwnsExternalSourceAspects,
-  ElementRefersToElements, Relationship, RelationshipProps
+  InformationPartitionElement, KnownLocations,
+  Model,
+  RecipeDefinitionElement,
+  Relationship,
+  RelationshipProps,
+  Schema, Subject, SynchronizationConfigLink,
 } from "@bentley/imodeljs-backend";
 
 import { IModelExporter, IModelExportHandler } from "./IModelExporter";
 import { IModelImporter } from "./IModelImporter";
 
-const loggerCategory: string = BackendLoggerCategory.IModelTransformer;
+const loggerCategory: string = TransformerLoggerCategory.IModelTransformer;
 
 /** Options provided to the [[IModelTransformer]] constructor.
  * @beta
@@ -178,19 +178,19 @@ export class IModelTransformer extends IModelExportHandler {
 
   /** Log current settings that affect IModelTransformer's behavior. */
   private logSettings(): void {
-    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.visitElements=${this.exporter.visitElements}`);
-    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.visitRelationships=${this.exporter.visitRelationships}`);
-    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.wantGeometry=${this.exporter.wantGeometry}`);
-    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.wantSystemSchemas=${this.exporter.wantSystemSchemas}`);
-    Logger.logInfo(BackendLoggerCategory.IModelExporter, `this.exporter.wantTemplateModels=${this.exporter.wantTemplateModels}`);
+    Logger.logInfo(TransformerLoggerCategory.IModelExporter, `this.exporter.visitElements=${this.exporter.visitElements}`);
+    Logger.logInfo(TransformerLoggerCategory.IModelExporter, `this.exporter.visitRelationships=${this.exporter.visitRelationships}`);
+    Logger.logInfo(TransformerLoggerCategory.IModelExporter, `this.exporter.wantGeometry=${this.exporter.wantGeometry}`);
+    Logger.logInfo(TransformerLoggerCategory.IModelExporter, `this.exporter.wantSystemSchemas=${this.exporter.wantSystemSchemas}`);
+    Logger.logInfo(TransformerLoggerCategory.IModelExporter, `this.exporter.wantTemplateModels=${this.exporter.wantTemplateModels}`);
     Logger.logInfo(loggerCategory, `this.targetScopeElementId=${this.targetScopeElementId}`);
     Logger.logInfo(loggerCategory, `this._noProvenance=${this._noProvenance}`);
     Logger.logInfo(loggerCategory, `this._includeSourceProvenance=${this._includeSourceProvenance}`);
     Logger.logInfo(loggerCategory, `this._cloneUsingBinaryGeometry=${this._cloneUsingBinaryGeometry}`);
     Logger.logInfo(loggerCategory, `this._wasSourceIModelCopiedToTarget=${this._wasSourceIModelCopiedToTarget}`);
     Logger.logInfo(loggerCategory, `this._isReverseSynchronization=${this._isReverseSynchronization}`);
-    Logger.logInfo(BackendLoggerCategory.IModelImporter, `this.importer.autoExtendProjectExtents=${this.importer.autoExtendProjectExtents}`);
-    Logger.logInfo(BackendLoggerCategory.IModelImporter, `this.importer.simplifyElementGeometry=${this.importer.simplifyElementGeometry}`);
+    Logger.logInfo(TransformerLoggerCategory.IModelImporter, `this.importer.autoExtendProjectExtents=${this.importer.autoExtendProjectExtents}`);
+    Logger.logInfo(TransformerLoggerCategory.IModelImporter, `this.importer.simplifyElementGeometry=${this.importer.simplifyElementGeometry}`);
   }
 
   /** Return the IModelDb where IModelTransformer will store its provenance.
@@ -961,13 +961,13 @@ export class TemplateModelCloner extends IModelTransformer {
     predecessorIds.forEach((predecessorId: Id64String) => {
       if (Id64.invalid === this.context.findTargetElementId(predecessorId)) {
         if (this.context.isBetweenIModels) {
-          throw new IModelError(IModelStatus.BadRequest, `Remapping for source dependency ${predecessorId} not found for target iModel`, Logger.logError, BackendLoggerCategory.IModelTransformer);
+          throw new IModelError(IModelStatus.BadRequest, `Remapping for source dependency ${predecessorId} not found for target iModel`, Logger.logError, TransformerLoggerCategory.IModelTransformer);
         } else {
           const definitionElement = this.sourceDb.elements.tryGetElement<DefinitionElement>(predecessorId, DefinitionElement);
           if (definitionElement && !(definitionElement instanceof RecipeDefinitionElement)) {
             this.context.remapElement(predecessorId, predecessorId); // when in the same iModel, can use existing DefinitionElements without remapping
           } else {
-            throw new IModelError(IModelStatus.BadRequest, `Remapping for dependency ${predecessorId} not found`, Logger.logError, BackendLoggerCategory.IModelTransformer);
+            throw new IModelError(IModelStatus.BadRequest, `Remapping for dependency ${predecessorId} not found`, Logger.logError, TransformerLoggerCategory.IModelTransformer);
           }
         }
       }

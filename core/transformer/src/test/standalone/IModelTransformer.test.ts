@@ -11,12 +11,13 @@ import {
   AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d,
 } from "@bentley/imodeljs-common";
 import {
-  BackendLoggerCategory, BackendRequestContext, CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementMultiAspect,
-  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, IModelCloneContext, IModelDb, IModelExporter,
-  IModelExportHandler, IModelHost, IModelJsFs, IModelSchemaLoader, IModelTransformer, InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector,
+  BackendRequestContext, CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementMultiAspect,
+  ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, IModelCloneContext, IModelDb,
+  IModelHost, IModelJsFs, IModelSchemaLoader, InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb,
-  SpatialCategory, Subject,
+  SpatialCategory, StandaloneDb, Subject,
 } from "@bentley/imodeljs-backend";
+import {IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../imodeljs-transformer";
 import { IModelTestUtils } from "../IModelTestUtils";
 import {
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerUtils, PhysicalModelConsolidator,
@@ -24,7 +25,6 @@ import {
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 import * as Semver from "semver";
-import { StandaloneDb } from "../../IModelDb";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -40,9 +40,9 @@ describe("IModelTransformer", () => {
     if (false) {
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
-      Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelExporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelImporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelTransformer, LogLevel.Trace);
     }
   });
 
@@ -67,9 +67,9 @@ describe("IModelTransformer", () => {
     assert.isAtLeast(numSourceRelationships, 1);
 
     if (true) { // initial import
-      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "==============");
-      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "Initial Import");
-      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "==============");
+      Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "==============");
+      Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "Initial Import");
+      Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "==============");
       const targetImporter = new RecordingIModelImporter(targetDb);
       const transformer = new TestIModelTransformer(sourceDb, targetImporter);
       assert.isTrue(transformer.context.isBetweenIModels);
@@ -121,10 +121,10 @@ describe("IModelTransformer", () => {
     }
 
     if (true) { // second import with no changes to source, should be a no-op
-      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "");
-      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "=================");
-      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "Reimport (no-op)");
-      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "=================");
+      Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "");
+      Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "=================");
+      Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "Reimport (no-op)");
+      Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "=================");
       const targetImporter = new RecordingIModelImporter(targetDb);
       const transformer = new TestIModelTransformer(sourceDb, targetImporter);
       await transformer.processAll();
@@ -148,10 +148,10 @@ describe("IModelTransformer", () => {
     if (true) { // update source db, then import again
       IModelTransformerUtils.updateSourceDb(sourceDb);
       sourceDb.saveChanges();
-      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "");
-      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "===============================");
-      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "Reimport after sourceDb update");
-      Logger.logInfo(BackendLoggerCategory.IModelTransformer, "===============================");
+      Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "");
+      Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "===============================");
+      Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "Reimport after sourceDb update");
+      Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "===============================");
       const targetImporter = new RecordingIModelImporter(targetDb);
       const transformer = new TestIModelTransformer(sourceDb, targetImporter);
       await transformer.processAll();

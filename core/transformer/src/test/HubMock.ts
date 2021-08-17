@@ -9,15 +9,15 @@ import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps,
-} from "../BackendHubAccess";
-import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
-import { SnapshotDb } from "../IModelDb";
-import { IModelHost } from "../IModelHost";
-import { IModelHubBackend } from "../IModelHubBackend";
-import { IModelJsFs } from "../IModelJsFs";
-import { HubUtility } from "./integration/HubUtility";
-import { KnownTestLocations } from "./KnownTestLocations";
+  AuthorizedBackendRequestContext, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, IModelHost,
+  IModelHubBackend,
+  IModelIdArg,
+  IModelJsFs,
+  LockProps, SnapshotDb ,
+} from "@bentley/imodeljs-backend";
+
+import {HubUtility} from "./integration/HubUtility";
+import {KnownTestLocations} from "./KnownTestLocations";
 import { LocalHub, LocalHubProps } from "./LocalHub";
 
 /**

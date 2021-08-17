@@ -26,7 +26,7 @@ import {
   InformationRecordModel, LinkElement, Model, ModelSelector, OrthographicViewDefinition, PhysicalElement, PhysicalModel, PhysicalObject,
   PhysicalPartition, Platform, Relationship, RelationshipProps, RenderMaterialElement, RepositoryLink, SnapshotDb, SpatialCategory,
   SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture, ViewDefinition,
-} from "../imodeljs-backend";
+} from "@bentley/imodeljs-backend";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../imodeljs-transformer";
 import { KnownTestLocations } from "./KnownTestLocations";
 import { Base64 } from "js-base64";

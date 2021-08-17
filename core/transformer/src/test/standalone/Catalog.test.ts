@@ -12,13 +12,13 @@ import {
   RepositoryLinkProps, SubCategoryAppearance,
 } from "@bentley/imodeljs-common";
 import {
-  BackendLoggerCategory, BackendRequestContext, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
+  BackendRequestContext, DefinitionContainer, DefinitionGroup, DefinitionGroupGroupsDefinitions, DefinitionModel,
   DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementOwnsChildElements, EntityClassType,
-  IModelDb, IModelJsFs, IModelTransformer, LinkElement, PhysicalElement, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalType,
-  RecipeDefinitionElement, RepositoryLink, SnapshotDb, SpatialCategory, TemplateModelCloner, TemplateRecipe2d, TemplateRecipe3d,
+  IModelDb, IModelJsFs, LinkElement, PhysicalElement, PhysicalElementIsOfType, PhysicalModel, PhysicalObject, PhysicalType,
+  RecipeDefinitionElement, RepositoryLink, SnapshotDb, SpatialCategory, TemplateRecipe2d, TemplateRecipe3d,
   TypeDefinitionElement,
 } from "@bentley/imodeljs-backend";
-import { IModelTransformOptions } from "../../IModelTransformer";
+import { IModelTransformer, IModelTransformOptions, TemplateModelCloner, TransformerLoggerCategory } from "../../imodeljs-transformer";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelTransformerUtils } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
@@ -565,9 +565,9 @@ describe("Catalog", () => {
     if (false) { // optionally initialize logging
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
-      Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelExporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelImporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelTransformer, LogLevel.Trace);
     }
     await createAcmeCatalog(acmeCatalogDbFile);
     await createBestCatalog(bestCatalogDbFile);
