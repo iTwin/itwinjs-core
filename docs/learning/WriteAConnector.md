@@ -61,6 +61,7 @@ title: iModel Connector Developer Guide
   - [Authentication](#authentication)
   - [Locks & Codes](#locks--codes)
   - [More information](#more-information)
+- [Bentley Authored Connectors](#bentley-authored-connectors)
 
 ## Introduction
 
@@ -700,3 +701,7 @@ For more indepth information please see:
 - [Insert a CategorySelector element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#CategorySelector)
 - [Insert a DisplayStyle3d element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#DisplayStyle3d)
 - [Insert a OrthographicViewDefinition element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#OrthographicViewDefinition)
+
+## Bentley Authored Connectors
+
+### [Bentley Civil iModel Connector](civil-connector.md)
