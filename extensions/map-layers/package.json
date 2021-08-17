@@ -1,6 +1,6 @@
 {
   "name": "@bentley/map-layers",
-  "version": "3.0.0-dev.27",
+  "version": "3.0.0-dev.28",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/map-layers.js",
   "typings": "lib/map-layers",
@@ -102,6 +102,7 @@
     "@bentley/ui-components": "workspace:*",
     "@bentley/ui-core": "workspace:*",
     "@bentley/ui-framework": "workspace:*",
+    "@bentley/ui-imodel-components": "workspace:*",
     "@bentley/ui-ninezone": "workspace:*",
     "react": "^17.0.0",
     "react-dom": "^17.0.0"
