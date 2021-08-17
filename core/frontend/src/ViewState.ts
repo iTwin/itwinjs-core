@@ -1574,8 +1574,10 @@ export abstract class ViewState3d extends ViewState {
 
   /** Get the target point of the view. If there is no camera, view center is returned. */
   public override getTargetPoint(result?: Point3d): Point3d {
-    if (!this._cameraOn)
-      return super.getTargetPoint(result);
+    if (!this._cameraOn) {
+      const earthFocalPoint = this.getEarthFocalPoint();
+      return earthFocalPoint ? earthFocalPoint : super.getTargetPoint(result);
+    }
 
     return this.getEyePoint().plusScaled(this.getZVector(), -1.0 * this.getFocusDistance(), result);
   }
@@ -2006,8 +2008,9 @@ export abstract class ViewState3d extends ViewState {
     return settings && settings.elevation ? settings.elevation : 0;
   }
 
-  /*  Return the point on the globe in directly front of the eye (or view center if camera off)
-   * @internal
+  /*  If the background map is displayed, return the point on the globe in directly front of the eye (or in center of vieww if camera off)
+   *  This is generally a better target point for orthographic views than the view center which can be far from the area of interest.
+   * @beta
    */
   public getEarthFocalPoint(): Point3d | undefined {
     if (!this.iModel.ecefLocation || this.globeMode !== GlobeMode.Ellipsoid)
@@ -2020,67 +2023,31 @@ export abstract class ViewState3d extends ViewState {
     const earthEllipsoid = backgroundMapGeometry.getEarthEllipsoid();
     const viewZ = this.getRotation().rowZ();
     const center = this.getCenter();
-    const eye = this.isCameraEnabled() ? this.camera.getEyePoint() : center;
+    const eye = this.isCameraEnabled() ? this.camera.getEyePoint() : center.plusScaled(viewZ, Constant.diameterOfEarth);
     const eyeRay = Ray3d.create(eye, viewZ);
     const fractions = new Array<number>(), points = new Array<Point3d>();
-    let fraction = -1.0E10, index = -1;
+
     if (earthEllipsoid.intersectRay(eyeRay, fractions, points, undefined)) {
+      let fraction = -1.0E10, index = -1;
       for (let i = 0; i < fractions.length; i++)
         if (fractions[i] > fraction) {
           fraction = fractions[i];
           index = i;
         }
+      return (index >= 0 && fraction < 0) ? points[index] : undefined;
+    } else {
+      return eyeRay.projectPointToRay(center);
     }
-    return (index >= 0 && fraction < 0) ? points[index] : undefined;
   }
 
-  public globalOrthographicZoom(target: Point3d, zoomRatio: number): ViewStatus {
-    if (!this.iModel.ecefLocation)
-      return ViewStatus.NotGeolocated;
-
-    if (this.globeMode !== GlobeMode.Ellipsoid)
-      return ViewStatus.NotEllipsoidGlobeMode;
-
-    if (!this.isCameraEnabled)
-      return ViewStatus.NotOrthographicView;
-
-    const rotation = this.getRotation();
-    const viewZ = rotation.rowZ();
-    const earthCenter = this.iModel.ecefLocation.earthCenter;
-    const centerToTarget = Vector3d.createStartEnd(target, earthCenter);
-
-    rotation.multiplyVectorInPlace(centerToTarget);
-    const centerDistance = centerToTarget.magnitudeXY();
-    const currentTheta = Math.asin(centerDistance / Constant.earthRadiusWGS84.equator);
-    const newTheta = Math.asin(centerDistance * zoomRatio / Constant.earthRadiusWGS84.equator);
-    if (currentTheta === undefined || newTheta === undefined)
-      return ViewStatus.DegenerateGeometry;
-
-    const deltaTheta = newTheta - currentTheta;
-    const axis = viewZ.crossProduct(centerToTarget);
-    const newZ = Vector3d.createRotateVectorAroundVector(viewZ, axis, Angle.createRadians(deltaTheta));
-    if (!newZ)
-      return ViewStatus.DegenerateGeometry;
-
-    const extents = this.getExtents();
-    const newRotation = Matrix3d.createRigidFromColumns(newZ, rotation.rowY(), AxisOrder.ZYX);
-
-    if (!newRotation)
-      return ViewStatus.DegenerateGeometry;
-
-    newRotation.transposeInPlace();
-    const originToTarget = Vector3d.createStartEnd(this.getOrigin(), target);
-    rotation.multiplyVectorInPlace(originToTarget);
-    newRotation.multiplyTransposeVectorInPlace(originToTarget);
-
-    const newOrigin = target.plusScaled(originToTarget, zoomRatio);
-
-    this.setOrigin(newOrigin);
-    this.setRotation(newRotation);
-    this.setExtents(Vector3d.create(extents.x * zoomRatio, extents.y * zoomRatio, extents.z));
-
-    return ViewStatus.Success;
-  }
+  /**
+   * For a global, ellipsoid view rotate the view around the supplied target
+   * point such that the view center transitions to the ellipsoid center. The amount
+   * of rotation is applied applied linearly as the camera height or orthographic
+   * view size increases such that the view transitions to centered as the view
+   * is zoomed out.
+   * @beta
+   */
 
   public transitionToGloballyCenteredCamera(target: Point3d): ViewStatus {
     if (!this.iModel.ecefLocation)
@@ -2089,25 +2056,16 @@ export abstract class ViewState3d extends ViewState {
     if (this.globeMode !== GlobeMode.Ellipsoid)
       return ViewStatus.NotEllipsoidGlobeMode;
 
-    const startRamp = 30000;
-    const finishRamp = 1000000;
-    const extents = this.getExtents();
-    let height = extents.magnitudeXY();
-    let eye = this.getCenter();
-    if (this.isCameraEnabled()) {
-      eye = this.camera.eye;
-      const cartoEye = this.rootToCartographic(eye, ViewState3d._scratchGlobeCarto);
+    const globalTransition = this.globalViewTransition();
 
-      if (!cartoEye)
-        return ViewStatus.NotGeolocated;
-
-      height = cartoEye.height;
-    }
-    if (height < startRamp)
+    if (globalTransition <= 0)
       return ViewStatus.HeightBelowTransition;
 
     const earthCenter = this.iModel.ecefLocation?.earthCenter;
+    const viewCenter = this.getCenter();
     const viewZ = this.getRotation().rowZ();
+    const eye = this.isCameraEnabled() ? this.camera.eye : viewCenter.plusScaled(viewZ, Constant.diameterOfEarth);
+
     const centerToEye = earthCenter.unitVectorTo(eye);
     if (!centerToEye)
       return ViewStatus.DegenerateGeometry;
@@ -2117,12 +2075,13 @@ export abstract class ViewState3d extends ViewState {
       return ViewStatus.DegenerateGeometry;
 
     const theta = viewZ.angleTo(centerToEye);
+    if (theta.radians > Angle.piOver2Radians)
+      return ViewStatus.DegenerateGeometry;
 
     if (theta.isAlmostZero)
       return ViewStatus.NoTransitionRequired;
 
-    const scale = Math.min(1, (height - startRamp) / (finishRamp - startRamp));
-    const transitionRotation = Matrix3d.createRotationAroundVector(axis, theta.cloneScaled(scale));
+    const transitionRotation = Matrix3d.createRotationAroundVector(axis, theta.cloneScaled(globalTransition));
     if (!transitionRotation)
       return ViewStatus.DegenerateGeometry;
 
