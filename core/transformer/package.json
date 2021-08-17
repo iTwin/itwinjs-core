@@ -62,7 +62,7 @@
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/imodeljs-backend": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
-    "@bentley/imodeljs-native": "workspace:*",
+    "@bentley/imodeljs-native": "3.0.6",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/oidc-signin-tool": "workspace:*",
     "@bentley/telemetry-client": "workspace:*",
