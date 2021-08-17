@@ -139,7 +139,7 @@ An iTwin Connector provides a workflow to easily synchronize information from va
 
 #### Element
 
-iModel uses BIS schemas to describe the persistence model of the digital twin. An element represents an instance of a [bis:Element](https://prod.imodeljs.org/bis/intro/element-fundamentals/) class.
+iModel uses BIS schemas to describe the persistence model of the digital twin. An element represents an instance of a [bis:Element](../bis/intro/element-fundamentals) class.
 
 #### Changeset
 
@@ -186,7 +186,7 @@ The appropriate balancing of these two conflicting goals is not an easy task. Ho
 
 ##### Schemas
 
-See this article on [Importing a schema and bootstrapping definitions](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
+See this article on [Importing a schema and bootstrapping definitions](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema)
 
 There are roughly three degrees of customizations you may need to employ to connect and align your data to an iModel. These degrees range from no customization at all (i.e., using the out-of-the-box domain schemas used by many of the Bentley authored Connectors) to extending the domain schemas to introduce additional classes (or subclasses) and properties. Finally, the most extreme level of customization which is to add classes and properties programmatically as your data is read (a.k.a, "dynamic schema").
 
@@ -214,7 +214,7 @@ The [DynamicSchema](../bis/domains/corecustomattributes.ecschema/#dynamicschema)
 
 Wherever practical, the Elements generated from an iTwin Connector should be identifiable through an optimal "Display Label."
 
-As discussed in [Element Fundamentals](https://github.com/imodeljs/imodeljs/tree/master/docs/bis/intro/element-fundamentals.md), the Display Labels are created through the following logic:
+As discussed in [Element Fundamentals](../bis/intro/element-fundamentals.md), the Display Labels are created through the following logic:
 
 1. If the UserLabel property is set, it is taken as the Display Label.
 2. If the CodeValue is set (and the UserLabel is not set), the CodeValue becomes the Display Label.
@@ -317,7 +317,7 @@ A Connector must also relate each physical model that it creates to the source d
 
 Id mapping is a way of looking up the data in the iModel that corresponds to a given piece of source data. If the source data has stable, unique IDs, then Id mapping could be straightforward.
 
-See [updateElementClass](https://github.com/imodeljs/itwin-Connector-sample/blob/main/COBie-Connector/src/DataAligner.ts) function in the provided sample. When the identifier is provided to the Synchronizer, it is stored inside the ExternalSourceAspect class in the Identifier property.
+See [updateElementClass](https://github.com/imodeljs/itwin-connector-sample/blob/main/COBie-connector/src/DataAligner.ts) function in the provided sample. When the identifier is provided to the Synchronizer, it is stored inside the ExternalSourceAspect class in the Identifier property.
 
 An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to store information about the element.
 
@@ -599,10 +599,10 @@ As a Connector developer, once the data is transformed into an iModel, one needs
 
 #### ECSQL
 
-Please see this article on [ECSQL](../ecsqltutorial/index#learning-ecsql) as a prerequisite for this section. The iModelConsole instance below demonstrates how you can use ECSQL to find some of the transformed data in an iModel.
+Please see this article on [ECSQL](./ecsqltutorial/index#learning-ecsql) as a prerequisite for this section. The iModelConsole instance below demonstrates how you can use ECSQL to find some of the transformed data in an iModel.
 
 <figure>
-  <iframe style="height:40vh;width:60vw;" src="https://www.itwinjs.org/console/?imodel=House%20Sample%20Bak&query=SELECT%20Element.Id%20FROM%20bis.ExternalSourceAspect%20WHERE%20Identifier=%27197359%27">
+  <iframe style="height:40vh;width:60vw;" src="../console/?imodel=House Sample Bak&query=SELECT * FROM bis.Element">
   </iframe>
 </figure>
 
@@ -680,7 +680,7 @@ Typical workflow to create iModel geometry is
 
 1. Identify the suitable ECClass to persist your data. Typically this is a PhysicalElement
 2. Construct a [GeometryStreamBuilder]($imodeljs-common) to help with collecting all the geometric primitives that will be used to create the element.
-3. Create and map individual geometric primitives from the input data and feed it into the geometrystream. To learn how to create individual primitives that will be fed into the geometrystreambuilder, the [iTwin Geometry sample](https://www.itwinjs.org/sample-showcase/?group=Geometry+Samples&sample=simple-3d-sample) is a good starting point
+3. Create and map individual geometric primitives from the input data and feed it into the geometrystream. To learn how to create individual primitives that will be fed into the geometrystreambuilder, the [iTwin Geometry sample](../sample-showcase/?group=Geometry+Samples&sample=simple-3d-sample) is a good starting point
 4. Provide geometry and other details to the element creation logic. Please see [GeometricElement3d](./backend/createelements#geometricelement3d)
 
 ### Authentication
