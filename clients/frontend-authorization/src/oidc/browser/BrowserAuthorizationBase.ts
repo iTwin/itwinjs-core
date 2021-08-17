@@ -10,6 +10,9 @@
 import { UserManager, UserManagerSettings } from "oidc-client";
 import { BrowserAuthorizationLogger } from "./BrowserAuthorizationLogger";
 
+/**
+ * @beta
+ */
 export abstract class BrowserAuthorizationBase<TConfig> {
   protected _userManager?: UserManager;
 

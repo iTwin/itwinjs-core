@@ -117,7 +117,7 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     const orbitGtBlob = this.jsonProperties.orbitGtBlob;
 
     // If this is an OrbitGt reality model, create it's reference
-    if(orbitGtBlob) {
+    if (orbitGtBlob) {
 
       const spatialModel = this.asSpatialModel;
 
@@ -142,12 +142,12 @@ export abstract class GeometricModelState extends ModelState implements Geometri
     // If this is a TileTree reality model, create it's reference
     const tilesetUrl = this.jsonProperties.tilesetUrl;
 
-    if(tilesetUrl) {
+    if (tilesetUrl) {
 
       const spatialModel = this.asSpatialModel;
 
       return createRealityTileTreeReference({
-        url : tilesetUrl,
+        url: tilesetUrl,
         iModel: this.iModel,
         source: view,
         modelId: this.id,
@@ -227,8 +227,6 @@ export class GeometricModel3dState extends GeometricModelState {
 
   /** If true, then the elements in this GeometricModel3dState are in real-world coordinates and will be in the spatial index. */
   public get isSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
-  /** @deprecated use [[isSpatiallyLocated]] */
-  public get iSpatiallyLocated(): boolean { return !this.isNotSpatiallyLocated; }
 }
 
 /** Represents the front-end state of a [SheetModel]($backend).

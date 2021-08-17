@@ -10,4 +10,5 @@ export * from "./backend/iOSHost";
 export * from "./backend/MobileHost";
 export * from "./backend/MobileAuthorizationBackend";
 export * from "./common/MobileRpcManager";
+export * from "./backend/MobileFileHandler";
 

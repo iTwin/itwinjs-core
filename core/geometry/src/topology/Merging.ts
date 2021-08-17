@@ -267,6 +267,11 @@ export class HalfEdgeGraphMerge {
     }
     return sweepHeap;
   }
+  private static snapFractionToNode(xy: Point2d, fraction: number, node: HalfEdge, nodeFraction: number): number{
+    if (Geometry.isSameCoordinate(xy.x, node.x) && Geometry.isSameCoordinate(xy.y, node.y))
+      return nodeFraction;
+    return fraction;
+}
   private static computeIntersectionFractionsOnEdges(nodeA0: HalfEdge, nodeB0: HalfEdge, fractions: Vector2d, pointA: Point2d, pointB: Point2d): boolean {
     const nodeA1 = nodeA0.faceSuccessor;
     const ax0 = nodeA0.x;
@@ -284,6 +289,10 @@ export class HalfEdgeGraphMerge {
       pointA.y = ay0 + fractions.x * uy;
       pointB.x = bx0 + fractions.y * vx;
       pointB.y = by0 + fractions.y * vy;
+      fractions.x = this.snapFractionToNode(pointA, fractions.x, nodeA0, 0.0);
+      fractions.x = this.snapFractionToNode(pointA, fractions.x, nodeA1, 1.0);
+      fractions.y = this.snapFractionToNode(pointB, fractions.y, nodeB0, 0.0);
+      fractions.y = this.snapFractionToNode(pointB, fractions.y, nodeB1, 1.0);
       return Geometry.isIn01(fractions.x) && Geometry.isIn01(fractions.y);
     }
     return false;
@@ -304,10 +313,11 @@ export class HalfEdgeGraphMerge {
     const pointA = Point2d.create();
     const pointB = Point2d.create();
     let nodeB0;
+    const popTolerance = Geometry.smallMetricDistance;
     while (undefined !== (nodeA0 = sweepHeap.priorityQueue.pop())) {
       data.numUpEdge++;
       const n0 = sweepHeap.activeEdges.length;
-      sweepHeap.removeArrayMembersWithY1Below(nodeA0.y);
+      sweepHeap.removeArrayMembersWithY1Below(nodeA0.y - popTolerance);
       data.numPopOut += n0 - sweepHeap.activeEdges.length;
       for (i = 0; i < sweepHeap.activeEdges.length; i++) {
         nodeB0 = sweepHeap.activeEdges[i];

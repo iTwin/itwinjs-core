@@ -10,16 +10,15 @@
  */
 export function copyStyles(targetDoc: Document, sourceDoc: Document = document) {
   const stylesheets = Array.from(sourceDoc.styleSheets);
+  // istanbul ignore next
   stylesheets.forEach((stylesheet) => {
     const css = stylesheet;
-    // istanbul ignore if
     if (stylesheet.href) {
       const newStyleElement = targetDoc.createElement("link");
       newStyleElement.rel = "stylesheet";
       newStyleElement.href = stylesheet.href;
       targetDoc.head.appendChild(newStyleElement);
     } else {
-      // istanbul ignore else
       if (css && css.cssRules && css.cssRules.length > 0) {
         const newStyleElement = targetDoc.createElement("style");
         Array.from(css.cssRules).forEach((rule) => {

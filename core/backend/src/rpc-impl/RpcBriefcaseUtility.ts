@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { BeDuration, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
   BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, RequestNewBriefcaseProps, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
@@ -46,26 +46,29 @@ export class RpcBriefcaseUtility {
       myBriefcaseIds = await IModelHost.hubAccess.getMyBriefcaseIds({ requestContext, iModelId });
     }
 
-    const resolvers = args.fileNameResolvers ?? [(arg) => BriefcaseManager.getFileName(arg), (arg) => BriefcaseManager.getCompatibilityFileName(arg)]; // eslint-disable-line deprecation/deprecation
+    const resolvers = args.fileNameResolvers ?? [(arg) => BriefcaseManager.getFileName(arg)];
+
     // see if we can open any of the briefcaseIds we already acquired from iModelHub
-    for (const resolver of resolvers) {
-      for (const briefcaseId of myBriefcaseIds) {
-        const fileName = resolver({ briefcaseId, iModelId });
-        if (IModelJsFs.existsSync(fileName)) {
-          const briefcaseDb = BriefcaseDb.findByFilename(fileName);
-          if (briefcaseDb !== undefined)
-            return briefcaseDb as BriefcaseDb;
-          try {
-            if (args.forceDownload)
-              throw new Error(); // causes delete below
-            const db = await BriefcaseDb.open(requestContext, { fileName });
-            if (db.changeset.id !== tokenProps.changeSetId)
-              await BriefcaseManager.processChangesets(requestContext, db, { id: tokenProps.changeSetId! });
-            return db;
-          } catch (error) {
-            if (!(error instanceof IModelError && error.errorNumber === IModelStatus.AlreadyOpen))
-              // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
-              await BriefcaseManager.deleteBriefcaseFiles(fileName, args.requestContext);
+    if (resolvers) {
+      for (const resolver of resolvers) {
+        for (const briefcaseId of myBriefcaseIds) {
+          const fileName = resolver({ briefcaseId, iModelId });
+          if (IModelJsFs.existsSync(fileName)) {
+            const briefcaseDb = BriefcaseDb.findByFilename(fileName);
+            if (briefcaseDb !== undefined)
+              return briefcaseDb as BriefcaseDb;
+            try {
+              if (args.forceDownload)
+                throw new Error(); // causes delete below
+              const db = await BriefcaseDb.open(requestContext, { fileName });
+              if (db.changeset.id !== tokenProps.changeset?.id)
+                await BriefcaseManager.processChangesets(requestContext, db, tokenProps.changeset!);
+              return db;
+            } catch (error) {
+              if (!(error instanceof IModelError && error.errorNumber === IModelStatus.AlreadyOpen))
+                // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.
+                await BriefcaseManager.deleteBriefcaseFiles(fileName, args.requestContext);
+            }
           }
         }
       }
@@ -130,8 +133,7 @@ export class RpcBriefcaseUtility {
     const checkpoint: CheckpointProps = {
       iModelId: tokenProps.iModelId!,
       contextId: tokenProps.contextId!,
-      changeSetId: tokenProps.changeSetId!,
-      changesetIndex: tokenProps.changesetIndex,
+      changeset: tokenProps.changeset!,
       requestContext,
     };
 
@@ -157,7 +159,7 @@ export class RpcBriefcaseUtility {
       const request = {
         checkpoint,
         localFile: V1CheckpointManager.getFileName(checkpoint),
-        aliasFiles: [V1CheckpointManager.getCompatibilityFileName(checkpoint)],// eslint-disable-line deprecation/deprecation
+        aliasFiles: [],
       };
       db = await BeDuration.race(timeout, V1CheckpointManager.getCheckpointDb(request));
       requestContext.enter();
@@ -177,23 +179,4 @@ export class RpcBriefcaseUtility {
     return (await this.open({ requestContext, tokenProps, syncMode, timeout })).toJSON();
   }
 
-  /** Close the briefcase if necessary */
-  public static async close(requestContext: AuthorizedClientRequestContext, tokenProps: IModelRpcProps): Promise<boolean> {
-    // Close is a no-op for ReadOnly connections
-    if (OpenMode.Readonly === tokenProps.openMode)
-      return true;
-
-    // For read-write connections, close the briefcase and delete local copies of it
-    const briefcaseDb = BriefcaseDb.tryFindByKey(tokenProps.key);
-    if (!briefcaseDb)
-      return false;
-
-    const fileName = briefcaseDb.pathName;
-    if (!briefcaseDb.isOpen)
-      return false;
-
-    briefcaseDb.close();
-    await BriefcaseManager.deleteBriefcaseFiles(fileName, requestContext);
-    return true;
-  }
 }

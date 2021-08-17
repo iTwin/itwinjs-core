@@ -7,7 +7,7 @@ import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
 import { PropertyDescription, PropertyRecord, PropertyValue, PropertyValueFormat } from "@bentley/ui-abstract";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { Table } from "../../../ui-components";
 import {
   DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments, DropTargetProps,
@@ -24,8 +24,6 @@ describe("Table withDragDrop HOC", () => {
   const DragDropTable = wrapInTestContext(TableWithDragDrop);
 
   const renderIntoDocument = createDnDRenderer(TableWithDragDrop);
-
-  afterEach(cleanup);
 
   const createRowItem = (index: number) => {
     const rowItem: RowItem = { key: index.toString(), cells: [] };
