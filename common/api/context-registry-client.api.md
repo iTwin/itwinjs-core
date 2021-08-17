@@ -6,48 +6,38 @@
 
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';
-import { RequestQueryOptions } from '@bentley/itwin-client';
 import { WsgClient } from '@bentley/itwin-client';
-import { WsgInstance } from '@bentley/itwin-client';
 
 // @beta
-export class Asset extends CommonAssetProjectContext {
+export interface ITwin {
     // (undocumented)
-    assetType?: string;
-}
-
-// @beta
-export class Context extends WsgInstance {
+    code?: string;
     // (undocumented)
-    allowExternalTeamMembers?: boolean;
-    // (undocumented)
-    contextTypeId?: ContextType;
-    // (undocumented)
-    dataLocationId?: string;
+    id: string;
     // (undocumented)
     name?: string;
-    // (undocumented)
-    number?: string;
-    // (undocumented)
-    status?: number;
-    // (undocumented)
-    teamId?: string;
-    // (undocumented)
-    ultimateRefId?: string;
 }
 
 // @beta
-export class ContextRegistryClient extends WsgClient {
+export interface ITwinAccess {
+    getAll: (requestContext: AuthorizedClientRequestContext, queryOptions?: ITwinQueryArg) => Promise<ITwin[]>;
+    getAllByName: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<ITwin[]>;
+    getById: (requestContext: AuthorizedClientRequestContext, id: string) => Promise<ITwin>;
+    getFavorites: (requestContext: AuthorizedClientRequestContext, queryOptions?: ITwinQueryArg) => Promise<ITwin[]>;
+    getRecentlyUsed: (requestContext: AuthorizedClientRequestContext, queryOptions?: ITwinQueryArg) => Promise<ITwin[]>;
+}
+
+// @beta
+export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     constructor();
     // (undocumented)
     static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
-    getAsset(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset>;
-    getAssets(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset[]>;
-    getInvitedProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project[]>;
-    getProject(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project>;
-    getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project[]>;
+    getAll(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]>;
+    getAllByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin[]>;
+    getById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ITwin>;
+    getFavorites(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]>;
+    getRecentlyUsed(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]>;
     protected getRelyingPartyUrl(): string;
-    getTeam(requestContext: AuthorizedClientRequestContext): Promise<Team>;
     // @internal (undocumented)
     protected getUrlSearchKey(): string;
     // (undocumented)
@@ -57,35 +47,11 @@ export class ContextRegistryClient extends WsgClient {
 }
 
 // @beta
-export interface ContextRegistryRequestQueryOptions extends RequestQueryOptions {
-    isFavorite?: boolean;
-    isMRU?: boolean;
-}
-
-// @beta
-export enum ContextType {
+export interface ITwinQueryArg {
     // (undocumented)
-    Asset = 2,
+    skip?: number;
     // (undocumented)
-    Project = 3,
-    // (undocumented)
-    Team = 1,
-    // (undocumented)
-    Unknown = 0
-}
-
-// @beta
-export class Project extends CommonAssetProjectContext {
-    // (undocumented)
-    assetId?: string;
-    // (undocumented)
-    isRbacEnabled?: boolean;
-    // (undocumented)
-    type?: string;
-}
-
-// @beta
-export class Team extends CommonContext {
+    top?: number;
 }
 
 
