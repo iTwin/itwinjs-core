@@ -70,7 +70,7 @@ title: iTwin Connector Developer Guide
 
 iTwin Connectors play an essential role in enabling a wide range of both Bentley and third-party design applications to contribute to an iTwin. Bentley iTwin Services provides connectors to support a wide array of design applications to ensure that all engineering data can be aggregated into a single digital twin environment inside an iModel.
 
-As explained in the [overview](../learning/imodel-connectors.md), a "Connector" is a program that:
+As explained in the [overview](./imodel-connectors.md), a "Connector" is a program that:
 
 1. Reads information from a data source,
 2. Aligns the source data with the BIS schema and preferably a domain schema, and
@@ -94,7 +94,7 @@ It is not relevant for someone trying to bring in data for which a Connector alr
 
 ### Ways to sync data to an iTwin
 
-[The iTwin Synchronizer portal](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47606/itwin-synchronizer-portal) and [iTwin Synchronizer client](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47597/itwin-synchronizer-client) provide a two different [Ways to sync your data to an iTwin](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47596/ways-to-sync-your-data-to-an-itwin#LimPortal) Lastly, the [iTwin Snapshot Application](https://www.itwinjs.org/learning/tutorials/itwin-snapshot-app/) is a free tool for developers to create a read-only, static "snapshot" of an iModel and visualize it.
+[The iTwin Synchronizer portal](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47606/itwin-synchronizer-portal) and [iTwin Synchronizer client](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47597/itwin-synchronizer-client) provide a two different [Ways to sync your data to an iTwin](https://communities.bentley.com/products/digital-twin-cloud-services/itwin-services/w/synchronization-wiki/47596/ways-to-sync-your-data-to-an-itwin#LimPortal) Lastly, the [iTwin Snapshot Application](./tutorials/itwin-snapshot-app) is a free tool for developers to create a read-only, static "snapshot" of an iModel and visualize it.
 
 The following are the various steps involved in that workflow.
 ![iTwin workflow](https://communities.bentley.com/resized-image/__size/650x340/__key/communityserver-wikis-components-files/00-00-00-05-55/pastedimage1591602805184v1.png)
@@ -108,8 +108,8 @@ To understand the APIs, you will need to have an understanding of typescript.
 
 Two foundational articles which are highly recommended for background knowledge of building connectors are:
 
-- [Intro to BIS - Information Hierarchy](https://www.itwinjs.org/bis/intro/information-hierarchy/)
-- [Intro to BIS - Fabric of the Universe](https://www.itwinjs.org/bis/intro/fabric-of-the-universe/)
+- [Intro to BIS - Information Hierarchy](../bis/intro/information-hierarchy)
+- [Intro to BIS - Fabric of the Universe](../bis/intro/fabric-of-the-universe)
 
 ### Structure of the guide
 
@@ -143,7 +143,7 @@ iModel uses BIS schemas to describe the persistence model of the digital twin. A
 
 #### Changeset
 
-A changeset represents a file containing changes corresponding to an iModel briefcase. For more information on changesets, please see [ChangeSets](https://www.itwinjs.org/reference/imodelhub-client/imodelhubclient/changeset/)
+A changeset represents a file containing changes corresponding to an iModel briefcase. For more information on changesets, please see [ChangeSets]($imodelhub-client)
 
 ## The basics of writing a Connector
 
@@ -155,7 +155,7 @@ There are three main steps that a Connector needs to undertake to bring data int
 
 - Extract data from the input source
 - Transform and align the data to the digital twin.
-- Generate [changesets](https://github.com/imodeljs/imodeljs/blob/master/docs/learning/iModelHub/index.md#the-timeline-of-changes-to-an-imodel) and load data into an iModel.
+- Generate [changesets](./iModelHub/index.md#the-timeline-of-changes-to-an-imodel) and load data into an iModel.
 
 The sections below give a high-level overview of the various parts that go into creating an iTwin Connector.
 
@@ -194,7 +194,7 @@ There are roughly three degrees of customizations you may need to employ to conn
 
 Bentley has authored many "domain" schemas to support connectors for many of its authoring applications. For the most aligned data (i.e., data published from your Connector uses the same classes and properties as data published from other connectors), it is best to use a domain schema.
 
-To see what domains exist in BIS, see [Domains](https://www.itwinjs.org/bis/domains/)
+To see what domains exist in BIS, see [Domains](../bis/domains/)
 
 Sometimes BIS domain schemas are not adequate to capture all the data in the authoring application. The flow chart below can be used to assist in deciding which schema methodology to use.
 
@@ -206,9 +206,9 @@ When the format for incoming data in the native source is not completely known, 
 
 For example, if the native source allows for user-defined classes or properties, then as the classes and properties are read from the native source, they can be added to an iModel schema in-memory and real-time (a.k.a. dynamically). In effect, each native source file has its unique schema.
 
-As an iTwin Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that subsequent executions can use. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](https://github.com/imodeljs/imodeljs/tree/master/docs/bis/intro/schema-versioning-and-generations.md)
+As an iTwin Connector always runs multiple times to keep an iModel synchronized, the schemas created by previous executions limit the schemas that subsequent executions can use. To provide consistency and enable concise changesets, the Connector adds to the previously-defined schemas (creating new schema versions). This follows the general schema update strategy defined in [Schema Versioning and Generations](../bis/intro/schema-versioning-and-generations.md)
 
-The [DynamicSchema](https://www.itwinjs.org/bis/domains/corecustomattributes.ecschema/#dynamicschema) custom attribute should be set on customer-specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes,` enabling iModelHub to detect dynamic schemas programmatically. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
+The [DynamicSchema](../bis/domains/corecustomattributes.ecschema/#dynamicschema) custom attribute should be set on customer-specific application schemas. This custom attribute can be found in the standard schema `CoreCustomAttributes,` enabling iModelHub to detect dynamic schemas programmatically. Dynamic schemas require special handling since their name and version are typically duplicated between iModels from different work sets.
 
 ##### Display Labels
 
@@ -239,13 +239,13 @@ A common condition occurs where a property is generally readable and unique, but
 
 For some elements in some models, such an identifier may really not exist. For example, a simple geometric line element w/o additional business data would not have an obvious, unique, and human-readable identifier, and it would generally be detrimental to generate a CodeValue solely for not leaving it blank. Additionally, generated CodeValues have a high chance of violating the "human-readable" requirement. In such a case, this section should not be taken as a directive to generate such an identifier when it doesn't exist.
 
-Refer to [Element Codes](https://www.itwinjs.org/bis/intro/codes/) in the "Introduction to BIS" documentation.
+Refer to [Element Codes](../bis/intro/codes) in the "Introduction to BIS" documentation.
 
 #### Sync
 
 ##### Detecting and pushing changes
 
-Rather than starting over when the source data changes, a Connector should be able to detect and convert only the differences. That makes for compact, meaningful changesets, which are added to the iModel's [timeline](https://github.com/imodeljs/imodeljs/blob/master/docs/learning/iModelHub/index.md#the-timeline-of-changes-to-an-imodel).
+Rather than starting over when the source data changes, a Connector should be able to detect and convert only the differences. That makes for compact, meaningful changesets, which are added to the iModel's [timeline](./iModelHub/index.md#the-timeline-of-changes-to-an-imodel).
 
 In the case of source data that was previously converted and has changed, the Connector should update the data in the iModel that were the results of the previous conversion. In the case of source data that was previously converted and has been deleted in the source, the Connector should delete the results of the last conversion. Source data that has been added should be inserted.
 
@@ -258,13 +258,13 @@ A Connector is usually dealing with two levels of provenance
 1. What is the identity and metadata of a file or repository synchronized into an iModel?
 2. What is the identity of the element within that repository?
 
-[RepositoryLink](https://www.itwinjs.org/reference/imodeljs-backend/elements/repositorylink/) is a specialization of a UrlLink which has a "Url" property pointing to an external resource or repository and a RepositoryGuid that identifies the external repository.
+[RepositoryLink]($imodeljs-backend) is a specialization of a UrlLink which has a "Url" property pointing to an external resource or repository and a RepositoryGuid that identifies the external repository.
 
-[ExternalSource](https://www.itwinjs.org/reference/imodeljs-backend/elements/externalsource/) is an information container found in a repository. A few use cases for ExternalSources are listed below:
+[ExternalSource]($imodeljs-backend) is an information container found in a repository. A few use cases for ExternalSources are listed below:
 
 1. A MicroStation DGN file, for example, may contain multiple models which in turn contain elements. The repository link would point to the DGN file while the ExternalSource would refer the models within the DGN file,
 2. In many cases, the external file is not a container for multiple smaller models, so there would be a one-to-one correspondence between an ExternalSource and its RepositoryLink,
-3. In the latter case, when there is also no possibility for referencing, layering or otherwise superimposing files and or models, then a common practice is to duplicate elements across one or more files to acheive the effect of reference elements. In this case, one element may refer to multiple ExternalSources and this is done via an [ExternalSourceGroup](https://www.itwinjs.org/reference/imodeljs-backend/elements/externalsourcegroup/)
+3. In the latter case, when there is also no possibility for referencing, layering or otherwise superimposing files and or models, then a common practice is to duplicate elements across one or more files to acheive the effect of reference elements. In this case, one element may refer to multiple ExternalSources and this is done via an [ExternalSourceGroup]($imodeljs-backend)
 
 ###### Case 1 : File metadata
 
@@ -321,7 +321,7 @@ See [updateElementClass](https://github.com/imodeljs/itwin-Connector-sample/blob
 
 An iTwin Connector uses the ExternalSourceAspect class defined in the BIS schema to store information about the element.
 
-Note: the [Federation GUID](https://www.itwinjs.org/bis/intro/element-fundamentals/#federationguid) is an optional property available for mapping external ids to elements in the iModel. The Code is also a helpful way of searching for an element based on external data. If the source data does not have stable, unique IDs, then the Connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
+Note: the [Federation GUID](../bis/intro/element-fundamentals#federationguid) is an optional property available for mapping external ids to elements in the iModel. The Code is also a helpful way of searching for an element based on external data. If the source data does not have stable, unique IDs, then the Connector will have to use some other means of identifying pieces of source data in a stable way. A cryptographic hash of the source data itself can work as a stable Id -- that is, it can be used to identify data that has not changed.
 
 ##### Change detection
 
@@ -391,7 +391,7 @@ The framework will automatically detect and delete elements and models if the co
 
 ### Getting started
 
-You'll need Node.js version ">=12.17.0 <15.0”. Please refer to [Section 1 from iTwin.js Getting Started](https://www.itwinjs.org/getting-started/) for more details.
+You'll need Node.js version ">=12.17.0 <15.0”. Please refer to [Section 1 from iTwin.js Getting Started](../getting-started/index#get-the-tools) for more details.
 
 The node packages you'll need can be installed using
 
@@ -483,8 +483,8 @@ Use this method to add any models (e.g., physical, definition, or group) require
 
 See also:
 
-- [DefinitionModel.insert](https://www.itwinjs.org/reference/imodeljs-backend/models/definitionmodel/insertstatic/#insert)
-- [PhysicalModel.insert](https://www.itwinjs.org/reference/imodeljs-backend/models/physicalmodel/insertstatic/#insert)
+- [DefinitionModel.insert]($imodeljs-backend)
+- [PhysicalModel.insert]($imodeljs-backend)
 
 #### OpenSourceData
 
@@ -579,10 +579,10 @@ const error =`Unable to find model Id for ${undefined === groupModelId ? ModelNa
 
 The ultimate purpose of a Connector is to synchronize an iModel with the data in one or more source documents. The synchronization step involves authorization, communicating with an iModel server, converting data, and concurrency control. iTwin.js defines a framework in which the Connector itself can focus on the tasks of extraction, alignment, and change-detection. The other functions are handled by classes provided by iTwin.js. The framework is implemented by the BridgeRunner class. A BridgeRunner conducts the overall synchronization process. It loads and calls functions on a Connector at the appropriate points in the sequence. The process may be summarized as follows:
 
-- BridgeRunner: [Opens a local briefcase copy](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/IModelDb.md) of the iModel that is to be updated.
+- BridgeRunner: [Opens a local briefcase copy](./backend/IModelDb.md) of the iModel that is to be updated.
 - Import or Update Schema
-  - Connector: Possibly [import an appropriate BIS schema into the briefcase](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/SchemasAndElementsInTypeScript.md#importing-the-schema) or upgrade an existing schema.
-  - BridgeRunner: [Push](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModel server.
+  - Connector: Possibly [import an appropriate BIS schema into the briefcase](./backend/SchemasAndElementsInTypeScript.md#importing-the-schema) or upgrade an existing schema.
+  - BridgeRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) the results to the iModel server.
 - Convert Changed Data
   - Connector:
     - Opens to the data source.
@@ -590,8 +590,8 @@ The ultimate purpose of a Connector is to synchronize an iModel with the data in
     - [Transform](#data-alignment) the new or changed source data into the target BIS schema.
     - Write the resulting BIS data to the local briefcase.
     - Remove BIS data corresponding to deleted source data.
-  - BridgeRunner: Obtain required [Locks and Codes](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/ConcurrencyControl.md) from the iModel server and code server.
-- BridgeRunner: [Push](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) changes to the iModel server.
+  - BridgeRunner: Obtain required [Locks and Codes](./backend/ConcurrencyControl.md) from the iModel server and code server.
+- BridgeRunner: [Push](./backend/IModelDbReadwrite.md#pushing-changes-to-imodelhub) changes to the iModel server.
 
 ### Analyzing the Connector output
 
@@ -599,7 +599,7 @@ As a Connector developer, once the data is transformed into an iModel, one needs
 
 #### ECSQL
 
-Please see this article on [ECSQL](https://www.itwinjs.org/learning/ecsqltutorial/) as a prerequisite for this section. The iModelConsole instance below demonstrates how you can use ECSQL to find some of the transformed data in an iModel.
+Please see this article on [ECSQL](../ecsqltutorial/index#learning-ecsql) as a prerequisite for this section. The iModelConsole instance below demonstrates how you can use ECSQL to find some of the transformed data in an iModel.
 
 <figure>
   <iframe style="height:40vh;width:60vw;" src="https://www.itwinjs.org/console/?imodel=House%20Sample%20Bak&query=SELECT%20Element.Id%20FROM%20bis.ExternalSourceAspect%20WHERE%20Identifier=%27197359%27">
@@ -628,16 +628,16 @@ Some sample queries that is helpful to debug Connector output
 
 #### Visualizing the output
 
-To get started, please build it using the instructions provided in the [iTwin Desktop Viewer](https://www.itwinjs.org/learning/tutorials/develop-desktop-viewer/)
+To get started, please build it using the instructions provided in the [iTwin Desktop Viewer](./tutorials/index#develop-desktop-viewer)
 Once the application is built and running, use the briefcase icon to open the output from the Connector. Some of the [frontend developer tools](https://www.npmjs.com/package/@bentley/frontend-devtools/v/1.5.0) are also useful to analyze the data. E.g. fdt inspect element.
 
 ### Logs
 
-See this article on [Logging](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/common/Logging.md)
+See this article on [Logging](./common/Logging.md)
 
 ### Error Messages
 
-See [Errors](https://www.itwinjs.org/reference/bentleyjs-core/errors/)
+See [Errors]($bentleyjs-core)
 
 ### Building a test for a Connector
 
@@ -674,18 +674,18 @@ Generally, for iModels primarily generated from connectors that deal with buildi
 
 ### Dealing with geometry
 
-Please see the section on [GeometryStream](https://www.itwinjs.org/learning/common/geometrystream/) to understand the persistence of iModel geometry. Inside a Connector, the input data geometry needs to be transformed and persisted as a geometrystream stored with the element. The [geometry library](https://www.itwinjs.org/learning/geometry/) provided as a part of iTwin.js will aid in the heavy lifting of complex calculations.
+Please see the section on [GeometryStream](./common/geometrystream) to understand the persistence of iModel geometry. Inside a Connector, the input data geometry needs to be transformed and persisted as a geometrystream stored with the element. The [geometry library](./geometry/index#the-geometry-library) provided as a part of iTwin.js will aid in the heavy lifting of complex calculations.
 
 Typical workflow to create iModel geometry is
 
 1. Identify the suitable ECClass to persist your data. Typically this is a PhysicalElement
-2. Construct a [GeometryStreamBuilder](https://www.itwinjs.org/reference/imodeljs-common/geometry/geometrystreambuilder/) to help with collecting all the geometric primitives that will be used to create the element.
+2. Construct a [GeometryStreamBuilder]($imodeljs-common) to help with collecting all the geometric primitives that will be used to create the element.
 3. Create and map individual geometric primitives from the input data and feed it into the geometrystream. To learn how to create individual primitives that will be fed into the geometrystreambuilder, the [iTwin Geometry sample](https://www.itwinjs.org/sample-showcase/?group=Geometry+Samples&sample=simple-3d-sample) is a good starting point
-4. Provide geometry and other details to the element creation logic. Please see [GeometricElement3d](https://www.itwinjs.org/learning/backend/createelements/#geometricelement3d)
+4. Provide geometry and other details to the element creation logic. Please see [GeometricElement3d](./backend/createelements#geometricelement3d)
 
 ### Authentication
 
-See this article on [AccessToken](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/common/AccessToken.md)
+See this article on [AccessToken](./common/AccessToken.md)
 
 ### Locks & Codes
 
@@ -703,14 +703,14 @@ Job-subject scoping also prevents problems with locks and codes. The codes used 
 
 For more indepth information please see:
 
-- [BriefcaseManager.create](https://www.itwinjs.org/reference/imodeljs-backend/imodels/briefcasemanager/createstatic/#create)
-- [BriefcaseDb.open](https://www.itwinjs.org/reference/imodeljs-backend/imodels/briefcasedb/openstatic/#open)
-- [IModelDb.saveChanges](https://www.itwinjs.org/reference/imodeljs-backend/imodels/imodeldb/savechanges/#savechanges)
-- [BriefcaseDb.pullAndMergeChanges](https://www.itwinjs.org/reference/imodeljs-backend/imodels/briefcasedb/pullandmergechanges/#pullandmergechanges)
-- [BriefcaseDb.pushChanges](https://www.itwinjs.org/reference/imodeljs-backend/imodels/briefcasedb/pushchanges/#pushchanges)
-- [ConcurrencyControl](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/ConcurrencyControl.md)
-- [Insert a Subject element](https://www.itwinjs.org/learning/backend/createelements/#subject)
-- [Insert a ModelSelector element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#ModelSelector)
-- [Insert a CategorySelector element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#CategorySelector)
-- [Insert a DisplayStyle3d element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#DisplayStyle3d)
-- [Insert a OrthographicViewDefinition element](https://github.com/imodeljs/imodeljs/tree/master/docs/learning/backend/CreateElements.md#OrthographicViewDefinition)
+- [BriefcaseManager.create]($imodeljs-backend)
+- [BriefcaseDb.open]($imodeljs-backend)
+- [IModelDb.saveChanges]($imodeljs-backend)
+- [BriefcaseDb.pullAndMergeChanges]($imodeljs-backend)
+- [BriefcaseDb.pushChanges]($imodeljs-backend)
+- [ConcurrencyControl](./backend/ConcurrencyControl.md)
+- [Insert a Subject element](./backend/createelements#subject)
+- [Insert a ModelSelector element](./backend/CreateElements.md#ModelSelector)
+- [Insert a CategorySelector element](./backend/CreateElements.md#CategorySelector)
+- [Insert a DisplayStyle3d element](./backend/CreateElements.md#DisplayStyle3d)
+- [Insert a OrthographicViewDefinition element](./backend/CreateElements.md#OrthographicViewDefinition)
