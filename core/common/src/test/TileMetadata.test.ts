@@ -84,6 +84,7 @@ describe("TileMetadata", () => {
       // inputs
       id: IModelTileTreeId;
       ignoreProjectExtents?: true;
+      noOptimizeBReps?: true;
       maxVersion?: number;
       // expected
       baseId: string;
@@ -92,22 +93,37 @@ describe("TileMetadata", () => {
 
     const kNone = TreeFlags.None;
     const kExtents = TreeFlags.UseProjectExtents;
+    const kBReps = TreeFlags.OptimizeBRepProcessing;
     const kPriority = TreeFlags.EnforceDisplayPriority;
-    const kAll = kExtents | kPriority;
+    const kDefaults = kExtents | kBReps;
+    const kAll = kDefaults | kPriority;
 
     const testCases: TestCase[] = [
       {
         id: primaryId(),
         baseId: "",
-        flags: kExtents,
+        flags: kDefaults,
       },
       {
         id: primaryId(false),
         baseId: "E:0_",
+        flags: kDefaults,
+      },
+      {
+        id: primaryId(true),
+        ignoreProjectExtents: true,
+        baseId: "",
+        flags: kBReps,
+      },
+      {
+        id: primaryId(true),
+        noOptimizeBReps: true,
+        baseId: "",
         flags: kExtents,
       },
       {
         id: primaryId(true),
+        noOptimizeBReps: true,
         ignoreProjectExtents: true,
         baseId: "",
         flags: kNone,
@@ -116,13 +132,13 @@ describe("TileMetadata", () => {
         id: primaryId(false),
         ignoreProjectExtents: true,
         baseId: "E:0_",
-        flags: kNone,
+        flags: kBReps,
       },
       {
         id: primaryId(false, true),
         ignoreProjectExtents: true,
         baseId: "E:0_",
-        flags: kPriority,
+        flags: kPriority | kBReps,
       },
       {
         id: primaryId(true, true),
@@ -132,7 +148,7 @@ describe("TileMetadata", () => {
       {
         id: primaryId(false, false, "abcxyz"),
         baseId: "E:0_Sabcxyzs",
-        flags: kExtents,
+        flags: kDefaults,
       },
       {
         id: primaryId(true, true, "fakeclip"),
@@ -142,74 +158,79 @@ describe("TileMetadata", () => {
       {
         id: primaryId(true, false, undefined, { id: "0x123", node: 0x5a }),
         baseId: "A:0x123_#5a_",
-        flags: kExtents,
+        flags: kDefaults,
       },
       {
         id: primaryId(false, false, undefined, { id: "0xfde" }),
         ignoreProjectExtents: true,
         baseId: "A:0xfde_#ffffffff_E:0_",
-        flags: kNone,
+        flags: kBReps,
       },
       {
         id: primaryId(false, false, "clippy", { id: "0x5c", node: 32 }),
         baseId: "A:0x5c_#20_E:0_Sclippys",
-        flags: kExtents,
+        flags: kDefaults,
       },
       // Animation and display priority are incompatible - animation wins
       {
         id: primaryId(true, true, undefined, { id: "0x1a", node: 5 }),
         baseId: "A:0x1a_#5_",
-        flags: kExtents,
+        flags: kDefaults,
       },
 
       {
         id: classifierId(),
         baseId: "CP:1.000000_",
-        flags: kExtents,
+        flags: kDefaults,
       },
       {
         id: classifierId(0.250000),
         baseId: "CP:0.250000_",
-        flags: kExtents,
+        flags: kDefaults,
       },
       {
         id: classifierId(2.500000, false),
         baseId: "C:2.500000_",
-        flags: kExtents,
+        flags: kDefaults,
       },
       {
         id: classifierId(3, false, { id: "0xabc", node: 0xfe }),
         baseId: "C:3.000000_A:0xabc_#fe_",
-        flags: kExtents,
+        flags: kDefaults,
       },
       {
         id: classifierId(12.00001234),
         baseId: "CP:12.000012_",
-        flags: kExtents,
+        flags: kDefaults,
       },
       {
         id: classifierId(123456789.0),
         baseId: "CP:123456789.000000_",
-        flags: kExtents,
+        flags: kDefaults,
       },
       // Planar classifiers can ignore project extents.
       {
         id: classifierId(),
         ignoreProjectExtents: true,
         baseId: "CP:1.000000_",
-        flags: kNone,
+        flags: kBReps,
       },
       // Volume classifiers always use project extents.
       {
         id: classifierId(1, false),
         ignoreProjectExtents: true,
         baseId: "C:1.000000_",
-        flags: kExtents,
+        flags: kDefaults,
       },
     ];
 
     for (const test of testCases) {
-      const options = { ...defaultTileOptions, useProjectExtents: true !== test.ignoreProjectExtents };
+      const options = {
+        ...defaultTileOptions,
+        useProjectExtents: true !== test.ignoreProjectExtents,
+        optimizeBRepProcessing: true !== test.noOptimizeBReps,
+      };
+
       if (undefined !== test.maxVersion)
         options.maximumMajorTileFormatVersion = test.maxVersion;
 
@@ -244,6 +265,7 @@ describe("TileMetadata", () => {
           useProjectExtents: true === expected.projectExtents,
           disableMagnification: false,
           alwaysSubdivideIncompleteTiles: false,
+          optimizeBRepProcessing: false,
         };
 
         expect(TileOptions.fromTreeIdAndContentId(treeId, contentId)).to.deep.equal(options);
@@ -322,6 +344,7 @@ describe("TileMetadata", () => {
         noPatterns?: boolean;
         externalTextures?: boolean;
         projectExtents?: boolean;
+        optimizeBReps?: boolean;
       };
     }
 
@@ -338,6 +361,7 @@ describe("TileMetadata", () => {
           useProjectExtents: true === expected.tileOptions.projectExtents,
           disableMagnification: false,
           alwaysSubdivideIncompleteTiles: false,
+          optimizeBRepProcessing: true === expected.tileOptions.optimizeBReps,
         };
         const parsed = parseTileTreeIdAndContentId(treeId, contentId);
 
@@ -359,7 +383,7 @@ describe("TileMetadata", () => {
     test("4_0-0x1c", "-0-1-2-3", "content");
     test("4_0-0x1c", "0-1-2-3-4", "content");
 
-    test("19_1-S010_1_0_-5_30_0_-1_5e-11____s0x1d", "-b-14-32-4-1-1", {
+    test("19_5-S010_1_0_-5_30_0_-1_5e-11____s0x1d", "-b-14-32-4-1-1", {
       tileOptions: {
         elision: true,
         instancing: true,
@@ -367,6 +391,7 @@ describe("TileMetadata", () => {
         version: 25,
         projectExtents: true,
         externalTextures: true,
+        optimizeBReps: true,
       },
       modelId: "0x1d",
       treeId: {

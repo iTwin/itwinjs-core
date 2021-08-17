@@ -8,7 +8,6 @@ import { AccessToken } from '@bentley/itwin-client';
 import { AsyncMethodsOf } from '@bentley/imodeljs-frontend';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { CancelRequest } from '@bentley/itwin-client';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { IModelAppOptions } from '@bentley/imodeljs-frontend';
 import { NativeAppAuthorizationBackend } from '@bentley/imodeljs-backend';
 import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
@@ -119,13 +118,13 @@ export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: st
 // @beta (undocumented)
 export abstract class MobileDevice {
     // (undocumented)
-    abstract authGetAccessToken(ctx: ClientRequestContext, callback: (accessToken?: string, err?: string) => void): void;
+    abstract authGetAccessToken(callback: (accessToken?: string, err?: string) => void): void;
     // (undocumented)
-    authInit(_ctx: ClientRequestContext, _config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void;
+    authInit(_config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void;
     // (undocumented)
-    abstract authSignIn(ctx: ClientRequestContext, callback: (err?: string) => void): void;
+    abstract authSignIn(callback: (err?: string) => void): void;
     // (undocumented)
-    abstract authSignOut(ctx: ClientRequestContext, callback: (err?: string) => void): void;
+    abstract authSignOut(callback: (err?: string) => void): void;
     // (undocumented)
     abstract authStateChanged(accessToken?: string, err?: string): void;
     // (undocumented)

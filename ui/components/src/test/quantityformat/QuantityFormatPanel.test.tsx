@@ -5,7 +5,8 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { act, fireEvent, render, wait } from "@testing-library/react";
+import { act, fireEvent, render, waitFor } from "@testing-library/react";
+import userEvent from "@testing-library/user-event";
 import { IModelApp, MockRender, QuantityType } from "@bentley/imodeljs-frontend";
 import TestUtils from "../TestUtils";
 import { QuantityFormatPanel } from "../../ui-components/quantityformat/QuantityFormatPanel";
@@ -488,7 +489,7 @@ describe("QuantityInput", () => {
     act(() => {
       fireEvent.change(sampleInput, { target: { value: "729.32" } });
     });
-    await wait(() => {
+    await waitFor(() => {
       fireEvent.keyDown(sampleInput, { key: "Enter", code: 13 });
       // renderedComponent.debug();
       renderedComponent.getByDisplayValue("729.32");
@@ -497,7 +498,7 @@ describe("QuantityInput", () => {
     act(() => {
       fireEvent.change(sampleInput, { target: { value: "a" } });
     });
-    await wait(() => {
+    await waitFor(() => {
       fireEvent.keyDown(sampleInput, { key: "Enter", code: 13 });
       renderedComponent.getByDisplayValue("0");
     });
@@ -531,31 +532,19 @@ describe("QuantityInput", () => {
     const spy = sinon.spy();
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.LengthEngineering} showSample initialMagnitude={123.45} onFormatChange={spy} />);
     const primaryUnitLabel = renderedComponent.getByTestId("unit-label-Units.FT");
-    act(() => {
-      fireEvent.change(primaryUnitLabel, { target: { value: "testfeet" } });
-    });
-    await wait(() => {
-      renderedComponent.getByText(/testfeet/);
-      expect(spy).to.be.called;
-      spy.resetHistory();
-    });
+    userEvent.type(primaryUnitLabel, "testfeet");
+    const itemLabel = await renderedComponent.findByText(/testfeet/);
+    expect (itemLabel).to.exist;
+    expect(spy).to.be.called;
+    spy.resetHistory();
 
     // NEEDSWORK - Can't get the selectChangeValueByText below to work
     // const primaryUnitSelector = renderedComponent.getByTestId("unit-Units.FT");
-    // act(() => {
-    //   // fireEvent.change(primaryUnitSelector, { target: { value: "Units.YRD:yd" } });
-    //   selectChangeValueByText(primaryUnitSelector, "unit-Units.FT-menu".replace(".", "-"), "YRD",
-    //     (msg: string) => {
-    //       console.log(msg); // eslint-disable-line no-console
-    //       renderedComponent.debug();
-    //     });
-    // });
-    // await wait(() => {
-    //   renderedComponent.getByTestId("unit-label-Units.YRD");
-    //   expect(spy).to.be.called;
-    //   spy.resetHistory();
-    // });
-
+    // fireEvent.change(primaryUnitSelector, { target: {value:"Units.YRD:yd"}});
+    // const unitLabel = await renderedComponent.findByTestId("unit-label-Units.YRD");
+    // expect(unitLabel).to.exist;
+    // expect(spy).to.be.called;
+    // spy.resetHistory();
     // renderedComponent.debug();
   });
 

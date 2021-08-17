@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react"; // , waitForElement
+import { fireEvent, render } from "@testing-library/react"; // , waitForElement
 import { AlphaSlider } from "../../ui-components/color/AlphaSlider";
 
 describe("<AlphaSlider />", () => {
@@ -20,8 +20,6 @@ describe("<AlphaSlider />", () => {
     Object.assign(event, props);
     return event;
   };
-
-  afterEach(cleanup);
 
   it("horizontal slider should render", () => {
     const renderedComponent = render(<AlphaSlider alpha={alpha} isHorizontal={true} />);

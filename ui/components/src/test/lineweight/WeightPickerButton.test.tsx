@@ -7,15 +7,13 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { WeightPickerButton } from "../../ui-components/lineweight/WeightPickerButton";
 
 describe("<WeightPickerButton/>", () => {
   const colorDef = ColorDef.create(ColorByName.blue);
   const activeWeight = 3;
   const weights = [1, 2, 3, 4, 5, 6];
-
-  afterEach(cleanup);
 
   it("should render", () => {
     const renderedComponent = render(<WeightPickerButton activeWeight={activeWeight} weights={weights} colorDef={colorDef} />);

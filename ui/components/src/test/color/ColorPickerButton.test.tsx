@@ -7,15 +7,13 @@ import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
-import { cleanup, fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { ColorPickerButton } from "../../ui-components/color/ColorPickerButton";
 
 // cSpell:ignore colorpicker
 
 describe("<ColorPickerButton/>", () => {
   const colorDef = ColorDef.create(ColorByName.blue);
-
-  afterEach(cleanup);
 
   it("should render", () => {
     const renderedComponent = render(<ColorPickerButton initialColor={colorDef} />);
@@ -66,9 +64,8 @@ describe("<ColorPickerButton/>", () => {
     fireEvent.click(button);
     expect(renderedComponent.container.querySelector(".icon-caret-up")).not.to.be.null;
 
-    const popupDiv = await waitForElement(() => renderedComponent.getByTestId("components-colorpicker-popup-colors"));
-    expect(popupDiv).not.to.be.undefined;
-
+    const popupDiv = renderedComponent.getByTestId("components-colorpicker-popup-colors");
+    expect (popupDiv).not.to.be.undefined;
     if (popupDiv) {
       const title = renderedComponent.getByText("test-title");
       expect(title).not.to.be.undefined;

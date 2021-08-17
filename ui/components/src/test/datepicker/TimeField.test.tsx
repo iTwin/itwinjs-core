@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { TimeField, TimeSpec } from "../../ui-components/datepicker/TimeField";
 import TestUtils from "../TestUtils";
 import { SpecialKey, TimeDisplay } from "@bentley/ui-abstract";
@@ -40,8 +40,6 @@ describe("<TimeField />", () => {
     sinon.restore();
     renderSpy = sinon.spy();
   });
-
-  afterEach(cleanup);
 
   after(() => {
     TestUtils.terminateUiComponents();
