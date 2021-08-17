@@ -7,15 +7,19 @@ import * as chai from "chai";
 import * as chaiAsPromised from "chai-as-promised";
 import * as path from "path";
 import * as fs from "fs";
+import { Base64 } from "js-base64";
 import { BackendITwinClientLoggerCategory } from "@bentley/backend-itwin-client";
 import {
   BeEvent, BentleyLoggerCategory, DbResult, Guid, GuidString, Id64, Id64String, IDisposable, IModelStatus, Logger, LogLevel, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
+import { Box, LineString3d, Point2d, Point3d, Range2d, Range3d, StandardViewIndex, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
+  AuxCoordSystem2dProps,
+  Base64EncodedString,
   ChangesetIdWithIndex,
-  Code, CodeProps, ElementProps, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, PhysicalElementProps, RelatedElement,
-  RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse, SyncMode,
+  Code, CodeProps, CodeScopeSpec, ColorDef, ElementAspectProps, ElementProps, FontType, GeometricElement2dProps, GeometryParams, GeometryPartProps, GeometryStreamBuilder, GeometryStreamProps, ImageSourceFormat, IModel, IModelError, IModelReadRpcInterface, IModelVersion, IModelVersionProps, PhysicalElementProps, PlanProjectionSettings, RelatedElement,
+  RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse, SkyBoxImageType, SubCategoryAppearance, SubCategoryOverride, SyncMode,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
 import { AccessToken, AccessTokenProps, AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
@@ -23,13 +27,17 @@ import { TestUserCredentials, TestUsers, TestUtility } from "@bentley/oidc-signi
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
 import { ClassRegistry } from "../ClassRegistry";
-import { Drawing, PhysicalElement, Subject } from "../Element";
+import { Drawing, DrawingGraphic, GeometryPart, PhysicalElement, Subject } from "../Element";
 import {
-  BriefcaseDb, BriefcaseManager, Element, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, InformationPartitionElement, Model,
-  PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SubjectOwnsPartitionElements,
+  AuxCoordSystem2d,
+  BackendRequestContext,
+  BriefcaseDb, BriefcaseManager, CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, ECSqlStatement, Element, ElementOwnsChildElements, ElementOwnsMultiAspects, ElementOwnsUniqueAspect, ElementUniqueAspect, FunctionalModel, FunctionalSchema, GroupModel, IModelDb, IModelHost, IModelHostConfiguration, IModelJsFs, InformationPartitionElement, Model,
+  ModelSelector,
+  OrthographicViewDefinition,
+  PhysicalModel, PhysicalObject, PhysicalPartition, Platform, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture,
 } from "../imodeljs-backend";
-import { DrawingModel } from "../Model";
-import { ElementDrivesElement, RelationshipProps } from "../Relationship";
+import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordModel, SpatialLocationModel } from "../Model";
+import { DrawingGraphicRepresentsElement, ElementDrivesElement, Relationship, RelationshipProps } from "../Relationship";
 import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
 import { Schema, Schemas } from "../Schema";
 import { HubMock } from "./HubMock";
@@ -141,17 +149,18 @@ export enum TestUserType {
   SuperManager
 }
 
-export class IModelTestUtils {
-  private static testOrg = {
+export namespace IModelTestUtils {
+  const testOrg = {
     name: "Test Organization",
     id: Guid.createValue(),
   };
+
   /** get an AuthorizedClientRequestContext for a [[TestUserType]].
      * @note if the current test is using [[HubMock]], calling this method multiple times with the same type will return users from the same organization,
      * but with different credentials. This can be useful for simulating more than one user of the same type on the same project.
      * However, if a real IModelHub is used, the credentials are supplied externally and will always return the same value (because otherwise they would not be valid.)
      */
-  public static async getUserContext(user: TestUserType): Promise<AuthorizedClientRequestContext> {
+  export async function getUserContext(user: TestUserType): Promise<AuthorizedClientRequestContext> {
     if (HubMock.isValid) {
       const firstName = TestUserType[user];
       const lastName = "User";
@@ -167,7 +176,7 @@ export class IModelTestUtils {
             lastName,
             name: `${firstName} ${lastName}`,
           },
-          organization: this.testOrg,
+          organization: testOrg,
         },
         startsAt: new Date(Date.now()).toJSON(),
         expiresAt: new Date(Date.now() + 60 * 60 * 100).toJSON(), /* 1 hour from now */
@@ -194,14 +203,14 @@ export class IModelTestUtils {
   }
 
   /** Helper to open a briefcase db directly with the BriefcaseManager API */
-  public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext }): Promise<BriefcaseDb> {
+  export async function downloadAndOpenBriefcase(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext }): Promise<BriefcaseDb> {
     assert.isTrue(HubUtility.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const props = await BriefcaseManager.downloadBriefcase(args.requestContext, args);
     return BriefcaseDb.open(args.requestContext, { fileName: props.fileName });
   }
 
   /** Opens the specific iModel as a Briefcase through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
-  public static async openBriefcaseUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<BriefcaseDb> {
+  export async function openBriefcaseUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<BriefcaseDb> {
     args.requestContext.enter();
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
@@ -229,7 +238,7 @@ export class IModelTestUtils {
   }
 
   /** Downloads and opens a v1 checkpoint */
-  public static async downloadAndOpenCheckpoint(args: { requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
+  export async function downloadAndOpenCheckpoint(args: { requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
@@ -244,7 +253,7 @@ export class IModelTestUtils {
   }
 
   /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
-  public static async openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<SnapshotDb> {
+  export async function openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
@@ -271,7 +280,7 @@ export class IModelTestUtils {
     }
   }
 
-  public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: IModelDb) {
+  export async function closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: IModelDb) {
     const fileName = briefcaseDb.pathName;
     const iModelId = briefcaseDb.iModelId;
     briefcaseDb.close();
@@ -296,7 +305,7 @@ export class IModelTestUtils {
    * @param subDirName Sub-directory under known test output directory. Should match the name of the test file minus the .test.ts file extension.
    * @param fileName Name of output fille
    */
-  public static prepareOutputFile(subDirName: string, fileName: string): string {
+  export function prepareOutputFile(subDirName: string, fileName: string): string {
     if (!IModelJsFs.existsSync(KnownTestLocations.outputDir))
       IModelJsFs.mkdirSync(KnownTestLocations.outputDir);
 
@@ -312,21 +321,21 @@ export class IModelTestUtils {
   }
 
   /** Resolve an asset file path from the asset name by looking in the known assets directory */
-  public static resolveAssetFile(assetName: string): string {
+  export function resolveAssetFile(assetName: string): string {
     const assetFile = path.join(KnownTestLocations.assetsDir, assetName);
     assert.isTrue(IModelJsFs.existsSync(assetFile));
     return assetFile;
   }
 
   /** Orchestrates the steps necessary to create a new snapshot iModel from a seed file. */
-  public static createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotDb {
+  export function createSnapshotFromSeed(testFileName: string, seedFileName: string): SnapshotDb {
     const seedDb: SnapshotDb = SnapshotDb.openFile(seedFileName);
     const testDb: SnapshotDb = SnapshotDb.createFrom(seedDb, testFileName);
     seedDb.close();
     return testDb;
   }
 
-  public static getUniqueModelCode(testDb: IModelDb, newModelCodeBase: string): Code {
+  export function getUniqueModelCode(testDb: IModelDb, newModelCodeBase: string): Code {
     let newModelCode: string = newModelCodeBase;
     let iter: number = 0;
     while (true) {
@@ -339,7 +348,7 @@ export class IModelTestUtils {
     }
   }
 
-  public static generateChangeSetId(): ChangesetIdWithIndex {
+  export function generateChangeSetId(): ChangesetIdWithIndex {
     let result = "";
     for (let i = 0; i < 20; ++i) {
       result += Math.floor(Math.random() * 256).toString(16).padStart(2, "0");
@@ -348,7 +357,7 @@ export class IModelTestUtils {
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
-  public static createAndInsertPhysicalPartition(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
+  export function createAndInsertPhysicalPartition(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
     const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
     const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
 
@@ -363,7 +372,7 @@ export class IModelTestUtils {
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
-  public static async createAndInsertPhysicalPartitionAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String> {
+  export async function createAndInsertPhysicalPartitionAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String> {
     const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
     const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
 
@@ -382,7 +391,7 @@ export class IModelTestUtils {
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
-  public static createAndInsertPhysicalModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
+  export function createAndInsertPhysicalModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
     const newModelId = testDb.models.insertModel(newModel);
     assert.isTrue(Id64.isValidId64(newModelId));
@@ -392,7 +401,7 @@ export class IModelTestUtils {
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
-  public static async createAndInsertPhysicalModelAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
+  export async function createAndInsertPhysicalModelAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
     if (testDb.isBriefcaseDb()) {
       await testDb.concurrencyControl.requestResourcesForInsert(reqContext, [], [newModel]);
@@ -409,7 +418,7 @@ export class IModelTestUtils {
    * Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
    * @return [modeledElementId, modelId]
    */
-  public static createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parent?: Id64String): Id64String[] {
+  export function createAndInsertPhysicalPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parent?: Id64String): Id64String[] {
     const eid = IModelTestUtils.createAndInsertPhysicalPartition(testImodel, newModelCode, parent);
     const modeledElementRef = new RelatedElement({ id: eid });
     const mid = IModelTestUtils.createAndInsertPhysicalModel(testImodel, modeledElementRef, privateModel);
@@ -420,7 +429,7 @@ export class IModelTestUtils {
    * Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
    * @return [modeledElementId, modelId]
    */
-  public static async createAndInsertPhysicalPartitionAndModelAsync(reqContext: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parentId?: Id64String): Promise<Id64String[]> {
+  export async function createAndInsertPhysicalPartitionAndModelAsync(reqContext: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parentId?: Id64String): Promise<Id64String[]> {
     const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(reqContext, testImodel, newModelCode, parentId);
     reqContext.enter();
     const modeledElementRef = new RelatedElement({ id: eid });
@@ -430,7 +439,7 @@ export class IModelTestUtils {
   }
 
   /** Create and insert a Drawing Partition element (in the repositoryModel). */
-  public static createAndInsertDrawingPartition(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
+  export function createAndInsertDrawingPartition(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Id64String {
     const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
     const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
 
@@ -445,7 +454,7 @@ export class IModelTestUtils {
   }
 
   /** Create and insert a DrawingModel associated with Drawing Partition. */
-  public static createAndInsertDrawingModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
+  export function createAndInsertDrawingModel(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Id64String {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: DrawingModel.classFullName, isPrivate: privateModel });
     const newModelId = testDb.models.insertModel(newModel);
     assert.isTrue(Id64.isValidId64(newModelId));
@@ -458,14 +467,14 @@ export class IModelTestUtils {
    * Create and insert a Drawing Partition element (in the repositoryModel) and an associated DrawingModel.
    * @return [modeledElementId, modelId]
    */
-  public static createAndInsertDrawingPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parent?: Id64String): Id64String[] {
+  export function createAndInsertDrawingPartitionAndModel(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parent?: Id64String): Id64String[] {
     const eid = IModelTestUtils.createAndInsertDrawingPartition(testImodel, newModelCode, parent);
     const modeledElementRef = new RelatedElement({ id: eid });
     const mid = IModelTestUtils.createAndInsertDrawingModel(testImodel, modeledElementRef, privateModel);
     return [eid, mid];
   }
 
-  public static getUniqueSpatialCategoryCode(scopeModel: Model, newCodeBaseValue: string): Code {
+  export function getUniqueSpatialCategoryCode(scopeModel: Model, newCodeBaseValue: string): Code {
     let newCodeValue: string = newCodeBaseValue;
     let iter: number = 0;
     while (true) {
@@ -478,7 +487,7 @@ export class IModelTestUtils {
   }
 
   // Create a PhysicalObject. (Does not insert it.)
-  public static createPhysicalObject(testImodel: IModelDb, modelId: Id64String, categoryId: Id64String, elemCode?: Code): Element {
+  export function createPhysicalObject(testImodel: IModelDb, modelId: Id64String, categoryId: Id64String, elemCode?: Code): Element {
     const elementProps: PhysicalElementProps = {
       classFullName: "Generic:PhysicalObject",
       model: modelId,
@@ -495,7 +504,7 @@ export class IModelTestUtils {
    * - concurrentQuery.current === 4
    * - cacheDir === path.join(__dirname, ".cache")
    */
-  public static async startBackend(config?: IModelHostConfiguration): Promise<void> {
+  export async function startBackend(config?: IModelHostConfiguration): Promise<void> {
     loadEnv(path.join(__dirname, "..", "..", ".env"));
     const cfg = config ? config : new IModelHostConfiguration();
     cfg.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
@@ -503,7 +512,7 @@ export class IModelTestUtils {
     return IModelHost.startup(cfg);
   }
 
-  public static registerTestBimSchema() {
+  export function registerTestBimSchema() {
     if (undefined === Schemas.getRegisteredSchema(TestBim.schemaName)) {
       Schemas.registerSchema(TestBim);
       ClassRegistry.register(TestPhysicalObject, TestBim);
@@ -511,11 +520,11 @@ export class IModelTestUtils {
     }
   }
 
-  public static async shutdownBackend(): Promise<void> {
+  export async function shutdownBackend(): Promise<void> {
     return IModelHost.shutdown();
   }
 
-  public static setupLogging() {
+  export function setupLogging() {
     Logger.initializeToConsole();
     Logger.setLevelDefault(LogLevel.Error);
 
@@ -533,11 +542,11 @@ export class IModelTestUtils {
     }
   }
 
-  public static init() {
+  export function init() {
     // dummy method to get this script included
   }
 
-  private static initDebugLogLevels(reset?: boolean) {
+  export function initDebugLogLevels(reset?: boolean) {
     Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
     Logger.setLevel(BentleyLoggerCategory.Performance, reset ? LogLevel.Error : LogLevel.Info);
     Logger.setLevel(BackendLoggerCategory.IModelDb, reset ? LogLevel.Error : LogLevel.Trace);
@@ -551,15 +560,15 @@ export class IModelTestUtils {
 
   // Setup typical programmatic log level overrides here
   // Convenience method used to debug specific tests/fixtures
-  public static setupDebugLogLevels() {
+  export function setupDebugLogLevels() {
     IModelTestUtils.initDebugLogLevels(false);
   }
 
-  public static resetDebugLogLevels() {
+  export function resetDebugLogLevels() {
     IModelTestUtils.initDebugLogLevels(true);
   }
 
-  public static executeQuery(db: IModelDb, ecsql: string, bindings?: any[] | object): any[] {
+  export function executeQuery(db: IModelDb, ecsql: string, bindings?: any[] | object): any[] {
     return db.withPreparedStatement(ecsql, (stmt) => {
       if (bindings)
         stmt.bindValues(bindings);
@@ -575,16 +584,427 @@ export class IModelTestUtils {
     });
   }
 
-  public static createJobSubjectElement(iModel: IModelDb, name: string): Subject {
+  export function createJobSubjectElement(iModel: IModelDb, name: string): Subject {
     const subj = Subject.create(iModel, iModel.elements.getRootSubject().id, name);
     subj.setJsonProperty("Subject", { Job: name }); // eslint-disable-line @typescript-eslint/naming-convention
     return subj;
   }
 
   /** Flushes the Txns in the TxnTable - this allows importing of schemas */
-  public static flushTxns(iModelDb: IModelDb): boolean {
+  export function flushTxns(iModelDb: IModelDb): boolean {
     iModelDb.nativeDb.deleteAllTxns();
     return true;
+  }
+
+  const uniqueAspectGuid: GuidString = Guid.createValue();
+  const federationGuid3: GuidString = Guid.createValue();
+
+  export async function prepareSourceDb(sourceDb: IModelDb): Promise<void> {
+    // Import desired schemas
+    const requestContext = new BackendRequestContext();
+    const sourceSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerSource.ecschema.xml");
+    await sourceDb.importSchemas(requestContext, [FunctionalSchema.schemaFilePath, sourceSchemaFileName]);
+    FunctionalSchema.registerSchema();
+  }
+
+  function insertSpatialCategory(iModelDb: IModelDb, modelId: Id64String, categoryName: string, color: ColorDef): Id64String {
+    const appearance: SubCategoryAppearance.Props = {
+      color: color.toJSON(),
+      transp: 0,
+      invisible: false,
+    };
+    return SpatialCategory.insert(iModelDb, modelId, categoryName, appearance);
+  }
+
+  export function createBoxes(subCategoryIds: Id64String[]): GeometryStreamProps {
+    const length = 1.0;
+    const entryOrigin = Point3d.createZero();
+    const geometryStreamBuilder = new GeometryStreamBuilder();
+    geometryStreamBuilder.appendGeometry(Box.createDgnBox(
+      entryOrigin, Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, length),
+      length, length, length, length, true,
+    )!);
+    for (const subCategoryId of subCategoryIds) {
+      entryOrigin.addInPlace({ x: 1, y: 1, z: 1 });
+      geometryStreamBuilder.appendSubCategoryChange(subCategoryId);
+      geometryStreamBuilder.appendGeometry(Box.createDgnBox(
+        entryOrigin, Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, length),
+        length, length, length, length, true,
+      )!);
+    }
+    return geometryStreamBuilder.geometryStream;
+  }
+
+  export function createRectangle(size: Point2d): GeometryStreamProps {
+    const geometryStreamBuilder = new GeometryStreamBuilder();
+    geometryStreamBuilder.appendGeometry(LineString3d.createPoints([
+      new Point3d(0, 0),
+      new Point3d(size.x, 0),
+      new Point3d(size.x, size.y),
+      new Point3d(0, size.y),
+      new Point3d(0, 0),
+    ]));
+    return geometryStreamBuilder.geometryStream;
+  }
+
+  export function populateSourceDb(sourceDb: IModelDb): void {
+    // Embed font
+    if (Platform.platformName.startsWith("win")) {
+      sourceDb.embedFont({ id: 1, type: FontType.TrueType, name: "Arial" });
+      assert.exists(sourceDb.fontMap.getFont("Arial"));
+      assert.exists(sourceDb.fontMap.getFont(1));
+    }
+    // Initialize project extents
+    const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
+    sourceDb.updateProjectExtents(projectExtents);
+    // Insert CodeSpecs
+    const codeSpecId1: Id64String = sourceDb.codeSpecs.insert("SourceCodeSpec", CodeScopeSpec.Type.Model);
+    const codeSpecId2: Id64String = sourceDb.codeSpecs.insert("ExtraCodeSpec", CodeScopeSpec.Type.ParentElement);
+    const codeSpecId3: Id64String = sourceDb.codeSpecs.insert("InformationRecords", CodeScopeSpec.Type.Model);
+    assert.isTrue(Id64.isValidId64(codeSpecId1));
+    assert.isTrue(Id64.isValidId64(codeSpecId2));
+    assert.isTrue(Id64.isValidId64(codeSpecId3));
+    // Insert RepositoryModel structure
+    const subjectId = Subject.insert(sourceDb, IModel.rootSubjectId, "Subject", "Subject Description");
+    assert.isTrue(Id64.isValidId64(subjectId));
+    const sourceOnlySubjectId = Subject.insert(sourceDb, IModel.rootSubjectId, "Only in Source");
+    assert.isTrue(Id64.isValidId64(sourceOnlySubjectId));
+    const definitionModelId = DefinitionModel.insert(sourceDb, subjectId, "Definition");
+    assert.isTrue(Id64.isValidId64(definitionModelId));
+    const informationModelId = InformationRecordModel.insert(sourceDb, subjectId, "Information");
+    assert.isTrue(Id64.isValidId64(informationModelId));
+    const groupModelId = GroupModel.insert(sourceDb, subjectId, "Group");
+    assert.isTrue(Id64.isValidId64(groupModelId));
+    const physicalModelId = PhysicalModel.insert(sourceDb, subjectId, "Physical");
+    assert.isTrue(Id64.isValidId64(physicalModelId));
+    const spatialLocationModelId = SpatialLocationModel.insert(sourceDb, subjectId, "SpatialLocation", true);
+    assert.isTrue(Id64.isValidId64(spatialLocationModelId));
+    const functionalModelId = FunctionalModel.insert(sourceDb, subjectId, "Functional");
+    assert.isTrue(Id64.isValidId64(functionalModelId));
+    const documentListModelId = DocumentListModel.insert(sourceDb, subjectId, "Document");
+    assert.isTrue(Id64.isValidId64(documentListModelId));
+    const drawingId = Drawing.insert(sourceDb, documentListModelId, "Drawing");
+    assert.isTrue(Id64.isValidId64(drawingId));
+    // Insert DefinitionElements
+    const modelSelectorId = ModelSelector.insert(sourceDb, definitionModelId, "SpatialModels", [physicalModelId, spatialLocationModelId]);
+    assert.isTrue(Id64.isValidId64(modelSelectorId));
+    const spatialCategoryId = insertSpatialCategory(sourceDb, definitionModelId, "SpatialCategory", ColorDef.green);
+    assert.isTrue(Id64.isValidId64(spatialCategoryId));
+    const sourcePhysicalCategoryId = insertSpatialCategory(sourceDb, definitionModelId, "SourcePhysicalCategory", ColorDef.blue);
+    assert.isTrue(Id64.isValidId64(sourcePhysicalCategoryId));
+    const subCategoryId = SubCategory.insert(sourceDb, spatialCategoryId, "SubCategory", { color: ColorDef.blue.toJSON() });
+    assert.isTrue(Id64.isValidId64(subCategoryId));
+    const filteredSubCategoryId = SubCategory.insert(sourceDb, spatialCategoryId, "FilteredSubCategory", { color: ColorDef.green.toJSON() });
+    assert.isTrue(Id64.isValidId64(filteredSubCategoryId));
+    const drawingCategoryId = DrawingCategory.insert(sourceDb, definitionModelId, "DrawingCategory", new SubCategoryAppearance());
+    assert.isTrue(Id64.isValidId64(drawingCategoryId));
+    const spatialCategorySelectorId = CategorySelector.insert(sourceDb, definitionModelId, "SpatialCategories", [spatialCategoryId, sourcePhysicalCategoryId]);
+    assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
+    const drawingCategorySelectorId = CategorySelector.insert(sourceDb, definitionModelId, "DrawingCategories", [drawingCategoryId]);
+    assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
+    const auxCoordSystemProps: AuxCoordSystem2dProps = {
+      classFullName: AuxCoordSystem2d.classFullName,
+      model: definitionModelId,
+      code: AuxCoordSystem2d.createCode(sourceDb, definitionModelId, "AuxCoordSystem2d"),
+    };
+    const auxCoordSystemId = sourceDb.elements.insertElement(auxCoordSystemProps);
+    assert.isTrue(Id64.isValidId64(auxCoordSystemId));
+    const textureId = insertTextureElement(sourceDb, definitionModelId, "Texture");
+    assert.isTrue(Id64.isValidId64(textureId));
+    const renderMaterialId = RenderMaterialElement.insert(sourceDb, definitionModelId, "RenderMaterial", new RenderMaterialElement.Params("PaletteName"));
+    assert.isTrue(Id64.isValidId64(renderMaterialId));
+    const geometryPartProps: GeometryPartProps = {
+      classFullName: GeometryPart.classFullName,
+      model: definitionModelId,
+      code: GeometryPart.createCode(sourceDb, definitionModelId, "GeometryPart"),
+      geom: createBox(Point3d.create(3, 3, 3)),
+    };
+    const geometryPartId = sourceDb.elements.insertElement(geometryPartProps);
+    assert.isTrue(Id64.isValidId64(geometryPartId));
+    // Insert InformationRecords
+    const informationRecordProps1: any = {
+      classFullName: "TestTransformerSource:SourceInformationRecord",
+      model: informationModelId,
+      code: { spec: codeSpecId3, scope: informationModelId, value: "InformationRecord1" },
+      commonString: "Common1",
+      sourceString: "One",
+    };
+    const informationRecordId1: Id64String = sourceDb.elements.insertElement(informationRecordProps1);
+    assert.isTrue(Id64.isValidId64(informationRecordId1));
+    const informationRecordProps2: any = {
+      classFullName: "TestTransformerSource:SourceInformationRecord",
+      model: informationModelId,
+      code: { spec: codeSpecId3, scope: informationModelId, value: "InformationRecord2" },
+      commonString: "Common2",
+      sourceString: "Two",
+    };
+    const informationRecordId2: Id64String = sourceDb.elements.insertElement(informationRecordProps2);
+    assert.isTrue(Id64.isValidId64(informationRecordId2));
+    const informationRecordProps3: any = {
+      classFullName: "TestTransformerSource:SourceInformationRecord",
+      model: informationModelId,
+      code: { spec: codeSpecId3, scope: informationModelId, value: "InformationRecord3" },
+      commonString: "Common3",
+      sourceString: "Three",
+    };
+    const informationRecordId3: Id64String = sourceDb.elements.insertElement(informationRecordProps3);
+    assert.isTrue(Id64.isValidId64(informationRecordId3));
+    // Insert PhysicalObject1
+    const physicalObjectProps1: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject1",
+      geom: createBox(Point3d.create(1, 1, 1), spatialCategoryId, subCategoryId, renderMaterialId, geometryPartId),
+      placement: {
+        origin: Point3d.create(1, 1, 1),
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+    };
+    const physicalObjectId1: Id64String = sourceDb.elements.insertElement(physicalObjectProps1);
+    assert.isTrue(Id64.isValidId64(physicalObjectId1));
+    // Insert PhysicalObject1 children
+    const childObjectProps1A: PhysicalElementProps = physicalObjectProps1;
+    childObjectProps1A.userLabel = "ChildObject1A";
+    childObjectProps1A.parent = new ElementOwnsChildElements(physicalObjectId1);
+    childObjectProps1A.placement!.origin = Point3d.create(0, 1, 1);
+    const childObjectId1A: Id64String = sourceDb.elements.insertElement(childObjectProps1A);
+    assert.isTrue(Id64.isValidId64(childObjectId1A));
+    const childObjectProps1B: PhysicalElementProps = childObjectProps1A;
+    childObjectProps1B.userLabel = "ChildObject1B";
+    childObjectProps1B.placement!.origin = Point3d.create(1, 0, 1);
+    const childObjectId1B: Id64String = sourceDb.elements.insertElement(childObjectProps1B);
+    assert.isTrue(Id64.isValidId64(childObjectId1B));
+    // Insert PhysicalObject2
+    const physicalObjectProps2: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: sourcePhysicalCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject2",
+      geom: createBox(Point3d.create(2, 2, 2)),
+      placement: {
+        origin: Point3d.create(2, 2, 2),
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+    };
+    const physicalObjectId2: Id64String = sourceDb.elements.insertElement(physicalObjectProps2);
+    assert.isTrue(Id64.isValidId64(physicalObjectId2));
+    // Insert PhysicalObject3
+    const physicalObjectProps3: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: sourcePhysicalCategoryId,
+      code: Code.createEmpty(),
+      federationGuid: federationGuid3,
+      userLabel: "PhysicalObject3",
+    };
+    const physicalObjectId3: Id64String = sourceDb.elements.insertElement(physicalObjectProps3);
+    assert.isTrue(Id64.isValidId64(physicalObjectId3));
+    // Insert PhysicalObject4
+    const physicalObjectProps4: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: physicalModelId,
+      category: spatialCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalObject4",
+      geom: createBoxes([subCategoryId, filteredSubCategoryId]),
+      placement: {
+        origin: Point3d.create(4, 4, 4),
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+    };
+    const physicalObjectId4: Id64String = sourceDb.elements.insertElement(physicalObjectProps4);
+    assert.isTrue(Id64.isValidId64(physicalObjectId4));
+    // Insert PhysicalElement1
+    const sourcePhysicalElementProps: PhysicalElementProps = {
+      classFullName: "TestTransformerSource:SourcePhysicalElement",
+      model: physicalModelId,
+      category: sourcePhysicalCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "PhysicalElement1",
+      geom: createBox(Point3d.create(2, 2, 2)),
+      placement: {
+        origin: Point3d.create(4, 4, 4),
+        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
+      },
+      sourceString: "S1",
+      sourceDouble: 1.1,
+      sourceNavigation: { id: sourcePhysicalCategoryId, relClassName: "TestTransformerSource:SourcePhysicalElementUsesSourceDefinition" },
+      commonNavigation: { id: sourcePhysicalCategoryId },
+      commonString: "Common",
+      commonDouble: 7.3,
+      sourceBinary: new Uint8Array([1, 3, 5, 7]),
+      commonBinary: Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])),
+      extraString: "Extra",
+    } as PhysicalElementProps;
+    const sourcePhysicalElementId: Id64String = sourceDb.elements.insertElement(sourcePhysicalElementProps);
+    assert.isTrue(Id64.isValidId64(sourcePhysicalElementId));
+    assert.doesNotThrow(() => sourceDb.elements.getElement(sourcePhysicalElementId));
+    // Insert ElementAspects
+    sourceDb.elements.insertAspect({
+      classFullName: "TestTransformerSource:SourceUniqueAspect",
+      element: new ElementOwnsUniqueAspect(physicalObjectId1),
+      commonDouble: 1.1,
+      commonString: "Unique",
+      commonLong: physicalObjectId1,
+      commonBinary: Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])),
+      sourceDouble: 11.1,
+      sourceString: "UniqueAspect",
+      sourceLong: physicalObjectId1,
+      sourceGuid: uniqueAspectGuid,
+      extraString: "Extra",
+    } as ElementAspectProps);
+    const sourceUniqueAspect: ElementUniqueAspect = sourceDb.elements.getAspects(physicalObjectId1, "TestTransformerSource:SourceUniqueAspect")[0];
+    assert.equal(sourceUniqueAspect.asAny.commonDouble, 1.1);
+    assert.equal(sourceUniqueAspect.asAny.commonString, "Unique");
+    assert.equal(sourceUniqueAspect.asAny.commonLong, physicalObjectId1);
+    assert.equal(sourceUniqueAspect.asAny.sourceDouble, 11.1);
+    assert.equal(sourceUniqueAspect.asAny.sourceString, "UniqueAspect");
+    assert.equal(sourceUniqueAspect.asAny.sourceLong, physicalObjectId1);
+    assert.equal(sourceUniqueAspect.asAny.sourceGuid, uniqueAspectGuid);
+    assert.equal(sourceUniqueAspect.asAny.extraString, "Extra");
+    sourceDb.elements.insertAspect({
+      classFullName: "TestTransformerSource:SourceMultiAspect",
+      element: new ElementOwnsMultiAspects(physicalObjectId1),
+      commonDouble: 2.2,
+      commonString: "Multi",
+      commonLong: physicalObjectId1,
+      sourceDouble: 22.2,
+      sourceString: "MultiAspect",
+      sourceLong: physicalObjectId1,
+      sourceGuid: Guid.createValue(),
+      extraString: "Extra",
+    } as ElementAspectProps);
+    sourceDb.elements.insertAspect({
+      classFullName: "TestTransformerSource:SourceMultiAspect",
+      element: new ElementOwnsMultiAspects(physicalObjectId1),
+      commonDouble: 3.3,
+      commonString: "Multi",
+      commonLong: physicalObjectId1,
+      sourceDouble: 33.3,
+      sourceString: "MultiAspect",
+      sourceLong: physicalObjectId1,
+      sourceGuid: Guid.createValue(),
+      extraString: "Extra",
+    } as ElementAspectProps);
+    sourceDb.elements.insertAspect({
+      classFullName: "TestTransformerSource:SourceUniqueAspectToExclude",
+      element: new ElementOwnsUniqueAspect(physicalObjectId1),
+      description: "SourceUniqueAspect1",
+    } as ElementAspectProps);
+    sourceDb.elements.insertAspect({
+      classFullName: "TestTransformerSource:SourceMultiAspectToExclude",
+      element: new ElementOwnsMultiAspects(physicalObjectId1),
+      description: "SourceMultiAspect1",
+    } as ElementAspectProps);
+    // Insert DrawingGraphics
+    const drawingGraphicProps1: GeometricElement2dProps = {
+      classFullName: DrawingGraphic.classFullName,
+      model: drawingId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "DrawingGraphic1",
+      geom: createRectangle(Point2d.create(1, 1)),
+      placement: { origin: Point2d.create(2, 2), angle: 0 },
+    };
+    const drawingGraphicId1: Id64String = sourceDb.elements.insertElement(drawingGraphicProps1);
+    assert.isTrue(Id64.isValidId64(drawingGraphicId1));
+    const drawingGraphicRepresentsId1: Id64String = DrawingGraphicRepresentsElement.insert(sourceDb, drawingGraphicId1, physicalObjectId1);
+    assert.isTrue(Id64.isValidId64(drawingGraphicRepresentsId1));
+    const drawingGraphicProps2: GeometricElement2dProps = {
+      classFullName: DrawingGraphic.classFullName,
+      model: drawingId,
+      category: drawingCategoryId,
+      code: Code.createEmpty(),
+      userLabel: "DrawingGraphic2",
+      geom: createRectangle(Point2d.create(1, 1)),
+      placement: { origin: Point2d.create(3, 3), angle: 0 },
+    };
+    const drawingGraphicId2: Id64String = sourceDb.elements.insertElement(drawingGraphicProps2);
+    assert.isTrue(Id64.isValidId64(drawingGraphicId2));
+    const drawingGraphicRepresentsId2: Id64String = DrawingGraphicRepresentsElement.insert(sourceDb, drawingGraphicId2, physicalObjectId1);
+    assert.isTrue(Id64.isValidId64(drawingGraphicRepresentsId2));
+    // Insert DisplayStyles
+    const displayStyle2dId: Id64String = DisplayStyle2d.insert(sourceDb, definitionModelId, "DisplayStyle2d");
+    assert.isTrue(Id64.isValidId64(displayStyle2dId));
+    const displayStyle3d: DisplayStyle3d = DisplayStyle3d.create(sourceDb, definitionModelId, "DisplayStyle3d");
+    const subCategoryOverride: SubCategoryOverride = SubCategoryOverride.fromJSON({ color: ColorDef.from(1, 2, 3).toJSON() });
+    displayStyle3d.settings.overrideSubCategory(subCategoryId, subCategoryOverride);
+    displayStyle3d.settings.addExcludedElements(physicalObjectId1);
+    displayStyle3d.settings.setPlanProjectionSettings(spatialLocationModelId, new PlanProjectionSettings({ elevation: 10.0 }));
+    displayStyle3d.settings.environment = {
+      sky: {
+        image: {
+          type: SkyBoxImageType.Spherical,
+          texture: textureId,
+        },
+      },
+    };
+    const displayStyle3dId: Id64String = displayStyle3d.insert();
+    assert.isTrue(Id64.isValidId64(displayStyle3dId));
+    // Insert ViewDefinitions
+    const viewId = OrthographicViewDefinition.insert(sourceDb, definitionModelId, "Orthographic View", modelSelectorId, spatialCategorySelectorId, displayStyle3dId, projectExtents, StandardViewIndex.Iso);
+    assert.isTrue(Id64.isValidId64(viewId));
+    sourceDb.views.setDefaultViewId(viewId);
+    const drawingViewRange = new Range2d(0, 0, 100, 100);
+    const drawingViewId = DrawingViewDefinition.insert(sourceDb, definitionModelId, "Drawing View", drawingId, drawingCategorySelectorId, displayStyle2dId, drawingViewRange);
+    assert.isTrue(Id64.isValidId64(drawingViewId));
+    // Insert instance of SourceRelToExclude to test relationship exclusion by class
+    const relationship1: Relationship = sourceDb.relationships.createInstance({
+      classFullName: "TestTransformerSource:SourceRelToExclude",
+      sourceId: spatialCategorySelectorId,
+      targetId: drawingCategorySelectorId,
+    });
+    const relationshipId1: Id64String = sourceDb.relationships.insertInstance(relationship1);
+    assert.isTrue(Id64.isValidId64(relationshipId1));
+    // Insert instance of RelWithProps to test relationship property remapping
+    const relationship2: Relationship = sourceDb.relationships.createInstance({
+      classFullName: "TestTransformerSource:SourceRelWithProps",
+      sourceId: spatialCategorySelectorId,
+      targetId: drawingCategorySelectorId,
+      sourceString: "One",
+      sourceDouble: 1.1,
+      sourceLong: spatialCategoryId,
+      sourceGuid: Guid.createValue(),
+    } as any);
+    const relationshipId2: Id64String = sourceDb.relationships.insertInstance(relationship2);
+    assert.isTrue(Id64.isValidId64(relationshipId2));
+  }
+
+  export function createBox(size: Point3d, categoryId?: Id64String, subCategoryId?: Id64String, renderMaterialId?: Id64String, geometryPartId?: Id64String): GeometryStreamProps {
+    const geometryStreamBuilder = new GeometryStreamBuilder();
+    if ((undefined !== categoryId) && (undefined !== subCategoryId)) {
+      geometryStreamBuilder.appendSubCategoryChange(subCategoryId);
+      if (undefined !== renderMaterialId) {
+        const geometryParams = new GeometryParams(categoryId, subCategoryId);
+        geometryParams.materialId = renderMaterialId;
+        geometryStreamBuilder.appendGeometryParamsChange(geometryParams);
+      }
+    }
+    geometryStreamBuilder.appendGeometry(Box.createDgnBox(
+      Point3d.createZero(), Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, size.z),
+      size.x, size.y, size.x, size.y, true,
+    )!);
+    if (undefined !== geometryPartId) {
+      geometryStreamBuilder.appendGeometryPart3d(geometryPartId);
+    }
+    return geometryStreamBuilder.geometryStream;
+  }
+
+  export function insertTextureElement(iModelDb: IModelDb, modelId: Id64String, textureName: string): Id64String {
+    // This is an encoded png containing a 3x3 square with white in top left pixel, blue in middle pixel, and green in bottom right pixel. The rest of the square is red.
+    const pngData = [137, 80, 78, 71, 13, 10, 26, 10, 0, 0, 0, 13, 73, 72, 68, 82, 0, 0, 0, 3, 0, 0, 0, 3, 8, 2, 0, 0, 0, 217, 74, 34, 232, 0, 0, 0, 1, 115, 82, 71, 66, 0, 174, 206, 28, 233, 0, 0, 0, 4, 103, 65, 77, 65, 0, 0, 177, 143, 11, 252, 97, 5, 0, 0, 0, 9, 112, 72, 89, 115, 0, 0, 14, 195, 0, 0, 14, 195, 1, 199, 111, 168, 100, 0, 0, 0, 24, 73, 68, 65, 84, 24, 87, 99, 248, 15, 4, 12, 12, 64, 4, 198, 64, 46, 132, 5, 162, 254, 51, 0, 0, 195, 90, 10, 246, 127, 175, 154, 145, 0, 0, 0, 0, 73, 69, 78, 68, 174, 66, 96, 130];
+    const textureData = Base64.btoa(String.fromCharCode(...pngData));
+    return Texture.insertTexture(iModelDb, modelId, textureName, ImageSourceFormat.Png, textureData, `Description for ${textureName}`);
+  }
+
+  export function queryByUserLabel(iModelDb: IModelDb, userLabel: string): Id64String {
+    return iModelDb.withPreparedStatement(`SELECT ECInstanceId FROM ${Element.classFullName} WHERE UserLabel=:userLabel`, (statement: ECSqlStatement): Id64String => {
+      statement.bindString("userLabel", userLabel);
+      return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
+    });
   }
 }
 
