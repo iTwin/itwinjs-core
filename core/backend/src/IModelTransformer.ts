@@ -775,7 +775,7 @@ export class IModelTransformer extends IModelExportHandler {
     // and instead export the asked for schema, which will prevent warnings from trying to import already existing schemas
     if (!this._hasNativelyExportedAllSchemas) {
       this._hasNativelyExportedAllSchemas = true;
-      this.targetDb.nativeDb.exportSchemas(this._schemaExportDir);
+      this.sourceDb.nativeDb.exportSchemas(this._schemaExportDir);
     }
   }
 
