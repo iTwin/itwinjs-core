@@ -53,7 +53,7 @@ describe("<EnumEditor />", () => {
     const selectNode = wrapper.getByTestId("components-select-editor");
     expect(selectNode).not.to.be.null;
 
-    selectChangeValueByIndex(selectNode, 1, handleError);
+    selectChangeValueByIndex(selectNode, 1, handleError, true);
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
@@ -69,7 +69,7 @@ describe("<EnumEditor />", () => {
     const selectNode = wrapper.getByTestId("components-select-editor");
     expect(selectNode).not.to.be.null;
 
-    selectChangeValueByIndex(selectNode, 1, handleError);
+    selectChangeValueByIndex(selectNode, 1, handleError, true);
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });

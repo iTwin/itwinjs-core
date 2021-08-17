@@ -240,6 +240,7 @@ export class TimelineComponent extends React.Component<TimelineComponentProps, T
   // set the current duration, which will call the OnChange callback
   private _setDuration = (currentDuration: number) => {
     this._timeLastCycle = new Date().getTime();
+    // istanbul ignore else
     if (!this._unmounted)
       this.setState({ currentDuration });
     // istanbul ignore else
