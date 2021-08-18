@@ -230,3 +230,5 @@ display-test-app has access to all key-ins defined in the imodeljs-editor-fronte
 
 * `dta edit` - begin a new editing scope, or end the current editing scope. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing scope, or "[EDIT]" indicating an active editing scope.
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
+* `dta push` - push local changes to iModelHub. Takes an optional description of the changes. You must be signed in.
+* `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
