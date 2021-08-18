@@ -28,7 +28,10 @@ interface CommandLineArgs {
   sourceStartChangesetIndex?: ChangesetIndex;
   sourceEndChangesetId?: ChangesetId;
   sourceEndChangesetIndex?: ChangesetIndex;
+  /** location of a target snapshot iModel to transform */
   targetFile: string;
+  /** location to create a new target file */
+  targetDestination: string;
   targetContextId?: GuidString;
   targetIModelId?: GuidString;
   targetIModelName?: string;
@@ -68,7 +71,9 @@ void (async () => {
     Yargs.option("sourceEndChangesetId", { desc: "The ending changeset of the source iModel to transform", type: "string", default: undefined });
     Yargs.option("sourceEndChangesetIndex", { desc: "The ending changeset of the source iModel to transform", type: "number", default: undefined });
 
-    // used if the target iModel is a snapshot
+    // used if the target iModel is a new snapshot
+    Yargs.option("targetDestination", { desc: "The destination path where to create the target iModel", type: "string" });
+    // used if the target iModel is a standalone db
     Yargs.option("targetFile", { desc: "The full path to the target iModel", type: "string" });
 
     // used if the target iModel is on iModelHub
@@ -114,7 +119,7 @@ void (async () => {
     let contextRegistry: ContextRegistryClient | undefined;
     let sourceDb: IModelDb;
     let targetDb: IModelDb;
-    let processChanges = false;
+    const processChanges = args.sourceStartChangesetIndex || args.sourceStartChangesetId;
 
     if (args.sourceContextId || args.targetContextId) {
       requestContext = await IModelHubUtils.getAuthorizedClientRequestContext();
@@ -139,7 +144,6 @@ void (async () => {
       Logger.logInfo(loggerCategory, `sourceIModelId=${sourceIModelId}`);
       if (args.sourceStartChangesetIndex || args.sourceStartChangesetId) {
         assert(!(args.sourceStartChangesetIndex && args.sourceStartChangesetId), "Pick single way to specify starting changeset");
-        processChanges = true;
         if (args.sourceStartChangesetIndex) {
           args.sourceStartChangesetId = await IModelHubUtils.queryChangesetId(requestContext, sourceIModelId, args.sourceStartChangesetIndex);
         } else {
@@ -231,22 +235,21 @@ void (async () => {
         contextId: targetContextId,
         iModelId: targetIModelId,
       });
-    } else {
-      assert(undefined !== args.targetFile);
-      // target is a local standalone file
-      const targetFile = args.targetFile ? path.normalize(args.targetFile) : "";
-      if (processChanges) {
-        targetDb = StandaloneDb.openFile(targetFile);
-      } else {
-        // clean target output file before continuing (regardless of args.clean value)
-        if (IModelJsFs.existsSync(targetFile)) {
-          IModelJsFs.removeSync(targetFile);
-        }
-        targetDb = StandaloneDb.createEmpty(targetFile, { // use StandaloneDb instead of SnapshotDb to enable processChanges testing
-          rootSubject: { name: `${sourceDb.rootSubject.name}-Transformed` },
-          ecefLocation: sourceDb.ecefLocation,
-        });
+    } else if (args.targetDestination) {
+      const targetDestination = args.targetDestination ? path.normalize(args.targetDestination) : "";
+      assert(!processChanges, "cannot process changes because targetDestination creates a new iModel");
+      // clean target output destination before continuing (regardless of args.clean value)
+      if (IModelJsFs.existsSync(targetDestination)) {
+        IModelJsFs.removeSync(targetDestination);
       }
+      targetDb = StandaloneDb.createEmpty(targetDestination, { // use StandaloneDb instead of SnapshotDb to enable processChanges testing
+        rootSubject: { name: `${sourceDb.rootSubject.name}-Transformed` },
+        ecefLocation: sourceDb.ecefLocation,
+      });
+    } else {
+      // target is a local standalone file
+      assert(undefined !== args.targetFile);
+      targetDb = StandaloneDb.openFile(args.targetFile);
     }
 
     if (args.logProvenanceScopes) {
