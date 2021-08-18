@@ -682,14 +682,14 @@ describe("mirukuru TileTree", () => {
     const treeRef = model.createTileTreeReference(viewState);
     const noEdges = treeRef.treeOwner;
 
-    viewState.viewFlags.visibleEdges = true;
+    viewState.viewFlags = viewState.viewFlags.with("visibleEdges", true);
     const edges = treeRef.treeOwner;
     expect(edges).not.to.equal(noEdges);
 
     const edges2 = treeRef.treeOwner;
     expect(edges2).to.equal(edges);
 
-    viewState.viewFlags.visibleEdges = false;
+    viewState.viewFlags = viewState.viewFlags.with("visibleEdges", false);
     const noEdges2 = treeRef.treeOwner;
     expect(noEdges2).to.equal(noEdges);
   });

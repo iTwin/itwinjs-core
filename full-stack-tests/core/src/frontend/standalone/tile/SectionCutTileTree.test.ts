@@ -54,7 +54,7 @@ describe("Section-cut tile tree", () => {
   const defaultClip = ClipVector.createCapture([ClipPrimitive.createCapture(ConvexClipPlaneSet.createPlanes([]), false)]);
 
   function enableClip(view: ViewState, produceCutGeometry: boolean, clip: ClipVector | undefined): void {
-    view.viewFlags.clipVolume = true;
+    view.viewFlags = view.viewFlags.with("clipVolume", true);
     view.displayStyle.settings.clipStyle = ClipStyle.fromJSON({ produceCutGeometry });
     view.setViewClip(clip);
   }
@@ -101,10 +101,10 @@ describe("Section-cut tile tree", () => {
     await test((view) => enableClip(view, true, defaultClip), (view) => {
       expectNumTreesPerModel(2, view);
 
-      view.viewFlags.clipVolume = false;
+      view.viewFlags = view.viewFlags.with("clipVolume", false);
       expectNumTreesPerModel(1, view);
 
-      view.viewFlags.clipVolume = true;
+      view.viewFlags = view.viewFlags.with("clipVolume", true);
       expectNumTreesPerModel(2, view);
     });
   });
@@ -134,7 +134,7 @@ describe("Section-cut tile tree", () => {
       for (const modelId of view.modelSelector.models) {
         const model = view.iModel.models.getLoaded(modelId)!;
         expect(model).not.to.be.undefined;
-        model.jsonProperties.viewFlagOverrides = ViewFlagOverrides.fromJSON({ clipVolume: false });
+        model.jsonProperties.viewFlagOverrides = { clipVolume: false };
         break;
       }
     }, (view) => {

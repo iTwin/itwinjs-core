@@ -56,7 +56,7 @@ class MockTree extends TileTree {
   public get rootTile() { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return 1; }
-  public get viewFlagOverrides() { return new ViewFlagOverrides(); }
+  public get viewFlagOverrides() { return { }; }
   public override get isContentUnbounded() { return false; }
 
   protected _selectTiles(_args: TileDrawArgs): Tile[] {
