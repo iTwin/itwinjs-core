@@ -18,6 +18,7 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -37,7 +38,7 @@ export interface CheckpointProps {
   /** changeset for the checkpoint */
   readonly changeset: ChangesetIdWithIndex;
 
-  readonly requestContext: AuthorizedClientRequestContext;
+  readonly requestContext?: AuthorizedClientRequestContext;
 }
 
 /** Called to show progress during a download. If this function returns non-zero, the download is aborted.
@@ -231,9 +232,10 @@ export class CheckpointManager {
         CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
         // Apply change sets if necessary
         const parentChangeset = nativeDb.getParentChangeset();
-        if (parentChangeset.id !== checkpoint.changeset.id)
-          await BriefcaseManager.processChangesets(checkpoint.requestContext, db, checkpoint.changeset);
-        else {
+        if (parentChangeset.id !== checkpoint.changeset.id) {
+          const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
+          await BriefcaseManager.processChangesets(requestContext, db, checkpoint.changeset);
+        } else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
           parentChangeset.index = checkpoint.changeset.index;
           nativeDb.saveLocalValue("parentChangeSet", JSON.stringify(parentChangeset));

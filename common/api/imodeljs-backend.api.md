@@ -659,7 +659,7 @@ export interface CheckpointProps {
     readonly expectV2?: boolean;
     readonly iModelId: GuidString;
     // (undocumented)
-    readonly requestContext: AuthorizedClientRequestContext;
+    readonly requestContext?: AuthorizedClientRequestContext;
 }
 
 // @public
