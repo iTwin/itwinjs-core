@@ -165,35 +165,6 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     return this.getByQuery(requestContext, queryOptions);
   }
 
-  /** Get favorited iTwins
-   * @param requestContext The client request context
-   * @param arg Options for paging or filtering
-   * @returns Array of favorited iTwins, may be empty
-  */
-  public async getFavorites(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]> {
-    const queryOptions: HiddenQueryOptions = {
-      $top: arg?.top,
-      $skip: arg?.skip,
-      isFavorite: true,
-    };
-    return this.getByQuery(requestContext, queryOptions);
-  }
-
-  /** Get the most recently used iTwins
-   * @param requestContext The client request context
-   * @param arg Options for paging or filtering
-   * @returns Array of most recently used iTwins, may be empty
-   */
-  public async getRecentlyUsed(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]> {
-    const queryOptions: HiddenQueryOptions = {
-      $top: arg?.top,
-      $skip: arg?.skip,
-      isMRU: true,
-    };
-
-    return this.getByQuery(requestContext, queryOptions);
-  }
-
   /** Get an iTwin via id
    * @param requestContext The client request context
    * @param id The unique id/wsgId/ecId of the iTwin
