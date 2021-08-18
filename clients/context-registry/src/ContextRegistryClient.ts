@@ -6,7 +6,7 @@
  * @module ContextRegistry
  */
 import * as deepAssign from "deep-assign";
-import { assert, Config } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 import { ITwin, ITwinAccess, ITwinQueryArg } from "./ITwinAccessProps";
 
@@ -221,20 +221,5 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
   protected override async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
     deepAssign(options, { headers: { "content-type": "application/json" } });
-  }
-
-  /** Gets theRelyingPartyUrl for the service.
-   * @returns RelyingPartyUrl for the service.
-   */
-  protected getRelyingPartyUrl(): string {
-    if (Config.App.has(ITwinAccessClient.configRelyingPartyUri))
-      return `${Config.App.get(ITwinAccessClient.configRelyingPartyUri)}/`;
-
-    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
-      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
-    }
-
-    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${ITwinAccessClient.configRelyingPartyUri}`);
   }
 }
