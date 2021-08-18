@@ -241,7 +241,7 @@ export class ViewFlags {
    * @see [[override]] to have `undefined` properties retain their current values.
    */
   public copy(changedFlags: Partial<ViewFlagsProperties>): ViewFlags {
-    return new ViewFlags({ ...this, ...changedFlags });
+    return JsonUtils.isNonEmptyObject(changedFlags) ? new ViewFlags({ ...this, ...changedFlags }) : this;
   }
 
   /** Produce a copy of these ViewFlags, overriding some of its properties. Any properties not explicitly specified by `overrides` will retain their current values,
@@ -260,6 +260,42 @@ export class ViewFlags {
     }
 
     return this.copy(overrides);
+  }
+
+  public with(flag: keyof Omit<ViewFlagsProperties, "edgeMask" | "renderMode">, value: boolean): ViewFlags {
+    if (this[flag] === value)
+      return this;
+
+    const props: ViewFlagsProperties = { ...this };
+    props[flag] = false;
+    return new ViewFlags(props);
+  }
+
+  public withRenderMode(renderMode: RenderMode): ViewFlags {
+    return renderMode === this.renderMode ? this : this.copy({ renderMode });
+  }
+
+  /** Adjust view flags for renderer.
+   * @internal
+   */
+  public normalize(): ViewFlags {
+    switch (this.renderMode) {
+      case RenderMode.Wireframe:
+        if (this.visibleEdges || this.hiddenEdges)
+          return this.copy({ visibleEdges: false, hiddenEdges: false });
+        break;
+      case RenderMode.SmoothShade:
+        if (!this.visibleEdges)
+          return this.copy({ hiddenEdges: false });
+        break;
+      case RenderMode.HiddenLine:
+      case RenderMode.SolidFill:
+        if (!this.visibleEdges || this.transparency)
+          return this.copy({ visibleEdges: true, transparency: false });
+        break;
+    }
+
+    return this;
   }
 
   /** @internal */

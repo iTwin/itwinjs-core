@@ -31,7 +31,7 @@ export interface IModelTileTreeOptions {
 }
 
 // Overrides nothing.
-const viewFlagOverrides = new ViewFlagOverrides();
+const viewFlagOverrides = { };
 
 /** Parameters used to construct an [[IModelTileTree]]
  * @internal

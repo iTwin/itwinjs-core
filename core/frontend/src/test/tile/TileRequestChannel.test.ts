@@ -158,7 +158,7 @@ class TestTree extends TileTree {
   public get rootTile(): TestTile { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return undefined; }
-  public get viewFlagOverrides() { return new ViewFlagOverrides(); }
+  public get viewFlagOverrides() { return { }; }
   protected _selectTiles(): Tile[] { return []; }
   public draw() { }
   public prune() { }

@@ -217,7 +217,7 @@ class OrbitGtTileGraphic extends TileUsageMarker {
 export class OrbitGtTileTree extends TileTree {
   private _tileParams: TileParams;
   public rootTile: OrbitGtRootTile;
-  public viewFlagOverrides = new ViewFlagOverrides();
+  public viewFlagOverrides: ViewFlagOverrides = { };
   private _tileGraphics = new Map<string, OrbitGtTileGraphic>();
 
   public constructor(treeParams: TileTreeParams, private _dataManager: OrbitGtDataManager, cloudRange: Range3d, private _centerOffset: Vector3d, private _ecefTransform: Transform) {

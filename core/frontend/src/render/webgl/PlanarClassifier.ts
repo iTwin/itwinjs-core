@@ -298,7 +298,6 @@ class ClassifierAndMaskCombinationBuffer extends CombineTexturesFrameBuffer {
 }
 
 const scratchPrevRenderState = new RenderState();
-const scratchViewFlags = new ViewFlags();
 
 /** @internal */
 export class PlanarClassifier extends RenderPlanarClassifier implements RenderMemory.Consumer, WebGLDisposable {
@@ -557,13 +556,19 @@ export class PlanarClassifier extends RenderPlanarClassifier implements RenderMe
     const prevState = system.currentRenderState.clone(scratchPrevRenderState);
     system.context.viewport(0, 0, this._width, this._height);
 
-    const vf = target.currentViewFlags.clone(scratchViewFlags);
-    vf.renderMode = RenderMode.SmoothShade;
-    vf.transparency = !this.isClassifyingPointCloud; // point clouds don't support transparency.
-    vf.noGeometryMap = true;
-    vf.textures = vf.lighting = vf.shadows = false;
-    vf.monochrome = vf.materials = vf.ambientOcclusion = false;
-    vf.visibleEdges = vf.hiddenEdges = false;
+    const vf = target.currentViewFlags.copy({
+      renderMode: RenderMode.SmoothShade,
+      transparency: !this.isClassifyingPointCloud, // point clouds don't support transparency.
+      noGeometryMap: true,
+      textures: false,
+      lighting: false,
+      shadows: false,
+      monochrome: false,
+      materials: false,
+      ambientOcclusion: false,
+      visibleEdges: false,
+      hiddenEdges: false,
+    });
 
     system.applyRenderState(this._renderState);
     const prevPlan = target.plan;
