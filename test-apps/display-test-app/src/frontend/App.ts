@@ -12,9 +12,8 @@ import {
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawHintBuilder,
-  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem,
-  SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp,
+  IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { DtaConfiguration } from "../common/DtaConfiguration";
@@ -43,6 +42,7 @@ import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } 
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { SyncViewportsTool } from "./SyncViewportsTool";
 import { FrameStatsTool } from "./FrameStatsTool";
+import { signIn } from "./signIn";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -72,6 +72,45 @@ class SVTSelectionTool extends SelectionTool {
 
     // ###TODO Want to do this only if version comparison enabled, but meh.
     IModelApp.locateManager.options.allowExternalIModels = true;
+  }
+}
+
+class SignInTool extends Tool {
+  public static override toolId = "SignIn";
+  public override run(): boolean {
+    signIn(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    return true;
+  }
+}
+
+abstract class PushPullChangesTool extends Tool {
+  public static override get maxArgs() { return 1; }
+
+  protected abstract execute(bc: BriefcaseConnection, arg?: string): Promise<void>;
+
+  public override run(arg?: string): boolean {
+    const imodel = IModelApp.viewManager.selectedView?.iModel;
+    if (!imodel || !imodel.isBriefcaseConnection())
+      return false;
+
+    this.execute(imodel, arg); // eslint-disable-line @typescript-eslint/no-floating-promises
+    return true;
+  }
+}
+
+class PushChangesTool extends PushPullChangesTool {
+  public static override toolId = "PushChanges";
+
+  protected override async execute(bc: BriefcaseConnection, description?: string): Promise<void> {
+    await bc.pushChanges(description ?? "display-test-app");
+  }
+}
+
+class PullChangesTool extends PushPullChangesTool {
+  public static override toolId = "PullChanges";
+
+  protected override async execute(bc: BriefcaseConnection): Promise<void> {
+    return bc.pullAndMergeChanges();
   }
 }
 
@@ -220,6 +259,8 @@ export class DisplayTestApp {
       OpenIModelTool,
       OutputShadersTool,
       PlaceLineStringTool,
+      PullChangesTool,
+      PushChangesTool,
       PurgeTileTreesTool,
       RecordFpsTool,
       RefreshTilesTool,
@@ -228,6 +269,7 @@ export class DisplayTestApp {
       RestoreWindowTool,
       SaveImageTool,
       ShutDownTool,
+      SignInTool,
       SVTSelectionTool,
       SyncViewportsTool,
       ToggleAspectRatioSkewDecoratorTool,
