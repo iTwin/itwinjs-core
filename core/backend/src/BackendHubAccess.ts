@@ -8,12 +8,12 @@
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import {
-  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName,
-  LocalFileName,
+  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps, IModelVersion,
+  LocalDirName, LocalFileName,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseId } from "./BriefcaseManager";
-import { DownloadRequest } from "./CheckpointManager";
+import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
 
 /** The scope of a lock.
  * @public
@@ -25,6 +25,18 @@ export enum LockScope {
   Shared,
   /** A Lock that blocks other users from making modifications to an entity. */
   Exclusive,
+}
+
+/**
+ * The properties to access a V2 checkpoint through a daemon.
+ * @beta
+ */
+export interface V2CheckpointAccessProps {
+  container: string;
+  auth: string;
+  user: string;
+  dbAlias: string;
+  storageType: string;
 }
 
 /**
@@ -131,6 +143,8 @@ export interface BackendHubAccess {
 
   /** download a v1 checkpoint */
   downloadV1Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
+  /** get the access props for a V2 checkpoint. Returns undefined if no V2 checkpoint exists. */
+  queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
   /** download a v2 checkpoint */
   downloadV2Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
 

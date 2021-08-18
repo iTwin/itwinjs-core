@@ -413,6 +413,7 @@ export interface BackendHubAccess {
     queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
     queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
     querySchemaLock: (arg: BriefcaseDbArg) => Promise<boolean>;
+    queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
     releaseAllCodes: (arg: BriefcaseIdArg) => Promise<void>;
     releaseAllLocks: (arg: BriefcaseIdArg & ChangesetIndexArg) => Promise<void>;
     releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
@@ -2965,6 +2966,8 @@ export class IModelHubBackend {
     // (undocumented)
     static querySchemaLock(arg: BriefcaseDbArg): Promise<boolean>;
     // (undocumented)
+    static queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
+    // (undocumented)
     static releaseAllCodes(arg: BriefcaseIdArg): Promise<void>;
     // (undocumented)
     static releaseAllLocks(arg: BriefcaseIdArg & ChangesetIndexArg): Promise<void>;
@@ -4710,6 +4713,20 @@ export class V1CheckpointManager {
     // (undocumented)
     static getFolder(iModelId: GuidString): string;
     }
+
+// @beta
+export interface V2CheckpointAccessProps {
+    // (undocumented)
+    auth: string;
+    // (undocumented)
+    container: string;
+    // (undocumented)
+    dbAlias: string;
+    // (undocumented)
+    storageType: string;
+    // (undocumented)
+    user: string;
+}
 
 // @internal
 export class V2CheckpointManager {
