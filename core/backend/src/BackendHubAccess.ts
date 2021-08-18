@@ -71,12 +71,9 @@ export interface IModelNameArg {
  * @internal
  */
 export interface BriefcaseDbArg {
-  requestContext?: AuthorizedClientRequestContext;
-  briefcase: {
-    briefcaseId: BriefcaseId;
-    iModelId: GuidString;
-    changeset: ChangesetIdWithIndex;
-  };
+  briefcaseId: BriefcaseId;
+  iModelId: GuidString;
+  changeset: ChangesetIdWithIndex;
 }
 
 /** Argument for methods that must supply an IModelId and a BriefcaseId
@@ -149,8 +146,9 @@ export interface BackendHubAccess {
   /** download a v2 checkpoint */
   downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
 
-  /** acquire a list of locks. Throws if unsuccessful */
-  acquireLocks(arg: BriefcaseDbArg & { locks: LockProps[] }): Promise<void>;
+  /** acquire one or more locks. Throws if unsuccessful */
+  acquireLocks(arg: BriefcaseDbArg, locks: LockProps | LockProps[]): Promise<void>;
+
   /** acquire the schema lock. Throws if unsuccessful */
   acquireSchemaLock(arg: BriefcaseDbArg): Promise<void>;
 
