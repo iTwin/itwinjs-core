@@ -3,14 +3,13 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ProcessDetector } from "@bentley/bentleyjs-core";
-import { BrowserAuthorizationCallbackHandler } from "@bentley/frontend-authorization-client";
 import { CloudStorageContainerUrl, CloudStorageTileCache, RpcConfiguration, TileContentIdentifier } from "@bentley/imodeljs-common";
-import { IModelApp, IModelConnection, NativeApp, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
+import { IModelApp, IModelConnection, RenderDiagnostics, RenderSystem } from "@bentley/imodeljs-frontend";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DisplayTestApp } from "./App";
 import { openIModel } from "./openIModel";
+import { signIn } from "./signIn";
 import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
@@ -55,23 +54,6 @@ async function openFile(filename: string, writable: boolean): Promise<IModelConn
   const iModelConnection = await openIModel(filename, writable);
   configuration.iModelName = iModelConnection.name;
   return iModelConnection;
-}
-
-// Wraps the signIn process
-// @return Promise that resolves to true after signIn is complete
-async function signIn(): Promise<boolean> {
-  if (!NativeApp.isValid) // for browser, frontend handles redirect. For native apps, backend handles it
-    await BrowserAuthorizationCallbackHandler.handleSigninCallback("http://localhost:3000/signin-callback");
-
-  const auth = IModelApp.authorizationClient!;
-  if (auth.isAuthorized)
-    return true;
-
-  return new Promise<boolean>((resolve, reject) => {
-    auth.onUserStateChanged.addOnce((token?: AccessToken) =>
-      resolve(token !== undefined));
-    auth.signIn().catch((err) => reject(err));
-  });
 }
 
 class FakeTileCache extends CloudStorageTileCache {

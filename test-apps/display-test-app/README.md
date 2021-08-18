@@ -180,6 +180,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * `dta incident markers` - toggle incident marker demo in the selected viewport.
 * `dta path decoration` - toggle drawing a small path decoration in the selected viewport for testing purposes.
 * `dta markup` - toggle markup on the selected viewport.
+* `dta signin` - sign in to use Bentley services like iModelHub and reality data.
 * `dta output shaders` - output debug information for compiled shaders. Requires SVT_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
   * `d=output\directory\` - directory into which to put the output files.
   * filter string: a combination of the following characters to filter the output (e.g., `gu` outputs all used glsl shaders, both fragment and vertex):
