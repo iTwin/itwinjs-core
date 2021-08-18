@@ -173,6 +173,28 @@ describe("ViewFlags", () => {
       constructions: !def.constructions,
     });
   });
+
+  it("has 3 JSON properties corresponding to 1 lighting flag", () => {
+    function expectLighting(vf: ViewFlags, expected: boolean) {
+      expect(vf.lighting).to.equal(expected);
+      const props = vf.toJSON();
+      const prop = expected ? undefined : true;
+      // ###TODO expect(props.noSolarLight).to.equal(prop);
+      // ###TODO expect(props.noCameraLights).to.equal(prop);
+      // ###TODO expect(props.noSourceLights).to.equal(prop);
+      expect(ViewFlags.fromJSON(props).lighting).to.equal(expected);
+    }
+
+    expectLighting(ViewFlags.fromJSON(), false);
+    expectLighting(ViewFlags.fromJSON({}), true);
+    expectLighting(ViewFlags.fromJSON({ noSourceLights: true, noCameraLights: true, noSolarLight: true }), false);
+    expectLighting(ViewFlags.fromJSON({ noCameraLights: true, noSolarLight: true }), true);
+    expectLighting(ViewFlags.fromJSON({ noCameraLights: true }), true);
+
+    expectLighting(new ViewFlags(), false);
+    expectLighting(new ViewFlags({ lighting: false }), false);
+    expectLighting(new ViewFlags({ lighting: true }), true);
+  });
 });
 
 describe("ViewFlagOverrides", () => {
