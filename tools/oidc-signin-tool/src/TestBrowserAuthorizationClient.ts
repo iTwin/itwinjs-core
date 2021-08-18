@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, BeEvent, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { AuthorizationParameters, Client, custom, generators, Issuer, OpenIDCallbackChecks, TokenSet } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
@@ -52,10 +52,9 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     if (undefined === this._deploymentRegion)
       this._deploymentRegion = Config.App.has("imjs_buddi_resolve_url_using_region") ? Config.App.getNumber("imjs_buddi_resolve_url_using_region") : 0; // Defaults to PROD (for 3rd party users)
 
-    const urlDiscoveryClient: UrlDiscoveryClient = new UrlDiscoveryClient();
-    this._imsUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSProfile.RP", this._deploymentRegion);
-
-    const oidcUrl = await urlDiscoveryClient.discoverUrl(new ClientRequestContext(""), "IMSOpenID", this._deploymentRegion);
+    const imsClient = new ImsAuthorizationClient();
+    this._imsUrl = await imsClient.getUrl(new ClientRequestContext(""));
+    const oidcUrl = await imsClient.getUrl(new ClientRequestContext(""));
 
     // Due to issues with a timeout or failed request to the authorization service increasing the standard timeout and adding retries.
     // Docs for this option here, https://github.com/panva/node-openid-client/tree/master/docs#customizing-http-requests

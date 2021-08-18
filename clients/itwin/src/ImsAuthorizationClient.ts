@@ -15,7 +15,7 @@ export class ImsAuthorizationClient extends Client {
 
   public constructor() {
     super();
-    this._url = Config.App.query("imjs_itwin_platform_authority");
+    this.baseUrl = Config.App.query("imjs_itwin_platform_authority");
   }
 
   /**
