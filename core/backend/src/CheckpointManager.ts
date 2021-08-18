@@ -10,16 +10,20 @@
 
 import * as path from "path";
 import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
+<<<<<<< HEAD
 import { CheckpointV2Query } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, IModelError } from "@bentley/imodeljs-common";
+=======
+import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, IModelError } from "@bentley/imodeljs-common";
+>>>>>>> 82160e3ca0 (Add `queryV2Checkpoint` to `BackendHubAccess` interface (#2090))
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
-import { IModelHubBackend } from "./IModelHubBackend";
 import { IModelJsFs } from "./IModelJsFs";
+import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -43,7 +47,11 @@ export interface CheckpointProps {
 
   changesetIndex?: ChangesetIndex;
 
+<<<<<<< HEAD
   requestContext: AuthorizedClientRequestContext;
+=======
+  readonly requestContext?: AuthorizedClientRequestContext;
+>>>>>>> 82160e3ca0 (Add `queryV2Checkpoint` to `BackendHubAccess` interface (#2090))
 }
 
 /** Called to show progress during a download. If this function returns non-zero, the download is aborted.
@@ -114,6 +122,7 @@ export class Downloads {
 */
 export class V2CheckpointManager {
   private static async getCommandArgs(checkpoint: CheckpointProps): Promise<BlobDaemonCommandArg> {
+<<<<<<< HEAD
     const { requestContext, iModelId, changeSetId } = checkpoint;
 
     try {
@@ -122,21 +131,14 @@ export class V2CheckpointManager {
       const checkpoints = await IModelHubBackend.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
       requestContext.enter();
       if (checkpoints.length < 1)
+=======
+    try {
+      const v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
+      if (!v2props)
+>>>>>>> 82160e3ca0 (Add `queryV2Checkpoint` to `BackendHubAccess` interface (#2090))
         throw new Error("no checkpoint");
 
-      const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpoints[0];
-      if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
-        throw new Error("Invalid checkpoint in iModelHub");
-
-      return {
-        container: containerAccessKeyContainer,
-        auth: containerAccessKeySAS,
-        daemonDir: process.env.BLOCKCACHE_DIR,
-        storageType: "azure?sas=1",
-        user: containerAccessKeyAccount,
-        dbAlias: containerAccessKeyDbName,
-        writeable: false,
-      };
+      return { ...v2props, daemonDir: process.env.BLOCKCACHE_DIR, writeable: false };
     } catch (err) {
       throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
     }
@@ -263,11 +265,17 @@ export class CheckpointManager {
         CheckpointManager.validateCheckpointGuids(checkpoint, nativeDb);
         // Apply change sets if necessary
         const parentChangeset = nativeDb.getParentChangeset();
+<<<<<<< HEAD
         if (parentChangeset.id !== checkpoint.changeSetId) {
           // Refresh the access token since downloading of the checkpoint may have taken significant time
           if (IModelHost.authorizationClient)
             checkpoint.requestContext.accessToken = await IModelHost.authorizationClient.getAccessToken();
           await BriefcaseManager.processChangesets(checkpoint.requestContext, db, { id: checkpoint.changeSetId, index: checkpoint.changesetIndex });
+=======
+        if (parentChangeset.id !== checkpoint.changeset.id) {
+          const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
+          await BriefcaseManager.processChangesets(requestContext, db, checkpoint.changeset);
+>>>>>>> 82160e3ca0 (Add `queryV2Checkpoint` to `BackendHubAccess` interface (#2090))
         } else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
           parentChangeset.index = checkpoint.changesetIndex;
