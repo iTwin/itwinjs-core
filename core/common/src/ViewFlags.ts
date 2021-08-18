@@ -8,7 +8,7 @@
 
 // cspell:ignore ovrs
 
-import { JsonUtils, Mutable, NonFunctionProperties } from "@bentley/bentleyjs-core";
+import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@bentley/bentleyjs-core";
 
 /** Enumerates the available rendering modes. The rendering mode chiefly controls whether and how surfaces and their edges are drawn.
  * Generally speaking,
@@ -234,10 +234,21 @@ export class ViewFlags {
     }
   }
 
+  /** Produce a copy of these ViewFlags with some modified properties. Any properties not explicitly specified by `changedFlags` will retain their current values.
+   * @param changedFlags Properties to modify.
+   * @returns A copy of these ViewFlags modified according to the supplied properties.
+   * @note Any explicitly `undefined` property of `changedFlags` will be set to its default value in the returned ViewFlags.
+   * @see [[override]] to have `undefined` properties retain their current values.
+   */
   public copy(changedFlags: Partial<ViewFlagsProperties>): ViewFlags {
     return new ViewFlags({ ...this, ...changedFlags });
   }
 
+  /** Produce a copy of these ViewFlags, overriding some of its properties. Any properties not explicitly specified by `overrides` will retain their current values,
+   * as will any property explicitly set to `undefined`.
+   * @param overrides The properties to override.
+   * @see [[copy]] to have `undefined` properties reset to their default values.
+   */
   public override(overrides: Partial<ViewFlagsProperties>): ViewFlags {
     // Create a copy of the input with all undefined ViewFlags properties removed.
     // Note we use the keys of `ViewFlags.defaults` instead of those of the input to avoid processing additional unrelated properties that may be present on input.
@@ -418,6 +429,6 @@ export class ViewFlags {
   }
 }
 
-export type ViewFlagsProperties = Mutable<NonFunctionProperties<ViewFlags>>;
+export type ViewFlagsProperties = Mutable<NonFunctionPropertiesOf<ViewFlags>>;
 
 export type ViewFlagOverrides = Partial<ViewFlagsProperties>;

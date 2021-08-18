@@ -37,8 +37,15 @@ export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | unde
   return isInstanceOf<T>(obj, constructor) ? obj as T : undefined;
 }
 
-export type NonFunctionPropertyNames<T> = {
+/** Extracts the names of all properties of `T` that are not of type `function`.
+ * @see [[NonFunctionPropertiesOf]] to obtain a type that includes only these properties.
+ * @public
+ */
+export type NonFunctionPropertyNamesOf<T> = {
   [K in keyof T]: T[K] extends Function ? never : K;
 }[keyof T];
 
-export type NonFunctionProperties<T> = Pick<T, NonFunctionPropertyNames<T>>;
+/** Produces a type consisting of all of the properties of `T` except for those of type `function`.
+ * @public
+ */
+export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
