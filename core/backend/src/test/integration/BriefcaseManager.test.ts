@@ -16,18 +16,18 @@ import { HubUtility } from "./HubUtility";
 import { TestChangeSetUtility } from "./TestChangeSetUtility";
 
 // Configuration needed:
-//    imjs_test_regular_user_name
-//    imjs_test_regular_user_password
-//    imjs_test_manager_user_name
-//    imjs_test_manager_user_password
-//    imjs_test_super_manager_user_name
+//    IMJS_TEST_REGULAR_USER_NAME
+//    IMJS_TEST_REGULAR_USER_PASSWORD
+//    IMJS_TEST_MANAGER_USER_NAME
+//    IMJS_TEST_MANAGER_USER_PASSWORD
+//    IMJS_TEST_SUPER_MANAGER_USER_NAME
 //    imjs_test_super_manager_password
 //    imjs_test_imodelhub_user_name
 //    imjs_test_imodelhub_user_password
-//    imjs_oidc_browser_test_client_id
+//    IMJS_OIDC_BROWSER_TEST_CLIENT_ID
 //      - Required to be a SPA
-//    imjs_oidc_browser_test_redirect_uri
-//    imjs_oidc_browser_test_scopes
+//    IMJS_OIDC_BROWSER_TEST_REDIRECT_URI
+//    IMJS_OIDC_BROWSER_TEST_SCOPES
 //      - Required scopes: "openid imodelhub context-registry-service:read-only"
 
 describe("BriefcaseManager (#integration)", () => {

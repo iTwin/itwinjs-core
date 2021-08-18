@@ -2,6 +2,18 @@
   "name": "@bentley/frontend-authorization-client",
   "entries": [
     {
+      "version": "2.19.6",
+      "tag": "@bentley/frontend-authorization-client_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:28 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add silent redirect uri to BrowserAuthClientConfig. If not provided default to redirectUri"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.5",
       "tag": "@bentley/frontend-authorization-client_v2.19.5",
       "date": "Fri, 13 Aug 2021 21:48:08 GMT",

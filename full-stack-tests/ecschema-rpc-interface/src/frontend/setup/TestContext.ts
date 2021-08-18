@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
-import { Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { NoRenderApp } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
 import {
@@ -54,7 +54,7 @@ export class TestContext {
     Logger.setLevelDefault(this.settings.logLevel === undefined ? LogLevel.Warning : this.settings.logLevel);
 
     // Setup environment
-    Config.App.set("imjs_buddi_resolve_url_using_region", this.settings.env);
+    process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(this.settings.env);
 
     if (undefined !== this.settings.oidcClientId) {
       this.adminUserAccessToken = await getAccessTokenFromBackend({

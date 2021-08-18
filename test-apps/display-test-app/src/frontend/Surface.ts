@@ -15,7 +15,7 @@ import { TileLoadIndicator } from "./TileLoadIndicator";
 import { createToolButton, ToolBar } from "./ToolBar";
 import { Viewer, ViewerProps } from "./Viewer";
 import { Dock, NamedWindow, NamedWindowProps, Window, WindowProps } from "./Window";
-import { openStandaloneIModel } from "./openStandaloneIModel";
+import { openIModel } from "./openIModel";
 import { setTitle } from "./Title";
 import { openAnalysisStyleExample } from "./AnalysisStyleExample";
 import { openDecorationGeometryExample } from "./DecorationGeometryExample";
@@ -181,7 +181,7 @@ export class Surface {
     }
 
     try {
-      const iModel = await openStandaloneIModel(filename, this.openReadWrite);
+      const iModel = await openIModel(filename, this.openReadWrite);
       setTitle(iModel);
       const viewer = await this.createViewer({ iModel });
       viewer.dock(Dock.Full);

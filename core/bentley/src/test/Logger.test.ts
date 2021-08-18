@@ -6,7 +6,6 @@ import { assert } from "chai";
 import { BentleyError } from "../BentleyError";
 import { DbResult, GetMetaDataFunction, Logger, LogLevel, PerfLogger, using } from "../bentleyjs-core";
 import { ClientRequestContext } from "../ClientRequestContext";
-import { EnvMacroSubst } from "../Logger";
 import { BeDuration } from "../Time";
 
 let outerr: any[];
@@ -70,50 +69,6 @@ function clearOutlets() {
 type FunctionReturningAny = () => any;
 
 describe("Logger", () => {
-
-  it("envvar subst", () => {
-    process.env.test1 = "test1";
-    process.env.test2 = "test2";
-
-    assert.equal(EnvMacroSubst.replace("${test1}"), "test1");
-    assert.equal(EnvMacroSubst.replace(" ${test1}"), " test1");
-    assert.equal(EnvMacroSubst.replace("${test1} "), "test1 ");
-    assert.equal(EnvMacroSubst.replace("${test2}"), "test2");
-    assert.equal(EnvMacroSubst.replace("${test1}${test2}"), "test1test2");
-    assert.equal(EnvMacroSubst.replace("-${test1}-${test2}-"), "-test1-test2-");
-    // should fail
-    assert.equal(EnvMacroSubst.replace("${testx}"), "${testx}");
-    assert.equal(EnvMacroSubst.replace("$(test1)"), "$(test1)");
-
-    const testObj: any = {
-      prop1: "${test1}",
-      prop2: "${test2}",
-      propx: "${testx}",
-      propy: "${testy}",
-      i: 1,
-      a: ["${test1}", "${test2}"],
-      nested: {
-        nestedprop1: "${test1}",
-        nestedprop2: "${test2}",
-        nestedpropy: "${testy}",
-        j: 2,
-      },
-    };
-    assert.isTrue(EnvMacroSubst.anyPropertyContainsEnvvars(testObj, true));
-    EnvMacroSubst.replaceInProperties(testObj, true, { testy: "testy" });
-    assert.isTrue(EnvMacroSubst.anyPropertyContainsEnvvars(testObj, true)); // still contains ${testx}, which looks like a macro
-    assert.equal(testObj.prop1, "test1");
-    assert.equal(testObj.prop2, "test2");
-    assert.equal(testObj.propx, "${testx}");
-    assert.equal(testObj.propy, "testy");
-    assert.equal(testObj.i, 1);
-    assert.equal(testObj.a[0], "test1");
-    assert.equal(testObj.a[1], "test2");
-    assert.equal(testObj.nested.nestedprop1, "test1");
-    assert.equal(testObj.nested.nestedprop2, "test2");
-    assert.equal(testObj.nested.nestedpropy, "testy");
-    assert.equal(testObj.nested.j, 2);
-  });
 
   it("log without initializing", () => {
     // logging messages in the components must not cause failures if the app hasn't initialized logging.

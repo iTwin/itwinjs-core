@@ -282,23 +282,6 @@ export namespace CompressedId64Set {
 export type ComputePriorityFunction<T> = (value: T) => number;
 
 // @public
-export class Config {
-    addEnvVarsStartingWith(prefix: string): void;
-    static get App(): Config;
-    get(varName: string, defaultVal?: boolean | string | number): any;
-    getBoolean(name: string, defaultVal?: boolean): boolean;
-    getContainer(): any;
-    getNumber(name: string, defaultVal?: number): number;
-    getString(name: string, defaultVal?: string): string;
-    getVars(): string[];
-    has(varName: string): boolean;
-    merge(source: any): void;
-    query(varName: string): any;
-    remove(varName: string): void;
-    set(varName: string, value: boolean | string | number): void;
-}
-
-// @public
 export type Constructor<T> = new (...args: any[]) => T;
 
 // @public
@@ -546,14 +529,6 @@ export interface EntryContainer<K, V> {
     set(key: K, value: Entry<K, V>): void;
     // (undocumented)
     readonly size: number;
-}
-
-// @alpha
-export class EnvMacroSubst {
-    static anyPropertyContainsEnvvars(obj: any, recurse: boolean): boolean;
-    static containsEnvvars(str: string): boolean;
-    static replace(str: string, defaultValues?: any): string;
-    static replaceInProperties(obj: any, recurse: boolean, defaultValues?: any): void;
 }
 
 // @beta
