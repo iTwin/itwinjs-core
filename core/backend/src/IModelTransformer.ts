@@ -766,17 +766,10 @@ export class IModelTransformer extends IModelExportHandler {
     return Semver.gt(`${schemaKey.version.read}.${schemaKey.version.write}.${schemaKey.version.minor}`, Schema.toSemverString(versionInTarget));
   }
 
-  private _hasNativelyExportedAllSchemas = false;
-
   /** Override of [IModelExportHandler.onExportSchema]($backend) that serializes a schema to disk for [[processSchemas]] to import into
    * the target iModel when it is exported from the source iModel. */
-  protected override async onExportSchema(_schema: ECSchemaMetaData.Schema): Promise<void> {
-    // HACK: when the native serializer gets support for individual schema export, this will stop exporting all at once
-    // and instead export the asked for schema, which will prevent false errors because of trying to import already existing schemas
-    if (!this._hasNativelyExportedAllSchemas) {
-      this._hasNativelyExportedAllSchemas = true;
-      this.sourceDb.nativeDb.exportSchemas(this._schemaExportDir);
-    }
+  protected override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
+    this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir);
   }
 
   // pending PR https://github.com/typescript-eslint/typescript-eslint/pull/3601 fixes the rule @typescript-eslint/return-await
@@ -793,7 +786,6 @@ export class IModelTransformer extends IModelExportHandler {
       requestContext.enter();
       IModelJsFs.mkdirSync(this._schemaExportDir);
       await this.exporter.exportSchemas();
-      this._hasNativelyExportedAllSchemas = false;
       requestContext.enter();
       const exportedSchemaFiles = IModelJsFs.readdirSync(this._schemaExportDir);
       if (exportedSchemaFiles.length === 0)
