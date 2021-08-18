@@ -12,7 +12,7 @@ import {
   BackendRequestContext, IModelDb, IModelHost, IModelJsFs, SnapshotDb,
   StandaloneDb,
 } from "@bentley/imodeljs-backend";
-import { BackendLoggerCategory } from "@bentley/imodeljs-transformer";
+import { TransformerLoggerCategory } from "@bentley/imodeljs-transformer";
 import { BriefcaseIdValue, ChangesetId, ChangesetIndex, ChangesetProps, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ElementUtils } from "./ElementUtils";
@@ -111,9 +111,9 @@ void (async () => {
     Logger.setLevel(loggerCategory, LogLevel.Info);
 
     if (args.logTransformer) { // optionally enable verbose transformation logging
-      Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelExporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelImporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelTransformer, LogLevel.Trace);
     }
 
     let requestContext: AuthorizedClientRequestContext | BackendRequestContext;
@@ -147,8 +147,8 @@ void (async () => {
         assert(!(args.sourceStartChangesetIndex && args.sourceStartChangesetId), "Pick single way to specify starting changeset");
         if (args.sourceStartChangesetIndex) {
           args.sourceStartChangesetId = await IModelHubUtils.queryChangesetId(requestContext, sourceIModelId, args.sourceStartChangesetIndex);
-        } else {
-          args.sourceStartChangesetIndex = await IModelHubUtils.queryChangesetIndex(requestContext, sourceIModelId, args.sourceStartChangesetId!);
+        } else if (args.sourceStartChangesetId) {
+          args.sourceStartChangesetIndex = await IModelHubUtils.queryChangesetIndex(requestContext, sourceIModelId, args.sourceStartChangesetId);
         }
         Logger.logInfo(loggerCategory, `sourceStartChangesetIndex=${args.sourceStartChangesetIndex}`);
         Logger.logInfo(loggerCategory, `sourceStartChangesetId=${args.sourceStartChangesetId}`);
@@ -157,10 +157,11 @@ void (async () => {
         assert(!(args.sourceEndChangesetIndex && args.sourceEndChangesetId), "Pick single way to specify ending changeset");
         if (args.sourceEndChangesetIndex) {
           args.sourceEndChangesetId = await IModelHubUtils.queryChangesetId(requestContext, sourceIModelId, args.sourceEndChangesetIndex);
-        } else {
-          args.sourceEndChangesetIndex = await IModelHubUtils.queryChangesetIndex(requestContext, sourceIModelId, args.sourceEndChangesetId!);
+        } else if (args.sourceEndChangesetId) {
+          args.sourceEndChangesetIndex = await IModelHubUtils.queryChangesetIndex(requestContext, sourceIModelId, args.sourceEndChangesetId);
         }
-        sourceEndVersion = IModelVersion.asOfChangeSet(args.sourceEndChangesetId!);
+        assert(args.sourceEndChangesetId !== undefined, "sourceEndChangesetId should be set by now");
+        sourceEndVersion = IModelVersion.asOfChangeSet(args.sourceEndChangesetId);
         Logger.logInfo(loggerCategory, `sourceEndChangesetIndex=${args.sourceEndChangesetIndex}`);
         Logger.logInfo(loggerCategory, `sourceEndChangesetId=${args.sourceEndChangesetId}`);
       }

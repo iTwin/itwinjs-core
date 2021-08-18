@@ -1891,6 +1891,7 @@ importers:
       '@bentley/imodeljs-backend': workspace:*
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-frontend': workspace:*
+      '@bentley/imodeljs-transformer': workspace:*
       '@bentley/itwin-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/body-parser': ^1.17.0
@@ -1927,6 +1928,7 @@ importers:
       '@bentley/imodeljs-backend': link:../../core/backend
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-frontend': link:../../core/frontend
+      '@bentley/imodeljs-transformer': link:../../core/transformer
       '@bentley/itwin-client': link:../../clients/itwin
       body-parser: 1.19.0
       chai: 4.3.4
@@ -3518,6 +3520,7 @@ importers:
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-backend': workspace:*
       '@bentley/imodeljs-common': workspace:*
+      '@bentley/imodeljs-transformer': workspace:*
       '@bentley/itwin-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
@@ -3539,6 +3542,7 @@ importers:
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-backend': link:../../core/backend
       '@bentley/imodeljs-common': link:../../core/common
+      '@bentley/imodeljs-transformer': link:../../core/transformer
       '@bentley/itwin-client': link:../../clients/itwin
       fs-extra: 8.1.0
       yargs: 16.2.0
