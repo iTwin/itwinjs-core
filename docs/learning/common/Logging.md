@@ -71,7 +71,7 @@ This approach is useful when you want to monitor the activity in a small number 
 
 ## Configuration Files
 
-A service typically initializes and configures logging in its startup logic. Configuration can be based on the configuration parameters of the service, which may be set by the deployment mechanism. The simplest way to do this is to use [LoggerLevelsConfig]($bentleyjs-core). This is normally used in conjunction with a stream config. Both are normally stored in a config file that is deployed with the service
+A service typically initializes and configures logging in its startup logic. Configuration can be based on the configuration parameters of the service, which may be set by the deployment mechanism. The simplest way to do this is to use [LoggerLevelsConfig]($bentleyjs-core). This is normally used in conjunction with a stream config. Both are normally stored in a config file that is deployed with the service.
 
 *Example:*
 
