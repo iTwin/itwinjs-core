@@ -12,7 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp,
+  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp,
   IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
@@ -83,34 +83,38 @@ class SignInTool extends Tool {
   }
 }
 
-abstract class PushPullChangesTool extends Tool {
+class PushChangesTool extends Tool {
+  public static override toolId = "PushChanges";
   public static override get maxArgs() { return 1; }
+  public static override get minArgs() { return 1; }
 
-  protected abstract execute(bc: BriefcaseConnection, arg?: string): Promise<void>;
+  public override run(description?: string): boolean {
+    if (!description || "string" !== typeof description)
+      return false;
 
-  public override run(arg?: string): boolean {
     const imodel = IModelApp.viewManager.selectedView?.iModel;
     if (!imodel || !imodel.isBriefcaseConnection())
       return false;
 
-    this.execute(imodel, arg); // eslint-disable-line @typescript-eslint/no-floating-promises
+    imodel.pushChanges(description); // eslint-disable-line @typescript-eslint/no-floating-promises
     return true;
   }
-}
 
-class PushChangesTool extends PushPullChangesTool {
-  public static override toolId = "PushChanges";
-
-  protected override async execute(bc: BriefcaseConnection, description?: string): Promise<void> {
-    await bc.pushChanges(description ?? "display-test-app");
+  public override parseAndRun(...args: string[]): boolean {
+    return this.run(args[0]);
   }
 }
 
-class PullChangesTool extends PushPullChangesTool {
+class PullChangesTool extends Tool {
   public static override toolId = "PullChanges";
 
-  protected override async execute(bc: BriefcaseConnection): Promise<void> {
-    return bc.pullAndMergeChanges();
+  public override run(): boolean {
+    const imodel = IModelApp.viewManager.selectedView?.iModel;
+    if (!imodel || !imodel.isBriefcaseConnection())
+      return false;
+
+    imodel.pullAndMergeChanges(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    return true;
   }
 }
 
