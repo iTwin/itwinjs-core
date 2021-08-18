@@ -769,8 +769,7 @@ export class IModelTransformer extends IModelExportHandler {
   /** Override of [IModelExportHandler.onExportSchema]($backend) that serializes a schema to disk for [[processSchemas]] to import into
    * the target iModel when it is exported from the source iModel. */
   protected override async onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void> {
-    const schemaPath = path.join(this._schemaExportDir, `${schema.fullName}.ecschema.xml`);
-    IModelJsFs.writeFileSync(schemaPath, await schema.toXmlString());
+    this.sourceDb.nativeDb.exportSchema(schema.name, this._schemaExportDir);
   }
 
   // pending PR https://github.com/typescript-eslint/typescript-eslint/pull/3601 fixes the rule @typescript-eslint/return-await
