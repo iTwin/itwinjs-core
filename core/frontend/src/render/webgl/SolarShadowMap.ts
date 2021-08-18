@@ -454,7 +454,6 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
       transparency: false,
       lighting: false,
       shadows: false,
-      noGeometryMap: true,
       monochrome: false,
       ambientOcclusion: false,
       visibleEdges: false,

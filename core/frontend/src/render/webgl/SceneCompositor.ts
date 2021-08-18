@@ -1244,7 +1244,6 @@ abstract class Compositor extends SceneCompositor {
       visibleEdges: false,
       materials: false,
       textures: false,
-      noGeometryMap: true,
       transparency: false,
     });
 

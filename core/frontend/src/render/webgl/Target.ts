@@ -772,7 +772,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
       materials: false,
       ambientOcclusion: false,
       thematicDisplay: this.currentViewFlags.thematicDisplay && this.uniforms.thematic.wantIsoLines,
-      noGeometryMap: true,
     });
 
     const top = this.currentBranch;

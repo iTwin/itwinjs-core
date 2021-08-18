@@ -242,9 +242,7 @@ export class CoreTools {
       return;
 
     // Turn on clip volume flag for section tools
-    const viewFlags: ViewFlags = vp.view.viewFlags.clone();
-    viewFlags.clipVolume = true;
-    vp.viewFlags = viewFlags;
+    vp.viewFlags = vp.viewFlags.with("clipVolume", true);
   }
 
   // note current ViewClipByPlaneTool is not automatically registered so the app must call ViewClipByPlaneTool.register();

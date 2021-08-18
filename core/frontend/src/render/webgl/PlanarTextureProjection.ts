@@ -176,7 +176,6 @@ export class PlanarTextureProjection {
       textures: false,
       lighting: false,
       shadows: false,
-      noGeometryMap: true,
       monochrome: false,
       materials: false,
       ambientOcclusion: false,
