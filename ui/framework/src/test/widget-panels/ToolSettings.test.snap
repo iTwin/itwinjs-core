@@ -1,11 +1,34 @@
 // Jest Snapshot v1, https://goo.gl/fbAQLP
 
+exports[`ToolSettingsContent should render (Floating Widget mode) 1`] = `
+<div
+  class="nz-floating-toolsettings"
+  style="visibility: visible;"
+>
+  <div
+    class="uifw-floating-toolsettings-container"
+  >
+    <div
+      class="nz-widget-content"
+    >
+      <div>
+        Hello World
+      </div>
+    </div>
+  </div>
+</div>
+`;
+
 exports[`ToolSettingsContent should render 1`] = `
 <div
-  class="nz-widget-content"
+  class="uifw-floating-toolsettings-container"
 >
-  <div>
-    Hello World
+  <div
+    class="nz-widget-content"
+  >
+    <div>
+      Hello World
+    </div>
   </div>
 </div>
 `;

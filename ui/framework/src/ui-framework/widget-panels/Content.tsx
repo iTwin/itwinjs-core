@@ -32,9 +32,10 @@ export function useWidgetDef(): WidgetDef | undefined {
 
   React.useEffect(() => {
     const listener = (args: FrontstageNineZoneStateChangedEventArgs) => {
-      if (args.frontstageDef !== frontstage || frontstage.isStageClosing || frontstage.isApplicationClosing)
+      // istanbul ignore next
+      if (args.frontstageDef !== frontstage || !frontstage || frontstage.isStageClosing || frontstage.isApplicationClosing)
         return;
-      setWidgetDef(frontstage?.findWidgetDef(tabId));
+      setWidgetDef(frontstage.findWidgetDef(tabId));
     };
     FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener(listener);
     return () => {

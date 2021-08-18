@@ -151,10 +151,12 @@ export function ToolSettingsWidgetContent() {
   const node = useToolSettingsNode();
   // if no tool settings hide the floating widgets tab
   React.useEffect(() => {
+    // istanbul ignore else
     if (floatingToolSettingsContainerRef.current) {
       const floatingWidgetTab = floatingToolSettingsContainerRef.current.closest(".nz-floating-toolsettings");
+      // istanbul ignore else
       if (floatingWidgetTab) {
-        (floatingWidgetTab as HTMLDivElement).style.visibility = !!node ? "visible" : "hidden";
+        (floatingWidgetTab as HTMLDivElement).style.visibility = !!node ? "visible" : /* istanbul ignore next */ "hidden";
       }
     }
   }, [node]);

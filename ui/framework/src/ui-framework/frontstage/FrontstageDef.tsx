@@ -712,6 +712,7 @@ export class FrontstageDef {
 
   /** @internal */
   public setFloatingWidgetBoundsInternal(floatingWidgetId: string, bounds: RectangleProps, inhibitNineZoneStateChangedEvent = false) {
+    // istanbul ignore else
     if (this.nineZoneState) {
       const newState = setFloatingWidgetContainerBounds(this.nineZoneState, floatingWidgetId, bounds);
       if (inhibitNineZoneStateChangedEvent)
@@ -779,9 +780,11 @@ export class FrontstageDef {
       return undefined;
 
     const location = findTab(this.nineZoneState, widgetId);
+    // istanbul ignore else
     if (location && isFloatingLocation(location)) {
       return location.floatingWidgetId;
     }
+    // istanbul ignore next
     return undefined;
   }
 
@@ -789,8 +792,10 @@ export class FrontstageDef {
     if (!floatingWidgetId)
       return undefined;
 
+    // istanbul ignore else
     if (this.nineZoneState && (floatingWidgetId in this.nineZoneState.floatingWidgets.byId)) {
       const foundWidget = document.querySelector(`div.nz-widget-floatingWidget[data-widget-id='${floatingWidgetId}']`);
+      // istanbul ignore next
       if (foundWidget) {
         const domRect = foundWidget.getBoundingClientRect();
         return { left: domRect.left, right: domRect.right, top: domRect.top, bottom: domRect.bottom };

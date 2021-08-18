@@ -106,8 +106,10 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
       }
     } catch (ex) {
       // istanbul ignore next
-      message = UiFramework.translate("keyinbrowser.exceptionOccurred");
-      detailedMessage = `${UiFramework.translate("keyinbrowser.exceptionOccurred")}: ${ex}`;
+      {
+        message = UiFramework.translate("keyinbrowser.exceptionOccurred");
+        detailedMessage = `${UiFramework.translate("keyinbrowser.exceptionOccurred")}: ${ex}`;
+      }
     }
 
     // istanbul ignore else
