@@ -6,9 +6,10 @@
  * @module Utilities
  */
 
-import { Geometry } from "@bentley/geometry-core";
-import { Point, PointProps } from "./Point";
+import { PointProps } from "@bentley/ui-abstract";
+import { Point } from "./Point";
 import { Size, SizeProps } from "./Size";
+import { UiGeometry } from "./UiGeometry";
 
 /** Describes 2d bounds.
  * @public
@@ -42,6 +43,13 @@ export class Rectangle implements RectangleProps {
   /** Creates rectangle from [[SizeProps]]. */
   public static createFromSize(size: SizeProps): Rectangle {
     return new Rectangle(0, 0, size.width, size.height);
+  }
+
+  /** Create a rectangle with 2 pairs of xy candidates. Theses are compared and shuffled as needed for the rectangle. */
+  public static createXYXY(xA: number, yA: number, xB: number, yB: number): Rectangle {
+    return new Rectangle(
+      Math.min(xA, xB), Math.min(yA, yB),
+      Math.max(xA, xB), Math.max(yA, yB));
   }
 
   /** Creates rectangle with specified bounds. */
@@ -171,6 +179,14 @@ export class Rectangle implements RectangleProps {
   }
 
   /**
+   * Checks if a point given as x,y is within the rectangle.
+   * @note Inclusive.
+   */
+  public containsXY(x: number, y: number): boolean {
+    return this.containsPoint({x, y});
+  }
+
+  /**
    * @returns true if this rectangle contains other rectangle.
    * @note Inclusive.
    */
@@ -258,11 +274,11 @@ export class Rectangle implements RectangleProps {
 
     if (point.x < this.left) {
       if (point.y < this.top)
-        shortestDistance = Geometry.hypotenuseXY(this.left - point.x, this.top - point.y);
+        shortestDistance = UiGeometry.hypotenuseXY(this.left - point.x, this.top - point.y);
       else if (point.y <= this.bottom)
         shortestDistance = this.left - point.x;
       else
-        shortestDistance = Geometry.hypotenuseXY(this.left - point.x, this.bottom - point.y);
+        shortestDistance = UiGeometry.hypotenuseXY(this.left - point.x, this.bottom - point.y);
     } else if (point.x <= this.right) {
       if (point.y < this.top)
         shortestDistance = this.top - point.y;
@@ -272,11 +288,11 @@ export class Rectangle implements RectangleProps {
         shortestDistance = point.y - this.bottom;
     } else {
       if (point.y < this.top)
-        shortestDistance = Geometry.hypotenuseXY(this.right - point.x, this.top - point.y);
+        shortestDistance = UiGeometry.hypotenuseXY(this.right - point.x, this.top - point.y);
       else if (point.y <= this.bottom)
         shortestDistance = point.x - this.right;
       else
-        shortestDistance = Geometry.hypotenuseXY(this.right - point.x, this.bottom - point.y);
+        shortestDistance = UiGeometry.hypotenuseXY(this.right - point.x, this.bottom - point.y);
     }
 
     return shortestDistance;

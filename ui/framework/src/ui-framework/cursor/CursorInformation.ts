@@ -6,8 +6,8 @@
  * @module Cursor
  */
 
-import { RelativePosition } from "@bentley/ui-abstract";
-import { Point, PointProps, UiEvent } from "@bentley/ui-core";
+import { PointProps, RelativePosition } from "@bentley/ui-abstract";
+import { Point, UiEvent } from "@bentley/ui-core";
 
 /** Enum for Cursor Direction parts
  *  @public

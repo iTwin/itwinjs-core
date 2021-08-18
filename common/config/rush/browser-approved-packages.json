@@ -219,6 +219,10 @@
       "allowedCategories": [ "extensions", "internal" ]
     },
     {
+      "name": "@bentley/ui-imodel-components",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
       "name": "@bentley/ui-ninezone",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
@@ -453,6 +457,10 @@
     {
       "name": "enzyme",
       "allowedCategories": [ "extensions", "frontend" ]
+    },
+    {
+      "name": "enzyme-adapter-react-16",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "enzyme-to-json",

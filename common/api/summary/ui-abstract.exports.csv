@@ -65,6 +65,7 @@ public;DialogPropertyItem
 public;DialogPropertySyncItem 
 public;DialogProps
 public;DialogRow
+public;DisplayMessageType
 public;EditorPosition
 public;EnumerationChoice
 public;EnumerationChoicesInfo
@@ -113,6 +114,8 @@ internal;matchesPrefix: IFilter
 internal;matchesStrictPrefix: IFilter
 internal;matchesSubString(word: string, wordToMatchAgainst: string): IMatch[] | null
 internal;matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null
+public;MessagePresenter
+public;MessageSeverity
 public;MultilineTextEditorParams 
 public;OnCancelFunc = () => void
 public;OnItemExecutedFunc = (item: any) => void
@@ -120,6 +123,7 @@ public;OnNumberCommitFunc = (value: number) => void
 public;OnValueCommitFunc = (value: Primitives.Value) => void
 internal;or(...filter: IFilter[]): IFilter
 public;ParseResults
+public;PointProps
 public;Primitives
 public;PrimitiveValue 
 public;PropertyChangeResult

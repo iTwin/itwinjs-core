@@ -7,7 +7,7 @@
  */
 
 import { NotifyMessageDetailsType } from "./ReactNotifyMessageDetails";
-import { MessageSeverity } from "@bentley/ui-core";
+import { MessageSeverity } from "@bentley/ui-abstract";
 import { MessageManager } from "./MessageManager";
 import { OutputMessageType } from "@bentley/imodeljs-frontend";
 
