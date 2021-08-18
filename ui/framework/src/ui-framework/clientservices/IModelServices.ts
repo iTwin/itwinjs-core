@@ -8,7 +8,7 @@
 
 import { OpenMode } from "@bentley/bentleyjs-core";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ProjectInfo } from "./ProjectServices";
+import { ITwin } from "@bentley/context-registry-client";
 
 /** Enumeration for iModel scope
  * @internal
@@ -28,7 +28,7 @@ export interface IModelInfo {
   wsgId: string;
   createdDate: Date;
   thumbnail?: string;
-  projectInfo: ProjectInfo;
+  projectInfo: ITwin;
   status: string;
 }
 
@@ -74,7 +74,7 @@ export interface IModelUserInfo {
 export interface IModelServices {
 
   /** Get the iModels in a project. */
-  getIModels(projectInfo: ProjectInfo, top: number, skip: number): Promise<IModelInfo[]>;
+  getIModels(projectInfo: ITwin, top: number, skip: number): Promise<IModelInfo[]>;
 
   /** Open the specified version of the IModel */
   openIModel(contextId: string, iModelId: string, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection>;
