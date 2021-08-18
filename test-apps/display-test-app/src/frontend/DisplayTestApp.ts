@@ -10,7 +10,7 @@ import { AccessToken } from "@bentley/itwin-client";
 import { WebGLExtensionName } from "@bentley/webgl-compatibility";
 import { DtaConfiguration } from "../common/DtaConfiguration";
 import { DisplayTestApp } from "./App";
-import { openStandaloneIModel } from "./openStandaloneIModel";
+import { openIModel } from "./openIModel";
 import { Surface } from "./Surface";
 import { setTitle } from "./Title";
 import { showStatus } from "./Utils";
@@ -50,9 +50,9 @@ async function retrieveConfiguration(): Promise<void> {
   });
 }
 
-async function openIModel(filename: string, writable: boolean): Promise<IModelConnection> {
+async function openFile(filename: string, writable: boolean): Promise<IModelConnection> {
   configuration.standalone = true;
-  const iModelConnection = await openStandaloneIModel(filename, writable);
+  const iModelConnection = await openIModel(filename, writable);
   configuration.iModelName = iModelConnection.name;
   return iModelConnection;
 }
@@ -166,7 +166,7 @@ const dtaFrontendMain = async () => {
     const iModelName = configuration.iModelName;
     if (undefined !== iModelName) {
       const writable = configuration.openReadWrite ?? false;
-      iModel = await openIModel(iModelName, writable);
+      iModel = await openFile(iModelName, writable);
       setTitle(iModel);
     }
 

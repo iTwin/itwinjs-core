@@ -39,7 +39,7 @@ npm run start:servers
 
 ## Using display-test-app
 
-Currently, display-test-app only supports opening snapshot iModels from the local disk. If you define the `SVT_STANDALONE_FILENAME` environment variable to contain the absolute path to an existing iModel file on your machine, then upon startup, a viewport displaying the contents of this iModel will be displayed. Otherwise, on startup the toolbar will have a button allowing you to select an iModel to open.
+Currently, display-test-app only supports opening snapshot iModels from the local disk. If you define the `SVT_STANDALONE_FILENAME` environment variable to contain the absolute path to an existing iModel file on your machine, then upon startup, a viewport displaying the contents of this iModel will be displayed. Otherwise, on startup the toolbar will have a button allowing you to select an iModel to open. If the file opened from disk is a briefcase that retains its link to iModelHub (as opposed to a snapshot) and is opened in read-write mode, it can push and pull changesets.
 
 display-test-app's UI consists of:
 
@@ -99,11 +99,11 @@ You can use these environment variables to alter the default behavior of various
 * SVT_STANDALONE_FILENAME
   * Absolute path to an iModel to be opened on start-up.
 * SVT_STANDALONE_FILEPATH (browser only)
-  * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels. This enables the use of a file open dialog. Within that dialog you must navigate to the exact path and select a file residing inside that directory - not in any subdirectory thereof.
+  * Allows SVT running in the browser to assume a common base path for ALL local iModels. This enables the use of a file open dialog. Within that dialog you must navigate to the exact path and select a file residing inside that directory - not in any subdirectory thereof.
 * SVT_STANDALONE_VIEWNAME
   * The name of a view to open by default within an iModel.
 * SVT_STANDALONE_SIGNIN
-  * If defined (value does not matter), the user will be required to sign in. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
+  * If defined (value does not matter), the user will be required to sign in at startup. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
 * SVT_NO_MAXIMIZE_WINDOW
   * If defined, don't maximize the electron window on startup
 * SVT_NO_DEV_TOOLS
@@ -215,7 +215,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 display-test-app supplies minimal features for editing the contents of an iModel, strictly for testing purposes. To use it:
 
 * Set SVT_READ_WRITE=1 in the environment.
-* Open an editable standalone iModel.
+* Open a briefcase or an editable standalone iModel.
 * Use the key-ins below to make changes; typically:
   * `dta edit` to begin an editing scope;
   * key-ins to delete/move/insert elements and undo/redo those changes;

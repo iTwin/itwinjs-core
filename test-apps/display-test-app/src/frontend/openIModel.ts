@@ -6,12 +6,12 @@ import { IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelError } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, IModelConnection, SnapshotConnection } from "@bentley/imodeljs-frontend";
 
-export async function openStandaloneIModel(filename: string, writable: boolean,): Promise<IModelConnection> {
+export async function openIModel(fileName: string, writable: boolean,): Promise<IModelConnection> {
   try {
-    return await BriefcaseConnection.openStandalone(filename, writable ? OpenMode.ReadWrite : OpenMode.Readonly, { key: filename });
+    return await BriefcaseConnection.openFile({ fileName, readonly: !writable, key: fileName })
   } catch (err) {
     if (writable && err instanceof IModelError && err.errorNumber === IModelStatus.ReadOnly)
-      return SnapshotConnection.openFile(filename);
+      return SnapshotConnection.openFile(fileName);
     else
       throw err;
   }
