@@ -11,7 +11,7 @@ import {
   PrimitivePropertyProps, PrimitiveType, SchemaItemKey, SchemaItemType, StructArrayPropertyProps,
   StructClass, StructPropertyProps,
 } from "@bentley/ecschema-metadata";
-import { PropertyEditResults, SchemaContextEditor } from "./Editor";
+import { PropertyEditResults, SchemaContextEditor, SchemaItemEditResults } from "./Editor";
 import { MutableClass } from "./Mutable/MutableClass";
 
 /**
@@ -151,6 +151,32 @@ export class ECClasses {
     const newProperty = await mutableClass.createStructArrayProperty(name, type);
     await newProperty.fromJSON(structProps);
     return { itemKey: classKey, propertyName: name };
+  }
+
+  public async deleteProperty(classKey: SchemaItemKey, name: string): Promise<PropertyEditResults> {
+    let mutableClass: MutableClass;
+    try {
+      mutableClass = await this.getClass(classKey, name);
+    } catch (e) {
+      return { errorMessage: e.message };
+    }
+
+    await mutableClass.deleteProperty(name);
+    return { itemKey: classKey, propertyName: name };
+  }
+
+  public async delete(classKey: SchemaItemKey): Promise<SchemaItemEditResults> {
+    const schema = await this._schemaEditor.getSchema(classKey.schemaKey);
+    if (schema === undefined)
+      return { errorMessage: `Schema Key ${classKey.schemaKey.toString(true)} not found in context` };
+
+    const ecClass = await schema.getItem<ECClass>(classKey.name);
+    if (ecClass === undefined)
+      return {};
+
+    await schema.deleteClass(ecClass.name);
+
+    return { itemKey: classKey };
   }
 
   private async getClass(classKey: SchemaItemKey, name: string): Promise<MutableClass> {

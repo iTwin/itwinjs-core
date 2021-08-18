@@ -10,7 +10,7 @@ import * as React from "react";
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelConnection, ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
-import { ViewportComponent, ViewStateProp } from "@bentley/ui-components";
+import { ViewportComponent, ViewStateProp } from "@bentley/ui-imodel-components";
 import { FillCentered } from "@bentley/ui-core";
 
 import { FrontstageManager } from "../frontstage/FrontstageManager";

@@ -6,7 +6,7 @@
  * @module ContextRegistry
  */
 import * as deepAssign from "deep-assign";
-import { assert, Config } from "@bentley/bentleyjs-core";
+import { assert } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 
 /** The iTwin context type.
@@ -139,7 +139,6 @@ export interface ContextRegistryRequestQueryOptions extends RequestQueryOptions 
  */
 export class ContextRegistryClient extends WsgClient {
   public static readonly searchKey: string = "CONNECTEDContextService.URL";
-  public static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
 
   public constructor() {
     super("v2.5");
@@ -152,21 +151,6 @@ export class ContextRegistryClient extends WsgClient {
   protected override async setupOptionDefaults(options: RequestOptions): Promise<void> {
     await super.setupOptionDefaults(options);
     deepAssign(options, { headers: { "content-type": "application/json" } });
-  }
-
-  /** Gets theRelyingPartyUrl for the service.
-   * @returns RelyingPartyUrl for the service.
-   */
-  protected getRelyingPartyUrl(): string {
-    if (Config.App.has(ContextRegistryClient.configRelyingPartyUri))
-      return `${Config.App.get(ContextRegistryClient.configRelyingPartyUri)}/`;
-
-    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
-      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
-    }
-
-    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${ContextRegistryClient.configRelyingPartyUri}`);
   }
 
   /** Gets the iTwin project contexts that are accessible to the authorized user.

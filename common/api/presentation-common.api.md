@@ -229,8 +229,9 @@ export interface CompressedClassInfoJSON {
 }
 
 // @public
-export type CompressedDescriptorJSON = Omit<DescriptorJSON, "selectClasses" | "fields"> & {
+export type CompressedDescriptorJSON = Omit<DescriptorJSON, "selectClasses" | "fields" | "categories"> & {
     selectClasses: SelectClassInfoJSON<string>[];
+    categories: CategoryDescriptionJSON[];
     classesMap: {
         [id: string]: CompressedClassInfoJSON;
     };
@@ -337,6 +338,22 @@ export interface ContentRule extends RuleBase, ConditionContainer {
     condition?: string;
     ruleType: RuleTypes.Content;
     specifications: ContentSpecification[];
+}
+
+// @beta
+export interface ContentSourcesRequestOptions<TIModel> extends RequestOptions<TIModel> {
+    classes: string[];
+}
+
+// @beta
+export type ContentSourcesRpcRequestOptions = PresentationRpcRequestOptions<ContentSourcesRequestOptions<never>>;
+
+// @beta
+export interface ContentSourcesRpcResult {
+    classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    };
+    sources: SelectClassInfoJSON<Id64String>[];
 }
 
 // @public
@@ -908,7 +925,7 @@ export class Field {
     editor?: EditorDescription;
     static fromCompressedJSON(json: FieldJSON<string>, classesMap: {
         [id: string]: CompressedClassInfoJSON;
-    }): FieldJSON | undefined;
+    }, categories: CategoryDescription[]): Field | undefined;
     static fromJSON(json: FieldJSON | undefined, categories: CategoryDescription[]): Field | undefined;
     // @deprecated
     static fromJSON(json: FieldJSON | string | undefined): Field | undefined;
@@ -974,7 +991,7 @@ export interface FieldHierarchy {
 export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
 
 // @internal (undocumented)
-export const getFieldByName: (fields: Field[], name: string, recurse?: boolean | undefined) => Field | undefined;
+export const getFieldByName: (fields: Field[], name: string | undefined, recurse?: boolean | undefined) => Field | undefined;
 
 // @public
 export const getInstancesCount: (keys: Readonly<KeySet>) => number;
@@ -1610,6 +1627,9 @@ export class NestedContentField extends Field {
     // (undocumented)
     clone(): NestedContentField;
     contentClassInfo: ClassInfo;
+    static fromCompressedJSON(json: NestedContentFieldJSON<Id64String>, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }, categories: CategoryDescription[]): any;
     static fromJSON(json: NestedContentFieldJSON | undefined, categories: CategoryDescription[]): NestedContentField | undefined;
     // @deprecated
     static fromJSON(json: NestedContentFieldJSON | string | undefined): NestedContentField | undefined;
@@ -1981,6 +2001,8 @@ export class PresentationRpcInterface extends RpcInterface {
     getContentSetSize(_token: IModelRpcProps, _options: ContentRpcRequestOptions, _descriptorOrOverrides: DescriptorJSON | DescriptorOverrides, _keys: KeySetJSON): PresentationRpcResponse<number>;
     // (undocumented)
     getContentSetSize(_token: IModelRpcProps, _options: ExtendedContentRpcRequestOptions): PresentationRpcResponse<number>;
+    // @beta (undocumented)
+    getContentSources(_token: IModelRpcProps, _options: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult>;
     // @deprecated (undocumented)
     getDisplayLabelDefinition(_token: IModelRpcProps, _options: LabelRpcRequestOptions, _key: InstanceKeyJSON): PresentationRpcResponse<LabelDefinitionJSON>;
     // (undocumented)
@@ -2114,6 +2136,9 @@ export class PropertiesField extends Field {
     constructor(category: CategoryDescription, name: string, label: string, description: TypeDescription, isReadonly: boolean, priority: number, properties: Property[], editor?: EditorDescription, renderer?: RendererDescription);
     // (undocumented)
     clone(): PropertiesField;
+    static fromCompressedJSON(json: PropertiesFieldJSON<Id64String>, classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }, categories: CategoryDescription[]): PropertiesField | undefined;
     static fromJSON(json: PropertiesFieldJSON | undefined, categories: CategoryDescription[]): PropertiesField | undefined;
     // @deprecated
     static fromJSON(json: PropertiesFieldJSON | string | undefined): PropertiesField | undefined;
@@ -2385,9 +2410,9 @@ export interface RelatedClassInfo {
 // @public (undocumented)
 export namespace RelatedClassInfo {
     export function equals(lhs: RelatedClassInfo | StrippedRelatedClassInfo, rhs: RelatedClassInfo | StrippedRelatedClassInfo): boolean;
-    export function fromCompressedJSON(compressedInfoJSON: RelatedClassInfoJSON<string>, classesMap: {
+    export function fromCompressedJSON(json: RelatedClassInfoJSON<string>, classesMap: {
         [id: string]: CompressedClassInfoJSON;
-    }): RelatedClassInfoJSON;
+    }): RelatedClassInfo;
     export function fromJSON(json: RelatedClassInfoJSON): RelatedClassInfo;
     export function strip(full: RelatedClassInfo): StrippedRelatedClassInfo;
     export function toCompressedJSON(classInfo: RelatedClassInfo, classesMap: {
@@ -2561,6 +2586,8 @@ export class RpcRequestsHandler implements IDisposable {
     // (undocumented)
     getContentSetSize(options: ExtendedContentRequestOptions<IModelRpcProps, DescriptorJSON, KeySetJSON, RulesetVariableJSON>): Promise<number>;
     // (undocumented)
+    getContentSources(options: ContentSourcesRequestOptions<IModelRpcProps>): Promise<ContentSourcesRpcResult>;
+    // (undocumented)
     getDisplayLabelDefinition(options: DisplayLabelRequestOptions<IModelRpcProps, InstanceKeyJSON>): Promise<LabelDefinitionJSON>;
     // (undocumented)
     getElementProperties(options: ElementPropertiesRequestOptions<IModelRpcProps>): Promise<ElementProperties | undefined>;
@@ -2715,18 +2742,26 @@ export interface SchemasSpecification {
 export interface SelectClassInfo {
     isSelectPolymorphic: boolean;
     navigationPropertyClasses: RelatedClassInfo[];
+    pathFromInputToSelectClass?: RelationshipPath;
+    // @deprecated
     pathToPrimaryClass: RelationshipPath;
+    // @deprecated
     relatedInstanceClasses: RelatedClassInfo[];
+    relatedInstancePaths?: RelationshipPath[];
     relatedPropertyPaths: RelationshipPath[];
     selectClassInfo: ClassInfo;
 }
 
 // @public (undocumented)
 export namespace SelectClassInfo {
-    export function fromCompressedJSON(compressedSelectClass: SelectClassInfoJSON<string>, classesMap: {
+    export function fromCompressedJSON(json: SelectClassInfoJSON<string>, classesMap: {
         [id: string]: CompressedClassInfoJSON;
-    }): SelectClassInfoJSON;
+    }): SelectClassInfo;
     export function fromJSON(json: SelectClassInfoJSON): SelectClassInfo;
+    // @internal
+    export function listFromCompressedJSON(json: SelectClassInfoJSON<Id64String>[], classesMap: {
+        [id: string]: CompressedClassInfoJSON;
+    }): SelectClassInfo[];
     export function toCompressedJSON(selectClass: SelectClassInfo, classesMap: {
         [id: string]: CompressedClassInfoJSON;
     }): SelectClassInfoJSON<string>;
@@ -2739,9 +2774,13 @@ export interface SelectClassInfoJSON<TClassInfoJSON = ClassInfoJSON> {
     // (undocumented)
     navigationPropertyClasses: RelatedClassInfoJSON<TClassInfoJSON>[];
     // (undocumented)
+    pathFromInputToSelectClass?: RelationshipPathJSON<TClassInfoJSON>;
+    // @deprecated (undocumented)
     pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
-    // (undocumented)
+    // @deprecated (undocumented)
     relatedInstanceClasses: RelatedClassInfoJSON<TClassInfoJSON>[];
+    // (undocumented)
+    relatedInstancePaths?: RelationshipPathJSON<TClassInfoJSON>[];
     // (undocumented)
     relatedPropertyPaths: RelationshipPathJSON<TClassInfoJSON>[];
     // (undocumented)

@@ -376,7 +376,7 @@ internal;NativeAppLogger
 public;NativeAppOpts 
 internal;NoRenderApp
 public;class NotificationHandler
-public;NotificationManager
+public;NotificationManager 
 public;NotifyMessageDetails
 internal;NullRenderSystem 
 internal;NullTarget 

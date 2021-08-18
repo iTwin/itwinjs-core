@@ -5119,7 +5119,6 @@ export interface NativeAppFunctions {
     getAccessTokenProps: () => Promise<AccessTokenProps>;
     getBriefcaseFileName: (_props: BriefcaseProps) => Promise<string>;
     getCachedBriefcases: (_iModelId?: GuidString) => Promise<LocalBriefcaseProps[]>;
-    getConfig: () => Promise<any>;
     initializeAuth: (props: ClientRequestContextProps, config?: NativeAppAuthorizationConfiguration) => Promise<number>;
     overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
     requestCancelDownloadBriefcase: (_fileName: string) => Promise<boolean>;
@@ -8215,6 +8214,8 @@ export interface TileOptions {
     // (undocumented)
     readonly maximumMajorTileFormatVersion: number;
     // (undocumented)
+    readonly optimizeBRepProcessing: boolean;
+    // (undocumented)
     readonly useProjectExtents: boolean;
 }
 
@@ -8298,6 +8299,8 @@ export enum TreeFlags {
     EnforceDisplayPriority = 2,
     // (undocumented)
     None = 0,
+    // (undocumented)
+    OptimizeBRepProcessing = 4,
     // (undocumented)
     UseProjectExtents = 1
 }

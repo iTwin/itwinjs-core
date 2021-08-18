@@ -51,6 +51,8 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /common/**/ecschema-locaters/                     @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema-metadata.*                    @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema-metadata/                     @calebmshafer @ColinKerr @wgoehrig
+/common/**/ecschema-editing.*                     @calebmshafer @ColinKerr @wgoehrig
+/common/**/ecschema-editing/                      @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema-rpcinterface-tests/           @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts.*                          @calebmshafer @ColinKerr @wgoehrig
 /common/**/ecschema2ts/                           @calebmshafer @ColinKerr @wgoehrig
@@ -110,6 +112,7 @@ rush.json       @calebmshafer @pmconne @wgoehrig
 /core/common/src/rpc/IModelTileRpcInterface.ts    @pmconne
 /core/ecschema-locaters         @calebmshafer @ColinKerr @wgoehrig
 /core/ecschema-metadata         @calebmshafer @ColinKerr @wgoehrig
+/core/ecschema-editing          @calebmshafer @ColinKerr @wgoehrig
 /core/electron-manager          @wgoehrig @ramanujam-raman
 /core/express-server            @calebmshafer @wgoehrig @ramanujam-raman
 /core/frontend                  @kabentley @bbastings @imodeljs/display

@@ -9,7 +9,7 @@
 import "./NodeContent.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
+import { PrimitiveValue, PropertyDescription, PropertyRecord, PropertyValueFormat, StandardTypeNames } from "@bentley/ui-abstract";
 import { CommonProps, shallowDiffers, TreeNodePlaceholder } from "@bentley/ui-core";
 import { ItemStyle, ItemStyleProvider } from "../../../properties/ItemStyle";
 import { PropertyContainerType, PropertyValueRendererContext, PropertyValueRendererManager } from "../../../properties/ValueRendererManager";
@@ -81,7 +81,7 @@ export class TreeNodeContent extends React.Component<TreeNodeContentProps, TreeN
     };
     const property: PropertyDescription = {
       displayLabel: UiComponents.translate("general.label"),
-      typename: "string",
+      typename: StandardTypeNames.String,
       name: "node_label",
     };
 

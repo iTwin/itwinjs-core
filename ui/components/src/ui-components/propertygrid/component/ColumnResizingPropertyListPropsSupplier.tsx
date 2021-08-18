@@ -4,8 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import _ from "lodash";
 import * as React from "react";
-import { Geometry } from "@bentley/geometry-core";
-import { Orientation, RatioChangeResult } from "@bentley/ui-core";
+import { Orientation, RatioChangeResult, UiGeometry } from "@bentley/ui-core";
 import { PropertyListProps } from "./PropertyList";
 
 /** @internal */
@@ -58,7 +57,7 @@ export class ColumnResizingPropertyListPropsSupplier extends React.Component<Col
   };
 
   private _onColumnRatioChanged = (ratio: number): RatioChangeResult => {
-    ratio = Geometry.clamp(ratio, this._minRatio, this._maxRatio);
+    ratio = UiGeometry.clamp(ratio, this._minRatio, this._maxRatio);
     if (this.state.columnRatio === ratio)
       return { ratio };
 
@@ -98,7 +97,7 @@ export class ColumnResizingPropertyListPropsSupplier extends React.Component<Col
   };
 
   private getValidColumnRatio(): number {
-    return Geometry.clamp(this.state.columnRatio, this._minRatio, this._maxRatio);
+    return UiGeometry.clamp(this.state.columnRatio, this._minRatio, this._maxRatio);
   }
 
   public override render() {

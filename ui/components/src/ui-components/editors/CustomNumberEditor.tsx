@@ -12,10 +12,9 @@ import "./CustomNumberEditor.scss";
 import classnames from "classnames";
 import * as React from "react";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
 import {
-  CustomFormattedNumberParams, IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes,
-  PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey, StandardEditorNames, StandardTypeNames,
+  CustomFormattedNumberParams, IconEditorParams, InputEditorSizeParams, MessageSeverity, PrimitiveValue, PropertyEditorParams, PropertyEditorParamTypes,
+  PropertyRecord, PropertyValue, PropertyValueFormat, SpecialKey, StandardEditorNames, StandardTypeNames, UiAbstract,
 } from "@bentley/ui-abstract";
 import { Icon, IconInput, Input, InputProps } from "@bentley/ui-core";
 import { UiComponents } from "../UiComponents";
@@ -71,11 +70,12 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
           this.setState({ inputValue: newDisplayValue });
         }
       } else {
-        const msg = new NotifyMessageDetails(OutputMessagePriority.Error, parseResults.parseError ? parseResults.parseError : /* istanbul ignore next */ UiComponents.translate("errors.unable-to-parse-quantity"));
-        this.htmlElement && msg.setInputFieldTypeDetails(this.htmlElement);
-        // istanbul ignore next
-        if (IModelApp.notifications)
-          IModelApp.notifications.outputMessage(msg);
+        // istanbul ignore else
+        if (this.htmlElement)
+          UiAbstract.messagePresenter.displayInputFieldMessage(this.htmlElement, MessageSeverity.Error, parseResults.parseError ? parseResults.parseError : /* istanbul ignore next */ UiComponents.translate("errors.unable-to-parse-quantity"));
+        else
+          UiAbstract.messagePresenter.displayMessage(MessageSeverity.Error, parseResults.parseError ? parseResults.parseError : /* istanbul ignore next */ UiComponents.translate("errors.unable-to-parse-quantity"));
+
         const displayValue = (record.value.displayValue && record.value.displayValue.length > 0) ? record.value.displayValue : /* istanbul ignore next */ (this._formatParams as CustomFormattedNumberParams).formatFunction(record.value.value as number);
         propertyValue = {
           valueFormat: PropertyValueFormat.Primitive,
@@ -237,9 +237,7 @@ export class CustomNumberEditor extends React.PureComponent<PropertyEditorProps,
 
     // istanbul ignore else
     if (e.key !== SpecialKey.Enter) {
-      // istanbul ignore next
-      if (IModelApp.notifications)
-        IModelApp.notifications.closeInputFieldMessage();
+      UiAbstract.messagePresenter.closeInputFieldMessage();
     }
   };
 

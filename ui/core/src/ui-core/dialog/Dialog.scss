@@ -5,13 +5,12 @@
 @import "../icons/variables";
 @import "../inputs/variables";
 @import "../style/themecolors";
+@import "../text/block";
 @import "../z-index";
 @import "../scrollbar";
 @import "~@itwin/itwinui-css/scss/style/typography";
 @import "~@itwin/itwinui-css/scss/style/variables";
-@import "~@itwin/itwinui-css/scss/text/block";
-@import "~@itwin/itwinui-css/scss/text/leading";
-@import "~@itwin/itwinui-css/scss/text/subheading";
+@import "~@itwin/itwinui-css/scss/text/mixins";
 
 // cspell:ignore titlebar outoffocus nwse
 
@@ -164,7 +163,7 @@
         overflow: auto;
         flex: 1 1;
 
-        @include iui-text-block;
+        @include uicore-text-block;
 
         padding: $uicore-unbordered-padding;
         margin: 0;

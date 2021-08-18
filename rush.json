@@ -294,6 +294,13 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
+      "packageName": "@bentley/ui-imodel-components",
+      "projectFolder": "ui/imodel-components",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
       "packageName": "@bentley/ui-ninezone",
       "projectFolder": "ui/ninezone",
       "reviewCategory": "frontend",
