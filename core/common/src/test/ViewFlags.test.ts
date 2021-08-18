@@ -149,6 +149,14 @@ describe("ViewFlags", () => {
 
 
   it("overrides", () => {
+    const def = ViewFlags.defaults;
+    expect(def.override({})).to.deep.equal(def);
+
+    const inv = invertDefaults();
+    expect(def.override(inv)).to.deep.equal(inv);
+    expect(inv.override(def)).to.deep.equal(def);
+
+    expect(inv.override({ ...inv, renderMode: undefined, transparency: undefined })).to.deep.equal(inv);
   });
 
   it("returns defaults if no properties supplied", () => {
