@@ -17,6 +17,8 @@ export * from "./ui-components/breadcrumb/breadcrumbdetails/hoc/withDragDrop";
 export * from "./ui-components/common/Links";
 export * from "./ui-components/common/PageOptions";
 export * from "./ui-components/common/selection/SelectionModes";
+export * from "./ui-components/common/HighlightingComponentProps";
+export * from "./ui-components/common/HighlightedText";
 export * from "./ui-components/common/IImageLoader";
 export * from "./ui-components/common/selection/SelectionHandler";
 export * from "./ui-components/common/showhide/ShowHideDialog";
@@ -79,6 +81,7 @@ export * from "./ui-components/inputs/ParsedInput";
 
 export * from "./ui-components/oidc/SignIn";
 
+export * from "./ui-components/properties/LinkHandler";
 export * from "./ui-components/properties/ValueRendererManager";
 export * from "./ui-components/properties/renderers/NonPrimitivePropertyRenderer";
 export * from "./ui-components/properties/renderers/PrimitivePropertyRenderer";
@@ -86,6 +89,10 @@ export * from "./ui-components/properties/renderers/PropertyRenderer";
 export * from "./ui-components/properties/renderers/PropertyView";
 export * from "./ui-components/properties/renderers/ActionButtonList";
 export * from "./ui-components/properties/renderers/ActionButtonRenderer";
+export * from "./ui-components/properties/renderers/value/MergedPropertyValueRenderer";
+export * from "./ui-components/properties/renderers/value/MultilineTextPropertyValueRenderer";
+export * from "./ui-components/properties/renderers/value/UrlPropertyValueRenderer";
+export * from "./ui-components/properties/renderers/value/WithContextStyle";
 
 export * from "./ui-components/properties/renderers/label/NonPrimitivePropertyLabelRenderer";
 export * from "./ui-components/properties/renderers/label/PrimitivePropertyLabelRenderer";
@@ -110,6 +117,7 @@ export * from "./ui-components/propertygrid/component/VirtualizedPropertyGridWit
 export * from "./ui-components/propertygrid/component/PropertyCategoryBlock";
 export * from "./ui-components/propertygrid/component/PropertyGridEventsRelatedPropsSupplier";
 export * from "./ui-components/propertygrid/component/PropertyGridCommons";
+export * from "./ui-components/propertygrid/component/PropertyList";
 export * from "./ui-components/propertygrid/internal/flat-items/FlatGridItem";
 export * from "./ui-components/propertygrid/internal/flat-items/MutableCategorizedArrayProperty";
 export * from "./ui-components/propertygrid/internal/flat-items/MutableCategorizedPrimitiveProperty";
@@ -136,6 +144,7 @@ export * from "./ui-components/table/SimpleTableDataProvider";
 export * from "./ui-components/table/columnfiltering/ColumnFiltering";
 export * from "./ui-components/table/columnfiltering/TableFilterDescriptorCollection";
 export * from "./ui-components/table/component/Table";
+export * from "./ui-components/table/component/TableCell";
 export * from "./ui-components/table/component/TableColumn";
 export * from "./ui-components/table/hocs/withDragDrop";
 
@@ -165,6 +174,7 @@ export * from "./ui-components/tree/controlled/TreeNodeLoader";
 export * from "./ui-components/tree/controlled/Observable";
 export * from "./ui-components/tree/controlled/TreeHooks";
 export * from "./ui-components/tree/controlled/component/ControlledTree";
+export * from "./ui-components/tree/controlled/component/TreeNodeEditor";
 export * from "./ui-components/tree/controlled/component/TreeNodeRenderer";
 export * from "./ui-components/tree/controlled/component/TreeRenderer";
 export * from "./ui-components/tree/controlled/internal/SparseTree";

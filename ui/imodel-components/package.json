@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-imodel-components",
-  "version": "3.0.0-dev.28",
+  "version": "3.0.0-dev.29",
   "description": "iModel.js UI IModel Components",
   "main": "lib/ui-imodel-components.js",
   "typings": "lib/ui-imodel-components",
@@ -33,15 +33,15 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.28",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.28",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.28",
-    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.28",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.28",
-    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.28",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.28",
-    "@bentley/ui-core": "workspace:^3.0.0-dev.28",
-    "@bentley/ui-components": "workspace:^3.0.0-dev.28",
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.29",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.29",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.29",
+    "@bentley/imodeljs-frontend": "workspace:^3.0.0-dev.29",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.29",
+    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.29",
+    "@bentley/ui-abstract": "workspace:^3.0.0-dev.29",
+    "@bentley/ui-core": "workspace:^3.0.0-dev.29",
+    "@bentley/ui-components": "workspace:^3.0.0-dev.29",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },

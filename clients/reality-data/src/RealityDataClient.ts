@@ -16,7 +16,7 @@ import { URL } from "url";
  * @internal
  */
 export enum RealityDataType {
-  REALITYMESH3DTILES  = "RealityMesh3DTiles", // Web Ready Scalable Mesh
+  REALITYMESH3DTILES = "RealityMesh3DTiles", // Web Ready Scalable Mesh
   OPC = "OPC", // Orbit Point Cloud
   TERRAIN3DTILE = "Terrain3DTiles", // Terrain3DTiles
   OMR = "OMR", // Mapping Resource,
@@ -388,8 +388,8 @@ export class RealityDataClient extends WsgClient {
    * Creates an instance of RealityDataServicesClient.
    */
   public constructor() {
-    super("v2.5");
-    // this.baseUrl = "https://api.bentley.com/contextshare";
+    super("v1");
+    this.baseUrl = "https://api.bentley.com/contextshare";
   }
 
   /**
@@ -455,10 +455,10 @@ export class RealityDataClient extends WsgClient {
         return Object.keys(obj).filter((k) => Number.isNaN(+k)) as K[];
       }
       // If type not specified, add all supported known types
-      let isFirst=true;
+      let isFirst = true;
       for (const rdType of enumKeys(RealityDataType)) {
         if (isFirst)
-          isFirst=false;
+          isFirst = false;
         else
           filter += `+or+`;
         filter += `Type+eq+'${RealityDataType[rdType]}'`;
