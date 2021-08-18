@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { Config } from "@bentley/bentleyjs-core";
 import { AuthorizedFrontendRequestContext, CheckpointConnection } from "@bentley/imodeljs-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { IModelData } from "../../common/Settings";
 import { IModelVersion } from "@bentley/imodeljs-common";
 
@@ -36,7 +36,12 @@ export class IModelSession {
       if (!iModelData.projectName)
         throw new Error(`The iModel has no project name, so it cannot get the project.`);
       const client = new ITwinAccessClient();
-      const iTwinList: ITwin[] = await client.getAllByName(requestContext, iModelData.projectName);
+      const iTwinList: ITwin[] = await client.getAll(requestContext, {
+        search: {
+          searchString: iModelData.projectName,
+          property: ITwinSearchableProperty.Name,
+          exactMatch: true,
+        }});
 
       if (iTwinList.length === 0)
         throw new Error(`ITwin ${iModelData.projectName} was not found for the user.`);

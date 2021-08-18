@@ -68,7 +68,10 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
     }
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const projectInfos: ITwin[] = await UiFramework.iTwinAccessService.getAll(requestContext, {top:40, skip:0}); // eslint-disable-line @typescript-eslint/no-floating-promises
+    const projectInfos: ITwin[] = await UiFramework.iTwinAccessService.getAll(requestContext, {
+      pagination: {
+        top: 40,
+      }});
     this.setState({
       isLoadingProjects: false,
       isLoadingiModels: true,

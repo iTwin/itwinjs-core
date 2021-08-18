@@ -20,9 +20,30 @@ export interface ITwin {
 /** Argument for methods that may take pagination
  * @beta
 */
-export interface ITwinQueryArg {
+export interface ITwinPaginationArg {
   top?: number;
   skip?: number;
+}
+
+/** Set of properties that can be searched
+ * @beta
+*/
+export enum ITwinSearchableProperty {
+  Name = "name",
+}
+
+/** Argument for methods that may take searching
+ * @beta
+*/
+export interface ITwinSearchArg {
+  searchString: string;
+  property: ITwinSearchableProperty;
+  exactMatch: boolean;
+}
+
+export interface ITwinQueryArg {
+  pagination?: ITwinPaginationArg;
+  search?: ITwinSearchArg;
 }
 
 /** Methods for accessing iTwins
@@ -30,9 +51,7 @@ export interface ITwinQueryArg {
 */
 export interface ITwinAccess {
   /** Get iTwins associated with the requester */
-  getAll: (requestContext: AuthorizedClientRequestContext, queryOptions?: ITwinQueryArg) => Promise<ITwin[]>;
-  /** Get all iTwins with the exact name */
-  getAllByName: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<ITwin[]>;
+  getAll: (requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg) => Promise<ITwin[]>;
   /** Get an iTwin with the exact id */
   getById: (requestContext: AuthorizedClientRequestContext, id: string) => Promise<ITwin>;
 }

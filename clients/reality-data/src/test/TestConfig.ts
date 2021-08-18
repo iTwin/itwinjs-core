@@ -2,7 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestUserCredentials, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 
@@ -26,7 +26,12 @@ export class TestConfig {
 
   public static async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const iTwinAccessClient = new ITwinAccessClient();
-    const iTwinList: ITwin[] = await iTwinAccessClient.getAllByName(requestContext, name);
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext, {
+      search: {
+        searchString: name,
+        property: ITwinSearchableProperty.Name,
+        exactMatch: true,
+      }});
 
     if (iTwinList.length === 0)
       throw new Error(`ITwin ${name} was not found for user.`);

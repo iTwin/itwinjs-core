@@ -6,7 +6,7 @@
 import * as path from "path";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
@@ -55,7 +55,12 @@ function convertToBis(briefcase: IModelDb, modelId: Id64String, data: RobotWorld
 // __PUBLISH_EXTRACT_END__
 
 async function getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
-  const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAllByName(requestContext, name);
+  const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(requestContext, {
+    search: {
+      searchString: name,
+      property: ITwinSearchableProperty.Name,
+      exactMatch: true,
+    }});
 
   if (iTwinList.length === 0)
     throw new Error(`ITwin ${name} was not found for the user.`);

@@ -6,7 +6,7 @@
 import { assert } from "chai";
 import * as path from "path";
 import { BentleyStatus, ChangeSetApplyOption, ChangeSetStatus, Guid, GuidString, Logger, OpenMode, PerfLogger } from "@bentley/bentleyjs-core";
-import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { Briefcase, ChangeSet, ChangeSetQuery, HubIModel, IModelHubClient, IModelQuery, Version, VersionQuery } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetType } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
@@ -607,7 +607,12 @@ class TestIModelHubProject {
 
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const client = TestIModelHubProject.contextClient;
-    const iTwinList: ITwin[] = await client.getAllByName(requestContext, name);
+    const iTwinList: ITwin[] = await client.getAll(requestContext, {
+      search: {
+        searchString: name,
+        property: ITwinSearchableProperty.Name,
+        exactMatch: true,
+      }});
 
     if (iTwinList.length === 0)
       throw new Error(`ITwin ${name} was not found for the user.`);

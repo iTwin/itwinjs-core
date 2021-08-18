@@ -48,7 +48,10 @@ export class ProjectDialog extends React.Component<ProjectDialogProps, ProjectDi
     this.setState({ isLoading: true, projects: undefined });
 
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const projectInfos: ITwin[] = await UiFramework.iTwinAccessService.getAll(requestContext, {top:40, skip:0});
+    const projectInfos: ITwin[] = await UiFramework.iTwinAccessService.getAll(requestContext, {
+      pagination: {
+        top: 40,
+      }});
     this.setState({ isLoading: false, projects: projectInfos });
   }
 

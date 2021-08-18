@@ -6,7 +6,7 @@
  * @module ContextRegistry
  */
 import { assert, Config } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 import * as deepAssign from "deep-assign";
 import { ITwin, ITwinAccess, ITwinQueryArg } from "./ITwinAccessProps";
 
@@ -113,21 +113,6 @@ class Asset extends HiddenContext {
   public assetType?: string;
 }
 
-/** A set of query options containing favorite and most recently used
- * @beta
- */
-class HiddenQueryOptions {
-  // The public Project API (at time of writing) supports $search but not $filter
-  // instead the currently used API supports $filter but not $search
-  public $filter?: string;
-  public $top?: number;
-  public $skip?: number;
-
-  // Hidden custom query options
-  public isFavorite?: boolean;
-  public isMRU?: boolean;
-}
-
 /** Client API to access the context registry services.
  * @beta
  */
@@ -146,22 +131,18 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    * @returns Array of iTwins, may be empty
    */
   public async getAll(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]> {
-    const queryOptions: HiddenQueryOptions = {
-      $top: arg?.top,
-      $skip: arg?.skip,
+    const queryOptions: RequestQueryOptions = {
+      $top: arg?.pagination?.top,
+      $skip: arg?.pagination?.skip,
     };
-    return this.getByQuery(requestContext, queryOptions);
-  }
 
-  /** Get all iTwins with matching name
-   * @param requestContext The client request context
-   * @param name The name to match
-   * @returns Array of matching iTwins, may be empty
-   */
-  public async getAllByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin[]> {
-    const queryOptions: HiddenQueryOptions = {
-      $filter: `name+eq+'${name}'`,
-    };
+    if (arg?.search) {
+      if (arg.search.exactMatch)
+        queryOptions.$filter = `${arg.search.property}+eq+'${arg.search.searchString}'`;
+      else
+        queryOptions.$filter = `${arg.search.property}+like+'${arg.search.searchString}'`;
+    }
+
     return this.getByQuery(requestContext, queryOptions);
   }
 
@@ -172,7 +153,7 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    * @throws If no matching iTwin found, or multiple matching iTwin found
    */
   public async getById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ITwin> {
-    const queryOptions: HiddenQueryOptions = {
+    const queryOptions: RequestQueryOptions = {
       $filter: `$id+eq+'${id}'`, // At time of writing $filter is supported, this may not be the case in the future
     };
     // Only one iTwin
@@ -190,7 +171,7 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    * @param queryOptions Use the mapped EC property names in the query strings and not the TypeScript property names.
    * @returns Array of iTwins meeting the query's requirements
    */
-  private async getByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: HiddenQueryOptions): Promise<ITwin[]> {
+  private async getByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
     requestContext.enter();
     const projectQuery = queryOptions;
     const assetQuery = queryOptions;

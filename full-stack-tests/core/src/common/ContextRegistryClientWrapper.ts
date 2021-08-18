@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { ContextManagerClient } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
@@ -11,7 +11,12 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 export class ContextRegistryClientWrapper implements ContextManagerClient {
   public async getITwinByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin> {
     const client = new ITwinAccessClient();
-    const iTwinList: ITwin[] = await client.getAllByName(requestContext, name);
+    const iTwinList: ITwin[] = await client.getAll(requestContext, {
+      search: {
+        searchString: name,
+        property: ITwinSearchableProperty.Name,
+        exactMatch: true,
+      }});
 
     if (iTwinList.length === 0)
       throw new Error(`ITwin ${name} was not found for the user.`);

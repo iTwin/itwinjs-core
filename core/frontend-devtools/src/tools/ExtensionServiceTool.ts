@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ExtensionServiceExtensionLoader, IModelApp, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType, Tool } from "@bentley/imodeljs-frontend";
 
@@ -95,7 +95,12 @@ export class ExtensionServiceTool extends Tool {
 
     const requestContext = new AuthorizedClientRequestContext(token);
     const iTwinAccessClient = new ITwinAccessClient();
-    const iTwinList: ITwin[] = await iTwinAccessClient.getAllByName(requestContext, contextName);
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext, {
+      search: {
+        searchString: contextName,
+        property: ITwinSearchableProperty.Name,
+        exactMatch: true,
+      }});
 
     if (iTwinList.length === 0)
       throw new Error(`ITwin ${contextName} was not found for the user.`);

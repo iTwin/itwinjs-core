@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
-import { ITwin, ITwinAccessClient } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection, IModelHubFrontend } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp } from "..";
@@ -41,7 +41,12 @@ export class ExternalIModel {
     const requestContext: AuthorizedFrontendRequestContext = await AuthorizedFrontendRequestContext.create();
 
     const connectClient = new ITwinAccessClient();
-    const iTwinList: ITwin[] = await connectClient.getAllByName(requestContext, projectName);
+    const iTwinList: ITwin[] = await connectClient.getAll(requestContext, {
+      search: {
+        searchString: projectName,
+        property: ITwinSearchableProperty.Name,
+        exactMatch: true,
+      }});
 
     if (iTwinList.length === 0)
       throw new Error(`ITwin ${projectName} was not found for the user.`);

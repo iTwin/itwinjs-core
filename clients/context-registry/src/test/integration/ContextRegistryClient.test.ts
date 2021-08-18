@@ -5,7 +5,7 @@
 import * as chai from "chai";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ITwinAccessClient } from "../../ContextRegistryClient";
-import { ITwin } from "../../ITwinAccessProps";
+import { ITwin, ITwinSearchableProperty } from "../../ITwinAccessProps";
 import { TestConfig } from "../TestConfig";
 
 chai.should();
@@ -26,7 +26,12 @@ describe("ContextRegistryClient (#integration)", () => {
   });
 
   it("should get a list of iTwins by name (#integration)", async () => {
-    const iTwinList: ITwin[] = await iTwinAccessClient.getAllByName(requestContext, TestConfig.iTwinName);
+    const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext, {
+      search: {
+        searchString: TestConfig.name,
+        property: ITwinSearchableProperty.Name,
+        exactMatch: true,
+      }});
 
     // At least one iTwin
     chai.expect(iTwinList).to.not.be.empty;
