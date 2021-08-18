@@ -6,7 +6,6 @@
 // Sets up a local backend to be used for testing within the iModel.js repo.
 
 import * as path from "path";
-import { Config } from "@bentley/bentleyjs-core";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
 import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
@@ -31,7 +30,7 @@ function loadEnv(envFile: string) {
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 const settings = new Settings(process.env);
-Config.App.set("imjs_buddi_resolve_url_using_region", settings.env);
+process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(settings.env);
 
 // eslint-disable-next-line @typescript-eslint/no-floating-promises
 (async () => {

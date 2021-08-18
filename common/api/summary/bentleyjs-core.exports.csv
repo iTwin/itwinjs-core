@@ -35,7 +35,6 @@ public;compareWithTolerance(a: number, b: number, tolerance?: number): number
 public;CompressedId64Set = string
 public;CompressedId64Set
 public;ComputePriorityFunction
-public;Config
 public;Constructor
 public;DbOpcode
 public;DbResult
@@ -48,7 +47,6 @@ public;DisposeFunc = () => void
 public;DuplicatePolicy
 public;Entry
 public;EntryContainer
-alpha;EnvMacroSubst
 beta;ExtensionStatus
 public;GeoServiceStatus
 public;GetMetaDataFunction = () => any
