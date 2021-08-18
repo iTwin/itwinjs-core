@@ -602,9 +602,10 @@ export namespace BSplineCurveOps {
         return false;
 
       // insert dummy points to be computed below
-      const dummy = Point3d.createZero();
-      dataPts.splice(1, 0, dummy);
-      dataPts.splice(dataPts.length - 1, 0, dummy);
+      const dummy0 = Point3d.createZero();
+      const dummy1 = Point3d.createZero();
+      dataPts.splice(1, 0, dummy0);
+      dataPts.splice(dataPts.length - 1, 0, dummy1);
 
       let succeeded = false;
       if (undefined === options.startTangent) {
