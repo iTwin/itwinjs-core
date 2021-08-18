@@ -20,24 +20,15 @@ export interface ITwin {
 
 // @beta
 export interface ITwinAccess {
-    getAll: (requestContext: AuthorizedClientRequestContext, queryOptions?: ITwinQueryArg) => Promise<ITwin[]>;
-    getAllByName: (requestContext: AuthorizedClientRequestContext, name: string) => Promise<ITwin[]>;
+    getAll: (requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg) => Promise<ITwin[]>;
     getById: (requestContext: AuthorizedClientRequestContext, id: string) => Promise<ITwin>;
-    getFavorites: (requestContext: AuthorizedClientRequestContext, queryOptions?: ITwinQueryArg) => Promise<ITwin[]>;
-    getRecentlyUsed: (requestContext: AuthorizedClientRequestContext, queryOptions?: ITwinQueryArg) => Promise<ITwin[]>;
 }
 
 // @beta
 export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     constructor();
-    // (undocumented)
-    static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
     getAll(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]>;
-    getAllByName(requestContext: AuthorizedClientRequestContext, name: string): Promise<ITwin[]>;
     getById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ITwin>;
-    getFavorites(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]>;
-    getRecentlyUsed(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]>;
-    protected getRelyingPartyUrl(): string;
     // @internal (undocumented)
     protected getUrlSearchKey(): string;
     // (undocumented)
@@ -47,11 +38,35 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
 }
 
 // @beta
-export interface ITwinQueryArg {
+export interface ITwinPaginationArg {
     // (undocumented)
     skip?: number;
     // (undocumented)
     top?: number;
+}
+
+// @beta
+export interface ITwinQueryArg {
+    // (undocumented)
+    pagination?: ITwinPaginationArg;
+    // (undocumented)
+    search?: ITwinSearchArg;
+}
+
+// @beta
+export enum ITwinSearchableProperty {
+    // (undocumented)
+    Name = "name"
+}
+
+// @beta
+export interface ITwinSearchArg {
+    // (undocumented)
+    exactMatch: boolean;
+    // (undocumented)
+    property: ITwinSearchableProperty;
+    // (undocumented)
+    searchString: string;
 }
 
 

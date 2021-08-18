@@ -41,6 +41,9 @@ export interface ITwinSearchArg {
   exactMatch: boolean;
 }
 
+/** Set of optional arguments used for methods that allow advanced queries
+ * @beta
+ */
 export interface ITwinQueryArg {
   pagination?: ITwinPaginationArg;
   search?: ITwinSearchArg;
