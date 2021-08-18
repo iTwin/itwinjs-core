@@ -2,8 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-
-import { ClientRequestContext, Config, EnvMacroSubst, OpenMode } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
 import { IModelError, IModelStatus, OpenBriefcaseProps } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -14,23 +13,6 @@ import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
 async function getUserAccessToken(userCredentials: TestUserCredentials): Promise<AccessToken> {
   return TestUtility.getAccessToken(userCredentials);
 }
-
-// __PUBLISH_EXTRACT_START__ Service.readConfig
-export function readConfigParams(): any {
-  const config = require("./MyService.config.json");
-
-  const defaultConfigValues: any = {
-    /* ... define a property corresponding to each placeholder in the config file and a default value for it ... */
-    "some-macro-name": "its-default-value",
-  };
-
-  // Replace ${some-macro-name} placeholders with actual environment variables,
-  // falling back on the supplied default values.
-  EnvMacroSubst.replaceInProperties(config, true, defaultConfigValues);
-
-  return config;
-}
-// __PUBLISH_EXTRACT_END__
 
 function configureIModel() {
   // __PUBLISH_EXTRACT_START__ BriefcaseDb.onOpen
@@ -54,8 +36,8 @@ function configureIModel() {
 
 // Call the above functions, to avoid lint errors.
 const cred = {
-  email: Config.App.getString("imjs_test_regular_user_name"),
-  password: Config.App.getString("imjs_test_regular_user_password"),
+  email: process.env.IMJS_TEST_REGULAR_USER_NAME ?? "",
+  password: process.env.IMJS_TEST_REGULAR_USER_PASSWORD ?? "",
 };
 
 getUserAccessToken(cred).then((_accessToken: AccessToken) => { // eslint-disable-line @typescript-eslint/no-floating-promises

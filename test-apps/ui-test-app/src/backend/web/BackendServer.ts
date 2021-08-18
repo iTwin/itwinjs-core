@@ -2,27 +2,20 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { EnvMacroSubst, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager} from "@bentley/imodeljs-common";
+import { BentleyCloudRpcManager } from "@bentley/imodeljs-common";
 import { getSupportedRpcs } from "../../common/rpcs";
 import { loggerCategory } from "../../common/TestAppConfiguration";
-
-// Setup to log to a locally install seq server from https://datalust.co/download
-const defaultConfigValues = {
-  "TESTAPP-SEQ-URL": "http://localhost", // eslint-disable-line @typescript-eslint/naming-convention
-  "TESTAPP-SEQ-PORT": 5341, // eslint-disable-line @typescript-eslint/naming-convention
-  "TESTAPP-API-KEY": "InvalidApiKey", // eslint-disable-line @typescript-eslint/naming-convention
-};
 
 /** Initializes logging based on the configuration json file */
 export function initializeLogging() {
   const config: any = require("./BackendServer.config.json"); // eslint-disable-line @typescript-eslint/no-var-requires
-  EnvMacroSubst.replaceInProperties(config, true, defaultConfigValues);
 
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Error);
+
   if ("loggerConfig" in config)
     Logger.configureLevels(config.loggerConfig);
 }
