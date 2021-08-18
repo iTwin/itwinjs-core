@@ -7,7 +7,7 @@
  */
 
 import { URL } from "url";
-import { BentleyStatus, Logger, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyStatus, Logger, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { CommonLoggerCategory } from "../../CommonLoggerCategory";
 import { IModelRpcProps } from "../../IModel";
 import { IModelError } from "../../IModelError";
@@ -20,7 +20,6 @@ import { WebAppRpcProtocol } from "./WebAppRpcProtocol";
 
 enum AppMode {
   MilestoneReview = "1",
-  WorkGroupEdit = "2",
 }
 
 /** An http protocol for Bentley cloud RPC interface deployments.
@@ -106,13 +105,8 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
       contextId = encodeURIComponent(token.contextId || "");
       iModelId = encodeURIComponent(token.iModelId!);
 
-      if (token.openMode === OpenMode.Readonly) {
-        // Use "0" if changeSetId omitted or empty string.
-        routeChangeSetId = token.changeSetId || "0";
-        appMode = AppMode.MilestoneReview;
-      } else {
-        appMode = AppMode.WorkGroupEdit;
-      }
+      routeChangeSetId = token.changeset?.id || "0";
+      appMode = AppMode.MilestoneReview;
     }
 
     return `${prefix}/${appTitle}/${appVersion}/mode/${appMode}/context/${contextId}/imodel/${iModelId}${!!routeChangeSetId ? `/changeset/${routeChangeSetId}` : ""}/${operationId}`;
@@ -126,16 +120,14 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
     const urlPathComponents = request.path.split("/");
 
     const iModelKey = tokenFromBody.key;
-    let openMode = tokenFromBody.openMode;
     let iModelId = tokenFromBody.iModelId;
     let contextId = tokenFromBody.contextId;
-    let changeSetId = tokenFromBody.changeSetId;
+    const changeset = { id: tokenFromBody.changeset?.id ?? "0", index: tokenFromBody.changeset?.index };
 
     for (let i = 0; i <= urlPathComponents.length; ++i) {
       const key = urlPathComponents[i];
       const value = urlPathComponents[i + 1];
       if (key === "mode") {
-        openMode = (value === AppMode.WorkGroupEdit) ? OpenMode.ReadWrite : OpenMode.Readonly;
         ++i;
       } else if (key === "context") {
         contextId = value;
@@ -144,12 +136,12 @@ export abstract class BentleyCloudRpcProtocol extends WebAppRpcProtocol {
         iModelId = value;
         ++i;
       } else if (key === "changeset") {
-        changeSetId = (value === "0") ? "" : value;
+        changeset.id = (value === "0") ? "" : value;
         ++i;
       }
     }
 
-    return { key: iModelKey, contextId, iModelId, changeSetId, openMode };
+    return { key: iModelKey, contextId, iModelId, changeset };
   }
 
   /** Returns the OpenAPI-compatible URI path parameters for an RPC operation.

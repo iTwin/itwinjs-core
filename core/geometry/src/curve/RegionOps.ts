@@ -281,7 +281,7 @@ export class RegionOps {
     const graph = RegionOpsFaceToFaceSearch.doBinaryBooleanBetweenMultiLoopInputs(
       inputA, RegionGroupOpType.Union,
       operation,
-      inputB, RegionGroupOpType.Union);
+      inputB, RegionGroupOpType.Union, true);
     return this.finishGraphToPolyface(graph, triangulate);
   }
   /**
@@ -301,7 +301,7 @@ export class RegionOps {
     const graph = RegionOpsFaceToFaceSearch.doBinaryBooleanBetweenMultiLoopInputs(
       inputA, RegionGroupOpType.Union,
       operation,
-      inputB, RegionGroupOpType.Union);
+      inputB, RegionGroupOpType.Union, true);
     if (!graph)
       return undefined;
     const loopEdges = HalfEdgeGraphSearch.collectExtendedBoundaryLoopsInGraph(graph, HalfEdgeMask.EXTERIOR);
@@ -310,6 +310,7 @@ export class RegionOps {
       const points = new GrowableXYZArray();
       for (const edge of graphLoop)
         points.pushXYZ(edge.x, edge.y, edge.z);
+      points.pushWrap(1);
       const loop = Loop.create();
       loop.tryAddChild(LineString3d.createCapture(points));
       allLoops.push(loop);

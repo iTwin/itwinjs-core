@@ -66,6 +66,7 @@ import { DialogProperty } from '@bentley/ui-abstract';
 import { DialogPropertyItem } from '@bentley/ui-abstract';
 import { DialogPropertySyncItem } from '@bentley/ui-abstract';
 import { Dictionary } from '@bentley/bentleyjs-core';
+import { DisplayMessageType } from '@bentley/ui-abstract';
 import { DisplayStyle3dSettings } from '@bentley/imodeljs-common';
 import { DisplayStyleProps } from '@bentley/imodeljs-common';
 import { DisplayStyleSettings } from '@bentley/imodeljs-common';
@@ -177,6 +178,8 @@ import { Matrix4d } from '@bentley/geometry-core';
 import { MeshEdges } from '@bentley/imodeljs-common';
 import { MeshPolyline } from '@bentley/imodeljs-common';
 import { MeshPolylineList } from '@bentley/imodeljs-common';
+import { MessagePresenter } from '@bentley/ui-abstract';
+import { MessageSeverity } from '@bentley/ui-abstract';
 import { ModelGeometryChanges } from '@bentley/imodeljs-common';
 import { ModelGeometryChangesProps } from '@bentley/imodeljs-common';
 import { ModelIdAndGeometryGuid } from '@bentley/imodeljs-common';
@@ -1622,7 +1625,7 @@ export interface BlankConnectionProps {
 
 // @public
 export class BriefcaseConnection extends IModelConnection {
-    protected constructor(props: IModelConnectionProps);
+    protected constructor(props: IModelConnectionProps, openMode: OpenMode);
     close(): Promise<void>;
     get contextId(): GuidString;
     get editingScope(): GraphicalEditingScope | undefined;
@@ -1867,7 +1870,6 @@ export class CheckpointConnection extends IModelConnection {
     get isClosed(): boolean;
     // (undocumented)
     protected _isClosed?: boolean;
-    protected static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<CheckpointConnection>;
     static openRemote(contextId: string, iModelId: string, version?: IModelVersion): Promise<CheckpointConnection>;
     }
 
@@ -2548,33 +2550,6 @@ export class DynamicsContext extends RenderContext {
     changeDynamics(): void;
     createGraphic(options: Omit<GraphicBuilderOptions, "viewport">): GraphicBuilder;
     }
-
-// @alpha @deprecated
-export class EditingFunctions {
-    constructor(connection: IModelConnection);
-    get categories(): EditingFunctions.CategoryEditor;
-    get codes(): EditingFunctions.Codes;
-    get models(): EditingFunctions.ModelEditor;
-    }
-
-// @alpha @deprecated (undocumented)
-export namespace EditingFunctions {
-    // @deprecated
-    export class CategoryEditor {
-        constructor(c: IModelConnection);
-        createAndInsertSpatialCategory(scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String>;
-        }
-    export class Codes {
-        constructor(c: IModelConnection);
-        makeCode(specName: string, scope: Id64String, value: string): Promise<CodeProps>;
-        makeModelCode(scope: Id64String, value: string): Promise<CodeProps>;
-    }
-    // @deprecated
-    export class ModelEditor {
-        constructor(c: IModelConnection);
-        createAndInsertPhysicalModel(newModelCode: CodeProps, privateModel?: boolean): Promise<Id64String>;
-        }
-}
 
 // @public
 export namespace EditManipulator {
@@ -4647,7 +4622,6 @@ export namespace IModelConnection {
         load(viewDefinitionId: Id64String): Promise<ViewState>;
         queryDefaultViewId(): Promise<Id64String>;
         queryProps(queryParams: ViewQueryParams): Promise<ViewDefinitionProps[]>;
-        saveThumbnail(viewId: Id64String, thumbnail: ThumbnailProps): Promise<void>;
     }
     export interface ViewSpec {
         class: string;
@@ -6638,10 +6612,12 @@ export abstract class NotificationHandler {
 }
 
 // @public
-export class NotificationManager {
+export class NotificationManager implements MessagePresenter {
     clearToolTip(): void;
     closeInputFieldMessage(): void;
     closePointerMessage(): void;
+    displayInputFieldMessage(inputField: HTMLElement, severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string): void;
+    displayMessage(severity: MessageSeverity, briefMessage: HTMLElement | string, detailedMessage?: HTMLElement | string, messageType?: DisplayMessageType): void;
     endActivityMessage(_reason: ActivityMessageEndReason): boolean;
     get isToolTipOpen(): boolean;
     get isToolTipSupported(): boolean;
@@ -6939,11 +6915,8 @@ export enum OutputMessagePriority {
 // @public
 export enum OutputMessageType {
     Alert = 4,
-    // (undocumented)
     InputField = 3,
-    // (undocumented)
     Pointer = 1,
-    // (undocumented)
     Sticky = 2,
     Toast = 0
 }
@@ -7819,20 +7792,6 @@ export interface RealityTileTreeParams extends TileTreeParams {
     readonly rootToEcef?: Transform;
     // (undocumented)
     readonly yAxisUp?: boolean;
-}
-
-// @public @deprecated (undocumented)
-export class RemoteBriefcaseConnection extends CheckpointConnection {
-    // @internal
-    attachChangeCache(): Promise<void>;
-    // @internal
-    changeCacheAttached(): Promise<boolean>;
-    // (undocumented)
-    static open(contextId: string, iModelId: string, openMode?: OpenMode, version?: IModelVersion): Promise<RemoteBriefcaseConnection>;
-    pullAndMergeChanges(): Promise<void>;
-    pushChanges(description: string): Promise<void>;
-    saveChanges(description?: string): Promise<void>;
-    updateProjectExtents(newExtents: AxisAlignedBox3d): Promise<void>;
 }
 
 // @public
@@ -10081,6 +10040,8 @@ export class TileAdmin {
     // @internal (undocumented)
     onTilesElided(numElided: number): void;
     readonly onTileTreeLoad: BeEvent<(tileTree: TileTreeOwner) => void>;
+    // @internal (undocumented)
+    readonly optimizeBRepProcessing: boolean;
     // @internal
     process(): void;
     // @internal
@@ -10142,6 +10103,8 @@ export namespace TileAdmin {
         maximumMajorTileFormatVersion?: number;
         minimumSpatialTolerance?: number;
         mobileRealityTileMinToleranceRatio?: number;
+        // @internal
+        optimizeBRepProcessing?: boolean;
         retryInterval?: number;
         tileExpirationTime?: number;
         tileTreeExpirationTime?: number;

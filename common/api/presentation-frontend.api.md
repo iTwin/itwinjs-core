@@ -8,6 +8,7 @@ import { BeEvent } from '@bentley/bentleyjs-core';
 import { Content } from '@bentley/presentation-common';
 import { ContentDescriptorRequestOptions } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
+import { ContentSourcesRequestOptions } from '@bentley/presentation-common';
 import { ContentUpdateInfo } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
@@ -49,6 +50,7 @@ import { RegisteredRuleset } from '@bentley/presentation-common';
 import { RpcRequestsHandler } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
 import { RulesetVariable } from '@bentley/presentation-common';
+import { SelectClassInfo } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SetRulesetVariableParams } from '@bentley/presentation-common';
@@ -281,6 +283,8 @@ export class PresentationManager implements IDisposable {
     getContentSetSize(requestOptions: ContentRequestOptions<IModelConnection, RulesetVariable>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
     // (undocumented)
     getContentSetSize(requestOptions: ExtendedContentRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>): Promise<number>;
+    // @beta
+    getContentSources(requestOptions: ContentSourcesRequestOptions<IModelConnection>): Promise<SelectClassInfo[]>;
     // @deprecated
     getDisplayLabelDefinition(requestOptions: LabelRequestOptions<IModelConnection>, key: InstanceKey): Promise<LabelDefinition>;
     // (undocumented)

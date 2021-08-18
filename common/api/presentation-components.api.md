@@ -45,7 +45,6 @@ import { Paged } from '@bentley/presentation-common';
 import { PagedTreeNodeLoader } from '@bentley/ui-components';
 import { PageOptions } from '@bentley/presentation-common';
 import { PageOptions as PageOptions_2 } from '@bentley/ui-components';
-import { PartialHierarchyModification } from '@bentley/presentation-common';
 import { ProcessFieldHierarchiesProps } from '@bentley/presentation-common';
 import { ProcessMergedValueProps } from '@bentley/presentation-common';
 import { ProcessPrimitiveValueProps } from '@bentley/presentation-common';
@@ -78,7 +77,6 @@ import { TableDataProvider } from '@bentley/ui-components';
 import { TableProps } from '@bentley/ui-components';
 import { TreeEditingParams } from '@bentley/ui-components';
 import { TreeEventHandler } from '@bentley/ui-components';
-import { TreeModel } from '@bentley/ui-components';
 import { TreeModelChanges } from '@bentley/ui-components';
 import { TreeModelSource } from '@bentley/ui-components';
 import { TreeNodeItem } from '@bentley/ui-components';
@@ -86,7 +84,7 @@ import { TreeProps } from '@bentley/ui-components';
 import { TreeSelectionModificationEventArgs } from '@bentley/ui-components';
 import { TreeSelectionReplacementEventArgs } from '@bentley/ui-components';
 import { TypeDescription } from '@bentley/presentation-common';
-import { ViewportProps } from '@bentley/ui-components';
+import { ViewportProps } from '@bentley/ui-imodel-components';
 import { VisibleTreeNodes } from '@bentley/ui-components';
 
 // @internal (undocumented)
@@ -564,9 +562,8 @@ export interface PresentationTreeNodeLoaderProps extends PresentationTreeDataPro
 
 // @public
 export interface PresentationTreeNodeLoaderResult {
-    // (undocumented)
     nodeLoader: PagedTreeNodeLoader<IPresentationTreeDataProvider>;
-    // (undocumented)
+    // @alpha
     onItemsRendered: (items: RenderedItemsRange) => void;
 }
 
@@ -729,9 +726,6 @@ export interface UnifiedSelectionTreeEventHandlerParams {
     // @internal
     selectionHandler?: SelectionHandler;
 }
-
-// @internal (undocumented)
-export function updateTreeModel(treeModel: TreeModel, hierarchyModifications: PartialHierarchyModification[], treeNodeItemCreationProps: CreateTreeNodeItemProps): MutableTreeModel | undefined;
 
 // @public
 export function useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps): {

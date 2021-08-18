@@ -52,10 +52,6 @@ public;ContextSubMenu
 public;ContextSubMenuProps 
 internal;Corner
 internal;CrossAxisArrowKeyFunc = (forward: boolean) => void
-public;Cube 
-internal;CubeFace 
-internal;CubeFaceProps 
-public;CubeProps 
 public;Dialog 
 public;DialogAlignment
 public;DialogButtonDef
@@ -81,7 +77,6 @@ public;ExpandableList
 public;ExpandableListProps 
 public;ExpansionToggle 
 public;ExpansionToggleProps 
-public;Face
 beta;FeaturedTile(props: TileProps): JSX.Element
 deprecated;FeaturedTile(props: TileProps): JSX.Element
 beta;Field 
@@ -197,6 +192,7 @@ public;MessagedComponentProps
 beta;MessageRenderer(props: MessageRendererProps): JSX.Element | null
 beta;MessageRendererProps 
 public;MessageSeverity
+deprecated;MessageSeverity
 public;MessageType = string | HTMLElement | ReactMessage
 beta;MinimalFeaturedTile(props: TileProps): JSX.Element
 deprecated;MinimalFeaturedTile(props: TileProps): JSX.Element
@@ -220,6 +216,7 @@ internal;percentInRange(percent: number): number
 internal;placementToPosition(placement: TooltipPlacement | undefined): RelativePosition
 internal;Point 
 public;PointProps
+deprecated;PointProps
 public;Popup 
 beta;PopupContextMenu(props: PopupContextMenuProps): JSX.Element
 beta;PopupContextMenuProps 
@@ -351,6 +348,7 @@ public;TreeNodeProps
 public;TreeProps 
 public;UiCore
 public;UiEvent
+internal;UiGeometry
 public;UiSetting
 public;UiSettings = UiSettingsStorage
 public;UiSettingsResult

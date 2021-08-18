@@ -1,6 +1,25 @@
 # Change Log - @bentley/reality-data-client
 
-This log was last generated on Wed, 04 Aug 2021 20:29:34 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Aug 2021 20:34:29 GMT and should not be manually modified.
+
+## 2.19.6
+Tue, 17 Aug 2021 20:34:29 GMT
+
+### Updates
+
+- Update ContextShare endpoint back to the new url.
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:09 GMT
+
+_Version update only_
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+### Updates
+
+- revert imodeljs#1574 to use contextshare url instead of apim
 
 ## 2.19.3
 Wed, 04 Aug 2021 20:29:34 GMT
@@ -19,6 +38,11 @@ _Version update only_
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
+
+_Version update only_
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
 
 _Version update only_
 

@@ -13,6 +13,8 @@ import "./MapManagerSettings.scss";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { Select, SelectOption, Slider } from "@itwin/itwinui-react";
 
+/* eslint-disable deprecation/deprecation */
+
 enum MapMaskingOption {
   None,
   AllModels

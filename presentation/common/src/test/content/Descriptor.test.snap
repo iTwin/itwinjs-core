@@ -2333,3 +2333,219 @@ Object {
   "sortingField": undefined,
 }
 `;
+
+exports[`Descriptor toCompressedJSON creates valid CompressedDescriptorJSON 1`] = `
+Object {
+  "categories": Array [
+    Object {
+      "description": "Test category description",
+      "expand": false,
+      "label": "Test Category",
+      "name": "test-category",
+      "parent": undefined,
+      "priority": 0,
+    },
+  ],
+  "classesMap": Object {
+    "0x1": Object {
+      "label": "Source",
+      "name": "source:class",
+    },
+    "0x2": Object {
+      "label": "Target",
+      "name": "target:class",
+    },
+    "0x3": Object {
+      "label": "Relationship",
+      "name": "relationship:class",
+    },
+  },
+  "connectionId": undefined,
+  "contentFlags": 0,
+  "contentOptions": undefined,
+  "displayType": "DisplayType",
+  "fields": Array [
+    Object {
+      "category": Object {
+        "description": "Test category description",
+        "expand": false,
+        "label": "Test Category",
+        "name": "test-category",
+        "parent": undefined,
+        "priority": 0,
+      },
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Simple Field",
+      "name": "SimpleField",
+      "priority": 0,
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "category": Object {
+        "description": "Test category description",
+        "expand": false,
+        "label": "Test Category",
+        "name": "test-category",
+        "parent": undefined,
+        "priority": 0,
+      },
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Simple Field",
+      "name": "SimpleField",
+      "priority": 0,
+      "properties": Array [
+        Object {
+          "property": Object {
+            "classInfo": "0x1",
+            "name": "PropertyName",
+            "type": "string",
+          },
+          "relatedClassPath": Array [
+            Object {
+              "isForwardRelationship": false,
+              "isPolymorphicRelationship": false,
+              "isPolymorphicTargetClass": false,
+              "relationshipInfo": "0x3",
+              "sourceClassInfo": "0x1",
+              "targetClassInfo": "0x2",
+            },
+          ],
+        },
+      ],
+      "renderer": undefined,
+      "type": Object {
+        "typeName": "string",
+        "valueFormat": "Primitive",
+      },
+    },
+    Object {
+      "actualPrimaryClassIds": Array [],
+      "autoExpand": false,
+      "category": Object {
+        "description": "Test category description",
+        "expand": false,
+        "label": "Test Category",
+        "name": "test-category",
+        "parent": undefined,
+        "priority": 0,
+      },
+      "contentClassInfo": "0x1",
+      "editor": undefined,
+      "isReadonly": false,
+      "label": "Nested Content",
+      "name": "NestedContentField",
+      "nestedFields": Array [
+        Object {
+          "category": Object {
+            "description": "Test category description",
+            "expand": false,
+            "label": "Test Category",
+            "name": "test-category",
+            "parent": undefined,
+            "priority": 0,
+          },
+          "editor": undefined,
+          "isReadonly": false,
+          "label": "Simple Field",
+          "name": "SimpleField",
+          "priority": 0,
+          "renderer": undefined,
+          "type": Object {
+            "typeName": "string",
+            "valueFormat": "Primitive",
+          },
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x3",
+          "sourceClassInfo": "0x1",
+          "targetClassInfo": "0x2",
+        },
+      ],
+      "priority": 0,
+      "relationshipMeaning": "RelatedInstance",
+      "renderer": undefined,
+      "type": Object {
+        "members": Array [
+          Object {
+            "label": "Simple Field",
+            "name": "SimpleField",
+            "type": Object {
+              "typeName": "string",
+              "valueFormat": "Primitive",
+            },
+          },
+        ],
+        "typeName": "NestedContentFieldType",
+        "valueFormat": "Struct",
+      },
+    },
+  ],
+  "filterExpression": "testFilterExpression",
+  "inputKeysHash": undefined,
+  "selectClasses": Array [
+    Object {
+      "isSelectPolymorphic": false,
+      "navigationPropertyClasses": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x3",
+          "sourceClassInfo": "0x1",
+          "targetClassInfo": "0x2",
+        },
+      ],
+      "pathToPrimaryClass": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x3",
+          "sourceClassInfo": "0x1",
+          "targetClassInfo": "0x2",
+        },
+      ],
+      "relatedInstanceClasses": Array [
+        Object {
+          "isForwardRelationship": false,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": "0x3",
+          "sourceClassInfo": "0x1",
+          "targetClassInfo": "0x2",
+        },
+      ],
+      "relatedPropertyPaths": Array [
+        Array [
+          Object {
+            "isForwardRelationship": false,
+            "isPolymorphicRelationship": false,
+            "isPolymorphicTargetClass": false,
+            "relationshipInfo": "0x3",
+            "sourceClassInfo": "0x1",
+            "targetClassInfo": "0x2",
+          },
+        ],
+      ],
+      "selectClassInfo": "0x1",
+    },
+  ],
+  "selectionInfo": Object {
+    "level": 1,
+    "providerName": "testProviderName",
+  },
+  "sortDirection": 0,
+  "sortingFieldName": "SimpleField",
+}
+`;
