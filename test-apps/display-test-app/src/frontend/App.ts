@@ -84,6 +84,8 @@ class SignInTool extends Tool {
 }
 
 abstract class PushPullChangesTool extends Tool {
+  public static override get maxArgs() { return 1; }
+
   protected abstract execute(bc: BriefcaseConnection, arg?: string): Promise<void>;
 
   public override run(arg?: string): boolean {
@@ -98,6 +100,7 @@ abstract class PushPullChangesTool extends Tool {
 
 class PushChangesTool extends PushPullChangesTool {
   public static override toolId = "PushChanges";
+
   protected override async execute(bc: BriefcaseConnection, description?: string): Promise<void> {
     await bc.pushChanges(description ?? "display-test-app");
   }
@@ -105,6 +108,7 @@ class PushChangesTool extends PushPullChangesTool {
 
 class PullChangesTool extends PushPullChangesTool {
   public static override toolId = "PullChanges";
+
   protected override async execute(bc: BriefcaseConnection): Promise<void> {
     return bc.pullAndMergeChanges();
   }
