@@ -99,6 +99,10 @@ class PushChangesTool extends Tool {
     imodel.pushChanges(description); // eslint-disable-line @typescript-eslint/no-floating-promises
     return true;
   }
+
+  public override parseAndRun(...args: string[]): boolean {
+    return this.run(args[0]);
+  }
 }
 
 class PullChangesTool extends Tool {
