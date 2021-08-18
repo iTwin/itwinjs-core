@@ -53,5 +53,5 @@ export interface ViewChangeOptions extends ViewAnimationOptions {
   /** Function to be called when the extents are adjusted due to a limits error (view too larger or too small) */
   onExtentsError?: (status: ViewStatus) => ViewStatus;
   /** If defined and the view is global it will be transitioned to a globe centric view about this point */
-  globeCenteringTarget?: Point3d;
+  globeCenteringTarget?: { pivot: Point3d, transition?: boolean };
 }

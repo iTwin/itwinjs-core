@@ -1809,13 +1809,17 @@ export class WheelEventProcessor {
     }
 
     const view = vp.view;
+    let globeCenteringTarget;
+    if (view.is3d() && view.iModel.ecefLocation)
+      globeCenteringTarget = { pivot: target, transition: zoomRatio > 1 };
+
     const animationOptions: ViewChangeOptions = {
       animateFrustumChange: true,
       cancelOnAbort: true,
       animationTime: ScreenViewport.animation.time.wheel.milliseconds,
       easingFunction: Easing.Cubic.Out,
       onExtentsError: (err) => view.outputStatusMessage(err),
-      globeCenteringTarget: target,
+      globeCenteringTarget ,
     };
 
     const currentInputState = IModelApp.toolAdmin.currentInputState;

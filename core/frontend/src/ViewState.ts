@@ -2049,7 +2049,7 @@ export abstract class ViewState3d extends ViewState {
    * @beta
    */
 
-  public transitionToGloballyCenteredCamera(target: Point3d): ViewStatus {
+  public transitionToGloballyCenteredCamera(target: Point3d, transition?: boolean): ViewStatus {
     if (!this.iModel.ecefLocation)
       return ViewStatus.NotGeolocated;
 
@@ -2081,7 +2081,7 @@ export abstract class ViewState3d extends ViewState {
     if (theta.isAlmostZero)
       return ViewStatus.NoTransitionRequired;
 
-    const transitionRotation = Matrix3d.createRotationAroundVector(axis, theta.cloneScaled(globalTransition));
+    const transitionRotation = Matrix3d.createRotationAroundVector(axis, transition ? theta.cloneScaled(globalTransition) : theta);
     if (!transitionRotation)
       return ViewStatus.DegenerateGeometry;
 
