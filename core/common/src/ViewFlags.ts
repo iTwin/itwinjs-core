@@ -43,9 +43,9 @@ export interface ViewFlagProps {
   noDim?: boolean;
   /** If true, don't show patterns. */
   noPattern?: boolean;
-  /** If true, don't line weights. */
+  /** If true, all lines are drawn with a width of 1 pixel. */
   noWeight?: boolean;
-  /** If true, don't line styles. */
+  /** If true, don't apply [[LinePixels]] styles. */
   noStyle?: boolean;
   /** If true, don't use transparency. */
   noTransp?: boolean;
@@ -79,12 +79,8 @@ export interface ViewFlagProps {
   shadows?: boolean;
   /** If true, use the view's clipping volume. Has no effect on other types of clips like [[ModelClipGroups]]. */
   clipVol?: boolean;
-  /** If true, use hidden line material colors. */
-  hlMatColors?: boolean;
   /** If true, show view with monochrome settings. */
   monochrome?: boolean;
-  /** @internal unused */
-  edgeMask?: number;
   /** [[RenderMode]] */
   renderMode?: number;
   /** Display background map. */
@@ -169,14 +165,8 @@ export class ViewFlags {
    * @see [DisplayStyleSettings.monochromeMode]($common) to control the type of monochrome display applied.
    */
   public readonly monochrome: boolean;
-  /** @internal unused Ignore geometry maps */
-  public readonly noGeometryMap: boolean;
   /** Display background map */
   public readonly backgroundMap: boolean;
-  /** Use material colors for hidden lines */
-  public readonly hLineMaterialColors: boolean;
-  /** @internal 0=none, 1=generate mask, 2=use mask */
-  public readonly edgeMask: number;
   /** Controls whether ambient occlusion is used. */
   public readonly ambientOcclusion: boolean;
   /** Controls whether thematic display is used.
@@ -216,10 +206,7 @@ export class ViewFlags {
     this.clipVolume = flags?.clipVolume ?? true;
     this.constructions = flags?.constructions ?? false;
     this.monochrome = flags?.monochrome ?? false;
-    this.noGeometryMap = flags?.noGeometryMap ?? false;
     this.backgroundMap = flags?.backgroundMap ?? false;
-    this.hLineMaterialColors = flags?.hLineMaterialColors ?? false;
-    this.edgeMask = flags?.edgeMask ?? 0;
     this.ambientOcclusion = flags?.ambientOcclusion ?? false;
     this.thematicDisplay = flags?.thematicDisplay ?? false;
     this.forceSurfaceDiscard = flags?.forceSurfaceDiscard ?? false;
@@ -262,7 +249,7 @@ export class ViewFlags {
     return this.copy(overrides);
   }
 
-  public with(flag: keyof Omit<ViewFlagsProperties, "edgeMask" | "renderMode">, value: boolean): ViewFlags {
+  public with(flag: keyof Omit<ViewFlagsProperties, "renderMode">, value: boolean): ViewFlags {
     if (this[flag] === value)
       return this;
 
@@ -335,10 +322,8 @@ export class ViewFlags {
     if (this.hiddenEdges) out.hidEdges = true;
     if (this.shadows) out.shadows = true;
     if (this.clipVolume) out.clipVol = true;
-    if (this.hLineMaterialColors) out.hlMatColors = true;
     if (this.monochrome) out.monochrome = true;
     if (this.backgroundMap) out.backgroundMap = true;
-    if (this.edgeMask !== 0) out.edgeMask = this.edgeMask;
     if (this.ambientOcclusion) out.ambientOcclusion = true;
     if (this.thematicDisplay) out.thematicDisplay = true;
     if (this.forceSurfaceDiscard) out.forceSurfaceDiscard = true;
@@ -372,10 +357,8 @@ export class ViewFlags {
       hidEdges: this.hiddenEdges,
       shadows: this.shadows,
       clipVol: this.clipVolume,
-      hlMatColors: this.hLineMaterialColors,
       monochrome: this.monochrome,
       backgroundMap: this.backgroundMap,
-      edgeMask: this.edgeMask,
       ambientOcclusion: this.ambientOcclusion,
       thematicDisplay: this.thematicDisplay,
       forceSurfaceDiscard: this.forceSurfaceDiscard,
@@ -423,8 +406,6 @@ export class ViewFlags {
       shadows: JsonUtils.asBool(json.shadows),
       clipVolume: JsonUtils.asBool(json.clipVol),
       monochrome: JsonUtils.asBool(json.monochrome),
-      edgeMask: JsonUtils.asInt(json.edgeMask),
-      hLineMaterialColors: JsonUtils.asBool(json.hlMatColors),
       backgroundMap: JsonUtils.asBool(json.backgroundMap),
       ambientOcclusion: JsonUtils.asBool(json.ambientOcclusion),
       thematicDisplay: JsonUtils.asBool(json.thematicDisplay),
@@ -454,10 +435,7 @@ export class ViewFlags {
       && this.clipVolume === other.clipVolume
       && this.constructions === other.constructions
       && this.monochrome === other.monochrome
-      && this.noGeometryMap === other.noGeometryMap
-      && this.hLineMaterialColors === other.hLineMaterialColors
       && this.backgroundMap === other.backgroundMap
-      && this.edgeMask === other.edgeMask
       && this.ambientOcclusion === other.ambientOcclusion
       && this.thematicDisplay === other.thematicDisplay
       && this.forceSurfaceDiscard === other.forceSurfaceDiscard

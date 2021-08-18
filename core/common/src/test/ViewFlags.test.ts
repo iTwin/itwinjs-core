@@ -8,7 +8,7 @@ import {
 } from "../ViewFlags";
 
 function invertDefaults(): ViewFlags {
-  const invertedProperties: Partial<ViewFlagsProperties> = { renderMode: RenderMode.SolidFill, edgeMask: 1 };
+  const invertedProperties: Partial<ViewFlagsProperties> = { renderMode: RenderMode.SolidFill };
   for (const propname of Object.keys(ViewFlags.defaults)) {
     const key = propname as keyof ViewFlags;
     const value = ViewFlags.defaults[key];
@@ -66,10 +66,8 @@ describe("ViewFlags", () => {
         hidEdges: on,
         shadows: on,
         clipVol: on,
-        hlMatColors: on,
         monochrome: on,
         backgroundMap: on,
-        edgeMask: 1,
         ambientOcclusion: on,
         thematicDisplay: on,
         forceSurfaceDiscard: on,
@@ -81,7 +79,6 @@ describe("ViewFlags", () => {
     };
 
     roundTrip(makeViewFlags(true), "input");
-    roundTrip(makeViewFlags(false), { renderMode: RenderMode.SolidFill, edgeMask: 1 });
 
     const defaults = {
       clipVol: true,
@@ -109,9 +106,7 @@ describe("ViewFlags", () => {
       visEdges: true,
       hidEdges: true,
       shadows: true,
-      hlMatColors: true,
       monochrome: true,
-      edgeMask: 1,
       renderMode: RenderMode.SolidFill,
       ambientOcclusion: true,
       thematicDisplay: true,
