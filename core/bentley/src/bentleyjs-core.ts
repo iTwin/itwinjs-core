@@ -12,7 +12,6 @@ export * from "./ByteStream";
 export * from "./ClientRequestContext";
 export * from "./Compare";
 export * from "./CompressedId64Set";
-export * from "./Config";
 export * from "./Dictionary";
 export * from "./Disposable";
 export * from "./Id";

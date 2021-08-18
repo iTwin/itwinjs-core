@@ -38,9 +38,9 @@ loadEnv(path.join(process.cwd(), ".env"));
 /** Signs in for the provided user.
  *
  * The default OIDC configuration is defined by the following environment variables,
- *   - `imjs_oidc_browser_test_client_id`
- *   - `imjs_oidc_browser_test_redirect_uri`
- *   - `imjs_oidc_browser_test_scopes`
+ *   - `IMJS_OIDC_BROWSER_TEST_CLIENT_ID`
+ *   - `IMJS_OIDC_BROWSER_TEST_REDIRECT_URI`
+ *   - `IMJS_OIDC_BROWSER_TEST_SCOPES`
  *
  * If the oidcConfig param is provided, it will always be used over the default.
  */

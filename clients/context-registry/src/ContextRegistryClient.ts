@@ -5,9 +5,9 @@
 /** @packageDocumentation
  * @module ContextRegistry
  */
+import * as deepAssign from "deep-assign";
 import { assert, Config } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
-import * as deepAssign from "deep-assign";
 import { ITwin, ITwinAccess, ITwinQueryArg } from "./ITwinAccessProps";
 
 /** The iTwin context. Currently supported context types are [[Project]] and [[Asset]].
@@ -118,7 +118,6 @@ class Asset extends HiddenContext {
  */
 export class ITwinAccessClient extends WsgClient implements ITwinAccess {
   public static readonly searchKey: string = "CONNECTEDContextService.URL";
-  public static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
 
   public constructor() {
     super("v2.5");

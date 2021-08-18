@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as chai from "chai";
-import { Config, Guid } from "@bentley/bentleyjs-core";
+import { Guid } from "@bentley/bentleyjs-core";
 import {
   ChangeSetCreatedEvent, GetEventOperationType, GlobalCheckpointCreatedEvent, GlobalCheckpointV2CreatedEvent, GlobalEventSAS, GlobalEventSubscription, GlobalEventType, HardiModelDeleteEvent, HubIModel,
   IModelClient, IModelCreatedEvent, IModelHubGlobalEvent, NamedVersionCreatedEvent, SoftiModelDeleteEvent,
@@ -136,8 +136,8 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     imodelHubClient = utils.getDefaultClient();
 
     serviceAccount1 = {
-      email: Config.App.getString("imjs_test_serviceAccount1_user_name"),
-      password: Config.App.getString("imjs_test_serviceAccount1_user_password"),
+      email: process.env.IMJS_TEST_SERVICEACCOUNT1_USER_NAME ?? "",
+      password: process.env.IMJS_TEST_SERVICEACCOUNT1_USER_PASSWORD ?? "",
     };
     const serviceAccountAccessToken = await utils.login(serviceAccount1);
     serviceAccountRequestContext = new AuthorizedClientRequestContext(serviceAccountAccessToken);
@@ -176,6 +176,7 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     chai.expect(event).to.be.instanceof(IModelCreatedEvent);
     chai.assert(!!event!.iModelId);
     chai.expect(event!.contextId).to.be.eq(projectId);
+    chai.expect(event!.contextTypeId).to.be.eq(ContextType.Project);
   });
 
   it("should update Global Event subscription", async () => {
@@ -353,5 +354,6 @@ describe("iModelHub GlobalEventHandler (#unit)", () => {
     chai.expect(event).to.be.instanceof(IModelCreatedEvent);
     chai.assert(!!event!.iModelId);
     chai.expect(event!.contextId).to.be.eq(assetId);
+    chai.expect(event!.contextTypeId).to.be.eq(ContextType.Asset);
   });
 });
