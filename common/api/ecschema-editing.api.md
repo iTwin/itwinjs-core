@@ -411,7 +411,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType; /** EC-1301: Required message parameters: childClass.FullName, property name, baseClass.FullName, base property type, child property type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
@@ -423,7 +423,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType; /** EC-1301: Required message parameters: childClass.FullName, property name, baseClass.FullName, base property type, child property type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
@@ -435,7 +435,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType; /** EC-1301: Required message parameters: childClass.FullName, property name, baseClass.FullName, base property type, child property type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string, string, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
@@ -447,7 +447,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType; /** EC-1301: Required message parameters: childClass.FullName, property name, baseClass.FullName, base property type, child property type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
@@ -459,7 +459,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType; /** EC-1301: Required message parameters: childClass.FullName, property name, baseClass.FullName, base property type, child property type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
@@ -471,7 +471,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType; /** EC-1301: Required message parameters: childClass.FullName, property name, baseClass.FullName, base property type, child property type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
@@ -483,7 +483,7 @@ export const Diagnostics: {
             readonly code: string;
             readonly messageText: string;
             readonly schema: Schema;
-            readonly diagnosticType: import("./Diagnostic").DiagnosticType;
+            readonly diagnosticType: import("./Diagnostic").DiagnosticType; /** EC-1301: Required message parameters: childClass.FullName, property name, baseClass.FullName, base property type, child property type */
             ecDefinition: AnyProperty;
             messageArgs?: [string, string, string, string] | undefined;
             category: import("./Diagnostic").DiagnosticCategory;
