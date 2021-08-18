@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, expect } from "chai";
 import {
-  RenderMode, ViewFlagOverrides, ViewFlagOverridesProps, ViewFlagProps, ViewFlags,
+  RenderMode, ViewFlagOverrides, ViewFlagProps, ViewFlags, ViewFlagsProperties,
 } from "../ViewFlags";
 
 describe("ViewFlags", () => {
@@ -88,9 +88,7 @@ describe("ViewFlags", () => {
     const testCases: ViewFlags[] = [];
     for (const renderMode of [RenderMode.Wireframe, RenderMode.HiddenLine, RenderMode.SolidFill, RenderMode.SmoothShade]) {
       for (let i = 0; i < 2; i++) {
-        const vf = new ViewFlags();
-        vf.renderMode = renderMode;
-        vf.visibleEdges = i > 0;
+        const vf = new ViewFlags({ renderMode, visibleEdges: i > 0 });
         testCases.push(vf);
       }
     }
@@ -104,7 +102,7 @@ describe("ViewFlags", () => {
 
 describe("ViewFlagOverrides", () => {
   it("should round-trip through JSON", () => {
-    const testCases: ViewFlagOverridesProps[] = [
+    const testCases: Array<Partial<ViewFlagsProperties>> = [
       { },
       { dimensions: true, transparency: false, renderMode: RenderMode.SolidFill },
       {
@@ -134,22 +132,14 @@ describe("ViewFlagOverrides", () => {
       },
     ];
 
-    for (const testCase of testCases) {
-      const ovrs = ViewFlagOverrides.fromJSON(testCase);
-      const json = ovrs.toJSON();
-      expect(json).to.deep.equal(testCase);
-    }
-
-    expect(ViewFlagOverrides.fromJSON(undefined).toJSON()).to.deep.equal({ });
+    expect(false).to.equal("###TODO this test is useless now");
   });
 
   it("should compute whether edges are required", () => {
     const viewflagTestCases: ViewFlags[] = [];
     for (const renderMode of [RenderMode.Wireframe, RenderMode.HiddenLine, RenderMode.SolidFill, RenderMode.SmoothShade]) {
       for (let i = 0; i < 2; i++) {
-        const vf = new ViewFlags();
-        vf.renderMode = renderMode;
-        vf.visibleEdges = i > 0;
+        const vf = new ViewFlags({ renderMode, visibleEdges: i > 0 });
         viewflagTestCases.push(vf);
       }
     }
@@ -157,26 +147,25 @@ describe("ViewFlagOverrides", () => {
     const ovrsTestCases: Array<[ViewFlagOverrides, RenderMode | undefined, boolean | undefined]> = [];
     for (const renderMode of [undefined, RenderMode.Wireframe, RenderMode.HiddenLine, RenderMode.SolidFill, RenderMode.SmoothShade]) {
       for (let i = 0; i < 3; i++) {
-        const ovrs = new ViewFlagOverrides();
+        const ovrs: ViewFlagOverrides = { };
         if (undefined !== renderMode)
-          ovrs.setRenderMode(renderMode);
+          ovrs.renderMode = renderMode;
 
         let visibleEdges;
-        if (i > 0) {
-          visibleEdges = i > 1;
-          ovrs.setShowVisibleEdges(visibleEdges);
-        }
+        if (i > 0)
+          visibleEdges = ovrs.visibleEdges = i > 1;
 
         ovrsTestCases.push([ovrs, renderMode, visibleEdges]);
       }
     }
 
     for (const testCase of ovrsTestCases) {
-      for (const viewflags of viewflagTestCases) {
+      for (let viewflags of viewflagTestCases) {
         const renderMode = undefined !== testCase[1] ? testCase[1] : viewflags.renderMode;
         const edges = undefined !== testCase[2] ? testCase[2] : viewflags.visibleEdges;
         const edgesRequired = edges || RenderMode.SmoothShade !== renderMode;
-        expect(testCase[0].edgesRequired(viewflags)).to.equal(edgesRequired);
+        viewflags = viewflags.override(testCase[0]);
+        expect(viewflags.edgesRequired()).to.equal(edgesRequired);
       }
     }
   });

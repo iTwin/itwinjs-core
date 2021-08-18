@@ -440,7 +440,7 @@ export interface DisplayStyleSettingsOptions {
  */
 export class DisplayStyleSettings {
   protected readonly _json: DisplayStyleSettingsProps;
-  private readonly _viewFlags: ViewFlags;
+  private _viewFlags: ViewFlags;
   private _background: ColorDef;
   private _monochrome: ColorDef;
   private _monochromeMode: MonochromeMode;
@@ -595,7 +595,7 @@ export class DisplayStyleSettings {
       return;
 
     this.onViewFlagsChanged.raiseEvent(flags);
-    flags.clone(this._viewFlags);
+    this._viewFlags = flags;
     this._json.viewflags = flags.toJSON();
   }
 

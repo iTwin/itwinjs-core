@@ -25,7 +25,7 @@ describe("CutStyle", () => {
     roundTrip({}, undefined);
     roundTrip({ viewflags: undefined, hiddenLine: undefined, appearance: undefined }, undefined);
     roundTrip(CutStyle.create().toJSON(), undefined);
-    roundTrip(CutStyle.create(new ViewFlagOverrides(), HiddenLine.Settings.defaults, FeatureAppearance.defaults).toJSON(), undefined);
+    roundTrip(CutStyle.create({ }, HiddenLine.Settings.defaults, FeatureAppearance.defaults).toJSON(), undefined);
 
     const hiddenLine = {
       ...HiddenLine.Settings.defaults.toJSON(),

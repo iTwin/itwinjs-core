@@ -238,6 +238,19 @@ export class ViewFlags {
     return new ViewFlags({ ...this, ...changedFlags });
   }
 
+  public override(overrides: Partial<ViewFlagsProperties>): ViewFlags {
+    // Create a copy of the input with all undefined ViewFlags properties removed.
+    // Note we use the keys of `ViewFlags.defaults` instead of those of the input to avoid processing additional unrelated properties that may be present on input.
+    overrides = { ...overrides };
+    for (const propName of Object.keys(ViewFlags.defaults)) {
+      const key = propName as keyof Partial<ViewFlagsProperties>;
+      if (undefined === overrides[key])
+        delete overrides[key];
+    }
+
+    return this.copy(overrides);
+  }
+
   /** @internal */
   public hiddenEdgesVisible(): boolean {
     switch (this.renderMode) {
@@ -407,4 +420,4 @@ export class ViewFlags {
 
 export type ViewFlagsProperties = Mutable<NonFunctionProperties<ViewFlags>>;
 
-export type ViewFlagsOverrides = Partial<ViewFlagsProperties>;
+export type ViewFlagOverrides = Partial<ViewFlagsProperties>;
