@@ -8,7 +8,7 @@
 
 // cspell:ignore ovrs
 
-import { JsonUtils } from "@bentley/bentleyjs-core";
+import { JsonUtils, Mutable, NonFunctionProperties } from "@bentley/bentleyjs-core";
 
 /** Enumerates the available rendering modes. The rendering mode chiefly controls whether and how surfaces and their edges are drawn.
  * Generally speaking,
@@ -110,127 +110,132 @@ function edgesRequired(renderMode: RenderMode, visibleEdges: boolean): boolean {
   return visibleEdges || RenderMode.SmoothShade !== renderMode;
 }
 
-/** Flags for controlling how graphics appear within a View.
+/** Flags controlling how graphics appear within a view.
+ * @see [[DisplayStyleSettings.viewFlags]] to define the view flags for a [DisplayStyle]($backend).
  * @public
  */
 export class ViewFlags {
-  /** The [[RenderMode]] of the view. */
-  public renderMode: RenderMode = RenderMode.Wireframe;
+  /** The basic rendering mode applied to the view. This modulates the behavior of some of the other flags.
+    * For example, the [[lighting]] and [[visibleEdges]] flags are ignored unless the render mode is [[RenderMode.SmoothShade]].
+    */
+  public readonly renderMode: RenderMode;
   /** Shows or hides dimensions. */
-  public dimensions: boolean = true;
+  public readonly dimensions: boolean;
   /** Shows or hides pattern geometry. */
-  public patterns: boolean = true;
+  public readonly patterns: boolean;
   /** Controls whether non-zero line weights are used or display using weight 0. */
-  public weights: boolean = true;
+  public readonly weights: boolean;
   /** Controls whether custom line styles are used (e.g. control whether elements with custom line styles draw normally, or as solid lines). */
-  public styles: boolean = true;
+  public readonly styles: boolean;
   /** Controls whether element transparency is used (e.g. control whether elements with transparency draw normally, or as opaque). */
-  public transparency: boolean = true;
+  public readonly transparency: boolean;
   /** Controls whether the fills on filled elements are displayed. */
-  public fill: boolean = true;
+  public readonly fill: boolean;
   /** Controls whether to display texture maps for material assignments. When off only material color is used for display. */
-  public textures: boolean = true;
+  public readonly textures: boolean;
   /** Controls whether materials are used (e.g. control whether geometry with materials draw normally, or as if it has no material). */
-  public materials: boolean = true;
+  public readonly materials: boolean;
   /** Shows or hides the ACS triad. */
-  public acsTriad: boolean = false;
+  public readonly acsTriad: boolean;
   /** Shows or hides the grid. The grid settings are a design file setting. */
-  public grid: boolean = false;
+  public readonly grid: boolean;
   /** Shows or hides visible edges in the shaded render mode. */
-  public visibleEdges: boolean = false;
+  public readonly visibleEdges: boolean;
   /** Shows or hides hidden edges in the shaded render mode. */
-  public hiddenEdges: boolean = false;
+  public readonly hiddenEdges: boolean;
   /** Controls whether the source lights in spatial models are used
    * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
    * @see [[lighting]] for a more convenient way to toggle lighting on and off.
    */
-  public sourceLights: boolean = false;
+  public readonly sourceLights: boolean;
   /** Controls whether camera (ambient, portrait, flashbulb) lights are used.
    * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
    * @see [[lighting]] for a more convenient way to toggle lighting on and off.
    */
-  public cameraLights: boolean = false;
+  public readonly cameraLights: boolean;
   /** Controls whether sunlight used
    * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
    * @see [[lighting]] for a more convenient way to toggle lighting on and off.
    */
-  public solarLight: boolean = false;
+  public readonly solarLight: boolean;
   /** Shows or hides shadows. */
-  public shadows: boolean = false;
+  public readonly shadows: boolean;
   /** Controls whether the view's clip volume is applied. Has no effect on other types of clips like [[ModelClipGroups]]. */
-  public clipVolume: boolean = true;
+  public readonly clipVolume: boolean;
   /** Shows or hides construction class geometry. */
-  public constructions: boolean = false;
+  public readonly constructions: boolean;
   /** Draw geometry using the view's monochrome color.
    * @see [DisplayStyleSettings.monochromeColor]($common) for details on how the color is applied.
    * @see [DisplayStyleSettings.monochromeMode]($common) to control the type of monochrome display applied.
    */
-  public monochrome: boolean = false;
+  public readonly monochrome: boolean;
   /** @internal unused Ignore geometry maps */
-  public noGeometryMap: boolean = false;
+  public readonly noGeometryMap: boolean;
   /** Display background map */
-  public backgroundMap: boolean = false;
+  public readonly backgroundMap: boolean;
   /** Use material colors for hidden lines */
-  public hLineMaterialColors: boolean = false;
+  public readonly hLineMaterialColors: boolean;
   /** @internal 0=none, 1=generate mask, 2=use mask */
-  public edgeMask: number = 0;
+  public readonly edgeMask: number;
   /** Controls whether ambient occlusion is used. */
-  public ambientOcclusion: boolean = false;
+  public readonly ambientOcclusion: boolean;
   /** Controls whether thematic display is used.
    * @note Currently, thematically displayed geometry will not receive shadows. If thematic display is enabled, shadows will not be received by thematically displayed geometry, even if shadows are enabled.
    */
-  public thematicDisplay: boolean = false;
+  public readonly thematicDisplay: boolean;
   /** Controls whether surface discard is always applied regardless of other ViewFlags.
    * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
    * non-planar surfaces always draw in front of those non-planar surfaces.
    * When this view flag is set to false (the default), then for 3d views if the render mode is wireframe (only edges are displayed) or smooth shader with visible edges turned off (only surfaces are displayed),
    * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
    */
-  public forceSurfaceDiscard: boolean = false;
+  public readonly forceSurfaceDiscard: boolean;
   /** White-on-white reversal is used by some CAD applications to cause white geometry to be drawn as black if the view's background color is also white. */
-  public whiteOnWhiteReversal = true;
+  public readonly whiteOnWhiteReversal: boolean;
 
   /** Controls whether or not lighting is applied.
    * @note Has no effect unless `renderMode` is set to [[RenderMode.SmoothShade]].
    */
   public get lighting(): boolean { return this.solarLight || this.sourceLights || this.cameraLights; }
-  public set lighting(enable: boolean) { this.solarLight = this.sourceLights = this.cameraLights = enable; }
 
-  public clone(out?: ViewFlags): ViewFlags { return ViewFlags.createFrom(this, out); }
-  public static createFrom(other?: ViewFlags, out?: ViewFlags): ViewFlags {
-    const val = undefined !== out ? out : new ViewFlags();
-    if (other) {
-      val.renderMode = other.renderMode;
-      val.dimensions = other.dimensions;
-      val.patterns = other.patterns;
-      val.weights = other.weights;
-      val.styles = other.styles;
-      val.transparency = other.transparency;
-      val.fill = other.fill;
-      val.textures = other.textures;
-      val.materials = other.materials;
-      val.acsTriad = other.acsTriad;
-      val.grid = other.grid;
-      val.visibleEdges = other.visibleEdges;
-      val.hiddenEdges = other.hiddenEdges;
-      val.sourceLights = other.sourceLights;
-      val.cameraLights = other.cameraLights;
-      val.solarLight = other.solarLight;
-      val.shadows = other.shadows;
-      val.clipVolume = other.clipVolume;
-      val.constructions = other.constructions;
-      val.monochrome = other.monochrome;
-      val.noGeometryMap = other.noGeometryMap;
-      val.hLineMaterialColors = other.hLineMaterialColors;
-      val.backgroundMap = other.backgroundMap;
-      val.edgeMask = other.edgeMask;
-      val.ambientOcclusion = other.ambientOcclusion;
-      val.thematicDisplay = other.thematicDisplay;
-      val.forceSurfaceDiscard = other.forceSurfaceDiscard;
-      val.whiteOnWhiteReversal = other.whiteOnWhiteReversal;
+  public constructor(flags?: Partial<ViewFlagsProperties>) {
+    this.renderMode = flags?.renderMode ?? RenderMode.Wireframe;
+    this.dimensions = flags?.dimensions ?? true;
+    this.patterns = flags?.patterns ?? true;
+    this.weights = flags?.weights ?? true;
+    this.styles = flags?.styles ?? true;
+    this.transparency = flags?.transparency ?? true;
+    this.fill = flags?.fill ?? true;
+    this.textures = flags?.textures ?? true;
+    this.materials = flags?.materials ?? true;
+    this.acsTriad = flags?.acsTriad ?? false;
+    this.grid = flags?.grid ?? false;
+    this.visibleEdges = flags?.visibleEdges ?? false;
+    this.hiddenEdges = flags?.hiddenEdges ?? false;
+    this.shadows = flags?.shadows ?? false;
+    this.clipVolume = flags?.clipVolume ?? true;
+    this.constructions = flags?.constructions ?? false;
+    this.monochrome = flags?.monochrome ?? false;
+    this.noGeometryMap = flags?.noGeometryMap ?? false;
+    this.backgroundMap = flags?.backgroundMap ?? false;
+    this.hLineMaterialColors = flags?.hLineMaterialColors ?? false;
+    this.edgeMask = flags?.edgeMask ?? 0;
+    this.ambientOcclusion = flags?.ambientOcclusion ?? false;
+    this.thematicDisplay = flags?.thematicDisplay ?? false;
+    this.forceSurfaceDiscard = flags?.forceSurfaceDiscard ?? false;
+    this.whiteOnWhiteReversal = flags?.whiteOnWhiteReversal ?? true;
+
+    if (undefined !== flags?.lighting) {
+      this.solarLight = this.sourceLights = this.cameraLights = flags.lighting;
+    } else {
+      this.sourceLights = flags?.sourceLights ?? false;
+      this.cameraLights = flags?.cameraLights ?? false;
+      this.solarLight = flags?.solarLight ?? false;
     }
+  }
 
-    return val;
+  public copy(changedFlags: Partial<ViewFlagsProperties>): ViewFlags {
+    return new ViewFlags({ ...this, ...changedFlags });
   }
 
   /** @internal */
@@ -318,47 +323,54 @@ export class ViewFlags {
     };
   }
 
+  public static readonly defaults = new ViewFlags();
+
+  public static create(flags?: Partial<ViewFlagsProperties>): ViewFlags {
+    return flags ? new ViewFlags(flags) : this.defaults;
+  }
+
   public static fromJSON(json?: ViewFlagProps): ViewFlags {
-    const val = new ViewFlags();
     if (!json)
-      return val;
+      return this.defaults;
 
-    val.constructions = !JsonUtils.asBool(json.noConstruct);
-    val.dimensions = !JsonUtils.asBool(json.noDim);
-    val.patterns = !JsonUtils.asBool(json.noPattern);
-    val.weights = !JsonUtils.asBool(json.noWeight);
-    val.styles = !JsonUtils.asBool(json.noStyle);
-    val.transparency = !JsonUtils.asBool(json.noTransp);
-    val.fill = !JsonUtils.asBool(json.noFill);
-    val.grid = JsonUtils.asBool(json.grid);
-    val.acsTriad = JsonUtils.asBool(json.acs);
-    val.textures = !JsonUtils.asBool(json.noTexture);
-    val.materials = !JsonUtils.asBool(json.noMaterial);
-    val.cameraLights = !JsonUtils.asBool(json.noCameraLights);
-    val.sourceLights = !JsonUtils.asBool(json.noSourceLights);
-    val.solarLight = !JsonUtils.asBool(json.noSolarLight);
-    val.visibleEdges = JsonUtils.asBool(json.visEdges);
-    val.hiddenEdges = JsonUtils.asBool(json.hidEdges);
-    val.shadows = JsonUtils.asBool(json.shadows);
-    val.clipVolume = JsonUtils.asBool(json.clipVol);
-    val.monochrome = JsonUtils.asBool(json.monochrome);
-    val.edgeMask = JsonUtils.asInt(json.edgeMask);
-    val.hLineMaterialColors = JsonUtils.asBool(json.hlMatColors);
-    val.backgroundMap = JsonUtils.asBool(json.backgroundMap);
-    val.ambientOcclusion = JsonUtils.asBool(json.ambientOcclusion);
-    val.thematicDisplay = JsonUtils.asBool(json.thematicDisplay);
-    val.forceSurfaceDiscard = JsonUtils.asBool(json.forceSurfaceDiscard);
-    val.whiteOnWhiteReversal = !JsonUtils.asBool(json.noWhiteOnWhiteReversal);
-
+    let renderMode: RenderMode;
     const renderModeValue = JsonUtils.asInt(json.renderMode);
     if (renderModeValue < RenderMode.HiddenLine)
-      val.renderMode = RenderMode.Wireframe;
+      renderMode = RenderMode.Wireframe;
     else if (renderModeValue > RenderMode.SolidFill)
-      val.renderMode = RenderMode.SmoothShade;
+      renderMode = RenderMode.SmoothShade;
     else
-      val.renderMode = renderModeValue;
+      renderMode = renderModeValue;
 
-    return val;
+    return new ViewFlags({
+      renderMode,
+      constructions: !JsonUtils.asBool(json.noConstruct),
+      dimensions: !JsonUtils.asBool(json.noDim),
+      patterns: !JsonUtils.asBool(json.noPattern),
+      weights: !JsonUtils.asBool(json.noWeight),
+      styles: !JsonUtils.asBool(json.noStyle),
+      transparency: !JsonUtils.asBool(json.noTransp),
+      fill: !JsonUtils.asBool(json.noFill),
+      grid: JsonUtils.asBool(json.grid),
+      acsTriad: JsonUtils.asBool(json.acs),
+      textures: !JsonUtils.asBool(json.noTexture),
+      materials: !JsonUtils.asBool(json.noMaterial),
+      cameraLights: !JsonUtils.asBool(json.noCameraLights),
+      sourceLights: !JsonUtils.asBool(json.noSourceLights),
+      solarLight: !JsonUtils.asBool(json.noSolarLight),
+      visibleEdges: JsonUtils.asBool(json.visEdges),
+      hiddenEdges: JsonUtils.asBool(json.hidEdges),
+      shadows: JsonUtils.asBool(json.shadows),
+      clipVolume: JsonUtils.asBool(json.clipVol),
+      monochrome: JsonUtils.asBool(json.monochrome),
+      edgeMask: JsonUtils.asInt(json.edgeMask),
+      hLineMaterialColors: JsonUtils.asBool(json.hlMatColors),
+      backgroundMap: JsonUtils.asBool(json.backgroundMap),
+      ambientOcclusion: JsonUtils.asBool(json.ambientOcclusion),
+      thematicDisplay: JsonUtils.asBool(json.thematicDisplay),
+      forceSurfaceDiscard: JsonUtils.asBool(json.forceSurfaceDiscard),
+      whiteOnWhiteReversal: !JsonUtils.asBool(json.noWhiteOnWhiteReversal),
+    });
   }
 
   public equals(other: ViewFlags): boolean {
@@ -393,238 +405,6 @@ export class ViewFlags {
   }
 }
 
-/** Values used by [[ViewFlagOverrides]] to indicate which aspects of the [[ViewFlags]] are overridden.
- * @public
- */
-export enum ViewFlagPresence {
-  RenderMode, // eslint-disable-line @typescript-eslint/no-shadow
-  Dimensions,
-  Patterns,
-  Weights,
-  Styles,
-  Transparency,
-  Unused,
-  Fill,
-  Textures,
-  Materials,
-  VisibleEdges,
-  HiddenEdges,
-  Lighting,
-  Shadows,
-  ClipVolume,
-  Constructions,
-  Monochrome,
-  GeometryMap,
-  HlineMaterialColors,
-  EdgeMask,
-  BackgroundMap,
-  ForceSurfaceDiscard,
-  WhiteOnWhiteReversal,
-  ThematicDisplay,
-}
+export type ViewFlagsProperties = Mutable<NonFunctionProperties<ViewFlags>>;
 
-/** JSON representation of [[ViewFlagOverrides]]. A flag is overridden if it is defined.
- * @public
- */
-export interface ViewFlagOverridesProps {
-  dimensions?: boolean;
-  patterns?: boolean;
-  weights?: boolean;
-  styles?: boolean;
-  transparency?: boolean;
-  fill?: boolean;
-  textures?: boolean;
-  materials?: boolean;
-  lighting?: boolean;
-  visibleEdges?: boolean;
-  hiddenEdges?: boolean;
-  shadows?: boolean;
-  clipVolume?: boolean;
-  constructions?: boolean;
-  monochrome?: boolean;
-  noGeometryMap?: boolean;
-  backgroundMap?: boolean;
-  hLineMaterialColors?: boolean;
-  forceSurfaceDiscard?: boolean;
-  whiteOnWhiteReversal?: boolean;
-  edgeMask?: number;
-  renderMode?: RenderMode;
-  thematicDisplay?: boolean;
-}
-
-/** Overrides a subset of [[ViewFlags]].
- * @public
- */
-export class ViewFlagOverrides {
-  private _present = 0;
-  private readonly _values = new ViewFlags();
-
-  /** Returns true if the specified flag is overridden. */
-  public isPresent(flag: ViewFlagPresence): boolean { return 0 !== (this._present & (1 << flag)); }
-  /** Mark the specified flag as overridden. */
-  public setPresent(flag: ViewFlagPresence) { this._present |= (1 << flag); }
-  /** Mark the specified flag as not overridden. */
-  public clearPresent(flag: ViewFlagPresence) {
-    // Bit-wise NOT produces signed one's complement in javascript...triple-shift right by zero to get correct result...
-    this._present &= (~(1 << flag)) >>> 0;
-  }
-
-  /** Construct a ViewFlagOverrides which overrides all flags to match the specified ViewFlags, or overrides nothing if no ViewFlags are supplied. */
-  constructor(flags?: ViewFlags) {
-    if (undefined !== flags)
-      this.overrideAll(flags);
-  }
-
-  /** Marks all view flags as overridden.
-   * @param flags If supplied, these overrides will match the input view flags; otherwise, they will match the default view flags.
-   */
-  public overrideAll(flags?: ViewFlags) {
-    ViewFlags.createFrom(flags, this._values);
-    this._present = 0xffffffff;
-  }
-
-  /** Create a copy of these overrides.
-   * @param out If supplied, the input overrides will be modified to match these overrides; otherwise, a new ViewFlagOverrides object will be created as the clone.
-   * @returns A copy of these overrides.
-   */
-  public clone(out?: ViewFlagOverrides): ViewFlagOverrides {
-    const result = undefined !== out ? out : new ViewFlagOverrides();
-    result.copyFrom(this);
-    return result;
-  }
-
-  /** Modify these overrides to match the input overrides. */
-  public copyFrom(other: ViewFlagOverrides): void {
-    other._values.clone(this._values);
-    this._present = other._present;
-  }
-
-  public setShowDimensions(val: boolean) { this._values.dimensions = val; this.setPresent(ViewFlagPresence.Dimensions); }
-  public setShowPatterns(val: boolean) { this._values.patterns = val; this.setPresent(ViewFlagPresence.Patterns); }
-  public setShowWeights(val: boolean) { this._values.weights = val; this.setPresent(ViewFlagPresence.Weights); }
-  public setShowStyles(val: boolean) { this._values.styles = val; this.setPresent(ViewFlagPresence.Styles); }
-  public setShowTransparency(val: boolean) { this._values.transparency = val; this.setPresent(ViewFlagPresence.Transparency); }
-  public setShowFill(val: boolean) { this._values.fill = val; this.setPresent(ViewFlagPresence.Fill); }
-  public setShowTextures(val: boolean) { this._values.textures = val; this.setPresent(ViewFlagPresence.Textures); }
-  public setShowMaterials(val: boolean) { this._values.materials = val; this.setPresent(ViewFlagPresence.Materials); }
-  public setApplyLighting(val: boolean) { this._values.lighting = val; this.setPresent(ViewFlagPresence.Lighting); }
-  public setShowVisibleEdges(val: boolean) { this._values.visibleEdges = val; this.setPresent(ViewFlagPresence.VisibleEdges); }
-  public setShowHiddenEdges(val: boolean) { this._values.hiddenEdges = val; this.setPresent(ViewFlagPresence.HiddenEdges); }
-  public setShowShadows(val: boolean) { this._values.shadows = val; this.setPresent(ViewFlagPresence.Shadows); }
-  public setShowClipVolume(val: boolean) { this._values.clipVolume = val; this.setPresent(ViewFlagPresence.ClipVolume); }
-  public setShowConstructions(val: boolean) { this._values.constructions = val; this.setPresent(ViewFlagPresence.Constructions); }
-  public setMonochrome(val: boolean) { this._values.monochrome = val; this.setPresent(ViewFlagPresence.Monochrome); }
-  public setIgnoreGeometryMap(val: boolean) { this._values.noGeometryMap = val; this.setPresent(ViewFlagPresence.GeometryMap); }
-  public setShowBackgroundMap(val: boolean) { this._values.backgroundMap = val; this.setPresent(ViewFlagPresence.BackgroundMap); }
-  public setUseHlineMaterialColors(val: boolean) { this._values.hLineMaterialColors = val; this.setPresent(ViewFlagPresence.HlineMaterialColors); }
-  public setForceSurfaceDiscard(val: boolean) { this._values.forceSurfaceDiscard = val; this.setPresent(ViewFlagPresence.ForceSurfaceDiscard); }
-  public setWhiteOnWhiteReversal(val: boolean) { this._values.whiteOnWhiteReversal = val; this.setPresent(ViewFlagPresence.WhiteOnWhiteReversal); }
-  public setEdgeMask(val: number) { this._values.edgeMask = val; this.setPresent(ViewFlagPresence.EdgeMask); }
-  public setRenderMode(val: RenderMode) { this._values.renderMode = val; this.setPresent(ViewFlagPresence.RenderMode); }
-  public setThematicDisplay(val: boolean) { this._values.thematicDisplay = val; this.setPresent(ViewFlagPresence.ThematicDisplay); }
-
-  /** Return whether these overrides applied to the specified ViewFlags require edges to be drawn. */
-  public edgesRequired(viewFlags: ViewFlags): boolean {
-    const renderMode = this.isPresent(ViewFlagPresence.RenderMode) ? this._values.renderMode : viewFlags.renderMode;
-    const visibleEdges = this.isPresent(ViewFlagPresence.VisibleEdges) ? this._values.visibleEdges : viewFlags.visibleEdges;
-    return edgesRequired(renderMode, visibleEdges);
-  }
-
-  /** Returns true if any view flags are overridden. */
-  public anyOverridden() { return 0 !== this._present; }
-
-  /** Marks all view flags as not overridden. */
-  public clear() { this._present = 0; }
-
-  public clearClipVolume() { this.clearPresent(ViewFlagPresence.ClipVolume); }
-
-  /** If ViewFlags.clipVolume is overridden, return the override value; else return undefined.
-   * @internal
-   */
-  public get clipVolumeOverride(): boolean | undefined {
-    return this.isPresent(ViewFlagPresence.ClipVolume) ? this._values.clipVolume : undefined;
-  }
-
-  /** Apply these overrides to the supplied ViewFlags. The values of any flags that are overridden will be replaced by the override values; the rest of the flags are untouched. */
-  public apply(base: ViewFlags): ViewFlags {
-    this.applyFlags(base);
-    return base;
-  }
-
-  public toJSON(): ViewFlagOverridesProps {
-    const props: ViewFlagOverridesProps = {};
-    this.applyFlags(props);
-    return props;
-  }
-
-  public static fromJSON(props?: ViewFlagOverridesProps): ViewFlagOverrides {
-    const ovrs = new ViewFlagOverrides();
-    if (!props)
-      return ovrs;
-
-    const setBoolean = (key: keyof ViewFlagOverridesProps, set: (val: boolean) => void) => {
-      const val = props[key];
-      if (typeof val === "boolean")
-        set(val);
-    };
-
-    setBoolean("dimensions", (val) => ovrs.setShowDimensions(val));
-    setBoolean("patterns", (val) => ovrs.setShowPatterns(val));
-    setBoolean("weights", (val) => ovrs.setShowWeights(val));
-    setBoolean("styles", (val) => ovrs.setShowStyles(val));
-    setBoolean("transparency", (val) => ovrs.setShowTransparency(val));
-    setBoolean("fill", (val) => ovrs.setShowFill(val));
-    setBoolean("textures", (val) => ovrs.setShowTextures(val));
-    setBoolean("materials", (val) => ovrs.setShowMaterials(val));
-    setBoolean("lighting", (val) => ovrs.setApplyLighting(val));
-    setBoolean("visibleEdges", (val) => ovrs.setShowVisibleEdges(val));
-    setBoolean("hiddenEdges", (val) => ovrs.setShowHiddenEdges(val));
-    setBoolean("shadows", (val) => ovrs.setShowShadows(val));
-    setBoolean("clipVolume", (val) => ovrs.setShowClipVolume(val));
-    setBoolean("constructions", (val) => ovrs.setShowConstructions(val));
-    setBoolean("monochrome", (val) => ovrs.setMonochrome(val));
-    setBoolean("noGeometryMap", (val) => ovrs.setIgnoreGeometryMap(val));
-    setBoolean("backgroundMap", (val) => ovrs.setShowBackgroundMap(val));
-    setBoolean("hLineMaterialColors", (val) => ovrs.setUseHlineMaterialColors(val));
-    setBoolean("forceSurfaceDiscard", (val) => ovrs.setForceSurfaceDiscard(val));
-    setBoolean("whiteOnWhiteReversal", (val) => ovrs.setWhiteOnWhiteReversal(val));
-    setBoolean("thematicDisplay", (val) => ovrs.setThematicDisplay(val));
-
-    if (typeof props.edgeMask === "number")
-      ovrs.setEdgeMask(props.edgeMask);
-
-    if (typeof props.renderMode === "number")
-      ovrs.setRenderMode(props.renderMode);
-
-    return ovrs;
-  }
-
-  private applyFlags(flags: ViewFlags | ViewFlagOverridesProps): void {
-    if (!this.anyOverridden())
-      return;
-
-    if (this.isPresent(ViewFlagPresence.Dimensions)) flags.dimensions = this._values.dimensions;
-    if (this.isPresent(ViewFlagPresence.Patterns)) flags.patterns = this._values.patterns;
-    if (this.isPresent(ViewFlagPresence.Weights)) flags.weights = this._values.weights;
-    if (this.isPresent(ViewFlagPresence.Styles)) flags.styles = this._values.styles;
-    if (this.isPresent(ViewFlagPresence.Transparency)) flags.transparency = this._values.transparency;
-    if (this.isPresent(ViewFlagPresence.Fill)) flags.fill = this._values.fill;
-    if (this.isPresent(ViewFlagPresence.Textures)) flags.textures = this._values.textures;
-    if (this.isPresent(ViewFlagPresence.Materials)) flags.materials = this._values.materials;
-    if (this.isPresent(ViewFlagPresence.Lighting)) flags.lighting = this._values.lighting;
-    if (this.isPresent(ViewFlagPresence.VisibleEdges)) flags.visibleEdges = this._values.visibleEdges;
-    if (this.isPresent(ViewFlagPresence.HiddenEdges)) flags.hiddenEdges = this._values.hiddenEdges;
-    if (this.isPresent(ViewFlagPresence.Shadows)) flags.shadows = this._values.shadows;
-    if (this.isPresent(ViewFlagPresence.ClipVolume)) flags.clipVolume = this._values.clipVolume;
-    if (this.isPresent(ViewFlagPresence.Constructions)) flags.constructions = this._values.constructions;
-    if (this.isPresent(ViewFlagPresence.Monochrome)) flags.monochrome = this._values.monochrome;
-    if (this.isPresent(ViewFlagPresence.GeometryMap)) flags.noGeometryMap = this._values.noGeometryMap;
-    if (this.isPresent(ViewFlagPresence.BackgroundMap)) flags.backgroundMap = this._values.backgroundMap;
-    if (this.isPresent(ViewFlagPresence.HlineMaterialColors)) flags.hLineMaterialColors = this._values.hLineMaterialColors;
-    if (this.isPresent(ViewFlagPresence.ForceSurfaceDiscard)) flags.forceSurfaceDiscard = this._values.forceSurfaceDiscard;
-    if (this.isPresent(ViewFlagPresence.WhiteOnWhiteReversal)) flags.whiteOnWhiteReversal = this._values.whiteOnWhiteReversal;
-    if (this.isPresent(ViewFlagPresence.EdgeMask)) flags.edgeMask = this._values.edgeMask;
-    if (this.isPresent(ViewFlagPresence.RenderMode)) flags.renderMode = this._values.renderMode;
-    if (this.isPresent(ViewFlagPresence.ThematicDisplay)) flags.thematicDisplay = this._values.thematicDisplay;
-  }
-}
+export type ViewFlagsOverrides = Partial<ViewFlagsProperties>;
