@@ -16,6 +16,7 @@ import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
 import { TableExampleWidgetControl } from "../contentviews/TableExampleContent";
+import { ReactTableDemoContentControl } from "../components/ReactTableDemo";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
@@ -28,8 +29,8 @@ export class Frontstage3 extends FrontstageProvider {
         verticalSplit: {
           percentage: 0.50,
           minSizeLeft: 100, minSizeRight: 100,
-          left: 0,
-          right: { horizontalSplit: { percentage: 0.50, top: 1, bottom: 2, minSizeTop: 100, minSizeBottom: 100 } },
+          left: { horizontalSplit: { percentage: 0.50, top: 0, bottom: 1, minSizeTop: 100, minSizeBottom: 100 } },
+          right: { horizontalSplit: { percentage: 0.50, top: 2, bottom: 3, minSizeTop: 100, minSizeBottom: 100 } },
         },
       },
     );
@@ -42,12 +43,14 @@ export class Frontstage3 extends FrontstageProvider {
             applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
+            classId: ReactTableDemoContentControl,
+          },
+          {
             classId: App_IModelViewport.id,
-            applicationData: { label: "Content 2a", bgColor: "blue" },
+            applicationData: { viewState: UiFramework.getDefaultViewState, iModelConnection: UiFramework.getIModelConnection },
           },
           {
             classId: "TableExampleContent",
-            applicationData: { label: "Content 3a", bgColor: "black" },
           },
         ],
       },

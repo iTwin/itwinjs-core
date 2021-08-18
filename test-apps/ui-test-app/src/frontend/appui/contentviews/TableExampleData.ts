@@ -10,7 +10,7 @@ import {
   SliderEditorParams, StandardEditorNames, StandardTypeNames, TimeDisplay,
 } from "@bentley/ui-abstract";
 import {
-  ColumnDescription, FilterRenderer, RowItem, SimpleTableDataProvider,
+  ColumnDescription, FilterRenderer, RowItem, SimpleTableDataProvider, TableDataProvider,
 } from "@bentley/ui-components";
 
 const createPropertyRecord = (value: any, column: ColumnDescription, typename: string, editor?: PropertyEditorInfo) => {
@@ -156,7 +156,7 @@ export class TableExampleData {
       label: "ID",
       resizable: true,
       sortable: true,
-      width: 90,
+      width: 70,
       editable: true,
       filterable: true,
       filterRenderer: FilterRenderer.Numeric,
@@ -168,6 +168,7 @@ export class TableExampleData {
       resizable: true,
       editable: true,
       filterable: true,
+      width: 200,
       filterRenderer: FilterRenderer.MultiSelect,
     },
     {
@@ -185,7 +186,7 @@ export class TableExampleData {
       sortable: true,
       resizable: true,
       editable: true,
-      width: 180,
+      width: 90,
       filterable: true,
       filterRenderer: FilterRenderer.SingleSelect,
     },
@@ -200,7 +201,7 @@ export class TableExampleData {
   ];
 
   public get columns(): ColumnDescription[] { return this._columns; }
-  public get dataProvider(): SimpleTableDataProvider { return this._dataProvider; }
+  public get dataProvider(): TableDataProvider { return this._dataProvider; }
 
   public loadData(useUtc: boolean) {
     const editorParams: BasePropertyEditorParams[] = [];

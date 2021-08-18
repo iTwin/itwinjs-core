@@ -3,13 +3,12 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { CellProps, Column } from "react-table";
-
-// import { RowItem } from "@bentley/ui-components";
+import { Column, TableState } from "react-table";
 import { Table } from "@itwin/itwinui-react";
-
-// import { TableExampleData } from "../contentviews/TableExampleData";
-// import { TableDataProviderAdapter } from "./TableDataProviderAdapter";
+import { Centered, LoadingSpinner } from "@bentley/ui-core";
+import { ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
+import { TableExampleData } from "../contentviews/TableExampleData";
+import { TableDataProviderAdapter } from "./TableDataProviderAdapter";
 
 export interface CellData {
   name: string;
@@ -17,124 +16,108 @@ export interface CellData {
 }
 
 export interface ReactTableDemoProps {
-  columns: Column<Record<string, unknown>>[];
-  data: Record<string, unknown>[];
+  isSortable?: boolean;
 }
 
 export function ReactTableDemo(args: ReactTableDemoProps) {
-  //   const tableExampleData = React.useMemo(() => new TableExampleData(), []);
-  //   const providerAdapter = React.useRef<TableDataProviderAdapter>();
-  //   const [fetchedData, setFetchedData] = React.useState<RowItem[]>();
-  //   const [fetchedColumns, setFetchedColumns] = React.useState<Column<RowItem>[]>();
-  //   const isMounted = React.useRef(false);
+  const tableExampleData = React.useMemo(() => new TableExampleData(), []);
+  const providerAdapter = React.useRef<TableDataProviderAdapter>();
+  const [fetchedData, setFetchedData] = React.useState<Record<string, unknown>[]>(() => []);
+  const [fetchedColumns, setFetchedColumns] = React.useState<Column<Record<string, unknown>>[]>(() => []);
+  const isMounted = React.useRef(false);
+  const [isInitialLoading, setIsInitialLoading] = React.useState(false);
+  const [isLoading, setIsLoading] = React.useState(false);
 
-  //   React.useEffect(() => {
-  //     isMounted.current = true;
-  //     async function fetchData() {
-  //       tableExampleData.loadData(false);
-  //       const dataProvider = tableExampleData.dataProvider;
-  //       providerAdapter.current = new TableDataProviderAdapter(dataProvider);
-  //       await providerAdapter.current.adapt();
-  //       if (isMounted.current) {
-  //         setFetchedData(providerAdapter.current.reactTableData);
-  //         setFetchedColumns(
-  //           [
-  //             {
-  //               Header: "columns",
-  //               columns: providerAdapter.current.reactTableColumns,
-  //             },
-  //           ]
-  //         );
-  //       }
-  //     }
-  //     fetchData(); // eslint-disable-line @typescript-eslint/no-floating-promises
-  //   }, [tableExampleData, setFetchedData, setFetchedColumns]);
+  React.useEffect(() => {
+    isMounted.current = true;
+    async function fetchData() {
+      tableExampleData.loadData(false);
+      const dataProvider = tableExampleData.dataProvider;
+      providerAdapter.current = new TableDataProviderAdapter(dataProvider);
+      const rowsCount = await providerAdapter.current.getRowsCount();
 
-  //   // runs returned function only when component is unmounted.
-  //   React.useEffect(() => {
-  //     return (() => {
-  //       isMounted.current = false;
-  //     });
-  //   }, []);
+      await providerAdapter.current.adaptColumns();
+      await providerAdapter.current.adaptRows(rowsCount);   // Adapt all for now - NEEDSWORK
 
-  //   // const [selectedRow, setSelectedRow] = React.useState<number | undefined>();
-
-  //   const data = fetchedData ? fetchedData : [];
-  //   const columns = fetchedColumns ? fetchedColumns : [];
-
-  //   // const onRowClicked = (row: Row<RowItem>) => {
-  //   //   const rowIndex = data.findIndex((value) => value === row.original);
-  //   //   setSelectedRow(rowIndex);
-  //   // };
-
-  //   return (
-  //     <div style={{ height: "100%" }}>
-  //       <Table
-  //         columns={columns}
-  //         data={data}
-  //         isNextPageLoading={false}
-  //         hasNextPage={false}
-  //         loadMoreItems={async () => null}
-  //         // onRowClick={onRowClicked}
-  //         reset={false}
-  //       // selectedRow={selectedRow}
-  //       />
-  //     </div>
-  //   );
-  const { columns, data, ...rest } = args;
-  const onClickHandler = (
-    _props: CellProps<CellData>,
-  ) => { }; // action(props.row.original.name)();
-  const tableColumns = React.useMemo(
-    () => [
-      {
-        Header: 'Table',
-        columns: [
-          {
-            id: 'name',
-            Header: 'Name',
-            accessor: 'name',
-          },
-          {
-            id: 'description',
-            Header: 'Description',
-            accessor: 'description',
-            maxWidth: 200,
-          },
-          {
-            id: 'click-me',
-            Header: 'Click',
-            width: 100,
-            Cell: (props: CellProps<CellData>) => {
-              const onClick = () => onClickHandler(props);
-              return (
-                <a className='iui-anchor' onClick={onClick}>
-                  Click me!
-                </a>
-              );
+      if (isMounted.current) {
+        setFetchedData(providerAdapter.current.reactTableData);
+        setFetchedColumns(
+          [
+            {
+              Header: "Table",
+              columns: providerAdapter.current.reactTableColumns,
             },
-          },
-        ],
-      },
-    ],
-    [],
-  );
+          ]
+        );
+      }
+    }
 
-  const tableData = React.useMemo(
-    () => [
-      { name: 'Name1', description: 'Description1' },
-      { name: 'Name2', description: 'Description2' },
-      { name: 'Name3', description: 'Description3' },
-    ],
-    [],
-  );
+    setIsInitialLoading(true);
+    setTimeout(() => {
+      fetchData(); // eslint-disable-line @typescript-eslint/no-floating-promises
+      setIsInitialLoading(false);
+    }, 100);
+  }, [tableExampleData]);
+
+  // runs returned function only when component is unmounted.
+  React.useEffect(() => {
+    return (() => {
+      isMounted.current = false;
+    });
+  }, []);
+
+  const { isSortable, ...rest } = args;
+
+  const onSelect = React.useCallback((_selectedData: Record<string, unknown>[] | undefined, _tableState?: TableState<Record<string, unknown>> | undefined) => {
+  }, []);
+
+  const onSort = React.useCallback((_state: TableState<Record<string, unknown>>) => {
+  }, []);
+
+  const onBottomReached = React.useCallback(async () => {
+    if (providerAdapter.current) {
+      const rowsCount = await providerAdapter.current.getRowsCount();
+      if (providerAdapter.current.adaptedRowsCount < rowsCount) {
+        setIsLoading(true);
+        await providerAdapter.current.adaptRows(providerAdapter.current.adaptedRowsCount + 100);
+        setFetchedData(providerAdapter.current.reactTableData);
+        setIsLoading(false);
+      }
+    }
+  }, []);
+
+  if (isInitialLoading)
+    return (
+      <div style={{ height: "100%" }}>
+        <Centered>
+          <LoadingSpinner size="large" />
+        </Centered>
+      </div>
+    );
 
   return (
     <Table
-      columns={columns || tableColumns}
-      data={data || tableData}
-      emptyTableContent='No data.'
+      style={{ height: "100%" }}
+      density="extra-condensed"
+      columns={fetchedColumns}
+      data={fetchedData}
+      emptyTableContent="No data."
+      onBottomReached={onBottomReached}
+      isLoading={isLoading}
+      isSelectable={true}
+      onSelect={onSelect}
+      isSortable={isSortable}
+      onSort={onSort}
       {...rest}
     />
   );
 }
+
+export class ReactTableDemoContentControl extends ContentControl {
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+
+    this.reactNode = <ReactTableDemo isSortable={true} />;
+  }
+}
+
