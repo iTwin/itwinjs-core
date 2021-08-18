@@ -12,7 +12,6 @@ import * as React from "react";
 import { Input, InputProps } from "@itwin/itwinui-react";
 import { SpecialKey } from "@bentley/ui-abstract";
 import { WebFontIcon } from "../../icons/WebFontIcon";
-import { CommonProps } from "../../utils/Props";
 
 /** Step function prototype for [[NumberInput]] component
  * @beta
