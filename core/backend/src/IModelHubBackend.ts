@@ -18,11 +18,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import {
-<<<<<<< HEAD
-  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetIndexArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps,
-=======
-  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps, V2CheckpointAccessProps,
->>>>>>> 82160e3ca0 (Add `queryV2Checkpoint` to `BackendHubAccess` interface (#2090))
+  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetIndexArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps, V2CheckpointAccessProps,
 } from "./BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseManager } from "./BriefcaseManager";
@@ -284,8 +280,8 @@ export class IModelHubBackend {
   }
 
   public static async queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
-    const checkpointQuery = new CheckpointV2Query().byChangeSetId(arg.changeset.id).selectContainerAccessKey();
-    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
+    const checkpointQuery = new CheckpointV2Query().byChangeSetId(arg.changeSetId).selectContainerAccessKey();
+    const requestContext = arg.requestContext;
     const checkpoints = await this.iModelClient.checkpointsV2.get(requestContext, arg.iModelId, checkpointQuery);
     if (checkpoints.length < 1)
       return undefined;
