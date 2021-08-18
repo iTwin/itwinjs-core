@@ -7,6 +7,18 @@ import {
   RenderMode, ViewFlagOverrides, ViewFlagProps, ViewFlags, ViewFlagsProperties,
 } from "../ViewFlags";
 
+function invertDefaults(): ViewFlags {
+  const invertedProperties: Partial<ViewFlagsProperties> = { renderMode: RenderMode.SolidFill, edgeMask: 1 };
+  for (const propname of Object.keys(ViewFlags.defaults)) {
+    const key = propname as keyof ViewFlags;
+    const value = ViewFlags.defaults[key];
+    if (typeof value === "boolean")
+      (invertedProperties as any)[key] = !value;
+  }
+
+  return new ViewFlags(invertedProperties);
+}
+
 describe("ViewFlags", () => {
   it("should initialize to expected defaults", () => {
     const flags = new ViewFlags();
@@ -82,6 +94,31 @@ describe("ViewFlags", () => {
 
     roundTrip(undefined, defaults);
     roundTrip(new ViewFlags().toJSON(), defaults);
+
+    roundTrip(invertDefaults().toJSON(), {
+      noDim: true,
+      noPattern: true,
+      noWeight: true,
+      noStyle: true,
+      noTransp: true,
+      noFill: true,
+      grid: true,
+      acs: true,
+      noTexture: true,
+      noMaterial: true,
+      visEdges: true,
+      hidEdges: true,
+      shadows: true,
+      hlMatColors: true,
+      monochrome: true,
+      edgeMask: 1,
+      renderMode: RenderMode.SolidFill,
+      ambientOcclusion: true,
+      thematicDisplay: true,
+      backgroundMap: true,
+      forceSurfaceDiscard: true,
+      noWhiteOnWhiteReversal: true,
+    });
   });
 
   it("should compute whether edges are required", () => {
@@ -98,43 +135,44 @@ describe("ViewFlags", () => {
       expect(viewflags.edgesRequired()).to.equal(edgesRequired);
     }
   });
+
+  it("copies", () => {
+    const def = ViewFlags.defaults;
+    expect(def.copy({})).to.deep.equal(def);
+
+    const inv = invertDefaults();
+    expect(def.copy(inv)).to.deep.equal(inv);
+    expect(inv.copy(def)).to.deep.equal(def);
+
+    expect(inv.copy({ ...inv, renderMode: undefined, transparency: undefined })).to.deep.equal({ ...inv, renderMode: RenderMode.Wireframe, transparency: true });
+  });
+
+
+  it("overrides", () => {
+  });
+
+  it("returns defaults if no properties supplied", () => {
+    expect(ViewFlags.fromJSON()).to.equal(ViewFlags.defaults);
+    expect(ViewFlags.create()).to.equal(ViewFlags.defaults);
+    expect(ViewFlags.create({ })).to.equal(ViewFlags.defaults);
+  });
+
+  it("uses different defaults for undefined vs ViewFlagProps", () => {
+    const def = ViewFlags.defaults;
+    expect(ViewFlags.fromJSON(undefined)).to.deep.equal(def);
+
+    expect(ViewFlags.fromJSON({ })).to.deep.equal({
+      ...def,
+      clipVolume: !def.clipVolume,
+      sourceLights: !def.sourceLights,
+      cameraLights: !def.cameraLights,
+      solarLight: !def.solarLight,
+      constructions: !def.constructions,
+    });
+  });
 });
 
 describe("ViewFlagOverrides", () => {
-  it("should round-trip through JSON", () => {
-    const testCases: Array<Partial<ViewFlagsProperties>> = [
-      { },
-      { dimensions: true, transparency: false, renderMode: RenderMode.SolidFill },
-      {
-        dimensions: true,
-        patterns: true,
-        weights: true,
-        styles: true,
-        transparency: true,
-        fill: true,
-        textures: true,
-        materials: true,
-        lighting: true,
-        visibleEdges: true,
-        hiddenEdges: true,
-        shadows: false,
-        clipVolume: false,
-        constructions: false,
-        monochrome: false,
-        noGeometryMap: false,
-        backgroundMap: false,
-        hLineMaterialColors: false,
-        forceSurfaceDiscard: false,
-        whiteOnWhiteReversal: false,
-        edgeMask: 2,
-        renderMode: RenderMode.HiddenLine,
-        thematicDisplay: false,
-      },
-    ];
-
-    expect(false).to.equal("###TODO this test is useless now");
-  });
-
   it("should compute whether edges are required", () => {
     const viewflagTestCases: ViewFlags[] = [];
     for (const renderMode of [RenderMode.Wireframe, RenderMode.HiddenLine, RenderMode.SolidFill, RenderMode.SmoothShade]) {

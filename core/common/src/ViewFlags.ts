@@ -350,7 +350,7 @@ export class ViewFlags {
   public static readonly defaults = new ViewFlags();
 
   public static create(flags?: Partial<ViewFlagsProperties>): ViewFlags {
-    return flags ? new ViewFlags(flags) : this.defaults;
+    return flags && !JsonUtils.isEmptyObject(flags) ? new ViewFlags(flags) : this.defaults;
   }
 
   public static fromJSON(json?: ViewFlagProps): ViewFlags {
@@ -397,7 +397,7 @@ export class ViewFlags {
     });
   }
 
-  public equals(other: ViewFlags): boolean {
+  public equals(other: Readonly<ViewFlagsProperties>): boolean {
     return this.renderMode === other.renderMode
       && this.dimensions === other.dimensions
       && this.patterns === other.patterns
