@@ -192,10 +192,7 @@ export class Viewer extends Window {
 
   private _maybeDisableEdges() {
     if (this.disableEdges && (this.viewport.viewFlags.visibleEdges || this.viewport.viewFlags.hiddenEdges)) {
-      const vf = this.viewport.viewFlags.clone();
-      vf.visibleEdges = false;
-      vf.hiddenEdges = false;
-      this.viewport.viewFlags = vf;
+      this.viewport.viewFlags = this.viewport.viewFlags.copy({ visibleEdges: false, hiddenEdges: false });
     }
   }
 

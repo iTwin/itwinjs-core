@@ -73,9 +73,7 @@ export class LightingEditor {
     parent.appendChild(span);
 
     const cb = this.addCheckBox("Shadows", (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(scratchVf);
-      vf.shadows = enabled;
-      this._vp.viewFlags = vf;
+      this._vp.viewFlags = this._vp.viewFlags.with("shadows", enabled);
     }, span).checkbox;
 
     let color;
@@ -261,9 +259,7 @@ export class LightingEditor {
 
   private addLightingToggle(parent: HTMLElement): void {
     const elems = this.addCheckBox("Lights", (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(scratchVf);
-      vf.lighting = enabled;
-      this._vp.viewFlags = vf;
+      this._vp.viewFlags = this._vp.viewFlags.with("lighting", enabled);
     }, parent);
 
     this._updates.push((view: ViewState) => {

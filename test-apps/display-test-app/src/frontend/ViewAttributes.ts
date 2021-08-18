@@ -224,7 +224,6 @@ export class ViewAttributes {
   private readonly _removeMe: () => void;
   private readonly _parent: HTMLElement;
   private _id = 0;
-  private _scratchViewFlags = new ViewFlags();
 
   private _displayStylePickerDiv?: HTMLDivElement;
   public set displayStylePickerInput(newComboBox: ComboBox) {
@@ -317,9 +316,7 @@ export class ViewAttributes {
 
   private addViewFlagAttribute(parent: HTMLElement, label: string, flag: ViewFlag, only3d: boolean = false): void {
     const elems = this.addCheckbox(label, (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf[flag] = enabled;
-      this._vp.viewFlags = vf;
+      this._vp.viewFlags = this._vp.viewFlags.with(flag, enabled);
       this.sync();
     }, parent);
 
@@ -405,9 +402,7 @@ export class ViewAttributes {
       id: "viewAttr_renderMode",
       value: this._vp.viewFlags.renderMode,
       handler: (thing) => {
-        const flags = this._vp.view.viewFlags.clone(this._scratchViewFlags);
-        flags.renderMode = Number.parseInt(thing.value, 10);
-        this._vp.viewFlags = flags;
+        this._vp.viewFlags = this._vp.viewFlags.withRenderMode(Number.parseInt(thing.value, 10));
         this.sync();
       },
     }).select;
@@ -472,9 +467,7 @@ export class ViewAttributes {
     };
 
     const enableMap = (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.backgroundMap = enabled;
-      this._vp.viewFlags = vf;
+      this._vp.viewFlags = this._vp.viewFlags.with("backgroundMap", enabled);
       backgroundSettingsDiv.style.display = enabled ? "block" : "none";
       showOrHideSettings(enabled);
       this.sync();
@@ -719,12 +712,10 @@ export class ViewAttributes {
     slider.div.style.textAlign = "left";
 
     const visEdgesCb = this.addCheckbox("Visible Edges", (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.visibleEdges = enabled;
+      this._vp.viewFlags = this._vp.viewFlags.with("visibleEdges", enabled);
       hidEdgesCb.checkbox.disabled = !enabled;
       hidEditor.hidden = hidEditor.hidden || !enabled;
       visEditor.hidden = !enabled;
-      this._vp.viewFlags = vf;
       this.sync();
     }, nestedMenu.body);
 
@@ -732,10 +723,8 @@ export class ViewAttributes {
     edgeDisplayDiv.appendChild(visEditor);
 
     const hidEdgesCb = this.addCheckbox("Hidden Edges", (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.hiddenEdges = enabled;
+      this._vp.viewFlags = this._vp.viewFlags.with("hiddenEdges", enabled);
       hidEditor.hidden = !enabled;
-      this._vp.viewFlags = vf;
       this.sync();
     }, edgeDisplayDiv);
 
@@ -753,7 +742,7 @@ export class ViewAttributes {
       const settings = this._edgeSettings;
       slider.slider.value = settings.transparencyThreshold.toString();
 
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
+      const vf = this._vp.viewFlags;
       visEdgesCb.checkbox.checked = vf.visibleEdges;
       visEditor.hidden = !vf.visibleEdges;
       hidEdgesCb.checkbox.checked = vf.visibleEdges && vf.hiddenEdges;
