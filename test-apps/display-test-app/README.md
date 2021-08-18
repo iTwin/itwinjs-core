@@ -39,7 +39,8 @@ npm run start:servers
 
 ## Using display-test-app
 
-Currently, display-test-app only supports opening snapshot iModels from the local disk. If you define the `SVT_STANDALONE_FILENAME` environment variable to contain the absolute path to an existing iModel file on your machine, then upon startup, a viewport displaying the contents of this iModel will be displayed. Otherwise, on startup the toolbar will have a button allowing you to select an iModel to open. If the file opened from disk is a briefcase that retains its link to iModelHub (as opposed to a snapshot) and is opened in read-write mode, it can push and pull changesets.
+display-test-app provides no UI for selecting iModels from iModelHub - only a toolbar button to open an iModel from the local file system. However, if the iModel is a briefcase that was downloaded from iModelHub and is opened in read-write mode, it can push and pull changesets.
+The `SVT_STANDALONE_FILENAME` environment variable can be defined before startup to contain the absolute path to an iModel on disk; if so, it will be opened automatically at startup.
 
 display-test-app's UI consists of:
 
@@ -99,7 +100,7 @@ You can use these environment variables to alter the default behavior of various
 * SVT_STANDALONE_FILENAME
   * Absolute path to an iModel to be opened on start-up.
 * SVT_STANDALONE_FILEPATH (browser only)
-  * Allows SVT running in the browser to assume a common base path for ALL local iModels. This enables the use of a file open dialog. Within that dialog you must navigate to the exact path and select a file residing inside that directory - not in any subdirectory thereof.
+  * Allows display-test-app running in the browser to assume a common base path for ALL local iModels. This enables the use of a file open dialog. Within that dialog you must navigate to the exact path and select a file residing inside that directory - not in any subdirectory thereof.
 * SVT_STANDALONE_VIEWNAME
   * The name of a view to open by default within an iModel.
 * SVT_STANDALONE_SIGNIN
@@ -230,5 +231,5 @@ display-test-app has access to all key-ins defined in the imodeljs-editor-fronte
 
 * `dta edit` - begin a new editing scope, or end the current editing scope. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing scope, or "[EDIT]" indicating an active editing scope.
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
-* `dta push` - push local changes to iModelHub. Takes an optional description of the changes. You must be signed in.
+* `dta push` - push local changes to iModelHub. A description of the changes must be supplied. It should be enclosed in double quotes if it contains whitespace characters.
 * `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
