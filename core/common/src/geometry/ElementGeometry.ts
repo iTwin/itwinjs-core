@@ -168,6 +168,8 @@ export enum BRepGeometryOperation {
   Loft = 9,
   /** Create a solid or sheet with all non-smooth/non-laminar edges rounded */
   Round = 10,
+  /** Offset all faces of a solid or sheet target by the supplied distance. */
+  Offset = 11,
 }
 
 /** Parameters for [[BRepGeometryOperation.Cut]]
@@ -206,6 +208,14 @@ export interface BRepRoundProps {
   radius: number;
 }
 
+/** Parameters for [[BRepGeometryOperation.Offset]]
+ * @alpha
+ */
+export interface BRepOffsetProps {
+  /** Offset to apply to all faces; positive value offsets outwards, negative value offsets inwards */
+  distance: number;
+}
+
 /** Parameters for [IModelDb.createBRepGeometry]($imodeljs-backend)
  * @alpha
  */
@@ -219,7 +229,7 @@ export interface BRepGeometryCreate {
   /** Whether disjoint results should be returned as multiple entries or a single disjoint body */
   separateDisjoint?: boolean;
   /** Options and parameters for this operation */
-  parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps;
+  parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps | BRepOffsetProps;
 }
 
 /** Information provided to [[BRepGeometryFunction]].

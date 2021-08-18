@@ -129,6 +129,9 @@ const dtaFrontendMain = async () => {
   if (configuration.disableMagnification)
     tileAdminProps.disableMagnification = true;
 
+  if (configuration.disableBRepCache)
+    tileAdminProps.optimizeBRepProcessing = false;
+
   tileAdminProps.enableExternalTextures = (configuration.enableExternalTextures !== false);
   tileAdminProps.tileTreeExpirationTime = configuration.tileTreeExpirationSeconds;
   tileAdminProps.tileExpirationTime = configuration.tileExpirationSeconds;

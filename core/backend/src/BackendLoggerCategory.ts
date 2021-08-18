@@ -48,7 +48,6 @@ export enum BackendLoggerCategory {
   LinearReferencing = "imodeljs-backend.LinearReferencing",
 
   /** The logger category used by the following classes:
-   * - [[AutoPush]]
    * - BriefcaseManager
    * - [[IModelDb]]
    */
@@ -120,10 +119,4 @@ export enum BackendLoggerCategory {
    * @internal
    */
   NativeApp = "imodeljs-backend.NativeApp",
-
-  /** The logger category used by the following class:
-   * - [[UsageLoggingUtilities]]
-   * @internal
-   */
-  UsageLogging = "imodeljs-backend.UlasUtilities",
 }

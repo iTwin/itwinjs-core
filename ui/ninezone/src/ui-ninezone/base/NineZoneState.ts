@@ -8,7 +8,8 @@
 
 // Cspell:ignore popout
 import { castDraft, Draft, produce } from "immer";
-import { Point, PointProps, Rectangle, RectangleProps, SizeProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { Point, Rectangle, RectangleProps, SizeProps } from "@bentley/ui-core";
 import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "@bentley/bentleyjs-core";
 import { getUniqueId } from "./NineZone";
@@ -1449,7 +1450,10 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
       const floatingWidget = state.widgets[location.floatingWidgetId];
       // popout widget can only have a single widgetTab so if that is the case just convert floating container to popout container
       if (floatingWidget.tabs.length === 1) {
-        return convertFloatingWidgetContainerToPopout(state, location.floatingWidgetId);
+        return produce(convertFloatingWidgetContainerToPopout(state, location.floatingWidgetId), (draft)=> {
+          const popoutTab = draft.tabs[widgetTabId];
+          initSizeAndPositionProps(popoutTab, "preferredPopoutWidgetSize", preferredSizeAndPosition);
+        });
       }
 
       // remove the tab from the floating container and create a new popout container

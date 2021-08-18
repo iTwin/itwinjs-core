@@ -355,4 +355,19 @@ describe("iModelHub VersionHandler", () => {
     );
     chai.expect(versions.length - notHiddenversions.length).to.be.equal(1);
   });
+
+  it("should get the application data for a named version", async () => {
+    const applicationId: string = `testApplicationId`;
+    const applicationName: string = `testApplicationName`;
+    const mockedVersion: Version = utils.generateVersion(undefined, undefined, undefined, undefined, undefined, false, applicationId, applicationName);
+    utils.mockGetVersions(imodelId, `?$select=*,CreatedByApplication-forward-Application.*`, mockedVersion);
+    const version: Version = (await iModelClient.versions.get(requestContext, imodelId, new VersionQuery().selectApplicationData()))[0];
+
+    if (TestConfig.enableMocks) {
+      chai.assert(version.applicationId);
+      chai.expect(version.applicationId).equals("testApplicationId");
+      chai.assert(version.applicationName);
+      chai.expect(version.applicationName).equals("testApplicationName");
+    }
+  });
 });

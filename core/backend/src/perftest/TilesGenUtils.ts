@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Range3d } from "@bentley/geometry-core";
-import { IModelDb, SpatialModel } from "../imodeljs-backend";
+import { IModelDb } from "../IModelDb";
+import { SpatialModel } from "../Model";
 import {
   BatchType, computeChildTileProps, ContentIdProvider, CurrentImdlVersion, iModelTileTreeIdToString,
   TileMetadata, TileMetadataReader, TileProps,
@@ -62,11 +63,12 @@ export class BackendTileGenerator {
     maximumMajorTileFormatVersion: CurrentImdlVersion.Major,
     enableInstancing: true,
     enableImprovedElision: true,
-    useProjectExtents: false,
+    useProjectExtents: true,
     disableMagnification: false,
     ignoreAreaPatterns: false,
-    enableExternalTextures: false,
+    enableExternalTextures: true,
     alwaysSubdivideIncompleteTiles: false,
+    optimizeBRepProcessing: true,
   };
   private readonly _stats: Stats = {
     modelCount: 0,

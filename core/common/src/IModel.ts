@@ -12,6 +12,7 @@ import {
 import {
   Angle, AxisIndex, AxisOrder, Constant, Geometry, Matrix3d, Point3d, Range3d, Range3dProps, Transform, Vector3d, XYAndZ, XYZProps, YawPitchRollAngles, YawPitchRollProps,
 } from "@bentley/geometry-core";
+import { ChangesetIdWithIndex } from "./ChangesetProps";
 import { Cartographic, LatLongAndHeight } from "./geometry/Cartographic";
 import { GeographicCRS, GeographicCRSProps } from "./geometry/CoordinateReferenceSystem";
 import { AxisAlignedBox3d } from "./geometry/Placement";
@@ -26,12 +27,11 @@ export interface IModelRpcOpenProps {
   readonly contextId?: GuidString;
   /** Guid of the iModel. */
   readonly iModelId?: GuidString;
-  /** Id of the last ChangeSet that was applied to the iModel - must be defined for briefcases that are synchronized with iModelHub. An empty string indicates the first version.
-   * @note ChangeSet Ids are string hash values based on the ChangeSet's content and parent.
+
+  /** Id of the last Changeset that was applied to the iModel - must be defined for briefcases that are synchronized with iModelHub.
+   * @note Changeset Ids are string hash values based on the content and parent.
    */
-  changeSetId?: string;
-  /** Mode used to open the iModel */
-  openMode?: OpenMode;
+  readonly changeset?: ChangesetIdWithIndex;
 }
 
 /** The properties that identify an opened iModel for RPC operations.
@@ -200,7 +200,7 @@ export class EcefLocation implements EcefLocationProps {
   private _transform: Transform;
 
   /** Get the transform from iModel Spatial coordinates to ECEF from this EcefLocation */
-  public getTransform(): Transform { return this._transform;  }
+  public getTransform(): Transform { return this._transform; }
 
   /** Construct a new EcefLocation. Once constructed, it is frozen and cannot be modified. */
   constructor(props: EcefLocationProps) {
@@ -336,7 +336,7 @@ export abstract class IModel implements IModelProps {
   public set name(name: string) {
     if (name !== this._name) {
       const old = this._name;
-      this._name =  name;
+      this._name = name;
       if (undefined !== old)
         this.onNameChanged.raiseEvent(old);
     }
@@ -472,15 +472,12 @@ export abstract class IModel implements IModelProps {
   /** The Guid that identifies this iModel. */
   public get iModelId(): GuidString | undefined { return this._iModelId; }
 
-  /** @internal */
-  protected _changeSetId: string | undefined;
-  /** The Id of the last changeset that was applied to this iModel.
-   * @note An empty string indicates the first version while `undefined` mean no changeset information is available.
-   */
-  public get changeSetId() { return this._changeSetId; }
+  /** @public */
+  public changeset: ChangesetIdWithIndex;
 
+  protected _openMode = OpenMode.Readonly;
   /** The [[OpenMode]] used for this IModel. */
-  public readonly openMode: OpenMode;
+  public get openMode(): OpenMode { return this._openMode; }
 
   /** Return a token for RPC operations. */
   public getRpcProps(): IModelRpcProps {
@@ -491,18 +488,21 @@ export abstract class IModel implements IModelProps {
       key: this._fileKey,
       contextId: this.contextId,
       iModelId: this.iModelId,
-      changeSetId: this.changeSetId,
-      openMode: this.openMode,
+      changeset: this.changeset,
     };
   }
 
   /** @internal */
-  protected constructor(tokenProps: IModelRpcProps | undefined, openMode: OpenMode) {
-    this._fileKey = tokenProps?.key ?? "";
-    this._contextId = tokenProps?.contextId;
-    this._iModelId = tokenProps?.iModelId;
-    this._changeSetId = tokenProps?.changeSetId;
-    this.openMode = openMode; // Note: The open mode passed through the RPC layer is ignored in the case of IModelDb-s
+  protected constructor(tokenProps?: IModelRpcProps) {
+    this.changeset = { id: "", index: 0 };
+    this._fileKey = "";
+    if (tokenProps) {
+      this._fileKey = tokenProps.key;
+      this._contextId = tokenProps.contextId;
+      this._iModelId = tokenProps.iModelId;
+      if (tokenProps.changeset)
+        this.changeset = tokenProps.changeset;
+    }
   }
 
   /** @internal */

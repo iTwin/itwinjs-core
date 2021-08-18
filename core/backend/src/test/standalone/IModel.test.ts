@@ -37,6 +37,7 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import sinon = require("sinon");
 import { IModelHubBackend } from "../../IModelHubBackend";
 import { V2CheckpointManager } from "../../CheckpointManager";
+import { Base64 } from "js-base64";
 
 // spell-checker: disable
 
@@ -1146,7 +1147,7 @@ describe("iModel", () => {
     assert.isTrue(imodel5.isGeoLocated);
     const center = { x: 289095, y: 3803860, z: 10 }; // near center of project extents, 10 meters above ground.
     const ecefPt = imodel5.spatialToEcef(center);
-    const pt = {x: -3575156.3661052254, y: 3873432.0891543664, z: 3578996.012643183};
+    const pt = { x: -3575156.3661052254, y: 3873432.0891543664, z: 3578996.012643183 };
     assert.isTrue(ecefPt.isAlmostEqual(pt), "spatialToEcef");
 
     const z2 = imodel5.ecefToSpatial(ecefPt);
@@ -1822,8 +1823,7 @@ describe("iModel", () => {
     iModel2.close();
   });
 
-  // Deactivated since change was (temporarily) reverted
-  it.skip("presence of a GCS imposes the ecef value", async () => {
+  it("presence of a GCS imposes the ecef value", async () => {
     const args = {
       rootSubject: { name: "TestSubject", description: "test project" },
       client: "ABC Engineering",
@@ -1910,9 +1910,9 @@ describe("iModel", () => {
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = snapshot.getGuid();
     const contextId = Guid.createValue();
-    const changeSetId = IModelTestUtils.generateChangeSetId();
+    const changeset = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId); // even fake checkpoints need a changeSetId!
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id); // even fake checkpoints need a changeSetId!
     snapshot.saveChanges();
     snapshot.close();
 
@@ -1920,7 +1920,7 @@ describe("iModel", () => {
     const mockCheckpointV2: CheckpointV2 = {
       wsgId: "INVALID",
       ecId: "INVALID",
-      changeSetId,
+      changeset,
       containerAccessKeyAccount: "testAccount",
       containerAccessKeyContainer: `imodelblocks-${iModelId}`,
       containerAccessKeySAS: "testSAS",
@@ -1938,12 +1938,11 @@ describe("iModel", () => {
 
     process.env.BLOCKCACHE_DIR = "/foo/";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeSetId });
+    const checkpoint = await SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeset });
     const props = checkpoint.getRpcProps();
-    assert.equal(props.openMode, OpenMode.Readonly);
     assert.equal(props.iModelId, iModelId);
     assert.equal(props.contextId, contextId);
-    assert.equal(props.changeSetId, changeSetId);
+    assert.equal(props.changeset?.id, changeset.id);
     assert.equal(commandStub.callCount, 1);
     assert.equal(commandStub.firstCall.firstArg, "attach");
 
@@ -1963,9 +1962,9 @@ describe("iModel", () => {
     const snapshot = SnapshotDb.createEmpty(dbPath, { rootSubject: { name: "test" } });
     const iModelId = Guid.createValue();  // This is wrong - it should be `snapshot.getGuid()`!
     const contextId = Guid.createValue();
-    const changeSetId = IModelTestUtils.generateChangeSetId();
+    const changeset = IModelTestUtils.generateChangeSetId();
     snapshot.nativeDb.saveProjectGuid(Guid.normalize(contextId));
-    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeSetId);
+    snapshot.nativeDb.saveLocalValue("ParentChangeSetId", changeset.id);
     snapshot.saveChanges();
     snapshot.close();
 
@@ -1973,7 +1972,7 @@ describe("iModel", () => {
     const mockCheckpointV2: CheckpointV2 = {
       wsgId: "INVALID",
       ecId: "INVALID",
-      changeSetId,
+      changeset,
       containerAccessKeyAccount: "testAccount",
       containerAccessKeyContainer: `imodelblocks-${iModelId}`,
       containerAccessKeySAS: "testSAS",
@@ -1991,11 +1990,11 @@ describe("iModel", () => {
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
 
     process.env.BLOCKCACHE_DIR = ""; // try without setting daemon dir
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.BadRequest, error); // bad request because daemon dir wasn't set
 
     process.env.BLOCKCACHE_DIR = "/foo/";
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeSetId }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId, iModelId, changeset }));
     expectIModelError(IModelStatus.ValidationFailed, error);
   });
 
@@ -2006,11 +2005,11 @@ describe("iModel", () => {
     sinon.stub(IModelHubBackend.iModelClient, "checkpointsV2").get(() => checkpointsV2Handler);
 
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
+    let error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
 
     hubMock.callsFake(async () => [{} as any]);
-    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeSetId: IModelTestUtils.generateChangeSetId() }));
+    error = await getIModelError(SnapshotDb.openCheckpointV2({ requestContext: ctx, contextId: Guid.createValue(), iModelId: Guid.createValue(), changeset: IModelTestUtils.generateChangeSetId() }));
     expectIModelError(IModelStatus.NotFound, error);
   });
 
@@ -2032,7 +2031,7 @@ describe("iModel", () => {
 
   it("Standalone iModel properties", () => {
     const standaloneRootSubjectName = "Standalone";
-    const standaloneFile1: string = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
+    const standaloneFile1 = IModelTestUtils.prepareOutputFile("IModel", "Standalone1.bim");
     let standaloneDb1 = StandaloneDb.createEmpty(standaloneFile1, { rootSubject: { name: standaloneRootSubjectName } });
     assert.isTrue(standaloneDb1.isStandaloneDb());
     assert.isTrue(standaloneDb1.isStandalone);
@@ -2045,7 +2044,8 @@ describe("iModel", () => {
     assert.isTrue(standaloneDb1.isOpen);
     assert.isTrue(Guid.isV4Guid(standaloneDb1.iModelId));
     assert.equal(standaloneDb1.contextId, Guid.empty);
-    assert.isUndefined(standaloneDb1.changeSetId);
+    assert.strictEqual("", standaloneDb1.changeset.id);
+    assert.strictEqual(0, standaloneDb1.changeset.index);
     assert.equal(standaloneDb1.openMode, OpenMode.ReadWrite);
     standaloneDb1.close();
     assert.isFalse(standaloneDb1.isOpen);
@@ -2427,6 +2427,7 @@ describe("iModel", () => {
     const elementProps: DefinitionElementProps = {
       classFullName: SpatialCategory.classFullName,
       model: IModel.dictionaryId,
+      federationGuid: Guid.empty,
       code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategoryForClearFederationGuid"),
     };
     const elementId = imodel1.elements.insertElement(elementProps);
@@ -2435,7 +2436,7 @@ describe("iModel", () => {
     assert.isFalse(element.isPrivate);
 
     // update element with a defined FederationGuid
-    const federationGuid: GuidString = Guid.createValue();
+    const federationGuid = Guid.createValue();
     element.federationGuid = federationGuid;
     element.isPrivate = true;
     element.update();
@@ -2482,7 +2483,7 @@ describe("iModel", () => {
     subject1.federationGuid = federationGuid1;
     subject2.federationGuid = federationGuid2;
     subject3.federationGuid = "";
-    subject4.federationGuid = undefined;
+    subject4.federationGuid = Guid.empty;
     const subjectId1 = subject1.insert();
     const subjectId2 = subject2.insert();
     const subjectId3 = subject3.insert();

@@ -8,7 +8,10 @@
 
 import { BentleyStatus } from "@bentley/bentleyjs-core";
 import { IModelError } from "../../IModelError";
-import { initializeRpcRequest, RpcConfiguration, RpcPendingQueue, RpcRoutingToken } from "../../imodeljs-common";
+import { RpcConfiguration } from "./RpcConfiguration";
+import { RpcPendingQueue } from "./RpcPendingQueue";
+import { initializeRpcRequest } from "./RpcRequest";
+import { RpcRoutingToken } from "./RpcRoutingToken";
 import { RpcInterface, RpcInterfaceDefinition, RpcInterfaceImplementation } from "../../RpcInterface";
 import { RpcInterfaceEndpoints } from "../../RpcManager";
 import { RpcControlChannel } from "./RpcControl";

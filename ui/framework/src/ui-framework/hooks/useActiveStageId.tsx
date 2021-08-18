@@ -9,8 +9,8 @@
 import { useEffect, useState } from "react";
 import { FrontstageActivatedEventArgs, FrontstageManager } from "../frontstage/FrontstageManager";
 
-/** React hook that maintains the active stageId.
- * @beta
+/** React hook that maintains the active stage Id.
+ * @public
  */
 export function useActiveStageId(): string {
   const [activeStageId, setActiveStageId] = useState(FrontstageManager.activeFrontstageId);

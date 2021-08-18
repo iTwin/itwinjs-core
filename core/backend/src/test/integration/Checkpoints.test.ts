@@ -9,13 +9,13 @@ import * as fs from "fs-extra";
 import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
 import { CheckpointV2Query } from "@bentley/imodelhub-client";
+import { ChangesetProps } from "@bentley/imodeljs-common";
 import { BlobDaemon } from "@bentley/imodeljs-native";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { IModelHubBackend } from "../../IModelHubBackend";
 import { AuthorizedBackendRequestContext, IModelHost, IModelJsFs, SnapshotDb } from "../../imodeljs-backend";
 import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
-import { ChangesetProps } from "../../BackendHubAccess";
 
 describe("Checkpoints (#integration)", () => {
   let requestContext: AuthorizedBackendRequestContext;
@@ -70,10 +70,10 @@ describe("Checkpoints (#integration)", () => {
       requestContext,
       contextId: testContextId,
       iModelId: testIModelId,
-      changeSetId: testChangeSet.id,
+      changeset: testChangeSet,
     });
     assert.equal(iModel.getGuid(), testIModelId);
-    assert.equal(iModel.changeSetId, testChangeSet.id);
+    assert.equal(iModel.changeset.id, testChangeSet.id);
     assert.equal(iModel.contextId, testContextId);
     assert.equal(iModel.rootSubject.name, "Stadium Dataset 1");
     let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");

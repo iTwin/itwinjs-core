@@ -10,7 +10,7 @@ import { Logger } from "@bentley/bentleyjs-core";
 import { AlternateDateFormats, Primitives, StandardTypeNames, TimeDisplay } from "@bentley/ui-abstract";
 import { TimeFormat } from "@bentley/ui-core";
 import { formatInputDate } from "../datepicker/DateField";
-import { adjustDateToTimezone } from "../datepicker/DatePicker";
+import { adjustDateToTimezone } from "../common/DateUtils";
 import { UiComponents } from "../UiComponents";
 import { LessGreaterOperatorProcessor, TypeConverter } from "./TypeConverter";
 import { TypeConverterManager } from "./TypeConverterManager";

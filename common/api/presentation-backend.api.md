@@ -8,6 +8,7 @@ import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { Content } from '@bentley/presentation-common';
 import { ContentDescriptorRequestOptions } from '@bentley/presentation-common';
 import { ContentRequestOptions } from '@bentley/presentation-common';
+import { ContentSourcesRequestOptions } from '@bentley/presentation-common';
 import { Descriptor } from '@bentley/presentation-common';
 import { DescriptorOverrides } from '@bentley/presentation-common';
 import { DiagnosticsScopeLogs } from '@bentley/presentation-common';
@@ -17,6 +18,7 @@ import { DisplayValueGroup } from '@bentley/presentation-common';
 import { DistinctValuesRequestOptions } from '@bentley/presentation-common';
 import { ElementProperties } from '@bentley/presentation-common';
 import { ElementPropertiesRequestOptions } from '@bentley/presentation-common';
+import { Entity } from '@bentley/imodeljs-backend';
 import { ExtendedContentRequestOptions } from '@bentley/presentation-common';
 import { ExtendedHierarchyRequestOptions } from '@bentley/presentation-common';
 import { FormatProps } from '@bentley/imodeljs-quantity';
@@ -39,6 +41,7 @@ import { PartialHierarchyModification } from '@bentley/presentation-common';
 import { PresentationUnitSystem } from '@bentley/presentation-common';
 import { RegisteredRuleset } from '@bentley/presentation-common';
 import { Ruleset } from '@bentley/presentation-common';
+import { SelectClassInfo } from '@bentley/presentation-common';
 import { SelectionInfo } from '@bentley/presentation-common';
 import { SelectionScope } from '@bentley/presentation-common';
 import { SelectionScopeRequestOptions } from '@bentley/presentation-common';
@@ -178,6 +181,8 @@ export class PresentationManager {
     // @deprecated
     getContentSetSize(requestContext: ClientRequestContext, requestOptions: ContentRequestOptions<IModelDb>, descriptorOrOverrides: Descriptor | DescriptorOverrides, keys: KeySet): Promise<number>;
     getContentSetSize(requestOptions: WithClientRequestContext<ExtendedContentRequestOptions<IModelDb, Descriptor, KeySet>>): Promise<number>;
+    // @beta (undocumented)
+    getContentSources(requestOptions: WithClientRequestContext<ContentSourcesRequestOptions<IModelDb>>): Promise<SelectClassInfo[]>;
     // @deprecated
     getDisplayLabelDefinition(requestContext: ClientRequestContext, requestOptions: LabelRequestOptions<IModelDb>, key: InstanceKey): Promise<LabelDefinition>;
     getDisplayLabelDefinition(requestOptions: WithClientRequestContext<DisplayLabelRequestOptions<IModelDb, InstanceKey>>): Promise<LabelDefinition>;
@@ -302,6 +307,8 @@ export interface RulesetEmbedderProps {
 
 // @beta
 export interface RulesetInsertOptions {
+    onEntityInsert?: InsertCallbacks;
+    onEntityUpdate?: UpdateCallbacks;
     replaceVersions?: "all" | "all-lower" | "exact";
     skip?: "never" | "same-id" | "same-id-and-version-eq" | "same-id-and-version-gte";
 }

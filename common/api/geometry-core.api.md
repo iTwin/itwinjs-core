@@ -84,6 +84,7 @@ export class Angle implements BeJSONFunctions {
     static createDegrees(degrees: number): Angle;
     static createDegreesAdjustPositive(degrees: number): Angle;
     static createDegreesAdjustSigned180(degrees: number): Angle;
+    static createInterpolate(angle0: Angle, fraction: number, angle1: Angle): Angle;
     static createRadians(radians: number): Angle;
     get degrees(): number;
     static readonly degreesPerRadian: number;
@@ -2015,6 +2016,7 @@ export class Geometry {
     static inverseMetricDistance(a: number): number | undefined;
     static inverseMetricDistanceSquared(a: number): number | undefined;
     static isAlmostEqualNumber(a: number, b: number): boolean;
+    static isAlmostEqualOptional(a: number | undefined, b: number | undefined, tolerance: number): boolean;
     static isAlmostEqualXAndY(a: XAndY, b: XAndY): boolean;
     static isArrayOfNumberArray(json: any, numNumberArray: number, minEntries?: number): boolean;
     static isDistanceWithinTol(distance: number, tol?: number): boolean;
@@ -2055,8 +2057,10 @@ export class Geometry {
     static resolveValue<T>(value: T | undefined, defaultValue: T): T;
     static restrictToInterval(x: number, a: number, b: number): number;
     static safeDivideFraction(numerator: number, denominator: number, defaultResult: number): number;
+    static readonly smallAngleDegrees = 5.7e-11;
     static readonly smallAngleRadians = 1e-12;
     static readonly smallAngleRadiansSquared = 1e-24;
+    static readonly smallAngleSeconds = 2e-7;
     static readonly smallFraction = 1e-10;
     static readonly smallMetricDistance = 0.000001;
     static readonly smallMetricDistanceSquared = 1e-12;
@@ -2284,6 +2288,7 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     multiplyAndRenormalizeMatrix3dInverseTransposeInPlace(matrix: Matrix3d): boolean;
     multiplyMatrix3dInPlace(matrix: Matrix3d): void;
     multiplyMatrix4dAndQuietRenormalizeMatrix4d(matrix: Matrix4d): void;
+    static multiplyTransformInPlace(transform: Transform, data: GrowableXYZArray[] | GrowableXYZArray): void;
     multiplyTransformInPlace(transform: Transform): void;
     pop(): void;
     push(toPush: XYAndZ): void;
@@ -2909,6 +2914,7 @@ export class InterpolationCurve3d extends ProxyCurve {
     // (undocumented)
     isAlmostEqual(other: GeometryQuery): boolean;
     isSameGeometryClass(other: GeometryQuery): boolean;
+    get options(): InterpolationCurve3dOptions;
     reverseInPlace(): void;
     toJSON(): any;
     tryTransformInPlace(transform: Transform): boolean;
@@ -3966,6 +3972,7 @@ export class Point3dArray {
     static computeConvexHullXY(points: Point3d[], hullPoints: Point3d[], insidePoints: Point3d[], addClosurePoint?: boolean): void;
     // @deprecated
     static createRange(data: MultiLineStringDataVariant): Range3d;
+    static distanceIndexedPointBToSegmentAC(points: Point3d[], indexA: number, indexB: number, indexC: number, extrapolate: boolean): number;
     static evaluateTrilinearDerivativeTransform(points: Point3d[], u: number, v: number, w: number, result?: Transform): Transform;
     static evaluateTrilinearPoint(points: Point3d[], u: number, v: number, w: number, result?: Point3d): Point3d;
     static evaluateTrilinearWeights(weights: Float64Array, u0: number, u1: number, v0: number, v1: number, w0: number, w1: number): void;
@@ -4251,10 +4258,10 @@ export class PolyfaceClip {
     static clipPolyfaceConvexClipPlaneSet(polyface: Polyface, clipper: ConvexClipPlaneSet): Polyface;
     // @internal
     static clipPolyfaceConvexClipPlaneSetToBuilders(polyface: Polyface, clipper: ConvexClipPlaneSet, destination: ClippedPolyfaceBuilders): void;
-    static clipPolyfaceInsideOutside(polyface: Polyface, clipper: ClipPlane | ConvexClipPlaneSet | UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders): void;
+    static clipPolyfaceInsideOutside(polyface: Polyface, clipper: ClipPlane | ConvexClipPlaneSet | UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelect?: number): void;
     static clipPolyfaceUnderOverConvexPolyfaceIntoBuilders(visitorA: PolyfaceVisitor, visitorB: PolyfaceVisitor, builderAUnderB: PolyfaceBuilder | undefined, builderAOverB: PolyfaceBuilder | undefined): void;
     // @internal
-    static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders): void;
+    static clipPolyfaceUnionOfConvexClipPlaneSetsToBuilders(polyface: Polyface, allClippers: UnionOfConvexClipPlaneSets, destination: ClippedPolyfaceBuilders, outputSelector?: number): void;
     static computeCutFill(meshA: IndexedPolyface, meshB: IndexedPolyface): {
         meshAUnderB: IndexedPolyface;
         meshAOverB: IndexedPolyface;
@@ -4965,8 +4972,10 @@ export class Sample {
     static appendVariableSawTooth(points: Point3d[], dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhase: number, xFactor: number): Point3d[];
     static convertPointsToSegments(points: Point3d[], forceClosure?: boolean): LineSegment3d[];
     static createAllGeometryQueryTypes(): GeometryQuery[];
+    static createAnnulusPolyline(edgesPerQuadrant: number, center: Point3d, r0: number, r1: number, theta0: Angle, theta1: Angle, addClosure: boolean): Point3d[];
     static createArcRegions(): Loop[];
     static createArcs(radiusRatio?: number, sweep?: AngleSweep): Arc3d[];
+    static createArcStrokes(edgesPerQuadrant: number, center: Point3d, r0: number, theta0: Angle, theta1: Angle, addClosure?: boolean): Point3d[];
     static createBagOfCurves(): BagOfCurves[];
     static createBidirectionalSawtooth(origin: Point3d, dxLow: number, riseX: number, riseY: number, dxHigh: number, numPhaseOutbound: number, dyFinal: number, dxLowReturn: number, riseXReturn: number, riseYReturn: number, dxHighReturn: number): Point3d[];
     static createBoxes(capped?: boolean): Box[];
@@ -5002,6 +5011,7 @@ export class Sample {
     static createMap4ds(): Map4d[];
     static createMatrix3dArray(): Matrix3d[];
     static createMatrix4ds(includeIrregular?: boolean): Matrix4d[];
+    static createMeshInAnnulus(edgesPerQuadrant: number, center: Point3d, r0: number, r1: number, theta0: Angle, theta1: Angle): IndexedPolyface | undefined;
     static createMessyRigidTransform(fixedPoint?: Point3d): Transform;
     static createMixedBsplineCurves(): BSplineCurve3dBase[];
     static createNonZeroVectors(): Vector3d[];
@@ -5599,6 +5609,7 @@ export class UnionOfConvexClipPlaneSets implements Clipper, PolygonClipper {
     multiplyPlanesByMatrix4d(matrix: Matrix4d, invert?: boolean, transpose?: boolean): boolean;
     polygonClip(input: GrowableXYZArray | Point3d[], output: GrowableXYZArray[]): void;
     setInvisible(invisible: boolean): void;
+    takeConvexSets(source: UnionOfConvexClipPlaneSets): void;
     toJSON(): UnionOfConvexClipPlaneSetsProps;
     transformInPlace(transform: Transform): void;
 }

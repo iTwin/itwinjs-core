@@ -202,7 +202,18 @@ export class ViewsFrontstage extends FrontstageProvider {
     for (const viewState of this.viewStates) {
       const thisContentProps: ContentProps = {
         classId: IModelViewportControl,
-        applicationData: { viewState, iModelConnection: this.iModelConnection },
+        applicationData:
+        {
+          viewState, iModelConnection: this.iModelConnection,
+          featureOptions:
+          {
+            defaultViewOverlay: {
+              enableScheduleAnimationViewOverlay: true,
+              enableAnalysisTimelineViewOverlay: true,
+              enableSolarTimelineViewOverlay: true,
+            },
+          },
+        },
       };
       contentProps.push(thisContentProps);
     }
@@ -511,7 +522,7 @@ class AdditionalTools {
   private get _outputMessageItem() {
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.outputMessage",
-      execute: () => { IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test")); },
+      execute: () => { IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, "Test", undefined, OutputMessageType.Sticky)); },
     });
   }
 
@@ -553,7 +564,7 @@ class AdditionalTools {
     const id = "spinners";
     return new CommandItemDef({
       iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.spinnerTestDialog",
-      execute: () => { ModelessDialogManager.openDialog(<SpinnerTestDialog opened={true} />, id); },
+      execute: () => { ModelessDialogManager.openDialog(<SpinnerTestDialog opened={true} onClose={() => ModelessDialogManager.closeDialog(id)} />, id); },
     });
   }
 
@@ -742,11 +753,12 @@ class AdditionalTools {
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
     // ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, { groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinPaletteButtonItemDef, { groupPriority: -10 }),
-    ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage, { groupPriority: -10 }),
+    // ToolbarHelper.createToolbarItemFromItemDef(5, this._openNestedAnimationStage, { groupPriority: -10 }),
     ToolbarHelper.createToolbarItemFromItemDef(115, AppTools.tool1, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(120, AppTools.tool2, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(125, this._viewportPopupButtonItemDef, { groupPriority: 20 }),
     ToolbarHelper.createToolbarItemFromItemDef(130, AppTools.toolWithSettings, { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(132, AppTools.analysisAnimationCommand, { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(135, ToolWithDynamicSettings.toolItemDef, { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(140, AppTools.toggleHideShowItemsCommand, { groupPriority: 30 }),
     ToolbarHelper.createToolbarItemFromItemDef(145, new CommandItemDef({

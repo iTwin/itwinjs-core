@@ -98,8 +98,6 @@ beta;ChildWindowManager
 beta;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 internal;clearKeyinPaletteHistory(): void
-public;COLOR_THEME_DEFAULT = ColorTheme.Light
-deprecated;COLOR_THEME_DEFAULT = ColorTheme.Light
 public;ColorTheme
 public;CombinedReducerState
 public;combineReducers: CombineReducersFunction
@@ -178,7 +176,7 @@ deprecated;DefaultNavigationProps
 beta;DefaultNavigationWidget 
 deprecated;DefaultNavigationWidget 
 internal;DefaultToolSettingsProvider 
-public;DefaultViewOverlay({ viewport, onPlayPause }: ViewOverlayProps): JSX.Element
+public;DefaultViewOverlay({ viewport, onPlayPause, featureOptions }: ViewOverlayProps): JSX.Element | null
 public;DialogChangedEvent 
 public;DialogChangedEventArgs
 internal;DialogGridContainer({ componentGenerator, containerClassName }: DialogGridContainerProps): JSX.Element
@@ -247,8 +245,6 @@ public;class FrontstageProvider
 public;FrontstageReadyEvent 
 public;FrontstageReadyEventArgs
 internal;FrontstageRuntimeProps
-public;FunctionKey
-deprecated;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
 deprecated;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
@@ -367,8 +363,6 @@ public;MessageAddedEventArgs
 public;MessageCenterField 
 public;MessageCenterFieldProps 
 public;MessageManager
-beta;MessageRenderer(props: MessageRendererProps): JSX.Element | null
-beta;MessageRendererProps 
 public;MessagesUpdatedEvent 
 public;ModalDialogChangedEvent 
 public;ModalDialogManager
@@ -459,8 +453,6 @@ public;PropsHelper
 beta;QuantityFormatSettingsPage({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element
 beta;QuantityFormatterSettingsOptions
 alpha;ReactContent
-public;ReactMessage = ReactMessage_2
-deprecated;ReactMessage = ReactMessage_2
 public;ReactNotifyMessageDetails
 public;Reducer
 public;ReducerActions
@@ -519,8 +511,6 @@ public;SnapModeField: import("react-redux").ConnectedComponent
 alpha;SolarTimelineDataProvider 
 public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
 public;SpatialContainmentTreeProps
-public;SpecialKey
-deprecated;SpecialKey
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
 public;StagePanel 
@@ -530,10 +520,12 @@ public;StagePanelDefaultProps = Pick
 alpha;StagePanelHeader 
 alpha;StagePanelHeaderProps 
 alpha;StagePanelLocation
+deprecated;StagePanelLocation
 public;StagePanelMaxSizeSpec = number |
 public;StagePanelProps
 internal;StagePanelRuntimeProps
 alpha;StagePanelSection
+deprecated;StagePanelSection
 public;StagePanelState
 internal;StagePanelZoneDef 
 internal;StagePanelZoneDefKeys = keyof Pick
@@ -566,6 +558,8 @@ public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
 internal;StatusBarZoneProps 
 public;StatusFieldProps 
+beta;StatusMessageRenderer(props: StatusMessageRendererProps): JSX.Element | null
+beta;StatusMessageRendererProps 
 beta;StickyMessage(props: StickyMessageProps): JSX.Element
 beta;StickyMessageProps
 public;SupportsViewSelectorChange
@@ -658,6 +652,7 @@ internal;useActiveFrontstageDef(): FrontstageDef | undefined
 beta;useActiveFrontstageId: () => string
 public;useActiveIModelConnection(): IModelConnection | undefined
 internal;useActiveModalFrontstageInfo(): ModalFrontstageInfo | undefined
+public;useActiveStageId(): string
 public;useActiveViewport(): ScreenViewport | undefined
 public;useAnalysisAnimationDataProvider(viewport: ScreenViewport | undefined): AnalysisAnimationTimelineDataProvider | undefined
 internal;useAvailableUiItemsProviders(): readonly string[]
@@ -757,8 +752,6 @@ internal;WidgetStackTabGroupProps
 internal;WidgetStackTabProps
 internal;WidgetStackTabs 
 internal;WidgetStackTabsProps
-public;WidgetState
-deprecated;WidgetState
 public;WidgetStateChangedEvent 
 public;WidgetStateChangedEventArgs
 public;WidgetStateFunc = (state: Readonly

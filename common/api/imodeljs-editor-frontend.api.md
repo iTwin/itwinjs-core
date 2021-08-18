@@ -29,6 +29,7 @@ import { EventHandled } from '@bentley/imodeljs-frontend';
 import { FlatBufferGeometryStream } from '@bentley/imodeljs-common';
 import { GeometricElementProps } from '@bentley/imodeljs-common';
 import { GeometryParams } from '@bentley/imodeljs-common';
+import { GeometryQuery } from '@bentley/geometry-core';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
 import { HitDetail } from '@bentley/imodeljs-frontend';
 import { Id64Arg } from '@bentley/bentleyjs-core';
@@ -67,6 +68,14 @@ export enum ArcMethod {
     StartEndMid = 3,
     // (undocumented)
     StartMidEnd = 2
+}
+
+// @alpha (undocumented)
+export enum BCurveMethod {
+    // (undocumented)
+    ControlPoints = 0,
+    // (undocumented)
+    ThroughPoints = 1
 }
 
 // @alpha (undocumented)
@@ -121,7 +130,7 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected setupAccuDraw(): void;
     // (undocumented)
-    protected showConstructionGraphics(ev: BeButtonEvent, context: DynamicsContext): boolean;
+    protected get showCurveConstructions(): boolean;
     // (undocumented)
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
@@ -142,6 +151,55 @@ export class CreateArcTool extends CreateOrContinuePathTool {
     // (undocumented)
     get useSweepProperty(): DialogProperty<boolean>;
     }
+
+// @alpha
+export class CreateBCurveTool extends CreateOrContinuePathTool {
+    // (undocumented)
+    protected addConstructionGraphics(curve: CurvePrimitive, showCurve: boolean, context: DynamicsContext): void;
+    // (undocumented)
+    applyToolSettingPropertyChange(updatedValue: DialogPropertySyncItem): boolean;
+    // (undocumented)
+    protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
+    // (undocumented)
+    protected getSnapGeometry(): GeometryQuery | undefined;
+    // (undocumented)
+    static iconSpec: string;
+    // (undocumented)
+    protected isComplete(ev: BeButtonEvent): boolean;
+    // (undocumented)
+    protected get maxOrder(): number;
+    // (undocumented)
+    get method(): BCurveMethod;
+    set method(method: BCurveMethod);
+    // (undocumented)
+    get methodProperty(): DialogProperty<number>;
+    // (undocumented)
+    protected get minOrder(): number;
+    // (undocumented)
+    onInstall(): boolean;
+    // (undocumented)
+    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
+    onRestartTool(): void;
+    // (undocumented)
+    get order(): number;
+    set order(value: number);
+    // (undocumented)
+    get orderProperty(): DialogProperty<number>;
+    parseAndRun(...inputArgs: string[]): boolean;
+    // (undocumented)
+    protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
+    // (undocumented)
+    protected get showCurveConstructions(): boolean;
+    // (undocumented)
+    supplyToolSettingsProperties(): DialogItem[] | undefined;
+    // (undocumented)
+    static toolId: string;
+    // (undocumented)
+    protected get wantClosure(): boolean;
+    // (undocumented)
+    protected get wantPickableDynamics(): boolean;
+}
 
 // @alpha
 export class CreateCircleTool extends CreateOrContinuePathTool {
@@ -171,6 +229,8 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     // (undocumented)
     onReinitialize(): void;
     // (undocumented)
+    onResetButtonUp(ev: BeButtonEvent): Promise<EventHandled>;
+    // (undocumented)
     onRestartTool(): void;
     parseAndRun(...inputArgs: string[]): boolean;
     // (undocumented)
@@ -183,7 +243,7 @@ export class CreateCircleTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected setupAccuDraw(): void;
     // (undocumented)
-    protected showConstructionGraphics(ev: BeButtonEvent, context: DynamicsContext): boolean;
+    protected get showCurveConstructions(): boolean;
     // (undocumented)
     supplyToolSettingsProperties(): DialogItem[] | undefined;
     // (undocumented)
@@ -250,12 +310,6 @@ export class CreateLineStringTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected createNewCurvePrimitive(ev: BeButtonEvent, isDynamics: boolean): CurvePrimitive | undefined;
     // (undocumented)
-    decorate(context: DecorateContext): void;
-    // (undocumented)
-    getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
-    // (undocumented)
-    getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
-    // (undocumented)
     static iconSpec: string;
     // (undocumented)
     protected isComplete(ev: BeButtonEvent): boolean;
@@ -266,13 +320,11 @@ export class CreateLineStringTool extends CreateOrContinuePathTool {
     // (undocumented)
     protected provideToolAssistance(_mainInstrText?: string, _additionalInstr?: ToolAssistanceInstruction[]): void;
     // (undocumented)
-    protected _snapGeomId?: Id64String;
-    // (undocumented)
-    testDecorationHit(id: Id64String): boolean;
-    // (undocumented)
     static toolId: string;
     // (undocumented)
     protected get wantClosure(): boolean;
+    // (undocumented)
+    protected get wantPickableDynamics(): boolean;
 }
 
 // @alpha
@@ -283,6 +335,8 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     protected acceptPoint(ev: BeButtonEvent): Promise<boolean>;
     // (undocumented)
     protected addConstructionGraphics(curve: CurvePrimitive, showCurve: boolean, context: DynamicsContext): void;
+    // (undocumented)
+    protected addPickableGraphics(context: DecorateContext): void;
     // (undocumented)
     protected get allowClosure(): boolean;
     // (undocumented)
@@ -317,11 +371,17 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     // (undocumented)
     protected getCurrentRotation(ev: BeButtonEvent): Matrix3d;
     // (undocumented)
+    getDecorationGeometry(_hit: HitDetail): GeometryStreamProps | undefined;
+    // (undocumented)
     protected getElementProps(placement: PlacementProps): GeometricElementProps | undefined;
     // (undocumented)
     protected getGeometryProps(placement: PlacementProps): JsonGeometryStream | FlatBufferGeometryStream | undefined;
     // (undocumented)
     protected getPlacementProps(): PlacementProps | undefined;
+    // (undocumented)
+    protected getSnapGeometry(): GeometryQuery | undefined;
+    // (undocumented)
+    getToolTip(hit: HitDetail): Promise<HTMLElement | string>;
     // (undocumented)
     protected getUpVector(ev: BeButtonEvent): Vector3d;
     // (undocumented)
@@ -374,13 +434,19 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     // (undocumented)
     protected showConstructionGraphics(_ev: BeButtonEvent, context: DynamicsContext): boolean;
     // (undocumented)
+    protected get showCurveConstructions(): boolean;
+    // (undocumented)
     protected get showJoin(): boolean;
     // (undocumented)
     protected showJoinIndicator(context: DecorateContext, pt: Point3d): void;
     // (undocumented)
+    protected _snapGeomId?: Id64String;
+    // (undocumented)
     protected startCommand(): Promise<string>;
     // (undocumented)
     protected _startedCmd?: string;
+    // (undocumented)
+    testDecorationHit(id: Id64String): boolean;
     // (undocumented)
     protected updateCurveAndContinuationData(ev: BeButtonEvent, isDynamics: boolean, phase: CreateCurvePhase): Promise<void>;
     // (undocumented)
@@ -391,6 +457,8 @@ export abstract class CreateOrContinuePathTool extends CreateElementTool {
     protected get wantDynamics(): boolean;
     // (undocumented)
     protected get wantJoin(): boolean;
+    // (undocumented)
+    protected get wantPickableDynamics(): boolean;
     // (undocumented)
     protected get wantSimplify(): boolean;
     // (undocumented)

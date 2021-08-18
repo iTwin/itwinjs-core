@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ecschema-rpcinterface-tests",
+      "comment": "Bumped dotenv and removed deprecated @types/dotenv",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ecschema-rpcinterface-tests",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}

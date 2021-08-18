@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
+import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@bentley/imodeljs-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
@@ -38,8 +38,6 @@ export function getRpcInterfaces(settings: Settings) {
     rpcInterfaces.push(PresentationRpcInterface);
   if (settings.runiModelReadRpcTests)
     rpcInterfaces.push(IModelReadRpcInterface);
-  if (settings.runiModelWriteRpcTests)
-    rpcInterfaces.push(IModelWriteRpcInterface);
   if (settings.runiModelTileRpcTests)
     rpcInterfaces.push(IModelTileRpcInterface);
 

@@ -9,7 +9,7 @@
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiError } from "@bentley/ui-abstract";
-import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
+import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-imodel-components";
 import { CommonProps } from "@bentley/ui-core";
 import { Direction, Tools as NZ_ToolsWidget, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
@@ -24,8 +24,9 @@ import { ToolbarWidgetDefBase } from "./ToolbarWidgetBase";
 import { NavigationWidgetProps, WidgetType } from "./WidgetDef";
 
 /** Definition of a Navigation Widget normally displayed in the top right zone in the 9-Zone Layout system.
- *  @public @deprecated use NavigationWidgetComposer instead
- */
+ * @public
+ * @deprecated use NavigationWidgetComposer instead
+ */
 export class NavigationWidgetDef extends ToolbarWidgetDefBase {
   private _navigationAidId: string;
   private _imodel: IModelConnection | undefined;
@@ -50,12 +51,6 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
       this._reactNode = <NavigationWidgetWithDef navigationWidgetDef={this} />;
 
     return this._reactNode;
-  }
-
-  /** @deprecated use reactNode */
-  // istanbul ignore next
-  public override get reactElement(): React.ReactNode {
-    return this.reactNode;
   }
 
   public renderCornerItem(): React.ReactNode {
@@ -102,8 +97,9 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
 }
 
 /** Properties for the [[NavigationWidget]] React component.
- *  @public @deprecated use NavigationWidgetComposer instead
- */
+ * @public
+ * @deprecated use NavigationWidgetComposer instead
+ */
 export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonProps {
   iModelConnection?: IModelConnection;
   horizontalToolbar?: React.ReactNode;
@@ -112,14 +108,15 @@ export interface NavigationWidgetPropsEx extends NavigationWidgetProps, CommonPr
 
 /** State for the Navigation Widget React component.
  * @internal
- */
+ */
 interface NavigationWidgetState {
   navigationWidgetDef: NavigationWidgetDef; // eslint-disable-line deprecation/deprecation
 }
 
 /** Navigation Widget React component.
- *  @public @deprecated use NavigationWidgetComposer instead
- */
+ * @public
+ * @deprecated use NavigationWidgetComposer instead
+ */
 export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, NavigationWidgetState> { // eslint-disable-line deprecation/deprecation
 
   /** @internal */
@@ -182,7 +179,7 @@ export class NavigationWidget extends React.Component<NavigationWidgetPropsEx, N
 }
 
 /** Properties for the [[NavigationWidgetWithDef]] component.
- */
+ */
 interface Props extends CommonProps {
   navigationWidgetDef: NavigationWidgetDef; // eslint-disable-line deprecation/deprecation
   horizontalToolbar?: React.ReactNode;
@@ -196,7 +193,7 @@ interface NavigationWidgetWithDefState {
 }
 
 /** Navigation Widget React component that's passed a NavigationWidgetDef.
- */
+ */
 class NavigationWidgetWithDef extends React.Component<Props, NavigationWidgetWithDefState> {
 
   constructor(props: Props) {

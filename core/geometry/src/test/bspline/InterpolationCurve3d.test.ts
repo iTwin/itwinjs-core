@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { Checker } from "../Checker";
 import { Sample } from "../../serialization/GeometrySamples";
-import { InterpolationCurve3d } from "../../bspline/InterpolationCurve3d";
+import { InterpolationCurve3d, InterpolationCurve3dOptions } from "../../bspline/InterpolationCurve3d";
 import { GeometryCoreTestIO } from "../GeometryCoreTestIO";
 import { GeometryQuery } from "../../curve/GeometryQuery";
 import { testGeometryQueryRoundTrip } from "../serialization/FlatBuffer.test";
@@ -21,9 +21,11 @@ describe("InterpolationCurve3d", () => {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, circlePoints, 0, 0, 0);
 
     const curve = InterpolationCurve3d.create({ fitPoints: circlePoints });
-    ck.testDefined(curve);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, 0, 0, 0);
-    testGeometryQueryRoundTrip(ck, curve);
+    if (ck.testType(curve, InterpolationCurve3d)) {
+      ck.testType(curve.options, InterpolationCurve3dOptions);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, 0, 0, 0);
+      testGeometryQueryRoundTrip(ck, curve);
+    }
     GeometryCoreTestIO.saveGeometry(allGeometry, "InterpolationCurve3d", "HelloWorld");
     expect(ck.getNumErrors()).equals(0);
   });

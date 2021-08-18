@@ -2,12 +2,8 @@
 *
 !scripts/**/*.js
 !bin/**/*.js
-!tslint-rules/**/*.js
 !mocha-reporter/**/*.js
 !*.md
 !tsconfig.json
 !tsconfig-base.json
-!tslint.json
-!tslint-docs.json
 !.nycrc
-!.eslintrc.js

@@ -71,6 +71,8 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
   private _lastDirection: ContextMenuDirection | undefined = ContextMenuDirection.BottomRight;
   private _lastSelectedIndex: number = 0;
   private _injectedChildren: React.ReactNode;
+  private _parentWindowHeight: number = 0;
+  private _parentWindowWidth: number = 0;
 
   public static defaultProps: Partial<ContextMenuProps> = {
     direction: ContextMenuDirection.BottomRight,
@@ -320,6 +322,11 @@ export class ContextMenu extends React.PureComponent<ContextMenuProps, ContextMe
     const parentWindow = this.getWindow();
 
     let renderDirection = parentMenu === undefined ? this.state.direction : direction;
+
+    if (parentWindow.innerHeight === this._parentWindowHeight && parentWindow.innerWidth === this._parentWindowWidth)
+      return;
+    this._parentWindowHeight = parentWindow.innerHeight;
+    this._parentWindowWidth = parentWindow.innerWidth;
 
     // check if menu should flip
     if (parentWindow && autoflip && parentMenu === undefined) {

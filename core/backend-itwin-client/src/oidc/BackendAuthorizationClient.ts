@@ -39,7 +39,9 @@ export abstract class BackendAuthorizationClient extends ImsAuthorizationClient 
     custom.setHttpOptionsDefaults({
       timeout: RequestGlobalOptions.timeout.response,
       retry: RequestGlobalOptions.maxRetries,
-      agent: RequestGlobalOptions.httpsProxy,
+      agent: {
+        https: RequestGlobalOptions.httpsProxy,
+      },
     });
 
     this._configuration = configuration;

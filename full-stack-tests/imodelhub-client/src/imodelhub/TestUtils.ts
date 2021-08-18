@@ -41,7 +41,6 @@ function configMockSettings() {
     return;
 
   Config.App.set("imjs_imodelhub_url", "https://api.bentley.com/imodelhub");
-  Config.App.set("imjs_rbac_url", "https://api.bentley.com/rbac");
   Config.App.set("imjs_buddi_resolve_url_using_region", 0);
   Config.App.set("imjs_url_prefix", "");
   Config.App.set("imjs_test_serviceAccount1_user_name", "test");
@@ -161,13 +160,6 @@ export class IModelHubUrlMock {
   public static getUrl(): string {
     configMockSettings();
     return Config.App.get("imjs_imodelhub_url", "");
-  }
-}
-
-export class RbacUrlMock {
-  public static getUrl(): string {
-    configMockSettings();
-    return Config.App.get("imjs_rbac_url", "");
   }
 }
 
@@ -635,7 +627,8 @@ export function mockDeniedLocks(imodelId: GuidString, locks: Lock[], requestOpti
 }
 
 /** Named versions */
-export function generateVersion(name?: string, changesetId?: string, addInstanceId: boolean = true, smallThumbnailId?: GuidString, largeThumbnailId?: GuidString, hidden?: boolean): Version {
+export function generateVersion(name?: string, changesetId?: string, addInstanceId: boolean = true, smallThumbnailId?: GuidString,
+  largeThumbnailId?: GuidString, hidden?: boolean, applicationId?: string, applicationName?: string): Version {
   const result = new Version();
   if (addInstanceId) {
     result.id = Guid.createValue();
@@ -648,6 +641,8 @@ export function generateVersion(name?: string, changesetId?: string, addInstance
   // eslint-disable-next-line deprecation/deprecation
   result.largeThumbnailId = largeThumbnailId;
   result.hidden = hidden;
+  result.applicationId = applicationId;
+  result.applicationName = applicationName;
   return result;
 }
 

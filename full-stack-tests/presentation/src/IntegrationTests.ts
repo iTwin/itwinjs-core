@@ -10,7 +10,6 @@ import * as fs from "fs";
 import * as path from "path";
 import sinonChai from "sinon-chai";
 import { ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
 import { IModelAppOptions, NoRenderApp } from "@bentley/imodeljs-frontend";
 import { I18NOptions } from "@bentley/imodeljs-i18n";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
@@ -22,6 +21,21 @@ import {
 import { RequestPriority } from "@bentley/presentation-common";
 import { PresentationManagerProps as PresentationFrontendProps } from "@bentley/presentation-frontend";
 import { initialize as initializeTesting, PresentationTestingInitProps, terminate as terminateTesting } from "@bentley/presentation-testing";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 chai.use(sinonChai);
 chai.use(chaiSubset);

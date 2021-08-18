@@ -1,6 +1,104 @@
 # Change Log - @bentley/imodeljs-frontend
 
-This log was last generated on Thu, 08 Jul 2021 15:23:00 GMT and should not be manually modified.
+This log was last generated on Fri, 13 Aug 2021 21:48:08 GMT and should not be manually modified.
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:08 GMT
+
+### Updates
+
+- Orbit OPC OrbitGtBlobProps initialization and SAS token update.
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+_Version update only_
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+### Updates
+
+- ViewCreator3d fix - modelExtents now computed from all model ranges
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+### Updates
+
+- Viewport.zoomToElements includes only 2d or 3d elements based on view type.
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- BriefcaseConnection.PullAndMergeChanges now returns both changesetId and changesetIndex
+- Adjust the range of a RenderGraphic based on displacement applied by the viewport's AnalysisStyle, if any, so that displaced portions of the mesh can be located by tools.
+- Added support for PointCloudModel attachments in OPC format with RDS URL resolving to OrbitGtBlobProps.
+- Handle failures in models query when isNotSpatiallyLocated property does not exist in the schema
+- GraphicBuilder now generates normals for polyfaces if requested.
+- remove internal barrel-import usage
+- Stop delivering pseudo-localized strings
+- Fix multi-model animation issue.
+- Handle degenerate frustum in BackgroundMapGeometry.getFrustumIntersectionDepthRange.
+- Add support to GraphicBuilder for solid primitives and visible edges.
+- move check for redirect callback handling in WebViewerApp to before IModelApp.startup call
+- Support reprojection of Cesium OSM tiles
+- internal async order change
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+### Updates
+
+- Add IModelConnection.Elements.getPlacements and update Viewport and ViewClipByElementTool to use it.
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- add GraphicBuilder.addCurvePrimitive.
+- Add Tiles.updateForScheduleScript to refresh tiles after modifying schedule script."
+- Update Toolsettings set-up in SetCameraTool to fix enable/disable setting of input field.
+- Add Viewport.flashedId property and corresponding onFlashedIdChanged event.
+- Added support for ESRI MapServer exposing a minimum LOD.
+- Fix the Nadir color for 2 colors skybox in the context of background map.
+- Add ability to clone Format and to add property setters. This allows a user to synchronously tweak a format in the frontend.
+- Fix issue with TouchCursor unexpectedly disappearing when disabling snap/locate.
+- pickable decoration enhancement
+- Update tile trees when project extents change.
+- Remove BackgroundMapLocation use EcefLocation directly.
+- Clean up and promote AnalysisStyle APIs.
+- TileAdmin.requestElementGraphics can now produce section-cut graphics.
+- Update tooltips of RealityData with its type
+- Add API to wait until all pending external textures have finished loading.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
@@ -38,6 +136,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - make IpcApp and NativeApp @public
 - Prevent preflight for ContextShare tile request
 - Erase touch cursor when it is drawn in a different view.
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
