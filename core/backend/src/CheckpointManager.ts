@@ -10,7 +10,6 @@
 
 import * as path from "path";
 import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { CheckpointV2Query } from "@bentley/imodelhub-client";
 import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, IModelError } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -18,7 +17,6 @@ import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
-import { IModelHubBackend } from "./IModelHubBackend";
 import { IModelJsFs } from "./IModelJsFs";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
@@ -110,29 +108,12 @@ export class Downloads {
 */
 export class V2CheckpointManager {
   private static async getCommandArgs(checkpoint: CheckpointProps): Promise<BlobDaemonCommandArg> {
-    const { requestContext, iModelId, changeset } = checkpoint;
-
     try {
-      requestContext.enter();
-      const checkpointQuery = new CheckpointV2Query().byChangeSetId(changeset.id).selectContainerAccessKey();
-      const checkpoints = await IModelHubBackend.iModelClient.checkpointsV2.get(requestContext, iModelId, checkpointQuery);
-      requestContext.enter();
-      if (checkpoints.length < 1)
+      const v2props = await IModelHost.hubAccess.queryV2Checkpoint(checkpoint);
+      if (!v2props)
         throw new Error("no checkpoint");
 
-      const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpoints[0];
-      if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
-        throw new Error("Invalid checkpoint in iModelHub");
-
-      return {
-        container: containerAccessKeyContainer,
-        auth: containerAccessKeySAS,
-        daemonDir: process.env.BLOCKCACHE_DIR,
-        storageType: "azure?sas=1",
-        user: containerAccessKeyAccount,
-        dbAlias: containerAccessKeyDbName,
-        writeable: false,
-      };
+      return { ...v2props, daemonDir: process.env.BLOCKCACHE_DIR, writeable: false };
     } catch (err) {
       throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
     }
@@ -227,7 +208,6 @@ export class CheckpointManager {
 
       throw (error); // most likely, was aborted
     }
-
   }
 
   public static async updateToRequestedVersion(request: DownloadRequest) {

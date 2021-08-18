@@ -308,46 +308,47 @@ export class AzureBlobStorage extends CloudStorageService {
 
 // @internal
 export interface BackendHubAccess {
-    acquireLocks: (arg: BriefcaseDbArg & {
+    acquireLocks(arg: BriefcaseDbArg & {
         locks: LockProps[];
-    }) => Promise<void>;
-    acquireNewBriefcaseId: (arg: IModelIdArg) => Promise<number>;
-    acquireSchemaLock: (arg: BriefcaseDbArg) => Promise<void>;
-    createIModel: (arg: IModelNameArg & {
+    }): Promise<void>;
+    acquireNewBriefcaseId(arg: IModelIdArg): Promise<number>;
+    acquireSchemaLock(arg: BriefcaseDbArg): Promise<void>;
+    createIModel(arg: IModelNameArg & {
         description?: string;
         revision0?: LocalFileName;
-    }) => Promise<GuidString>;
-    deleteIModel: (arg: IModelIdArg & {
+    }): Promise<GuidString>;
+    deleteIModel(arg: IModelIdArg & {
         contextId: GuidString;
-    }) => Promise<void>;
-    downloadChangeset: (arg: ChangesetArg & {
+    }): Promise<void>;
+    downloadChangeset(arg: ChangesetArg & {
         targetDir: LocalDirName;
-    }) => Promise<ChangesetFileProps>;
-    downloadChangesets: (arg: ChangesetRangeArg & {
+    }): Promise<ChangesetFileProps>;
+    downloadChangesets(arg: ChangesetRangeArg & {
         targetDir: LocalDirName;
-    }) => Promise<ChangesetFileProps[]>;
-    downloadV1Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
-    downloadV2Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
-    getChangesetFromNamedVersion: (arg: IModelIdArg & {
+    }): Promise<ChangesetFileProps[]>;
+    downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
+    downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
+    getChangesetFromNamedVersion(arg: IModelIdArg & {
         versionName: string;
-    }) => Promise<ChangesetProps>;
-    getChangesetFromVersion: (arg: IModelIdArg & {
+    }): Promise<ChangesetProps>;
+    getChangesetFromVersion(arg: IModelIdArg & {
         version: IModelVersion;
-    }) => Promise<ChangesetProps>;
-    getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
-    getMyBriefcaseIds: (arg: IModelIdArg) => Promise<number[]>;
-    pushChangeset: (arg: IModelIdArg & {
+    }): Promise<ChangesetProps>;
+    getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
+    getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
+    pushChangeset(arg: IModelIdArg & {
         changesetProps: ChangesetFileProps;
-    }) => Promise<ChangesetIndex>;
-    queryAllCodes: (arg: BriefcaseDbArg) => Promise<CodeProps[]>;
-    queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
-    queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
-    queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
-    queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
-    querySchemaLock: (arg: IModelIdArg) => Promise<boolean>;
-    releaseAllCodes: (arg: BriefcaseDbArg) => Promise<void>;
-    releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
-    releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
+    }): Promise<ChangesetIndex>;
+    queryAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]>;
+    queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
+    queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
+    queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
+    queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
+    querySchemaLock(arg: IModelIdArg): Promise<boolean>;
+    queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
+    releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
+    releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
+    releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
 }
 
 // @public
@@ -2849,6 +2850,8 @@ export class IModelHubBackend {
     // (undocumented)
     static querySchemaLock(arg: IModelIdArg): Promise<boolean>;
     // (undocumented)
+    static queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
+    // (undocumented)
     static releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
     // (undocumented)
     static releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
@@ -4549,6 +4552,20 @@ export class V1CheckpointManager {
     // (undocumented)
     static getFolder(iModelId: GuidString): string;
     }
+
+// @beta
+export interface V2CheckpointAccessProps {
+    // (undocumented)
+    auth: string;
+    // (undocumented)
+    container: string;
+    // (undocumented)
+    dbAlias: string;
+    // (undocumented)
+    storageType: string;
+    // (undocumented)
+    user: string;
+}
 
 // @internal
 export class V2CheckpointManager {
