@@ -139,21 +139,6 @@ export class ViewFlags {
   public readonly visibleEdges: boolean;
   /** Shows or hides hidden edges in the shaded render mode. */
   public readonly hiddenEdges: boolean;
-  /** Controls whether the source lights in spatial models are used
-   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
-   * @see [[lighting]] for a more convenient way to toggle lighting on and off.
-   */
-  public readonly sourceLights: boolean;
-  /** Controls whether camera (ambient, portrait, flashbulb) lights are used.
-   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
-   * @see [[lighting]] for a more convenient way to toggle lighting on and off.
-   */
-  public readonly cameraLights: boolean;
-  /** Controls whether sunlight used
-   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
-   * @see [[lighting]] for a more convenient way to toggle lighting on and off.
-   */
-  public readonly solarLight: boolean;
   /** Shows or hides shadows. */
   public readonly shadows: boolean;
   /** Controls whether the view's clip volume is applied. Has no effect on other types of clips like [[ModelClipGroups]]. */
@@ -186,7 +171,7 @@ export class ViewFlags {
   /** Controls whether or not lighting is applied.
    * @note Has no effect unless `renderMode` is set to [[RenderMode.SmoothShade]].
    */
-  public get lighting(): boolean { return this.solarLight || this.sourceLights || this.cameraLights; }
+  public readonly lighting: boolean;
 
   public constructor(flags?: Partial<ViewFlagsProperties>) {
     this.renderMode = flags?.renderMode ?? RenderMode.Wireframe;
@@ -211,14 +196,7 @@ export class ViewFlags {
     this.thematicDisplay = flags?.thematicDisplay ?? false;
     this.forceSurfaceDiscard = flags?.forceSurfaceDiscard ?? false;
     this.whiteOnWhiteReversal = flags?.whiteOnWhiteReversal ?? true;
-
-    if (undefined !== flags?.lighting) {
-      this.solarLight = this.sourceLights = this.cameraLights = flags.lighting;
-    } else {
-      this.sourceLights = flags?.sourceLights ?? false;
-      this.cameraLights = flags?.cameraLights ?? false;
-      this.solarLight = flags?.solarLight ?? false;
-    }
+    this.lighting = flags?.lighting ?? false;
   }
 
   /** Produce a copy of these ViewFlags with some modified properties. Any properties not explicitly specified by `changedFlags` will retain their current values.
@@ -315,9 +293,7 @@ export class ViewFlags {
     if (this.acsTriad) out.acs = true;
     if (!this.textures) out.noTexture = true;
     if (!this.materials) out.noMaterial = true;
-    if (!this.cameraLights) out.noCameraLights = true;
-    if (!this.sourceLights) out.noSourceLights = true;
-    if (!this.solarLight) out.noSolarLight = true;
+    if (!this.lighting) out.noCameraLights = out.noSourceLights = out.noSolarLight = true;
     if (this.visibleEdges) out.visEdges = true;
     if (this.hiddenEdges) out.hidEdges = true;
     if (this.shadows) out.shadows = true;
@@ -350,9 +326,9 @@ export class ViewFlags {
       acs: this.acsTriad,
       noTexture: !this.textures,
       noMaterial: !this.materials,
-      noCameraLights: !this.cameraLights,
-      noSourceLights: !this.sourceLights,
-      noSolarLight: !this.solarLight,
+      noCameraLights: !this.lighting,
+      noSourceLights: !this.lighting,
+      noSolarLight: !this.lighting,
       visEdges: this.visibleEdges,
       hidEdges: this.hiddenEdges,
       shadows: this.shadows,
@@ -385,8 +361,10 @@ export class ViewFlags {
     else
       renderMode = renderModeValue;
 
+    const lighting = !JsonUtils.asBool(json.noCameraLights) || !JsonUtils.asBool(json.noSourceLights) || !JsonUtils.asBool(json.noSolarLight);
     return new ViewFlags({
       renderMode,
+      lighting,
       constructions: !JsonUtils.asBool(json.noConstruct),
       dimensions: !JsonUtils.asBool(json.noDim),
       patterns: !JsonUtils.asBool(json.noPattern),
@@ -398,9 +376,6 @@ export class ViewFlags {
       acsTriad: JsonUtils.asBool(json.acs),
       textures: !JsonUtils.asBool(json.noTexture),
       materials: !JsonUtils.asBool(json.noMaterial),
-      cameraLights: !JsonUtils.asBool(json.noCameraLights),
-      sourceLights: !JsonUtils.asBool(json.noSourceLights),
-      solarLight: !JsonUtils.asBool(json.noSolarLight),
       visibleEdges: JsonUtils.asBool(json.visEdges),
       hiddenEdges: JsonUtils.asBool(json.hidEdges),
       shadows: JsonUtils.asBool(json.shadows),
@@ -428,9 +403,7 @@ export class ViewFlags {
       && this.grid === other.grid
       && this.visibleEdges === other.visibleEdges
       && this.hiddenEdges === other.hiddenEdges
-      && this.sourceLights === other.sourceLights
-      && this.cameraLights === other.cameraLights
-      && this.solarLight === other.solarLight
+      && this.lighting === other.lighting
       && this.shadows === other.shadows
       && this.clipVolume === other.clipVolume
       && this.constructions === other.constructions

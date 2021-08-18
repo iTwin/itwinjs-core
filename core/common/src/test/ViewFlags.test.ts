@@ -167,9 +167,7 @@ describe("ViewFlags", () => {
     expect(ViewFlags.fromJSON({ })).to.deep.equal({
       ...def,
       clipVolume: !def.clipVolume,
-      sourceLights: !def.sourceLights,
-      cameraLights: !def.cameraLights,
-      solarLight: !def.solarLight,
+      lighting: !def.lighting,
       constructions: !def.constructions,
     });
   });
@@ -179,9 +177,9 @@ describe("ViewFlags", () => {
       expect(vf.lighting).to.equal(expected);
       const props = vf.toJSON();
       const prop = expected ? undefined : true;
-      // ###TODO expect(props.noSolarLight).to.equal(prop);
-      // ###TODO expect(props.noCameraLights).to.equal(prop);
-      // ###TODO expect(props.noSourceLights).to.equal(prop);
+      expect(props.noSolarLight).to.equal(prop);
+      expect(props.noCameraLights).to.equal(prop);
+      expect(props.noSourceLights).to.equal(prop);
       expect(ViewFlags.fromJSON(props).lighting).to.equal(expected);
     }
 
