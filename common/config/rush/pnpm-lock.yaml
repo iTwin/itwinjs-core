@@ -1450,6 +1450,7 @@ importers:
       sinon: ^9.0.2
       typescript: ~4.3.0
     dependencies:
+      '@bentley/imodeljs-native': 3.0.6
       semver: 5.7.1
     devDependencies:
       '@bentley/backend-itwin-client': link:../backend-itwin-client
@@ -1459,7 +1460,6 @@ importers:
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-backend': link:../backend
       '@bentley/imodeljs-common': link:../common
-      '@bentley/imodeljs-native': 3.0.6
       '@bentley/itwin-client': link:../../clients/itwin
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/telemetry-client': link:../../clients/telemetry
@@ -8540,6 +8540,7 @@ packages:
   /@bentley/imodeljs-native/3.0.6:
     resolution: {integrity: sha512-EKvAOR5k1sTAO2WXUyxjxEzJInwB6Uq4czJ46I83Jfk0p2DP6rAVcdoD4gGn7hmiURCKTrzWk03hjQqDLJY7rg==}
     requiresBuild: true
+    dev: false
 
   /@bentley/react-scripts/4.0.3_428b90cc0d849ebb6ccbdf38609f3b43:
     resolution: {integrity: sha512-gET4e/0PWe/FVvSJR3QKi+m1ct9CND6ZwNdZcAoTvLlkrb/6i/SexR3ZjOIMFXgKKBsCVjf2c83BZBzjAsRCWg==}
