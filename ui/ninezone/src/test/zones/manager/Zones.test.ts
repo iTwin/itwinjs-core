@@ -5,7 +5,8 @@
 import { should } from "chai";
 import * as sinon from "sinon";
 import * as Moq from "typemoq";
-import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { Point, Rectangle, RectangleProps } from "@bentley/ui-core";
 import {
   DisabledResizeHandles, DraggedWidgetManager, getClosedWidgetTabIndex, getColumnZones, getZoneCell, HorizontalAnchor, ResizeHandle,
   ResizeStrategy, ToolSettingsWidgetMode, WidgetZoneId, widgetZoneIds, ZoneManager, ZonesManager, ZonesManagerProps, ZoneTargetType,

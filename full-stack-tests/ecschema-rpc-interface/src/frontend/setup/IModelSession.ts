@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Config } from "@bentley/bentleyjs-core";
 import { CheckpointConnection } from "@bentley/imodeljs-frontend";
 
 export class IModelSession {
@@ -24,7 +23,7 @@ export class IModelSession {
 
   public async open(): Promise<CheckpointConnection> {
     try {
-      const env = Config.App.get("imjs_buddi_resolve_url_using_region");
+      const env = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION;
       // eslint-disable-next-line no-console
       console.log(`Environment: ${env}`);
       this._iModel = await CheckpointConnection.openRemote(this.contextId, this.iModelId);

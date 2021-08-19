@@ -9,7 +9,8 @@
 import "./FloatingWidget.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { CommonProps, Point, PointProps, Rectangle, useRefs } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { CommonProps, Point, Rectangle, useRefs } from "@bentley/ui-core";
 import { assert } from "@bentley/bentleyjs-core";
 import { useDragResizeHandle, UseDragResizeHandleArgs, useIsDraggedItem } from "../base/DragManager";
 import { NineZoneDispatchContext } from "../base/NineZone";

@@ -5,7 +5,7 @@
 import { shallow } from "enzyme";
 import * as React from "react";
 import * as sinon from "sinon";
-import { PointProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
 import { DragHandle, HorizontalAnchor, PointerCaptor, Tab, TabMode, TabModeHelpers, VerticalAnchor } from "../../../../ui-ninezone";
 import { createBoundingClientRect, createPointerEvent, mount } from "../../../Utils";
 

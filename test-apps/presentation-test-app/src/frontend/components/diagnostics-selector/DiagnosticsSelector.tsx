@@ -7,7 +7,8 @@ import React from "react";
 import { DiagnosticsLoggerSeverity } from "@bentley/presentation-common";
 import { DiagnosticsProps } from "@bentley/presentation-components";
 import { consoleDiagnosticsHandler } from "@bentley/presentation-frontend";
-import { ContextMenuDirection, GlobalContextMenu, PointProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { ContextMenuDirection, GlobalContextMenu } from "@bentley/ui-core";
 import { LabeledSelect, ToggleSwitch } from "@itwin/itwinui-react";
 
 export interface DiagnosticsSelectorProps {

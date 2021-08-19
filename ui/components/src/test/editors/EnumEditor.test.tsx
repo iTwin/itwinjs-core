@@ -8,12 +8,11 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
+import { SpecialKey } from "@bentley/ui-abstract";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
 import { EnumEditor } from "../../ui-components/editors/EnumEditor";
-import TestUtils from "../TestUtils";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
-import { PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import TestUtils, { MineDataController } from "../TestUtils";
+import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 import { handleError, selectChangeValueByIndex, stubScrollIntoView } from "../test-helpers/misc";
 
 describe("<EnumEditor />", () => {
@@ -121,12 +120,6 @@ describe("<EnumEditor />", () => {
 
     wrapper.unmount();
   });
-
-  class MineDataController extends DataControllerBase {
-    public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test" } };
-    }
-  }
 
   it("should not commit if DataController fails to validate", async () => {
     PropertyEditorManager.registerDataController("myData", MineDataController);

@@ -1,6 +1,13 @@
 # Change Log - @bentley/frontend-authorization-client
 
-This log was last generated on Fri, 13 Aug 2021 21:48:08 GMT and should not be manually modified.
+This log was last generated on Tue, 17 Aug 2021 20:34:28 GMT and should not be manually modified.
+
+## 2.19.6
+Tue, 17 Aug 2021 20:34:28 GMT
+
+### Updates
+
+- Add silent redirect uri to BrowserAuthClientConfig. If not provided default to redirectUri
 
 ## 2.19.5
 Fri, 13 Aug 2021 21:48:08 GMT

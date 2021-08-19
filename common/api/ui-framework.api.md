@@ -21,8 +21,8 @@ import { BackstageItem } from '@bentley/ui-abstract';
 import { BackstageItemsManager } from '@bentley/ui-abstract';
 import { BackstageStageLauncher as BackstageStageLauncher_2 } from '@bentley/ui-abstract';
 import { BadgeType } from '@bentley/ui-abstract';
-import { BaseSolarDataProvider } from '@bentley/ui-components';
-import { BaseTimelineDataProvider } from '@bentley/ui-components';
+import { BaseSolarDataProvider } from '@bentley/ui-imodel-components';
+import { BaseTimelineDataProvider } from '@bentley/ui-imodel-components';
 import { BeButtonEvent } from '@bentley/imodeljs-frontend';
 import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
@@ -75,7 +75,7 @@ import { ItemField } from '@bentley/imodeljs-frontend';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
-import { MessageSeverity } from '@bentley/ui-core';
+import { MessageSeverity } from '@bentley/ui-abstract';
 import { MessageType } from '@bentley/ui-core';
 import { NestedStagePanelKey } from '@bentley/ui-ninezone';
 import { NestedStagePanelsManagerProps } from '@bentley/ui-ninezone';
@@ -102,10 +102,10 @@ import { OutputMessagePriority } from '@bentley/imodeljs-frontend';
 import { OutputMessageType } from '@bentley/imodeljs-frontend';
 import { PageOptions } from '@bentley/ui-components';
 import { PanelSide } from '@bentley/ui-ninezone';
-import { PlaybackSettings } from '@bentley/ui-components';
+import { PlaybackSettings } from '@bentley/ui-imodel-components';
 import { Point } from '@bentley/ui-core';
 import { Point2d } from '@bentley/geometry-core';
-import { PointProps } from '@bentley/ui-core';
+import { PointProps } from '@bentley/ui-abstract';
 import { Primitives } from '@bentley/ui-abstract';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { PropertyRecord } from '@bentley/ui-abstract';
@@ -127,7 +127,7 @@ import { SettingsTabEntry } from '@bentley/ui-core';
 import { Size } from '@bentley/ui-core';
 import { SizeProps } from '@bentley/ui-core';
 import { SnapMode } from '@bentley/imodeljs-frontend';
-import { SolarDataProvider } from '@bentley/ui-components';
+import { SolarDataProvider } from '@bentley/ui-imodel-components';
 import { SpecialKey } from '@bentley/ui-abstract';
 import { StagePanelLocation as StagePanelLocation_2 } from '@bentley/ui-abstract';
 import { StagePanelSection as StagePanelSection_2 } from '@bentley/ui-abstract';
@@ -177,7 +177,7 @@ import { ViewFlagProps } from '@bentley/imodeljs-common';
 import { ViewManager } from '@bentley/imodeljs-frontend';
 import { Viewport } from '@bentley/imodeljs-frontend';
 import { ViewState } from '@bentley/imodeljs-frontend';
-import { ViewStateProp } from '@bentley/ui-components';
+import { ViewStateProp } from '@bentley/ui-imodel-components';
 import { ViewStateProps } from '@bentley/imodeljs-common';
 import { WidgetManagerProps } from '@bentley/ui-ninezone';
 import { WidgetState } from '@bentley/ui-abstract';
@@ -461,6 +461,9 @@ export class AnalysisAnimationTimelineDataProvider extends BaseTimelineDataProvi
 
 // @public
 export type AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef;
+
+// @public
+export type AnyToolbarItemDef = AnyItemDef | CustomItemDef;
 
 // @public
 export type AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps;
@@ -3021,7 +3024,7 @@ export const IModelConnectedNavigationWidget: import("react-redux").ConnectedCom
 export const IModelConnectedSpatialContainmentTree: import("react-redux").ConnectedComponent<typeof SpatialContainmentTree, any>;
 
 // @beta
-export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@bentley/ui-components").ViewportProps & import("@bentley/presentation-components").ViewWithUnifiedSelectionProps>, any>;
+export const IModelConnectedViewport: import("react-redux").ConnectedComponent<React.ComponentType<import("@bentley/ui-imodel-components").ViewportProps & import("@bentley/presentation-components").ViewWithUnifiedSelectionProps>, any>;
 
 // @beta
 export const IModelConnectedViewSelector: import("react-redux").ConnectedComponent<typeof ViewSelector, any>;
@@ -4650,6 +4653,20 @@ export class SelectionContextToolDefinitions {
 
 // @public
 export const SelectionInfoField: import("react-redux").ConnectedComponent<typeof SelectionInfoFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionInfoFieldComponent> & SelectionInfoFieldProps, "selectionCount">>;
+
+// @public
+export enum SelectionScope {
+    // (undocumented)
+    Assembly = 1,
+    // (undocumented)
+    Category = 3,
+    // (undocumented)
+    Element = 0,
+    // (undocumented)
+    Model = 4,
+    // (undocumented)
+    TopAssembly = 2
+}
 
 // @public
 export const SelectionScopeField: import("react-redux").ConnectedComponent<typeof SelectionScopeFieldComponent, import("react-redux").Omit<React.ClassAttributes<SelectionScopeFieldComponent> & SelectionScopeFieldProps, "availableSelectionScopes" | "activeSelectionScope">>;
@@ -6746,6 +6763,19 @@ export interface UiVisibilityEventArgs {
     visible: boolean;
 }
 
+// @alpha
+export function UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element;
+
+// @beta
+export interface UnitSystemSelectorProps {
+    // (undocumented)
+    availableUnitSystems: Set<UnitSystemKey>;
+    // (undocumented)
+    onUnitSystemSelected: (unitSystem: UnitSystemKey) => void;
+    // (undocumented)
+    selectedUnitSystemKey: UnitSystemKey;
+}
+
 // @internal (undocumented)
 export function useActiveFrontstageDef(): FrontstageDef | undefined;
 
@@ -6859,6 +6889,9 @@ export function useSyncDefinitions(frontstageDef: FrontstageDef): void;
 
 // @internal (undocumented)
 export function useToolSettingsNode(): string | number | boolean | {} | React.ReactElement<any, string | React.JSXElementConstructor<any>> | React.ReactNodeArray | React.ReactPortal | null | undefined;
+
+// @beta
+export const useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[];
 
 // @beta
 export const useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[];

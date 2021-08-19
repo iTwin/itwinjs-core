@@ -39,7 +39,8 @@ npm run start:servers
 
 ## Using display-test-app
 
-Currently, display-test-app only supports opening snapshot iModels from the local disk. If you define the `SVT_STANDALONE_FILENAME` environment variable to contain the absolute path to an existing iModel file on your machine, then upon startup, a viewport displaying the contents of this iModel will be displayed. Otherwise, on startup the toolbar will have a button allowing you to select an iModel to open.
+display-test-app provides no UI for selecting iModels from iModelHub - only a toolbar button to open an iModel from the local file system. However, if the iModel is a briefcase that was downloaded from iModelHub and is opened in read-write mode, it can push and pull changesets.
+The `SVT_STANDALONE_FILENAME` environment variable can be defined before startup to contain the absolute path to an iModel on disk; if so, it will be opened automatically at startup.
 
 display-test-app's UI consists of:
 
@@ -99,11 +100,11 @@ You can use these environment variables to alter the default behavior of various
 * SVT_STANDALONE_FILENAME
   * Absolute path to an iModel to be opened on start-up.
 * SVT_STANDALONE_FILEPATH (browser only)
-  * Allows SVT running in the browser to assume a common base path for ALL local standalone iModels. This enables the use of a file open dialog. Within that dialog you must navigate to the exact path and select a file residing inside that directory - not in any subdirectory thereof.
+  * Allows display-test-app running in the browser to assume a common base path for ALL local iModels. This enables the use of a file open dialog. Within that dialog you must navigate to the exact path and select a file residing inside that directory - not in any subdirectory thereof.
 * SVT_STANDALONE_VIEWNAME
   * The name of a view to open by default within an iModel.
 * SVT_STANDALONE_SIGNIN
-  * If defined (value does not matter), the user will be required to sign in. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
+  * If defined (value does not matter), the user will be required to sign in at startup. This enables access to content stored on the reality data service. As a side effect, you may observe a harmless "failed to fetch" dialog on startup, which can be safely dismissed.
 * SVT_NO_MAXIMIZE_WINDOW
   * If defined, don't maximize the electron window on startup
 * SVT_NO_DEV_TOOLS
@@ -180,6 +181,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 * `dta incident markers` - toggle incident marker demo in the selected viewport.
 * `dta path decoration` - toggle drawing a small path decoration in the selected viewport for testing purposes.
 * `dta markup` - toggle markup on the selected viewport.
+* `dta signin` - sign in to use Bentley services like iModelHub and reality data.
 * `dta output shaders` - output debug information for compiled shaders. Requires SVT_DEBUG_SHADERS to have been set. Accepts 0-2 arguments:
   * `d=output\directory\` - directory into which to put the output files.
   * filter string: a combination of the following characters to filter the output (e.g., `gu` outputs all used glsl shaders, both fragment and vertex):
@@ -215,7 +217,7 @@ display-test-app has access to all key-ins defined in the imodeljs-frontend and 
 display-test-app supplies minimal features for editing the contents of an iModel, strictly for testing purposes. To use it:
 
 * Set SVT_READ_WRITE=1 in the environment.
-* Open an editable standalone iModel.
+* Open a briefcase or an editable standalone iModel.
 * Use the key-ins below to make changes; typically:
   * `dta edit` to begin an editing scope;
   * key-ins to delete/move/insert elements and undo/redo those changes;
@@ -229,3 +231,5 @@ display-test-app has access to all key-ins defined in the imodeljs-editor-fronte
 
 * `dta edit` - begin a new editing scope, or end the current editing scope. The title of the window or browser tab will update to reflect the current state: "[R/W]" indicating no current editing scope, or "[EDIT]" indicating an active editing scope.
 * `dta place line string` - start placing a line string. Each data point defines another point in the string; a reset (right mouse button) finishes. The element is placed into the first spatial model and spatial category in the viewport's model and category selectors.
+* `dta push` - push local changes to iModelHub. A description of the changes must be supplied. It should be enclosed in double quotes if it contains whitespace characters.
+* `dta pull` - pull and merge changes from iModelHub into the local briefcase. You must be signed in.
