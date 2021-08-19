@@ -582,13 +582,7 @@ export class DisplayStyleSettings {
     this._contextRealityModels = new ContextRealityModels(this._json, options?.createContextRealityModel);
   }
 
-  /** Flags controlling various aspects of the display style. To change the style's view flags, do something like:
-   * ```ts
-   *  const flags = settings.viewFlags.clone();
-   *  flags.renderMode = RenderMode.SmoothShade; // or any other alterations.
-   *  settings.viewFlags = flags;
-   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
-   */
+  /** Flags controlling various aspects of the display style. */
   public get viewFlags(): ViewFlags { return this._viewFlags; }
   public set viewFlags(flags: ViewFlags) {
     if (this.viewFlags.equals(flags))
