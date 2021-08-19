@@ -3,14 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
-import { Guid, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { Box, Point3d, Vector3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import {
-  Code, GeometryStreamBuilder, IModel, PhysicalElementProps, RenderSchedule, RenderTimelineProps,
-} from "@bentley/imodeljs-common";
-import {
-  GenericSchema, IModelJsFs, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, StandaloneDb, SubjectOwnsPartitionElements,
-} from "../../imodeljs-backend";
+import { Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { Code, IModel, RenderSchedule, RenderTimelineProps } from "@bentley/imodeljs-common";
+import { GenericSchema, IModelJsFs, RenderTimeline, StandaloneDb } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
 
 describe("RenderTimeline", () => {

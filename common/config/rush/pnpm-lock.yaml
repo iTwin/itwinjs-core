@@ -1421,6 +1421,7 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/ecschema-metadata': workspace:*
+      '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-backend': workspace:*
       '@bentley/imodeljs-common': workspace:*
@@ -1450,6 +1451,7 @@ importers:
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/ecschema-metadata': link:../ecschema-metadata
+      '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../geometry
       '@bentley/imodeljs-backend': link:../backend
       '@bentley/imodeljs-common': link:../common
