@@ -250,7 +250,7 @@ describe("QuantityInput", () => {
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} onFormatChange={spy} />);
 
     const typeSelector = renderedComponent.getByTestId("format-type-selector");
-    selectChangeValueByText(typeSelector, "QuantityFormat.decimal", handleError, true);
+    selectChangeValueByText(typeSelector, "QuantityFormat.decimal", handleError);
     expect(spy).to.be.called;
     spy.resetHistory();
 

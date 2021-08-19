@@ -1544,7 +1544,9 @@ export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingW
   return state;
 }
 
-/** Add a new Floating Panel with a single widget tab */
+/** Add a new Floating Panel with a single widget tab
+ * @internal
+ */
 export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string,
   home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps,
   userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState {
