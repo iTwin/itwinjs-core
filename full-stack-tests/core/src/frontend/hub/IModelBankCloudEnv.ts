@@ -29,12 +29,12 @@ export class IModelBankCloudEnv implements IModelCloudEnvironment {
   }
 
   public async bootstrapIModelBankProject(requestContext: AuthorizedClientRequestContext, projectName: string): Promise<void> {
-    let container: ITwin | undefined;
+    let iTwin: ITwin | undefined;
     try {
-      container = await this.contextMgr.getITwinByName(requestContext, projectName);
-      if (container === undefined)
+      iTwin = await this.contextMgr.getITwinByName(requestContext, projectName);
+      if (iTwin === undefined)
         throw new Error("what happened?");
-      await this.contextMgr.deleteContext(requestContext, container.id);
+      await this.contextMgr.deleteContext(requestContext, iTwin.id);
     } catch (err) {
       if (!(err instanceof WsgError) || (err.errorNumber !== WSStatus.InstanceNotFound)) {
         throw err;

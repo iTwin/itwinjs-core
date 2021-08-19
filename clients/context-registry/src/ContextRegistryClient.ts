@@ -10,7 +10,7 @@ import { assert } from "@bentley/bentleyjs-core";
 import { AuthorizedClientRequestContext, ECJsonTypeMap, RequestOptions, RequestQueryOptions, WsgClient, WsgInstance } from "@bentley/itwin-client";
 import { ITwin, ITwinAccess, ITwinQueryArg } from "./ITwinAccessProps";
 
-/** The iTwin context. Currently supported context types are [[Project]] and [[Asset]].
+/** The iTwin context such as Projects and Assets.
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Context", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -90,6 +90,7 @@ abstract class HiddenContext extends Context {
 }
 
 /** An iTwin context of type project. Represents time-constrained work done on an [[Asset]].
+ * Deprecated
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Project", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -105,6 +106,7 @@ class Project extends HiddenContext {
 }
 
 /** An iTwin context of type asset. Assets represent a large scale item that is owned and/or operated by organization, such as buildings, highways and so on.
+ * Deprecated
  * @beta
  */
 @ECJsonTypeMap.classToJson("wsg", "CONNECTEDContext.Asset", { schemaPropertyName: "schemaName", classPropertyName: "className" })
@@ -126,7 +128,7 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
 
   /** Get iTwins accessible to the user
    * @param requestContext The client request context
-   * @param arg Options for paging or filtering
+   * @param arg Options for paging and/or searching
    * @returns Array of iTwins, may be empty
    */
   public async getAll(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]> {
@@ -176,17 +178,11 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     const assetQuery = queryOptions;
 
     if (queryOptions?.$skip && (projectQuery && assetQuery)) {
-      // Skip a project object on Odd skips
-      projectQuery.$skip =
-      queryOptions?.$skip
-        ? Math.ceil(queryOptions.$skip / 2)
-        : undefined;
+      // Ceiling to skip a project object on Odd skips
+      projectQuery.$skip = queryOptions?.$skip ? Math.ceil(queryOptions.$skip / 2) : undefined;
 
-      // Skip an asset object on Even skips
-      assetQuery.$skip =
-      queryOptions?.$skip
-        ? Math.floor(queryOptions.$skip / 2)
-        : undefined;
+      // Floor to skip an asset object on Even skips
+      assetQuery.$skip = queryOptions?.$skip ? Math.floor(queryOptions.$skip / 2) : undefined;
     }
 
     const projectITwins: ITwin[] = await this.getInstances<Project>(requestContext, Project, "/Repositories/BentleyCONNECT--Main/ConnectedContext/project/", projectQuery);

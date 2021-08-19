@@ -77,9 +77,9 @@ export class TestUtility {
 
   public static async queryContextIdByName(contextName: string): Promise<string> {
     const requestContext = await AuthorizedFrontendRequestContext.create();
-    const container: ITwin = await this.imodelCloudEnv.contextMgr.getITwinByName(requestContext, contextName);
-    assert(container && container.id);
-    return container.id;
+    const iTwin: ITwin = await this.imodelCloudEnv.contextMgr.getITwinByName(requestContext, contextName);
+    assert(iTwin && iTwin.id);
+    return iTwin.id;
   }
 
   public static async queryIModelIdbyName(contextId: string, iModelName: string): Promise<string> {

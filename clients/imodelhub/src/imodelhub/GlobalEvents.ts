@@ -59,7 +59,7 @@ export abstract class IModelHubGlobalEvent extends IModelHubBaseEvent {
   public override fromJson(obj: any) {
     super.fromJson(obj);
     this.iModelId = obj.iModelId;
-    this.projectId = obj.ProjectId; // SWB Q: How is ProjectId different from ContextId?
+    this.projectId = obj.ProjectId;
     this.contextId = obj.ContextId;
   }
 }

@@ -221,17 +221,17 @@ export async function bootstrapBankProject(requestContext: AuthorizedClientReque
     return;
 
   const bankContext = getCloudEnv().contextMgr as IModelBankFileSystemContextClient;
-  let container: ITwin | undefined;
+  let iTwin: ITwin | undefined;
   try {
-    container = await bankContext.getITwinByName(requestContext, projectName);
+    iTwin = await bankContext.getITwinByName(requestContext, projectName);
   } catch (err) {
     if (err instanceof WsgError && err.errorNumber === WSStatus.InstanceNotFound) {
-      container = undefined;
+      iTwin = undefined;
     } else {
       throw err;
     }
   }
-  if (!container)
+  if (!iTwin)
     await bankContext.createContext(requestContext, projectName);
 
   bankProjects.push(projectName);
@@ -245,12 +245,12 @@ export async function getAssetId(requestContext: AuthorizedClientRequestContext,
 
   await bootstrapBankProject(requestContext, assetName);
 
-  const asset: ITwin = await getCloudEnv().contextMgr.getITwinByName(requestContext, assetName);
+  const iTwin: ITwin = await getCloudEnv().contextMgr.getITwinByName(requestContext, assetName);
 
-  if (!asset || !asset.id)
+  if (!iTwin || !iTwin.id)
     throw new Error(`Asset with name ${assetName} doesn't exist.`);
 
-  return asset.id;
+  return iTwin.id;
 }
 
 export async function getProjectId(requestContext: AuthorizedClientRequestContext, projectName?: string): Promise<string> {
@@ -261,12 +261,12 @@ export async function getProjectId(requestContext: AuthorizedClientRequestContex
 
   await bootstrapBankProject(requestContext, projectName);
 
-  const container: ITwin = await getCloudEnv().contextMgr.getITwinByName(requestContext, projectName);
+  const iTwin: ITwin = await getCloudEnv().contextMgr.getITwinByName(requestContext, projectName);
 
-  if (!container || !container.id)
+  if (!iTwin || !iTwin.id)
     throw new Error(`Project with name ${TestConfig.projectName} doesn't exist.`);
 
-  return container.id;
+  return iTwin.id;
 }
 
 /** iModels */
