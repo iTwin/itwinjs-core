@@ -38,7 +38,6 @@ The iTwin.js library is organized into the following separately downloadable [np
 - ($itwin-client)
 - ($product-settings-client)
 - ($reality-data-client)
-- ($usage-logging-client)
 
 ## iTwin.js UI Packages
 
