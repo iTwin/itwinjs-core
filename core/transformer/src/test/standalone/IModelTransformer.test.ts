@@ -23,7 +23,7 @@ import {
   RecordingIModelImporter, TestIModelTransformer,
 } from "../IModelTransformerUtils";
 import { IModelTestUtils } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
 import * as Semver from "semver";
 
 describe("IModelTransformer", () => {

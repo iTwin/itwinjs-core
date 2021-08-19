@@ -12,7 +12,7 @@ import {
   GenericSchema, PhysicalModel, PhysicalObject, PhysicalPartition, RenderTimeline, SpatialCategory, StandaloneDb, SubjectOwnsPartitionElements,
 } from "@bentley/imodeljs-backend";
 import { IModelTransformer } from "../../imodeljs-transformer";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { IModelTestUtils } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
 
 describe("RenderTimeline Remap", () => {
   before(() => {

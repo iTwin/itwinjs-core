@@ -19,9 +19,8 @@ import {
   TypeDefinitionElement,
 } from "@bentley/imodeljs-backend";
 import { IModelTransformer, IModelTransformOptions, TemplateModelCloner, TransformerLoggerCategory } from "../../imodeljs-transformer";
-import { IModelTestUtils } from "../IModelTestUtils";
-import { IModelTransformerUtils } from "../IModelTransformerUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
+import { IModelTestUtils } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
+import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
 
 const createClassViews = false; // can set to true to make it easier to debug the catalog structure
 
@@ -67,11 +66,11 @@ async function createAcmeCatalog(dbFile: string): Promise<void> {
   const drawingCategoryId = DrawingCategory.insert(db, containerId, "Symbols", new SubCategoryAppearance()); // "Symbols" is the name of a standard domain DrawingCategory in this sample
 
   const codeValue1 = "A-1 Series";
-  const physicalGeomProps1 = IModelTransformerUtils.createBox(new Point3d(1, 1, 1));
+  const physicalGeomProps1 = IModelTestUtils.createBox(new Point3d(1, 1, 1));
   const physicalRecipeId1 = insertEquipmentRecipe(db, containerId, spatialCategoryId, codeValue1, physicalGeomProps1); // a template recipe can be referenced by more than one PhysicalType
   insertEquipmentType(db, containerId, "A-101", physicalRecipeId1, manufacturerName, productLineName);
   insertEquipmentType(db, containerId, "A-102", physicalRecipeId1, manufacturerName, productLineName);
-  const symbolGeomProps1 = IModelTransformerUtils.createRectangle(Point2d.create(1, 1));
+  const symbolGeomProps1 = IModelTestUtils.createRectangle(Point2d.create(1, 1));
   const symbolRecipeId1 = insertSymbolRecipe(db, containerId, drawingCategoryId, codeValue1, symbolGeomProps1);
   const groupProps1: DefinitionElementProps = {
     classFullName: DefinitionGroup.classFullName,
@@ -83,12 +82,12 @@ async function createAcmeCatalog(dbFile: string): Promise<void> {
   DefinitionGroupGroupsDefinitions.insert(db, groupId1, symbolRecipeId1);
 
   const codeValue2 = "A-2 Series";
-  const physicalGeomProps2 = IModelTransformerUtils.createBox(new Point3d(2, 2, 2));
+  const physicalGeomProps2 = IModelTestUtils.createBox(new Point3d(2, 2, 2));
   const physicalRecipeId2 = insertEquipmentRecipe(db, containerId, spatialCategoryId, codeValue2, physicalGeomProps2);
   insertEquipmentType(db, containerId, "A-201", physicalRecipeId2, manufacturerName, productLineName);
   insertEquipmentType(db, containerId, "A-202", physicalRecipeId2, manufacturerName, productLineName);
   insertEquipmentType(db, containerId, "A-203", physicalRecipeId2, manufacturerName, productLineName);
-  const symbolGeomProps2 = IModelTransformerUtils.createRectangle(Point2d.create(2, 2));
+  const symbolGeomProps2 = IModelTestUtils.createRectangle(Point2d.create(2, 2));
   const symbolRecipeId2 = insertSymbolRecipe(db, containerId, drawingCategoryId, codeValue2, symbolGeomProps2);
   const groupProps2: DefinitionElementProps = {
     classFullName: DefinitionGroup.classFullName,
@@ -100,10 +99,10 @@ async function createAcmeCatalog(dbFile: string): Promise<void> {
   DefinitionGroupGroupsDefinitions.insert(db, groupId2, symbolRecipeId2);
 
   const codeValue3 = "A-3 Series";
-  const physicalGeomProps3 = IModelTransformerUtils.createBox(new Point3d(3, 3, 3));
+  const physicalGeomProps3 = IModelTestUtils.createBox(new Point3d(3, 3, 3));
   const physicalRecipeId3 = insertEquipmentRecipe(db, containerId, spatialCategoryId, codeValue3, physicalGeomProps3);
   insertEquipmentType(db, containerId, "A-301", physicalRecipeId3, manufacturerName, productLineName);
-  const symbolGeomProps3 = IModelTransformerUtils.createRectangle(Point2d.create(3, 3));
+  const symbolGeomProps3 = IModelTestUtils.createRectangle(Point2d.create(3, 3));
   const symbolRecipeId3 = insertSymbolRecipe(db, containerId, drawingCategoryId, codeValue3, symbolGeomProps3);
   const groupProps3: DefinitionElementProps = {
     classFullName: DefinitionGroup.classFullName,
@@ -138,13 +137,13 @@ async function createBestCatalog(dbFile: string): Promise<void> {
   const categoryIdB = SpatialCategory.insert(db, containerIdB, "Equipment", new SubCategoryAppearance());
 
   const codeValueB2 = "B-2 Series";
-  const physicalGeomPropsB2 = IModelTransformerUtils.createCylinder(2);
+  const physicalGeomPropsB2 = IModelTestUtils.createCylinder(2);
   const physicalRecipeIdB2 = insertEquipmentRecipe(db, containerIdB, categoryIdB, codeValueB2, physicalGeomPropsB2);
   insertEquipmentType(db, containerIdB, "B-201", physicalRecipeIdB2, manufacturerName, productLineNameB);
   insertEquipmentType(db, containerIdB, "B-202", physicalRecipeIdB2, manufacturerName, productLineNameB);
 
   const codeValueB3 = "B-3 Series";
-  const physicalGeomPropsB3 = IModelTransformerUtils.createCylinder(3);
+  const physicalGeomPropsB3 = IModelTestUtils.createCylinder(3);
   const physicalRecipeIdB3 = insertEquipmentRecipe(db, containerIdB, categoryIdB, codeValueB3, physicalGeomPropsB3);
   insertEquipmentType(db, containerIdB, "B-301", physicalRecipeIdB3, manufacturerName, productLineNameB);
   insertEquipmentType(db, containerIdB, "B-302", physicalRecipeIdB3, manufacturerName, productLineNameB);
@@ -158,13 +157,13 @@ async function createBestCatalog(dbFile: string): Promise<void> {
   const categoryIdD = SpatialCategory.insert(db, containerIdD, "Equipment", new SubCategoryAppearance());
 
   const codeValueD1 = "D-1 Series";
-  const physicalGeomPropsD1 = IModelTransformerUtils.createCylinder(1);
+  const physicalGeomPropsD1 = IModelTestUtils.createCylinder(1);
   const physicalRecipeIdD1 = insertEquipmentRecipe(db, containerIdD, categoryIdD, codeValueD1, physicalGeomPropsD1);
   insertEquipmentType(db, containerIdD, "D-101", physicalRecipeIdD1, manufacturerName, productLineNameD);
   insertEquipmentType(db, containerIdD, "D-102", physicalRecipeIdD1, manufacturerName, productLineNameD);
 
   const codeValueD2 = "D-2 Series";
-  const physicalGeomPropsD2 = IModelTransformerUtils.createCylinder(2);
+  const physicalGeomPropsD2 = IModelTestUtils.createCylinder(2);
   const physicalRecipeIdD2 = insertEquipmentRecipe(db, containerIdD, categoryIdD, codeValueD2, physicalGeomPropsD2);
   insertEquipmentType(db, containerIdD, "D-201", physicalRecipeIdD2, manufacturerName, productLineNameD);
   insertEquipmentType(db, containerIdD, "D-202", physicalRecipeIdD2, manufacturerName, productLineNameD);
@@ -198,7 +197,7 @@ async function createTestCatalog(dbFile: string): Promise<void> {
     code: Code.createEmpty(),
     userLabel: "Cylinder",
     placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
-    geom: IModelTransformerUtils.createCylinder(1),
+    geom: IModelTestUtils.createCylinder(1),
   };
   db.elements.insertElement(cylinderProps);
 
@@ -212,7 +211,7 @@ async function createTestCatalog(dbFile: string): Promise<void> {
     code: Code.createEmpty(),
     userLabel: "Assembly Head",
     placement: { origin: Point3d.createZero(), angles: { yaw: 0, pitch: 0, roll: 0 } },
-    geom: IModelTransformerUtils.createCylinder(1),
+    geom: IModelTestUtils.createCylinder(1),
   };
   const assemblyHeadId: Id64String = db.elements.insertElement(assemblyHeadProps);
   const childBoxProps: PhysicalElementProps = {
@@ -223,7 +222,7 @@ async function createTestCatalog(dbFile: string): Promise<void> {
     code: Code.createEmpty(),
     userLabel: "Child",
     placement: { origin: Point3d.create(2, 0, 0), angles: { yaw: 0, pitch: 0, roll: 0 } },
-    geom: IModelTransformerUtils.createBox(Point3d.create(1, 1, 1)),
+    geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
   };
   db.elements.insertElement(childBoxProps);
 
@@ -238,7 +237,7 @@ async function createTestCatalog(dbFile: string): Promise<void> {
     code: Code.createEmpty(),
     userLabel: "DrawingGraphic",
     placement: { origin: Point2d.createZero(), angle: 0 },
-    geom: IModelTransformerUtils.createRectangle(Point2d.create(1, 1)),
+    geom: IModelTestUtils.createRectangle(Point2d.create(1, 1)),
   };
   db.elements.insertElement(drawingGraphicProps);
 

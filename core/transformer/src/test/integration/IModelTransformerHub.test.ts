@@ -22,8 +22,8 @@ import {
 import { HubMock } from "@bentley/imodeljs-backend/lib/test/HubMock";
 import { IModelTestUtils, TestUserType } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
 import { CountingIModelImporter, IModelToTextFileExporter, TestIModelTransformer } from "../IModelTransformerUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { HubUtility } from "./HubUtility";
+import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
+import { HubUtility } from "@bentley/imodeljs-backend/lib/test/integration/HubUtility";
 
 describe("IModelTransformerHub (#integration)", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
