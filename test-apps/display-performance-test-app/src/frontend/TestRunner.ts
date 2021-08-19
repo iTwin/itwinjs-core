@@ -7,7 +7,9 @@ import * as path from "path";
 import {
   assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@bentley/bentleyjs-core";
-import { BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps } from "@bentley/imodeljs-common";
+import {
+  BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewFlagsProperties, ViewStateProps,
+} from "@bentley/imodeljs-common";
 import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
   PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
@@ -963,10 +965,7 @@ function removeOptsFromString(input: string, ignore: string[] | string | undefin
     ignore = ignore.split(" ");
 
   ignore.forEach((del: string) => {
-    if (del === "+max")
-      output = output.replace(/\+max\d+/, "");
-    else
-      output = output.replace(del, "");
+    output = output.replace(del, "");
   });
 
   output = output.replace(/__+/, "_");
@@ -986,13 +985,15 @@ function getRenderMode(vp: ScreenViewport): string {
   }
 }
 
-function getRenderOpts(curRenderOpts: RenderSystem.Options): string {
+function getRenderOpts(opts: RenderSystem.Options): string {
   let optString = "";
-  for (const [key, value] of Object.entries(curRenderOpts)) {
+  for (const propName of Object.keys(opts)) {
+    const key = propName as keyof RenderSystem.Options;
     switch (key) {
-      case "disabledExtensions":
-        if (value) {
-          for (const ext of value) {
+      case "disabledExtensions": {
+        const extensions = opts[key];
+        if (extensions) {
+          for (const ext of extensions) {
             switch (ext) {
               case "WEBGL_draw_buffers":
                 optString += "-drawBuf";
@@ -1021,58 +1022,43 @@ function getRenderOpts(curRenderOpts: RenderSystem.Options): string {
               case "EXT_frag_depth":
                 optString += "-fragDepth";
                 break;
-              default:
-                optString += `-${ext}`;
-                break;
             }
           }
         }
         break;
-      case "preserveShaderSourceCode":
-        if (value) optString += "+shadeSrc";
-        break;
+      }
       case "displaySolarShadows":
-        if (!value) optString += "-solShd";
-        break;
-      case "logarithmicZBuffer":
-        if (value) optString += "+logZBuf";
+        if (!opts[key]) optString += "-solShd";
         break;
       case "useWebGL2":
-        if (value) optString += "+webGL2";
+        if (opts[key]) optString += "+webGL2";
         break;
-      case "antialiasSamples":
-        if (value > 1) optString += `+aa${value as number}`;
+      case "antialiasSamples": {
+        const value = opts[key];
+        if (undefined !== value && value > 1) optString += `+aa${value as number}`;
         break;
-      default:
-        if (value) optString += `+${key}`;
+      }
     }
   }
+
   return optString;
 }
 
-function getTileProps(curTileProps: TileAdmin.Props): string {
+function getTileProps(props: TileAdmin.Props): string {
   let tilePropsStr = "";
-  for (const [key, value] of Object.entries(curTileProps)) {
+
+  for (const propName of Object.keys(props)) {
+    const key = propName as keyof TileAdmin.Props;
     switch (key) {
-      case "elideEmptyChildContentRequests":
-        if (value) tilePropsStr += "+elide";
-        break;
       case "enableInstancing":
-        if (value) tilePropsStr += "+inst";
-        break;
-      case "maxActiveRequests":
-        if (value !== 10) tilePropsStr += `+max${value}`;
-        break;
-      case "retryInterval":
-        if (value) tilePropsStr += `+retry${value}`;
+        if (props[key]) tilePropsStr += "+inst";
         break;
       case "disableMagnification":
-        if (value) tilePropsStr += "-mag";
+        if (props[key]) tilePropsStr += "-mag";
         break;
-      default:
-        if (value) tilePropsStr += `+${key}`;
     }
   }
+
   return tilePropsStr;
 }
 
@@ -1144,85 +1130,44 @@ function getOtherProps(vp: ScreenViewport): string {
   return propsStr;
 }
 
+const viewFlagsPropsStrings = {
+  dimensions: "-dim",
+  patterns: "-pat",
+  weights: "-wt",
+  styles: "-sty",
+  transparency: "-trn",
+  fill: "-fll",
+  textures: "-txt",
+  materials: "-mat",
+  visibleEdges: "+vsE",
+  hiddenEdges: "+hdE",
+  shadows: "+shd",
+  clipVolume: "-clip",
+  constructions: "+con",
+  monochrome: "+mno",
+  backgroundMap: "+bkg",
+  ambientOcclusion: "+ao",
+  forceSurfaceDiscard: "+fsd",
+};
+
 function getViewFlagsString(test: TestCase): string {
   let vfString = "";
-  for (const [key, value] of Object.entries(test.viewport.viewFlags)) {
-    switch (key) {
-      case "renderMode":
-        break;
-      case "dimensions":
-        if (!value) vfString += "-dim";
-        break;
-      case "patterns":
-        if (!value) vfString += "-pat";
-        break;
-      case "weights":
-        if (!value) vfString += "-wt";
-        break;
-      case "styles":
-        if (!value) vfString += "-sty";
-        break;
-      case "transparency":
-        if (!value) vfString += "-trn";
-        break;
-      case "fill":
-        if (!value) vfString += "-fll";
-        break;
-      case "textures":
-        if (!value) vfString += "-txt";
-        break;
-      case "materials":
-        if (!value) vfString += "-mat";
-        break;
-      case "visibleEdges":
-        if (value) vfString += "+vsE";
-        break;
-      case "hiddenEdges":
-        if (value) vfString += "+hdE";
-        break;
-      case "sourceLights":
-        if (value) vfString += "+scL";
-        break;
-      case "cameraLights":
-        if (value) vfString += "+cmL";
-        break;
-      case "solarLight":
-        if (value) vfString += "+slL";
-        break;
-      case "shadows":
-        if (value) vfString += "+shd";
-        break;
-      case "clipVolume":
-        if (!value) vfString += "-clp";
-        break;
-      case "constructions":
-        if (value) vfString += "+con";
-        break;
-      case "monochrome":
-        if (value) vfString += "+mno";
-        break;
-      case "noGeometryMap":
-        if (value) vfString += "+noG";
-        break;
-      case "backgroundMap":
-        if (value) vfString += "+bkg";
-        break;
-      case "hLineMaterialColors":
-        if (value) vfString += "+hln";
-        break;
-      case "edgeMask":
-        if (value === 1) vfString += "+genM";
-        if (value === 2) vfString += "+useM";
-        break;
-      case "ambientOcclusion":
-        if (value) vfString += "+ao";
-        break;
-      case "forceSurfaceDiscard":
-        if (value) vfString += "+fsd";
-        break;
-      default:
-        if (value) vfString += `+${key}`;
-    }
+
+  // Lighting flag always comes first.
+  const vf = test.viewport.viewFlags;
+  if (!vf.lighting)
+    vfString = "-lit";
+
+  for (const propName of Object.keys(vf)) {
+    const key = propName as keyof typeof viewFlagsPropsStrings;
+    const abbrev = viewFlagsPropsStrings[key];
+    if (!abbrev)
+      continue;
+
+    assert("-" === abbrev[0] || "+" === abbrev[0]);
+    const includeIf = "+" === abbrev[0];
+    if (vf[key] === includeIf)
+      vfString += abbrev;
   }
 
   if (undefined !== test.view.elementOverrides)
