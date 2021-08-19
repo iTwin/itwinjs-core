@@ -60,11 +60,10 @@ export class LineStringOffsetClipperContext {
     }
     return undefined;
   }
-  private static createDirectedPlane(basePoint: Point3d, vector: Vector3d, shift: number, normalScale: number, hidden: boolean) {
+private static createDirectedPlane(basePoint: Point3d, vector: Vector3d, shift: number, normalScale: number, interior: boolean = false) {
     return ClipPlane.createNormalAndPointXYZXYZ(
       vector.x * normalScale, vector.y * normalScale, vector.z * normalScale,
-      basePoint.x + shift * vector.x, basePoint.y + shift * vector.y, basePoint.z + shift * vector.z,
-      hidden, hidden);
+      basePoint.x + shift * vector.x, basePoint.y + shift * vector.y, basePoint.z + shift * vector.z, interior, interior);
   }
   /**
    * Create (if needed) the chamfer cutback plane for a turn.

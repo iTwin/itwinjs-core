@@ -21,7 +21,7 @@ exports.builder = (yargs) =>
 exports.handler = async (argv) => {
   const rootDir = __dirname.split("tools")[0];
 
-  let envFile = process.env.imjs_config_file ? process.env.imjs_config_file : "";
+  let envFile = process.env.IMJS_CONFIG_FILE ? process.env.IMJS_CONFIG_FILE : "";
 
   if (!envFile) {
     const lastIndex = rootDir.lastIndexOf(path.sep + "imodeljs");

@@ -41,6 +41,7 @@ packageClassification:  [
          "ui-abstract",
          "ui-core",
          "ui-components",
+         "ui-imodel-components",
          "ui-ninezone",
          "ui-framework"
       ]

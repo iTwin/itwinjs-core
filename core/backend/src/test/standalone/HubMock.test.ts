@@ -226,7 +226,7 @@ describe("HubMock", () => {
     const iModelId = await IModelHost.hubAccess.createIModel({ contextId, iModelName: "test imodel", revision0 });
     const briefcase = await BriefcaseManager.downloadBriefcase(requestContext, { contextId, iModelId });
     assert.equal(briefcase.briefcaseId, 2);
-    assert.equal(briefcase.changeSetId, "");
+    assert.equal(briefcase.changeset.id, "");
     assert.equal(briefcase.iModelId, iModelId);
     assert.equal(briefcase.contextId, contextId);
     await IModelHost.hubAccess.deleteIModel({ contextId, iModelId });

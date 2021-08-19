@@ -9,21 +9,9 @@
 import "./MessageBox.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { DialogButtonDef } from "@bentley/ui-abstract";
+import { DialogButtonDef, MessageSeverity } from "@bentley/ui-abstract";
 import { Dialog } from "../dialog/Dialog";
 import { CommonProps } from "../utils/Props";
-
-/** Message Severity enum.
- * @public
- */
-export enum MessageSeverity {
-  None = 0,
-  Information = 1,
-  Question = 2,
-  Warning = 3,
-  Error = 4,
-  Fatal = 5,
-}
 
 /** Properties for the [[MessageBox]] component
  * @public

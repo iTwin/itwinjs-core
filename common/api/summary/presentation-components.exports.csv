@@ -83,7 +83,6 @@ beta;UnifiedSelectionContextProviderProps
 beta;UnifiedSelectionState = (selectionLevel?: number) => Readonly
 public;UnifiedSelectionTreeEventHandler 
 public;UnifiedSelectionTreeEventHandlerParams
-internal;updateTreeModel(treeModel: TreeModel, hierarchyModifications: PartialHierarchyModification[], treeNodeItemCreationProps: CreateTreeNodeItemProps): MutableTreeModel | undefined
 public;useControlledPresentationTreeFiltering(props: ControlledPresentationTreeFilteringProps):
 beta;useControlledTreeFiltering: typeof useControlledPresentationTreeFiltering
 deprecated;useControlledTreeFiltering: typeof useControlledPresentationTreeFiltering

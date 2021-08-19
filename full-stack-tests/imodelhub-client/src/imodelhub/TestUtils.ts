@@ -6,7 +6,7 @@ import * as chai from "chai";
 import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
-import { ClientRequestContext, Config, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
 import { Asset, Project } from "@bentley/context-registry-client";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
@@ -40,17 +40,17 @@ function configMockSettings() {
   if (!TestConfig.enableMocks)
     return;
 
-  Config.App.set("imjs_imodelhub_url", "https://api.bentley.com/imodelhub");
-  Config.App.set("imjs_buddi_resolve_url_using_region", 0);
-  Config.App.set("imjs_url_prefix", "");
-  Config.App.set("imjs_test_serviceAccount1_user_name", "test");
-  Config.App.set("imjs_test_serviceAccount1_user_password", "test");
-  Config.App.set("imjs_test_manager_user_name", "test");
-  Config.App.set("imjs_test_manager_user_password", "test");
+  process.env.IMJS_IMODELHUB_URL = "https://api.bentley.com/imodelhub";
+  process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = "0";
+  process.env.IMJS_URL_PREFIX = "";
+  process.env.IMJS_TEST_SERVICEACCOUNT1_USER_NAME = "test";
+  process.env.IMJS_TEST_SERVICEACCOUNT1_USER_PASSWORD = "test";
+  process.env.IMJS_TEST_MANAGER_USER_NAME = "test";
+  process.env.IMJS_TEST_MANAGER_USER_PASSWORD = "test";
 }
 
 export function getExpectedFileHandlerUrlSchemes(): string[] {
-  const handler = Config.App.getString("imjs_test_imodel_bank_file_handler", "url");
+  const handler = process.env.IMJS_TEST_IMODEL_BANK_FILE_HANDLER ?? "url";
   switch (handler.toLowerCase()) {
     case "localhost":
       return ["file://"];
@@ -159,7 +159,7 @@ let imodelBankClient: IModelBankClient;
 export class IModelHubUrlMock {
   public static getUrl(): string {
     configMockSettings();
-    return Config.App.get("imjs_imodelhub_url", "");
+    return process.env.IMJS_IMODELHUB_URL ?? "";
   }
 }
 
@@ -627,7 +627,8 @@ export function mockDeniedLocks(imodelId: GuidString, locks: Lock[], requestOpti
 }
 
 /** Named versions */
-export function generateVersion(name?: string, changesetId?: string, addInstanceId: boolean = true, smallThumbnailId?: GuidString, largeThumbnailId?: GuidString, hidden?: boolean): Version {
+export function generateVersion(name?: string, changesetId?: string, addInstanceId: boolean = true, smallThumbnailId?: GuidString,
+  largeThumbnailId?: GuidString, hidden?: boolean, applicationId?: string, applicationName?: string): Version {
   const result = new Version();
   if (addInstanceId) {
     result.id = Guid.createValue();
@@ -640,6 +641,8 @@ export function generateVersion(name?: string, changesetId?: string, addInstance
   // eslint-disable-next-line deprecation/deprecation
   result.largeThumbnailId = largeThumbnailId;
   result.hidden = hidden;
+  result.applicationId = applicationId;
+  result.applicationName = applicationName;
   return result;
 }
 

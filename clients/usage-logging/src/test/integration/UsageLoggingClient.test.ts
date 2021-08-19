@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
 import * as os from "os";
-import { BentleyStatus, Config, Guid, GuidString } from "@bentley/bentleyjs-core";
+import { BentleyStatus, Guid, GuidString } from "@bentley/bentleyjs-core";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import {
@@ -16,10 +16,17 @@ describe("UlasClient - OIDC Token (#integration)", () => {
   let accessToken: AccessToken;
 
   before(async () => {
+    if (process.env.IMJS_OIDC_ULAS_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_OIDC_ULAS_TEST_CLIENT_ID");
+    if (process.env.IMJS_OIDC_ULAS_TEST_REDIRECT_URI === undefined)
+      throw new Error("Could not find IMJS_OIDC_ULAS_TEST_REDIRECT_URI");
+    if (process.env.IMJS_OIDC_ULAS_TEST_SCOPES === undefined)
+      throw new Error("Could not find  IMJS_OIDC_ULAS_TEST_SCOPES");
+
     const oidcConfig: TestBrowserAuthorizationClientConfiguration = {
-      clientId: Config.App.getString("imjs_oidc_ulas_test_client_id"),
-      redirectUri: Config.App.getString("imjs_oidc_ulas_test_redirect_uri"),
-      scope: Config.App.getString("imjs_oidc_ulas_test_scopes"),
+      clientId: process.env.IMJS_OIDC_ULAS_TEST_CLIENT_ID ?? "",
+      redirectUri: process.env.IMJS_OIDC_ULAS_TEST_REDIRECT_URI ?? "",
+      scope: process.env.IMJS_OIDC_ULAS_TEST_SCOPES ?? "",
     };
 
     // Need to cast to any and then back to AccessToken because of circular dependency with the oidc-signin-tool

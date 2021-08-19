@@ -219,6 +219,10 @@
       "allowedCategories": [ "extensions", "internal" ]
     },
     {
+      "name": "@bentley/ui-imodel-components",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
       "name": "@bentley/ui-ninezone",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
@@ -271,6 +275,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@testing-library/user-event",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@typescript-eslint/eslint-plugin",
       "allowedCategories": [ "tools" ]
     },
@@ -285,6 +293,10 @@
     {
       "name": "@ungap/url-search-params",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "@wojtekmaj/enzyme-adapter-react-17",
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "agentkeepalive",
@@ -448,7 +460,7 @@
     },
     {
       "name": "enzyme-adapter-react-16",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "enzyme-to-json",
@@ -801,6 +813,10 @@
     {
       "name": "react-dom",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "react-dom-instance",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-highlight-words",

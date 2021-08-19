@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-backend",
-  "version": "3.0.0-dev.23",
+  "version": "3.0.0-dev.30",
   "description": "iModel.js backend components",
   "main": "lib/imodeljs-backend.js",
   "typings": "lib/imodeljs-backend",
@@ -55,14 +55,14 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/backend-itwin-client": "workspace:^3.0.0-dev.23",
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.23",
-    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.23",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.23",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.23",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.23",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.23",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.23"
+    "@bentley/backend-itwin-client": "workspace:^3.0.0-dev.30",
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.30",
+    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.30",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.30",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.30",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.30",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.30",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.30"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -119,7 +119,7 @@
   "dependencies": {
     "@azure/storage-blob": "10.4.0",
     "@bentley/context-registry-client": "workspace:*",
-    "@bentley/imodeljs-native": "3.0.2",
+    "@bentley/imodeljs-native": "3.0.6",
     "@bentley/usage-logging-client": "workspace:*",
     "deep-assign": "^2.0.0",
     "form-data": "^2.3.2",

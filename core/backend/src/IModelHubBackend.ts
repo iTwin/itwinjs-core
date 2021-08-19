@@ -13,13 +13,16 @@ import {
   BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient,
   IModelHubClient, IModelQuery, Lock, LockLevel, LockQuery, LockType, VersionQuery,
 } from "@bentley/imodelhub-client";
-import { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName } from "@bentley/imodeljs-common";
+import {
+  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
+} from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import {
-  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps,
+  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps, V2CheckpointAccessProps,
 } from "./BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseManager } from "./BriefcaseManager";
+import { CheckpointProps } from "./CheckpointManager";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -260,7 +263,7 @@ export class IModelHubBackend {
   public static async downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
-    checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeSetId);
+    checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeset.id);
     const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
     const checkpoints = await this.iModelClient.checkpoints.get(requestContext, checkpoint.iModelId, checkpointQuery);
     if (checkpoints.length !== 1)
@@ -276,10 +279,30 @@ export class IModelHubBackend {
     return checkpoints[0].mergedChangeSetId!;
   }
 
+  public static async queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
+    const checkpointQuery = new CheckpointV2Query().byChangeSetId(arg.changeset.id).selectContainerAccessKey();
+    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
+    const checkpoints = await this.iModelClient.checkpointsV2.get(requestContext, arg.iModelId, checkpointQuery);
+    if (checkpoints.length < 1)
+      return undefined;
+
+    const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpoints[0];
+    if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
+      throw new Error("Invalid V2 checkpoint in iModelHub");
+
+    return {
+      container: containerAccessKeyContainer,
+      auth: containerAccessKeySAS,
+      user: containerAccessKeyAccount,
+      dbAlias: containerAccessKeyDbName,
+      storageType: "azure?sas=1",
+    };
+  }
+
   public static async downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointV2Query();
-    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeSetId).selectContainerAccessKey();
+    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeset.id).selectContainerAccessKey();
     const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
     let checkpoints: CheckpointV2[] = [];
     try {

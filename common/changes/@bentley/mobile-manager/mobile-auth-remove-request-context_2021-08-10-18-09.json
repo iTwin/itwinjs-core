@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/mobile-manager",
+      "comment": "remove request context from mobile auth client",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/mobile-manager",
+  "email": "khanaffan@users.noreply.github.com"
+}
