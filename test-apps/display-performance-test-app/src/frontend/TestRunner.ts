@@ -8,7 +8,7 @@ import {
   assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
 } from "@bentley/bentleyjs-core";
 import {
-  BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewFlagsProperties, ViewStateProps,
+  BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
@@ -1035,7 +1035,7 @@ function getRenderOpts(opts: RenderSystem.Options): string {
         break;
       case "antialiasSamples": {
         const value = opts[key];
-        if (undefined !== value && value > 1) optString += `+aa${value as number}`;
+        if (undefined !== value && value > 1) optString += `+aa${value}`;
         break;
       }
     }
