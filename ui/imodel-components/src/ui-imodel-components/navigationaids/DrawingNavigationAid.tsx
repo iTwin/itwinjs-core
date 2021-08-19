@@ -764,7 +764,8 @@ export class DrawingNavigationCanvas extends React.Component<DrawingNavigationCa
     if (vp.logo.style)
       vp.logo.style.display = "none";
 
-    vp.viewFlags = vp.viewFlags.with("acsTriad", false);
+    if (vp.viewFlags.acsTriad)
+      vp.viewFlags = vp.viewFlags.with("acsTriad", false);
   }
 
   private _update = () => {
