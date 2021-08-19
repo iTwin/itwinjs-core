@@ -9,11 +9,11 @@ import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  AuthorizedBackendRequestContext, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, IModelHost,
+  AuthorizedBackendRequestContext, BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CheckpointProps, IModelHost,
   IModelHubBackend,
   IModelIdArg,
   IModelJsFs,
-  LockProps, SnapshotDb ,
+  LockProps, SnapshotDb, V2CheckpointAccessProps,
 } from "@bentley/imodeljs-backend";
 
 import {HubUtility} from "./integration/HubUtility";
@@ -190,6 +190,10 @@ export class HubMock {
 
   public static async pushChangeset(arg: IModelIdArg & { changesetProps: ChangesetFileProps }): Promise<ChangesetIndex> {
     return this.findLocalHub(arg.iModelId).addChangeset(arg.changesetProps);
+  }
+
+  public static async queryV2Checkpoint(_arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
+    return undefined;
   }
 
   public static async downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
