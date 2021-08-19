@@ -446,7 +446,7 @@ export class IModelTransformer extends IModelExportHandler {
       targetElementProps = this.onTransformElement(sourceElement);
     }
     // if an existing remapping was not yet found, check by Code as long as the CodeScope is valid (invalid means a missing predecessor so not worth checking)
-    if ((targetElementId === undefined || !Id64.isValidId64(targetElementId)) && Id64.isValidId64(targetElementProps.code.scope)) {
+    if (!Id64.isValidId64(targetElementId) && Id64.isValidId64(targetElementProps.code.scope)) {
       targetElementId = this.targetDb.elements.queryElementIdByCode(new Code(targetElementProps.code));
       if (undefined !== targetElementId) {
         const targetElement: Element = this.targetDb.elements.getElement(targetElementId);
