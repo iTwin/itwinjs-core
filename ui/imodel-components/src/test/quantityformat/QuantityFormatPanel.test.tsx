@@ -239,7 +239,6 @@ describe("QuantityInput", () => {
     const precisionSelector = renderedComponent.getByTestId("fraction-precision-selector");
 
     ["1", "2", "4", "8", "16", "32", "64", "128", "256"].forEach((_selectValue, index) => {
-      // fireEvent.change(precisionSelector, { target: { value: selectValue } });
       selectChangeValueByIndex(precisionSelector, index, handleError);
       expect(spy).to.be.called;
       spy.resetHistory();
@@ -251,15 +250,12 @@ describe("QuantityInput", () => {
     const renderedComponent = render(<QuantityFormatPanel quantityType={QuantityType.Length} showSample initialMagnitude={123.45} onFormatChange={spy} />);
 
     const typeSelector = renderedComponent.getByTestId("format-type-selector");
-    // fireEvent.change(typeSelector, { target: { value: FormatType.Decimal.toString() } });
     selectChangeValueByText(typeSelector, "QuantityFormat.decimal", handleError);
     expect(spy).to.be.called;
     spy.resetHistory();
 
     const precisionSelector = renderedComponent.getByTestId("decimal-precision-selector");
-
     ["0", "1", "2", "3", "4", "5", "6", "7", "8", "9", "10", "11", "12"].forEach((_selectValue, index) => {
-      // fireEvent.change(precisionSelector, { target: { value: selectValue } });
       selectChangeValueByIndex(precisionSelector, index, handleError);
       expect(spy).to.be.called;
       spy.resetHistory();
