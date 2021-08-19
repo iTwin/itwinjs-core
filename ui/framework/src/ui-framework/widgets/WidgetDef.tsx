@@ -7,8 +7,8 @@
  */
 
 import * as React from "react";
-import { AbstractWidgetProps, BadgeType, ConditionalStringValue, StringGetter, UiError, WidgetState } from "@bentley/ui-abstract";
-import { PointProps, UiEvent } from "@bentley/ui-core";
+import { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiError, WidgetState } from "@bentley/ui-abstract";
+import { UiEvent } from "@bentley/ui-core";
 import { Direction, PanelSide } from "@bentley/ui-ninezone";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
 import { ConfigurableUiManager } from "../configurableui/ConfigurableUiManager";
