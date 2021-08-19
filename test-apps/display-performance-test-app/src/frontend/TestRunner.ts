@@ -1149,6 +1149,8 @@ const viewFlagsPropsStrings = {
   ambientOcclusion: "+ao",
   forceSurfaceDiscard: "+fsd",
   thematicDisplay: "+thematicDisplay",
+  grid: "+grid",
+  whiteOnWhiteReversal: "+wow",
 };
 
 function getViewFlagsString(test: TestCase): string {
