@@ -1148,6 +1148,7 @@ const viewFlagsPropsStrings = {
   backgroundMap: "+bkg",
   ambientOcclusion: "+ao",
   forceSurfaceDiscard: "+fsd",
+  thematicDisplay: "+thematicDisplay",
 };
 
 function getViewFlagsString(test: TestCase): string {
@@ -1155,7 +1156,7 @@ function getViewFlagsString(test: TestCase): string {
 
   // Lighting flag always comes first.
   const vf = test.viewport.viewFlags;
-  if (!vf.lighting)
+  if (!vf.lighting && RenderMode.SmoothShade === vf.renderMode)
     vfString = "-lit";
 
   for (const propName of Object.keys(vf)) {
