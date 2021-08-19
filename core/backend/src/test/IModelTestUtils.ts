@@ -39,6 +39,7 @@ import {
   OrthographicViewDefinition,
   PhysicalModel, PhysicalObject, PhysicalPartition, Platform, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, SubjectOwnsPartitionElements, Texture, ViewDefinition,
 } from "../imodeljs-backend";
+export * as IModelJsBackend from "../imodeljs-backend";
 import { DefinitionModel, DocumentListModel, DrawingModel, InformationRecordModel, SpatialLocationModel } from "../Model";
 import { DrawingGraphicRepresentsElement, ElementDrivesElement, ElementRefersToElements, Relationship, RelationshipProps } from "../Relationship";
 import { DownloadAndOpenArgs, RpcBriefcaseUtility } from "../rpc-impl/RpcBriefcaseUtility";
