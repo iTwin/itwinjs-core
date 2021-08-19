@@ -49,6 +49,7 @@
       "analytical-backend": "analytical-backend",
       "backend-itwin-client": "backend-itwin-client",
       "backend": "imodeljs-backend",
+      "transformer": "imodeljs-transformer",
       "bentley": "bentleyjs-core",
       "common": "imodeljs-common",
       "context-registry-client": "context-registry-client",
