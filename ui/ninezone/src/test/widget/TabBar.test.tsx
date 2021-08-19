@@ -51,6 +51,48 @@ describe("WidgetTitleBar", () => {
     })).should.true;
   });
 
+  it("should dispatch FLOATING_WIDGET_CLEAR_USER_SIZED", () => {
+    const fakeTimers = sinon.useFakeTimers();
+
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addPanelWidget(nineZone, "left", "w1", ["t1"]);
+    nineZone = addTab(nineZone, "t1");
+    nineZone = produce(nineZone, (stateDraft) => {
+      stateDraft.panels.left.widgets = [];
+      stateDraft.floatingWidgets.byId.w1 = createFloatingWidgetState("w1", {
+        bounds: new Rectangle(0, 100, 200, 400).toProps(),
+        userSized: true,
+      });
+    });
+    const { container } = render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <FloatingWidget
+          floatingWidget={nineZone.floatingWidgets.byId.w1!}
+          widget={nineZone.widgets.w1}
+        />
+      </NineZoneProvider>,
+    );
+    const titleBar = container.getElementsByClassName("nz-widget-tabBar")[0];
+    const handle = titleBar.getElementsByClassName("nz-handle")[0];
+
+    act(() => {
+      fireEvent.mouseDown(handle);
+      fireEvent.mouseUp(handle);
+      fireEvent.mouseDown(handle);
+      dispatch.reset();
+      fireEvent.mouseUp(handle);
+      fakeTimers.tick(300);
+    });
+    dispatch.calledOnceWithExactly(sinon.match({
+      type: "FLOATING_WIDGET_CLEAR_USER_SIZED",
+      id: "w1",
+    })).should.true;
+  });
+
   it("should dispatch WIDGET_DRAG_END with tab target", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();

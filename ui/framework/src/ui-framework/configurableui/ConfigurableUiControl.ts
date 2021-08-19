@@ -32,15 +32,20 @@ export class ConfigurableBase implements ConfigurableUiElement {
   private _uniqueId: string;
   private _classId: string;
   private _name: string;
+  protected _appDataOptions: any;
 
   constructor(info: ConfigurableCreateInfo, options: any) {
     this._uniqueId = info.uniqueId;
     this._classId = info.classId;
     this._name = (options && options.hasOwnProperty("name")) ? options.name : info.uniqueId;
+    this._appDataOptions = options;
   }
 
   /** @internal */
   public get uniqueId(): string { return this._uniqueId; }
+
+  /** allow options set via appData to be seen by API calls */
+  public get applicationData(): any { return this._appDataOptions; }
 
   /** Gets the class Id of configurable element */
   public get classId(): string { return this._classId; }

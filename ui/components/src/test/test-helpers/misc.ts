@@ -48,10 +48,9 @@ export const waitForUpdate = async (action: () => any, spy: sinon.SinonSpy, coun
 /**
  * Select component pick value using index
  */
-export const selectChangeValueByIndex = (select: HTMLElement, index: number, onError?: (msg: string) => void): void => {
+export const selectChangeValueByIndex = (select: HTMLElement, index: number, onError?: (msg: string) => void, useOwnerDoc?: boolean): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
-
-  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
+  const menu = useOwnerDoc ? select.ownerDocument.querySelector("ul.iui-menu") as HTMLUListElement : select.querySelector("ul.iui-menu") as HTMLUListElement;
   if (!menu)
     onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;
@@ -67,10 +66,10 @@ export const selectChangeValueByIndex = (select: HTMLElement, index: number, onE
 /**
  * Select component change value using text of menu item to find item
  */
-export const selectChangeValueByText = (select: HTMLElement, label: string, onError?: (msg: string) => void): void => {
+export const selectChangeValueByText = (select: HTMLElement, label: string, onError?: (msg: string) => void, useOwnerDoc?: boolean): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
 
-  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
+  const menu = useOwnerDoc ? select.ownerDocument.querySelector("ul.iui-menu") as HTMLUListElement : select.querySelector("ul.iui-menu") as HTMLUListElement;
   if (!menu)
     onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;
