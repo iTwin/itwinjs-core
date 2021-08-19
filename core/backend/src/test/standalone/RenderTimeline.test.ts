@@ -40,49 +40,6 @@ describe("RenderTimeline", () => {
     return imodel.elements.insertElement(props);
   }
 
-  function insertPhysicalModel(db: StandaloneDb): Id64String {
-    const partitionProps = {
-      classFullName: PhysicalPartition.classFullName,
-      model: IModel.repositoryModelId,
-      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
-      code: PhysicalPartition.createCode(db, IModel.rootSubjectId, `PhysicalPartition_${Guid.createValue()}`),
-    };
-
-    const partitionId = db.elements.insertElement(partitionProps);
-    expect(Id64.isValidId64(partitionId)).to.be.true;
-
-    const model = db.models.createModel({
-      classFullName: PhysicalModel.classFullName,
-      modeledElement: { id: partitionId },
-    });
-
-    expect(model instanceof PhysicalModel).to.be.true;
-
-    const modelId = db.models.insertModel(model);
-    expect(Id64.isValidId64(modelId)).to.be.true;
-    return modelId;
-  }
-
-  function insertPhysicalElement(db: StandaloneDb, model: Id64String, category: Id64String): Id64String {
-    const geomBuilder = new GeometryStreamBuilder();
-    geomBuilder.appendGeometry(Box.createDgnBox(Point3d.createZero(), Vector3d.unitX(), Vector3d.unitY(), new Point3d(0, 0, 2), 2, 2, 2, 2, true)!);
-    const props: PhysicalElementProps = {
-      classFullName: PhysicalObject.classFullName,
-      model,
-      category,
-      code: Code.createEmpty(),
-      geom: geomBuilder.geometryStream,
-      placement: {
-        origin: Point3d.create(1, 1, 1),
-        angles: YawPitchRollAngles.createDegrees(0, 0, 0),
-      },
-    };
-
-    const elemId = db.elements.insertElement(props);
-    expect(Id64.isValid(elemId)).to.be.true;
-    return elemId;
-  }
-
   function createIModel(name: string): StandaloneDb {
     const props = {
       rootSubject: {

@@ -10,7 +10,7 @@ import {
   BackendRequestContext, Category, ECSqlStatement, Element, GeometricElement2d, GeometricElement3d, IModelDb, IModelHost,
   IModelJsFs, PhysicalModel, PhysicalPartition, SnapshotDb, SpatialCategory, SpatialElement,
 } from "@bentley/imodeljs-backend";
-import  { TransformerLoggerCategory } from "@bentley/imodeljs-transformer";
+import { TransformerLoggerCategory } from "@bentley/imodeljs-transformer";
 import { Code, PhysicalElementProps } from "@bentley/imodeljs-common";
 import { loggerCategory, Transformer } from "../Transformer";
 

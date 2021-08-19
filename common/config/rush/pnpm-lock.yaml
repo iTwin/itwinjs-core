@@ -1419,6 +1419,7 @@ importers:
   ../../core/transformer:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
+      '@bentley/build-tools': workspace:*
       '@bentley/ecschema-metadata': workspace:*
       '@bentley/geometry-core': workspace:*
       '@bentley/imodeljs-backend': workspace:*
@@ -1427,6 +1428,7 @@ importers:
       '@bentley/itwin-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
+      '@types/mocha': ^8.2.2
       '@types/node': 10.14.1
       '@types/semver': ^5.5.0
       '@types/sinon': ^9.0.0
@@ -1434,6 +1436,7 @@ importers:
       chai-as-promised: ^7
       cpx: ^1.5.0
       eslint: ^7.11.0
+      mocha: ^8.3.2
       npm-run-all: ^4.1.5
       nyc: ^15.1.0
       rimraf: ^3.0.2
@@ -1445,6 +1448,7 @@ importers:
       semver: 5.7.1
     devDependencies:
       '@bentley/bentleyjs-core': link:../bentley
+      '@bentley/build-tools': link:../../tools/build
       '@bentley/ecschema-metadata': link:../ecschema-metadata
       '@bentley/geometry-core': link:../geometry
       '@bentley/imodeljs-backend': link:../backend
@@ -1452,6 +1456,7 @@ importers:
       '@bentley/itwin-client': link:../../clients/itwin
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
+      '@types/mocha': 8.2.3
       '@types/node': 10.14.1
       '@types/semver': 5.5.0
       '@types/sinon': 9.0.11
@@ -1459,6 +1464,7 @@ importers:
       chai-as-promised: 7.1.1_chai@4.3.4
       cpx: 1.5.0
       eslint: 7.31.0
+      mocha: 8.4.0
       npm-run-all: 4.1.5
       nyc: 15.1.0
       rimraf: 3.0.2
