@@ -13,7 +13,7 @@ These classes should be considered a framework and not confused with the actual 
 
 The [IModelExporter]($transformer) and [IModelExportHandler]($transformer) base classes are used when the **source** data in an ETL workflow is contained within an iModel.
 
-While it is possible to export data from an iModel using the standard [IModelDb]($transformer) API, the [IModelExporter]($transformer) and [IModelExportHandler]($transformer) base classes offer the following capabilities:
+While it is possible to export data from an iModel using the standard [IModelDb]($backend) API, the [IModelExporter]($transformer) and [IModelExportHandler]($transformer) base classes offer the following capabilities:
 
 - An implementation of a [visitor](https://en.wikipedia.org/wiki/Visitor_pattern) pattern that makes it easy to iterate the iModel in a prescribed order that attempts to visit dependencies/prerequisites before dependents.
 - Visit the entire iModel using [IModelExporter.exportAll]($transformer)
@@ -32,7 +32,7 @@ Below is an example of using [IModelExporter]($transformer) and [IModelExportHan
 
 The [IModelImporter]($transformer) base class is used when the **target** in an ETL workflow is an iModel.
 
-While it is possible to import data into an iModel using the standard [IModelDb]($transformer) API, the [IModelImporter]($transformer) class offers the following capabilities:
+While it is possible to import data into an iModel using the standard [IModelDb]($backend) API, the [IModelImporter]($transformer) class offers the following capabilities:
 
 - Callbacks whenever IModelImporter is used to insert, update, or delete entities. Simply override one of the protected `onInsert*`, `onUpdate*`, or `onDelete*` methods.
 - Automatically compute the [IModel.projectExtents]($common) during import via the [IModelImporter.autoExtendProjectExtents]($transformer) setting.
@@ -45,8 +45,8 @@ While it is possible to import data into an iModel using the standard [IModelDb]
 See the following for more information about projectExtents:
 
 - [IModel.projectExtents]($common)
-- [IModelDb.updateProjectExtents]($transformer)
-- [IModelDb.computeProjectExtents]($transformer)
+- [IModelDb.updateProjectExtents]($backend)
+- [IModelDb.computeProjectExtents]($backend)
 
 #### autoExtendProjectExtents = false
 
