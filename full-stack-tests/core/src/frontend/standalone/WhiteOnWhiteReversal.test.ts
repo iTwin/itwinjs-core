@@ -29,9 +29,6 @@ describe("White-on-white reversal", async () => {
       let newVf = setup(vp, vf);
       vp.viewFlags = newVf ?? vf;
 
-      vp.viewFlags = vf;
-      vp.invalidateRenderPlan();
-
       await vp.waitForAllTilesToRender();
       if (undefined !== cleanup)
         cleanup(vp);
