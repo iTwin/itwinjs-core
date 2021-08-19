@@ -94,7 +94,7 @@ describe("Screen-space effects", () => {
   async function test(bgColor: ColorDef, func: (vp: TestViewport) => Promise<void>) {
     await testViewports("0x24", imodel, 50, 50, async (vp) => {
       // Turn off lighting so we get pure colors and edges so we get only surfaces.
-      vp.viewFlags = vp.viewFlags.with("visibleEdges", false);
+      vp.viewFlags = vp.viewFlags.with("visibleEdges", false).with("lighting", false);
 
       vp.displayStyle.backgroundColor = bgColor;
 
