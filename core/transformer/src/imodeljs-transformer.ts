@@ -11,6 +11,8 @@ export * from "./IModelTransformer";
  * The imodeljs-transformer package contains classes that [backend code]($docs/learning/backend/index.md) can use to
  * traverse iModels, as well as *transform* an iModel into another existing or empty one, by exporting elements from one during
  * traversal and importing them into another.
+ *
+ * You can read further in [iModelTransformation and Data Exchange]($docs/learning/transformer/index.md) here.
  */
 /**
  * @docs-group-description iModels
