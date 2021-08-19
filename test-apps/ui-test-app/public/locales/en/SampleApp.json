@@ -343,7 +343,7 @@
       "label": "Display"
     },
     "pullMergePushFailed": "Pull or push failed.",
-    "pullMergeFailed": "Failed to pull changes from serve",
+    "pullMergeFailed": "Failed to pull changes from server",
     "pushButtonTitle": "Push",
     "pushButtonDisabledTitle": "No local changes to push",
     "pullButtonTitle": "Pull",
