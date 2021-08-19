@@ -193,6 +193,25 @@ describe("ViewFlags", () => {
     expectLighting(new ViewFlags({ lighting: false }), false);
     expectLighting(new ViewFlags({ lighting: true }), true);
   });
+
+  it("with", () => {
+    const def = ViewFlags.defaults;
+    for (const propName of Object.keys(def)) {
+      const key = propName as keyof Omit<ViewFlagsProperties, "renderMode">;
+      const value = def[key];
+      if (typeof value !== "boolean")
+        continue;
+
+      expect(def.with(key, value)).to.equal(def);
+      expect(def.with(key, !value)[key]).to.equal(!value);
+    }
+  });
+
+  it("withRenderMode", () => {
+    const vf = new ViewFlags({ renderMode: RenderMode.SolidFill });
+    expect(vf.withRenderMode(RenderMode.SolidFill)).to.equal(vf);
+    expect(vf.withRenderMode(RenderMode.HiddenLine).renderMode).to.equal(RenderMode.HiddenLine);
+  });
 });
 
 describe("ViewFlagOverrides", () => {
