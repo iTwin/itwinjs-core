@@ -5,9 +5,11 @@
 
 import * as path from "path";
 import {
-  assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, ProcessDetector, SortedArray, StopWatch,
+  assert, BeDuration, Dictionary, Id64, Id64Array, Id64String, NonFunctionPropertyNamesOf, ProcessDetector, SortedArray, StopWatch,
 } from "@bentley/bentleyjs-core";
-import { BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewStateProps } from "@bentley/imodeljs-common";
+import {
+  BackgroundMapType, DisplayStyleProps, FeatureAppearance, Hilite, RenderMode, ViewFlagsProperties, ViewStateProps,
+} from "@bentley/imodeljs-common";
 import {
   DisplayStyle3dState, DisplayStyleState, EntityState, FeatureSymbology, GLTimerResult, GLTimerResultCallback, IModelApp, IModelConnection,
   PerformanceMetrics, Pixel, RenderSystem, ScreenViewport, SnapshotConnection, Target, TileAdmin, ViewRect, ViewState,
@@ -694,10 +696,6 @@ export class TestRunner {
     if (renderMode)
       testName += `_${renderMode}`;
 
-    const vf = getViewFlagsString(test);
-    if (vf)
-      testName += `_${vf}`;
-
     const renderOpts = getRenderOpts(configs.renderOptions);
     if (renderOpts)
       testName += `_${renderOpts}`;
@@ -717,6 +715,15 @@ export class TestRunner {
     const other = getOtherProps(test.viewport);
     if (other)
       testName += `_${other}`;
+
+    // NB: We removed the 3 lighting properties from ViewFlags, replacing them with a single `lighting` property.
+    // We need to update previously-generated filenames to remove those flags and add this one.
+    // To make that easy, we now put the view flags string at the end of the filename,
+    // and the lighting flag at the end of the view flags string.
+    // Once those test names are updated it will no longer be important for this to be last.
+    const vf = getViewFlagsString(test);
+    if (vf)
+      testName += `_${vf}`;
 
     testName = removeOptsFromString(testName, configs.filenameOptsToIgnore);
     if (!ignoreDupes) {
@@ -988,9 +995,11 @@ function getRenderMode(vp: ScreenViewport): string {
 
 function getRenderOpts(curRenderOpts: RenderSystem.Options): string {
   let optString = "";
-  for (const [key, value] of Object.entries(curRenderOpts)) {
+  for (const propName of Object.keys(curRenderOpts)) {
+    const key = propName as NonFunctionPropertyNamesOf<RenderSystem.Options>;
     switch (key) {
-      case "disabledExtensions":
+      case "disabledExtensions": {
+        const value = curRenderOpts[key];
         if (value) {
           for (const ext of value) {
             switch (ext) {
@@ -1028,51 +1037,50 @@ function getRenderOpts(curRenderOpts: RenderSystem.Options): string {
           }
         }
         break;
-      case "preserveShaderSourceCode":
-        if (value) optString += "+shadeSrc";
-        break;
+      }
       case "displaySolarShadows":
-        if (!value) optString += "-solShd";
+        if (!curRenderOpts[key]) optString += "-solShd";
         break;
-      case "logarithmicZBuffer":
-        if (value) optString += "+logZBuf";
+      case "logarithmicDepthBuffer":
+        if (!curRenderOpts[key]) optString += "-logZBuf";
         break;
       case "useWebGL2":
-        if (value) optString += "+webGL2";
+        if (!curRenderOpts[key]) optString += "-webGL2";
         break;
-      case "antialiasSamples":
-        if (value > 1) optString += `+aa${value as number}`;
+      case "antialiasSamples": {
+        const value = curRenderOpts[key];
+        if (value && value > 1) optString += `+aa${value}`;
         break;
-      default:
-        if (value) optString += `+${key}`;
+      }
     }
   }
+
   return optString;
 }
 
 function getTileProps(curTileProps: TileAdmin.Props): string {
   let tilePropsStr = "";
-  for (const [key, value] of Object.entries(curTileProps)) {
-    switch (key) {
-      case "elideEmptyChildContentRequests":
-        if (value) tilePropsStr += "+elide";
-        break;
-      case "enableInstancing":
-        if (value) tilePropsStr += "+inst";
-        break;
-      case "maxActiveRequests":
-        if (value !== 10) tilePropsStr += `+max${value}`;
-        break;
-      case "retryInterval":
-        if (value) tilePropsStr += `+retry${value}`;
-        break;
-      case "disableMagnification":
-        if (value) tilePropsStr += "-mag";
-        break;
-      default:
-        if (value) tilePropsStr += `+${key}`;
-    }
-  }
+  if (!curTileProps.enableInstancing)
+    tilePropsStr += "-inst";
+
+  if (curTileProps.disableMagnification)
+    tilePropsStr += "-mag";
+
+  if (curTileProps.ignoreAreaPatterns)
+    tilePropsStr += "+ignorePat";
+
+  if (!curTileProps.useProjectExtents)
+    tilePropsStr += "-projExt";
+
+  if (!curTileProps.optimizeBRepProcessing)
+    tilePropsStr += "-optBRep";
+
+  if (curTileProps.alwaysSubdivideIncompleteTiles)
+    tilePropsStr += "+subdivIncomp";
+
+  if (undefined !== curTileProps.minimumSpatialTolerance)
+    tilePropsStr += "+minTol${curTileProps.minimumSpatialTolerance";
+
   return tilePropsStr;
 }
 
@@ -1146,10 +1154,11 @@ function getOtherProps(vp: ScreenViewport): string {
 
 function getViewFlagsString(test: TestCase): string {
   let vfString = "";
-  for (const [key, value] of Object.entries(test.viewport.viewFlags)) {
+  const renderMode = test.viewport.viewFlags.renderMode;
+  for (const propName of Object.keys(test.viewport.viewFlags)) {
+    const key = propName as keyof Omit<ViewFlagsProperties, "renderMode">;
+    const value = test.viewport.viewFlags[key];
     switch (key) {
-      case "renderMode":
-        break;
       case "dimensions":
         if (!value) vfString += "-dim";
         break;
@@ -1175,22 +1184,16 @@ function getViewFlagsString(test: TestCase): string {
         if (!value) vfString += "-mat";
         break;
       case "visibleEdges":
-        if (value) vfString += "+vsE";
+        if (value && renderMode === RenderMode.SmoothShade)
+          vfString += "+vsE";
         break;
       case "hiddenEdges":
-        if (value) vfString += "+hdE";
-        break;
-      case "sourceLights":
-        if (value) vfString += "+scL";
-        break;
-      case "cameraLights":
-        if (value) vfString += "+cmL";
-        break;
-      case "solarLight":
-        if (value) vfString += "+slL";
+        if (value && renderMode !== RenderMode.Wireframe)
+          vfString += "+hdE";
         break;
       case "shadows":
-        if (value) vfString += "+shd";
+        if (value && renderMode === RenderMode.SmoothShade)
+          vfString += "+shd";
         break;
       case "clipVolume":
         if (!value) vfString += "-clp";
@@ -1201,18 +1204,8 @@ function getViewFlagsString(test: TestCase): string {
       case "monochrome":
         if (value) vfString += "+mno";
         break;
-      case "noGeometryMap":
-        if (value) vfString += "+noG";
-        break;
       case "backgroundMap":
         if (value) vfString += "+bkg";
-        break;
-      case "hLineMaterialColors":
-        if (value) vfString += "+hln";
-        break;
-      case "edgeMask":
-        if (value === 1) vfString += "+genM";
-        if (value === 2) vfString += "+useM";
         break;
       case "ambientOcclusion":
         if (value) vfString += "+ao";
@@ -1230,6 +1223,10 @@ function getViewFlagsString(test: TestCase): string {
 
   if (undefined !== test.view.selectedElements)
     vfString += "+selEl";
+
+  // NB: See comment in getTestName - this flag should always be last, at least until we update existing test names.
+  if (renderMode === RenderMode.SmoothShade && !test.viewport.viewFlags.lighting)
+    vfString += "-lit";
 
   return vfString;
 }
