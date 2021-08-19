@@ -37,7 +37,27 @@ export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | unde
   return isInstanceOf<T>(obj, constructor) ? obj as T : undefined;
 }
 
-/** Extracts the names of all properties of `T` that are not of type `function`.
+/** Extracts the names of all public properties of `T` that are not of type `function`.
+ * This includes properties defined using `get` syntax. Care should be used when using this type in conjunction with
+ * the object spread (`...`) operator, because the spread operator omits properties defined using `get` syntax and, therefore,
+ * so too does the type that TypeScript infers from that operator.
+ * `get` syntax. For example:
+ * ```ts
+ *  class Thing {
+ *     private _a = "a"; // a private variable
+ *     public b = "b"; // a public variable
+ *     public get c() { return "c"; } // a public property
+ *     public d() { return "d"; } // a public method
+ *     public e = () => "e"; // a public variable of type `function`
+ *  }
+ *
+ *  // The following can have the values "b" or "c" - those are the public, non-function properties of Thing.
+ *  let nonFunctionProperty: NonFunctionPropertyNamesOf<Thing> = "c";
+ *
+ *  // The following produces an error: "Property 'c' is missing in type '{ b: string; e: () => string; }' but required in type 'NonFunctionPropertiesOf<Thing>'"
+ *  const thing1 = new Thing();
+ *  const thing2: NonFunctionPropertiesOf<Thing> = { ...thing1 };
+ * ```
  * @see [[NonFunctionPropertiesOf]] to obtain a type that includes only these properties.
  * @public
  */
@@ -45,7 +65,8 @@ export type NonFunctionPropertyNamesOf<T> = {
   [K in keyof T]: T[K] extends Function ? never : K;
 }[keyof T];
 
-/** Produces a type consisting of all of the properties of `T` except for those of type `function`.
+/** Produces a type consisting of all of the public properties of `T` except for those of type `function`.
+ * @see [[NonFunctionPropertyNamesOf]] for potential pitfalls when used in conjunction with the object spread operator.
  * @public
  */
 export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
