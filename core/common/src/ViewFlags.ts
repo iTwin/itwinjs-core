@@ -232,7 +232,7 @@ export class ViewFlags {
       return this;
 
     const props: ViewFlagsProperties = { ...this };
-    props[flag] = false;
+    props[flag] = value;
     return new ViewFlags(props);
   }
 
