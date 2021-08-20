@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { fireEvent, render, waitForElement } from "@testing-library/react";
+import { fireEvent, render, waitFor } from "@testing-library/react";
 import { PropertyValueRendererManager } from "../../../ui-components/properties/ValueRendererManager";
 import { TableCell, TableCellContent, TableIconCellContent } from "../../../ui-components/table/component/TableCell";
 import { CellItem } from "../../../ui-components/table/TableDataProvider";
@@ -81,7 +81,7 @@ describe("TableCellContent", () => {
     expect(content.container.firstChild).to.not.be.empty;
     expect((content.container.firstChild! as HTMLElement).innerHTML).to.be.empty;
 
-    await waitForElement(() => content.getByText("Test property"));
+    await waitFor(() => content.getByText("Test property"));
   });
 
   it("renders when property record is not provided", () => {
@@ -118,7 +118,7 @@ describe("TableCellContent", () => {
         propertyValueRendererManager={PropertyValueRendererManager.defaultManager}
       />);
 
-    await waitForElement(() => content.getByText("Changed property"));
+    await waitFor(() => content.getByText("Changed property"));
   });
 });
 

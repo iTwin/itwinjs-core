@@ -5,10 +5,12 @@
 
 import { expect } from "chai";
 import { BeDuration } from "@bentley/bentleyjs-core";
+import { Matrix4d } from "@bentley/geometry-core";
 import { IModelHost } from "../../IModelHost";
 import { StandaloneDb } from "../../IModelDb";
 import { IModelTestUtils } from "../IModelTestUtils";
 import { IModelJsNative } from "@bentley/imodeljs-native";
+import { BackendRequestContext } from "../../BackendRequestContext";
 
 describe("DgnDbWorker", () => {
   let imodel: StandaloneDb;
@@ -173,5 +175,27 @@ describe("DgnDbWorker", () => {
     expect(cancel.every((x) => x.isAborted || x.isSkipped)).to.be.true;
     expect(resolve.isOk || resolve.isSkipped || resolve.isAborted).to.be.true;
     expect(reject.isError || reject.isSkipped).to.be.true;
+  });
+
+  it("cancels a snap request", async () => {
+    // Block the worker thread pool with 4 workers so that our snap cannot complete before they complete.
+    const blockers = [new Worker(), new Worker(), new Worker(), new Worker()];
+    blockers.forEach((w) => w.queue());
+
+    const sessionId = "0x222";
+    const snap = imodel.requestSnap(new BackendRequestContext(), sessionId, {
+      testPoint: { x: 1, y: 2, z: 3 },
+      closePoint: { x: 1, y: 2, z: 3 },
+      id: "0x111",
+      worldToView: Matrix4d.createIdentity().toJSON(),
+    });
+
+    imodel.cancelSnap(sessionId);
+
+    // Clear the worker thread pool so the snap request (now canceled) can be processed.
+    blockers.forEach((w) => w.setReady());
+    await Promise.all(blockers.map(async (w) => w.promise));
+
+    await expect(snap).to.be.rejectedWith("aborted");
   });
 });

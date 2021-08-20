@@ -3,12 +3,11 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { BeDragDropContext } from "../../ui-components";
 
 describe("BeDragDropContext", () => {
 
-  afterEach(cleanup);
   it("should render", () => {
     // eslint-disable-next-line deprecation/deprecation
     render(<BeDragDropContext> Test </BeDragDropContext>);

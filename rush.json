@@ -105,20 +105,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/usage-logging-client",
-      "projectFolder": "clients/usage-logging",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/extension-cli",
-      "projectFolder": "tools/extension-cli",
-      "reviewCategory": "tools",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/bentleyjs-core",
       "projectFolder": "core/bentley",
       "reviewCategory": "common",
@@ -189,13 +175,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/imodel-bridge",
-      "projectFolder": "core/imodel-bridge",
-      "reviewCategory": "backend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/imodeljs-frontend",
       "projectFolder": "core/frontend",
       "reviewCategory": "frontend",
@@ -220,13 +199,6 @@
       "packageName": "@bentley/imodeljs-i18n",
       "projectFolder": "core/i18n",
       "reviewCategory": "frontend",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
-      "packageName": "@bentley/logger-config",
-      "projectFolder": "core/logger-config",
-      "reviewCategory": "backend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
@@ -310,6 +282,13 @@
     {
       "packageName": "@bentley/ui-components",
       "projectFolder": "ui/components",
+      "reviewCategory": "frontend",
+      "shouldPublish": true,
+      "versionPolicyName": "prerelease-monorepo-lockStep"
+    },
+    {
+      "packageName": "@bentley/ui-imodel-components",
+      "projectFolder": "ui/imodel-components",
       "reviewCategory": "frontend",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

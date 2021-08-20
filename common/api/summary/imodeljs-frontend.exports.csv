@@ -135,10 +135,6 @@ public;DrawingModelState
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
-alpha;EditingFunctions
-deprecated;EditingFunctions
-alpha;EditingFunctions
-deprecated;EditingFunctions
 public;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
@@ -166,12 +162,8 @@ internal;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
 internal;eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boolean): Cartographic | undefined
 internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise
-alpha;FeatureLogBatchClient
-alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
 public;FeatureSymbology
-alpha;FeatureTrackingManager
-alpha;FeatureTrackingProps
 internal;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
 deprecated;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
 internal;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
@@ -380,7 +372,7 @@ internal;NativeAppLogger
 public;NativeAppOpts 
 internal;NoRenderApp
 public;class NotificationHandler
-public;NotificationManager
+public;NotificationManager 
 public;NotifyMessageDetails
 internal;NullRenderSystem 
 internal;NullTarget 
@@ -455,8 +447,6 @@ internal;class RealityTileLoader
 internal;RealityTileParams 
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
-public;RemoteBriefcaseConnection 
-deprecated;RemoteBriefcaseConnection 
 public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics

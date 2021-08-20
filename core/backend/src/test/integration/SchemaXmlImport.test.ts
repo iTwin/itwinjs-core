@@ -14,11 +14,11 @@ import { KnownTestLocations } from "../KnownTestLocations";
 import { HubUtility } from "./HubUtility";
 
 // Configuration needed
-//    imjs_test_manager_user_name
-//    imjs_test_manager_user_password
-//    imjs_oidc_browser_test_client_id
-//    imjs_oidc_browser_test_redirect_uri
-//    imjs_oidc_browser_test_scopes
+//    IMJS_TEST_MANAGER_USER_NAME
+//    IMJS_TEST_MANAGER_USER_PASSWORD
+//    IMJS_OIDC_BROWSER_TEST_CLIENT_ID
+//    IMJS_OIDC_BROWSER_TEST_REDIRECT_URI
+//    IMJS_OIDC_BROWSER_TEST_SCOPES
 //      - Required: "openid imodelhub context-registry-service:read-only"
 
 describe("Schema XML Import Tests (#integration)", () => {

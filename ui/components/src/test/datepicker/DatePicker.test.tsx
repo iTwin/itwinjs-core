@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import React from "react";
 import sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import TestUtils from "../TestUtils";
 import { DatePicker } from "../../ui-components/datepicker/DatePicker";
 import { SpecialKey } from "@bentley/ui-abstract";
@@ -25,8 +25,6 @@ describe("<DatePicker />", () => {
     sinon.restore();
     renderSpy = sinon.spy();
   });
-
-  afterEach(cleanup);
 
   after(() => {
     TestUtils.terminateUiComponents();

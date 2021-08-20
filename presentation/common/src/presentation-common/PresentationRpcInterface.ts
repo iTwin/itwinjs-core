@@ -9,11 +9,11 @@
 import { Id64String } from "@bentley/bentleyjs-core";
 import { IModelRpcProps, RpcInterface } from "@bentley/imodeljs-common";
 import { ContentJSON } from "./content/Content";
-import { DescriptorJSON, DescriptorOverrides, SelectionInfo } from "./content/Descriptor";
+import { DescriptorJSON, DescriptorOverrides, SelectClassInfoJSON, SelectionInfo } from "./content/Descriptor";
 import { ItemJSON } from "./content/Item";
 import { DisplayValueGroupJSON } from "./content/Value";
 import { DiagnosticsOptions, DiagnosticsScopeLogs } from "./Diagnostics";
-import { InstanceKeyJSON } from "./EC";
+import { CompressedClassInfoJSON, InstanceKeyJSON } from "./EC";
 import { ElementProperties } from "./ElementProperties";
 import { PresentationStatus } from "./Error";
 import { NodeKeyJSON } from "./hierarchy/Key";
@@ -22,9 +22,9 @@ import { NodePathElementJSON } from "./hierarchy/NodePathElement";
 import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
-  ContentDescriptorRequestOptions, ContentRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions, HierarchyRequestOptions,
-  LabelRequestOptions, Paged, SelectionScopeRequestOptions,
+  ContentDescriptorRequestOptions, ContentRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
+  DistinctValuesRequestOptions, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
+  HierarchyCompareOptions, HierarchyRequestOptions, LabelRequestOptions, Paged, SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
@@ -76,6 +76,22 @@ export type ExtendedHierarchyRpcRequestOptions = PresentationRpcRequestOptions<E
  * @deprecated Use [[ContentDescriptorRpcRequestOptions]] or [[ExtendedContentRpcRequestOptions]]
  */
 export type ContentRpcRequestOptions = PresentationRpcRequestOptions<ContentRequestOptions<never, RulesetVariableJSON>>; // eslint-disable-line deprecation/deprecation
+
+/**
+ * Data structure for content sources RPC request options.
+ * @beta
+ */
+export type ContentSourcesRpcRequestOptions = PresentationRpcRequestOptions<ContentSourcesRequestOptions<never>>;
+/**
+ * Data structure for content sources RPC response.
+ * @beta
+ */
+export interface ContentSourcesRpcResult {
+  /** A list of objects containing content source information. */
+  sources: SelectClassInfoJSON<Id64String>[];
+  /** An `ECClassId` => [[CompressedClassInfoJSON]] map for deserializing [[sources]]. */
+  classesMap: { [id: string]: CompressedClassInfoJSON };
+}
 
 /**
  * Data structure for content descriptor RPC request options.
@@ -141,7 +157,7 @@ export class PresentationRpcInterface extends RpcInterface {
   public static readonly interfaceName = "PresentationRpcInterface"; // eslint-disable-line @typescript-eslint/naming-convention
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.10.0";
+  public static interfaceVersion = "2.11.0";
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -172,6 +188,9 @@ export class PresentationRpcInterface extends RpcInterface {
   // istanbul ignore next
   // eslint-disable-next-line deprecation/deprecation
   public async loadHierarchy(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<void> { return this.forward(arguments); }
+
+  /** @beta */
+  public async getContentSources(_token: IModelRpcProps, _options: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult> { return this.forward(arguments); }
 
   /** @deprecated Use an overload with [[ContentDescriptorRpcRequestOptions]] */
   // eslint-disable-next-line deprecation/deprecation

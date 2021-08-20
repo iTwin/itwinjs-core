@@ -5,18 +5,24 @@
 import "./RpcImpl";
 // Sets up certa to allow a method on the frontend to get an access token
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
+import * as fs from "fs";
 import * as http from "http";
 import * as path from "path";
-import { Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
+import { Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelJsExpressServer } from "@bentley/express-server";
-import { FileNameResolver, IModelHost, IModelHostConfiguration } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager, RpcConfiguration } from "@bentley/imodeljs-common";
+import {
+  FileNameResolver, IModelDb, IModelHost, IModelHostConfiguration, IpcHandler, PhysicalModel, PhysicalPartition, SpatialCategory,
+  SubjectOwnsPartitionElements,
+} from "@bentley/imodeljs-backend";
+import {
+  BentleyCloudRpcManager, CodeProps, ElementProps, IModel, RelatedElement, RpcConfiguration, SubCategoryAppearance,
+} from "@bentley/imodeljs-common";
 import { BasicManipulationCommand, EditCommandAdmin } from "@bentley/imodeljs-editor-backend";
+import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
 import { rpcInterfaces } from "../common/RpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
 import * as testCommands from "./TestEditCommands";
-import * as fs from "fs";
 
 import serveHandler = require("serve-handler");
 /* eslint-disable no-console */
@@ -36,6 +42,37 @@ function loadEnv(envFile: string) {
   dotenvExpand(envResult);
 }
 
+class FullStackTestIpcHandler extends IpcHandler implements FullStackTestIpc {
+  public get channelName() { return fullstackIpcChannel; }
+
+  public static async createAndInsertPartition(iModelDb: IModelDb, newModelCode: CodeProps): Promise<Id64String> {
+    const modeledElementProps: ElementProps = {
+      classFullName: PhysicalPartition.classFullName,
+      parent: new SubjectOwnsPartitionElements(IModel.rootSubjectId),
+      model: IModel.repositoryModelId,
+      code: newModelCode,
+    };
+    const modeledElement = iModelDb.elements.createElement(modeledElementProps);
+    return iModelDb.elements.insertElement(modeledElement);
+  }
+
+  public async createAndInsertPhysicalModel(key: string, newModelCode: CodeProps): Promise<Id64String> {
+    const iModelDb = IModelDb.findByKey(key);
+    const eid = await FullStackTestIpcHandler.createAndInsertPartition(iModelDb, newModelCode);
+    const modeledElementRef = new RelatedElement({ id: eid });
+    const newModel = iModelDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: false });
+    return iModelDb.models.insertModel(newModel);
+  }
+
+  public async createAndInsertSpatialCategory(key: string, scopeModelId: Id64String, categoryName: string, appearance: SubCategoryAppearance.Props): Promise<Id64String> {
+    const iModelDb = IModelDb.findByKey(key);
+    const category = SpatialCategory.create(iModelDb, scopeModelId, categoryName);
+    const categoryId = iModelDb.elements.insertElement(category);
+    category.setDefaultAppearance(appearance);
+    return categoryId;
+  }
+}
+
 async function init() {
   loadEnv(path.join(__dirname, "..", "..", ".env"));
   RpcConfiguration.developmentMode = true;
@@ -52,6 +89,7 @@ async function init() {
     await ElectronHost.startup({ electronHost: { rpcInterfaces }, iModelHost });
     EditCommandAdmin.registerModule(testCommands);
     EditCommandAdmin.register(BasicManipulationCommand);
+    FullStackTestIpcHandler.register();
   } else {
     const rpcConfig = BentleyCloudRpcManager.initializeImpl({ info: { title: "full-stack-test", version: "v1.0" } }, rpcInterfaces);
 
