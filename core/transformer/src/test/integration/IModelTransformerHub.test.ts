@@ -20,8 +20,8 @@ import {
   IModelTransformer, TransformerLoggerCategory,
 } from "../../imodeljs-transformer";
 import { HubMock } from "@bentley/imodeljs-backend/lib/test/HubMock";
-import { IModelTestUtils, TestUserType } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
-import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer } from "../IModelTransformerUtils";
+import { ExtensiveTestScenario, IModelTestUtils, TestUserType } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
+import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer, TransformerExtensiveTestScenario as TransformerExtensiveTestScenario } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
 import { HubUtility } from "@bentley/imodeljs-backend/lib/test/integration/HubUtility";
 
@@ -58,7 +58,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
     const sourceSeedDb = SnapshotDb.createEmpty(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
     assert.isTrue(IModelJsFs.existsSync(sourceSeedFileName));
-    await IModelTestUtils.ExtensiveTestScenario.prepareDb(sourceSeedDb);
+    await ExtensiveTestScenario.prepareDb(sourceSeedDb);
     sourceSeedDb.saveChanges();
     sourceSeedDb.close();
 
@@ -72,7 +72,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
     const targetSeedDb = SnapshotDb.createEmpty(targetSeedFileName, { rootSubject: { name: "TransformerTarget" } });
     assert.isTrue(IModelJsFs.existsSync(targetSeedFileName));
-    await IModelTransformerTestUtils.prepareTargetDb(targetSeedDb);
+    await TransformerExtensiveTestScenario.prepareTargetDb(targetSeedDb);
     assert.isTrue(targetSeedDb.codeSpecs.hasName("TargetCodeSpec")); // inserted by prepareTargetDb
     targetSeedDb.saveChanges();
     targetSeedDb.close();
@@ -90,7 +90,7 @@ describe("IModelTransformerHub (#integration)", () => {
       targetDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
       if (true) { // initial import
-        IModelTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
+        ExtensiveTestScenario.populateDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, "Populate source");
@@ -128,7 +128,7 @@ describe("IModelTransformerHub (#integration)", () => {
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, "Import #1");
-        IModelTransformerTestUtils.assertTargetDbContents(sourceDb, targetDb);
+        TransformerExtensiveTestScenario.assertTargetDbContents(sourceDb, targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
         const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-1.txt");
@@ -185,7 +185,7 @@ describe("IModelTransformerHub (#integration)", () => {
       }
 
       if (true) { // update source db, then import again
-        IModelTestUtils.ExtensiveTestScenario.updateDb(sourceDb);
+        ExtensiveTestScenario.updateDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, "Update source");
@@ -224,7 +224,7 @@ describe("IModelTransformerHub (#integration)", () => {
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, "Import #2");
-        IModelTestUtils.ExtensiveTestScenario.assertUpdatesInDb(targetDb);
+        ExtensiveTestScenario.assertUpdatesInDb(targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
         const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-2.txt");

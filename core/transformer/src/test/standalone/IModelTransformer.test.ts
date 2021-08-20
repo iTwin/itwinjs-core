@@ -20,9 +20,9 @@ import {
 import {IModelExporter, IModelExportHandler, IModelTransformer, TransformerLoggerCategory } from "../../imodeljs-transformer";
 import {
   ClassCounter, FilterByViewTransformer, IModelToTextFileExporter, IModelTransformer3d, IModelTransformerTestUtils, PhysicalModelConsolidator,
-  RecordingIModelImporter, TestIModelTransformer,
+  RecordingIModelImporter, TestIModelTransformer, TransformerExtensiveTestScenario,
 } from "../IModelTransformerUtils";
-import { IModelTestUtils } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
+import { ExtensiveTestScenario, IModelTestUtils } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
 import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
 import * as Semver from "semver";
 
@@ -50,13 +50,13 @@ describe("IModelTransformer", () => {
     // Source IModelDb
     const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
-    await IModelTestUtils.ExtensiveTestScenario.prepareDb(sourceDb);
-    IModelTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
+    await ExtensiveTestScenario.prepareDb(sourceDb);
+    ExtensiveTestScenario.populateDb(sourceDb);
     sourceDb.saveChanges();
     // Target IModelDb
     const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "TestIModelTransformer-Target" } });
-    await IModelTestUtils.ExtensiveTestScenario.prepareDb(targetDb);
+    await ExtensiveTestScenario.prepareDb(targetDb);
     targetDb.saveChanges();
 
     const numSourceUniqueAspects: number = count(sourceDb, ElementUniqueAspect.classFullName);
@@ -90,7 +90,7 @@ describe("IModelTransformer", () => {
       assert.isAtLeast(count(targetDb, "TestTransformerTarget:AuditRecord"), 1);
       assert.equal(3, count(targetDb, "TestTransformerTarget:TargetInformationRecord"));
       targetDb.saveChanges();
-      IModelTransformerTestUtils.assertTargetDbContents(sourceDb, targetDb);
+      TransformerExtensiveTestScenario.assertTargetDbContents(sourceDb, targetDb);
       transformer.context.dump(`${targetDbFile}.context.txt`);
       transformer.dispose();
     }
@@ -146,7 +146,7 @@ describe("IModelTransformer", () => {
     }
 
     if (true) { // update source db, then import again
-      IModelTestUtils.ExtensiveTestScenario.updateDb(sourceDb);
+      ExtensiveTestScenario.updateDb(sourceDb);
       sourceDb.saveChanges();
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "");
       Logger.logInfo(TransformerLoggerCategory.IModelTransformer, "===============================");
@@ -166,7 +166,7 @@ describe("IModelTransformer", () => {
       assert.equal(targetImporter.numRelationshipsUpdated, 1);
       assert.equal(targetImporter.numRelationshipsDeleted, 1);
       targetDb.saveChanges();
-      IModelTestUtils.ExtensiveTestScenario.assertUpdatesInDb(targetDb);
+      ExtensiveTestScenario.assertUpdatesInDb(targetDb);
       assert.equal(numTargetRelationships + targetImporter.numRelationshipsInserted - targetImporter.numRelationshipsDeleted, count(targetDb, ElementRefersToElements.classFullName));
       assert.equal(2, count(targetDb, "TestTransformerTarget:TargetInformationRecord"));
       transformer.dispose();
@@ -182,8 +182,8 @@ describe("IModelTransformer", () => {
     // Simulate branching workflow by initializing branchDb to be a copy of the populated masterDb
     const masterDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "Master.bim");
     const masterDb = SnapshotDb.createEmpty(masterDbFile, { rootSubject: { name: "Branching Workflow" }, createClassViews: true });
-    await IModelTestUtils.ExtensiveTestScenario.prepareDb(masterDb);
-    IModelTestUtils.ExtensiveTestScenario.populateDb(masterDb);
+    await ExtensiveTestScenario.prepareDb(masterDb);
+    ExtensiveTestScenario.populateDb(masterDb);
     masterDb.saveChanges();
     const branchDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "Branch.bim");
     const branchDb = SnapshotDb.createFrom(masterDb, branchDbFile, { createClassViews: true });
@@ -217,8 +217,8 @@ describe("IModelTransformer", () => {
     });
 
     // Make changes to simulate working on the branch
-    IModelTestUtils.ExtensiveTestScenario.updateDb(branchDb);
-    IModelTestUtils.ExtensiveTestScenario.assertUpdatesInDb(branchDb);
+    ExtensiveTestScenario.updateDb(branchDb);
+    ExtensiveTestScenario.assertUpdatesInDb(branchDb);
     branchDb.saveChanges();
 
     const numBranchElements = count(branchDb, Element.classFullName);
@@ -231,7 +231,7 @@ describe("IModelTransformer", () => {
     await branchToMasterTransformer.processAll();
     branchToMasterTransformer.dispose();
     masterDb.saveChanges();
-    IModelTestUtils.ExtensiveTestScenario.assertUpdatesInDb(masterDb, false);
+    ExtensiveTestScenario.assertUpdatesInDb(masterDb, false);
     assert.equal(numBranchElements, count(masterDb, Element.classFullName) - 2); // processAll cannot detect deletes when isReverseSynchronization=true
     assert.equal(numBranchRelationships, count(masterDb, ElementRefersToElements.classFullName) - 1); // processAll cannot detect deletes when isReverseSynchronization=true
     assert.equal(0, count(masterDb, ExternalSourceAspect.classFullName));
@@ -250,15 +250,15 @@ describe("IModelTransformer", () => {
     // Source IModelDb
     const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "SourceImportSubject.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "SourceImportSubject" } });
-    await IModelTestUtils.ExtensiveTestScenario.prepareDb(sourceDb);
-    IModelTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
+    await ExtensiveTestScenario.prepareDb(sourceDb);
+    ExtensiveTestScenario.populateDb(sourceDb);
     const sourceSubjectId = sourceDb.elements.queryElementIdByCode(Subject.createCode(sourceDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(sourceSubjectId));
     sourceDb.saveChanges();
     // Target IModelDb
     const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TargetImportSubject.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "TargetImportSubject" } });
-    await IModelTestUtils.ExtensiveTestScenario.prepareDb(targetDb);
+    await ExtensiveTestScenario.prepareDb(targetDb);
     const targetSubjectId = Subject.insert(targetDb, IModel.rootSubjectId, "Target Subject", "Target Subject Description");
     assert.isTrue(Id64.isValidId64(targetSubjectId));
     targetDb.saveChanges();
@@ -269,7 +269,7 @@ describe("IModelTransformer", () => {
     await transformer.processRelationships(ElementRefersToElements.classFullName);
     transformer.dispose();
     targetDb.saveChanges();
-    IModelTransformerTestUtils.assertTargetDbContents(sourceDb, targetDb, "Target Subject");
+    TransformerExtensiveTestScenario.assertTargetDbContents(sourceDb, targetDb, "Target Subject");
     const targetSubject: Subject = targetDb.elements.getElement<Subject>(targetSubjectId);
     assert.equal(targetSubject.description, "Target Subject Description");
     // Close
@@ -281,8 +281,8 @@ describe("IModelTransformer", () => {
     // Set up the IModelDb with a populated source Subject and an "empty" target Subject
     const iModelFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "CloneModel.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "CloneModel" } });
-    await IModelTestUtils.ExtensiveTestScenario.prepareDb(iModelDb);
-    IModelTestUtils.ExtensiveTestScenario.populateDb(iModelDb);
+    await ExtensiveTestScenario.prepareDb(iModelDb);
+    ExtensiveTestScenario.populateDb(iModelDb);
     const sourceSubjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(sourceSubjectId));
     const targetSubjectId = Subject.insert(iModelDb, IModel.rootSubjectId, "Target Subject");

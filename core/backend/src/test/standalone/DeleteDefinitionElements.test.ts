@@ -12,7 +12,7 @@ import {
   CategorySelector, DisplayStyle2d, DisplayStyle3d, DrawingCategory, DrawingViewDefinition, GeometryPart, IModelJsFs, InformationPartitionElement,
   ModelSelector, OrthographicViewDefinition, RenderMaterialElement, SnapshotDb, SpatialCategory, SubCategory, Subject, Texture,
 } from "../../imodeljs-backend";
-import { IModelTestUtils } from "../IModelTestUtils";
+import { ExtensiveTestScenario, IModelTestUtils } from "../IModelTestUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
 
 describe("DeleteDefinitionElements", () => {
@@ -35,8 +35,8 @@ describe("DeleteDefinitionElements", () => {
   it("should delete if not used", async () => {
     const iModelFile: string = IModelTestUtils.prepareOutputFile("DeleteDefinitionElements", "DeleteDefinitionElements.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "DeleteDefinitionElements" } });
-    await IModelTestUtils.ExtensiveTestScenario.prepareDb(iModelDb);
-    IModelTestUtils.ExtensiveTestScenario.populateDb(iModelDb);
+    await ExtensiveTestScenario.prepareDb(iModelDb);
+    ExtensiveTestScenario.populateDb(iModelDb);
 
     // Get ElementIds of DefinitionElements created by populateSourceDb
     const subjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;

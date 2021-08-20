@@ -22,302 +22,23 @@ import {
   RelationshipProps, RenderMaterialElement, SnapshotDb, SpatialCategory, SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture,
 } from "@bentley/imodeljs-backend";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../imodeljs-transformer";
-import { IModelTestUtils } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
+import { ExtensiveTestScenario, IModelTestUtils } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
 import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
 
-export namespace IModelTransformerTestUtils {
-  export async function prepareTargetDb(targetDb: IModelDb): Promise<void> {
-    // Import desired target schemas
-    const requestContext = new BackendRequestContext();
-    const targetSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerTarget.ecschema.xml");
-    await targetDb.importSchemas(requestContext, [targetSchemaFileName]);
-    // Insert a target-only CodeSpec to test remapping
-    const targetCodeSpecId: Id64String = targetDb.codeSpecs.insert("TargetCodeSpec", CodeScopeSpec.Type.Model);
-    assert.isTrue(Id64.isValidId64(targetCodeSpecId));
-    // Insert some elements to avoid getting same IDs for sourceDb and targetDb
-    const subjectId = Subject.insert(targetDb, IModel.rootSubjectId, "Only in Target");
-    Subject.insert(targetDb, subjectId, "S1");
-    Subject.insert(targetDb, subjectId, "S2");
-    Subject.insert(targetDb, subjectId, "S3");
-    Subject.insert(targetDb, subjectId, "S4");
-    const targetPhysicalCategoryId = IModelTestUtils.insertSpatialCategory(targetDb, IModel.dictionaryId, "TargetPhysicalCategory", ColorDef.red);
-    assert.isTrue(Id64.isValidId64(targetPhysicalCategoryId));
-  }
-
-  export function assertTargetDbContents(sourceDb: IModelDb, targetDb: IModelDb, targetSubjectName: string = "Subject"): void {
-    // CodeSpec
-    assert.isTrue(targetDb.codeSpecs.hasName("TargetCodeSpec"));
-    assert.isTrue(targetDb.codeSpecs.hasName("InformationRecords"));
-    assert.isFalse(targetDb.codeSpecs.hasName("SourceCodeSpec"));
-    assert.isFalse(targetDb.codeSpecs.hasName("ExtraCodeSpec"));
-    // Font
-    if (Platform.platformName.startsWith("win")) {
-      assert.exists(targetDb.fontMap.getFont("Arial"));
-    }
-    // Subject
-    const subjectId: Id64String = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, targetSubjectName))!;
-    assert.isTrue(Id64.isValidId64(subjectId));
-    const subjectProps: SubjectProps = targetDb.elements.getElementProps(subjectId);
-    assert.equal(subjectProps.description, `${targetSubjectName} Description`);
-    const sourceOnlySubjectId = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, "Only in Source"));
-    assert.equal(undefined, sourceOnlySubjectId);
-    const targetOnlySubjectId = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, "Only in Target"))!;
-    assert.isTrue(Id64.isValidId64(targetOnlySubjectId));
-    // Partitions / Models
-    const definitionModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Definition"))!;
-    const informationModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Information"))!;
-    const groupModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Group"))!;
-    const physicalModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Physical"))!;
-    const spatialLocationModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "SpatialLocation"))!;
-    const documentListModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Document"))!;
-    assertTargetElement(sourceDb, targetDb, definitionModelId);
-    assertTargetElement(sourceDb, targetDb, informationModelId);
-    assertTargetElement(sourceDb, targetDb, groupModelId);
-    assertTargetElement(sourceDb, targetDb, physicalModelId);
-    assertTargetElement(sourceDb, targetDb, spatialLocationModelId);
-    assertTargetElement(sourceDb, targetDb, documentListModelId);
-    const physicalModel: PhysicalModel = targetDb.models.getModel<PhysicalModel>(physicalModelId);
-    const spatialLocationModel: SpatialLocationModel = targetDb.models.getModel<SpatialLocationModel>(spatialLocationModelId);
-    assert.isFalse(physicalModel.isPlanProjection);
-    assert.isTrue(spatialLocationModel.isPlanProjection);
-    // SpatialCategory
-    const spatialCategoryId = targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, definitionModelId, "SpatialCategory"))!;
-    assertTargetElement(sourceDb, targetDb, spatialCategoryId);
-    const spatialCategoryProps = targetDb.elements.getElementProps(spatialCategoryId);
-    assert.equal(definitionModelId, spatialCategoryProps.model);
-    assert.equal(definitionModelId, spatialCategoryProps.code.scope);
-    assert.equal(undefined, targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, definitionModelId, "SourcePhysicalCategory")), "Should have been remapped");
-    const targetPhysicalCategoryId = targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, IModel.dictionaryId, "TargetPhysicalCategory"))!;
-    assert.isTrue(Id64.isValidId64(targetPhysicalCategoryId));
-    // SubCategory
-    const subCategoryId = targetDb.elements.queryElementIdByCode(SubCategory.createCode(targetDb, spatialCategoryId, "SubCategory"))!;
-    assertTargetElement(sourceDb, targetDb, subCategoryId);
-    const filteredSubCategoryId = targetDb.elements.queryElementIdByCode(SubCategory.createCode(targetDb, spatialCategoryId, "FilteredSubCategory"));
-    assert.isUndefined(filteredSubCategoryId);
-    // DrawingCategory
-    const drawingCategoryId = targetDb.elements.queryElementIdByCode(DrawingCategory.createCode(targetDb, definitionModelId, "DrawingCategory"))!;
-    assertTargetElement(sourceDb, targetDb, drawingCategoryId);
-    const drawingCategoryProps = targetDb.elements.getElementProps(drawingCategoryId);
-    assert.equal(definitionModelId, drawingCategoryProps.model);
-    assert.equal(definitionModelId, drawingCategoryProps.code.scope);
-    // Spatial CategorySelector
-    const spatialCategorySelectorId = targetDb.elements.queryElementIdByCode(CategorySelector.createCode(targetDb, definitionModelId, "SpatialCategories"))!;
-    assertTargetElement(sourceDb, targetDb, spatialCategorySelectorId);
-    const spatialCategorySelectorProps = targetDb.elements.getElementProps<CategorySelectorProps>(spatialCategorySelectorId);
-    assert.isTrue(spatialCategorySelectorProps.categories.includes(spatialCategoryId));
-    assert.isTrue(spatialCategorySelectorProps.categories.includes(targetPhysicalCategoryId), "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
-    // Drawing CategorySelector
-    const drawingCategorySelectorId = targetDb.elements.queryElementIdByCode(CategorySelector.createCode(targetDb, definitionModelId, "DrawingCategories"))!;
-    assertTargetElement(sourceDb, targetDb, drawingCategorySelectorId);
-    const drawingCategorySelectorProps = targetDb.elements.getElementProps<CategorySelectorProps>(drawingCategorySelectorId);
-    assert.isTrue(drawingCategorySelectorProps.categories.includes(drawingCategoryId));
-    // ModelSelector
-    const modelSelectorId = targetDb.elements.queryElementIdByCode(ModelSelector.createCode(targetDb, definitionModelId, "SpatialModels"))!;
-    assertTargetElement(sourceDb, targetDb, modelSelectorId);
-    const modelSelectorProps = targetDb.elements.getElementProps<ModelSelectorProps>(modelSelectorId);
-    assert.isTrue(modelSelectorProps.models.includes(physicalModelId));
-    assert.isTrue(modelSelectorProps.models.includes(spatialLocationModelId));
-    // Texture
-    const textureId = targetDb.elements.queryElementIdByCode(Texture.createCode(targetDb, definitionModelId, "Texture"))!;
-    assert.isTrue(Id64.isValidId64(textureId));
-    // RenderMaterial
-    const renderMaterialId = targetDb.elements.queryElementIdByCode(RenderMaterialElement.createCode(targetDb, definitionModelId, "RenderMaterial"))!;
-    assert.isTrue(Id64.isValidId64(renderMaterialId));
-    // GeometryPart
-    const geometryPartId = targetDb.elements.queryElementIdByCode(GeometryPart.createCode(targetDb, definitionModelId, "GeometryPart"))!;
-    assert.isTrue(Id64.isValidId64(geometryPartId));
-    // PhysicalElement
-    const physicalObjectId1: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject1");
-    const physicalObjectId2: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject2");
-    const physicalObjectId3: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject3");
-    const physicalObjectId4: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject4");
-    const physicalElementId1: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalElement1");
-    const childObjectId1A: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "ChildObject1A");
-    const childObjectId1B: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "ChildObject1B");
-    assertTargetElement(sourceDb, targetDb, physicalObjectId1);
-    assertTargetElement(sourceDb, targetDb, physicalObjectId2);
-    assertTargetElement(sourceDb, targetDb, physicalObjectId3);
-    assertTargetElement(sourceDb, targetDb, physicalObjectId4);
-    assertTargetElement(sourceDb, targetDb, physicalElementId1);
-    assertTargetElement(sourceDb, targetDb, childObjectId1A);
-    assertTargetElement(sourceDb, targetDb, childObjectId1B);
-    const physicalObject1: PhysicalObject = targetDb.elements.getElement<PhysicalObject>({ id: physicalObjectId1, wantGeometry: true });
-    const physicalObject2: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId2);
-    const physicalObject3: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId3);
-    const physicalObject4: PhysicalObject = targetDb.elements.getElement<PhysicalObject>({ id: physicalObjectId4, wantGeometry: true });
-    const physicalElement1: PhysicalElement = targetDb.elements.getElement<PhysicalElement>(physicalElementId1);
-    const childObject1A: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(childObjectId1A);
-    const childObject1B: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(childObjectId1B);
-    assert.equal(physicalObject1.category, spatialCategoryId, "SpatialCategory should have been imported");
-    assert.isDefined(physicalObject1.geom);
-    let index1 = 0;
-    for (const entry of new GeometryStreamIterator(physicalObject1.geom!)) {
-      if (0 === index1) {
-        assert.equal(entry.primitive.type, "geometryQuery");
-        assert.equal(entry.geomParams.subCategoryId, subCategoryId);
-        assert.equal(entry.geomParams.materialId, renderMaterialId);
-      } else if (1 === index1) {
-        assert.equal(entry.primitive.type, "partReference");
-        assert.equal(entry.geomParams.subCategoryId, subCategoryId);
-        assert.equal(entry.geomParams.materialId, renderMaterialId);
-        if (entry.primitive.type === "partReference")
-          assert.equal(entry.primitive.part.id, geometryPartId);
-      } else {
-        assert.fail(undefined, undefined, "Only expected 2 entries");
-      }
-      index1++;
-    }
-    IModelTestUtils
-    assert.equal(physicalObject2.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
-    assert.equal(physicalObject3.federationGuid, IModelTestUtils.ExtensiveTestScenario.federationGuid3, "Source FederationGuid should have been transferred to target element");
-    assert.equal(physicalObject4.category, spatialCategoryId);
-    let index4 = 0;
-    for (const entry of new GeometryStreamIterator(physicalObject4.geom!)) {
-      assert.equal(entry.primitive.type, "geometryQuery");
-      if (0 === index4) {
-        assert.notEqual(entry.geomParams.subCategoryId, subCategoryId, "Expect the default SubCategory");
-      } else if (1 === index4) {
-        assert.equal(entry.geomParams.subCategoryId, subCategoryId);
-      }
-      index4++;
-    }
-    assert.equal(index4, 2, "Expect 2 remaining boxes since 1 was filtered out");
-    assert.equal(physicalElement1.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
-    assert.equal(physicalElement1.classFullName, "TestTransformerTarget:TargetPhysicalElement", "Class should have been remapped");
-    assert.equal(physicalElement1.asAny.targetString, "S1", "Property should have been remapped by onTransformElement override");
-    assert.equal(physicalElement1.asAny.targetDouble, 1.1, "Property should have been remapped by onTransformElement override");
-    assert.equal(physicalElement1.asAny.targetNavigation.id, targetPhysicalCategoryId, "Property should have been remapped by onTransformElement override");
-    assert.equal(physicalElement1.asAny.commonNavigation.id, targetPhysicalCategoryId, "Property should have been automatically remapped (same name)");
-    assert.equal(physicalElement1.asAny.commonString, "Common", "Property should have been automatically remapped (same name)");
-    assert.equal(physicalElement1.asAny.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
-    assert.equal(Base64EncodedString.fromUint8Array(physicalElement1.asAny.targetBinary), Base64EncodedString.fromUint8Array(new Uint8Array([1, 3, 5, 7])), "Property should have been remapped by onTransformElement override");
-    assert.equal(Base64EncodedString.fromUint8Array(physicalElement1.asAny.commonBinary), Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])), "Property should have been automatically remapped (same name)");
-    assert.notExists(physicalElement1.asAny.extraString, "Property should have been dropped during transformation");
-    assert.equal(childObject1A.parent!.id, physicalObjectId1);
-    assert.equal(childObject1B.parent!.id, physicalObjectId1);
-    // ElementUniqueAspects
-    const targetUniqueAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetUniqueAspect");
-    assert.equal(targetUniqueAspects.length, 1);
-    assert.equal(targetUniqueAspects[0].asAny.commonDouble, 1.1);
-    assert.equal(targetUniqueAspects[0].asAny.commonString, "Unique");
-    assert.equal(targetUniqueAspects[0].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
-    assert.equal(Base64EncodedString.fromUint8Array(targetUniqueAspects[0].asAny.commonBinary), Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])));
-    assert.equal(targetUniqueAspects[0].asAny.targetDouble, 11.1);
-    assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect");
-    assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
-    assert.isTrue(Guid.isV4Guid(targetUniqueAspects[0].asAny.targetGuid));
-    assert.equal(IModelTestUtils.ExtensiveTestScenario.uniqueAspectGuid, targetUniqueAspects[0].asAny.targetGuid);
-    // ElementMultiAspects
-    const targetMultiAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetMultiAspect");
-    assert.equal(targetMultiAspects.length, 2);
-    assert.equal(targetMultiAspects[0].asAny.commonDouble, 2.2);
-    assert.equal(targetMultiAspects[0].asAny.commonString, "Multi");
-    assert.equal(targetMultiAspects[0].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
-    assert.equal(targetMultiAspects[0].asAny.targetDouble, 22.2);
-    assert.equal(targetMultiAspects[0].asAny.targetString, "MultiAspect");
-    assert.equal(targetMultiAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
-    assert.isTrue(Guid.isV4Guid(targetMultiAspects[0].asAny.targetGuid));
-    assert.equal(targetMultiAspects[1].asAny.commonDouble, 3.3);
-    assert.equal(targetMultiAspects[1].asAny.commonString, "Multi");
-    assert.equal(targetMultiAspects[1].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
-    assert.equal(targetMultiAspects[1].asAny.targetDouble, 33.3);
-    assert.equal(targetMultiAspects[1].asAny.targetString, "MultiAspect");
-    assert.equal(targetMultiAspects[1].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
-    assert.isTrue(Guid.isV4Guid(targetMultiAspects[1].asAny.targetGuid));
-    // InformationRecords
-    const informationRecordCodeSpec: CodeSpec = targetDb.codeSpecs.getByName("InformationRecords");
-    assert.isTrue(Id64.isValidId64(informationRecordCodeSpec.id));
-    const informationRecordId1 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord1" }));
-    const informationRecordId2 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" }));
-    const informationRecordId3 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord3" }));
-    assert.isTrue(Id64.isValidId64(informationRecordId1!));
-    assert.isTrue(Id64.isValidId64(informationRecordId2!));
-    assert.isTrue(Id64.isValidId64(informationRecordId3!));
-    const informationRecord2: any = targetDb.elements.getElement(informationRecordId2!);
-    assert.equal(informationRecord2.commonString, "Common2");
-    assert.equal(informationRecord2.targetString, "Two");
-    // DisplayStyle
-    const displayStyle3dId = targetDb.elements.queryElementIdByCode(DisplayStyle3d.createCode(targetDb, definitionModelId, "DisplayStyle3d"))!;
-    assertTargetElement(sourceDb, targetDb, displayStyle3dId);
-    const displayStyle3d = targetDb.elements.getElement<DisplayStyle3d>(displayStyle3dId);
-    assert.isTrue(displayStyle3d.settings.hasSubCategoryOverride);
-    assert.equal(displayStyle3d.settings.subCategoryOverrides.size, 1);
-    assert.exists(displayStyle3d.settings.getSubCategoryOverride(subCategoryId), "Expect subCategoryOverrides to have been remapped");
-    assert.isTrue(displayStyle3d.settings.excludedElements.has(physicalObjectId1), "Expect excludedElements to be remapped"); // eslint-disable-line deprecation/deprecation
-    assert.equal(displayStyle3d.settings.environment.sky?.image?.type, SkyBoxImageType.Spherical);
-    assert.equal(displayStyle3d.settings.environment.sky?.image?.texture, textureId);
-    assert.equal(displayStyle3d.settings.getPlanProjectionSettings(spatialLocationModelId)?.elevation, 10.0);
-    // ViewDefinition
-    const viewId = targetDb.elements.queryElementIdByCode(OrthographicViewDefinition.createCode(targetDb, definitionModelId, "Orthographic View"))!;
-    assertTargetElement(sourceDb, targetDb, viewId);
-    const viewProps = targetDb.elements.getElementProps<SpatialViewDefinitionProps>(viewId);
-    assert.equal(viewProps.displayStyleId, displayStyle3dId);
-    assert.equal(viewProps.categorySelectorId, spatialCategorySelectorId);
-    assert.equal(viewProps.modelSelectorId, modelSelectorId);
-    // AuxCoordSystem2d
-    assert.equal(undefined, targetDb.elements.queryElementIdByCode(AuxCoordSystem2d.createCode(targetDb, definitionModelId, "AuxCoordSystem2d")), "Should have been excluded by class");
-    // DrawingGraphic
-    const drawingGraphicId1: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "DrawingGraphic1");
-    const drawingGraphicId2: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "DrawingGraphic2");
-    assertTargetElement(sourceDb, targetDb, drawingGraphicId1);
-    assertTargetElement(sourceDb, targetDb, drawingGraphicId2);
-    // DrawingGraphicRepresentsElement
-    assertTargetRelationship(sourceDb, targetDb, DrawingGraphicRepresentsElement.classFullName, drawingGraphicId1, physicalObjectId1);
-    assertTargetRelationship(sourceDb, targetDb, DrawingGraphicRepresentsElement.classFullName, drawingGraphicId2, physicalObjectId1);
-    // TargetRelWithProps
-    const relWithProps: any = targetDb.relationships.getInstanceProps(
-      "TestTransformerTarget:TargetRelWithProps",
-      { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
-    );
-    assert.equal(relWithProps.targetString, "One");
-    assert.equal(relWithProps.targetDouble, 1.1);
-    assert.equal(relWithProps.targetLong, spatialCategoryId);
-    assert.isTrue(Guid.isV4Guid(relWithProps.targetGuid));
-  }
-
-  function assertTargetElement(sourceDb: IModelDb, targetDb: IModelDb, targetElementId: Id64String): void {
-    assert.isTrue(Id64.isValidId64(targetElementId));
-    const element: Element = targetDb.elements.getElement(targetElementId);
-    assert.isTrue(element.federationGuid && Guid.isV4Guid(element.federationGuid));
-    const aspects: ElementAspect[] = targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
-    const aspect: ExternalSourceAspect = aspects.filter((esa: any) => esa.kind === ExternalSourceAspect.Kind.Element)[0] as ExternalSourceAspect;
-    assert.exists(aspect);
-    assert.equal(aspect.kind, ExternalSourceAspect.Kind.Element);
-    assert.equal(aspect.scope.id, IModel.rootSubjectId);
-    assert.isUndefined(aspect.checksum);
-    assert.isTrue(Id64.isValidId64(aspect.identifier));
-    const sourceLastMod: string = sourceDb.elements.queryLastModifiedTime(aspect.identifier);
-    assert.equal(aspect.version, sourceLastMod);
-    const sourceElement: Element = sourceDb.elements.getElement(aspect.identifier);
-    assert.exists(sourceElement);
-  }
-
-  function assertTargetRelationship(sourceDb: IModelDb, targetDb: IModelDb, targetRelClassFullName: string, targetRelSourceId: Id64String, targetRelTargetId: Id64String): void {
-    const targetRelationship: Relationship = targetDb.relationships.getInstance(targetRelClassFullName, { sourceId: targetRelSourceId, targetId: targetRelTargetId });
-    assert.exists(targetRelationship);
-    const aspects: ElementAspect[] = targetDb.elements.getAspects(targetRelSourceId, ExternalSourceAspect.classFullName);
-    const aspect: ExternalSourceAspect = aspects.filter((esa: any) => esa.kind === ExternalSourceAspect.Kind.Relationship)[0] as ExternalSourceAspect;
-    assert.exists(aspect);
-    const sourceRelationship: Relationship = sourceDb.relationships.getInstance(ElementRefersToElements.classFullName, aspect.identifier);
-    assert.exists(sourceRelationship);
-    assert.isDefined(aspect.jsonProperties);
-    const json: any = JSON.parse(aspect.jsonProperties!);
-    assert.equal(targetRelationship.id, json.targetRelInstanceId);
-  }
-
-  export function createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): SnapshotDb {
+export class IModelTransformerTestUtils {
+  public static createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): SnapshotDb {
     const teamFile: string = path.join(outputDir, `Team${teamName}.bim`);
     if (IModelJsFs.existsSync(teamFile)) {
       IModelJsFs.removeSync(teamFile);
     }
     const iModelDb: SnapshotDb = SnapshotDb.createEmpty(teamFile, { rootSubject: { name: teamName }, createClassViews: true });
     assert.exists(iModelDb);
-    populateTeamIModel(iModelDb, teamName, teamOrigin, teamColor);
+    IModelTransformerTestUtils.populateTeamIModel(iModelDb, teamName, teamOrigin, teamColor);
     iModelDb.saveChanges();
     return iModelDb;
   }
 
-  export function populateTeamIModel(teamDb: IModelDb, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): void {
+  public static populateTeamIModel(teamDb: IModelDb, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): void {
     const contextSubjectId: Id64String = Subject.insert(teamDb, IModel.rootSubjectId, "Context");
     assert.isTrue(Id64.isValidId64(contextSubjectId));
     const definitionModelId = DefinitionModel.insert(teamDb, IModel.rootSubjectId, `Definition${teamName}`);
@@ -362,7 +83,7 @@ export namespace IModelTransformerTestUtils {
     assert.isTrue(Id64.isValidId64(physicalObjectId2));
   }
 
-  export function createSharedIModel(outputDir: string, teamNames: string[]): SnapshotDb {
+  public static createSharedIModel(outputDir: string, teamNames: string[]): SnapshotDb {
     const iModelName: string = `Shared${teamNames.join("")}`;
     const iModelFile: string = path.join(outputDir, `${iModelName}.bim`);
     if (IModelJsFs.existsSync(iModelFile)) {
@@ -377,7 +98,7 @@ export namespace IModelTransformerTestUtils {
     return iModelDb;
   }
 
-  export function assertTeamIModelContents(iModelDb: IModelDb, teamName: string): void {
+  public static assertTeamIModelContents(iModelDb: IModelDb, teamName: string): void {
     const definitionPartitionId: Id64String = IModelTestUtils.queryDefinitionPartitionId(iModelDb, IModel.rootSubjectId, teamName);
     const teamSpatialCategoryId = IModelTestUtils.querySpatialCategoryId(iModelDb, definitionPartitionId, teamName);
     const sharedSpatialCategoryId = IModelTestUtils.querySpatialCategoryId(iModelDb, IModel.dictionaryId, "Shared");
@@ -393,7 +114,7 @@ export namespace IModelTransformerTestUtils {
     assert.equal(physicalObject2.category, sharedSpatialCategoryId);
   }
 
-  export function assertSharedIModelContents(iModelDb: IModelDb, teamNames: string[]): void {
+  public static assertSharedIModelContents(iModelDb: IModelDb, teamNames: string[]): void {
     const sharedSpatialCategoryId = IModelTestUtils.querySpatialCategoryId(iModelDb, IModel.dictionaryId, "Shared");
     assert.isTrue(Id64.isValidId64(sharedSpatialCategoryId));
     const aspects: ExternalSourceAspect[] = iModelDb.elements.getAspects(sharedSpatialCategoryId, ExternalSourceAspect.classFullName) as ExternalSourceAspect[];
@@ -416,6 +137,286 @@ export namespace IModelTransformerTestUtils {
       assert.equal(physicalObject2.category, sharedSpatialCategoryId);
       assert.equal(1, iModelDb.elements.getAspects(physicalObjectId2, ExternalSourceAspect.classFullName).length);
     });
+  }
+}
+
+export class TransformerExtensiveTestScenario {
+  public static async prepareTargetDb(targetDb: IModelDb): Promise<void> {
+    // Import desired target schemas
+    const requestContext = new BackendRequestContext();
+    const targetSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerTarget.ecschema.xml");
+    await targetDb.importSchemas(requestContext, [targetSchemaFileName]);
+    // Insert a target-only CodeSpec to test remapping
+    const targetCodeSpecId: Id64String = targetDb.codeSpecs.insert("TargetCodeSpec", CodeScopeSpec.Type.Model);
+    assert.isTrue(Id64.isValidId64(targetCodeSpecId));
+    // Insert some elements to avoid getting same IDs for sourceDb and targetDb
+    const subjectId = Subject.insert(targetDb, IModel.rootSubjectId, "Only in Target");
+    Subject.insert(targetDb, subjectId, "S1");
+    Subject.insert(targetDb, subjectId, "S2");
+    Subject.insert(targetDb, subjectId, "S3");
+    Subject.insert(targetDb, subjectId, "S4");
+    const targetPhysicalCategoryId = IModelTestUtils.insertSpatialCategory(targetDb, IModel.dictionaryId, "TargetPhysicalCategory", ColorDef.red);
+    assert.isTrue(Id64.isValidId64(targetPhysicalCategoryId));
+  }
+
+  public static assertTargetDbContents(sourceDb: IModelDb, targetDb: IModelDb, targetSubjectName: string = "Subject"): void {
+    // CodeSpec
+    assert.isTrue(targetDb.codeSpecs.hasName("TargetCodeSpec"));
+    assert.isTrue(targetDb.codeSpecs.hasName("InformationRecords"));
+    assert.isFalse(targetDb.codeSpecs.hasName("SourceCodeSpec"));
+    assert.isFalse(targetDb.codeSpecs.hasName("ExtraCodeSpec"));
+    // Font
+    if (Platform.platformName.startsWith("win")) {
+      assert.exists(targetDb.fontMap.getFont("Arial"));
+    }
+    // Subject
+    const subjectId: Id64String = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, targetSubjectName))!;
+    assert.isTrue(Id64.isValidId64(subjectId));
+    const subjectProps: SubjectProps = targetDb.elements.getElementProps(subjectId);
+    assert.equal(subjectProps.description, `${targetSubjectName} Description`);
+    const sourceOnlySubjectId = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, "Only in Source"));
+    assert.equal(undefined, sourceOnlySubjectId);
+    const targetOnlySubjectId = targetDb.elements.queryElementIdByCode(Subject.createCode(targetDb, IModel.rootSubjectId, "Only in Target"))!;
+    assert.isTrue(Id64.isValidId64(targetOnlySubjectId));
+    // Partitions / Models
+    const definitionModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Definition"))!;
+    const informationModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Information"))!;
+    const groupModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Group"))!;
+    const physicalModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Physical"))!;
+    const spatialLocationModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "SpatialLocation"))!;
+    const documentListModelId = targetDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(targetDb, subjectId, "Document"))!;
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, definitionModelId);
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, informationModelId);
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, groupModelId);
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, physicalModelId);
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, spatialLocationModelId);
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, documentListModelId);
+    const physicalModel: PhysicalModel = targetDb.models.getModel<PhysicalModel>(physicalModelId);
+    const spatialLocationModel: SpatialLocationModel = targetDb.models.getModel<SpatialLocationModel>(spatialLocationModelId);
+    assert.isFalse(physicalModel.isPlanProjection);
+    assert.isTrue(spatialLocationModel.isPlanProjection);
+    // SpatialCategory
+    const spatialCategoryId = targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, definitionModelId, "SpatialCategory"))!;
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, spatialCategoryId);
+    const spatialCategoryProps = targetDb.elements.getElementProps(spatialCategoryId);
+    assert.equal(definitionModelId, spatialCategoryProps.model);
+    assert.equal(definitionModelId, spatialCategoryProps.code.scope);
+    assert.equal(undefined, targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, definitionModelId, "SourcePhysicalCategory")), "Should have been remapped");
+    const targetPhysicalCategoryId = targetDb.elements.queryElementIdByCode(SpatialCategory.createCode(targetDb, IModel.dictionaryId, "TargetPhysicalCategory"))!;
+    assert.isTrue(Id64.isValidId64(targetPhysicalCategoryId));
+    // SubCategory
+    const subCategoryId = targetDb.elements.queryElementIdByCode(SubCategory.createCode(targetDb, spatialCategoryId, "SubCategory"))!;
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, subCategoryId);
+    const filteredSubCategoryId = targetDb.elements.queryElementIdByCode(SubCategory.createCode(targetDb, spatialCategoryId, "FilteredSubCategory"));
+    assert.isUndefined(filteredSubCategoryId);
+    // DrawingCategory
+    const drawingCategoryId = targetDb.elements.queryElementIdByCode(DrawingCategory.createCode(targetDb, definitionModelId, "DrawingCategory"))!;
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, drawingCategoryId);
+    const drawingCategoryProps = targetDb.elements.getElementProps(drawingCategoryId);
+    assert.equal(definitionModelId, drawingCategoryProps.model);
+    assert.equal(definitionModelId, drawingCategoryProps.code.scope);
+    // Spatial CategorySelector
+    const spatialCategorySelectorId = targetDb.elements.queryElementIdByCode(CategorySelector.createCode(targetDb, definitionModelId, "SpatialCategories"))!;
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, spatialCategorySelectorId);
+    const spatialCategorySelectorProps = targetDb.elements.getElementProps<CategorySelectorProps>(spatialCategorySelectorId);
+    assert.isTrue(spatialCategorySelectorProps.categories.includes(spatialCategoryId));
+    assert.isTrue(spatialCategorySelectorProps.categories.includes(targetPhysicalCategoryId), "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
+    // Drawing CategorySelector
+    const drawingCategorySelectorId = targetDb.elements.queryElementIdByCode(CategorySelector.createCode(targetDb, definitionModelId, "DrawingCategories"))!;
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, drawingCategorySelectorId);
+    const drawingCategorySelectorProps = targetDb.elements.getElementProps<CategorySelectorProps>(drawingCategorySelectorId);
+    assert.isTrue(drawingCategorySelectorProps.categories.includes(drawingCategoryId));
+    // ModelSelector
+    const modelSelectorId = targetDb.elements.queryElementIdByCode(ModelSelector.createCode(targetDb, definitionModelId, "SpatialModels"))!;
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, modelSelectorId);
+    const modelSelectorProps = targetDb.elements.getElementProps<ModelSelectorProps>(modelSelectorId);
+    assert.isTrue(modelSelectorProps.models.includes(physicalModelId));
+    assert.isTrue(modelSelectorProps.models.includes(spatialLocationModelId));
+    // Texture
+    const textureId = targetDb.elements.queryElementIdByCode(Texture.createCode(targetDb, definitionModelId, "Texture"))!;
+    assert.isTrue(Id64.isValidId64(textureId));
+    // RenderMaterial
+    const renderMaterialId = targetDb.elements.queryElementIdByCode(RenderMaterialElement.createCode(targetDb, definitionModelId, "RenderMaterial"))!;
+    assert.isTrue(Id64.isValidId64(renderMaterialId));
+    // GeometryPart
+    const geometryPartId = targetDb.elements.queryElementIdByCode(GeometryPart.createCode(targetDb, definitionModelId, "GeometryPart"))!;
+    assert.isTrue(Id64.isValidId64(geometryPartId));
+    // PhysicalElement
+    const physicalObjectId1: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject1");
+    const physicalObjectId2: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject2");
+    const physicalObjectId3: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject3");
+    const physicalObjectId4: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalObject4");
+    const physicalElementId1: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "PhysicalElement1");
+    const childObjectId1A: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "ChildObject1A");
+    const childObjectId1B: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "ChildObject1B");
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, physicalObjectId1);
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, physicalObjectId2);
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, physicalObjectId3);
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, physicalObjectId4);
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, physicalElementId1);
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, childObjectId1A);
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, childObjectId1B);
+    const physicalObject1: PhysicalObject = targetDb.elements.getElement<PhysicalObject>({ id: physicalObjectId1, wantGeometry: true });
+    const physicalObject2: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId2);
+    const physicalObject3: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(physicalObjectId3);
+    const physicalObject4: PhysicalObject = targetDb.elements.getElement<PhysicalObject>({ id: physicalObjectId4, wantGeometry: true });
+    const physicalElement1: PhysicalElement = targetDb.elements.getElement<PhysicalElement>(physicalElementId1);
+    const childObject1A: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(childObjectId1A);
+    const childObject1B: PhysicalObject = targetDb.elements.getElement<PhysicalObject>(childObjectId1B);
+    assert.equal(physicalObject1.category, spatialCategoryId, "SpatialCategory should have been imported");
+    assert.isDefined(physicalObject1.geom);
+    let index1 = 0;
+    for (const entry of new GeometryStreamIterator(physicalObject1.geom!)) {
+      if (0 === index1) {
+        assert.equal(entry.primitive.type, "geometryQuery");
+        assert.equal(entry.geomParams.subCategoryId, subCategoryId);
+        assert.equal(entry.geomParams.materialId, renderMaterialId);
+      } else if (1 === index1) {
+        assert.equal(entry.primitive.type, "partReference");
+        assert.equal(entry.geomParams.subCategoryId, subCategoryId);
+        assert.equal(entry.geomParams.materialId, renderMaterialId);
+        if (entry.primitive.type === "partReference")
+          assert.equal(entry.primitive.part.id, geometryPartId);
+      } else {
+        assert.fail(undefined, undefined, "Only expected 2 entries");
+      }
+      index1++;
+    }
+    assert.equal(physicalObject2.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
+    assert.equal(physicalObject3.federationGuid, ExtensiveTestScenario.federationGuid3, "Source FederationGuid should have been transferred to target element");
+    assert.equal(physicalObject4.category, spatialCategoryId);
+    let index4 = 0;
+    for (const entry of new GeometryStreamIterator(physicalObject4.geom!)) {
+      assert.equal(entry.primitive.type, "geometryQuery");
+      if (0 === index4) {
+        assert.notEqual(entry.geomParams.subCategoryId, subCategoryId, "Expect the default SubCategory");
+      } else if (1 === index4) {
+        assert.equal(entry.geomParams.subCategoryId, subCategoryId);
+      }
+      index4++;
+    }
+    assert.equal(index4, 2, "Expect 2 remaining boxes since 1 was filtered out");
+    assert.equal(physicalElement1.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
+    assert.equal(physicalElement1.classFullName, "TestTransformerTarget:TargetPhysicalElement", "Class should have been remapped");
+    assert.equal(physicalElement1.asAny.targetString, "S1", "Property should have been remapped by onTransformElement override");
+    assert.equal(physicalElement1.asAny.targetDouble, 1.1, "Property should have been remapped by onTransformElement override");
+    assert.equal(physicalElement1.asAny.targetNavigation.id, targetPhysicalCategoryId, "Property should have been remapped by onTransformElement override");
+    assert.equal(physicalElement1.asAny.commonNavigation.id, targetPhysicalCategoryId, "Property should have been automatically remapped (same name)");
+    assert.equal(physicalElement1.asAny.commonString, "Common", "Property should have been automatically remapped (same name)");
+    assert.equal(physicalElement1.asAny.commonDouble, 7.3, "Property should have been automatically remapped (same name)");
+    assert.equal(Base64EncodedString.fromUint8Array(physicalElement1.asAny.targetBinary), Base64EncodedString.fromUint8Array(new Uint8Array([1, 3, 5, 7])), "Property should have been remapped by onTransformElement override");
+    assert.equal(Base64EncodedString.fromUint8Array(physicalElement1.asAny.commonBinary), Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])), "Property should have been automatically remapped (same name)");
+    assert.notExists(physicalElement1.asAny.extraString, "Property should have been dropped during transformation");
+    assert.equal(childObject1A.parent!.id, physicalObjectId1);
+    assert.equal(childObject1B.parent!.id, physicalObjectId1);
+    // ElementUniqueAspects
+    const targetUniqueAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetUniqueAspect");
+    assert.equal(targetUniqueAspects.length, 1);
+    assert.equal(targetUniqueAspects[0].asAny.commonDouble, 1.1);
+    assert.equal(targetUniqueAspects[0].asAny.commonString, "Unique");
+    assert.equal(targetUniqueAspects[0].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
+    assert.equal(Base64EncodedString.fromUint8Array(targetUniqueAspects[0].asAny.commonBinary), Base64EncodedString.fromUint8Array(new Uint8Array([2, 4, 6, 8])));
+    assert.equal(targetUniqueAspects[0].asAny.targetDouble, 11.1);
+    assert.equal(targetUniqueAspects[0].asAny.targetString, "UniqueAspect");
+    assert.equal(targetUniqueAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
+    assert.isTrue(Guid.isV4Guid(targetUniqueAspects[0].asAny.targetGuid));
+    assert.equal(ExtensiveTestScenario.uniqueAspectGuid, targetUniqueAspects[0].asAny.targetGuid);
+    // ElementMultiAspects
+    const targetMultiAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetMultiAspect");
+    assert.equal(targetMultiAspects.length, 2);
+    assert.equal(targetMultiAspects[0].asAny.commonDouble, 2.2);
+    assert.equal(targetMultiAspects[0].asAny.commonString, "Multi");
+    assert.equal(targetMultiAspects[0].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
+    assert.equal(targetMultiAspects[0].asAny.targetDouble, 22.2);
+    assert.equal(targetMultiAspects[0].asAny.targetString, "MultiAspect");
+    assert.equal(targetMultiAspects[0].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
+    assert.isTrue(Guid.isV4Guid(targetMultiAspects[0].asAny.targetGuid));
+    assert.equal(targetMultiAspects[1].asAny.commonDouble, 3.3);
+    assert.equal(targetMultiAspects[1].asAny.commonString, "Multi");
+    assert.equal(targetMultiAspects[1].asAny.commonLong, physicalObjectId1, "Id should have been remapped");
+    assert.equal(targetMultiAspects[1].asAny.targetDouble, 33.3);
+    assert.equal(targetMultiAspects[1].asAny.targetString, "MultiAspect");
+    assert.equal(targetMultiAspects[1].asAny.targetLong, physicalObjectId1, "Id should have been remapped");
+    assert.isTrue(Guid.isV4Guid(targetMultiAspects[1].asAny.targetGuid));
+    // InformationRecords
+    const informationRecordCodeSpec: CodeSpec = targetDb.codeSpecs.getByName("InformationRecords");
+    assert.isTrue(Id64.isValidId64(informationRecordCodeSpec.id));
+    const informationRecordId1 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord1" }));
+    const informationRecordId2 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord2" }));
+    const informationRecordId3 = targetDb.elements.queryElementIdByCode(new Code({ spec: informationRecordCodeSpec.id, scope: informationModelId, value: "InformationRecord3" }));
+    assert.isTrue(Id64.isValidId64(informationRecordId1!));
+    assert.isTrue(Id64.isValidId64(informationRecordId2!));
+    assert.isTrue(Id64.isValidId64(informationRecordId3!));
+    const informationRecord2: any = targetDb.elements.getElement(informationRecordId2!);
+    assert.equal(informationRecord2.commonString, "Common2");
+    assert.equal(informationRecord2.targetString, "Two");
+    // DisplayStyle
+    const displayStyle3dId = targetDb.elements.queryElementIdByCode(DisplayStyle3d.createCode(targetDb, definitionModelId, "DisplayStyle3d"))!;
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, displayStyle3dId);
+    const displayStyle3d = targetDb.elements.getElement<DisplayStyle3d>(displayStyle3dId);
+    assert.isTrue(displayStyle3d.settings.hasSubCategoryOverride);
+    assert.equal(displayStyle3d.settings.subCategoryOverrides.size, 1);
+    assert.exists(displayStyle3d.settings.getSubCategoryOverride(subCategoryId), "Expect subCategoryOverrides to have been remapped");
+    assert.isTrue(displayStyle3d.settings.excludedElements.has(physicalObjectId1), "Expect excludedElements to be remapped"); // eslint-disable-line deprecation/deprecation
+    assert.equal(displayStyle3d.settings.environment.sky?.image?.type, SkyBoxImageType.Spherical);
+    assert.equal(displayStyle3d.settings.environment.sky?.image?.texture, textureId);
+    assert.equal(displayStyle3d.settings.getPlanProjectionSettings(spatialLocationModelId)?.elevation, 10.0);
+    // ViewDefinition
+    const viewId = targetDb.elements.queryElementIdByCode(OrthographicViewDefinition.createCode(targetDb, definitionModelId, "Orthographic View"))!;
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, viewId);
+    const viewProps = targetDb.elements.getElementProps<SpatialViewDefinitionProps>(viewId);
+    assert.equal(viewProps.displayStyleId, displayStyle3dId);
+    assert.equal(viewProps.categorySelectorId, spatialCategorySelectorId);
+    assert.equal(viewProps.modelSelectorId, modelSelectorId);
+    // AuxCoordSystem2d
+    assert.equal(undefined, targetDb.elements.queryElementIdByCode(AuxCoordSystem2d.createCode(targetDb, definitionModelId, "AuxCoordSystem2d")), "Should have been excluded by class");
+    // DrawingGraphic
+    const drawingGraphicId1: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "DrawingGraphic1");
+    const drawingGraphicId2: Id64String = IModelTestUtils.queryByUserLabel(targetDb, "DrawingGraphic2");
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, drawingGraphicId1);
+    TransformerExtensiveTestScenario.assertTargetElement(sourceDb, targetDb, drawingGraphicId2);
+    // DrawingGraphicRepresentsElement
+    TransformerExtensiveTestScenario.assertTargetRelationship(sourceDb, targetDb, DrawingGraphicRepresentsElement.classFullName, drawingGraphicId1, physicalObjectId1);
+    TransformerExtensiveTestScenario.assertTargetRelationship(sourceDb, targetDb, DrawingGraphicRepresentsElement.classFullName, drawingGraphicId2, physicalObjectId1);
+    // TargetRelWithProps
+    const relWithProps: any = targetDb.relationships.getInstanceProps(
+      "TestTransformerTarget:TargetRelWithProps",
+      { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
+    );
+    assert.equal(relWithProps.targetString, "One");
+    assert.equal(relWithProps.targetDouble, 1.1);
+    assert.equal(relWithProps.targetLong, spatialCategoryId);
+    assert.isTrue(Guid.isV4Guid(relWithProps.targetGuid));
+  }
+
+  public static assertTargetElement(sourceDb: IModelDb, targetDb: IModelDb, targetElementId: Id64String): void {
+    assert.isTrue(Id64.isValidId64(targetElementId));
+    const element: Element = targetDb.elements.getElement(targetElementId);
+    assert.isTrue(element.federationGuid && Guid.isV4Guid(element.federationGuid));
+    const aspects: ElementAspect[] = targetDb.elements.getAspects(targetElementId, ExternalSourceAspect.classFullName);
+    const aspect: ExternalSourceAspect = aspects.filter((esa: any) => esa.kind === ExternalSourceAspect.Kind.Element)[0] as ExternalSourceAspect;
+    assert.exists(aspect);
+    assert.equal(aspect.kind, ExternalSourceAspect.Kind.Element);
+    assert.equal(aspect.scope.id, IModel.rootSubjectId);
+    assert.isUndefined(aspect.checksum);
+    assert.isTrue(Id64.isValidId64(aspect.identifier));
+    const sourceLastMod: string = sourceDb.elements.queryLastModifiedTime(aspect.identifier);
+    assert.equal(aspect.version, sourceLastMod);
+    const sourceElement: Element = sourceDb.elements.getElement(aspect.identifier);
+    assert.exists(sourceElement);
+  }
+
+  public static assertTargetRelationship(sourceDb: IModelDb, targetDb: IModelDb, targetRelClassFullName: string, targetRelSourceId: Id64String, targetRelTargetId: Id64String): void {
+    const targetRelationship: Relationship = targetDb.relationships.getInstance(targetRelClassFullName, { sourceId: targetRelSourceId, targetId: targetRelTargetId });
+    assert.exists(targetRelationship);
+    const aspects: ElementAspect[] = targetDb.elements.getAspects(targetRelSourceId, ExternalSourceAspect.classFullName);
+    const aspect: ExternalSourceAspect = aspects.filter((esa: any) => esa.kind === ExternalSourceAspect.Kind.Relationship)[0] as ExternalSourceAspect;
+    assert.exists(aspect);
+    const sourceRelationship: Relationship = sourceDb.relationships.getInstance(ElementRefersToElements.classFullName, aspect.identifier);
+    assert.exists(sourceRelationship);
+    assert.isDefined(aspect.jsonProperties);
+    const json: any = JSON.parse(aspect.jsonProperties!);
+    assert.equal(targetRelationship.id, json.targetRelInstanceId);
   }
 }
 
