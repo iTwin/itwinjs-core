@@ -50,8 +50,6 @@ describe("IModelTransformer", () => {
     // Source IModelDb
     const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
-    type Eq<T,U>  = T extends U ? U extends T ? true : false : false;
-    const _test: Eq<IModelDb, Parameters<typeof IModelTestUtils.prepareSourceDb>[0]> = true;
     await IModelTestUtils.prepareSourceDb(sourceDb);
     IModelTestUtils.populateSourceDb(sourceDb);
     sourceDb.saveChanges();
