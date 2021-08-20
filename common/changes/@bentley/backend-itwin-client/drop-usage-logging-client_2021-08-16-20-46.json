@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/backend-itwin-client",
+      "comment": "Remove usage-logging-client",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/backend-itwin-client",
+  "email": "41296254+DanielToby@users.noreply.github.com"
+}
