@@ -214,6 +214,8 @@ export class IModelHost {
   /** Root of the directory holding all the files that iModel.js caches */
   public static get cacheDir(): string { return this._cacheDir; }
 
+  public static get tileCacheDir(): string { return this._tileCacheDir; }
+
   /** The optional [[FileNameResolver]] that resolves keys and partial file names for snapshot iModels. */
   public static snapshotFileNameResolver?: FileNameResolver;
 
@@ -364,7 +366,6 @@ export class IModelHost {
     this.setupCacheDirs(configuration);
     IModelHubBackend.setIModelClient(configuration.imodelClient);
     BriefcaseManager.initialize(this._briefcaseCacheDir);
-
     IModelHost.setupRpcRequestContext();
 
     [
@@ -386,7 +387,6 @@ export class IModelHost {
     IModelHost.setupTileCache();
 
     this.platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
-
     // const introspectionClientId = Config.App.getString("imjs_introspection_client_id", "");
     // const introspectionClientSecret = Config.App.getString("imjs_introspection_client_secret", "");
     // if (introspectionClientId && introspectionClientSecret) {
@@ -399,6 +399,7 @@ export class IModelHost {
   }
 
   private static _briefcaseCacheDir: string;
+  private static _tileCacheDir: string;
 
   private static logStartup() {
     if (!Logger.isEnabled(loggerCategory, LogLevel.Trace))
@@ -426,6 +427,7 @@ export class IModelHost {
   private static setupCacheDirs(configuration: IModelHostConfiguration) {
     this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
+    this._tileCacheDir = path.join(this._cacheDir, "tiles");
   }
 
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
@@ -510,6 +512,9 @@ export class IModelHost {
 
   private static setupTileCache() {
     const config = IModelHost.configuration!;
+    IModelJsFs.recursiveMkDirSync(this._tileCacheDir);
+    // TODO: This current setup won't allow to by default use the same path we use today. It will do the default caching location.. Is this a problem?
+    this.platform.tileCacheDir = this._tileCacheDir;
     const credentials = config.tileCacheCredentials;
     if (undefined === credentials)
       return;

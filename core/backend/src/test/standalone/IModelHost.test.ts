@@ -102,5 +102,23 @@ describe("IModelHost", () => {
     expectedDir = path.join(KnownLocations.tmpdir, cacheSubDir);
     assert.strictEqual(expectedDir, BriefcaseManager.cacheDir);
   });
+  it("should set the tiles cache directory to expected locations", async () => {
+    // Shutdown IModelHost to allow this test to use it.
+    await IModelTestUtils.shutdownBackend();
+    const config = new IModelHostConfiguration();
+    const cacheSubDir = "tiles";
+
+    // Test cache default location
+    await IModelHost.shutdown();
+    await IModelHost.startup(config);
+    const expectedDir = path.join(IModelHost.cacheDir, cacheSubDir);
+    assert.strictEqual(expectedDir, IModelHost.tileCacheDir);
+
+    // Test custom cache location
+    await IModelHost.shutdown();
+    config.cacheDir = KnownLocations.tmpdir;
+    await IModelHost.startup(config);
+
+  });
 
 });
