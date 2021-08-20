@@ -22,7 +22,7 @@ export class Entities extends ECClasses {
   public constructor(_schemaEditor: SchemaContextEditor) {
     super(_schemaEditor);
   }
-  public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClass?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+  public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClassKey?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
 
@@ -32,11 +32,22 @@ export class Entities extends ECClasses {
     }
 
     // Add a deserializing method.
-    if (baseClass !== undefined) {
-      const baseClassItem = await schema.lookupItem(baseClass) as EntityClass;
-      if (baseClassItem === undefined) return { errorMessage: `Unable to locate base class ${baseClass.fullName} in schema ${schema.fullName}.` };
-      if (baseClassItem.schemaItemType !== SchemaItemType.EntityClass) return { errorMessage: `${baseClassItem.fullName} is not of type Entity Class.` };
-      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClass, async () => baseClassItem);
+    if (baseClassKey !== undefined) {
+      let baseClassSchema = schema;
+      if (!baseClassKey.schemaKey.matches(schema.schemaKey))
+        baseClassSchema = await this._schemaEditor.getSchema(baseClassKey.schemaKey);
+
+      if (baseClassSchema === undefined)
+        return { errorMessage: `Unable to locate the schema ${baseClassKey.schemaKey.toString()} for the specified base class ${baseClassKey.fullName}.` };
+
+      const baseClassItem = await baseClassSchema.lookupItem(baseClassKey) as EntityClass;
+      if (baseClassItem === undefined)
+        return { errorMessage: `Unable to locate base class ${baseClassKey.fullName} in schema ${baseClassSchema.fullName}.` };
+
+      if (baseClassItem.schemaItemType !== SchemaItemType.EntityClass)
+        return { errorMessage: `${baseClassItem.fullName} is not of type Entity Class.` };
+
+      newClass.baseClass = new DelayedPromiseWithProps<SchemaItemKey, EntityClass>(baseClassKey, async () => baseClassItem);
     }
 
     if (mixins !== undefined) {
