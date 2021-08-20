@@ -8,7 +8,7 @@
 
 import { assert, BeTimePoint, dispose } from "@bentley/bentleyjs-core";
 import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { ColorDef, Frustum } from "@bentley/imodeljs-common";
+import { BoundingSphere, ColorDef, Frustum } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
@@ -34,6 +34,10 @@ const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.crea
 const additiveRefinementThreshold = 2000;    // Additive tiles (Cesium OSM tileset) are subdivided until their range diagonal falls below this threshold to ensure accurate reprojection.
 const additiveRefinementDepthLimit = 20;
 const scratchFrustum = new Frustum();
+const scratchSphere = new BoundingSphere();
+
+// eslint-disable-next-line prefer-const
+let skipStepChildren = false;
 
 /**
  * A specialization of tiles that represent reality tiles.  3D Tilesets and maps use this class and have their own optimized traversal and lifetime management.
@@ -178,7 +182,10 @@ export class RealityTile extends Tile {
   }
   public addBoundingGraphic(builder: GraphicBuilder, color: ColorDef) {
     builder.setSymbology(color, color, 3);
-    builder.addRangeBoxFromCorners(this.rangeCorners ? this.rangeCorners : this.range.corners());
+    let corners = this.rangeCorners ? this.rangeCorners : this.range.corners();
+    if (this._reprojectionTransform)
+      corners = this._reprojectionTransform.multiplyPoint3dArray(corners);
+    builder.addRangeBoxFromCorners(corners);
   }
 
   public setReprojection(rootReprojection: Transform) {
@@ -266,14 +273,21 @@ export class RealityTile extends Tile {
     else
       Frustum.fromRange(this.range, scratchFrustum);
 
-    if (this.isFrustumCulled(scratchFrustum, args, true, this.boundingSphere))
+    let boundingSphere = this.boundingSphere;
+
+    if (this._reprojectionTransform) {
+      scratchFrustum.multiply(this._reprojectionTransform);
+      boundingSphere = boundingSphere.transformBy(this._reprojectionTransform, scratchSphere);
+    }
+
+    if (this.isFrustumCulled(scratchFrustum, args, true, boundingSphere))
       return -1;
 
     // some nodes are merely for structure and don't have any geometry
     if (0 === this.maximumSize)
       return 0;
 
-    if (this.isLeaf)
+    if (!this._reprojectionTransform && this.isLeaf)
       return this.hasContentRange && this.isContentCulled(args) ? -1 : 1;
 
     return this.maximumSize / args.getPixelSize(this);
@@ -320,6 +334,9 @@ export class RealityTile extends Tile {
   public get isStepChild() { return false; }
 
   protected loadAdditiveRefinementChildren(resolve: (children: Tile[]) => void): void {
+    if (skipStepChildren)
+      return;
+
     const corners = this.rangeCorners;
     if (!corners)
       return;

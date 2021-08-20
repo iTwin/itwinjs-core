@@ -18,7 +18,7 @@ import {
   TileDrawArgs, TileLoadPriority, TileRequest, TileRequestChannel,
 } from "./internal";
 
-const defaultViewFlagOverrides = createDefaultViewFlagOverrides({});
+const defaultViewFlagOverrides = createDefaultViewFlagOverrides({}), unclippedDefaultViewFlagOverrides = createDefaultViewFlagOverrides({ clipVolume: false });
 
 const scratchTileCenterWorld = new Point3d();
 const scratchTileCenterView = new Point3d();
@@ -127,7 +127,7 @@ export abstract class RealityTileLoader {
     return content;
   }
 
-  public get viewFlagOverrides(): ViewFlagOverrides { return defaultViewFlagOverrides; }
+  public get viewFlagOverrides(): ViewFlagOverrides { return this.isContentUnbounded ? unclippedDefaultViewFlagOverrides : defaultViewFlagOverrides; }
 
   public static computeTileClosestToEyePriority(tile: Tile, viewports: Iterable<Viewport>, location: Transform): number {
     // Prioritize tiles closer to eye.

@@ -691,7 +691,7 @@ class RealityTreeReference extends RealityModelTileTree.Reference {
       const elevationBias = context.viewport.view.displayStyle.backgroundMapElevationBias;
 
       if (undefined !== elevationBias)
-        drawArgs.location.origin.z += elevationBias;
+        drawArgs.location.origin.z -= elevationBias;
     }
 
     return drawArgs;
