@@ -10,7 +10,7 @@
   1. Go to <https://developer.bentley.com>
   2. Click the **Sign In** button and sign-in using your Bentley account credentials
       - If you have not already registered, click **Register now** and complete the registration process.
-  3. Click on your user icon and navigate to the [My Apps](https://developer.bentley.com/my-apps/) page
+  3. Navigate to the [My Apps](https://developer.bentley.com/my-apps/) page
   4. Click the **Register New** button
   5. Give your application a Name
   6. Select the **Visualization** API
