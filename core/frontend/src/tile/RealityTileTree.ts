@@ -17,9 +17,6 @@ import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
 
-// eslint-disable-next-line prefer-const
-let skipReprojection = false;
-
 /** @internal */
 export class TraversalDetails {
   public queuedChildren = new Array<Tile>();
@@ -266,9 +263,6 @@ export class RealityTileTree extends TileTree {
   }
 
   public doReprojectChildren(tile: Tile): boolean {
-    if (skipReprojection)
-      return false;
-
     if (!(tile instanceof RealityTile) || !tile.boundedByRegion || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
       return false;
 

@@ -36,9 +36,6 @@ const additiveRefinementDepthLimit = 20;
 const scratchFrustum = new Frustum();
 const scratchSphere = new BoundingSphere();
 
-// eslint-disable-next-line prefer-const
-let skipStepChildren = false;
-
 /**
  * A specialization of tiles that represent reality tiles.  3D Tilesets and maps use this class and have their own optimized traversal and lifetime management.
  * @internal
@@ -334,9 +331,6 @@ export class RealityTile extends Tile {
   public get isStepChild() { return false; }
 
   protected loadAdditiveRefinementChildren(resolve: (children: Tile[]) => void): void {
-    if (skipStepChildren)
-      return;
-
     const corners = this.rangeCorners;
     if (!corners)
       return;
