@@ -6,21 +6,12 @@
  * @module NativeApp
  */
 
-import { AsyncFunction as AsyncFunction_, AsyncMethodsOf as AsyncMethodsOf_, PromiseReturnType as PromiseReturnType_ } from "@bentley/bentleyjs-core";
+import { AsyncFunction, AsyncMethodsOf, PromiseReturnType } from "@bentley/bentleyjs-core";
 import {
   BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
   iTwinChannel, RemoveFunction,
 } from "@bentley/imodeljs-common";
 import { IModelApp, IModelAppOptions } from "./IModelApp";
-
-/** @public @deprecated this type has moved to @bentley/bentleyjs-core */
-export type AsyncFunction = AsyncFunction_;
-
-/** @public @deprecated this type has moved to @bentley/bentleyjs-core */
-export type AsyncMethodsOf<T> = AsyncMethodsOf_<T>;
-
-/** @public @deprecated this type has moved to @bentley/bentleyjs-core */
-export type PromiseReturnType<T extends AsyncFunction_> = PromiseReturnType_<T>;
 
 /**
  * Options for [[IpcApp.startup]]
