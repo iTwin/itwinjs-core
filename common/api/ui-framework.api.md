@@ -1042,6 +1042,9 @@ export interface ConditionalFieldProps extends StatusFieldProps {
 // @public
 export class ConfigurableBase implements ConfigurableUiElement {
     constructor(info: ConfigurableCreateInfo, options: any);
+    // (undocumented)
+    protected _appDataOptions: any;
+    get applicationData(): any;
     get classId(): string;
     get name(): string;
     // @internal (undocumented)
@@ -1948,6 +1951,7 @@ export const expandWidget: (base: {
                     readonly widgetId: string | undefined;
                     readonly side: PanelSide;
                 };
+                readonly userSized?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -2040,6 +2044,8 @@ export const expandWidget: (base: {
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
             readonly canPopout?: boolean | undefined;
+            readonly userSized?: boolean | undefined;
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -2053,6 +2059,7 @@ export const expandWidget: (base: {
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly size: {
@@ -2471,6 +2478,12 @@ export class FrontstageDef {
     floatWidget(widgetId: string, point?: PointProps, size?: SizeProps): void;
     // (undocumented)
     get frontstageProvider(): FrontstageProvider | undefined;
+    // (undocumented)
+    getFloatingWidgetContainerBounds(floatingWidgetId: string | undefined): RectangleProps | undefined;
+    // (undocumented)
+    getFloatingWidgetContainerIdByWidgetId(widgetId: string): string | undefined;
+    // (undocumented)
+    getFloatingWidgetContainerIds(): string[];
     // @beta
     getStagePanelDef(location: StagePanelLocation_2): StagePanelDef | undefined;
     getZoneDef(zoneId: number): ZoneDef | undefined;
@@ -2519,6 +2532,10 @@ export class FrontstageDef {
     setActiveView(newContent: ContentControl, oldContent?: ContentControl): void;
     setActiveViewFromViewport(viewport: ScreenViewport): boolean;
     setContentLayoutAndGroup(contentLayoutDef: ContentLayoutDef, contentGroup: ContentGroup): void;
+    // @internal (undocumented)
+    setFloatingWidgetBoundsInternal(floatingWidgetId: string, bounds: RectangleProps, inhibitNineZoneStateChangedEvent?: boolean): void;
+    // (undocumented)
+    setFloatingWidgetContainerBounds(floatingWidgetId: string, bounds: RectangleProps): boolean;
     // @internal (undocumented)
     setIsApplicationClosing(value: boolean): void;
     startDefaultTool(): void;
@@ -4759,6 +4776,7 @@ export const setPanelSize: (base: {
                     readonly widgetId: string | undefined;
                     readonly side: PanelSide;
                 };
+                readonly userSized?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -4851,6 +4869,8 @@ export const setPanelSize: (base: {
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
             readonly canPopout?: boolean | undefined;
+            readonly userSized?: boolean | undefined;
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -4864,6 +4884,7 @@ export const setPanelSize: (base: {
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly size: {
@@ -4923,6 +4944,7 @@ export const setWidgetLabel: (base: {
                     readonly widgetId: string | undefined;
                     readonly side: PanelSide;
                 };
+                readonly userSized?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5015,6 +5037,8 @@ export const setWidgetLabel: (base: {
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
             readonly canPopout?: boolean | undefined;
+            readonly userSized?: boolean | undefined;
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5028,6 +5052,7 @@ export const setWidgetLabel: (base: {
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly size: {
@@ -5065,6 +5090,7 @@ export const setWidgetState: (base: {
                     readonly widgetId: string | undefined;
                     readonly side: PanelSide;
                 };
+                readonly userSized?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5157,6 +5183,8 @@ export const setWidgetState: (base: {
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
             readonly canPopout?: boolean | undefined;
+            readonly userSized?: boolean | undefined;
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5170,6 +5198,7 @@ export const setWidgetState: (base: {
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly size: {
@@ -5271,6 +5300,7 @@ export const showWidget: (base: {
                     readonly widgetId: string | undefined;
                     readonly side: PanelSide;
                 };
+                readonly userSized?: boolean | undefined;
             };
         };
         readonly allIds: readonly string[];
@@ -5363,6 +5393,8 @@ export const showWidget: (base: {
             readonly preferredPanelWidgetSize?: "fit-content" | undefined;
             readonly allowedPanelTargets?: readonly PanelSide[] | undefined;
             readonly canPopout?: boolean | undefined;
+            readonly userSized?: boolean | undefined;
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly toolSettings: {
@@ -5376,6 +5408,7 @@ export const showWidget: (base: {
             readonly id: string;
             readonly minimized: boolean;
             readonly tabs: readonly string[];
+            readonly isFloatingStateWindowResizable?: boolean | undefined;
         };
     };
     readonly size: {
@@ -7177,11 +7210,16 @@ export class WidgetDef {
     // (undocumented)
     static createWidgetPropsFromAbstractProps(abstractWidgetProps: AbstractWidgetProps): WidgetProps;
     // @internal (undocumented)
+    get defaultFloatingPosition(): PointProps | undefined;
+    set defaultFloatingPosition(position: PointProps | undefined);
+    // @internal (undocumented)
     get defaultState(): WidgetState;
     // @alpha
     expand(): void;
     // (undocumented)
     get fillZone(): boolean;
+    // (undocumented)
+    get floatingContainerId(): string | undefined;
     // (undocumented)
     getWidgetControl(type: ConfigurableUiControlType): WidgetControl | undefined;
     // (undocumented)
@@ -7220,6 +7258,8 @@ export class WidgetDef {
     saveTransientState(): void;
     // (undocumented)
     setCanPopout(value: boolean | undefined): void;
+    // (undocumented)
+    setFloatingContainerId(value: string | undefined): void;
     setLabel(v: string | ConditionalStringValue | StringGetter): void;
     setTooltip(v: string | ConditionalStringValue | StringGetter): void;
     // (undocumented)

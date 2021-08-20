@@ -147,10 +147,25 @@ export function ToolSettingsContent() {
 
 /** @internal */
 export function ToolSettingsWidgetContent() {
+  const floatingToolSettingsContainerRef = React.useRef<HTMLDivElement>(null);
   const node = useToolSettingsNode();
+  // if no tool settings hide the floating widgets tab
+  React.useEffect(() => {
+    // istanbul ignore else
+    if (floatingToolSettingsContainerRef.current) {
+      const floatingWidgetTab = floatingToolSettingsContainerRef.current.closest(".nz-floating-toolsettings");
+      // istanbul ignore else
+      if (floatingWidgetTab) {
+        (floatingWidgetTab as HTMLDivElement).style.visibility = !!node ? "visible" : /* istanbul ignore next */ "hidden";
+      }
+    }
+  }, [node]);
+
   return (
-    <ScrollableWidgetContent>
-      {node}
-    </ScrollableWidgetContent>
+    <div className="uifw-floating-toolsettings-container" ref={floatingToolSettingsContainerRef} >
+      <ScrollableWidgetContent>
+        {node}
+      </ScrollableWidgetContent>
+    </div>
   );
 }

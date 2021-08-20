@@ -1,6 +1,6 @@
 {
   "name": "@bentley/imodeljs-frontend",
-  "version": "3.0.0-dev.29",
+  "version": "3.0.0-dev.31",
   "description": "iModel.js frontend components",
   "main": "lib/imodeljs-frontend.js",
   "typings": "lib/imodeljs-frontend",
@@ -36,19 +36,19 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.29",
-    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.29",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.29",
-    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.29",
-    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.29",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.29",
-    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.29",
-    "@bentley/itwin-client": "workspace:^3.0.0-dev.29",
-    "@bentley/orbitgt-core": "workspace:^3.0.0-dev.29",
-    "@bentley/product-settings-client": "workspace:^3.0.0-dev.29",
-    "@bentley/telemetry-client": "workspace:^3.0.0-dev.29",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.29",
-    "@bentley/webgl-compatibility": "workspace:^3.0.0-dev.29"
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.31",
+    "@bentley/frontend-authorization-client": "workspace:^3.0.0-dev.31",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.31",
+    "@bentley/imodelhub-client": "workspace:^3.0.0-dev.31",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.31",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.31",
+    "@bentley/imodeljs-quantity": "workspace:^3.0.0-dev.31",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.31",
+    "@bentley/orbitgt-core": "workspace:^3.0.0-dev.31",
+    "@bentley/product-settings-client": "workspace:^3.0.0-dev.31",
+    "@bentley/telemetry-client": "workspace:^3.0.0-dev.31",
+    "@bentley/ui-abstract": "workspace:^3.0.0-dev.31",
+    "@bentley/webgl-compatibility": "workspace:^3.0.0-dev.31"
   },
   "//devDependencies": [
     "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
@@ -98,7 +98,6 @@
     "@bentley/context-registry-client": "workspace:*",
     "@bentley/extension-client": "workspace:*",
     "@bentley/reality-data-client": "workspace:*",
-    "@bentley/usage-logging-client": "workspace:*",
     "fuse.js": "^3.3.0",
     "semver": "^5.5.0",
     "wms-capabilities": "0.4.0",
