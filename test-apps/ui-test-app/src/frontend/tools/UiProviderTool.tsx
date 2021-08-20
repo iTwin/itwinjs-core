@@ -13,7 +13,7 @@ import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
 import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
   ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
-  UiItemsManager, UiItemsProvider,
+  UiItemsManager, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
 import { FillCentered } from "@bentley/ui-core";
 import {
@@ -164,16 +164,44 @@ class TestUiProvider implements UiItemsProvider {
     const widgets: AbstractWidgetProps[] = [];
     const allowedStages = ["ViewsFrontstage", "Ui2"];
     // Section parameter is ignored. The widget will be added once to the top section of a right panel.
-    if (allowedStages.includes(stageId) && location === StagePanelLocation.Right) {
+    if (allowedStages.includes(stageId) && location === StagePanelLocation.Right && section === StagePanelSection.Start) {
       widgets.push({
         id: "addonWidget",
-        getWidgetContent: () => <FillCentered>Addon Widget in panel</FillCentered>, // eslint-disable-line react/display-name
+        label: "Add On 1",
+        getWidgetContent: () => <FillCentered>Addon Widget  (id: addonWidget)</FillCentered>, // eslint-disable-line react/display-name
+        defaultState: WidgetState.Floating,
+        floatingContainerId: "floating-addonWidget-container",
+        isFloatingStateSupported: true,
+      });
+      widgets.push({
+        label: "Add On 2",
+        id: "addonWidget2",
+        getWidgetContent: () => <FillCentered>Addon Widget 2 (id: addonWidget2)</FillCentered>, // eslint-disable-line react/display-name
+        defaultState: WidgetState.Floating,
+        floatingContainerId: "floating-addonWidget-container",
+        isFloatingStateSupported: true,
       });
     }
+
     if (allowedStages.includes(stageId) && location === StagePanelLocation.Right && section === StagePanelSection.Middle) {
       widgets.push({
+        label: "Add On 3",
         id: "addonWidgetMiddle",
-        getWidgetContent: () => <FillCentered>Addon Widget in middle section</FillCentered>, // eslint-disable-line react/display-name
+        // eslint-disable-next-line react/display-name
+        getWidgetContent: () => {
+          return (<FillCentered>
+            <div style={{ margin: "5px", display: "flex", flexDirection: "column", alignItems: "center" }}>
+              Widget id: addonWidgetMiddle
+              <div>
+                (Not Resizable)
+              </div>
+            </div>
+          </FillCentered>);
+        },
+        defaultState: WidgetState.Floating,
+        isFloatingStateSupported: true,
+        defaultFloatingPosition: { x: 200, y: 200 },
+        isFloatingStateWindowResizable: false,
       });
     }
     return widgets;

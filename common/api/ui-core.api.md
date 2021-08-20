@@ -1375,6 +1375,7 @@ export const NumberInput: (props: NumberInputProps) => JSX.Element | null;
 // @beta
 export interface NumberInputProps extends Omit<InputProps_2, "min" | "max" | "step" | "onChange"> {
     containerClassName?: string;
+    containerStyle?: React.CSSProperties;
     format?: (num: number | null | undefined, formattedValue: string) => string;
     max?: number;
     min?: number;

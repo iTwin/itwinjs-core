@@ -11,7 +11,7 @@ import { CommonToolbarItem, StageUsage, WidgetState } from "@bentley/ui-abstract
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
-import { LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
+import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 
 /* eslint-disable react/jsx-key */
 
@@ -205,7 +205,7 @@ export class FrontstageUi2 extends FrontstageProvider {
             panelZones={{
               start: {
                 widgets: [
-                  <Widget id="BottomStart1" label="Start1" element={<h2>Bottom Start1 widget</h2>} />,
+                  <Widget id="BottomStart1" label="Floating Info" element={<FloatingLayoutInfo />} />,
                   <Widget id="BottomStart2" canPopout={true} label="Start2" defaultState={WidgetState.Open} element={<LayoutInfo />} />,
                 ],
               },

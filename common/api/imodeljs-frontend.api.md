@@ -93,7 +93,6 @@ import { FeatureAppearanceProps } from '@bentley/imodeljs-common';
 import { FeatureAppearanceProvider } from '@bentley/imodeljs-common';
 import { FeatureIndex } from '@bentley/imodeljs-common';
 import { FeatureIndexType } from '@bentley/imodeljs-common';
-import { FeatureLogEntry } from '@bentley/usage-logging-client';
 import { FeatureOverrides } from '@bentley/imodeljs-common';
 import { FeatureOverrideType } from '@bentley/imodeljs-common';
 import { FeatureTable } from '@bentley/imodeljs-common';
@@ -297,8 +296,6 @@ import { UiAdmin } from '@bentley/ui-abstract';
 import { UnitConversion } from '@bentley/imodeljs-quantity';
 import { UnitProps } from '@bentley/imodeljs-quantity';
 import { UnitsProvider } from '@bentley/imodeljs-quantity';
-import { UsageLoggingClient } from '@bentley/usage-logging-client';
-import { UsageType } from '@bentley/usage-logging-client';
 import { Vector2d } from '@bentley/geometry-core';
 import { Vector3d } from '@bentley/geometry-core';
 import { ViewAttachmentProps } from '@bentley/imodeljs-common';
@@ -3025,22 +3022,6 @@ export function eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeigh
 // @internal
 export function eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise<Cartographic | undefined>;
 
-// @alpha
-export class FeatureLogBatchClient {
-    constructor(_getRequestContext: () => Promise<AuthorizedClientRequestContext>, options?: Partial<FeatureLogBatchOptions>, _client?: UsageLoggingClient);
-    clearAutomaticBatchSubmission(reset?: boolean): void;
-    queueLog(...entries: FeatureLogEntry[]): Promise<void>;
-    setupAutomaticBatchSubmission(): void;
-    }
-
-// @alpha
-export interface FeatureLogBatchOptions {
-    // (undocumented)
-    maxBatchInterval: number;
-    // (undocumented)
-    maxBatchSize: number;
-}
-
 // @public
 export interface FeatureOverrideProvider {
     addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
@@ -3063,25 +3044,6 @@ export namespace FeatureSymbology {
         // @internal
         initFromViewport(viewport: Viewport): void;
         }
-}
-
-// @alpha
-export class FeatureTrackingManager {
-    constructor();
-    protected _client: FeatureLogBatchClient;
-    protected _hostFallbackName: string;
-    protected _hostName: string;
-    track(props: FeatureTrackingProps): void;
-    protected trackFeature(_props: FeatureTrackingProps): FeatureLogEntry | undefined;
-    protected _usageType: UsageType;
-}
-
-// @alpha
-export interface FeatureTrackingProps {
-    applicationData?: Map<string, any>;
-    featureName: string;
-    iModelConnection?: IModelConnection;
-    ulasFeatureId?: string;
 }
 
 // @internal @deprecated (undocumented)
