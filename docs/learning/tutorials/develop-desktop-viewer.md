@@ -1,4 +1,4 @@
-# Developing a iTwin Desktop Viewer
+# Developing a Desktop Viewer
 
 ## Setup
 
