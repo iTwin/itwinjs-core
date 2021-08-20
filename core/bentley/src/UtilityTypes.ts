@@ -73,7 +73,7 @@ export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
 
 /** Any function returning a Promise.
  * @see [[AsyncMethodsOf]] to extract all async methods from a type.
- * @see [[PromiseReturnType to extract the type to which the Promise resolves.
+ * @see [[PromiseReturnType]] to extract the type to which the Promise resolves.
  * @public
  */
 export type AsyncFunction = (...args: any) => Promise<any>;
