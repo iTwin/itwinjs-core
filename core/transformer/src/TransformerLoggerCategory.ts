@@ -12,17 +12,17 @@
  * @public
  */
 export enum TransformerLoggerCategory {
-  /** The logger category used by the [IModelExporter]($backend) class.
+  /** The logger category used by the [IModelExporter]($transformer) class.
    * @beta
    */
   IModelExporter = "imodeljs-backend.IModelExporter",
 
-  /** The logger category used by the [IModelImporter]($backend) class.
+  /** The logger category used by the [IModelImporter]($transformer) class.
    * @beta
    */
   IModelImporter = "imodeljs-backend.IModelImporter",
 
-  /** The logger category used by the [IModelTransformer]($backend) class.
+  /** The logger category used by the [IModelTransformer]($transformer) class.
    * @beta
    */
   IModelTransformer = "imodeljs-backend.IModelTransformer",
