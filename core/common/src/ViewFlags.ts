@@ -158,7 +158,7 @@ export class ViewFlags {
   public readonly textures: boolean;
   /** In [[RenderMode.SmoothShade]], whether to apply [[RenderMaterial]]s to surfaces. Default: true. */
   public readonly materials: boolean;
-  /** Whether to display a graphical representation of the view's [AuxCoordSystem]($frontend). Default: false. */
+  /** Whether to display a graphical representation of the view's [AuxCoordSystem]($backend). Default: false. */
   public readonly acsTriad: boolean;
   /** Whether to display a grid. Default: false. */
   public readonly grid: boolean;
