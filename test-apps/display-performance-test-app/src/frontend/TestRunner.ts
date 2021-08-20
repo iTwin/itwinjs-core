@@ -1142,7 +1142,7 @@ const viewFlagsPropsStrings = {
   visibleEdges: "+vsE",
   hiddenEdges: "+hdE",
   shadows: "+shd",
-  clipVolume: "-clip",
+  clipVolume: "-clp",
   constructions: "+con",
   monochrome: "+mno",
   backgroundMap: "+bkg",
