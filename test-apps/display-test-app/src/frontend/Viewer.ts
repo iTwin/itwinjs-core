@@ -24,7 +24,7 @@ import { createImageButton, createToolButton, ToolBar } from "./ToolBar";
 import { ViewAttributesPanel } from "./ViewAttributes";
 import { ViewList, ViewPicker } from "./ViewPicker";
 import { Window } from "./Window";
-import { openStandaloneIModel } from "./openStandaloneIModel";
+import { openIModel } from "./openIModel";
 
 // cspell:ignore savedata topdiv savedview viewtop
 
@@ -429,7 +429,7 @@ export class Viewer extends Window {
     const sameFile = filename === this._imodel.key;
     if (!sameFile) {
       try {
-        newIModel = await openStandaloneIModel(filename, this.surface.openReadWrite);
+        newIModel = await openIModel(filename, this.surface.openReadWrite);
       } catch (err) {
         alert(err.toString());
         return;
@@ -442,7 +442,7 @@ export class Viewer extends Window {
     await this.clearViews();
 
     if (sameFile)
-      newIModel = await openStandaloneIModel(filename, this.surface.openReadWrite);
+      newIModel = await openIModel(filename, this.surface.openReadWrite);
 
     this._imodel = newIModel!;
     await this.buildViewList();

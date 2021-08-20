@@ -14,5 +14,3 @@ The current iTwin Service client APIs are available in the following npm package
   - ($itwin-client)
 - [@bentley/product-settings-client](https://www.npmjs.com/package/@bentley/product-settings-client)
   - ($product-settings-client)
-- [@bentley/usage-logging-client](https://www.npmjs.com/package/@bentley/usage-logging-client)
-  - ($usage-logging-client)

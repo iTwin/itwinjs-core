@@ -269,11 +269,18 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `SpecialKey`                           | `SpecialKey` in @bentley/ui-abstract                                                   |
 | `WidgetState`                          | `WidgetState` in @bentley/ui-abstract                                                  |
 
+### @bentley/bentleyjs-core
+
+| Removed                                | Replacement                                                                            |
+| -------------------------------------- | -------------------------------------------------------------------------------------- |
+| `Config`                               | Use `process.env` to access environment variables directly |
+| `EnvMacroSubst`                        | *eliminated*  |
+
 <!---
 User Interface Changes - section to comment below
 -->
 
-## User Interface Changes
+### User Interface Changes
 
 Several changes were made in the @bentley/ui-* packages.
 Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
@@ -283,6 +290,13 @@ A new @bentley/ui-imodel-components package has been added and contains items re
 The @bentley/ui-* and @bentley/presentation-components packages are now dependent on React version 17. **Applications using the ui packages must update React 17.** Details about React version 17 can be found in the [React Blog](https://reactjs.org/blog/2020/10/20/react-v17.html).
 
 For migration purposes, React 16 is included in the peerDependencies for the packages. React 16 is not an officially supported version of iTwin.js app or Extension development using the iTwin.js AppUi.
+
+#### New Floating Widget Capabilities
+
+Widgets provided via UiItemsProviders may now set `defaultState: WidgetState.Floating` and `isFloatingStateSupported: true` to open
+the widget in a floating container. The property `defaultFloatingPosition` may also be specified to define the position of the floating container. If a position is not defined the container will be centered in the `AppUi` area.
+
+The method `getFloatingWidgetContainerIds()` has been added to FrontstageDef to retrieve the Ids for all floating widget containers for the active frontstage as specified by the `frontstageDef`. These ids can be used to query the size of the floating container via `frontstageDef.getFloatingWidgetContainerBounds`. The method `frontstageDef.setFloatingWidgetContainerBounds` can then be used to set the size and position of a floating widget container.
 
 ### Deprecated ui-core Components in Favor of iTwinUI-react Components
 

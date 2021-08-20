@@ -17,7 +17,7 @@ export class LocalFileSupport {
       return true;
 
     if (!SampleAppIModelApp.testAppConfiguration?.snapshotPath) {
-      alert("imjs_TESTAPP_SNAPSHOT_FILEPATH must be set on the backend and point to a folder containing local snapshot files.");
+      alert("IMJS_TESTAPP_SNAPSHOT_FILEPATH must be set on the backend and point to a folder containing local snapshot files.");
       return false;
     }
 

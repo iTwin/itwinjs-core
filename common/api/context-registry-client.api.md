@@ -39,14 +39,11 @@ export class Context extends WsgInstance {
 // @beta
 export class ContextRegistryClient extends WsgClient {
     constructor();
-    // (undocumented)
-    static readonly configRelyingPartyUri = "imjs_connected_context_service_relying_party_uri";
     getAsset(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset>;
     getAssets(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<Asset[]>;
     getInvitedProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project[]>;
     getProject(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project>;
     getProjects(requestContext: AuthorizedClientRequestContext, queryOptions?: ContextRegistryRequestQueryOptions): Promise<Project[]>;
-    protected getRelyingPartyUrl(): string;
     getTeam(requestContext: AuthorizedClientRequestContext): Promise<Team>;
     // @internal (undocumented)
     protected getUrlSearchKey(): string;

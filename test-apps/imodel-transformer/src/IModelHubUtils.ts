@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 // cspell:words buddi urlps
 
-import { Config, GuidString } from "@bentley/bentleyjs-core";
+import { GuidString } from "@bentley/bentleyjs-core";
 import { ElectronAuthorizationBackend } from "@bentley/electron-manager/lib/ElectronBackend";
 import { Version } from "@bentley/imodelhub-client";
 import { BriefcaseDb, BriefcaseManager, IModelHost, IModelHubBackend, NativeHost, RequestNewBriefcaseArg } from "@bentley/imodeljs-backend";
@@ -44,7 +44,7 @@ export namespace IModelHubUtils {
     } else if ("dev" === arg) {
       value = "103";
     }
-    Config.App.set("imjs_buddi_resolve_url_using_region", value);
+    process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(value);
   }
 
   export async function queryIModelId(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString | undefined> {

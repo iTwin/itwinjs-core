@@ -7,7 +7,7 @@
  */
 
 import {
-  AsyncMethodsOf, BeEvent, Config, GuidString, Logger, PromiseReturnType, SessionProps,
+  AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType, SessionProps,
 } from "@bentley/bentleyjs-core";
 import {
   BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
@@ -191,8 +191,6 @@ export class NativeApp {
     this._isValid = true;
 
     NativeAppNotifyHandler.register(); // receives notifications from backend
-
-    Config.App.merge(await this.callNativeHost("getConfig"));
     NativeApp.hookBrowserConnectivityEvents();
 
     // initialize current online state.
