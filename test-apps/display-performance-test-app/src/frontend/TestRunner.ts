@@ -1158,8 +1158,8 @@ function getViewFlagsString(test: TestCase): string {
 
   // Lighting flag always comes first.
   const vf = test.viewport.viewFlags;
-  if (!vf.lighting && RenderMode.SmoothShade === vf.renderMode)
-    vfString = "-lit";
+  if (vf.lighting && RenderMode.SmoothShade === vf.renderMode)
+    vfString = "+lit";
 
   for (const propName of Object.keys(vf)) {
     const key = propName as keyof typeof viewFlagsPropsStrings;
