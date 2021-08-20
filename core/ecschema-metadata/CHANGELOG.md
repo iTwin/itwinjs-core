@@ -1,6 +1,13 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Tue, 17 Aug 2021 20:34:28 GMT and should not be manually modified.
+This log was last generated on Fri, 20 Aug 2021 17:47:22 GMT and should not be manually modified.
+
+## 2.19.7
+Fri, 20 Aug 2021 17:47:22 GMT
+
+### Updates
+
+- remove alpha toXmlString method and its implicit xmldom dependency
 
 ## 2.19.6
 Tue, 17 Aug 2021 20:34:28 GMT
