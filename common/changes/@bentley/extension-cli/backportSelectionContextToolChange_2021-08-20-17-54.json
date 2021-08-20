@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/extension-cli",
+      "comment": "",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/extension-cli",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}
