@@ -9,7 +9,7 @@
 import {
   assert, BentleyStatus, compareNumbers, compareStrings, compareStringsOrUndefined, CompressedId64Set, Guid, Id64String,
 } from "@bentley/bentleyjs-core";
-import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
+import { Angle, Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
 import {
   Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskPriority, PlanarClipMaskSettings,
   SpatialClassifiers, ViewFlagOverrides, ViewFlagPresence,
@@ -124,6 +124,10 @@ const scratchRay = Ray3d.createXAxis();
 
 /** @internal */
 export class RealityModelTileUtils {
+  public static isGlobalRegion(boundingVolume: any) {
+    return Array.isArray(boundingVolume?.region) && (boundingVolume.region[2] - boundingVolume.region[0]) > Angle.piRadians && (boundingVolume.region[3] - boundingVolume.region[1]) > Angle.piOver2Radians;
+  }
+
   public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[] } | undefined {
     if (undefined === boundingVolume)
       return undefined;
@@ -351,7 +355,10 @@ class RealityModelTileLoader extends RealityTileLoader {
     super();
     this.tree = tree;
     this._batchedIdMap = batchedIdMap;
-    this._viewFlagOverrides = createDefaultViewFlagOverrides({ lighting: true });
+    let clipVolume;
+    if (RealityModelTileUtils.isGlobalRegion(tree.tilesetJson.boundingVolume))
+      clipVolume = false;
+    this._viewFlagOverrides = createDefaultViewFlagOverrides({ lighting: true, clipVolume });
     this._viewFlagOverrides.clearPresent(ViewFlagPresence.VisibleEdges);      // Display these if they are present (Cesium outline extension)
     this._viewFlagOverrides.clearPresent(ViewFlagPresence.HiddenEdges);
   }
