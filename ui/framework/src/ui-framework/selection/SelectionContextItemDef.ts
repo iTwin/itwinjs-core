@@ -215,9 +215,13 @@ export class SelectionContextToolDefinitions {
       iconSpec: "icon-visibility",
       labelKey: "UiFramework:tools.clearVisibility",
       isHidden: getIsHiddenIfFeatureOverridesActive(),
-      stateSyncIds: getFeatureOverrideSyncEventIds(),
-      stateFunc: featureOverridesActiveStateFunc,
-      execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processClearEmphasize(),
+      stateSyncIds: getFeatureOverrideSyncEventIds(), /* only here to support AppUi 1, setting isHidden is the AppUi 2 way */
+      stateFunc: featureOverridesActiveStateFunc,  /* only here to support AppUi 1, setting isHidden is the AppUi 2 way */
+      execute: async () => {
+        await UiFramework.hideIsolateEmphasizeActionHandler.processClearEmphasize();
+        await UiFramework.hideIsolateEmphasizeActionHandler.processClearOverrideModels();
+        await UiFramework.hideIsolateEmphasizeActionHandler.processClearOverrideCategories();
+      },
     });
   }
 
