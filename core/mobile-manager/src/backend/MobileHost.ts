@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, BriefcaseStatus, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
+import { BeEvent, BriefcaseStatus, Logger } from "@bentley/bentleyjs-core";
 import { IModelHost, IpcHandler, IpcHost, NativeHost, NativeHostOpts } from "@bentley/imodeljs-backend";
 import { IModelReadRpcInterface, IModelTileRpcInterface, InternetConnectivityStatus, NativeAppAuthorizationConfiguration, RpcInterfaceDefinition, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import { CancelRequest, DownloadFailed, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
@@ -61,10 +61,10 @@ export abstract class MobileDevice {
   public abstract resumeDownloadInForeground(requestId: number): boolean;
   public abstract resumeDownloadInBackground(requestId: number): boolean;
   public abstract reconnect(connection: number): void;
-  public abstract authSignIn(ctx: ClientRequestContext, callback: (err?: string) => void): void;
-  public abstract authSignOut(ctx: ClientRequestContext, callback: (err?: string) => void): void;
-  public abstract authGetAccessToken(ctx: ClientRequestContext, callback: (accessToken?: string, err?: string) => void): void;
-  public authInit(_ctx: ClientRequestContext, _config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void { callback(); }
+  public abstract authSignIn(callback: (err?: string) => void): void;
+  public abstract authSignOut(callback: (err?: string) => void): void;
+  public abstract authGetAccessToken(callback: (accessToken?: string, err?: string) => void): void;
+  public authInit(_config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void { callback(); }
   public abstract authStateChanged(accessToken?: string, err?: string): void;
 }
 
