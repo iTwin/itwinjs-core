@@ -35,8 +35,8 @@ describe("DeleteDefinitionElements", () => {
   it("should delete if not used", async () => {
     const iModelFile: string = IModelTestUtils.prepareOutputFile("DeleteDefinitionElements", "DeleteDefinitionElements.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "DeleteDefinitionElements" } });
-    await IModelTestUtils.prepareSourceDb(iModelDb);
-    IModelTestUtils.populateSourceDb(iModelDb);
+    await IModelTestUtils.ExtensiveTestScenario.prepareDb(iModelDb);
+    IModelTestUtils.ExtensiveTestScenario.populateDb(iModelDb);
 
     // Get ElementIds of DefinitionElements created by populateSourceDb
     const subjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;

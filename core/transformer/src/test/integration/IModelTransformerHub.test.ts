@@ -21,7 +21,7 @@ import {
 } from "../../imodeljs-transformer";
 import { HubMock } from "@bentley/imodeljs-backend/lib/test/HubMock";
 import { IModelTestUtils, TestUserType } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
-import { CountingIModelImporter, IModelToTextFileExporter, TestIModelTransformer } from "../IModelTransformerUtils";
+import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
 import { HubUtility } from "@bentley/imodeljs-backend/lib/test/integration/HubUtility";
 
@@ -58,7 +58,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
     const sourceSeedDb = SnapshotDb.createEmpty(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
     assert.isTrue(IModelJsFs.existsSync(sourceSeedFileName));
-    await IModelTestUtils.prepareSourceDb(sourceSeedDb);
+    await IModelTestUtils.ExtensiveTestScenario.prepareDb(sourceSeedDb);
     sourceSeedDb.saveChanges();
     sourceSeedDb.close();
 
@@ -72,7 +72,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
     const targetSeedDb = SnapshotDb.createEmpty(targetSeedFileName, { rootSubject: { name: "TransformerTarget" } });
     assert.isTrue(IModelJsFs.existsSync(targetSeedFileName));
-    await IModelTestUtils.prepareTargetDb(targetSeedDb);
+    await IModelTransformerTestUtils.prepareTargetDb(targetSeedDb);
     assert.isTrue(targetSeedDb.codeSpecs.hasName("TargetCodeSpec")); // inserted by prepareTargetDb
     targetSeedDb.saveChanges();
     targetSeedDb.close();
@@ -90,7 +90,7 @@ describe("IModelTransformerHub (#integration)", () => {
       targetDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
       if (true) { // initial import
-        IModelTestUtils.populateSourceDb(sourceDb);
+        IModelTestUtils.ExtensiveTestScenario.populateDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, "Populate source");
@@ -128,7 +128,7 @@ describe("IModelTransformerHub (#integration)", () => {
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, "Import #1");
-        IModelTestUtils.assertTargetDbContents(sourceDb, targetDb);
+        IModelTransformerTestUtils.assertTargetDbContents(sourceDb, targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
         const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-1.txt");
@@ -185,7 +185,7 @@ describe("IModelTransformerHub (#integration)", () => {
       }
 
       if (true) { // update source db, then import again
-        IModelTestUtils.updateSourceDb(sourceDb);
+        IModelTestUtils.ExtensiveTestScenario.updateDb(sourceDb);
         await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, "Update source");
@@ -198,21 +198,21 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.isTrue(IModelJsFs.existsSync(sourceExportFileName));
         const sourceDbChanges: any = (sourceExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(sourceDbChanges);
-        // expect some inserts from updateSourceDb
+        // expect some inserts from updateDb
         assert.equal(sourceDbChanges.codeSpec.insertIds.size, 0);
         assert.equal(sourceDbChanges.element.insertIds.size, 1);
         assert.equal(sourceDbChanges.aspect.insertIds.size, 0);
         assert.equal(sourceDbChanges.model.insertIds.size, 0);
         assert.equal(sourceDbChanges.relationship.insertIds.size, 2);
-        // expect some updates from updateSourceDb
+        // expect some updates from updateDb
         assert.isAtLeast(sourceDbChanges.element.updateIds.size, 1);
         assert.isAtLeast(sourceDbChanges.aspect.updateIds.size, 1);
         assert.isAtLeast(sourceDbChanges.model.updateIds.size, 1);
         assert.isAtLeast(sourceDbChanges.relationship.updateIds.size, 1);
-        // expect some deletes from updateSourceDb
+        // expect some deletes from updateDb
         assert.isAtLeast(sourceDbChanges.element.deleteIds.size, 1);
         assert.equal(sourceDbChanges.relationship.deleteIds.size, 1);
-        // don't expect other changes from updateSourceDb
+        // don't expect other changes from updateDb
         assert.equal(sourceDbChanges.codeSpec.updateIds.size, 0);
         assert.equal(sourceDbChanges.codeSpec.deleteIds.size, 0);
         assert.equal(sourceDbChanges.aspect.deleteIds.size, 0);
@@ -224,7 +224,7 @@ describe("IModelTransformerHub (#integration)", () => {
         await targetDb.concurrencyControl.request(requestContext);
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, "Import #2");
-        IModelTestUtils.assertUpdatesInDb(targetDb);
+        IModelTestUtils.ExtensiveTestScenario.assertUpdatesInDb(targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
         const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-2.txt");
@@ -234,22 +234,22 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.isTrue(IModelJsFs.existsSync(targetExportFileName));
         const targetDbChanges: any = (targetExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(targetDbChanges);
-        // expect some inserts from transforming the result of updateSourceDb
+        // expect some inserts from transforming the result of updateDb
         assert.equal(targetDbChanges.codeSpec.insertIds.size, 0);
         assert.equal(targetDbChanges.element.insertIds.size, 1);
         assert.equal(targetDbChanges.aspect.insertIds.size, 3);
         assert.equal(targetDbChanges.model.insertIds.size, 0);
         assert.equal(targetDbChanges.relationship.insertIds.size, 2);
-        // expect some updates from transforming the result of updateSourceDb
+        // expect some updates from transforming the result of updateDb
         assert.isAtLeast(targetDbChanges.element.updateIds.size, 1);
         assert.isAtLeast(targetDbChanges.aspect.updateIds.size, 1);
         assert.isAtLeast(targetDbChanges.model.updateIds.size, 1);
         assert.isAtLeast(targetDbChanges.relationship.updateIds.size, 1);
-        // expect some deletes from transforming the result of updateSourceDb
+        // expect some deletes from transforming the result of updateDb
         assert.isAtLeast(targetDbChanges.element.deleteIds.size, 1);
         assert.isAtLeast(targetDbChanges.aspect.deleteIds.size, 1);
         assert.equal(targetDbChanges.relationship.deleteIds.size, 1);
-        // don't expect other changes from transforming the result of updateSourceDb
+        // don't expect other changes from transforming the result of updateDb
         assert.equal(targetDbChanges.codeSpec.updateIds.size, 0);
         assert.equal(targetDbChanges.codeSpec.deleteIds.size, 0);
         assert.equal(targetDbChanges.model.deleteIds.size, 0);
@@ -314,8 +314,8 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isFalse(sourceDb.concurrencyControl.locks.hasSchemaLock);
 
       // populate sourceDb
-      IModelTestUtils.populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
-      IModelTestUtils.assertTeamIModelContents(sourceDb, "Test");
+      IModelTransformerTestUtils.populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
+      IModelTransformerTestUtils.assertTeamIModelContents(sourceDb, "Test");
       await sourceDb.concurrencyControl.request(requestContext);
       sourceDb.saveChanges();
       await sourceDb.pushChanges(requestContext, "Populate Source");
@@ -336,7 +336,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const transformer = new IModelTransformer(new IModelExporter(sourceDb), targetDb);
       await transformer.processAll();
       transformer.dispose();
-      IModelTestUtils.assertTeamIModelContents(targetDb, "Test");
+      IModelTransformerTestUtils.assertTeamIModelContents(targetDb, "Test");
       await targetDb.concurrencyControl.request(requestContext);
       targetDb.saveChanges();
       await targetDb.pushChanges(requestContext, "Import changes from sourceDb");
