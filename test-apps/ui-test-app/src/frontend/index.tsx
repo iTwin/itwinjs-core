@@ -449,7 +449,7 @@ export class SampleAppIModelApp {
           searchString: projectName,
           property: ITwinSearchableProperty.Name,
           exactMatch: true,
-        }
+        },
       });
 
       if (iTwinList.length === 0)

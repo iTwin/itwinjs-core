@@ -28,7 +28,7 @@ describe("ContextRegistryClient (#integration)", () => {
   it("should get a list of iTwins by name (#integration)", async () => {
     const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext, {
       search: {
-        searchString: TestConfig.name,
+        searchString: TestConfig.iTwinName,
         property: ITwinSearchableProperty.Name,
         exactMatch: true,
       }});
@@ -45,6 +45,6 @@ describe("ContextRegistryClient (#integration)", () => {
     const iTwin: ITwin = await iTwinAccessClient.getById(requestContext, TestConfig.iTwinId);
 
     // Returned iTwin matches searched id
-    chai.expect(iTwin.id).equals(TestConfig.iTwinId);
+    chai.expect(iTwin).property("id").equals(TestConfig.iTwinId);
   });
 });
