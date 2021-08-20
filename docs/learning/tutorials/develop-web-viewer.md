@@ -35,10 +35,10 @@
 
 ## Useful Links
 
-- [Create React App](https://create-react-app.dev/)
 - [iTwin Viewer React](https://www.npmjs.com/package/@itwin/web-viewer-react)
 - [iTwin Viewer Create React App Template](https://www.npmjs.com/package/@itwin/cra-template-web-viewer)
 - [Bentley React Scripts](https://www.npmjs.com/package/@bentley/react-scripts)
+- [Create React App](https://create-react-app.dev/)
 
 ## Next Steps
 
