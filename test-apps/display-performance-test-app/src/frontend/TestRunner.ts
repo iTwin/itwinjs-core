@@ -1151,6 +1151,7 @@ const viewFlagsPropsStrings = {
   thematicDisplay: "+thematicDisplay",
   grid: "+grid",
   whiteOnWhiteReversal: "+wow",
+  acsTriad: "+acsTriad",
 };
 
 function getViewFlagsString(test: TestCase): string {
