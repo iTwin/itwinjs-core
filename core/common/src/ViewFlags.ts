@@ -10,86 +10,92 @@
 
 import { JsonUtils, Mutable, NonFunctionPropertiesOf } from "@bentley/bentleyjs-core";
 
-/** Enumerates the available rendering modes. The rendering mode chiefly controls whether and how surfaces and their edges are drawn.
- * Generally speaking,
- *  - Wireframe draws only edges.
- *  - SmoothShade draws only surfaces.
- *  - HiddenLine and SolidFill draw both surfaces and edges.
- *  - Lighting is only applied in SmoothShade mode.
- *
- * The [[FillFlags]] associated with planar regions controls whether and how the region's interior area is displayed in Wireframe mode.
- * [[ViewFlags]] has options for enabling display of visible and/or hidden edges in SmoothShade mode.
- * [[HiddenLine.Settings]] allow aspects of edge and surface symbology to be overridden within a view.
+/** Enumerates the available basic rendering modes, as part of a [DisplayStyle]($backend)'s [[ViewFlags]].
+ * The rendering mode broadly affects various aspects of the display style - in particular, whether and how surfaces and their edges are drawn.
  * @public
  */
 export enum RenderMode {
-  /** Render only edges, no surfaces, with exceptions for planar regions with [[FillFlags]] set up to render the surface in wireframe mode. */
+  /** Renders only the edges of surfaces, with exceptions for planar regions based on their [[FillFlags]].
+   * Lighting (and by extension, shadows) is not applied.
+   * [[HiddenLine.Settings]] are not applied - edges use the elements' width, style, and color.
+   * [[ViewFlags.hiddenEdges]] is ignored - hidden edges are never displayed in wireframe mode.
+   */
   Wireframe = 0,
-  /** Render only surfaces, no edges, with lighting. */
+  /** By default, renders surfaces without their edges.
+   * Lighting and shadows can be applied using [[ViewFlags.lighting]] and [[ViewFlags.shadows]].
+   * Edges can be enabled using [[ViewFlags.visibleEdges]] and [[ViewFlags.hiddenEdges]], and their appearance customized using [[HiddenLine.Settings]].
+   * Surfaces can be drawn with transparency, based on [[ViewFlags.transparency]].
+   */
   SmoothShade = 6,
-  /** Render edges and surfaces. Surfaces are drawn using the view's background color instead of the element's fill color. */
-  HiddenLine = 3,
-  /** Render edges and surfaces. */
+  /** Renders surfaces and their edges. By default, edges are drawn in white; this can be overridden using [[HiddenLine.Settings]].
+   * All surfaces are rendered opaque. If a surface's transparency is below that specified by [[HiddenLine.Settings.transparencyThreshold]], it is not rendered.
+   * Materials and textures are not applied - surfaces are drawn in their actual colors.
+   * [[ViewFlags.visibleEdges]] is ignored - visible edges are always drawn. Hidden edges can be enabled using [[ViewFlags.hiddenEdges]].
+   * Lighting (and by extension, shadows) is not applied.
+   */
   SolidFill = 4,
+  /** Identical to [[RenderMode.SmoothShade]], except:
+   *  - Surfaces are drawn using the [DisplayStyle]($backend)'s background color.
+   *  - Edges are drawn using their surface's colors; this can be overridden using [[HiddenLine.Settings]].
+   */
+  HiddenLine = 3,
 }
 
-/** JSON representation of [[ViewFlags]]
+/** JSON representation of [[ViewFlags]].
+ * This is a persistence format with some unfortunate quirks that have been retained for backwards compatibility.
+ * In particular, it supplies three separate flags intended to control lighting - [[noCameraLights]], [[noSourceLights]], and [[noSolarLight]] -
+ * but there exists only a single [[ViewFlags.lighting]] flag. [[ViewFlags.lighting]] is set to true unless all three of the "no lighting" flags are true.
+ * It also uses awkward negative ([[noConstruct]], [[noTransp]]) and/or abbreviated ([[clipVol]], [[visEdges]]) property names that differ from
+ * those of the corresponding [[ViewFlags]] properties, making usage of this type in code error-prone.
+ * Prefer to use [[ViewFlagsProperties]] unless you need to work directly with the persistence format.
  * @public
  */
 export interface ViewFlagProps {
-  /** If true, don't show construction class. */
+  /** If true, don't display geometry of class [[GeometryClass.Construction]]. */
   noConstruct?: boolean;
-  /** If true, don't show dimension class. */
+  /** If true, don't display geometry of class [[GeometryClass.Dimension]]. */
   noDim?: boolean;
-  /** If true, don't show patterns. */
+  /** If true, don't display geometry of class [[GeometryClass.Pattern]]. */
   noPattern?: boolean;
   /** If true, all lines are drawn with a width of 1 pixel. */
   noWeight?: boolean;
   /** If true, don't apply [[LinePixels]] styles. */
   noStyle?: boolean;
-  /** If true, don't use transparency. */
+  /** If true, display transparency geometry as opaque. */
   noTransp?: boolean;
-  /** If true, don't show filled regions. */
+  /** If true, don't show filled planar regions, unless they use [[FillFlags.Always]]. */
   noFill?: boolean;
-  /** If true, show grids. */
+  /** If true, display a grid in the view. */
   grid?: boolean;
-  /** If true, show AuxCoordSystem. */
+  /** If true, display graphics representing the [AuxCoordSystem]($frontend). */
   acs?: boolean;
-  /** If true, don't show textures. */
+  /** If true, don't apply [[RenderTexture]]s to surfaces. */
   noTexture?: boolean;
-  /** If true, don't show materials. */
+  /** If true, don't apply [[RenderMaterial]]s to surfaces. */
   noMaterial?: boolean;
-  /** If true, don't use camera lights.
-   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
-   */
+  /** @see [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
   noCameraLights?: boolean;
-  /** If true, don't use source lights.
-   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
-   */
+  /** @see [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
   noSourceLights?: boolean;
-  /** If true, don't use solar lights.
-   * @note Currently the renderer only supports solar lighting. For backwards-compatibility reasons, solar lights will be displayed if any combination of [[noCameraLights]], [[noSourceLights]], or [[noSolarLight]] is set to `false`.
-   */
+  /** @see [[ViewFlagProps]] for how this affects [[ViewFlags.lighting]]. */
   noSolarLight?: boolean;
-  /** If true, show visible edges. */
+  /** If true, display the edges of surfaces. */
   visEdges?: boolean;
-  /** If true, show hidden edges. */
+  /** If true, display the edges of surfaces, even if they are behind other geometry. */
   hidEdges?: boolean;
-  /** If true, show shadows. */
+  /** If true, display shadows. */
   shadows?: boolean;
-  /** If true, use the view's clipping volume. Has no effect on other types of clips like [[ModelClipGroups]]. */
+  /** If true, apply the view's clipping volume. Has no effect on other types of clips like [[ModelClipGroups]]. */
   clipVol?: boolean;
-  /** If true, show view with monochrome settings. */
+  /** If true, apply the view's [[DisplayStyleSettings.monochromeColor]] and [[DisplayStyleSettings.monochromeMode]] to produce a monochrome image. */
   monochrome?: boolean;
-  /** [[RenderMode]] */
-  renderMode?: number;
-  /** Display background map. */
+  /** The basic rendering mode, which affects the behavior of other flags. */
+  renderMode?: RenderMode;
+  /** Display a background map. */
   backgroundMap?: boolean;
-  /** If true, show ambient occlusion. */
+  /** If true, apply [[AmbientOcclusion]]. */
   ambientOcclusion?: boolean;
-  /** If true, show thematic display.
-   * @note Currently, thematically displayed geometry will not receive shadows. If thematic display is enabled, shadows will not be received by thematically displayed geometry, even if shadows are enabled.
-   */
+  /** If true, apply [[ThematicDisplay]]. */
   thematicDisplay?: boolean;
   /** Controls whether surface discard is always applied regardless of other ViewFlags.
    * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
@@ -107,56 +113,90 @@ function edgesRequired(renderMode: RenderMode, visibleEdges: boolean): boolean {
 }
 
 /** Flags controlling how graphics appear within a view.
+ * A [[ViewFlags]] object is immutable. There are several ways to produce a modified copy of a ViewFlags object:
+ * ```ts
+ *  // Start with the default values for all properties.
+ *  let vf = ViewFlags.defaults;
+ *  // Change a single boolean property:
+ *  vf = vf.with("visibleEdges", true);
+ *  // Change only the render mode:
+ *  vf = vf.withRenderMode(RenderMode.HiddenLine);
+ *  // Change multiple properties:
+ *  vf = vf.copy({ renderMode: RenderMode.SmoothShade, visibleEdges: true });
+ *  // Reset multiple properties to their default values:
+ *  vf = vf.copy({ renderMode: undefined, visibleEdges: undefined });
+ *
+ * ```
+ * [[with]] and [[withRenderMode]] should be preferred if you only need to change a single property, as they will not create a new object unless
+ * the new value differs from the current value.
+ * [[copy]] and [[override]] should be preferred if you need to change multiple properties, as they will create no more than one new object, vs
+ * each call to [[with]] or [[withRenderMode]] potentially creating a new object.
  * @see [[DisplayStyleSettings.viewFlags]] to define the view flags for a [DisplayStyle]($backend).
  * @public
  */
 export class ViewFlags {
   /** The basic rendering mode applied to the view. This modulates the behavior of some of the other flags.
-    * For example, the [[lighting]] and [[visibleEdges]] flags are ignored unless the render mode is [[RenderMode.SmoothShade]].
-    */
+   * Default: [[RenderMode.Wireframe]].
+   * @see [[RenderMode]] for details.
+   */
   public readonly renderMode: RenderMode;
-  /** Shows or hides dimensions. */
+  /** Whether to display geometry of class [[GeometryClass.Dimension]]. Default: true. */
   public readonly dimensions: boolean;
-  /** Shows or hides pattern geometry. */
+  /** Whether to display geometry of class [[GeometryClass.Pattern]]. Default: true. */
   public readonly patterns: boolean;
-  /** Controls whether non-zero line weights are used or display using weight 0. */
+  /** Whether to allow lines and edges to draw with width greater than one pixel. Default: true. */
   public readonly weights: boolean;
-  /** Controls whether custom line styles are used (e.g. control whether elements with custom line styles draw normally, or as solid lines). */
+  /** Whether [[LinePixels]] are allowed to apply patterns to lines and edges. If false, they all draw as solid lines. Default: true. */
   public readonly styles: boolean;
-  /** Controls whether element transparency is used (e.g. control whether elements with transparency draw normally, or as opaque). */
+  /** Whether element transparency is applied. If false, transparent geometry is drawn opaque. Default: true.
+   * @see [[RenderMode]] for render mode-specific behavior.
+   */
   public readonly transparency: boolean;
-  /** Controls whether the fills on filled elements are displayed. */
+  /** In [[RenderMode.Wireframe]] only, whether to display the interiors of planar regions with [[FillFlags.ByView]]. Default: true. */
   public readonly fill: boolean;
-  /** Controls whether to display texture maps for material assignments. When off only material color is used for display. */
+  /** In [[RenderMode.SmoothShade]], whether to apply [[RenderTexture]]s to surfaces. Default: true. */
   public readonly textures: boolean;
-  /** Controls whether materials are used (e.g. control whether geometry with materials draw normally, or as if it has no material). */
+  /** In [[RenderMode.SmoothShade]], whether to apply [[RenderMaterial]]s to surfaces. Default: true. */
   public readonly materials: boolean;
-  /** Shows or hides the ACS triad. */
+  /** Whether to display a graphical representation of the view's [AuxCoordSystem]($frontend). Default: false. */
   public readonly acsTriad: boolean;
-  /** Shows or hides the grid. The grid settings are a design file setting. */
+  /** Whether to display a grid. Default: false. */
   public readonly grid: boolean;
-  /** Shows or hides visible edges in the shaded render mode. */
+  /** In [[RenderMode.SmoothShade]], whether to display the edges of surfaces. Default: false.
+   * @see [[HiddenLine.Settings]] to customize the appearance of the edges.
+   */
   public readonly visibleEdges: boolean;
-  /** Shows or hides hidden edges in the shaded render mode. */
+  /** In any mode except [[RenderMode.Wireframe]], whether to display the edges of surfaces occluded by other geometry.
+   * This has no effect unless [[visibleEdges]] is also true.
+   * Default: false.
+   * @see [[HiddenLine.Settings]] to customize the appearance of the edges.
+   */
   public readonly hiddenEdges: boolean;
-  /** Shows or hides shadows. */
+  /** In [[RenderMode.SmoothShade]], whether to display solar shadows. This has no effect unless [[lighting]] is also true. Default: false.
+   * @note Rendering shadows can reduce framerate, particularly on less capable graphics hardware or in complex scenes.
+   */
   public readonly shadows: boolean;
-  /** Controls whether the view's clip volume is applied. Has no effect on other types of clips like [[ModelClipGroups]]. */
+  /** Whether to apply the view's clip volume to the geometry in the scene.
+   * Default: true, except when using [[fromJSON]].
+   * @see [[ViewDetails.clipVector]] to define the view's clip volume.
+   */
   public readonly clipVolume: boolean;
-  /** Shows or hides construction class geometry. */
+  /** Whether to display geometry of class [[GeometryClass.Construction]].
+   * Default: false, except when using [[fromJSON]].
+   */
   public readonly constructions: boolean;
-  /** Draw geometry using the view's monochrome color.
-   * @see [DisplayStyleSettings.monochromeColor]($common) for details on how the color is applied.
-   * @see [DisplayStyleSettings.monochromeMode]($common) to control the type of monochrome display applied.
+  /** Whether to produce a monochrome image. Default: false.
+   * @see [DisplayStyleSettings.monochromeColor]($common) to define the monochrome color.
+   * @see [DisplayStyleSettings.monochromeMode]($common) to define how the monochrome image is produced.
    */
   public readonly monochrome: boolean;
-  /** Display background map */
-  public readonly backgroundMap: boolean;
-  /** Controls whether ambient occlusion is used. */
-  public readonly ambientOcclusion: boolean;
-  /** Controls whether thematic display is used.
-   * @note Currently, thematically displayed geometry will not receive shadows. If thematic display is enabled, shadows will not be received by thematically displayed geometry, even if shadows are enabled.
+  /** Whether to display background map imagery. Default: false.
+   * @see [[DisplayStyleSettings.backgroundMap]] to customize the map settings.
    */
+  public readonly backgroundMap: boolean;
+  /** In [[RenderMode.SmoothShade]], whether to apply [[AmbientOcclusion]]. Default: false. */
+  public readonly ambientOcclusion: boolean;
+  /** Whether to apply [[ThematicDisplay]]. Default: false. */
   public readonly thematicDisplay: boolean;
   /** Controls whether surface discard is always applied regardless of other ViewFlags.
    * Surface shaders contain complicated logic to ensure that the edges of a surface always draw in front of the surface, and that planar surfaces sketched coincident with
@@ -165,14 +205,21 @@ export class ViewFlags {
    * that logic does not execute, potentially improving performance for no degradation in visual quality. In some scenarios - such as wireframe views containing many planar regions with interior fill, or smooth views containing many coincident planar and non-planar surfaces - enabling this view flag improves display quality by forcing that logic to execute.
    */
   public readonly forceSurfaceDiscard: boolean;
-  /** White-on-white reversal is used by some CAD applications to cause white geometry to be drawn as black if the view's background color is also white. */
+  /** Whether to apply white-on-white reversal.
+   * Some CAD applications use this to cause white geometry to be drawn as black if the view's background color is white.
+   * Default: true.
+   */
   public readonly whiteOnWhiteReversal: boolean;
 
-  /** Controls whether or not lighting is applied.
-   * @note Has no effect unless `renderMode` is set to [[RenderMode.SmoothShade]].
+  /** In [[RenderMode.SmoothShade]], whether to apply lighting to surfaces.
+   * Default: false, except when using [[fromJSON]].
+   * @see [[DisplayStyleSettings.lights]] to customize the light settings.
    */
   public readonly lighting: boolean;
 
+  /** Create a new ViewFlags.
+   * @param flags The properties to initialize. Any properties not specified are initialized to their default values.
+   */
   public constructor(flags?: Partial<ViewFlagsProperties>) {
     this.renderMode = flags?.renderMode ?? RenderMode.Wireframe;
     this.dimensions = flags?.dimensions ?? true;
@@ -227,6 +274,13 @@ export class ViewFlags {
     return this.copy(overrides);
   }
 
+  /** Produce a copy of these ViewFlags with a single boolean property changed.
+   * @param flag The name of the property.
+   * @param value The value to change the property to.
+   * @returns A new ViewFlags with the property changed as specified, or `this` if the property already has the specified value.
+   * @see [[withRenderMode]] to change the [[renderMode]] property.
+   * @see [[copy]] and [[override]] to change multiple properties.
+   */
   public with(flag: keyof Omit<ViewFlagsProperties, "renderMode">, value: boolean): ViewFlags {
     if (this[flag] === value)
       return this;
@@ -236,6 +290,11 @@ export class ViewFlags {
     return new ViewFlags(props);
   }
 
+  /** Produce a copy of these ViewFlags with a different [[renderMode]].
+   * @param renderMode The new render mode.
+   * @returns A new ViewFlags with the render mode changed as specified, or `this` if the render mode is already set to the requested value.
+   * @see [[copy]] and [[override]] to change multiple properties.
+   */
   public withRenderMode(renderMode: RenderMode): ViewFlags {
     return renderMode === this.renderMode ? this : this.copy({ renderMode });
   }
@@ -280,6 +339,7 @@ export class ViewFlags {
     return edgesRequired(this.renderMode, this.visibleEdges);
   }
 
+  /** Convert to JSON representation. */
   public toJSON(): ViewFlagProps {
     const out: ViewFlagProps = {};
     if (!this.constructions) out.noConstruct = true;
@@ -342,12 +402,24 @@ export class ViewFlags {
     };
   }
 
+  /** A ViewFlags object with all properties initialized to their default values. */
   public static readonly defaults = new ViewFlags();
 
+  /** Create a ViewFlags.
+   * @param flags The properties to initialize. Any properties not specified are initialized to their default values.
+   */
   public static create(flags?: Partial<ViewFlagsProperties>): ViewFlags {
     return flags && !JsonUtils.isEmptyObject(flags) ? new ViewFlags(flags) : this.defaults;
   }
 
+  /** Create a ViewFlags from its JSON representation.
+   * @note As described in [[ViewFlagProps]], the JSON representation is awkward and error-prone. Prefer to use [[create]] unless you
+   * need to deal with the persistence format directly.
+   * @note The default values differ slightly from those used by the constructor and [[create]]:
+   *  - [[clipVolume]] defaults to false.
+   *  - [[constructions]] defaults to true.
+   *  - [[lighting]] defaults to true unless all of [[ViewFlagProps.noSolarLight]], [[ViewFlagProps.noCameraLights]], and [[ViewFlagProps.noSourceLights]] are true.
+   */
   public static fromJSON(json?: ViewFlagProps): ViewFlags {
     if (!json)
       return this.defaults;
@@ -389,7 +461,11 @@ export class ViewFlags {
     });
   }
 
+  /** Returns true if `this` and `other` are equivalent. */
   public equals(other: Readonly<ViewFlagsProperties>): boolean {
+    if (this === other)
+      return true;
+
     return this.renderMode === other.renderMode
       && this.dimensions === other.dimensions
       && this.patterns === other.patterns
@@ -416,6 +492,14 @@ export class ViewFlags {
   }
 }
 
+/** A type containing all of the properties of [[ViewFlags]] with none of the methods and with the `readonly` modifiers removed.
+ * @see [[ViewFlags.create]], [[ViewFlags.copy]], and [[ViewFlags.override]] for methods accepting an object of this type.
+ * @public
+ */
 export type ViewFlagsProperties = Mutable<NonFunctionPropertiesOf<ViewFlags>>;
 
+/** A type that describes how to override selected properties of a [[ViewFlags]].
+ * @see [[ViewFlags.override]] to apply the overrides to a ViewFlags object.
+ * @public
+ */
 export type ViewFlagOverrides = Partial<ViewFlagsProperties>;

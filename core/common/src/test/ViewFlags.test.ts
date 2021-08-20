@@ -212,6 +212,21 @@ describe("ViewFlags", () => {
     expect(vf.withRenderMode(RenderMode.SolidFill)).to.equal(vf);
     expect(vf.withRenderMode(RenderMode.HiddenLine).renderMode).to.equal(RenderMode.HiddenLine);
   });
+
+  it("compares for equality", () => {
+    const def = ViewFlags.defaults;
+    for (const propName of Object.keys(def)) {
+      const key = propName as keyof Omit<ViewFlagsProperties, "renderMode">;
+      const value = def[key];
+      if (typeof value !== "boolean") {
+        expect(key).to.equal("renderMode");
+        expect(def.renderMode).to.equal(RenderMode.Wireframe);
+        expect(def.equals(def.withRenderMode(RenderMode.SmoothShade))).to.be.false;
+      } else {
+        expect(def.equals(def.with(key, !value))).to.be.false;
+      }
+    }
+  });
 });
 
 describe("ViewFlagOverrides", () => {
