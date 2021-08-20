@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
-import { ServerTimeoutError, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { ServerTimeoutError } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { Viewport } from "../../Viewport";

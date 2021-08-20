@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
-import { ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { SpatialViewState } from "../../SpatialViewState";

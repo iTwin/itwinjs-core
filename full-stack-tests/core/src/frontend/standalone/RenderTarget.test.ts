@@ -34,7 +34,7 @@ describe("Vertex buffer objects", () => {
   it("should render correctly", async () => {
     const rect = new ViewRect(0, 0, 100, 100);
     await testViewportsWithDpr(imodel, rect, async (vp) => {
-      const vf = vp.view.viewFlags.with("visibleEdges", true);
+      vp.view.viewFlags = vp.view.viewFlags.with("visibleEdges", true);
 
       await vp.waitForAllTilesToRender();
       expect(vp.numRequestedTiles).to.equal(0);

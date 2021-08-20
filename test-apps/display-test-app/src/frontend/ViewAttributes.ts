@@ -8,7 +8,7 @@ import {
 } from "@bentley/frontend-devtools";
 import {
   BackgroundMapProps, BackgroundMapProviderName, BackgroundMapType, ColorDef, DisplayStyle3dSettingsProps, GlobeMode, HiddenLine, LinePixels,
-  MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode, ViewFlags,
+  MonochromeMode, RenderMode, TerrainProps, ThematicDisplayMode, ThematicGradientColorScheme, ThematicGradientMode,
 } from "@bentley/imodeljs-common";
 import { DisplayStyle2dState, DisplayStyle3dState, DisplayStyleState, Viewport, ViewState, ViewState3d } from "@bentley/imodeljs-frontend";
 import { AmbientOcclusionEditor } from "./AmbientOcclusion";

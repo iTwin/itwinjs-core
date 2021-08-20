@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-import { ViewFlags } from "@bentley/imodeljs-common";
 // cSpell:ignore configurableui keyinbrowser
 import {
   FitViewTool, FlyViewTool, IModelApp, MeasureDistanceTool, MeasureLocationTool, PanViewTool, RotateViewTool, SelectionTool, ViewClipByElementTool,

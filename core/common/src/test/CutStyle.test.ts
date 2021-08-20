@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { CutStyle, CutStyleProps } from "../ClipStyle";
-import { ViewFlagOverrides } from "../ViewFlags";
 import { HiddenLine } from "../HiddenLine";
 import { FeatureAppearance } from "../FeatureSymbology";
 

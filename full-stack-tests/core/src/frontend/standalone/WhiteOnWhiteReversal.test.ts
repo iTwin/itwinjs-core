@@ -25,8 +25,8 @@ describe("White-on-white reversal", async () => {
 
   async function test(expectedColors: Color[], setup: (vp: Viewport, vf: ViewFlags) => ViewFlags | undefined, cleanup?: (vp: Viewport) => void): Promise<void> {
     await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
-      let vf = vp.viewFlags.copy({ renderMode: RenderMode.Wireframe, acsTriad: false });
-      let newVf = setup(vp, vf);
+      const vf = vp.viewFlags.copy({ renderMode: RenderMode.Wireframe, acsTriad: false });
+      const newVf = setup(vp, vf);
       vp.viewFlags = newVf ?? vf;
 
       await vp.waitForAllTilesToRender();

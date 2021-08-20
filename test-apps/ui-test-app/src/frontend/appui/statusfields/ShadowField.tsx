@@ -9,7 +9,7 @@
 import "./ShadowField.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { RenderMode } from "@bentley/imodeljs-common";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@bentley/ui-framework";
 import { FooterIndicator } from "@bentley/ui-ninezone";

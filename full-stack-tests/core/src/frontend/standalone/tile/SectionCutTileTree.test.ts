@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import { ClipPrimitive, ClipVector, ConvexClipPlaneSet } from "@bentley/geometry-core";
-import { ClipStyle, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { ClipStyle } from "@bentley/imodeljs-common";
 import {
   IModelApp, IModelConnection, SnapshotConnection, SpatialViewState, ViewState,
 } from "@bentley/imodeljs-frontend";

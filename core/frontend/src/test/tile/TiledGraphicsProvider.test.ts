@@ -5,7 +5,6 @@
 import { expect } from "chai";
 import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { SpatialViewState } from "../../SpatialViewState";
 import { ScreenViewport, Viewport } from "../../Viewport";

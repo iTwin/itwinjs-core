@@ -4,14 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { CheckBox, createButton, createCheckBox, createColorInput, createLabeledNumericInput, createTextBox } from "@bentley/frontend-devtools";
 import { Vector3d } from "@bentley/geometry-core";
-import { ColorDef, LightSettings, LightSettingsProps, RenderMode, RgbColor, SolarShadowSettings, ViewFlags } from "@bentley/imodeljs-common";
+import { ColorDef, LightSettings, LightSettingsProps, RenderMode, RgbColor, SolarShadowSettings } from "@bentley/imodeljs-common";
 import { Viewport, ViewState } from "@bentley/imodeljs-frontend";
 
 // cspell:ignore cels sundir textbox hemi lighteditor
 
 type Update = (view: ViewState) => void;
-
-const scratchVf = new ViewFlags();
 
 export class LightingEditor {
   private readonly _vp: Viewport;

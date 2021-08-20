@@ -6,7 +6,7 @@
  * @module NativeApp
  */
 
-import { AsyncFunction, AsyncMethodsOf, PromiseReturnType } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, PromiseReturnType } from "@bentley/bentleyjs-core";
 import {
   BackendError, IModelError, IModelStatus, IpcAppChannel, IpcAppFunctions, IpcAppNotifications, IpcInvokeReturn, IpcListener, IpcSocketFrontend,
   iTwinChannel, RemoveFunction,

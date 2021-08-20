@@ -10,7 +10,7 @@ import { assert, BeTimePoint, GuidString, Id64Array, Id64String } from "@bentley
 import { Range3d, Transform } from "@bentley/geometry-core";
 import {
   BatchType, ContentIdProvider, ElementAlignedBox3d, ElementGeometryChange, FeatureAppearanceProvider,
-  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, TileProps, ViewFlagOverrides,
+  IModelTileTreeId, IModelTileTreeProps, ModelGeometryChanges, TileProps,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IModelConnection } from "../IModelConnection";

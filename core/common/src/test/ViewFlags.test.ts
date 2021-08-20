@@ -142,7 +142,6 @@ describe("ViewFlags", () => {
     expect(inv.copy({ ...inv, renderMode: undefined, transparency: undefined })).to.deep.equal({ ...inv, renderMode: RenderMode.Wireframe, transparency: true });
   });
 
-
   it("overrides", () => {
     const def = ViewFlags.defaults;
     expect(def.override({})).to.deep.equal(def);
