@@ -2,7 +2,7 @@
 
 ## Develop
 
-- [Install necessary prerequisites]($docs/getting-started/development-prerequisites).
+- [Install necessary prerequisites]($docs/learning/tutorials/development-prerequisites).
 - From a terminal, `npx create-react-app your-app-name --template @itwin/web-viewer --scripts-version @bentley/react-scripts`
   - This will generate a new application based on the iTwin Viewer React component in the `your-app-name` directory.
 - Open the `your-app-name` directory in VS Code.
