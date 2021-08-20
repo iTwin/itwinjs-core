@@ -8,7 +8,7 @@
  */
 
 import {
-  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SubCategoryAppearance, SubCategoryOverride, ViewFlags,
+  DisplayStyle3dSettingsProps, DisplayStyleOverridesOptions, RenderMode, SubCategoryAppearance, SubCategoryOverride, ViewFlags, ViewFlagsProperties,
 } from "@bentley/imodeljs-common";
 import {
   DisplayStyle3dState, Environment, IModelApp, NotifyMessageDetails, OutputMessagePriority, Tool, Viewport,
@@ -80,7 +80,7 @@ export class ChangeViewFlagsTool extends Tool {
     if (undefined === vp || 0 === args.length)
       return true;
 
-    const vf = vp.viewFlags.clone();
+    const vf: Partial<ViewFlagsProperties> = { ...vp.viewFlags };
     for (const arg of args) {
       const parts = arg.split("=");
       if (2 !== parts.length)
@@ -116,7 +116,7 @@ export class ChangeViewFlagsTool extends Tool {
       }
     }
 
-    return this.run(vf, vp);
+    return this.run(new ViewFlags(vf), vp);
   }
 }
 

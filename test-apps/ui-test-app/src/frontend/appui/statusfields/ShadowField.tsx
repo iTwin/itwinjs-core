@@ -9,7 +9,7 @@
 import "./ShadowField.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { RenderMode, ViewFlags } from "@bentley/imodeljs-common";
+import { RenderMode } from "@bentley/imodeljs-common";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { ContentControl, ContentControlActivatedEventArgs, ContentViewManager, FrontstageManager, StatusFieldProps } from "@bentley/ui-framework";
 import { FooterIndicator } from "@bentley/ui-ninezone";
@@ -64,12 +64,12 @@ export class ShadowField extends React.Component<StatusFieldProps, ShadowFieldSt
     const vp = this.state.viewport;
     const view = vp.view;
     if (view && view.is3d()) {
-      const scratchViewFlags = new ViewFlags();
-      const vf = vp.viewFlags.clone(scratchViewFlags);
+      let vf = vp.viewFlags;
       if (vf.shadows !== enabled) {
-        vf.shadows = enabled;
-        if (enabled)  // also ensure render mode is set to smooth, this is required to display shadows.
-          vf.renderMode = RenderMode.SmoothShade;
+        vf = vf.with("shadows", enabled);
+        if (enabled)
+          vf = vf.withRenderMode(RenderMode.SmoothShade); // required for shadows.
+
         vp.viewFlags = vf;
         vp.synchWithView();
         this.forceUpdate();
