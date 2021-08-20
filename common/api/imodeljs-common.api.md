@@ -8608,7 +8608,7 @@ export interface ViewDetailsProps {
     gridSpaceY?: number;
 }
 
-// @public (undocumented)
+// @public
 export type ViewFlagOverrides = Partial<ViewFlagsProperties>;
 
 // @public
@@ -8634,7 +8634,7 @@ export interface ViewFlagProps {
     noTransp?: boolean;
     noWeight?: boolean;
     noWhiteOnWhiteReversal?: boolean;
-    renderMode?: number;
+    renderMode?: RenderMode;
     shadows?: boolean;
     thematicDisplay?: boolean;
     visEdges?: boolean;
@@ -8649,17 +8649,13 @@ export class ViewFlags {
     readonly clipVolume: boolean;
     readonly constructions: boolean;
     copy(changedFlags: Partial<ViewFlagsProperties>): ViewFlags;
-    // (undocumented)
     static create(flags?: Partial<ViewFlagsProperties>): ViewFlags;
-    // (undocumented)
     static readonly defaults: ViewFlags;
     readonly dimensions: boolean;
     edgesRequired(): boolean;
-    // (undocumented)
     equals(other: Readonly<ViewFlagsProperties>): boolean;
     readonly fill: boolean;
     readonly forceSurfaceDiscard: boolean;
-    // (undocumented)
     static fromJSON(json?: ViewFlagProps): ViewFlags;
     readonly grid: boolean;
     readonly hiddenEdges: boolean;
@@ -8679,19 +8675,16 @@ export class ViewFlags {
     readonly thematicDisplay: boolean;
     // @internal
     toFullyDefinedJSON(): Required<ViewFlagProps>;
-    // (undocumented)
     toJSON(): ViewFlagProps;
     readonly transparency: boolean;
     readonly visibleEdges: boolean;
     readonly weights: boolean;
     readonly whiteOnWhiteReversal: boolean;
-    // (undocumented)
     with(flag: keyof Omit<ViewFlagsProperties, "renderMode">, value: boolean): ViewFlags;
-    // (undocumented)
     withRenderMode(renderMode: RenderMode): ViewFlags;
 }
 
-// @public (undocumented)
+// @public
 export type ViewFlagsProperties = Mutable<NonFunctionPropertiesOf<ViewFlags>>;
 
 // @public

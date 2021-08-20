@@ -5,6 +5,8 @@ internal;addClientRequestContext: (metaData: any) => void
 public;areEqualPossiblyUndefined
 public;asInstanceOf
 public;assert(condition: boolean, msg?: string): asserts condition
+public;AsyncFunction = (...args: any) => Promise
+public;AsyncMethodsOf
 alpha;AsyncMutex
 alpha;AsyncMutexUnlockFnType = () => void
 beta;AuthStatus
@@ -78,6 +80,8 @@ public;LRUDictionary
 public;LRUMap
 public;Mutable
 public;MutableCompressedId64Set 
+public;NonFunctionPropertiesOf
+public;NonFunctionPropertyNamesOf
 public;ObservableSet
 beta;OneAtATimeAction
 public;OpenMode
@@ -90,6 +94,7 @@ public;partitionArray
 public;PerfLogger 
 public;PriorityQueue
 public;ProcessDetector
+public;PromiseReturnType
 public;ReadonlyOrderedSet
 public;ReadonlySortedArray
 beta;RepositoryStatus
