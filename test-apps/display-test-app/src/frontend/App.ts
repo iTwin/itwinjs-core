@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
@@ -12,8 +12,8 @@ import {
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawHintBuilder, AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp,
-  IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem, SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
+  AccuDrawHintBuilder,   AccuDrawShortcuts, AccuSnap, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
+  SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
 import { DtaConfiguration } from "../common/DtaConfiguration";

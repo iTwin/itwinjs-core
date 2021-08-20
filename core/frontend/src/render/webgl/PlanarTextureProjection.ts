@@ -170,17 +170,18 @@ export class PlanarTextureProjection {
     state.flags.blend = false;
     state.flags.depthTest = false;
 
-    const viewFlags = target.currentViewFlags.clone();
-    viewFlags.renderMode = RenderMode.SmoothShade;
-    viewFlags.transparency = false;
-    viewFlags.textures = false;
-    viewFlags.lighting = false;
-    viewFlags.shadows = false;
-    viewFlags.noGeometryMap = true;
-    viewFlags.monochrome = false;
-    viewFlags.materials = false;
-    viewFlags.ambientOcclusion = false;
-    viewFlags.visibleEdges = viewFlags.hiddenEdges = false;
+    const viewFlags = target.currentViewFlags.copy({
+      renderMode: RenderMode.SmoothShade,
+      transparency: false,
+      textures: false,
+      lighting: false,
+      shadows: false,
+      monochrome: false,
+      materials: false,
+      ambientOcclusion: false,
+      visibleEdges: false,
+      hiddenEdges: false,
+    });
 
     return { state, viewFlags };
   }

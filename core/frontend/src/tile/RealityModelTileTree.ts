@@ -12,7 +12,7 @@ import {
 import { Constant, Ellipsoid, Matrix3d, Point3d, Range3d, Ray3d, Transform, TransformProps, Vector3d, XYZ } from "@bentley/geometry-core";
 import {
   Cartographic, GeoCoordStatus, IModelError, PlanarClipMaskPriority, PlanarClipMaskSettings,
-  SpatialClassifiers, ViewFlagOverrides, ViewFlagPresence,
+  SpatialClassifiers, ViewFlagOverrides,
 } from "@bentley/imodeljs-common";
 import { AccessToken, request, RequestOptions } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
@@ -352,8 +352,10 @@ class RealityModelTileLoader extends RealityTileLoader {
     this.tree = tree;
     this._batchedIdMap = batchedIdMap;
     this._viewFlagOverrides = createDefaultViewFlagOverrides({ lighting: true });
-    this._viewFlagOverrides.clearPresent(ViewFlagPresence.VisibleEdges);      // Display these if they are present (Cesium outline extension)
-    this._viewFlagOverrides.clearPresent(ViewFlagPresence.HiddenEdges);
+
+    // Display edges if they are present (Cesium outline extension) and enabled for view.
+    this._viewFlagOverrides.visibleEdges = undefined;
+    this._viewFlagOverrides.hiddenEdges = undefined;
   }
 
   public get doDrapeBackgroundMap(): boolean { return this.tree.doDrapeBackgroundMap; }

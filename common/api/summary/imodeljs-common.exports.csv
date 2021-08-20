@@ -676,11 +676,10 @@ public;ViewDetails
 public;ViewDetails3d 
 public;ViewDetails3dProps 
 public;ViewDetailsProps
-public;ViewFlagOverrides
-public;ViewFlagOverridesProps
-public;ViewFlagPresence
+public;ViewFlagOverrides = Partial
 public;ViewFlagProps
 public;ViewFlags
+public;ViewFlagsProperties = Mutable
 public;ViewQueryParams 
 public;ViewStateLoadProps
 public;ViewStateProps
