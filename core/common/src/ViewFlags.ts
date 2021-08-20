@@ -67,7 +67,7 @@ export interface ViewFlagProps {
   noFill?: boolean;
   /** If true, display a grid in the view. */
   grid?: boolean;
-  /** If true, display graphics representing the [AuxCoordSystem]($frontend). */
+  /** If true, display graphics representing the [AuxCoordSystem]($backend). */
   acs?: boolean;
   /** If true, don't apply [[RenderTexture]]s to surfaces. */
   noTexture?: boolean;
