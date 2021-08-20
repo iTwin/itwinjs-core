@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { CompressedId64Set, Id64, Id64String, OrderedId64Array } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, CompressedId64Set, Id64, Id64String, OrderedId64Array, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { LineSegment3d, Point3d, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import { BisCodeSpec, Code, CodeProps, GeometryStreamBuilder, PhysicalElementProps } from "@bentley/imodeljs-common";
-import { AsyncMethodsOf, BriefcaseConnection, IModelConnection, IpcApp, PromiseReturnType } from "@bentley/imodeljs-frontend";
+import { BriefcaseConnection, IModelConnection, IpcApp } from "@bentley/imodeljs-frontend";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import { BasicManipulationCommandIpc, editorBuiltInCmdIds } from "@bentley/imodeljs-editor-common";
 import { fullstackIpcChannel, FullStackTestIpc } from "../common/FullStackTestIpc";
