@@ -8,9 +8,10 @@
 
 import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { Geometry } from "../Geometry";
-import { NumberArray, Point3dArray } from "../geometry3d/PointHelpers";
+import { Point3dArray } from "../geometry3d/PointHelpers";
 import { ProxyCurve } from "../curve/ProxyCurve";
 import { CurvePrimitive } from "../curve/CurvePrimitive";
+import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
 import { BSplineCurve3d } from "./BSplineCurve";
 import { GeometryQuery } from "../curve/GeometryQuery";
 import { Transform } from "../geometry3d/Transform";
@@ -206,10 +207,10 @@ export class InterpolationCurve3dOptions {
           return true;
         if (dataA.knots === undefined && dataB.knots === undefined)
           return true;
-        /* alas .. need to allow tricky mismatch of end replication? */
-        const knotA = NumberArray.cloneWithStartAndEndMultiplicity(dataA.knots, 1, 1);
-        const knotB = NumberArray.cloneWithStartAndEndMultiplicity(dataB.knots, 1, 1);
-        return Geometry.almostEqualNumberArrays(knotA, knotB, (a: number, b: number) => Geometry.isAlmostEqualNumber(a, b));
+        /* alas .. need to allow tricky mismatch of end replication */
+        const knotsA = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(dataA.knots, dataA.fitPoints.length, false);
+        const knotsB = BSplineCurveOps.C2CubicFit.convertCubicKnotVectorToFitParams(dataB.knots, dataB.fitPoints.length, false);
+        return Geometry.almostEqualNumberArrays(knotsA, knotsB, (a: number, b: number) => Geometry.isAlmostEqualNumber(a, b));
       }
     }
     return false;
