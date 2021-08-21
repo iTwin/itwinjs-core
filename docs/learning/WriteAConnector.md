@@ -1,6 +1,4 @@
----
-title: iTwin Connector Developer Guide
----
+# Write A Connector
 
 ## Table of Contents
 
@@ -194,7 +192,7 @@ There are roughly three degrees of customizations you may need to employ to conn
 
 Bentley has authored many "domain" schemas to support connectors for many of its authoring applications. For the most aligned data (i.e., data published from your Connector uses the same classes and properties as data published from other connectors), it is best to use a domain schema.
 
-To see what domains exist in BIS, see [Domains](../bis/domains/)
+To see what domains exist in BIS, see [Domains](../../bis/domains/)
 
 Sometimes BIS domain schemas are not adequate to capture all the data in the authoring application. The flow chart below can be used to assist in deciding which schema methodology to use.
 
@@ -391,7 +389,7 @@ The framework will automatically detect and delete elements and models if the co
 
 ### Getting started
 
-You'll need Node.js version ">=12.17.0 <15.0”. Please refer to [Section 1 from iTwin.js Getting Started](../getting-started/index#get-the-tools) for more details.
+You'll need Node.js version ">=12.17.0 <15.0”. Please refer to [Section 1 from iTwin.js Getting Started](../getting-started/index.md#get-the-tools) for more details.
 
 The node packages you'll need can be installed using
 
@@ -628,7 +626,7 @@ Some sample queries that is helpful to debug Connector output
 
 #### Visualizing the output
 
-To get started, please build it using the instructions provided in the [iTwin Desktop Viewer](./tutorials/index#develop-desktop-viewer)
+To get started, please build it using the instructions provided in the [Tutorials](./tutorials/index#Tutorials)
 Once the application is built and running, use the briefcase icon to open the output from the Connector.
 
 ### Logs
