@@ -7,11 +7,12 @@
 import { CommonProps } from '@bentley/ui-core';
 import * as CSS from 'csstype';
 import { Draft } from 'immer';
+import { Interaction } from 'scheduler/tracing';
 import { NoChildrenProps } from '@bentley/ui-core';
 import { Omit } from '@bentley/ui-core';
 import { OmitChildrenProp } from '@bentley/ui-core';
 import { Point } from '@bentley/ui-core';
-import { PointProps } from '@bentley/ui-core';
+import { PointProps } from '@bentley/ui-abstract';
 import { PopupProps } from '@bentley/ui-core';
 import * as PropTypes from 'prop-types';
 import * as React from 'react';
@@ -33,6 +34,9 @@ export function addPopoutWidget(state: NineZoneState, id: PopoutWidgetState["id"
 
 // @internal (undocumented)
 export function addTab(state: NineZoneState, id: TabState["id"], tabArgs?: Partial<TabState>): NineZoneState;
+
+// @internal
+export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string, home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps, userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState;
 
 // @alpha
 export class AppButton extends React.PureComponent<AppButtonProps> {
@@ -570,6 +574,17 @@ export interface FloatingWidgetBringToFrontAction {
     readonly type: "FLOATING_WIDGET_BRING_TO_FRONT";
 }
 
+// @internal
+export interface FloatingWidgetClearUserSizedAction {
+    // (undocumented)
+    readonly id: FloatingWidgetState["id"];
+    // (undocumented)
+    readonly type: "FLOATING_WIDGET_CLEAR_USER_SIZED";
+}
+
+// @internal (undocumented)
+export function floatingWidgetClearUserSizedFlag(state: Draft<NineZoneState>, floatingWidgetId: FloatingWidgetState["id"]): void;
+
 // @internal (undocumented)
 export const FloatingWidgetContext: React.Context<FloatingWidgetState | undefined>;
 
@@ -619,6 +634,16 @@ export interface FloatingWidgetSendBackAction {
 }
 
 // @internal
+export interface FloatingWidgetSetBoundsAction {
+    // (undocumented)
+    readonly bounds: RectangleProps;
+    // (undocumented)
+    readonly id: FloatingWidgetState["id"];
+    // (undocumented)
+    readonly type: "FLOATING_WIDGET_SET_BOUNDS";
+}
+
+// @internal
 export interface FloatingWidgetsState {
     // (undocumented)
     readonly allIds: ReadonlyArray<FloatingWidgetState["id"]>;
@@ -639,6 +664,8 @@ export interface FloatingWidgetState {
     readonly home: FloatingWidgetHomeState;
     // (undocumented)
     readonly id: WidgetState["id"];
+    // (undocumented)
+    readonly userSized?: boolean;
 }
 
 // @internal (undocumented)
@@ -1219,7 +1246,7 @@ export interface NestedToolSettingsProps extends CommonProps {
 export function NineZone(props: NineZoneProps): JSX.Element;
 
 // @internal
-export type NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction;
+export type NineZoneActionTypes = ResizeAction | PanelToggleCollapsedAction | PanelSetCollapsedAction | PanelSetSizeAction | PanelToggleSpanAction | PanelTogglePinnedAction | PanelInitializeAction | FloatingWidgetResizeAction | FloatingWidgetSetBoundsAction | FloatingWidgetBringToFrontAction | FloatingWidgetSendBackAction | FloatingWidgetClearUserSizedAction | PopoutWidgetSendBackAction | PanelWidgetDragStartAction | WidgetDragAction | WidgetDragEndAction | WidgetTabClickAction | WidgetTabDoubleClickAction | WidgetTabDragStartAction | WidgetTabDragAction | WidgetTabDragEndAction | WidgetTabPopoutAction | ToolSettingsDragStartAction | ToolSettingsDockAction;
 
 // @internal (undocumented)
 export const NineZoneContext: React.Context<NineZoneState>;
@@ -1907,6 +1934,9 @@ export interface ScrollableWidgetContentProps {
 export const SendBack: React.NamedExoticComponent<object>;
 
 // @internal (undocumented)
+export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingWidgetId: string, bounds: RectangleProps): NineZoneState;
+
+// @internal (undocumented)
 export function setRectangleProps(props: Draft<RectangleProps>, bounds: RectangleProps): void;
 
 // @internal (undocumented)
@@ -2402,6 +2432,8 @@ export interface TabState {
     // (undocumented)
     readonly id: string;
     // (undocumented)
+    readonly isFloatingStateWindowResizable?: boolean;
+    // (undocumented)
     readonly label: string;
     // (undocumented)
     readonly preferredFloatingWidgetSize?: SizeProps;
@@ -2409,6 +2441,8 @@ export interface TabState {
     readonly preferredPanelWidgetSize?: "fit-content";
     // (undocumented)
     readonly preferredPopoutWidgetSize?: SizeAndPositionProps;
+    // (undocumented)
+    readonly userSized?: boolean;
 }
 
 // @internal (undocumented)
@@ -2884,7 +2918,7 @@ export function useCursor(): void;
 export function useDoubleClick(onDoubleClick?: () => void): () => void;
 
 // @internal
-export function useDrag<T extends HTMLElement>(onDragStart?: (initialPointerPosition: Point) => void, onDrag?: (position: Point) => void, onDragEnd?: () => void, onTouchStart?: () => void): (instance: T | null) => void;
+export function useDrag<T extends HTMLElement>(onDragStart?: (initialPointerPosition: Point) => void, onDrag?: (position: Point) => void, onDragEnd?: () => void, onTouchStart?: () => void, onDoubleClick?: () => void): (instance: T | null) => void;
 
 // @internal (undocumented)
 export function useDraggedItemId<T extends DragItem>(type: T["type"]): T["id"] | undefined;
@@ -3313,6 +3347,8 @@ export interface WidgetProps extends CommonProps {
     children?: React.ReactNode;
     // (undocumented)
     onTransitionEnd?(): void;
+    // (undocumented)
+    widgetId?: string;
 }
 
 // @internal (undocumented)
@@ -3341,6 +3377,8 @@ export interface WidgetState {
     readonly activeTabId: TabState["id"];
     // (undocumented)
     readonly id: string;
+    // (undocumented)
+    readonly isFloatingStateWindowResizable?: boolean;
     // (undocumented)
     readonly minimized: boolean;
     // (undocumented)
@@ -3531,7 +3569,7 @@ export const widgetZoneIds: ReadonlyArray<WidgetZoneId>;
 
 // @alpha
 export const withContainIn: <ComponentProps extends {}>(Component: React.ComponentType<ComponentProps>) => {
-    new (props: Readonly<ComponentProps & WithContainInProps>): {
+    new (props: (ComponentProps & WithContainInProps) | Readonly<ComponentProps & WithContainInProps>): {
         ref: React.RefObject<HTMLDivElement>;
         readonly containFn: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
         getContainerBounds(): Rectangle;
@@ -3560,7 +3598,7 @@ export const withContainIn: <ComponentProps extends {}>(Component: React.Compone
         componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
         UNSAFE_componentWillUpdate?(nextProps: Readonly<ComponentProps & WithContainInProps>, nextState: Readonly<{}>, nextContext: any): void;
     };
-    new (props: ComponentProps & WithContainInProps, context?: any): {
+    new (props: ComponentProps & WithContainInProps, context: any): {
         ref: React.RefObject<HTMLDivElement>;
         readonly containFn: (componentBounds: RectangleProps, containerBounds: RectangleProps) => RectangleProps;
         getContainerBounds(): Rectangle;

@@ -6,13 +6,7 @@
  * @module Utilities
  */
 
-/** Describes 2d points.
- * @public
- */
-export interface PointProps {
-  readonly x: number;
-  readonly y: number;
-}
+import { PointProps } from "@bentley/ui-abstract";
 
 /** Describes and provides methods to work with 2d points.
  * @internal

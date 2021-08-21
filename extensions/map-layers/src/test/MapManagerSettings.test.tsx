@@ -173,7 +173,7 @@ describe("MapManagerSettings", () => {
   it("Transparency slider", () => {
     viewportMock.verify((x) => x.changeBackgroundMapProps(moq.It.isAny()), moq.Times.never());
     const component = mountComponent();
-    component.find(".core-slider-handle").simulate("keydown", { key: SpecialKey.ArrowUp });
+    component.find(".iui-slider-thumb").simulate("keydown", { key: SpecialKey.ArrowRight });
     viewportMock.verify((x) => x.changeBackgroundMapProps({ transparency: 0.01 }), moq.Times.once());
     component.unmount();
   });

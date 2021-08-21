@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert } from "chai";
-import { BeDuration, GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { BeDuration, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { ChangeSet, ChangeSetQuery, IModelHubClient } from "@bentley/imodelhub-client";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, MockRender, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelApp, IModelConnection, MockRender } from "@bentley/imodeljs-frontend";
 import { TestUsers } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
@@ -43,14 +43,13 @@ describe("Opening IModelConnection (#integration)", () => {
     await MockRender.App.shutdown();
   });
 
-  /* eslint-disable deprecation/deprecation */
-  const doTest = async (openMode: OpenMode) => {
+  const doTest = async () => {
     const promiseArray = new Array<Promise<IModelConnection>>();
     let promiseChainWithShortWaits: Promise<any> = Promise.resolve();
     let promiseChainWithFullWaits: Promise<any> = Promise.resolve();
     let n = 0;
     while (++n < 10) {
-      const openPromise = RemoteBriefcaseConnection.open(testContextId, testIModelId, openMode, IModelVersion.asOfChangeSet(testChangeSetId));
+      const openPromise = CheckpointConnection.openRemote(testContextId, testIModelId, IModelVersion.asOfChangeSet(testChangeSetId));
       const waitPromise = BeDuration.wait(5000); // 5 seconds
       const racePromise = Promise.race([openPromise, waitPromise]);
 
@@ -73,7 +72,7 @@ describe("Opening IModelConnection (#integration)", () => {
   };
 
   it("should be able to open multiple read-only connections to an iModel that requires a large number of change sets to be applied", async () => {
-    await doTest(OpenMode.Readonly);
+    await doTest();
   });
 
 });

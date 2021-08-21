@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/expandable/list";
 @import "~@bentley/ui-core/lib/ui-core/scrollbar";
+@import "~@bentley/ui-core/lib/ui-core/style/itwinui-overrides";
 
 .components-property-grid-loader {
   position: relative;
@@ -27,6 +28,8 @@
 
   user-select: none;
   color: $buic-foreground-body;
+
+  @include small-itwinui-expandable-block;
 }
 
 .components-property-grid-wrapper {

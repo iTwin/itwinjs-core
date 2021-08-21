@@ -811,6 +811,34 @@ export class Point3dArray {
    */
   public static createRange(data: MultiLineStringDataVariant): Range3d { return Range3d.createFromVariantData(data); }
 
+  /**
+   * return perpendicular distance from points[indexB] to the segment points[indexA] to points[indexC].
+   * * extrapolation option when projection is outside of fraction range 0..1 are:
+   *   * false ==> measure distance to closest endpoint
+   *   * true ==> measure distance to extended line segment.
+   * (no index checking!)
+   */
+  public static distanceIndexedPointBToSegmentAC(points: Point3d[], indexA: number, indexB: number, indexC: number, extrapolate: boolean): number{
+    const vectorU = Vector3d.createStartEnd(points[indexA], points[indexC]);
+    const vectorV = Vector3d.createStartEnd(points[indexA], points[indexB]);
+    const uDotU = vectorU.dotProduct(vectorU);
+    const uDotV = vectorU.dotProduct(vectorV);
+    let fraction = Geometry.conditionalDivideFraction(uDotV, uDotU);
+    if (fraction === undefined)
+      fraction = 0.0;
+    if (!extrapolate) {
+      if (fraction > 1.0)
+        fraction = 1.0;
+      if (fraction < 0.0)
+        fraction = 0.0;
+    }
+    let h2 = vectorV.magnitudeSquared() - fraction * fraction * uDotU;
+    // h2 should never be negative except for quirky tolerance ..
+    if (h2 < 0.0)
+      h2 = 0.0;
+    return Math.sqrt(h2);
+    }
+
   /** Computes the hull of the XY projection of points.
    * * Returns the hull as an array of Point3d
    * * Optionally returns non-hull points in `insidePoints[]`

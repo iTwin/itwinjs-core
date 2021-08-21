@@ -89,7 +89,7 @@ export class PolyfaceQuery {
 
       source.reset();
       while (source.moveToNextFacet()) {
-        s += PolygonOps.sumTriangleAreas(source.point.getPoint3dArray());
+        s += PolygonOps.areaNormal(source.point.getPoint3dArray()).magnitude();
       }
     }
     return s;

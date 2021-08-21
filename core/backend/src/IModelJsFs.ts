@@ -113,11 +113,6 @@ export class IModelJsFs {
     return files;
   }
 
-  /** accidental spelling error
-   * @deprecated use recursiveFindSync
-   */
-  public static recusiveFindSync(rootDir: string, pattern: RegExp): string[] { return this.recursiveFindSync(rootDir, pattern); }
-
   /**
    * Walks a directory in breadth first fashion
    * @param rootDir  directory from where the traversal starts

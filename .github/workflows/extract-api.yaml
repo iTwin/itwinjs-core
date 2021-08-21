@@ -1,0 +1,41 @@
+# iModel.js Extract API Build
+
+name: Extract API
+
+on:
+  pull_request:
+    branches:
+      - master
+      - release/*
+
+jobs:
+  extract-api:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout branch
+        uses: actions/checkout@v2
+
+      - name: Configure git
+        run: |
+          git config --local user.email imodeljs-admin@users.noreply.github.com
+          git config --local user.name imodeljs-admin
+
+      - name: Setup node
+        uses: actions/setup-node@v2
+        with:
+          node-version: '14'
+
+      - name: Rush install
+        run: node common/scripts/install-run-rush.js install
+
+      - name: Rush build
+        run: node common/scripts/install-run-rush.js compile -v -p max
+
+      - name: Rush extract-api
+        run: node common/scripts/install-run-rush.js extract-api
+
+      - name: Publish extracted api
+        uses: actions/upload-artifact@v2
+        with:
+          name: extracted-api
+          path: common/api

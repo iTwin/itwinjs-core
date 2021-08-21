@@ -3,10 +3,10 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { Id64String, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { Id64String, Logger } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
-import { AuthorizedFrontendRequestContext, IModelConnection, IModelHubFrontend, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection, IModelHubFrontend } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp } from "..";
 
 /* eslint-disable deprecation/deprecation */
@@ -28,7 +28,7 @@ export class ExternalIModel {
       Logger.logInfo(SampleAppIModelApp.loggerCategory(this),
         `openIModel (external): projectId=${info.projectId}&iModelId=${info.imodelId} mode=${SampleAppIModelApp.allowWrite ? "ReadWrite" : "Readonly"}`);
 
-      this.iModelConnection = await RemoteBriefcaseConnection.open(info.projectId, info.imodelId, SampleAppIModelApp.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
+      this.iModelConnection = await CheckpointConnection.openRemote(info.projectId, info.imodelId);
       this.viewId = await this.onIModelSelected(this.iModelConnection);
     }
   }

@@ -21,12 +21,12 @@ import { onEscapeSetFocusToHome } from "../hooks/useEscapeSetFocusToHome";
 
 /** Properties for the [[ToolButton]] React Component.
  * @public
- */
+ */
 export interface ToolButtonProps extends ToolItemProps, CommonProps { }
 
 /** Tool Button React Component.
  * @public
- */
+ */
 export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> {
   private _componentUnmounting = false;
   private _label: string | StringGetter | ConditionalStringValue = "";
@@ -70,10 +70,10 @@ export class ToolButton extends React.Component<ToolButtonProps, BaseItemState> 
       if (this.props.stateFunc) // eslint-disable-line deprecation/deprecation
         newState = this.props.stateFunc(newState); // eslint-disable-line deprecation/deprecation
 
-      // istanbul ignore else
+      // istanbul ignore next
       if ((this.state.isActive !== newState.isActive) ||
-      /* istanbul ignore next */ (this.state.isEnabled !== newState.isEnabled) ||
-      /* istanbul ignore next */ (this.state.isVisible !== newState.isVisible)) {
+        ( /* istanbul ignore next */ this.state.isEnabled !== newState.isEnabled) ||
+        ( /* istanbul ignore next */ this.state.isVisible !== newState.isVisible)) {
         this.setState({
           isActive: newState.isActive,
           isEnabled: newState.isEnabled,

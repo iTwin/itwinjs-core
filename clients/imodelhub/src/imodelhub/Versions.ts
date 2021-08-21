@@ -11,7 +11,7 @@ import { AuthorizedClientRequestContext, ECJsonTypeMap, WsgInstance } from "@ben
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
-import { InstanceIdQuery } from "./HubQuery";
+import { addSelectApplicationData, InstanceIdQuery } from "./HubQuery";
 import { ThumbnailSize } from "./Thumbnails";
 
 const loggerCategory: string = IModelHubClientLoggerCategory.IModelHub;
@@ -62,6 +62,14 @@ export class Version extends WsgInstance {
    */
   @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[HasThumbnail].relatedInstance[LargeThumbnail].instanceId")
   public largeThumbnailId?: GuidString;
+
+  /** Id of the application that created this named Version. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[CreatedByApplication].relatedInstance[Application].properties.Id")
+  public applicationId?: string;
+
+  /** Name of the application that created this named Version. */
+  @ECJsonTypeMap.propertyToJson("wsg", "relationshipInstances[CreatedByApplication].relatedInstance[Application].properties.Name")
+  public applicationName?: string;
 }
 
 /**
@@ -108,6 +116,15 @@ export class VersionQuery extends InstanceIdQuery {
       this._query.$select += `,HasThumbnail-forward-${size}Thumbnail.*`;
     }
 
+    return this;
+  }
+
+  /**
+   * Query will additionally select data about application that created this [[Version]].
+   * @returns This query.
+   */
+  public selectApplicationData() {
+    addSelectApplicationData(this._query);
     return this;
   }
 

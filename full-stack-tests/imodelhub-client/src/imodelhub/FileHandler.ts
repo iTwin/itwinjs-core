@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AzureFileHandler, LocalhostHandler, StorageServiceFileHandler, UrlFileHandler } from "@bentley/backend-itwin-client";
-import { Config } from "@bentley/bentleyjs-core";
 import { TestConfig } from "../TestConfig";
 
 export function createFileHandler(useDownloadBuffer?: boolean) {
@@ -15,7 +14,7 @@ export function createFileHandler(useDownloadBuffer?: boolean) {
 }
 
 export function createIModelBankFileHandler(useDownloadBuffer?: boolean) {
-  const handler = Config.App.getString("imjs_test_imodel_bank_file_handler", "url");
+  const handler = process.env.IMJS_TEST_IMODEL_BANK_FILE_HANDLER ?? "url";
   switch (handler.toLowerCase()) {
     case "azure":
       return new AzureFileHandler(useDownloadBuffer);

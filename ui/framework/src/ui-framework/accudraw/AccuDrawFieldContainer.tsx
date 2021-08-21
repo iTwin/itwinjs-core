@@ -23,7 +23,7 @@ import angleIconSvg from "./angle.svg?sprite";
 import distanceIconSvg from "./distance.svg?sprite";
 import { FrameworkAccuDraw } from "./FrameworkAccuDraw";
 import { AccuDrawUiSettings } from "./AccuDrawUiSettings";
-import { getCSSColorFromDef } from "@bentley/ui-components";
+import { getCSSColorFromDef } from "@bentley/ui-imodel-components";
 import { ColorDef } from "@bentley/imodeljs-common";
 
 /** @alpha */
@@ -204,11 +204,11 @@ export function AccuDrawFieldContainer(props: AccuDrawFieldContainerProps) {
         fieldStyle = inStyle ? inStyle : {};
         if (backgroundColor) {
           rgbaString = typeof backgroundColor === "string" ? backgroundColor : getCSSColorFromDef(backgroundColor);
-          fieldStyle = {...fieldStyle, backgroundColor: rgbaString};
+          fieldStyle = { ...fieldStyle, backgroundColor: rgbaString };
         }
         if (foregroundColor) {
           rgbaString = typeof foregroundColor === "string" ? foregroundColor : getCSSColorFromDef(foregroundColor);
-          fieldStyle = {...fieldStyle, color: rgbaString};
+          fieldStyle = { ...fieldStyle, color: rgbaString };
         }
       }
       return fieldStyle;

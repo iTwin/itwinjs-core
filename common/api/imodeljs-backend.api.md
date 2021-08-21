@@ -28,6 +28,7 @@ import { ChangeOpCode } from '@bentley/imodeljs-common';
 import { ChangeSet } from '@bentley/imodelhub-client';
 import { ChangesetFileProps } from '@bentley/imodeljs-common';
 import { ChangesetId } from '@bentley/imodeljs-common';
+import { ChangesetIdWithIndex } from '@bentley/imodeljs-common';
 import { ChangesetIndex } from '@bentley/imodeljs-common';
 import { ChangesetIndexAndId } from '@bentley/imodeljs-common';
 import { ChangesetIndexOrId } from '@bentley/imodeljs-common';
@@ -240,67 +241,10 @@ export class AnnotationElement2d extends GraphicalElement2d {
     static get className(): string;
 }
 
-// @beta @deprecated
-export interface AppActivityMonitor {
-    isIdle: boolean;
-}
-
 // @public
 export class AuthorizedBackendRequestContext extends AuthorizedClientRequestContext {
     constructor(accessToken: AccessToken, activityId?: string);
     static create(activityId?: string): Promise<AuthorizedBackendRequestContext>;
-}
-
-// @beta @deprecated
-export class AutoPush {
-    constructor(iModel: BriefcaseDb, params: AutoPushParams, activityMonitor?: AppActivityMonitor);
-    get autoSchedule(): boolean;
-    set autoSchedule(v: boolean);
-    cancel(): void;
-    get durationOfLastPushMillis(): number;
-    get endOfLastPushMillis(): number;
-    event: BeEvent<AutoPushEventHandler>;
-    get iModel(): BriefcaseDb;
-    get lastError(): any | undefined;
-    // (undocumented)
-    reserveCodes(): Promise<void>;
-    // (undocumented)
-    scheduleNextAutoPushIfNecessary(): void;
-    scheduleNextPush(intervalSeconds?: number): void;
-    get state(): AutoPushState;
-    static validateAutoPushParams(params: any): void;
-}
-
-// @beta @deprecated
-export type AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void;
-
-// @beta @deprecated
-export enum AutoPushEventType {
-    // (undocumented)
-    PushCancelled = 3,
-    // (undocumented)
-    PushFailed = 2,
-    // (undocumented)
-    PushFinished = 1,
-    // (undocumented)
-    PushStarted = 0
-}
-
-// @beta @deprecated
-export interface AutoPushParams {
-    autoSchedule: boolean;
-    pushIntervalSecondsMax: number;
-    pushIntervalSecondsMin: number;
-}
-
-// @beta @deprecated
-export enum AutoPushState {
-    // (undocumented)
-    NotRunning = 0,
-    // (undocumented)
-    Pushing = 2,
-    // (undocumented)
-    Scheduled = 1
 }
 
 // @public
@@ -362,57 +306,49 @@ export class AzureBlobStorage extends CloudStorageService {
     upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
 }
 
-// @beta @deprecated
-export class BackendActivityMonitor implements AppActivityMonitor {
-    constructor(idleIntervalSeconds?: number);
-    // (undocumented)
-    idleIntervalSeconds: number;
-    // (undocumented)
-    get isIdle(): boolean;
-}
-
 // @internal
 export interface BackendHubAccess {
-    acquireLocks: (arg: BriefcaseDbArg & {
+    acquireLocks(arg: BriefcaseDbArg & {
         locks: LockProps[];
-    }) => Promise<void>;
-    acquireNewBriefcaseId: (arg: IModelIdArg) => Promise<number>;
-    acquireSchemaLock: (arg: BriefcaseDbArg) => Promise<void>;
-    createIModel: (arg: IModelNameArg & {
+    }): Promise<void>;
+    acquireNewBriefcaseId(arg: IModelIdArg): Promise<number>;
+    acquireSchemaLock(arg: BriefcaseDbArg): Promise<void>;
+    createIModel(arg: IModelNameArg & {
         description?: string;
         revision0?: LocalFileName;
-    }) => Promise<GuidString>;
-    deleteIModel: (arg: IModelIdArg & {
+    }): Promise<GuidString>;
+    deleteIModel(arg: IModelIdArg & {
         contextId: GuidString;
-    }) => Promise<void>;
-    downloadChangeset: (arg: ChangesetArg & {
+    }): Promise<void>;
+    downloadChangeset(arg: ChangesetArg & {
         targetDir: LocalDirName;
-    }) => Promise<ChangesetFileProps>;
-    downloadChangesets: (arg: ChangesetRangeArg & {
+    }): Promise<ChangesetFileProps>;
+    downloadChangesets(arg: ChangesetRangeArg & {
         targetDir: LocalDirName;
-    }) => Promise<ChangesetFileProps[]>;
-    downloadV1Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
-    downloadV2Checkpoint: (arg: CheckPointArg) => Promise<ChangesetId>;
-    getChangesetFromNamedVersion: (arg: IModelIdArg & {
+    }): Promise<ChangesetFileProps[]>;
+    downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
+    downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
+    getChangesetFromNamedVersion(arg: IModelIdArg & {
         versionName: string;
-    }) => Promise<ChangesetProps>;
-    getChangesetFromVersion: (arg: IModelIdArg & {
+    }): Promise<ChangesetProps>;
+    getChangesetFromVersion(arg: IModelIdArg & {
         version: IModelVersion;
-    }) => Promise<ChangesetProps>;
-    getLatestChangeset: (arg: IModelIdArg) => Promise<ChangesetProps>;
-    getMyBriefcaseIds: (arg: IModelIdArg) => Promise<number[]>;
-    pushChangeset: (arg: IModelIdArg & {
+    }): Promise<ChangesetProps>;
+    getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
+    getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
+    pushChangeset(arg: IModelIdArg & {
         changesetProps: ChangesetFileProps;
-    }) => Promise<ChangesetIndex>;
-    queryAllCodes: (arg: BriefcaseDbArg) => Promise<CodeProps[]>;
-    queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
-    queryChangeset: (arg: ChangesetArg) => Promise<ChangesetProps>;
-    queryChangesets: (arg: ChangesetRangeArg) => Promise<ChangesetProps[]>;
-    queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;
-    querySchemaLock: (arg: BriefcaseDbArg) => Promise<boolean>;
-    releaseAllCodes: (arg: BriefcaseIdArg) => Promise<void>;
-    releaseAllLocks: (arg: BriefcaseIdArg & ChangesetIndexArg) => Promise<void>;
-    releaseBriefcase: (arg: BriefcaseIdArg) => Promise<void>;
+    }): Promise<ChangesetIndex>;
+    queryAllCodes(arg: BriefcaseDbArg): Promise<CodeProps[]>;
+    queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
+    queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
+    queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
+    queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
+    querySchemaLock(arg: IModelIdArg): Promise<boolean>;
+    queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
+    releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
+    releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
+    releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
 }
 
 // @public
@@ -480,7 +416,7 @@ export class BriefcaseDb extends IModelDb {
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
     get isBriefcase(): boolean;
-    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext, _props: IModelRpcProps) => void>;
+    static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext, _args: OpenBriefcaseProps) => void>;
     static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     static open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb>;
     pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<ChangesetIndexAndId>;
@@ -502,7 +438,7 @@ export interface BriefcaseDbArg {
     briefcase: {
         briefcaseId: BriefcaseId;
         iModelId: GuidString;
-        changeSetId: ChangesetId;
+        changeset: ChangesetIdWithIndex;
     };
     // (undocumented)
     requestContext?: AuthorizedClientRequestContext;
@@ -515,17 +451,6 @@ export type BriefcaseId = number;
 export interface BriefcaseIdArg extends IModelIdArg {
     // (undocumented)
     briefcaseId: number;
-}
-
-// @public @deprecated (undocumented)
-export enum BriefcaseIdValue {
-    // @internal @deprecated (undocumented)
-    DeprecatedStandalone = 1,
-    FirstValid = 2,
-    Illegal = 4294967295,
-    LastValid = 16777205,
-    Max = 16777216,
-    Standalone = 0
 }
 
 // @public
@@ -549,15 +474,9 @@ export class BriefcaseManager {
     static getChangedElementsPathName(iModelId: GuidString): string;
     // @internal (undocumented)
     static getChangeSetsPath(iModelId: GuidString): string;
-    // @internal @deprecated
-    static getCompatibilityFileName(briefcase: BriefcaseProps): string;
-    // @internal @deprecated
-    static getCompatibilityPath(iModelId: GuidString): string;
     static getFileName(briefcase: BriefcaseProps): string;
     static getIModelPath(iModelId: GuidString): string;
-    static initialize(cacheRootDir: string, compatibilityDir?: string): void;
-    // @deprecated
-    static isStandaloneBriefcaseId(id: BriefcaseId): boolean;
+    static initialize(cacheRootDir: string): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal (undocumented)
     static logUsage(requestContext: ClientRequestContext, token: IModelRpcOpenProps): void;
@@ -650,7 +569,7 @@ export interface ChangesetArg extends IModelIdArg {
 // @internal (undocumented)
 export interface ChangesetIndexArg extends IModelIdArg {
     // (undocumented)
-    csIndex: ChangesetIndex;
+    changeset: ChangesetIdWithIndex;
 }
 
 // @internal
@@ -734,15 +653,13 @@ export class CheckpointManager {
 
 // @public
 export interface CheckpointProps {
-    changeSetId: ChangesetId;
+    readonly changeset: ChangesetIdWithIndex;
+    readonly contextId: GuidString;
     // (undocumented)
-    changesetIndex?: ChangesetIndex;
-    contextId: GuidString;
+    readonly expectV2?: boolean;
+    readonly iModelId: GuidString;
     // (undocumented)
-    expectV2?: boolean;
-    iModelId: GuidString;
-    // (undocumented)
-    requestContext: AuthorizedClientRequestContext;
+    readonly requestContext?: AuthorizedClientRequestContext;
 }
 
 // @public
@@ -1317,13 +1234,6 @@ export abstract class Document extends InformationContentElement {
     static get className(): string;
 }
 
-// @internal @deprecated
-export abstract class DocumentCarrier extends InformationCarrierElement {
-    constructor(props: ElementProps, iModel: IModelDb);
-    // (undocumented)
-    static get className(): string;
-}
-
 // @public
 export class DocumentListModel extends InformationModel {
     // @internal (undocumented)
@@ -1347,10 +1257,10 @@ export interface DownloadJob {
 
 // @internal
 export interface DownloadRequest {
-    aliasFiles?: string[];
-    checkpoint: CheckpointProps;
+    readonly aliasFiles?: ReadonlyArray<string>;
+    readonly checkpoint: CheckpointProps;
     localFile: string;
-    onProgress?: ProgressFunction;
+    readonly onProgress?: ProgressFunction;
 }
 
 // @internal (undocumented)
@@ -2342,8 +2252,6 @@ export abstract class GeometricModel3d extends GeometricModel implements Geometr
     // @internal (undocumented)
     static get className(): string;
     readonly isNotSpatiallyLocated: boolean;
-    // @deprecated (undocumented)
-    get iSpatiallyLocated(): boolean;
     readonly isPlanProjection: boolean;
     get isSpatiallyLocated(): boolean;
     // @internal (undocumented)
@@ -2496,7 +2404,7 @@ export class IModelCloneContext {
 // @public
 export abstract class IModelDb extends IModel {
     // @internal
-    protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps, openMode: OpenMode);
+    protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps);
     abandonChanges(): void;
     // @internal
     protected beforeClose(): void;
@@ -2504,10 +2412,6 @@ export abstract class IModelDb extends IModel {
     // @internal
     get classMetaDataRegistry(): MetaDataRegistry;
     clearCaches(): void;
-    // @deprecated
-    clearSqliteStatementCache(): void;
-    // @deprecated
-    clearStatementCache(): void;
     close(): void;
     get codeSpecs(): CodeSpecs;
     computeProjectExtents(options?: ComputeProjectExtentsOptions): ComputedProjectExtents;
@@ -2802,10 +2706,6 @@ export class IModelHost {
     static getCrashReportProperties(): CrashReportingConfigNameValuePair[];
     // @internal
     static get hubAccess(): BackendHubAccess;
-    // @deprecated (undocumented)
-    static get iModelClient(): IModelClient;
-    // @deprecated (undocumented)
-    static get isUsingIModelBankClient(): boolean;
     static get isValid(): boolean;
     // @internal (undocumented)
     static loadNative(): void;
@@ -2847,8 +2747,6 @@ export class IModelHost {
 // @public
 export class IModelHostConfiguration {
     appAssetsDir?: string;
-    // @deprecated
-    briefcaseCacheDir?: string;
     cacheDir?: string;
     compressCachedTiles?: boolean;
     // (undocumented)
@@ -2950,11 +2848,13 @@ export class IModelHubBackend {
         iModelName: string;
     }): Promise<GuidString | undefined>;
     // (undocumented)
-    static querySchemaLock(arg: BriefcaseDbArg): Promise<boolean>;
+    static querySchemaLock(arg: IModelIdArg): Promise<boolean>;
     // (undocumented)
-    static releaseAllCodes(arg: BriefcaseIdArg): Promise<void>;
+    static queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
     // (undocumented)
-    static releaseAllLocks(arg: BriefcaseIdArg & ChangesetIndexArg): Promise<void>;
+    static releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
+    // (undocumented)
+    static releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
     static releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
     // (undocumented)
     static setIModelClient(client?: IModelClient): void;
@@ -3027,8 +2927,6 @@ export class IModelJsFs {
     static readFileSync(pathname: string): string | Buffer;
     static recursiveFindSync(rootDir: string, pattern: RegExp): string[];
     static recursiveMkDirSync(dirPath: string): void;
-    // @deprecated
-    static recusiveFindSync(rootDir: string, pattern: RegExp): string[];
     static removeSync(pathname: string): void;
     static rmdirSync(pathname: string): void;
     static unlinkSync(pathname: string): void;
@@ -3101,7 +2999,7 @@ export class IModelTransformer extends IModelExportHandler {
     protected onExportFont(font: FontProps, _isUpdate: boolean | undefined): void;
     protected onExportModel(sourceModel: Model): void;
     protected onExportRelationship(sourceRelationship: Relationship): void;
-    protected onExportSchema(schema: ECSchemaMetaData.Schema): Promise<void>;
+    protected onExportSchema(_schema: ECSchemaMetaData.Schema): Promise<void>;
     protected onTransformElement(sourceElement: Element): ElementProps;
     protected onTransformElementAspect(sourceElementAspect: ElementAspect, _targetElementId: Id64String): ElementAspectProps;
     protected onTransformModel(sourceModel: Model, targetModeledElementId: Id64String): ModelProps;
@@ -3141,13 +3039,6 @@ export interface IModelTransformOptions {
     noProvenance?: boolean;
     targetScopeElementId?: Id64String;
     wasSourceIModelCopiedToTarget?: boolean;
-}
-
-// @internal @deprecated
-export abstract class InformationCarrierElement extends Element {
-    constructor(props: ElementProps, iModel: IModelDb);
-    // (undocumented)
-    static get className(): string;
 }
 
 // @public
@@ -3833,14 +3724,6 @@ export class PlanCallout extends Callout {
 
 // @public
 export class Platform {
-    // @deprecated
-    static get isDesktop(): boolean;
-    // @deprecated
-    static get isElectron(): boolean;
-    // @deprecated
-    static get isMobile(): boolean;
-    // @deprecated
-    static get isNodeJs(): boolean;
     // @internal (undocumented)
     static load(): typeof IModelJsNative;
     static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp";
@@ -4142,8 +4025,6 @@ export class SnapshotDb extends IModelDb {
     beforeClose(): void;
     static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotDb;
     static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb;
-    // @deprecated
-    get filePath(): string;
     // (undocumented)
     static findByKey(key: string): SnapshotDb;
     // (undocumented)
@@ -4251,6 +4132,25 @@ export class SpatialViewDefinition extends ViewDefinition3d implements SpatialVi
 }
 
 // @public
+export class SQLiteDb implements IDisposable {
+    constructor();
+    abandonChanges(): void;
+    closeDb(): void;
+    createDb(pathName: string): void;
+    dispose(): void;
+    executeSQL(sql: string): DbResult;
+    get isOpen(): boolean;
+    // @internal (undocumented)
+    get nativeDb(): IModelJsNative.SQLiteDb;
+    openDb(pathName: string, openMode: OpenMode): void;
+    // @internal
+    prepareSqliteStatement(sql: string): SqliteStatement;
+    saveChanges(): void;
+    withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
+    withSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
+}
+
+// @public
 export class SqliteStatement implements IterableIterator<any>, IDisposable {
     [Symbol.iterator](): IterableIterator<any>;
     constructor(_sql: string);
@@ -4317,8 +4217,6 @@ export enum SqliteValueType {
 // @public
 export class StandaloneDb extends IModelDb {
     static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb;
-    // @deprecated
-    get filePath(): string;
     // (undocumented)
     static findByKey(key: string): StandaloneDb;
     // (undocumented)
@@ -4522,22 +4420,6 @@ export class TitleText extends DetailingSymbol {
     static get className(): string;
 }
 
-// @public @deprecated (undocumented)
-export enum TxnAction {
-    // (undocumented)
-    Abandon = 2,
-    // (undocumented)
-    Commit = 1,
-    // (undocumented)
-    Merge = 5,
-    // (undocumented)
-    None = 0,
-    // (undocumented)
-    Reinstate = 4,
-    // (undocumented)
-    Reverse = 3
-}
-
 // @public
 export interface TxnChangedEntities {
     // @deprecated
@@ -4665,13 +4547,25 @@ export class V1CheckpointManager {
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;
     // (undocumented)
     static getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb>;
-    // @deprecated
-    static getCompatibilityFileName(checkpoint: CheckpointProps): string;
     // (undocumented)
     static getFileName(checkpoint: CheckpointProps): string;
     // (undocumented)
     static getFolder(iModelId: GuidString): string;
     }
+
+// @beta
+export interface V2CheckpointAccessProps {
+    // (undocumented)
+    auth: string;
+    // (undocumented)
+    container: string;
+    // (undocumented)
+    dbAlias: string;
+    // (undocumented)
+    storageType: string;
+    // (undocumented)
+    user: string;
+}
 
 // @internal
 export class V2CheckpointManager {

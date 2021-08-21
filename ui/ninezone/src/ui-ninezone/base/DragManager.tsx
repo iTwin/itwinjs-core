@@ -6,7 +6,8 @@
  * @module Base
  */
 import * as React from "react";
-import { Point, PointProps, SizeProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { Point, SizeProps } from "@bentley/ui-core";
 import { PanelSide } from "../widget-panels/Panel";
 import { FloatingWidgetResizeHandle } from "../widget/FloatingWidget";
 import { Event, EventEmitter } from "./Event";

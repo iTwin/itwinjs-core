@@ -12,7 +12,7 @@ import * as os from "os";
 import * as path from "path";
 import { Transform, TransformCallback } from "stream";
 import * as urllib from "url";
-import { Config, Logger } from "@bentley/bentleyjs-core";
+import { Logger } from "@bentley/bentleyjs-core";
 import { ArgumentCheck } from "@bentley/imodelhub-client";
 import {
   AuthorizedClientRequestContext, CancelRequest, DownloadFailed, FileHandler, ProgressCallback, ProgressInfo, request, RequestOptions, SasUrlExpired,
@@ -249,7 +249,7 @@ export class AzureFileHandler implements FileHandler {
 
     // suppress azcopy for smaller file as it take longer to spawn and exit then it take Http downloader to download it.
     if (useAzcopy && fileSize) {
-      const minFileSize = Config.App.getNumber("imjs_az_min_filesize_threshold", 500 * 1024 * 1024 /** 500 Mb */);
+      const minFileSize = process.env.IMJS_AZ_MIN_FILESIZE_THRESHOLD ? Number(process.env.IMJS_AZ_MIN_FILESIZE_THRESHOLD) : 500 * 1024 * 1024 /** 500 Mb */;
       if (fileSize < minFileSize)
         useAzcopy = false;
     }

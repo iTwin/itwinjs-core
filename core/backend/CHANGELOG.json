@@ -2,6 +2,63 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.19.7",
+      "tag": "@bentley/imodeljs-backend_v2.19.7",
+      "date": "Fri, 20 Aug 2021 17:47:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add queryV2Checkpoint to BackendHubAccess"
+          },
+          {
+            "comment": "use native serializer for processing schemas in transformer"
+          },
+          {
+            "comment": "only export necessary schemas during imodel transformation"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.6",
+      "tag": "@bentley/imodeljs-backend_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:29 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.5",
+      "tag": "@bentley/imodeljs-backend_v2.19.5",
+      "date": "Fri, 13 Aug 2021 21:48:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.4",
+      "tag": "@bentley/imodeljs-backend_v2.19.4",
+      "date": "Thu, 12 Aug 2021 13:09:26 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "clear statement cache before applying schema changesets"
+          },
+          {
+            "comment": "Tests for solid kernel severe error exceptions."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.3",
+      "tag": "@bentley/imodeljs-backend_v2.19.3",
+      "date": "Wed, 04 Aug 2021 20:29:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.2",
+      "tag": "@bentley/imodeljs-backend_v2.19.2",
+      "date": "Tue, 03 Aug 2021 18:26:23 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.1",
       "tag": "@bentley/imodeljs-backend_v2.19.1",
       "date": "Thu, 29 Jul 2021 20:01:11 GMT",
@@ -51,6 +108,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.18.4",
+      "tag": "@bentley/imodeljs-backend_v2.18.4",
+      "date": "Tue, 10 Aug 2021 19:35:13 GMT",
+      "comments": {}
     },
     {
       "version": "2.18.3",

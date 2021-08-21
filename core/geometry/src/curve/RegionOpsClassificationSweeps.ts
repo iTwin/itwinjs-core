@@ -155,6 +155,7 @@ export class RegionOpsFaceToFaceSearch {
         facePathStack.push(mate);
         let faceNode = mate.faceSuccessor;
         mate.setMaskAroundFace(faceHasBeenVisited);
+        entryNode = mate;
         if (callbacks.enterFace(facePathStack, mate)) {
           for (; ;) {
             mate = faceNode.edgeMate;
@@ -262,6 +263,7 @@ export class RegionOpsFaceToFaceSearch {
     binaryOp: RegionBinaryOpType,
     dataB: MultiLineStringDataVariant[],
     opB: RegionGroupOpType,
+    purgeSliverExteriorFaces: boolean
   ): HalfEdgeGraph | undefined {
     const graph = new HalfEdgeGraph();
     const baseMask = HalfEdgeMask.BOUNDARY_EDGE | HalfEdgeMask.PRIMARY_EDGE;
@@ -271,12 +273,16 @@ export class RegionOpsFaceToFaceSearch {
 
     // Add all the members in groupA ..
     for (const data of dataA) {
+      if (data.length > 2){
       const member = new RegionGroupMember(data, callbacks.groupA);
-      RegionOps.addLoopsWithEdgeTagToGraph(graph, data, baseMask, member);
+        RegionOps.addLoopsWithEdgeTagToGraph(graph, data, baseMask, member);
+      }
     }
     for (const data of dataB) {
+      if (data.length > 2){
       const member = new RegionGroupMember(data, callbacks.groupB);
-      RegionOps.addLoopsWithEdgeTagToGraph(graph, data, baseMask, member);
+        RegionOps.addLoopsWithEdgeTagToGraph(graph, data, baseMask, member);
+      }
     }
     // split edges where they cross . . .
     HalfEdgeGraphMerge.splitIntersectingEdges(graph);
@@ -286,6 +292,8 @@ export class RegionOpsFaceToFaceSearch {
     const context = new RegularizationContext(graph);
     context.regularizeGraph(true, true);
     callbacks.runClassificationSweep(binaryOp);
+    if (purgeSliverExteriorFaces)
+      callbacks.unmaskMaskedNullFaces(HalfEdgeMask.EXTERIOR);
     return graph;
   }
 }
@@ -541,13 +549,34 @@ export class RegionBooleanContext implements RegionOpsFaceToFaceSearchCallbacks 
     const componentArray = GraphComponentArray.create(this.graph);
     for (const component of componentArray.components) {
       const exteriorHalfEdge = HalfEdgeGraphSearch.findMinimumAreaFace(component.faces, this.faceAreaFunction);
+      if (exteriorHalfEdge){
       const exteriorMask = HalfEdgeMask.EXTERIOR;
       const allMasksToClear = exteriorMask | faceHasBeenVisitedMask | nodeHasBeenVisitedMask;
       this.graph.clearMask(allMasksToClear);
-      RegionOpsFaceToFaceSearch.faceToFaceSearchFromOuterLoop(this.graph, exteriorHalfEdge, faceHasBeenVisitedMask, nodeHasBeenVisitedMask, this);
+        RegionOpsFaceToFaceSearch.faceToFaceSearchFromOuterLoop(this.graph, exteriorHalfEdge, faceHasBeenVisitedMask, nodeHasBeenVisitedMask, this);
+      }
     }
     this.graph.dropMask(faceHasBeenVisitedMask);
     this.graph.dropMask(nodeHasBeenVisitedMask);
+
+  }
+  // search the graph for faces with
+  // .. exactly 2 edges
+  // .. both with given mask
+  // .. at least one mate is not exterior.
+  // .. clear that mark
+  public unmaskMaskedNullFaces(mask: number) {
+    for (const nodeA of this.graph.allHalfEdges) {
+      const nodeB = nodeA.faceSuccessor;
+      if (nodeB.faceSuccessor === nodeA) {
+        if (nodeA.getMask(mask) && nodeB.getMask(mask)) {
+          if (!nodeA.edgeMate.getMask(mask) || !nodeB.edgeMate.getMask(mask)) {
+            nodeA.clearMask(mask);
+            nodeB.clearMask(mask);
+          }
+        }
+      }
+    }
 
   }
   private getInOut(): boolean {

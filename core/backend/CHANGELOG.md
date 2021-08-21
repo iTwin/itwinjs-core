@@ -1,6 +1,43 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Thu, 29 Jul 2021 20:01:11 GMT and should not be manually modified.
+This log was last generated on Fri, 20 Aug 2021 17:47:22 GMT and should not be manually modified.
+
+## 2.19.7
+Fri, 20 Aug 2021 17:47:22 GMT
+
+### Updates
+
+- add queryV2Checkpoint to BackendHubAccess
+- use native serializer for processing schemas in transformer
+- only export necessary schemas during imodel transformation
+
+## 2.19.6
+Tue, 17 Aug 2021 20:34:29 GMT
+
+_Version update only_
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:08 GMT
+
+_Version update only_
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+### Updates
+
+- clear statement cache before applying schema changesets
+- Tests for solid kernel severe error exceptions.
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+_Version update only_
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
 
 ## 2.19.1
 Thu, 29 Jul 2021 20:01:11 GMT
@@ -24,6 +61,11 @@ Mon, 26 Jul 2021 12:21:25 GMT
 - Add offset body operation for IFC connector.
 - Correctly handle case where subtract operation consumes target body.
 - await returned promise to ensure finally block doesn't intercept it
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
 
 ## 2.18.3
 Wed, 28 Jul 2021 17:16:30 GMT

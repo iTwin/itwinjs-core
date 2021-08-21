@@ -202,7 +202,18 @@ export class ViewsFrontstage extends FrontstageProvider {
     for (const viewState of this.viewStates) {
       const thisContentProps: ContentProps = {
         classId: IModelViewportControl,
-        applicationData: { viewState, iModelConnection: this.iModelConnection },
+        applicationData:
+        {
+          viewState, iModelConnection: this.iModelConnection,
+          featureOptions:
+          {
+            defaultViewOverlay: {
+              enableScheduleAnimationViewOverlay: true,
+              enableAnalysisTimelineViewOverlay: true,
+              enableSolarTimelineViewOverlay: true,
+            },
+          },
+        },
       };
       contentProps.push(thisContentProps);
     }
@@ -219,7 +230,7 @@ export class ViewsFrontstage extends FrontstageProvider {
             widgets={
               [
                 <Widget isFreeform={true} element={<BasicToolWidget additionalHorizontalItems={this._additionalTools.additionalHorizontalToolbarItems}
-                  additionalVerticalItems={this._additionalTools.additionalVerticalToolbarItems} showCategoryAndModelsContextTools={false} />} />,
+                  additionalVerticalItems={this._additionalTools.additionalVerticalToolbarItems} showCategoryAndModelsContextTools={true} />} />,
               ]}
           />
         }

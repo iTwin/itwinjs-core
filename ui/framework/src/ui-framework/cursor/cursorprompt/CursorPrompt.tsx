@@ -9,8 +9,8 @@
 import "./CursorPrompt.scss";
 import * as React from "react";
 import { ToolAssistanceInstruction } from "@bentley/imodeljs-frontend";
-import { RelativePosition } from "@bentley/ui-abstract";
-import { BodyText, Icon, Point, PointProps, Timer } from "@bentley/ui-core";
+import { PointProps, RelativePosition } from "@bentley/ui-abstract";
+import { BodyText, Icon, Point, Timer } from "@bentley/ui-core";
 import { CursorInformation, CursorUpdatedEventArgs } from "../CursorInformation";
 import { CursorPopupManager } from "../cursorpopup/CursorPopupManager";
 

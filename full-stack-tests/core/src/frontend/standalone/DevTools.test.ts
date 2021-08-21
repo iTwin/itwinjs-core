@@ -15,7 +15,7 @@ describe("DevTools", () => {
 
     const iModelRpcProps: IModelRpcProps = {
       iModelId: "test",
-      changeSetId: "test",
+      changeset: { id: "test" },
       key: "__globalEvents__",
     }; // Supply a real token in an integration test
     devTools = DevTools.connectToBackendInstance(iModelRpcProps);
