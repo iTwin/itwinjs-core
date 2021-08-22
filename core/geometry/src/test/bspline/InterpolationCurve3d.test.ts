@@ -146,11 +146,13 @@ function testInterpolationCurveConstruction(ck: Checker, allGeometry: GeometryQu
     const point1 = curve.options.fitPoints[curve.options.fitPoints.length - 1];
     const tangentScale = 0.25;    // tangents were defined with length less than 2?
     const y1 = y0 + delta;
-    if (curve.options.startTangent) {
+    if (curve.options.startTangent && !curve.options.startTangent.isAlmostZero) {
+      ck.testVector3d(curve.options.startTangent.normalize()!, curve.fractionToPointAndUnitTangent(0.0).direction, "start tangent interpolated");
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point0, point0.plusScaled(curve.options.startTangent, tangentScale)], x0, y0, 0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point0, point0.plusScaled(curve.options.startTangent, tangentScale)], x0, y1, 0);
     }
-    if (curve.options.endTangent) { // points into curve
+    if (curve.options.endTangent && !curve.options.endTangent.isAlmostZero) { // points into curve
+      ck.testVector3d(curve.options.endTangent.normalize()!, curve.fractionToPointAndUnitTangent(1.0).direction.negate(), "end tangent interpolated");
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point1, point1.plusScaled(curve.options.endTangent, tangentScale)], x0, y0, 0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point1, point1.plusScaled(curve.options.endTangent, tangentScale)], x0, y1, 0);
     }
