@@ -308,17 +308,17 @@ export namespace BSplineCurveOps {
 
       if (options.closed) {
         // first row
-        deltaIPlus1 = options.knots[2] - options.knots[1];
         deltaI = options.knots[1] - options.knots[0];
-        deltaIMinus1 = options.knots[numIntervalsMinus1 + 1] - options.knots[numIntervalsMinus1];
         deltaIMinus2 = options.knots[numIntervalsMinus1] - options.knots[numIntervalsMinus1 - 1];
+        deltaIMinus1 = options.knots[numIntervalsMinus1 + 1] - options.knots[numIntervalsMinus1];
+        deltaIPlus1 = options.knots[2] - options.knots[1];
         this.computeAlphaBetaGamma(alpha, beta, gamma, 0, deltaIPlus1, deltaI, deltaIMinus1, deltaIMinus2);
 
         // second row
-        deltaIPlus1 = options.knots[3] - options.knots[2];
-        deltaI = options.knots[2] - options.knots[1];
-        deltaIMinus1 = deltaI;
         deltaIMinus2 = deltaIMinus1;
+        deltaIMinus1 = deltaI;
+        deltaI = options.knots[2] - options.knots[1];
+        deltaIPlus1 = options.knots[3] - options.knots[2];
         this.computeAlphaBetaGamma(alpha, beta, gamma, 1, deltaIPlus1, deltaI, deltaIMinus1, deltaIMinus2);
 
         // last row; there's one less equation than open case
@@ -343,17 +343,17 @@ export namespace BSplineCurveOps {
         }
 
         // second row
-        deltaIPlus1 = options.knots[3] - options.knots[2];
         deltaI = options.knots[2] - options.knots[1];
         deltaIMinus1 = options.knots[1] - options.knots[0];
         deltaIMinus2 = 0.0;
+        deltaIPlus1 = options.knots[3] - options.knots[2];
         this.computeAlphaBetaGamma(alpha, beta, gamma, 1, deltaIPlus1, deltaI, deltaIMinus1, deltaIMinus2);
 
         // penultimate row
-        deltaIPlus1 = 0.0;
         deltaI = options.knots[numIntervalsMinus1 + 1] - options.knots[numIntervalsMinus1];
         deltaIMinus1 = options.knots[numIntervalsMinus1] - options.knots[numIntervalsMinus1 - 1];
         deltaIMinus2 = options.knots[numIntervalsMinus1 - 1] - options.knots[numIntervalsMinus1 - 2];
+        deltaIPlus1 = 0.0;
         this.computeAlphaBetaGamma(alpha, beta, gamma, numIntervalsMinus1, deltaIPlus1, deltaI, deltaIMinus1, deltaIMinus2);
 
         // last row
@@ -373,10 +373,10 @@ export namespace BSplineCurveOps {
 
       // middle rows
       for (let i = 2; i < numIntervalsMinus1; ++i) {
-        deltaIPlus1 = options.knots[i + 2] - options.knots[i + 1];
         deltaI = options.knots[i + 1] - options.knots[i];
-        deltaIMinus1 = options.knots[i] - options.knots[i - 1];
         deltaIMinus2 = options.knots[i - 1] - options.knots[i - 2];
+        deltaIMinus1 = options.knots[i] - options.knots[i - 1];
+        deltaIPlus1 = options.knots[i + 2] - options.knots[i + 1];
         this.computeAlphaBetaGamma(alpha, beta, gamma, i, deltaIPlus1, deltaI, deltaIMinus1, deltaIMinus2);
       }
       return true;

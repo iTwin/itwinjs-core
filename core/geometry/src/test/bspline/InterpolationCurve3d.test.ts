@@ -150,9 +150,9 @@ function testInterpolationCurveConstruction(ck: Checker, allGeometry: GeometryQu
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point0, point0.plusScaled(curve.options.startTangent, tangentScale)], x0, y0, 0);
       GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point0, point0.plusScaled(curve.options.startTangent, tangentScale)], x0, y1, 0);
     }
-    if (curve.options.endTangent) {
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point1, point1.plusScaled(curve.options.endTangent, -tangentScale)], x0, y0, 0);
-      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point1, point1.plusScaled(curve.options.endTangent, -tangentScale)], x0, y1, 0);
+    if (curve.options.endTangent) { // points into curve
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point1, point1.plusScaled(curve.options.endTangent, tangentScale)], x0, y0, 0);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, [point1, point1.plusScaled(curve.options.endTangent, tangentScale)], x0, y1, 0);
     }
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve, x0, y0, 0);
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, curve.proxyCurve, x0, y1, 0);
