@@ -15,7 +15,7 @@ import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
-import { ReactTableDemoContentControl } from "../components/ReactTableDemo";
+import { ReactTableDemoContentControl } from "../table-demo/ReactTableDemo";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
 
