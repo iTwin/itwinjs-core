@@ -91,9 +91,7 @@ describe("GraphicBuilder", () => {
     });
 
     it("never, if view flags do not require them", () => {
-      const vf = viewport.viewFlags.clone();
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.visibleEdges = false;
+      const vf = viewport.viewFlags.copy({ renderMode: RenderMode.SmoothShade, visibleEdges: false });
       viewport.viewFlags = vf;
       expect(viewport.viewFlags.edgesRequired()).to.be.false;
 

@@ -82,9 +82,7 @@ describe("Background map", () => {
     ];
 
     await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
-      const vf = vp.viewFlags.clone();
-      vf.backgroundMap = true;
-      vp.viewFlags = vf;
+      vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
 
       for (const test of tests) {
         expect(await isSameTileTree(vp, test[0])).to.equal(test[1]);
@@ -99,12 +97,7 @@ describe("Background map", () => {
 
     async function expectPixelTypes(vp: TestViewport, mapProps: BackgroundMapProps | undefined, expectedCenterColor: PixelType, expectedCornerColor: PixelType, expectedCenterFeature: PixelType, expectedCornerFeature: PixelType): Promise<void> {
       if (mapProps) {
-        if (!vp.viewFlags.backgroundMap) {
-          const vf = vp.viewFlags.clone();
-          vf.backgroundMap = true;
-          vp.viewFlags = vf;
-        }
-
+        vp.viewFlags = vp.viewFlags.with("backgroundMap", true);
         vp.backgroundMapSettings = BackgroundMapSettings.fromJSON(mapProps);
       }
 
@@ -164,9 +157,7 @@ describe("Background map", () => {
 
     await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
       // Turn off lighting. Map is already off.
-      const vf = vp.viewFlags.clone();
-      vf.lighting = false;
-      vp.viewFlags = vf;
+      vp.viewFlags = vp.viewFlags.with("lighting", false);
 
       for (const test of tests)
         await expectPixelTypes(vp, test[0], test[1], test[2], test[3], test[4]);

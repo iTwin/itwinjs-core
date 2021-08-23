@@ -448,17 +448,17 @@ export class SolarShadowMap implements RenderMemory.Consumer, WebGLDisposable {
     const gl = System.instance.context;
     gl.viewport(0, 0, shadowMapWidth, shadowMapHeight);
 
-    const viewFlags = target.currentViewFlags.clone(this._scratchViewFlags);
-    viewFlags.renderMode = RenderMode.SmoothShade;
-    viewFlags.transparency = false;
-    // viewFlags.textures = false;  // need textures for alpha transparency shadows
-    viewFlags.lighting = false;
-    viewFlags.shadows = false;
-    viewFlags.noGeometryMap = true;
-    viewFlags.monochrome = false;
-    // viewFlags.materials = false; material transparency affects whether or not surface casts shadows
-    viewFlags.ambientOcclusion = false;
-    viewFlags.visibleEdges = viewFlags.hiddenEdges = false;
+    // NB: textures and materials are needed because their transparencies affect whether or not a surface casts shadows
+    const viewFlags = target.currentViewFlags.copy({
+      renderMode: RenderMode.SmoothShade,
+      transparency: false,
+      lighting: false,
+      shadows: false,
+      monochrome: false,
+      ambientOcclusion: false,
+      visibleEdges: false,
+      hiddenEdges: false,
+    });
 
     System.instance.applyRenderState(this._renderState);
     const prevPlan = target.plan;

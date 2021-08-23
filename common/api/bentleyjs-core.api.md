@@ -20,6 +20,14 @@ export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | unde
 // @public
 export function assert(condition: boolean, msg?: string): asserts condition;
 
+// @public
+export type AsyncFunction = (...args: any) => Promise<any>;
+
+// @public
+export type AsyncMethodsOf<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? P : never;
+}[keyof T];
+
 // @alpha
 export class AsyncMutex {
     lock(): Promise<AsyncMutexUnlockFnType>;
@@ -1139,6 +1147,14 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     }
 
 // @public
+export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
+
+// @public
+export type NonFunctionPropertyNamesOf<T> = {
+    [K in keyof T]: T[K] extends Function ? never : K;
+}[keyof T];
+
+// @public
 export class ObservableSet<T> extends Set<T> {
     constructor(elements?: Iterable<T> | undefined);
     // @internal (undocumented)
@@ -1258,6 +1274,9 @@ export class ProcessDetector {
     static get isNativeAppFrontend(): boolean;
     static get isNodeProcess(): boolean;
 }
+
+// @public
+export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 // @public
 export class ReadonlyOrderedSet<T> implements Iterable<T> {

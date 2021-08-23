@@ -8,6 +8,11 @@ exports[`<EnumEditor /> renders correctly 1`] = `
     data-testid="components-select-editor"
     onChange={[Function]}
     options={Array []}
+    popoverProps={
+      Object {
+        "appendTo": [Function],
+      }
+    }
     style={
       Object {
         "minWidth": "6em",
@@ -26,6 +31,11 @@ exports[`<EnumEditor /> renders correctly with style 1`] = `
     data-testid="components-select-editor"
     onChange={[Function]}
     options={Array []}
+    popoverProps={
+      Object {
+        "appendTo": [Function],
+      }
+    }
     style={
       Object {
         "color": "red",

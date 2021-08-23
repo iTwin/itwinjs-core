@@ -28,9 +28,13 @@ describe("Pickable graphic", () => {
 
   beforeEach(() => {
     const view = SpatialViewState.createBlank(imodel, new Point3d(), new Vector3d(1, 1, 1));
-    view.viewFlags.acsTriad = view.viewFlags.grid = view.viewFlags.lighting = false;
-    view.viewFlags.renderMode = RenderMode.SmoothShade;
-    view.displayStyle.backgroundColor = ColorDef.black;
+    view.viewFlags = view.viewFlags.copy({
+      acsTriad: false,
+      grid: false,
+      lighting: false,
+      renderMode: RenderMode.SmoothShade,
+    });
+
     viewport = ScreenViewport.create(div, view);
   });
 
