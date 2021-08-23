@@ -2,7 +2,7 @@
 
 ## Setup
 
-- [Install necessary prerequisites]($docs/getting-started/development-prerequisites)
+- [Install necessary prerequisites]($docs/learning/tutorials/development-prerequisites).
 - [Register an Agent Application](https://developer.bentley.com/register/)
 - Give your agent application a name.
 - Choose "Service" application type.
