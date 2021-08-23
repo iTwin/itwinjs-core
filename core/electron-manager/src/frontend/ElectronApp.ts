@@ -2,9 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { IpcListener, IpcSocketFrontend } from "@bentley/imodeljs-common";
-import { AsyncMethodsOf, IpcApp, NativeApp, NativeAppOpts, PromiseReturnType } from "@bentley/imodeljs-frontend";
+import { IpcApp, NativeApp, NativeAppOpts } from "@bentley/imodeljs-frontend";
 import { ITwinElectronApi } from "../backend/ElectronPreload";
 import { ElectronRpcManager } from "../common/ElectronRpcManager";
 

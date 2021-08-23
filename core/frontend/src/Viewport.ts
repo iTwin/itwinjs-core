@@ -527,7 +527,6 @@ export abstract class Viewport implements IDisposable {
   public get isGridOn(): boolean { return this.viewFlags.grid; }
 
   /** Flags controlling aspects of how the contents of this viewport are rendered.
-   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
    * @see [DisplayStyleSettings.viewFlags]($common).
    */
   public get viewFlags(): ViewFlags { return this.view.viewFlags; }

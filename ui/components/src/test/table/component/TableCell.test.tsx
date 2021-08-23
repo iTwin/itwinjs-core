@@ -63,7 +63,7 @@ describe("TableCell", () => {
   });
 });
 
-describe("TableCellContent", () => {
+describe.skip("TableCellContent", () => {
   const key = "test-cell-item";
 
   it("renders", async () => {

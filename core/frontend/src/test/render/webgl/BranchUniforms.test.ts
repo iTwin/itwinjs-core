@@ -30,7 +30,7 @@ interface ClipInfo {
 function makeBranch(info: ClipInfo): Branch {
   const branch = new GraphicBranch();
   if (undefined !== info.noViewClip)
-    branch.viewFlagOverrides.setShowClipVolume(!info.noViewClip);
+    branch.viewFlagOverrides.clipVolume = !info.noViewClip;
 
   const graphic = IModelApp.renderSystem.createGraphicBranch(branch, Transform.identity, { clipVolume: info.clip });
   expect(graphic instanceof Branch).to.be.true;
@@ -66,7 +66,7 @@ function expectClipStack(target: Target, expected: Array<{ numRows: number }>): 
  */
 function testBranches(viewClip: ClipInfo, branches: ClipInfo[], expectViewClip: boolean, expectedClips: Array<{ numRows: number }>): void {
   const plan = { ...createEmptyRenderPlan(), clip: viewClip.clip?.clipVector };
-  plan.viewFlags.clipVolume = true !== viewClip.noViewClip;
+  plan.viewFlags = plan.viewFlags.with("clipVolume", true !== viewClip.noViewClip);
 
   const target = makeTarget();
   target.changeRenderPlan(plan);

@@ -5,7 +5,7 @@
 ```ts
 
 import { AccessToken } from '@bentley/itwin-client';
-import { AsyncMethodsOf } from '@bentley/imodeljs-frontend';
+import { AsyncMethodsOf } from '@bentley/bentleyjs-core';
 import { BrowserWindow } from 'electron';
 import { BrowserWindowConstructorOptions } from 'electron';
 import { IpcHandler } from '@bentley/imodeljs-backend';
@@ -13,7 +13,7 @@ import { NativeAppAuthorizationBackend } from '@bentley/imodeljs-backend';
 import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { NativeAppOpts } from '@bentley/imodeljs-frontend';
 import { NativeHostOpts } from '@bentley/imodeljs-backend';
-import { PromiseReturnType } from '@bentley/imodeljs-frontend';
+import { PromiseReturnType } from '@bentley/bentleyjs-core';
 import { RpcConfiguration } from '@bentley/imodeljs-common';
 import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
 import { TokenResponse } from '@openid/appauth';
