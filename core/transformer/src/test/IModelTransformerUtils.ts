@@ -23,7 +23,6 @@ import {
 } from "@bentley/imodeljs-backend";
 import { IModelExporter, IModelExportHandler, IModelImporter, IModelTransformer } from "../imodeljs-transformer";
 import { ExtensiveTestScenario, IModelTestUtils } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
-import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
 
 export class IModelTransformerTestUtils {
   public static createTeamIModel(outputDir: string, teamName: string, teamOrigin: Point3d, teamColor: ColorDef): SnapshotDb {
@@ -144,7 +143,7 @@ export class TransformerExtensiveTestScenario {
   public static async prepareTargetDb(targetDb: IModelDb): Promise<void> {
     // Import desired target schemas
     const requestContext = new BackendRequestContext();
-    const targetSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "ExtensiveTestScenarioTarget.ecschema.xml");
+    const targetSchemaFileName: string = path.join(__dirname, "assets", "ExtensiveTestScenarioTarget.ecschema.xml");
     await targetDb.importSchemas(requestContext, [targetSchemaFileName]);
     // Insert a target-only CodeSpec to test remapping
     const targetCodeSpecId: Id64String = targetDb.codeSpecs.insert("TargetCodeSpec", CodeScopeSpec.Type.Model);
