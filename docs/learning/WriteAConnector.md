@@ -276,7 +276,7 @@ select ecinstanceid from bis.ExternalSource where repository=?
 
 If an ExternalSource is not found, insert one using
 
-```JavaScript
+```ts
  function insertExternalSource(iModelDb: IModelDb, repository: Id64String, userLabel: string): Id64String {
     const externalSourceProps: ExternalSourceProps = {
       classFullName: ExternalSource.classFullName,
@@ -293,7 +293,7 @@ If an ExternalSource is not found, insert one using
 
 After calling Synchronizer.updateIModel, set the source property of the element's ExternalSourceAspect to point to the correct ExternalSource. Here is a code snippet:
 
-```JavaScript
+```ts
 const ids = ExternalSourceAspect.findBySource(imodel, scope, kind, item.id);
 const aspect = imodel.elements.getAspect(ids.aspectId) as ExternalSourceAspect;
 if (aspect.source === <externalsource.id>)
@@ -306,7 +306,7 @@ At the start of the Connector's updateExistingData function, examine all existin
 
 A Connector must also relate each physical model that it creates to the source document(s) that is used to make that model. Specifically, each Connector must create an ElementHasLinks ECRelationship from the InformationContentElement element representing the model to one or more RepositoryLink elements that describe the source document. When creating a physical partition model, link it to the RepositoryLink that corresponds to the source document. Synchronized.recordDocument in the Connector SDK provides the implementation for the above. Having a stable file identifier is critical to detect changes when the file is processed again by the connector. The connector provides this information in the SourceItem call.
 
-```Javascript
+```ts
   public recordDocument(scope: Id64String, sourceItem: SourceItem, kind: string = "DocumentWithBeGuid", knownUrn: string = ""): SynchronizationResults {
     const key = scope + sourceItem.id.toLowerCase();
 ```
@@ -331,7 +331,7 @@ For each item found in the external source.
 
 Define a [[SourceItem]] object to capture the identifier, version, and checksum of the item.
 
-```JavaScript
+```ts
     const sourceItem: SourceItem = {
       id: <<identifies the item in the external source>>,
       version: <<the item’s version number, if available>>,
@@ -341,23 +341,23 @@ Define a [[SourceItem]] object to capture the identifier, version, and checksum 
 
 Then, check use [Synchronizer](#synchronizer) to see if the item was previously converted.
 
-```JavaScript
+```ts
 const results = this.synchronizer.detectChanges(scopeId, kind, sourceItem);
 ```
 
 If so, check to see if the item’s state is unchanged since the previous conversion. In that case, register the fact that the element in the iModel is still required and move on to the next item.
 
-```JavaScript
-    if (results.state === ItemState.Unchanged) {
-      assert(results.id !== undefined);
-      this.synchronizer.onElementSeen(results.id);
-      return results.id;
-    }
+```ts
+if (results.state === ItemState.Unchanged) {
+  assert(results.id !== undefined);
+  this.synchronizer.onElementSeen(results.id);
+  return results.id;
+}
 ```
 
 Otherwise, the item is new or if its state has changed. The connector must generate the appropriate BIS element representation of it.
 
-```JavaScript
+```ts
     const element = convert the item to BIS element …
 
     if (results.id !== undefined) // in case this is an update
@@ -366,7 +366,7 @@ Otherwise, the item is new or if its state has changed. The connector must gener
 
 Then ask Synchronizer to write the BIS element to the briefcase. Synchronizer will update the existing element if it exists or insert a new one if not.
 
-```JavaScript
+```ts
     const sync: SynchronizationResults = {
       element,
       itemState: results.state,
@@ -439,7 +439,7 @@ Methods
 
 The BridgeRunner has a Synchronize method that runs your bridge module.
 
-```JavaScript
+```ts
     const bridgeJobDef = new BridgeJobDefArgs();
     bridgeJobDef.sourcePath = "c:\tmp\mynativefile.txt";
     bridgeJobDef.bridgeModule = "./HelloWorldConnector.js";
@@ -459,7 +459,7 @@ An IModelBridge has a private Synchronizer member which can be gotten or set via
 
 The bridgeModule assigned to the BridgeJobDefArgs above must extend the IModelBridge class. This class has several methods that must be implemented to customize the behavior of your Connector.
 
-```JavaScript
+```ts
 class HelloWorldConnector extends IModelBridge {
 
 ```
@@ -468,7 +468,7 @@ class HelloWorldConnector extends IModelBridge {
 
 Use this method to add any models (e.g., physical, definition, or group) required by your Connector upfront to ensure that the models exist when it is time to populate them with their respective elements.
 
-```JavaScript
+```ts
   public async initializeJob(): Promise<void> {
     if (ItemState.New === this._sourceDataState) {
       this.createGroupModel();
@@ -488,7 +488,7 @@ See also:
 
 Use this method to read your native source data and assign it to a member property of your Connector to be accessed later on when it is time to convert your native object to their counterparts in the iModel.
 
-```JavaScript
+```ts
   public async openSourceData(sourcePath: string): Promise<void> {
     const json = fs.readFileSync(sourcePath, "utf8");
     this._data = JSON.parse(json);
@@ -505,7 +505,7 @@ Use this method to read your native source data and assign it to a member proper
 
 Your source data may have non-graphical data best represented as definitions. Typically, this data requires a single instance for each definition, and the same instance is referenced multiple times. Therefore, it is best to import the definitions upfront all at once. Override the ImportDefinitions method for this purpose.
 
-```JavaScript
+```ts
   // importDefinitions is for definitions that are written to shared models such as DictionaryModel
   public async importDefinitions(): Promise<any> {
     if (this._sourceDataState === ItemState.Unchanged) {
@@ -524,7 +524,7 @@ Your source data may have non-graphical data best represented as definitions. Ty
 
 Use this method to import any domain schema that is required to publish your data.
 
-```JavaScript
+```ts
   public async importDomainSchema(_requestContext: AuthorizedClientRequestContext | ClientRequestContext): Promise<any> {
     if (this._sourceDataState === ItemState.Unchanged) {
       return;
@@ -546,7 +546,7 @@ For background on when to use a dynamic schema, please checkout [Dynamic Schemas
 
 This method is the main workhorse of your Connector. When UpdateExistingData is called, models and definitions should be created and available for insertion of elements (if that is the desired workflow). Note: In the example below, definition elements are being inserted into the definition model at this point as well. Physical elements and Group elements can now be converted.
 
-```JavaScript
+```ts
   public async updateExistingData() {
     const groupModelId = this.queryGroupModel();
     const physicalModelId = this.queryPhysicalModel();

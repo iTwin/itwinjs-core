@@ -2,7 +2,7 @@
 
 ## Override the ImportDynamicSchema Method
 
-```JavaScript
+```ts
   public async importDynamicSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext): Promise<any> {
     if (this.sourceDataState === ItemState.Unchanged) return;
     if (this.sourceDataState === ItemState.New) COBieSchema.registerSchema();
@@ -20,20 +20,36 @@
 
 ## Example - DynamicSchemaGenerator from COBie Connector example
 
-```JavaScript
+```ts
 /*---------------------------------------------------------------------------------------------
-* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* See LICENSE.md in the project root for license terms and full copyright notice.
-*--------------------------------------------------------------------------------------------*/
+ * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+ * See LICENSE.md in the project root for license terms and full copyright notice.
+ *--------------------------------------------------------------------------------------------*/
 
 import { IModelDb } from "@bentley/imodeljs-backend";
-import { Schema, PrimitiveType, SchemaContextEditor, SchemaContext, SchemaComparer, ISchemaCompareReporter, SchemaChanges, ISchemaChanges, AnyDiagnostic } from "@bentley/ecschema-metadata";
+import {
+  Schema,
+  PrimitiveType,
+  SchemaContextEditor,
+  SchemaContext,
+  SchemaComparer,
+  ISchemaCompareReporter,
+  SchemaChanges,
+  ISchemaChanges,
+  AnyDiagnostic,
+} from "@bentley/ecschema-metadata";
 import { IModelSchemaLoader } from "@bentley/imodeljs-backend/lib/IModelSchemaLoader";
 import { MutableSchema } from "@bentley/ecschema-metadata/lib/Metadata/Schema";
 import { ItemState } from "@bentley/imodel-bridge/lib/Synchronizer";
 import { DOMParser, XMLSerializer } from "xmldom";
 import { DataFetcher } from "./DataFetcher";
-import { PropertyRenameMap, PropertyTypeMap, COBieBaseEntityProps, COBieEntityPropMap, COBieRelationshipProps } from "./schema/COBieSchemaConfig";
+import {
+  PropertyRenameMap,
+  PropertyTypeMap,
+  COBieBaseEntityProps,
+  COBieEntityPropMap,
+  COBieRelationshipProps,
+} from "./schema/COBieSchemaConfig";
 
 export class DynamicSchemaGenerator {
   public dataFetcher: DataFetcher;
@@ -43,40 +59,72 @@ export class DynamicSchemaGenerator {
   }
 
   public async synchronizeSchema(imodel: IModelDb): Promise<SchemaSyncResults> {
-    const createBaseClasses = async (editor: SchemaContextEditor, schema: Schema) => {
+    const createBaseClasses = async (
+      editor: SchemaContextEditor,
+      schema: Schema
+    ) => {
       for (const entityProp of COBieBaseEntityProps) {
-        const baseInsertResult = await editor.entities.createFromProps(schema.schemaKey, entityProp);
-      }
-    };
-
-    const createProperties = async (editor: SchemaContextEditor, table: any, entityInsertResult: any) => {
-      const cols = await this.dataFetcher.fetchColumns(table.name);
-      for (const col of cols) {
-        const propertyName: string = PropertyRenameMap.hasOwnProperty(col.name) ? PropertyRenameMap[col.name] : col.name;
-        const propertyType: any = PropertyTypeMap.hasOwnProperty(propertyName) ? PropertyTypeMap[propertyName] : { typeName: "string", typeValue: PrimitiveType.String };
-        const property = { name: propertyName, type: "PrimitiveProperty", typeName: propertyType.typeName };
-        const propertyInsertResult = await editor.entities.createPrimitivePropertyFromProps(
-          entityInsertResult.itemKey!,
-          propertyName,
-          propertyType.typeValue,
-          property,
+        const baseInsertResult = await editor.entities.createFromProps(
+          schema.schemaKey,
+          entityProp
         );
       }
     };
 
-    const createEntityclasses = async (editor: SchemaContextEditor, schema: Schema) => {
+    const createProperties = async (
+      editor: SchemaContextEditor,
+      table: any,
+      entityInsertResult: any
+    ) => {
+      const cols = await this.dataFetcher.fetchColumns(table.name);
+      for (const col of cols) {
+        const propertyName: string = PropertyRenameMap.hasOwnProperty(col.name)
+          ? PropertyRenameMap[col.name]
+          : col.name;
+        const propertyType: any = PropertyTypeMap.hasOwnProperty(propertyName)
+          ? PropertyTypeMap[propertyName]
+          : { typeName: "string", typeValue: PrimitiveType.String };
+        const property = {
+          name: propertyName,
+          type: "PrimitiveProperty",
+          typeName: propertyType.typeName,
+        };
+        const propertyInsertResult =
+          await editor.entities.createPrimitivePropertyFromProps(
+            entityInsertResult.itemKey!,
+            propertyName,
+            propertyType.typeValue,
+            property
+          );
+      }
+    };
+
+    const createEntityclasses = async (
+      editor: SchemaContextEditor,
+      schema: Schema
+    ) => {
       const tables = await this.dataFetcher.fetchTables();
       for (const table of tables) {
         const entityClassProps = COBieEntityPropMap[table.name];
         if (!entityClassProps) continue;
-        const entityInsertResult = await editor.entities.createFromProps(schema.schemaKey, entityClassProps);
+        const entityInsertResult = await editor.entities.createFromProps(
+          schema.schemaKey,
+          entityClassProps
+        );
         await createProperties(editor, table, entityInsertResult);
       }
     };
 
-    const createRelationshipClasses = async (editor: SchemaContextEditor, schema: Schema) => {
+    const createRelationshipClasses = async (
+      editor: SchemaContextEditor,
+      schema: Schema
+    ) => {
       for (const relationshipClassProps of COBieRelationshipProps) {
-        const relationshipInsertResult = await editor.relationships.createFromProps(schema.schemaKey, relationshipClassProps);
+        const relationshipInsertResult =
+          await editor.relationships.createFromProps(
+            schema.schemaKey,
+            relationshipClassProps
+          );
       }
     };
 
@@ -84,13 +132,22 @@ export class DynamicSchemaGenerator {
       const schemaVersion = imodel.querySchemaVersion("COBieConnectorDynamic");
       let [readVersion, writeVersion, minorVersion] = [1, 0, 0];
       if (increaseVersion) {
-        [readVersion, writeVersion, minorVersion] = schemaVersion!.split(".").map((version) => parseInt(version, 10));
+        [readVersion, writeVersion, minorVersion] = schemaVersion!
+          .split(".")
+          .map((version) => parseInt(version, 10));
         minorVersion += 1;
       }
 
       const context = new SchemaContext();
       const editor = new SchemaContextEditor(context);
-      const newSchema = new Schema(context, "COBieConnectorDynamic", "cbd", readVersion, writeVersion, minorVersion);
+      const newSchema = new Schema(
+        context,
+        "COBieConnectorDynamic",
+        "cbd",
+        readVersion,
+        writeVersion,
+        minorVersion
+      );
 
       const bisSchema = loader.getSchema("BisCore");
       const funcSchema = loader.getSchema("Functional");
@@ -105,7 +162,9 @@ export class DynamicSchemaGenerator {
       await (newSchema as MutableSchema).addReference(bisSchema); // TODO remove this hack later
       await (newSchema as MutableSchema).addReference(funcSchema);
       await (newSchema as MutableSchema).addReference(buildingSpatialSchema);
-      await (newSchema as MutableSchema).addReference(spatialComppositionSchema);
+      await (newSchema as MutableSchema).addReference(
+        spatialComppositionSchema
+      );
 
       await createBaseClasses(editor, newSchema);
       await createEntityclasses(editor, newSchema);
@@ -137,7 +196,9 @@ export class DynamicSchemaGenerator {
   }
 
   public async schemaToString(schema: Schema): Promise<string> {
-    let xmlDoc = new DOMParser().parseFromString(`<?xml version="1.0" encoding="UTF-8"?>`);
+    let xmlDoc = new DOMParser().parseFromString(
+      `<?xml version="1.0" encoding="UTF-8"?>`
+    );
     xmlDoc = await schema.toXml(xmlDoc);
     const xmlString = new XMLSerializer().serializeToString(xmlDoc);
     return xmlString;
@@ -156,13 +217,12 @@ class DynamicSchemaCompareReporter implements ISchemaCompareReporter {
     this.changes.push(schemaChanges as SchemaChanges);
   }
 
-  public get diagnostics(): AnyDiagnostic [] {
-    let diagnostics: AnyDiagnostic [] = [];
+  public get diagnostics(): AnyDiagnostic[] {
+    let diagnostics: AnyDiagnostic[] = [];
     for (const changes of this.changes) {
       diagnostics = diagnostics.concat(changes.allDiagnostics);
     }
     return diagnostics;
   }
 }
-
 ```
