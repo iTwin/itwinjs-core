@@ -18,13 +18,13 @@ import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
 /** The scope of a lock.
  * @public
  */
-export enum LockScope {
+export enum LockState {
   /** The entity is not locked */
-  None,
+  None = 0,
   /** Holding a shared lock blocks other users from acquiring the Exclusive lock on an entity. More than one user may acquire the shared lock. */
-  Shared,
+  Shared = 1,
   /** A Lock that blocks other users from making modifications to an entity. */
-  Exclusive,
+  Exclusive = 2,
 }
 
 /**
@@ -45,9 +45,9 @@ export interface V2CheckpointAccessProps {
  */
 export interface LockProps {
   /** The entityId for the lock */
-  entityId: Id64String;
+  id: Id64String;
   /** the lock scope */
-  scope: LockScope;
+  state: LockState;
 }
 
 /** Argument for methods that must supply an IModelId
