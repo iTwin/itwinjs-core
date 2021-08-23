@@ -141,7 +141,7 @@ iModel uses BIS schemas to describe the persistence model of the digital twin. A
 
 #### Changeset
 
-A changeset represents a file containing changes corresponding to an iModel briefcase. For more information on changesets, please see [ChangeSets]($imodelhub-client)
+A changeset represents a file containing changes corresponding to an iModel briefcase. For more information on changesets, please see [ChangeSet]($imodelhub-client)
 
 ## The basics of writing a Connector
 
