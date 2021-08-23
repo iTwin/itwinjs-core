@@ -113,7 +113,7 @@ export class LocalHub {
       stmt.bindString(2, user);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
-        throw new IModelError(rc, "can't update briefcaseId in mock database");
+        throw new IModelError(rc, "can't insert briefcaseId in mock database");
     });
     db.saveChanges();
     return newId;

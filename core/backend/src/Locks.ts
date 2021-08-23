@@ -29,7 +29,7 @@ export class Locks {
       this._db.openDb(dbName, OpenMode.ReadWrite);
     } catch (_e) {
       this._db.createDb(dbName);
-      this._db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,level INTEGER NOT NULL,lastCSetIndex INTEGER)");
+      this._db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL)");
 
     }
   }
@@ -45,9 +45,19 @@ export class Locks {
   }
 
   private getLockState(id: Id64String): LockState | undefined {
-    return !Id64.isValid(id) ? LockState.None : this.lockDb.withPreparedSqliteStatement("SELECT level FROM locks WHERE id=?", (stmt) => {
+    return !Id64.isValid(id) ? LockState.None : this.lockDb.withPreparedSqliteStatement("SELECT state FROM locks WHERE id=?", (stmt) => {
       stmt.bindId(1, id);
       return (DbResult.BE_SQLITE_ROW === stmt.step()) ? stmt.getValueInteger(0) : undefined;
+    });
+  }
+
+  private saveLockState(props: LockProps) {
+    this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state) VALUES (?,?)", (stmt) => {
+      stmt.bindId(1, props.id);
+      stmt.bindInteger(1, props.state);
+      const rc = stmt.step();
+      if (DbResult.BE_SQLITE_DONE !== rc)
+        throw new IModelError(rc, "can't insert lock into database");
     });
   }
 
@@ -69,14 +79,17 @@ export class Locks {
   }
 
   private addSharedLock(id: Id64String, locks: Set<Id64String>) {
-    if (locks.has(id) || this.hasSharedLock(id))
+    if (!Id64.isValid(id) || locks.has(id) || this.hasSharedLock(id))
       return;
-    const el = this.getParentAndModel(id);
 
-    if (!this.hasSharedLock(el.parentId)) {
-      locks.push({ id, state: LockState.Shared });
-      this.addSharedLocks(id, locks);
-    }
+    locks.add(id);
+    this.addParentSharedLocks(id, locks);
+  }
+
+  private addParentSharedLocks(id: Id64String, locks: Set<Id64String>) {
+    const el = this.getParentAndModel(id);
+    this.addSharedLock(el.parentId, locks);
+    this.addSharedLock(el.modelId, locks);
 
   }
 
@@ -84,13 +97,16 @@ export class Locks {
     if (this.hasExclusiveLock(id))
       return;
 
-    const locks = new Map<Id64String, LockState>();
-    locks.set(id, LockState.Exclusive);
+    const sharedLocks = new Set<Id64String>();
+    this.addParentSharedLocks(id, sharedLocks);
 
-    this.addSharedLock(id, locks);
+    const locks: LockProps[] = [{ id, state: LockState.Exclusive }];
+    for (const shared of sharedLocks)
+      locks.push({ id: shared, state: LockState.Shared });
+
     await IModelHost.hubAccess.acquireLocks(this.iModel, locks);
     for (const lock of locks)
-      this.saveLockState(lock.id, lock.state);
+      this.saveLockState(lock);
   }
 
 }
