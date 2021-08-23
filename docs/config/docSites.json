@@ -82,7 +82,6 @@
       "ui-framework": "ui-framework",
       "ui-imodel-components": "ui-imodel-components",
       "ui-ninezone": "ui-ninezone",
-      "usage-logging-client": "usage-logging-client",
       "webgl-compatibility": "webgl-compatibility"
     },
     "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"itwinjs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",

@@ -235,10 +235,6 @@
       "allowedCategories": [ "backend", "common" ]
     },
     {
-      "name": "@bentley/usage-logging-client",
-      "allowedCategories": [ "backend", "frontend" ]
-    },
-    {
       "name": "@bentley/webgl-compatibility",
       "allowedCategories": [ "frontend", "internal" ]
     },

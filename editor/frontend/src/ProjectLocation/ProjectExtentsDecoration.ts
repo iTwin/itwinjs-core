@@ -36,9 +36,7 @@ function enableBackgroundMap(viewport: Viewport, onOff: boolean): boolean {
   if (onOff === viewport.viewFlags.backgroundMap)
     return false;
 
-  const viewFlags = viewport.viewFlags.clone();
-  viewFlags.backgroundMap = onOff;
-  viewport.viewFlags = viewFlags;
+  viewport.viewFlags = viewport.viewFlags.with("backgroundMap", onOff);
   return true;
 }
 

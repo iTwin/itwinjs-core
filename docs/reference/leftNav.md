@@ -31,8 +31,7 @@ packageClassification:  [
        "imodelhub-client",
        "itwin-client",
        "product-settings-client",
-       "reality-data-client",
-       "usage-logging-client"
+       "reality-data-client"
      ]
    },
    {

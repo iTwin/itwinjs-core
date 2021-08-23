@@ -44,8 +44,10 @@ internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
-public;AsyncFunction = (...args: any) => Promise
+public;AsyncFunction = AsyncFunction_2
+deprecated;AsyncFunction = AsyncFunction_2
 public;AsyncMethodsOf
+deprecated;AsyncMethodsOf
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -162,12 +164,8 @@ internal;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
 internal;eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boolean): Cartographic | undefined
 internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise
-alpha;FeatureLogBatchClient
-alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
 public;FeatureSymbology
-alpha;FeatureTrackingManager
-alpha;FeatureTrackingProps
 internal;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
 deprecated;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
 internal;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
@@ -421,6 +419,7 @@ internal;PlanarTilePatch
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
 public;PromiseReturnType
+deprecated;PromiseReturnType
 internal;QuadId
 beta;QuantityFormatOverridesChangedArgs
 beta;QuantityFormatsChangedArgs

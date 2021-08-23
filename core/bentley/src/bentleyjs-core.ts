@@ -16,11 +16,9 @@ export * from "./Dictionary";
 export * from "./Disposable";
 export * from "./Id";
 export * from "./IndexMap";
-export * from "./InstanceOf";
 export * from "./JsonUtils";
 export * from "./Logger";
 export * from "./LRUMap";
-export * from "./Mutable";
 export * from "./ProcessDetector";
 export * from "./ObservableSet";
 export * from "./OneAtATimeAction";
@@ -31,6 +29,7 @@ export * from "./PriorityQueue";
 export * from "./SortedArray";
 export * from "./StringUtils";
 export * from "./Time";
+export * from "./UtilityTypes";
 
 /** @packageDocumentation
  * @module Utils

@@ -75,8 +75,14 @@ export interface AbstractWidgetProps extends ProvidedItem {
     readonly badgeType?: BadgeType;
     // @beta
     readonly canPopout?: boolean;
+    readonly defaultFloatingPosition?: {
+        x: number;
+        y: number;
+    };
     readonly defaultState?: WidgetState;
     readonly fillZone?: boolean;
+    // @beta
+    readonly floatingContainerId?: string;
     readonly getWidgetContent: () => any;
     readonly icon?: string | ConditionalStringValue;
     readonly id?: string;

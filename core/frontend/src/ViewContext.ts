@@ -42,7 +42,7 @@ export class RenderContext {
 
   constructor(vp: Viewport, frustum?: Frustum) {
     this._viewport = vp;
-    this.viewFlags = vp.viewFlags.clone(); // viewFlags can diverge from viewport after attachment
+    this.viewFlags = vp.viewFlags;
     this.frustum = frustum ? frustum : vp.getFrustum();
     this.frustumPlanes = new FrustumPlanes(this.frustum);
   }
