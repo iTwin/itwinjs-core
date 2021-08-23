@@ -147,8 +147,8 @@ void (async () => {
         assert(!(args.sourceStartChangesetIndex && args.sourceStartChangesetId), "Pick single way to specify starting changeset");
         if (args.sourceStartChangesetIndex) {
           args.sourceStartChangesetId = await IModelHubUtils.queryChangesetId(requestContext, sourceIModelId, args.sourceStartChangesetIndex);
-        } else if (args.sourceStartChangesetId) {
-          args.sourceStartChangesetIndex = await IModelHubUtils.queryChangesetIndex(requestContext, sourceIModelId, args.sourceStartChangesetId);
+        } else {
+          args.sourceStartChangesetIndex = await IModelHubUtils.queryChangesetIndex(requestContext, sourceIModelId, args.sourceStartChangesetId!);
         }
         Logger.logInfo(loggerCategory, `sourceStartChangesetIndex=${args.sourceStartChangesetIndex}`);
         Logger.logInfo(loggerCategory, `sourceStartChangesetId=${args.sourceStartChangesetId}`);
@@ -157,11 +157,10 @@ void (async () => {
         assert(!(args.sourceEndChangesetIndex && args.sourceEndChangesetId), "Pick single way to specify ending changeset");
         if (args.sourceEndChangesetIndex) {
           args.sourceEndChangesetId = await IModelHubUtils.queryChangesetId(requestContext, sourceIModelId, args.sourceEndChangesetIndex);
-        } else if (args.sourceEndChangesetId) {
-          args.sourceEndChangesetIndex = await IModelHubUtils.queryChangesetIndex(requestContext, sourceIModelId, args.sourceEndChangesetId);
+        } else {
+          args.sourceEndChangesetIndex = await IModelHubUtils.queryChangesetIndex(requestContext, sourceIModelId, args.sourceEndChangesetId!);
         }
-        assert(args.sourceEndChangesetId !== undefined, "sourceEndChangesetId should be set by now");
-        sourceEndVersion = IModelVersion.asOfChangeSet(args.sourceEndChangesetId);
+        sourceEndVersion = IModelVersion.asOfChangeSet(args.sourceEndChangesetId!);
         Logger.logInfo(loggerCategory, `sourceEndChangesetIndex=${args.sourceEndChangesetIndex}`);
         Logger.logInfo(loggerCategory, `sourceEndChangesetId=${args.sourceEndChangesetId}`);
       }
