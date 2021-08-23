@@ -544,7 +544,7 @@ export class IModelTestUtils {
     // dummy method to get this script included
   }
 
-  public static initDebugLogLevels(reset?: boolean) {
+  private static initDebugLogLevels(reset?: boolean) {
     Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
     Logger.setLevel(BentleyLoggerCategory.Performance, reset ? LogLevel.Error : LogLevel.Info);
     Logger.setLevel(BackendLoggerCategory.IModelDb, reset ? LogLevel.Error : LogLevel.Trace);
