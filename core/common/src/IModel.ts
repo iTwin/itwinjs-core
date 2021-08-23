@@ -135,6 +135,8 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   lazyBlockCache?: boolean;
   /** @internal */
   autoUploadBlocks?: boolean;
+  /** @internal */
+  tempFileBase?: string;
 }
 
 /** Options to open a [StandaloneDb]($backend) via [StandaloneDb.openFile]($backend) from the backend,

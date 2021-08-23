@@ -25,6 +25,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { join } from "path";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { BriefcaseId, BriefcaseManager } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
@@ -2528,7 +2529,9 @@ export class SnapshotDb extends IModelDb {
    */
   public static async openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb> {
     const { filePath, expiryTimestamp } = await V2CheckpointManager.attach(checkpoint);
-    const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key: CheckpointManager.getKey(checkpoint) });
+    const key = CheckpointManager.getKey(checkpoint);
+    const tempFileBase = join(IModelHost.cacheDir, key); // temp files for this checkpoint should go in the cacheDir.
+    const snapshot = SnapshotDb.openFile(filePath, { lazyBlockCache: true, key, tempFileBase });
     snapshot._contextId = checkpoint.contextId;
     try {
       CheckpointManager.validateCheckpointGuids(checkpoint, snapshot.nativeDb);
