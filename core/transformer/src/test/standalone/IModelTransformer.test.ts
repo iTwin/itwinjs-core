@@ -56,7 +56,7 @@ describe("IModelTransformer", () => {
     // Target IModelDb
     const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "TestIModelTransformer-Target" } });
-    await ExtensiveTestScenario.prepareDb(targetDb);
+    await TransformerExtensiveTestScenario.prepareTargetDb(targetDb);
     targetDb.saveChanges();
 
     const numSourceUniqueAspects: number = count(sourceDb, ElementUniqueAspect.classFullName);
@@ -258,7 +258,7 @@ describe("IModelTransformer", () => {
     // Target IModelDb
     const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TargetImportSubject.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "TargetImportSubject" } });
-    await ExtensiveTestScenario.prepareDb(targetDb);
+    await TransformerExtensiveTestScenario.prepareTargetDb(targetDb);
     const targetSubjectId = Subject.insert(targetDb, IModel.rootSubjectId, "Target Subject", "Target Subject Description");
     assert.isTrue(Id64.isValidId64(targetSubjectId));
     targetDb.saveChanges();
