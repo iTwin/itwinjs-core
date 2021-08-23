@@ -366,6 +366,7 @@ export class IModelHost {
     this.setupCacheDirs(configuration);
     IModelHubBackend.setIModelClient(configuration.imodelClient);
     BriefcaseManager.initialize(this._briefcaseCacheDir);
+
     IModelHost.setupRpcRequestContext();
 
     [
@@ -387,6 +388,7 @@ export class IModelHost {
     IModelHost.setupTileCache();
 
     this.platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
+
     // const introspectionClientId = Config.App.getString("imjs_introspection_client_id", "");
     // const introspectionClientSecret = Config.App.getString("imjs_introspection_client_secret", "");
     // if (introspectionClientId && introspectionClientSecret) {
