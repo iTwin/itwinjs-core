@@ -49,8 +49,8 @@ export interface MapLayerOptions {
 /** @internal */
 export class MapLayerFormatRegistry {
   private _configOptions: MapLayerOptions;
-  constructor(opts: MapLayerOptions) {
-    this._configOptions = opts;
+  constructor(opts?: MapLayerOptions) {
+    this._configOptions = opts ? opts : {};
     internalMapLayerImageryFormats.forEach((format) => this.register(format));
   }
   private _formats = new Map<string, MapLayerFormatType>();
