@@ -714,6 +714,7 @@ export interface ColumnDescription {
     showFieldFilters?: boolean;
     sortable?: boolean;
     sortIgnoreCase?: boolean;
+    sortType?: string;
     width?: number;
 }
 

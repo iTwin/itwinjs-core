@@ -6,7 +6,7 @@ import * as React from "react";
 import { WidgetState } from "@bentley/ui-abstract";
 import {
   ActionItemButton, ContentGroup, ContentLayoutDef, CoreTools, Frontstage, FrontstageProps, FrontstageProvider, GroupButton, IModelViewportControl,
-  NavigationWidget, StagePanel, ToolButton, ToolWidget, UiFramework, Widget, Zone, ZoneLocation, ZoneState,
+  NavigationWidget, ToolButton, ToolWidget, UiFramework, Widget, Zone, ZoneLocation, ZoneState,
 } from "@bentley/ui-framework";
 import { Direction, Toolbar } from "@bentley/ui-ninezone";
 import { AppTools } from "../../tools/ToolSpecifications";
@@ -15,7 +15,6 @@ import { SmallStatusBarWidgetControl } from "../statusbars/SmallStatusBar";
 import { NavigationTreeWidgetControl } from "../widgets/NavigationTreeWidget";
 import { HorizontalPropertyGridWidgetControl, VerticalPropertyGridWidgetControl } from "../widgets/PropertyGridDemoWidget";
 import { TableDemoWidgetControl } from "../widgets/TableDemoWidget";
-import { TableExampleWidgetControl } from "../contentviews/TableExampleContent";
 import { ReactTableDemoContentControl } from "../components/ReactTableDemo";
 
 /* eslint-disable react/jsx-key, deprecation/deprecation */
@@ -114,13 +113,13 @@ export class Frontstage3 extends FrontstageProvider {
             ]}
           />
         }
-        bottomPanel={
-          <StagePanel
-            widgets={[
-              <Widget iconSpec="icon-placeholder" label="Large Table" control={TableExampleWidgetControl} />,
-            ]}
-          />
-        }
+      // bottomPanel={
+      //   <StagePanel
+      //     widgets={[
+      //       <Widget iconSpec="icon-placeholder" label="Large Table" control={TableExampleWidgetControl} />,
+      //     ]}
+      //   />
+      // }
       />
     );
   }

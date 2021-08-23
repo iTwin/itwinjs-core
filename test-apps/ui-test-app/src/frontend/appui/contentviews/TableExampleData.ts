@@ -13,6 +13,8 @@ import {
   ColumnDescription, FilterRenderer, RowItem, SimpleTableDataProvider, TableDataProvider,
 } from "@bentley/ui-components";
 
+// cSpell:ignore datetime
+
 const createPropertyRecord = (value: any, column: ColumnDescription, typename: string, editor?: PropertyEditorInfo) => {
   const v: PropertyValue = {
     valueFormat: PropertyValueFormat.Primitive,
@@ -123,7 +125,7 @@ const createEnumPropertyRecord = (rowIndex: number, column: ColumnDescription) =
 
 const createLoremPropertyRecord = (column: ColumnDescription) => {
   const lorem = new LoremIpsum();
-  const value = lorem.generateWords(5);
+  const value = lorem.generateWords(3);
 
   const v: PropertyValue = {
     valueFormat: PropertyValueFormat.Primitive,
@@ -170,6 +172,7 @@ export class TableExampleData {
       filterable: true,
       width: 200,
       filterRenderer: FilterRenderer.MultiSelect,
+      sortType: "datetime",
     },
     {
       key: "title",

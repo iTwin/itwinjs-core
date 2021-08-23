@@ -5,15 +5,9 @@
 import * as React from "react";
 import { Column, TableState } from "react-table";
 import { Table } from "@itwin/itwinui-react";
-import { Centered, LoadingSpinner } from "@bentley/ui-core";
 import { ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
 import { TableExampleData } from "../contentviews/TableExampleData";
 import { TableDataProviderAdapter } from "./TableDataProviderAdapter";
-
-export interface CellData {
-  name: string;
-  description: string;
-}
 
 export interface ReactTableDemoProps {
   isSortable?: boolean;
@@ -25,7 +19,6 @@ export function ReactTableDemo(args: ReactTableDemoProps) {
   const [fetchedData, setFetchedData] = React.useState<Record<string, unknown>[]>(() => []);
   const [fetchedColumns, setFetchedColumns] = React.useState<Column<Record<string, unknown>>[]>(() => []);
   const isMounted = React.useRef(false);
-  const [isInitialLoading, setIsInitialLoading] = React.useState(false);
   const [isLoading, setIsLoading] = React.useState(false);
 
   React.useEffect(() => {
@@ -40,7 +33,6 @@ export function ReactTableDemo(args: ReactTableDemoProps) {
       await providerAdapter.current.adaptRows(rowsCount);   // Adapt all for now - NEEDSWORK
 
       if (isMounted.current) {
-        setFetchedData(providerAdapter.current.reactTableData);
         setFetchedColumns(
           [
             {
@@ -49,14 +41,15 @@ export function ReactTableDemo(args: ReactTableDemoProps) {
             },
           ]
         );
+        setFetchedData(providerAdapter.current.reactTableData); // Load all for now - NEEDSWORK
       }
     }
 
-    setIsInitialLoading(true);
+    setIsLoading(true);
     setTimeout(() => {
       fetchData(); // eslint-disable-line @typescript-eslint/no-floating-promises
-      setIsInitialLoading(false);
-    }, 100);
+      setIsLoading(false);
+    });
   }, [tableExampleData]);
 
   // runs returned function only when component is unmounted.
@@ -86,15 +79,6 @@ export function ReactTableDemo(args: ReactTableDemoProps) {
     }
   }, []);
 
-  if (isInitialLoading)
-    return (
-      <div style={{ height: "100%" }}>
-        <Centered>
-          <LoadingSpinner size="large" />
-        </Centered>
-      </div>
-    );
-
   return (
     <Table
       style={{ height: "100%" }}
@@ -114,6 +98,8 @@ export function ReactTableDemo(args: ReactTableDemoProps) {
 }
 
 export class ReactTableDemoContentControl extends ContentControl {
+  private _tableExampleData = new TableExampleData();
+
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
