@@ -10,7 +10,7 @@ Writing an iTwin.js application requires the following software:
 
 ## 2. Get, build, and develop code
 
-[Follow the "Developing a web viewer" tutorial]($docs/learning/tutorials/develop-web-viewer.md)
+[Follow the "Developing a Desktop Viewer" tutorial]($docs/learning/tutorials/develop-desktop-viewer.md)
 
 &nbsp;
 &nbsp;
