@@ -36,6 +36,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 ### Immutability
 
 [ViewFlags]($common) has long been a common source of surprising behavior. Consider the following code:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     vp.viewFlags.shadows = true;
@@ -43,6 +44,7 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 ```
 
 You could be forgiven for expecting the image displayed in the Viewport to include shadows after calling this function, but that will not be the case. Instead, you must write the function as follows:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     const vf = vp.viewFlags.clone();
@@ -52,6 +54,7 @@ You could be forgiven for expecting the image displayed in the Viewport to inclu
 ```
 
 To rectify this, and to eliminate various other pitfalls associated with mutable state, ViewFlags has been converted to an immutable type - all of its properties are read-only and the only way to change a property is to create a copy. The function above can now be written as:
+
 ```ts
   function turnOnShadows(vp: Viewport) {
     vp.viewFlags = vp.viewFlags.with("shadows", true);
@@ -61,10 +64,12 @@ To rectify this, and to eliminate various other pitfalls associated with mutable
 ```
 
 Methods that mutate a ViewFlags object have been removed.
-- `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
-- `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
+
+* `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
+* `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
 
 If your code used to modify a single property, change it to use [ViewFlags.with]($common) or [ViewFlags.withRenderMode]($common):
+
 ```ts
   // Replace this...
   viewport.viewFlags.clipVolume = true;
@@ -73,6 +78,7 @@ If your code used to modify a single property, change it to use [ViewFlags.with]
 ```
 
 If your code used to modify multiple properties, change it to use [ViewFlags.copy]($common):
+
 ```ts
   // Replace this...
   viewport.viewFlags.shadows = viewport.viewFlags.lighting = true;
@@ -81,6 +87,7 @@ If your code used to modify multiple properties, change it to use [ViewFlags.cop
 ```
 
 If your code used to create a new ViewFlags and then modify its properties, pass the initial properties to [ViewFlags.create]($common) instead:
+
 ```ts
   // Replace this...
   const vf = new ViewFlags();
@@ -106,6 +113,7 @@ If you were using noCameraLights, noSourceLights, or noSolarLight, use [ViewFlag
 This cumbersome, inefficient class has been replaced with the identically-named [ViewFlagOverrides]($common) type, which is simply an interface that has all the same properties as [ViewFlags]($common), but each is optional. A flag is overridden if its value is not `undefined`.
 
 Upgrade instructions:
+
 ```
   let ovrs = new ViewFlagOverrides(); // Old code - nothing overridden.
   let ovrs = { }; // New code
@@ -156,6 +164,23 @@ Upgrade instructions:
 ## Moved utility types
 
 The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [PromiseReturnType]($bentleyjs-core) types have moved to the @bentley/bentleyjs-core package. The ones in @bentley/imodeljs-frontend have been deprecated.
+
+## Removed default Bing Maps and MapBox keys
+
+The `@bentley/imodeljs-frontend` has always been delivered with a Bing Maps and MapBox Imagery key which should have never been publicly exposed. Both keys have now been completely removed and all applications will need to provide their own keys.
+
+In order to configure a key for Bing Maps, or any other map layers, use the [[IModelAppOptions.mapLayerOptions]] configuration to supply the necessary information.
+
+```ts
+const appOptions = {
+  maplayerOptions: {
+    BingMaps: {
+      key: "some key",
+      value: "key"
+    }
+  }
+}
+```
 
 ## Removal of previously deprecated APIs
 
