@@ -7,7 +7,6 @@ import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Popup } from "@bentley/ui-core";
-import { ProjectDialog } from "./ProjectDialog";
 import { ITwin } from "@bentley/context-registry-client";
 
 /** Properties for the [[ProjectDropdown]] component */
@@ -45,19 +44,10 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
     this.setState({ showProjectsDialog: true });
   };
 
-  private _onCloseProjectDialog = () => {
-    this.closeDialog();
-  };
-
   private _onItemClick(project: ITwin) {
     this.closeDropdown();
     this.props.onProjectClicked(project);
   }
-
-  private _onProjectSelected = (project: ITwin) => {
-    this.closeDialog();
-    this.props.onProjectClicked(project);
-  };
 
   private _splitterClicked = (_event: React.MouseEvent<HTMLElement>) => {
     this.setState((prevState) => ({ isDropdownOpen: !prevState.isDropdownOpen }));
@@ -143,9 +133,6 @@ export class ProjectDropdown extends React.Component<ProjectDropdownProps, Proje
         </div>
         <div className="pp-highlight" />
         {this.renderDropdown()}
-        {this.state.showProjectsDialog &&
-          <ProjectDialog onClose={this._onCloseProjectDialog} onProjectSelected={this._onProjectSelected} />
-        }
       </div>
     );
   }

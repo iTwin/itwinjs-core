@@ -37,7 +37,6 @@ import * as toolSettingTools from "./tools/ToolSettingsTools";
 import { UiShowHideManager, UiShowHideSettingsProvider } from "./utils/UiShowHideManager";
 import { WidgetManager } from "./widgets/WidgetManager";
 import { ChildWindowManager } from "./childwindow/ChildWindowManager";
-import { ITwinAccess, ITwinAccessClient } from "@bentley/context-registry-client";
 
 // cSpell:ignore Mobi
 
@@ -90,7 +89,6 @@ export interface TrackingTime {
  */
 export class UiFramework {
   private static _initialized = false;
-  private static _iTwinAccessService?: ITwinAccess;
   private static _iModelServices?: IModelServices;
   private static _i18n?: I18N;
   private static _store?: Store<any>;
@@ -149,12 +147,11 @@ export class UiFramework {
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param i18n The internationalization service created by the application. Defaults to IModelApp.i18n.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
-   * @param iTwinAccessService Optional app defined ITwinAccess. If not specified ITwinAccessClient will be used.
    * @param iModelServices Optional app defined iModelServices. If not specified DefaultIModelServices will be used.
    *
    * @internal
    */
-  public static async initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, iTwinAccessService?: ITwinAccess, iModelServices?: IModelServices): Promise<void> {
+  public static async initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, iModelServices?: IModelServices): Promise<void> {
     if (UiFramework._initialized) {
       Logger.logInfo(UiFramework.loggerCategory(UiFramework), `UiFramework.initialize already called`);
       return;
@@ -178,7 +175,6 @@ export class UiFramework {
 
     const readFinishedPromise = frameworkNamespace.readFinished;
 
-    UiFramework._iTwinAccessService = iTwinAccessService ? /* istanbul ignore next */ iTwinAccessService : new ITwinAccessClient();
     UiFramework._iModelServices = iModelServices ? /* istanbul ignore next */ iModelServices : new DefaultIModelServices();
     UiFramework._backstageManager = new BackstageManager();
     UiFramework._hideIsolateEmphasizeActionHandler = new HideIsolateEmphasizeManager();  // this allows user to override the default HideIsolateEmphasizeManager implementation.
@@ -225,7 +221,6 @@ export class UiFramework {
     if (UiFramework._i18n)
       UiFramework._i18n.unregisterNamespace(UiFramework.i18nNamespace);
     UiFramework._i18n = undefined;
-    UiFramework._iTwinAccessService = undefined;
     UiFramework._iModelServices = undefined;
     UiFramework._backstageManager = undefined;
     UiFramework._widgetManager = undefined;
@@ -341,13 +336,6 @@ export class UiFramework {
     const className = getClassName(obj);
     const category = UiFramework.packageName + (className ? `.${className}` : "");
     return category;
-  }
-
-  /** @internal */
-  public static get iTwinAccessService(): ITwinAccess {
-    if (!UiFramework._iTwinAccessService)
-      throw new UiError(UiFramework.loggerCategory(this), UiFramework._complaint);
-    return UiFramework._iTwinAccessService;
   }
 
   /** @internal */

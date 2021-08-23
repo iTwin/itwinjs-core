@@ -12,7 +12,7 @@ import { BlockingPrompt } from "./BlockingPrompt";
 import { IModelList } from "./IModelList";
 import { NavigationItem, NavigationList } from "./Navigation";
 import { ProjectDropdown } from "./ProjectDropdown";
-import { ActivityMessageDetails, ActivityMessageEndReason, AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
+import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@bentley/imodeljs-frontend";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Button } from "@itwin/itwinui-react";
 import { ITwin } from "@bentley/context-registry-client";
@@ -63,22 +63,7 @@ export class IModelOpen extends React.Component<IModelOpenProps, IModelOpenState
         currentProject: this.props.initialIModels[0].projectInfo, // eslint-disable-line @bentley/react-set-state-usage
         iModels: this.props.initialIModels,  // eslint-disable-line @bentley/react-set-state-usage
       });
-
-      return;
     }
-
-    const requestContext = await AuthorizedFrontendRequestContext.create();
-    const projectInfos: ITwin[] = await UiFramework.iTwinAccessService.getAll(requestContext, {
-      pagination: {
-        top: 40,
-      }});
-    this.setState({
-      isLoadingProjects: false,
-      isLoadingiModels: true,
-      recentProjects: projectInfos,
-    });
-    if (projectInfos.length > 0)
-      this._selectProject(projectInfos[0]);
   }
 
   // retrieves the IModels for a Project. Called when first mounted and when a new Project is selected.

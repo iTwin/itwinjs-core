@@ -7,9 +7,8 @@ import classnames from "classnames";
 import * as React from "react";
 import { SearchBox } from "@bentley/ui-core";
 import { IModelInfo } from "@bentley/ui-framework";
-import { Button, ToggleSwitch } from "@itwin/itwinui-react";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 import { IModelCard } from "./IModelCard";
-import { ProjectDialog } from "./ProjectDialog";
 
 /** Properties for the [[IModelList]] component */
 export interface IModelListProps {
@@ -19,7 +18,6 @@ export interface IModelListProps {
 
 interface IModelListState {
   showDescriptions: boolean;
-  showProjectDialog: boolean;
   currentIModel?: IModelInfo;
   showDetails: boolean;
   filter: string;
@@ -35,7 +33,6 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
 
     this.state = {
       showDescriptions: true, /* show descriptions by default */
-      showProjectDialog: false,
       showDetails: false,
       filter: "",
     };
@@ -47,14 +44,6 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
 
   private _onShowDetails = () => {
     this.setState({ showDetails: true });
-  };
-
-  private _onShowProjectsSelector = () => {
-    this.setState({ showProjectDialog: true });
-  };
-
-  private _onProjectsSelectorClose = () => {
-    this.setState({ showProjectDialog: false });
   };
 
   private _handleSearchValueChanged = (value: string): void => {
@@ -138,9 +127,7 @@ export class IModelList extends React.Component<IModelListProps, IModelListState
         <div className="cards-empty">
           <div className="fade-in-fast">
             There are no iModels associated to this project.
-            <Button styleType="cta" onClick={this._onShowProjectsSelector}>Search for active projects in your Organization?</Button>
           </div>
-          {this.state.showProjectDialog && <ProjectDialog onClose={this._onProjectsSelectorClose} />}
         </div>
       );
     } else {
