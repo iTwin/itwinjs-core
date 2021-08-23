@@ -201,14 +201,14 @@ export class IModelTestUtils {
   }
 
   /** Helper to open a briefcase db directly with the BriefcaseManager API */
-  public static async  downloadAndOpenBriefcase(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext }): Promise<BriefcaseDb> {
+  public static async downloadAndOpenBriefcase(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext }): Promise<BriefcaseDb> {
     assert.isTrue(HubUtility.allowHubBriefcases || HubMock.isValid, "Must use HubMock for tests that modify iModels");
     const props = await BriefcaseManager.downloadBriefcase(args.requestContext, args);
     return BriefcaseDb.open(args.requestContext, { fileName: props.fileName });
   }
 
   /** Opens the specific iModel as a Briefcase through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
-  public static async  openBriefcaseUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<BriefcaseDb> {
+  public static async openBriefcaseUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<BriefcaseDb> {
     args.requestContext.enter();
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
@@ -236,7 +236,7 @@ export class IModelTestUtils {
   }
 
   /** Downloads and opens a v1 checkpoint */
-  public static async  downloadAndOpenCheckpoint(args: { requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
+  public static async downloadAndOpenCheckpoint(args: { requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelId: GuidString, asOf?: IModelVersionProps }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
@@ -251,7 +251,7 @@ export class IModelTestUtils {
   }
 
   /** Opens the specific Checkpoint iModel, `SyncMode.FixedVersion`, through the same workflow the IModelReadRpc.openForRead method will use. Replicates the way a frontend would open the iModel. */
-  public static async  openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<SnapshotDb> {
+  public static async openCheckpointUsingRpc(args: RequestNewBriefcaseProps & { requestContext: AuthorizedClientRequestContext, deleteFirst?: boolean }): Promise<SnapshotDb> {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
@@ -278,7 +278,7 @@ export class IModelTestUtils {
     }
   }
 
-  public static async  closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: IModelDb) {
+  public static async closeAndDeleteBriefcaseDb(requestContext: AuthorizedClientRequestContext, briefcaseDb: IModelDb) {
     const fileName = briefcaseDb.pathName;
     const iModelId = briefcaseDb.iModelId;
     briefcaseDb.close();
@@ -370,7 +370,7 @@ export class IModelTestUtils {
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
-  public static async  createAndInsertPhysicalPartitionAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String> {
+  public static async createAndInsertPhysicalPartitionAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String> {
     const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
     const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
 
@@ -399,7 +399,7 @@ export class IModelTestUtils {
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
-  public static async  createAndInsertPhysicalModelAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
+  public static async createAndInsertPhysicalModelAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
     if (testDb.isBriefcaseDb()) {
       await testDb.concurrencyControl.requestResourcesForInsert(reqContext, [], [newModel]);
@@ -427,7 +427,7 @@ export class IModelTestUtils {
    * Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
    * @return [modeledElementId, modelId]
    */
-  public static async  createAndInsertPhysicalPartitionAndModelAsync(reqContext: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parentId?: Id64String): Promise<Id64String[]> {
+  public static async createAndInsertPhysicalPartitionAndModelAsync(reqContext: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parentId?: Id64String): Promise<Id64String[]> {
     const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(reqContext, testImodel, newModelCode, parentId);
     reqContext.enter();
     const modeledElementRef = new RelatedElement({ id: eid });
@@ -502,7 +502,7 @@ export class IModelTestUtils {
    * - concurrentQuery.current === 4
    * - cacheDir === path.join(__dirname, ".cache")
    */
-  public static async  startBackend(config?: IModelHostConfiguration): Promise<void> {
+  public static async startBackend(config?: IModelHostConfiguration): Promise<void> {
     loadEnv(path.join(__dirname, "..", "..", ".env"));
     const cfg = config ? config : new IModelHostConfiguration();
     cfg.concurrentQuery.concurrent = 4; // for test restrict this to two threads. Making closing connection faster
@@ -518,7 +518,7 @@ export class IModelTestUtils {
     }
   }
 
-  public static async  shutdownBackend(): Promise<void> {
+  public static async shutdownBackend(): Promise<void> {
     return IModelHost.shutdown();
   }
 
@@ -832,7 +832,7 @@ export class ExtensiveTestScenario {
   static uniqueAspectGuid: GuidString = Guid.createValue();
   static federationGuid3: GuidString = Guid.createValue();
 
-  public static async  prepareDb(sourceDb: IModelDb): Promise<void> {
+  public static async prepareDb(sourceDb: IModelDb): Promise<void> {
     // Import desired schemas
     const requestContext = new BackendRequestContext();
     const sourceSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerSource.ecschema.xml");
