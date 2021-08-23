@@ -1,4 +1,4 @@
-# Getting started (offline quick start)
+# Getting Started
 
 ## 1. Get the tools
 
@@ -22,6 +22,7 @@ The starter application is located in the [desktop-starter](https://github.com/i
 
 &nbsp;
 &nbsp;
+
 ---
 
 ## Next Steps
