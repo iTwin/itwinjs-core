@@ -6,7 +6,8 @@
  * @module Utilities
  */
 
-import { PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { Rectangle, RectangleProps } from "@bentley/ui-core";
 
 /** CSS helpers.
  * @internal

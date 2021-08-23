@@ -9,8 +9,7 @@ import { render } from "@testing-library/react";
 import {
   ActivityMessageDetails, ActivityMessageEndReason, NotifyMessageDetails, OutputMessagePriority, OutputMessageType,
 } from "@bentley/imodeljs-frontend";
-import { WidgetState } from "@bentley/ui-abstract";
-import { MessageSeverity } from "@bentley/ui-core";
+import { MessageSeverity, WidgetState } from "@bentley/ui-abstract";
 import { MessageHyperlink, MessageLayout, MessageProgress, Toast } from "@bentley/ui-ninezone";
 import { IconButton } from "@itwin/itwinui-react";
 import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";

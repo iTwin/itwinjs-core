@@ -15,10 +15,6 @@
       "allowedCategories": [ "tools" ]
     },
     {
-      "name": "@bentley/backend-application-insights-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/backend-itwin-client",
       "allowedCategories": [ "backend", "integration-testing", "internal", "tools" ]
     },
@@ -36,15 +32,11 @@
     },
     {
       "name": "@bentley/certa",
-      "allowedCategories": [ "backend", "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
-      "name": "@bentley/config-loader",
-      "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "common", "edit", "frontend", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "@bentley/context-registry-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
     },
     {
       "name": "@bentley/ecschema-locaters",
@@ -60,7 +52,7 @@
     },
     {
       "name": "@bentley/electron-manager",
-      "allowedCategories": [ "internal", "tools" ]
+      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/eslint-plugin",
@@ -72,15 +64,11 @@
     },
     {
       "name": "@bentley/extension-client",
-      "allowedCategories": [ "frontend", "tools" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "@bentley/extension-webpack-tools",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
-    },
-    {
-      "name": "@bentley/frontend-application-insights-client",
-      "allowedCategories": [ "internal" ]
     },
     {
       "name": "@bentley/frontend-authorization-client",
@@ -159,10 +147,6 @@
       "allowedCategories": [ "backend" ]
     },
     {
-      "name": "@bentley/logger-config",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "@bentley/map-layers",
       "allowedCategories": [ "internal" ]
     },
@@ -207,14 +191,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "@bentley/projectshare-client",
-      "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "@bentley/rbac-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal", "tools" ]
-    },
-    {
       "name": "@bentley/react-scripts",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
@@ -224,7 +200,7 @@
     },
     {
       "name": "@bentley/telemetry-client",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "integration-testing" ]
     },
     {
       "name": "@bentley/ui-abstract",
@@ -243,16 +219,16 @@
       "allowedCategories": [ "extensions", "internal" ]
     },
     {
+      "name": "@bentley/ui-imodel-components",
+      "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
       "name": "@bentley/ui-ninezone",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@bentley/units-schema",
       "allowedCategories": [ "backend", "common" ]
-    },
-    {
-      "name": "@bentley/usage-logging-client",
-      "allowedCategories": [ "backend", "frontend" ]
     },
     {
       "name": "@bentley/webgl-compatibility",
@@ -267,20 +243,12 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
-      "name": "@itwin/itwinui-icons-react",
-      "allowedCategories": [ "frontend" ]
-    },
-    {
       "name": "@itwin/itwinui-react",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
       "name": "@microsoft/api-extractor",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "@microsoft/applicationinsights-web",
-      "allowedCategories": [ "common" ]
     },
     {
       "name": "@openid/appauth",
@@ -303,6 +271,10 @@
       "allowedCategories": [ "extensions", "frontend", "internal" ]
     },
     {
+      "name": "@testing-library/user-event",
+      "allowedCategories": [ "frontend" ]
+    },
+    {
       "name": "@typescript-eslint/eslint-plugin",
       "allowedCategories": [ "tools" ]
     },
@@ -317,6 +289,10 @@
     {
       "name": "@ungap/url-search-params",
       "allowedCategories": [ "common" ]
+    },
+    {
+      "name": "@wojtekmaj/enzyme-adapter-react-17",
+      "allowedCategories": [ "extensions", "frontend" ]
     },
     {
       "name": "agentkeepalive",
@@ -361,14 +337,6 @@
     {
       "name": "browserslist",
       "allowedCategories": [ "tools" ]
-    },
-    {
-      "name": "bunyan",
-      "allowedCategories": [ "backend" ]
-    },
-    {
-      "name": "bunyan-seq",
-      "allowedCategories": [ "backend" ]
     },
     {
       "name": "cache-require-paths",
@@ -472,11 +440,11 @@
     },
     {
       "name": "dotenv",
-      "allowedCategories": [ "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "dotenv-expand",
-      "allowedCategories": [ "integration-testing", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal", "tools" ]
     },
     {
       "name": "electron",
@@ -488,7 +456,7 @@
     },
     {
       "name": "enzyme-adapter-react-16",
-      "allowedCategories": [ "extensions", "frontend" ]
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "enzyme-to-json",
@@ -557,10 +525,6 @@
     {
       "name": "fast-deep-equal",
       "allowedCategories": [ "frontend" ]
-    },
-    {
-      "name": "fast-sha256",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "fast-sort",
@@ -656,7 +620,7 @@
     },
     {
       "name": "js-base64",
-      "allowedCategories": [ "backend", "common", "frontend", "integration-testing", "internal" ]
+      "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
     },
     {
       "name": "jsdom",
@@ -669,10 +633,6 @@
     {
       "name": "json-schema-faker",
       "allowedCategories": [ "common" ]
-    },
-    {
-      "name": "json5",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "jsonc-parser",
@@ -737,10 +697,6 @@
     {
       "name": "nock",
       "allowedCategories": [ "backend", "common", "integration-testing", "internal" ]
-    },
-    {
-      "name": "node-fetch",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "nodemon",
@@ -827,10 +783,6 @@
       "allowedCategories": [ "extensions", "internal" ]
     },
     {
-      "name": "react-compound-slider",
-      "allowedCategories": [ "extensions", "frontend", "internal" ]
-    },
-    {
       "name": "react-data-grid",
       "allowedCategories": [ "frontend" ]
     },
@@ -857,6 +809,10 @@
     {
       "name": "react-dom",
       "allowedCategories": [ "extensions", "frontend", "internal" ]
+    },
+    {
+      "name": "react-dom-instance",
+      "allowedCategories": [ "frontend" ]
     },
     {
       "name": "react-highlight-words",
@@ -915,18 +871,6 @@
       "allowedCategories": [ "frontend", "internal" ]
     },
     {
-      "name": "request",
-      "allowedCategories": [ "backend", "internal" ]
-    },
-    {
-      "name": "request-promise",
-      "allowedCategories": [ "backend", "internal" ]
-    },
-    {
-      "name": "request-promise-native",
-      "allowedCategories": [ "internal" ]
-    },
-    {
       "name": "require-dir",
       "allowedCategories": [ "tools" ]
     },
@@ -964,7 +908,7 @@
     },
     {
       "name": "semver",
-      "allowedCategories": [ "backend", "common", "frontend", "internal", "tools" ]
+      "allowedCategories": [ "backend", "common", "frontend", "internal" ]
     },
     {
       "name": "serve-handler",
@@ -1017,10 +961,6 @@
     {
       "name": "symlink-dir",
       "allowedCategories": [ "internal" ]
-    },
-    {
-      "name": "tar",
-      "allowedCategories": [ "tools" ]
     },
     {
       "name": "terser-webpack-plugin",

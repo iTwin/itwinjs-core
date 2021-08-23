@@ -4,7 +4,6 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as React from "react";
-import { Icon, Slider } from "@bentley/ui-core";
 import {
   ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, CoreTools, Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider,
   SyncToolSettingsPropertiesEventArgs,
@@ -13,18 +12,17 @@ import {
 import { ToolInformation } from "../../../ui-framework/zones/toolsettings/ToolInformation";
 import TestUtils from "../../TestUtils";
 import { DialogItemValue, DialogPropertySyncItem, UiLayoutDataProvider } from "@bentley/ui-abstract";
-import { Input } from "@itwin/itwinui-react";
+import { Input, Slider } from "@itwin/itwinui-react";
 
 describe("ToolUiProvider", () => {
 
   function FancySlider() {
     const handleSliderChange = React.useCallback((_values: ReadonlyArray<number>) => {
     }, []);
-    const handleFormatTip = React.useCallback((value: number) => Math.round(value).toString(), []);
     return (
-      <Slider style={{ minWidth: "160px" }} min={0} max={100} values={[30, 70]} step={5} mode={2}
-        showTicks getTickCount={() => 10}
-        showTooltip formatTooltip={handleFormatTip}
+      <Slider style={{ minWidth: "160px" }} min={0} max={100} values={[30, 70]} step={5}
+        tickLabels={["", "", "", "", "", "", "", "", "", "", ""]}
+        tooltipProps={(_: number, val: number) => { return { content: `\$${val}.00` }; }}
         onChange={handleSliderChange} />
     );
   }
@@ -33,8 +31,8 @@ describe("ToolUiProvider", () => {
     const handleSliderChange = React.useCallback((_values: ReadonlyArray<number>) => {
     }, []);
     return (
-      <Slider style={{ minWidth: "160px" }} min={0} max={100} values={[50]} step={1} showMinMax={true} maxImage={<Icon iconSpec="icon-placeholder" />}
-        showTooltip onChange={handleSliderChange} />
+      <Slider style={{ minWidth: "160px" }} min={0} max={100} values={[50]} step={1}
+        onChange={handleSliderChange} />
     );
   }
   class Tool2UiProvider extends ToolUiProvider {

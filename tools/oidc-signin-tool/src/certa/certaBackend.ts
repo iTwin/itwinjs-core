@@ -5,15 +5,30 @@
 
 import * as path from "path";
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { loadEnv } from "@bentley/config-loader";
 import { AccessToken } from "@bentley/itwin-client";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "../TestUsers";
 import { TestUtility } from "../TestUtility";
 import { getTokenCallbackName, serializeToken } from "./certaCommon";
+import * as fs from "fs";
 
 // A backend to use within Certa's `backendInitModule` to setup OIDC sign-in.
 
 /* eslint-disable no-console */
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 // The assumption is the certa.json file is a peer of the `package.json` file and
 // when certa is invoked via a npm script (in the package.json) the `.env` will
@@ -23,9 +38,9 @@ loadEnv(path.join(process.cwd(), ".env"));
 /** Signs in for the provided user.
  *
  * The default OIDC configuration is defined by the following environment variables,
- *   - `imjs_oidc_browser_test_client_id`
- *   - `imjs_oidc_browser_test_redirect_uri`
- *   - `imjs_oidc_browser_test_scopes`
+ *   - `IMJS_OIDC_BROWSER_TEST_CLIENT_ID`
+ *   - `IMJS_OIDC_BROWSER_TEST_REDIRECT_URI`
+ *   - `IMJS_OIDC_BROWSER_TEST_SCOPES`
  *
  * If the oidcConfig param is provided, it will always be used over the default.
  */

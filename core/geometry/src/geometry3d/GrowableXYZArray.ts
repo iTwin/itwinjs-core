@@ -458,6 +458,16 @@ export class GrowableXYZArray extends IndexedReadWriteXYZCollection {
     }
     return result;
   }
+    /** multiply each point by the transform, replace values. */
+  public static multiplyTransformInPlace(transform: Transform, data: GrowableXYZArray[] | GrowableXYZArray) {
+    if (Array.isArray(data)) {
+      for (const d of data)
+        d.multiplyTransformInPlace(transform);
+    } else {
+      data.multiplyTransformInPlace(transform);
+    }
+  }
+
   /** multiply each point by the transform, replace values. */
   public multiplyTransformInPlace(transform: Transform) {
     const data = this._data;

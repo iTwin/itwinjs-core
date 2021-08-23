@@ -174,8 +174,8 @@ export class FrameworkStagePanel extends React.PureComponent<FrameworkStagePanel
   private setMinMaxSize() {
     const panel = getNestedStagePanelKey(this.props.location);
     const nestedPanelsManager = FrontstageManager.NineZoneManager.getNestedPanelsManager();
-    this.props.minSize && /* istanbul ignore next */ (nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).minSize = this.props.minSize);
-    this.props.maxSize && /* istanbul ignore next */ (nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).maxSize = this.props.maxSize);
+    this.props.minSize && ( /* istanbul ignore next */ nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).minSize = this.props.minSize);
+    this.props.maxSize && ( /* istanbul ignore next */ nestedPanelsManager.getPanelsManager(panel.id).getPanelManager(panel.type).maxSize = this.props.maxSize);
   }
 
   private _handleResize = (resizeBy: number) => {

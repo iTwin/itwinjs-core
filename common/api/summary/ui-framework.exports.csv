@@ -34,6 +34,7 @@ internal;addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageDef, sid
 internal;addWidgets(state: NineZoneState, widgets: ReadonlyArray
 public;AnalysisAnimationTimelineDataProvider 
 public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef
+public;AnyToolbarItemDef = AnyItemDef | CustomItemDef
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 internal;appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray
 public;AppNotificationManager 
@@ -98,8 +99,6 @@ beta;ChildWindowManager
 beta;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 internal;clearKeyinPaletteHistory(): void
-public;COLOR_THEME_DEFAULT = ColorTheme.Light
-deprecated;COLOR_THEME_DEFAULT = ColorTheme.Light
 public;ColorTheme
 public;CombinedReducerState
 public;combineReducers: CombineReducersFunction
@@ -178,7 +177,7 @@ deprecated;DefaultNavigationProps
 beta;DefaultNavigationWidget 
 deprecated;DefaultNavigationWidget 
 internal;DefaultToolSettingsProvider 
-public;DefaultViewOverlay({ viewport, onPlayPause }: ViewOverlayProps): JSX.Element
+public;DefaultViewOverlay({ viewport, onPlayPause, featureOptions }: ViewOverlayProps): JSX.Element | null
 public;DialogChangedEvent 
 public;DialogChangedEventArgs
 internal;DialogGridContainer({ componentGenerator, containerClassName }: DialogGridContainerProps): JSX.Element
@@ -247,8 +246,6 @@ public;class FrontstageProvider
 public;FrontstageReadyEvent 
 public;FrontstageReadyEventArgs
 internal;FrontstageRuntimeProps
-public;FunctionKey
-deprecated;FunctionKey
 public;FunctionType = (...args: any[]) => any
 public;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
 deprecated;getBackstageItemStateFromProps: (props: BackstageItemProps) => BackstageItemState
@@ -457,8 +454,6 @@ public;PropsHelper
 beta;QuantityFormatSettingsPage({ initialQuantityType, availableUnitSystems }: QuantityFormatterSettingsOptions): JSX.Element
 beta;QuantityFormatterSettingsOptions
 alpha;ReactContent
-public;ReactMessage = ReactMessage_2
-deprecated;ReactMessage = ReactMessage_2
 public;ReactNotifyMessageDetails
 public;Reducer
 public;ReducerActions
@@ -488,6 +483,7 @@ beta;SectionsStatusFieldProps
 beta;selectionContextStateFunc(state: Readonly
 public;SelectionContextToolDefinitions
 public;SelectionInfoField: import("react-redux").ConnectedComponent
+public;SelectionScope
 public;SelectionScopeField: import("react-redux").ConnectedComponent
 public;SeparatorBackstageItem 
 public;SessionState
@@ -517,8 +513,6 @@ public;SnapModeField: import("react-redux").ConnectedComponent
 alpha;SolarTimelineDataProvider 
 public;SpatialContainmentTree(props: SpatialContainmentTreeProps): JSX.Element
 public;SpatialContainmentTreeProps
-public;SpecialKey
-deprecated;SpecialKey
 internal;SplitterPaneTarget 
 internal;SplitterPaneTargetProps
 public;StagePanel 
@@ -656,6 +650,8 @@ public;UiShowHideManager
 internal;UiShowHideSettingsProvider 
 public;UiVisibilityChangedEvent 
 public;UiVisibilityEventArgs
+alpha;UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element
+beta;UnitSystemSelectorProps
 internal;useActiveFrontstageDef(): FrontstageDef | undefined
 beta;useActiveFrontstageId: () => string
 public;useActiveIModelConnection(): IModelConnection | undefined
@@ -688,6 +684,7 @@ beta;useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvid
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
 internal;useSyncDefinitions(frontstageDef: FrontstageDef): void
 internal;useToolSettingsNode(): string | number | boolean | {} | React.ReactElement
+beta;useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
 beta;useUiSettingsStorageContext(): UiSettingsStorage
@@ -760,8 +757,6 @@ internal;WidgetStackTabGroupProps
 internal;WidgetStackTabProps
 internal;WidgetStackTabs 
 internal;WidgetStackTabsProps
-public;WidgetState
-deprecated;WidgetState
 public;WidgetStateChangedEvent 
 public;WidgetStateChangedEventArgs
 public;WidgetStateFunc = (state: Readonly

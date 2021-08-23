@@ -36,7 +36,7 @@ function generateTileRequestKey(props: TileRequestProps): string {
     key: token.key,
     contextId: token.contextId,
     iModelId: token.iModelId,
-    changeSetId: token.changeSetId,
+    changeSetId: token.changeset?.id,
   })}:${props.treeId}`;
 }
 

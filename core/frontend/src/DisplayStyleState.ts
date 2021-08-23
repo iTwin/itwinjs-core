@@ -548,7 +548,6 @@ export abstract class DisplayStyleState extends ElementState implements DisplayS
   }
 
   /** Flags controlling various aspects of the display style.
-   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
    * @see [DisplayStyleSettings.viewFlags]($common)
    */
   public get viewFlags(): ViewFlags { return this.settings.viewFlags; }

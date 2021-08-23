@@ -28,6 +28,7 @@ import {
   SpatialLocationModel, SpatialViewDefinition, SubCategory, Subject, Texture, ViewDefinition,
 } from "../imodeljs-backend";
 import { KnownTestLocations } from "./KnownTestLocations";
+import { Base64 } from "js-base64";
 
 /** IModelTransformer utilities shared by both standalone and integration tests. */
 export namespace IModelTransformerUtils {

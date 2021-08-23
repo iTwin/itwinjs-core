@@ -520,7 +520,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
 
     if (vp.view.isSpatialView()) {
       const modelsToTurnOff = [...vp.view.modelSelector.models].filter((modelId: string) => !modelsToKeep.has(modelId));
-      this.updateModelOverride (vp, modelsToTurnOff);
+      this.updateModelOverride(vp, modelsToTurnOff);
     }
 
     await vp.replaceViewedModels(modelsToKeep);
@@ -535,7 +535,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
     const categoriesToTurnOff = [...vp.view.categorySelector.categories].filter((categoryId: string) => !categoriesToKeep.has(categoryId));
     vp.changeCategoryDisplay(categoriesToTurnOff, false);
     vp.changeCategoryDisplay(categoriesToKeep, true);
-    this.updateCategoryOverride (vp, categoriesToTurnOff);
+    this.updateCategoryOverride(vp, categoriesToTurnOff);
   }
 
   /**
@@ -563,7 +563,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   public static async hideSelectedElementsModel(vp: Viewport) {
     const modelIds = await HideIsolateEmphasizeManager.getSelectionSetElementModels(vp.iModel);
     vp.changeModelDisplay(modelIds, false);
-    this.updateModelOverride (vp, [...modelIds]);
+    this.updateModelOverride(vp, [...modelIds]);
   }
 
   /**
@@ -603,7 +603,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   public static async hideSelectedElementsCategory(vp: Viewport) {
     const categoryIds = await HideIsolateEmphasizeManager.getSelectionSetElementCategories(vp.iModel);
     vp.changeCategoryDisplay(categoryIds, false);
-    this.updateCategoryOverride (vp, [...categoryIds]);
+    this.updateCategoryOverride(vp, [...categoryIds]);
   }
 
   /**
@@ -620,6 +620,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
 
   /** Checks to see if any featureOverrideProviders are active */
   public areFeatureOverridesActive(vp: Viewport): boolean {
+    // Check all the emphasize possibilities
     const emphasizeElementsProvider = vp.findFeatureOverrideProviderOfType<EmphasizeElements>(EmphasizeElements);
     if (undefined !== emphasizeElementsProvider && emphasizeElementsProvider.isActive)
       return true;
@@ -630,6 +631,13 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
 
     const subCategoryOverrideProvider = vp.findFeatureOverrideProviderOfType<SubCategoryOverrideProvider>(SubCategoryOverrideProvider);
     if (undefined !== subCategoryOverrideProvider && subCategoryOverrideProvider.subCategoryIds.length > 0)
+      return true;
+
+    // Check hide/isolate possibilities
+    if (HideIsolateEmphasizeManager.isOverrideCategories(vp))
+      return true;
+
+    if (HideIsolateEmphasizeManager.isOverrideModels(vp))
       return true;
 
     return false;
@@ -801,7 +809,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   public static updateCategoryOverride(vp: Viewport, ids: string[]) {
     const prevIds = this._overrideCategoryIds.get(vp);
     const newIds = [...(prevIds || []), ...ids];
-    this._overrideCategoryIds.set (vp, new Set(newIds));
+    this._overrideCategoryIds.set(vp, new Set(newIds));
   }
 
   /**
@@ -810,7 +818,7 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
   public static updateModelOverride(vp: Viewport, ids: string[]) {
     const prevIds = this._overrideModelIds.get(vp);
     const newIds = [...(prevIds || []), ...ids];
-    this._overrideModelIds.set (vp, new Set(newIds));
+    this._overrideModelIds.set(vp, new Set(newIds));
   }
 
   /**
@@ -831,13 +839,13 @@ export class HideIsolateEmphasizeManager extends HideIsolateEmphasizeActionHandl
    * Clear the category override cache (hidden or isolated categories)
    */
   private static clearCategoryOverride(vp: Viewport) {
-    this._overrideCategoryIds.delete (vp);
+    this._overrideCategoryIds.delete(vp);
   }
 
   /**
    * Clear the model override cache (hidden or isolated models)
    */
   private static clearModelOverride(vp: Viewport) {
-    this._overrideModelIds.delete (vp);
+    this._overrideModelIds.delete(vp);
   }
 }

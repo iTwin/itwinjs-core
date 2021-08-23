@@ -108,7 +108,7 @@ export class SetModelLocateTool extends Tool {
     const changed = changeModelAppearanceOverrides(IModelApp.viewManager.selectedView, { nonLocatable }, name);
 
     if (changed)
-      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Mode: ${name} set to locate: ${locate}`));
+      IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Info, `Model: ${name} set to locate: ${locate}`));
 
     return changed;
   }

@@ -6,9 +6,24 @@
 const path = require("path");
 const glob = require("glob");
 const webpack = require("webpack");
+const fs = require("fs");
 
-// loads into the process.env
-require("@bentley/config-loader").loadEnv(path.join(__dirname, ".env"));
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
+
+loadEnv(path.join(__dirname, ".env"));
 
 function createConfig(shouldInstrument) {
   const config = {

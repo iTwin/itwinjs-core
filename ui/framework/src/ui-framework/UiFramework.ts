@@ -16,9 +16,9 @@ import { I18N } from "@bentley/imodeljs-i18n";
 import { AccessToken, UserInfo } from "@bentley/itwin-client";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
-import { getClassName, UiError } from "@bentley/ui-abstract";
-import { UiComponents } from "@bentley/ui-components";
+import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";
 import { LocalSettingsStorage, SettingsManager, UiEvent, UiSettingsStorage } from "@bentley/ui-core";
+import { UiIModelComponents } from "@bentley/ui-imodel-components";
 import { BackstageManager } from "./backstage/BackstageManager";
 import { DefaultIModelServices } from "./clientservices/DefaultIModelServices";
 import { DefaultProjectServices } from "./clientservices/DefaultProjectServices";
@@ -136,7 +136,7 @@ export class UiFramework {
   public static readonly onFrameworkVersionChangedEvent = new FrameworkVersionChangedEvent();
 
   /**
-   * Called by the application to initialize the UiFramework. Also initializes UiComponents, UiCore and UiAbstract.
+   * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore and UiAbstract.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param i18n The internationalization service created by the application. Defaults to IModelApp.i18n.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
@@ -146,7 +146,7 @@ export class UiFramework {
   }
 
   /**
-   * Called by the application to initialize the UiFramework. Also initializes UiComponents, UiCore and UiAbstract.
+   * Called by the application to initialize the UiFramework. Also initializes UIIModelComponents, UiComponents, UiCore and UiAbstract.
    * @param store The single Redux store created by the host application. If this is `undefined` then it is assumed that the [[StateManager]] is being used to provide the Redux store.
    * @param i18n The internationalization service created by the application. Defaults to IModelApp.i18n.
    * @param frameworkStateKey The name of the key used by the app when adding the UiFramework state into the Redux store. If not defined "frameworkState" is assumed. This value is ignored if [[StateManager]] is being used. The StateManager use "frameworkState".
@@ -198,12 +198,15 @@ export class UiFramework {
       oidcClient.onUserStateChanged.addListener(UiFramework._handleUserStateChanged);
     }
 
-    // Initialize ui-components, ui-core & ui-abstract
-    await UiComponents.initialize(UiFramework._i18n);
+    // Initialize ui-imodel-components, ui-components, ui-core & ui-abstract
+    await UiIModelComponents.initialize(UiFramework._i18n);
 
     UiFramework.settingsManager.onSettingsProvidersChanged.addListener(() => {
       SyncUiEventDispatcher.dispatchSyncUiEvent(SyncUiEventId.SettingsProvidersChanged);
     });
+
+    // Initialize the MessagePresenter interface in UiAbstract for Editor notifications
+    UiAbstract.messagePresenter = IModelApp.notifications;
 
     UiFramework._initialized = true;
 
@@ -232,7 +235,7 @@ export class UiFramework {
 
     UiFramework.onFrameworkVersionChangedEvent.removeListener(UiFramework._handleFrameworkVersionChangedEvent);
 
-    UiComponents.terminate();
+    UiIModelComponents.terminate();
     UiFramework._initialized = false;
   }
 

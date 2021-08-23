@@ -82,13 +82,13 @@ export function openDecorationGeometryExample(viewer: Viewer): void {
   viewer.viewport.turnCameraOn();
   viewer.viewport.zoomToVolume(viewer.viewport.iModel.projectExtents);
 
-  const viewFlags = viewer.viewport.viewFlags.clone();
-  viewFlags.renderMode = RenderMode.SmoothShade;
-  viewFlags.lighting = true;
-  viewFlags.visibleEdges = true;
-  viewFlags.whiteOnWhiteReversal = false;
-  viewFlags.backgroundMap = true;
-  viewer.viewport.viewFlags = viewFlags;
+  viewer.viewport.viewFlags = viewer.viewport.viewFlags.copy({
+    renderMode: RenderMode.SmoothShade,
+    lighting: true,
+    visibleEdges: true,
+    whiteOnWhiteReversal: false,
+    backgroundMap: true,
+  });
 
   viewer.viewport.view.getDisplayStyle3d().settings.environment = {
     sky: {

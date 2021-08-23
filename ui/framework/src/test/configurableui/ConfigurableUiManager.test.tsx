@@ -7,11 +7,18 @@ import { expect } from "chai";
 import * as React from "react";
 import { MockRender } from "@bentley/imodeljs-frontend";
 import {
-  ConfigurableCreateInfo, ConfigurableUiManager, ContentGroupManager, ContentGroupProps, ContentLayoutManager, ContentLayoutProps, CoreTools,
+  ConfigurableCreateInfo, ConfigurableUiManager, ContentControl, ContentGroupManager, ContentGroupProps, ContentLayoutManager, ContentLayoutProps, CoreTools,
   Frontstage, FrontstageManager, FrontstageProps, FrontstageProvider, MessageManager, ModalDialogManager, ModelessDialogManager, PopupManager,
   TaskManager, TaskPropsList, WidgetControl, WorkflowManager, WorkflowProps, WorkflowPropsList,
 } from "../../ui-framework";
 import TestUtils from "../TestUtils";
+
+class TableExampleContentControl extends ContentControl {
+  constructor(info: ConfigurableCreateInfo, options: any) {
+    super(info, options);
+    this.reactNode = <div />;
+  }
+}
 
 describe("ConfigurableUiManager", () => {
 
@@ -20,9 +27,11 @@ describe("ConfigurableUiManager", () => {
     await MockRender.App.startup();
 
     ConfigurableUiManager.initialize();
+    ConfigurableUiManager.registerControl("TableExampleContent", TableExampleContentControl);
   });
 
   after(async () => {
+    ConfigurableUiManager.unregisterControl("TableExampleContent");
     await MockRender.App.shutdown();
     TestUtils.terminateUiFramework();
   });
@@ -83,18 +92,26 @@ describe("ConfigurableUiManager", () => {
     expect(() => ConfigurableUiManager.createControl("invalid", "1")).to.throw(Error);
   });
 
-  it("loadContentGroup", () => {
+  it("loadContentGroup and read applicationData from control", () => {
     const contentGroupProps: ContentGroupProps = {
       id: "testContentGroup1",
       contents: [
         {
-          classId: "TestContentControl",
+          id: "test-content-control",
+          classId: "TableExampleContent",
           applicationData: { label: "Content 1a", bgColor: "black" },
         },
       ],
     };
     ConfigurableUiManager.loadContentGroup(contentGroupProps);
-    expect(ContentGroupManager.findGroup("testContentGroup1")).to.not.be.undefined;
+    const contentGroup = ContentGroupManager.findGroup("testContentGroup1");
+    expect(contentGroup).to.not.be.undefined;
+    // force controls to be creates
+    const controls = contentGroup?.getContentControls();
+    expect(controls).to.not.be.undefined;
+    const control = contentGroup?.getContentControlById("test-content-control");
+    expect(control).to.not.be.undefined;
+    expect(control?.applicationData.label).eql("Content 1a");
   });
 
   it("loadContentGroups", () => {

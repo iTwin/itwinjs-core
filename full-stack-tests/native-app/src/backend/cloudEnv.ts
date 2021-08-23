@@ -2,13 +2,12 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { Config } from "@bentley/bentleyjs-core";
 import { IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { getIModelBankCloudEnv } from "./IModelBankBackendCloudEnv";
 import { IModelHubBackendCloudEnv } from "./IModelHubBackendCloudEnv";
 
 export class CloudEnv {
-  public static readonly enableIModelBank: boolean = Config.App.has("imjs_test_imodel_bank") && !!JSON.parse(Config.App.get("imjs_test_imodel_bank"));
+  public static readonly enableIModelBank: boolean = process.env.IMJS_TEST_IMODEL_BANK !== undefined && !!JSON.parse(process.env.IMJS_TEST_IMODEL_BANK);
   private static _cloudEnv: IModelCloudEnvironment | undefined;
 
   public static get cloudEnv(): IModelCloudEnvironment {

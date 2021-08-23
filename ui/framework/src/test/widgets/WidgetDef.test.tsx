@@ -94,7 +94,7 @@ describe("WidgetDef", () => {
     expect(widgetDef.tooltip).to.eq("tooltip");
   });
 
-  it("reactElement supports set and get", () => {
+  it("reactNode supports set and get", () => {
     const widgetProps: WidgetProps = {
       classId: "WidgetDefTest",
     };

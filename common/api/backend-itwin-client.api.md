@@ -17,7 +17,6 @@ import { ImsAuthorizationClient } from '@bentley/itwin-client';
 import { IntrospectionResponse as IntrospectionResponse_2 } from 'openid-client';
 import { Issuer } from 'openid-client';
 import { ProgressCallback } from '@bentley/itwin-client';
-import { SamlAccessToken } from '@bentley/itwin-client';
 import { TelemetryClient } from '@bentley/telemetry-client';
 import { TelemetryEvent } from '@bentley/telemetry-client';
 import { Transform } from 'stream';
@@ -71,20 +70,6 @@ export interface BackendAuthorizationClientConfiguration {
     clientSecret: string;
     scope: string;
 }
-
-// @internal
-export class BackendFeatureUsageTelemetryClient extends BackendTelemetryClient {
-    constructor(config: {
-        backendMachineName: string;
-        backendApplicationId?: string;
-        backendApplicationVersion?: string;
-        clientAuthManager?: ImsClientAuthIntrospectionManager;
-    });
-    // (undocumented)
-    protected readonly _backendMachineName: string;
-    // (undocumented)
-    protected _postTelemetry(requestContext: AuthorizedClientRequestContext, backendTelemetryEvent: BackendTelemetryEvent): Promise<void>;
-    }
 
 // @public
 export enum BackendITwinClientLoggerCategory {
@@ -185,8 +170,6 @@ export interface ConfigData {
 export class DelegationAuthorizationClient extends BackendAuthorizationClient {
     constructor(configuration: DelegationAuthorizationClientConfiguration);
     getJwtFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<AccessToken>;
-    getJwtFromSaml(requestContext: ClientRequestContext, samlToken: SamlAccessToken): Promise<AccessToken>;
-    getSamlFromJwt(requestContext: ClientRequestContext, accessToken: AccessToken): Promise<SamlAccessToken>;
 }
 
 // @beta
@@ -301,18 +284,6 @@ export class MemoryIntrospectionResponseCache extends IntrospectionResponseCache
     // (undocumented)
     protected storeResponse(key: string, response: IntrospectionResponse): Promise<void>;
 }
-
-// @beta @deprecated
-export type OidcAgentClient = AgentAuthorizationClient;
-
-// @beta @deprecated
-export type OidcAgentClientConfiguration = AgentAuthorizationClientConfiguration;
-
-// @beta @deprecated
-export type OidcDelegationClient = DelegationAuthorizationClient;
-
-// @beta @deprecated
-export type OidcDelegationClientConfiguration = DelegationAuthorizationClientConfiguration;
 
 // @internal
 export interface ProgressData {

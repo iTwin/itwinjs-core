@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ecschema-locaters",
-  "version": "3.0.0-dev.6",
+  "version": "3.0.0-dev.34",
   "description": "EC Schema file locaters",
   "license": "MIT",
   "main": "lib/ecschema-locaters.js",
@@ -48,13 +48,13 @@
     "nyc": "^15.1.0",
     "rimraf": "^3.0.2",
     "typescript": "~4.3.0",
-    "xmldom": "^0.5.0"
+    "xmldom": "^0.6.0"
   },
   "dependencies": {
     "glob": "^7.1.2"
   },
   "peerDependencies": {
-    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.6"
+    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.34"
   },
   "nyc": {
     "extends": "./node_modules/@bentley/build-tools/.nycrc",

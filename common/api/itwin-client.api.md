@@ -366,52 +366,6 @@ export class ResponseError extends BentleyError {
     status?: number;
 }
 
-// @internal @deprecated
-export class SamlAccessToken extends SamlToken {
-    static fromJson(jsonObj: any): SamlAccessToken | undefined;
-    static fromSamlAssertion(samlAssertion: string): SamlAccessToken;
-    static fromSamlTokenString(accessTokenStr: string, includesPrefix?: IncludePrefix): SamlAccessToken;
-    static fromTokenString(tokenStr: string): SamlAccessToken;
-    toTokenString(includePrefix?: IncludePrefix): string;
-}
-
-// @internal @deprecated
-export class SamlAuthorizationToken extends SamlToken {
-    static fromSamlAssertion(samlAssertion: string): SamlAuthorizationToken;
-    toTokenString(includePrefix?: IncludePrefix): string;
-}
-
-// @internal @deprecated
-export abstract class SamlToken {
-    protected constructor();
-    // (undocumented)
-    protected _expiresAt?: Date;
-    // (undocumented)
-    getExpiresAt(): Date | undefined;
-    // (undocumented)
-    protected getSaml(): string | undefined;
-    // (undocumented)
-    getSamlAssertion(): string | undefined;
-    // (undocumented)
-    getStartsAt(): Date | undefined;
-    // (undocumented)
-    getUserInfo(): UserInfo | undefined;
-    // (undocumented)
-    protected parseSamlAssertion(): boolean;
-    // (undocumented)
-    protected _saml?: string;
-    // (undocumented)
-    protected _samlAssertion?: string;
-    // (undocumented)
-    setUserInfo(userInfo: UserInfo): void;
-    // (undocumented)
-    protected _startsAt?: Date;
-    // (undocumented)
-    protected _userInfo?: UserInfo;
-    // (undocumented)
-    protected _x509Certificate?: string;
-}
-
 // @beta
 export class SasUrlExpired extends BentleyError {
     constructor(errorNumber: number, message: string, log?: LogFunction, category?: string, getMetaData?: GetMetaDataFunction);
@@ -424,9 +378,7 @@ export function TokenPrefix(prefix: string): (constructor: any) => void;
 export class UrlDiscoveryClient extends Client {
     constructor();
     // (undocumented)
-    static readonly configResolveUrlUsingRegion = "imjs_buddi_resolve_url_using_region";
-    // (undocumented)
-    static readonly configURL = "imjs_buddi_url";
+    static readonly configResolveUrlUsingRegion = "IMJS_BUDDI_RESOLVE_URL_USING_REGION";
     discoverUrl(requestContext: ClientRequestContext, searchKey: string, regionId: number | undefined): Promise<string>;
     getUrl(): Promise<string>;
     protected getUrlSearchKey(): string;
@@ -516,14 +468,9 @@ export abstract class WsgClient extends Client {
     protected constructor(apiVersion: string);
     // (undocumented)
     apiVersion: string;
-    // (undocumented)
-    static readonly configHostRelyingPartyUri = "imjs_default_relying_party_uri";
-    // (undocumented)
-    static readonly configUseHostRelyingPartyUriAsFallback = "imjs_use_default_relying_party_uri_as_fallback";
     protected deleteInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, relativeUrlPath: string, instance?: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<void>;
     protected getInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
     protected getInstancesChunk<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, url: string, chunkedQueryContext: ChunkedQueryContext | undefined, typedConstructor: new () => T, queryOptions?: RequestQueryOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;
-    protected abstract getRelyingPartyUrl(): string;
     getUrl(requestContext: ClientRequestContext, excludeApiVersion?: boolean): Promise<string>;
     protected postInstance<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instance: T, requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T>;
     protected postInstances<T extends WsgInstance>(requestContext: AuthorizedClientRequestContext, typedConstructor: new () => T, relativeUrlPath: string, instances: T[], requestOptions?: WsgRequestOptions, httpRequestOptions?: HttpRequestOptions): Promise<T[]>;

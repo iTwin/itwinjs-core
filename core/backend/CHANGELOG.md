@@ -1,6 +1,50 @@
 # Change Log - @bentley/imodeljs-backend
 
-This log was last generated on Mon, 26 Jul 2021 12:21:25 GMT and should not be manually modified.
+This log was last generated on Fri, 20 Aug 2021 17:47:22 GMT and should not be manually modified.
+
+## 2.19.7
+Fri, 20 Aug 2021 17:47:22 GMT
+
+### Updates
+
+- add queryV2Checkpoint to BackendHubAccess
+- use native serializer for processing schemas in transformer
+- only export necessary schemas during imodel transformation
+
+## 2.19.6
+Tue, 17 Aug 2021 20:34:29 GMT
+
+_Version update only_
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:08 GMT
+
+_Version update only_
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+### Updates
+
+- clear statement cache before applying schema changesets
+- Tests for solid kernel severe error exceptions.
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+_Version update only_
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+### Updates
+
+- Refresh access token when setting up V1 Checkpoints if possible
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
@@ -17,6 +61,21 @@ Mon, 26 Jul 2021 12:21:25 GMT
 - Add offset body operation for IFC connector.
 - Correctly handle case where subtract operation consumes target body.
 - await returned promise to ensure finally block doesn't intercept it
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
 
 ## 2.18.1
 Fri, 16 Jul 2021 17:45:09 GMT
@@ -36,6 +95,11 @@ Fri, 09 Jul 2021 18:11:24 GMT
 - Push refreshes access token if necessary. 
 - Do not reuse briefcase ids in ReadWrite workflows when using the RPC interfaces (if the briefcase was not found in the local file system)
 - Add missing SectionDrawing properties.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
 
 ## 2.17.2
 Thu, 08 Jul 2021 15:23:00 GMT
@@ -76,6 +140,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - fix schema-import occurring potentially out of order
 - dont reimport schemas that already exist by default during transformations
 - Use ecef location calculated for projected iModels
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
+
+_Version update only_
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT

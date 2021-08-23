@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
 import { expect } from "chai";
@@ -586,6 +586,18 @@ describe("GeneralSweepBooleans", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "DocDemo");
     expect(ck.getNumErrors()).equals(0);
   });
+  it("FacetPasting", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const loopA = GrowableXYZArray.create([[0, 0, 0], [1, 0, 0], [1, 1, 0], [0, 1, 0]]);  // Missing closure !!!
+    const loopB = GrowableXYZArray.create([[1, 0, 0], [2, 0, 0], [2, 1, 0], [1, 1, 0]]);  // Missing closure !!!
+    const loop = RegionOps.polygonBooleanXYToLoops([loopA, loopB], RegionBinaryOpType.Union, []);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loopA, 0, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loopB, 0, 0);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loop, 4, 0);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "sweepBooleans", "FacetPasting");
+    expect(ck.getNumErrors()).equals(0);
+});
 });
 
 function exerciseAreaBooleans(dataA: AnyRegion[], dataB: AnyRegion[],

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { mount, ReactWrapper, shallow } from "enzyme";
 import * as React from "react";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { ThemedSelect } from "../../ui-core";
 
 describe("<ThemedSelect />", () => {
@@ -89,7 +89,7 @@ describe("<ThemedSelect />", () => {
 });
 
 describe("<ThemedSelect - React Testing Library />", () => {
-  afterEach(cleanup);
+
   const cityChoices = [
     { label: "London", value: "London" },
     { label: "Paris", value: "Paris" },

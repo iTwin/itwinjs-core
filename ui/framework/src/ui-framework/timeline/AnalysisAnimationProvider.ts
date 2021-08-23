@@ -7,7 +7,7 @@
  */
 
 import { ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
-import { BaseTimelineDataProvider, PlaybackSettings } from "@bentley/ui-components";
+import { BaseTimelineDataProvider, PlaybackSettings } from "@bentley/ui-imodel-components";
 
 /**  Analysis Timeline Data Provider - Allows a TimelineComponent to animate the AnalysisStyle information stored in a ViewState.
  * @public

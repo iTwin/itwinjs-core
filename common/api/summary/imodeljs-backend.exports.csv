@@ -2,26 +2,12 @@ sep=;
 Release Tag;API Item
 beta;AliCloudStorageService 
 public;AnnotationElement2d 
-beta;AppActivityMonitor
-deprecated;AppActivityMonitor
 public;AuthorizedBackendRequestContext 
-beta;AutoPush
-deprecated;AutoPush
-beta;AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void
-deprecated;AutoPushEventHandler = (etype: AutoPushEventType, autoPush: AutoPush) => void
-beta;AutoPushEventType
-deprecated;AutoPushEventType
-beta;AutoPushParams
-deprecated;AutoPushParams
-beta;AutoPushState
-deprecated;AutoPushState
 public;class AuxCoordSystem 
 public;AuxCoordSystem2d 
 public;AuxCoordSystem3d 
 public;AuxCoordSystemSpatial 
 beta;AzureBlobStorage 
-beta;BackendActivityMonitor 
-deprecated;BackendActivityMonitor 
 internal;BackendHubAccess
 public;BackendLoggerCategory
 public;BackendRequestContext 
@@ -31,8 +17,6 @@ public;BriefcaseDb
 internal;BriefcaseDbArg
 public;BriefcaseId = number
 internal;BriefcaseIdArg 
-public;BriefcaseIdValue
-deprecated;BriefcaseIdValue
 public;BriefcaseManager
 public;class Callout 
 public;Category 
@@ -89,8 +73,6 @@ public;DisplayStyle2d
 public;DisplayStyle3d 
 public;DisplayStyleCreationOptions 
 public;class Document 
-internal;class DocumentCarrier 
-deprecated;class DocumentCarrier 
 public;DocumentListModel 
 public;DocumentPartition 
 internal;DownloadJob
@@ -219,8 +201,6 @@ internal;IModelNameArg
 alpha;IModelSchemaLoader
 beta;IModelTransformer 
 beta;IModelTransformOptions
-internal;class InformationCarrierElement 
-deprecated;class InformationCarrierElement 
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
@@ -318,6 +298,7 @@ public;SpatialLocationPartition
 public;class SpatialLocationType 
 public;class SpatialModel 
 public;SpatialViewDefinition 
+public;SQLiteDb 
 public;SqliteStatement 
 public;SqliteValue
 public;SqliteValueType
@@ -341,17 +322,14 @@ public;TextAnnotation3d
 public;Texture 
 internal;TextureCreateProps 
 public;TitleText 
-public;TxnAction
-deprecated;TxnAction
 public;TxnChangedEntities
 public;TxnIdString = string
 public;TxnManager
 public;class TypeDefinitionElement 
 public;UpdateModelOptions 
 public;UrlLink 
-internal;UsageLoggingUtilities
-internal;UsageLoggingUtilitiesOptions
 internal;V1CheckpointManager
+beta;V2CheckpointAccessProps
 internal;V2CheckpointManager
 public;ValidationError
 public;ViewAttachment 

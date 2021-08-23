@@ -5,16 +5,16 @@
 import { assert, expect } from "chai";
 import * as path from "path";
 import * as sinon from "sinon";
-import { DbResult, Id64, Id64String, Logger, LogLevel } from "@bentley/bentleyjs-core";
+import { DbResult, Guid, Id64, Id64String, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, StandardViewIndex, Transform, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
-  AxisAlignedBox3d, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d,
+  AxisAlignedBox3d, BriefcaseIdValue, Code, CodeScopeSpec, CodeSpec, ColorDef, CreateIModelProps, DefinitionElementProps, ExternalSourceAspectProps, IModel, IModelError, PhysicalElementProps, Placement3d,
 } from "@bentley/imodeljs-common";
 import {
   BackendLoggerCategory, BackendRequestContext, CategorySelector, DisplayStyle3d, DocumentListModel, Drawing, DrawingCategory, DrawingGraphic, DrawingModel, ECSqlStatement, Element, ElementMultiAspect,
   ElementOwnsExternalSourceAspects, ElementRefersToElements, ElementUniqueAspect, ExternalSourceAspect, GenericPhysicalMaterial, IModelCloneContext, IModelDb, IModelExporter,
-  IModelExportHandler, IModelJsFs, IModelSchemaLoader, IModelTransformer, InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector,
-  OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, SnapshotDb,
+  IModelExportHandler, IModelHost, IModelJsFs, IModelSchemaLoader, IModelTransformer, InformationRecordModel, InformationRecordPartition, LinkElement, Model, ModelSelector,
+  OrthographicViewDefinition, PhysicalModel, PhysicalObject, PhysicalPartition, PhysicalType, Relationship, RepositoryLink, Schema, SnapshotDb,
   SpatialCategory, Subject,
 } from "../../imodeljs-backend";
 import { IModelTestUtils } from "../IModelTestUtils";
@@ -23,6 +23,8 @@ import {
   RecordingIModelImporter, TestIModelTransformer,
 } from "../IModelTransformerUtils";
 import { KnownTestLocations } from "../KnownTestLocations";
+import * as Semver from "semver";
+import { StandaloneDb } from "../../IModelDb";
 
 describe("IModelTransformer", () => {
   const outputDir: string = path.join(KnownTestLocations.outputDir, "IModelTransformer");
@@ -1130,4 +1132,54 @@ describe("IModelTransformer", () => {
     targetDb.close();
   });
 
+  // for testing purposes only, based on SetToStandalone.ts, force a snapshot to mimic a standalone iModel
+  function setToStandalone(iModelName: string) {
+    const nativeDb = new IModelHost.platform.DgnDb();
+    nativeDb.openIModel(iModelName, OpenMode.ReadWrite);
+    nativeDb.saveProjectGuid(Guid.empty); // empty projectId means "standalone"
+    nativeDb.saveChanges(); // save change to ProjectId
+    nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
+    nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
+    nativeDb.saveLocalValue("StandaloneEdit", JSON.stringify({txns: true}));
+    nativeDb.saveChanges(); // save change to briefcaseId
+    nativeDb.closeIModel();
+  }
+
+  it("biscore update is valid", async () => {
+    const reqCtx = new BackendRequestContext();
+
+    const sourceDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "BisCoreUpdateSource.bim");
+    const sourceDb = SnapshotDb.createEmpty(sourceDbPath, { rootSubject: { name: "BisCoreUpdate" } });
+
+    // this seed has an old biscore, so we know that transforming an empty source (which starts with a fresh, updated biscore)
+    // will cause an update to the old biscore in this target
+    const targetDbPath = IModelTestUtils.prepareOutputFile("IModelTransformer", "BisCoreUpdateTarget.bim");
+    const seedDb = SnapshotDb.openFile(IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim"));
+    const targetDbTestCopy = SnapshotDb.createFrom(seedDb, targetDbPath);
+    targetDbTestCopy.close();
+    seedDb.close();
+    setToStandalone(targetDbPath);
+    const targetDb = StandaloneDb.openFile(targetDbPath);
+
+    assert(
+      Semver.lt(
+        Schema.toSemverString(targetDb.querySchemaVersion("BisCore")!),
+        Schema.toSemverString(sourceDb.querySchemaVersion("BisCore")!)),
+      "The targetDb must have a less up-to-date version of the BisCore schema than the source"
+    );
+
+    const transformer = new IModelTransformer(sourceDb, targetDb);
+    await transformer.processSchemas(reqCtx);
+    targetDb.saveChanges();
+
+    assert(
+      Semver.eq(
+        Schema.toSemverString(targetDb.querySchemaVersion("BisCore")!),
+        Schema.toSemverString(sourceDb.querySchemaVersion("BisCore")!)),
+      "The targetDb must now have an equivalent BisCore schema because it was updated"
+    );
+
+    sourceDb.close();
+    targetDb.close();
+  });
 });

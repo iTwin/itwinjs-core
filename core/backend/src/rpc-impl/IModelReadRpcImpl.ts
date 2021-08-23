@@ -36,9 +36,8 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return RpcBriefcaseUtility.openWithTimeout(requestContext, tokenProps, SyncMode.FixedVersion);
   }
 
-  public async close(tokenProps: IModelRpcProps): Promise<boolean> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    return RpcBriefcaseUtility.close(requestContext, tokenProps);
+  public async close(_tokenProps: IModelRpcProps): Promise<boolean> {
+    return true;
   }
 
   public async queryRows(tokenProps: IModelRpcProps, ecsql: string, bindings?: any[] | object, limit?: QueryLimit, quota?: QueryQuota, priority?: QueryPriority, restartToken?: string, abbreviateBlobs?: boolean): Promise<QueryResponse> {
@@ -280,6 +279,6 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
   public async getTextureImage(tokenProps: IModelRpcProps, textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const db = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
-    return db.getTextureImage(textureLoadProps);
+    return db.getTextureImage(requestContext, textureLoadProps);
   }
 }

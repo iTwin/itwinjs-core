@@ -28,7 +28,6 @@ The iTwin.js library is organized into the following separately downloadable [np
 - ($i18n)
 - ($bentley)
 - ($geometry)
-- ($logger-config)
 
 ## iTwin.js Client Packages
 
@@ -38,16 +37,14 @@ The iTwin.js library is organized into the following separately downloadable [np
 - ($imodelhub-client)
 - ($itwin-client)
 - ($product-settings-client)
-- ($projectshare-client)
-- ($rbac-client)
 - ($reality-data-client)
-- ($usage-logging-client)
 
 ## iTwin.js UI Packages
 
 - ($ui-abstract)
 - ($ui-core)
 - ($ui-components)
+- ($ui-imodel-components)
 - ($ui-ninezone)
 - ($ui-framework)
 

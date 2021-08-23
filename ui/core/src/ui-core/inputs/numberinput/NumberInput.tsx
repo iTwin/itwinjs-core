@@ -26,6 +26,8 @@ export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step
   value?: number;
   /** CSS class name for the NumberInput component container div */
   containerClassName?: string;
+  /** Style for component container div. */
+  containerStyle?: React.CSSProperties;
   /** number or function	Number.MIN_SAFE_INTEGER */
   min?: number;
   /** number or function	defaults to Number.MAX_SAFE_INTEGER */
@@ -51,7 +53,7 @@ export interface NumberInputProps extends Omit<InputProps, "min" | "max" | "step
 const ForwardRefNumberInput = React.forwardRef<HTMLInputElement, NumberInputProps>(
   function ForwardRefNumberInput(props, ref) {
     const { containerClassName, value, min, max, precision, format, parse,
-      onChange, onBlur, onKeyDown, step, snap, showTouchButtons, ...otherProps } = props;
+      onChange, onBlur, onKeyDown, step, snap, showTouchButtons, containerStyle, ...otherProps } = props;
     const currentValueRef = React.useRef(value);
 
     /**
@@ -184,7 +186,7 @@ const ForwardRefNumberInput = React.forwardRef<HTMLInputElement, NumberInputProp
 
     const containerClasses = classnames("core-number-input-container", containerClassName, showTouchButtons && "core-number-buttons-for-touch");
     return (
-      <div className={containerClasses} >
+      <div className={containerClasses} style={containerStyle} >
         <Input ref={ref} value={formattedValue} onChange={handleChange} onKeyDown={handleKeyDown} onBlur={handleBlur} {...otherProps} />
         <div className={classnames("core-number-input-buttons-container", showTouchButtons && "core-number-buttons-for-touch")}>
           { /* eslint-disable-next-line jsx-a11y/no-static-element-interactions, jsx-a11y/click-events-have-key-events */}
