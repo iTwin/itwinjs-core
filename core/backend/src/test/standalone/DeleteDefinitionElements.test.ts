@@ -38,7 +38,7 @@ describe("DeleteDefinitionElements", () => {
     await ExtensiveTestScenario.prepareDb(iModelDb);
     ExtensiveTestScenario.populateDb(iModelDb);
 
-    // Get ElementIds of DefinitionElements created by populateSourceDb
+    // Get ElementIds of DefinitionElements created by populateDb
     const subjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;
     const definitionModelId = iModelDb.elements.queryElementIdByCode(InformationPartitionElement.createCode(iModelDb, subjectId, "Definition"))!;
     const spatialCategoryId = iModelDb.elements.queryElementIdByCode(SpatialCategory.createCode(iModelDb, definitionModelId, "SpatialCategory"))!;

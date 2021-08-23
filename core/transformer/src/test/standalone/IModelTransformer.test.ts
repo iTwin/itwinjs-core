@@ -86,9 +86,9 @@ describe("IModelTransformer", () => {
       assert.isAtLeast(count(targetDb, ElementRefersToElements.classFullName), 1);
       assert.isAtLeast(count(targetDb, InformationRecordPartition.classFullName), 1);
       assert.isAtLeast(count(targetDb, InformationRecordModel.classFullName), 1);
-      assert.isAtLeast(count(targetDb, "TestTransformerTarget:PhysicalPartitionIsTrackedByRecords"), 1);
-      assert.isAtLeast(count(targetDb, "TestTransformerTarget:AuditRecord"), 1);
-      assert.equal(3, count(targetDb, "TestTransformerTarget:TargetInformationRecord"));
+      assert.isAtLeast(count(targetDb, "ExtensiveTestScenarioTarget:PhysicalPartitionIsTrackedByRecords"), 1);
+      assert.isAtLeast(count(targetDb, "ExtensiveTestScenarioTarget:AuditRecord"), 1);
+      assert.equal(3, count(targetDb, "ExtensiveTestScenarioTarget:TargetInformationRecord"));
       targetDb.saveChanges();
       TransformerExtensiveTestScenario.assertTargetDbContents(sourceDb, targetDb);
       transformer.context.dump(`${targetDbFile}.context.txt`);
@@ -141,7 +141,7 @@ describe("IModelTransformer", () => {
       assert.equal(numTargetElements, count(targetDb, Element.classFullName), "Second import should not add elements");
       assert.equal(numTargetExternalSourceAspects, count(targetDb, ExternalSourceAspect.classFullName), "Second import should not add aspects");
       assert.equal(numTargetRelationships, count(targetDb, ElementRefersToElements.classFullName), "Second import should not add relationships");
-      assert.equal(3, count(targetDb, "TestTransformerTarget:TargetInformationRecord"));
+      assert.equal(3, count(targetDb, "ExtensiveTestScenarioTarget:TargetInformationRecord"));
       transformer.dispose();
     }
 
@@ -168,7 +168,7 @@ describe("IModelTransformer", () => {
       targetDb.saveChanges();
       ExtensiveTestScenario.assertUpdatesInDb(targetDb);
       assert.equal(numTargetRelationships + targetImporter.numRelationshipsInserted - targetImporter.numRelationshipsDeleted, count(targetDb, ElementRefersToElements.classFullName));
-      assert.equal(2, count(targetDb, "TestTransformerTarget:TargetInformationRecord"));
+      assert.equal(2, count(targetDb, "ExtensiveTestScenarioTarget:TargetInformationRecord"));
       transformer.dispose();
     }
 

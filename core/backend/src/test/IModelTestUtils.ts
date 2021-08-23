@@ -835,7 +835,7 @@ export class ExtensiveTestScenario {
   public static async prepareDb(sourceDb: IModelDb): Promise<void> {
     // Import desired schemas
     const requestContext = new BackendRequestContext();
-    const sourceSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerSource.ecschema.xml");
+    const sourceSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "ExtensiveTestScenario.ecschema.xml");
     await sourceDb.importSchemas(requestContext, [FunctionalSchema.schemaFilePath, sourceSchemaFileName]);
     FunctionalSchema.registerSchema();
   }
@@ -916,7 +916,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(geometryPartId));
     // Insert InformationRecords
     const informationRecordProps1: any = {
-      classFullName: "TestTransformerSource:SourceInformationRecord",
+      classFullName: "ExtensiveTestScenario:SourceInformationRecord",
       model: informationModelId,
       code: { spec: codeSpecId3, scope: informationModelId, value: "InformationRecord1" },
       commonString: "Common1",
@@ -925,7 +925,7 @@ export class ExtensiveTestScenario {
     const informationRecordId1: Id64String = sourceDb.elements.insertElement(informationRecordProps1);
     assert.isTrue(Id64.isValidId64(informationRecordId1));
     const informationRecordProps2: any = {
-      classFullName: "TestTransformerSource:SourceInformationRecord",
+      classFullName: "ExtensiveTestScenario:SourceInformationRecord",
       model: informationModelId,
       code: { spec: codeSpecId3, scope: informationModelId, value: "InformationRecord2" },
       commonString: "Common2",
@@ -934,7 +934,7 @@ export class ExtensiveTestScenario {
     const informationRecordId2: Id64String = sourceDb.elements.insertElement(informationRecordProps2);
     assert.isTrue(Id64.isValidId64(informationRecordId2));
     const informationRecordProps3: any = {
-      classFullName: "TestTransformerSource:SourceInformationRecord",
+      classFullName: "ExtensiveTestScenario:SourceInformationRecord",
       model: informationModelId,
       code: { spec: codeSpecId3, scope: informationModelId, value: "InformationRecord3" },
       commonString: "Common3",
@@ -1012,7 +1012,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(physicalObjectId4));
     // Insert PhysicalElement1
     const sourcePhysicalElementProps: PhysicalElementProps = {
-      classFullName: "TestTransformerSource:SourcePhysicalElement",
+      classFullName: "ExtensiveTestScenario:SourcePhysicalElement",
       model: physicalModelId,
       category: sourcePhysicalCategoryId,
       code: Code.createEmpty(),
@@ -1024,7 +1024,7 @@ export class ExtensiveTestScenario {
       },
       sourceString: "S1",
       sourceDouble: 1.1,
-      sourceNavigation: { id: sourcePhysicalCategoryId, relClassName: "TestTransformerSource:SourcePhysicalElementUsesSourceDefinition" },
+      sourceNavigation: { id: sourcePhysicalCategoryId, relClassName: "ExtensiveTestScenario:SourcePhysicalElementUsesSourceDefinition" },
       commonNavigation: { id: sourcePhysicalCategoryId },
       commonString: "Common",
       commonDouble: 7.3,
@@ -1037,7 +1037,7 @@ export class ExtensiveTestScenario {
     assert.doesNotThrow(() => sourceDb.elements.getElement(sourcePhysicalElementId));
     // Insert ElementAspects
     sourceDb.elements.insertAspect({
-      classFullName: "TestTransformerSource:SourceUniqueAspect",
+      classFullName: "ExtensiveTestScenario:SourceUniqueAspect",
       element: new ElementOwnsUniqueAspect(physicalObjectId1),
       commonDouble: 1.1,
       commonString: "Unique",
@@ -1049,7 +1049,7 @@ export class ExtensiveTestScenario {
       sourceGuid: ExtensiveTestScenario.uniqueAspectGuid,
       extraString: "Extra",
     } as ElementAspectProps);
-    const sourceUniqueAspect: ElementUniqueAspect = sourceDb.elements.getAspects(physicalObjectId1, "TestTransformerSource:SourceUniqueAspect")[0];
+    const sourceUniqueAspect: ElementUniqueAspect = sourceDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenario:SourceUniqueAspect")[0];
     assert.equal(sourceUniqueAspect.asAny.commonDouble, 1.1);
     assert.equal(sourceUniqueAspect.asAny.commonString, "Unique");
     assert.equal(sourceUniqueAspect.asAny.commonLong, physicalObjectId1);
@@ -1059,7 +1059,7 @@ export class ExtensiveTestScenario {
     assert.equal(sourceUniqueAspect.asAny.sourceGuid, ExtensiveTestScenario.uniqueAspectGuid);
     assert.equal(sourceUniqueAspect.asAny.extraString, "Extra");
     sourceDb.elements.insertAspect({
-      classFullName: "TestTransformerSource:SourceMultiAspect",
+      classFullName: "ExtensiveTestScenario:SourceMultiAspect",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
       commonDouble: 2.2,
       commonString: "Multi",
@@ -1071,7 +1071,7 @@ export class ExtensiveTestScenario {
       extraString: "Extra",
     } as ElementAspectProps);
     sourceDb.elements.insertAspect({
-      classFullName: "TestTransformerSource:SourceMultiAspect",
+      classFullName: "ExtensiveTestScenario:SourceMultiAspect",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
       commonDouble: 3.3,
       commonString: "Multi",
@@ -1083,12 +1083,12 @@ export class ExtensiveTestScenario {
       extraString: "Extra",
     } as ElementAspectProps);
     sourceDb.elements.insertAspect({
-      classFullName: "TestTransformerSource:SourceUniqueAspectToExclude",
+      classFullName: "ExtensiveTestScenario:SourceUniqueAspectToExclude",
       element: new ElementOwnsUniqueAspect(physicalObjectId1),
       description: "SourceUniqueAspect1",
     } as ElementAspectProps);
     sourceDb.elements.insertAspect({
-      classFullName: "TestTransformerSource:SourceMultiAspectToExclude",
+      classFullName: "ExtensiveTestScenario:SourceMultiAspectToExclude",
       element: new ElementOwnsMultiAspects(physicalObjectId1),
       description: "SourceMultiAspect1",
     } as ElementAspectProps);
@@ -1146,7 +1146,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(drawingViewId));
     // Insert instance of SourceRelToExclude to test relationship exclusion by class
     const relationship1: Relationship = sourceDb.relationships.createInstance({
-      classFullName: "TestTransformerSource:SourceRelToExclude",
+      classFullName: "ExtensiveTestScenario:SourceRelToExclude",
       sourceId: spatialCategorySelectorId,
       targetId: drawingCategorySelectorId,
     });
@@ -1154,7 +1154,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(relationshipId1));
     // Insert instance of RelWithProps to test relationship property remapping
     const relationship2: Relationship = sourceDb.relationships.createInstance({
-      classFullName: "TestTransformerSource:SourceRelWithProps",
+      classFullName: "ExtensiveTestScenario:SourceRelWithProps",
       sourceId: spatialCategorySelectorId,
       targetId: drawingCategorySelectorId,
       sourceString: "One",
@@ -1187,7 +1187,7 @@ export class ExtensiveTestScenario {
     const drawingCategorySelectorId = sourceDb.elements.queryElementIdByCode(CategorySelector.createCode(sourceDb, definitionModelId, "DrawingCategories"))!;
     assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
     const relWithProps: any = sourceDb.relationships.getInstanceProps(
-      "TestTransformerSource:SourceRelWithProps",
+      "ExtensiveTestScenario:SourceRelWithProps",
       { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
     );
     assert.equal(relWithProps.sourceString, "One");
@@ -1197,12 +1197,12 @@ export class ExtensiveTestScenario {
     sourceDb.relationships.updateInstance(relWithProps);
     // Update ElementAspect properties
     const physicalObjectId1: Id64String = IModelTestUtils.queryByUserLabel(sourceDb, "PhysicalObject1");
-    const sourceUniqueAspects: ElementAspect[] = sourceDb.elements.getAspects(physicalObjectId1, "TestTransformerSource:SourceUniqueAspect");
+    const sourceUniqueAspects: ElementAspect[] = sourceDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenario:SourceUniqueAspect");
     assert.equal(sourceUniqueAspects.length, 1);
     sourceUniqueAspects[0].asAny.commonString += "-Updated";
     sourceUniqueAspects[0].asAny.sourceString += "-Updated";
     sourceDb.elements.updateAspect(sourceUniqueAspects[0]);
-    const sourceMultiAspects: ElementAspect[] = sourceDb.elements.getAspects(physicalObjectId1, "TestTransformerSource:SourceMultiAspect");
+    const sourceMultiAspects: ElementAspect[] = sourceDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenario:SourceMultiAspect");
     assert.equal(sourceMultiAspects.length, 2);
     sourceMultiAspects[1].asAny.commonString += "-Updated";
     sourceMultiAspects[1].asAny.sourceString += "-Updated";
@@ -1261,8 +1261,8 @@ export class ExtensiveTestScenario {
 
   public static assertUpdatesInDb(iModelDb: IModelDb, assertDeletes: boolean = true): void {
     // determine which schema was imported
-    const testSourceSchema = iModelDb.querySchemaVersion("TestTransformerSource") ? true : false;
-    const testTargetSchema = iModelDb.querySchemaVersion("TestTransformerTarget") ? true : false;
+    const testSourceSchema = iModelDb.querySchemaVersion("ExtensiveTestScenario") ? true : false;
+    const testTargetSchema = iModelDb.querySchemaVersion("ExtensiveTestScenarioTarget") ? true : false;
     assert.notEqual(testSourceSchema, testTargetSchema);
     // assert Subject was updated
     const subjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;
@@ -1281,7 +1281,7 @@ export class ExtensiveTestScenario {
     assert.isTrue(Id64.isValidId64(spatialCategorySelectorId));
     const drawingCategorySelectorId = iModelDb.elements.queryElementIdByCode(CategorySelector.createCode(iModelDb, definitionModelId, "DrawingCategories"))!;
     assert.isTrue(Id64.isValidId64(drawingCategorySelectorId));
-    const relClassFullName = testTargetSchema ? "TestTransformerTarget:TargetRelWithProps" : "TestTransformerSource:SourceRelWithProps";
+    const relClassFullName = testTargetSchema ? "ExtensiveTestScenarioTarget:TargetRelWithProps" : "ExtensiveTestScenario:SourceRelWithProps";
     const relWithProps: any = iModelDb.relationships.getInstanceProps(
       relClassFullName,
       { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
@@ -1290,7 +1290,7 @@ export class ExtensiveTestScenario {
     assert.equal(testTargetSchema ? relWithProps.targetDouble : relWithProps.sourceDouble, 1.2);
     // assert ElementAspect properties
     const physicalObjectId1: Id64String = IModelTestUtils.queryByUserLabel(iModelDb, "PhysicalObject1");
-    const uniqueAspectClassFullName = testTargetSchema ? "TestTransformerTarget:TargetUniqueAspect" : "TestTransformerSource:SourceUniqueAspect";
+    const uniqueAspectClassFullName = testTargetSchema ? "ExtensiveTestScenarioTarget:TargetUniqueAspect" : "ExtensiveTestScenario:SourceUniqueAspect";
     const uniqueAspects: ElementAspect[] = iModelDb.elements.getAspects(physicalObjectId1, uniqueAspectClassFullName);
     assert.equal(uniqueAspects.length, 1);
     const uniqueAspect = uniqueAspects[0].asAny;
@@ -1300,7 +1300,7 @@ export class ExtensiveTestScenario {
     assert.equal(testTargetSchema ? uniqueAspect.targetDouble : uniqueAspect.sourceDouble, 11.1);
     assert.equal(testTargetSchema ? uniqueAspect.targetString : uniqueAspect.sourceString, "UniqueAspect-Updated");
     assert.equal(testTargetSchema ? uniqueAspect.targetLong : uniqueAspect.sourceLong, physicalObjectId1);
-    const multiAspectClassFullName = testTargetSchema ? "TestTransformerTarget:TargetMultiAspect" : "TestTransformerSource:SourceMultiAspect";
+    const multiAspectClassFullName = testTargetSchema ? "ExtensiveTestScenarioTarget:TargetMultiAspect" : "ExtensiveTestScenario:SourceMultiAspect";
     const multiAspects: ElementAspect[] = iModelDb.elements.getAspects(physicalObjectId1, multiAspectClassFullName);
     assert.equal(multiAspects.length, 2);
     const multiAspect0 = multiAspects[0].asAny;

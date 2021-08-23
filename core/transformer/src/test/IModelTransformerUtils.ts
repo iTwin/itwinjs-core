@@ -144,7 +144,7 @@ export class TransformerExtensiveTestScenario {
   public static async prepareTargetDb(targetDb: IModelDb): Promise<void> {
     // Import desired target schemas
     const requestContext = new BackendRequestContext();
-    const targetSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "TestTransformerTarget.ecschema.xml");
+    const targetSchemaFileName: string = path.join(KnownTestLocations.assetsDir, "ExtensiveTestScenarioTarget.ecschema.xml");
     await targetDb.importSchemas(requestContext, [targetSchemaFileName]);
     // Insert a target-only CodeSpec to test remapping
     const targetCodeSpecId: Id64String = targetDb.codeSpecs.insert("TargetCodeSpec", CodeScopeSpec.Type.Model);
@@ -297,7 +297,7 @@ export class TransformerExtensiveTestScenario {
     }
     assert.equal(index4, 2, "Expect 2 remaining boxes since 1 was filtered out");
     assert.equal(physicalElement1.category, targetPhysicalCategoryId, "SourcePhysicalCategory should have been remapped to TargetPhysicalCategory");
-    assert.equal(physicalElement1.classFullName, "TestTransformerTarget:TargetPhysicalElement", "Class should have been remapped");
+    assert.equal(physicalElement1.classFullName, "ExtensiveTestScenarioTarget:TargetPhysicalElement", "Class should have been remapped");
     assert.equal(physicalElement1.asAny.targetString, "S1", "Property should have been remapped by onTransformElement override");
     assert.equal(physicalElement1.asAny.targetDouble, 1.1, "Property should have been remapped by onTransformElement override");
     assert.equal(physicalElement1.asAny.targetNavigation.id, targetPhysicalCategoryId, "Property should have been remapped by onTransformElement override");
@@ -310,7 +310,7 @@ export class TransformerExtensiveTestScenario {
     assert.equal(childObject1A.parent!.id, physicalObjectId1);
     assert.equal(childObject1B.parent!.id, physicalObjectId1);
     // ElementUniqueAspects
-    const targetUniqueAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetUniqueAspect");
+    const targetUniqueAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenarioTarget:TargetUniqueAspect");
     assert.equal(targetUniqueAspects.length, 1);
     assert.equal(targetUniqueAspects[0].asAny.commonDouble, 1.1);
     assert.equal(targetUniqueAspects[0].asAny.commonString, "Unique");
@@ -322,7 +322,7 @@ export class TransformerExtensiveTestScenario {
     assert.isTrue(Guid.isV4Guid(targetUniqueAspects[0].asAny.targetGuid));
     assert.equal(ExtensiveTestScenario.uniqueAspectGuid, targetUniqueAspects[0].asAny.targetGuid);
     // ElementMultiAspects
-    const targetMultiAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "TestTransformerTarget:TargetMultiAspect");
+    const targetMultiAspects: ElementAspect[] = targetDb.elements.getAspects(physicalObjectId1, "ExtensiveTestScenarioTarget:TargetMultiAspect");
     assert.equal(targetMultiAspects.length, 2);
     assert.equal(targetMultiAspects[0].asAny.commonDouble, 2.2);
     assert.equal(targetMultiAspects[0].asAny.commonString, "Multi");
@@ -380,7 +380,7 @@ export class TransformerExtensiveTestScenario {
     TransformerExtensiveTestScenario.assertTargetRelationship(sourceDb, targetDb, DrawingGraphicRepresentsElement.classFullName, drawingGraphicId2, physicalObjectId1);
     // TargetRelWithProps
     const relWithProps: any = targetDb.relationships.getInstanceProps(
-      "TestTransformerTarget:TargetRelWithProps",
+      "ExtensiveTestScenarioTarget:TargetRelWithProps",
       { sourceId: spatialCategorySelectorId, targetId: drawingCategorySelectorId },
     );
     assert.equal(relWithProps.targetString, "One");
@@ -527,9 +527,9 @@ export class TestIModelTransformer extends IModelTransformer {
     this.exporter.excludeCodeSpec("ExtraCodeSpec");
     this.exporter.excludeElementClass(AuxCoordSystem.classFullName); // want to exclude AuxCoordSystem2d/3d
     this.exporter.excludeElement(this.sourceDb.elements.queryElementIdByCode(Subject.createCode(this.sourceDb, IModel.rootSubjectId, "Only in Source"))!);
-    this.exporter.excludeRelationshipClass("TestTransformerSource:SourceRelToExclude");
-    this.exporter.excludeElementAspectClass("TestTransformerSource:SourceUniqueAspectToExclude");
-    this.exporter.excludeElementAspectClass("TestTransformerSource:SourceMultiAspectToExclude");
+    this.exporter.excludeRelationshipClass("ExtensiveTestScenario:SourceRelToExclude");
+    this.exporter.excludeElementAspectClass("ExtensiveTestScenario:SourceUniqueAspectToExclude");
+    this.exporter.excludeElementAspectClass("ExtensiveTestScenario:SourceMultiAspectToExclude");
   }
 
   /** Initialize some CodeSpec remapping rules for testing */
@@ -550,9 +550,9 @@ export class TestIModelTransformer extends IModelTransformer {
 
   /** Initialize some class remapping rules for testing */
   private initClassRemapping(): void {
-    this.context.remapElementClass("TestTransformerSource:SourcePhysicalElement", "TestTransformerTarget:TargetPhysicalElement");
-    this.context.remapElementClass("TestTransformerSource:SourcePhysicalElementUsesCommonDefinition", "TestTransformerTarget:TargetPhysicalElementUsesCommonDefinition");
-    this.context.remapElementClass("TestTransformerSource:SourceInformationRecord", "TestTransformerTarget:TargetInformationRecord");
+    this.context.remapElementClass("ExtensiveTestScenario:SourcePhysicalElement", "ExtensiveTestScenarioTarget:TargetPhysicalElement");
+    this.context.remapElementClass("ExtensiveTestScenario:SourcePhysicalElementUsesCommonDefinition", "ExtensiveTestScenarioTarget:TargetPhysicalElementUsesCommonDefinition");
+    this.context.remapElementClass("ExtensiveTestScenario:SourceInformationRecord", "ExtensiveTestScenarioTarget:TargetInformationRecord");
   }
 
   /** */
@@ -583,15 +583,15 @@ export class TestIModelTransformer extends IModelTransformer {
     if (!targetElementProps.federationGuid) {
       targetElementProps.federationGuid = Guid.createValue();
     }
-    if ("TestTransformerSource:SourcePhysicalElement" === sourceElement.classFullName) {
+    if ("ExtensiveTestScenario:SourcePhysicalElement" === sourceElement.classFullName) {
       targetElementProps.targetString = sourceElement.asAny.sourceString;
       targetElementProps.targetDouble = sourceElement.asAny.sourceDouble;
       targetElementProps.targetBinary = sourceElement.asAny.sourceBinary;
       targetElementProps.targetNavigation = {
         id: this.context.findTargetElementId(sourceElement.asAny.sourceNavigation.id),
-        relClassName: "TestTransformerTarget:TargetPhysicalElementUsesTargetDefinition",
+        relClassName: "ExtensiveTestScenarioTarget:TargetPhysicalElementUsesTargetDefinition",
       };
-    } else if ("TestTransformerSource:SourceInformationRecord" === sourceElement.classFullName) {
+    } else if ("ExtensiveTestScenario:SourceInformationRecord" === sourceElement.classFullName) {
       targetElementProps.targetString = sourceElement.asAny.sourceString;
     }
     return targetElementProps;
@@ -600,8 +600,8 @@ export class TestIModelTransformer extends IModelTransformer {
   /** Override transformElementAspect to remap Source*Aspect --> Target*Aspect */
   protected override onTransformElementAspect(sourceElementAspect: ElementAspect, targetElementId: Id64String): ElementAspectProps {
     const targetElementAspectProps: any = super.onTransformElementAspect(sourceElementAspect, targetElementId);
-    if ("TestTransformerSource:SourceUniqueAspect" === sourceElementAspect.classFullName) {
-      targetElementAspectProps.classFullName = "TestTransformerTarget:TargetUniqueAspect";
+    if ("ExtensiveTestScenario:SourceUniqueAspect" === sourceElementAspect.classFullName) {
+      targetElementAspectProps.classFullName = "ExtensiveTestScenarioTarget:TargetUniqueAspect";
       targetElementAspectProps.targetDouble = targetElementAspectProps.sourceDouble;
       targetElementAspectProps.sourceDouble = undefined;
       targetElementAspectProps.targetString = targetElementAspectProps.sourceString;
@@ -610,8 +610,8 @@ export class TestIModelTransformer extends IModelTransformer {
       targetElementAspectProps.sourceLong = undefined;
       targetElementAspectProps.targetGuid = targetElementAspectProps.sourceGuid;
       targetElementAspectProps.sourceGuid = undefined;
-    } else if ("TestTransformerSource:SourceMultiAspect" === sourceElementAspect.classFullName) {
-      targetElementAspectProps.classFullName = "TestTransformerTarget:TargetMultiAspect";
+    } else if ("ExtensiveTestScenario:SourceMultiAspect" === sourceElementAspect.classFullName) {
+      targetElementAspectProps.classFullName = "ExtensiveTestScenarioTarget:TargetMultiAspect";
       targetElementAspectProps.targetDouble = targetElementAspectProps.sourceDouble;
       targetElementAspectProps.sourceDouble = undefined;
       targetElementAspectProps.targetString = targetElementAspectProps.sourceString;
@@ -627,8 +627,8 @@ export class TestIModelTransformer extends IModelTransformer {
   /** Override transformRelationship to remap SourceRelWithProps --> TargetRelWithProps */
   protected override onTransformRelationship(sourceRelationship: Relationship): RelationshipProps {
     const targetRelationshipProps: any = super.onTransformRelationship(sourceRelationship);
-    if ("TestTransformerSource:SourceRelWithProps" === sourceRelationship.classFullName) {
-      targetRelationshipProps.classFullName = "TestTransformerTarget:TargetRelWithProps";
+    if ("ExtensiveTestScenario:SourceRelWithProps" === sourceRelationship.classFullName) {
+      targetRelationshipProps.classFullName = "ExtensiveTestScenarioTarget:TargetRelWithProps";
       targetRelationshipProps.targetString = targetRelationshipProps.sourceString;
       targetRelationshipProps.sourceString = undefined;
       targetRelationshipProps.targetDouble = targetRelationshipProps.sourceDouble;
@@ -713,7 +713,7 @@ export class RecordingIModelImporter extends CountingIModelImporter {
         const parentSubjectId: Id64String = modeledElement.parent!.id; // InformationPartitionElements are always parented to Subjects
         const recordPartitionId: Id64String = InformationRecordModel.insert(this.targetDb, parentSubjectId, `Records for ${model.name}`);
         this.targetDb.relationships.insertInstance({
-          classFullName: "TestTransformerTarget:PhysicalPartitionIsTrackedByRecords",
+          classFullName: "ExtensiveTestScenarioTarget:PhysicalPartitionIsTrackedByRecords",
           sourceId: modeledElement.id,
           targetId: recordPartitionId,
         });
@@ -753,7 +753,7 @@ export class RecordingIModelImporter extends CountingIModelImporter {
     super.onDeleteElement(elementId); // delete element after AuditRecord is inserted
   }
   private getRecordPartitionId(physicalPartitionId: Id64String): Id64String {
-    const sql = "SELECT TargetECInstanceId FROM TestTransformerTarget:PhysicalPartitionIsTrackedByRecords WHERE SourceECInstanceId=:physicalPartitionId";
+    const sql = "SELECT TargetECInstanceId FROM ExtensiveTestScenarioTarget:PhysicalPartitionIsTrackedByRecords WHERE SourceECInstanceId=:physicalPartitionId";
     return this.targetDb.withPreparedStatement(sql, (statement: ECSqlStatement): Id64String => {
       statement.bindId("physicalPartitionId", physicalPartitionId);
       return DbResult.BE_SQLITE_ROW === statement.step() ? statement.getValue(0).getId() : Id64.invalid;
@@ -761,7 +761,7 @@ export class RecordingIModelImporter extends CountingIModelImporter {
   }
   private insertAuditRecord(operation: string, recordPartitionId: Id64String, physicalElement: PhysicalElement): Id64String {
     const auditRecord: any = {
-      classFullName: "TestTransformerTarget:AuditRecord",
+      classFullName: "ExtensiveTestScenarioTarget:AuditRecord",
       model: recordPartitionId,
       code: Code.createEmpty(),
       userLabel: `${operation} of ${physicalElement.getDisplayLabel()} at ${new Date()}`,
