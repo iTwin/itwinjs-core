@@ -8,29 +8,15 @@ Writing an iTwin.js application requires the following software:
   - This provides the backend JavaScript runtime.
   - The installation also includes the `npm` command line tool.
 
-## 2. Get the code
+## 2. Get, build, and develop code
 
-The starter application is located in the [desktop-viewer](https://github.com/iTwin/viewer/tree/master/packages/modules/cra-template-desktop-viewer) repo on GitHub. It is an example of an Electron based application and comes with a sample snapshot iModel.
-
-> `npx create-react-app my-app-name --template @itwin/desktop-viewer --scripts-version @bentley/react-scripts`
-
-## 3. Build and run a sample app
-
-> `npm start`
-
-The app will open a pre-packaged offline snapshot iModel. You will likely want to use your own snapshot iModel. Follow the [Create a snapshot iModel]($docs/learning/tutorials/create-test-imodel-offline) tutorial. Then open your snapshot by clicking the Home button and selecting "Open Offline Snapshot".
-
-Desktop apps can also open cloud hosted iModels. If you do not have access to one, follow one of our tutorials to [create an online iModel]($docs/learning/tutorials/index.md). Then open your online iModel by clicking the Home button and selecting "Open Online iModel".
+[Follow the "Developing a web viewer" tutorial]($docs/learning/tutorials/develop-web-viewer.md)
 
 &nbsp;
 &nbsp;
 ---
 
 ## Next Steps
-
-### [Create a snapshot iModel from your local data.]($docs/learning/tutorials/create-test-imodel-offline.md)
-
-> Open your snapshot iModel in the desktop-starter app by clicking the home button in the upper left and clicking "Select snapshot".
 
 ### [Follow tutorials to dive deeper into iTwin.js]($docs/learning/tutorials/index.md)
 
