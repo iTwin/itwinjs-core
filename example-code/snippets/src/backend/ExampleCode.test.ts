@@ -8,14 +8,14 @@ import { Range3d } from "@bentley/geometry-core";
 import { IModelHubError } from "@bentley/imodelhub-client";
 import { BisCoreSchema, BriefcaseDb, ClassRegistry, ConcurrencyControl, Element, ElementAspect, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import { CodeScopeSpec, CodeSpec, IModel } from "@bentley/imodeljs-common";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { IModelTestUtils } from "./IModelTestUtils";
 
 /** Example code organized as tests to make sure that it builds and runs successfully. */
 describe("Example Code", () => {
   let iModel: StandaloneDb;
 
-  const accessToken: AccessToken = (AccessToken as any);
+  const accessToken: AccessTokenString = "";
   const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken);
 
   before(async () => {

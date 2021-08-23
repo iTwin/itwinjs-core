@@ -5,18 +5,23 @@
 
 import { AuthStatus, BeEvent, BentleyError } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessTokenString } from "@bentley/itwin-client";
 
 /**
  * Basic FrontendAuthorizationClient to use with an already created access token.
  * @internal
  */
 export class TestFrontendAuthorizationClient implements FrontendAuthorizationClient {
-  private _activeToken?: AccessToken;
+  private _activeToken?: AccessTokenString;
 
-  constructor(private _accessToken?: AccessToken) {
+  constructor(private _accessToken?: AccessTokenString) {
     this._activeToken = this._accessToken;
     this.onUserStateChanged.raiseEvent(this._activeToken);
+  }
+
+  public get expiry(): Date{
+    // Placeholder
+    return new Date();
   }
 
   public get isAuthorized(): boolean {
@@ -41,11 +46,11 @@ export class TestFrontendAuthorizationClient implements FrontendAuthorizationCli
     this.onUserStateChanged.raiseEvent(this._activeToken);
   }
 
-  public async getAccessToken(): Promise<AccessToken> {
+  public async getAccessToken(): Promise<AccessTokenString> {
     if (!this._activeToken)
       throw new BentleyError(AuthStatus.Error, "Cannot get access token");
     return this._activeToken;
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token: AccessTokenString | undefined) => void>();
 }

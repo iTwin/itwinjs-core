@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { GuidString, Id64, Logger } from "@bentley/bentleyjs-core";
 import { Briefcase, CodeQuery, CodeState, HubCode, IModelClient, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
-import { AccessToken, AuthenticationError, AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
+import { AccessTokenString, AuthenticationError, AuthorizedClientRequestContext, ResponseError } from "@bentley/itwin-client";
 import * as utils from "./TestUtils";
 import { TestConfig } from "../TestConfig";
 
@@ -17,7 +17,7 @@ describe.skip("iModelHub Performance tests", () => {
   let requestContext: AuthorizedClientRequestContext;
 
   async function setup(recreate = false) {
-    const accessToken: AccessToken = await utils.login();
+    const accessToken: AccessTokenString = await utils.login();
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);
@@ -300,7 +300,7 @@ describe.skip("iModelHub Performance tests", () => {
           await imodelHubClient.locks.get(requestContext, imodelId, query);
         } catch (err) {
           if ((err instanceof ResponseError && err.status === 401) || err instanceof AuthenticationError) {
-            const accessToken: AccessToken = await utils.login();
+            const accessToken: AccessTokenString = await utils.login();
             requestContext = new AuthorizedClientRequestContext(accessToken);
             startTime = Date.now();
             await imodelHubClient.locks.get(requestContext, imodelId, query);

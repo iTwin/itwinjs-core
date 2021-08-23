@@ -7,7 +7,7 @@
  */
 
 import { Logger } from "@bentley/bentleyjs-core";
-import { AuthorizedClientRequestContext, ImsAuthorizationClient, IncludePrefix, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
 import { ClientMetadata, custom, Issuer, Client as OpenIdClient } from "openid-client";
 import { BackendITwinClientLoggerCategory } from "../../BackendITwinClientLoggerCategory";
 import { IntrospectionResponse } from "./IntrospectionResponse";
@@ -66,7 +66,7 @@ export class IntrospectionClient {
   }
 
   public async introspect(requestContext: AuthorizedClientRequestContext): Promise<IntrospectionResponse> {
-    const accessTokenStr = requestContext.accessToken.toTokenString(IncludePrefix.No);
+    const accessTokenStr = requestContext.accessToken?.substr(requestContext.accessToken.indexOf(" ") + 1) ?? "";
 
     try {
       const cachedResponse = await this._cache.get(accessTokenStr);

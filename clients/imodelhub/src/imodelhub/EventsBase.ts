@@ -8,7 +8,7 @@
 
 import { BeEvent } from "@bentley/bentleyjs-core";
 import {
-  AccessToken, AuthorizedClientRequestContext, DefaultRequestOptionsProvider, ECJsonTypeMap, request, RequestOptions, WsgInstance,
+  AccessTokenString, AuthorizedClientRequestContext, DefaultRequestOptionsProvider, ECJsonTypeMap, request, RequestOptions, WsgInstance,
 } from "@bentley/itwin-client";
 import { IModelBaseHandler } from "./BaseHandler";
 
@@ -176,7 +176,7 @@ export abstract class EventBaseHandler {
 /** @internal */
 export class ListenerSubscription {
   public listeners: BeEvent<(event: IModelHubBaseEvent) => void>;
-  public authenticationCallback: () => Promise<AccessToken>;
+  public authenticationCallback: () => Promise<AccessTokenString>;
   public getEvent: (token: string, baseAddress: string, subscriptionId: string, timeout?: number) => Promise<IModelHubBaseEvent | undefined>;
   public getSASToken: (requestContext: AuthorizedClientRequestContext) => Promise<BaseEventSAS>;
   public id: string;
@@ -215,7 +215,7 @@ export class EventListener {
   }
 
   private static async getEvents(subscription: ListenerSubscription) {
-    let accessToken: AccessToken = await subscription.authenticationCallback();
+    let accessToken: AccessTokenString = await subscription.authenticationCallback();
     let eventSAS: BaseEventSAS | undefined;
 
     mainLoop:

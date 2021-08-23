@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 import { executeBackendCallback, registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessTokenString } from "@bentley/itwin-client";
 
 const getEnvCallbackName = "getEnv";
 const getClientAccessTokenCallbackName = "getClientAccessToken";
@@ -17,7 +17,7 @@ export function exposeBackendCallbacks() {
   registerBackendCallback(getClientAccessTokenCallbackName, async (clientConfiguration: AgentAuthorizationClientConfiguration) => {
     const authClient = new AgentAuthorizationClient(clientConfiguration);
     const token = await authClient.getAccessToken();
-    return JSON.stringify(token.toJSON());
+    return token as string;
   });
 
 }
@@ -26,7 +26,7 @@ export async function getProcessEnvFromBackend(): Promise<NodeJS.ProcessEnv> {
   return JSON.parse(await executeBackendCallback(getEnvCallbackName));
 }
 
-export async function getClientAccessTokenFromBackend(clientConfiguration: AgentAuthorizationClientConfiguration): Promise<AccessToken> {
+export async function getClientAccessTokenFromBackend(clientConfiguration: AgentAuthorizationClientConfiguration): Promise<AccessTokenString> {
   const tokenString = await executeBackendCallback(getClientAccessTokenCallbackName, clientConfiguration);
-  return AccessToken.fromJson(JSON.parse(tokenString));
+  return tokenString;
 }

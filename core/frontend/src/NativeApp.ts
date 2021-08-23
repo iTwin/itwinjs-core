@@ -12,7 +12,7 @@ import {
   NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
   RequestNewBriefcaseProps, StorageValue, SyncMode,
 } from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AccessTokenString, AuthorizationClient, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
 import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
@@ -44,8 +44,10 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
     Logger.logInfo(FrontendLoggerCategory.NativeApp, "Internet connectivity changed");
     NativeApp.onInternetConnectivityChanged.raiseEvent(status);
   }
-  public notifyUserStateChanged(props?: AccessTokenProps) {
-    IModelApp.authorizationClient?.onUserStateChanged.raiseEvent(props ? AccessToken.fromJson(props) : undefined);
+  public notifyUserStateChanged() {
+    // TODO: How should we handle this?
+    // takes in props?: AccessTokenProps
+    // IModelApp.authorizationClient?.onUserStateChanged.raiseEvent(props ? props.tokenString : undefined);
   }
 }
 
@@ -57,14 +59,17 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
  * We must therefore check for expiration and request refreshes as/when necessary.
  * @public
  */
-export class NativeAppAuthorization {
+export class NativeAppAuthorization implements AuthorizationClient {
   private _config?: NativeAppAuthorizationConfiguration;
-  private _cachedToken?: AccessToken;
+  private _cachedToken?: AccessTokenString;
   private _refreshingToken = false;
   protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
-  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token?: AccessTokenString) => void>();
   public get hasSignedIn() { return this._cachedToken !== undefined; }
-  public get isAuthorized(): boolean { return this.hasSignedIn && !this._cachedToken!.isExpired(this._expireSafety); }
+  public get isAuthorized(): boolean {
+    const currentTime = new Date();
+    return this.hasSignedIn && this.expiry > new Date(currentTime.getTime() + this._expireSafety*1000);
+  }
 
   /** ctor for NativeAppAuthorization
    * @param config if present, overrides backend supplied configuration. Generally not necessary, should be supplied
@@ -72,9 +77,14 @@ export class NativeAppAuthorization {
    */
   public constructor(config?: NativeAppAuthorizationConfiguration) {
     this._config = config;
-    this.onUserStateChanged.addListener((token?: AccessToken) => {
+    this.onUserStateChanged.addListener((token?: AccessTokenString) => {
       this._cachedToken = token;
     });
+  }
+
+  public get expiry(): Date {
+    // Placeholder
+    return new Date();
   }
 
   /** Used to initialize the the backend authorization. Must be awaited before any other methods are called */
@@ -98,7 +108,7 @@ export class NativeAppAuthorization {
    * - This method must be called to refresh the token - the client does NOT automatically monitor for token expiry.
    * - Getting or refreshing the token will trigger the [[onUserStateChanged]] event.
    */
-  public async getAccessToken(): Promise<AccessToken> {
+  public async getAccessToken(): Promise<AccessTokenString> {
     // if we have a valid token, return it. Otherwise call backend to refresh the token.
     if (!this.isAuthorized) {
       if (this._refreshingToken) {
@@ -106,7 +116,7 @@ export class NativeAppAuthorization {
       }
 
       this._refreshingToken = true;
-      this._cachedToken = AccessToken.fromJson(await NativeApp.callNativeHost("getAccessTokenProps"));
+      this._cachedToken = (await NativeApp.callNativeHost("getAccessTokenProps")).tokenString;
       this._refreshingToken = false;
     }
 

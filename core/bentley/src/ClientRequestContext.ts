@@ -7,6 +7,7 @@
  */
 
 import { Guid, GuidString } from "./Id";
+// import { AccessTokenString } from "@bentley/itwin-client";
 
 // cSpell:ignore csrf
 
@@ -104,7 +105,7 @@ export interface SerializedClientRequestContext {
   applicationId: string;
   applicationVersion: string;
   sessionId: string;
-  authorization?: string;
+  authorization?: string | undefined;
   userId?: string;
   csrfToken?: { headerName: string, headerValue: string };
 }

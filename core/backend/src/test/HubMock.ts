@@ -13,7 +13,7 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
   BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps, V2CheckpointAccessProps,
 } from "../BackendHubAccess";
-import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
+// import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
 import { CheckpointProps } from "../CheckpointManager";
 import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
@@ -161,14 +161,13 @@ export class HubMock {
   }
 
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
-    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    return this.findLocalHub(arg.iModelId).getBriefcaseIds(requestContext.accessToken.getUserInfo()!.id);
+    // const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
+    return this.findLocalHub(arg.iModelId).getBriefcaseIds("");
   }
 
   public static async acquireNewBriefcaseId(arg: IModelIdArg): Promise<number> {
-    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(requestContext.accessToken.getUserInfo()!.id);
-
+    // const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
+    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId("");
   }
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
   public static async releaseBriefcase(arg: BriefcaseIdArg): Promise<void> {

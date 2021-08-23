@@ -37,8 +37,7 @@ export class TestConfig {
       $filter: `Name+eq+'${projectName}'`,
     });
     if (!project || !project.wsgId) {
-      const userInfo = requestContext.accessToken.getUserInfo();
-      throw new Error(`Project ${projectName} not found for user ${!userInfo ? "n/a" : userInfo.email}.`);
+      throw new Error(`Project ${projectName} not found for user.`);
     }
     return project.wsgId;
   }
@@ -48,8 +47,7 @@ export class TestConfig {
     const imodelHubClient: IModelClient = new IModelHubClient();
     const iModel: HubIModel = (await imodelHubClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName)))[0];
     if (!iModel || !iModel.wsgId || iModel.name !== iModelName) {
-      const userInfo = requestContext.accessToken.getUserInfo();
-      throw new Error(`iModel ${iModelName} not found for project ${projectId} for user ${!userInfo ? "n/a" : userInfo.email}.`);
+      throw new Error(`iModel ${iModelName} not found for project ${projectId} for user.`);
     }
 
     return iModel.wsgId;

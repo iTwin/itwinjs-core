@@ -7,7 +7,7 @@
  */
 import { ClientRequestContext, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { ContextType } from "@bentley/context-registry-client";
-import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, Response, WsgInstance } from "@bentley/itwin-client";
+import { AccessTokenString, AuthorizedClientRequestContext, ECJsonTypeMap, request, RequestOptions, Response, WsgInstance } from "@bentley/itwin-client";
 import { IModelHubClientLoggerCategory } from "../IModelHubClientLoggerCategories";
 import { IModelBaseHandler } from "./BaseHandler";
 import { ArgumentCheck } from "./Errors";
@@ -423,7 +423,7 @@ export class GlobalEventHandler extends EventBaseHandler {
    * @returns Function that deletes the created listener.
    * @throws [[IModelHubClientError]] with [IModelHubStatus.UndefinedArgumentError]($bentley) or [IModelHubStatus.InvalidArgumentError]($bentley) if one of the arguments is undefined or has an invalid value.
    */
-  public createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessToken>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void {
+  public createListener(requestContext: AuthorizedClientRequestContext, authenticationCallback: () => Promise<AccessTokenString>, subscriptionInstanceId: string, listener: (event: IModelHubGlobalEvent) => void): () => void {
     requestContext.enter();
     ArgumentCheck.defined("subscriptionInstanceId", subscriptionInstanceId);
     const subscription = new ListenerSubscription();

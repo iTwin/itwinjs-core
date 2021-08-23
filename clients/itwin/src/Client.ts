@@ -135,7 +135,7 @@ export abstract class Client {
     Logger.logInfo(loggerCategory, "Sending DELETE request", () => ({ url }));
     const options: RequestOptions = {
       method: "DELETE",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: requestContext.accessToken },
     };
     this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
     await this.setupOptionDefaults(options);

@@ -7,15 +7,15 @@
  */
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessToken } from "./Token";
+import { AccessTokenString } from "./Token";
 
 /** Interface to provide authorization information
  * @beta
  */
 export interface AuthorizationClient {
-  /** is the user currently authorized? */
-  readonly isAuthorized: boolean;
+  /** Get the expiration date of the access token*/
+  readonly expiry: Date;
 
   /** Get the AccessToken of the currently authorized user. The token is refreshed if necessary and possible. */
-  getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken>;
+  getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString>;
 }

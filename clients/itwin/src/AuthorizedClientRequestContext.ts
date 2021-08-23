@@ -7,7 +7,7 @@
  */
 
 import { ClientRequestContext, ClientRequestContextProps, Guid, GuidString, SessionProps } from "@bentley/bentleyjs-core";
-import { AccessToken, AccessTokenProps } from "./Token";
+import { AccessTokenProps, AccessTokenString } from "./Token";
 
 /** The properties of AuthorizedSession.
  * @beta
@@ -18,7 +18,7 @@ export interface AuthorizedSessionProps extends SessionProps {
 
 /** @beta */
 export interface AuthorizedSession extends SessionProps {
-  accessToken?: AccessToken;
+  accessToken?: AccessTokenString;
 }
 
 /** The properties of AuthorizedClientRequestContext.
@@ -39,12 +39,12 @@ export class AuthorizedClientRequestContext extends ClientRequestContext {
   /** The access token value of the client application.
    * @beta
    */
-  public accessToken: AccessToken;
+  public accessToken: AccessTokenString;
 
   /** Constructor
    * @beta
    */
-  public constructor(accessToken: AccessToken, activityId: GuidString = Guid.createValue(), applicationId: string = "", applicationVersion: string = "", sessionId: GuidString = Guid.empty) {
+  public constructor(accessToken: AccessTokenString, activityId: GuidString = Guid.createValue(), applicationId: string = "", applicationVersion: string = "", sessionId: GuidString = Guid.empty) {
     super(activityId, applicationId, applicationVersion, sessionId);
     this.accessToken = accessToken;
   }
@@ -52,12 +52,11 @@ export class AuthorizedClientRequestContext extends ClientRequestContext {
   /** @internal */
   public override toJSON(): AuthorizedClientRequestContextProps {
     const obj = super.toJSON() as AuthorizedClientRequestContextProps;
-    obj.accessToken = this.accessToken.toJSON();
     return obj;
   }
   /** @internal */
   public static override fromJSON(json: AuthorizedClientRequestContextProps): AuthorizedClientRequestContext {
-    return new AuthorizedClientRequestContext(AccessToken.fromJson(json.accessToken), json.activityId, json.applicationId, json.applicationVersion, json.sessionId);
+    return new AuthorizedClientRequestContext(json.accessToken.tokenString, json.activityId, json.applicationId, json.applicationVersion, json.sessionId);
 
   }
 }

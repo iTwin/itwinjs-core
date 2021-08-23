@@ -121,7 +121,7 @@ export class ThumbnailHandler {
     requestContext.enter();
     const options: RequestOptions = {
       method: "GET",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: requestContext.accessToken },
       responseType: "arraybuffer",
       agent: this._handler.getAgent(),
     };

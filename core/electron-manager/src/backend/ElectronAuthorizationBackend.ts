@@ -14,7 +14,7 @@
 import { assert, AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { IModelHost, NativeAppAuthorizationBackend, NativeHost } from "@bentley/imodeljs-backend";
 import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
-import { AccessToken, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
+import { AccessTokenString, request as httpRequest, RequestOptions } from "@bentley/itwin-client";
 import {
   AuthorizationError, AuthorizationNotifier, AuthorizationRequest, AuthorizationRequestJson, AuthorizationResponse, AuthorizationServiceConfiguration,
   BaseTokenRequestHandler, GRANT_TYPE_AUTHORIZATION_CODE, GRANT_TYPE_REFRESH_TOKEN, RevokeTokenRequest, RevokeTokenRequestJson, StringMap,
@@ -63,7 +63,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     await this.loadAccessToken();
   }
 
-  public async refreshToken(): Promise<AccessToken> {
+  public async refreshToken(): Promise<AccessTokenString> {
     if (this._tokenResponse === undefined || this._tokenResponse.refreshToken === undefined)
       throw new BentleyError(AuthStatus.Error, "Not signed In. First call signIn()", Logger.logError, loggerCategory);
 
@@ -73,7 +73,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   /** Loads the access token from the store, and refreshes it if necessary and possible
    * @return AccessToken if it's possible to get a valid access token, and undefined otherwise.
    */
-  private async loadAccessToken(): Promise<AccessToken | undefined> {
+  private async loadAccessToken(): Promise<AccessTokenString | undefined> {
     const tokenResponse = await this.tokenStore.load();
     if (tokenResponse === undefined || tokenResponse.refreshToken === undefined)
       return undefined;
@@ -90,8 +90,8 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
    * This is a wrapper around [[signIn]] - the only difference is that the promise resolves
    * with the access token after sign in is complete and successful.
    */
-  public async signInComplete(): Promise<AccessToken> {
-    return new Promise<AccessToken>((resolve, reject) => {
+  public async signInComplete(): Promise<AccessTokenString> {
+    return new Promise<AccessTokenString>((resolve, reject) => {
       NativeHost.onUserStateChanged.addOnce((token) => {
         if (token !== undefined) {
           resolve(token);
@@ -229,8 +229,8 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     return response?.body;
   }
 
-  private async createAccessTokenFromResponse(tokenResponse: TokenResponse): Promise<AccessToken> {
-    const profile = await this.getUserProfile(tokenResponse);
+  private async createAccessTokenFromResponse(tokenResponse: TokenResponse): Promise<AccessTokenString> {
+    // const profile = await this.getUserProfile(tokenResponse);
 
     const json = {
       access_token: tokenResponse.accessToken,
@@ -238,7 +238,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
       expires_in: tokenResponse.expiresIn,
     };
 
-    return AccessToken.fromTokenResponseJson(json, profile);
+    return json.access_token;
   }
 
   private async clearTokenResponse() {
@@ -247,7 +247,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     this.setAccessToken(undefined);
   }
 
-  private async setTokenResponse(tokenResponse: TokenResponse): Promise<AccessToken> {
+  private async setTokenResponse(tokenResponse: TokenResponse): Promise<AccessTokenString> {
     const accessToken = await this.createAccessTokenFromResponse(tokenResponse);
     this._tokenResponse = tokenResponse;
     await this.tokenStore.save(this._tokenResponse);
@@ -255,7 +255,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
     return accessToken;
   }
 
-  private async refreshAccessToken(refreshToken: string): Promise<AccessToken> {
+  private async refreshAccessToken(refreshToken: string): Promise<AccessTokenString> {
     const tokenResponse = await this.makeRefreshAccessTokenRequest(refreshToken);
     Logger.logTrace(loggerCategory, "Refresh token completed, and issued access token");
     return this.setTokenResponse(tokenResponse);

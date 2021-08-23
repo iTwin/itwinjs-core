@@ -11,11 +11,10 @@ const copyrightNotice = 'Copyright © 2017-2021 <a href="https://www.bentley.com
 import {
   BeDuration, BentleyStatus, ClientRequestContext, DbResult, dispose, Guid, GuidString, Logger, SerializedClientRequestContext,
 } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelClient } from "@bentley/imodelhub-client";
 import { IModelStatus, RpcConfiguration, RpcInterfaceDefinition, RpcRequest } from "@bentley/imodeljs-common";
 import { I18N, I18NOptions } from "@bentley/imodeljs-i18n";
-import { IncludePrefix } from "@bentley/itwin-client";
+import { AccessTokenString, AuthorizationClient } from "@bentley/itwin-client";
 import { ConnectSettingsClient, SettingsAdmin } from "@bentley/product-settings-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { UiAdmin } from "@bentley/ui-abstract";
@@ -107,7 +106,7 @@ export interface IModelAppOptions {
   /** If present, supplies the [[I18N]] for this session. May be either an I18N instance or an I18NOptions used to create an I18N */
   i18n?: I18N | I18NOptions;
   /** If present, supplies the authorization information for various frontend APIs */
-  authorizationClient?: FrontendAuthorizationClient;
+  authorizationClient?: AuthorizationClient;
   /** If present, supplies security options for the frontend. */
   security?: FrontendSecurityOptions;
   /** @internal */
@@ -199,7 +198,7 @@ export class IModelApp {
   protected constructor() { }
 
   /** Provides authorization information for various frontend APIs */
-  public static authorizationClient?: FrontendAuthorizationClient;
+  public static authorizationClient?: AuthorizationClient;
   /** The [[ToolRegistry]] for this session. */
   public static readonly tools = new ToolRegistry();
   /** A uniqueId for this session */
@@ -531,16 +530,12 @@ export class IModelApp {
 
     RpcConfiguration.requestContext.serialize = async (_request: RpcRequest): Promise<SerializedClientRequestContext> => {
       const id = _request.id;
-      let authorization: string | undefined;
+      let authorization: AccessTokenString;
       let userId: string | undefined;
-      if (IModelApp.authorizationClient?.hasSignedIn) {
+      if (IModelApp.authorizationClient) {
         // todo: need to subscribe to token change events to avoid getting the string equivalent and compute length
         try {
-          const accessToken = await IModelApp.authorizationClient.getAccessToken();
-          authorization = accessToken.toTokenString(IncludePrefix.Yes);
-          const userInfo = accessToken.getUserInfo();
-          if (userInfo)
-            userId = userInfo.id;
+          authorization = await IModelApp.authorizationClient.getAccessToken();
         } catch (err) {
           // The application may go offline
         }

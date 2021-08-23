@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
 import { AuthorizedFrontendRequestContext, IModelApp } from "@bentley/imodeljs-frontend";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { TestUtility } from "./TestUtility";
@@ -31,20 +31,20 @@ describe("IModelApp (#integration)", () => {
   });
 
   it("should setup access token and application id values for the backend", async () => {
-    const expectedAccessTokenStr = (await IModelApp.authorizationClient!.getAccessToken()).toTokenString();
+    const expectedAccessTokenStr = await IModelApp.authorizationClient!.getAccessToken();
 
     let authorizedRequestContext: AuthorizedClientRequestContext = await AuthorizedFrontendRequestContext.create();
     authorizedRequestContext.enter();
 
     authorizedRequestContext = ClientRequestContext.current as AuthorizedFrontendRequestContext;
-    let actualAccessTokenStr = authorizedRequestContext.accessToken.toTokenString();
+    let actualAccessTokenStr = authorizedRequestContext.accessToken;
     assert.equal(actualAccessTokenStr, expectedAccessTokenStr);
     assert.equal(authorizedRequestContext.applicationId, IModelApp.applicationId);
     assert.equal(authorizedRequestContext.sessionId, IModelApp.sessionId);
     const activityId = authorizedRequestContext.activityId;
 
     let actualAuthorizedRequestContext = await TestRpcInterface.getClient().reportAuthorizedRequestContext();
-    actualAccessTokenStr = AccessToken.fromJson(actualAuthorizedRequestContext.accessToken).toTokenString();
+    actualAccessTokenStr = actualAuthorizedRequestContext.accessToken.tokenString;
     assert.equal(actualAccessTokenStr, expectedAccessTokenStr);
     assert.equal(actualAuthorizedRequestContext.applicationId, IModelApp.applicationId);
     assert.equal(actualAuthorizedRequestContext.sessionId, IModelApp.sessionId);
@@ -54,14 +54,14 @@ describe("IModelApp (#integration)", () => {
     authorizedRequestContext.useContextForRpc = true;
     actualAuthorizedRequestContext = await TestRpcInterface.getClient().reportAuthorizedRequestContext();
     assert.isFalse(authorizedRequestContext.useContextForRpc);
-    actualAccessTokenStr = AccessToken.fromJson(actualAuthorizedRequestContext.accessToken).toTokenString();
+    actualAccessTokenStr = actualAuthorizedRequestContext.accessToken.tokenString;
     assert.equal(actualAccessTokenStr, expectedAccessTokenStr);
     assert.equal(actualAuthorizedRequestContext.applicationId, IModelApp.applicationId);
     assert.equal(actualAuthorizedRequestContext.sessionId, IModelApp.sessionId);
     assert.equal(actualAuthorizedRequestContext.activityId, activityId, "The activityId setup wasn't used by the RPC operation");
 
     actualAuthorizedRequestContext = await TestRpcInterface.getClient().reportAuthorizedRequestContext();
-    actualAccessTokenStr = AccessToken.fromJson(actualAuthorizedRequestContext.accessToken).toTokenString();
+    actualAccessTokenStr = actualAuthorizedRequestContext.accessToken.tokenString;
     assert.equal(actualAccessTokenStr, expectedAccessTokenStr);
     assert.equal(actualAuthorizedRequestContext.applicationId, IModelApp.applicationId);
     assert.equal(actualAuthorizedRequestContext.sessionId, IModelApp.sessionId);

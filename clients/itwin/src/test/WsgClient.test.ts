@@ -5,7 +5,6 @@
 import { WsgClient, WsgRequestOptions } from "../WsgClient";
 import { AuthorizedClientRequestContext, ChunkedQueryContext, ECJsonTypeMap, HttpRequestOptions, RequestQueryOptions, WsgInstance } from "../itwin-client";
 import * as requestModule from "../Request";
-import { AccessToken } from "../Token";
 import { expect } from "chai";
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
 
@@ -77,7 +76,7 @@ describe("WsgClient", async () => {
 
     const instance = new TestClass();
     const typedConstructor = Object.getPrototypeOf(instance).constructor;
-    const requestContext = new AuthorizedClientRequestContext(new AccessToken());
+    const requestContext = new AuthorizedClientRequestContext("");
 
     const responseInstance = {
       instanceAfterChange: {

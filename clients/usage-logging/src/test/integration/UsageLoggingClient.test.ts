@@ -5,7 +5,7 @@
 import { assert } from "chai";
 import * as os from "os";
 import { BentleyStatus, Guid, GuidString } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestUsers } from "@bentley/oidc-signin-tool/lib/frontend";
 import {
   EndFeatureLogEntry, FeatureLogEntry, LogPostingResponse, StartFeatureLogEntry, UsageLoggingClient, UsageType,
@@ -13,7 +13,7 @@ import {
 
 describe("UlasClient - OIDC Token (#integration)", () => {
   const client: UsageLoggingClient = new UsageLoggingClient();
-  let accessToken: AccessToken;
+  let accessToken: AccessTokenString;
 
   before(async () => {
     if (process.env.IMJS_OIDC_ULAS_TEST_CLIENT_ID === undefined)
@@ -30,7 +30,7 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     };
 
     // Need to cast to any and then back to AccessToken because of circular dependency with the oidc-signin-tool
-    accessToken = (await getAccessTokenFromBackend(TestUsers.regular, oidcConfig) as any) as AccessToken;
+    accessToken = (await getAccessTokenFromBackend(TestUsers.regular, oidcConfig) as any) as AccessTokenString;
   });
 
   it("AccessToken without feature tracking claims (#integration)", async () => {
@@ -44,27 +44,12 @@ describe("UlasClient - OIDC Token (#integration)", () => {
     const passingTokenModes = [TokenMode.Complete, TokenMode.NoUserId, TokenMode.NoUltimateId];
 
     for (const mode of [TokenMode.Complete, TokenMode.NoUserProfile, TokenMode.NoUserId, TokenMode.NoUltimateId]) {
-      let tempAccessToken: AccessToken;
+      let tempAccessToken: AccessTokenString;
       if (mode === TokenMode.NoUserProfile) {
         // fake token that does not contain a user profile
-        tempAccessToken = new AccessToken("");
+        tempAccessToken = "";
       } else {
-        tempAccessToken = (await getAccessTokenFromBackend(TestUsers.regular) as any) as AccessToken;
-
-        // token from which some user profile information is removed. UlasClient does not utilize this information, and instead defers this task to the ULAS server, which examines the token string itself.
-        // Need to cast to any and then back to AccessToken because of circular dependency with the oidc-signin-tool
-        switch (mode) {
-          case TokenMode.NoUserId:
-            tempAccessToken.getUserInfo()!.id = "";
-            break;
-
-          case TokenMode.NoUltimateId:
-            tempAccessToken.getUserInfo()!.featureTracking = { ultimateSite: "", usageCountryIso: "" };
-            break;
-
-          default:
-            break;
-        }
+        tempAccessToken = (await getAccessTokenFromBackend(TestUsers.regular) as any) as AccessTokenString;
       }
 
       const tempRequestContext = new AuthorizedClientRequestContext(tempAccessToken, undefined, "43", "3.4.99");

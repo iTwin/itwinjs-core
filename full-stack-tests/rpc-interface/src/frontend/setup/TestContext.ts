@@ -7,7 +7,7 @@ import { expect } from "chai";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
 import { AuthorizedFrontendRequestContext, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessTokenString } from "@bentley/itwin-client";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
 } from "@bentley/oidc-signin-tool/lib/frontend";
@@ -21,8 +21,8 @@ declare const PACKAGE_VERSION: string;
 /* eslint-disable @typescript-eslint/indent */
 
 export class TestContext {
-  public adminUserAccessToken!: AccessToken;
-  public clientAccessToken?: AccessToken;
+  public adminUserAccessToken!: AccessTokenString;
+  public clientAccessToken?: AccessTokenString;
 
   public iModelWithChangesets?: IModelSession;
   public iModelForWrite?: IModelSession;

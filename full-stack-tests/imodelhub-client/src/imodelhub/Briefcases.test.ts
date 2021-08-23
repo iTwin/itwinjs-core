@@ -7,7 +7,7 @@ import * as fs from "fs";
 import * as path from "path";
 import { GuidString, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { Briefcase, BriefcaseQuery, ChangeSet, IModelClient, IModelHubClient, IModelHubClientError, Lock } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
@@ -92,7 +92,7 @@ describe("iModelHub BriefcaseHandler", () => {
 
   before(async function () {
     this.timeout(0);
-    const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
+    const accessToken: AccessTokenString = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
     (requestContext as any).activityId = "iModelHub BriefcaseHandler";
 

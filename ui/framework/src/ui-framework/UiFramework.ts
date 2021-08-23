@@ -13,7 +13,7 @@ import { GuidString, Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AuthorizedFrontendRequestContext, IModelApp, IModelConnection, SnapMode, ViewState } from "@bentley/imodeljs-frontend";
 import { I18N } from "@bentley/imodeljs-i18n";
-import { AccessToken, UserInfo } from "@bentley/itwin-client";
+import { AccessTokenString, UserInfo } from "@bentley/itwin-client";
 import { Presentation } from "@bentley/presentation-frontend";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { getClassName, UiAbstract, UiError } from "@bentley/ui-abstract";
@@ -190,11 +190,6 @@ export class UiFramework {
     const oidcClient = IModelApp.authorizationClient;
     // istanbul ignore next
     if (isFrontendAuthorizationClient(oidcClient)) {
-      const authorized = IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
-      if (authorized) {
-        const accessToken = await oidcClient.getAccessToken();
-        UiFramework.setUserInfo(accessToken !== undefined ? accessToken.getUserInfo() : undefined);
-      }
       oidcClient.onUserStateChanged.addListener(UiFramework._handleUserStateChanged);
     }
 
@@ -556,7 +551,7 @@ export class UiFramework {
    */
   // istanbul ignore next
   public static async postTelemetry(eventName: string, eventId?: GuidString, contextId?: GuidString, iModeId?: GuidString, changeSetId?: string, time?: TrackingTime, additionalProperties?: { [key: string]: any }): Promise<void> {
-    if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
+    if (!IModelApp.authorizationClient)
       return;
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const telemetryEvent = new TelemetryEvent(eventName, eventId, contextId, iModeId, changeSetId, time, additionalProperties);
@@ -571,9 +566,7 @@ export class UiFramework {
   };
 
   // istanbul ignore next
-  private static _handleUserStateChanged = (accessToken: AccessToken | undefined) => {
-    UiFramework.setUserInfo(accessToken !== undefined ? accessToken.getUserInfo() : undefined);
-
+  private static _handleUserStateChanged = (accessToken: AccessTokenString | undefined) => {
     if (accessToken === undefined) {
       ConfigurableUiManager.closeUi();
     }

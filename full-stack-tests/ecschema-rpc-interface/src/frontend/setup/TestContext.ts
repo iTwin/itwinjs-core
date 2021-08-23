@@ -6,7 +6,7 @@
 import { expect } from "chai";
 import { Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { NoRenderApp } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessTokenString } from "@bentley/itwin-client";
 import {
   getAccessTokenFromBackend, TestBrowserAuthorizationClientConfiguration, TestFrontendAuthorizationClient, TestUserCredentials,
 } from "@bentley/oidc-signin-tool/lib/frontend";
@@ -16,7 +16,7 @@ import { IModelSession } from "./IModelSession";
 import { BentleyCloudRpcManager, OpenAPIInfo } from "@bentley/imodeljs-common";
 
 export class TestContext {
-  public adminUserAccessToken!: AccessToken;
+  public adminUserAccessToken!: AccessTokenString;
 
   public iModelWithChangesets?: IModelSession;
   public contextId?: string;

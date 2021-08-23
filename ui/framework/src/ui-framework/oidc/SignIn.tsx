@@ -50,7 +50,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
       this._oidcClient = oidcClient;
 
     // istanbul ignore next
-    const isAuthorized = this._oidcClient && this._oidcClient.isAuthorized;
+    const isAuthorized = this._oidcClient && this._oidcClient.expiry > new Date();
     // istanbul ignore if
     if (isAuthorized)
       this._oidcClient!.onUserStateChanged.addListener(this._onUserStateChanged);
@@ -59,7 +59,7 @@ export class SignIn extends React.PureComponent<SignInProps> {
   // istanbul ignore next
   private _onUserStateChanged() {
     // istanbul ignore next
-    if (this._oidcClient && this._oidcClient.isAuthorized && this.props.onSignedIn)
+    if (this._oidcClient && this._oidcClient.expiry > new Date() && this.props.onSignedIn)
       this.props.onSignedIn();
   }
 

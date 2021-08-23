@@ -24,7 +24,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
-import { AccessToken, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { AccessTokenString, ProgressInfo, UrlDiscoveryClient } from "@bentley/itwin-client";
 // To test map-layer extension comment out the following and ensure ui-test-app\build\imjs_extensions contains map-layers, if not see Readme.md in map-layers package.
 import { MapLayersUI } from "@bentley/map-layers";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
@@ -161,7 +161,7 @@ export class SampleAppIModelApp {
   }
 
   public static getUiSettingsStorage(): UiSettings {
-    const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
+    const authorized = !!IModelApp.authorizationClient;
     if (SampleAppIModelApp.testAppConfiguration?.useLocalSettings || !authorized) {
       return SampleAppIModelApp._localUiSettings;
     }
@@ -569,7 +569,7 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
 
     AppUi.initialize();
 
-    const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
+    const authorized = !!IModelApp.authorizationClient;
     this._initializeSignin(authorized); // eslint-disable-line @typescript-eslint/no-floating-promises
 
     this.state = {
@@ -582,8 +582,8 @@ class SampleAppViewer extends React.Component<any, { authorized: boolean, uiSett
     return authorized ? SampleAppIModelApp.showSignedIn() : SampleAppIModelApp.showSignedOut();
   };
 
-  private _onUserStateChanged = async (_accessToken: AccessToken | undefined) => {
-    const authorized = !!IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized;
+  private _onUserStateChanged = async (_accessToken: AccessTokenString | undefined) => {
+    const authorized = !!IModelApp.authorizationClient;
     const uiSettingsStorage = SampleAppIModelApp.getUiSettingsStorage();
     await UiFramework.setUiSettingsStorage(uiSettingsStorage);
     this.setState({ authorized, uiSettingsStorage });

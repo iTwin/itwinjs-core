@@ -41,7 +41,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 
     const options: RequestOptions = {
       method: "GET",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: requestContext.accessToken },
       qs: queryOptions,
       accept: "application/json",
     };
@@ -94,7 +94,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 
     const options: RequestOptions = {
       method: "POST",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: requestContext.accessToken },
       body,
     };
 
@@ -109,7 +109,7 @@ export class IModelBankFileSystemContextClient implements ContextManagerClient {
 
     const options: RequestOptions = {
       method: "DELETE",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: requestContext.accessToken },
     };
 
     await request(requestContext, url, options);

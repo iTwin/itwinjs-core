@@ -18,7 +18,7 @@ import {
   RequestNewBriefcaseProps, RpcConfiguration, RpcManager, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLoggerCategory } from "@bentley/imodeljs-native";
-import { AccessToken, AccessTokenProps, AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
+import { AccessTokenProps, AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { TestUserCredentials, TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { BackendLoggerCategory as BackendLoggerCategory } from "../BackendLoggerCategory";
 import { CheckpointProps, V1CheckpointManager } from "../CheckpointManager";
@@ -172,7 +172,7 @@ export class IModelTestUtils {
         startsAt: new Date(Date.now()).toJSON(),
         expiresAt: new Date(Date.now() + 60 * 60 * 100).toJSON(), /* 1 hour from now */
       };
-      return new AuthorizedClientRequestContext(AccessToken.fromJson(props));
+      return new AuthorizedClientRequestContext(props.tokenString);
     }
 
     let credentials: TestUserCredentials;

@@ -230,10 +230,9 @@ export class UsageLoggingClient extends Client {
 
   private async logEntry(requestContext: AuthorizedClientRequestContext, postUrl: string, jsonBody: any): Promise<LogPostingResponse> {
     const token = requestContext.accessToken;
-    const authString: string = token.toTokenString();
     const options: RequestOptions = {
       method: "POST",
-      headers: { authorization: authString },
+      headers: { authorization: token },
       body: jsonBody,
     };
 

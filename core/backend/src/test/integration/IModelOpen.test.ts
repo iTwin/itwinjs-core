@@ -5,7 +5,6 @@
 
 import { BentleyError, GuidString } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { assert, expect } from "chai";
 import { SnapshotDb } from "../../IModelDb";
@@ -33,7 +32,7 @@ describe("IModelOpen (#integration)", () => {
   };
 
   it("Unauthorized requests should cause an obvious error", async () => {
-    const badToken = new AccessToken("ThisIsABadToken");
+    const badToken = "ThisIsABadToken";
     const badRequestContext = new AuthorizedBackendRequestContext(badToken);
 
     // Try the bad request context

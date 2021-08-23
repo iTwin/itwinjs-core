@@ -5,15 +5,10 @@
 
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import { ChangeSet, IModelHubClient, Version, VersionQuery } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
-
-class MockAccessToken extends AccessToken {
-  public constructor() { super(""); }
-  public override toTokenString() { return ""; }
-}
+import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 const imodelHubClient: IModelHubClient = new IModelHubClient();
-const accessToken: AccessToken = new MockAccessToken();
+const accessToken: AccessTokenString = "";
 const authorizedRequestContext = new AuthorizedClientRequestContext(accessToken, "b0f0808d-e76f-4615-acf4-95aa1b78eba5");
 const imodelId: GuidString = Guid.createValue();
 

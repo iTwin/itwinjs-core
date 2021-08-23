@@ -7,8 +7,7 @@
  */
 
 import { AuthStatus, BentleyError, ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, AuthorizationClient } from "@bentley/itwin-client";
-import { decode } from "jsonwebtoken";
+import { AccessTokenString, AuthorizationClient } from "@bentley/itwin-client";
 import { GrantBody, TokenSet } from "openid-client";
 import { BackendITwinClientLoggerCategory } from "../BackendITwinClientLoggerCategory";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
@@ -34,13 +33,18 @@ export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientCo
  * @beta
  */
 export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
-  private _accessToken?: AccessToken;
+  private _accessToken?: AccessTokenString;
 
   constructor(agentConfiguration: AgentAuthorizationClientConfiguration) {
     super(agentConfiguration);
   }
 
-  private async generateAccessToken(requestContext: ClientRequestContext): Promise<AccessToken> {
+  public get expiry(): Date {
+    // Placeholder
+    return new Date();
+  }
+
+  private async generateAccessToken(requestContext: ClientRequestContext): Promise<AccessTokenString> {
     const scope = this._configuration.scope;
     if (scope.includes("openid") || scope.includes("email") || scope.includes("profile") || scope.includes("organization"))
       throw new BentleyError(AuthStatus.Error, "Scopes for an Agent cannot include 'openid email profile organization'");
@@ -58,10 +62,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
       throw new BentleyError(AuthStatus.Error, error.message || "Authorization error", Logger.logError, loggerCategory, () => ({ error: error.error, message: error.message }));
     }
 
-    const userProfile = tokenSet.access_token
-      ? decode(tokenSet.access_token, { json: true, complete: false })
-      : undefined;
-    this._accessToken = AccessToken.fromTokenResponseJson(tokenSet, userProfile);
+    this._accessToken = tokenSet.access_token;
     return this._accessToken;
   }
 
@@ -69,7 +70,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
    * Get the access token
    * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead.
    */
-  public async getToken(requestContext: ClientRequestContext): Promise<AccessToken> {
+  public async getToken(requestContext: ClientRequestContext): Promise<AccessTokenString> {
     return this.generateAccessToken(requestContext);
   }
 
@@ -77,19 +78,20 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
    * Refresh the access token - simply checks if the token is still valid before re-fetching a new access token
    * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead to always get a valid token.
    */
-  public async refreshToken(requestContext: ClientRequestContext, jwt: AccessToken): Promise<AccessToken> {
-    requestContext.enter();
+  // SHOULD WE REMOVE THIS NOW?
+  // public async refreshToken(requestContext: ClientRequestContext, jwt: AccessTokenString): Promise<AccessTokenString> {
+  //   requestContext.enter();
 
-    // Refresh 1 minute before expiry
-    const expiresAt = jwt.getExpiresAt();
-    if (!expiresAt)
-      throw new BentleyError(AuthStatus.Error, "Invalid JWT passed to refresh");
-    if (expiresAt.getTime() - Date.now() > 1 * 60 * 1000)
-      return jwt;
+  //   // Refresh 1 minute before expiry
+  //   const expiresAt = jwt.getExpiresAt();
+  //   if (!expiresAt)
+  //     throw new BentleyError(AuthStatus.Error, "Invalid JWT passed to refresh");
+  //   if (expiresAt.getTime() - Date.now() > 1 * 60 * 1000)
+  //     return jwt;
 
-    this._accessToken = await this.generateAccessToken(requestContext);
-    return this._accessToken;
-  }
+  //   this._accessToken = await this.generateAccessToken(requestContext);
+  //   return this._accessToken;
+  // }
 
   /**
    * Set to true if there's a current authorized user or client (in the case of agent applications).
@@ -104,7 +106,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     if (!this._accessToken)
       return false;
 
-    const expiresAt = this._accessToken.getExpiresAt();
+    const expiresAt = this.expiry;
     if (!expiresAt)
       throw new BentleyError(AuthStatus.Error, "Invalid JWT");
 
@@ -119,7 +121,7 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
   /** Returns a promise that resolves to the AccessToken of the currently authorized client.
    * The token is refreshed if necessary.
    */
-  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
+  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString> {
     if (this.isAuthorized)
       return this._accessToken!;
     return this.generateAccessToken(requestContext || new ClientRequestContext());

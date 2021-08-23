@@ -14,7 +14,7 @@ class IModelOpenControl extends ContentControl {
   constructor(info: ConfigurableCreateInfo, options: any) {
     super(info, options);
 
-    if (IModelApp.authorizationClient && IModelApp.authorizationClient.isAuthorized)
+    if (IModelApp.authorizationClient)
       this.reactNode = <IModelOpen onIModelSelected={this._onOpenIModel} />;
     else
       this.reactNode = null;

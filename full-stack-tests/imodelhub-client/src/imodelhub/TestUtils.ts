@@ -13,7 +13,7 @@ import {
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,
   Version, VersionQuery,
 } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext, ECJsonTypeMap, ProgressInfo, UserInfo, WsgError } from "@bentley/itwin-client";
+import { AccessTokenString, AuthorizedClientRequestContext, ECJsonTypeMap, ProgressInfo, WsgError } from "@bentley/itwin-client";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
@@ -90,23 +90,6 @@ function removeFileUrlExpirationTime(url?: string) {
 }
 
 /** Other services */
-export class MockAccessToken extends AccessToken {
-  public constructor() {
-    super("");
-  }
-
-  public override getUserInfo(): UserInfo | undefined {
-    const id = "596c0d8b-eac2-46a0-aa4a-b590c3314e7c";
-    const email = { id: "testuser001@mailinator.com" };
-    const profile = { firstName: "test", lastName: "user" };
-    const organization = { id: "fefac5b-bcad-488b-aed2-df27bffe5786", name: "Bentley" };
-    const featureTracking = { ultimateSite: "1004144426", usageCountryIso: "US" };
-    return new UserInfo(id, email, profile, organization, featureTracking);
-  }
-
-  public override toTokenString() { return ""; }
-}
-
 export type RequestBehaviorOptionsList =
   "DoNotScheduleRenderThumbnailJob" |
   "DisableGlobalEvents" |
@@ -206,13 +189,13 @@ export async function delay(ms: number) {
   return new Promise((resolve) => setTimeout(resolve, ms));
 }
 
-export async function login(userCredentials?: TestUserCredentials): Promise<AccessToken> {
+export async function login(userCredentials?: TestUserCredentials): Promise<AccessTokenString> {
   if (TestConfig.enableMocks)
-    return new MockAccessToken();
+    return "";
   const authorizationClient = getCloudEnv().getAuthorizationClient(undefined, userCredentials);
   const requestContext = new ClientRequestContext();
 
-  await authorizationClient.signIn(requestContext);
+  // await authorizationClient.signIn(requestContext);
   return authorizationClient.getAccessToken(requestContext);
 }
 

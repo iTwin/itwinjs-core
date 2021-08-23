@@ -8,7 +8,7 @@ import {
   AllCodesDeletedEvent, AllLocksDeletedEvent, BriefcaseDeletedEvent, ChangeSetPostPushEvent, ChangeSetPrePushEvent, CheckpointCreatedEvent, CheckpointV2CreatedEvent, CodeEvent, EventSAS,
   EventSubscription, EventType, IModelClient, IModelDeletedEvent, IModelHubEvent, IModelHubEventType, LockEvent, LockLevel, LockType, VersionEvent,
 } from "@bentley/imodelhub-client";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers } from "@bentley/oidc-signin-tool";
 import { RequestType, ResponseBuilder, ScopeType } from "../ResponseBuilder";
 import { TestConfig } from "../TestConfig";
@@ -99,7 +99,7 @@ describe("iModelHub EventHandler", () => {
 
   before(async function () {
     this.timeout(0);
-    const accessToken: AccessToken = TestConfig.enableMocks ? new utils.MockAccessToken() : await utils.login(TestUsers.super);
+    const accessToken: AccessTokenString = TestConfig.enableMocks ? "" : await utils.login(TestUsers.super);
     requestContext = new AuthorizedClientRequestContext(accessToken);
 
     contextId = await utils.getProjectId(requestContext);
@@ -131,7 +131,7 @@ describe("iModelHub EventHandler", () => {
   it("should fail getting SAS token with invalid accessToken (#integration)", async () => {
     let error;
     try {
-      const mockRequestContext = new AuthorizedClientRequestContext(new utils.MockAccessToken());
+      const mockRequestContext = new AuthorizedClientRequestContext("");
       await imodelHubClient.events.getSASToken(mockRequestContext, imodelId);
     } catch (err) {
       error = err;
@@ -227,7 +227,7 @@ describe("iModelHub EventHandler", () => {
 
     let receivedEventsCount = 0;
     const deleteListener = imodelHubClient.events.createListener(requestContext, async () => {
-      return TestConfig.enableMocks ? new utils.MockAccessToken() : utils.login(TestUsers.super);
+      return TestConfig.enableMocks ? "" : utils.login(TestUsers.super);
     }, subscription.wsgId, imodelId, (receivedEvent: IModelHubEvent) => {
       if (receivedEvent instanceof CodeEvent)
         receivedEventsCount++;

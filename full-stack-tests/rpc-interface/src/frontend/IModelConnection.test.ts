@@ -10,7 +10,7 @@ import {
   MassPropertiesRequestProps, ModelQueryParams,
 } from "@bentley/imodeljs-common";
 import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessTokenString } from "@bentley/itwin-client";
 import { TestFrontendAuthorizationClient } from "@bentley/oidc-signin-tool/lib/frontend";
 import { TestContext } from "./setup/TestContext";
 
@@ -25,7 +25,7 @@ const expect = chai.expect;
 };
 
 describe("IModel Connection", () => {
-  let accessToken: AccessToken;
+  let accessToken: AccessTokenString;
   let testContext: TestContext;
 
   before(async function () {
@@ -61,7 +61,7 @@ describe("IModel Connection", () => {
 });
 
 describe("IModel Connection with client credentials", () => {
-  let accessToken: AccessToken;
+  let accessToken: AccessTokenString;
   let testContext: TestContext;
 
   before(async function () {
@@ -92,7 +92,7 @@ describe("IModel Connection with client credentials", () => {
 describe("IModelReadRpcInterface Methods requestable from an IModelConnection", () => {
   let iModel: IModelConnection;
   let contextId: string;
-  let accessToken: AccessToken;
+  let accessToken: AccessTokenString;
   let testContext: TestContext;
 
   before(async function () {
@@ -324,7 +324,7 @@ describe("IModelReadRpcInterface Methods requestable from an IModelConnection", 
 describe("Snapping", () => {
   let iModel: IModelConnection;
   let contextId: string;
-  let accessToken: AccessToken;
+  let accessToken: AccessTokenString;
   let testContext: TestContext;
 
   before(async function () {

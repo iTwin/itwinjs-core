@@ -11,7 +11,7 @@ import { Angle } from "@bentley/geometry-core";
 import {
   CartographicRange, ContextRealityModel, ContextRealityModelProps, FeatureAppearance, OrbitGtBlobProps,
 } from "@bentley/imodeljs-common";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessTokenString } from "@bentley/itwin-client";
 import { RealityData, RealityDataClient } from "@bentley/reality-data-client";
 import { DisplayStyleState } from "./DisplayStyleState";
 import { AuthorizedFrontendRequestContext } from "./FrontendRequestContext";
@@ -23,8 +23,8 @@ import {
   createOrbitGtTileTreeReference, createRealityTileTreeReference, RealityModelTileTree, TileTreeReference,
 } from "./tile/internal";
 
-async function getAccessToken(): Promise<AccessToken | undefined> {
-  if (!IModelApp.authorizationClient || !IModelApp.authorizationClient.hasSignedIn)
+async function getAccessToken(): Promise<AccessTokenString | undefined> {
+  if (!IModelApp.authorizationClient)
     return undefined; // Not signed in
 
   try {

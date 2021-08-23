@@ -265,7 +265,7 @@ export abstract class WsgClient extends Client {
     const untypedInstance: any = instance ? ECJsonTypeMap.toJson<T>("wsg", instance) : undefined;
     const options: RequestOptions = {
       method: "DELETE",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: requestContext.accessToken },
       body: {
         instance: untypedInstance,
       },
@@ -296,7 +296,7 @@ export abstract class WsgClient extends Client {
 
     const options: RequestOptions = {
       method: "POST",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: requestContext.accessToken },
       body: {
         instance: untypedInstance,
       },
@@ -342,7 +342,7 @@ export abstract class WsgClient extends Client {
 
     const options: RequestOptions = {
       method: "POST",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: requestContext.accessToken },
       body: {
         instances: untypedInstances,
       },
@@ -428,7 +428,7 @@ export abstract class WsgClient extends Client {
     };
 
     options.headers = {
-      authorization: requestContext.accessToken.toTokenString(),
+      authorization: requestContext.accessToken,
     };
 
     this.applyUserConfiguredHttpRequestOptions(options, httpRequestOptions);
@@ -499,7 +499,7 @@ export abstract class WsgClient extends Client {
 
     const options: RequestOptions = {
       method: "POST",
-      headers: { authorization: requestContext.accessToken.toTokenString() },
+      headers: { authorization: requestContext.accessToken },
       body: this.getQueryRequestBody(queryOptions),
     };
 

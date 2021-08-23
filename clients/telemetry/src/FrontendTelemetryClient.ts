@@ -25,12 +25,6 @@ export class ClientTelemetryEvent extends TelemetryEvent {
   public readonly clientApplicationId?: string;
   /** Application version configured for the client application. */
   public readonly clientApplicationVersion?: string;
-  /** Client-configured ID of the current user */
-  public readonly clientUserId?: string;
-  /** Client-configured ID of the current user's organization */
-  public readonly clientUserOrgId?: string;
-  /** Client-configured name of the current user's organization */
-  public readonly clientUserOrgName?: string;
 
   public constructor(telemetryEvent: TelemetryEvent, requestContext: AuthorizedClientRequestContext) {
     super(telemetryEvent.eventName, telemetryEvent.eventId, telemetryEvent.contextId, telemetryEvent.iModelId, telemetryEvent.changeSetId, telemetryEvent.time, telemetryEvent.additionalProperties);
@@ -39,9 +33,6 @@ export class ClientTelemetryEvent extends TelemetryEvent {
     this.sessionId = requestContext.sessionId;
     this.clientApplicationId = requestContext.applicationId;
     this.clientApplicationVersion = requestContext.applicationVersion;
-    this.clientUserId = requestContext.accessToken.getUserInfo()?.id;
-    this.clientUserOrgId = requestContext.accessToken.getUserInfo()?.organization?.name;
-    this.clientUserOrgName = requestContext.accessToken.getUserInfo()?.organization?.id;
   }
 
   public override getProperties(): { [key: string]: any } {
@@ -51,9 +42,6 @@ export class ClientTelemetryEvent extends TelemetryEvent {
     properties.sessionId = this.sessionId;
     properties.clientApplicationId = this.clientApplicationId;
     properties.clientApplicationVersion = this.clientApplicationVersion;
-    properties.clientUserId = this.clientUserId;
-    properties.clientUserOrgName = this.clientUserOrgName;
-    properties.clientUserOrgId = this.clientUserOrgId;
 
     return properties;
   }

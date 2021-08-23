@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as chai from "chai";
-import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { AccessTokenString, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { TestConfig } from "./TestConfig";
 
@@ -21,7 +21,7 @@ export class HubAccessTestValidator {
     if (HubAccessTestValidator._singletonInstance)
       return HubAccessTestValidator._singletonInstance;
 
-    const accessToken: AccessToken = await TestUtility.getAccessToken(TestUsers.regular);
+    const accessToken: AccessTokenString = await TestUtility.getAccessToken(TestUsers.regular);
     const requestContext = new AuthorizedClientRequestContext(accessToken);
 
     const testProjectName = "iModelJsIntegrationTest";
@@ -33,13 +33,13 @@ export class HubAccessTestValidator {
     return HubAccessTestValidator._singletonInstance;
   }
 
-  public async validateContextRegistryAccess(accessToken: AccessToken) {
+  public async validateContextRegistryAccess(accessToken: AccessTokenString) {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
     const projectId = await TestConfig.queryProjectId(requestContext, this._testProjectName);
     chai.expect(projectId).to.be.equal(this._testProjectId);
   }
 
-  public async validateIModelHubAccess(accessToken: AccessToken) {
+  public async validateIModelHubAccess(accessToken: AccessTokenString) {
     const requestContext = new AuthorizedClientRequestContext(accessToken);
     const iModelId = await TestConfig.queryIModelId(requestContext, this._testIModelName, this._testProjectId);
     chai.expect(iModelId).to.be.equal(this._testIModelId);

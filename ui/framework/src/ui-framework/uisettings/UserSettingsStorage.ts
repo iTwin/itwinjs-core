@@ -52,7 +52,7 @@ export class UserSettingsStorage implements UiSettingsStorage {
   }
 
   private get isSignedIn(): boolean {
-    return !!IModelApp.authorizationClient && IModelApp.authorizationClient.hasSignedIn;
+    return !!IModelApp.authorizationClient;
   }
 }
 

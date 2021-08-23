@@ -66,7 +66,7 @@ export class ExtensionClient extends Client {
     const options: RequestOptions = { method: "GET" };
     await this.setupOptionDefaults(options);
     requestContext.enter();
-    options.headers = { authorization: requestContext.accessToken.toTokenString() };
+    options.headers = { authorization: requestContext.accessToken };
     try {
       const urlBase = await this.getUrl(requestContext);
       const response = await request(requestContext, `${urlBase}${contextId}/IModelExtension/${extensionName ?? ""}`, options);
@@ -101,7 +101,7 @@ export class ExtensionClient extends Client {
     requestContext.enter();
 
     const options: RequestOptions = { method: "GET" };
-    options.headers = { authorization: requestContext.accessToken.toTokenString() };
+    options.headers = { authorization: requestContext.accessToken };
     await this.setupOptionDefaults(options);
     requestContext.enter();
     try {
@@ -205,7 +205,7 @@ export class ExtensionClient extends Client {
     };
 
     const options: RequestOptions = { method: "POST" };
-    options.headers = { authorization: requestContext.accessToken.toTokenString() };
+    options.headers = { authorization: requestContext.accessToken };
     options.body = requestBody;
     await this.setupOptionDefaults(options);
     requestContext.enter();
@@ -269,7 +269,7 @@ export class ExtensionClient extends Client {
     requestContext.enter();
 
     const options: RequestOptions = { method: "DELETE" };
-    options.headers = { authorization: requestContext.accessToken.toTokenString() };
+    options.headers = { authorization: requestContext.accessToken };
     await this.setupOptionDefaults(options);
     requestContext.enter();
 

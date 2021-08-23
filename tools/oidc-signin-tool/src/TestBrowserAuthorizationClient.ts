@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { AccessTokenString, UrlDiscoveryClient } from "@bentley/itwin-client";
 import { AuthorizationParameters, Client, custom, generators, Issuer, OpenIDCallbackChecks, TokenSet } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
@@ -25,7 +25,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
   private _imsUrl!: string;
   private readonly _config: TestBrowserAuthorizationClientConfiguration;
   private readonly _user: TestUserCredentials;
-  private _accessToken?: AccessToken;
+  private _accessToken?: AccessTokenString;
   private _deploymentRegion?: number;
 
   /**
@@ -36,6 +36,11 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
   public constructor(config: TestBrowserAuthorizationClientConfiguration, user: TestUserCredentials) {
     this._config = config;
     this._user = user;
+  }
+
+  public get expiry(): Date {
+    // Placeholder for now
+    return new Date();
   }
 
   /**
@@ -68,7 +73,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     this._client = new this._issuer.Client({ client_id: this._config.clientId, token_endpoint_auth_method: "none" }); // eslint-disable-line @typescript-eslint/naming-convention
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token: AccessTokenString | undefined) => void>();
 
   /** Returns true if there's a current authorized user or client (in the case of agent applications).
    * Returns true if signed in and the access token has not expired, and false otherwise.
@@ -81,7 +86,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
   public get hasExpired(): boolean {
     if (!this._accessToken)
       return false;
-    const expiresAt = this._accessToken.getExpiresAt();
+    const expiresAt = this.expiry;
     assert(!!expiresAt);
     // show expiry one minute before actual time to refresh
     return ((expiresAt.getTime() - Date.now()) <= 1 * 60 * 1000);
@@ -97,9 +102,9 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
    * The token is refreshed if necessary and possible.
    * @throws [[BentleyError]] If the client was not used to authorize, or there was an authorization error.
    */
-  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> {
+  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessTokenString> {
     if (this.isAuthorized)
-      return this._accessToken!;
+      return this._accessToken;
 
     // Add retry logic to help avoid flaky issues on CI machines.
     let numRetries = 0;
@@ -118,7 +123,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
       break;
     }
 
-    return this._accessToken!;
+    return this._accessToken;
   }
 
   public async signIn(): Promise<void> {
@@ -196,9 +201,10 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
     this.onUserStateChanged.raiseEvent(this._accessToken);
   }
 
-  private async tokenSetToAccessToken(tokenSet: TokenSet): Promise<AccessToken> {
-    const userInfo = await this._client.userinfo(tokenSet);
-    return AccessToken.fromTokenResponseJson(tokenSet, userInfo)!;
+  private async tokenSetToAccessToken(tokenSet: TokenSet): Promise<AccessTokenString> {
+    // const userInfo = await this._client.userinfo(tokenSet);
+    return tokenSet.access_token;
+    // return AccessToken.fromTokenResponseJson(tokenSet, userInfo)!;
   }
 
   private createAuthParams(scope: string): [AuthorizationParameters, OpenIDCallbackChecks] {
@@ -445,7 +451,7 @@ export class TestBrowserAuthorizationClient implements FrontendAuthorizationClie
  * @param deploymentRegion Deployment region. If unspecified, it's inferred from configuration, or simply defaults to "0" for PROD use
  * @alpha
  */
-export async function getTestAccessToken(config: TestBrowserAuthorizationClientConfiguration, user: TestUserCredentials, deploymentRegion?: number): Promise<AccessToken> {
+export async function getTestAccessToken(config: TestBrowserAuthorizationClientConfiguration, user: TestUserCredentials, deploymentRegion?: number): Promise<AccessTokenString> {
   const client = new TestBrowserAuthorizationClient(config, user);
   if (undefined !== deploymentRegion)
     client.deploymentRegion = deploymentRegion;

@@ -6,8 +6,7 @@
  * @module iModelHubClient
  */
 import { Asset, Project } from "@bentley/context-registry-client";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
+import { AuthorizationClient, AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { IModelClient } from "./IModelClient";
 
 /** How to discover "contexts". A context corresponds to an iTwin "project" or "asset".
@@ -25,7 +24,7 @@ export interface IModelCloudEnvironment {
   readonly isIModelHub: boolean;
   readonly contextMgr: ContextManagerClient;
   readonly imodelClient: IModelClient;
-  getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): FrontendAuthorizationClient;
+  getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any): AuthorizationClient;
   startup(): Promise<void>;
   shutdown(): Promise<number>;
 }

@@ -8,7 +8,7 @@
  */
 
 import { assert, AuthStatus, BeEvent, BentleyError, ClientRequestContext, IDisposable, Logger } from "@bentley/bentleyjs-core";
-import { AccessToken, ImsAuthorizationClient } from "@bentley/itwin-client";
+import { AccessTokenString, ImsAuthorizationClient } from "@bentley/itwin-client";
 import { User, UserManager, UserManagerSettings, WebStorageStateStore } from "oidc-client";
 import { FrontendAuthorizationClient } from "../../FrontendAuthorizationClient";
 import { FrontendAuthorizationClientLoggerCategory } from "../../FrontendAuthorizationClientLoggerCategory";
@@ -57,9 +57,14 @@ export interface BrowserAuthorizationClientRequestOptions {
  * @beta
  */
 export class BrowserAuthorizationClient extends BrowserAuthorizationBase<BrowserAuthorizationClientConfiguration> implements FrontendAuthorizationClient, IDisposable {
-  public readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token?: AccessTokenString) => void>();
 
-  protected _accessToken?: AccessToken;
+  protected _accessToken?: AccessTokenString;
+
+  public get expiry(): Date {
+    // Placeholder to get it to build
+    return new Date();
+  }
 
   public get isAuthorized(): boolean {
     return this.hasSignedIn;
@@ -253,7 +258,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       this._accessToken = undefined;
       return;
     }
-    this._accessToken = AccessToken.fromTokenResponseJson(user, user.profile);
+    this._accessToken = user.access_token; // AccessToken.fromTokenResponseJson(user, user.profile);
   }
 
   /**
@@ -283,7 +288,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
    * The token is refreshed as necessary.
    * @throws [BentleyError]($bentley) If signIn() was not called, or there was an authorization error.
    */
-  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessToken> {
+  public async getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString> {
     if (this._accessToken)
       return this._accessToken;
     if (requestContext)

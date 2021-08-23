@@ -8,7 +8,6 @@ import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import { assert } from "chai";
 import { BackendTestCallbacks } from "../common/SideChannels";
 import { IModelApp, NativeApp } from "@bentley/imodeljs-frontend";
-import { AccessToken } from "@bentley/itwin-client";
 
 if (!ProcessDetector.isElectronAppFrontend) {
   describe("IpcWebSocket", () => {
@@ -47,7 +46,8 @@ if (!ProcessDetector.isElectronAppFrontend) {
 
     it("should not recurse in auth call", async () => {
       await NativeApp.startup(socket);
-      IModelApp.authorizationClient!.onUserStateChanged.raiseEvent(new AccessToken(undefined, undefined, new Date(0)));
+      // TODO: Best way to replace line below?
+      // IModelApp.authorizationClient!.onUserStateChanged.raiseEvent(new AccessToken(undefined, undefined, new Date(0)));
       await NativeApp.callNativeHost("getAccessTokenProps");
       IModelApp.authorizationClient = undefined;
     });

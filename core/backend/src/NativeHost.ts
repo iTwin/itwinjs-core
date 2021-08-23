@@ -12,7 +12,7 @@ import {
   BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
 } from "@bentley/imodeljs-common";
-import { AccessToken, AccessTokenProps, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
+import { AccessTokenProps, AccessTokenString, AuthorizationClient, ImsAuthorizationClient, RequestGlobalOptions } from "@bentley/itwin-client";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { Downloads } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
@@ -20,11 +20,11 @@ import { IpcHandler, IpcHost, IpcHostOpts } from "./IpcHost";
 import { NativeAppStorage } from "./NativeAppStorage";
 
 /** @internal */
-export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient {
-  protected _accessToken?: AccessToken;
+export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient{
+  protected _accessToken?: AccessTokenString;
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;
-  protected abstract refreshToken(): Promise<AccessToken>;
+  protected abstract refreshToken(): Promise<AccessTokenString>;
   public config?: NativeAppAuthorizationConfiguration;
   public expireSafety = 60 * 10; // refresh token 10 minutes before real expiration time
   public issuerUrl?: string;
@@ -35,20 +35,25 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
   }
 
   public get isAuthorized(): boolean {
-    return undefined !== this._accessToken && !this._accessToken.isExpired(this.expireSafety);
+    return undefined !== this._accessToken && this.expiry > new Date();
   }
 
-  public setAccessToken(token?: AccessToken) {
+  public setAccessToken(token?: AccessTokenString) {
     if (token === this._accessToken)
       return;
     this._accessToken = token;
     NativeHost.onUserStateChanged.raiseEvent(token);
   }
 
-  public async getAccessToken(): Promise<AccessToken> {
+  public async getAccessToken(): Promise<AccessTokenString> {
     if (!this.isAuthorized)
       this.setAccessToken(await this.refreshToken());
     return this._accessToken!;
+  }
+
+  public get expiry(): Date {
+    // Placeholder
+    return new Date();
   }
 
   public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
@@ -70,7 +75,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public get channelName() { return nativeAppChannel; }
 
   public async setAccessTokenProps(token: AccessTokenProps) {
-    NativeHost.authorization.setAccessToken(AccessToken.fromJson(token));
+    NativeHost.authorization.setAccessToken(token.tokenString);
   }
   public async initializeAuth(props: SessionProps, config?: NativeAppAuthorizationConfiguration): Promise<number> {
     IModelHost.session.applicationId = props.applicationId;
@@ -87,7 +92,12 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
     return NativeHost.authorization.signOut();
   }
   public async getAccessTokenProps(): Promise<AccessTokenProps> {
-    return (await NativeHost.authorization.getAccessToken()).toJSON();
+    return {
+      tokenString: await NativeHost.authorization.getAccessToken() ?? "",
+      startsAt: undefined,
+      expiresAt: NativeHost.authorization.expiry.toDateString(),
+      userInfo: undefined,
+    };
   }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
     return NativeHost.checkInternetConnectivity();
@@ -198,7 +208,7 @@ export class NativeHost {
   public static get authorization() { return IModelHost.authorizationClient as NativeAppAuthorizationBackend; }
 
   /** Event called when the user's sign-in state changes - this may be due to calls to signIn(), signOut() or because the token was refreshed */
-  public static readonly onUserStateChanged = new BeEvent<(token?: AccessToken) => void>();
+  public static readonly onUserStateChanged = new BeEvent<(token?: AccessTokenString) => void>();
 
   /** Event called when the internet connectivity changes, if known. */
   public static readonly onInternetConnectivityChanged = new BeEvent<(status: InternetConnectivityStatus) => void>();
@@ -234,8 +244,13 @@ export class NativeHost {
       this._isValid = true;
       this.onInternetConnectivityChanged.addListener((status: InternetConnectivityStatus) =>
         NativeHost.notifyNativeFrontend("notifyInternetConnectivityChanged", status));
-      this.onUserStateChanged.addListener((token?: AccessToken) =>
-        NativeHost.notifyNativeFrontend("notifyUserStateChanged", token?.toJSON()));
+      this.onUserStateChanged.addListener((token?: AccessTokenString) =>
+        NativeHost.notifyNativeFrontend("notifyUserStateChanged", {
+          tokenString: token ?? "",
+          startsAt: undefined,
+          expiresAt: NativeHost.authorization.expiry.toDateString(),
+          userInfo: undefined,
+        }));
       this._applicationName = opt?.nativeHost?.applicationName ?? "iTwinApp";
     }
 

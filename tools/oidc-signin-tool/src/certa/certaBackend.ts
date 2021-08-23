@@ -5,10 +5,10 @@
 
 import * as path from "path";
 import { registerBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
-import { AccessToken } from "@bentley/itwin-client";
+import { AccessTokenString } from "@bentley/itwin-client";
 import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from "../TestUsers";
 import { TestUtility } from "../TestUtility";
-import { getTokenCallbackName, serializeToken } from "./certaCommon";
+import { getTokenCallbackName } from "./certaCommon";
 import * as fs from "fs";
 
 // A backend to use within Certa's `backendInitModule` to setup OIDC sign-in.
@@ -44,12 +44,12 @@ loadEnv(path.join(process.cwd(), ".env"));
  *
  * If the oidcConfig param is provided, it will always be used over the default.
  */
-async function signin(user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration): Promise<AccessToken> {
+async function signin(user: TestUserCredentials, oidcConfig?: TestBrowserAuthorizationClientConfiguration): Promise<AccessTokenString> {
   // Handle OIDC signin
   // console.log("Starting OIDC signin...");
   // console.time("Finished OIDC signin in");
 
-  let token: AccessToken;
+  let token: AccessTokenString;
   if (undefined === oidcConfig || null === oidcConfig) {
     token = await TestUtility.getAccessToken(user);
   } else {
@@ -67,5 +67,5 @@ async function signin(user: TestUserCredentials, oidcConfig?: TestBrowserAuthori
 
 registerBackendCallback(getTokenCallbackName, async (user: any, oidcConfig?: any): Promise<string> => {
   const accessToken = await signin(user, oidcConfig);
-  return JSON.stringify(serializeToken(accessToken));
+  return accessToken?.toString() ?? "";
 });

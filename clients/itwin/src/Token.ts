@@ -194,3 +194,5 @@ export class AccessToken {
     return token;
   }
 }
+
+export type AccessTokenString = string | undefined;

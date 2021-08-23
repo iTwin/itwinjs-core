@@ -5,11 +5,11 @@
 
 import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessToken, UserInfo } from "@bentley/itwin-client";
+import { AccessTokenString, UserInfo } from "@bentley/itwin-client";
 import { TestUtility } from "@bentley/oidc-signin-tool";
 
 export class TestIModelHubOidcAuthorizationClient implements FrontendAuthorizationClient {
-  private _token: AccessToken | undefined;
+  private _token: AccessTokenString | undefined;
 
   public constructor(_userInfo: UserInfo | undefined, private _userCredentials: any) {
   }
@@ -25,7 +25,7 @@ export class TestIModelHubOidcAuthorizationClient implements FrontendAuthorizati
     this.onUserStateChanged.raiseEvent(this._token);
   }
 
-  public readonly onUserStateChanged = new BeEvent<(token: AccessToken | undefined) => void>();
+  public readonly onUserStateChanged = new BeEvent<(token: AccessTokenString | undefined) => void>();
   public get isAuthorized(): boolean {
     return !!this._token;
   }
@@ -36,7 +36,12 @@ export class TestIModelHubOidcAuthorizationClient implements FrontendAuthorizati
     return !!this._token;
   }
 
-  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessToken> {
+  public get expiry(): Date {
+    // Placeholder
+    return new Date();
+  }
+
+  public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessTokenString> {
     if (!this._token) {
       throw new Error("User is not signed in.");
     }
