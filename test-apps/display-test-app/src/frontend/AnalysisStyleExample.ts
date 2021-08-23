@@ -282,9 +282,7 @@ export async function openAnalysisStyleExample(viewer: Viewer): Promise<void> {
   viewer.viewport.setStandardRotation(StandardViewId.Iso);
   viewer.viewport.zoomToVolume(viewer.viewport.iModel.projectExtents);
 
-  const viewFlags = viewer.viewport.viewFlags.clone();
-  viewFlags.renderMode = RenderMode.SolidFill;
-  viewer.viewport.viewFlags = viewFlags;
+  viewer.viewport.viewFlags = viewer.viewport.viewFlags.withRenderMode(RenderMode.SolidFill);
 
   viewer.viewport.view.getDisplayStyle3d().settings.environment = {
     sky: {
