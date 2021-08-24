@@ -777,18 +777,6 @@ export class ExplosionEffect extends Tool {
 }
 
 // @beta
-export class ExtensionServiceTool extends Tool {
-    // (undocumented)
-    static get maxArgs(): undefined;
-    // (undocumented)
-    static get minArgs(): number;
-    parseAndRun(...args: string[]): boolean;
-    run(args: any[]): boolean;
-    // (undocumented)
-    static toolId: string;
-}
-
-// @beta
 export class FadeOutTool extends ViewportToggleTool {
     // (undocumented)
     protected toggle(vp: Viewport, enable?: boolean): void;
