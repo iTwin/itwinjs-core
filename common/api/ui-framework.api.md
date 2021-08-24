@@ -73,7 +73,6 @@ import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { ItemField } from '@bentley/imodeljs-frontend';
 import { ITwin } from '@bentley/context-registry-client';
-import { ITwinAccess } from '@bentley/context-registry-client';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';
@@ -6574,13 +6573,11 @@ export class UiFramework {
     static initialize(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string): Promise<void>;
     static get initialized(): boolean;
     // @internal
-    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, iTwinAccessService?: ITwinAccess, iModelServices?: IModelServices): Promise<void>;
+    static initializeEx(store: Store<any> | undefined, i18n?: I18N, frameworkStateKey?: string, iModelServices?: IModelServices): Promise<void>;
     // @alpha
     static get isContextMenuOpen(): boolean;
     // (undocumented)
     static isMobile(): boolean;
-    // @internal (undocumented)
-    static get iTwinAccessService(): ITwinAccess;
     // @internal (undocumented)
     static loggerCategory(obj: any): string;
     // @internal
