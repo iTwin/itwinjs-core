@@ -18,7 +18,7 @@ import {
 import { FillCentered } from "@bentley/ui-core";
 import {
   ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, createAction,
-  ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
+  ReducerRegistryInstance, StateManager, StatusBarItemUtilities, SyncUiEventId, UiFramework, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { ShadowField } from "../appui/statusfields/ShadowField";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
@@ -100,6 +100,10 @@ class SampleExtensionStateManager {
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "TestUiProvider";
 
+  constructor() {
+
+  }
+
   public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
 
     if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
@@ -123,7 +127,13 @@ class TestUiProvider implements UiItemsProvider {
         });
       const groupSpec = ToolbarItemUtilities.createGroupButton("test-tool-group", 230, "icon-developer", "test group", [childActionSpec, simpleActionSpec], { badgeType: BadgeType.TechnicalPreview, parentToolGroupId: "tool-formatting-setting" });
 
-      return [simpleActionSpec, nestedActionSpec, groupSpec];
+      const isClearMeasureHiddenCondition = new ConditionalBooleanValue((): boolean => !IModelApp.toolAdmin.currentTool?.toolId.startsWith("Measure."), [SyncUiEventId.ToolActivated]);
+      const clearMeasureActionSpec = ToolbarItemUtilities.createActionButton("clear-measure-tool", 100, "icon-paintbrush", "Clear Measure Decorations",
+        (): void => {
+          IModelApp.toolAdmin.currentTool?.onReinitialize();
+        }, { isHidden: isClearMeasureHiddenCondition });
+
+      return [clearMeasureActionSpec, simpleActionSpec, nestedActionSpec, groupSpec];
     }
     return [];
   }

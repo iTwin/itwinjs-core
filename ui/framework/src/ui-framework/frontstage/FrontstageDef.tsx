@@ -544,11 +544,11 @@ export class FrontstageDef {
 
     // Process panels before zones so in uiVersion="2" extension can explicitly target a widget for a StagePanelSection
     this.panelDefs.forEach((panelDef: StagePanelDef) => {
-      panelDef.updateDynamicWidgetDefs(this.id, this.usage, panelDef.location, undefined, widgetDefs);
+      panelDef.updateDynamicWidgetDefs(this.id, this.usage, panelDef.location, undefined, widgetDefs, this.applicationData);
     });
 
     this.zoneDefs.forEach((zoneDef: ZoneDef) => {
-      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation, undefined, widgetDefs);
+      zoneDef.updateDynamicWidgetDefs(this.id, this.usage, zoneDef.zoneLocation, undefined, widgetDefs, this.applicationData);
     });
   }
 

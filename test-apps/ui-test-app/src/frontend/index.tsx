@@ -185,7 +185,7 @@ export class SampleAppIModelApp {
     };
 
     // For testing local extensions only, should not be used in production.
-    IModelApp.extensionAdmin.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
+    IModelApp.extensionAdmin?.addExtensionLoaderFront(new ExternalServerExtensionLoader("http://localhost:3000"));
 
     this.sampleAppNamespace = IModelApp.i18n.registerNamespace("SampleApp");
 

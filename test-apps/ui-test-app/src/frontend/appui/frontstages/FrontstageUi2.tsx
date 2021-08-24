@@ -4,8 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BasicNavigationWidget, BasicToolWidget, ContentGroup, CoreTools,
-  Frontstage, FrontstageProps, FrontstageProvider, IModelViewportControl, StagePanel, StagePanelState, SyncUiEventArgs, SyncUiEventDispatcher, ToolbarHelper, UiFramework, Widget, Zone,
+  BackstageAppButton, ContentGroup, CoreTools,
+  Frontstage, FrontstageProps, FrontstageProvider, IModelViewportControl,
+  SimpleNavigationWidget, SimpleStatusBarWidgetControl, SimpleToolWidget, StagePanel, StagePanelState, SyncUiEventArgs,
+  SyncUiEventDispatcher, ToolbarHelper, UiFramework, Widget, Zone,
 } from "@bentley/ui-framework";
 import { CommonToolbarItem, StageUsage, WidgetState } from "@bentley/ui-abstract";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
@@ -64,8 +66,7 @@ export class FrontstageUi2 extends FrontstageProvider {
   };
 
   public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
-    ToolbarHelper.createToolbarItemFromItemDef(0, CoreTools.keyinBrowserButtonItemDef, { groupPriority: -10 }),
-    ToolbarHelper.createToolbarItemFromItemDef(135, AppTools.toggleHideShowItemsCommand, { groupPriority: 30 }),
+    ToolbarHelper.createToolbarItemFromItemDef(10, AppTools.toggleHideShowItemsCommand, { groupPriority: 3000 }),
   ];
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
@@ -90,12 +91,26 @@ export class FrontstageUi2 extends FrontstageProvider {
         defaultContentId="singleIModelView"
         isInFooterMode={true}
         usage={StageUsage.General}
-        applicationData={{ key: "value" }}
+        applicationData={
+          {
+            verticalContentToolGroups: {
+              selectElementGroupPriority: 100,
+              measureGroupPriority: 200,
+              selectionGroupPriority: 300,
+            },
+            horizontalContentToolGroups: {
+              clearSelectionGroupPriority: 100,
+              overridesGroupPriority: 200,
+            },
+          }
+        }
+
         contentManipulationTools={
           <Zone
             widgets={
               [
-                <Widget isFreeform={true} element={<BasicToolWidget additionalHorizontalItems={this.additionalHorizontalToolbarItems} />} />,
+                <Widget isFreeform={true} element={<SimpleToolWidget cornerButton={<BackstageAppButton icon={"icon-bentley-systems"} />}
+                  horizontalItems={this.additionalHorizontalToolbarItems} />} />,
               ]}
           />
         }
@@ -103,7 +118,7 @@ export class FrontstageUi2 extends FrontstageProvider {
           <Zone
             widgets={
               [
-                <Widget isFreeform={true} element={<BasicNavigationWidget />} />,
+                <Widget isFreeform={true} element={<SimpleNavigationWidget />} />,
               ]}
           />
         }
@@ -119,7 +134,7 @@ export class FrontstageUi2 extends FrontstageProvider {
           <Zone
             widgets={
               [
-                <Widget isStatusBar={true} classId="SmallStatusBar" />,
+                <Widget isStatusBar={true} control={SimpleStatusBarWidgetControl} />,
               ]}
           />
         }

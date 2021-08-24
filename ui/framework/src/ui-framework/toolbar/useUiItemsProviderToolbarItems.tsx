@@ -1,6 +1,6 @@
 /*---------------------------------------------------------------------------------------------
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
-* Licensed under the MIT License. See LICENSE.md in the project root for license terms.
+* See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 /** @packageDocumentation
  * @module Toolbar
@@ -38,7 +38,7 @@ export const useUiItemsProviderToolbarItems = (manager: ToolbarItemsManager, too
       const usage = frontstageDef?.usage ? frontstageDef.usage : StageUsage.General;
       currentStageRef.current = stageId;
       providersRef.current = uiProviders;
-      const toolbarItems = UiItemsManager.getToolbarButtonItems(stageId, usage, toolbarUsage, toolbarOrientation);
+      const toolbarItems = UiItemsManager.getToolbarButtonItems(stageId, usage, toolbarUsage, toolbarOrientation, frontstageDef?.applicationData);
       const updatedToolbarItems = UiItemsArbiter.updateToolbarButtonItems(toolbarItems);
       manager.loadItems(updatedToolbarItems);
       setItems(manager.items);

@@ -400,7 +400,7 @@ export class AppTools {
       // Even though the following will work because calling SampleAppIModelApp.getTestProperty will update redux and trigger event - exercise the tool's call to dispatchUiSyncEvent instead.
       // iconSpec: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "icon-visibility-hide-2" : "icon-visibility", [SampleAppUiActionId.setTestProperty]),
       // label: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "Hide items" : "Show items", [SampleAppUiActionId.setTestProperty]),
-      iconSpec: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "icon-visibility-hide-2" : "icon-visibility", [toolSyncUiEventId]),
+      iconSpec: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "icon-zoom-out" : "icon-zoom-in", [toolSyncUiEventId]),
       label: new ConditionalStringValue(() => SampleAppIModelApp.getTestProperty() !== "HIDE" ? "Hide items" : "Show items", [toolSyncUiEventId]),
 
       execute: () => {

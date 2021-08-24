@@ -272,7 +272,8 @@ describe("Frontstage", () => {
     const widgetId = "ProviderTest";
     const provider: WidgetProvider = {
       id: "test",
-      getWidgetDefs: (stageId: string, _stageUsage: string, location: ZoneLocation | StagePanelLocation, _section?: StagePanelSection | undefined): readonly WidgetDef[] | undefined => {
+      getWidgetDefs: (stageId: string, _stageUsage: string, location: ZoneLocation | StagePanelLocation,
+        _section?: StagePanelSection | undefined, _frontstageAppData?: any): readonly WidgetDef[] | undefined => {
         if (stageId === "TestFrontstage" && location === ZoneLocation.BottomRight) {
           const widgetDef = new WidgetDef({ id: widgetId });
           return [widgetDef];

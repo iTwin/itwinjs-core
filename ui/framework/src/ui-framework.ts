@@ -232,6 +232,9 @@ export * from "./ui-framework/tools/ToolSettingsTools";
 
 export * from "./ui-framework/uiadmin/FrameworkUiAdmin";
 
+export * from "./ui-framework/ui-items-provider/StandardContentToolsProvider";
+export * from "./ui-framework/ui-items-provider/StandardNavigationToolsProvider";
+export * from "./ui-framework/ui-items-provider/StandardStatusbarItemsProvider";
 export * from "./ui-framework/uiprovider/DefaultDialogGridContainer";
 
 export * from "./ui-framework/uisettings/AppUiSettings";
@@ -259,6 +262,9 @@ export * from "./ui-framework/widgets/DefaultNavigationWidget";
 export * from "./ui-framework/widgets/NavigationWidget";
 export * from "./ui-framework/widgets/NavigationWidgetComposer";
 export * from "./ui-framework/widgets/ReviewToolWidget";
+export * from "./ui-framework/widgets/SimpleNavigationWidget";
+export * from "./ui-framework/widgets/SimpleStatusBar";
+export * from "./ui-framework/widgets/SimpleToolWidget";
 export * from "./ui-framework/widgets/StableWidgetDef";
 export * from "./ui-framework/widgets/ToolbarWidgetBase";
 export * from "./ui-framework/widgets/ToolWidget";

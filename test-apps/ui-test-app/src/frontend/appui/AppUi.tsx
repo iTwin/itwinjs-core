@@ -35,6 +35,9 @@ import {
   FrontstageManager,
   KeyboardShortcutManager,
   KeyboardShortcutProps,
+  StandardContentToolsProvider,
+  StandardNavigationToolsProvider,
+  StandardStatusbarItemsProvider,
   TaskPropsList,
   UiFramework,
   WidgetDef,
@@ -75,6 +78,30 @@ export class AppUi {
     AppUi.defineDynamicWidgets();
 
     // AppUi.setAccuDrawUiSettings();
+
+    // Provides standard tools for ToolWidget in ui2.0 stage
+    StandardContentToolsProvider.register({
+      horizontal: {
+        clearSelection: true,
+        clearDisplayOverrides: true,
+        hide: "group",
+        isolate: "group",
+        emphasize: "element",
+      },
+    }, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === "Ui2";
+    });
+
+    // Provides standard tools for NavigationWidget in ui2.0 stage
+    StandardNavigationToolsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === "Ui2";
+    });
+
+    // Provides standard status fields for ui2.0 stage
+    StandardStatusbarItemsProvider.register(undefined, (stageId: string, _stageUsage: string, _applicationData: any) => {
+      return stageId === "Ui2";
+    });
+
   }
 
   /** Define Frontstages
@@ -460,7 +487,8 @@ export class AppUi {
     });
     const provider: WidgetProvider = {
       id: "test",
-      getWidgetDefs: (stageId: string, _stageUsage: string, location: ZoneLocation | StagePanelLocation, _section?: StagePanelSection | undefined): ReadonlyArray<WidgetDef> | undefined => {
+      getWidgetDefs: (stageId: string, _stageUsage: string, location: ZoneLocation | StagePanelLocation,
+        _section?: StagePanelSection | undefined, _frontstageAppData?: any): ReadonlyArray<WidgetDef> | undefined => {
         if (stageId === "ViewsFrontstage" && location === StagePanelLocation.Right) {
           return [widgetDef3];
         }
