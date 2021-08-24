@@ -29,7 +29,7 @@ export class TestConfig {
     const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext, {
       search: {
         searchString: name,
-        property: ITwinSearchableProperty.Name,
+        propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
       }});
 

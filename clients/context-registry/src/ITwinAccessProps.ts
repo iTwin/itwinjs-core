@@ -37,7 +37,7 @@ export enum ITwinSearchableProperty {
 */
 export interface ITwinSearchArg {
   searchString: string;
-  property: ITwinSearchableProperty;
+  propertyName: ITwinSearchableProperty;
   exactMatch: boolean;
 }
 
@@ -55,6 +55,4 @@ export interface ITwinQueryArg {
 export interface ITwinAccess {
   /** Get iTwins associated with the requester */
   getAll: (requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg) => Promise<ITwin[]>;
-  /** Get an iTwin with the exact id */
-  getById: (requestContext: AuthorizedClientRequestContext, id: string) => Promise<ITwin>;
 }

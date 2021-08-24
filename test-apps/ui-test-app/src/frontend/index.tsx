@@ -447,7 +447,7 @@ export class SampleAppIModelApp {
       const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(requestContext, {
         search: {
           searchString: projectName,
-          property: ITwinSearchableProperty.Name,
+          propertyName: ITwinSearchableProperty.Name,
           exactMatch: true,
         },
       });

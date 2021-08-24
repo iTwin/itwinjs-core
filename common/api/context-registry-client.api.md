@@ -64,7 +64,7 @@ export interface ITwinSearchArg {
     // (undocumented)
     exactMatch: boolean;
     // (undocumented)
-    property: ITwinSearchableProperty;
+    propertyName: ITwinSearchableProperty;
     // (undocumented)
     searchString: string;
 }

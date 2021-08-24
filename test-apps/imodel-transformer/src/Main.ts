@@ -136,9 +136,6 @@ void (async () => {
       const sourceContextId = Guid.normalize(args.sourceContextId);
       const sourceIModelId = Guid.normalize(args.sourceIModelId);
       let sourceEndVersion = IModelVersion.latest();
-      const sourceContext = await iTwinAccessClient.getById(requestContext, sourceContextId);
-      assert(undefined !== sourceContext);
-      Logger.logInfo(loggerCategory, `sourceContextId=${sourceContextId}, name=${sourceContext.name}`);
       Logger.logInfo(loggerCategory, `sourceIModelId=${sourceIModelId}`);
       if (args.sourceStartChangesetIndex || args.sourceStartChangesetId) {
         assert(!(args.sourceStartChangesetIndex && args.sourceStartChangesetId), "Pick single way to specify starting changeset");

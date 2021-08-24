@@ -139,32 +139,12 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
 
     if (arg?.search) {
       if (arg.search.exactMatch)
-        queryOptions.$filter = `${arg.search.property}+eq+'${arg.search.searchString}'`;
+        queryOptions.$filter = `${arg.search.propertyName}+eq+'${arg.search.searchString}'`;
       else
-        queryOptions.$filter = `${arg.search.property}+like+'${arg.search.searchString}'`;
+        queryOptions.$filter = `${arg.search.propertyName}+like+'${arg.search.searchString}'`;
     }
 
     return this.getByQuery(requestContext, queryOptions);
-  }
-
-  /** Get an iTwin via id
-   * @param requestContext The client request context
-   * @param id The unique id/wsgId/ecId of the iTwin
-   * @returns An iTwin with matching id
-   * @throws If no matching iTwin found, or multiple matching iTwin found
-   */
-  public async getById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ITwin> {
-    const queryOptions: RequestQueryOptions = {
-      $filter: `$id+eq+'${id}'`, // At time of writing $filter is supported, this may not be the case in the future
-    };
-    // Only one iTwin
-    const iTwins = await this.getByQuery(requestContext, queryOptions);
-    if (iTwins.length === 0)
-      throw new Error(`ITwin with an id ${id} was not found for the user.`);
-    else if (iTwins.length > 1)
-      throw new Error(`Multiple iTwins with id ${id} were found for the user.`);
-
-    return iTwins[0];
   }
 
   /** Gets all iTwins (projects or assets) using the given query options

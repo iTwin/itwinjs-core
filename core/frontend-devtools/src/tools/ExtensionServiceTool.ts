@@ -98,7 +98,7 @@ export class ExtensionServiceTool extends Tool {
     const iTwinList: ITwin[] = await iTwinAccessClient.getAll(requestContext, {
       search: {
         searchString: contextName,
-        property: ITwinSearchableProperty.Name,
+        propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
       }});
 

@@ -58,7 +58,7 @@ async function getITwinByName(requestContext: AuthorizedClientRequestContext, na
   const iTwinList: ITwin[] = await (new ITwinAccessClient()).getAll(requestContext, {
     search: {
       searchString: name,
-      property: ITwinSearchableProperty.Name,
+      propertyName: ITwinSearchableProperty.Name,
       exactMatch: true,
     }});
 

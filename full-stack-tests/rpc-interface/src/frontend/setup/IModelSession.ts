@@ -38,7 +38,7 @@ export class IModelSession {
       const iTwinList: ITwin[] = await client.getAll(requestContext, {
         search: {
           searchString: iModelData.projectName,
-          property: ITwinSearchableProperty.Name,
+          propertyName: ITwinSearchableProperty.Name,
           exactMatch: true,
         }});
 

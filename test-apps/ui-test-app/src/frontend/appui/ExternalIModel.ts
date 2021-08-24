@@ -44,7 +44,7 @@ export class ExternalIModel {
     const iTwinList: ITwin[] = await connectClient.getAll(requestContext, {
       search: {
         searchString: projectName,
-        property: ITwinSearchableProperty.Name,
+        propertyName: ITwinSearchableProperty.Name,
         exactMatch: true,
       }});
 
