@@ -135,7 +135,13 @@ export interface SnapshotOpenOptions extends IModelEncryptionProps, OpenDbKey {
   lazyBlockCache?: boolean;
   /** @internal */
   autoUploadBlocks?: boolean;
-  /** @internal */
+  /**
+   * The "base" name that can be used for creating temporary files related to this Db.
+   * The string should be a name related to the current Db filename using some known pattern so that all files named "baseName*" can be deleted externally during cleanup.
+   * It must be the name of a file (that may or may not exist) in a writable directory.
+   * If not present, the baseName will default to the database's file name (including the path).
+   * @internal
+   */
   tempFileBase?: string;
 }
 
