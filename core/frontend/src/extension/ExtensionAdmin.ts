@@ -28,7 +28,7 @@ export class ExtensionAdmin {
 
   public constructor() { }
 
-  /** On view startup, [[IModelApp.viewManager.onViewOpen]], [[ExtensionAdmin]] will be setup according to the provided [[ExtensionAdminProps]].
+  /** On view startup, [[IModelApp.viewManager.onViewOpen]], [[ExtensionAdmin]] will be setup.
    * @beta
    */
   public onInitialized() { }
