@@ -7516,6 +7516,7 @@ export class RealityModelTileUtils {
     static rangeFromBoundingVolume(boundingVolume: any): {
         range: Range3d;
         corners?: Point3d[];
+        region?: RealityTileRegion;
     } | undefined;
     // (undocumented)
     static transformFromJson(jTrans: number[] | undefined): Transform;
@@ -7532,8 +7533,6 @@ export class RealityTile extends Tile {
     allChildrenIncluded(tiles: Tile[]): boolean;
     // (undocumented)
     protected get _anyChildNotFound(): boolean;
-    // (undocumented)
-    readonly boundedByRegion: boolean | undefined;
     // (undocumented)
     get channel(): TileRequestChannel;
     // (undocumented)
@@ -7595,6 +7594,10 @@ export class RealityTile extends Tile {
     // (undocumented)
     get realityRoot(): RealityTileTree;
     // (undocumented)
+    readonly region?: RealityTileRegion;
+    // (undocumented)
+    reproject(rootReprojection: Transform): void;
+    // (undocumented)
     protected _reprojectionTransform?: Transform;
     // (undocumented)
     requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
@@ -7604,8 +7607,6 @@ export class RealityTile extends Tile {
     selectRealityTiles(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
     // (undocumented)
     selectSecondaryTiles(_args: TileDrawArgs, _context: TraversalSelectionContext): void;
-    // (undocumented)
-    setReprojection(rootReprojection: Transform): void;
     // (undocumented)
     readonly transformToRoot?: Transform;
     // (undocumented)
@@ -7673,13 +7674,46 @@ export interface RealityTileParams extends TileParams {
     // (undocumented)
     readonly additiveRefinement?: boolean;
     // (undocumented)
-    readonly boundedByRegion?: boolean;
-    // (undocumented)
     readonly noContentButTerminateOnSelection?: boolean;
     // (undocumented)
     readonly rangeCorners?: Point3d[];
     // (undocumented)
+    readonly region?: RealityTileRegion;
+    // (undocumented)
     readonly transformToRoot?: Transform;
+}
+
+// @internal (undocumented)
+export class RealityTileRegion {
+    constructor(values: {
+        minLongitude: number;
+        minLatitude: number;
+        minHeight: number;
+        maxLongitude: number;
+        maxLatitude: number;
+        maxHeight: number;
+    });
+    // (undocumented)
+    static create(region: number[]): RealityTileRegion;
+    // (undocumented)
+    getRange(): {
+        range: Range3d;
+        corners?: Point3d[];
+    };
+    // (undocumented)
+    static isGlobal(boundingVolume: any): boolean;
+    // (undocumented)
+    maxHeight: number;
+    // (undocumented)
+    maxLatitude: number;
+    // (undocumented)
+    maxLongitude: number;
+    // (undocumented)
+    minHeight: number;
+    // (undocumented)
+    minLatitude: number;
+    // (undocumented)
+    minLongitude: number;
 }
 
 // @internal (undocumented)
