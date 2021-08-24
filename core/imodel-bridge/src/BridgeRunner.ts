@@ -189,6 +189,10 @@ export class BridgeRunner {
       await this._bridge.openSourceData(this._bridgeArgs.sourcePath);
       await this._bridge.onOpenIModel();
       await iModelDbBuilder.updateExistingIModel();
+    }  catch (err) {
+      Logger.logError(BridgeLoggerCategory.Framework, err.message);
+      iModelDbBuilder.imodel.abandonChanges();
+      throw err;
     } finally {
       if (iModelDbBuilder.imodel.isBriefcaseDb() || iModelDbBuilder.imodel.isSnapshotDb()) {
         iModelDbBuilder.imodel.close();
