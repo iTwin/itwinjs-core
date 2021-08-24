@@ -29,7 +29,7 @@ describe("ArcGisUtilities tests", () => {
   const sampleOnlineAuthorize1 = "https://www.arcgis.com/sharing/rest/oauth2/authorize";
   const sampleOnlineToken1 = "https://www.arcgis.com/sharing/rest/oauth2/token";
 
-  it("should build proper OAuth2 endpoint URL using generateTokenUrl", async () => {
+  it.skip("should build proper OAuth2 endpoint URL using generateTokenUrl", async () => {
 
     sandbox.stub(ArcGisUtilities, "validateOAuth2Endpoint").resolves(true);
     sandbox.stub(ArcGisUtilities, "requestGetJson").callsFake(async function _(_url: string) {
@@ -47,7 +47,7 @@ describe("ArcGisUtilities tests", () => {
 
   });
 
-  it("should build proper OAuth2 endpoint URL if no generateTokenUrl response", async () => {
+  it.skip("should build proper OAuth2 endpoint URL if no generateTokenUrl response", async () => {
 
     sandbox.stub(ArcGisUtilities, "validateOAuth2Endpoint").resolves(true);
     sandbox.stub(ArcGisUtilities, "requestGetJson").callsFake(async function _(_url: string) {
@@ -65,7 +65,7 @@ describe("ArcGisUtilities tests", () => {
 
   });
 
-  it("should build proper OAuth2 endpoint URL if could not validate url base on generateTokenUrl", async () => {
+  it.skip("should build proper OAuth2 endpoint URL if could not validate url base on generateTokenUrl", async () => {
 
     sandbox.stub(ArcGisUtilities, "validateOAuth2Endpoint")
       .callsFake(async function _(url: string) {
@@ -87,7 +87,7 @@ describe("ArcGisUtilities tests", () => {
 
   });
 
-  it("should build proper OAuth2 endpoint URL if ArcGIS online", async () => {
+  it.skip("should build proper OAuth2 endpoint URL if ArcGIS online", async () => {
 
     let endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnlineFeatureServer1, EsriOAuth2EndpointType.Authorize);
 

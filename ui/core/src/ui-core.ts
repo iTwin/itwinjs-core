@@ -17,6 +17,7 @@ export * from "./ui-core/base/DivWithOutsideClick";
 export * from "./ui-core/base/Centered";
 export * from "./ui-core/base/FillCentered";
 export * from "./ui-core/base/FlexWrapContainer";
+export * from "./ui-core/base/Gap";
 export * from "./ui-core/base/PointerEvents";
 export * from "./ui-core/base/ScrollView";
 
@@ -36,6 +37,7 @@ export * from "./ui-core/contextmenu/PopupContextMenu";
 export * from "./ui-core/cube/Cube";
 
 export * from "./ui-core/dialog/Dialog";
+export * from "./ui-core/dialog/DialogButtonDef";
 export * from "./ui-core/dialog/GlobalDialog";
 
 export * from "./ui-core/elementseparator/ElementSeparator";
@@ -78,8 +80,6 @@ export * from "./ui-core/inputs/LabeledComponentProps";
 export * from "./ui-core/inputs/LabeledInput";
 export * from "./ui-core/inputs/LabeledTextarea";
 export * from "./ui-core/inputs/numberinput/NumberInput";
-export * from "./ui-core/inputs/numericinput/NumericInput";
-export * from "./ui-core/inputs/numericinput/ReactNumericInput";
 export * from "./ui-core/inputs/Textarea";
 
 export * from "./ui-core/listbox/Listbox";
@@ -174,8 +174,10 @@ export * from "./ui-core/utils/shallowDiffers";
 export * from "./ui-core/utils/typeUtils";
 export * from "./ui-core/utils/isPromiseLike";
 export * from "./ui-core/utils/ScrollPositionMaintainer";
+
 export * from "./ui-core/utils/hooks/useDisposable";
 export * from "./ui-core/utils/hooks/useEffectSkipFirst";
+export * from "./ui-core/utils/hooks/useEventListener";
 export * from "./ui-core/utils/hooks/ResizeObserverPolyfill";
 export * from "./ui-core/utils/hooks/useOnOutsideClick";
 export * from "./ui-core/utils/hooks/useProximityToMouse";

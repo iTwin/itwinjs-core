@@ -48,6 +48,7 @@ alpha;BRepGeometryFunction = (info: BRepGeometryInfo) => void
 alpha;BRepGeometryInfo
 alpha;BRepGeometryOperation
 alpha;BRepHollowProps
+alpha;BRepOffsetProps
 public;BRepPrimitive
 alpha;BRepRoundProps
 alpha;BRepThickenProps
@@ -322,8 +323,6 @@ internal;iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId,
 internal;IModelTileTreeProps 
 public;IModelVersion
 public;IModelVersionProps =
-internal;class IModelWriteRpcInterface 
-deprecated;class IModelWriteRpcInterface 
 public;InformationPartitionElementProps 
 internal;initializeRpcRequest: () => void
 internal;INSTANCE: unique symbol

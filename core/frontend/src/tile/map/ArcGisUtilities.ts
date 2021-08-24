@@ -5,13 +5,11 @@
 import { Angle } from "@bentley/geometry-core";
 import { MapSubLayerProps } from "@bentley/imodeljs-common";
 import { getJson, request, RequestBasicCredentials, RequestOptions, Response } from "@bentley/itwin-client";
-import { ArcGisBaseToken, ArcGisOAuth2Token, EsriOAuth2Endpoint, FrontendRequestContext } from "../../imodeljs-frontend";
-import { MapLayerAuthType, MapLayerSourceValidation } from "../internal";
-import { MapCartoRectangle } from "./MapCartoRectangle";
-import { MapLayerSource, MapLayerSourceStatus } from "./MapLayerSources";
-import { ArcGisTokenClientType } from "./ArcGisTokenGenerator";
-import { ArcGisTokenManager } from "./ArcGisTokenManager";
-import { EsriOAuth2, EsriOAuth2EndpointType } from "./EsriOAuth2";
+import { FrontendRequestContext } from "../../FrontendRequestContext";
+import {
+  ArcGisBaseToken, ArcGisOAuth2Token, ArcGisTokenClientType, ArcGisTokenManager,EsriOAuth2, EsriOAuth2Endpoint, EsriOAuth2EndpointType,
+  MapCartoRectangle, MapLayerAuthType, MapLayerSource, MapLayerSourceStatus, MapLayerSourceValidation,
+} from "../internal";
 
 /** @packageDocumentation
  * @module Tiles

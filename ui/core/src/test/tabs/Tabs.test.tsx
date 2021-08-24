@@ -14,15 +14,6 @@ describe("<Tabs />", () => {
     wrapper.find("a").length.should.equal(3);
   });
 
-  it("onClickLabel triggers correctly", () => {
-    const spyClick = sinon.spy();
-    const wrapper = mount(<VerticalTabs labels={["label 1", "label 2"]} onClickLabel={spyClick} />);
-    const label = wrapper.find("a").at(1);
-    label.simulate("click");
-    spyClick.should.have.been.calledOnceWithExactly(1);
-    wrapper.unmount();
-  });
-
   it("activeIndex sets correctly", () => {
     const wrapper = mount(<VerticalTabs labels={["label 1"]} activeIndex={0} />);
     wrapper.find(".core-active").length.should.eq(1);
@@ -84,6 +75,7 @@ describe("<Tabs />", () => {
   });
 
   it("Left key in Horizontal puts focus on previous tab", () => {
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = wrapper.find("a").at(1);
     label.simulate("keyup", { key: "ArrowLeft" });
@@ -93,6 +85,7 @@ describe("<Tabs />", () => {
   });
 
   it("Right key in Horizontal puts focus on next tab", () => {
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = wrapper.find("a").at(1);
     label.simulate("keyup", { key: "ArrowRight" });
@@ -122,6 +115,7 @@ describe("<Tabs />", () => {
   });
 
   it("Left key in Horizontal puts focus on last tab when on first", () => {
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={0} />);
     const label = wrapper.find("a").at(0);
     label.simulate("keyup", { key: "ArrowLeft" });
@@ -131,6 +125,7 @@ describe("<Tabs />", () => {
   });
 
   it("Right key in Horizontal puts focus on first tab when on last", () => {
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={2} />);
     const label = wrapper.find("a").at(2);
     label.simulate("keyup", { key: "ArrowRight" });
@@ -154,6 +149,7 @@ describe("<Tabs />", () => {
   });
 
   it("Up/Down key in Horizontal does nothing", () => {
+    // eslint-disable-next-line deprecation/deprecation
     const wrapper = mount(<HorizontalTabs labels={["label 1", "label 2", "label 3"]} activeIndex={1} />);
     const label = wrapper.find("a").at(1);
     label.simulate("keydown", { key: "ArrowUp" });

@@ -9,16 +9,14 @@
 import * as os from "os";
 import * as path from "path";
 import * as semver from "semver";
+import { HttpRequestHost } from "@bentley/backend-itwin-client";
 import {
-  BackendFeatureUsageTelemetryClient, ClientAuthIntrospectionManager, HttpRequestHost, ImsClientAuthIntrospectionManager, IntrospectionClient,
-} from "@bentley/backend-itwin-client";
-import {
-  assert, BeEvent, ClientRequestContext, Config, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector, SessionProps,
+  assert, BeEvent, ClientRequestContext, Guid, GuidString, IModelStatus, Logger, LogLevel, ProcessDetector, SessionProps,
 } from "@bentley/bentleyjs-core";
-import { IModelBankClient, IModelClient } from "@bentley/imodelhub-client";
+import { IModelClient } from "@bentley/imodelhub-client";
 import { BentleyStatus, IModelError, RpcConfiguration, SerializedRpcRequest } from "@bentley/imodeljs-common";
 import { IModelJsNative, NativeLibrary } from "@bentley/imodeljs-native";
-import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UrlDiscoveryClient, UserInfo } from "@bentley/itwin-client";
+import { AccessToken, AuthorizationClient, AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { TelemetryManager } from "@bentley/telemetry-client";
 import { AliCloudStorageService } from "./AliCloudStorageService";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -35,11 +33,9 @@ import { IModelJsFs } from "./IModelJsFs";
 import { DevToolsRpcImpl } from "./rpc-impl/DevToolsRpcImpl";
 import { IModelReadRpcImpl } from "./rpc-impl/IModelReadRpcImpl";
 import { IModelTileRpcImpl } from "./rpc-impl/IModelTileRpcImpl";
-import { IModelWriteRpcImpl } from "./rpc-impl/IModelWriteRpcImpl";
 import { SnapshotIModelRpcImpl } from "./rpc-impl/SnapshotIModelRpcImpl";
 import { WipRpcImpl } from "./rpc-impl/WipRpcImpl";
 import { initializeRpcBackend } from "./RpcBackend";
-import { UsageLoggingUtilities } from "./usage-logging/UsageLoggingUtilities";
 
 const loggerCategory: string = BackendLoggerCategory.IModelHost;
 
@@ -82,11 +78,6 @@ export interface CrashReportingConfig {
  * @public
  */
 export class IModelHostConfiguration {
-  /**
-   * The native platform to use -- normally, the app should leave this undefined. [[IModelHost.startup]] will set it to the appropriate nativePlatform automatically.
-   * @deprecated - this is unused
-   */
-  public nativePlatform?: any;
 
   /**
    * Root of the directory holding all the files that iModel.js caches
@@ -103,15 +94,6 @@ export class IModelHostConfiguration {
    * @see [[IModelHost.cacheDir]] for the value it's set to after startup
    */
   public cacheDir?: string;
-
-  /** The path where the cache of briefcases are stored. Defaults to `path.join(KnownLocations.tmpdir, "Bentley/iModelJs/cache/")`
-   * If overriding this, ensure it's set to a folder with complete access - it may have to be deleted and recreated.
-   * @deprecated Use [[IModelHostConfiguration.cacheDir]] instead to specify the root of all caches.
-   * - Using this new option will cause a new cache structure and invalidate existing caches - i.e., the cache will be
-   *   re-created in a new location on disk, and the existing cache may have to be manually cleaned out.
-   * - If [[IModelHostConfiguration.cacheDir]] is also specified, this setting will take precedence for the briefcase cache
-   */
-  public briefcaseCacheDir?: string;
 
   /** The directory where the app's assets are found. */
   public appAssetsDir?: string;
@@ -187,12 +169,6 @@ export class IModelHostConfiguration {
       maxMemoryAllowed: 2 * 1024 * 1024, // 2 MB
     },
   };
-
-  /**
-   * Application (host) type for native logging
-   * @internal
-   */
-  public applicationType?: IModelJsNative.ApplicationType;
 }
 
 /** IModelHost initializes ($backend) and captures its configuration. A backend must call [[IModelHost.startup]] before using any backend classes.
@@ -202,12 +178,6 @@ export class IModelHostConfiguration {
 export class IModelHost {
   private constructor() { }
   public static authorizationClient?: AuthorizationClient;
-
-  private static _clientAuthIntrospectionManager?: ClientAuthIntrospectionManager;
-  /** @alpha */
-  public static get clientAuthIntrospectionManager(): ClientAuthIntrospectionManager | undefined { return this._clientAuthIntrospectionManager; }
-  /** @alpha */
-  public static get introspectionClient(): IntrospectionClient | undefined { return this._clientAuthIntrospectionManager?.introspectionClient; }
 
   /** @alpha */
   public static readonly telemetry = new TelemetryManager();
@@ -259,17 +229,9 @@ export class IModelHost {
   }
 
   /** @internal */
-  public static loadNative(region: number, applicationType?: IModelJsNative.ApplicationType, iModelClient?: IModelClient): void {
+  public static loadNative(): void {
     const platform = Platform.load();
     this.registerPlatform(platform);
-
-    let iModelClientType = IModelJsNative.IModelClientType.IModelHub;
-    let iModelClientUrl: string | undefined;
-    if (iModelClient && iModelClient instanceof IModelBankClient) {
-      iModelClientType = IModelJsNative.IModelClientType.IModelBank;
-      iModelClientUrl = iModelClient.baseUrl;
-    }
-    platform.NativeUlasClient.initialize(region, applicationType, iModelClientType, iModelClientUrl);
   }
 
   private static registerPlatform(platform: typeof IModelJsNative): void {
@@ -339,20 +301,6 @@ export class IModelHost {
    */
   public static get hubAccess(): BackendHubAccess { return this._hubAccess; }
 
-  /**
-   *  @deprecated access to IModelHub should generally be through other higher level apis.
-   * For internal methods, use [[hubAccess]]] api.
-   * If you really need to call the IModelClient api directly, use [[IModelHubBackend.iModelClient]]
-   */
-  public static get iModelClient(): IModelClient {
-    return IModelHubBackend.iModelClient;
-  }
-
-  /** @deprecated use [[hubAccess]] api */
-  public static get isUsingIModelBankClient(): boolean {
-    return IModelHubBackend.isUsingIModelBankClient;
-  }
-
   private static _isValid = false;
   /** Returns true if IModelHost is started.  */
   public static get isValid() { return this._isValid; }
@@ -381,9 +329,8 @@ export class IModelHost {
     initializeRpcBackend();
 
     if (this._platform === undefined) {
-      const region = Config.App.getNumber(UrlDiscoveryClient.configResolveUrlUsingRegion, 0);
       try {
-        this.loadNative(region, configuration.applicationType, configuration.imodelClient);
+        this.loadNative();
       } catch (error) {
         Logger.logError(loggerCategory, "Error registering/loading the native platform API", () => (configuration));
         throw error;
@@ -416,14 +363,13 @@ export class IModelHost {
 
     this.setupCacheDirs(configuration);
     IModelHubBackend.setIModelClient(configuration.imodelClient);
-    BriefcaseManager.initialize(this._briefcaseCacheDir, path.join(this._cacheDir, "bc", "v4_0"));
+    BriefcaseManager.initialize(this._briefcaseCacheDir);
 
     IModelHost.setupRpcRequestContext();
 
     [
       IModelReadRpcImpl,
       IModelTileRpcImpl,
-      IModelWriteRpcImpl, // eslint-disable-line deprecation/deprecation
       SnapshotIModelRpcImpl,
       WipRpcImpl,
       DevToolsRpcImpl,
@@ -441,19 +387,13 @@ export class IModelHost {
 
     this.platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
 
-    const introspectionClientId = Config.App.getString("imjs_introspection_client_id", "");
-    const introspectionClientSecret = Config.App.getString("imjs_introspection_client_secret", "");
-    if (introspectionClientId && introspectionClientSecret) {
-      const introspectionClient = new IntrospectionClient(introspectionClientId, introspectionClientSecret);
-      this._clientAuthIntrospectionManager = new ImsClientAuthIntrospectionManager(introspectionClient);
-    }
+    // const introspectionClientId = Config.App.getString("imjs_introspection_client_id", "");
+    // const introspectionClientSecret = Config.App.getString("imjs_introspection_client_secret", "");
+    // if (introspectionClientId && introspectionClientSecret) {
+    //   const introspectionClient = new IntrospectionClient(introspectionClientId, introspectionClientSecret);
+    //   this._clientAuthIntrospectionManager = new ImsClientAuthIntrospectionManager(introspectionClient);
+    // }
 
-    if (!IModelHubBackend.isUsingIModelBankClient && configuration.applicationType !== IModelJsNative.ApplicationType.WebAgent) { // ULAS does not support usage without a user (i.e. agent clients)
-      const usageLoggingClient = new BackendFeatureUsageTelemetryClient({ backendApplicationId: this.applicationId, backendApplicationVersion: this.applicationVersion, backendMachineName: os.hostname(), clientAuthManager: this._clientAuthIntrospectionManager });
-      this.telemetry.addClient(usageLoggingClient);
-    }
-
-    UsageLoggingUtilities.configure({ hostApplicationId: IModelHost.applicationId, hostApplicationVersion: IModelHost.applicationVersion, clientAuthManager: this._clientAuthIntrospectionManager });
     process.once("beforeExit", IModelHost.shutdown);
     IModelHost.onAfterStartup.raiseEvent();
   }
@@ -485,12 +425,7 @@ export class IModelHost {
 
   private static setupCacheDirs(configuration: IModelHostConfiguration) {
     this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
-
-    // Set up the briefcaseCacheDir, defaulting to the the legacy/deprecated value
-    if (configuration.briefcaseCacheDir) // eslint-disable-line deprecation/deprecation
-      this._briefcaseCacheDir = path.normalize(configuration.briefcaseCacheDir); // eslint-disable-line deprecation/deprecation
-    else
-      this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
+    this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 
   /** This method must be called when an iModel.js services is shut down. Raises [[onBeforeShutdown]] */
@@ -501,7 +436,6 @@ export class IModelHost {
 
     IModelHost._isValid = false;
     IModelHost.onBeforeShutdown.raiseEvent();
-    IModelHost.platform.shutdown();
     IModelHost.configuration = undefined;
     process.removeListener("beforeExit", IModelHost.shutdown);
   }
@@ -600,26 +534,6 @@ export class Platform {
   public static get platformName(): "win32" | "linux" | "darwin" | "ios" | "android" | "uwp" {
     return process.platform as any;
   }
-
-  /** Query if this is an electron backend
-   * @deprecated use ProcessDetector.isElectronAppBackend
-   */
-  public static get isElectron(): boolean { return ProcessDetector.isElectronAppBackend; }
-
-  /** Query if this is a desktop backend
-   * @deprecated use ProcessDetector.isElectronAppBackend
-   */
-  public static get isDesktop(): boolean { return ProcessDetector.isElectronAppBackend; }
-
-  /** Query if this is a mobile backend
-   * @deprecated use ProcessDetector.isMobileAppBackend
-   */
-  public static get isMobile(): boolean { return ProcessDetector.isMobileAppBackend; }
-
-  /** Query if this is backend running in Node.js
-   * @deprecated use ProcessDetector.isNodeProcess
-   */
-  public static get isNodeJs(): boolean { return ProcessDetector.isNodeProcess; }
 
   /** @internal */
   public static load(): typeof IModelJsNative {

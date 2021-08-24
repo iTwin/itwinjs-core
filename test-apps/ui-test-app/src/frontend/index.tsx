@@ -8,10 +8,9 @@ import * as ReactDOM from "react-dom";
 import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
-import { assert, ClientRequestContext, Config, Id64String, Logger, LogLevel, OpenMode, ProcessDetector } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext, Config, Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient } from "@bentley/context-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
-import { FrontendApplicationInsightsClient } from "@bentley/frontend-application-insights-client";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
@@ -68,7 +67,7 @@ import { BrowserRouter, Route, Switch } from "react-router-dom";
 // Initialize my application gateway configuration for the frontend
 RpcConfiguration.developmentMode = true;
 
-// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise mobx hypermodeling testapp urlps
+// cSpell:ignore setTestProperty sampleapp uitestapp setisimodellocal projectwise hypermodeling testapp urlps
 // cSpell:ignore toggledraginteraction toggleframeworkversion set-drag-interaction set-framework-version
 
 /** Action Ids used by redux and to send sync UI components. Typically used to refresh visibility or enable state of control.
@@ -278,6 +277,9 @@ export class SampleAppIModelApp {
 
     UiFramework.useDefaultPopoutUrl = true;
 
+    const esriOAuth2InitStatus = EsriOAuth2.initialize("http://localhost:3000/esri-oauth2-callback");
+    assert(esriOAuth2InitStatus === true);
+
     // try starting up event loop if not yet started so key-in palette can be opened
     IModelApp.startEventLoop();
   }
@@ -305,7 +307,7 @@ export class SampleAppIModelApp {
       await req.downloadPromise;
       iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
     } else {
-      iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
+      iModelConnection = await UiFramework.iModelServices.openIModel(projectId, iModelId);
     }
 
     SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -415,7 +417,7 @@ export class SampleAppIModelApp {
         await req.downloadPromise;
         iModelConnection = await BriefcaseConnection.openFile({ fileName: req.fileName, readonly: true });
       } else {
-        iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId, this.allowWrite ? OpenMode.ReadWrite : OpenMode.Readonly);
+        iModelConnection = await UiFramework.iModelServices.openIModel(contextId, iModelId);
       }
 
       SampleAppIModelApp.setIsIModelLocal(false, true);
@@ -743,13 +745,6 @@ async function main() {
 
   // Start the app.
   await SampleAppIModelApp.startup(opts);
-
-  // Add ApplicationInsights telemetry client
-  const iModelJsApplicationInsightsKey = Config.App.getString("imjs_telemetry_application_insights_instrumentation_key", "");
-  if (iModelJsApplicationInsightsKey) {
-    const applicationInsightsClient = new FrontendApplicationInsightsClient(iModelJsApplicationInsightsKey);
-    IModelApp.telemetry.addClient(applicationInsightsClient);
-  }
 
   await SampleAppIModelApp.initialize();
 

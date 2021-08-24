@@ -6,10 +6,13 @@
  * @module Tiles
  */
 
-import { BeTimePoint } from "@bentley/bentleyjs-core";
-import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Transform } from "@bentley/geometry-core";
-import { ColorDef } from "@bentley/imodeljs-common";
+import { assert, BeTimePoint, dispose } from "@bentley/bentleyjs-core";
+import { ClipMaskXYZRangePlanes, ClipShape, ClipVector, Point3d, Range3d, Transform, Vector3d } from "@bentley/geometry-core";
+import { ColorDef, Frustum } from "@bentley/imodeljs-common";
+import { IModelApp } from "../IModelApp";
+import { GraphicBranch, GraphicBranchOptions } from "../render/GraphicBranch";
 import { GraphicBuilder } from "../render/GraphicBuilder";
+import { RenderGraphic } from "../render/RenderGraphic";
 import { RenderSystem } from "../render/RenderSystem";
 import { ViewingSpace } from "../ViewingSpace";
 import { Viewport } from "../Viewport";
@@ -23,10 +26,15 @@ export interface RealityTileParams extends TileParams {
   readonly additiveRefinement?: boolean;
   readonly noContentButTerminateOnSelection?: boolean;
   readonly rangeCorners?: Point3d[];
+  readonly boundedByRegion?: boolean;
 }
 
 const scratchLoadedChildren = new Array<RealityTile>();
 const scratchCorners = [Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero(), Point3d.createZero()];
+const additiveRefinementThreshold = 2000;    // Additive tiles (Cesium OSM tileset) are subdivided until their range diagonal falls below this threshold to ensure accurate reprojection.
+const additiveRefinementDepthLimit = 20;
+const scratchFrustum = new Frustum();
+
 /**
  * A specialization of tiles that represent reality tiles.  3D Tilesets and maps use this class and have their own optimized traversal and lifetime management.
  * @internal
@@ -36,7 +44,10 @@ export class RealityTile extends Tile {
   public readonly additiveRefinement?: boolean;
   public readonly noContentButTerminateOnSelection?: boolean;
   public readonly rangeCorners?: Point3d[];
+  public readonly boundedByRegion;
   private _everDisplayed = false;
+  protected _reprojectionTransform?: Transform;
+  private _reprojectedGraphic?: RenderGraphic;
 
   public constructor(props: RealityTileParams, tree: RealityTileTree) {
     super(props, tree);
@@ -44,6 +55,7 @@ export class RealityTile extends Tile {
     this.additiveRefinement = (undefined === props.additiveRefinement) ? this.realityParent?.additiveRefinement : props.additiveRefinement;
     this.noContentButTerminateOnSelection = props.noContentButTerminateOnSelection;
     this.rangeCorners = props.rangeCorners;
+    this.boundedByRegion = props.boundedByRegion;
 
     if (undefined === this.transformToRoot)
       return;
@@ -92,10 +104,24 @@ export class RealityTile extends Tile {
   public async requestContent(isCanceled: () => boolean): Promise<TileRequest.Response> {
     return this.realityRoot.loader.requestTileContent(this, isCanceled);
   }
+  private useAdditiveRefinementStepchildren() {
+    // Create additive stepchildren only if we are this tile is additive and we are repojecting and the radius exceeds the additiveRefinementThreshold.
+    // This criteria is currently only met by the Cesium OSM tileset.
+    const rangeDiagonal = this.rangeCorners ? this.rangeCorners[0].distance(this.rangeCorners[3]) : 0;
+    return this.additiveRefinement && this.isDisplayable && rangeDiagonal > additiveRefinementThreshold && this.depth < additiveRefinementDepthLimit && this.realityRoot.doReprojectChildren(this);
+  }
 
   protected _loadChildren(resolve: (children: Tile[] | undefined) => void, reject: (error: Error) => void): void {
     this.realityRoot.loader.loadChildren(this).then((children: Tile[] | undefined) => {
-      resolve(children);
+
+      /* If this is a large tile is to be included additively, but we are reprojecting (Cesium OSM) then we must add step-children to display the geometry as an overly large
+         tile cannot be reprojected accurately.  */
+      if (this.useAdditiveRefinementStepchildren())
+        this.loadAdditiveRefinementChildren((stepChildren: Tile[]) =>  { children = children ? children?.concat(stepChildren) : stepChildren; });
+
+      if (children)
+        this.realityRoot.reprojectAndResolveChildren(this, children, resolve);   /* Potentially reprojecect and resolve these children */
+
     }).catch((err) => {
       reject(err);
     });
@@ -155,6 +181,10 @@ export class RealityTile extends Tile {
     builder.addRangeBoxFromCorners(this.rangeCorners ? this.rangeCorners : this.range.corners());
   }
 
+  public setReprojection(rootReprojection: Transform) {
+    this._reprojectionTransform = rootReprojection;
+  }
+
   public allChildrenIncluded(tiles: Tile[]) {
     if (this.children === undefined || tiles.length !== this.children.length)
       return false;
@@ -202,8 +232,8 @@ export class RealityTile extends Tile {
         }
       }
     } else {
-      if (this.additiveRefinement && this.isDisplayable)
-        context.selectOrQueue(this, args, traversalDetails);
+      if (this.additiveRefinement && this.isDisplayable && !this.useAdditiveRefinementStepchildren())
+        context.selectOrQueue(this, args, traversalDetails);      // With additive refinement it is necessary to display this tile along with any displayed children.
 
       this.selectRealityChildren(context, args, traversalDetails);
       if (this.isReady && (traversalDetails.childrenLoading || 0 !== traversalDetails.queuedChildren.length)) {
@@ -228,7 +258,15 @@ export class RealityTile extends Tile {
   }
 
   public computeVisibilityFactor(args: TileDrawArgs): number {
-    if (this.isEmpty || this.isRegionCulled(args))
+    if (this.isEmpty)
+      return -1;
+
+    if (this.rangeCorners)
+      scratchFrustum.setFromCorners(this.rangeCorners);
+    else
+      Frustum.fromRange(this.range, scratchFrustum);
+
+    if (this.isFrustumCulled(scratchFrustum, args, true, this.boundingSphere))
       return -1;
 
     // some nodes are merely for structure and don't have any geometry
@@ -272,7 +310,131 @@ export class RealityTile extends Tile {
     if (!this.tree.isContentUnbounded)
       return undefined;           // For a non-global tree use the standard size algorithm.
 
-    // For global tiles (as in OSM buildings) return the range corners - this allows an algorithm that uses the area of the projected corners to attenuate horizon tiles.
-    return this.range.corners(scratchCorners);
+    // For global tiles (as in OSM buildings) return the range corners or X-Y corners only if bounded by region- this allows an algorithm that uses the area of the projected corners to attenuate horizon tiles.
+    if (!this.rangeCorners)
+      return this.range.corners(scratchCorners);
+
+    return this.boundedByRegion ? this.rangeCorners.slice(4) : this.rangeCorners;
+  }
+
+  public get isStepChild() { return false; }
+
+  protected loadAdditiveRefinementChildren(resolve: (children: Tile[]) => void): void {
+    const corners = this.rangeCorners;
+    if (!corners)
+      return;
+
+    const origin = corners[0];
+    const xVector = Vector3d.createStartEnd(origin, corners[1]);
+    const yVector = Vector3d.createStartEnd(origin, corners[2]);
+    const zVector = Vector3d.createStartEnd(origin, corners[4]);
+    const maximumSize = this.maximumSize;
+    const boundedByRegion = this.boundedByRegion;
+    const rangeDiagonal = corners[0].distance(corners[3]);
+    const isLeaf = rangeDiagonal < additiveRefinementThreshold || this.depth  > additiveRefinementDepthLimit;
+    const localTransform = Transform.createOriginAndMatrixColumns(origin, xVector, yVector, zVector);
+    if (!localTransform) {
+      assert(false);
+      return;
+    }
+
+    const stepChildren = new Array<AdditiveRefinementStepChild>();
+
+    for (let i = 0, step = 0; i < 2; i++) {
+      for (let j = 0; j < 2; j++) {
+        const  rangeCorners = [];
+        const xLow = i / 2, xHigh = xLow + .5, yLow = j / 2, yHigh = yLow + .5;
+        rangeCorners.push(Point3d.create(xLow, yLow));
+        rangeCorners.push(Point3d.create(xHigh, yLow));
+        rangeCorners.push(Point3d.create(xLow, yHigh));
+        rangeCorners.push(Point3d.create(xHigh, yHigh));
+        for (let k = 0; k < 4; k++)
+          rangeCorners.push(rangeCorners[k].plusXYZ(0, 0, 1));
+
+        localTransform.multiplyPoint3dArrayInPlace(rangeCorners);
+
+        const contentId = `${this.contentId}_S${step++}`;
+        const range = Range3d.createArray(rangeCorners);
+        const childParams: RealityTileParams = { rangeCorners, contentId, range, maximumSize, parent: this, additiveRefinement: false, isLeaf, boundedByRegion };
+
+        stepChildren.push(new AdditiveRefinementStepChild(childParams, this.realityRoot));
+      }
+    }
+    resolve(stepChildren);
+  }
+  public override produceGraphics(): RenderGraphic | undefined {
+    if (undefined === this._reprojectionTransform)
+      return super.produceGraphics();
+
+    if (undefined === this._reprojectedGraphic && undefined !== this._graphic) {
+      const branch = new GraphicBranch(false);
+      branch.add(this._graphic);
+      this._reprojectedGraphic = IModelApp.renderSystem.createGraphicBranch(branch, this._reprojectionTransform);
+    }
+    return this._reprojectedGraphic;
+  }
+
+  public get unprojectedGraphic(): RenderGraphic | undefined {
+    return this._graphic;
+  }
+  public override disposeContents(): void {
+    super.disposeContents();
+    this._reprojectedGraphic = dispose(this._reprojectedGraphic);
+  }
+}
+
+/** When additive refinement is used (as in the Cesium OSM tileset) it is not possible to accurately reproject very large, low level tiles
+ * In this case we create additional "step" children (grandchildren etc. ) that will clipped portions display the their ancestor's additive geometry.
+ * These step children are subdivided until they are small enough to be accurately reprojected - this is controlled by the additiveRefinementThreshold (currently 2KM).
+ * The stepchildren do not contain any tile graphics - they just create a branch with clipping and reprojection to display their additive refinement ancestor graphics.
+ */
+class AdditiveRefinementStepChild  extends RealityTile {
+  public override get isStepChild() { return true; }
+  private _loadableTile: RealityTile;
+
+  public constructor(props: RealityTileParams, tree: RealityTileTree) {
+    super(props, tree);
+    this._loadableTile = this.realityParent;
+    for (; this._loadableTile && this._loadableTile.isStepChild; this._loadableTile = this._loadableTile.realityParent)
+      ;
+  }
+  public override get loadableTile(): RealityTile {
+    return this._loadableTile;
+  }
+  public override get isLoading(): boolean { return this._loadableTile.isLoading; }
+  public override get isQueued(): boolean { return this._loadableTile.isQueued; }
+  public override get isNotFound(): boolean { return this._loadableTile.isNotFound; }
+  public override get isReady(): boolean { return this._loadableTile.isReady; }
+  public override get isLoaded(): boolean { return this._loadableTile.isLoaded; }
+  public override get isEmpty() { return false; }
+  public override produceGraphics(): RenderGraphic | undefined {
+    if (undefined === this._graphic) {
+      const parentGraphics = this._loadableTile.unprojectedGraphic;
+
+      if (!parentGraphics || !this._reprojectionTransform)
+        return undefined;
+
+      const branch = new GraphicBranch(false);
+      branch.add(parentGraphics);
+      const renderSystem =  IModelApp.renderSystem;
+      const branchOptions: GraphicBranchOptions = {};
+      if (this.rangeCorners) {
+        const clipPolygon = [this.rangeCorners[0], this.rangeCorners[1], this.rangeCorners[3], this.rangeCorners[2]];
+        branchOptions.clipVolume =  renderSystem.createClipVolume(ClipVector.create([ClipShape.createShape(clipPolygon, undefined, undefined, this.tree.iModelTransform)!]));
+      }
+      this._graphic = renderSystem.createGraphicBranch(branch, this._reprojectionTransform, branchOptions);
+    }
+    return this._graphic;
+  }
+
+  public override markUsed(args: TileDrawArgs): void {
+    args.markUsed(this);
+    args.markUsed(this._loadableTile);
+  }
+  protected override _loadChildren(resolve: (children: Tile[] | undefined) => void, _reject: (error: Error) => void): void {
+    this.loadAdditiveRefinementChildren((stepChildren: Tile[]) =>  {
+      if (stepChildren)
+        this.realityRoot.reprojectAndResolveChildren(this, stepChildren, resolve);
+    });
   }
 }

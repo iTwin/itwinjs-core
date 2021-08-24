@@ -9,7 +9,7 @@ $hovered-icon-color: $buic-foreground-primary-tone;
 
 .maplayers-settings-container {
     display: grid;
-    align-items: baseline;
+    align-items: center;
     padding: 4px;
     grid-template-columns: 150px 1fr;
     column-gap: 8px;
@@ -22,6 +22,10 @@ $hovered-icon-color: $buic-foreground-primary-tone;
 }
 
 .map-manager-settings-group {
+  margin-top: 1rem;
+}
+
+.map-manager-settings-terrain-container {
   margin-top: 1rem;
 }
 

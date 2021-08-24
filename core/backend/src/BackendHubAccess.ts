@@ -8,7 +8,7 @@
 
 import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import {
-  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName,
+  ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName,
   LocalFileName,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
@@ -63,7 +63,7 @@ export interface BriefcaseDbArg {
   briefcase: {
     briefcaseId: BriefcaseId;
     iModelId: GuidString;
-    changeSetId: ChangesetId;
+    changeset: ChangesetIdWithIndex;
   };
 }
 
@@ -83,7 +83,7 @@ export interface ChangesetArg extends IModelIdArg {
 
 /** @internal */
 export interface ChangesetIndexArg extends IModelIdArg {
-  csIndex: ChangesetIndex;
+  changeset: ChangesetIdWithIndex;
 }
 
 /** Argument for methods that must supply an IModelId and a range of ChangesetIds.
@@ -140,17 +140,17 @@ export interface BackendHubAccess {
   acquireSchemaLock: (arg: BriefcaseDbArg) => Promise<void>;
 
   /** determine whether the schema lock is currently held */
-  querySchemaLock: (arg: BriefcaseDbArg) => Promise<boolean>;
+  querySchemaLock: (arg: IModelIdArg) => Promise<boolean>;
   /** get the full list of held locks for a briefcase */
   queryAllLocks: (arg: BriefcaseDbArg) => Promise<LockProps[]>;
 
   /** release all currently held locks */
-  releaseAllLocks: (arg: BriefcaseIdArg & ChangesetIndexArg) => Promise<void>;
+  releaseAllLocks: (arg: BriefcaseDbArg) => Promise<void>;
 
   /** Query codes */
   queryAllCodes: (arg: BriefcaseDbArg) => Promise<CodeProps[]>;
   /** release codes */
-  releaseAllCodes: (arg: BriefcaseIdArg) => Promise<void>;
+  releaseAllCodes: (arg: BriefcaseDbArg) => Promise<void>;
 
   /** get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   queryIModelByName: (arg: IModelNameArg) => Promise<GuidString | undefined>;

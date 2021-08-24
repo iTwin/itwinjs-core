@@ -5,8 +5,9 @@
 // cSpell:ignore Modeless WMTS
 
 import * as React from "react";
-import { Button, Dialog, DialogButtonType, Icon, Input, InputStatus, LabeledInput, ProgressBar, Radio, Select } from "@bentley/ui-core";
+import { Button, Dialog, Icon, InputStatus} from "@bentley/ui-core";
 import { ModalDialogManager, usePopup } from "@bentley/ui-framework";
+import { Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions } from "../Interfaces";
 import {
@@ -15,7 +16,8 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { MapLayerProps } from "@bentley/imodeljs-common";
 import "./MapUrlDialog.scss";
-import { SpecialKey } from "@bentley/ui-abstract";
+import { DialogButtonType, SpecialKey } from "@bentley/ui-abstract";
+
 
 export const MAP_TYPES = {
   wms: "WMS",
@@ -114,10 +116,14 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
     };
   }, []);
 
-  const [mapTypes] = React.useState((): string[] => {
-    const types = [MAP_TYPES.arcGis, MAP_TYPES.wms, MAP_TYPES.wmts];
+  const [mapTypes] = React.useState((): SelectOption<string>[] => {
+    const types = [
+      { value: MAP_TYPES.arcGis, label: MAP_TYPES.arcGis },
+      { value: MAP_TYPES.wms, label: MAP_TYPES.wms },
+      { value: MAP_TYPES.wmts, label: MAP_TYPES.wmts },
+    ];
     if (mapTypesOptions?.supportTileUrl)
-      types.push(MAP_TYPES.tileUrl);
+      types.push({ value: MAP_TYPES.tileUrl, label: MAP_TYPES.tileUrl });
     return types;
   });
 
@@ -125,7 +131,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
   // Even though the settings storage is available,
   // we don't always want to enable it in the UI.
-  const [settingsStorageDisabled] = React.useState( !isSettingsStorageAvailable|| props.mapLayerSourceToEdit !== undefined || props.layerRequiringCredentials !== undefined );
+  const [settingsStorageDisabled] = React.useState(!isSettingsStorageAvailable || props.mapLayerSourceToEdit !== undefined || props.layerRequiringCredentials !== undefined);
 
   const [layerRequiringCredentialsIdx] = React.useState((): number | undefined => {
     if (props.layerRequiringCredentials === undefined || !props.layerRequiringCredentials.name || !props.layerRequiringCredentials.url) {
@@ -141,9 +147,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
   });
 
   // Update warning message based on the dialog state and server response
-  const handleMapTypeSelection = React.useCallback((e: React.ChangeEvent<HTMLSelectElement>) => {
-    setMapType(e.target.value);
-    e.preventDefault();
+  const handleMapTypeSelection = React.useCallback((newValue: string) => {
+    setMapType(newValue);
 
     // Reset few states
     if (invalidCredentialsProvided)
@@ -532,7 +537,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
               className="map-manager-base-select"
               options={mapTypes}
               value={mapType}
-              disabled={props.layerRequiringCredentials !== undefined || props.mapLayerSourceToEdit !== undefined || layerAttachPending || layerAuthPending} onChange={handleMapTypeSelection} />
+              disabled={props.layerRequiringCredentials !== undefined || props.mapLayerSourceToEdit !== undefined || layerAttachPending || layerAuthPending}
+              onChange={handleMapTypeSelection} />
+
             <span className="map-layer-source-label">{nameLabel}</span>
             <Input placeholder={nameInputPlaceHolder} onChange={onNameChange} value={mapName} disabled={props.layerRequiringCredentials !== undefined || layerAttachPending || layerAuthPending} />
             <span className="map-layer-source-label">{urlLabel}</span>
@@ -576,7 +583,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         {/* Progress bar */}
         {(layerAttachPending || layerAuthPending) &&
           <div className="map-layer-source-progressBar">
-            <ProgressBar indeterminate />
+            <ProgressLinear indeterminate />
           </div>
         }
       </Dialog>

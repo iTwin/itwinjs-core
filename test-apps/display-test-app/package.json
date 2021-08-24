@@ -61,13 +61,11 @@
     "@bentley/imodeljs-editor-frontend": "workspace:*",
     "@bentley/imodeljs-editor-backend": "workspace:*",
     "@bentley/imodeljs-editor-common": "workspace:*",
-    "@bentley/rbac-client": "workspace:*",
     "@bentley/ui-abstract": "workspace:*",
     "@bentley/webgl-compatibility": "workspace:*",
     "body-parser": "^1.18.2"
   },
   "devDependencies": {
-    "@bentley/config-loader": "workspace:*",
     "@bentley/backend-webpack-tools": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
@@ -77,6 +75,8 @@
     "child_process": "^1.0.2",
     "cpx": "^1.5.0",
     "cross-env": "^5.1.4",
+    "dotenv": "^10.0.0",
+    "dotenv-expand": "^5.1.0",
     "electron": "^11.1.0",
     "eslint": "^7.11.0",
     "express": "^4.16.3",

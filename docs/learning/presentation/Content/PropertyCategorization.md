@@ -2,7 +2,7 @@
 
 When creating content, properties are assigned categories that are shown together in a property grid:
 
-![Property Grid](./media/property-grid.png)
+![Property grid](./media/property-grid.png)
 
 There are multiple sources for a property's category and several ways to override them or control their nesting through presentation rules.
 
@@ -12,7 +12,7 @@ A property may or may not have a category and there are several sources it may b
 
 1. A [property override specification](./PropertySpecification.md) with [property category overrides](./PropertyCategorySpecification.md).
 2. An ECPropertyCategory assigned to the ECProperty in ECSchema.
-3. If a property is related with a *SameInstance* relationship, and that related class contains the property.
+3. If a property is related with a [RelationshipMeaning.SameInstance]($presentation-common) relationship and that related class contains the property.
 
 If a property has no direct category, it is displayed as if it belonged to the parent category. See the [next section](#category-nesting) for more details on category nesting.
 
@@ -22,13 +22,13 @@ Categories group properties so they're easier for users to find and manage. Howe
 
 Generally, since a property grid requests properties for the current selection, we put all properties into the default *Selected Item(s)* category:
 
-![Selected Item(s)' Category](./media/property-grid-selected-items-category.png)
+![Selected Item(s) category](./media/property-grid-selected-items-category.png)
 
 The default category can be overriden using [DefaultPropertyCategoryOverride rule](./DefaultPropertyCategoryOverride.md).
 
 If properties have [direct categories of their own](#direct-property-categories), their categories appear nested under this top-level category, e.g.:
 
-![Nested Categories](./media/property-grid-nested-categories.png)
+![Nested categories](./media/property-grid-nested-categories.png)
 
 Additionally, when presentation rules specify [related properties](./RelatedPropertiesSpecification.md), it is possible to create new top-level categories. See the [Controlling Category Nesting of Related Properties](#controlling-category-nesting-of-related-properties) for more details.
 
@@ -104,7 +104,7 @@ Finally, category nesting can be achieved using [property category overrides](./
 
 **Result:**
 
-!['Relationship Meaning on Related Properties'](./media/property-grid-example-related-properties.png)
+!['Relationship meaning on related properties'](./media/property-grid-example-related-properties.png)
 
 In the above example both `PropB` and `PropC` have a custom property category assigned through presentation rules and they're both specified as related properties for class `A`. Because `PropB` is set to be related with a `SameInstance` relationship, it will be shown as nested under the other properties of class `A`. `PropC`, on the other hand, is nested under another top-level category created from class `C`, because it's related with a `RelatedInstance` relationship.
 
@@ -200,7 +200,7 @@ Here is a more complex example with *nested* related properties:
 
 **Result:**
 
-!['Relationship Meaning on Nested Related Properties'](./media/property-grid-example-nested-related-properties.png)
+!['Relationship meaning on nested related properties'](./media/property-grid-example-nested-related-properties.png)
 
 ### Controlling Category Nesting Through Property Category Overrides
 
@@ -241,4 +241,50 @@ Here is a more complex example with *nested* related properties:
 
 **Result:**
 
-!['Custom Nested Properties'](./media/property-grid-example-custom-nested-categories.png)
+!['Custom nested properties'](./media/property-grid-example-custom-nested-categories.png)
+
+Occasionally there may be a need to move the categories' hierarchy to a specific place, especially when creating it for nested related properties. A typical example would be a requirement to merge nested related properties into the parent related properties' list. By default, all nested related properties get their own category:
+
+!['Default related properties nesting'](./media/property-grid-example-default-related-properties-nesting.png)
+
+```json
+{
+  "ruleType": "ContentModifier",
+  "class": { "schemaName": "MySchema", "className": "A" },
+  "relatedProperties": [{
+    "propertiesSource": {
+      "relationship": {"schemaName": "MySchema", "className": "AB"},
+      "direction": "Forward",
+      "targetClass": {"schemaName": "MySchema", "className": "B"}
+    },
+    "nestedRelatedProperties": [{
+      "propertiesSource": {
+        "relationship": {"schemaName": "MySchema", "className": "BC"},
+        "direction": "Forward",
+        "targetClass": {"schemaName": "MySchema", "className": "C"}
+      },
+      "properties": [{
+        "name": "*",
+        "categoryId": { "type": "DefaultParent" }
+      }]
+    }]
+  }]
+}
+```
+
+Applying the above rule moves `C` properties into the parent category:
+
+!['Related properties nesting customized with default parent category identifier'](./media/property-grid-example-related-properties-nesting-customized-with-default-parent-category.png)
+
+Or, we can also move the properties into the root category by using `Root` category identifier:
+
+!['Related properties nesting customized with root category identifier'](./media/property-grid-example-related-properties-nesting-customized-with-root-category.png)
+
+Below is a table of how category identifiers work in different situations:
+
+|                      | Direct Property    | Direct Categorized Property                | Related Property (`SameInstance` meaning) | Related Property (`RelatedInstance` meaning) | Nested Related Property (`RelatedInstance` & `SameInstance`) | Nested Related Property (`RelatedInstance` & `RelatedInstance`) | Nested Related Categorized Property (`RelatedInstance` & `SameInstance`)
+| -------------------- | ------------------ | ------------------------------------------ | ----------------------------------------- | -------------------------------------------- | ------------------------------------------------------------ | --------------------------------------------------------------- | -----------------------------------------
+| No category override | `Selected Item(s)` | `Selected Item(s)` -> *ECPropertyCategory* | `Selected Item(s)` -> *Related class*     | *Related class*                              | *First level related class* -> *Second level related class*  | *First level related class* -> *Second level related class*     | *First level related class* -> *ECPropertyCategory*
+| `DefaultParent`      | `Selected Item(s)` | `Selected Item(s)`                         | `Selected Item(s)`                        | *Related class*                              | *First level related class*                                  | *First level related class* -> *Second level related class*     | *First level related class*
+| `Root`               | `Selected Item(s)` | `Selected Item(s)`                         | `Selected Item(s)`                        | *Related class*                              | *First level related class*                                  | *First level related class*                                     | *First level related class*
+| `Id`                 | Custom             | Custom                                     | Custom                                    | Custom                                       | Custom                                                       | Custom                                                          | Custom

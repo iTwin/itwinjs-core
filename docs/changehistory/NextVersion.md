@@ -3,65 +3,202 @@ publish: false
 ---
 # NextVersion
 
-## Decoration graphics enhancements
+## Build tools changes
 
-### Visible edges
+Removed TSLint support from `@bentley/build-tools`. If you're still using it, please switch to ESLint.
+Also removed legacy `.eslintrc.js` file from the same package. Instead, use `@bentley/eslint-plugin` and the `imodeljs-recommended` config included in it.
 
-Graphics produced by a [GraphicBuilder]($frontend) can now produce edges for surfaces. By default, edges are only produced for graphics of type [GraphicType.Scene]($frontend), and only if the [Viewport]($frontend)'s [ViewFlags]($common) specify that edges should be displayed. To generate edges for other types of graphics, or to prevent them from being generated, override [GraphicBuilderOptions.generateEdges]($frontend) or [GraphicBuilder.wantEdges]($frontend) when creating the graphic. Note that surfaces will z-fight with their edges to a degree unless the graphic is also pickable - see [GraphicBuilderOptions.pickable]($frontend).
+## `Viewport.zoomToElements` improvements
 
-### Solid primitives in decorations
+[Viewport.zoomToElements]($frontend) accepts any number of element Ids and fits the viewport to the union of their [Placement]($common)s. A handful of shortcomings of the previous implementation have been addressed:
 
-Decoration graphics can now be produced from [SolidPrimitive]($geometry-core)s - e.g., spheres, cones, slabs, swept surfaces, and so on - using [GraphicBuilder.addSolidPrimitive]($frontend).
+* Previously, the element Ids were passed to [IModelConnection.Elements.getProps]($frontend), which returned **all** of the element's properties (potentially many megabytes of data), only to extract the [PlacementProps]($common) for each element and discard the rest. Now, it uses the new [IModelConnection.Elements.getPlacements]($frontend) function to query only the placements.
+* Previously, if a mix of 2d and 3d elements were specified, the viewport would attempt to union their 2d and 3d placements, typically causing it to fit incorrectly because 2d elements reside in a different coordinate space than 3d elements. Now, the viewport ignores 2d elements if it is viewing a 3d view, and vice-versa.
 
-## Presentation changes
+## Breaking changes
 
-Added [RelatedPropertiesSpecificationNew.skipIfDuplicate]($presentation-common) attribute to allow specification to be overriden by specifications from higher priority content modifiers. Set this attribute to all related properties' specifications in the default BisCore ruleset.
+### Continued transition to `ChangesetIndex`
 
-## Dictionary enhancements
+Every Changeset has both an Id (a string hash of its content and parent changeset) and an Index (a small integer representing its relative position on the iModel's timeline.) Either value can be used to uniquely identify a changeset. However, it is often necessary to compare two changeset identifiers to determine relative order, or to supply a range of changesets of interest. In this case, Id is not useful and must be converted to an index via a round-trip to an iModelHub server. Unfortunately, much of the iModel.js api uses only [ChangesetId]($common) to identify a changeset. That was unfortunate, since [ChangesetIndex]($common) is frequently needed and `ChangesetId` is rarely useful. For this reason we are migrating the api to prefer `ChangesetIndex` over several releases.
 
-[Dictionary.keys]($bentleyjs-core) and [Dictionary.values]($bentleyjs-core) enable iteration of the dictionary's keys and values in the same manner as a standard Map.
+In version 2.19, we introduced the type [ChangesetIdWithIndex]($common) to begin that migration. However, for 2.x compatibility we could not use it several places where it would have been helpful:
 
-[Dictionary.findOrInsert]($bentleyjs-core) returns the existing value associated with a key, or - if none yet exists - inserts a new value with that key. It also returns a flag indicating whether or not a new value was inserted. This allows the following code that requires two lookups of the key:
+* [IModelRpcOpenProps]($common)
+* [CheckpointProps]($backend)
+* [LocalBriefcaseProps]($common)
 
-```ts
-let value = dictionary.get(key);
-let inserted = undefined !== value;
-if (undefined === value)
-  inserted = dictionary.insert(key, value = newValue);
+Each of these interfaces originally had only a member `changeSetId: string`, In 2.19, for backwards compatibility, a new member `changeSetIndex?: number` was added. In V3 those two members are now replaced with a single member `changeset: ChangesetIdWithIndex`. Note that this is a breaking change, and you may have to adjust your code. To get the changeset Id, use `changeset.id`. To get the changeset Index, use `changeset.index` (may be undefined). In V4, this will become `changeset: ChangesetIndexAndId` and index will be required.
 
-alert(`${value} was ${inserted ? "inserted" : "already present"}`);
-```
+> Note: "Changeset" is one word. Apis should not use a capital "S" when referring to them.
 
-To be replaced with a more efficient version that requires only one lookup:
+## Removal of previously deprecated APIs
 
-```ts
-const result = dictionary.findOrInsert(key, value);
-alert(`${result.value} was ${result.inserted ? "inserted" : "already present"}`);
-```
+In this 3.0 major release, we have removed several APIs that were previously marked as deprecated in 2.x. Generally, the reason for the deprecation as well as the alternative suggestions can be found in the 2.x release notes. They are summarized here for quick reference.
 
-## ChangesetIndex vs. ChangesetId
+### @bentley/imodeljs-backend
 
-A changeset represents the delta (i.e. the "set of changes") between two points on an iModel's timeline. It can be identified by two means: a [ChangesetId]($common) and a [ChangesetIndex]($common) - every changeset has both once it has been pushed to iModelHub. A `ChangesetId` is a string that is formed from the checksum of the contents of the changeset and its parent `ChangesetId`. A `ChangesetIndex` is a small sequential integer representing the position of the changeset on the iModel's timeline. Later changesets will always have a larger `ChangesetIndex` than earlier changesets. However, it is not possible to compare two `ChangesetId`s and tell anything about their relative position on the timeline.
+| Removed                                                      | Replacement                                    |
+| ------------------------------------------------------------ | ---------------------------------------------- |
+| `AutoPush`                                                   | *eliminated*                                   |
+| `BriefcaseIdValue`                                           | `BriefcaseIdValue` in @bentley/imodeljs-common |
+| `BriefcaseManager.getCompatibilityFileName`                  | *eliminated*                                   |
+| `BriefcaseManager.getCompatibilityPath`                      | *eliminated*                                   |
+| `BriefcaseManager.isStandaloneBriefcaseId`                   | use `id === BriefcaseIdValue.Unassigned`       |
+| `compatibilityDir` argument of `BriefcaseManager.initialize` | *eliminated*                                   |
+| `DocumentCarrier`                                            | *eliminated*                                   |
+| `IModelDb.clearSqliteStatementCache`                         | `IModelDb.clearCaches`                         |
+| `IModelDb.clearStatementCache`                               | `IModelDb.clearCaches`                         |
+| `IModelHost.iModelClient`                                    | `IModelHubBackend.iModelClient`                |
+| `IModelHostConfiguration.briefcaseCacheDir`                  | `IModelHostConfiguration.cacheDir`             |
+| `InformationCarrierElement`                                  | *eliminated*                                   |
+| `Platform.isDesktop`                                         | `ProcessDetector.isElectronAppBackend`         |
+| `Platform.isElectron`                                        | `ProcessDetector.isElectronAppBackend`         |
+| `Platform.isMobile`                                          | `ProcessDetector.isMobileAppBackend`           |
+| `Platform.isNodeJs`                                          | `ProcessDetector.isNodeProcess`                |
+| `SnapshotDb.filePath`                                        | `SnapshotDb.pathName`                          |
+| `StandaloneDb.filePath`                                      | `StandaloneDb.pathName`                        |
+| `TxnAction`                                                  | `TxnAction` in @bentley/imodeljs-common        |
 
-Much of the `iTwin.js` api that refers to changesets takes a `ChangesetId` as an argument. That is unfortunate, since `ChangesetIndex` is often required to determine order of changesets. Obtaining the `ChangesetIndex` from a `ChangesetId` requires a round-trip to iModelHub. This version begins the process of reworking the api to prefer `ChangesetIndex` as the identifier for changesets. However, for backwards compatibility, the new types [ChangesetIndexAndId]($common) (both values are known) and [ChangesetIdWithIndex]($common) (Id is known, index may be undefined) are used many places. Ultimately only `ChangesetIndex` will be used to identify changesets, and you should prefer it in any new api that identifies changesets.
+### @bentley/imodeljs-common
 
-### Breaking change
+| Removed                                      | Replacement                                                    |
+| -------------------------------------------- | -------------------------------------------------------------- |
+| `Code.getValue`                              | `Code.value`                                                   |
+| `CodeSpec.specScopeType`                     | `CodeSpec.scopeType`                                           |
+| `IModel.changeSetId`                         | `IModel.changeset.id`                                          |
+| `IModelVersion.evaluateChangeSet`            | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
+| `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
+| `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
 
- The return type of the methods [BriefcaseDb.pullAndMergeChanges]($backend) and [BriefcaseDb.pushChanges]($backend) was changed from a string `ChangesetId` to [ChangesetIndexAndId]($common).
+### @bentley/imodeljs-frontend
 
-## FederationGuid Policy Change
+| Removed                                | Replacement                                               |
+| -------------------------------------- | --------------------------------------------------------- |
+| `CheckpointConnection.open`            | `CheckpointConnection.openRemote`                         |
+| `DecorateContext.screenViewport`       | `DecorateContext.viewport`                                |
+| `IModelApp.iModelClient`               | `IModelHubFrontend.iModelClient`                          |
+| `IModelConnection.Models.loaded`       | use `for..of` to iterate and `getLoaded` to look up by Id |
+| `IModelConnection.Views.saveThumbnail` | use IPC and `IModelDb.saveThumbnail`                      |
+| `IOidcFrontendClient`                  | `FrontendAuthorizationClient`                             |
+| `isIOidcFrontendClient`                | `FrontendAuthorizationClient`                             |
+| `OidcBrowserClient`                    | `BrowserAuthorizationClient`                              |
+| `OidcFrontendClientConfiguration`      | `BrowserAuthorizationClientConfiguration`                 |
+| `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
+| `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
+| `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
 
-In previous versions, if you inserted an element with [ElementProps.federationGuid]($common) `undefined`, its value would be `NULL` in the inserted element. In this version, if `federationGuid === undefined`, a new valid Guid will be created for the new element. This is to better facilitate tracking element identity across iModels in `IModelTransformer`.
+### @bentley/backend-itwin-client
 
-> Note: if `federationGuid` is a valid Guid, its value will be preserved.
+SAML support has officially been dropped as a supported workflow. All related APIs for SAML have been removed.
 
-To insert an element with a `NULL` federationGuid, set it to an illegal value (e.g. `Guid.empty`).
+| Removed                             | Replacement                                  |
+| ----------------------------------- | -------------------------------------------- |
+| `OidcDelegationClientConfiguration` | `DelegationAuthorizationClientConfiguration` |
+| `OidcDelegationClient`              | `DelegationAuthorizationClient`              |
 
-```ts
-   const elementId = imodel1.elements.insertElement( {
-      classFullName: SpatialCategory.classFullName,
-      model: IModel.dictionaryId,
-      federationGuid: Guid.empty,
-      code: SpatialCategory.createCode(imodel1, IModel.dictionaryId, "TestCategory")
-   });
-```
+### @bentley/ui-core
+
+| Removed                              | Replacement                                            |
+| ------------------------------------ | ------------------------------------------------------ |
+| `LoadingPromptProps.isDeterministic` | `LoadingPromptProps.isDeterminate` in @bentley/ui-core |
+| `NumericInput` component             | `NumberInput` component in @bentley/ui-core            |
+| `TabsProps.onClickLabel`             | `TabsProps.onActivateTab` in @bentley/ui-core          |
+
+### @bentley/ui-components
+
+| Removed                          | Replacement                                      |
+| -------------------------------- | ------------------------------------------------ |
+| `hasFlag`                        | `hasSelectionModeFlag` in @bentley/ui-components |
+| `StandardEditorNames`            | `StandardEditorNames` in @bentley/ui-abstract    |
+| `StandardTypeConverterTypeNames` | `StandardTypeNames` in @bentley/ui-abstract      |
+| `StandardTypeNames`              | `StandardTypeNames` in @bentley/ui-abstract      |
+| `Timeline`                       | `TimelineComponent` in @bentley/ui-components    |
+
+### @bentley/ui-framework
+
+| Removed                                | Replacement                                                                            |
+| -------------------------------------- | -------------------------------------------------------------------------------------- |
+| `COLOR_THEME_DEFAULT`                  | `SYSTEM_PREFERRED_COLOR_THEME` in @bentley/ui-framework is used as default color theme |
+| `FunctionKey`                          | `FunctionKey` in @bentley/ui-abstract                                                  |
+| `IModelAppUiSettings`                  | `UserSettingsStorage` in @bentley/ui-framework                                         |
+| `reactElement` in ContentControl       | `ContentControl.reactNode`                                                             |
+| `reactElement` in NavigationAidControl | `NavigationAidControl.reactNode`                                                       |
+| `reactElement` in NavigationWidgetDef  | `NavigationWidgetDef.reactNode`                                                        |
+| `reactElement` in ToolWidgetDef        | `ToolWidgetDef.reactNode`                                                              |
+| `reactElement` in WidgetControl        | `WidgetControl.reactNode`                                                              |
+| `reactElement` in WidgetDef            | `WidgetDef.reactNode`                                                                  |
+| `ReactMessage`                         | `ReactMessage` in @bentley/ui-core                                                     |
+| `SpecialKey`                           | `SpecialKey` in @bentley/ui-abstract                                                   |
+| `WidgetState`                          | `WidgetState` in @bentley/ui-abstract                                                  |
+
+### User Interface Changes
+
+Several changes were made in the @bentley/ui-* packages.
+Some components in @bentley/ui-core were deprecated in favor of components in @itwinui-react.
+A few constructs were deprecated in @bentley/ui-core package with alternatives elsewhere.
+
+### @bentley/extension-cli
+
+The cli tool has been deprecated due to an impending change of Extensions and the Extension Service. Please continue to use the 2.x version if you still require publishing Extensions.
+
+### @bentley/config-loader
+
+The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using .env files will not be affected.
+
+#### Deprecated ui-core Components in Favor of iTwinUI-react Components
+
+Several UI components in the @bentley/ui-core package have been deprecated.
+Developers should use equivalent components in @itwin/itwinui-react instead.
+
+| Deprecated in @bentley/ui-core | Use from @itwin/itwinui-react instead          |
+| ------------------------------ | ---------------------------------------------- |
+| Button                         | Button                                         |
+| ButtonSize                     | `size` prop for itwinui-react Button           |
+| ButtonType                     | `styleType` prop for itwinui-react Button      |
+| Checkbox                       | Checkbox                                       |
+| ExpandableBlock                | ExpandableBlock                                |
+| Headline                       | Headline                                       |
+| HorizontalTabs                 | HorizontalTabs                                 |
+| Input                          | Input                                          |
+| LabeledInput                   | LabeledInput                                   |
+| LabeledSelect                  | LabeledSelect                                  |
+| LabeledTextarea                | LabeledTextarea                                |
+| LabeledToggle                  | ToggleSwitch with `labelPosition="right"` prop |
+| LeadingText                    | Leading                                        |
+| ProgressBar                    | ProgressLinear                                 |
+| ProgressSpinner                | ProgressRadial                                 |
+| Radio                          | Radio                                          |
+| Select                         | Select                                         |
+| SelectOption                   | SelectOption                                   |
+| Slider                         | Slider                                         |
+| SmallText                      | Small                                          |
+| Spinner                        | ProgressRadial with `indeterminate` prop       |
+| SpinnerSize                    | `size` prop in ProgressRadialProps             |
+| SplitButton                    | SplitButton                                    |
+| Subheading                     | Subheading                                     |
+| Textarea                       | Textarea                                       |
+| Tile                           | Tile                                           |
+| Title                          | Title                                          |
+| Toggle                         | ToggleSwitch                                   |
+| Tooltip                        | Tooltip                                        |
+| TooltipPlacement               | Placement                                      |
+
+##### Slider
+
+The deprecated [Slider]($ui-core) was a wrapper around the react-compound-slider that does not work properly in popout windows. To eliminate this issue, the deprecated `Slider`will now wrap the  `Slider` component from @itwin/itwinui-react. This result is a couple prop changes. The `onSlideStart` or `onSlideEnd` props are ignored, use `onUpdate` and `onChange` props if needed. The only two `modes` that remain supported are 1 and 2.
+
+#### Deprecated with alternatives elsewhere
+
+A few constructs were deprecated in @bentley/ui-core package.
+Some were copied to the @bentley/ui-abstract package.
+Some have replacements within the @bentley/ui-core package.
+
+| Deprecated                            | Replacement                                |
+| ------------------------------------- | ------------------------------------------ |
+| DialogButtonDef in @bentley/ui-core   | DialogButtonDef in @bentley/ui-abstract    |
+| DialogButtonStyle in @bentley/ui-core | DialogButtonStyle in @bentley/ui-abstract  |
+| DialogButtonType in @bentley/ui-core  | DialogButtonType in @bentley/ui-abstract   |
+| LocalUiSettings in @bentley/ui-core   | LocalSettingsStorage in @bentley/ui-core   |
+| SessionUiSettings in @bentley/ui-core | SessionSettingsStorage in @bentley/ui-core |

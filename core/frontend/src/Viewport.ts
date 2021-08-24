@@ -48,8 +48,7 @@ import { createRenderPlanFromViewport } from "./render/RenderPlan";
 import { RenderTarget } from "./render/RenderTarget";
 import { StandardView, StandardViewId } from "./StandardView";
 import { SubCategoriesCache } from "./SubCategoriesCache";
-import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
-import { MapTiledGraphicsProvider } from "./tile/map/MapTiledGraphicsProvider";
+import { DisclosedTileTreeSet, MapLayerImageryProvider, MapTiledGraphicsProvider, MapTileTreeReference, TileBoundingBoxes, TiledGraphicsProvider, TileTreeReference } from "./tile/internal";
 import { EventController } from "./tools/EventController";
 import { ToolSettings } from "./tools/ToolSettings";
 import { Animator, ViewAnimationOptions, ViewChangeOptions } from "./ViewAnimation";
@@ -1950,7 +1949,8 @@ export abstract class Viewport implements IDisposable {
    * @param options options that control how the view change works and whether to change view rotation.
    */
   public async zoomToElements(ids: Id64Arg, options?: ViewChangeOptions & ZoomToOptions): Promise<void> {
-    this.zoomToPlacements(await this.iModel.elements.getPlacements(ids), options);
+    const placements = await this.iModel.elements.getPlacements(ids, { type: this.view.is3d() ? "3d" : "2d" });
+    this.zoomToPlacements(placements, options);
   }
 
   /** Zoom the view to a volume of space in world coordinates.
@@ -2688,8 +2688,7 @@ export class ScreenViewport extends Viewport {
   /** The canvas to display the view contents. */
   public readonly canvas: HTMLCanvasElement;
   /** The HTMLDivElement used for HTML decorations. May be referenced from the DOM by class "overlay-decorators".
-   * @deprecated from public access, use DecorateContext.addHtmlDecoration
-   * it will be un-deprecated for internal usage only in a future release
+   * @internal
    */
   public readonly decorationDiv: HTMLDivElement;
   /** The HTMLDivElement used for toolTips. May be referenced from the DOM by class "overlay-tooltip". */

@@ -5,8 +5,7 @@
 import { EnvMacroSubst, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { IModelJsExpressServer } from "@bentley/express-server";
 import { IModelHost } from "@bentley/imodeljs-backend";
-import { BentleyCloudRpcManager, IModelError, IModelStatus } from "@bentley/imodeljs-common";
-import { BunyanLoggerConfig, SeqLoggerConfig } from "@bentley/logger-config";
+import { BentleyCloudRpcManager} from "@bentley/imodeljs-common";
 import { getSupportedRpcs } from "../../common/rpcs";
 import { loggerCategory } from "../../common/TestAppConfiguration";
 
@@ -22,14 +21,7 @@ export function initializeLogging() {
   const config: any = require("./BackendServer.config.json"); // eslint-disable-line @typescript-eslint/no-var-requires
   EnvMacroSubst.replaceInProperties(config, true, defaultConfigValues);
 
-  if ("seq" in config) {
-    if (EnvMacroSubst.anyPropertyContainsEnvvars(config.seq, true))
-      throw new IModelError(IModelStatus.NotFound, "Unmatched environment variables in 'seq' element in BackendServer.config.json.", Logger.logError, loggerCategory, () => config.seq);
-    BunyanLoggerConfig.logToBunyan(SeqLoggerConfig.createBunyanSeqLogger(config.seq, loggerCategory));
-  } else {
-    Logger.initializeToConsole();
-  }
-
+  Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Error);
   if ("loggerConfig" in config)
     Logger.configureLevels(config.loggerConfig);

@@ -5,9 +5,10 @@
 
 import { assert } from "chai";
 import * as semver from "semver";
-import { BentleyError, OpenMode, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
+import { BentleyError, SerializedClientRequestContext } from "@bentley/bentleyjs-core";
 import { executeBackendCallback } from "@bentley/certa/lib/utils/CallbackUtils";
 import {
+  ChangesetIdWithIndex,
   IModelReadRpcInterface, IModelRpcProps, NoContentError, RpcConfiguration, RpcInterface, RpcInterfaceDefinition, RpcManager, RpcOperation, RpcOperationPolicy,
   RpcProtocol, RpcRequest, RpcRequestEvent, RpcRequestStatus, RpcResponseCacheControl, RpcSerializedValue, WipRpcInterface,
 } from "@bentley/imodeljs-common";
@@ -22,7 +23,7 @@ import { currentEnvironment } from "./_Setup.test";
 // cspell:ignore oldvalue newvalue
 
 const timeout = async (ms: number) => new Promise((resolve) => setTimeout(resolve, ms));
-const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
+const testToken: IModelRpcProps = { key: "test", contextId: "test", iModelId: "test", changeset: { id: "test" } };
 
 describe("RpcInterface", () => {
   class LocalInterface extends RpcInterface {
@@ -248,7 +249,7 @@ describe("RpcInterface", () => {
     assert.isTrue(endpointsRestored[0].compatible);
 
     const originalToken = RpcOperation.fallbackToken;
-    RpcOperation.fallbackToken = { key: "test", contextId: "test", iModelId: "test", changeSetId: "test", openMode: OpenMode.Readonly };
+    RpcOperation.fallbackToken = { key: "test", contextId: "test", iModelId: "test", changeset: { id: "test" } };
     assert.equal(controlPolicy.token(undefined as any)!.contextId, "test");
     RpcOperation.fallbackToken = originalToken;
     assert.equal(controlPolicy.token(undefined as any)!.contextId, originalToken ? originalToken.contextId : "none");
@@ -468,20 +469,17 @@ describe("RpcInterface", () => {
   it("should transport imodel tokens correctly", async () => {
     RpcOperation.lookup(TestRpcInterface, "op16").policy.token = new RpcOperationPolicy().token;
 
-    async function check(key: string, contextId?: string, iModelId?: string, changeSetId?: string, openMode?: OpenMode) {
-      const token: IModelRpcProps = { key, contextId, iModelId, changeSetId, openMode };
-      const values: TokenValues = { key, contextId, iModelId, changeSetId, openMode };
+    async function check(key: string, contextId?: string, iModelId?: string, changeset?: ChangesetIdWithIndex) {
+      const token: IModelRpcProps = { key, contextId, iModelId, changeset };
+      const values: TokenValues = { key, contextId, iModelId, changeset };
       assert.isTrue(await TestRpcInterface.getClient().op16(token, values));
     }
 
-    await check("key1", "context1", "imodel1", "change1", OpenMode.ReadWrite);
-    await check("key1", "context1", "imodel1", "", OpenMode.ReadWrite);
-    await check("key1", "context1", "imodel1", undefined, OpenMode.ReadWrite);
-    await check("", "context1", "imodel1", "change1", OpenMode.ReadWrite);
-
-    await check("key1", "context1", "imodel1", "change1", OpenMode.Readonly);
-    await check("key1", "context1", "imodel1", "", OpenMode.Readonly);
-    await check("", "context1", "imodel1", "change1", OpenMode.Readonly);
+    const change1 = { id: "change1" };
+    await check("key1", "context1", "imodel1", change1);
+    await check("key1", "context1", "imodel1", undefined);
+    await check("key1", "context1", "imodel1", { id: "" });
+    await check("", "context1", "imodel1", change1);
   });
 
   it("should recover when the underlying transport is replaced, resend all active requests, and disregard any zombie responses", async () => {

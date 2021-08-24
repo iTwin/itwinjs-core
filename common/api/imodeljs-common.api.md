@@ -8,7 +8,6 @@ import { AccessTokenProps } from '@bentley/itwin-client';
 import { Angle } from '@bentley/geometry-core';
 import { AngleProps } from '@bentley/geometry-core';
 import { AnyGeometryQuery } from '@bentley/geometry-core';
-import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuthStatus } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BentleyError } from '@bentley/bentleyjs-core';
@@ -36,13 +35,11 @@ import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64Set } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IDisposable } from '@bentley/bentleyjs-core';
-import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelJson } from '@bentley/geometry-core';
 import { IModelStatus } from '@bentley/bentleyjs-core';
 import { IndexedPolyfaceVisitor } from '@bentley/geometry-core';
 import { IndexedValue } from '@bentley/bentleyjs-core';
 import { IndexMap } from '@bentley/bentleyjs-core';
-import { LockLevel } from '@bentley/imodelhub-client';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { LogLevel } from '@bentley/bentleyjs-core';
 import { LowAndHighXY } from '@bentley/geometry-core';
@@ -603,7 +600,7 @@ export interface BRepGeometryCreate {
     entryArray: ElementGeometryDataEntry[];
     onResult: BRepGeometryFunction;
     operation: BRepGeometryOperation;
-    parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps;
+    parameters?: BRepCutProps | BRepThickenProps | BRepHollowProps | BRepRoundProps | BRepOffsetProps;
     separateDisjoint?: boolean;
 }
 
@@ -622,6 +619,7 @@ export enum BRepGeometryOperation {
     Hollow = 7,
     Intersect = 2,
     Loft = 9,
+    Offset = 11,
     Round = 10,
     Sew = 3,
     Subtract = 1,
@@ -632,6 +630,11 @@ export enum BRepGeometryOperation {
 
 // @alpha
 export interface BRepHollowProps {
+    distance: number;
+}
+
+// @alpha
+export interface BRepOffsetProps {
     distance: number;
 }
 
@@ -897,9 +900,9 @@ export type ChangesetId = string;
 // @public
 export interface ChangesetIdWithIndex {
     // (undocumented)
-    id: ChangesetId;
+    readonly id: ChangesetId;
     // (undocumented)
-    index?: ChangesetIndex;
+    readonly index?: ChangesetIndex;
 }
 
 // @public
@@ -908,18 +911,18 @@ export type ChangesetIndex = number;
 // @public
 export interface ChangesetIndexAndId {
     // (undocumented)
-    id: ChangesetId;
+    readonly id: ChangesetId;
     // (undocumented)
-    index: ChangesetIndex;
+    readonly index: ChangesetIndex;
 }
 
 // @public
 export type ChangesetIndexOrId = ChangesetIndexAndId | {
-    index: ChangesetIndex;
-    id?: never;
+    readonly index: ChangesetIndex;
+    readonly id?: never;
 } | {
-    id: ChangesetId;
-    index?: never;
+    readonly id: ChangesetId;
+    readonly index?: never;
 };
 
 // @beta
@@ -1095,8 +1098,6 @@ export class Code implements CodeProps {
     equals(other: Code): boolean;
     // (undocumented)
     static fromJSON(json?: any): Code;
-    // @deprecated (undocumented)
-    getValue(): string;
     static isEmpty(c: CodeProps): boolean;
     static isValid(c: CodeProps): boolean;
     scope: string;
@@ -1136,8 +1137,6 @@ export namespace CodeScopeSpec {
 
 // @public
 export class CodeSpec {
-    // @internal @deprecated
-    constructor(iModel: IModel, id: Id64String, name: string, scopeType?: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement, properties?: any);
     static create(iModel: IModel, name: string, scopeType: CodeScopeSpec.Type, scopeReq?: CodeScopeSpec.ScopeRequirement): CodeSpec;
     // @internal
     static createFromJson(iModel: IModel, id: Id64String, name: string, properties: any): CodeSpec;
@@ -1154,9 +1153,6 @@ export class CodeSpec {
     set scopeReq(req: CodeScopeSpec.ScopeRequirement);
     get scopeType(): CodeScopeSpec.Type;
     set scopeType(scopeType: CodeScopeSpec.Type);
-    // @deprecated
-    get specScopeType(): CodeScopeSpec.Type;
-    set specScopeType(scopeType: CodeScopeSpec.Type);
 }
 
 // @public
@@ -2927,6 +2923,7 @@ export class Frustum {
     scaleAboutCenter(scale: number): void;
     scaleXYAboutCenter(scale: number): void;
     setFrom(other: Frustum): void;
+    setFromCorners(corners: Point3d[]): void;
     toMap4d(): Map4d | undefined;
     toRange(range?: Range3d): Range3d;
     transformBy(trans: Transform, result?: Frustum): Frustum;
@@ -4128,12 +4125,10 @@ export class ImdlHeader extends TileHeader {
 // @public
 export abstract class IModel implements IModelProps {
     // @internal
-    protected constructor(tokenProps: IModelRpcProps | undefined, openMode: OpenMode);
+    protected constructor(tokenProps?: IModelRpcProps);
     cartographicToSpatialFromEcef(cartographic: Cartographic, result?: Point3d): Point3d;
     // (undocumented)
     changeset: ChangesetIdWithIndex;
-    // @deprecated
-    get changeSetId(): string;
     get contextId(): GuidString | undefined;
     // @internal (undocumented)
     protected _contextId?: GuidString;
@@ -4169,7 +4164,9 @@ export abstract class IModel implements IModelProps {
     readonly onNameChanged: BeEvent<(previousName: string) => void>;
     readonly onProjectExtentsChanged: BeEvent<(previousExtents: AxisAlignedBox3d) => void>;
     readonly onRootSubjectChanged: BeEvent<(previousSubject: RootSubjectProps) => void>;
-    readonly openMode: OpenMode;
+    get openMode(): OpenMode;
+    // (undocumented)
+    protected _openMode: OpenMode;
     get projectExtents(): AxisAlignedBox3d;
     set projectExtents(extents: AxisAlignedBox3d);
     static readonly repositoryModelId: Id64String;
@@ -4289,11 +4286,9 @@ export abstract class IModelReadRpcInterface extends RpcInterface {
 
 // @public
 export interface IModelRpcOpenProps {
-    changeSetId?: ChangesetId;
-    changesetIndex?: ChangesetIndex;
+    readonly changeset?: ChangesetIdWithIndex;
     readonly contextId?: GuidString;
     readonly iModelId?: GuidString;
-    openMode?: OpenMode;
 }
 
 // @public
@@ -4344,17 +4339,9 @@ export interface IModelTileTreeProps extends TileTreeProps {
 // @public
 export class IModelVersion {
     static asOfChangeSet(changeSetId: string): IModelVersion;
-    // @deprecated
-    evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<ChangesetId>;
     static first(): IModelVersion;
     static fromJSON(json: IModelVersionProps): IModelVersion;
-    // @deprecated
-    static fromJson(jsonObj: any): IModelVersion;
     getAsOfChangeSet(): ChangesetId | undefined;
-    // @internal @deprecated
-    static getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<ChangesetId>;
-    // @internal @deprecated
-    static getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<ChangesetId>;
     getName(): string | undefined;
     get isFirst(): boolean;
     get isLatest(): boolean;
@@ -4386,52 +4373,6 @@ export type IModelVersionProps = {
     latest?: never;
     afterChangeSetId?: never;
 };
-
-// @internal @deprecated
-export abstract class IModelWriteRpcInterface extends RpcInterface {
-    // @deprecated (undocumented)
-    createAndInsertPhysicalModel(_tokenProps: IModelRpcProps, _newModelCode: CodeProps, _privateModel: boolean): Promise<Id64String>;
-    // @deprecated (undocumented)
-    createAndInsertSpatialCategory(_tokenProps: IModelRpcProps, _scopeModelId: Id64String, _categoryName: string, _appearance: SubCategoryAppearance.Props): Promise<Id64String>;
-    // @deprecated (undocumented)
-    deleteElements(_tokenProps: IModelRpcProps, _ids: Id64Array): Promise<void>;
-    // (undocumented)
-    doConcurrencyControlRequest(_tokenProps: IModelRpcProps): Promise<void>;
-    static getClient(): IModelWriteRpcInterface;
-    static getClientForRouting(token: RpcRoutingToken): IModelWriteRpcInterface;
-    // @deprecated (undocumented)
-    getModelsAffectedByWrites(_tokenProps: IModelRpcProps): Promise<Id64String[]>;
-    // @deprecated (undocumented)
-    getParentChangeset(_iModelToken: IModelRpcProps): Promise<ChangesetId>;
-    // (undocumented)
-    hasPendingTxns(_iModelToken: IModelRpcProps): Promise<boolean>;
-    // (undocumented)
-    hasUnsavedChanges(_iModelToken: IModelRpcProps): Promise<boolean>;
-    static readonly interfaceName = "IModelWriteRpcInterface";
-    static interfaceVersion: string;
-    // (undocumented)
-    lockModel(_tokenProps: IModelRpcProps, _modelId: Id64String, _level: LockLevel): Promise<void>;
-    // @deprecated (undocumented)
-    openForWrite(_iModelToken: IModelRpcOpenProps): Promise<IModelConnectionProps>;
-    // (undocumented)
-    pullAndMergeChanges(_tokenProps: IModelRpcProps): Promise<IModelConnectionProps>;
-    // @deprecated (undocumented)
-    pullMergePush(_tokenProps: IModelRpcProps, _comment: string, _doPush: boolean): Promise<GuidString>;
-    // (undocumented)
-    pushChanges(_tokenProps: IModelRpcProps, _description: string): Promise<IModelConnectionProps>;
-    // (undocumented)
-    requestResources(_tokenProps: IModelRpcProps, _elementIds: Id64Array, _modelIds: Id64Array, _opcode: DbOpcode): Promise<void>;
-    // (undocumented)
-    saveChanges(_iModelToken: IModelRpcProps, _description?: string): Promise<void>;
-    // (undocumented)
-    saveThumbnail(_iModelToken: IModelRpcProps, _val: Uint8Array): Promise<void>;
-    // (undocumented)
-    synchConcurrencyControlResourcesCache(_tokenProps: IModelRpcProps): Promise<void>;
-    // @deprecated (undocumented)
-    undoRedo(_rpc: IModelRpcProps, _undo: boolean): Promise<IModelStatus>;
-    // (undocumented)
-    updateProjectExtents(_iModelToken: IModelRpcProps, _newExtents: AxisAlignedBox3dProps): Promise<void>;
-}
 
 // @public
 export interface InformationPartitionElementProps extends ElementProps {
@@ -4804,9 +4745,7 @@ export type LocalAlignedBox3d = Range3d;
 // @public
 export interface LocalBriefcaseProps {
     briefcaseId: number;
-    changeSetId: ChangesetId;
-    // (undocumented)
-    changesetIndex?: ChangesetIndex;
+    changeset: ChangesetIdWithIndex;
     contextId: GuidString;
     fileName: string;
     fileSize: number;
