@@ -6,7 +6,7 @@
 import { join } from "path";
 import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
-import { LockProps, LockScope } from "../BackendHubAccess";
+import { LockProps, LockState } from "../BackendHubAccess";
 import { BriefcaseId, BriefcaseManager } from "../BriefcaseManager";
 import { IModelDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
@@ -30,17 +30,17 @@ export interface LocalHubProps {
 }
 
 export interface LockStatusNone {
-  scope: LockScope.None;
+  state: LockState.None;
   lastCsIndex?: ChangesetIndex;
 }
 export interface LockStatusExclusive {
-  scope: LockScope.Exclusive;
+  state: LockState.Exclusive;
   briefcaseId: BriefcaseId;
   lastCsIndex?: ChangesetIndex;
 }
 
 export interface LockStatusShared {
-  scope: LockScope.Shared;
+  state: LockState.Shared;
   sharedBy: Set<BriefcaseId>;
   lastCsIndex?: ChangesetIndex;
 }
@@ -418,12 +418,12 @@ export class LocalHub {
     this.db.withPreparedSqliteStatement("SELECT entityId FROM locks WHERE briefcaseId=?", (stmt) => {
       stmt.bindInteger(1, briefcaseId);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
-        locks.push({ entityId: stmt.getValueString(0), scope: LockScope.Exclusive });
+        locks.push({ id: stmt.getValueString(0), state: LockState.Exclusive });
     });
     this.db.withPreparedSqliteStatement("SELECT lockId FROM sharedLocks WHERE briefcaseId=?", (stmt) => {
       stmt.bindInteger(1, briefcaseId);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
-        locks.push({ entityId: stmt.getValueString(0), scope: LockScope.Shared });
+        locks.push({ id: stmt.getValueString(0), state: LockState.Shared });
     });
     return locks;
   }
@@ -433,19 +433,19 @@ export class LocalHub {
       stmt.bindId(1, elementId);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
-        return { scope: LockScope.None };
+        return { state: LockState.None };
       const lastCsVal = stmt.getValue(0);
-      const state = {
+      const lock = {
         lastCsIndex: lastCsVal.isNull ? undefined : lastCsVal.getInteger(),
-        scope: stmt.getValueInteger(1),
+        state: stmt.getValueInteger(1),
       };
-      switch (state.scope) {
-        case LockScope.None:
+      switch (lock.state) {
+        case LockState.None:
           return state;
-        case LockScope.Exclusive:
-          return { ...state, briefcaseId: stmt.getValueInteger(2) };
-        case LockScope.Shared:
-          return { ...state, sharedBy: this.querySharedLockHolders(elementId) };
+        case LockState.Exclusive:
+          return { ...lock, briefcaseId: stmt.getValueInteger(2) };
+        case LockState.Shared:
+          return { ...lock, sharedBy: this.querySharedLockHolders(elementId) };
         default:
           throw new Error("illegal lock state");
       }
@@ -453,11 +453,11 @@ export class LocalHub {
   }
 
   private reserveLock(currStatus: LockStatus, props: LockProps, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
-    if (props.scope === LockScope.Exclusive && currStatus.lastCsIndex && (currStatus.lastCsIndex > this.getIndexFromChangeset(briefcase.changeset)))
+    if (props.scope === LockState.Exclusive && currStatus.lastCsIndex && (currStatus.lastCsIndex > this.getIndexFromChangeset(briefcase.changeset)))
       throw new IModelError(IModelHubStatus.PullIsRequired, "Pull is required");
 
-    const wantShared = props.scope === LockScope.Shared;
-    if (wantShared && (currStatus.scope === LockScope.Exclusive))
+    const wantShared = props.scope === LockState.Shared;
+    if (wantShared && (currStatus.scope === LockState.Exclusive))
       throw new Error("cannot acquire shared lock because an exclusive lock is already held");
 
     this.db.withPreparedSqliteStatement("INSERT INTO locks(entityId,level,briefcaseId) VALUES(?,?,?) ON CONFLICT(entityId) DO UPDATE SET briefcaseId=excluded.briefcaseId,level=excluded.level", (stmt) => {
@@ -503,22 +503,22 @@ export class LocalHub {
   }
 
   public requestLock(props: LockProps, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
-    if (props.scope === LockScope.None)
-      throw new Error("cannot request lock for LockScope.None");
+    if (props.scope === LockState.None)
+      throw new Error("cannot request lock for LockState.None");
 
     const lockStatus = this.queryLockStatus(props.entityId);
     switch (lockStatus.scope) {
-      case LockScope.None:
+      case LockState.None:
         return this.reserveLock(lockStatus, props, briefcase);
 
-      case LockScope.Shared:
-        if (props.scope !== LockScope.Shared)
+      case LockState.Shared:
+        if (props.scope !== LockState.Shared)
           throw new Error("element is locked with shared access, cannot obtain exclusive lock");
         if (!lockStatus.sharedBy.has(briefcase.briefcaseId))
           this.reserveLock(lockStatus, props, briefcase);
         return;
 
-      case LockScope.Exclusive:
+      case LockState.Exclusive:
         if (lockStatus.briefcaseId !== briefcase.briefcaseId)
           throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock is already owned by another user");
     }
@@ -528,17 +528,17 @@ export class LocalHub {
     const lockId = props.entityId;
     const lockStatus = this.queryLockStatus(lockId);
     switch (lockStatus.scope) {
-      case LockScope.None:
+      case LockState.None:
         throw new IModelError(IModelHubStatus.LockDoesNotExist, "lock not held");
 
-      case LockScope.Exclusive:
+      case LockState.Exclusive:
         if (lockStatus.briefcaseId !== arg.briefcaseId)
           throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock not held by this briefcase");
         this.updateLockChangeset(lockId, this.getIndexFromChangeset(arg.changeset));
         this.clearLock(lockId);
         break;
 
-      case LockScope.Shared:
+      case LockState.Shared:
         if (!lockStatus.sharedBy.has(arg.briefcaseId))
           throw new IModelError(IModelHubStatus.LockDoesNotExist, "shared lock not held by this briefcase");
 

@@ -83,8 +83,9 @@ export interface ComputedProjectExtents {
 export interface LockControl {
   open(iModel: BriefcaseDb): void;
   close(): void;
-  hasExclusiveLock(id: Id64String): boolean;
-  hasSharedLock(id: Id64String): boolean;
+  elementWasCreated(id: Id64String): void;
+  holdsExclusiveLock(id: Id64String): boolean;
+  holdsSharedLock(id: Id64String): boolean;
   acquireExclusiveLock(ids: Id64Arg): Promise<void>;
   acquireSharedLocks(ids: Id64Arg): Promise<void>;
   acquireSchemaLock(): Promise<void>;
@@ -95,8 +96,9 @@ export class OptimisticLocks implements LockControl {
   public open(_iModel: BriefcaseDb): void { }
   public close(): void { }
   public clearAllLocks(): void { }
-  public hasExclusiveLock(_id: Id64String): boolean { return true; }
-  public hasSharedLock(_id: Id64String): boolean { return true; }
+  public holdsExclusiveLock(): boolean { return true; }
+  public holdsSharedLock(): boolean { return true; }
+  public elementWasCreated(): void { }
   public async acquireExclusiveLock(): Promise<void> { }
   public async acquireSharedLocks(): Promise<void> { }
   public async acquireSchemaLock(): Promise<void> { }

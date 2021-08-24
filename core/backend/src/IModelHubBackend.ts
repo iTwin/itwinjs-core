@@ -23,7 +23,6 @@ import {
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { CheckpointProps } from "./CheckpointManager";
-import { ConcurrencyControl } from "./ConcurrencyControl";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 

@@ -92,30 +92,30 @@ export class PessimisticLocks implements LockControl {
   }
 
   /** Determine whether an the exclusive lock is already held by an element (or one of its owners) */
-  public hasExclusiveLock(id: Id64String): boolean {
+  public holdsExclusiveLock(id: Id64String): boolean {
     if (this.getLockState(id) === LockState.Exclusive)
       return true; // yes, we hold the lock.
 
     // an exclusive lock is implied if the element's owner is exclusively locked (recursively)
     const owners = this.getOwners(id);
-    return this.hasExclusiveLock(owners.modelId) || this.hasExclusiveLock(owners.parentId);
+    return this.holdsExclusiveLock(owners.modelId) || this.holdsExclusiveLock(owners.parentId);
   }
 
-  public hasSharedLock(id: Id64String): boolean {
+  public holdsSharedLock(id: Id64String): boolean {
     const state = this.getLockState(id);
     if (state === LockState.Shared || state === LockState.Exclusive)
       return true; // we already hold either the shared or exclusive lock for this element
 
     // see if an owner has exclusive lock. If so we implicitly have shared lock, but owner holding shared lock doesn't help.
     const owners = this.getOwners(id);
-    return this.hasExclusiveLock(owners.modelId) || this.hasExclusiveLock(owners.parentId);
+    return this.holdsExclusiveLock(owners.modelId) || this.holdsExclusiveLock(owners.parentId);
   }
 
   /** if the shared lock on the element supplied is not already held, add it to the set of shared locks required. Then, check owners. */
   private addSharedLock(id: Id64String, locks: Set<Id64String>) {
     // if the id is not valid, or of the lock is already in the set, or if we already hold a shared lock, we're done
     // Note: if we hold a shared lock, it is guaranteed that we also hold all required shared locks on owners.
-    if (!Id64.isValid(id) || locks.has(id) || this.hasSharedLock(id))
+    if (!Id64.isValid(id) || locks.has(id) || this.holdsSharedLock(id))
       return;
 
     locks.add(id); // add to set of needed shared locks
@@ -156,7 +156,7 @@ export class PessimisticLocks implements LockControl {
   public async acquireExclusiveLock(ids: Id64Arg): Promise<void> {
     const locks = new Map<Id64String, LockState>();
     for (const id of Id64.iterable(ids)) {
-      if (!this.hasExclusiveLock(id))
+      if (!this.holdsExclusiveLock(id))
         locks.set(id, LockState.Exclusive);
     }
     return this.acquireAllLocks(locks);
@@ -169,7 +169,7 @@ export class PessimisticLocks implements LockControl {
   public async acquireSharedLocks(ids: Id64Arg): Promise<void> {
     const locks = new Map<Id64String, LockState>();
     for (const id of Id64.iterable(ids)) {
-      if (!this.hasSharedLock(id))
+      if (!this.holdsSharedLock(id))
         locks.set(id, LockState.Shared);
     }
     return this.acquireAllLocks(locks);

@@ -6,12 +6,12 @@
  * @module Elements
  */
 
-import { assert, CompressedId64Set, DbOpcode, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, IModelStatus, JsonUtils, OrderedId64Array } from "@bentley/bentleyjs-core";
 import { ClipVector, Range3d, Transform } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
-  GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
+  GeometryStreamProps, IModel, IModelError, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
   Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps,
   SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
@@ -141,8 +141,7 @@ export class Element extends Entity implements ElementProps {
    * @note `this` is the class of the Element to be inserted
    * @beta
    */
-  protected static onInsert(_arg: OnElementPropsArg): void {
-  }
+  protected static onInsert(_arg: OnElementPropsArg): void { }
 
   /** Called after a new Element was inserted.
    * @note If you override this method, you must call super.
@@ -150,9 +149,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onInserted(arg: OnElementIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Insert);
-    }
+    arg.iModel.locks.elementWasCreated(arg.id);
   }
 
   /** Called before an Element is updated.
@@ -162,9 +159,8 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onElementWrite(this, arg.props, DbOpcode.Update);
-    }
+    if (!arg.iModel.locks.holdsExclusiveLock(arg.props.id!))
+      throw new IModelError(IModelStatus.LockNotHeld, "required lock not held");
   }
 
   /** Called after an Element was updated.
@@ -172,11 +168,7 @@ export class Element extends Entity implements ElementProps {
    * @note `this` is the class of the Element that was updated
    * @beta
    */
-  protected static onUpdated(arg: OnElementIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      arg.iModel.concurrencyControl.onElementWritten(this, arg.id, DbOpcode.Update);
-    }
-  }
+  protected static onUpdated(_arg: OnElementIdArg): void { }
 
   /** Called before an Element is deleted.
    * @note throw an exception to disallow the delete
@@ -185,11 +177,8 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onDelete(arg: OnElementIdArg): void {
-    if (arg.iModel.isBriefcaseDb()) {
-      const props = arg.iModel.elements.tryGetElementProps(arg.id);
-      if (props !== undefined)
-        arg.iModel.concurrencyControl.onElementWrite(this, props, DbOpcode.Delete);
-    }
+    if (!arg.iModel.locks.holdsExclusiveLock(arg.id))
+      throw new IModelError(IModelStatus.LockNotHeld, "required lock not held");
   }
 
   /** Called after an Element was deleted.
@@ -414,15 +403,6 @@ export class Element extends Entity implements ElementProps {
   public update() { this.iModel.elements.updateElement(this); }
   /** Delete this Element from the iModel. */
   public delete() { this.iModel.elements.deleteElement(this.id); }
-
-  /** Add a request for locks, code reservations, and anything else that would be needed to carry out the specified operation.
-   * @param opcode The operation that will be performed on the element.
-   */
-  public override buildConcurrencyControlRequest(opcode: DbOpcode): void {
-    if (this.iModel.isBriefcaseDb()) {
-      this.iModel.concurrencyControl.buildRequestForElement(this, opcode);
-    }
-  }
 }
 
 /** An abstract base class to model real world entities that intrinsically have geometry.
