@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodel-bridge",
+      "comment": "Abandons changes and releases locks after encountering an error",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodel-bridge",
+  "email": "46531236+akshay-madhukar@users.noreply.github.com"
+}
