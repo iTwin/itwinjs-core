@@ -244,17 +244,15 @@ export class AzureFileHandler implements FileHandler {
    * @param fileSize size of the transferred file in bytes
    */
   private useAzCopyForFileTransfer(fileSize?: number): boolean {
-    let useAzcopy = AzCopy.isAvailable;
-
     // suppress azcopy for smaller file as it take longer to spawn and exit then it take Http downloader to download it.
-    if (useAzcopy && fileSize) {
+    if (fileSize) {
       // eslint-disable-next-line deprecation/deprecation
       const minFileSize = Config.App.getNumber("imjs_az_min_filesize_threshold", 500 * 1024 * 1024 /** 500 Mb */);
       if (fileSize < minFileSize)
-        useAzcopy = false;
+        return false;
     }
 
-    return useAzcopy;
+    return AzCopy.isAvailable;
   }
 
   /**
