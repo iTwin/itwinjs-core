@@ -7,7 +7,7 @@
  */
 
 import { join } from "path";
-import { AuthStatus, BeEvent, ClientRequestContext, Config, GuidString, SessionProps } from "@bentley/bentleyjs-core";
+import { AuthStatus, BeEvent, ClientRequestContext, GuidString, SessionProps } from "@bentley/bentleyjs-core";
 import {
   BriefcaseProps, IModelError, InternetConnectivityStatus, LocalBriefcaseProps, NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions,
   NativeAppNotifications, nativeAppNotify, OverriddenBy, RequestNewBriefcaseProps, StorageValue,
@@ -94,9 +94,6 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   }
   public async overrideInternetConnectivity(by: OverriddenBy, status: InternetConnectivityStatus): Promise<void> {
     NativeHost.overrideInternetConnectivity(by, status);
-  }
-  public async getConfig(): Promise<any> {
-    return Config.App.getContainer();
   }
   public async acquireNewBriefcaseId(iModelId: GuidString): Promise<number> {
     return BriefcaseManager.acquireNewBriefcaseId(await IModelHost.getAuthorizedContext(), iModelId);

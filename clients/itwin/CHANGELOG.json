@@ -2,6 +2,24 @@
   "name": "@bentley/itwin-client",
   "entries": [
     {
+      "version": "2.19.7",
+      "tag": "@bentley/itwin-client_v2.19.7",
+      "date": "Fri, 20 Aug 2021 17:47:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.6",
+      "tag": "@bentley/itwin-client_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add `imjs_itwin_platform_authority` environment variable support to allow changing the IMS authority"
+          }
+        ]
+      }
+    },
+    {
       "version": "2.19.5",
       "tag": "@bentley/itwin-client_v2.19.5",
       "date": "Fri, 13 Aug 2021 21:48:09 GMT",

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { AbstractWidgetProps, BadgeType, ConditionalStringValue, StringGetter, UiError, WidgetState } from "@bentley/ui-abstract";
+import { AbstractWidgetProps, BadgeType, ConditionalStringValue, PointProps, StringGetter, UiError, WidgetState } from "@bentley/ui-abstract";
 import { UiEvent } from "@bentley/ui-core";
 import { Direction, PanelSide } from "@bentley/ui-ninezone";
 import { ConfigurableCreateInfo, ConfigurableUiControlConstructor, ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
@@ -141,6 +141,8 @@ export class WidgetDef {
   private _restoreTransientState?: () => boolean;
   private _preferredPanelSize: "fit-content" | undefined;
   private _canPopout?: boolean;
+  private _floatingContainerId?: string;
+  private _defaultFloatingPosition: PointProps | undefined;
 
   private _tabLocation: TabLocation = {
     side: "left",
@@ -175,6 +177,10 @@ export class WidgetDef {
   public set tabLocation(tabLocation: TabLocation) { this._tabLocation = tabLocation; }
 
   /** @internal */
+  public get defaultFloatingPosition() { return this._defaultFloatingPosition; }
+  public set defaultFloatingPosition(position: PointProps | undefined) { this._defaultFloatingPosition = position; }
+
+  /** @internal */
   public get defaultState() { return this._defaultState; }
 
   constructor(widgetProps: WidgetProps) {
@@ -195,6 +201,8 @@ export class WidgetDef {
       me._label = UiFramework.i18n.translate(widgetProps.labelKey);
 
     me.setCanPopout(widgetProps.canPopout);
+    me.setFloatingContainerId(widgetProps.floatingContainerId);
+    me.defaultFloatingPosition = widgetProps.defaultFloatingPosition ? widgetProps.defaultFloatingPosition as PointProps : undefined;
 
     if (widgetProps.priority !== undefined)
       me._priority = widgetProps.priority;
@@ -210,8 +218,8 @@ export class WidgetDef {
       me._classId = widgetProps.classId;
 
     if (widgetProps.defaultState !== undefined) {
-      me._state = widgetProps.defaultState;
       me._defaultState = widgetProps.defaultState;
+      me._state = widgetProps.defaultState === WidgetState.Floating ? WidgetState.Open : widgetProps.defaultState;
     }
 
     if (widgetProps.isFreeform !== undefined) {
@@ -374,6 +382,14 @@ export class WidgetDef {
 
   public get canPopout(): boolean | undefined {
     return (this._canPopout);
+  }
+
+  public setFloatingContainerId(value: string | undefined) {
+    this._floatingContainerId = value;
+  }
+
+  public get floatingContainerId(): string | undefined {
+    return (this._floatingContainerId);
   }
 
   public canOpen(): boolean {

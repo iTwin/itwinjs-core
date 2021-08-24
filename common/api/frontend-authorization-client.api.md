@@ -92,6 +92,7 @@ export interface BrowserAuthorizationClientConfiguration extends BrowserAuthoriz
     readonly redirectUri: string;
     readonly responseType?: "code" | "id_token" | "id_token token" | "code id_token" | "code token" | "code id_token token" | string;
     readonly scope: string;
+    readonly silentRedirectUri?: string;
 }
 
 // @internal

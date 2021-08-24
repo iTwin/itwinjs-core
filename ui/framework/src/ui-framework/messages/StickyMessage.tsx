@@ -9,7 +9,7 @@
 import "./StickyMessage.scss";
 import * as React from "react";
 import classnames from "classnames";
-import { MessageSeverity } from "@bentley/ui-core";
+import { MessageSeverity } from "@bentley/ui-abstract";
 import { MessageLayout } from "@bentley/ui-ninezone";
 import { ToastPresentation } from "@itwin/itwinui-react/cjs/core/Toast/Toast";
 import { NotifyMessageDetailsType } from "../messages/ReactNotifyMessageDetails";

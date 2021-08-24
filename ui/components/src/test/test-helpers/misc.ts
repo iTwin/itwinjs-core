@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as sinon from "sinon";
 import { expect } from "chai";
-import { act, fireEvent, wait } from "@testing-library/react";
+import { act, fireEvent, waitFor } from "@testing-library/react";
 
 let mochaTimeoutsEnabled: Mocha.Context;
 beforeEach(function () {
@@ -22,7 +22,7 @@ export const waitForSpy = async (spy: sinon.SinonSpy, options?: WaitForSpyOption
   const defaultValues: WaitForSpyOptions = { timeout: 250, error: "Waiting for spy timed out!" };
   const { timeout, error } = options ? { ...defaultValues, ...options } : defaultValues;
 
-  return wait(() => {
+  return waitFor(() => {
     if (!spy.called)
       throw new Error(error);
   }, { timeout, interval: 10 });
@@ -36,7 +36,7 @@ export const waitForUpdate = async (action: () => any, spy: sinon.SinonSpy, coun
   const timeout = mochaTimeoutsEnabled ? undefined : Number.MAX_VALUE;
   const callCountBefore = spy.callCount;
   act(() => { action(); });
-  await wait(() => {
+  await waitFor(() => {
     if (spy.callCount - callCountBefore !== count) {
       const err = new Error(`Calls count doesn't match. Expected ${count}, got ${spy.callCount - callCountBefore} (${spy.callCount} in total)`);
       err.stack = stack;
@@ -48,10 +48,9 @@ export const waitForUpdate = async (action: () => any, spy: sinon.SinonSpy, coun
 /**
  * Select component pick value using index
  */
-export const selectChangeValueByIndex = (select: HTMLElement, index: number, onError?: (msg: string) => void): void => {
+export const selectChangeValueByIndex = (select: HTMLElement, index: number, onError?: (msg: string) => void, useOwnerDoc?: boolean): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
-
-  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
+  const menu = useOwnerDoc ? select.ownerDocument.querySelector("ul.iui-menu") as HTMLUListElement : select.querySelector("ul.iui-menu") as HTMLUListElement;
   if (!menu)
     onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;
@@ -67,10 +66,10 @@ export const selectChangeValueByIndex = (select: HTMLElement, index: number, onE
 /**
  * Select component change value using text of menu item to find item
  */
-export const selectChangeValueByText = (select: HTMLElement, label: string, onError?: (msg: string) => void): void => {
+export const selectChangeValueByText = (select: HTMLElement, label: string, onError?: (msg: string) => void, useOwnerDoc?: boolean): void => {
   fireEvent.click(select.querySelector(".iui-select-button") as HTMLElement);
 
-  const menu = select.querySelector(".iui-menu") as HTMLUListElement;
+  const menu = useOwnerDoc ? select.ownerDocument.querySelector("ul.iui-menu") as HTMLUListElement : select.querySelector("ul.iui-menu") as HTMLUListElement;
   if (!menu)
     onError && onError(`Couldn't find menu`);
   expect(menu).to.exist;

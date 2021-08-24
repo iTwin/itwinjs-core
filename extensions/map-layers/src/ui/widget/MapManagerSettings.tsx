@@ -14,6 +14,8 @@ import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { EsriOAuthSettingsGroup } from "./EsriOAuthSettingsGroup";
 import { Select, SelectOption, Slider } from "@itwin/itwinui-react";
 
+/* eslint-disable deprecation/deprecation */
+
 enum MapMaskingOption {
   None,
   AllModels

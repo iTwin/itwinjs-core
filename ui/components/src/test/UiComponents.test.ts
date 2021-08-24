@@ -5,7 +5,6 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
-import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
 import { UiComponents } from "../ui-components";
 import TestUtils from "./TestUtils";
 
@@ -48,15 +47,6 @@ describe("UiComponents", () => {
     await UiComponents.initialize(TestUtils.i18n);
     spyLogger.calledOnce.should.true;
     (Logger.logInfo as any).restore();
-  });
-
-  it("calling initialize without I18N will use IModelApp.i18n", async () => {
-    await MockRender.App.startup();
-
-    await UiComponents.initialize();
-    expect(UiComponents.i18n).to.eq(IModelApp.i18n);
-
-    await MockRender.App.shutdown();
   });
 
   it("calling loggerCategory without an obj should return packageName", () => {

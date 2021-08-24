@@ -49,6 +49,21 @@ describe("Property creation tests", () => {
     expect(property.propertyType).to.eql(PrimitiveType.Double);
   });
 
+  it("should successfully delete a PrimitiveProperty from class", async () => {
+    const createResult = await testEditor.entities.createPrimitiveProperty(entityKey, "TestProperty", PrimitiveType.Double);
+    let property = await entity?.getProperty(createResult.propertyName!) as PrimitiveProperty;
+    expect(property.class.key).to.eql(createResult.itemKey);
+    expect(property.name).to.eql(createResult.propertyName);
+
+    const delResult = await testEditor.entities.deleteProperty(entityKey, "TestProperty");
+    expect(delResult.itemKey).to.eql(entityKey);
+    expect(delResult.propertyName).to.eql("TestProperty");
+
+    // Should get undefined since property has been deleted
+    property = await entity?.getProperty(createResult.propertyName!) as PrimitiveProperty;
+    expect(property).to.be.undefined;
+  });
+
   it("should successfully create an EnumerationProperty from a JSON prop", async () => {
     const enumJson = {
       name: "TestEnum",
@@ -76,6 +91,21 @@ describe("Property creation tests", () => {
     const propResult = await testEditor.entities.createEnumerationPropertyFromProps(entityKey, "TestProperty", enumeration,propertyJson);
     const property = await entity?.getProperty(propResult.propertyName!) as EnumerationProperty;
     expect(await property.enumeration).to.eql(enumeration);
+  });
+
+  it("should successfully delete an EnumerationProperty from class", async () => {
+    const schema = await testEditor.getSchema(testKey);
+    const testEnum = new Enumeration(schema, "TestEnumeration");
+    const createResult = await testEditor.entities.createEnumerationProperty(entityKey, "TestProperty", testEnum);
+    let property = await entity?.getProperty(createResult.propertyName!) as EnumerationProperty;
+    expect(await property.enumeration).to.eql(testEnum);
+
+    const delResult = await testEditor.entities.deleteProperty(entityKey, "TestProperty");
+    expect(delResult.itemKey).to.eql(entityKey);
+    expect(delResult.propertyName).to.eql("TestProperty");
+
+    property = await entity?.getProperty(createResult.propertyName!) as EnumerationProperty;
+    expect(property).to.be.undefined;
   });
 
   it("should create a NavigationProperty", async () => {
@@ -141,6 +171,21 @@ describe("Property creation tests", () => {
     expect(await navProperty.relationshipClass).to.eql(relationship);
   });
 
+  it("should successfully delete a NavigationProperty from class", async () => {
+    const schema = await testEditor.getSchema(testKey);
+    const relationship = new RelationshipClass(schema, "TestRelationship");
+    const createResult = await testEditor.entities.createNavigationProperty(entityKey, "TestProperty", relationship, StrengthDirection.Forward);
+    let property = await entity?.getProperty(createResult.propertyName!) as NavigationProperty;
+    expect(await property.relationshipClass).to.eql(relationship);
+
+    const delResult = await testEditor.entities.deleteProperty(entityKey, "TestProperty");
+    expect(delResult.itemKey).to.eql(entityKey);
+    expect(delResult.propertyName).to.eql("TestProperty");
+
+    property = await entity?.getProperty(createResult.propertyName!) as NavigationProperty;
+    expect(property).to.be.undefined;
+  });
+
   it("should successfully create a PrimitiveArrayProperty from a JSON prop", async () => {
     const propertyJson = {
       name: "TestProperty",
@@ -156,6 +201,20 @@ describe("Property creation tests", () => {
     expect(property.maxOccurs).to.eql(55);
   });
 
+  it("should successfully delete a PrimitiveArrayProperty from class", async () => {
+    const createResult = await testEditor.entities.createPrimitiveArrayProperty(entityKey, "TestProperty", PrimitiveType.Double);
+    let property = await entity?.getProperty(createResult.propertyName!) as PrimitiveArrayProperty;
+    expect(property.class.key).to.eql(createResult.itemKey);
+    expect(property.name).to.eql(createResult.propertyName);
+
+    const delResult = await testEditor.entities.deleteProperty(entityKey, "TestProperty");
+    expect(delResult.itemKey).to.eql(entityKey);
+    expect(delResult.propertyName).to.eql("TestProperty");
+
+    property = await entity?.getProperty(createResult.propertyName!) as PrimitiveArrayProperty;
+    expect(property).to.be.undefined;
+  });
+
   it("should successfully create a StructProperty from a JSON prop", async () => {
     const propertyJson = {
       name: "TestProperty",
@@ -167,6 +226,21 @@ describe("Property creation tests", () => {
     const propResult = await testEditor.entities.createStructPropertyFromProps(entityKey, "TestProperty", structClass, propertyJson);
     const property = await entity?.getProperty(propResult.propertyName!) as StructProperty;
     expect(property.structClass).to.eql(structClass);
+  });
+
+  it("should successfully delete a StructProperty from class", async () => {
+    const classResult = await testEditor.structs.create(testKey, "TestStruct");
+    const structClass = await testEditor.schemaContext.getSchemaItem(classResult.itemKey!) as StructClass;
+    const createResult = await testEditor.entities.createStructProperty(entityKey, "TestProperty", structClass);
+    let property = await entity?.getProperty(createResult.propertyName!) as StructProperty;
+    expect(property.structClass).to.eql(structClass);
+
+    const delResult = await testEditor.entities.deleteProperty(entityKey, "TestProperty");
+    expect(delResult.itemKey).to.eql(entityKey);
+    expect(delResult.propertyName).to.eql("TestProperty");
+
+    property = await entity?.getProperty(createResult.propertyName!) as StructProperty;
+    expect(property).to.be.undefined;
   });
 
   it("should successfully create a StructArrayProperty from a JSON prop", async () => {
@@ -184,5 +258,108 @@ describe("Property creation tests", () => {
     expect(property.structClass).to.eql(structClass);
     expect(property.minOccurs).to.eql(20);
     expect(property.maxOccurs).to.eql(32);
+  });
+
+  it("should successfully delete a StructArrayProperty from class", async () => {
+    const classResult = await testEditor.structs.create(testKey, "TestStruct");
+    const structClass = await testEditor.schemaContext.getSchemaItem(classResult.itemKey!) as StructClass;
+    const createResult = await testEditor.entities.createStructArrayProperty(entityKey, "TestProperty", structClass);
+    let property = await entity?.getProperty(createResult.propertyName!) as StructArrayProperty;
+    expect(property.structClass).to.eql(structClass);
+
+    const delResult = await testEditor.entities.deleteProperty(entityKey, "TestProperty");
+    expect(delResult.itemKey).to.eql(entityKey);
+    expect(delResult.propertyName).to.eql("TestProperty");
+
+    property = await entity?.getProperty(createResult.propertyName!) as StructArrayProperty;
+    expect(property).to.be.undefined;
+  });
+
+  it("should successfully add property type double to class", async () => {
+    const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.Double);
+    const property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
+    expect(property.name).to.eql("prefix_TestProperty");
+    expect(property.propertyType).to.eql(PrimitiveType.Double);
+  });
+
+  it("should successfully delete property type double from class", async () => {
+    const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.Double);
+    let property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
+    expect(property.propertyType).to.eql(PrimitiveType.Double);
+
+    const delResult = await testEditor.entities.deleteProperty(entityKey, "prefix_TestProperty");
+    expect(delResult.itemKey).to.eql(entityKey);
+    expect(delResult.propertyName).to.eql("prefix_TestProperty");
+
+    property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property).to.be.undefined;
+  });
+
+  it("should successfully add property type string to class", async () => {
+    const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.String);
+    const property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
+    expect(property.name).to.eql("prefix_TestProperty");
+    expect(property.propertyType).to.eql(PrimitiveType.String);
+  });
+
+  it("should successfully delete property type string from class", async () => {
+    const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.String);
+    let property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
+    expect(property.propertyType).to.eql(PrimitiveType.String);
+
+    const delResult = await testEditor.entities.deleteProperty(entityKey, "prefix_TestProperty");
+    expect(delResult.itemKey).to.eql(entityKey);
+    expect(delResult.propertyName).to.eql("prefix_TestProperty");
+
+    property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property).to.be.undefined;
+  });
+
+  it("should successfully add property type date time to class", async () => {
+    const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.DateTime);
+    const property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
+    expect(property.name).to.eql("prefix_TestProperty");
+    expect(property.propertyType).to.eql(PrimitiveType.DateTime);
+  });
+
+  it("should successfully delete property type date time from class", async () => {
+    const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.DateTime);
+    let property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
+    expect(property.propertyType).to.eql(PrimitiveType.DateTime);
+
+    const delResult = await testEditor.entities.deleteProperty(entityKey, "prefix_TestProperty");
+    expect(delResult.itemKey).to.eql(entityKey);
+    expect(delResult.propertyName).to.eql("prefix_TestProperty");
+
+    property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property).to.be.undefined;
+  });
+
+  it("should successfully add property type integer to class", async () => {
+    const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.Integer);
+    const property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
+    expect(property.name).to.eql("prefix_TestProperty");
+    expect(property.propertyType).to.eql(PrimitiveType.Integer);
+  });
+
+  it("should successfully delete property type integer from class", async () => {
+    const propResult = await testEditor.entities.createPrimitiveProperty(entityKey, "prefix_TestProperty", PrimitiveType.Integer);
+    let property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property.fullName).to.eql("testEntity.prefix_TestProperty");
+    expect(property.propertyType).to.eql(PrimitiveType.Integer);
+
+    const delResult = await testEditor.entities.deleteProperty(entityKey, "prefix_TestProperty");
+    expect(delResult.itemKey).to.eql(entityKey);
+    expect(delResult.propertyName).to.eql("prefix_TestProperty");
+
+    property = await entity?.getProperty(propResult.propertyName!) as PrimitiveProperty;
+    expect(property).to.be.undefined;
   });
 });

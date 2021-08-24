@@ -6,7 +6,7 @@ import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
 import { Primitives, PropertyConverterInfo } from "@bentley/ui-abstract";
-import { render, waitForElement } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import { PrimitivePropertyValueRenderer } from "../../../../ui-components";
 import { TypeConverter } from "../../../../ui-components/converters/TypeConverter";
 import { TypeConverterManager } from "../../../../ui-components/converters/TypeConverterManager";
@@ -102,7 +102,7 @@ describe("PrimitivePropertyValueRenderer", () => {
 
       const renderedElement = render(<>{renderer.render(propertyRecord, context)}</>);
       renderedElement.getByText("in progress");
-      await waitForElement(() => renderedElement.getByText(value));
+      await waitFor(() => renderedElement.getByText(value));
     });
 
     it("renders async value without default value in context", async () => {
@@ -113,7 +113,7 @@ describe("PrimitivePropertyValueRenderer", () => {
       const propertyRecord = TestUtils.createPropertyRecord(value, { key: "test", label: "test" }, "async");
 
       const renderedElement = render(<>{renderer.render(propertyRecord)}</>);
-      await waitForElement(() => renderedElement.getByText(value));
+      await waitFor(() => renderedElement.getByText(value));
     });
 
     it("throws when trying to render array property", () => {

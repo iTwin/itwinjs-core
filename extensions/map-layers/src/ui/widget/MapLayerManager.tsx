@@ -311,10 +311,7 @@ export function MapLayerManager(props: MapLayerManagerProps) {
   const handleMapLayersToggle = React.useCallback(() => {
     if (activeViewport) {
       const newState = !backgroundMapVisible;
-      const vf = activeViewport.viewFlags.clone();
-      vf.backgroundMap = newState; // Or any other modifications
-      activeViewport.viewFlags = vf;
-      activeViewport.invalidateRenderPlan();
+      activeViewport.viewFlags = activeViewport.viewFlags.with("backgroundMap", newState);
       setBackgroundMapVisible(newState);
     }
   }, [backgroundMapVisible, setBackgroundMapVisible, activeViewport]);

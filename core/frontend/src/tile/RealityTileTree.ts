@@ -263,7 +263,7 @@ export class RealityTileTree extends TileTree {
   }
 
   public doReprojectChildren(tile: Tile): boolean {
-    if (!(tile instanceof RealityTile) || !tile.boundedByRegion || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
+    if (!(tile instanceof RealityTile) || !tile.region || this._gcsConverter === undefined || this._rootToEcef === undefined || undefined === this._ecefToDb)
       return false;
 
     const tileRange = this.iModelTransform.isIdentity ? tile.range : this.iModelTransform.multiplyRange(tile.range, scratchRange);
@@ -332,7 +332,7 @@ export class RealityTileTree extends TileTree {
                 const dbReprojection = Transform.createMatrixPickupPutdown(matrix, reprojection.dbPoints[0], reprojectedOrigin, scratchTransform);
                 if (dbReprojection) {
                   const rootReprojection = dbToRoot.multiplyTransformTransform(dbReprojection).multiplyTransformTransform(rootToDb);
-                  reprojection.child.setReprojection(rootReprojection);
+                  reprojection.child.reproject(rootReprojection);
                 }
               }
             }
