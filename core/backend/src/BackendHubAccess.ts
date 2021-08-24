@@ -39,6 +39,7 @@ export interface V2CheckpointAccessProps {
   storageType: string;
 }
 
+export type LockMap = Map<Id64String, LockState>;
 /**
  * The properties of an iModel server lock.
  * @beta
@@ -147,7 +148,7 @@ export interface BackendHubAccess {
   downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
 
   /** acquire one or more locks. Throws if unsuccessful */
-  acquireLocks(arg: BriefcaseDbArg, locks: LockProps | LockProps[]): Promise<void>;
+  acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
 
   /** acquire the schema lock. Throws if unsuccessful */
   acquireSchemaLock(arg: BriefcaseDbArg): Promise<void>;

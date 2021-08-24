@@ -496,7 +496,7 @@ export class BriefcaseManager {
     const csIndex = await IModelHost.hubAccess.pushChangeset({ requestContext, iModelId: briefcase.iModelId, changesetProps });
     briefcase.nativeDb.completeCreateChangeset({ index: csIndex });
     if (releaseLocks)
-      await IModelHost.hubAccess.releaseAllLocks({ requestContext, briefcase });
+      await IModelHost.hubAccess.releaseAllLocks(briefcase);
   }
 
   /** Attempt to pull merge and push once */

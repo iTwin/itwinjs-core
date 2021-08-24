@@ -6,21 +6,29 @@
  * @module iModels
  */
 
-import { DbResult, Id64, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
-import { LockProps, LockState } from "./BackendHubAccess";
+import { DbResult, Id64, Id64Arg, Id64String, OpenMode } from "@bentley/bentleyjs-core";
+import { IModel, IModelError } from "@bentley/imodeljs-common";
+import { LockMap, LockState } from "./BackendHubAccess";
 import { BriefcaseDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
 
-export class Locks {
+/**
+ * Both the Model and Parent of an element are considered "owners" of their member elements. That means:
+ * 1) they must hold at least a shared lock before an exclusive lock can be acquired for their members
+ * 2) if they hold an exclusive lock, then all of their members are exclusively locked implicitly.
+ */
+interface ElementOwners { modelId: Id64String, parentId: Id64String }
+
+
+export class PessimisticLocks implements LockControl {
   private _db?: SQLiteDb;
   private _iModel?: BriefcaseDb;
 
   private get iModel() { return this._iModel!; } // eslint-disable-line @typescript-eslint/naming-convention
   private get lockDb() { return this._db!; } // eslint-disable-line @typescript-eslint/naming-convention
 
-  public open(iModel: BriefcaseDb) {
+  public async open(iModel: BriefcaseDb) {
     this._iModel = iModel;
     this._db = new SQLiteDb();
 
@@ -29,11 +37,20 @@ export class Locks {
       this._db.openDb(dbName, OpenMode.ReadWrite);
     } catch (_e) {
       this._db.createDb(dbName);
-      this._db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL)");
+      this._db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,acquired INTEGER)");
+      this._db.saveChanges();
 
     }
   }
-  private getParentAndModel(id: Id64String): { modelId: Id64String, parentId: Id64String } {
+
+  public close() {
+    if (this._db?.isOpen) {
+      this._db.closeDb();
+      this._db = undefined;
+    }
+  }
+
+  private getOwners(id: Id64String): ElementOwners {
     return this.iModel.withPreparedSqliteStatement("SELECT ModelId,ParentId FROM bis_Element WHERE id=?", (stmt) => {
       stmt.bindId(1, id);
       const rc = stmt.step();
@@ -51,62 +68,119 @@ export class Locks {
     });
   }
 
-  private saveLockState(props: LockProps) {
-    this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state) VALUES (?,?)", (stmt) => {
-      stmt.bindId(1, props.id);
-      stmt.bindInteger(1, props.state);
+  /** Clear the cache of locally held locks.
+   * Note: does *not* release locks from server.
+   */
+  public clearAllLocks() {
+    this.lockDb.executeSQL("DELETE FROM locks");
+  }
+
+  private insertLock(id: Id64String, state: LockState, acquired: boolean) {
+    this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,acquired) VALUES (?,?,?)", (stmt) => {
+      stmt.bindId(1, id);
+      stmt.bindInteger(2, state);
+      stmt.bindInteger(3, acquired ? 1 : 0);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_DONE !== rc)
         throw new IModelError(rc, "can't insert lock into database");
     });
   }
 
+  /** Determine whether an the exclusive lock is already held by an element (or one of its owners) */
   public hasExclusiveLock(id: Id64String): boolean {
     if (this.getLockState(id) === LockState.Exclusive)
-      return true;
-    const el = this.getParentAndModel(id);
-    return this.hasExclusiveLock(el.modelId) || this.hasExclusiveLock(el.parentId);
+      return true; // yes, we hold the lock.
+
+    // an exclusive lock is implied if the element's owner is exclusively locked (recursively)
+    const owners = this.getOwners(id);
+    return this.hasExclusiveLock(owners.modelId) || this.hasExclusiveLock(owners.parentId);
   }
 
   public hasSharedLock(id: Id64String): boolean {
     const state = this.getLockState(id);
     if (state === LockState.Shared || state === LockState.Exclusive)
-      return true;
+      return true; // we already hold either the shared or exclusive lock for this element
 
-    // see if parent or model has exclusive lock. if so we have shared lock, but parent or model holding shared lock doesn't help.
-    const el = this.getParentAndModel(id);
-    return this.hasExclusiveLock(el.modelId) || this.hasExclusiveLock(el.parentId);
+    // see if an owner has exclusive lock. If so we implicitly have shared lock, but owner holding shared lock doesn't help.
+    const owners = this.getOwners(id);
+    return this.hasExclusiveLock(owners.modelId) || this.hasExclusiveLock(owners.parentId);
   }
 
+  /** if the shared lock on the element supplied is not already held, add it to the set of shared locks required. Then, check owners. */
   private addSharedLock(id: Id64String, locks: Set<Id64String>) {
+    // if the id is not valid, or of the lock is already in the set, or if we already hold a shared lock, we're done
+    // Note: if we hold a shared lock, it is guaranteed that we also hold all required shared locks on owners.
     if (!Id64.isValid(id) || locks.has(id) || this.hasSharedLock(id))
       return;
 
-    locks.add(id);
-    this.addParentSharedLocks(id, locks);
+    locks.add(id); // add to set of needed shared locks
+    this.addOwnerSharedLocks(id, locks); // check parent models and groups
   }
 
-  private addParentSharedLocks(id: Id64String, locks: Set<Id64String>) {
-    const el = this.getParentAndModel(id);
-    this.addSharedLock(el.parentId, locks);
-    this.addSharedLock(el.modelId, locks);
-
+  /** add owners (recursively) of an element to a list of required shared locks, if not already held. */
+  private addOwnerSharedLocks(id: Id64String, locks: Set<Id64String>) {
+    const el = this.getOwners(id);
+    this.addSharedLock(el.parentId, locks); // if this element is in a group
+    this.addSharedLock(el.modelId, locks); // check its model
   }
 
-  public async acquireExclusiveLock(id: Id64String): Promise<void> {
-    if (this.hasExclusiveLock(id))
+  /** attempt to acquire all necessary locks for a set of elements */
+  private async acquireAllLocks(locks: LockMap) {
+    if (locks.size === 0) // no locks are required.
       return;
 
     const sharedLocks = new Set<Id64String>();
-    this.addParentSharedLocks(id, sharedLocks);
-
-    const locks: LockProps[] = [{ id, state: LockState.Exclusive }];
-    for (const shared of sharedLocks)
-      locks.push({ id: shared, state: LockState.Shared });
-
-    await IModelHost.hubAccess.acquireLocks(this.iModel, locks);
     for (const lock of locks)
-      this.saveLockState(lock);
+      this.addOwnerSharedLocks(lock[0], sharedLocks);
+
+    for (const shared of sharedLocks) {
+      if (!locks.has(shared)) // we may already be asking for exclusive lock
+        locks.set(shared, LockState.Shared);
+    }
+
+    await IModelHost.hubAccess.acquireLocks(this.iModel, locks); // throws if unsuccessful
+    for (const lock of locks)
+      this.insertLock(lock[0], lock[1], true);
+    this.lockDb.saveChanges();
   }
 
+  /**
+   * Acquire the exclusive lock on one or more elements. This also attempts to acquire a shared lock on all of the element's owners, recursively.
+   * If *any* lock cannot be obtained, no locks are acquired.
+   */
+  public async acquireExclusiveLock(ids: Id64Arg): Promise<void> {
+    const locks = new Map<Id64String, LockState>();
+    for (const id of Id64.iterable(ids)) {
+      if (!this.hasExclusiveLock(id))
+        locks.set(id, LockState.Exclusive);
+    }
+    return this.acquireAllLocks(locks);
+  }
+
+  /**
+   * Acquire a shared lock on one or more elements. This also attempts to acquire a shared lock on all of the element's owners, recursively.
+   * If *any* lock cannot be obtained, no locks are acquired.
+   */
+  public async acquireSharedLocks(ids: Id64Arg): Promise<void> {
+    const locks = new Map<Id64String, LockState>();
+    for (const id of Id64.iterable(ids)) {
+      if (!this.hasSharedLock(id))
+        locks.set(id, LockState.Shared);
+    }
+    return this.acquireAllLocks(locks);
+  }
+
+  /** When an element is newly created in a session, we hold the lock on it implicitly. Save that fact. */
+  public elementWasCreated(id: Id64String) {
+    this.insertLock(id, LockState.Exclusive, false);
+    this.lockDb.saveChanges();
+  }
+
+  /**
+   * Acquire the exclusive lock on the entire iModel.
+   * Note: No other briefcases will be able to perform *any* writeable operations until this lock is released.
+   */
+  public async lockSchema(): Promise<void> {
+    return this.acquireExclusiveLock(IModel.repositoryModelId);
+  }
 }

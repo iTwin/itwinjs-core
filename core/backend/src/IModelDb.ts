@@ -81,6 +81,28 @@ export interface ComputedProjectExtents {
   outliers?: Id64Array;
 }
 
+export interface LockControl {
+  open(iModel: BriefcaseDb): void;
+  close(): void;
+  clearAllLocks(): void;
+  hasExclusiveLock(id: Id64String): boolean;
+  hasSharedLock(id: Id64String): boolean;
+  acquireExclusiveLock(ids: Id64Arg): Promise<void>;
+  acquireSharedLocks(ids: Id64Arg): Promise<void>;
+  lockSchema(): Promise<void>;
+}
+
+export class OptimisticLocks implements LockControl {
+  public open(_iModel: BriefcaseDb): void { }
+  public close(): void { }
+  public clearAllLocks(): void { }
+  public hasExclusiveLock(_id: Id64String): boolean { return true; }
+  public hasSharedLock(_id: Id64String): boolean { return true; }
+  public async acquireExclusiveLock(): Promise<void> { }
+  public async acquireSharedLocks(): Promise<void> { }
+  public async lockSchema(): Promise<void> { }
+}
+
 /** An iModel database file. The database file is either briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -107,6 +129,7 @@ export abstract class IModelDb extends IModel {
   protected _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
+  protected _locks = new OptimisticLocks();
 
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
@@ -690,7 +713,6 @@ export abstract class IModelDb extends IModel {
   }
 
   /** Commit pending changes to this iModel.
-   * @note If this IModelDb is a briefcase that is synchronized with iModelHub, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
    * @param description Optional description of the changes
    * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
    */
@@ -703,7 +725,7 @@ export abstract class IModelDb extends IModel {
       throw new IModelError(stat, `Could not save changes (${description})`);
   }
 
-  /** Abandon pending changes in this iModel. You might also want to call [ConcurrencyControl.abandonResources]($backend) if this is a briefcase and you want to relinquish locks or codes that you acquired preemptively. */
+  /** Abandon pending changes in this iModel. */
   public abandonChanges(): void {
     this.nativeDb.abandonChanges();
   }
@@ -2127,6 +2149,7 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   }
 }
 
+
 /** A local copy of an iModel from iModelHub that can pull and potentially push changesets.
  * BriefcaseDb raises a set of events to allow apps and subsystems to track its object life cycle, including [[onOpen]] and [[onOpened]].
  * @public
@@ -2180,9 +2203,7 @@ export class BriefcaseDb extends IModelDb {
   /** The Guid that identifies the *context* that owns this iModel. */
   public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
 
-  /** Get the ConcurrencyControl for this iModel.
-   * The concurrency control is used available *only* if the briefcase has been setup to synchronize changes with iModelHub (i.e., syncMode = SyncMode.PullAndPush),
-   * and has been opened ReadWrite (i.e., openMode = OpenMode.ReadWrite)
+  /** Get the Locks interface for this iModel.
    * @beta
    */
   public readonly concurrencyControl: ConcurrencyControl;
@@ -2291,6 +2312,7 @@ export class BriefcaseDb extends IModelDb {
     };
 
     const briefcaseDb = new BriefcaseDb(nativeDb, token, openMode);
+
 
     if (briefcaseDb.allowLocalChanges) {
       if (!(requestContext instanceof AuthorizedClientRequestContext))
