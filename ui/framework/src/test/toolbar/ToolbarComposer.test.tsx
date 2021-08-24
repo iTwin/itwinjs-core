@@ -9,7 +9,7 @@ import {
   BadgeType, CommonToolbarItem, ConditionalBooleanValue, CustomButtonDefinition, StageUsage, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider,
 } from "@bentley/ui-abstract";
-import { render, waitForElement } from "@testing-library/react";
+import { render, waitFor } from "@testing-library/react";
 import {
   CommandItemDef, CustomItemDef, FrameworkVersion, FrontstageActivatedEventArgs, FrontstageDef, FrontstageManager, FrontstageProps, GroupItemDef,
   SyncUiEventDispatcher, ToolbarComposer, ToolbarHelper, ToolItemDef,
@@ -254,9 +254,9 @@ describe("<ToolbarComposer  />", async () => {
     fakeTimers.tick(500);
     fakeTimers.restore();
 
-    expect(await waitForElement(() => renderedComponent.queryByTitle("addon-tool-1"))).to.exist;
-    expect(await waitForElement(() => renderedComponent.queryByTitle("addon-tool-2"))).to.exist;
-    expect(await waitForElement(() => renderedComponent.queryByTitle("addon-group-1"))).to.exist;
+    expect(await waitFor(() => renderedComponent.queryByTitle("addon-tool-1"))).to.exist;
+    expect(await waitFor(() => renderedComponent.queryByTitle("addon-tool-2"))).to.exist;
+    expect(await waitFor(() => renderedComponent.queryByTitle("addon-group-1"))).to.exist;
 
     // new frontstage should trigger refresh
 
@@ -267,7 +267,7 @@ describe("<ToolbarComposer  />", async () => {
     const newStageDef = new FrontstageDef(newProps);
     FrontstageManager.onFrontstageActivatedEvent.emit({ deactivatedFrontstageDef: oldStageDef, activatedFrontstageDef: newStageDef } as FrontstageActivatedEventArgs);
 
-    expect(await waitForElement(() => renderedComponent.queryByTitle("addon-tool-1"))).to.exist;
+    expect(await waitFor(() => renderedComponent.queryByTitle("addon-tool-1"))).to.exist;
 
     UiItemsManager.unregister(testUiProvider.id);
   });
@@ -284,14 +284,14 @@ describe("<ToolbarComposer  />", async () => {
         items={items} />);
 
     expect(renderedComponent).not.to.be.undefined;
-    let buttonElement = await waitForElement(() => renderedComponent.queryByTitle("Tool_2"));
+    let buttonElement = await waitFor(() => renderedComponent.queryByTitle("Tool_2"));
     expect(buttonElement).to.exist;
-    expect(buttonElement!.classList.contains("nz-active")).to.be.false;
+    expect(buttonElement?.classList.contains("nz-active")).to.be.false;
 
     FrontstageManager.onToolActivatedEvent.emit({ toolId: "test.tool2_b" });
-    buttonElement = await waitForElement(() => renderedComponent.queryByTitle("Tool_2"));
+    buttonElement = await waitFor(() => renderedComponent.queryByTitle("Tool_2"));
     expect(buttonElement).to.exist;
-    expect(buttonElement!.classList.contains("nz-active")).to.be.true;
+    expect(buttonElement?.classList.contains("nz-active")).to.be.true;
 
     FrontstageManager.onToolActivatedEvent.emit({ toolId: "tool-added-to-group" });
     // expect(renderedComponent.queryByTitle("tool-added-to-group")).not.to.be.null;

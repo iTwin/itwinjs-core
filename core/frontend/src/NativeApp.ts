@@ -6,7 +6,9 @@
  * @module NativeApp
  */
 
-import { BeEvent, Config, GuidString, Logger, SessionProps } from "@bentley/bentleyjs-core";
+import {
+  AsyncMethodsOf, BeEvent, GuidString, Logger, PromiseReturnType, SessionProps,
+} from "@bentley/bentleyjs-core";
 import {
   BriefcaseDownloader, BriefcaseProps, IModelVersion, InternetConnectivityStatus, IpcSocketFrontend, LocalBriefcaseProps,
   NativeAppAuthorizationConfiguration, nativeAppChannel, NativeAppFunctions, NativeAppNotifications, nativeAppNotify, OverriddenBy,
@@ -15,7 +17,7 @@ import {
 import { AccessToken, AccessTokenProps, ProgressCallback, RequestGlobalOptions } from "@bentley/itwin-client";
 import { FrontendLoggerCategory } from "./FrontendLoggerCategory";
 import { IModelApp } from "./IModelApp";
-import { AsyncMethodsOf, IpcApp, IpcAppOptions, NotificationHandler, PromiseReturnType } from "./IpcApp";
+import { IpcApp, IpcAppOptions, NotificationHandler } from "./IpcApp";
 import { NativeAppLogger } from "./NativeAppLogger";
 
 /** Properties for specifying the BriefcaseId for downloading. May either specify a BriefcaseId directly (preferable) or, for
@@ -189,8 +191,6 @@ export class NativeApp {
     this._isValid = true;
 
     NativeAppNotifyHandler.register(); // receives notifications from backend
-
-    Config.App.merge(await this.callNativeHost("getConfig"));
     NativeApp.hookBrowserConnectivityEvents();
 
     // initialize current online state.

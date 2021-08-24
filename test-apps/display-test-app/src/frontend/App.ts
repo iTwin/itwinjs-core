@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ProcessDetector } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, ProcessDetector, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { FrontendDevTools } from "@bentley/frontend-devtools";
 import { HyperModeling } from "@bentley/hypermodeling-frontend";
@@ -12,8 +12,7 @@ import {
 } from "@bentley/imodeljs-common";
 import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
-  AccuDrawHintBuilder,
-  AccuDrawShortcuts, AccuSnap, AsyncMethodsOf, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, PromiseReturnType, RenderSystem,
+  AccuDrawHintBuilder,   AccuDrawShortcuts, AccuSnap, ExternalServerExtensionLoader, IModelApp, IpcApp, LocalhostIpcApp, RenderSystem,
   SelectionTool, SnapMode, TileAdmin, Tool, ToolAdmin,
 } from "@bentley/imodeljs-frontend";
 import { AndroidApp, IOSApp } from "@bentley/mobile-manager/lib/MobileFrontend";
@@ -43,6 +42,7 @@ import { MarkupTool, ModelClipTool, SaveImageTool, ZoomToSelectedElementsTool } 
 import { ApplyModelDisplayScaleTool } from "./DisplayScale";
 import { SyncViewportsTool } from "./SyncViewportsTool";
 import { FrameStatsTool } from "./FrameStatsTool";
+import { signIn } from "./signIn";
 
 class DisplayTestAppAccuSnap extends AccuSnap {
   private readonly _activeSnaps: SnapMode[] = [SnapMode.NearestKeypoint];
@@ -72,6 +72,49 @@ class SVTSelectionTool extends SelectionTool {
 
     // ###TODO Want to do this only if version comparison enabled, but meh.
     IModelApp.locateManager.options.allowExternalIModels = true;
+  }
+}
+
+class SignInTool extends Tool {
+  public static override toolId = "SignIn";
+  public override run(): boolean {
+    signIn(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    return true;
+  }
+}
+
+class PushChangesTool extends Tool {
+  public static override toolId = "PushChanges";
+  public static override get maxArgs() { return 1; }
+  public static override get minArgs() { return 1; }
+
+  public override run(description?: string): boolean {
+    if (!description || "string" !== typeof description)
+      return false;
+
+    const imodel = IModelApp.viewManager.selectedView?.iModel;
+    if (!imodel || !imodel.isBriefcaseConnection())
+      return false;
+
+    imodel.pushChanges(description); // eslint-disable-line @typescript-eslint/no-floating-promises
+    return true;
+  }
+
+  public override parseAndRun(...args: string[]): boolean {
+    return this.run(args[0]);
+  }
+}
+
+class PullChangesTool extends Tool {
+  public static override toolId = "PullChanges";
+
+  public override run(): boolean {
+    const imodel = IModelApp.viewManager.selectedView?.iModel;
+    if (!imodel || !imodel.isBriefcaseConnection())
+      return false;
+
+    imodel.pullAndMergeChanges(); // eslint-disable-line @typescript-eslint/no-floating-promises
+    return true;
   }
 }
 
@@ -220,6 +263,8 @@ export class DisplayTestApp {
       OpenIModelTool,
       OutputShadersTool,
       PlaceLineStringTool,
+      PullChangesTool,
+      PushChangesTool,
       PurgeTileTreesTool,
       RecordFpsTool,
       RefreshTilesTool,
@@ -228,6 +273,7 @@ export class DisplayTestApp {
       RestoreWindowTool,
       SaveImageTool,
       ShutDownTool,
+      SignInTool,
       SVTSelectionTool,
       SyncViewportsTool,
       ToggleAspectRatioSkewDecoratorTool,

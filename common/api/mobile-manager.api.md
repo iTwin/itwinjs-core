@@ -5,17 +5,16 @@
 ```ts
 
 import { AccessToken } from '@bentley/itwin-client';
-import { AsyncMethodsOf } from '@bentley/imodeljs-frontend';
+import { AsyncMethodsOf } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { CancelRequest } from '@bentley/itwin-client';
-import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { IModelAppOptions } from '@bentley/imodeljs-frontend';
 import { NativeAppAuthorizationBackend } from '@bentley/imodeljs-backend';
 import { NativeAppAuthorizationConfiguration } from '@bentley/imodeljs-common';
 import { NativeAppOpts } from '@bentley/imodeljs-frontend';
 import { NativeHostOpts } from '@bentley/imodeljs-backend';
 import { ProgressCallback } from '@bentley/itwin-client';
-import { PromiseReturnType } from '@bentley/imodeljs-frontend';
+import { PromiseReturnType } from '@bentley/bentleyjs-core';
 import { RpcConfiguration } from '@bentley/imodeljs-common';
 import { RpcEndpoint } from '@bentley/imodeljs-common';
 import { RpcInterfaceDefinition } from '@bentley/imodeljs-common';
@@ -119,13 +118,13 @@ export type MobileCompletionCallback = (downloadUrl: string, downloadFileUrl: st
 // @beta (undocumented)
 export abstract class MobileDevice {
     // (undocumented)
-    abstract authGetAccessToken(ctx: ClientRequestContext, callback: (accessToken?: string, err?: string) => void): void;
+    abstract authGetAccessToken(callback: (accessToken?: string, err?: string) => void): void;
     // (undocumented)
-    authInit(_ctx: ClientRequestContext, _config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void;
+    authInit(_config: NativeAppAuthorizationConfiguration, callback: (err?: string) => void): void;
     // (undocumented)
-    abstract authSignIn(ctx: ClientRequestContext, callback: (err?: string) => void): void;
+    abstract authSignIn(callback: (err?: string) => void): void;
     // (undocumented)
-    abstract authSignOut(ctx: ClientRequestContext, callback: (err?: string) => void): void;
+    abstract authSignOut(callback: (err?: string) => void): void;
     // (undocumented)
     abstract authStateChanged(accessToken?: string, err?: string): void;
     // (undocumented)

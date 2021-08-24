@@ -30,8 +30,7 @@ packageClassification:  [
        "imodelhub-client",
        "itwin-client",
        "product-settings-client",
-       "reality-data-client",
-       "usage-logging-client"
+       "reality-data-client"
      ]
    },
    {
@@ -41,6 +40,7 @@ packageClassification:  [
          "ui-abstract",
          "ui-core",
          "ui-components",
+         "ui-imodel-components",
          "ui-ninezone",
          "ui-framework"
       ]

@@ -7,7 +7,7 @@ import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { Breadcrumb } from "../../../ui-components";
 import { withBreadcrumbDragDrop } from "../../../ui-components/breadcrumb/hoc/withDragDrop";
 import {
@@ -18,8 +18,6 @@ import { createDnDRenderer } from "../../tree/deprecated/hocs/withDragDrop.test"
 /* eslint-disable deprecation/deprecation */
 
 describe("Breadcrumb withDragDrop HOC", () => {
-
-  afterEach(cleanup);
 
   const BreadcrumbWithDragDrop = withBreadcrumbDragDrop(Breadcrumb);
   const DragDropBreadcrumb = wrapInTestContext(BreadcrumbWithDragDrop);

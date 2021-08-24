@@ -2,6 +2,24 @@
   "name": "@bentley/ecschema-metadata",
   "entries": [
     {
+      "version": "2.19.7",
+      "tag": "@bentley/ecschema-metadata_v2.19.7",
+      "date": "Fri, 20 Aug 2021 17:47:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "remove alpha toXmlString method and its implicit xmldom dependency"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.6",
+      "tag": "@bentley/ecschema-metadata_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:28 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.5",
       "tag": "@bentley/ecschema-metadata_v2.19.5",
       "date": "Fri, 13 Aug 2021 21:48:08 GMT",

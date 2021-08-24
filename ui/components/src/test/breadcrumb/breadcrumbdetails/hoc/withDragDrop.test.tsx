@@ -7,7 +7,7 @@ import * as React from "react";
 import { wrapInTestContext } from "react-dnd-test-utils";
 import * as sinon from "sinon";
 import { PropertyRecord } from "@bentley/ui-abstract";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import {
   BreadcrumbDetails, BreadcrumbPath, DragSourceArguments, DragSourceProps, DropEffects, DropStatus, DropTargetArguments,
   DropTargetProps, withBreadcrumbDetailsDragDrop,
@@ -23,8 +23,6 @@ describe("Breadcrumb Details withDragDrop HOC", () => {
   const DragDropBreadcrumbDetails = wrapInTestContext(BreadcrumbDetailsWithDragDrop);
 
   const renderIntoDocument = createDnDRenderer(BreadcrumbDetailsWithDragDrop);
-
-  afterEach(cleanup);
 
   it("should render", () => {
     const path = new BreadcrumbPath(mockRawTreeDataProvider);

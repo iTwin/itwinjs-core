@@ -1085,7 +1085,7 @@ const DEFAULT_FORMATPROPS: UniqueFormatsProps[] = [
         units: [{ label: "°", name: "Units.ARC_DEG" }, { label: "'", name: "Units.ARC_MINUTE" }, { label: "\"", name: "Units.ARC_SECOND" }],
       },
       formatTraits: ["keepSingleZero", "showUnitLabel"],
-      precision: 0,
+      precision: 4,
       type: "Decimal",
       uomSeparator: "",
     },

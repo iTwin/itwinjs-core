@@ -10,7 +10,7 @@ import sinon from "sinon";
 import * as moq from "typemoq";
 import { PropertyRecord, PropertyValueFormat } from "@bentley/ui-abstract";
 import { Orientation } from "@bentley/ui-core";
-import { act, fireEvent, getByTitle, render, waitForDomChange, waitForElement } from "@testing-library/react";
+import { act, fireEvent, getByTitle, render, waitFor } from "@testing-library/react";
 import { HighlightingComponentProps } from "../../../ui-components/common/HighlightingComponentProps";
 import {
   VirtualizedPropertyGridWithDataProvider, VirtualizedPropertyGridWithDataProviderProps,
@@ -274,7 +274,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
       // Refresh PropertyGrid data.
       act(() => dataProvider.onDataChanged.raiseEvent());
-      await waitForDomChange();
+      // await waitFor();
 
       expect(queryByText("rootCategory1Property")).to.be.null;
       expect(queryByText("childCategory1Property")).to.be.null;
@@ -338,7 +338,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
 
       // Refresh PropertyGrid data.
       act(() => dataProvider.onDataChanged.raiseEvent());
-      await waitForDomChange();
+      // await waitFor();
 
       expect(getByText("childCategory1Property")).to.be.not.null;
       expect(queryByText("childCategory2Property")).to.be.null;
@@ -1121,7 +1121,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           highlight={highlight1}
         />,
       );
-      await waitForElement(() => getByTitle(container, "test9"), { container });
+      await waitFor(() => getByTitle(container, "test9"), { container });
 
       rerender(
         <VirtualizedPropertyGridWithDataProvider
@@ -1130,7 +1130,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           highlight={highlightValue}
         />,
       );
-      await waitForElement(() => getByTitle(container, "test9"), { container });
+      await waitFor(() => getByTitle(container, "test9"), { container });
 
       expect(scrollToItemFake).to.have.been.calledOnceWithExactly(3);
     });
@@ -1156,7 +1156,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           highlight={highlight1}
         />,
       );
-      await waitForElement(() => getByTitle(container, "test9"), { container });
+      await waitFor(() => getByTitle(container, "test9"), { container });
 
       rerender(
         <VirtualizedPropertyGridWithDataProvider
@@ -1165,7 +1165,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           highlight={highlightCategory}
         />,
       );
-      await waitForElement(() => getByTitle(container, "test9"), { container });
+      await waitFor(() => getByTitle(container, "test9"), { container });
 
       expect(scrollToItemFake).to.have.been.calledOnceWithExactly(0);
     });
@@ -1191,7 +1191,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           highlight={highlight1}
         />,
       );
-      await waitForElement(() => getByTitle(container, "test9"), { container });
+      await waitFor(() => getByTitle(container, "test9"), { container });
 
       rerender(
         <VirtualizedPropertyGridWithDataProvider
@@ -1200,7 +1200,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           highlight={highlightLabel}
         />,
       );
-      await waitForElement(() => getByTitle(container, "test9"), { container });
+      await waitFor(() => getByTitle(container, "test9"), { container });
 
       expect(scrollToItemFake).to.have.been.calledOnceWithExactly(3);
     });
@@ -1226,7 +1226,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           highlight={highlight1}
         />,
       );
-      await waitForElement(() => getByTitle(container, "test9"), { container });
+      await waitFor(() => getByTitle(container, "test9"), { container });
 
       rerender(
         <VirtualizedPropertyGridWithDataProvider
@@ -1235,11 +1235,11 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           highlight={{ highlightedText: "test" }}
         />,
       );
-      await waitForElement(() => getByTitle(container, "test9"), { container });
+      await waitFor(() => getByTitle(container, "test9"), { container });
       expect(scrollToItemFake).to.not.have.been.called;
 
       rerender(<VirtualizedPropertyGridWithDataProvider {...defaultProps} dataProvider={providerMock.object} />);
-      await waitForElement(() => getByTitle(container, "test9"), { container });
+      await waitFor(() => getByTitle(container, "test9"), { container });
       expect(scrollToItemFake).to.not.have.been.called;
     });
 
@@ -1259,10 +1259,10 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           highlight={highlightValue}
         />,
       );
-      await waitForElement(() => container.querySelector(".components-virtualized-property-grid"));
+      await waitFor(() => container.querySelector(".components-virtualized-property-grid"));
 
       rerender(<VirtualizedPropertyGridWithDataProvider {...defaultProps} dataProvider={providerMock.object} />);
-      await waitForElement(() => container.querySelector(".components-virtualized-property-grid"));
+      await waitFor(() => container.querySelector(".components-virtualized-property-grid"));
 
       expect(scrollToItemFake).to.not.have.been.called;
     });
@@ -1297,7 +1297,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           highlight={highlight1}
         />,
       );
-      await waitForElement(() => getByTitle(container, "test9"), { container });
+      await waitFor(() => getByTitle(container, "test9"), { container });
 
       rerender(
         <VirtualizedPropertyGridWithDataProvider
@@ -1306,7 +1306,7 @@ describe("VirtualizedPropertyGridWithDataProvider", () => {
           highlight={highlight3}
         />,
       );
-      await waitForElement(() => getByTitle(container, "test9"), { container });
+      await waitFor(() => getByTitle(container, "test9"), { container });
       expect(scrollToItemFake).to.not.have.been.called;
     });
   });

@@ -20,6 +20,14 @@ export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | unde
 // @public
 export function assert(condition: boolean, msg?: string): asserts condition;
 
+// @public
+export type AsyncFunction = (...args: any) => Promise<any>;
+
+// @public
+export type AsyncMethodsOf<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? P : never;
+}[keyof T];
+
 // @alpha
 export class AsyncMutex {
     lock(): Promise<AsyncMutexUnlockFnType>;
@@ -282,23 +290,6 @@ export namespace CompressedId64Set {
 export type ComputePriorityFunction<T> = (value: T) => number;
 
 // @public
-export class Config {
-    addEnvVarsStartingWith(prefix: string): void;
-    static get App(): Config;
-    get(varName: string, defaultVal?: boolean | string | number): any;
-    getBoolean(name: string, defaultVal?: boolean): boolean;
-    getContainer(): any;
-    getNumber(name: string, defaultVal?: number): number;
-    getString(name: string, defaultVal?: string): string;
-    getVars(): string[];
-    has(varName: string): boolean;
-    merge(source: any): void;
-    query(varName: string): any;
-    remove(varName: string): void;
-    set(varName: string, value: boolean | string | number): void;
-}
-
-// @public
 export type Constructor<T> = new (...args: any[]) => T;
 
 // @public
@@ -546,14 +537,6 @@ export interface EntryContainer<K, V> {
     set(key: K, value: Entry<K, V>): void;
     // (undocumented)
     readonly size: number;
-}
-
-// @alpha
-export class EnvMacroSubst {
-    static anyPropertyContainsEnvvars(obj: any, recurse: boolean): boolean;
-    static containsEnvvars(str: string): boolean;
-    static replace(str: string, defaultValues?: any): string;
-    static replaceInProperties(obj: any, recurse: boolean, defaultValues?: any): void;
 }
 
 // @beta
@@ -1164,6 +1147,14 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     }
 
 // @public
+export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
+
+// @public
+export type NonFunctionPropertyNamesOf<T> = {
+    [K in keyof T]: T[K] extends Function ? never : K;
+}[keyof T];
+
+// @public
 export class ObservableSet<T> extends Set<T> {
     constructor(elements?: Iterable<T> | undefined);
     // @internal (undocumented)
@@ -1283,6 +1274,9 @@ export class ProcessDetector {
     static get isNativeAppFrontend(): boolean;
     static get isNodeProcess(): boolean;
 }
+
+// @public
+export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 // @public
 export class ReadonlyOrderedSet<T> implements Iterable<T> {

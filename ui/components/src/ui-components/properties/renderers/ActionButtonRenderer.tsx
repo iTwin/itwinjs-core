@@ -10,7 +10,7 @@ import * as React from "react";
 import { PropertyRecord } from "@bentley/ui-abstract";
 
 /** Properties of [[ActionButtonRenderer]]
- * @beta
+ * @public
  */
 export interface ActionButtonRendererProps {
   /** Property that the action button belongs to */
@@ -21,6 +21,6 @@ export interface ActionButtonRendererProps {
 
 /**
  * Renders a React component (usually a button) for a PropertyRecord
- * @beta
+ * @public
  */
 export type ActionButtonRenderer = (props: ActionButtonRendererProps) => React.ReactNode;

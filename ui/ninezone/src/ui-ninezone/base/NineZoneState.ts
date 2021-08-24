@@ -8,7 +8,8 @@
 
 // Cspell:ignore popout
 import { castDraft, Draft, produce } from "immer";
-import { Point, PointProps, Rectangle, RectangleProps, SizeProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { Point, Rectangle, RectangleProps, SizeProps } from "@bentley/ui-core";
 import { HorizontalPanelSide, isHorizontalPanelSide, PanelSide, panelSides, VerticalPanelSide } from "../widget-panels/Panel";
 import { assert } from "@bentley/bentleyjs-core";
 import { getUniqueId } from "./NineZone";
@@ -25,6 +26,8 @@ export interface TabState {
   readonly preferredPanelWidgetSize?: "fit-content";
   readonly allowedPanelTargets?: PanelSide[];
   readonly canPopout?: boolean;
+  readonly userSized?: boolean;
+  readonly isFloatingStateWindowResizable?: boolean;
 }
 
 /** @internal future */
@@ -36,6 +39,7 @@ export interface WidgetState {
   readonly id: string;
   readonly minimized: boolean;
   readonly tabs: ReadonlyArray<TabState["id"]>;
+  readonly isFloatingStateWindowResizable?: boolean;
 }
 
 /** @internal future */
@@ -43,6 +47,7 @@ export interface FloatingWidgetState {
   readonly bounds: RectangleProps;
   readonly id: WidgetState["id"];
   readonly home: FloatingWidgetHomeState;
+  readonly userSized?: boolean;
 }
 
 /** @internal future */
@@ -241,8 +246,21 @@ export interface FloatingWidgetResizeAction {
 }
 
 /** @internal future */
+export interface FloatingWidgetSetBoundsAction {
+  readonly type: "FLOATING_WIDGET_SET_BOUNDS";
+  readonly id: FloatingWidgetState["id"];
+  readonly bounds: RectangleProps;
+}
+
+/** @internal future */
 export interface FloatingWidgetBringToFrontAction {
   readonly type: "FLOATING_WIDGET_BRING_TO_FRONT";
+  readonly id: FloatingWidgetState["id"];
+}
+
+/** @internal future */
+export interface FloatingWidgetClearUserSizedAction {
+  readonly type: "FLOATING_WIDGET_CLEAR_USER_SIZED";
   readonly id: FloatingWidgetState["id"];
 }
 
@@ -348,8 +366,10 @@ export type NineZoneActionTypes =
   PanelTogglePinnedAction |
   PanelInitializeAction |
   FloatingWidgetResizeAction |
+  FloatingWidgetSetBoundsAction |
   FloatingWidgetBringToFrontAction |
   FloatingWidgetSendBackAction |
+  FloatingWidgetClearUserSizedAction |
   PopoutWidgetSendBackAction |
   PanelWidgetDragStartAction |
   WidgetDragAction |
@@ -448,7 +468,9 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const floatingWidget = state.floatingWidgets.byId[action.floatingWidgetId];
       assert(!!floatingWidget);
       const newBounds = Rectangle.create(floatingWidget.bounds).offset(action.dragBy);
-      setRectangleProps(floatingWidget.bounds, newBounds);
+      const nzBounds = Rectangle.createFromSize(state.size);
+      const newContainedBounds = newBounds.containIn(nzBounds);
+      setRectangleProps(floatingWidget.bounds, newContainedBounds);
       return;
     }
     case "WIDGET_DRAG_END": {
@@ -498,6 +520,12 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
     case "FLOATING_WIDGET_RESIZE": {
       const { resizeBy } = action;
       const floatingWidget = state.floatingWidgets.byId[action.id];
+      // if this is not a tool settings widget then set the userSized flag
+      // istanbul ignore else
+      if (!isToolSettingsFloatingWidget(state, action.id)) {
+        floatingWidget.userSized = true;
+      }
+
       assert(!!floatingWidget);
       const bounds = Rectangle.create(floatingWidget.bounds);
       const newBounds = bounds.inset(-resizeBy.left, -resizeBy.top, -resizeBy.right, -resizeBy.bottom);
@@ -507,8 +535,15 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
       const size = newBounds.getSize();
       const tab = state.tabs[widget.activeTabId];
       initSizeProps(tab, "preferredFloatingWidgetSize", size);
+      tab.userSized = true;
       return;
     }
+
+    case "FLOATING_WIDGET_CLEAR_USER_SIZED": {
+      floatingWidgetClearUserSizedFlag(state, action.id);
+      return;
+    }
+
     case "FLOATING_WIDGET_BRING_TO_FRONT": {
       floatingWidgetBringToFront(state, action.id);
       return;
@@ -700,6 +735,7 @@ export const NineZoneStateReducer: (state: NineZoneState, action: NineZoneAction
           bounds: containedBounds.toProps(),
           id: target.newFloatingWidgetId,
           home: state.draggedTab.home,
+          userSized: tab.userSized,
         };
         state.floatingWidgets.allIds.push(target.newFloatingWidgetId);
         state.widgets[target.newFloatingWidgetId] = {
@@ -761,6 +797,15 @@ export function floatingWidgetBringToFront(state: Draft<NineZoneState>, floating
   const idIndex = state.floatingWidgets.allIds.indexOf(floatingWidgetId);
   const spliced = state.floatingWidgets.allIds.splice(idIndex, 1);
   state.floatingWidgets.allIds.push(spliced[0]);
+}
+
+/** @internal */
+export function floatingWidgetClearUserSizedFlag(state: Draft<NineZoneState>, floatingWidgetId: FloatingWidgetState["id"]) {
+  const floatingWidget = state.floatingWidgets.byId[floatingWidgetId];
+  floatingWidget.userSized = false;
+  const widget = state.widgets[floatingWidgetId];
+  const tab = state.tabs[widget.activeTabId];
+  tab.userSized = false;
 }
 
 /** Removes tab from the UI, but keeps the tab state.
@@ -856,9 +901,9 @@ function setWidgetActiveTabId(
 ) {
   state.widgets[widgetId].activeTabId = tabId;
   const floatingWidget = state.floatingWidgets.byId[widgetId];
-  if (floatingWidget && tabId) {
-    const size = Rectangle.create(floatingWidget.bounds).getSize();
+  if (floatingWidget && tabId && (tabId in state.tabs)) {
     const activeTab = state.tabs[tabId];
+    const size = Rectangle.create(floatingWidget.bounds).getSize();
     initSizeProps(activeTab, "preferredFloatingWidgetSize", size);
   }
 }
@@ -1279,6 +1324,7 @@ export function floatWidget(state: NineZoneState, widgetTabId: string, point?: P
           id: floatingWidgetId,
           minimized: false,
           tabs: [widgetTabId],
+          isFloatingStateWindowResizable: floatedTab.isFloatingStateWindowResizable,
         };
       });
     } else if (isPopoutLocation(location)) {
@@ -1449,7 +1495,7 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
       const floatingWidget = state.widgets[location.floatingWidgetId];
       // popout widget can only have a single widgetTab so if that is the case just convert floating container to popout container
       if (floatingWidget.tabs.length === 1) {
-        return produce(convertFloatingWidgetContainerToPopout(state, location.floatingWidgetId), (draft)=> {
+        return produce(convertFloatingWidgetContainerToPopout(state, location.floatingWidgetId), (draft) => {
           const popoutTab = draft.tabs[widgetTabId];
           initSizeAndPositionProps(popoutTab, "preferredPopoutWidgetSize", preferredSizeAndPosition);
         });
@@ -1480,9 +1526,70 @@ export function popoutWidgetToChildWindow(state: NineZoneState, widgetTabId: str
           tabs: [widgetTabId],
         };
       });
-
     }
   }
-
   return undefined;
+}
+
+/**
+ * @internal
+ */
+export function setFloatingWidgetContainerBounds(state: NineZoneState, floatingWidgetId: string, bounds: RectangleProps) {
+  if (floatingWidgetId in state.floatingWidgets.byId) {
+    return produce(state, (draft) => {
+      draft.floatingWidgets.byId[floatingWidgetId].bounds = bounds;
+      draft.floatingWidgets.byId[floatingWidgetId].userSized = true;
+    });
+  }
+  return state;
+}
+
+/** Add a new Floating Panel with a single widget tab
+ * @internal
+ */
+export function addWidgetTabToFloatingPanel(state: NineZoneState, floatingWidgetId: string, widgetTabId: string,
+  home: FloatingWidgetHomeState, preferredSize?: SizeProps, preferredPosition?: PointProps,
+  userSized?: boolean, isFloatingStateWindowResizable?: boolean): NineZoneState {
+  const location = findTab(state, widgetTabId);
+  if (location || !(widgetTabId in state.tabs))
+    return state;
+
+  // tab must be defined but not placed in a container (ie not in panel, floating, or popout)
+  const tab = state.tabs[widgetTabId];
+
+  return produce(state, (draft) => {
+    const size = { height: 200, width: 300, ...tab.preferredFloatingWidgetSize, ...preferredSize };
+    const preferredPoint = preferredPosition ?? { x: (state.size.width - size.width) / 2, y: (state.size.height - size.height) / 2 };
+    const nzBounds = Rectangle.createFromSize(state.size);
+    const bounds = Rectangle.createFromSize(size).offset(preferredPoint);
+    const containedBounds = bounds.containIn(nzBounds);
+
+    // add new id to list of floatingWidgets
+    if (!state.floatingWidgets.allIds.includes(floatingWidgetId))
+      draft.floatingWidgets.allIds.push(floatingWidgetId);
+
+    // add new floating widget to array of widgets in the state
+    const floatedTab = draft.tabs[widgetTabId];
+    initSizeProps(floatedTab, "preferredFloatingWidgetSize", size);
+    if (!(floatingWidgetId in state.floatingWidgets.byId)) {
+      draft.floatingWidgets.byId[floatingWidgetId] = {
+        bounds: containedBounds.toProps(),
+        id: floatingWidgetId,
+        home,
+        userSized,
+      };
+    }
+
+    if (floatingWidgetId in state.widgets) {
+      draft.widgets[floatingWidgetId].tabs.push(widgetTabId);
+    } else {
+      draft.widgets[floatingWidgetId] = {
+        activeTabId: widgetTabId,
+        id: floatingWidgetId,
+        minimized: false,
+        tabs: [widgetTabId],
+        isFloatingStateWindowResizable,
+      };
+    }
+  });
 }

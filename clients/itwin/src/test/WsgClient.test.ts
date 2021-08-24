@@ -16,10 +16,6 @@ export class TestWsgClient extends WsgClient {
     super(apiVersion);
   }
 
-  protected getRelyingPartyUrl(): string {
-    return "";
-  }
-
   protected getUrlSearchKey(): string {
     return "";
   }
@@ -60,7 +56,6 @@ class TestUrlWsgClient extends WsgClient {
     this.baseUrl = "https://api.bentley.com/testservice";
   }
 
-  protected getRelyingPartyUrl() { return ""; }
   protected getUrlSearchKey() { return ""; }
 
 }

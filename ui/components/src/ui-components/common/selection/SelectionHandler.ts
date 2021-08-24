@@ -5,7 +5,8 @@
 /** @packageDocumentation
  * @module Common
  */
-import { Range2d } from "@bentley/geometry-core";
+
+import { Rectangle } from "@bentley/ui-core";
 import { hasSelectionModeFlag, SelectionMode, SelectionModeFlags } from "./SelectionModes";
 
 /** Prototype for a Selection Changed handler
@@ -152,13 +153,13 @@ export class DragAction<Item> {
     if (currentPos.y === this._previousRow && currentPos.x === this._previousColumn || currentPos.x < 0 || currentPos.y < 0)
       return { selections: [], deselections: [] };
 
-    const currentRange: Range2d = Range2d.createXYXY(this._firstItemColumn, this._firstItemRow, currentPos.x, currentPos.y);
-    const previousRange: Range2d = Range2d.createXYXY(this._firstItemColumn, this._firstItemRow, this._previousColumn, this._previousRow);
-    const wholeRange: Range2d = Range2d.createXYXY(
-      currentRange.high.x > previousRange.high.x ? currentRange.high.x : previousRange.high.x,
-      currentRange.high.y > previousRange.high.y ? currentRange.high.y : previousRange.high.y,
-      currentRange.low.x < previousRange.low.x ? currentRange.low.x : previousRange.low.x,
-      currentRange.low.y < previousRange.low.y ? currentRange.low.y : previousRange.low.y,
+    const currentRange = Rectangle.createXYXY(this._firstItemColumn, this._firstItemRow, currentPos.x, currentPos.y);
+    const previousRange = Rectangle.createXYXY(this._firstItemColumn, this._firstItemRow, this._previousColumn, this._previousRow);
+    const wholeRange = Rectangle.createXYXY(
+      currentRange.right > previousRange.right ? currentRange.right : previousRange.right,
+      currentRange.bottom > previousRange.bottom ? currentRange.bottom : previousRange.bottom,
+      currentRange.left < previousRange.left ? currentRange.left : previousRange.left,
+      currentRange.top < previousRange.top ? currentRange.top : previousRange.top,
     );
     const selections = [];
     const deselections = [];
@@ -173,8 +174,8 @@ export class DragAction<Item> {
       this._firstItemSelected = true;
     }
 
-    for (let r = wholeRange.low.y; r <= wholeRange.high.y; r++) {
-      for (let c = wholeRange.low.x; c <= wholeRange.high.x; c++) {
+    for (let r = wholeRange.top; r <= wholeRange.bottom; r++) {
+      for (let c = wholeRange.left; c <= wholeRange.right; c++) {
         const insidePrevious = previousRange.containsXY(c, r);
         const insideCurrent = currentRange.containsXY(c, r);
         // If item is in only one of the ranges that means it's selection needs to be toggled.

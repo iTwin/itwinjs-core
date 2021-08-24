@@ -296,7 +296,7 @@ export class ScreenTestViewport extends ScreenViewport implements TestableViewpo
     const view = await imodel.views.load(viewId);
 
     // NB: Don't allow ACS triad etc to interfere with tests...
-    view.viewFlags.acsTriad = view.viewFlags.grid = false;
+    view.viewFlags = view.viewFlags.copy({ acsTriad: false, grid: false });
 
     const vp = this.create(div, view) as ScreenTestViewport;
     expect(vp).instanceof(ScreenTestViewport);

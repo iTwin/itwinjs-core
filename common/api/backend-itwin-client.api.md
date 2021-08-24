@@ -71,20 +71,6 @@ export interface BackendAuthorizationClientConfiguration {
     scope: string;
 }
 
-// @internal
-export class BackendFeatureUsageTelemetryClient extends BackendTelemetryClient {
-    constructor(config: {
-        backendMachineName: string;
-        backendApplicationId?: string;
-        backendApplicationVersion?: string;
-        clientAuthManager?: ImsClientAuthIntrospectionManager;
-    });
-    // (undocumented)
-    protected readonly _backendMachineName: string;
-    // (undocumented)
-    protected _postTelemetry(requestContext: AuthorizedClientRequestContext, backendTelemetryEvent: BackendTelemetryEvent): Promise<void>;
-    }
-
 // @public
 export enum BackendITwinClientLoggerCategory {
     Authorization = "backend-itwin-client.Authorization",

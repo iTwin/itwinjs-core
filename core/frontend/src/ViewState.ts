@@ -206,7 +206,6 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Flags controlling various aspects of this view's [[DisplayStyleState]].
-   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
    * @see [DisplayStyleSettings.viewFlags]($common)
    */
   public get viewFlags(): ViewFlags {

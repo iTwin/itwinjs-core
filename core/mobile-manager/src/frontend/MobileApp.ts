@@ -3,9 +3,9 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { BeEvent, Logger } from "@bentley/bentleyjs-core";
+import { AsyncMethodsOf, BeEvent, Logger, PromiseReturnType } from "@bentley/bentleyjs-core";
 import { IModelReadRpcInterface, IModelTileRpcInterface, IpcWebSocketFrontend } from "@bentley/imodeljs-common";
-import { AsyncMethodsOf, IpcApp, NativeApp, NativeAppOpts, NotificationHandler, PromiseReturnType } from "@bentley/imodeljs-frontend";
+import { IpcApp, NativeApp, NativeAppOpts, NotificationHandler } from "@bentley/imodeljs-frontend";
 import { mobileAppChannel, MobileAppFunctions, mobileAppNotify, MobileNotifications } from "../common/MobileAppProps";
 import { MobileRpcManager } from "../common/MobileRpcManager";
 

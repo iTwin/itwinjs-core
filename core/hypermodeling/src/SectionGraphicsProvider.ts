@@ -174,11 +174,12 @@ abstract class ProxyTree extends TileTree {
     if (undefined !== inverse)
       inverse.multiplyRange(range, range);
 
-    this._viewFlagOverrides = new ViewFlagOverrides(view.viewFlags);
-    this._viewFlagOverrides.setApplyLighting(false);
-
-    // View clip (section clip) should not apply to 2d graphics.
-    this._viewFlagOverrides.setShowClipVolume(false);
+    this._viewFlagOverrides = {
+      ...view.viewFlags,
+      lighting: false,
+      // View clip (section clip) should not apply to 2d graphics.
+      clipVolume: false,
+    };
 
     this._rootTile = new ProxyTile(this, range);
   }
@@ -285,7 +286,7 @@ class ProxyTile extends Tile {
     const sectionTree = proxyTree.tree;
 
     const location = proxyTree.iModelTransform.multiplyTransformTransform(sectionTree.iModelTransform);
-    const clipVolume = true === proxyTree.viewFlagOverrides.clipVolumeOverride ? proxyTree.clipVolume : undefined;
+    const clipVolume = true === proxyTree.viewFlagOverrides.clipVolume ? proxyTree.clipVolume : undefined;
     args = new TileDrawArgs({ context: args.context, location, tree: sectionTree, now: args.now, viewFlagOverrides: proxyTree.viewFlagOverrides, clipVolume, parentsAndChildrenExclusive: args.parentsAndChildrenExclusive, symbologyOverrides: proxyTree.symbologyOverrides });
     sectionTree.draw(args);
 
@@ -309,8 +310,7 @@ class ProxyTile extends Tile {
 
     const branch = new GraphicBranch();
     branch.entries.push(builder.finish());
-    branch.setViewFlagOverrides(new ViewFlagOverrides());
-    branch.viewFlagOverrides.setShowClipVolume(false);
+    branch.setViewFlagOverrides({ clipVolume: false });
     args.context.outputGraphic(args.context.createGraphicBranch(branch, Transform.createIdentity()));
   }
 }
