@@ -22,7 +22,7 @@ export interface QueryQuota {
 export interface QueryLimit {
   /** Maximum rows allowed to be returned */
   maxRowAllowed?: number;
-  /** It set number of rows to skip before returning results */
+  /** If set number of rows to skip before returning results */
   startRowOffset?: number;
 }
 
