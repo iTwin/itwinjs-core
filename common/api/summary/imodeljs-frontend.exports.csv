@@ -447,6 +447,7 @@ internal;RealityTile
 internal;RealityTileDrawArgs 
 internal;class RealityTileLoader
 internal;RealityTileParams 
+internal;RealityTileRegion
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 public;class RenderClipVolume

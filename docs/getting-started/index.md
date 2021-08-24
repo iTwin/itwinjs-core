@@ -1,4 +1,4 @@
-# Getting started (online quick start)
+# Getting Started
 
 ## 1. Get the tools
 
@@ -18,6 +18,7 @@ Writing an iTwin.js application requires the following software:
 
 &nbsp;
 &nbsp;
+
 ---
 
 ## Next Steps
