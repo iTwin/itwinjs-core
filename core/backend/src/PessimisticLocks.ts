@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 /** @packageDocumentation
  * @module iModels
  */
@@ -9,7 +10,7 @@
 import { DbResult, Id64, Id64Arg, Id64String, OpenMode } from "@bentley/bentleyjs-core";
 import { IModel, IModelError } from "@bentley/imodeljs-common";
 import { LockMap, LockState } from "./BackendHubAccess";
-import { BriefcaseDb } from "./IModelDb";
+import { BriefcaseDb, LockControl } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { SQLiteDb } from "./SQLiteDb";
 
@@ -18,8 +19,7 @@ import { SQLiteDb } from "./SQLiteDb";
  * 1) they must hold at least a shared lock before an exclusive lock can be acquired for their members
  * 2) if they hold an exclusive lock, then all of their members are exclusively locked implicitly.
  */
-interface ElementOwners { modelId: Id64String, parentId: Id64String }
-
+export interface ElementOwners { modelId: Id64String, parentId: Id64String }
 
 export class PessimisticLocks implements LockControl {
   private _db?: SQLiteDb;
@@ -32,7 +32,7 @@ export class PessimisticLocks implements LockControl {
     this._iModel = iModel;
     this._db = new SQLiteDb();
 
-    const dbName = `${this.iModel.getTempFileBase()}-locks`;
+    const dbName = `${this.iModel.nativeDb.getFilePath()}-locks`;
     try {
       this._db.openDb(dbName, OpenMode.ReadWrite);
     } catch (_e) {
@@ -71,8 +71,13 @@ export class PessimisticLocks implements LockControl {
   /** Clear the cache of locally held locks.
    * Note: does *not* release locks from server.
    */
-  public clearAllLocks() {
+  private clearAllLocks() {
     this.lockDb.executeSQL("DELETE FROM locks");
+  }
+
+  public async releaseAllLocks() {
+    await IModelHost.hubAccess.releaseAllLocks(this.iModel); // throws if unsuccessful
+    this.clearAllLocks();
   }
 
   private insertLock(id: Id64String, state: LockState, acquired: boolean) {
@@ -180,7 +185,8 @@ export class PessimisticLocks implements LockControl {
    * Acquire the exclusive lock on the entire iModel.
    * Note: No other briefcases will be able to perform *any* writeable operations until this lock is released.
    */
-  public async lockSchema(): Promise<void> {
+  public async acquireSchemaLock(): Promise<void> {
     return this.acquireExclusiveLock(IModel.repositoryModelId);
   }
 }
+

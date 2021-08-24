@@ -30,7 +30,6 @@ import { BriefcaseId, BriefcaseManager } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
-import { ConcurrencyControl } from "./ConcurrencyControl";
 import { ECSqlStatement } from "./ECSqlStatement";
 import { Element, SectionDrawing, Subject } from "./Element";
 import { ElementAspect, ElementMultiAspect, ElementUniqueAspect } from "./ElementAspect";
@@ -84,12 +83,12 @@ export interface ComputedProjectExtents {
 export interface LockControl {
   open(iModel: BriefcaseDb): void;
   close(): void;
-  clearAllLocks(): void;
   hasExclusiveLock(id: Id64String): boolean;
   hasSharedLock(id: Id64String): boolean;
   acquireExclusiveLock(ids: Id64Arg): Promise<void>;
   acquireSharedLocks(ids: Id64Arg): Promise<void>;
-  lockSchema(): Promise<void>;
+  acquireSchemaLock(): Promise<void>;
+  releaseAllLocks(): Promise<void>;
 }
 
 export class OptimisticLocks implements LockControl {
@@ -100,7 +99,8 @@ export class OptimisticLocks implements LockControl {
   public hasSharedLock(_id: Id64String): boolean { return true; }
   public async acquireExclusiveLock(): Promise<void> { }
   public async acquireSharedLocks(): Promise<void> { }
-  public async lockSchema(): Promise<void> { }
+  public async acquireSchemaLock(): Promise<void> { }
+  public async releaseAllLocks(): Promise<void> { }
 }
 
 /** An iModel database file. The database file is either briefcase or a snapshot.
@@ -129,7 +129,8 @@ export abstract class IModelDb extends IModel {
   protected _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
-  protected _locks = new OptimisticLocks();
+  protected _locks: LockControl;
+  public get locks() { return this._locks; }
 
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
@@ -165,6 +166,7 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
+    this._locks = new OptimisticLocks();
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
@@ -203,6 +205,7 @@ export abstract class IModelDb extends IModel {
     this.onBeforeClose.raiseEvent();
     this.clearCaches();
     this._concurrentQueryStats.dispose();
+    this._locks.close();
   }
 
   /** @internal */
@@ -767,10 +770,7 @@ export abstract class IModelDb extends IModel {
     if (!(requestContext instanceof AuthorizedClientRequestContext))
       throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
 
-    if (this.isBriefcaseDb() && this.allowLocalChanges) {
-      await this.concurrencyControl.locks.lockSchema(requestContext);
-      requestContext.enter();
-    }
+    await this._locks.acquireSchemaLock();
 
     const stat = this.nativeDb.importSchemas(schemaFileNames);
     if (DbResult.BE_SQLITE_OK !== stat) {
@@ -778,18 +778,6 @@ export abstract class IModelDb extends IModel {
     }
 
     this.clearCaches();
-    try {
-      // The schema import logic and/or imported Domains may have created new elements and models.
-      // Make sure we have the supporting locks and codes.
-      if (this.isBriefcaseDb() && this.allowLocalChanges) {
-        await this.concurrencyControl.request(requestContext);
-        requestContext.enter();
-      }
-    } catch (err) {
-      requestContext.enter();
-      this.abandonChanges();
-      throw err;
-    }
   }
 
   /** Import ECSchema(s) serialized to XML. On success, the schema definition is stored in the iModel.
@@ -813,32 +801,13 @@ export abstract class IModelDb extends IModel {
       return;
     }
 
-    if (!(requestContext instanceof AuthorizedClientRequestContext)) {
-      throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
-    }
-    if (this.isBriefcaseDb() && this.allowLocalChanges) {
-      await this.concurrencyControl.locks.lockSchema(requestContext);
-      requestContext.enter();
-    }
+    await this._locks.acquireSchemaLock();
 
     const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
-    if (DbResult.BE_SQLITE_OK !== stat) {
+    if (DbResult.BE_SQLITE_OK !== stat)
       throw new IModelError(stat, "Error importing schema");
-    }
 
     this.clearCaches();
-    try {
-      // The schema import logic and/or imported Domains may have created new elements and models.
-      // Make sure we have the supporting locks and codes.
-      if (this.isBriefcaseDb() && this.allowLocalChanges) {
-        await this.concurrencyControl.request(requestContext);
-        requestContext.enter();
-      }
-    } catch (err) {
-      requestContext.enter();
-      this.abandonChanges();
-      throw err;
-    }
   }
 
   /** Find an opened instance of any subclass of IModelDb, by filename
@@ -2149,7 +2118,6 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   }
 }
 
-
 /** A local copy of an iModel from iModelHub that can pull and potentially push changesets.
  * BriefcaseDb raises a set of events to allow apps and subsystems to track its object life cycle, including [[onOpen]] and [[onOpened]].
  * @public
@@ -2163,9 +2131,6 @@ export class BriefcaseDb extends IModelDb {
 
   /* the BriefcaseId of the briefcase opened with this BriefcaseDb */
   public readonly briefcaseId: number;
-
-  /** Returns `true` if this is briefcaseDb is opened writable and can be used to make changesets */
-  public get allowLocalChanges(): boolean { return this.openMode === OpenMode.ReadWrite && this.briefcaseId !== 0; }
 
   /** Event raised just before a BriefcaseDb is opened.
    *  * If the open requires authorization [AuthorizedClientRequestContext]($itwin-client) is passed in to the event handler. Otherwise [[ClientRequestContext]] is passed in
@@ -2193,48 +2158,19 @@ export class BriefcaseDb extends IModelDb {
     return db?.isBriefcaseDb() ? db : undefined;
   }
 
-  public override abandonChanges(): void {
-    if (this.allowLocalChanges)
-      this.concurrencyControl.abandonRequest();
-
-    super.abandonChanges();
-  }
-
   /** The Guid that identifies the *context* that owns this iModel. */
   public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
-
-  /** Get the Locks interface for this iModel.
-   * @beta
-   */
-  public readonly concurrencyControl: ConcurrencyControl;
 
   private constructor(nativeDb: IModelJsNative.DgnDb, token: IModelRpcProps, openMode: OpenMode) {
     super(nativeDb, token);
     this._openMode = openMode;
-    this.concurrencyControl = new ConcurrencyControl(this);
-    this.concurrencyControl.setPolicy(new ConcurrencyControl.PessimisticPolicy());
     this.briefcaseId = this.nativeDb.getBriefcaseId();
-  }
-
-  /** Commit pending changes to this iModel.
-   * @note If this IModelDb is a briefcase that is synchronized with iModelHub, then you must call [[ConcurrencyControl.request]] before attempting to save changes.
-   * @param description Optional description of the changes
-   * @throws [[IModelError]] if there is a problem saving changes or if there are pending, un-processed lock or code requests.
-   */
-  public override saveChanges(description?: string): void {
-    if (this.allowLocalChanges)
-      this.concurrencyControl.onSaveChanges();
-
-    super.saveChanges(description);
   }
 
   /** Upgrades the profile or domain schemas */
   private static async upgradeProfileOrDomainSchemas(arg: { requestContext: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps, upgradeOptions: UpgradeOptions, description: string }): Promise<void> {
     const lockArg = {
-      briefcase: {
-        briefcaseId: arg.briefcase.briefcaseId, changeset: arg.briefcase.changeset, iModelId: arg.briefcase.iModelId,
-      },
-      requestContext: arg.requestContext,
+      briefcaseId: arg.briefcase.briefcaseId, changeset: arg.briefcase.changeset, iModelId: arg.briefcase.iModelId,
     };
     const requestContext = arg.requestContext;
     // Lock schemas
@@ -2261,8 +2197,6 @@ export class BriefcaseDb extends IModelDb {
     // Push changes
     const briefcaseDb = await BriefcaseDb.open(requestContext, { ...arg.briefcase, readonly: false });
     try {
-      // Sync the concurrencyControl cache so that it includes the schema lock we requested before the open
-      await briefcaseDb.concurrencyControl.syncCache(requestContext);
       await briefcaseDb.pushChanges(requestContext, arg.description, ChangesType.Schema);
       arg.briefcase.changeset = briefcaseDb.changeset;
     } finally {
@@ -2313,23 +2247,9 @@ export class BriefcaseDb extends IModelDb {
 
     const briefcaseDb = new BriefcaseDb(nativeDb, token, openMode);
 
-
-    if (briefcaseDb.allowLocalChanges) {
-      if (!(requestContext instanceof AuthorizedClientRequestContext))
-        throw new IModelError(BentleyStatus.ERROR, "local changes requires authorization");
-      await briefcaseDb.concurrencyControl.onOpened(requestContext);
-    }
-
     BriefcaseManager.logUsage(requestContext, token);
     this.onOpened.raiseEvent(requestContext, briefcaseDb);
     return briefcaseDb;
-  }
-
-  /** @internal */
-  public override beforeClose() {
-    super.beforeClose();
-    if (this.allowLocalChanges)
-      this.concurrencyControl.onClose();
   }
 
   private closeAndReopen(openMode: OpenMode) {
@@ -2345,9 +2265,6 @@ export class BriefcaseDb extends IModelDb {
    * @returns the new changeSetId of this BriefcaseDb after pulling
    */
   public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<ChangesetIndexAndId> {
-    if (this.allowLocalChanges)
-      this.concurrencyControl.onMergeChanges();
-
     if (this.isReadonly) // we allow pulling changes into a briefcase that is readonly - close and reopen it writeable
       this.closeAndReopen(OpenMode.ReadWrite);
     try {
@@ -2377,14 +2294,8 @@ export class BriefcaseDb extends IModelDb {
   public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string, _unused?: any): Promise<ChangesetIndexAndId> {
     if (this.nativeDb.hasUnsavedChanges())
       throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes");
-    if (!this.allowLocalChanges)
-      throw new IModelError(BentleyStatus.ERROR, "Briefcase must be obtained with SyncMode.PullAndPush and opened ReadWrite");
-    if (!this.nativeDb.hasPendingTxns()) {
-      await this.concurrencyControl.onPushEmpty(requestContext);
+    if (!this.nativeDb.hasPendingTxns())
       return this.changeset as ChangesetIndexAndId; // nothing to push
-    }
-
-    await this.concurrencyControl.onPushChanges(requestContext);
 
     await BriefcaseManager.pushChanges(requestContext, this, description);
     const changeset = this.nativeDb.getParentChangeset() as ChangesetIndexAndId;
@@ -2392,7 +2303,6 @@ export class BriefcaseDb extends IModelDb {
     this.initializeIModelDb();
 
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
-    await this.concurrencyControl.onPushedChanges(requestContext);
     return changeset;
   }
 
