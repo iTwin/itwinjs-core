@@ -10,7 +10,6 @@
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
 import { BSplineWrapMode } from "../bspline/KnotVector";
@@ -1901,7 +1900,7 @@ export namespace IModelJson {
     /** Convert strongly typed instance to tagged json */
     public handleInterpolationCurve3d(curve: InterpolationCurve3d): any {
       const props = curve.cloneProps();
-      BSplineCurveOps.C2CubicFit.convertToJsonKnots(props);
+      props.knots = undefined; // DGN always recomputes fit params! (See mdlBspline_convertInterpolationToBspline)
       return { interpolationCurve: props };
     }
 
