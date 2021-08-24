@@ -124,7 +124,7 @@ const scratchRay = Ray3d.createXAxis();
 
 /** @internal */
 export class RealityTileRegion {
-  constructor(values: { minLongitude: number, minLatitude: number, minHeight: number, maxLongitude: number, maxLatitude: number, maxHeight: number}) {
+  constructor(values: { minLongitude: number, minLatitude: number, minHeight: number, maxLongitude: number, maxLatitude: number, maxHeight: number }) {
     this.minLongitude = values.minLongitude;
     this.minLatitude = values.minLatitude;
     this.minHeight = values.minHeight;
@@ -146,13 +146,13 @@ export class RealityTileRegion {
     const maxLongitude = region[2];
     const minLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(region[1]);
     const maxLatitude = Cartographic.parametricLatitudeFromGeodeticLatitude(region[3]);
-    return new RealityTileRegion({minLongitude, minLatitude, minHeight, maxLongitude, maxLatitude, maxHeight});
+    return new RealityTileRegion({ minLongitude, minLatitude, minHeight, maxLongitude, maxLatitude, maxHeight });
   }
 
   public static isGlobal(boundingVolume: any) {
     return Array.isArray(boundingVolume?.region) && (boundingVolume.region[2] - boundingVolume.region[0]) > Angle.piRadians && (boundingVolume.region[3] - boundingVolume.region[1]) > Angle.piOver2Radians;
   }
-  public getRange(): {range: Range3d, corners?: Point3d[] } {
+  public getRange(): { range: Range3d, corners?: Point3d[] } {
     const maxAngle = Math.max(Math.abs(this.maxLatitude - this.minLatitude), Math.abs(this.maxLongitude - this.minLongitude));
     let corners;
     let range: Range3d;
@@ -176,13 +176,13 @@ export class RealityTileRegion {
       range = minEllipsoid.patchRangeStartEndRadians(this.minLongitude, this.maxLongitude, this.minLatitude, this.maxLatitude);
       range.extendRange(maxEllipsoid.patchRangeStartEndRadians(this.minLongitude, this.maxLongitude, this.minLatitude, this.maxLatitude));
     }
-    return { range, corners};
+    return { range, corners };
   }
 }
 
 /** @internal */
 export class RealityModelTileUtils {
-  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion  } | undefined {
+  public static rangeFromBoundingVolume(boundingVolume: any): { range: Range3d, corners?: Point3d[], region?: RealityTileRegion } | undefined {
     if (undefined === boundingVolume)
       return undefined;
 
@@ -384,20 +384,12 @@ class RealityModelTileLoader extends RealityTileLoader {
     super();
     this.tree = tree;
     this._batchedIdMap = batchedIdMap;
-<<<<<<< HEAD
-    this._viewFlagOverrides = createDefaultViewFlagOverrides({ lighting: true });
-    this._viewFlagOverrides.clearPresent(ViewFlagPresence.VisibleEdges);      // Display these if they are present (Cesium outline extension)
-    this._viewFlagOverrides.clearPresent(ViewFlagPresence.HiddenEdges);
-=======
     let clipVolume;
     if (RealityTileRegion.isGlobal(tree.tilesetJson.boundingVolume))
       clipVolume = false;
     this._viewFlagOverrides = createDefaultViewFlagOverrides({ lighting: true, clipVolume });
-
-    // Display edges if they are present (Cesium outline extension) and enabled for view.
-    this._viewFlagOverrides.visibleEdges = undefined;
-    this._viewFlagOverrides.hiddenEdges = undefined;
->>>>>>> 040b0793e7 (Osm reprojection and clipping fixes (#2105))
+    this._viewFlagOverrides.clearPresent(ViewFlagPresence.VisibleEdges);      // Display these if they are present (Cesium outline extension)
+    this._viewFlagOverrides.clearPresent(ViewFlagPresence.HiddenEdges);
   }
 
   public get doDrapeBackgroundMap(): boolean { return this.tree.doDrapeBackgroundMap; }
