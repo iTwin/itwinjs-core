@@ -7,29 +7,42 @@ import { expect } from "chai";
 
 import { EsriOAuth2EndpointType } from "../../../tile/map/EsriOAuth2";
 import * as sinon from "sinon";
-import { ArcGisUtilities } from "../../../tile/internal";
+import { ArcGisUtilities, EsriSettingsService } from "../../../tile/internal";
 
 describe("ArcGisUtilities tests", () => {
   const sandbox = sinon.createSandbox();
+
+  beforeEach(async () => {
+
+    // Fake the setting service
+    sandbox.stub(EsriSettingsService, "getClientIds").callsFake(async function () {
+      return Promise.resolve( {
+        arcgisOnlineClientId: "dummy_clientId1",
+        enterpriseClientIds:[
+          {serviceBaseUrl:"https://dtlgeoarcgis.adtl.com", clientId:"dummy_clientId2"},
+        ],
+      });
+    });
+  });
 
   afterEach(async () => {
     sandbox.restore();
   });
 
   const sampleOnPremiseFeatureServer1 = "https://dtlgeoarcgis.adtl.com/server/rest/services/SampleWorldCities/FeatureServer/";
-  const sampleAuthorizeUrl1 = "https://dtlgeoarcgis.adtl.com/portal/sharing/rest/oauth2/authorize";
-  const sampleTokenUrl1 = "https://dtlgeoarcgis.adtl.com/portal/sharing/rest/oauth2/token";
-  const sampleGenerateTokenUrl1 = "https://dtlgeoarcgis.adtl.com/portal/sharing/rest/generateToken";
+  const sampleAuthorizeUrl1           = "https://dtlgeoarcgis.adtl.com/portal/sharing/rest/oauth2/authorize";
+  const sampleTokenUrl1               = "https://dtlgeoarcgis.adtl.com/portal/sharing/rest/oauth2/token";
+  const sampleGenerateTokenUrl1       = "https://dtlgeoarcgis.adtl.com/portal/sharing/rest/generateToken";
 
   const sampleOnPremiseFeatureServer2 = "https://dtlgeoarcgis.adtl.com/arcgis/rest/services/SampleWorldCities/FeatureServer/";
-  const sampleAuthorizeUrl2 = "https://dtlgeoarcgis.adtl.com/arcgis/sharing/rest/oauth2/authorize";
-  const sampleTokenUrl2 = "https://dtlgeoarcgis.adtl.com/portal/sharing/rest/oauth2/token";
+  const sampleAuthorizeUrl2           = "https://dtlgeoarcgis.adtl.com/arcgis/sharing/rest/oauth2/authorize";
+  const sampleTokenUrl2               = "https://dtlgeoarcgis.adtl.com/arcgis/sharing/rest/oauth2/token";
 
-  const sampleOnlineFeatureServer1 = "https://services3.arcgis.com/RRwXxn3KKYHT7QV6/arcgis/rest/services/Quebec/MapServer";
-  const sampleOnlineAuthorize1 = "https://www.arcgis.com/sharing/rest/oauth2/authorize";
-  const sampleOnlineToken1 = "https://www.arcgis.com/sharing/rest/oauth2/token";
+  const sampleOnlineFeatureServer1    = "https://services3.arcgis.com/RRwXxn3KKYHT7QV6/arcgis/rest/services/Quebec/MapServer";
+  const sampleOnlineAuthorize1        = "https://www.arcgis.com/sharing/rest/oauth2/authorize";
+  const sampleOnlineToken1            = "https://www.arcgis.com/sharing/rest/oauth2/token";
 
-  it.skip("should build proper OAuth2 endpoint URL using generateTokenUrl", async () => {
+  it("should build proper OAuth2 endpoint URL using generateTokenUrl", async () => {
 
     sandbox.stub(ArcGisUtilities, "validateOAuth2Endpoint").resolves(true);
     sandbox.stub(ArcGisUtilities, "requestGetJson").callsFake(async function _(_url: string) {
@@ -47,7 +60,7 @@ describe("ArcGisUtilities tests", () => {
 
   });
 
-  it.skip("should build proper OAuth2 endpoint URL if no generateTokenUrl response", async () => {
+  it("should build proper OAuth2 endpoint URL if no generateTokenUrl response", async () => {
 
     sandbox.stub(ArcGisUtilities, "validateOAuth2Endpoint").resolves(true);
     sandbox.stub(ArcGisUtilities, "requestGetJson").callsFake(async function _(_url: string) {
@@ -55,21 +68,22 @@ describe("ArcGisUtilities tests", () => {
     });
 
     const endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, EsriOAuth2EndpointType.Authorize);
-
     expect(endpointUrl).to.not.undefined;
     expect(endpointUrl?.getUrl()).to.equals(sampleAuthorizeUrl2);
 
-    const token1 = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, EsriOAuth2EndpointType.Token);
+    const token1 = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, EsriOAuth2EndpointType.Token);
     expect(token1).to.not.undefined;
     expect(token1?.getUrl()).to.equals(sampleTokenUrl2);
 
   });
 
-  it.skip("should build proper OAuth2 endpoint URL if could not validate url base on generateTokenUrl", async () => {
+  it("should build proper OAuth2 endpoint URL if could not validate url base on generateTokenUrl", async () => {
 
     sandbox.stub(ArcGisUtilities, "validateOAuth2Endpoint")
       .callsFake(async function _(url: string) {
-        return (url.includes("/oauth2") ? Promise.resolve(true) : Promise.resolve(false));
+        return (url.includes("/oauth2") ?
+          Promise.resolve(true) :   // Validate of OAuth2 endpoint should pass
+          Promise.resolve(false));  // Validate of GenerateTokenUrl should NOT pass
       });
 
     sandbox.stub(ArcGisUtilities, "requestGetJson").callsFake(async function _(_url: string) {
@@ -81,13 +95,13 @@ describe("ArcGisUtilities tests", () => {
     expect(endpointUrl).to.not.undefined;
     expect(endpointUrl?.getUrl()).to.equals(sampleAuthorizeUrl2);
 
-    endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer1, EsriOAuth2EndpointType.Token);
+    endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnPremiseFeatureServer2, EsriOAuth2EndpointType.Token);
     expect(endpointUrl).to.not.undefined;
     expect(endpointUrl?.getUrl()).to.equals(sampleTokenUrl2);
 
   });
 
-  it.skip("should build proper OAuth2 endpoint URL if ArcGIS online", async () => {
+  it("should build proper OAuth2 endpoint URL if ArcGIS online", async () => {
 
     let endpointUrl = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(sampleOnlineFeatureServer1, EsriOAuth2EndpointType.Authorize);
 
