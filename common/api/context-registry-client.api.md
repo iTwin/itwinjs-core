@@ -21,14 +21,12 @@ export interface ITwin {
 // @beta
 export interface ITwinAccess {
     getAll: (requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg) => Promise<ITwin[]>;
-    getById: (requestContext: AuthorizedClientRequestContext, id: string) => Promise<ITwin>;
 }
 
 // @beta
 export class ITwinAccessClient extends WsgClient implements ITwinAccess {
     constructor();
     getAll(requestContext: AuthorizedClientRequestContext, arg?: ITwinQueryArg): Promise<ITwin[]>;
-    getById(requestContext: AuthorizedClientRequestContext, id: string): Promise<ITwin>;
     // @internal (undocumented)
     protected getUrlSearchKey(): string;
     // (undocumented)
