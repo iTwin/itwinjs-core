@@ -60,6 +60,7 @@ import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
 import { AppTools } from "../tools/ToolSpecifications";
 import { IModelApp } from "@bentley/imodeljs-frontend";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
+import { AppUi2StageItemsProvider } from "../tools/AppUi2StageItemsProvider";
 
 // cSpell:ignore uitestapp
 
@@ -102,6 +103,8 @@ export class AppUi {
       return stageId === "Ui2";
     });
 
+    // Provides example widgets ui2.0 stage
+    AppUi2StageItemsProvider.register();
   }
 
   /** Define Frontstages

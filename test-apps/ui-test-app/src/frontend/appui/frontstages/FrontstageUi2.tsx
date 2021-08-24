@@ -9,11 +9,10 @@ import {
   SimpleNavigationWidget, SimpleStatusBarWidgetControl, SimpleToolWidget, StagePanel, StagePanelState, SyncUiEventArgs,
   SyncUiEventDispatcher, ToolbarHelper, UiFramework, Widget, Zone,
 } from "@bentley/ui-framework";
-import { CommonToolbarItem, StageUsage, WidgetState } from "@bentley/ui-abstract";
+import { CommonToolbarItem, StageUsage } from "@bentley/ui-abstract";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
-import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../widgets/LayoutWidget";
 
 /* eslint-disable react/jsx-key */
 
@@ -143,73 +142,20 @@ export class FrontstageUi2 extends FrontstageProvider {
           <StagePanel
             size={300}
             defaultState={StagePanelState.Minimized}
-            panelZones={{
-              start: {
-                widgets: [
-                  <Widget id="LeftStart1" canPopout={true} label="Start1" defaultState={WidgetState.Open} element={<h2>Left Start1 widget</h2>} />,
-                  <Widget id="LeftStart2" canPopout={true} label="Start2" element={<h2>Left Start2 widget</h2>} />,
-                ],
-              },
-              middle: {
-                widgets: [
-                  <Widget id="LeftMiddle1" label="Middle1" element={<h2>Left Middle1 widget</h2>} />,
-                  <Widget id="LeftMiddle2" canPopout={true} label="Middle2" defaultState={WidgetState.Open} element={<h2>Left Middle2 widget</h2>} />,
-                ],
-              },
-              end: {
-                widgets: [
-                  <Widget id="LeftEnd1" label="End1" defaultState={WidgetState.Open} element={<h2>Left End1 widget</h2>} />,
-                  <Widget id="LeftEnd2" label="End2" element={<h2>Left End2 widget</h2>} />,
-                ],
-              },
-            }}
           />
         }
 
         topPanel={
           <StagePanel
             size={90}
+            pinned={false}
             defaultState={StagePanelState.Minimized}
-            panelZones={{
-              start: {
-                widgets: [
-                  <Widget id="TopStart1" label="Start1" defaultState={WidgetState.Open} element={<h2>Top Start1 widget</h2>} />,
-                  <Widget id="TopStart2" label="Start2" element={<h2>Top Start2 widget</h2>} />,
-                ],
-              },
-              end: {
-                widgets: [
-                  <Widget id="TopEnd1" canPopout={true} label="End1" element={<h2>Top End1 widget</h2>} />,
-                  <Widget id="TopEnd2" label="End2" defaultState={WidgetState.Open} element={<h2>Top End2 widget</h2>} />,
-                ],
-              },
-            }}
           />
         }
 
         rightPanel={
           <StagePanel
             defaultState={StagePanelState.Open}
-            panelZones={{
-              start: {
-                widgets: [
-                  <Widget id="RightStart1" canPopout={true} label="Start1" element={<h2>Right Start1 widget</h2>} />,
-                  <Widget id="RightStart2" canPopout={true} label="Start2" defaultState={WidgetState.Open} element={<h2>Right Start2 widget</h2>} />,
-                ],
-              },
-              middle: {
-                widgets: [
-                  <Widget id="RightMiddle1" label="Middle1" defaultState={WidgetState.Open} element={<h2>Right Middle1 widget</h2>} />,
-                  <Widget id="RightMiddle2" canPopout={true} label="Middle2" element={<h2>Right Middle2 widget</h2>} />,
-                ],
-              },
-              end: {
-                widgets: [
-                  <Widget id="RightEnd1" label="End1" element={<h2>Right End1 widget</h2>} />,
-                  <Widget id="RightEnd2" canPopout={true} label="End2" defaultState={WidgetState.Open} element={<h2>Right End2 widget</h2>} />,
-                ],
-              },
-            }}
           />
         }
 
@@ -217,20 +163,6 @@ export class FrontstageUi2 extends FrontstageProvider {
           <StagePanel
             size={180}
             defaultState={StagePanelState.Open}
-            panelZones={{
-              start: {
-                widgets: [
-                  <Widget id="BottomStart1" label="Floating Info" element={<FloatingLayoutInfo />} />,
-                  <Widget id="BottomStart2" canPopout={true} label="Start2" defaultState={WidgetState.Open} element={<LayoutInfo />} />,
-                ],
-              },
-              end: {
-                widgets: [
-                  <Widget id="BottomEnd1" canPopout={true} label="End1" element={<h2>Bottom End1 widget</h2>} />,
-                  <Widget id="BottomEnd2" label="End2" defaultState={WidgetState.Open} element={<LayoutControls />} />,
-                ],
-              },
-            }}
           />
         }
       />

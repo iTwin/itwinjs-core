@@ -100,10 +100,6 @@ class SampleExtensionStateManager {
 class TestUiProvider implements UiItemsProvider {
   public readonly id = "TestUiProvider";
 
-  constructor() {
-
-  }
-
   public provideToolbarButtonItems(_stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
 
     if (stageUsage === StageUsage.General && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
@@ -378,4 +374,3 @@ export class OpenViewPopoutTool extends Tool {
       () => { IModelApp.tools.run(OpenViewPopoutTool.toolId); }, overrides);
   }
 }
-

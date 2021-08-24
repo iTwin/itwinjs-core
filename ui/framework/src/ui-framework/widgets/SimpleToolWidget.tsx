@@ -13,7 +13,6 @@ import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolWidgetComposer } from "./ToolWidgetComposer";
 import { useUiVisibility } from "./BasicToolWidget";
 
-
 /**
  * Empty Tool Widget that can be populated by specifying items for the horizontal and vertical toolbars.
  * This widget can also be populated via a UiItemsProvider.
