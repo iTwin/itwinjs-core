@@ -5,9 +5,9 @@
 // cSpell:ignore Modeless WMTS
 
 import * as React from "react";
-import { Button, Dialog, Icon, InputStatus} from "@bentley/ui-core";
+import { Dialog, Icon, InputStatus} from "@bentley/ui-core";
 import { ModalDialogManager, usePopup } from "@bentley/ui-framework";
-import { Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
+import { Button, Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions } from "../Interfaces";
 import {
@@ -17,7 +17,6 @@ import {
 import { MapLayerProps } from "@bentley/imodeljs-common";
 import "./MapUrlDialog.scss";
 import { DialogButtonType, SpecialKey } from "@bentley/ui-abstract";
-
 
 export const MAP_TYPES = {
   wms: "WMS",

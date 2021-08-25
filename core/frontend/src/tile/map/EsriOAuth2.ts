@@ -3,9 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, BeEvent } from "@bentley/bentleyjs-core";
-import { ArcGisOAuth2Token } from "../../imodeljs-frontend";
-import { ArcGisTokenManager, ArcGisUtilities, MapLayerTokenEndpoint} from "../internal";
-import { EsriSettingsService } from "./EsriSettingsService";
+import { ArcGisOAuth2Token, ArcGisTokenManager, ArcGisUtilities, EsriSettingsService, MapLayerTokenEndpoint} from "../internal";
 
 /** @beta */
 export enum EsriOAuth2EndpointType {Authorize,Token}

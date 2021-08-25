@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import * as React from "react";
+import * as iTwinui from "@itwin/itwinui-react";
 import * as UiCore from "@bentley/ui-core";
 import {ArcGisEnterpriseClientId, EsriOAuth2} from "@bentley/imodeljs-frontend";
 import { ModalDialogManager } from "@bentley/ui-framework";
@@ -116,12 +117,12 @@ export function EsriOAuthSettingsGroup() {
     <div className="map-manager-settings-group">
       <fieldset>
         <legend>ESRI OAuth</legend>
-        {(loadingFromSettingService) && <UiCore.LoadingSpinner size={UiCore.SpinnerSize.Medium} />}
+        {(loadingFromSettingService) && <UiCore.LoadingSpinner />}
         {(!loadingFromSettingService) && <>
           <div className="maplayers-settings-container">
-            <UiCore.Button className="esriSettings-button" buttonType={UiCore.ButtonType.Hollow} onClick={()=>handleClick(true)}>
-            {arcGisOnlineButtonTitle}
-            </UiCore.Button>
+            <iTwinui.Button className="esriSettings-button" styleType="default" onClick={()=>handleClick(true)}>
+              {arcGisOnlineButtonTitle}
+            </iTwinui.Button>
           </div>
           <div className="esriSettings-enterprise-clientIds">
             <div className="esriSettings-enterprise-header">
@@ -149,11 +150,11 @@ export function EsriOAuthSettingsGroup() {
                       { // Display the delete icon only when the mouse over a specific item otherwise list feels cluttered.
                         (listItemUnderCursor && listItemUnderCursor === clientId.serviceBaseUrl) &&
                   <>
-                    <UiCore.Button
+                    <iTwinui.Button
                       className="esriSettings-clientIds-entry-button"
-                      onClick={async (event) => {await onItemRemoveButtonClicked(clientId, event);}}>
+                      onClick={async (event: any) => {await onItemRemoveButtonClicked(clientId, event);}}>
                       <UiCore.Icon iconSpec="icon-delete" />
-                    </UiCore.Button>
+                    </iTwinui.Button>
                   </>}
                     </UiCore.ListboxItem>
                   )

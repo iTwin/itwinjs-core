@@ -45,7 +45,7 @@ describe("MapUrlDialog", () => {
     const validateSourceStub = sandbox.stub(MapLayerSource.prototype, "validateSource").callsFake(async function (_ignoreCache?: boolean) {
       return Promise.resolve({
         status: MapLayerSourceStatus.RequireAuth,
-        authInfo: { authMethod, tokenEndpoint: endPoint }
+        authInfo: { authMethod, tokenEndpoint: endPoint },
       });
     });
 
@@ -81,7 +81,7 @@ describe("MapUrlDialog", () => {
     sandbox.stub(MapLayerSource.prototype, "validateSource").callsFake(async function (_ignoreCache?: boolean) {
       return Promise.resolve({
         status: MapLayerSourceStatus.Valid,
-        subLayers: sampleWmsSubLayers
+        subLayers: sampleWmsSubLayers,
       });
     });
 
