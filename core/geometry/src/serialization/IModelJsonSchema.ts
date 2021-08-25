@@ -10,7 +10,6 @@
 import { BezierCurve3d } from "../bspline/BezierCurve3d";
 import { BezierCurve3dH } from "../bspline/BezierCurve3dH";
 import { BSplineCurve3d } from "../bspline/BSplineCurve";
-import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
 import { BSplineCurve3dH } from "../bspline/BSplineCurve3dH";
 import { BSplineSurface3d, BSplineSurface3dH, WeightStyle } from "../bspline/BSplineSurface";
 import { BSplineWrapMode } from "../bspline/KnotVector";
@@ -53,6 +52,7 @@ import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
 import { InterpolationCurve3d as InterpolationCurve3d, InterpolationCurve3dProps } from "../bspline/InterpolationCurve3d";
 import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
+import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
 // cspell:word bagof
 /* eslint-disable no-console*/
 /**

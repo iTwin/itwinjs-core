@@ -78,8 +78,9 @@ export class KnotVector {
    * @param knots
    * @param degree
    */
-  private constructor(knots: number[] | Float64Array | number, degree: number) {
+  private constructor(knots: number[] | Float64Array | number, degree: number, wrapMode?: BSplineWrapMode) {
     this.degree = degree;
+    this._wrapMode = wrapMode;
     // default values to satisfy compiler -- real values hapn setupFixedValues or final else defers to user
     this._knot0 = 0.0;
     this._knot1 = 1.0;
@@ -96,7 +97,7 @@ export class KnotVector {
     }
   }
   /** copy degree and knots to a new KnotVector. */
-  public clone(): KnotVector { return new KnotVector(this.knots, this.degree); }
+  public clone(): KnotVector { return new KnotVector(this.knots, this.degree, this.wrappable); }
   private setupFixedValues() {
     // These should be read-only . ..
     this._knot0 = this.knots[this.degree - 1];
