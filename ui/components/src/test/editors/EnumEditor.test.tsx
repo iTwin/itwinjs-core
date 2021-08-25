@@ -89,17 +89,17 @@ describe("<EnumEditor />", () => {
     expect(spyOnCommit.called).to.be.false;
   });
 
-  it.skip("onCommit should be called for blur", async () => {
+  it("onCommit should be called for blur", async () => {
     const propertyRecord = TestUtils.createEnumProperty("Test", 0);
     const spyOnCommit = sinon.spy();
     function handleCommit(_commit: PropertyUpdatedArgs): void {
       spyOnCommit();
     }
-    const wrapper = mount(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
-    const selectNode = wrapper.find("select");
-    expect(selectNode.length).to.eq(1);
+    const wrapper = render(<EditorContainer propertyRecord={propertyRecord} title="abc" onCommit={handleCommit} onCancel={() => { }} />);
+    const selectNode = wrapper.getByTestId("components-select-editor");
+    expect(selectNode).not.to.be.null;
 
-    selectNode.simulate("blur");
+    fireEvent.blur(selectNode);
     await TestUtils.flushAsyncOperations();
     expect(spyOnCommit.calledOnce).to.be.true;
   });
