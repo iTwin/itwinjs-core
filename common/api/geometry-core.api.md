@@ -2512,6 +2512,7 @@ export namespace IModelJson {
     export interface CurvePrimitiveProps {
         arc?: ArcByVectorProps | [XYZProps, XYZProps, XYZProps];
         bcurve?: BcurveProps;
+        interpolationCurve?: InterpolationCurve3dProps;
         lineSegment?: [XYZProps, XYZProps];
         lineString?: XYZProps[];
         transitionSpiral?: TransitionSpiralProps;
