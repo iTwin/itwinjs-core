@@ -5,7 +5,7 @@
 // cSpell:ignore Modeless WMTS
 
 import * as React from "react";
-import { Dialog, Icon, InputStatus} from "@bentley/ui-core";
+import { Dialog, Icon} from "@bentley/ui-core";
 import { ModalDialogManager, usePopup } from "@bentley/ui-framework";
 import { Button, Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
