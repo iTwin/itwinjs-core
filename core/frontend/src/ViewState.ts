@@ -1537,7 +1537,6 @@ export abstract class ViewState3d extends ViewState {
   }
 
   private _lookAt(eyePoint: XYAndZ, upVector: Vector3d, targetPoint?: XYAndZ, viewDirection?: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus {
-    console.log(`_lookAt   targetPoint ${targetPoint}   viewDirection ${viewDirection}\n`);
     // Must have either a target point for perspective or a viewDirection for ortho.
     const eye = new Point3d(eyePoint.x, eyePoint.y, eyePoint.z);
     const yVec = upVector.normalize();
