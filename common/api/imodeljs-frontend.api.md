@@ -12833,6 +12833,7 @@ export abstract class ViewState3d extends ViewState {
     lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): number;
     lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): Promise<number>;
     lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
+    lookAtUsingOrtho(eyePoint: Point3d, viewDirection: Vector3d, upVector: Vector3d, viewToWorldScale: number, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // (undocumented)
     minimumFrontDistance(): number;
     moveCameraLocal(distance: Vector3d): ViewStatus;
@@ -12872,6 +12873,8 @@ export enum ViewStatus {
     // (undocumented)
     DrawFailure = 4,
     // (undocumented)
+    InvalidDirection = 16,
+    // (undocumented)
     InvalidLens = 14,
     // (undocumented)
     InvalidTargetPoint = 13,
@@ -12879,6 +12882,8 @@ export enum ViewStatus {
     InvalidUpVector = 12,
     // (undocumented)
     InvalidViewport = 15,
+    // (undocumented)
+    InvalidViewToWorldScale = 17,
     // (undocumented)
     InvalidWindow = 7,
     // (undocumented)
