@@ -77,7 +77,6 @@ export * from "./ViewStatus";
 export * from "./WebViewerApp";
 export * from "./extension/Extension";
 export * from "./extension/ExtensionAdmin";
-export * from "./extension/loaders/ExtensionServiceExtensionLoader";
 export * from "./extension/loaders/ExternalServerExtensionLoader";
 export * from "./properties/AngleDescription";
 export * from "./properties/FormattedQuantityDescription";

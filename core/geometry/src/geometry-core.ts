@@ -229,6 +229,7 @@ export * from "./bspline/BezierCurveBase";
 export * from "./bspline/BezierCurve3d";
 export * from "./bspline/BezierCurve3dH";
 export * from "./bspline/BSplineCurve";
+export * from "./bspline/BSplineCurveOps";
 export * from "./bspline/BSpline1dNd";
 export * from "./bspline/BSplineCurve3dH";
 export * from "./bspline/BSplineSurface";
