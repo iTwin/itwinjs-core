@@ -1413,7 +1413,7 @@ export abstract class ViewState3d extends ViewState {
   }
 
   private finishLookAtGlobalLocation(targetPointCartographic: Cartographic, origEyePoint: Point3d, lEyePoint: Point3d, targetPoint: Point3d, pitchAngleRadians: number): number {
-    targetPointCartographic.latitude += 10.0;
+    targetPointCartographic.latitude += .001;
     const northOfEyePoint = this.cartographicToRoot(targetPointCartographic)!;
     let upVector = northOfEyePoint.unitVectorTo(lEyePoint)!;
     if (this.globeMode === GlobeMode.Plane)
