@@ -26,8 +26,9 @@ export interface ViewToolWidgetComposerProps {
   navigationAidHost?: React.ReactNode;
 }
 
-/** Simple Navigation Widget that provides standard tools to manipulate views containing element data.
- * Supports the specification of additional horizontal and vertical toolbar items through props.
+/** ViewToolWidgetComposer composes a Navigation Widget with no tools defined by default. Each stage can
+ * define a default set of tools for both the horizontal and vertical toolbar when setting up this widget.
+ * UiItemsProviders can also provide tools to populate the toolbars.
  *  @example
  * ```
  *  const horizontalItems = ToolbarHelper.createToolbarItemsFromItemDefs([

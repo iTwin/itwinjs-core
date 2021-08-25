@@ -14,8 +14,9 @@ import { ToolWidgetComposer } from "./ToolWidgetComposer";
 import { useUiVisibility } from "./BasicToolWidget";
 
 /**
- * Empty Tool Widget that can be populated by specifying items for the horizontal and vertical toolbars.
- * This widget can also be populated via a UiItemsProvider.
+ * ContentToolWidgetComposer composes a Tool Widget with no tools defined by default. Each stage can
+ * define a default set of tools for both the horizontal and vertical toolbar when setting up this widget.
+ * UiItemsProviders can also provide tools to populate the toolbars.
  * @example
  * ```
  *  const horizontalItems: CommonToolbarItem[] = [
