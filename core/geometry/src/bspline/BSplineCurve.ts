@@ -15,6 +15,7 @@ import { StrokeOptions } from "../curve/StrokeOptions";
 import { Geometry, PlaneAltitudeEvaluator } from "../Geometry";
 import { GeometryHandler, IStrokeHandler } from "../geometry3d/GeometryHandler";
 import { GrowableXYZArray } from "../geometry3d/GrowableXYZArray";
+import { IndexedXYZCollection } from "../geometry3d/IndexedXYZCollection";
 import { Plane3dByOriginAndUnitNormal } from "../geometry3d/Plane3dByOriginAndUnitNormal";
 import { Plane3dByOriginAndVectors } from "../geometry3d/Plane3dByOriginAndVectors";
 /* eslint-disable @typescript-eslint/naming-convention, no-empty, no-console*/
@@ -365,6 +366,13 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
       for (const p of poles) { curve._bcurve.packedData[i++] = p.x; curve._bcurve.packedData[i++] = p.y; curve._bcurve.packedData[i++] = p.z; }
     }
     return curve;
+  }
+
+  /**
+   * @deprecated Use createFromInterpolationCurve3dOptions
+   */
+   public static createThroughPoints(points: IndexedXYZCollection | Point3d[], order: number): BSplineCurve3d | undefined {
+    return BSplineCurveOps.createThroughPoints(points, order);
   }
 
   /**
