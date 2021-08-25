@@ -858,6 +858,32 @@ describe("PolygonAreas", () => {
     ck.checkpoint("PolygonAreas.TriangleVariants");
     expect(ck.getNumErrors()).equals(0);
   });
+  it.only("SimpleNonConvex", () => {
+    const ck = new Checker();
+    const pointA = [
+      Point3d.create(0,0,0),
+      Point3d.create(2,0,0),
+      Point3d.create(2,2,0),
+      Point3d.create(1,2,0),
+      Point3d.create(1,1,0),
+      Point3d.create(0,1,0),
+    ];
+    const centroidA = PolygonOps.centroidAreaNormal(pointA)!;
+    ck.testCoordinate(3.0, (centroidA as any).a, "area of nonconvex polygon");
+    for (const degrees of [17.0, 197.4]){
+      const rotationMatrix = Matrix3d.createRotationAroundVector(Vector3d.create(1, -2, 0.5), Angle.createDegrees(degrees))!;
+      const rotationTransform = Transform.createFixedPointAndMatrix(Point3d.create(0.3, 1.2, 0.4), rotationMatrix);
+      const pointB = rotationTransform.multiplyPoint3dArray(pointA);
+      const centroidB = PolygonOps.centroidAreaNormal(pointB)!;
+      ck.testCoordinate(3.0, (centroidB as any).a, "area of nonconvex polygon");
+      const centroidA1 = centroidA.cloneTransformed(rotationTransform);
+      ck.testPoint3d(centroidA1.origin, centroidB.origin, "centroid transform commutes");
+      ck.testVector3d(centroidA1.direction, centroidB.direction, "centroid transform commutes");
+    }
+
+    ck.checkpoint("PolygonAreas.SimpleNonConvex");
+    expect(ck.getNumErrors()).equals(0);
+  });
   it("LShape", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];

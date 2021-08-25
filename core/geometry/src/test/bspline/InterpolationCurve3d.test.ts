@@ -16,7 +16,7 @@ import { Angle } from "../../geometry3d/Angle";
 /* eslint-disable no-console */
 
 describe("InterpolationCurve3d", () => {
-  it.only("HelloWorld", () => {
+  it("HelloWorld", () => {
     const noisy = false;
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
