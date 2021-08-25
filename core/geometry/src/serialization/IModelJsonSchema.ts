@@ -52,6 +52,7 @@ import { DirectSpiral3d } from "../curve/spiral/DirectSpiral3d";
 import { TaggedNumericData } from "../polyface/TaggedNumericData";
 import { InterpolationCurve3d as InterpolationCurve3d, InterpolationCurve3dProps } from "../bspline/InterpolationCurve3d";
 import { AkimaCurve3d } from "../bspline/AkimaCurve3d";
+import { BSplineCurveOps } from "../bspline/BSplineCurveOps";
 // cspell:word bagof
 /* eslint-disable no-console*/
 /**
@@ -1900,7 +1901,7 @@ export namespace IModelJson {
     /** Convert strongly typed instance to tagged json */
     public handleInterpolationCurve3d(curve: InterpolationCurve3d): any {
       const props = curve.cloneProps();
-      props.knots = undefined; // DGN always recomputes fit params! (See mdlBspline_convertInterpolationToBspline)
+      BSplineCurveOps.C2CubicFit.convertToJsonKnots(props);
       return { interpolationCurve: props };
     }
 

@@ -15,7 +15,7 @@ import { Point3d, Vector3d } from "../geometry3d/Point3dVector3d";
 import { BandedSystem } from "../numerics/BandedSystem";
 import { BSplineCurve3d } from "./BSplineCurve";
 import { BSplineWrapMode, KnotVector } from "./KnotVector";
-import { InterpolationCurve3dOptions } from "./InterpolationCurve3d";
+import { InterpolationCurve3dOptions, InterpolationCurve3dProps } from "./InterpolationCurve3d";
 
 /**
  * A class with static methods for creating B-spline curves.
@@ -793,6 +793,14 @@ export namespace BSplineCurveOps {
         }
       }
       return knots;
+    }
+
+    /** Ensure full legacy knot vector for JSON export **/
+    public static convertToJsonKnots(props: InterpolationCurve3dProps) {
+      if (undefined !== props.knots) {
+        props.knots = this.convertCubicKnotVectorToFitParams(props.knots, props.fitPoints.length, false);
+        props.knots = this.convertFitParamsToCubicKnotVector(props.knots, props.closed, true);
+      }
     }
 
     /** Construct the control points for the c2 cubic fit algorithm
