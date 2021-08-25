@@ -797,7 +797,7 @@ export abstract class ViewManip extends ViewTool {
   public static fitViewWithGlobeAnimation(viewport: ScreenViewport, animateFrustumChange: boolean, options?: ViewChangeOptions) {
     const range = this.computeFitRange(viewport);
 
-    if (animateFrustumChange && viewport.isCameraOn && viewport.viewingGlobe) {
+    if (animateFrustumChange && (viewport.viewingGlobe || !viewport.view.getIsViewingProject())) {
       const view3d = viewport.view as ViewState3d;
       const cartographicCenter = view3d.rootToCartographic(range.center);
       if (undefined !== cartographicCenter) {
