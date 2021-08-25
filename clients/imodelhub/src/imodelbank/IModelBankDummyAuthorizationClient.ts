@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessTokenString, UserInfo } from "@bentley/itwin-client";
+import { AccessTokenString } from "@bentley/itwin-client";
 
 /** Implements the user permission abstraction by creating a dummy AccessToken. Note that the corresponding IModelBank server must
  * be able to tolerate this dummy token.
@@ -13,7 +13,7 @@ import { AccessTokenString, UserInfo } from "@bentley/itwin-client";
 export class IModelBankDummyAuthorizationClient implements FrontendAuthorizationClient {
   private _token?: AccessTokenString;
 
-  public constructor(private _userInfo: UserInfo | undefined, private _userCredentials: any) {
+  public constructor(private _userCredentials: any) {
   }
 
   public get expiry(): Date{
@@ -22,22 +22,20 @@ export class IModelBankDummyAuthorizationClient implements FrontendAuthorization
   }
 
   public async signIn(): Promise<void> {
-    if (!this._userInfo) {
-      this._userInfo = {
-        id: "",
-        email: {
-          id: this._userCredentials.email,
-        },
-        profile: {
-          name: "",
-          firstName: "",
-          lastName: "",
-        },
-      };
-    }
+    const userInfo =  {
+      id: "",
+      email: {
+        id: this._userCredentials.email,
+      },
+      profile: {
+        name: "",
+        firstName: "",
+        lastName: "",
+      },
+    };
 
     const foreignAccessTokenWrapper: any = {};
-    foreignAccessTokenWrapper.ForeignProjectAccessToken = { userInfo: this._userInfo };
+    foreignAccessTokenWrapper.ForeignProjectAccessToken = { userInfo };
     this._token = JSON.stringify(foreignAccessTokenWrapper);
     this.onUserStateChanged.raiseEvent(this._token);
   }

@@ -66,10 +66,9 @@ export class TestUtility {
         tokenString: await getAccessTokenFromBackend(user) ?? "",
         startsAt: undefined,
         expiresAt: undefined,
-        userInfo: undefined,
       });
     } else {
-      authorizationClient = this.imodelCloudEnv.getAuthorizationClient(undefined, user) as FrontendAuthorizationClient;
+      authorizationClient = this.imodelCloudEnv.getAuthorizationClient(user) as FrontendAuthorizationClient;
       await authorizationClient.signIn();
     }
     const accessToken = await authorizationClient.getAccessToken();

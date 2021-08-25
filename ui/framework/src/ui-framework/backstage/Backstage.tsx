@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { UserInfo } from "@bentley/itwin-client";
+import { UserInfo } from "../UserInfo";
 import { CommonProps, IconSpec, UiEvent } from "@bentley/ui-core";
 import { Backstage as NZ_Backstage } from "@bentley/ui-ninezone";
 import { SafeAreaContext } from "../safearea/SafeAreaContext";

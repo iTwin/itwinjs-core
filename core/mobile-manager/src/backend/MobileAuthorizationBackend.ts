@@ -9,7 +9,7 @@
 import { assert } from "@bentley/bentleyjs-core";
 import { NativeAppAuthorizationBackend } from "@bentley/imodeljs-backend";
 import { NativeAppAuthorizationConfiguration } from "@bentley/imodeljs-common";
-import { AccessTokenProps, AccessTokenString, UserInfo } from "@bentley/itwin-client";
+import { AccessTokenProps, AccessTokenString } from "@bentley/itwin-client";
 import { MobileHost } from "./MobileHost";
 
 /** Utility to provide OIDC/OAuth tokens from native ios app to frontend
@@ -32,12 +32,6 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
       let token: AccessTokenString;
       if (tokenString) {
         const tokenJson = JSON.parse(tokenString) as AccessTokenProps;
-        // Patch user info
-        if (typeof tokenJson.userInfo === "undefined")
-          tokenJson.userInfo = { id: "" };
-        else
-          tokenJson.userInfo = UserInfo.fromTokenResponseJson(tokenJson.userInfo);
-
         token = tokenJson.tokenString;
       }
       this.setAccessToken(token);

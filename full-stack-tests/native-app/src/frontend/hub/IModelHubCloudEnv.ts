@@ -3,7 +3,6 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { IModelCloudEnvironment, IModelHubClient } from "@bentley/imodelhub-client";
-import { UserInfo } from "@bentley/itwin-client";
 import { ContextRegistryClientWrapper } from "../../common/ContextRegistryClientWrapper";
 import { IModelHubUserMgr } from "../../common/IModelHubUserMgr";
 
@@ -14,7 +13,7 @@ export class IModelHubCloudEnv implements IModelCloudEnvironment {
   public async startup(): Promise<void> { }
   public async shutdown(): Promise<number> { return 0; }
 
-  public getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any) {
-    return new IModelHubUserMgr(userInfo, userCredentials);
+  public getAuthorizationClient(userCredentials: any) {
+    return new IModelHubUserMgr(userCredentials);
   }
 }

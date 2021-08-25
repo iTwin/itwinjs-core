@@ -3,8 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { assert, BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
-import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessTokenString, UrlDiscoveryClient } from "@bentley/itwin-client";
+import { AccessTokenString, AuthorizationClient, UrlDiscoveryClient } from "@bentley/itwin-client";
 import { AuthorizationParameters, Client, custom, generators, Issuer, OpenIDCallbackChecks, TokenSet } from "openid-client";
 import * as os from "os";
 import * as puppeteer from "puppeteer";
@@ -19,7 +18,7 @@ import { TestBrowserAuthorizationClientConfiguration, TestUserCredentials } from
  *   spawning a headless browser, and automatically filling in the supplied user credentials.
  * @alpha
  */
-export class TestBrowserAuthorizationClient implements FrontendAuthorizationClient {
+export class TestBrowserAuthorizationClient implements AuthorizationClient {
   private _client!: Client;
   private _issuer!: Issuer<Client>;
   private _imsUrl!: string;

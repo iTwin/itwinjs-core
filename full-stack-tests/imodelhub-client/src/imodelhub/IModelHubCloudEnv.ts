@@ -5,7 +5,7 @@
 
 import { Asset, ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { ContextManagerClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
+import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
 import { getIModelHubClient } from "./TestUtils";
 import { TestIModelHubOidcAuthorizationClient } from "../TestIModelHubOidcAuthorizationClient";
@@ -36,7 +36,7 @@ export class TestIModelHubCloudEnv implements IModelCloudEnvironment {
   public async startup(): Promise<void> { }
   public async shutdown(): Promise<number> { return 0; }
 
-  public getAuthorizationClient(userInfo: UserInfo | undefined, userCredentials: any) {
-    return new TestIModelHubOidcAuthorizationClient(userInfo, userCredentials);
+  public getAuthorizationClient(userCredentials: any) {
+    return new TestIModelHubOidcAuthorizationClient(userCredentials);
   }
 }

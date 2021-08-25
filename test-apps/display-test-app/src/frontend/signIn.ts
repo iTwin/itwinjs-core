@@ -16,13 +16,5 @@ export async function signIn(): Promise<boolean> {
   const auth = IModelApp.authorizationClient!;
 
   // Placeholder -- Figure this out
-  return auth.getAccessToken() !== undefined;
-
-  // if (auth.isAuthorized)
-  //   return true;
-
-  // return new Promise<boolean>((resolve, reject) => {
-  //   auth.onUserStateChanged.addOnce((token?: AccessTokenString) => resolve(token !== undefined));
-  //   auth.signIn().catch((err) => reject(err));
-  // });
+  return (await auth.getAccessToken()) !== undefined;
 }

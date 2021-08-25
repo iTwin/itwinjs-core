@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessTokenString, UserInfo } from "@bentley/itwin-client";
+import { AccessTokenString } from "@bentley/itwin-client";
 
 export function tokenFromUserCredentials(userCredentials: any): AccessTokenString {
   const tokenString = Buffer.from(`${userCredentials.email}:${userCredentials.password}`).toString("base64");
@@ -18,7 +18,7 @@ export function tokenFromUserCredentials(userCredentials: any): AccessTokenStrin
 export class IModelBankBasicAuthorizationClient implements FrontendAuthorizationClient {
   private _token?: AccessTokenString;
 
-  public constructor(_userInfo: UserInfo | undefined, private _userCredentials: any) {
+  public constructor(private _userCredentials: any) {
   }
 
   public get expiry(): Date {

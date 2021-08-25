@@ -96,7 +96,6 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
       tokenString: await NativeHost.authorization.getAccessToken() ?? "",
       startsAt: undefined,
       expiresAt: NativeHost.authorization.expiry.toDateString(),
-      userInfo: undefined,
     };
   }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
@@ -249,7 +248,6 @@ export class NativeHost {
           tokenString: token ?? "",
           startsAt: undefined,
           expiresAt: NativeHost.authorization.expiry.toDateString(),
-          userInfo: undefined,
         }));
       this._applicationName = opt?.nativeHost?.applicationName ?? "iTwinApp";
     }

@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { UserInfo } from "@bentley/itwin-client";
+import { UserInfo } from "../UserInfo";
 import { CommonProps, getUserColor } from "@bentley/ui-core";
 import { UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
 import { FrontstageManager } from "../frontstage/FrontstageManager";

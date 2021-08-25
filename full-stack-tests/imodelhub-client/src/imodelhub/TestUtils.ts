@@ -192,7 +192,7 @@ export async function delay(ms: number) {
 export async function login(userCredentials?: TestUserCredentials): Promise<AccessTokenString> {
   if (TestConfig.enableMocks)
     return "";
-  const authorizationClient = getCloudEnv().getAuthorizationClient(undefined, userCredentials);
+  const authorizationClient = getCloudEnv().getAuthorizationClient(userCredentials);
   const requestContext = new ClientRequestContext();
 
   // await authorizationClient.signIn(requestContext);

@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import * as sinon from "sinon";
-import { UserInfo } from "@bentley/itwin-client";
+import { UserInfo } from "../../ui-framework/UserInfo";
 import { FrontstageManager } from "../../ui-framework";
 import { UserProfileBackstageItem } from "../../ui-framework/backstage/UserProfile";
 import TestUtils, { mockUserInfo, mount } from "../TestUtils";

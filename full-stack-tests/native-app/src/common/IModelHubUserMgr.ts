@@ -4,13 +4,13 @@
 *--------------------------------------------------------------------------------------------*/
 import { BeEvent, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
-import { AccessTokenString, UserInfo } from "@bentley/itwin-client";
+import { AccessTokenString } from "@bentley/itwin-client";
 import { getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/frontend";
 
 export class IModelHubUserMgr implements FrontendAuthorizationClient {
   private _token: AccessTokenString | undefined;
 
-  public constructor(_userInfo: UserInfo | undefined, private _userCredentials: any) {
+  public constructor(private _userCredentials: any) {
   }
 
   public async signIn(_requestContext?: ClientRequestContext): Promise<void> {

@@ -153,22 +153,8 @@ export class IModelTestUtils {
      */
   public static async getUserContext(user: TestUserType): Promise<AuthorizedClientRequestContext> {
     if (HubMock.isValid) {
-      const firstName = TestUserType[user];
-      const lastName = "User";
       const props: AccessTokenProps = {
         tokenString: "bogus",
-        userInfo: {
-          id: Guid.createValue(),
-          email: {
-            id: `${firstName}.user@test.org`,
-          },
-          profile: {
-            firstName,
-            lastName,
-            name: `${firstName} ${lastName}`,
-          },
-          organization: this.testOrg,
-        },
         startsAt: new Date(Date.now()).toJSON(),
         expiresAt: new Date(Date.now() + 60 * 60 * 100).toJSON(), /* 1 hour from now */
       };
