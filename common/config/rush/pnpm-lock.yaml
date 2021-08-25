@@ -52,53 +52,6 @@ importers:
       typescript: 4.3.5
       webpack: 4.42.0
 
-  ../../clients/extension:
-    specifiers:
-      '@bentley/bentleyjs-core': workspace:*
-      '@bentley/build-tools': workspace:*
-      '@bentley/certa': workspace:*
-      '@bentley/context-registry-client': workspace:*
-      '@bentley/eslint-plugin': workspace:*
-      '@bentley/imodeljs-common': workspace:*
-      '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
-      '@types/chai': ^4.1.4
-      '@types/mocha': ^8.2.2
-      '@types/node': 10.14.1
-      chai: ^4.1.2
-      dotenv: ^10.0.0
-      dotenv-expand: ^5.1.0
-      eslint: ^7.11.0
-      internal-tools: workspace:*
-      mocha: ^8.3.2
-      rimraf: ^3.0.2
-      source-map-loader: ^1.0.0
-      typescript: ~4.3.0
-      webpack: 4.42.0
-    dependencies:
-      '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/imodeljs-common': link:../../core/common
-      '@bentley/itwin-client': link:../itwin
-    devDependencies:
-      '@bentley/build-tools': link:../../tools/build
-      '@bentley/certa': link:../../tools/certa
-      '@bentley/context-registry-client': link:../context-registry
-      '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@types/chai': 4.2.21
-      '@types/mocha': 8.2.3
-      '@types/node': 10.14.1
-      chai: 4.3.4
-      dotenv: 10.0.0
-      dotenv-expand: 5.1.0
-      eslint: 7.32.0
-      internal-tools: link:../../tools/internal
-      mocha: 8.4.0
-      rimraf: 3.0.2
-      source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.3.5
-      webpack: 4.42.0
-
   ../../clients/frontend-authorization:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
@@ -955,7 +908,6 @@ importers:
       '@bentley/certa': workspace:*
       '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
-      '@bentley/extension-client': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
@@ -993,7 +945,6 @@ importers:
       xml-js: ~1.6.11
     dependencies:
       '@bentley/context-registry-client': link:../../clients/context-registry
-      '@bentley/extension-client': link:../../clients/extension
       '@bentley/reality-data-client': link:../../clients/reality-data
       fuse.js: 3.6.1
       semver: 5.7.1
