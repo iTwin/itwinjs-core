@@ -15,6 +15,7 @@ export interface ArcGisBaseToken {
   token: string;
 }
 
+/** @internal */
 export interface ArcGisOAuth2Token extends ArcGisBaseToken {
 
   // The expiration time of the token in milliseconds (UNIX time)
@@ -30,6 +31,7 @@ export interface ArcGisOAuth2Token extends ArcGisBaseToken {
   persist?: boolean;
 }
 
+/** @internal */
 export interface ArcGisToken extends ArcGisBaseToken {
   // The expiration time of the token in milliseconds since January 1, 1970 (UTC).
   expires: number;

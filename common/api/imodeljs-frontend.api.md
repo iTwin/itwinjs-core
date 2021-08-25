@@ -1082,6 +1082,20 @@ export interface Animator {
 export type AppearanceOverrideProps = AppearanceOverrideProps_2;
 
 // @internal (undocumented)
+export interface ArcGisBaseToken {
+    // (undocumented)
+    token: string;
+}
+
+// @beta (undocumented)
+export interface ArcGisEnterpriseClientId {
+    // (undocumented)
+    clientId: string;
+    // (undocumented)
+    serviceBaseUrl: string;
+}
+
+// @internal (undocumented)
 export enum ArcGisErrorCode {
     // (undocumented)
     InvalidCredentials = 401,
@@ -1140,13 +1154,23 @@ export class ArcGISMapLayerImageryProvider extends MapLayerImageryProvider {
 }
 
 // @internal (undocumented)
-export interface ArcGisToken {
+export interface ArcGisOAuth2Token extends ArcGisBaseToken {
+    // (undocumented)
+    expiresAt: number;
+    // (undocumented)
+    persist?: boolean;
+    // (undocumented)
+    ssl: boolean;
+    // (undocumented)
+    userName: string;
+}
+
+// @internal (undocumented)
+export interface ArcGisToken extends ArcGisBaseToken {
     // (undocumented)
     expires: number;
     // (undocumented)
     ssl: boolean;
-    // (undocumented)
-    token: string;
 }
 
 // @internal (undocumented)
@@ -1178,9 +1202,19 @@ export class ArcGisTokenGenerator {
 // @internal (undocumented)
 export class ArcGisTokenManager {
     // (undocumented)
+    static getOAuth2Token(key: string): ArcGisOAuth2Token | undefined;
+    // (undocumented)
     static getToken(esriRestServiceUrl: string, userName: string, password: string, options: ArcGisGenerateTokenOptions): Promise<any>;
     // (undocumented)
+    static invalidateOAuth2Token(key: string): boolean;
+    // (undocumented)
     static invalidateToken(esriRestServiceUrl: string, userName: string): boolean;
+    // (undocumented)
+    static loadFromBrowserStorage(): void;
+    // (undocumented)
+    static saveToBrowserStorage(): void;
+    // (undocumented)
+    static setOAuth2Token(key: string, token: ArcGisOAuth2Token): void;
     }
 
 // @internal (undocumented)
@@ -1192,6 +1226,10 @@ export class ArcGisUtilities {
     // (undocumented)
     static getNationalMapSources(): Promise<MapLayerSource[]>;
     // (undocumented)
+    static getOAuth2EndpointFromMapLayerUrl(url: string, endpoint: EsriOAuth2EndpointType): Promise<EsriOAuth2Endpoint | undefined>;
+    // (undocumented)
+    static getRestUrlFromGenerateTokenUrl(url: string): Promise<string | undefined>;
+    // (undocumented)
     static getServiceDirectorySources(url: string, baseUrl?: string): Promise<MapLayerSource[]>;
     // (undocumented)
     static getServiceJson(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<any>;
@@ -1199,6 +1237,10 @@ export class ArcGisUtilities {
     static getSourcesFromQuery(range?: MapCartoRectangle, url?: string): Promise<MapLayerSource[]>;
     // (undocumented)
     static hasTokenError(response: Response): boolean;
+    // (undocumented)
+    static requestGetJson(url: string): Promise<Response>;
+    // (undocumented)
+    static validateOAuth2Endpoint(endpointUrl: string): Promise<boolean>;
     // (undocumented)
     static validateSource(url: string, credentials?: RequestBasicCredentials, ignoreCache?: boolean): Promise<MapLayerSourceValidation>;
 }
@@ -2910,6 +2952,70 @@ export class Environment {
     readonly sky: SkyBox;
     // (undocumented)
     toJSON(): EnvironmentProps;
+}
+
+// @beta (undocumented)
+export class EsriOAuth2 {
+    // (undocumented)
+    static get arcGisEnterpriseClientIds(): ArcGisEnterpriseClientId[] | undefined;
+    // (undocumented)
+    static get arcGisOnlineClientId(): string | undefined;
+    static set arcGisOnlineClientId(clientId: string | undefined);
+    // (undocumented)
+    static get expiration(): number | undefined;
+    // (undocumented)
+    static getMatchingEnterpriseClientId(url: string): string | undefined;
+    // @internal (undocumented)
+    static getOAuthTokenForMapLayerUrl(mapLayerUrl: string): Promise<ArcGisOAuth2Token | undefined>;
+    static initialize(redirectUri: string, tokenExpiration?: number): boolean;
+    // (undocumented)
+    static loadFromSettingsService(): Promise<void>;
+    // (undocumented)
+    static readonly onEsriOAuth2Callback: BeEvent<import("@bentley/bentleyjs-core").Listener>;
+    // (undocumented)
+    static get redirectUri(): string;
+    // (undocumented)
+    static removeEnterpriseClientId(clientId: ArcGisEnterpriseClientId): void;
+    // (undocumented)
+    static saveInSettingsService(): Promise<boolean>;
+    // (undocumented)
+    static setEnterpriseClientId(serviceBaseUrl: string, clientId: string): void;
+}
+
+// @internal (undocumented)
+export class EsriOAuth2Endpoint implements MapLayerTokenEndpoint {
+    constructor(url: string, isArcgisOnline: boolean);
+    // (undocumented)
+    getLoginUrl(stateData?: string): string;
+    // (undocumented)
+    getUrl(): string;
+    // (undocumented)
+    get isArcgisOnline(): boolean;
+    }
+
+// @internal (undocumented)
+export enum EsriOAuth2EndpointType {
+    // (undocumented)
+    Authorize = 0,
+    // (undocumented)
+    Token = 1
+}
+
+// @beta (undocumented)
+export interface EsriOAuthClientIds {
+    // (undocumented)
+    arcgisOnlineClientId?: string;
+    // (undocumented)
+    enterpriseClientIds?: ArcGisEnterpriseClientId[];
+}
+
+// @beta (undocumented)
+export class EsriSettingsService {
+    // (undocumented)
+    static getClientIds(): Promise<EsriOAuthClientIds | undefined>;
+    // (undocumented)
+    static get sourceNamespace(): string;
+    static storeClientIds(clientIds: EsriOAuthClientIds): Promise<boolean>;
 }
 
 // @public
@@ -5197,6 +5303,26 @@ export class MapCartoRectangle extends Range2d {
 }
 
 // @internal (undocumented)
+export interface MapLayerAuthentificationInfo {
+    // (undocumented)
+    authMethod: MapLayerAuthType;
+    // (undocumented)
+    tokenEndpoint?: MapLayerTokenEndpoint;
+}
+
+// @beta (undocumented)
+export enum MapLayerAuthType {
+    // (undocumented)
+    Basic = 2,
+    // (undocumented)
+    EsriOAuth2 = 4,
+    // (undocumented)
+    EsriToken = 3,
+    // (undocumented)
+    None = 1
+}
+
+// @internal (undocumented)
 export class MapLayerFormat {
     // (undocumented)
     static createImageryProvider(_settings: MapLayerSettings): MapLayerImageryProvider | undefined;
@@ -5438,6 +5564,8 @@ export enum MapLayerSourceStatus {
 // @internal (undocumented)
 export interface MapLayerSourceValidation {
     // (undocumented)
+    authInfo?: MapLayerAuthentificationInfo;
+    // (undocumented)
     status: MapLayerSourceStatus;
     // (undocumented)
     subLayers?: MapSubLayerProps[];
@@ -5459,6 +5587,14 @@ export abstract class MapLayerTileTreeReference extends TileTreeReference {
     protected _layerSettings: MapLayerSettings;
     // (undocumented)
     protected get _transparency(): number | undefined;
+}
+
+// @internal (undocumented)
+export interface MapLayerTokenEndpoint {
+    // (undocumented)
+    getLoginUrl(stateData?: string): string | undefined;
+    // (undocumented)
+    getUrl(): string;
 }
 
 // @internal (undocumented)

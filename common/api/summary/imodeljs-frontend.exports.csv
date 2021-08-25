@@ -34,10 +34,13 @@ internal;AnimationBranchStates = Map
 public;Animator
 public;AppearanceOverrideProps = AppearanceOverrideProps_2
 deprecated;AppearanceOverrideProps = AppearanceOverrideProps_2
+internal;ArcGisBaseToken
+beta;ArcGisEnterpriseClientId
 internal;ArcGisErrorCode
 internal;ArcGisGenerateTokenOptions
 internal;ArcGISMapLayerImageryProvider 
-internal;ArcGisToken
+internal;ArcGisOAuth2Token 
+internal;ArcGisToken 
 internal;ArcGisTokenClientType
 internal;ArcGisTokenGenerator
 internal;ArcGisTokenManager
@@ -151,6 +154,11 @@ deprecated;EmphasizeElementsProps = EmphasizeElementsProps_2
 beta;EngineeringLengthDescription 
 public;EntityState 
 public;Environment
+beta;EsriOAuth2
+internal;EsriOAuth2Endpoint 
+internal;EsriOAuth2EndpointType
+beta;EsriOAuthClientIds
+beta;EsriSettingsService
 public;EventController
 public;EventHandled
 beta;class Extension
@@ -321,6 +329,8 @@ internal;LRUTileListNode
 public;ManipulatorToolEvent
 internal;MapBoxLayerImageryProvider 
 internal;MapCartoRectangle 
+internal;MapLayerAuthentificationInfo
+beta;MapLayerAuthType
 internal;MapLayerFormat
 internal;MapLayerFormatRegistry
 internal;MapLayerFormatType = typeof MapLayerFormat
@@ -335,6 +345,7 @@ internal;MapLayerSources
 internal;MapLayerSourceStatus
 internal;MapLayerSourceValidation
 internal;class MapLayerTileTreeReference 
+internal;MapLayerTokenEndpoint
 internal;MapTile 
 internal;MapTiledGraphicsProvider 
 internal;MapTileLoader 

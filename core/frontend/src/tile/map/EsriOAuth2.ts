@@ -5,10 +5,10 @@
 import { assert, BeEvent } from "@bentley/bentleyjs-core";
 import { ArcGisOAuth2Token, ArcGisTokenManager, ArcGisUtilities, EsriSettingsService, MapLayerTokenEndpoint} from "../internal";
 
-/** @beta */
+/** @internal */
 export enum EsriOAuth2EndpointType {Authorize,Token}
 
-/** @beta */
+/** @internal */
 export class EsriOAuth2Endpoint implements MapLayerTokenEndpoint {
   private _url: string;
   private _isArcgisOnline: boolean;
@@ -142,6 +142,7 @@ export class EsriOAuth2 {
     return false;
   }
 
+  /** @internal */
   public static async getOAuthTokenForMapLayerUrl(mapLayerUrl: string): Promise<ArcGisOAuth2Token|undefined> {
     try {
       const oauthEndpoint = await ArcGisUtilities.getOAuth2EndpointFromMapLayerUrl(mapLayerUrl, EsriOAuth2EndpointType.Authorize);

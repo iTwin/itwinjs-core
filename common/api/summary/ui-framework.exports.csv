@@ -668,11 +668,13 @@ internal;useFrameworkVersion(): FrameworkVersion
 internal;useFrontstageManager(frontstageDef: FrontstageDef): void
 internal;useGroupedItems: (items: ReadonlyArray
 internal;useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined
+beta;useInterval(callback: (...args: any[]) => void, delay: number | undefined): void
 beta;useIsBackstageOpen: (manager: BackstageManager) => boolean
 internal;useItemsManager(frontstageDef: FrontstageDef): void
 internal;useLabels(): NineZoneLabels
 internal;useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispatch
 internal;useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined
+beta;usePopup(visible: boolean, url: string | undefined, title: string, width: number, height: number, onClose: () => void): void
 public;UserProfileBackstageItem 
 public;UserProfileBackstageItemProps 
 beta;UserSettingsProvider
