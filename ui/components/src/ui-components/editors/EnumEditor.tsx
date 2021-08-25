@@ -169,7 +169,7 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
         <Select
           className={className}
           style={this.props.style ? this.props.style : minWidthStyle}
-          onBlur={this.props.onBlur}
+          // onBlur={this.props.onBlur}
           value={selectValue}
           popoverProps={{ appendTo: () => this.state.parentDiv ? this.state.parentDiv.ownerDocument.body : /* istanbul ignore next */ document.body }}
           onChange={this._updateSelectValue}

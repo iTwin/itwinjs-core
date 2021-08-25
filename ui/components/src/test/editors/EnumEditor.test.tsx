@@ -89,7 +89,7 @@ describe("<EnumEditor />", () => {
     expect(spyOnCommit.called).to.be.false;
   });
 
-  it("onCommit should be called for blur", async () => {
+  it.skip("onCommit should be called for blur", async () => {
     const propertyRecord = TestUtils.createEnumProperty("Test", 0);
     const spyOnCommit = sinon.spy();
     function handleCommit(_commit: PropertyUpdatedArgs): void {
