@@ -9,14 +9,14 @@ import * as path from "path";
 import { ChangeSetApplyOption, Id64, Id64String, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { Arc3d, IModelJson as GeomJson, Point3d } from "@bentley/geometry-core";
 import {
-  ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, IModelHubClient, IModelHubError, IModelQuery, VersionQuery,
+  ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, IModelHubClient, IModelQuery, VersionQuery,
 } from "@bentley/imodelhub-client";
 import { Code, ColorDef, GeometryStreamProps, IModel, IModelVersion, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
 import { Reporter } from "@bentley/perf-tools/lib/Reporter";
 import {
-  BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb,
+  BriefcaseManager, DictionaryModel, Element, IModelDb, IModelHost, IModelJsNative, SpatialCategory, StandaloneDb,
 } from "../imodeljs-backend";
 import { IModelTestUtils } from "../test/IModelTestUtils";
 import { HubUtility } from "../test/integration/HubUtility";
@@ -77,14 +77,12 @@ async function getIModelAfterApplyingCS(requestContext: AuthorizedClientRequestC
 async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientRequestContext, reporter: Reporter, projectId: string, imodelPushId: string) {
   const iModelPullAndPush = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: imodelPushId });
   assert.exists(iModelPullAndPush);
-  iModelPullAndPush.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
   // get the time of applying a meta data change on an imodel
   const startTime = new Date().getTime();
   const rootEl: Element = iModelPullAndPush.elements.getRootSubject();
   rootEl.userLabel = `${rootEl.userLabel}changed`;
   iModelPullAndPush.elements.updateElement(rootEl);
-  await iModelPullAndPush.concurrencyControl.request(requestContext);
   iModelPullAndPush.saveChanges("user changes root subject of the imodel");
   const endTime = new Date().getTime();
   const elapsedTime = (endTime - startTime) / 1000.0;
@@ -102,7 +100,7 @@ async function pushIModelAfterMetaChanges(requestContext: AuthorizedClientReques
   await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModelPullAndPush);
 }
 
-async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
+async function createNewModelAndCategory(rwIModel: IModelDb) {
   // Create a new physical model.
   const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
 
@@ -110,18 +108,6 @@ async function createNewModelAndCategory(requestContext: AuthorizedClientRequest
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 }));
-
-  // Reserve all of the codes that are required by the new model and category.
-  try {
-    if (rwIModel.isBriefcaseDb()) {
-      await rwIModel.concurrencyControl.request(requestContext);
-      requestContext.enter();
-    }
-  } catch (err) {
-    if (err instanceof IModelHubError) {
-      assert.fail(JSON.stringify(err));
-    }
-  }
 
   return { modelId, spatialCategoryId };
 }
@@ -139,8 +125,7 @@ async function pushIModelAfterDataChanges(requestContext: AuthorizedClientReques
   const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
   // create new model, category and physical element, and insert in imodel
-  rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-  const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, rwIModel);
+  const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(rwIModel);
   rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, r.modelId, r.spatialCategoryId));
   rwIModel.saveChanges("User created model, category and one physical element");
 
@@ -168,10 +153,8 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
   assert.isNotEmpty(rwIModelId);
   // import schema and push change to hub
   const schemaPathname = path.join(KnownTestLocations.assetsDir, "PerfTestDomain.ecschema.xml");
-  rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
   await rwIModel.importSchemas(requestContext, [schemaPathname]).catch(() => { });
   assert.isDefined(rwIModel.getMetaData("PerfTestDomain:" + "PerfElement"), "PerfElement" + "is present in iModel.");
-  await rwIModel.concurrencyControl.request(requestContext);
   rwIModel.saveChanges("schema change pushed");
   await rwIModel.pullAndMergeChanges(requestContext);
   const startTime1 = new Date().getTime();
@@ -213,8 +196,7 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
   // create new model, category and physical element, and insert in imodel, and push these changes
-  rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-  const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, rwIModel);
+  const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(rwIModel);
   rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, r.modelId, r.spatialCategoryId));
   rwIModel.saveChanges("User created model, category and one physical element");
   await rwIModel.pushChanges(requestContext, "test change").catch(() => { });
@@ -259,8 +241,7 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
   // create new model, category and physical element, and insert in imodel, and push these changes
-  rwIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-  const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, rwIModel);
+  const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(rwIModel);
   rwIModel.elements.insertElement(IModelTestUtils.createPhysicalObject(rwIModel, r.modelId, r.spatialCategoryId));
   rwIModel.saveChanges("User created model, category and one physical element");
   await rwIModel.pushChanges(requestContext, "test change").catch(() => { });
@@ -676,16 +657,13 @@ describe("ImodelChangesetPerformance own data", () => {
           const sxml: string = PerfTestUtility.genSchemaXML(schemaName, baseClassName, hier, true, true, []);
           fs.writeFileSync(schemaPathname, sxml);
 
-          iModelDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
           await iModelDb.importSchemas(requestContext, [schemaPathname]).catch(() => { });
           assert.isDefined(iModelDb.getMetaData(`${schemaName}:${baseClassName}`), `${baseClassName} is not present in iModel.`);
-          await iModelDb.concurrencyControl.request(requestContext);
           iModelDb.saveChanges("schema changes");
           await iModelDb.pullAndMergeChanges(requestContext);
           await iModelDb.pushChanges(requestContext, "perf schema import");
 
           // seed with existing elements
-          iModelDb.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
           const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModelDb, Code.createEmpty(), true);
           let spatialCategoryId = SpatialCategory.queryCategoryIdByName(iModelDb, IModel.dictionaryId, "MySpatialCategory");
           if (undefined === spatialCategoryId)
@@ -699,7 +677,6 @@ describe("ImodelChangesetPerformance own data", () => {
             assert.isTrue(Id64.isValidId64(id), "insert failed");
           }
           requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
-          await iModelDb.concurrencyControl.request(requestContext);
           iModelDb.saveChanges();
           await iModelDb.pushChanges(requestContext, `Seed data for ${className}`);
 
@@ -720,8 +697,6 @@ describe("ImodelChangesetPerformance own data", () => {
                 const id = iModelDb.elements.insertElement(geomElement);
                 assert.isTrue(Id64.isValidId64(id), "insert failed");
               }
-              requestContext.enter();
-              await iModelDb.concurrencyControl.request(requestContext);
               iModelDb.saveChanges();
               await iModelDb.pushChanges(requestContext, `${className} inserts: ${opSize}`);
               break;
@@ -734,8 +709,6 @@ describe("ImodelChangesetPerformance own data", () => {
                   assert.isTrue(false);
                 }
               }
-              requestContext.enter();
-              await iModelDb.concurrencyControl.request(requestContext);
               iModelDb.saveChanges();
               await iModelDb.pushChanges(requestContext, `${className} deletes: ${opSize}`);
               break;
@@ -762,8 +735,6 @@ describe("ImodelChangesetPerformance own data", () => {
                   assert.fail("Element.update failed");
                 }
               }
-              requestContext.enter();
-              await iModelDb.concurrencyControl.request(requestContext);
               iModelDb.saveChanges();
               await iModelDb.pushChanges(requestContext, `${className} updates: ${opSize}`);
               break;

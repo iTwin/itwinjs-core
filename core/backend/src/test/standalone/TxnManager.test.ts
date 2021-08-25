@@ -14,6 +14,8 @@ import {
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestElementDrivesElement, TestPhysicalObject, TestPhysicalObjectProps } from "../IModelTestUtils";
 
+/// cspell:ignore accum
+
 describe("TxnManager", () => {
   let imodel: StandaloneDb;
   let props: TestPhysicalObjectProps;
@@ -356,7 +358,7 @@ describe("TxnManager", () => {
       for (const entity of entities) {
         expect(entity.id).to.equal(source.array[i]);
         ++i;
-        dest.push({...entity});
+        dest.push({ ...entity });
       }
     }
 

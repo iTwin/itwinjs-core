@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { ClientRequestContext, OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseDb, ConcurrencyControl } from "@bentley/imodeljs-backend";
+import { BriefcaseDb } from "@bentley/imodeljs-backend";
 import { IModelError, IModelStatus, OpenBriefcaseProps } from "@bentley/imodeljs-common";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUserCredentials, TestUtility } from "@bentley/oidc-signin-tool";
@@ -27,9 +27,7 @@ function configureIModel() {
   BriefcaseDb.onOpened.addListener((_requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModel: BriefcaseDb) => {
     if (iModel.openMode !== OpenMode.ReadWrite)
       return;
-
-    // Setting a concurrency control policy is an example of something you might do in an onOpened event handler.
-    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
+    // ... do something with the writeable briefcase
   });
   // __PUBLISH_EXTRACT_END__
 }

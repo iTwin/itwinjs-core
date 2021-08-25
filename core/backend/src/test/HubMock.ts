@@ -208,10 +208,10 @@ export class HubMock {
   }
 
   public static async releaseAllLocks(arg: BriefcaseDbArg) {
-    const hub = this.findLocalHub(arg.briefcase.iModelId);
-    const locks = hub.queryAllLocks(arg.briefcase.briefcaseId);
+    const hub = this.findLocalHub(arg.iModelId);
+    const locks = hub.queryAllLocks(arg.briefcaseId);
     for (const props of locks)
-      hub.releaseLock(props, arg.briefcase);
+      hub.releaseLock(props, arg);
   }
 
   public static async releaseAllCodes(_arg: BriefcaseDbArg) {
@@ -226,9 +226,9 @@ export class HubMock {
   }
 
   public static async acquireLocks(arg: BriefcaseDbArg & { locks: LockProps[] }): Promise<void> {
-    const hub = this.findLocalHub(arg.briefcase.iModelId);
+    const hub = this.findLocalHub(arg.iModelId);
     for (const lock of arg.locks) {
-      hub.requestLock(lock, arg.briefcase);
+      hub.requestLock(lock, arg);
     }
   }
 

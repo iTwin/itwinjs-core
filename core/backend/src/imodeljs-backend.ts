@@ -8,7 +8,6 @@ export * from "./ChangeSummaryManager";
 export * from "./CheckpointManager";
 export * from "./ClassRegistry";
 export * from "./CodeSpecs";
-export * from "./ConcurrencyControl";
 export * from "./DisplayStyle";
 export * from "./ECDb";
 export * from "./ECSchemaXmlContext";

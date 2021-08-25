@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import * as os from "os";
 import * as readline from "readline";
-import { BriefcaseStatus, GuidString, IModelStatus, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus, GuidString, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { UserCancelledError } from "@bentley/itwin-client";
 import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelHost, IModelJsFs } from "../../imodeljs-backend";
@@ -281,8 +281,6 @@ describe("BriefcaseManager (#integration)", () => {
 
     const rootEl: Element = iModelPullOnly.elements.getRootSubject();
     rootEl.userLabel = `${rootEl.userLabel}changed`;
-    await expect(iModelPullOnly.concurrencyControl.requestResourcesForUpdate(userContext2, [rootEl]))
-      .to.be.rejectedWith(IModelError).to.eventually.have.property("errorNumber", IModelStatus.NotOpenForWrite);
 
     assert.throws(() => iModelPullOnly.elements.updateElement(rootEl), IModelError);
 
@@ -345,10 +343,8 @@ describe("BriefcaseManager (#integration)", () => {
 
     const rootEl: Element = iModelPullAndPush.elements.getRootSubject();
     rootEl.userLabel = `${rootEl.userLabel}changed`;
-    await iModelPullAndPush.concurrencyControl.requestResourcesForUpdate(userContext2, [rootEl]);
     iModelPullAndPush.elements.updateElement(rootEl);
 
-    await iModelPullAndPush.concurrencyControl.request(userContext2);
     assert.isTrue(iModelPullAndPush.nativeDb.hasUnsavedChanges());
     assert.isFalse(iModelPullAndPush.nativeDb.hasPendingTxns());
     iModelPullAndPush.saveChanges();

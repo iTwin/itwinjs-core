@@ -6,12 +6,12 @@
  * @module Elements
  */
 
-import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, IModelStatus, JsonUtils, OrderedId64Array } from "@bentley/bentleyjs-core";
+import { CompressedId64Set, GuidString, Id64, Id64Set, Id64String, JsonUtils, OrderedId64Array } from "@bentley/bentleyjs-core";
 import { ClipVector, Range3d, Transform } from "@bentley/geometry-core";
 import {
   AxisAlignedBox3d, BisCodeSpec, Code, CodeScopeProps, CodeSpec, DefinitionElementProps, ElementAlignedBox3d, ElementProps, EntityMetaData,
   GeometricElement2dProps, GeometricElement3dProps, GeometricElementProps, GeometricModel2dProps, GeometricModel3dProps, GeometryPartProps,
-  GeometryStreamProps, IModel, IModelError, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
+  GeometryStreamProps, IModel, InformationPartitionElementProps, LineStyleProps, ModelProps, PhysicalElementProps, PhysicalTypeProps, Placement2d,
   Placement3d, RelatedElement, RenderSchedule, RenderTimelineProps, RepositoryLinkProps, SectionDrawingLocationProps, SectionDrawingProps,
   SectionType, SheetBorderTemplateProps, SheetProps, SheetTemplateProps, SubjectProps, TypeDefinition, TypeDefinitionElementProps, UrlLinkProps,
 } from "@bentley/imodeljs-common";
@@ -141,7 +141,12 @@ export class Element extends Entity implements ElementProps {
    * @note `this` is the class of the Element to be inserted
    * @beta
    */
-  protected static onInsert(_arg: OnElementPropsArg): void { }
+  protected static onInsert(arg: OnElementPropsArg): void {
+    const { iModel, props } = arg;
+    iModel.locks.checkSharedLock(props.model); // inserting requires shared lock on model
+    if (props.parent)   // inserting requires shared lock on parent, if present
+      iModel.locks.checkSharedLock(props.parent.id);
+  }
 
   /** Called after a new Element was inserted.
    * @note If you override this method, you must call super.
@@ -159,8 +164,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
-    if (!arg.iModel.locks.holdsExclusiveLock(arg.props.id!))
-      throw new IModelError(IModelStatus.LockNotHeld, "required lock not held");
+    arg.iModel.locks.checkExclusiveLock(arg.props.id!);
   }
 
   /** Called after an Element was updated.
@@ -177,8 +181,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onDelete(arg: OnElementIdArg): void {
-    if (!arg.iModel.locks.holdsExclusiveLock(arg.id))
-      throw new IModelError(IModelStatus.LockNotHeld, "required lock not held");
+    arg.iModel.locks.checkExclusiveLock(arg.id);
   }
 
   /** Called after an Element was deleted.

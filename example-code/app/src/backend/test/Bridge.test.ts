@@ -10,7 +10,7 @@ import { ContextRegistryClient, Project } from "@bentley/context-registry-client
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
-  BriefcaseDb, BriefcaseManager, CategorySelector, ConcurrencyControl, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, IModelHubBackend, ModelSelector,
+  BriefcaseDb, BriefcaseManager, CategorySelector, DefinitionModel, DisplayStyle3d, IModelDb, IModelHost, IModelHubBackend, ModelSelector,
   OrthographicViewDefinition, PhysicalModel, SpatialCategory, Subject,
 } from "@bentley/imodeljs-backend";
 import { ColorByName, IModel } from "@bentley/imodeljs-common";
@@ -85,12 +85,8 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   const briefcase = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
   requestContext.enter();
 
-  briefcase.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-
   // I. Import the schema.
   await briefcase.importSchemas(requestContext, [path.join(assetsDir, "RobotWorld.ecschema.xml")]);
-  //    You must acquire all locks and reserve all Codes used before saving or pushing.
-  await briefcase.concurrencyControl.request(requestContext);
   //    You *must* push this to the iModel right now.
   briefcase.saveChanges();
   await briefcase.pullAndMergeChanges(requestContext);
@@ -139,12 +135,6 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   OrthographicViewDefinition.insert(briefcase, defModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, viewRange);
 
   //  III. Push the data changes to iModel Server
-
-  // 1. Acquire Resources
-  //    You must acquire all locks and reserve all Codes used before saving or pushing.
-  await briefcase.concurrencyControl.request(requestContext);
-
-  // 2. Pull and then push.
   //    Note that you pull and merge first, in case another user has pushed.
   //    Also note that after pushing, all locks will be released.
   briefcase.saveChanges();

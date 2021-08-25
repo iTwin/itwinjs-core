@@ -36,7 +36,7 @@ export class FunctionalSchema extends Schema {
     // NOTE: this concurrencyControl logic was copied from IModelDb.importSchema
     requestContext.enter();
     if (iModelDb.isBriefcaseDb())
-      await iModelDb.locks.acquireSchemaLock();
+      await iModelDb.acquireSchemaLock();
 
     const stat = iModelDb.nativeDb.importFunctionalSchema();
     if (DbResult.BE_SQLITE_OK !== stat) {

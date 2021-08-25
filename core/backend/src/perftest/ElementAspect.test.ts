@@ -6,7 +6,6 @@ import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as path from "path";
 import { Id64String } from "@bentley/bentleyjs-core";
-import { IModelHubError } from "@bentley/imodelhub-client";
 import { ElementAspectProps, IModel, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
@@ -17,24 +16,13 @@ import { KnownTestLocations } from "../test/KnownTestLocations";
 
 /* eslint-disable @typescript-eslint/naming-convention */
 
-async function createNewModelAndCategory(requestContext: AuthorizedClientRequestContext, rwIModel: IModelDb) {
+async function createNewModelAndCategory(rwIModel: IModelDb) {
   // Create a new physical model.
   const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(rwIModel, IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel"), true);
   // Find or create a SpatialCategory.
   const dictionary: DictionaryModel = rwIModel.models.getModel(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value, new SubCategoryAppearance({ color: 0xff0000 }));
-  // Reserve all of the codes that are required by the new model and category.
-  try {
-    if (rwIModel.isBriefcaseDb()) {
-      await rwIModel.concurrencyControl.request(requestContext);
-      requestContext.enter();
-    }
-  } catch (err) {
-    if (err instanceof IModelHubError) {
-      assert.fail(JSON.stringify(err));
-    }
-  }
   return { modelId, spatialCategoryId };
 }
 
@@ -75,7 +63,7 @@ describe("ElementAspectPerformance", () => {
     let totalTimeUpdateSimpELeGet = 0;
     let totalTimeDeleteSimpELeGet = 0;
 
-    const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, iModelDb);
+    const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(iModelDb);
 
     for (let m = 0; m < count1; ++m) {
       // insert simple element with no aspect
@@ -134,7 +122,7 @@ describe("ElementAspectPerformance", () => {
     let totalTimeDelete = 0;
     let totalTimeRead = 0;
 
-    const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, iModelDb);
+    const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(iModelDb);
 
     for (let m = 0; m < count1; ++m) {
       // insert element with unique aspect
@@ -203,7 +191,7 @@ describe("ElementAspectPerformance", () => {
     let totalTimeDelete = 0;
     let totalTimeRead = 0;
 
-    const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(requestContext, iModelDb);
+    const r: { modelId: Id64String, spatialCategoryId: Id64String } = await createNewModelAndCategory(iModelDb);
 
     for (let m = 0; m < count1; ++m) {
       // insert element with multi aspect

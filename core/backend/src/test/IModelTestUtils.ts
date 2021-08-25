@@ -363,7 +363,7 @@ export class IModelTestUtils {
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
-  public static async createAndInsertPhysicalPartitionAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String> {
+  public static async createAndInsertPhysicalPartitionAsync(testDb: IModelDb, newModelCode: CodeProps, parentId?: Id64String): Promise<Id64String> {
     const model = parentId ? testDb.elements.getElement(parentId).model : IModel.repositoryModelId;
     const parent = new SubjectOwnsPartitionElements(parentId || IModel.rootSubjectId);
 
@@ -374,10 +374,6 @@ export class IModelTestUtils {
       code: newModelCode,
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
-    if (testDb.isBriefcaseDb()) {
-      await testDb.concurrencyControl.requestResourcesForInsert(reqContext, [modeledElement]);
-      reqContext.enter();
-    }
     return testDb.elements.insertElement(modeledElement);
   }
 
@@ -392,12 +388,8 @@ export class IModelTestUtils {
   }
 
   /** Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel. */
-  public static async createAndInsertPhysicalModelAsync(reqContext: AuthorizedClientRequestContext, testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
+  public static async createAndInsertPhysicalModelAsync(testDb: IModelDb, modeledElementRef: RelatedElement, privateModel: boolean = false): Promise<Id64String> {
     const newModel = testDb.models.createModel({ modeledElement: modeledElementRef, classFullName: PhysicalModel.classFullName, isPrivate: privateModel });
-    if (testDb.isBriefcaseDb()) {
-      await testDb.concurrencyControl.requestResourcesForInsert(reqContext, [], [newModel]);
-      reqContext.enter();
-    }
     const newModelId = testDb.models.insertModel(newModel);
     assert.isTrue(Id64.isValidId64(newModelId));
     assert.isTrue(Id64.isValidId64(newModel.id));
@@ -420,12 +412,10 @@ export class IModelTestUtils {
    * Create and insert a PhysicalPartition element (in the repositoryModel) and an associated PhysicalModel.
    * @return [modeledElementId, modelId]
    */
-  public static async createAndInsertPhysicalPartitionAndModelAsync(reqContext: AuthorizedClientRequestContext, testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parentId?: Id64String): Promise<Id64String[]> {
-    const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(reqContext, testImodel, newModelCode, parentId);
-    reqContext.enter();
+  public static async createAndInsertPhysicalPartitionAndModelAsync(testImodel: IModelDb, newModelCode: CodeProps, privateModel: boolean = false, parentId?: Id64String): Promise<Id64String[]> {
+    const eid = await IModelTestUtils.createAndInsertPhysicalPartitionAsync(testImodel, newModelCode, parentId);
     const modeledElementRef = new RelatedElement({ id: eid });
-    const mid = await IModelTestUtils.createAndInsertPhysicalModelAsync(reqContext, testImodel, modeledElementRef, privateModel);
-    reqContext.enter();
+    const mid = await IModelTestUtils.createAndInsertPhysicalModelAsync(testImodel, modeledElementRef, privateModel);
     return [eid, mid];
   }
 

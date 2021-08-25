@@ -7,8 +7,8 @@
  * @module iModels
  */
 
-import { DbResult, Id64, Id64Arg, Id64String, OpenMode } from "@bentley/bentleyjs-core";
-import { IModel, IModelError } from "@bentley/imodeljs-common";
+import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
+import { IModelError } from "@bentley/imodeljs-common";
 import { LockMap, LockState } from "./BackendHubAccess";
 import { BriefcaseDb, LockControl } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
@@ -32,14 +32,13 @@ export class PessimisticLocks implements LockControl {
     this._iModel = iModel;
     this._db = new SQLiteDb();
 
-    const dbName = `${this.iModel.nativeDb.getFilePath()}-locks`;
+    const dbName = `${iModel.nativeDb.getTempFileBaseName()}-locks`;
     try {
       this._db.openDb(dbName, OpenMode.ReadWrite);
     } catch (_e) {
       this._db.createDb(dbName);
       this._db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,acquired INTEGER)");
       this._db.saveChanges();
-
     }
   }
 
@@ -180,13 +179,19 @@ export class PessimisticLocks implements LockControl {
     this.insertLock(id, LockState.Exclusive, false);
     this.lockDb.saveChanges();
   }
+  /** locks are not necessary during change propagation. */
+  private get _locksAreRequired() { return !this.iModel.txns.isIndirectChanges; }
 
-  /**
-   * Acquire the exclusive lock on the entire iModel.
-   * Note: No other briefcases will be able to perform *any* writeable operations until this lock is released.
-   */
-  public async acquireSchemaLock(): Promise<void> {
-    return this.acquireExclusiveLock(IModel.repositoryModelId);
+  /** throw if locks are currently required and the exclusive lock is not held on the supplied element */
+  public checkExclusiveLock(id: Id64String) {
+    if (this._locksAreRequired && !this.holdsExclusiveLock(id))
+      throw new IModelError(IModelStatus.LockNotHeld, `exclusive lock on element ${id} not held`);
   }
+  /** throw if locks are currently required and a shared lock is not held on the supplied element */
+  public checkSharedLock(id: Id64String) {
+    if (this._locksAreRequired && !this.holdsSharedLock(id))
+      throw new IModelError(IModelStatus.LockNotHeld, `shared lock on element ${id} not held`);
+  }
+
 }
 

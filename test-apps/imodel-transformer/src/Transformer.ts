@@ -256,13 +256,7 @@ export class Transformer extends IModelTransformer {
   }
 
   private async saveChanges(description: string): Promise<void> {
-    if (this.targetDb.isBriefcaseDb()) {
-      assert(this._authorizedClientRequestContext !== undefined);
-      await this.targetDb.concurrencyControl.request(this._authorizedClientRequestContext);
-      this.targetDb.saveChanges(description);
-    } else {
-      this.targetDb.saveChanges(description);
-    }
+    this.targetDb.saveChanges(description);
   }
 
   private logElapsedTime(): void {

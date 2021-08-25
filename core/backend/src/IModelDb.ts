@@ -81,14 +81,31 @@ export interface ComputedProjectExtents {
 }
 
 export interface LockControl {
-  open(iModel: BriefcaseDb): void;
+  /** Close the lock control database */
   close(): void;
+  /** Notification that a new element was just created */
   elementWasCreated(id: Id64String): void;
+  /** Determine whether the supplied element currently holds the exclusive lock */
   holdsExclusiveLock(id: Id64String): boolean;
+  /** determine whether the supplied element currently holds a shared lock */
   holdsSharedLock(id: Id64String): boolean;
+  /** Throw if locks are required and the exclusive lock is not held on the supplied element.
+   * Note: there is no need to check the shared locks on parents/models since an element cannot hold the exclusive lock without first obtaining them.
+   */
+  checkExclusiveLock(id: Id64String): void;
+  /** Throw if locks are required and a shared lock is not held on the supplied element */
+  checkSharedLock(id: Id64String): void;
+  /** Acquire the exclusive lock on one or more elements from the lock server, if locks are required and not already held.
+   * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
+   * > Note: acquiring the exclusive lock on an element requires also obtaining a shared lock on all its owner elements.
+   */
   acquireExclusiveLock(ids: Id64Arg): Promise<void>;
+  /** Acquire a shared lock on one or more elements from the lock server, if locks are required and not already held.
+   * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
+   * > Note: acquiring a shared lock on an element requires also obtaining a shared lock on all its owner elements.
+   */
   acquireSharedLocks(ids: Id64Arg): Promise<void>;
-  acquireSchemaLock(): Promise<void>;
+  /** Release all locks currently held from the lock server. */
   releaseAllLocks(): Promise<void>;
 }
 
@@ -96,12 +113,13 @@ export class OptimisticLocks implements LockControl {
   public open(_iModel: BriefcaseDb): void { }
   public close(): void { }
   public clearAllLocks(): void { }
-  public holdsExclusiveLock(): boolean { return true; }
-  public holdsSharedLock(): boolean { return true; }
+  public holdsExclusiveLock(): boolean { return false; }
+  public holdsSharedLock(): boolean { return false; }
+  public checkExclusiveLock(): void { }
+  public checkSharedLock(): void { }
   public elementWasCreated(): void { }
   public async acquireExclusiveLock(): Promise<void> { }
   public async acquireSharedLocks(): Promise<void> { }
-  public async acquireSchemaLock(): Promise<void> { }
   public async releaseAllLocks(): Promise<void> { }
 }
 
@@ -131,8 +149,21 @@ export abstract class IModelDb extends IModel {
   protected _concurrentQueryStats = { resetTimerHandle: (null as any), logTimerHandle: (null as any), lastActivityTime: Date.now(), dispose: () => { } };
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
+
   protected _locks: LockControl;
   public get locks() { return this._locks; }
+
+  /** Acquire the exclusive schema lock on this iModel.
+   * > Note: To acquire the schema lock, all other briefcases must first release *all* their locks. No other briefcases
+   * will be able to acquire *any* locks while the schema lock is held.
+   */
+  public async acquireSchemaLock(): Promise<void> {
+    return this.locks.acquireExclusiveLock(IModel.repositoryModelId);
+  }
+  /** determine whether the schema lock is currently held for this iModel. */
+  public get holdsSchemaLock() {
+    return this.locks.holdsExclusiveLock(IModel.repositoryModelId);
+  }
 
   /** Event called after a changeset is applied to this IModelDb. */
   public readonly onChangesetApplied = new BeEvent<() => void>();
@@ -772,7 +803,7 @@ export abstract class IModelDb extends IModel {
     if (!(requestContext instanceof AuthorizedClientRequestContext))
       throw new IModelError(BentleyStatus.ERROR, "Importing the schema requires an AuthorizedClientRequestContext");
 
-    await this._locks.acquireSchemaLock();
+    await this.acquireSchemaLock();
 
     const stat = this.nativeDb.importSchemas(schemaFileNames);
     if (DbResult.BE_SQLITE_OK !== stat) {
@@ -803,7 +834,7 @@ export abstract class IModelDb extends IModel {
       return;
     }
 
-    await this._locks.acquireSchemaLock();
+    await this.acquireSchemaLock();
 
     const stat = this.nativeDb.importXmlSchemas(serializedXmlSchemas);
     if (DbResult.BE_SQLITE_OK !== stat)
@@ -2176,7 +2207,7 @@ export class BriefcaseDb extends IModelDb {
     };
     const requestContext = arg.requestContext;
     // Lock schemas
-    await IModelHost.hubAccess.acquireSchemaLock(lockArg);
+    // await IModelHost.hubAccess.acquireSchemaLock(lockArg);
 
     // Upgrade and validate
     try {

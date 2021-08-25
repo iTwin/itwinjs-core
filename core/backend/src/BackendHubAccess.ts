@@ -150,11 +150,6 @@ export interface BackendHubAccess {
   /** acquire one or more locks. Throws if unsuccessful */
   acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
 
-  /** acquire the schema lock. Throws if unsuccessful */
-  acquireSchemaLock(arg: BriefcaseDbArg): Promise<void>;
-
-  /** determine whether the schema lock is currently held */
-  querySchemaLock(arg: IModelIdArg): Promise<boolean>;
   /** get the full list of held locks for a briefcase */
   queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]>;
 

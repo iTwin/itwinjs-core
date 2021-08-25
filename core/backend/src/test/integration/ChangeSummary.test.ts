@@ -10,7 +10,7 @@ import {
 import { assert } from "chai";
 import * as path from "path";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ConcurrencyControl, ECSqlStatement,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ChangeSummary, ChangeSummaryManager, ECSqlStatement,
   ElementOwnsChildElements, IModelHost, IModelJsFs, SpatialCategory,
 } from "../../imodeljs-backend";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
@@ -382,17 +382,13 @@ describe("ChangeSummary (#integration)", () => {
 
     // Populate the iModel with 3 elements
     const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: managerRequestContext, contextId: testContextId, iModelId: testIModelId });
-    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     const [, modelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModel, IModelTestUtils.getUniqueModelCode(iModel, "TestPhysicalModel"), true);
-    await iModel.concurrencyControl.request(managerRequestContext);
     iModel.saveChanges("Added test model");
     const categoryId = SpatialCategory.insert(iModel, IModel.dictionaryId, "TestSpatialCategory", new SubCategoryAppearance({ color: ColorDef.fromString("rgb(255,0,0)").toJSON() }));
-    await iModel.concurrencyControl.request(managerRequestContext);
     iModel.saveChanges("Added test category");
     const elementId1: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId));
     const elementId2: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId));
     const elementId3: Id64String = iModel.elements.insertElement(IModelTestUtils.createPhysicalObject(iModel, modelId, categoryId));
-    await iModel.concurrencyControl.request(managerRequestContext);
     iModel.saveChanges("Added test elements");
 
     // Setup the hierarchy as element3 -> element1

@@ -460,7 +460,7 @@ export class LocalHub {
     if (wantShared && (currStatus.state === LockState.Exclusive))
       throw new Error("cannot acquire shared lock because an exclusive lock is already held");
 
-    this.db.withPreparedSqliteStatement("INSERT INTO locks(entityId,level,briefcaseId) VALUES(?,?,?) ON CONFLICT(entityId) DO UPDATE SET briefcaseId=excluded.briefcaseId,level=excluded.level", (stmt) => {
+    this.db.withPreparedSqliteStatement("INSERT INTO locks(id,level,briefcaseId) VALUES(?,?,?) ON CONFLICT(id) DO UPDATE SET briefcaseId=excluded.briefcaseId,level=excluded.level", (stmt) => {
       stmt.bindId(1, props.id);
       stmt.bindInteger(2, props.state);
       stmt.bindValue(3, wantShared ? undefined : briefcase.briefcaseId);
