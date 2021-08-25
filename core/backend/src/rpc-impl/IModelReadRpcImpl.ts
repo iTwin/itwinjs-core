@@ -12,7 +12,7 @@ import {
   Code, CodeProps, ElementLoadOptions, ElementLoadProps, ElementProps, EntityMetaData, EntityQueryParams, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, GeometrySummaryRequestProps, ImageSourceFormat, IModel, IModelConnectionProps, IModelCoordinatesResponseProps, IModelReadRpcInterface,
   IModelRpcOpenProps, IModelRpcProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelProps, NoContentError, QueryLimit, QueryPriority, QueryQuota, QueryResponse,
-  RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
+  RpcInterface, RpcManager, SnapRequestProps, SnapResponseProps, SyncMode, TextureData, TextureLoadProps, ViewStateLoadProps, ViewStateProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
@@ -277,9 +277,9 @@ export class IModelReadRpcImpl extends RpcInterface implements IModelReadRpcInte
     return iModelDb.getGeoCoordinatesFromIModelCoordinates(requestContext, props);
   }
 
-  public async getTextureImage(tokenProps: IModelRpcProps, textureLoadProps: TextureLoadProps): Promise<Uint8Array | undefined> {
+  public async queryTextureImage(tokenProps: IModelRpcProps, textureLoadProps: TextureLoadProps): Promise<TextureData | undefined> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     const db = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
-    return db.getTextureImage(requestContext, textureLoadProps);
+    return db.queryTextureImage(requestContext, textureLoadProps);
   }
 }

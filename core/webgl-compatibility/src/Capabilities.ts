@@ -63,6 +63,8 @@ export enum DepthType {
   // TextureFloat32Stencil8,       // core to WeBGL2
 }
 
+const maxTexSizeAllowed = 4096; // many devices and browsers have issues with source textures larger than this
+
 /** Describes the rendering capabilities of the host system.
  * @internal
  */
@@ -81,6 +83,8 @@ export class Capabilities {
   private _canRenderDepthWithoutColor: boolean = false;
   private _maxAnisotropy?: number;
   private _maxAntialiasSamples: number = 1;
+  private _supportsCreateImageBitmap: boolean = false;
+  private _maxTexSizeAllow: number = maxTexSizeAllowed;
 
   private _extensionMap: { [key: string]: any } = {}; // Use this map to store actual extension objects retrieved from GL.
   private _presentFeatures: WebGLFeature[] = []; // List of features the system can support (not necessarily dependent on extensions)
@@ -92,6 +96,8 @@ export class Capabilities {
   public get maxRenderType(): RenderType { return this._maxRenderType; }
   public get maxDepthType(): DepthType { return this._maxDepthType; }
   public get maxTextureSize(): number { return this._maxTextureSize; }
+  public get maxTexSizeAllow(): number { return this._maxTexSizeAllow; }
+  public get supportsCreateImageBitmap(): boolean { return this._supportsCreateImageBitmap; }
   public get maxColorAttachments(): number { return this._maxColorAttachments; }
   public get maxDrawBuffers(): number { return this._maxDrawBuffers; }
   public get maxFragTextureUnits(): number { return this._maxFragTextureUnits; }
@@ -224,6 +230,8 @@ export class Capabilities {
     this._isMobile = ProcessDetector.isMobileBrowser;
 
     this._maxTextureSize = gl.getParameter(gl.MAX_TEXTURE_SIZE);
+    this._supportsCreateImageBitmap = typeof createImageBitmap === "function" && ProcessDetector.isChromeEdgeElectron && !ProcessDetector.isIOSBrowser;
+    this._maxTexSizeAllow = Math.min (this._maxTextureSize, maxTexSizeAllowed);
     this._maxFragTextureUnits = gl.getParameter(gl.MAX_TEXTURE_IMAGE_UNITS);
     this._maxVertTextureUnits = gl.getParameter(gl.MAX_VERTEX_TEXTURE_IMAGE_UNITS);
     this._maxVertAttribs = gl.getParameter(gl.MAX_VERTEX_ATTRIBS);

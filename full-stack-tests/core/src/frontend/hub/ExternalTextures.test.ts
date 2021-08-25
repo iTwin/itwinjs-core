@@ -112,7 +112,9 @@ describe("external texture requests (#integration)", () => {
     const maxTextureSize = 8;
     for (const name of goodTexNames) {
       // check that requested textures are downsampled to maxTexturesize when requested.
-      let texBytes = await imodel.getTextureImage({ name, maxTextureSize });
+      let texData = await imodel.queryTextureImage({ name, maxTextureSize });
+      expect(texData).to.not.be.undefined;
+      let texBytes = texData?.bytes;
       expect(texBytes).to.not.be.undefined;
       let imageSource = new ImageSource(texBytes!, ImageSourceFormat.Jpeg);
       let image = await imageElementFromImageSource(imageSource);
@@ -121,7 +123,9 @@ describe("external texture requests (#integration)", () => {
       expect(image.width === maxTextureSize || image.height === maxTextureSize).to.be.true;
 
       // check that requests textures are not downsampled when not requested.
-      texBytes = await imodel.getTextureImage({ name });
+      texData = await imodel.queryTextureImage({ name });
+      expect(texData).to.not.be.undefined;
+      texBytes = texData?.bytes;
       expect(texBytes).to.not.be.undefined;
       imageSource = new ImageSource(texBytes!, ImageSourceFormat.Jpeg);
       image = await imageElementFromImageSource(imageSource);

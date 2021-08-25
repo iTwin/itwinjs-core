@@ -54,6 +54,11 @@ export class ProcessDetector {
   */
   public static get isMobileBrowser() { return this.isIOSBrowser || this.isAndroidBrowser; }
 
+  /** Is this process running in a Chrome or Edge browser or an Electron front end? */
+  public static get isChromeEdgeElectron() {
+    return (this.isBrowserProcess && window.navigator.userAgent.indexOf("Chrome") > -1 && window.navigator.userAgent.indexOf("OP") === -1) || this.isElectronAppFrontend;
+  }
+
   /** Is this process the frontend of an iTwin mobile application?
    * @note this indicates that this is a browser process started by an iTwin mobile application.
    * It will return `false` when running user-launched web browsers on a mobile device.

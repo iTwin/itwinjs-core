@@ -35,3 +35,15 @@ export interface TextureLoadProps {
   /** Maximum texture size supported by the client. If specified, the texture will be downsampled so both of its dimensions adhere to this size. */
   maxTextureSize?: number;
 }
+
+/** Properties returned with a texture.
+ * @public
+ */
+export interface TextureData {
+  /** returned texture width returned. If it was downsampled this will be that size. */
+  width: number;
+  /** returned texture width returned. If it was downsampled this will be that size. */
+  height: number;
+  /** returned byte data */
+  bytes: Uint8Array;
+}

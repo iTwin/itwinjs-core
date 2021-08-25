@@ -8,7 +8,7 @@
 
 import { assert, BeEvent, dispose, Id64String } from "@bentley/bentleyjs-core";
 import { ImageBuffer, ImageBufferFormat, ImageSource, ImageSourceFormat, isPowerOfTwo, nextHighestPowerOfTwo, RenderTexture } from "@bentley/imodeljs-common";
-import { imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
+import { getImageSourceMimeType, imageBufferToPngDataUrl, imageElementFromImageSource, openImageDataUrlInNewWindow } from "../../ImageUtil";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { WebGLDisposable } from "./Disposable";
@@ -236,6 +236,39 @@ class Texture2DCreateParams {
       (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, element), props.useMipMaps, props.interpolate, props.anisotropicFilter);
   }
 
+  public static createForImageBitmap(image: ImageBitmap, hasAlpha: boolean, type: RenderTexture.Type) {
+    const props = this.getImageProperties(hasAlpha, type);
+
+    let targetWidth = image.width;
+    let targetHeight = image.height;
+
+    const caps = System.instance.capabilities;
+    if (RenderTexture.Type.Glyph === type) {
+      targetWidth = nextHighestPowerOfTwo(targetWidth);
+      targetHeight = nextHighestPowerOfTwo(targetHeight);
+    } else if (!caps.supportsNonPowerOf2Textures && (!isPowerOfTwo(targetWidth) || !isPowerOfTwo(targetHeight))) {
+      if (GL.Texture.WrapMode.ClampToEdge === props.wrapMode) {
+        // NPOT are supported but not mipmaps
+        // Probably on poor hardware so I choose to disable mipmaps for lower memory usage over quality. If quality is required we need to resize the image to a pow of 2.
+        // Above comment is not necessarily true - WebGL doesn't support NPOT mipmapping, only supporting base NPOT caps
+        props.useMipMaps = undefined;
+      } else if (GL.Texture.WrapMode.Repeat === props.wrapMode) {
+        targetWidth = nextHighestPowerOfTwo(targetWidth);
+        targetHeight = nextHighestPowerOfTwo(targetHeight);
+      }
+    }
+
+    // Always draw to canvas for ImageBitmap
+    const canvas = document.createElement("canvas");
+    canvas.width = targetWidth;
+    canvas.height = targetHeight;
+    const context = canvas.getContext("2d")!;
+    context.drawImage(image, 0, 0, canvas.width, canvas.height);
+
+    return new Texture2DCreateParams(targetWidth, targetHeight, props.format, GL.Texture.DataType.UnsignedByte, props.wrapMode,
+      (tex: TextureHandle, params: Texture2DCreateParams) => loadTexture2DImageData(tex, params, undefined, canvas), props.useMipMaps, props.interpolate, props.anisotropicFilter);
+  }
+
   private static getImageProperties(isTranslucent: boolean, type: RenderTexture.Type): TextureImageProperties {
     const isSky = RenderTexture.Type.SkyBox === type;
     const isTile = RenderTexture.Type.TileSection === type;
@@ -336,6 +369,11 @@ export abstract class TextureHandle implements WebGLDisposable {
   /** Create a 2D texture from an HTMLImageElement. */
   public static createForImage(image: HTMLImageElement, hasAlpha: boolean, type: RenderTexture.Type) {
     return Texture2DHandle.createForImage(image, hasAlpha, type);
+  }
+
+  /** Create a 2D texture from an ImageBitmap. */
+  public static createForImageBitmap(image: ImageBitmap, hasAlpha: boolean, type: RenderTexture.Type) {
+    return Texture2DHandle.createForImageBitmap(image, hasAlpha, type);
   }
 
   /** Create a cube map texture from six HTMLImageElement objects. */
@@ -474,6 +512,11 @@ export class Texture2DHandle extends TextureHandle {
     return this.create(Texture2DCreateParams.createForImage(image, hasAlpha, type));
   }
 
+  /** Create a 2D texture from an ImageBitmap. */
+  public static override createForImageBitmap(image: ImageBitmap, hasAlpha: boolean, type: RenderTexture.Type) {
+    return this.create(Texture2DCreateParams.createForImageBitmap(image, hasAlpha, type));
+  }
+
   private static _placeHolderTextureData = new Uint8Array([128, 128, 128]);
 
   public static override createForElement(id: Id64String, imodel: IModelConnection, type: RenderTexture.Type, format: ImageSourceFormat) {
@@ -523,7 +566,8 @@ export interface ExternalTextureRequest {
 
 /** @internal */
 export class ExternalTextureLoader { /* currently exported for tests only */
-  public static readonly instance = new ExternalTextureLoader(10);
+  // public static readonly instance = new ExternalTextureLoader(10); // orig 10, tested 2
+  public static readonly instance = new ExternalTextureLoader(1);
   public readonly onTexturesLoaded = new BeEvent<() => void>();
   private readonly _maxActiveRequests: number;
   private _activeRequests: Array<ExternalTextureRequest> = [];
@@ -550,22 +594,47 @@ export class ExternalTextureLoader { /* currently exported for tests only */
   private async _activateRequest(req: ExternalTextureRequest) {
     if (req.imodel.isClosed)
       return;
+    const t0 = new Date("2021-08-18T17:15:00.0Z").getTime();
 
     this._activeRequests.push(req);
 
     try {
       if (!req.imodel.isClosed) {
-        const maxTextureSize = System.instance.capabilities.maxTextureSize;
-        const texBytes = await req.imodel.getTextureImage({ name: req.name, maxTextureSize });
-        if (undefined !== texBytes) {
-          const imageSource = new ImageSource(texBytes, req.format);
-          const image = await imageElementFromImageSource(imageSource);
-          if (!req.imodel.isClosed) {
-            req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
+        const maxTextureSize = System.instance.capabilities.maxTexSizeAllow;
+        const t1 = Date.now();
+        const texData = await req.imodel.queryTextureImage({ name: req.name, maxTextureSize });
+        const t2 = Date.now();
+        let t3 = t2, t4 = t2, t5 = t2, t6 = t2;
+        if (undefined !== texData) {
+          const imageSource = new ImageSource(texData.bytes, req.format);
+          if (System.instance.capabilities.supportsCreateImageBitmap) {
+            const blob = new Blob([imageSource.data], { type: getImageSourceMimeType(imageSource.format) });
+            t3 = Date.now();
+            const image = await createImageBitmap (blob, 0, 0, texData.width, texData.height);
+            t4 = Date.now();
+            if (!req.imodel.isClosed) {
+              t5 = Date.now();
+              req.handle.reload(Texture2DCreateParams.createForImageBitmap(image, ImageSourceFormat.Png === req.format, req.type));
+              t6 = Date.now();
+            }
+          } else {
+            t3 = Date.now();
+            const image = await imageElementFromImageSource(imageSource);
+            t4 = Date.now();
+            if (!req.imodel.isClosed) {
+              t5 = Date.now();
+              req.handle.reload(Texture2DCreateParams.createForImage(image, ImageSourceFormat.Png === req.format, req.type));
+              t6 = Date.now();
+            }
+          }
+          const t7 = Date.now();
+          if (!req.imodel.isClosed) { // is this check necessary?
             IModelApp.tileAdmin.invalidateAllScenes();
             if (undefined !== req.onLoaded)
               req.onLoaded(req);
           }
+          const t8 = Date.now();
+          console.log(`%[${t1-t0}] _activateReq: queryTex ${t2-t1}, use CIB ${System.instance.capabilities.supportsCreateImageBitmap}, image ${t4-t3}, texCreate ${t6-t5} end ${t8-t7}, tot ${t8-t1} ms [${req.name}] ${texData.width} x ${texData.height}%`); // eslint-disable-line no-console
         }
       }
     } catch (_e) { }
