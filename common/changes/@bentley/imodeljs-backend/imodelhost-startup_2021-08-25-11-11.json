@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/imodeljs-backend",
+      "comment": "throw better exception if IModelHost.startup has not been called",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/imodeljs-backend"
+}
