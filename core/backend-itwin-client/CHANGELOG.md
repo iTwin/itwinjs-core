@@ -1,6 +1,13 @@
 # Change Log - @bentley/backend-itwin-client
 
-This log was last generated on Mon, 23 Aug 2021 13:23:13 GMT and should not be manually modified.
+This log was last generated on Wed, 25 Aug 2021 15:36:01 GMT and should not be manually modified.
+
+## 2.19.9
+Wed, 25 Aug 2021 15:36:01 GMT
+
+### Updates
+
+- disable azcopy probe when file size requirement are not meet.
 
 ## 2.19.8
 Mon, 23 Aug 2021 13:23:13 GMT
