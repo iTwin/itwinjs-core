@@ -95,6 +95,10 @@ export class BSplineCurveOps {
   }
 }
 
+/**
+ * Namespace for collecting curve fit API
+ * @public
+ */
 export namespace BSplineCurveOps {
   /**
    * A helper class for creating C2 cubic fit curves.

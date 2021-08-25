@@ -879,7 +879,7 @@ export class BSplineCurveOps {
     static createThroughPointsC2Cubic(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined;
 }
 
-// @public (undocumented)
+// @public
 export namespace BSplineCurveOps {
     export class C2CubicFit {
         static constructFitParameters(options: InterpolationCurve3dOptions): boolean;
