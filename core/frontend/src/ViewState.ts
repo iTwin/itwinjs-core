@@ -1533,13 +1533,30 @@ export abstract class ViewState3d extends ViewState {
    * adjusted when the [[Viewport]] is synchronized from this view.
    */
   public lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus {
+    return this._lookAt(eyePoint, upVector, targetPoint, undefined, newExtents, frontDistance, backDistance, opts);
+  }
+
+  private _lookAt(eyePoint: XYAndZ, upVector: Vector3d, targetPoint?: XYAndZ, viewDirection?: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus {
+    console.log(`_lookAt   targetPoint ${targetPoint}   viewDirection ${viewDirection}\n`);
+    // Must have either a target point for perspective or a viewDirection for ortho.
     const eye = new Point3d(eyePoint.x, eyePoint.y, eyePoint.z);
     const yVec = upVector.normalize();
     if (!yVec) // up vector zero length?
       return ViewStatus.InvalidUpVector;
 
-    const zVec = Vector3d.createStartEnd(targetPoint, eye); // z defined by direction from eye to target
-    const focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
+    let zVec;
+    let focusDist;
+    if (undefined !== targetPoint) {
+      zVec = Vector3d.createStartEnd(targetPoint, eye); // z defined by direction from eye to target
+      focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
+    } else if (undefined !== viewDirection) {
+      zVec = viewDirection.normalize();
+      if (!zVec)
+        return ViewStatus.InvalidDirection;
+      focusDist = this.getFocusDistance();
+    } else {
+      return ViewStatus.InvalidTargetPoint;
+    }
     const minFrontDist = this.minimumFrontDistance();
 
     if (focusDist <= minFrontDist) { // eye and target are too close together
@@ -1595,7 +1612,10 @@ export abstract class ViewState3d extends ViewState {
     this.setOrigin(origin);
     this.setExtents(delta);
     this.setLensAngle(this.calcLensAngle());
-    this.enableCamera();
+    if (undefined !== targetPoint)
+      this.enableCamera();
+    else
+      this.turnCameraOff();
     this._updateMaxGlobalScopeFactor();
     return ViewStatus.Success;
   }
@@ -1625,6 +1645,24 @@ export abstract class ViewState3d extends ViewState {
     delta.scale(extent / delta.x, delta);
 
     return this.lookAt(eyePoint, targetPoint, upVector, delta, frontDistance, backDistance, opts);
+  }
+
+  /** Position an ortho view in the given direction, using a specified scale.
+   * @param eyePoint The new location of the camera.
+   * @param viewDirection The direction in which the view should look.
+   * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the view direction.
+   * @param viewToWorldScale vertical size of the view in world space.
+   * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
+   * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
+   * @param opts for providing onExtentsError
+   * @returns [[ViewStatus]] indicating whether the camera was successfully positioned.
+   * @note The aspect ratio of the view remains unchanged.
+   */
+  public lookAtUsingOrtho(eyePoint: Point3d, viewDirection: Vector3d, upVector: Vector3d, viewToWorldScale: number, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus {
+    if (viewToWorldScale <= 0)
+      return ViewStatus.InvalidViewToWorldScale;
+    const newExtents = Vector2d.create(this.getAspectRatio() * viewToWorldScale, viewToWorldScale);
+    return this._lookAt(eyePoint, upVector, undefined, viewDirection, newExtents, frontDistance, backDistance, opts);
   }
 
   /** Change the focus distance for this ViewState3d. Preserves the content of the view.

@@ -26,4 +26,6 @@ export enum ViewStatus {
   InvalidTargetPoint,
   InvalidLens,
   InvalidViewport,
+  InvalidDirection,
+  InvalidViewToWorldScale,
 }
