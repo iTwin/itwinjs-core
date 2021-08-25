@@ -385,15 +385,14 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
   }, [createSource, props.mapLayerSourceToEdit, props.activeViewport, mapUrl, isSettingsStorageAvailable, attemptAttachSource]);
 
-  // We don't show username/password field by default anymore.
-  // We need to validate the source in order to get the authentification type,
-  // some of them might requirer explicit username/password fields.
+  // The first time the dialog is loaded and we already know the layer requires auth. (i.e ImageryProvider already made an attempt)
+  // makes a request to discover the authentification types and adjust UI accordingly (i.e. username/password fields, Oauth popup)
+  // Without this effect, user would have to manually click the 'OK' button in order to trigger the layer connection.
   React.useEffect(() => {
     // Attach source asynchronously.
     void (async () => {
       if (props.layerRequiringCredentials?.url !== undefined && props.layerRequiringCredentials?.name !== undefined) {
         try {
-
           const source = MapLayerSource.fromJSON({url: props.layerRequiringCredentials.url, name: props.layerRequiringCredentials.name,formatId: props.layerRequiringCredentials.formatId});
           if (source !== undefined) {
             setLayerAttachPending(true);
@@ -407,7 +406,9 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
       }
     })();
 
-  }, [props.layerRequiringCredentials, updateAuthState]);
+  // Only run this effect when the dialog is initialized, otherwise it will it creates undesirable side-effects when 'OK' button is clicked.
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, []);
 
   const dialogContainer = React.useRef<HTMLDivElement>(null);
 
@@ -548,14 +549,16 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
              && props.mapLayerSourceToEdit === undefined &&
               <>
                 <span className="map-layer-source-label">{userNameLabel}</span>
-                <LabeledInput placeholder={serverRequireCredentials ? userNameRequiredLabel : userNameLabel}
-                  status={!userName && serverRequireCredentials ? InputStatus.Warning : undefined}
+                <LabeledInput displayStyle="inline"
+                  placeholder={serverRequireCredentials ? userNameRequiredLabel : userNameLabel}
+                  status={!userName && serverRequireCredentials ? "warning" : undefined}
                   disabled={layerAttachPending || layerAuthPending}
                   onChange={onUsernameChange} />
 
                 <span className="map-layer-source-label">{passwordLabel}</span>
-                <LabeledInput type="password" placeholder={serverRequireCredentials ? passwordRequiredLabel : passwordLabel}
-                  status={!password && serverRequireCredentials ? InputStatus.Warning : undefined}
+                <LabeledInput displayStyle="inline"
+                  type="password" placeholder={serverRequireCredentials ? passwordRequiredLabel : passwordLabel}
+                  status={!password && serverRequireCredentials ? "warning" : undefined}
                   disabled={layerAttachPending || layerAuthPending}
                   onChange={onPasswordChange}
                   onKeyPress={handleOnKeyDown} />
