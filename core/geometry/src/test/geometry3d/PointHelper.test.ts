@@ -862,10 +862,10 @@ describe("PolygonAreas", () => {
     const ck = new Checker();
     const pointA = [
       Point3d.create(0,0,0),
-      Point3d.create(2,0,0),
-      Point3d.create(2,2,0),
-      Point3d.create(1,2,0),
-      Point3d.create(1,1,0),
+      Point3d.create(0,0,2),
+      Point3d.create(0,2,2),
+      Point3d.create(0,2,1),
+      Point3d.create(0,1,1),
       Point3d.create(0,1,0),
     ];
     for (let i = 0; i < 5; i++){
