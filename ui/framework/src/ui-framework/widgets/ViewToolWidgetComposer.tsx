@@ -13,10 +13,10 @@ import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { useUiVisibility } from "./BasicToolWidget";
 import { NavigationWidgetComposer } from "./NavigationWidgetComposer";
 
-/** Properties that can be used to append items to the default set of toolbar items of [[DefaultNavigationWidget]].
+/** Properties for [[ViewToolWidgetCompose]].
  * @public
  */
-export interface SimpleNavigationWidgetProps {
+export interface ViewToolWidgetComposerProps {
   /** optional set of additional items to include in horizontal toolbar */
   horizontalItems?: CommonToolbarItem[];
   /** optional set of additional items to include in vertical toolbar */
@@ -43,11 +43,11 @@ export interface SimpleNavigationWidgetProps {
  *    CoreTools.toggleCameraViewCommand,
  *  ]);
  *
- * <SimpleNavigationWidget horizontalItems={horizontalItems} verticalItems={verticalItems} />
+ * <ViewToolWidgetComposer horizontalItems={horizontalItems} verticalItems={verticalItems} />
  * ```
  * @public
  */
-export function SimpleNavigationWidget(props: SimpleNavigationWidgetProps) {
+export function ViewToolWidgetComposer(props: ViewToolWidgetComposerProps) {
   const { navigationAidHost, horizontalItems, verticalItems } = props;
   const uiIsVisible = useUiVisibility();
   const className = classnames(

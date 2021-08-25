@@ -31,11 +31,11 @@ import { useUiVisibility } from "./BasicToolWidget";
  *    ToolbarHelper.createToolbarItemFromItemDef(30, CoreTools.sectionToolGroup),
  *  ];
  *
- * <SimpleToolWidget horizontalItems={horizontalItems} verticalItems={verticalItems} />
+ * <ContentToolWidgetComposer horizontalItems={horizontalItems} verticalItems={verticalItems} />
  * ```
  * @beta
  */
-export interface SimpleToolWidgetProps {
+export interface ContentToolWidgetComposerProps {
   /** If default backstage button is desired use <BackstageAppButton />. */
   cornerButton?: React.ReactNode;
   /** optional set of additional items to include in horizontal toolbar */
@@ -48,7 +48,7 @@ export interface SimpleToolWidgetProps {
  * This definition will also show a overflow button if there is not enough room to display all the toolbar buttons.
  * @beta
  */
-export function SimpleToolWidget(props: SimpleToolWidgetProps) {
+export function ContentToolWidgetComposer(props: ContentToolWidgetComposerProps) {
   const { cornerButton, horizontalItems, verticalItems } = props;
   const uiIsVisible = useUiVisibility();
   const className = classnames(

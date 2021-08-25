@@ -8,6 +8,7 @@
 
 import * as React from "react";
 import { CommonStatusBarItem, StageUsage, StatusBarSection, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
+import { FooterSeparator } from "@bentley/ui-ninezone";
 import { StatusBarItemUtilities } from "../statusbar/StatusBarItemUtilities";
 import { ToolAssistanceField } from "../statusfields/toolassistance/ToolAssistanceField";
 import { withStatusFieldProps } from "../statusbar/withStatusFieldProps";
@@ -18,13 +19,16 @@ import { SnapModeField } from "../statusfields/SnapMode";
 import { SelectionInfoField } from "../statusfields/SelectionInfo";
 import { TileLoadingIndicator } from "../statusfields/tileloading/TileLoadingIndicator";
 import { SelectionScopeField } from "../statusfields/SelectionScope";
+import { FooterModeField } from "../statusfields/FooterModeField";
 
 /** Defines what tools to include
  * @beta
  */
 export interface DefaultStatusbarItems {
-  toolAssistance?: boolean;
   messageCenter?: boolean;
+  preToolAssistanceSeparator?: boolean;
+  toolAssistance?: boolean;
+  postToolAssistanceSeparator?: boolean;
   activityCenter?: boolean;
   accuSnapModePicker?: boolean;
   tileLoadIndicator?: boolean;
@@ -60,13 +64,19 @@ export class StandardStatusbarItemsProvider implements UiItemsProvider {
     }
 
     if (provideToStage) {
-      if (!this._defaultItems || this._defaultItems?.toolAssistance) {
-        const ToolAssistance = withStatusFieldProps(ToolAssistanceField);
-        statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.ToolAssistance", StatusBarSection.Left, 10, <ToolAssistance />));
-      }
       if (!this._defaultItems || this._defaultItems?.messageCenter) {
         const MessageCenter = withMessageCenterFieldProps(MessageCenterField);
-        statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.MessageCenter", StatusBarSection.Left, 20, <MessageCenter />));
+        statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.MessageCenter", StatusBarSection.Left, 10, <MessageCenter />));
+      }
+      if (!this._defaultItems || this._defaultItems?.toolAssistance) {
+        if (this._defaultItems?.preToolAssistanceSeparator)
+          statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.PreToolAssistance", StatusBarSection.Left, 15, <FooterSeparator />));
+
+        const ToolAssistance = withStatusFieldProps(ToolAssistanceField);
+        statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.ToolAssistance", StatusBarSection.Left, 20, <ToolAssistance />));
+
+        if (this._defaultItems?.postToolAssistanceSeparator)
+          statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.PostToolAssistance", StatusBarSection.Left, 25, <FooterSeparator />));
       }
       if (!this._defaultItems || this._defaultItems?.activityCenter) {
         const ActivityCenter = withStatusFieldProps(ActivityCenterField);

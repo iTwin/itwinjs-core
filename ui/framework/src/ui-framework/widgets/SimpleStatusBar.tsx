@@ -50,4 +50,3 @@ export class SimpleStatusBarWidgetControl extends StatusBarWidgetControl {
 }
 
 ConfigurableUiManager.registerControl("SimpleStatusBar", SimpleStatusBarWidgetControl);
-

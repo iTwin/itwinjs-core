@@ -2148,10 +2148,10 @@ export class UiItemsArbiter {
 // @public
 export class UiItemsManager {
     static getBackstageItems(): BackstageItem[];
-    static getStatusBarItems(stageId: string, stageUsage: string): CommonStatusBarItem[];
-    static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[];
+    static getStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
+    static getToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
     static getUiItemsProvider(providerId: string): UiItemsProvider | undefined;
-    static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation): ReadonlyArray<AbstractWidgetProps>;
+    static getWidgets(stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation, stageAppData?: any): ReadonlyArray<AbstractWidgetProps>;
     static get hasRegisteredProviders(): boolean;
     static readonly onUiProviderRegisteredEvent: BeEvent<(ev: UiItemProviderRegisteredEventArgs) => void>;
     static register(uiProvider: UiItemsProvider): void;
@@ -2167,9 +2167,9 @@ export interface UiItemsProvider {
     onToolbarButtonItemArbiterChange?: (item: CommonToolbarItem, action: UiItemsApplicationAction) => void;
     onWidgetArbiterChange?: (widget: AbstractWidgetProps, action: UiItemsApplicationAction) => void;
     provideBackstageItems?: () => BackstageItem[];
-    provideStatusBarItems?: (stageId: string, stageUsage: string) => CommonStatusBarItem[];
-    provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => CommonToolbarItem[];
-    provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation) => ReadonlyArray<AbstractWidgetProps>;
+    provideStatusBarItems?: (stageId: string, stageUsage: string, stageAppData?: any) => CommonStatusBarItem[];
+    provideToolbarButtonItems?: (stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any) => CommonToolbarItem[];
+    provideWidgets?: (stageId: string, stageUsage: string, location: StagePanelLocation, section?: StagePanelSection, zoneLocation?: AbstractZoneLocation, stageAppData?: any) => ReadonlyArray<AbstractWidgetProps>;
 }
 
 // @public (undocumented)

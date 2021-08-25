@@ -40,7 +40,7 @@ function getGroupPriority(potentialId: any, defaultValue: number) {
   return defaultValue;
 }
 
-/** Provide standard tools for the SimpleToolWidget
+/** Provide standard tools for the ContentManipulationWidgetComposer
  * @beta
  */
 export class StandardContentToolsProvider implements UiItemsProvider {

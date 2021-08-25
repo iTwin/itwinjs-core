@@ -4,10 +4,10 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BackstageAppButton, ContentGroup, CoreTools,
-  Frontstage, FrontstageProps, FrontstageProvider, IModelViewportControl,
-  SimpleNavigationWidget, SimpleStatusBarWidgetControl, SimpleToolWidget, StagePanel, StagePanelState, SyncUiEventArgs,
-  SyncUiEventDispatcher, ToolbarHelper, UiFramework, Widget, Zone,
+  BackstageAppButton, ContentGroup, ContentToolWidgetComposer,
+  CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
+  IModelViewportControl, SimpleStatusBarWidgetControl, StagePanel, StagePanelState, SyncUiEventArgs, SyncUiEventDispatcher,
+  ToolbarHelper, UiFramework, ViewToolWidgetComposer, Widget, Zone,
 } from "@bentley/ui-framework";
 import { CommonToolbarItem, StageUsage } from "@bentley/ui-abstract";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
@@ -108,7 +108,7 @@ export class FrontstageUi2 extends FrontstageProvider {
           <Zone
             widgets={
               [
-                <Widget isFreeform={true} element={<SimpleToolWidget cornerButton={<BackstageAppButton icon={"icon-bentley-systems"} />}
+                <Widget isFreeform={true} element={<ContentToolWidgetComposer cornerButton={<BackstageAppButton icon={"icon-bentley-systems"} />}
                   horizontalItems={this.additionalHorizontalToolbarItems} />} />,
               ]}
           />
@@ -117,7 +117,7 @@ export class FrontstageUi2 extends FrontstageProvider {
           <Zone
             widgets={
               [
-                <Widget isFreeform={true} element={<SimpleNavigationWidget />} />,
+                <Widget isFreeform={true} element={<ViewToolWidgetComposer />} />,
               ]}
           />
         }
