@@ -292,9 +292,6 @@ function variablesEqual(lhs: RulesetVariable, rhs: RulesetVariable) {
 }
 
 function arraysEqual(lhs: any[], rhs: any[]) {
-  if (lhs === rhs)
-    return true;
-
   if (lhs.length !== rhs.length)
     return false;
 

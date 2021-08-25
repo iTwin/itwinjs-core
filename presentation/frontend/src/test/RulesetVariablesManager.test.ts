@@ -246,12 +246,16 @@ describe("RulesetVariablesManager", () => {
       expect(spy).to.be.calledWith(variableId, [1, 2], [1, 2, 3]);
       spy.resetHistory();
 
-      await vars.setInts(variableId, [1, 2, 3]);
+      await vars.setInts(variableId, [4, 5, 6]);
+      expect(spy).to.be.calledWith(variableId, [1, 2, 3], [4, 5, 6]);
+      spy.resetHistory();
+
+      await vars.setInts(variableId, [4, 5, 6]);
       expect(spy).to.not.be.called;
       spy.resetHistory();
 
       await vars.unset(variableId);
-      expect(spy).to.be.calledWith(variableId, [1, 2, 3], undefined);
+      expect(spy).to.be.calledWith(variableId, [4, 5, 6], undefined);
     });
 
     it("raises onVariableChanged event when mutable variable changes", async () => {
@@ -266,6 +270,11 @@ describe("RulesetVariablesManager", () => {
       value.push(3);
       await vars.setInts(variableId, value);
       expect(spy).to.be.calledWith(variableId, [1, 2], value);
+      spy.resetHistory();
+
+      value.splice(2, 1, 4);
+      await vars.setInts(variableId, value);
+      expect(spy).to.be.calledWith(variableId, [1, 2, 3], value);
       spy.resetHistory();
 
       await vars.setInts(variableId, value);
@@ -356,12 +365,16 @@ describe("RulesetVariablesManager", () => {
       expect(spy).to.be.calledWith(variableId, ["0x123", "0x789"], ["0x456"]);
       spy.resetHistory();
 
-      await vars.setId64s(variableId, ["0x456"]);
+      await vars.setId64s(variableId, ["0x789"]);
+      expect(spy).to.be.calledWith(variableId, ["0x456"], ["0x789"]);
+      spy.resetHistory();
+
+      await vars.setId64s(variableId, ["0x789"]);
       expect(spy).to.not.be.called;
       spy.resetHistory();
 
       await vars.unset(variableId);
-      expect(spy).to.be.calledWith(variableId, ["0x456"], undefined);
+      expect(spy).to.be.calledWith(variableId, ["0x789"], undefined);
     });
 
     it("raises onVariableChanged event when mutable variable changes", async () => {
@@ -376,6 +389,11 @@ describe("RulesetVariablesManager", () => {
       value.splice(0, 2, "0x456");
       await vars.setId64s(variableId, value);
       expect(spy).to.be.calledWith(variableId, ["0x123", "0x789"], value);
+      spy.resetHistory();
+
+      value.splice(0, 1, "0x789");
+      await vars.setId64s(variableId, value);
+      expect(spy).to.be.calledWith(variableId, ["0x456"], value);
       spy.resetHistory();
 
       await vars.setId64s(variableId, value);
