@@ -6,7 +6,7 @@
 import { assert, expect } from "chai";
 import * as os from "os";
 import * as readline from "readline";
-import { BriefcaseStatus, GuidString, OpenMode, StopWatch } from "@bentley/bentleyjs-core";
+import { BriefcaseStatus, GuidString, StopWatch } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { UserCancelledError } from "@bentley/itwin-client";
 import { AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, Element, IModelHost, IModelJsFs } from "../../imodeljs-backend";
@@ -254,73 +254,6 @@ describe("BriefcaseManager (#integration)", () => {
     await IModelTestUtils.closeAndDeleteBriefcaseDb(userContext2, iModelPullOnly2);
 
     // Delete iModel from the Hub and disk
-    await testUtility.deleteTestIModel();
-    HubMock.shutdown();
-  });
-
-  it("should not be able to edit PullOnly briefcases", async () => {
-    HubMock.startup("pullOnly");
-    const userContext1 = await IModelTestUtils.getUserContext(TestUserType.Manager); // User1 is just used to create and update the iModel
-    const userContext2 = await IModelTestUtils.getUserContext(TestUserType.SuperManager); // User2 is used for the test
-
-    // User1 creates an iModel on the Hub
-    const testUtility = new TestChangeSetUtility(userContext1, "PullOnlyTest");
-    await testUtility.createTestIModel();
-
-    const args = { requestContext: userContext2, contextId: testUtility.projectId, iModelId: testUtility.iModelId, briefcaseId: 0 };
-
-    // User2 opens the iModel pullOnly and is not able to edit (even if the db is opened read-write!)
-    let iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc(args);
-    assert.exists(iModelPullOnly);
-    assert.isTrue(!iModelPullOnly.isReadonly);
-    assert.isTrue(iModelPullOnly.isOpen);
-    assert.equal(iModelPullOnly.openMode, OpenMode.ReadWrite);
-
-    const briefcaseId = iModelPullOnly.briefcaseId;
-    const pathname = iModelPullOnly.pathName;
-
-    const rootEl: Element = iModelPullOnly.elements.getRootSubject();
-    rootEl.userLabel = `${rootEl.userLabel}changed`;
-
-    assert.throws(() => iModelPullOnly.elements.updateElement(rootEl), IModelError);
-
-    iModelPullOnly.close();
-
-    // User2 should be able to re-open the iModel pullOnly again
-    iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc(args);
-    const changesetPullAndPush = iModelPullOnly.changeset;
-    assert.strictEqual(iModelPullOnly.briefcaseId, briefcaseId);
-    assert.strictEqual(iModelPullOnly.pathName, pathname);
-    assert.isFalse(iModelPullOnly.nativeDb.hasUnsavedChanges());
-    assert.isFalse(iModelPullOnly.nativeDb.hasPendingTxns());
-
-    // User1 pushes a change set
-    await testUtility.pushTestChangeSet();
-
-    // User2 closes and reopens the iModel pullOnly as of the newer version
-    // - the briefcase will be upgraded to the newer version since it was closed and re-opened.
-    iModelPullOnly.close();
-    iModelPullOnly = await IModelTestUtils.openBriefcaseUsingRpc(args);
-    const changeSetIdPullAndPush3 = iModelPullOnly.changeset;
-    assert.notStrictEqual(changeSetIdPullAndPush3, changesetPullAndPush);
-    assert.strictEqual(iModelPullOnly.briefcaseId, briefcaseId);
-    assert.strictEqual(iModelPullOnly.pathName, pathname);
-    assert.isFalse(iModelPullOnly.nativeDb.hasUnsavedChanges());
-    assert.isFalse(iModelPullOnly.nativeDb.hasPendingTxns());
-
-    // User1 pushes another change set
-    await testUtility.pushTestChangeSet();
-
-    // User2 should be able pull and merge changes
-    await iModelPullOnly.pullAndMergeChanges(userContext2, IModelVersion.latest());
-    const changeSetIdPullAndPush4 = iModelPullOnly.changeset;
-    assert.notStrictEqual(changeSetIdPullAndPush4, changeSetIdPullAndPush3);
-
-    // User2 should NOT be able to push the changes
-    await expect(iModelPullOnly.pushChanges(userContext2, "test change")).to.be.rejectedWith(IModelError);
-
-    // Delete iModel from the Hub and disk
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(userContext2, iModelPullOnly);
     await testUtility.deleteTestIModel();
     HubMock.shutdown();
   });
