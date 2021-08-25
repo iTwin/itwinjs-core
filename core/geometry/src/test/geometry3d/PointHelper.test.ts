@@ -858,7 +858,7 @@ describe("PolygonAreas", () => {
     ck.checkpoint("PolygonAreas.TriangleVariants");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("SimpleNonConvex", () => {
+  it("SimpleNonConvex", () => {
     const ck = new Checker();
     const pointA = [
       Point3d.create(0,0,0),
@@ -868,6 +868,7 @@ describe("PolygonAreas", () => {
       Point3d.create(1,1,0),
       Point3d.create(0,1,0),
     ];
+    for (let i = 0; i < 5; i++){
     const centroidA = PolygonOps.centroidAreaNormal(pointA)!;
     ck.testCoordinate(3.0, (centroidA as any).a, "area of nonconvex polygon");
     for (const degrees of [17.0, 197.4]){
@@ -879,6 +880,10 @@ describe("PolygonAreas", () => {
       const centroidA1 = centroidA.cloneTransformed(rotationTransform);
       ck.testPoint3d(centroidA1.origin, centroidB.origin, "centroid transform commutes");
       ck.testVector3d(centroidA1.direction, centroidB.direction, "centroid transform commutes");
+      }
+    // shift last point to start for next pass . . .
+      const p = pointA.pop();
+      pointA.unshift(p!);
     }
 
     ck.checkpoint("PolygonAreas.SimpleNonConvex");
