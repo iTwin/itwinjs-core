@@ -11,7 +11,7 @@ import {
 import { AccessToken, AuthorizedClientRequestContext, IncludePrefix } from "@bentley/itwin-client";
 import { assert } from "chai";
 import { IModelHost } from "../../IModelHost";
-import { BriefcaseDb, BriefcaseManager, ConcurrencyControl, DefinitionModel, GeometryPart, IModelDb, PhysicalModel, PhysicalObject, RenderMaterialElement, SpatialCategory, SubCategory, Subject } from "../../imodeljs-backend";
+import { BriefcaseDb, BriefcaseManager, DefinitionModel, GeometryPart, IModelDb, PhysicalModel, PhysicalObject, RenderMaterialElement, SpatialCategory, SubCategory, Subject } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
@@ -105,7 +105,6 @@ describe("PushChangesTest (#integration)", () => {
     let iModel: BriefcaseDb | undefined;
     try {
       iModel = await BriefcaseDb.open(requestContext, { fileName: briefcaseProps.fileName });
-      iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
 
       // Initialize project extents
       const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
@@ -124,10 +123,6 @@ describe("PushChangesTest (#integration)", () => {
       // Insert physical object
       const geometryPartId = TestIModelWriter.insertGeometryPart(iModel, definitionModelId);
       TestIModelWriter.insertPhysicalObject(iModel, physicalModelId, spatialCategoryId, subCategoryId, renderMaterialId, geometryPartId);
-
-      // Request all the necessary codes and locks for the changes made so far
-      await iModel.concurrencyControl.request(requestContext);
-      requestContext.enter();
 
       iModel.saveChanges();
 

@@ -165,7 +165,7 @@ describe("HubMock", () => {
     };
     localHub.requestLock(lock1, { briefcaseId: 1, changeset: cs1 });
     let lockStat = localHub.queryLockStatus(lock1.id);
-    assert.equal(lockStat.scope, LockState.Shared);
+    assert.equal(lockStat.state, LockState.Shared);
     assert.equal((lockStat as LockStatusShared).sharedBy.size, 1);
     assert.isTrue((lockStat as LockStatusShared).sharedBy.has(1));
 
@@ -185,30 +185,30 @@ describe("HubMock", () => {
 
     localHub.releaseLock(lock1, { briefcaseId: 10, changeset: cs1 });
     lockStat = localHub.queryLockStatus(lock1.id);
-    assert.equal(lockStat.scope, LockState.None);
+    assert.equal(lockStat.state, LockState.None);
 
     lock1.state = LockState.Exclusive;
     localHub.requestLock(lock1, { briefcaseId: 4, changeset: cs1 });
     lockStat = localHub.queryLockStatus(lock1.id);
-    assert.equal(lockStat.scope, LockState.Exclusive);
+    assert.equal(lockStat.state, LockState.Exclusive);
     localHub.requestLock(lock1, { briefcaseId: 4, changeset: cs1 });
     expect(() => localHub.requestLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("already owned");
     expect(() => localHub.requestLock({ ...lock1, state: LockState.Shared }, { briefcaseId: 5, changeset: cs1 })).to.throw("already owned");
     localHub.releaseLock(lock1, { briefcaseId: 4, changeset: cs2 });
     lockStat = localHub.queryLockStatus(lock1.id);
-    assert.equal(lockStat.scope, LockState.None);
+    assert.equal(lockStat.state, LockState.None);
     assert.equal(lockStat.lastCsIndex, cs2.index);
 
     expect(() => localHub.requestLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("Pull is required");
     localHub.requestLock(lock1, { briefcaseId: 5, changeset: cs2 });
     lockStat = localHub.queryLockStatus(lock1.id);
-    assert.equal(lockStat.scope, LockState.Exclusive);
+    assert.equal(lockStat.state, LockState.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
     assert.equal(lockStat.lastCsIndex, cs2.index);
 
     localHub.requestLock({ state: LockState.Exclusive, id: "0x22" }, { briefcaseId: 5, changeset: cs1 });
     lockStat = localHub.queryLockStatus("0x22");
-    assert.equal(lockStat.scope, LockState.Exclusive);
+    assert.equal(lockStat.state, LockState.Exclusive);
     assert.equal((lockStat as LockStatusExclusive).briefcaseId, 5);
     assert.isUndefined(lockStat.lastCsIndex);
 

@@ -5,14 +5,13 @@
 
 import { DbOpcode, DbResult, GuidString, Id64String, IModelHubStatus } from "@bentley/bentleyjs-core";
 import { CodeState, HubCode, IModelHubError, IModelQuery, Lock, LockLevel, LockQuery, LockType } from "@bentley/imodelhub-client";
-import { CodeScopeSpec, CodeSpec, IModel, IModelError, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { IModel, IModelError, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { WsgError } from "@bentley/itwin-client";
 import { assert, expect } from "chai";
 import * as semver from "semver";
-import { LockScope } from "../../BackendHubAccess";
 import { IModelHubBackend } from "../../IModelHubBackend";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, ConcurrencyControl, DictionaryModel, Element, IModelHost, IModelJsFs, LockProps, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, DictionaryModel, Element, IModelHost, IModelJsFs, LockProps, SpatialCategory, SqliteStatement, SqliteValue, SqliteValueType,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
 import { IModelTestUtils, TestUserType, Timer } from "../IModelTestUtils";
@@ -27,20 +26,9 @@ export async function createNewModelAndCategory(requestContext: AuthorizedBacken
   const dictionary: DictionaryModel = rwIModel.models.getModel<DictionaryModel>(IModel.dictionaryId);
   const newCategoryCode = IModelTestUtils.getUniqueSpatialCategoryCode(dictionary, "ThisTestSpatialCategory");
   const category = SpatialCategory.create(rwIModel, IModel.dictionaryId, newCategoryCode.value);
-  await rwIModel.concurrencyControl.requestResourcesForInsert(requestContext, [category]);
-  requestContext.enter();
   const spatialCategoryId = rwIModel.elements.insertElement(category);
   category.setDefaultAppearance(new SubCategoryAppearance({ color: 0xff0000 }));
   // const spatialCategoryId: Id64String = SpatialCategory.insert(rwIModel, IModel.dictionaryId, newCategoryCode.value!, new SubCategoryAppearance({ color: 0xff0000 }));
-
-  // Reserve all of the codes that are required by the new model and category.
-  try {
-    await rwIModel.concurrencyControl.request(requestContext);
-  } catch (err) {
-    if (err instanceof IModelHubError) {
-      assert.fail(JSON.stringify(err));
-    }
-  }
 
   return { modelId, spatialCategoryId };
 }
@@ -89,85 +77,6 @@ describe("IModelWriteTest (#integration)", () => {
     }
   });
 
-  it("acquire codespec lock", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: superRequestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
-    const codeSpec1 = CodeSpec.create(iModel, "MyCodeSpec1", CodeScopeSpec.Type.Model);
-    iModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-
-    await iModel.concurrencyControl.locks.lockCodeSpecs(superRequestContext);
-    await iModel.concurrencyControl.locks.lockCodeSpecs(superRequestContext);
-    assert.isTrue(iModel.concurrencyControl.locks.hasCodeSpecsLock);
-    iModel.insertCodeSpec(codeSpec1);
-    iModel.saveChanges();
-    await iModel.pushChanges(superRequestContext, "inserted MyCodeSpec1");
-    assert.isFalse(iModel.concurrencyControl.locks.hasCodeSpecsLock, "pushChanges should automatically release all locks");
-
-    // Verify that locks are released even if there are no changes.
-    const prePushchangeset = iModel.changeset;
-    await iModel.concurrencyControl.locks.lockCodeSpecs(superRequestContext);
-    assert.isTrue(iModel.concurrencyControl.locks.hasCodeSpecsLock);
-    /* make no changes */
-    await iModel.pushChanges(superRequestContext, "did nothing");
-    assert.equal(prePushchangeset, iModel.changeset, "no changeset was pushed");
-
-    assert.isFalse(iModel.concurrencyControl.locks.hasCodeSpecsLock, "pushChanges should automatically release all locks");
-
-    let found = false;
-    let briefcases = BriefcaseManager.getCachedBriefcases(readWriteTestIModelId);
-    for (const briefcase of briefcases) {
-      if (briefcase.briefcaseId === iModel.briefcaseId && briefcase.contextId === testContextId && briefcase.iModelId === readWriteTestIModelId) {
-        assert.equal(briefcase.fileName, iModel.pathName);
-        found = true;
-      }
-    }
-    assert.isTrue(found);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(superRequestContext, iModel);
-
-    found = false;
-    briefcases = BriefcaseManager.getCachedBriefcases(); // test getCachedBriefcases without iModelId
-    for (const briefcase of briefcases) {
-      if (briefcase.briefcaseId === iModel.briefcaseId && briefcase.contextId === testContextId && briefcase.iModelId === readWriteTestIModelId)
-        found = true;
-    }
-    assert.isFalse(found);
-  });
-
-  it.skip("should verify that briefcase A can acquire Schema lock while briefcase B holds an element lock", async () => {
-
-    const bcA = await IModelHubBackend.iModelClient.briefcases.create(managerRequestContext, readWriteTestIModelId);
-    const bcB = await IModelHubBackend.iModelClient.briefcases.create(managerRequestContext, readWriteTestIModelId);
-    assert.notEqual(bcA.briefcaseId, bcB.briefcaseId);
-    assert.isTrue(bcA.briefcaseId !== undefined);
-    assert.isTrue(bcB.briefcaseId !== undefined);
-    const bcALockReq = toHubLock(ConcurrencyControl.Request.schemaLock, bcA.briefcaseId!);
-    const bcBLockReq = toHubLock(ConcurrencyControl.Request.getElementLock("0x1", LockScope.Exclusive), bcB.briefcaseId!);
-    // First, B acquires element lock
-    const bcBLocksAcquired = await IModelHubBackend.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcBLockReq]);
-    // Next, A acquires schema lock
-    const bcALocksAcquired = await IModelHubBackend.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcALockReq]);
-
-    assert.isTrue(bcALocksAcquired.length !== 0);
-    assert.equal(bcALocksAcquired[0].briefcaseId, bcA.briefcaseId);
-    assert.equal(bcALocksAcquired[0].lockType, bcALockReq.lockType);
-
-    assert.isTrue(bcBLocksAcquired.length !== 0);
-    assert.equal(bcBLocksAcquired[0].briefcaseId, bcB.briefcaseId);
-    assert.equal(bcBLocksAcquired[0].lockType, bcBLockReq.lockType);
-
-    const bcALocksQueryResults = await IModelHubBackend.iModelClient.locks.get(managerRequestContext, readWriteTestIModelId, new LockQuery().byBriefcaseId(bcA.briefcaseId!));
-    const bcBLocksQueryResults = await IModelHubBackend.iModelClient.locks.get(managerRequestContext, readWriteTestIModelId, new LockQuery().byBriefcaseId(bcB.briefcaseId!));
-    assert.deepEqual(bcALocksAcquired, bcALocksQueryResults);
-    assert.deepEqual(bcBLocksAcquired, bcBLocksQueryResults);
-
-    bcBLockReq.lockLevel = LockLevel.None;
-    await IModelHubBackend.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcBLockReq]);
-    bcALockReq.lockLevel = LockLevel.None;
-    await IModelHubBackend.iModelClient.locks.update(managerRequestContext, readWriteTestIModelId, [bcALockReq]);
-
-    await IModelHubBackend.iModelClient.briefcases.delete(managerRequestContext, readWriteTestIModelId, bcA.briefcaseId!);
-    await IModelHubBackend.iModelClient.briefcases.delete(managerRequestContext, readWriteTestIModelId, bcB.briefcaseId!);
-  });
-
   it("test change-merging scenarios in optimistic concurrency mode (#integration)", async () => {
     const firstUserRequestContext = await IModelTestUtils.getUserContext(TestUserType.Super);
     (firstUserRequestContext as any).activityId = "test change-merging scenarios in optimistic concurrency mode (#integration)";
@@ -185,9 +94,6 @@ describe("IModelWriteTest (#integration)", () => {
     assert.equal(neutralObserverIModel.nativeDb.getBriefcaseId(), neutralObserverIModel.briefcaseId);
     assert.isAbove(neutralObserverIModel.briefcaseId, 0);
 
-    // Set up optimistic concurrency. Note the defaults are:
-    firstIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-    secondIModel.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
     // Note: neutralObserver's IModel does not need to be configured for optimistic concurrency. He just pulls changes.
 
     // Check that the policy has been setup correctly

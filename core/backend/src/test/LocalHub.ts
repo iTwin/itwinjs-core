@@ -79,7 +79,7 @@ export class LocalHub {
     db.executeSQL("CREATE TABLE timeline(csIndex INTEGER PRIMARY KEY NOT NULL,csId TEXT NOT NULL UNIQUE,description TEXT,user TEXT,size BIGINT,type INTEGER,pushDate TEXT,briefcaseId INTEGER)");
     db.executeSQL("CREATE TABLE checkpoints(csIndex INTEGER PRIMARY KEY NOT NULL)");
     db.executeSQL("CREATE TABLE versions(name TEXT PRIMARY KEY NOT NULL,csIndex TEXT,FOREIGN KEY(csIndex) REFERENCES timeline(csIndex))");
-    db.executeSQL("CREATE TABLE locks(entityId INTEGER PRIMARY KEY NOT NULL,level INTEGER NOT NULL,lastCSetIndex INTEGER,briefcaseId INTEGER,FOREIGN KEY(lastCSetIndex) REFERENCES timeline(csIndex))");
+    db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,level INTEGER NOT NULL,lastCSetIndex INTEGER,briefcaseId INTEGER,FOREIGN KEY(lastCSetIndex) REFERENCES timeline(csIndex))");
     db.executeSQL("CREATE TABLE sharedLocks(lockId TEXT NOT NULL,briefcaseId INTEGER NOT NULL,PRIMARY KEY(lockId,briefcaseId))");
     db.executeSQL("CREATE INDEX LockIdx ON locks(briefcaseId)");
     db.executeSQL("CREATE INDEX SharedLockIdx ON sharedLocks(briefcaseId)");
@@ -415,7 +415,7 @@ export class LocalHub {
 
   public queryAllLocks(briefcaseId: number) {
     const locks: LockProps[] = [];
-    this.db.withPreparedSqliteStatement("SELECT entityId FROM locks WHERE briefcaseId=?", (stmt) => {
+    this.db.withPreparedSqliteStatement("SELECT id FROM locks WHERE briefcaseId=?", (stmt) => {
       stmt.bindInteger(1, briefcaseId);
       while (DbResult.BE_SQLITE_ROW === stmt.step())
         locks.push({ id: stmt.getValueString(0), state: LockState.Exclusive });
@@ -429,7 +429,7 @@ export class LocalHub {
   }
 
   public queryLockStatus(elementId: Id64String): LockStatus {
-    return this.db.withPreparedSqliteStatement("SELECT lastCSetIndex,level,briefcaseId FROM locks WHERE entityId=?", (stmt) => {
+    return this.db.withPreparedSqliteStatement("SELECT lastCSetIndex,level,briefcaseId FROM locks WHERE id=?", (stmt) => {
       stmt.bindId(1, elementId);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
@@ -441,7 +441,7 @@ export class LocalHub {
       };
       switch (lock.state) {
         case LockState.None:
-          return state;
+          return lock;
         case LockState.Exclusive:
           return { ...lock, briefcaseId: stmt.getValueInteger(2) };
         case LockState.Shared:
@@ -453,16 +453,16 @@ export class LocalHub {
   }
 
   private reserveLock(currStatus: LockStatus, props: LockProps, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
-    if (props.scope === LockState.Exclusive && currStatus.lastCsIndex && (currStatus.lastCsIndex > this.getIndexFromChangeset(briefcase.changeset)))
+    if (props.state === LockState.Exclusive && currStatus.lastCsIndex && (currStatus.lastCsIndex > this.getIndexFromChangeset(briefcase.changeset)))
       throw new IModelError(IModelHubStatus.PullIsRequired, "Pull is required");
 
-    const wantShared = props.scope === LockState.Shared;
-    if (wantShared && (currStatus.scope === LockState.Exclusive))
+    const wantShared = props.state === LockState.Shared;
+    if (wantShared && (currStatus.state === LockState.Exclusive))
       throw new Error("cannot acquire shared lock because an exclusive lock is already held");
 
     this.db.withPreparedSqliteStatement("INSERT INTO locks(entityId,level,briefcaseId) VALUES(?,?,?) ON CONFLICT(entityId) DO UPDATE SET briefcaseId=excluded.briefcaseId,level=excluded.level", (stmt) => {
-      stmt.bindId(1, props.entityId);
-      stmt.bindInteger(2, props.scope);
+      stmt.bindId(1, props.id);
+      stmt.bindInteger(2, props.state);
       stmt.bindValue(3, wantShared ? undefined : briefcase.briefcaseId);
       const rc = stmt.step();
       if (rc !== DbResult.BE_SQLITE_DONE)
@@ -471,7 +471,7 @@ export class LocalHub {
 
     if (wantShared) {
       this.db.withPreparedSqliteStatement("INSERT INTO sharedLocks(lockId,briefcaseId) VALUES(?,?)", (stmt) => {
-        stmt.bindId(1, props.entityId);
+        stmt.bindId(1, props.id);
         stmt.bindInteger(2, briefcase.briefcaseId);
         const rc = stmt.step();
         if (rc !== DbResult.BE_SQLITE_DONE)
@@ -482,7 +482,7 @@ export class LocalHub {
   }
 
   private clearLock(id: Id64String) {
-    this.db.withPreparedSqliteStatement("UPDATE locks SET level=0,briefcaseId=NULL WHERE entityId=?", (stmt) => {
+    this.db.withPreparedSqliteStatement("UPDATE locks SET level=0,briefcaseId=NULL WHERE id=?", (stmt) => {
       stmt.bindId(1, id);
       const rc = stmt.step();
       if (rc !== DbResult.BE_SQLITE_DONE)
@@ -493,7 +493,7 @@ export class LocalHub {
     if (index <= 0)
       return;
 
-    this.db.withPreparedSqliteStatement("UPDATE locks SET lastCSetIndex=?1 WHERE entityId=?2", (stmt) => {
+    this.db.withPreparedSqliteStatement("UPDATE locks SET lastCSetIndex=?1 WHERE id=?2", (stmt) => {
       stmt.bindInteger(1, index);
       stmt.bindId(2, id);
       const rc = stmt.step();
@@ -503,16 +503,16 @@ export class LocalHub {
   }
 
   public requestLock(props: LockProps, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
-    if (props.scope === LockState.None)
+    if (props.state === LockState.None)
       throw new Error("cannot request lock for LockState.None");
 
-    const lockStatus = this.queryLockStatus(props.entityId);
-    switch (lockStatus.scope) {
+    const lockStatus = this.queryLockStatus(props.id);
+    switch (lockStatus.state) {
       case LockState.None:
         return this.reserveLock(lockStatus, props, briefcase);
 
       case LockState.Shared:
-        if (props.scope !== LockState.Shared)
+        if (props.state !== LockState.Shared)
           throw new Error("element is locked with shared access, cannot obtain exclusive lock");
         if (!lockStatus.sharedBy.has(briefcase.briefcaseId))
           this.reserveLock(lockStatus, props, briefcase);
@@ -525,9 +525,9 @@ export class LocalHub {
   }
 
   public releaseLock(props: LockProps, arg: { briefcaseId: BriefcaseId, changeset: ChangesetIdWithIndex }) {
-    const lockId = props.entityId;
+    const lockId = props.id;
     const lockStatus = this.queryLockStatus(lockId);
-    switch (lockStatus.scope) {
+    switch (lockStatus.state) {
       case LockState.None:
         throw new IModelError(IModelHubStatus.LockDoesNotExist, "lock not held");
 
