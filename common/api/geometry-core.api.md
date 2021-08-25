@@ -874,6 +874,24 @@ export class BSplineCurve3dH extends BSplineCurve3dBase {
     }
 
 // @public
+export class BSplineCurveOps {
+    static createThroughPoints(points: IndexedXYZCollection | Point3d[], order: number): BSplineCurve3d | undefined;
+    static createThroughPointsC2Cubic(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined;
+}
+
+// @public (undocumented)
+export namespace BSplineCurveOps {
+    export class C2CubicFit {
+        static constructFitParameters(options: InterpolationCurve3dOptions): boolean;
+        static constructPoles(options: InterpolationCurve3dOptions): Point3d[] | Float64Array | undefined;
+        static convertCubicKnotVectorToFitParams(knots: number[] | undefined, numFitPoints: number, normalize?: boolean): number[] | undefined;
+        static convertFitParamsToCubicKnotVector(params: number[] | undefined, closed?: boolean, legacy?: boolean): number[] | undefined;
+        static convertToJsonKnots(props: InterpolationCurve3dProps): void;
+        static validateOptions(options: InterpolationCurve3dOptions): boolean;
+    }
+}
+
+// @public
 export class BSplineSurface3d extends BSpline2dNd implements BSplineSurface3dQuery {
     clone(): BSplineSurface3d;
     cloneTransformed(transform: Transform): BSplineSurface3d;
