@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/backend-itwin-client",
+      "comment": "disable azcopy probe when file size requirement are not meet.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/backend-itwin-client"
+}
