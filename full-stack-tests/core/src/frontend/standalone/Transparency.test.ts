@@ -111,11 +111,10 @@ describe("Transparency", async () => {
       expect(viewport.displayStyle.backgroundColor.equals(ColorDef.black)).to.be.true;
 
       viewport.changeViewedModels([]);
-      viewport.viewFlags.lighting = false;
+      viewport.viewFlags = viewport.viewFlags.with("lighting", false);
       viewport.isFadeOutActive = true;
 
       setup(viewport);
-      viewport.viewFlags = viewport.viewFlags.clone();
       viewport.addFeatureOverrideProvider(decorator);
 
       viewport.renderFrame();

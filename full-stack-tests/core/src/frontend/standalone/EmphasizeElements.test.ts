@@ -257,9 +257,7 @@ describe("EmphasizeElements tests", () => {
     const vp = ScreenViewport.create(viewDiv, spatialView.clone());
     EmphasizeElements.clear(vp);
 
-    const vf = vp.viewFlags.clone();
-    vf.weights = true;
-    vp.viewFlags = vf;
+    vp.viewFlags = vp.viewFlags.with("weights", true);
 
     const expectAppearance = (color: ColorDef, type: FeatureOverrideType, expectedAppearance: FeatureAppearanceProps) => {
       const emph = EmphasizeElements.getOrCreate(vp);

@@ -134,8 +134,8 @@ export class SelectionContextToolDefinitions {
       commandId: "UiFramework.IsolateSelected",
       iconSpec: "icon-asset-isolate",
       labelKey: "UiFramework:tools.isolateSelected",
-      stateSyncIds: getSelectionContextSyncEventIds(),
-      stateFunc: selectionContextStateFunc,
+      stateSyncIds: getSelectionContextSyncEventIds(), /* only here to support AppUi 1, setting isHidden is the AppUi 2 way */
+      stateFunc: selectionContextStateFunc, /* only here to support AppUi 1, setting isHidden is the AppUi 2 way */
       isHidden: getIsHiddenIfSelectionNotActive(),
       execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processIsolateSelected(),
     });
@@ -146,8 +146,8 @@ export class SelectionContextToolDefinitions {
       groupId: "UiFramework.IsolateSelectionGroup",
       labelKey: "UiFramework:tools.isolate",
       iconSpec: "icon-isolate",
-      stateSyncIds: getSelectionContextSyncEventIds(),
-      stateFunc: selectionContextStateFunc,
+      stateSyncIds: getSelectionContextSyncEventIds(), /* only here to support AppUi 1, setting isHidden is the AppUi 2 way */
+      stateFunc: selectionContextStateFunc, /* only here to support AppUi 1, setting isHidden is the AppUi 2 way */
       isHidden: getIsHiddenIfSelectionNotActive(),
       items: [this.isolateElementsItemDef, this.isolateCategoriesInSelectionItemDef, this.isolateModelsInSelectionItemDef],
       itemsInColumn: 3,
@@ -178,8 +178,8 @@ export class SelectionContextToolDefinitions {
       iconSpec: "icon-asset-classification-hide",
       labelKey: "UiFramework:tools.hideSelected",
       isHidden: getIsHiddenIfSelectionNotActive(),
-      stateSyncIds: getSelectionContextSyncEventIds(),
-      stateFunc: selectionContextStateFunc,
+      stateSyncIds: getSelectionContextSyncEventIds(), /* only here to support AppUi 1, setting isHidden is the AppUi 2 way */
+      stateFunc: selectionContextStateFunc, /* only here to support AppUi 1, setting isHidden is the AppUi 2 way */
       execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processHideSelected(),
     });
   }
@@ -190,8 +190,8 @@ export class SelectionContextToolDefinitions {
       labelKey: "UiFramework:tools.hide",
       iconSpec: "icon-visibility-hide-2",
       isHidden: getIsHiddenIfSelectionNotActive(),
-      stateSyncIds: getSelectionContextSyncEventIds(),
-      stateFunc: selectionContextStateFunc,
+      stateSyncIds: getSelectionContextSyncEventIds(), /* only here to support AppUi 1, setting isHidden is the AppUi 2 way */
+      stateFunc: selectionContextStateFunc, /* only here to support AppUi 1, setting isHidden is the AppUi 2 way */
       items: [this.hideElementsItemDef, this.hideCategoriesInSelectionItemDef, this.hideModelsInSelectionItemDef],
       itemsInColumn: 3,
     });
@@ -203,8 +203,8 @@ export class SelectionContextToolDefinitions {
       iconSpec: "icon-visibility-semi-transparent",
       labelKey: "UiFramework:tools.emphasizeSelected",
       isHidden: getIsHiddenIfSelectionNotActive(),
-      stateSyncIds: getSelectionContextSyncEventIds(),
-      stateFunc: selectionContextStateFunc,
+      stateSyncIds: getSelectionContextSyncEventIds(), /* only here to support AppUi 1, setting isHidden is the AppUi 2 way */
+      stateFunc: selectionContextStateFunc, /* only here to support AppUi 1, setting isHidden is the AppUi 2 way */
       execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processEmphasizeSelected(),
     });
   }
@@ -216,8 +216,12 @@ export class SelectionContextToolDefinitions {
       labelKey: "UiFramework:tools.clearVisibility",
       isHidden: getIsHiddenIfFeatureOverridesActive(),
       stateSyncIds: getFeatureOverrideSyncEventIds(),
-      stateFunc: featureOverridesActiveStateFunc,
-      execute: async () => UiFramework.hideIsolateEmphasizeActionHandler.processClearEmphasize(),
+      stateFunc: featureOverridesActiveStateFunc,  /* only here to support AppUi 1, setting isHidden is the AppUi 2 way */
+      execute: async () => {
+        await UiFramework.hideIsolateEmphasizeActionHandler.processClearEmphasize();
+        await UiFramework.hideIsolateEmphasizeActionHandler.processClearOverrideModels();
+        await UiFramework.hideIsolateEmphasizeActionHandler.processClearOverrideCategories();
+      },
     });
   }
 
