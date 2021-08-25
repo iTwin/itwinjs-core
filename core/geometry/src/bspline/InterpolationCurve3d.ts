@@ -86,7 +86,9 @@ export class InterpolationCurve3dOptions {
   /** `isColinearTangents` as property */
   public get isColinearTangents(): number { return Geometry.resolveNumber(this._isColinearTangents, 0); }
   public set isColinearTangents(val: number) { this._isColinearTangents = val; }
-  /** `isChordLenTangent` as property */
+  /** @deprecated Use `isChordLenTangents` instead */
+  public get isChordLenTangent(): number { return Geometry.resolveNumber(this._isChordLenTangents, 0); }
+  /** `isChordLenTangents` as property */
   public get isChordLenTangents(): number { return Geometry.resolveNumber(this._isChordLenTangents, 0); }
   public set isChordLenTangents(val: number) { this._isChordLenTangents = val; }
   /** `isNaturalTangents` as property */

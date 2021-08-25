@@ -767,7 +767,6 @@ export class BSplineCurve3d extends BSplineCurve3dBase {
     static create(poleArray: Float64Array | Point3d[], knotArray: Float64Array | number[], order: number): BSplineCurve3d | undefined;
     // (undocumented)
     static createFromAkimaCurve3dOptions(options: AkimaCurve3dOptions): BSplineCurve3d | undefined;
-    // (undocumented)
     static createFromInterpolationCurve3dOptions(options: InterpolationCurve3dOptions): BSplineCurve3d | undefined;
     // @deprecated (undocumented)
     static createThroughPoints(points: IndexedXYZCollection | Point3d[], order: number): BSplineCurve3d | undefined;
@@ -2957,6 +2956,8 @@ export class InterpolationCurve3dOptions {
     set fitPoints(val: Point3d[]);
     get isChordLenKnots(): number;
     set isChordLenKnots(val: number);
+    // @deprecated (undocumented)
+    get isChordLenTangent(): number;
     get isChordLenTangents(): number;
     set isChordLenTangents(val: number);
     get isColinearTangents(): number;
