@@ -586,7 +586,7 @@ export class TileAdmin {
     this.initializeRpc();
     const props = this.getTileRequestProps(tile);
     const url = await IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
-    if (await IModelTileRpcInterface.getClient().isUsingExternalTileCache()) {
+    if (typeof url === "string") {
       const response = await fetch(url);
       return new Uint8Array(await response.arrayBuffer());
     }

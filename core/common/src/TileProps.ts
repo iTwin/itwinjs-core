@@ -70,3 +70,13 @@ export interface TileVersionInfo {
    */
   formatVersion: number;
 }
+
+/** Key that can be used to retrieve tile content after it has been generated.
+ * @see [[IModelTileRpcInterface.generateTileContent]]
+ * @see [[IModelTileRpcInterface.retrieveTileContent]]
+ * @internal
+ */
+export interface TileContentKey {
+  treeId: string;
+  contentId: string;
+}

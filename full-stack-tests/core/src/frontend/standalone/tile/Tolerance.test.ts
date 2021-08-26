@@ -11,7 +11,7 @@ import {
   TileMetadata, TileProps, TileTreeMetadata,
 } from "@bentley/imodeljs-common";
 import {
-  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileTreeLoadStatus,
+  GeometricModelState, IModelApp, IModelConnection, IModelTile, IModelTileTree, SnapshotConnection, Tile, TileAdmin, TileTreeLoadStatus,
 } from "@bentley/imodeljs-frontend";
 import { fakeViewState } from "./TileIO.test";
 
@@ -59,9 +59,15 @@ describe("Tile tolerance", () => {
   }
 
   async function expectTolerance(contentId: string, expectedTolerance: number, epsilon = 0.000001): Promise<void> {
-    const url = await IModelTileRpcInterface.getClient().generateTileContent(imodel.getRpcProps(), treeId, contentId, undefined);
-    const response = await fetch(url);
-    const stream = new ByteStream(await response.arrayBuffer());
+    const tile = {
+      iModelTree: {
+        iModel: imodel,
+        geometryGuid: undefined,
+        contentIdQualifier: undefined,
+      },
+      contentId,
+    } as IModelTile;
+    const stream = new ByteStream(await IModelApp.tileAdmin.generateTileContent(tile));
     const header = new ImdlHeader(stream);
     expect(header.isValid).to.be.true;
     expect(header.isReadableVersion).to.be.true;

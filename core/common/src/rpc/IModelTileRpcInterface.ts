@@ -8,11 +8,10 @@
 
 import { Id64Array } from "@bentley/bentleyjs-core";
 import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
-import { CloudStorageTileCache } from "../CloudStorageTileCache";
 import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { IModelTileTreeProps, TileVersionInfo } from "../TileProps";
+import { IModelTileTreeProps, TileContentKey, TileVersionInfo } from "../TileProps";
 import { ElementGraphicsRequestProps } from "../tile/ElementGraphics";
 
 /** @public */
@@ -24,8 +23,6 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
 
   /** The semantic version of the interface. */
   public static interfaceVersion = "3.0.0";
-
-  private _usingExternalTileCache?: boolean;
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -41,11 +38,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
    * @internal
    */
   public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
-    if (this._usingExternalTileCache !== undefined)
-      return this._usingExternalTileCache;
-
-    this._usingExternalTileCache = await this.forward<boolean>(arguments);
-    return this._usingExternalTileCache;
+    return this.forward(arguments);
   }
 
   /** @internal */
@@ -55,11 +48,11 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
    * Use `CloudStorageTileCache.retrieve` for that.
    * @internal
    */
-  public async generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<string> {
+  public async generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<string | TileContentKey> {
     return this.forward(arguments);
   }
 
-  public async retrieveTileContent(_rpcProps: IModelRpcProps, _key: string): Promise<Uint8Array> {
+  public async retrieveTileContent(_rpcProps: IModelRpcProps, _key: TileContentKey): Promise<Uint8Array> {
     return this.forward(arguments);
   }
 
@@ -75,10 +68,6 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
    * @internal
    */
   public async purgeTileTrees(_tokenProps: IModelRpcProps, _modelIds: Id64Array | undefined): Promise<void> { return this.forward(arguments); }
-
-  private static async checkCache(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<Uint8Array | undefined> {
-    return CloudStorageTileCache.getCache().retrieve({ tokenProps, treeId, contentId, guid });
-  }
 
   /** Requests graphics for a single element in "iMdl" format.
    * @returns graphics in iMdl format, or `undefined` if the element's geometry produced no graphics or the request was canceled before completion.
