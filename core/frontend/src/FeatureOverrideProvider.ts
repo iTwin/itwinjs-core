@@ -9,16 +9,15 @@
 import { Viewport } from "./Viewport";
 import { FeatureSymbology } from "./render/FeatureSymbology";
 
-/** An object that customizes the appearance of Features within a [[Viewport]].
- * Only one FeatureOverrideProvider may be associated with a viewport at a time. Setting a new FeatureOverrideProvider replaces any existing provider.
+/** An object that customizes the appearance of [Feature]($common)s within a [[Viewport]] using [[FeatureSymbology.Overrides]].
+ * When the viewport needs to recreate the symbology overrides, it invokes the provider's [[addFeatureOverrides]] method.
+ * If necessary - for example, because of changes to some state from which the provider derives the overrides - the provider
+ * can request that the viewport recreate the overrides by calling [[Viewport.setFeatureOverrideProviderChanged]].
  *
- * If the provider's internal state changes such that the Viewport should recompute the symbology overrides, the provider should notify the viewport by
- * calling [[Viewport.setFeatureOverrideProviderChanged]].
- * @see [[Viewport.addFeatureOverrideProvider]]
- * @see [[Viewport.dropFeatureOverrideProvider]]
+ * @see [[Viewport.addFeatureOverrideProvider]] to register a provider with a viewport.
  * @public
  */
 export interface FeatureOverrideProvider {
-  /** Add to the supplied `overrides` any symbology overrides to be applied to the specified `viewport`. */
+  /** Add to the supplied overrides any symbology overrides to be applied to the specified viewport. */
   addFeatureOverrides(overrides: FeatureSymbology.Overrides, viewport: Viewport): void;
 }
