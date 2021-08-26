@@ -191,7 +191,7 @@ export class BridgeRunner {
       await iModelDbBuilder.updateExistingIModel();
     }  catch (err) {
       Logger.logError(BridgeLoggerCategory.Framework, err.message);
-      iModelDbBuilder.imodel.abandonChanges();
+      await iModelDbBuilder.onFailure();
       throw err;
     } finally {
       if (iModelDbBuilder.imodel.isBriefcaseDb() || iModelDbBuilder.imodel.isSnapshotDb()) {
@@ -225,6 +225,7 @@ abstract class IModelDbBuilder {
 
   public abstract initialize(): Promise<void>;
   public abstract acquire(): Promise<void>;
+  public abstract onFailure(): Promise<void>;
 
   protected abstract _updateExistingData(): Promise<void>;
   protected abstract _finalizeChanges(): Promise<void>;
@@ -521,6 +522,13 @@ class BriefcaseDbBuilder extends IModelDbBuilder {
 
     briefcaseDb.concurrencyControl.startBulkMode(); // We will run in bulk mode the whole time.
   }
+
+  public async onFailure() {
+    this._imodel?.abandonChanges();
+    if (this._imodel?.isBriefcaseDb() && this._requestContext) {
+      await this._imodel.concurrencyControl.abandonResources(this._requestContext);
+    }
+  }
 }
 
 class SnapshotDbBuilder extends IModelDbBuilder {
@@ -540,6 +548,10 @@ class SnapshotDbBuilder extends IModelDbBuilder {
 
     const synchronizer = new Synchronizer(this._imodel, this._bridge.supportsMultipleFilesPerChannel());
     this._bridge.synchronizer = synchronizer;
+  }
+
+  public async onFailure() {
+    this._imodel?.abandonChanges();
   }
 
   protected async _enterChannel(channelRootId: Id64String, _lockRoot?: boolean): Promise<void> {
