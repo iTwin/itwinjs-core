@@ -83,7 +83,7 @@ export class Loop extends CurveChain {
 
 /**
  * structure carrying a pair of loops with curve geometry.
- *
+ * @public
  */
 export class LoopCurveLoopCurve {
   public loopA?: Loop;
