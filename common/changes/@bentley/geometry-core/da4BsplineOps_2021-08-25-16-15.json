@@ -1,0 +1,10 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "InterpolationCurve3d support",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core"
+}
