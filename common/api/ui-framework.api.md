@@ -6825,6 +6825,9 @@ export const useGroupedItems: (items: ReadonlyArray<BackstageItem>) => GroupedIt
 export function useHorizontalToolSettingNodes(): ToolSettingsEntry[] | undefined;
 
 // @beta
+export function useInterval(callback: (...args: any[]) => void, delay: number | undefined): void;
+
+// @beta
 export const useIsBackstageOpen: (manager: BackstageManager) => boolean;
 
 // @internal (undocumented)
@@ -6838,6 +6841,9 @@ export function useNineZoneDispatch(frontstageDef: FrontstageDef): NineZoneDispa
 
 // @internal (undocumented)
 export function useNineZoneState(frontstageDef: FrontstageDef): NineZoneState | undefined;
+
+// @beta
+export function usePopup(visible: boolean, url: string | undefined, title: string, width: number, height: number, onClose: () => void): void;
 
 // @public
 export class UserProfileBackstageItem extends React.PureComponent<UserProfileBackstageItemProps> {
@@ -7643,7 +7649,7 @@ export enum WidgetType {
 }
 
 // @public
-export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "targetRef" | "onOpenWidget">>) => JSX.Element;
+export const withMessageCenterFieldProps: <P extends MessageCenterFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget" | "targetRef">>) => JSX.Element;
 
 // @public
 export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: React.JSXElementConstructor<P> & C) => {
@@ -7701,7 +7707,7 @@ export const withSafeArea: <P extends InjectedWithSafeAreaProps, C>(Component: R
 };
 
 // @public
-export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "openWidget" | "onOpenWidget">>) => JSX.Element;
+export const withStatusFieldProps: <P extends StatusFieldProps, C>(Component: React.JSXElementConstructor<P> & C) => (props: JSX.LibraryManagedAttributes<C, Omit<P, "isInFooterMode" | "onOpenWidget" | "openWidget">>) => JSX.Element;
 
 // @public
 export class Workflow extends ItemDefBase {
