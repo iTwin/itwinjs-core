@@ -199,7 +199,8 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
-    this._locks = new OptimisticLocks();
+    const useLocks = this.isBriefcaseDb() && this.briefcaseId !== BriefcaseIdValue.Unassigned &&
+      this._locks = new OptimisticLocks();
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
@@ -249,7 +250,7 @@ export abstract class IModelDb extends IModel {
       return;
 
     this._initialized = true;
-    const db = this.isBriefcaseDb() || this.isStandaloneDb() ? this : undefined;
+    const db = this.isBriefcaseDb() ? this : undefined;
     if (!db || !IpcHost.isValid)
       return;
 
