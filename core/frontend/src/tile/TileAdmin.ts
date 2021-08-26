@@ -585,7 +585,12 @@ export class TileAdmin {
   public async generateTileContent(tile: IModelTile): Promise<Uint8Array> {
     this.initializeRpc();
     const props = this.getTileRequestProps(tile);
-    return IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
+    const url = await IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
+    if (await IModelTileRpcInterface.getClient().isUsingExternalTileCache()) {
+      const response = await fetch(url);
+      return new Uint8Array(await response.arrayBuffer());
+    }
+    return IModelTileRpcInterface.getClient().retrieveTileContent(props.tokenProps, url);
   }
 
   /** @internal */

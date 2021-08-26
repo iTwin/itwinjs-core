@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { AbandonedError, Id64Array } from "@bentley/bentleyjs-core";
+import { Id64Array } from "@bentley/bentleyjs-core";
 import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
 import { CloudStorageTileCache } from "../CloudStorageTileCache";
 import { IModelRpcProps } from "../IModel";
@@ -23,7 +23,9 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
   public static readonly interfaceName = "IModelTileRpcInterface";
 
   /** The semantic version of the interface. */
-  public static interfaceVersion = "2.3.0";
+  public static interfaceVersion = "3.0.0";
+
+  private _usingExternalTileCache?: boolean;
 
   /*===========================================================================================
     NOTE: Any add/remove/change to the methods below requires an update of the interface version.
@@ -39,28 +41,25 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
    * @internal
    */
   public async isUsingExternalTileCache(): Promise<boolean> { // eslint-disable-line @bentley/prefer-get
-    return this.forward(arguments);
+    if (this._usingExternalTileCache !== undefined)
+      return this._usingExternalTileCache;
+
+    this._usingExternalTileCache = await this.forward<boolean>(arguments);
+    return this._usingExternalTileCache;
   }
 
   /** @internal */
   public async requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps> { return this.forward(arguments); }
 
-  /** @deprecated Use generateTileContent.
-   * @internal
-   */
-  public async requestTileContent(iModelToken: IModelRpcProps, treeId: string, contentId: string, isCanceled?: () => boolean, guid?: string): Promise<Uint8Array> {
-    const cached = await IModelTileRpcInterface.checkCache(iModelToken, treeId, contentId, guid);
-    if (undefined === cached && undefined !== isCanceled && isCanceled())
-      throw new AbandonedError();
-
-    return cached || this.forward(arguments);
-  }
-
   /** Ask the backend to generate content for the specified tile. This function, unlike the deprecated `requestTileContent`, does not check the cloud storage tile cache -
    * Use `CloudStorageTileCache.retrieve` for that.
    * @internal
    */
-  public async generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<Uint8Array> {
+  public async generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<string> {
+    return this.forward(arguments);
+  }
+
+  public async retrieveTileContent(_rpcProps: IModelRpcProps, _key: string): Promise<Uint8Array> {
     return this.forward(arguments);
   }
 

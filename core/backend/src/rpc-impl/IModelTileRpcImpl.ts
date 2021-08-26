@@ -19,11 +19,6 @@ import { IModelHost } from "../IModelHost";
 import { PromiseMemoizer, QueryablePromise } from "../PromiseMemoizer";
 import { RpcBriefcaseUtility } from "./RpcBriefcaseUtility";
 
-interface TileContent {
-  content: Uint8Array;
-  metadata?: object;
-}
-
 interface TileRequestProps {
   requestContext: ClientRequestContext;
   tokenProps: IModelRpcProps;
@@ -131,28 +126,42 @@ class RequestTileTreePropsMemoizer extends TileRequestMemoizer<IModelTileTreePro
 
 interface TileContentRequestProps extends TileRequestProps {
   contentId: string;
+  guid?: string;
 }
 
-async function getTileContent(props: TileContentRequestProps): Promise<TileContent> {
+// interface TileId {
+//   treeId: string;
+//   contentId: string;
+// }
+
+async function getTileContent(props: TileContentRequestProps): Promise<string> {
   const db = await RpcBriefcaseUtility.findOrOpen(props.requestContext as AuthorizedClientRequestContext, props.tokenProps, SyncMode.FixedVersion);
   props.requestContext.enter();
   const tile = await db.tiles.requestTileContent(props.requestContext, props.treeId, props.contentId);
   props.requestContext.enter();
-  return {
-    content: tile.content,
-    metadata: {
+
+  // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
+  if (IModelHost.usingExternalTileCache) {
+    await IModelHost.tileUploader.cacheTile(props.tokenProps, props.treeId, props.contentId, tile.content, props.guid, {
       backendName: IModelHost.applicationId,
       tileGenerationTime: tile.elapsedSeconds.toString(),
       tileSize: tile.content.byteLength.toString(),
-    },
-  };
+    });
+
+    return IModelHost.tileUploader.getUploadUrl(props.tokenProps, props.treeId, props.contentId, props.guid);
+  }
+
+  return JSON.stringify({
+    treeId: props.treeId,
+    contentId: props.contentId,
+  });
 }
 
 function generateTileContentKey(props: TileContentRequestProps): string {
   return `${generateTileRequestKey(props)}:${props.contentId}`;
 }
 
-class RequestTileContentMemoizer extends TileRequestMemoizer<TileContent, TileContentRequestProps> {
+class RequestTileContentMemoizer extends TileRequestMemoizer<string, TileContentRequestProps> {
   protected get _timeoutMilliseconds() { return IModelHost.tileContentRequestTimeout; }
   protected get _operationName() { return "requestTileContent"; }
   protected stringify(props: TileContentRequestProps): string { return `${props.treeId}:${props.contentId}`; }
@@ -174,7 +183,7 @@ class RequestTileContentMemoizer extends TileRequestMemoizer<TileContent, TileCo
     return this._instance;
   }
 
-  public static async perform(props: TileContentRequestProps): Promise<TileContent> {
+  public static async perform(props: TileContentRequestProps): Promise<string> {
     return this.instance.perform(props);
   }
 }
@@ -199,19 +208,17 @@ export class IModelTileRpcImpl extends RpcInterface implements IModelTileRpcInte
     return db.nativeDb.purgeTileTrees(modelIds);
   }
 
-  public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<Uint8Array> {
+  public async generateTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<string> {
     const requestContext = ClientRequestContext.current;
-    const tile = await RequestTileContentMemoizer.perform({ requestContext, tokenProps, treeId, contentId });
-
-    // ###TODO: Verify the guid supplied by the front-end matches the guid stored in the model?
-    if (IModelHost.usingExternalTileCache)
-      IModelHost.tileUploader.cacheTile(tokenProps, treeId, contentId, tile.content, guid, tile.metadata);
-
-    return tile.content;
+    return RequestTileContentMemoizer.perform({ requestContext, tokenProps, treeId, contentId, guid });
   }
 
-  public async requestTileContent(tokenProps: IModelRpcProps, treeId: string, contentId: string, _unused?: () => boolean, guid?: string): Promise<Uint8Array> {
-    return this.generateTileContent(tokenProps, treeId, contentId, guid);
+  public async retrieveTileContent(tokenProps: IModelRpcProps, key: string): Promise<Uint8Array> {
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    const db = await RpcBriefcaseUtility.findOrOpen(requestContext, tokenProps, SyncMode.FixedVersion);
+    requestContext.enter();
+    const { treeId, contentId } = JSON.parse(key);
+    return db.tiles.getTileContent(requestContext, treeId, contentId);
   }
 
   public async getTileCacheContainerUrl(_tokenProps: IModelRpcProps, id: CloudStorageContainerDescriptor): Promise<CloudStorageContainerUrl> {

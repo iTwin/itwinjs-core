@@ -891,7 +891,7 @@ describe.skip("TileAdmin", () => {
           else
             expect(guid).to.equal(`first_${qualifier!}`);
 
-          return new Uint8Array(1);
+          return "";
         };
 
         await tree.staticBranch.requestContent();

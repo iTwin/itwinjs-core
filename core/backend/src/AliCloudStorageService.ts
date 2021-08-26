@@ -15,6 +15,7 @@ declare class OSS {
   public putBucket(name: string): Promise<void>;
   public putBucketCORS(name: string, params: Array<{ allowedOrigin: string, allowedMethod: string[], allowedHeader: string }>): Promise<void>;
   public putStream(name: string, source: Readable, options: OSS.PutStreamOptions): Promise<void>;
+  public getStreamURL(bucket: string, name: string): Promise<string>;
 }
 
 declare namespace OSS { // eslint-disable-line no-redeclare
@@ -97,5 +98,9 @@ export class AliCloudStorageService extends CloudStorageService {
     }
     await this._client.putStream(name, source, putOptions);
     return "";
+  }
+
+  public async getResourceUrl(container: string, name: string): Promise<string> {
+    return this._client.getStreamURL(container, name);
   }
 }

@@ -2137,13 +2137,28 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
         this.pollTileContent(resolve, reject, treeId, tileId, requestContext);
       });
     }
+
+    /** @internal */
+    public async getTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array> {
+      requestContext.enter();
+
+      const ret = await new Promise<IModelJsNative.ErrorStatusOrResult<any, Uint8Array>>((resolve) => {
+        this._iModel.nativeDb.getTileContent(treeId, tileId, resolve);
+      });
+
+      if (undefined !== ret.error) {
+        throw new IModelError(ret.error.status, `TreeId=${treeId} TileId=${tileId}`);
+      }
+
+      return ret.result!;
+    }
   }
 }
 
 /** A local copy of an iModel from iModelHub that can pull and potentially push changesets.
- * BriefcaseDb raises a set of events to allow apps and subsystems to track its object life cycle, including [[onOpen]] and [[onOpened]].
- * @public
- */
+   * BriefcaseDb raises a set of events to allow apps and subsystems to track its object life cycle, including [[onOpen]] and [[onOpened]].
+   * @public
+   */
 export class BriefcaseDb extends IModelDb {
   /** Manages local changes to this briefcase. */
   public readonly txns = new TxnManager(this);

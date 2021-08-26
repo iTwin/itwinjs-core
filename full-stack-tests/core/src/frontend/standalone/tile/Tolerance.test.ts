@@ -59,8 +59,9 @@ describe("Tile tolerance", () => {
   }
 
   async function expectTolerance(contentId: string, expectedTolerance: number, epsilon = 0.000001): Promise<void> {
-    const content = await IModelTileRpcInterface.getClient().generateTileContent(imodel.getRpcProps(), treeId, contentId, undefined);
-    const stream = new ByteStream(content.buffer);
+    const url = await IModelTileRpcInterface.getClient().generateTileContent(imodel.getRpcProps(), treeId, contentId, undefined);
+    const response = await fetch(url);
+    const stream = new ByteStream(await response.arrayBuffer());
     const header = new ImdlHeader(stream);
     expect(header.isValid).to.be.true;
     expect(header.isReadableVersion).to.be.true;

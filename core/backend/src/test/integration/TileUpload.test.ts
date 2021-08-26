@@ -83,7 +83,7 @@ describe("TileUpload (#integration)", () => {
     IModelHost.applicationId = "TestApplication";
 
     RpcManager.initializeInterface(IModelTileRpcInterface);
-    tileRpcInterface = RpcRegistry.instance.getImplForInterface<IModelTileRpcInterface>(IModelTileRpcInterface);
+    tileRpcInterface = RpcRegistry.instance.getImplForInterface(IModelTileRpcInterface);
 
     requestContext = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
     testContextId = await HubUtility.getTestContextId(requestContext);
@@ -109,32 +109,32 @@ describe("TileUpload (#integration)", () => {
     await IModelTestUtils.startBackend();
   });
 
-  it("should upload tile to external cache with metadata", async () => {
-    const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId });
-    assert.isDefined(iModel);
+  // it("should upload tile to external cache with metadata", async () => {
+  //   const iModel = await IModelTestUtils.downloadAndOpenCheckpoint({ requestContext, contextId: testContextId, iModelId: testIModelId });
+  //   assert.isDefined(iModel);
 
-    // Generate tile
-    // eslint-disable-next-line deprecation/deprecation
-    const tileProps = await getTileProps(iModel, requestContext);
-    assert.isDefined(tileProps);
-    const tile = await tileRpcInterface.requestTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid); // eslint-disable-line deprecation/deprecation
+  //   // Generate tile
+  //   // eslint-disable-next-line deprecation/deprecation
+  //   const tileProps = await getTileProps(iModel, requestContext);
+  //   assert.isDefined(tileProps);
+  //   const tile = await tileRpcInterface.requestTileContent(iModel.getRpcProps(), tileProps!.treeId, tileProps!.contentId, undefined, tileProps!.guid); // eslint-disable-line deprecation/deprecation
 
-    // Uploads to the cloud storage tile cache happen asynchronously. Don't resolve until they have all finished.
-    await Promise.all(IModelHost.tileUploader.activeUploads);
+  //   // Uploads to the cloud storage tile cache happen asynchronously. Don't resolve until they have all finished.
+  //   await Promise.all(IModelHost.tileUploader.activeUploads);
 
-    // Query tile from tile cache
-    const containerUrl = Azure.ContainerURL.fromServiceURL(serviceUrl, testIModelId);
-    const blobUrl = Azure.BlobURL.fromContainerURL(containerUrl, `tiles/${tileProps!.treeId}/${tileProps!.guid}/${tileProps!.contentId}`);
-    const blockBlobUrl = Azure.BlockBlobURL.fromBlobURL(blobUrl);
-    const blobProperties = await blockBlobUrl.getProperties(Azure.Aborter.none);
+  //   // Query tile from tile cache
+  //   const containerUrl = Azure.ContainerURL.fromServiceURL(serviceUrl, testIModelId);
+  //   const blobUrl = Azure.BlobURL.fromContainerURL(containerUrl, `tiles/${tileProps!.treeId}/${tileProps!.guid}/${tileProps!.contentId}`);
+  //   const blockBlobUrl = Azure.BlockBlobURL.fromBlobURL(blobUrl);
+  //   const blobProperties = await blockBlobUrl.getProperties(Azure.Aborter.none);
 
-    // Verify metadata in blob properties
-    assert.isDefined(blobProperties.metadata);
-    assert.isDefined(blobProperties.metadata!.tilegenerationtime);
-    assert.equal(blobProperties.metadata!.backendname, IModelHost.applicationId);
-    assert.equal(blobProperties.metadata!.tilesize, tile.byteLength.toString());
+  //   // Verify metadata in blob properties
+  //   assert.isDefined(blobProperties.metadata);
+  //   assert.isDefined(blobProperties.metadata!.tilegenerationtime);
+  //   assert.equal(blobProperties.metadata!.backendname, IModelHost.applicationId);
+  //   assert.equal(blobProperties.metadata!.tilesize, tile.byteLength.toString());
 
-    await blockBlobUrl.delete(Azure.Aborter.none);
-    await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
-  });
+  //   await blockBlobUrl.delete(Azure.Aborter.none);
+  //   await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
+  // });
 });
