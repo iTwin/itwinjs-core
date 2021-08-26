@@ -242,13 +242,14 @@ describe("RegionBoolean", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "ParityRegionWithBadBoundary");
     expect(ck.getNumErrors()).equals(0);
   });
-  it("SectioningExample", () => {
+  it.only("SectioningExample", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
-    const xOut = 0.0;
+    let xOut = 0.0;
     const yOut0 = 0.0;
     const allLines: CurvePrimitive[] = [];
     const ax = 10.0;
+    const ax1 = ax + 1; // for mirror
     const ay1 = 1.0;
     const dy = 1.0;
     const ay2 = ay1 + dy;
@@ -259,9 +260,26 @@ describe("RegionBoolean", () => {
       const y = fraction * ay1;   // "on" the lower line
       allLines.push(LineSegment3d.createXYXY(x, y- by, x, y + dy + by));
     }
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, allLines, xOut, yOut0);
-    const regions = RegionOps.constructAllXYRegionLoops(allLines);
-    saveShiftedLoops(allGeometry, regions, xOut, yOut0, 1.5 * dy);
+    {
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, allLines, xOut, yOut0);
+      const regions = RegionOps.constructAllXYRegionLoops(allLines);
+      saveShiftedLoops(allGeometry, regions, xOut, yOut0, 1.5 * dy);
+    }
+
+    xOut += 3 * ax;
+    {
+    // repeat with a mirrored set of polygons
+    const n = allLines.length;
+    const transform = Transform.createFixedPointAndMatrix(Point3d.create(ax1, 0, 0),
+      Matrix3d.createScale(-1, 1.4, 1));
+    for (let i = 0; i < n; i++)
+      allLines.push(allLines[i].cloneTransformed(transform) as CurvePrimitive);
+
+      const regions = RegionOps.constructAllXYRegionLoops(allLines);
+      saveShiftedLoops(allGeometry, regions, xOut, yOut0, 10.5 * dy);
+      GeometryCoreTestIO.captureCloneGeometry(allGeometry, allLines, xOut, yOut0);
+    }
+
     GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningExample");
     expect(ck.getNumErrors()).equals(0);
     });
@@ -279,7 +297,6 @@ function saveShiftedLoops(allGeometry: GeometryQuery[], loops: SignedLoops | Sig
   if (Array.isArray(loops)) {
     for (const member of loops) {
       saveShiftedLoops(allGeometry, member, x0, y0, dy, positiveLoopOffset);
-      x0 += dy;
     }
   } else {
     GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops.positiveAreaLoops, x0, y0 + 2 * dy);
@@ -290,7 +307,7 @@ function saveShiftedLoops(allGeometry: GeometryQuery[], loops: SignedLoops | Sig
       const zz = 0.01;    // raise the tic marks above the faces
       for (const loop of loops.positiveAreaLoops) {
         const offsetLoop = RegionOps.constructCurveXYOffset(loop, positiveLoopOffset);
-        GeometryCoreTestIO.captureGeometry(allGeometry, offsetLoop, x0, yy);
+        GeometryCoreTestIO.captureCloneGeometry(allGeometry, offsetLoop, x0, yy);
       }
       // draw a tic mark starting at a fractional position along an edge, leading "to the left" of the edge.
       const drawEdgeTic = (curve: CurvePrimitive | undefined, fraction: number) => {

@@ -3252,6 +3252,17 @@ export class Loop extends CurveChain {
 }
 
 // @public
+export class LoopCurveLoopCurve {
+    constructor(loopA: Loop | undefined, curveA: CurvePrimitive | undefined, loopB: Loop | undefined, curveB: CurvePrimitive | undefined);
+    curveA?: CurvePrimitive;
+    curveB?: CurvePrimitive;
+    loopA?: Loop;
+    loopB?: Loop;
+    setA(loop: Loop, curve: CurvePrimitive): void;
+    setB(loop: Loop, curve: CurvePrimitive): void;
+}
+
+// @public
 export type LowAndHighXY = Readonly<WritableLowAndHighXY>;
 
 // @public
@@ -5127,6 +5138,7 @@ export class Segment1d {
 
 // @public
 export interface SignedLoops {
+    edges?: LoopCurveLoopCurve[];
     negativeAreaLoops: Loop[];
     positiveAreaLoops: Loop[];
     slivers: Loop[];

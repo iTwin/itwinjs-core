@@ -86,9 +86,13 @@ export class Loop extends CurveChain {
  * @public
  */
 export class LoopCurveLoopCurve {
+  /** First loop */
   public loopA?: Loop;
+  /** A curve (typically an edge of loopA) */
   public curveA?: CurvePrimitive;
+  /** second loop */
   public loopB?: Loop;
+  /** A curve (typically an edge of loopB) */
   public curveB?: CurvePrimitive;
   public constructor(loopA: Loop | undefined, curveA: CurvePrimitive | undefined, loopB: Loop | undefined, curveB: CurvePrimitive | undefined) {
     this.loopA = loopA;
@@ -96,10 +100,12 @@ export class LoopCurveLoopCurve {
     this.loopB = loopB;
     this.curveB = curveB;
   }
+  /** Set the loopA and curveA members */
   public setA(loop: Loop, curve: CurvePrimitive) {
     this.loopA = loop;
     this.curveA = curve;
   }
+  /** Set the loopB and curveB members */
   public setB(loop: Loop, curve: CurvePrimitive) {
     this.loopB = loop;
     this.curveB = curve;
