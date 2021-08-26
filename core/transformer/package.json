@@ -1,0 +1,90 @@
+{
+  "name": "@bentley/imodeljs-transformer",
+  "version": "3.0.0-dev.28",
+  "description": "API for exporting an iModel's parts and also importing them into another iModel",
+  "main": "lib/imodeljs-transformer.js",
+  "typings": "lib/imodeljs-transformer",
+  "license": "MIT",
+  "engines": {
+    "node": ">=10.17.0 <15.0"
+  },
+  "scripts": {
+    "compile": "npm run build",
+    "build": "tsc 1>&2 && npm run copy:assets && npm run copy:test-assets",
+    "clean": "rimraf lib .rush/temp/package-deps*.json",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/core/imodeljs-transformer/file.json --tsIndexFile=./imodeljs-transformer.ts --onlyJson",
+    "copy:assets": "cpx \"./src/assets/**/*\" ./lib/assets",
+    "copy:test-assets": "cpx \"./src/test/assets/**/*\" ./lib/test/assets",
+    "cover": "nyc npm test",
+    "cover:integration": "nyc npm run test:integration",
+    "extract-api": "betools extract-api --entry=imodeljs-transformer",
+    "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
+    "test": "betools test --offline=\"mock\" --grep=\"#integration\" --invert",
+    "test:integration": "betools test --offline=\"mock\" --grep=\"#integration\""
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/core/transformer"
+  },
+  "keywords": [
+    "Bentley",
+    "BIM",
+    "iModel",
+    "digital-twin",
+    "iTwin"
+  ],
+  "author": {
+    "name": "Bentley Systems, Inc.",
+    "url": "http://www.bentley.com"
+  },
+  "peerDependencies": {
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.28",
+    "@bentley/ecschema-metadata": "workspace:^3.0.0-dev.28",
+    "@bentley/geometry-core": "workspace:^3.0.0-dev.28",
+    "@bentley/imodeljs-backend": "workspace:^3.0.0-dev.28",
+    "@bentley/imodeljs-common": "workspace:^3.0.0-dev.28",
+    "@bentley/itwin-client": "workspace:^3.0.0-dev.28"
+  },
+  "//devDependencies": [
+    "NOTE: All peerDependencies should also be listed as devDependencies since peerDependencies are not considered by npm install",
+    "NOTE: All tools used by scripts in this package must be listed as devDependencies"
+  ],
+  "devDependencies": {
+    "@bentley/bentleyjs-core": "workspace:*",
+    "@bentley/build-tools": "workspace:*",
+    "@bentley/ecschema-metadata": "workspace:*",
+    "@bentley/eslint-plugin": "workspace:*",
+    "@bentley/geometry-core": "workspace:*",
+    "@bentley/imodeljs-backend": "workspace:*",
+    "@bentley/imodeljs-common": "workspace:*",
+    "@bentley/itwin-client": "workspace:*",
+    "@types/chai": "^4.1.4",
+    "@types/chai-as-promised": "^7",
+    "@types/mocha": "^8.2.2",
+    "@types/node": "10.14.1",
+    "@types/semver": "^5.5.0",
+    "@types/sinon": "^9.0.0",
+    "chai": "^4.1.2",
+    "chai-as-promised": "^7",
+    "cpx": "^1.5.0",
+    "eslint": "^7.11.0",
+    "mocha": "^8.3.2",
+    "npm-run-all": "^4.1.5",
+    "nyc": "^15.1.0",
+    "rimraf": "^3.0.2",
+    "sinon": "^9.0.2",
+    "typescript": "~4.3.0"
+  },
+  "dependencies": {
+    "semver": "^5.5.0"
+  },
+  "nyc": {
+    "extends": "./node_modules/@bentley/build-tools/.nycrc"
+  },
+  "eslintConfig": {
+    "plugins": [
+      "@bentley"
+    ],
+    "extends": "plugin:@bentley/imodeljs-recommended"
+  }
+}
