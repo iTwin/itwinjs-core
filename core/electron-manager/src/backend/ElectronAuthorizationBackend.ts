@@ -71,7 +71,7 @@ export class ElectronAuthorizationBackend extends NativeAppAuthorizationBackend 
   }
 
   /** Loads the access token from the store, and refreshes it if necessary and possible
-   * @return AccessToken if it's possible to get a valid access token, and undefined otherwise.
+   * @return AccessTokenString if it's possible to get a valid access token, and undefined otherwise.
    */
   private async loadAccessToken(): Promise<AccessTokenString | undefined> {
     const tokenResponse = await this.tokenStore.load();

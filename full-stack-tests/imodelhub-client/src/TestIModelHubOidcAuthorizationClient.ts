@@ -10,12 +10,12 @@ import { TestUtility } from "@bentley/oidc-signin-tool";
 
 export class TestIModelHubOidcAuthorizationClient implements FrontendAuthorizationClient {
   private _token: AccessTokenString | undefined;
-  private _expiresAt?: Date | undefined;
+  private _expiresAt?: Date;
 
   public constructor(private _userCredentials: any) {
   }
 
-  public isExpired(token?: AccessTokenString ): boolean {
+  public isExpired(token?: AccessTokenString): boolean {
     token = token ?? this._token;
     return !(token === this._token && this._expiresAt !== undefined && this._expiresAt > new Date());
   }

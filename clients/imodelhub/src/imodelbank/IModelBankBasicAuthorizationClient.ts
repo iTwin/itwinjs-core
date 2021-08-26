@@ -17,7 +17,6 @@ export function tokenFromUserCredentials(userCredentials: any): AccessTokenStrin
  */
 export class IModelBankBasicAuthorizationClient implements FrontendAuthorizationClient {
   private _token?: AccessTokenString;
-  private _expiresAt?: Date = undefined;
 
   public constructor(private _userCredentials: any) {
   }
@@ -25,14 +24,7 @@ export class IModelBankBasicAuthorizationClient implements FrontendAuthorization
   public async signIn(_requestContext?: ClientRequestContext): Promise<void> {
     _requestContext?.enter();
     this._token = tokenFromUserCredentials(this._userCredentials);
-    this._expiresAt = this._userCredentials.exiresAt;
     this.onUserStateChanged.raiseEvent(this._token);
-  }
-
-  public isExpired(token?: AccessTokenString): boolean {
-    // Should we make this check 1 minute in advance?
-    token = token ?? this._token;
-    return !(token === this._token && this._expiresAt !== undefined && this._expiresAt > new Date());
   }
 
   public async signOut(_requestContext?: ClientRequestContext): Promise<void> {

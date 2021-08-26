@@ -63,12 +63,6 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     return this._accessToken;
   }
 
-  public isExpired(token?: AccessTokenString ): boolean {
-    // Should we make this check 1 minute in advance?
-    token = token ?? this._accessToken;
-    return !(token === this._accessToken && this._expiresAt !== undefined && this._expiresAt > new Date());
-  }
-
   /**
    * Get the access token
    * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead.
@@ -78,27 +72,22 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
   }
 
   /**
-   * Refresh the access token - simply checks if the token is still valid before re-fetching a new access token
-   * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead to always get a valid token.
-   */
-  // SHOULD WE REMOVE THIS NOW?
-  public async refreshToken(requestContext: ClientRequestContext, jwt: AccessTokenString): Promise<AccessTokenString> {
-    requestContext.enter();
-
-    if (!this.isExpired(jwt)){
-      return jwt;
-    }
-
-    this._accessToken = await this.generateAccessToken(requestContext);
-    return this._accessToken;
-  }
-
-  /**
    * Set to true if there's a current authorized user or client (in the case of agent applications).
    * Set to true if signed in and the access token has not expired, and false otherwise.
    */
   public get isAuthorized(): boolean {
-    return this.hasSignedIn && !this.isExpired(this._accessToken);
+    return this.hasSignedIn && !this.hasExpired;
+  }
+
+  /** Set to true if the user has signed in, but the token has expired and requires a refresh */
+  public get hasExpired(): boolean {
+    if (!this._accessToken)
+      return false;
+
+    if (!this._expiresAt)
+      throw new BentleyError(AuthStatus.Error, "Invalid JWT");
+
+    return this._expiresAt.getTime() - Date.now() <= 1 * 60 * 1000; // Consider 1 minute before expiry as expired
   }
 
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */

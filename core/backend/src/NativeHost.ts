@@ -22,7 +22,6 @@ import { NativeAppStorage } from "./NativeAppStorage";
 /** @internal */
 export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient{
   protected _accessToken?: AccessTokenString;
-  protected _expiresAt?: Date = undefined; // TODO: Make sure this is set somewhere
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;
   protected abstract refreshToken(): Promise<AccessTokenString>;
@@ -36,13 +35,7 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
   }
 
   public get isAuthorized(): boolean {
-    return undefined !== this._accessToken && !this.isExpired();
-  }
-
-  public isExpired(token?: AccessTokenString ): boolean {
-    // Should we make this check 1 minute in advance?
-    token = token ?? this._accessToken;
-    return !(token === this._accessToken && this._expiresAt !== undefined && this._expiresAt > new Date());
+    return !!this._accessToken;
   }
 
   public setAccessToken(token?: AccessTokenString) {
@@ -96,7 +89,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public async getAccessTokenProps(): Promise<AccessTokenProps> {
     return {
       tokenString: await NativeHost.authorization.getAccessToken() ?? "",
-      expiresAt: undefined, // TODO: Need some way of getting the expiration here?
+      expiresAt: undefined,
     };
   }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {

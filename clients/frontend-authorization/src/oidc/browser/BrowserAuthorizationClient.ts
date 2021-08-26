@@ -60,13 +60,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
   public readonly onUserStateChanged = new BeEvent<(token?: AccessTokenString) => void>();
 
   protected _accessToken?: AccessTokenString;
-  protected _expiresAt?: Date;
-
-  public isExpired(token?: AccessTokenString): boolean {
-    // Should we make this check 1 minute in advance?
-    token = token ?? this._accessToken;
-    return !(token === this._accessToken && this._expiresAt !== undefined && this._expiresAt > new Date());
-  }
 
   public get isAuthorized(): boolean {
     return this.hasSignedIn;
@@ -228,7 +221,6 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
     // Attempt a silent sign-in
     try {
       user = await userManager.signinSilent(); // calls events
-      this._expiresAt = new Date(user.expires_at);
       return user;
     } catch (err) {
       return undefined;
@@ -261,7 +253,7 @@ export class BrowserAuthorizationClient extends BrowserAuthorizationBase<Browser
       this._accessToken = undefined;
       return;
     }
-    this._accessToken = user.access_token; // AccessToken.fromTokenResponseJson(user, user.profile);
+    this._accessToken = user.access_token;
   }
 
   /**

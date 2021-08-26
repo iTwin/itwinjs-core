@@ -49,17 +49,15 @@ export class SignIn extends React.PureComponent<SignInProps> {
     if (isFrontendAuthorizationClient(oidcClient))
       this._oidcClient = oidcClient;
 
-    // istanbul ignore next
-    const isAuthorized = this._oidcClient && !this._oidcClient.isExpired();
     // istanbul ignore if
-    if (isAuthorized)
+    if (this._oidcClient)
       this._oidcClient!.onUserStateChanged.addListener(this._onUserStateChanged);
   }
 
   // istanbul ignore next
   private _onUserStateChanged() {
     // istanbul ignore next
-    if (this._oidcClient && !this._oidcClient.isExpired() && this.props.onSignedIn)
+    if (this._oidcClient && this.props.onSignedIn)
       this.props.onSignedIn();
   }
 

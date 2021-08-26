@@ -52,7 +52,7 @@ export class UserSettingsStorage implements UiSettingsStorage {
   }
 
   private async isSignedIn(): Promise<boolean> {
-    return !!IModelApp.authorizationClient && await IModelApp.authorizationClient.getAccessToken() !== undefined; // TODO: Do we want this to be isExpired instead?
+    return !!IModelApp.authorizationClient && await IModelApp.authorizationClient.getAccessToken() !== undefined;
   }
 }
 

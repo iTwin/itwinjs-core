@@ -8,7 +8,7 @@
 
 import { IpcWebSocket, IpcWebSocketFrontend, IpcWebSocketMessage, IpcWebSocketTransport } from "@bentley/imodeljs-common";
 import { IpcApp } from "./IpcApp";
-import { WebViewerApp, WebViewerAppOpts } from "./WebViewerApp";
+import { WebViewerAppOpts } from "./WebViewerApp";
 
 class LocalTransport extends IpcWebSocketTransport {
   private _client: WebSocket;
@@ -53,6 +53,6 @@ export class LocalhostIpcApp {
     IpcWebSocket.transport = new LocalTransport(opts?.localhostIpcApp?.socketPort ?? 3002);
     const ipc = new IpcWebSocketFrontend();
     await IpcApp.startup(ipc, opts);
-    await WebViewerApp.startup(opts); // this also attempts to initialize IModelApp, that's ok.
+    // await WebViewerApp.startup(opts); // this also attempts to initialize IModelApp, that's ok.
   }
 }

@@ -20,7 +20,7 @@ import { EditTools } from "@bentley/imodeljs-editor-frontend";
 import {
   AccuSnap, AuthorizedFrontendRequestContext, BriefcaseConnection, ExternalServerExtensionLoader, IModelApp, IModelConnection,
   LocalUnitFormatProvider, NativeApp, NativeAppLogger, NativeAppOpts, SelectionTool, SnapMode, ToolAdmin, ViewClipByPlaneTool, ViewState,
-  WebViewerApp, WebViewerAppOpts,
+  WebViewerAppOpts,
 } from "@bentley/imodeljs-frontend";
 import { I18NNamespace } from "@bentley/imodeljs-i18n";
 import { MarkupApp } from "@bentley/imodeljs-markup";
@@ -176,8 +176,8 @@ export class SampleAppIModelApp {
       await IOSApp.startup(opts);
     } else if (ProcessDetector.isAndroidAppFrontend)
       await AndroidApp.startup(opts);
-    else
-      await WebViewerApp.startup(opts);
+    // else
+    //   await WebViewerApp.startup(opts);
 
     window.onerror = function (error) {
       // eslint-disable-next-line no-console

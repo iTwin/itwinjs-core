@@ -62,19 +62,12 @@ class NativeAppNotifyHandler extends NotificationHandler implements NativeAppNot
 export class NativeAppAuthorization implements AuthorizationClient {
   private _config?: NativeAppAuthorizationConfiguration;
   private _cachedToken?: AccessTokenString;
-  private _expiresAt?: Date | undefined = undefined; // TODO: Need to find some way to set this
   private _refreshingToken = false;
   protected _expireSafety = 60 * 10; // seconds before real expiration time so token will be refreshed before it expires
   public readonly onUserStateChanged = new BeEvent<(token?: AccessTokenString) => void>();
   public get hasSignedIn() { return this._cachedToken !== undefined; }
   public get isAuthorized(): boolean {
     return this.hasSignedIn;
-  }
-
-  public isExpired(token?: AccessTokenString ): boolean {
-    // Should we make this check 1 minute in advance?
-    token = token ?? this._cachedToken;
-    return !(token === this._cachedToken && this._expiresAt !== undefined && this._expiresAt > new Date());
   }
 
   /** ctor for NativeAppAuthorization
@@ -117,8 +110,7 @@ export class NativeAppAuthorization implements AuthorizationClient {
       }
 
       this._refreshingToken = true;
-      const accessTokenProps = await NativeApp.callNativeHost("getAccessTokenProps");
-      this._cachedToken = accessTokenProps.tokenString;
+      this._cachedToken = (await NativeApp.callNativeHost("getAccessTokenProps")).tokenString;
       this._refreshingToken = false;
     }
 

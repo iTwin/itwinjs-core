@@ -39,17 +39,6 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
   }
 
   /**
-   * Returns true if the passed token is the same one that is cached and it has not yet expired.
-   * If no token is passed, it will refer to the one cached.
-   * @beta
-   */
-  public isExpired(token?: AccessTokenString): boolean {
-    // Should we make this check 1 minute in advance?
-    token = token ?? this._accessToken;
-    return !(token === this._accessToken && this._expiresAt !== undefined && this._expiresAt > new Date());
-  }
-
-  /**
    * Set the deployment region
    * - For Bentley internal applications, the deployment region is automatically inferred from the "IMJS_BUDDI_RESOLVE_URL_USING_REGION" configuration if possible
    * - Defaults to PROD if un-specified
@@ -85,7 +74,16 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
    * Returns true if signed in and the access token has not expired, and false otherwise.
    */
   public get isAuthorized(): boolean {
-    return !!this._accessToken && this.isExpired();
+    return !!this._accessToken && !this.hasExpired;
+  }
+
+  /** Returns true if the user has signed in, but the token has expired and requires a refresh */
+  public get hasExpired(): boolean {
+    if (!this._accessToken)
+      return false;
+    assert(!!this._expiresAt);
+    // show expiry one minute before actual time to refresh
+    return ((this._expiresAt.getTime() - Date.now()) <= 1 * 60 * 1000);
   }
 
   /** Returns true if the user has signed in, but the token has expired and requires a refresh */
@@ -189,6 +187,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
 
     const token = await this.tokenSetToAccessToken(tokenSet);
     this._accessToken = token;
+    this._expiresAt = new Date(tokenSet.expires_at!);
     this.onUserStateChanged.raiseEvent(this._accessToken);
   }
 
@@ -198,9 +197,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
   }
 
   private async tokenSetToAccessToken(tokenSet: TokenSet): Promise<AccessTokenString> {
-    // const userInfo = await this._client.userinfo(tokenSet);
     return tokenSet.access_token;
-    // return AccessToken.fromTokenResponseJson(tokenSet, userInfo)!;
   }
 
   private createAuthParams(scope: string): [AuthorizationParameters, OpenIDCallbackChecks] {
