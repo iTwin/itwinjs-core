@@ -163,9 +163,8 @@ public;EventController
 public;EventHandled
 beta;class Extension
 beta;ExtensionAdmin
-beta;ExtensionAdminProps
 beta;ExtensionLoader
-beta;ExtensionServiceExtensionLoader 
+beta;ExtensionProps
 public;ExtentLimits
 beta;ExternalServerExtensionLoader 
 internal;ExternalTileStatistics

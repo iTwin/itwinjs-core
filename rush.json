@@ -56,13 +56,6 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/extension-client",
-      "projectFolder": "clients/extension",
-      "reviewCategory": "common",
-      "shouldPublish": true,
-      "versionPolicyName": "prerelease-monorepo-lockStep"
-    },
-    {
       "packageName": "@bentley/frontend-authorization-client",
       "projectFolder": "clients/frontend-authorization",
       "reviewCategory": "frontend",

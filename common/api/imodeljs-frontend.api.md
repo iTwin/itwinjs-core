@@ -88,7 +88,6 @@ import { EmphasizeElementsProps as EmphasizeElementsProps_2 } from '@bentley/imo
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
 import { EnvironmentProps } from '@bentley/imodeljs-common';
-import { ExtensionProps } from '@bentley/extension-client';
 import { Feature } from '@bentley/imodeljs-common';
 import { FeatureAppearance } from '@bentley/imodeljs-common';
 import { FeatureAppearanceProps } from '@bentley/imodeljs-common';
@@ -3054,7 +3053,7 @@ export abstract class Extension {
 
 // @beta
 export class ExtensionAdmin {
-    constructor(props?: ExtensionAdminProps);
+    constructor();
     addExtensionLoader(extensionLoader: ExtensionLoader): void;
     addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
     // @internal (undocumented)
@@ -3064,11 +3063,6 @@ export class ExtensionAdmin {
     onInitialized(): void;
     register(extension: Extension): void;
     }
-
-// @beta
-export interface ExtensionAdminProps {
-    configureExtensionServiceLoader?: boolean;
-}
 
 // @beta
 export interface ExtensionLoader {
@@ -3081,15 +3075,24 @@ export interface ExtensionLoader {
 }
 
 // @beta
-export class ExtensionServiceExtensionLoader implements ExtensionLoader {
-    constructor(_contextId: string);
+export interface ExtensionProps {
     // (undocumented)
-    getExtensionName(extensionRoot: string): string;
+    contextId: string;
     // (undocumented)
-    loadExtension(extensionName: string, extensionVersion?: string, args?: string[] | undefined): Promise<PendingExtension | undefined>;
+    extensionName: string;
     // (undocumented)
-    resolveResourceUrl(extensionName: string, relativeFileName: string): string;
-    }
+    files: FileInfo[];
+    // (undocumented)
+    isPublic: boolean;
+    // (undocumented)
+    status: ExtensionUploadStatus;
+    // (undocumented)
+    timestamp: Date;
+    // (undocumented)
+    uploadedBy: string;
+    // (undocumented)
+    version: string;
+}
 
 // @public
 export interface ExtentLimits {
