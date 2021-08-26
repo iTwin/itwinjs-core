@@ -22,6 +22,7 @@
     "@bentley/geometry-core": "workspace:*",
     "@bentley/imodelhub-client": "workspace:*",
     "@bentley/imodeljs-backend": "workspace:*",
+    "@bentley/imodeljs-transformer": "workspace:*",
     "@bentley/itwin-client": "workspace:*",
     "@bentley/backend-itwin-client": "workspace:*",
     "@bentley/imodeljs-common": "workspace:*",
