@@ -139,6 +139,10 @@
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal" ]
     },
     {
+      "name": "@bentley/imodeljs-transformer",
+      "allowedCategories": [ "internal" ]
+    },
+    {
       "name": "@bentley/itwin-client",
       "allowedCategories": [ "backend", "common", "extensions", "frontend", "integration-testing", "internal", "tools" ]
     },

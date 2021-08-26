@@ -50,6 +50,41 @@
       ]
     },
     {
+      "name": "Transformer Tests (Integration)",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/transformer/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "run",
+        "test:integration"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/core/transformer/lib/**/*.js"
+      ]
+    },
+    {
+      "name": "Transformer Tests (Standalone)",
+      "presentation": {
+        "group": "0_CoreTests",
+        "order": 1
+      },
+      "cwd": "${workspaceFolder}/core/transformer/",
+      "type": "pwa-node",
+      "request": "launch",
+      "runtimeExecutable": "npm",
+      "runtimeArgs": [
+        "test"
+      ],
+      "outFiles": [
+        "${workspaceFolder}/core/transformer/lib/**/*.js"
+      ]
+    },
+    {
       "name": "Bentley Tests",
       "presentation": {
         "group": "0_CoreTests",
