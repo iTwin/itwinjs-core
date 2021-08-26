@@ -639,6 +639,7 @@ public;ThumbnailFormatProps
 public;ThumbnailProps 
 internal;TileContentDescription 
 beta;TileContentIdentifier
+internal;TileContentKey
 internal;TileContentMetadata
 internal;TileFormat
 internal;tileFormatFromNumber(formatNumber: number): TileFormat

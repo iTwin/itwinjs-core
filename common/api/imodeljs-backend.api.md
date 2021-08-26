@@ -223,6 +223,8 @@ import { YawPitchRollAngles } from '@bentley/geometry-core';
 export class AliCloudStorageService extends CloudStorageService {
     constructor(credentials: CloudStorageServiceCredentials);
     // (undocumented)
+    getResourceUrl(container: string, name: string): Promise<string>;
+    // (undocumented)
     id: CloudStorageProvider;
     // (undocumented)
     listContainer(name: string, marker: string, count: number): Promise<string[]>;
@@ -354,6 +356,8 @@ export class AzureBlobStorage extends CloudStorageService {
     constructor(credentials: CloudStorageServiceCredentials);
     // (undocumented)
     ensureContainer(name: string): Promise<void>;
+    // (undocumented)
+    getResourceUrl(container: string, name: string): Promise<string>;
     // (undocumented)
     readonly id = CloudStorageProvider.Azure;
     // (undocumented)
@@ -767,6 +771,8 @@ export abstract class CloudStorageService {
     // (undocumented)
     download(_name: string): Promise<Readable | undefined>;
     // (undocumented)
+    abstract getResourceUrl(container: string, name: string): Promise<string>;
+    // (undocumented)
     abstract id: CloudStorageProvider;
     // (undocumented)
     initialize(): void;
@@ -798,7 +804,9 @@ export class CloudStorageTileUploader {
     // (undocumented)
     get activeUploads(): Iterable<Promise<void>>;
     // (undocumented)
-    cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object): void;
+    cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object): Promise<void>;
+    // (undocumented)
+    getUploadUrl(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<string>;
     }
 
 // @beta (undocumented)
@@ -2696,6 +2704,8 @@ export namespace IModelDb {
     // @internal (undocumented)
     export class Tiles {
         constructor(_iModel: IModelDb);
+        // (undocumented)
+        getTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<Uint8Array>;
         // (undocumented)
         requestTileContent(requestContext: ClientRequestContext, treeId: string, tileId: string): Promise<IModelJsNative.TileContent>;
         // (undocumented)
