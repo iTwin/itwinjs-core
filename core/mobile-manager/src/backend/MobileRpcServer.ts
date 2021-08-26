@@ -9,6 +9,12 @@ import { MobileRpcGateway, MobileRpcProtocol } from "../common/MobileRpcProtocol
 import { MobileRpcConfiguration } from "../common/MobileRpcManager";
 import { MobileHost } from "./MobileHost";
 
+interface MobileAddon {
+  notifyListening: (port: number) => void;
+}
+
+let addon: MobileAddon;
+
 export class MobileRpcServer {
   private static _nextId = -1;
 
@@ -49,13 +55,13 @@ export class MobileRpcServer {
       const address = this._server.address() as ws.AddressInfo;
       this._port = address.port;
       clearInterval(this._pingTimer);
-      this._notifyConnected();
+      this._notifyListening();
     });
   }
 
-  private _notifyConnected() {
+  private _notifyListening() {
     MobileRpcServer.interop.port = this._port;
-    (global as any).__iTwinJsRpcPort = this._port;
+    addon.notifyListening(this._port);
 
     if (this._connectionId !== 0) {
       MobileHost.reconnect(this._port);
@@ -118,15 +124,20 @@ export class MobileRpcServer {
 }
 
 let mobileReady = false;
+let hasSuspended = false;
 
 export function setupMobileRpc() {
   if (mobileReady) {
     return;
   }
 
+  addon = (process as any)._linkedBinding("iModelJsMobile");
+
   let server: MobileRpcServer | null = new MobileRpcServer();
 
   MobileHost.onEnterBackground.addListener(() => {
+    hasSuspended = true;
+
     if (server === null) {
       return;
     }
@@ -136,6 +147,10 @@ export function setupMobileRpc() {
   });
 
   MobileHost.onEnterForeground.addListener(() => {
+    if (!hasSuspended) {
+      return;
+    }
+
     server = new MobileRpcServer();
   });
 
