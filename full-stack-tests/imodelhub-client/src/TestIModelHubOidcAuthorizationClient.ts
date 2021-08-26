@@ -10,8 +10,14 @@ import { TestUtility } from "@bentley/oidc-signin-tool";
 
 export class TestIModelHubOidcAuthorizationClient implements FrontendAuthorizationClient {
   private _token: AccessTokenString | undefined;
+  private _expiresAt?: Date | undefined;
 
   public constructor(private _userCredentials: any) {
+  }
+
+  public isExpired(token?: AccessTokenString ): boolean {
+    token = token ?? this._token;
+    return !(token === this._token && this._expiresAt !== undefined && this._expiresAt > new Date());
   }
 
   public async signIn(_requestContext?: ClientRequestContext): Promise<void> {
@@ -34,11 +40,6 @@ export class TestIModelHubOidcAuthorizationClient implements FrontendAuthorizati
   }
   public get hasSignedIn(): boolean {
     return !!this._token;
-  }
-
-  public get expiry(): Date {
-    // Placeholder
-    return new Date();
   }
 
   public async getAccessToken(_requestContext?: ClientRequestContext): Promise<AccessTokenString> {

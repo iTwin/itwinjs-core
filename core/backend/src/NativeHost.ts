@@ -22,6 +22,7 @@ import { NativeAppStorage } from "./NativeAppStorage";
 /** @internal */
 export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClient implements AuthorizationClient{
   protected _accessToken?: AccessTokenString;
+  protected _expiresAt?: Date = undefined; // TODO: Make sure this is set somewhere
   public abstract signIn(): Promise<void>;
   public abstract signOut(): Promise<void>;
   protected abstract refreshToken(): Promise<AccessTokenString>;
@@ -35,7 +36,13 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
   }
 
   public get isAuthorized(): boolean {
-    return undefined !== this._accessToken && this.expiry > new Date();
+    return undefined !== this._accessToken && !this.isExpired();
+  }
+
+  public isExpired(token?: AccessTokenString ): boolean {
+    // Should we make this check 1 minute in advance?
+    token = token ?? this._accessToken;
+    return !(token === this._accessToken && this._expiresAt !== undefined && this._expiresAt > new Date());
   }
 
   public setAccessToken(token?: AccessTokenString) {
@@ -49,11 +56,6 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     if (!this.isAuthorized)
       this.setAccessToken(await this.refreshToken());
     return this._accessToken!;
-  }
-
-  public get expiry(): Date {
-    // Placeholder
-    return new Date();
   }
 
   public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }
@@ -94,8 +96,7 @@ class NativeAppHandler extends IpcHandler implements NativeAppFunctions {
   public async getAccessTokenProps(): Promise<AccessTokenProps> {
     return {
       tokenString: await NativeHost.authorization.getAccessToken() ?? "",
-      startsAt: undefined,
-      expiresAt: NativeHost.authorization.expiry.toDateString(),
+      expiresAt: undefined, // TODO: Need some way of getting the expiration here?
     };
   }
   public async checkInternetConnectivity(): Promise<InternetConnectivityStatus> {
@@ -246,8 +247,7 @@ export class NativeHost {
       this.onUserStateChanged.addListener((token?: AccessTokenString) =>
         NativeHost.notifyNativeFrontend("notifyUserStateChanged", {
           tokenString: token ?? "",
-          startsAt: undefined,
-          expiresAt: NativeHost.authorization.expiry.toDateString(),
+          expiresAt: undefined,
         }));
       this._applicationName = opt?.nativeHost?.applicationName ?? "iTwinApp";
     }

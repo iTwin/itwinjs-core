@@ -64,7 +64,6 @@ export class TestUtility {
       authorizationClient = new NativeAppAuthorization({ clientId: "testapp", redirectUri: "", scope: "" });
       await NativeApp.callNativeHost("setAccessTokenProps", {
         tokenString: await getAccessTokenFromBackend(user) ?? "",
-        startsAt: undefined,
         expiresAt: undefined,
       });
     } else {

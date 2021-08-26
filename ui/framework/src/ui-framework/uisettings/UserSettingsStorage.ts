@@ -16,7 +16,7 @@ import { UiSettingsResult, UiSettingsStatus, UiSettingsStorage } from "@bentley/
  */
 export class UserSettingsStorage implements UiSettingsStorage {
   public async getSetting(namespace: string, name: string): Promise<UiSettingsResult> {
-    if (!this.isSignedIn)
+    if (!(await this.isSignedIn()))
       return { status: UiSettingsStatus.AuthorizationError };
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const result = await IModelApp.settings.getUserSetting(requestContext, namespace, name, true);
@@ -28,7 +28,7 @@ export class UserSettingsStorage implements UiSettingsStorage {
   }
 
   public async saveSetting(namespace: string, name: string, setting: any): Promise<UiSettingsResult> {
-    if (!this.isSignedIn)
+    if (!(await this.isSignedIn()))
       return { status: UiSettingsStatus.AuthorizationError };
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const result = await IModelApp.settings.saveUserSetting(requestContext, setting, namespace, name, true);
@@ -40,7 +40,7 @@ export class UserSettingsStorage implements UiSettingsStorage {
   }
 
   public async deleteSetting(namespace: string, name: string): Promise<UiSettingsResult> {
-    if (!this.isSignedIn)
+    if (!(await this.isSignedIn()))
       return { status: UiSettingsStatus.AuthorizationError };
     const requestContext = await AuthorizedFrontendRequestContext.create();
     const result = await IModelApp.settings.deleteUserSetting(requestContext, namespace, name, true);
@@ -51,8 +51,8 @@ export class UserSettingsStorage implements UiSettingsStorage {
     };
   }
 
-  private get isSignedIn(): boolean {
-    return !!IModelApp.authorizationClient;
+  private async isSignedIn(): Promise<boolean> {
+    return !!IModelApp.authorizationClient && await IModelApp.authorizationClient.getAccessToken() !== undefined; // TODO: Do we want this to be isExpired instead?
   }
 }
 

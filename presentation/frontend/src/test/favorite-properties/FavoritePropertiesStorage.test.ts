@@ -19,6 +19,7 @@ import { FavoritePropertiesOrderInfo, PropertyFullName } from "../../presentatio
 import {
   IModelAppFavoritePropertiesStorage, OfflineCachingFavoritePropertiesStorage,
 } from "../../presentation-frontend/favorite-properties/FavoritePropertiesStorage";
+import { AccessTokenString } from "../../../../../clients/itwin/lib/Token";
 
 describe("IModelAppFavoritePropertiesStorage", () => {
 
@@ -33,7 +34,9 @@ describe("IModelAppFavoritePropertiesStorage", () => {
     sinon.stub(IModelApp, "settings").get(() => settingsAdminMock.object);
 
     authorizationClientMock = moq.Mock.ofType<FrontendAuthorizationClient>();
-    authorizationClientMock.setup((x) => x.hasSignedIn).returns(() => true);
+    // eslint-disable-next-line @typescript-eslint/unbound-method
+    const accessToken: AccessTokenString = "TestToken";
+    authorizationClientMock.setup((x) => x.getAccessToken()).returns(() => Promise.resolve(accessToken));
     IModelApp.authorizationClient = authorizationClientMock.object;
 
     storage = new IModelAppFavoritePropertiesStorage();

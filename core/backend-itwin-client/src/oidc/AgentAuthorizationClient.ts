@@ -34,14 +34,10 @@ export type AgentAuthorizationClientConfiguration = BackendAuthorizationClientCo
  */
 export class AgentAuthorizationClient extends BackendAuthorizationClient implements AuthorizationClient {
   private _accessToken?: AccessTokenString;
+  private _expiresAt?: Date;
 
   constructor(agentConfiguration: AgentAuthorizationClientConfiguration) {
     super(agentConfiguration);
-  }
-
-  public get expiry(): Date {
-    // Placeholder
-    return new Date();
   }
 
   private async generateAccessToken(requestContext: ClientRequestContext): Promise<AccessTokenString> {
@@ -63,7 +59,14 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
     }
 
     this._accessToken = tokenSet.access_token;
+    this._expiresAt = new Date(tokenSet.expires_at!); // TODO: Check if this is in proper format
     return this._accessToken;
+  }
+
+  public isExpired(token?: AccessTokenString ): boolean {
+    // Should we make this check 1 minute in advance?
+    token = token ?? this._accessToken;
+    return !(token === this._accessToken && this._expiresAt !== undefined && this._expiresAt > new Date());
   }
 
   /**
@@ -79,38 +82,23 @@ export class AgentAuthorizationClient extends BackendAuthorizationClient impleme
    * @deprecated Use [[AgentAuthorizationClient.getAccessToken]] instead to always get a valid token.
    */
   // SHOULD WE REMOVE THIS NOW?
-  // public async refreshToken(requestContext: ClientRequestContext, jwt: AccessTokenString): Promise<AccessTokenString> {
-  //   requestContext.enter();
+  public async refreshToken(requestContext: ClientRequestContext, jwt: AccessTokenString): Promise<AccessTokenString> {
+    requestContext.enter();
 
-  //   // Refresh 1 minute before expiry
-  //   const expiresAt = jwt.getExpiresAt();
-  //   if (!expiresAt)
-  //     throw new BentleyError(AuthStatus.Error, "Invalid JWT passed to refresh");
-  //   if (expiresAt.getTime() - Date.now() > 1 * 60 * 1000)
-  //     return jwt;
+    if (!this.isExpired(jwt)){
+      return jwt;
+    }
 
-  //   this._accessToken = await this.generateAccessToken(requestContext);
-  //   return this._accessToken;
-  // }
+    this._accessToken = await this.generateAccessToken(requestContext);
+    return this._accessToken;
+  }
 
   /**
    * Set to true if there's a current authorized user or client (in the case of agent applications).
    * Set to true if signed in and the access token has not expired, and false otherwise.
    */
   public get isAuthorized(): boolean {
-    return this.hasSignedIn && !this.hasExpired;
-  }
-
-  /** Set to true if the user has signed in, but the token has expired and requires a refresh */
-  public get hasExpired(): boolean {
-    if (!this._accessToken)
-      return false;
-
-    const expiresAt = this.expiry;
-    if (!expiresAt)
-      throw new BentleyError(AuthStatus.Error, "Invalid JWT");
-
-    return expiresAt.getTime() - Date.now() <= 1 * 60 * 1000; // Consider 1 minute before expiry as expired
+    return this.hasSignedIn && !this.isExpired(this._accessToken);
   }
 
   /** Set to true if signed in - the accessToken may be active or may have expired and require a refresh */

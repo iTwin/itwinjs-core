@@ -42,7 +42,6 @@ class TokenPrefixToTypeContainer {
  */
 export interface AccessTokenProps {
   tokenString: string;
-  startsAt?: string;
   expiresAt?: string;
 }
 

@@ -13,15 +13,17 @@ import { AccessTokenString } from "@bentley/itwin-client";
  */
 export class TestFrontendAuthorizationClient implements FrontendAuthorizationClient {
   private _activeToken?: AccessTokenString;
+  private _expiresAt?: Date | undefined = undefined;
 
-  constructor(private _accessToken?: AccessTokenString) {
+  constructor(private _accessToken?: AccessTokenString, expiresAt?: Date) {
     this._activeToken = this._accessToken;
+    this._expiresAt = expiresAt;
     this.onUserStateChanged.raiseEvent(this._activeToken);
   }
 
-  public get expiry(): Date{
-    // Placeholder
-    return new Date();
+  public isExpired(token?: AccessTokenString): boolean {
+    token = token ?? this._activeToken;
+    return !(token === this._activeToken && this._expiresAt !== undefined && this._expiresAt > new Date());
   }
 
   public get isAuthorized(): boolean {

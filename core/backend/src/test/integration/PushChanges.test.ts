@@ -88,7 +88,7 @@ describe("PushChangesTest (#integration)", () => {
     contextId = await HubUtility.getTestContextId(requestContext);
 
     IModelHost.authorizationClient = {
-      expiry: new Date(),
+      isExpired: () => false,
       getAccessToken: async (_requestContext?: ClientRequestContext) => requestContext.accessToken,
     };
   });

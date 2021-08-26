@@ -155,7 +155,6 @@ export class IModelTestUtils {
     if (HubMock.isValid) {
       const props: AccessTokenProps = {
         tokenString: "bogus",
-        startsAt: new Date(Date.now()).toJSON(),
         expiresAt: new Date(Date.now() + 60 * 60 * 100).toJSON(), /* 1 hour from now */
       };
       return new AuthorizedClientRequestContext(props.tokenString);

@@ -55,16 +55,15 @@ export interface IFavoritePropertiesStorage {
 export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesStorage {
 
   // eslint-disable-next-line @typescript-eslint/naming-convention
-  private get isSignedIn() {
+  private async isSignedIn(): Promise<boolean> {
     // note: these checks are also done when creating `AuthorizedFrontendRequestContext` but instead of just
     // throwing it also logs error messages which we want to avoid
 
-    // TODO: Figure out how to handle this, getAccessToken() doesn't work same and is async
-    return IModelApp.authorizationClient;
+    return !!IModelApp.authorizationClient && await IModelApp.authorizationClient.getAccessToken() !== undefined; // TODO: Do we want this to be isExpired instead?
   }
 
   public async loadProperties(projectId?: string, imodelId?: string): Promise<Set<PropertyFullName> | undefined> {
-    if (!this.isSignedIn) {
+    if (!(await this.isSignedIn())) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
 
@@ -86,7 +85,7 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
   }
 
   public async saveProperties(properties: Set<PropertyFullName>, projectId?: string, imodelId?: string): Promise<void> {
-    if (!this.isSignedIn) {
+    if (!(await this.isSignedIn())) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
     const requestContext = await AuthorizedFrontendRequestContext.create();
@@ -94,7 +93,7 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
   }
 
   public async loadPropertiesOrder(projectId: string | undefined, imodelId: string): Promise<FavoritePropertiesOrderInfo[] | undefined> {
-    if (!this.isSignedIn) {
+    if (!(await this.isSignedIn())) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
     const requestContext = await AuthorizedFrontendRequestContext.create();
@@ -103,7 +102,7 @@ export class IModelAppFavoritePropertiesStorage implements IFavoritePropertiesSt
   }
 
   public async savePropertiesOrder(orderInfos: FavoritePropertiesOrderInfo[], projectId: string | undefined, imodelId: string) {
-    if (!this.isSignedIn) {
+    if (!(await this.isSignedIn())) {
       throw new PresentationError(PresentationStatus.Error, "Current user is not authorized to use the settings service");
     }
     const requestContext = await AuthorizedFrontendRequestContext.create();

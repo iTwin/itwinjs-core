@@ -9,8 +9,15 @@ import { getAccessTokenFromBackend } from "@bentley/oidc-signin-tool/lib/fronten
 
 export class IModelHubUserMgr implements FrontendAuthorizationClient {
   private _token: AccessTokenString | undefined;
+  private _expiresAt?: Date; // TODO: Find someway to update this
 
   public constructor(private _userCredentials: any) {
+  }
+
+  public isExpired(token?: AccessTokenString ): boolean {
+    // Should we make this check 1 minute in advance?
+    token = token ?? this._token;
+    return !(token === this._token && this._expiresAt !== undefined && this._expiresAt > new Date());
   }
 
   public async signIn(_requestContext?: ClientRequestContext): Promise<void> {
@@ -41,10 +48,5 @@ export class IModelHubUserMgr implements FrontendAuthorizationClient {
       throw new Error("User is not signed in.");
     }
     return this._token;
-  }
-
-  public get expiry(): Date {
-    // Placeholder
-    return new Date();
   }
 }

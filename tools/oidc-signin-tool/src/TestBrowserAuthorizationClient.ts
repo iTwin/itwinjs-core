@@ -26,6 +26,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
   private readonly _user: TestUserCredentials;
   private _accessToken?: AccessTokenString;
   private _deploymentRegion?: number;
+  private _expiresAt?: Date | undefined = undefined;
 
   /**
    * Constructor
@@ -37,9 +38,15 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
     this._user = user;
   }
 
-  public get expiry(): Date {
-    // Placeholder for now
-    return new Date();
+  /**
+   * Returns true if the passed token is the same one that is cached and it has not yet expired.
+   * If no token is passed, it will refer to the one cached.
+   * @beta
+   */
+  public isExpired(token?: AccessTokenString): boolean {
+    // Should we make this check 1 minute in advance?
+    token = token ?? this._accessToken;
+    return !(token === this._accessToken && this._expiresAt !== undefined && this._expiresAt > new Date());
   }
 
   /**
@@ -78,17 +85,7 @@ export class TestBrowserAuthorizationClient implements AuthorizationClient {
    * Returns true if signed in and the access token has not expired, and false otherwise.
    */
   public get isAuthorized(): boolean {
-    return !!this._accessToken && !this.hasExpired;
-  }
-
-  /** Returns true if the user has signed in, but the token has expired and requires a refresh */
-  public get hasExpired(): boolean {
-    if (!this._accessToken)
-      return false;
-    const expiresAt = this.expiry;
-    assert(!!expiresAt);
-    // show expiry one minute before actual time to refresh
-    return ((expiresAt.getTime() - Date.now()) <= 1 * 60 * 1000);
+    return !!this._accessToken && this.isExpired();
   }
 
   /** Returns true if the user has signed in, but the token has expired and requires a refresh */

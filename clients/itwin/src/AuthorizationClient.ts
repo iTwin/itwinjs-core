@@ -13,8 +13,11 @@ import { AccessTokenString } from "./Token";
  * @beta
  */
 export interface AuthorizationClient {
-  /** Get the expiration date of the access token*/
-  readonly expiry: Date;
+  /**
+   * Returns true if the passed token is the same one that is cached and it has not yet expired.
+   * If no token is passed, it will refer to the one cached
+   */
+  isExpired(token?: AccessTokenString): Boolean;
 
   /** Get the AccessToken of the currently authorized user. The token is refreshed if necessary and possible. */
   getAccessToken(requestContext?: ClientRequestContext): Promise<AccessTokenString>;
