@@ -112,8 +112,8 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "@itwin/itwinui-css": "^0.25.0",
-    "@itwin/itwinui-react": "^1.14.0",
+    "@itwin/itwinui-css": "^0.27.0",
+    "@itwin/itwinui-react": "^1.16.2",
     "@types/shortid": "~0.0.29",
     "callable-instance2": "1.0.0",
     "classnames": "^2.3.1",
