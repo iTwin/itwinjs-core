@@ -600,7 +600,7 @@ describe("IModelTransformer", () => {
     }
 
     if (true) {
-      const iModelConsolidated: SnapshotDb = IModelTestUtils.createConsolidatedIModel(outputDir, "Consolidated");
+      const iModelConsolidated: SnapshotDb = IModelTransformerTestUtils.createConsolidatedIModel(outputDir, "Consolidated");
       const transformerS2C = new IModelTransformer(iModelShared, iModelConsolidated);
       const subjectA: Id64String = IModelTestUtils.querySubjectId(iModelShared, "A");
       const subjectB: Id64String = IModelTestUtils.querySubjectId(iModelShared, "B");
@@ -621,7 +621,7 @@ describe("IModelTransformer", () => {
       await transformerS2C.processDeferredElements();
       await transformerS2C.processRelationships(ElementRefersToElements.classFullName);
       transformerS2C.dispose();
-      IModelTestUtils.assertConsolidatedIModelContents(iModelConsolidated, "Consolidated");
+      IModelTransformerTestUtils.assertConsolidatedIModelContents(iModelConsolidated, "Consolidated");
       IModelTestUtils.dumpIModelInfo(iModelConsolidated);
       iModelConsolidated.close();
     }

@@ -630,38 +630,6 @@ export class IModelTestUtils {
     return elementId;
   }
 
-  public static createConsolidatedIModel(outputDir: string, consolidatedName: string): SnapshotDb {
-    const consolidatedFile: string = path.join(outputDir, `${consolidatedName}.bim`);
-    if (IModelJsFs.existsSync(consolidatedFile)) {
-      IModelJsFs.removeSync(consolidatedFile);
-    }
-    const consolidatedDb: SnapshotDb = SnapshotDb.createEmpty(consolidatedFile, { rootSubject: { name: `${consolidatedName}` } });
-    assert.exists(consolidatedDb);
-    const definitionModelId = DefinitionModel.insert(consolidatedDb, IModel.rootSubjectId, `Definition${consolidatedName}`);
-    assert.isTrue(Id64.isValidId64(definitionModelId));
-    const physicalModelId = PhysicalModel.insert(consolidatedDb, IModel.rootSubjectId, `Physical${consolidatedName}`);
-    assert.isTrue(Id64.isValidId64(physicalModelId));
-    consolidatedDb.saveChanges();
-    return consolidatedDb;
-  }
-
-  public static assertConsolidatedIModelContents(iModelDb: IModelDb, consolidatedName: string): void {
-    // assert what should exist
-    const definitionModelId: Id64String = IModelTestUtils.queryDefinitionPartitionId(iModelDb, IModel.rootSubjectId, consolidatedName);
-    assert.isTrue(Id64.isValidId64(definitionModelId));
-    const categoryA: Id64String = IModelTestUtils.querySpatialCategoryId(iModelDb, definitionModelId, "A");
-    const categoryB: Id64String = IModelTestUtils.querySpatialCategoryId(iModelDb, definitionModelId, "B");
-    assert.isTrue(Id64.isValidId64(categoryA));
-    assert.isTrue(Id64.isValidId64(categoryB));
-    const physicalModelId: Id64String = IModelTestUtils.queryPhysicalPartitionId(iModelDb, IModel.rootSubjectId, consolidatedName);
-    assert.isTrue(Id64.isValidId64(physicalModelId));
-    IModelTestUtils.queryPhysicalElementId(iModelDb, physicalModelId, categoryA, "A1");
-    IModelTestUtils.queryPhysicalElementId(iModelDb, physicalModelId, categoryB, "B1");
-    // assert what should not exist
-    assert.throws(() => IModelTestUtils.querySubjectId(iModelDb, "A"), Error);
-    assert.throws(() => IModelTestUtils.querySubjectId(iModelDb, "B"), Error);
-  }
-
   public static insertSpatialCategory(iModelDb: IModelDb, modelId: Id64String, categoryName: string, color: ColorDef): Id64String {
     const appearance: SubCategoryAppearance.Props = {
       color: color.toJSON(),
