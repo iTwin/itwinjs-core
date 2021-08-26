@@ -5,8 +5,13 @@
 /* eslint-disable react/display-name */
 
 import * as React from "react";
-import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@bentley/ui-abstract";
+import {
+  AbstractWidgetProps, CommonToolbarItem, StagePanelLocation, StagePanelSection,
+  ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState,
+} from "@bentley/ui-abstract";
+import { ToolbarHelper } from "@bentley/ui-framework";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../appui/widgets/LayoutWidget";
+import { AppTools } from "./ToolSpecifications";
 
 export class AppUi2StageItemsProvider implements UiItemsProvider {
   public static providerId = "sampleApp:ui2-stage-widget-provider";
@@ -257,4 +262,17 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
 
     return [];
   }
+
+  public provideToolbarButtonItems(stageId: string, _stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation): CommonToolbarItem[] {
+    const allowedStages = ["Ui2"];
+    if (allowedStages.includes(stageId)) {
+      if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
+        return [
+          ToolbarHelper.createToolbarItemFromItemDef(10, AppTools.toggleHideShowItemsCommand, { groupPriority: 3000 }),
+        ];
+      }
+    }
+    return [];
+  }
+
 }

@@ -140,8 +140,8 @@ public;ContentLayoutDef
 public;ContentLayoutManager
 public;ContentLayoutProps 
 public;ContentProps
-beta;ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element
-beta;ContentToolWidgetComposerProps
+public;ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element
+public;ContentToolWidgetComposerProps
 public;ContentViewManager
 public;CoreTools
 public;createAction
@@ -181,7 +181,6 @@ beta;DefaultNavigationTools
 beta;DefaultNavigationWidget 
 deprecated;DefaultNavigationWidget 
 beta;DefaultStatusbarItems
-public;DefaultStatusBarWidgetControl 
 internal;DefaultToolSettingsProvider 
 public;DefaultViewOverlay({ viewport, onPlayPause, featureOptions }: ViewOverlayProps): JSX.Element | null
 public;DialogChangedEvent 
@@ -564,6 +563,7 @@ public;StatusBarLeftSection(props: CommonDivProps): JSX.Element
 public;StatusBarProps 
 public;StatusBarRightSection(props: CommonDivProps): JSX.Element
 public;StatusBarSpaceBetween(props: CommonDivProps): JSX.Element
+public;StatusBarWidgetComposerControl 
 public;class StatusBarWidgetControl 
 public;StatusBarWidgetControlArgs
 internal;StatusBarZone 
@@ -714,8 +714,7 @@ beta;ViewSelectorChangedEvent
 beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
-public;ViewToolWidgetComposer(props: ViewToolWidgetComposerProps): JSX.Element
-public;ViewToolWidgetComposerProps
+public;ViewToolWidgetComposer(): JSX.Element
 public;ViewUtilities
 alpha;VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map
 beta;VisibilityComponent 

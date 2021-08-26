@@ -8,49 +8,37 @@
 
 import classnames from "classnames";
 import * as React from "react";
-import { CommonToolbarItem, ToolbarOrientation, ToolbarUsage } from "@bentley/ui-abstract";
+import { ToolbarOrientation, ToolbarUsage } from "@bentley/ui-abstract";
 import { ToolbarComposer } from "../toolbar/ToolbarComposer";
 import { ToolWidgetComposer } from "./ToolWidgetComposer";
 import { useUiVisibility } from "./BasicToolWidget";
 
 /**
- * ContentToolWidgetComposer composes a Tool Widget with no tools defined by default. Each stage can
- * define a default set of tools for both the horizontal and vertical toolbar when setting up this widget.
- * UiItemsProviders can also provide tools to populate the toolbars.
+ * ContentToolWidgetComposer composes a Tool Widget with no tools defined by default. UiItemsProviders
+ * are used to populate the toolbars. See [[StandardContentToolsProvider]].
  * @example
+ * ToolWidget with no corner button
  * ```
- *  const horizontalItems: CommonToolbarItem[] = [
- *    ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.clearSelectionItemDef),
- *    ToolbarHelper.createToolbarItemFromItemDef(20, SelectionContextToolDefinitions.clearHideIsolateEmphasizeElementsItemDef),
- *    ToolbarHelper.createToolbarItemFromItemDef(30, SelectionContextToolDefinitions.hideSectionToolGroup),
- *    ToolbarHelper.createToolbarItemFromItemDef(40, SelectionContextToolDefinitions.isolateSelectionToolGroup),
- *    ToolbarHelper.createToolbarItemFromItemDef(50, SelectionContextToolDefinitions.emphasizeElementsItemDef),
- *  ];
- *  const verticalItems: CommonToolbarItem[] = [
- *    ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.selectElementCommand),
- *    ToolbarHelper.createToolbarItemFromItemDef(20, CoreTools.measureToolGroup),
- *    ToolbarHelper.createToolbarItemFromItemDef(30, CoreTools.sectionToolGroup),
- *  ];
- *
- * <ContentToolWidgetComposer horizontalItems={horizontalItems} verticalItems={verticalItems} />
+ * <ContentToolWidgetComposer />
  * ```
- * @beta
+ * ToolWidget with corner button
+ * ```
+ * const cornerButton = <BackstageAppButton icon={"icon-bentley-systems"} />;
+ * <ContentToolWidgetComposer cornerButton={cornerButton} />
+ * ```
+ * @public
  */
 export interface ContentToolWidgetComposerProps {
   /** If default backstage button is desired use <BackstageAppButton />. */
   cornerButton?: React.ReactNode;
-  /** optional set of additional items to include in horizontal toolbar */
-  horizontalItems?: CommonToolbarItem[];
-  /** optional set of additional items to include in vertical toolbar */
-  verticalItems?: CommonToolbarItem[];
 }
 
 /** Default Tool Widget for standard "review" applications. Provides standard tools to review, and measure elements.
  * This definition will also show a overflow button if there is not enough room to display all the toolbar buttons.
- * @beta
+ * @public
  */
 export function ContentToolWidgetComposer(props: ContentToolWidgetComposerProps) {
-  const { cornerButton, horizontalItems, verticalItems } = props;
+  const { cornerButton } = props;
   const uiIsVisible = useUiVisibility();
   const className = classnames(
     !uiIsVisible && "nz-hidden",
@@ -59,8 +47,8 @@ export function ContentToolWidgetComposer(props: ContentToolWidgetComposerProps)
   return (
     <ToolWidgetComposer className={className}
       cornerItem={cornerButton}
-      horizontalToolbar={<ToolbarComposer items={horizontalItems ?? []} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Horizontal} />}
-      verticalToolbar={<ToolbarComposer items={verticalItems ?? []} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Vertical} />}
+      horizontalToolbar={<ToolbarComposer items={[]} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Horizontal} />}
+      verticalToolbar={<ToolbarComposer items={[]} usage={ToolbarUsage.ContentManipulation} orientation={ToolbarOrientation.Vertical} />}
     />
   );
 }

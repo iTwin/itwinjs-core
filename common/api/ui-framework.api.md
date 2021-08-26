@@ -1348,14 +1348,12 @@ export interface ContentProps {
     id?: string;
 }
 
-// @beta
+// @public
 export function ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element;
 
-// @beta
+// @public
 export interface ContentToolWidgetComposerProps {
     cornerButton?: React.ReactNode;
-    horizontalItems?: CommonToolbarItem[];
-    verticalItems?: CommonToolbarItem[];
 }
 
 // @public
@@ -1760,16 +1758,6 @@ export interface DefaultStatusbarItems {
     tileLoadIndicator?: boolean;
     // (undocumented)
     toolAssistance?: boolean;
-}
-
-// @public
-export class DefaultStatusBarWidgetControl extends StatusBarWidgetControl {
-    // (undocumented)
-    static controlId: string;
-    // (undocumented)
-    getReactNode(): React.ReactNode;
-    // (undocumented)
-    readonly id: string;
 }
 
 // @internal
@@ -5969,6 +5957,16 @@ export function StatusBarRightSection(props: CommonDivProps): JSX.Element;
 export function StatusBarSpaceBetween(props: CommonDivProps): JSX.Element;
 
 // @public
+export class StatusBarWidgetComposerControl extends StatusBarWidgetControl {
+    // (undocumented)
+    static controlId: string;
+    // (undocumented)
+    getReactNode(): React.ReactNode;
+    // (undocumented)
+    readonly id: string;
+}
+
+// @public
 export abstract class StatusBarWidgetControl extends WidgetControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     abstract getReactNode(args: StatusBarWidgetControlArgs): React_2.ReactNode;
@@ -7173,14 +7171,7 @@ export interface ViewSelectorProps {
 }
 
 // @public
-export function ViewToolWidgetComposer(props: ViewToolWidgetComposerProps): JSX.Element;
-
-// @public
-export interface ViewToolWidgetComposerProps {
-    horizontalItems?: CommonToolbarItem[];
-    navigationAidHost?: React.ReactNode;
-    verticalItems?: CommonToolbarItem[];
-}
+export function ViewToolWidgetComposer(): JSX.Element;
 
 // @public
 export class ViewUtilities {

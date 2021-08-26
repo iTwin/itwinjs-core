@@ -20,7 +20,7 @@ import { UiFramework } from "../UiFramework";
 import { PropsHelper } from "../utils/PropsHelper";
 import { WidgetControl } from "./WidgetControl";
 import { WidgetProps } from "./WidgetProps";
-import { DefaultStatusBarWidgetControl } from "./DefaultStatusBarWidgetControl";
+import { StatusBarWidgetComposerControl } from "./StatusBarWidgetComposerControl";
 
 const widgetStateNameMap = new Map<WidgetState, string>([
   [WidgetState.Closed, "Closed"],
@@ -351,8 +351,8 @@ export class WidgetDef {
 
     // To avoid breaking API changes, if a WidgetControl is not specified for a status bar use Default one.
     if (!this._widgetControl && this.isStatusBar) {
-      const info = new ConfigurableCreateInfo("DefaultStatusBarWidgetControl", DefaultStatusBarWidgetControl.controlId, DefaultStatusBarWidgetControl.controlId);
-      this._widgetControl = new DefaultStatusBarWidgetControl(info, undefined);
+      const info = new ConfigurableCreateInfo("StatusBarWidgetComposerControl", StatusBarWidgetComposerControl.controlId, StatusBarWidgetComposerControl.controlId);
+      this._widgetControl = new StatusBarWidgetComposerControl(info, undefined);
       this._widgetControl.widgetDef = this;
       this._widgetControl.initialize();
     }

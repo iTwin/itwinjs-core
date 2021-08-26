@@ -12,23 +12,25 @@ import { StatusBarComposer } from "../statusbar/StatusBarComposer";
 import { StatusBarWidgetControl } from "../statusbar/StatusBarWidgetControl";
 
 /**
- * DefaultStatusBarWidgetControl provides status bar to specified [[Frontstage]] that allows status bar items to be populated
+ * StatusBarWidgetComposerControl provides status bar to specified [[Frontstage]] that allows status bar items to be populated
  * via UiItemsProviders. See [[StandardStatusbarItemsProvider]] that can be used to populate this status bar with a common
  * set of status fields.
  * @example
+ * ```
  *       statusBar={
  *         <Zone
  *           widgets={
  *             [
- *               <Widget isStatusBar={true} />, // same as <Widget isStatusBar={true} control={DefaultStatusBarWidgetControl} />
+ *               <Widget isStatusBar={true} control={StatusBarWidgetComposerControl}  />
  *             ]}
  *         />
  *       }
+ * ```
  * @public
  */
-export class DefaultStatusBarWidgetControl extends StatusBarWidgetControl {
-  public static controlId = "uifw:DefaultStatusBarWidgetControl";
-  public readonly id = DefaultStatusBarWidgetControl.controlId;
+export class StatusBarWidgetComposerControl extends StatusBarWidgetControl {
+  public static controlId = "uifw:StatusBarWidgetComposerControl";
+  public readonly id = StatusBarWidgetComposerControl.controlId;
 
   public getReactNode(): React.ReactNode {
     return (

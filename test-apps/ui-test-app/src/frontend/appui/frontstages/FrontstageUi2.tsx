@@ -6,10 +6,10 @@ import * as React from "react";
 import {
   BackstageAppButton, ContentGroup, ContentToolWidgetComposer,
   CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
-  IModelViewportControl, StagePanel, StagePanelState, SyncUiEventArgs, SyncUiEventDispatcher,
+  IModelViewportControl, StagePanel, StagePanelState, StatusBarWidgetComposerControl, SyncUiEventArgs, SyncUiEventDispatcher,
   ToolbarHelper, UiFramework, ViewToolWidgetComposer, Widget, Zone,
 } from "@bentley/ui-framework";
-import { CommonToolbarItem, StageUsage } from "@bentley/ui-abstract";
+import { AbstractStatusBarItemUtilities, CommonToolbarItem, StageUsage, StatusBarSection } from "@bentley/ui-abstract";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { AppTools } from "../../tools/ToolSpecifications";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
@@ -56,6 +56,7 @@ export function MyCustomViewOverlay() {
     </div> : null;
 }
 
+
 export class FrontstageUi2 extends FrontstageProvider {
   private _supplyViewOverlay = (viewport: ScreenViewport) => {
     if (viewport.view) {
@@ -63,10 +64,6 @@ export class FrontstageUi2 extends FrontstageProvider {
     }
     return null;
   };
-
-  public additionalHorizontalToolbarItems: CommonToolbarItem[] = [
-    ToolbarHelper.createToolbarItemFromItemDef(10, AppTools.toggleHideShowItemsCommand, { groupPriority: 3000 }),
-  ];
 
   public get frontstage(): React.ReactElement<FrontstageProps> {
     const myContentGroup: ContentGroup = new ContentGroup(
@@ -108,8 +105,9 @@ export class FrontstageUi2 extends FrontstageProvider {
           <Zone
             widgets={
               [
-                <Widget isFreeform={true} element={<ContentToolWidgetComposer cornerButton={<BackstageAppButton icon={"icon-bentley-systems"} />}
-                  horizontalItems={this.additionalHorizontalToolbarItems} />} />,
+                <Widget isFreeform={true}
+                  element={<ContentToolWidgetComposer cornerButton={<BackstageAppButton icon={"icon-bentley-systems"} />} />}
+                />,
               ]}
           />
         }
@@ -133,20 +131,21 @@ export class FrontstageUi2 extends FrontstageProvider {
           <Zone
             widgets={
               [
-                <Widget isStatusBar={true} />, // same as <Widget isStatusBar={true} control={DefaultStatusBarWidgetControl} />
+                <Widget isStatusBar={true} />, // <Widget isStatusBar={true} control={StatusBarWidgetComposerControl} />,
               ]}
           />
+
         }
 
         leftPanel={
-          <StagePanel
+          < StagePanel
             size={300}
             defaultState={StagePanelState.Minimized}
           />
         }
 
         topPanel={
-          <StagePanel
+          < StagePanel
             size={90}
             pinned={false}
             defaultState={StagePanelState.Minimized}
@@ -154,13 +153,13 @@ export class FrontstageUi2 extends FrontstageProvider {
         }
 
         rightPanel={
-          <StagePanel
+          < StagePanel
             defaultState={StagePanelState.Open}
           />
         }
 
         bottomPanel={
-          <StagePanel
+          < StagePanel
             size={180}
             defaultState={StagePanelState.Open}
           />
