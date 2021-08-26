@@ -8,13 +8,12 @@
 
 import "./EditorContainer.scss";
 import * as React from "react";
-import { IModelApp, NotifyMessageDetails } from "@bentley/imodeljs-frontend";
-import { PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
+import { PropertyRecord, PropertyValue, SpecialKey, UiAbstract } from "@bentley/ui-abstract";
 import { CommonProps } from "@bentley/ui-core";
 import { AsyncErrorMessage, PropertyEditorBase, PropertyEditorManager } from "./PropertyEditorManager";
 
 /** Arguments for the Property Updated event callback
- * @beta
+ * @public
  */
 export interface PropertyUpdatedArgs {
   /** The property being updated. */
@@ -24,7 +23,7 @@ export interface PropertyUpdatedArgs {
 }
 
 /** Properties for a property editor component
- * @beta
+ * @public
  */
 export interface PropertyEditorProps extends CommonProps {
   /** The property being updated. */
@@ -40,7 +39,7 @@ export interface PropertyEditorProps extends CommonProps {
 }
 
 /** [[EditorContainer]] React component properties
- * @beta
+ * @public
  */
 export interface EditorContainerProps extends CommonProps {
   /** The property being updated. */
@@ -64,7 +63,7 @@ interface CloneProps extends PropertyEditorProps {
 }
 
 /** Interface implemented by React based type editors
- * @beta
+ * @public
  */
 export interface TypeEditor {
   getPropertyValue: () => Promise<PropertyValue | undefined>;
@@ -74,7 +73,7 @@ export interface TypeEditor {
 
 /**
  * EditorContainer React component used by the Table, Tree and PropertyGrid for cell editing.
- * @beta
+ * @public
  */
 export class EditorContainer extends React.PureComponent<EditorContainerProps> {
 
@@ -179,16 +178,15 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
     }
   }
 
-  private displayInputFieldMessage(errorMessage: AsyncErrorMessage | undefined) {
+  private displayOutputMessage(errorMessage: AsyncErrorMessage | undefined) {
     // istanbul ignore else
     if (errorMessage && this._editorRef) {
-      const details = new NotifyMessageDetails(errorMessage.priority, errorMessage.briefMessage, errorMessage.detailedMessage);
       const htmlElement = this._editorRef && this._editorRef.htmlElement;
       // istanbul ignore else
       if (htmlElement)
-        details.setInputFieldTypeDetails(htmlElement);
-      if (IModelApp.notifications)
-        IModelApp.notifications.outputMessage(details);
+        UiAbstract.messagePresenter.displayInputFieldMessage(htmlElement, errorMessage.severity, errorMessage.briefMessage, errorMessage.detailedMessage);
+      else
+        UiAbstract.messagePresenter.displayMessage(errorMessage.severity, errorMessage.briefMessage, errorMessage.detailedMessage, errorMessage.messageType);
     }
   }
 
@@ -200,7 +198,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
       const validateResult = await this._propertyEditor.validateValue(value, this.props.propertyRecord);
 
       if (validateResult.encounteredError) {
-        this.displayInputFieldMessage(validateResult.errorMessage);
+        this.displayOutputMessage(validateResult.errorMessage);
         isValid = false;
       }
     } else {
@@ -231,7 +229,7 @@ export class EditorContainer extends React.PureComponent<EditorContainerProps> {
       if (this._propertyEditor && args.propertyRecord) {
         const commitResult = await this._propertyEditor.commitValue(newValue, args.propertyRecord);
         if (commitResult.encounteredError) {
-          this.displayInputFieldMessage(commitResult.errorMessage);
+          this.displayOutputMessage(commitResult.errorMessage);
           doCommit = false;
         }
       }

@@ -68,6 +68,7 @@ function useLongPress(args: UseLongPressArgs) {
  * Hook used on expandable item that require drag or long press to open
  * @param onClick Function called when item is clicked.
  * @param onOpenPanel Function called when item is dragged or long pressed to open panel.
+ * @public
  */
 export function useDragInteraction(onClick?: () => void, onOpenPanel?: () => void) {
   const initialPosition = React.useRef<Point | undefined>(undefined);

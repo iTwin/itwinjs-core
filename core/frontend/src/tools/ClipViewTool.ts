@@ -129,9 +129,8 @@ export class ViewClipTool extends PrimitiveTool {
   public static enableClipVolume(viewport: Viewport): boolean {
     if (viewport.viewFlags.clipVolume)
       return false;
-    const viewFlags = viewport.viewFlags.clone();
-    viewFlags.clipVolume = true;
-    viewport.viewFlags = viewFlags;
+
+    viewport.viewFlags = viewport.viewFlags.with("clipVolume", true);
     return true;
   }
 

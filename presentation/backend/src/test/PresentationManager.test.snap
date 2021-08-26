@@ -1395,6 +1395,155 @@ Object {
 }
 `;
 
+exports[`PresentationManager addon results conversion to Presentation objects getContentSources returns content sources 1`] = `
+Array [
+  Object {
+    "isSelectPolymorphic": true,
+    "navigationPropertyClasses": Array [
+      Object {
+        "isForwardRelationship": true,
+        "isPolymorphicRelationship": false,
+        "isPolymorphicTargetClass": false,
+        "relationshipInfo": Object {
+          "id": "0x456",
+          "label": "Class Two",
+          "name": "class2",
+        },
+        "sourceClassInfo": Object {
+          "id": "0x123",
+          "label": "Class One",
+          "name": "class1",
+        },
+        "targetClassInfo": Object {
+          "id": "0x789",
+          "label": "Class Three",
+          "name": "class3",
+        },
+      },
+    ],
+    "pathFromInputToSelectClass": Array [
+      Object {
+        "isForwardRelationship": true,
+        "isPolymorphicRelationship": false,
+        "isPolymorphicTargetClass": false,
+        "relationshipInfo": Object {
+          "id": "0x456",
+          "label": "Class Two",
+          "name": "class2",
+        },
+        "sourceClassInfo": Object {
+          "id": "0x123",
+          "label": "Class One",
+          "name": "class1",
+        },
+        "targetClassInfo": Object {
+          "id": "0x789",
+          "label": "Class Three",
+          "name": "class3",
+        },
+      },
+    ],
+    "pathToPrimaryClass": Array [
+      Object {
+        "isForwardRelationship": true,
+        "isPolymorphicRelationship": false,
+        "isPolymorphicTargetClass": false,
+        "relationshipInfo": Object {
+          "id": "0x456",
+          "label": "Class Two",
+          "name": "class2",
+        },
+        "sourceClassInfo": Object {
+          "id": "0x123",
+          "label": "Class One",
+          "name": "class1",
+        },
+        "targetClassInfo": Object {
+          "id": "0x789",
+          "label": "Class Three",
+          "name": "class3",
+        },
+      },
+    ],
+    "relatedInstanceClasses": Array [
+      Object {
+        "isForwardRelationship": true,
+        "isPolymorphicRelationship": false,
+        "isPolymorphicTargetClass": false,
+        "relationshipInfo": Object {
+          "id": "0x456",
+          "label": "Class Two",
+          "name": "class2",
+        },
+        "sourceClassInfo": Object {
+          "id": "0x123",
+          "label": "Class One",
+          "name": "class1",
+        },
+        "targetClassInfo": Object {
+          "id": "0x789",
+          "label": "Class Three",
+          "name": "class3",
+        },
+      },
+    ],
+    "relatedInstancePaths": Array [
+      Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": Object {
+            "id": "0x456",
+            "label": "Class Two",
+            "name": "class2",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x123",
+            "label": "Class One",
+            "name": "class1",
+          },
+          "targetClassInfo": Object {
+            "id": "0x789",
+            "label": "Class Three",
+            "name": "class3",
+          },
+        },
+      ],
+    ],
+    "relatedPropertyPaths": Array [
+      Array [
+        Object {
+          "isForwardRelationship": true,
+          "isPolymorphicRelationship": false,
+          "isPolymorphicTargetClass": false,
+          "relationshipInfo": Object {
+            "id": "0x456",
+            "label": "Class Two",
+            "name": "class2",
+          },
+          "sourceClassInfo": Object {
+            "id": "0x123",
+            "label": "Class One",
+            "name": "class1",
+          },
+          "targetClassInfo": Object {
+            "id": "0x789",
+            "label": "Class Three",
+            "name": "class3",
+          },
+        },
+      ],
+    ],
+    "selectClassInfo": Object {
+      "id": "0x123",
+      "label": "Class One",
+      "name": "class1",
+    },
+  },
+]
+`;
+
 exports[`PresentationManager addon results conversion to Presentation objects getFilteredNodePaths [deprecated] returns filtered node paths 1`] = `
 Array [
   Object {

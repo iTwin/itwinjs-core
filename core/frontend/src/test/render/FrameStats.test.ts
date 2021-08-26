@@ -25,9 +25,7 @@ describe("FrameStats", () => {
 
   function testViewport(width: number, height: number, callback: (vp: ScreenViewport) => void): void {
     const vp = openBlankViewport({ width, height });
-    const vf = vp.viewFlags.clone();
-    vf.acsTriad = vf.grid = false;
-    vp.viewFlags = vf;
+    vp.viewFlags = vp.viewFlags.copy({ acsTriad: false, grid: false });
 
     IModelApp.viewManager.addViewport(vp);
 

@@ -7,7 +7,8 @@
  */
 
 import produce from "immer";
-import { Point, PointProps, Rectangle, RectangleProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { Point, Rectangle, RectangleProps } from "@bentley/ui-core";
 import { Cell, CellProps } from "../../utilities/Cell";
 import { DisabledResizeHandles } from "../../utilities/DisabledResizeHandles";
 import { HorizontalAnchor, ResizeHandle, VerticalAnchor } from "../../widget/Stacked";

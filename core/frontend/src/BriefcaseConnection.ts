@@ -164,8 +164,9 @@ export class BriefcaseConnection extends IModelConnection {
   /** The Guid that identifies this iModel. */
   public override get iModelId(): GuidString { return super.iModelId!; } // GuidString | undefined for IModelConnection, but required for BriefcaseConnection
 
-  protected constructor(props: IModelConnectionProps) {
+  protected constructor(props: IModelConnectionProps, openMode: OpenMode) {
     super(props);
+    this._openMode = openMode;
     this.txns = new BriefcaseTxns(this);
     this._modelsMonitor = new ModelChangeMonitor(this);
   }
@@ -173,7 +174,7 @@ export class BriefcaseConnection extends IModelConnection {
   /** Open a BriefcaseConnection to a [BriefcaseDb]($backend). */
   public static async openFile(briefcaseProps: OpenBriefcaseProps): Promise<BriefcaseConnection> {
     const iModelProps = await IpcApp.callIpcHost("openBriefcase", briefcaseProps);
-    const connection = new this({ ...briefcaseProps, ...iModelProps });
+    const connection = new this({ ...briefcaseProps, ...iModelProps }, briefcaseProps.readonly ? OpenMode.Readonly : OpenMode.ReadWrite);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }
@@ -183,7 +184,7 @@ export class BriefcaseConnection extends IModelConnection {
    */
   public static async openStandalone(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, opts?: StandaloneOpenOptions): Promise<BriefcaseConnection> {
     const openResponse = await IpcApp.callIpcHost("openStandalone", filePath, openMode, opts);
-    const connection = new this(openResponse);
+    const connection = new this(openResponse, openMode);
     IModelConnection.onOpen.raiseEvent(connection);
     return connection;
   }

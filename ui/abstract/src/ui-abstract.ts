@@ -32,6 +32,9 @@ export * from "./ui-abstract/items/ProvidedItem";
 export * from "./ui-abstract/items/RelativePosition";
 export * from "./ui-abstract/items/StageUsage";
 
+export * from "./ui-abstract/notification/MessagePresenter";
+export * from "./ui-abstract/notification/MessageSeverity";
+
 export * from "./ui-abstract/properties/Description";
 export * from "./ui-abstract/properties/EditorParams";
 export * from "./ui-abstract/properties/PrimitiveTypes";
@@ -50,10 +53,11 @@ export * from "./ui-abstract/toolbars/ToolbarItemsManager";
 export * from "./ui-abstract/statusbar/StatusBarItem";
 export * from "./ui-abstract/statusbar/StatusBarItemsManager";
 
+export * from "./ui-abstract/utils/callbacks";
 export * from "./ui-abstract/utils/getClassName";
 export * from "./ui-abstract/utils/isLetter";
 export * from "./ui-abstract/utils/IconSpecUtilities";
-export * from "./ui-abstract/utils/callbacks";
+export * from "./ui-abstract/utils/PointProps";
 export * from "./ui-abstract/utils/UiError";
 export * from "./ui-abstract/utils/filter/charCode";
 export * from "./ui-abstract/utils/filter/filters";
@@ -82,6 +86,10 @@ export * from "./ui-abstract/widget/WidgetState";
 /**
  * @docs-group-description Item
  * Classes for working with an Item in a Toolbar, Widget, Backstage or Context Menu
+ */
+/**
+ * @docs-group-description Notification
+ * Interfaces and enums for working with a message
  */
 /**
  * @docs-group-description Properties

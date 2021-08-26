@@ -60,6 +60,7 @@ export interface TileOptions {
   readonly ignoreAreaPatterns: boolean;
   readonly enableExternalTextures: boolean;
   readonly useProjectExtents: boolean;
+  readonly optimizeBRepProcessing: boolean;
   readonly disableMagnification: boolean;
   readonly alwaysSubdivideIncompleteTiles: boolean;
 }
@@ -83,6 +84,7 @@ export namespace TileOptions {
       ignoreAreaPatterns: 0 !== (contentFlags & ContentFlags.IgnoreAreaPatterns),
       enableExternalTextures: 0 !== (contentFlags & ContentFlags.ExternalTextures),
       useProjectExtents: 0 !== (tree.flags & TreeFlags.UseProjectExtents),
+      optimizeBRepProcessing: 0 !== (tree.flags & TreeFlags.OptimizeBRepProcessing),
       disableMagnification: false,
       alwaysSubdivideIncompleteTiles: false,
     };
@@ -262,6 +264,7 @@ export const defaultTileOptions: TileOptions = Object.freeze({
   ignoreAreaPatterns: false,
   enableExternalTextures: true,
   useProjectExtents: true,
+  optimizeBRepProcessing: true,
   disableMagnification: false,
   alwaysSubdivideIncompleteTiles: false,
 });
@@ -325,6 +328,7 @@ export enum TreeFlags {
   None = 0,
   UseProjectExtents = 1 << 0, // Use project extents as the basis of the tile tree's range.
   EnforceDisplayPriority = 1 << 1, // For 3d plan projection models, group graphics into layers based on subcategory.
+  OptimizeBRepProcessing = 1 << 2, // Use an optimized pipeline for producing facets from BRep entities.
 }
 
 /** Describes a tile tree used to draw the contents of a model, possibly with embedded animation.
@@ -378,6 +382,8 @@ export type IModelTileTreeId = PrimaryTileTreeId | ClassifierTileTreeId;
 export function iModelTileTreeIdToString(modelId: Id64String, treeId: IModelTileTreeId, options: TileOptions): string {
   let idStr = "";
   let flags = options.useProjectExtents ? TreeFlags.UseProjectExtents : TreeFlags.None;
+  if (options.optimizeBRepProcessing)
+    flags |= TreeFlags.OptimizeBRepProcessing;
 
   if (BatchType.Primary === treeId.type) {
     if (undefined !== treeId.animationId)

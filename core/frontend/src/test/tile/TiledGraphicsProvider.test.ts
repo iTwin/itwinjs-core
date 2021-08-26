@@ -5,7 +5,6 @@
 import { expect } from "chai";
 import { BeDuration, BeEvent } from "@bentley/bentleyjs-core";
 import { Point3d, Range3d, Transform } from "@bentley/geometry-core";
-import { ViewFlagOverrides } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { SpatialViewState } from "../../SpatialViewState";
 import { ScreenViewport, Viewport } from "../../Viewport";
@@ -65,7 +64,7 @@ class TestTree extends TileTree {
   public get rootTile(): TestTile { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return undefined; }
-  public get viewFlagOverrides() { return new ViewFlagOverrides(); }
+  public get viewFlagOverrides() { return { }; }
 
   protected _selectTiles(): Tile[] {
     return [this.rootTile];

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { FieldDefinitions, FieldValues, Form } from "../../ui-core";
 import TestUtils, { handleError, selectChangeValueByText, stubScrollIntoView } from "../TestUtils";
 
@@ -18,8 +18,6 @@ describe("<Form />", () => {
   after(() => {
     TestUtils.terminateUiCore();
   });
-
-  afterEach(cleanup);
 
   stubScrollIntoView();
 

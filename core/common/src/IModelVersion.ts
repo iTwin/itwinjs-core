@@ -6,11 +6,7 @@
  * @module iModels
  */
 
-import { BentleyStatus, GuidString, IModelStatus } from "@bentley/bentleyjs-core";
-import { ChangeSet, ChangeSetQuery, IModelClient, VersionQuery } from "@bentley/imodelhub-client";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { ChangesetId } from "./ChangesetProps";
-import { IModelError } from "./IModelError";
 
 /** Properties for IModelVersion
  * @public
@@ -89,15 +85,6 @@ export class IModelVersion {
     return version;
   }
 
-  /** Creates a version from an untyped JSON object
-   * @deprecated use fromJSON
-  */
-  public static fromJson(jsonObj: any): IModelVersion {
-    const version = new IModelVersion();
-    Object.assign(version, jsonObj);
-    return version;
-  }
-
   /** Returns true if this describes the first version */
   public get isFirst(): boolean { return !!this._first; }
 
@@ -114,49 +101,4 @@ export class IModelVersion {
 
   /** Returns the name of the version if this describes a named version. @see named() */
   public getName(): string | undefined { return this._versionName; }
-
-  /** Evaluate the ChangeSet Id corresponding to the version. All change sets up to and including
-   * the returned ChangeSet Id need to be applied to update the iModel to this version.
-   * Returns an empty string if this contains the first version (before any change sets). If the
-   * version was already specified as of a ChangeSet, the method simply returns
-   * that Id without any validation.
-   * @deprecated use IModelHost/IModelApp hubAccess.getChangesetIdFromVersion
-   */
-  public async evaluateChangeSet(requestContext: AuthorizedClientRequestContext, iModelId: GuidString, imodelClient: IModelClient): Promise<ChangesetId> {
-    if (this._first)
-      return "";
-
-    if (this._afterChangeSetId)
-      return this._afterChangeSetId;
-
-    if (this._latest)
-      return IModelVersion.getLatestChangeSetId(requestContext, imodelClient, iModelId); // eslint-disable-line deprecation/deprecation
-
-    if (this._versionName)
-      return IModelVersion.getChangeSetFromNamedVersion(requestContext, imodelClient, iModelId, this._versionName); // eslint-disable-line deprecation/deprecation
-
-    throw new IModelError(BentleyStatus.ERROR, "Invalid version");
-  }
-
-  /** Gets the last change set that was applied to the imodel
-   * @internal - public only so tests can catch calls to it and fail.
-   * @deprecated use IModelHost/IModelApp hubAccess.getChangesetIdFromVersion
-   */
-  public static async getLatestChangeSetId(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString): Promise<ChangesetId> {
-    const changeSets: ChangeSet[] = await imodelClient.changeSets.get(requestContext, iModelId, new ChangeSetQuery().top(1).latest());
-    return (changeSets.length === 0) ? "" : changeSets[changeSets.length - 1].wsgId;
-  }
-
-  /** Get the change set from the specified named version
-   * @internal - public only so tests can catch calls to it and fail.
-   * @deprecated use IModelHost/IModelApp hubAccess.getChangesetIdFromVersion
-   */
-  public static async getChangeSetFromNamedVersion(requestContext: AuthorizedClientRequestContext, imodelClient: IModelClient, iModelId: GuidString, versionName: string): Promise<ChangesetId> {
-    const versions = await imodelClient.versions.get(requestContext, iModelId, new VersionQuery().select("ChangeSetId").byName(versionName));
-
-    if (!versions[0] || !versions[0].changeSetId)
-      throw new IModelError(IModelStatus.NotFound, `Named version ${versionName} not found`);
-
-    return versions[0].changeSetId;
-  }
 }

@@ -34,6 +34,7 @@ internal;addPanelWidgets(state: NineZoneState, frontstageDef: FrontstageDef, sid
 internal;addWidgets(state: NineZoneState, widgets: ReadonlyArray
 public;AnalysisAnimationTimelineDataProvider 
 public;AnyItemDef = GroupItemDef | CommandItemDef | ToolItemDef | ActionButtonItemDef
+public;AnyToolbarItemDef = AnyItemDef | CustomItemDef
 public;AnyWidgetProps = WidgetProps | ToolWidgetProps | NavigationWidgetProps
 internal;appendWidgets(state: NineZoneState, widgetDefs: ReadonlyArray
 public;AppNotificationManager 
@@ -482,6 +483,7 @@ beta;SectionsStatusFieldProps
 beta;selectionContextStateFunc(state: Readonly
 public;SelectionContextToolDefinitions
 public;SelectionInfoField: import("react-redux").ConnectedComponent
+public;SelectionScope
 public;SelectionScopeField: import("react-redux").ConnectedComponent
 public;SeparatorBackstageItem 
 public;SessionState
@@ -648,6 +650,8 @@ public;UiShowHideManager
 internal;UiShowHideSettingsProvider 
 public;UiVisibilityChangedEvent 
 public;UiVisibilityEventArgs
+alpha;UnitSystemSelector(props: UnitSystemSelectorProps): JSX.Element
+beta;UnitSystemSelectorProps
 internal;useActiveFrontstageDef(): FrontstageDef | undefined
 beta;useActiveFrontstageId: () => string
 public;useActiveIModelConnection(): IModelConnection | undefined
@@ -680,6 +684,7 @@ beta;useSolarDataProvider(viewport: ScreenViewport | undefined): SolarDataProvid
 internal;useStatusBarEntry(): DockedStatusBarEntryContextArg
 internal;useSyncDefinitions(frontstageDef: FrontstageDef): void
 internal;useToolSettingsNode(): string | number | boolean | {} | React.ReactElement
+beta;useUiItemsProviderBackstageItems: (manager: BackstageItemsManager) => readonly BackstageItem[]
 beta;useUiItemsProviderStatusBarItems: (manager: StatusBarItemsManager_2) => readonly CommonStatusBarItem[]
 beta;useUiItemsProviderToolbarItems: (manager: ToolbarItemsManager, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation) => readonly CommonToolbarItem[]
 beta;useUiSettingsStorageContext(): UiSettingsStorage

@@ -20,12 +20,14 @@ import { InstanceKeyJSON } from "../presentation-common/EC";
 import { ElementProperties } from "../presentation-common/ElementProperties";
 import { NodeKey, NodeKeyJSON } from "../presentation-common/hierarchy/Key";
 import {
-  ContentDescriptorRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions,
+  ContentDescriptorRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
+  DistinctValuesRequestOptions, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
+  HierarchyCompareOptions,
 } from "../presentation-common/PresentationManagerOptions";
 import {
-  ContentDescriptorRpcRequestOptions, DisplayLabelRpcRequestOptions, DisplayLabelsRpcRequestOptions, ElementPropertiesRpcRequestOptions,
-  ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions, HierarchyCompareRpcOptions,
+  ContentDescriptorRpcRequestOptions, ContentSourcesRpcRequestOptions, ContentSourcesRpcResult, DisplayLabelRpcRequestOptions,
+  DisplayLabelsRpcRequestOptions, ElementPropertiesRpcRequestOptions, ExtendedContentRpcRequestOptions, ExtendedHierarchyRpcRequestOptions,
+  HierarchyCompareRpcOptions,
 } from "../presentation-common/PresentationRpcInterface";
 import { RulesetVariableJSON } from "../presentation-common/RulesetVariables";
 import { HierarchyCompareInfoJSON, PartialHierarchyModificationJSON } from "../presentation-common/Update";
@@ -284,6 +286,34 @@ describe("RpcRequestsHandler", () => {
         .setup(async (x) => x.getNodePaths(token, rpcOptions, paths, markedIndex))
         .returns(async () => successResponse(result)).verifiable();
       expect(await handler.getNodePaths(handlerOptions, paths, markedIndex)).to.eq(result);
+      rpcInterfaceMock.verifyAll();
+    });
+
+    it("forwards getContentSources call", async () => {
+      const classes = ["test1", "test2"];
+      const handlerOptions: ContentSourcesRequestOptions<IModelRpcProps> = {
+        imodel: token,
+        classes,
+      };
+      const rpcOptions: ContentSourcesRpcRequestOptions = {
+        clientId,
+        classes,
+      };
+      const result: ContentSourcesRpcResult = {
+        sources: [{
+          selectClassInfo: "0x123",
+          isSelectPolymorphic: true,
+          navigationPropertyClasses: [],
+          pathToPrimaryClass: [],
+          relatedInstanceClasses: [],
+          relatedPropertyPaths: [],
+        }],
+        classesMap: {
+          "0x123": { name: "class_name", label: "Class Label" },
+        },
+      };
+      rpcInterfaceMock.setup(async (x) => x.getContentSources(token, rpcOptions)).returns(async () => successResponse(result)).verifiable();
+      expect(await handler.getContentSources(handlerOptions)).to.eq(result);
       rpcInterfaceMock.verifyAll();
     });
 

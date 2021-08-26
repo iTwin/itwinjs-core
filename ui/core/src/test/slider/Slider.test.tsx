@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as React from "react";
 import * as sinon from "sinon";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { Icon } from "../../ui-core/icons/IconComponent";
 import { Slider } from "../../ui-core/slider/Slider";
 import TestUtils from "../TestUtils";
@@ -13,8 +13,6 @@ import TestUtils from "../TestUtils";
 /* eslint-disable deprecation/deprecation */
 
 describe("Slider", () => {
-
-  afterEach(cleanup);
 
   it("should render", () => {
     const component = render(<Slider min={0} max={100} values={[50]} />);

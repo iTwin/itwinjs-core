@@ -5,7 +5,7 @@
 
 import { Client } from "../Client";
 import { expect } from "chai";
-import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
 
 class TestApiClient extends Client {
   public constructor() {
@@ -32,10 +32,10 @@ describe("Client", () => {
   });
 
   it("should apply prefix with config entry", async () => {
-    Config.App.set("imjs_url_prefix", "test-");
+    process.env.IMJS_URL_PREFIX = "test-";
     const requestContext = new ClientRequestContext();
     const url = await client.getUrl(requestContext);
     expect(url).to.equal("https://test-api.bentley.com/test-api");
-    Config.App.remove("imjs_url_prefix");
+    delete process.env.IMJS_URL_PREFIX;
   });
 });
