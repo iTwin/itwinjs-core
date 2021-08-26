@@ -7,7 +7,7 @@
  */
 
 import {
-  assert, BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
+  BeEvent, BentleyStatus, ChangeSetStatus, ClientRequestContext, DbResult, Guid, GuidString, Id64, Id64Arg, Id64Array, Id64Set, Id64String,
   IModelStatus, JsonUtils, Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
@@ -2194,7 +2194,7 @@ export class BriefcaseDb extends IModelDb {
   /** The Guid that identifies the *context* that owns this iModel. */
   public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
 
-  private constructor(nativeDb: IModelJsNative.DgnDb, token: IModelRpcProps, openMode: OpenMode) {
+  protected constructor(nativeDb: IModelJsNative.DgnDb, token: IModelRpcProps, openMode: OpenMode) {
     super(nativeDb, token);
     this._openMode = openMode;
     this.briefcaseId = this.nativeDb.getBriefcaseId();
@@ -2226,6 +2226,9 @@ export class BriefcaseDb extends IModelDb {
       await IModelHost.hubAccess.releaseAllLocks(lockArg);
       throw err;
     }
+
+    if (arg.briefcase.briefcaseId === BriefcaseIdValue.Unassigned)
+      return;
 
     // Push changes
     const briefcaseDb = await BriefcaseDb.open(requestContext, { ...arg.briefcase, readonly: false });
@@ -2555,10 +2558,8 @@ export class SnapshotDb extends IModelDb {
  * - cannot apply a changeset to nor generate a changesets (since there is no timeline from which to get/push changesets)
  * @public
  */
-export class StandaloneDb extends IModelDb {
+export class StandaloneDb extends BriefcaseDb {
   public override get isStandalone(): boolean { return true; }
-  /** Manages local changes to this briefcase. */
-  public readonly txns: TxnManager;
 
   public static override findByKey(key: string): StandaloneDb {
     return super.findByKey(key) as StandaloneDb;
@@ -2567,13 +2568,6 @@ export class StandaloneDb extends IModelDb {
   public static override tryFindByKey(key: string): StandaloneDb | undefined {
     const db = super.tryFindByKey(key);
     return db?.isStandaloneDb() ? db : undefined;
-  }
-
-  private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
-    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), contextId: Guid.empty };
-    super(nativeDb, iModelRpcProps);
-    this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
-    this.txns = new TxnManager(this);
   }
 
   /** Create an *empty* standalone iModel.
@@ -2587,7 +2581,7 @@ export class StandaloneDb extends IModelDb {
     nativeDb.saveProjectGuid(Guid.empty);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
-    return new StandaloneDb(nativeDb, Guid.createValue());
+    return new StandaloneDb(nativeDb, { key: Guid.createValue(), iModelId: nativeDb.getDbGuid(), contextId: Guid.empty }, OpenMode.ReadWrite);
   }
 
   /**
@@ -2597,13 +2591,11 @@ export class StandaloneDb extends IModelDb {
    * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
    * @see [[StandaloneDb.validateSchemas]]
    */
-  public static upgradeSchemas(filePath: string) {
+  public static upgradeStandaloneSchemas(filePath: string) {
     let nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade });
-    assert(!nativeDb.hasUnsavedChanges(), "Expected schema upgrade to have saved any changes made");
     nativeDb.closeIModel();
 
     nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
-    assert(!nativeDb.hasUnsavedChanges(), "Expected schema upgrade to have saved any changes made");
     nativeDb.closeIModel();
   }
 
@@ -2619,18 +2611,20 @@ export class StandaloneDb extends IModelDb {
     const nativeDb = this.openDgnDb(file, openMode);
 
     try {
-      const projectId = nativeDb.queryProjectGuid();
+      const iModelId = nativeDb.getDbGuid();
+      const contextId = nativeDb.queryProjectGuid();
       const briefcaseId = nativeDb.getBriefcaseId();
-      if (projectId !== Guid.empty || !(briefcaseId === BriefcaseIdValue.Unassigned || briefcaseId === BriefcaseIdValue.DeprecatedStandalone))// eslint-disable-line deprecation/deprecation
-        throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone db. projectId=${projectId}, briefcaseId=${briefcaseId}`);
+      if (contextId !== Guid.empty || briefcaseId !== BriefcaseIdValue.Unassigned)
+        throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. contextId=${contextId}, briefcaseId=${briefcaseId}`);
 
       if (openMode === OpenMode.ReadWrite && (undefined === nativeDb.queryLocalValue(IModelDb._edit)))
         throw new IModelError(IModelStatus.ReadOnly, `${filePath} is not editable`);
+
+      return new StandaloneDb(nativeDb, { iModelId, contextId, key: file.key! }, openMode);
     } catch (error) {
       nativeDb.closeIModel();
       throw error;
     }
 
-    return new StandaloneDb(nativeDb, file.key!);
   }
 }

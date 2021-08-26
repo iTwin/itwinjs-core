@@ -8,7 +8,7 @@ import * as semver from "semver";
 import { DbResult, GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { IModel, RequestNewBriefcaseProps, SchemaState, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import {
-  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, DictionaryModel, Element, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement,
+  AuthorizedBackendRequestContext, BriefcaseDb, BriefcaseManager, DictionaryModel, IModelHost, IModelJsFs, SpatialCategory, SqliteStatement,
   SqliteValue, SqliteValueType,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";

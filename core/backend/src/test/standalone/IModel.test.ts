@@ -2212,7 +2212,7 @@ describe("iModel", () => {
     const schemaState: SchemaState = StandaloneDb.validateSchemas(testFileName, true);
     assert.strictEqual(schemaState, SchemaState.UpgradeRecommended);
 
-    StandaloneDb.upgradeSchemas(testFileName);
+    StandaloneDb.upgradeStandaloneSchemas(testFileName);
 
     iModel = StandaloneDb.openFile(testFileName, OpenMode.ReadWrite);
     const afterVersion = iModel.querySchemaVersion("BisCore");
