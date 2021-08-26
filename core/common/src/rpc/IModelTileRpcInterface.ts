@@ -52,6 +52,9 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     return this.forward(arguments);
   }
 
+  /** Retrieves tile content from the backend using a key returned by generateTileContent.
+   *  @internal
+   */
   public async retrieveTileContent(_rpcProps: IModelRpcProps, _key: TileContentKey): Promise<Uint8Array> {
     return this.forward(arguments);
   }
