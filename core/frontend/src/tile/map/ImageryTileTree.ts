@@ -156,7 +156,7 @@ export class ImageryMapTileTree extends RealityTileTree {
   }
   public get imageryLoader(): ImageryTileLoader { return this._imageryLoader; }
   public override get is3d(): boolean { assert(false); return false; }
-  public override get viewFlagOverrides(): ViewFlagOverrides { assert(false); return new ViewFlagOverrides(); }
+  public override get viewFlagOverrides(): ViewFlagOverrides { assert(false); return { }; }
   public override get isContentUnbounded(): boolean { assert(false); return true; }
   protected override _selectTiles(_args: TileDrawArgs): Tile[] { assert(false); return []; }
   public override draw(_args: TileDrawArgs): void { assert(false); }

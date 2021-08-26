@@ -23,15 +23,11 @@ describe("White-on-white reversal", async () => {
     await IModelApp.shutdown();
   });
 
-  async function test(expectedColors: Color[], setup: (vp: Viewport, vf: ViewFlags) => void, cleanup?: (vp: Viewport) => void): Promise<void> {
+  async function test(expectedColors: Color[], setup: (vp: Viewport, vf: ViewFlags) => ViewFlags | undefined, cleanup?: (vp: Viewport) => void): Promise<void> {
     await testOnScreenViewport("0x24", imodel, 100, 100, async (vp) => {
-      const vf = vp.viewFlags.clone();
-      vf.renderMode = RenderMode.Wireframe;
-      vf.acsTriad = false;
-      setup(vp, vf);
-
-      vp.viewFlags = vf;
-      vp.invalidateRenderPlan();
+      const vf = vp.viewFlags.copy({ renderMode: RenderMode.Wireframe, acsTriad: false });
+      const newVf = setup(vp, vf);
+      vp.viewFlags = newVf ?? vf;
 
       await vp.waitForAllTilesToRender();
       if (undefined !== cleanup)
@@ -52,19 +48,21 @@ describe("White-on-white reversal", async () => {
   it("should not apply if background is not white", async () => {
     await test([red, white], (vp, _vf) => {
       vp.displayStyle.backgroundColor = ColorDef.red;
+      return undefined;
     });
   });
 
   it("should apply if background is white and geometry is white", async () => {
     await test([black, white], (vp, _vf) => {
       vp.displayStyle.backgroundColor = ColorDef.white;
+      return undefined;
     });
   });
 
   it("should not apply if explicitly disabled", async () => {
     await test([white], (vp, vf) => {
-      vf.whiteOnWhiteReversal = false;
       vp.displayStyle.backgroundColor = ColorDef.white;
+      return vf.with("whiteOnWhiteReversal", false);
     });
   });
 
@@ -78,6 +76,7 @@ describe("White-on-white reversal", async () => {
 
       vp.displayStyle.backgroundColor = ColorDef.white;
       vp.addFeatureOverrideProvider(new ColorOverride());
+      return undefined;
     });
   });
 
@@ -152,6 +151,7 @@ describe("White-on-white reversal", async () => {
       IModelApp.viewManager.addDecorator(decorator);
       vp.changeViewedModels([]);
       vp.displayStyle.backgroundColor = ColorDef.white;
+      return undefined;
     }, (_vp) => {
       IModelApp.viewManager.dropDecorator(decorator);
     });

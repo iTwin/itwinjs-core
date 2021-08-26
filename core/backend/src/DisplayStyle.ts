@@ -162,7 +162,7 @@ export class DisplayStyle2d extends DisplayStyle {
         styles: {
           backgroundColor: 0,
           monochromeColor: ColorDef.white.toJSON(),
-          viewflags: ViewFlags.createFrom(),
+          viewflags: ViewFlags.defaults,
         },
       },
     };
