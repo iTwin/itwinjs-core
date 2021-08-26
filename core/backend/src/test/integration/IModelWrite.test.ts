@@ -49,7 +49,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     testContextId = await HubUtility.getTestContextId(managerRequestContext);
     readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
-    readWriteTestIModelId = await HubUtility.recreateIModel(managerRequestContext, testContextId, readWriteTestIModelName);
+    readWriteTestIModelId = await HubUtility.recreateIModel({ requestContext: managerRequestContext, contextId: testContextId, iModelName: readWriteTestIModelName, noLocks: true });
 
     // Purge briefcases that are close to reaching the acquire limit
     await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, readWriteTestIModelId);
@@ -77,7 +77,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Create a new empty iModel on the Hub & obtain a briefcase
     timer = new Timer("create iModel");
-    const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject" });
+    const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject", noLocks: true });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
     timer.end();

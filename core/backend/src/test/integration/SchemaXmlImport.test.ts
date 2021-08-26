@@ -30,7 +30,7 @@ describe("Schema XML Import Tests (#integration)", () => {
     HubMock.startup("schemaImport");
     requestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
     testContextId = await HubUtility.getTestContextId(requestContext);
-    readWriteTestIModelId = await HubUtility.recreateIModel(requestContext, testContextId, HubUtility.generateUniqueName("ReadWriteTest"));
+    readWriteTestIModelId = await HubUtility.recreateIModel({ requestContext, contextId: testContextId, iModelName: HubUtility.generateUniqueName("ReadWriteTest"), noLocks: true });
   });
 
   after(async () => {

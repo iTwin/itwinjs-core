@@ -21,7 +21,7 @@ import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client"
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
-import { BriefcaseDb, IModelDb } from "./IModelDb";
+import { BriefcaseDb, BriefcaseLocalValue, IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
@@ -214,7 +214,11 @@ export class BriefcaseManager {
       nativeDb.resetBriefcaseId(briefcaseId);
       if (nativeDb.getParentChangeset().id !== args.checkpoint.changeset.id)
         throw new IModelError(IModelStatus.InvalidId, `Downloaded briefcase has wrong changesetId: ${fileName}`);
+      // query the server to see if this iModel uses locks or not. If not, save that flag in the localValue table.
+      if (false === await IModelHost.hubAccess.shouldUseLocks(request))
+        nativeDb.saveLocalValue(BriefcaseLocalValue.NoLocking, "true");
     } finally {
+      nativeDb.saveChanges();
       nativeDb.closeIModel();
     }
     return response;
@@ -556,9 +560,9 @@ export class BriefcaseManager {
   /** Create an iModel on iModelHub
    * @deprecated use IModelHost.hubAccess.createIModel
    */
-  public static async create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString> {
-    return IModelHost.hubAccess.createIModel({ requestContext, contextId, iModelName, description: args.rootSubject.description });
-  }
+  // public static async create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString> {
+  //   return IModelHost.hubAccess.createIModel({ requestContext, contextId, iModelName, description: args.rootSubject.description });
+  // }
 
   /** @internal */
   public static logUsage(requestContext: ClientRequestContext, token: IModelRpcOpenProps) {

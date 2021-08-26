@@ -575,14 +575,14 @@ export class HubUtility {
   /** Deletes and re-creates an iModel with the provided name in the Context.
    * @returns the iModelId of the newly created iModel.
   */
-  public static async recreateIModel(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString> {
+  public static async recreateIModel(arg: { requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    const deleteIModel = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);
+    const deleteIModel = await HubUtility.queryIModelByName(arg.requestContext, arg.contextId, arg.iModelName);
     if (undefined !== deleteIModel)
-      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId, iModelId: deleteIModel });
+      await IModelHost.hubAccess.deleteIModel({ requestContext: arg.requestContext, contextId: arg.contextId, iModelId: deleteIModel });
 
     // Create a new iModel
-    return IModelHost.hubAccess.createIModel({ requestContext, contextId, iModelName, description: `Description for ${iModelName}` });
+    return IModelHost.hubAccess.createIModel({ ...arg, description: `Description for ${arg.iModelName}` });
   }
 
   /** Create an iModel with the name provided if it does not already exist. If it does exist, the iModelId is returned. */

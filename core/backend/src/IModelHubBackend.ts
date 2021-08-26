@@ -352,6 +352,10 @@ export class IModelHubBackend {
     return checkpoints[0].changeSetId!;
   }
 
+  public static async shouldUseLocks(_arg: IModelIdArg) {
+    return true; // NEEDS_WORK
+  }
+
   public static async releaseAllLocks(arg: BriefcaseDbArg) {
     const requestContext = await this.getRequestContext();
     return this.iModelClient.locks.deleteAll(requestContext, arg.iModelId, arg.briefcaseId);

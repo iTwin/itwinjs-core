@@ -27,6 +27,7 @@ export interface LocalHubProps {
   readonly iModelName: string;
   readonly description?: string;
   readonly revision0: string;
+  readonly noLocks?: true;
 }
 
 export interface LockStatusNone {
@@ -56,6 +57,7 @@ export class LocalHub {
   public readonly iModelId: GuidString;
   public readonly iModelName: string;
   public readonly description?: string;
+  public readonly wantLocks: boolean;
   private _hubDb?: SQLiteDb;
   private _nextBriefcaseId = BriefcaseIdValue.FirstValid;
   private _latestChangesetIndex = 0;
@@ -65,6 +67,7 @@ export class LocalHub {
     this.contextId = arg.contextId;
     this.iModelId = arg.iModelId;
     this.iModelName = arg.iModelName;
+    this.wantLocks = !arg.noLocks;
     this.description = arg.description;
 
     this.cleanup();

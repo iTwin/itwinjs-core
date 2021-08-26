@@ -214,6 +214,9 @@ export class HubMock {
       hub.releaseLock(props, arg);
   }
 
+  public static async shouldUseLocks(arg: IModelIdArg) {
+    return this.findLocalHub(arg.iModelId).wantLocks;
+  }
   public static async releaseAllCodes(_arg: BriefcaseDbArg) {
   }
 
@@ -230,13 +233,6 @@ export class HubMock {
     for (const lock of arg.locks) {
       hub.requestLock(lock, arg);
     }
-  }
-
-  public static async acquireSchemaLock(_arg: BriefcaseDbArg): Promise<void> {
-  }
-
-  public static async querySchemaLock(_arg: IModelIdArg): Promise<boolean> {
-    return false;
   }
 
   public static async queryIModelByName(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string }): Promise<GuidString | undefined> {

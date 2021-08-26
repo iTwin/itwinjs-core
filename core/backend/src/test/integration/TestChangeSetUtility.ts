@@ -49,7 +49,7 @@ export class TestChangeSetUtility {
     this.projectId = await HubUtility.getTestContextId(this._requestContext);
 
     // Re-create iModel on iModelHub
-    this.iModelId = await HubUtility.recreateIModel(this._requestContext, this.projectId, this._iModelName);
+    this.iModelId = await HubUtility.recreateIModel({ requestContext: this._requestContext, contextId: this.projectId, iModelName: this._iModelName, noLocks: true });
 
     // Populate sample data
     await this.addTestModel();

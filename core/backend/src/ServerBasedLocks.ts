@@ -8,7 +8,7 @@
  */
 
 import { DbResult, Id64, Id64Arg, Id64String, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
-import { IModelError } from "@bentley/imodeljs-common";
+import { IModel, IModelError } from "@bentley/imodeljs-common";
 import { LockMap, LockState } from "./BackendHubAccess";
 import { BriefcaseDb, LockControl } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
@@ -21,14 +21,15 @@ import { SQLiteDb } from "./SQLiteDb";
  */
 export interface ElementOwners { modelId: Id64String, parentId: Id64String }
 
-export class PessimisticLocks implements LockControl {
+export class ServerBasedLocks implements LockControl {
+  public get isServerBased() { return true; }
   private _db?: SQLiteDb;
   private _iModel?: BriefcaseDb;
 
   private get iModel() { return this._iModel!; } // eslint-disable-line @typescript-eslint/naming-convention
   private get lockDb() { return this._db!; } // eslint-disable-line @typescript-eslint/naming-convention
 
-  public async open(iModel: BriefcaseDb) {
+  public constructor(iModel: BriefcaseDb) {
     this._iModel = iModel;
     this._db = new SQLiteDb();
 
@@ -95,6 +96,9 @@ export class PessimisticLocks implements LockControl {
     if (this.getLockState(id) === LockState.Exclusive)
       return true; // yes, we hold the lock.
 
+    if (id === IModel.rootSubjectId) // the root has no owners
+      return false;
+
     // an exclusive lock is implied if the element's owner is exclusively locked (recursively)
     const owners = this.getOwners(id);
     return this.holdsExclusiveLock(owners.modelId) || this.holdsExclusiveLock(owners.parentId);
@@ -104,6 +108,9 @@ export class PessimisticLocks implements LockControl {
     const state = this.getLockState(id);
     if (state === LockState.Shared || state === LockState.Exclusive)
       return true; // we already hold either the shared or exclusive lock for this element
+
+    if (id === IModel.rootSubjectId) // the root has no owners
+      return false;
 
     // see if an owner has exclusive lock. If so we implicitly have shared lock, but owner holding shared lock doesn't help.
     const owners = this.getOwners(id);

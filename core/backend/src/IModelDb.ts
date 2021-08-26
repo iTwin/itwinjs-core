@@ -41,6 +41,7 @@ import { IModelJsFs } from "./IModelJsFs";
 import { IpcHost } from "./IpcHost";
 import { Model } from "./Model";
 import { Relationships } from "./Relationship";
+import { ServerBasedLocks } from "./ServerBasedLocks";
 import { SqliteStatement, StatementCache } from "./SqliteStatement";
 import { TxnManager } from "./TxnManager";
 import { DrawingViewDefinition, SheetViewDefinition, ViewDefinition } from "./ViewDefinition";
@@ -81,7 +82,8 @@ export interface ComputedProjectExtents {
 }
 
 export interface LockControl {
-  /** Close the lock control database */
+  readonly isServerBased: boolean;
+  /** Close the local lock control database */
   close(): void;
   /** Notification that a new element was just created */
   elementWasCreated(id: Id64String): void;
@@ -109,8 +111,8 @@ export interface LockControl {
   releaseAllLocks(): Promise<void>;
 }
 
-export class OptimisticLocks implements LockControl {
-  public open(_iModel: BriefcaseDb): void { }
+class NoLocks implements LockControl {
+  public get isServerBased() { return false; }
   public close(): void { }
   public clearAllLocks(): void { }
   public holdsExclusiveLock(): boolean { return false; }
@@ -123,6 +125,12 @@ export class OptimisticLocks implements LockControl {
   public async releaseAllLocks(): Promise<void> { }
 }
 
+/** @internal */
+export enum BriefcaseLocalValue {
+  StandaloneEdit = "StandaloneEdit",
+  NoLocking = "NoLocking"
+}
+
 /** An iModel database file. The database file is either briefcase or a snapshot.
  * @see [Accessing iModels]($docs/learning/backend/AccessingIModels.md)
  * @see [About IModelDb]($docs/learning/backend/IModelDb.md)
@@ -130,7 +138,6 @@ export class OptimisticLocks implements LockControl {
  */
 export abstract class IModelDb extends IModel {
   private _initialized = false;
-  protected static readonly _edit = "StandaloneEdit";
   /** Keep track of open imodels to support `tryFind` for RPC purposes */
   private static readonly _openDbs = new Map<string, IModelDb>();
   public static readonly defaultLimit = 1000; // default limit for batching queries
@@ -150,7 +157,7 @@ export abstract class IModelDb extends IModel {
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
 
-  protected _locks: LockControl;
+  protected _locks: LockControl = new NoLocks();
   public get locks() { return this._locks; }
 
   /** Acquire the exclusive schema lock on this iModel.
@@ -199,8 +206,6 @@ export abstract class IModelDb extends IModel {
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
-    const useLocks = this.isBriefcaseDb() && this.briefcaseId !== BriefcaseIdValue.Unassigned &&
-      this._locks = new OptimisticLocks();
 
     if (undefined === IModelDb._shutdownListener) { // the first time we create an IModelDb, add a listener to close any orphan files at shutdown.
       IModelDb._shutdownListener = IModelHost.onBeforeShutdown.addListener(() => {
@@ -2195,10 +2200,18 @@ export class BriefcaseDb extends IModelDb {
   /** The Guid that identifies the *context* that owns this iModel. */
   public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
 
+  protected get useServerLocks(): boolean {
+    // locks apply to assigned briefcases without the "no locking" flag
+    return (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
+  }
+
   protected constructor(nativeDb: IModelJsNative.DgnDb, token: IModelRpcProps, openMode: OpenMode) {
     super(nativeDb, token);
     this._openMode = openMode;
     this.briefcaseId = this.nativeDb.getBriefcaseId();
+
+    if (this.useServerLocks)
+      this._locks = new ServerBasedLocks(this);
   }
 
   /** Upgrades the profile or domain schemas */
@@ -2268,7 +2281,6 @@ export class BriefcaseDb extends IModelDb {
    * @param args parameters that specify the file name, and options for opening the briefcase file
    */
   public static async open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb> {
-    requestContext.enter();
     this.onOpen.raiseEvent(requestContext, args);
 
     const file = { path: args.fileName, key: args.key };
@@ -2441,7 +2453,7 @@ export class SnapshotDb extends IModelDb {
     if (!BriefcaseManager.isValidBriefcaseId(nativeDb.getBriefcaseId()))
       nativeDb.setDbGuid(Guid.createValue());
 
-    nativeDb.deleteLocalValue(IModelDb._edit);
+    nativeDb.deleteLocalValue(BriefcaseLocalValue.StandaloneEdit);
     nativeDb.saveChanges();
     nativeDb.deleteAllTxns();
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
@@ -2578,7 +2590,7 @@ export class StandaloneDb extends BriefcaseDb {
   public static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.createIModel(filePath, args);
-    nativeDb.saveLocalValue(IModelDb._edit, undefined === args.allowEdit ? "" : args.allowEdit);
+    nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, undefined === args.allowEdit ? "" : args.allowEdit);
     nativeDb.saveProjectGuid(Guid.empty);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
@@ -2618,7 +2630,7 @@ export class StandaloneDb extends BriefcaseDb {
       if (contextId !== Guid.empty || briefcaseId !== BriefcaseIdValue.Unassigned)
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. contextId=${contextId}, briefcaseId=${briefcaseId}`);
 
-      if (openMode === OpenMode.ReadWrite && (undefined === nativeDb.queryLocalValue(IModelDb._edit)))
+      if (openMode === OpenMode.ReadWrite && (undefined === nativeDb.queryLocalValue(BriefcaseLocalValue.StandaloneEdit)))
         throw new IModelError(IModelStatus.ReadOnly, `${filePath} is not editable`);
 
       return new StandaloneDb(nativeDb, { iModelId, contextId, key: file.key! }, openMode);

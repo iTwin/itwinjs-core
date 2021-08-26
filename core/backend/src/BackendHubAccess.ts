@@ -147,6 +147,8 @@ export interface BackendHubAccess {
   /** download a v2 checkpoint */
   downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
 
+  shouldUseLocks(arg: IModelIdArg): Promise<boolean>;
+
   /** acquire one or more locks. Throws if unsuccessful */
   acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
 
@@ -164,7 +166,7 @@ export interface BackendHubAccess {
   /** get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
   /** create a new iModel. Returns the Guid of the newly created iModel */
-  createIModel(arg: IModelNameArg & { description?: string, revision0?: LocalFileName }): Promise<GuidString>;
+  createIModel(arg: IModelNameArg & { description?: string, revision0?: LocalFileName, readonly noLocks?: true }): Promise<GuidString>;
   /** delete an iModel  */
   deleteIModel(arg: IModelIdArg & { contextId: GuidString }): Promise<void>;
 }
