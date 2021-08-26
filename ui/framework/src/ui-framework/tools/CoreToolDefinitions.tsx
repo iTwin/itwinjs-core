@@ -7,7 +7,6 @@
  */
 
 import * as React from "react";
-import { ViewFlags } from "@bentley/imodeljs-common";
 // cSpell:ignore configurableui keyinbrowser
 import {
   FitViewTool, FlyViewTool, IModelApp, MeasureDistanceTool, MeasureLocationTool, PanViewTool, RotateViewTool, SelectionTool, ViewClipByElementTool,
@@ -16,7 +15,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { ConditionalBooleanValue, ConditionalStringValue } from "@bentley/ui-abstract";
 import { ToolbarPopupContext } from "@bentley/ui-components";
-import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../../ui-framework";
+import { PopupButton, PopupButtonChildrenRenderPropArgs } from "../toolbar/PopupButton";
 import { ContentViewManager } from "../content/ContentViewManager";
 import { KeyinBrowser } from "../keyinbrowser/KeyinBrowser";
 import { getIsHiddenIfSelectionNotActive, getSelectionContextSyncEventIds, selectionContextStateFunc } from "../selection/SelectionContextItemDef";
@@ -242,9 +241,7 @@ export class CoreTools {
       return;
 
     // Turn on clip volume flag for section tools
-    const viewFlags: ViewFlags = vp.view.viewFlags.clone();
-    viewFlags.clipVolume = true;
-    vp.viewFlags = viewFlags;
+    vp.viewFlags = vp.viewFlags.with("clipVolume", true);
   }
 
   // note current ViewClipByPlaneTool is not automatically registered so the app must call ViewClipByPlaneTool.register();

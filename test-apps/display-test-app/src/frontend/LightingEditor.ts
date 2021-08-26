@@ -4,14 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import { CheckBox, createButton, createCheckBox, createColorInput, createLabeledNumericInput, createTextBox } from "@bentley/frontend-devtools";
 import { Vector3d } from "@bentley/geometry-core";
-import { ColorDef, LightSettings, LightSettingsProps, RenderMode, RgbColor, SolarShadowSettings, ViewFlags } from "@bentley/imodeljs-common";
+import { ColorDef, LightSettings, LightSettingsProps, RenderMode, RgbColor, SolarShadowSettings } from "@bentley/imodeljs-common";
 import { Viewport, ViewState } from "@bentley/imodeljs-frontend";
 
 // cspell:ignore cels sundir textbox hemi lighteditor
 
 type Update = (view: ViewState) => void;
-
-const scratchVf = new ViewFlags();
 
 export class LightingEditor {
   private readonly _vp: Viewport;
@@ -73,9 +71,7 @@ export class LightingEditor {
     parent.appendChild(span);
 
     const cb = this.addCheckBox("Shadows", (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(scratchVf);
-      vf.shadows = enabled;
-      this._vp.viewFlags = vf;
+      this._vp.viewFlags = this._vp.viewFlags.with("shadows", enabled);
     }, span).checkbox;
 
     let color;
@@ -261,9 +257,7 @@ export class LightingEditor {
 
   private addLightingToggle(parent: HTMLElement): void {
     const elems = this.addCheckBox("Lights", (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(scratchVf);
-      vf.lighting = enabled;
-      this._vp.viewFlags = vf;
+      this._vp.viewFlags = this._vp.viewFlags.with("lighting", enabled);
     }, parent);
 
     this._updates.push((view: ViewState) => {

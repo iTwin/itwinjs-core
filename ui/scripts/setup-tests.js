@@ -11,6 +11,9 @@ require('jsdom-global')();
 window.Date = Date;
 document.elementFromPoint = () => null;
 
+// Fill in more missing functions left out by jsdom or mocha
+performance = window.performance;
+
 const {
   JSDOM
 } = require('jsdom');
@@ -49,7 +52,7 @@ m._load = (request, parent, isMain) => {
 
 // setup enzyme (testing utils for React)
 enzyme.configure({
-  adapter: new (require("enzyme-adapter-react-16/build"))()
+  adapter: new (require("@wojtekmaj/enzyme-adapter-react-17/build"))()
 });
 chaiJestSnapshot.addSerializer(require("enzyme-to-json/serializer"));
 

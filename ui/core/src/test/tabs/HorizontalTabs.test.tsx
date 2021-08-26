@@ -6,6 +6,8 @@ import { mount, shallow } from "enzyme";
 import * as React from "react";
 import { HorizontalTabs } from "../../ui-core";
 
+/* eslint-disable deprecation/deprecation */
+
 describe("<HorizontalTabs />", () => {
   it("should render", () => {
     const wrapper = mount(<HorizontalTabs labels={[]} />);

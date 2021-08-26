@@ -7,7 +7,10 @@
  */
 
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ClassInfo, ClassInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON, StrippedRelationshipPath } from "../EC";
+import {
+  ClassInfo, ClassInfoJSON, CompressedClassInfoJSON, PropertyInfo, PropertyInfoJSON, RelatedClassInfo, RelationshipPath, RelationshipPathJSON,
+  StrippedRelationshipPath,
+} from "../EC";
 import { PresentationError, PresentationStatus } from "../Error";
 import { RelationshipMeaning } from "../rules/content/modifiers/RelatedPropertiesSpecification";
 import { CategoryDescription, CategoryDescriptionJSON } from "./Category";
@@ -35,38 +38,38 @@ export interface BaseFieldJSON {
  * Data structure for a [[PropertiesField]] serialized to JSON.
  * @public
  */
-export interface PropertiesFieldJSON extends BaseFieldJSON {
-  properties: PropertyJSON[];
+export interface PropertiesFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
+  properties: PropertyJSON<TClassInfoJSON>[];
 }
 
 /**
  * Data structure for a [[NestedContentField]] serialized to JSON.
  * @public
  */
-export interface NestedContentFieldJSON extends BaseFieldJSON {
-  contentClassInfo: ClassInfoJSON;
-  pathToPrimaryClass: RelationshipPathJSON;
+export interface NestedContentFieldJSON<TClassInfoJSON = ClassInfoJSON> extends BaseFieldJSON {
+  contentClassInfo: TClassInfoJSON;
+  pathToPrimaryClass: RelationshipPathJSON<TClassInfoJSON>;
   /** @alpha */
   relationshipMeaning?: RelationshipMeaning;
   /** @alpha */
   actualPrimaryClassIds?: Id64String[];
   autoExpand?: boolean;
-  nestedFields: FieldJSON[];
+  nestedFields: FieldJSON<TClassInfoJSON>[];
 }
 
 /**
  * JSON representation of a [[Field]]
  * @public
  */
-export type FieldJSON = BaseFieldJSON | PropertiesFieldJSON | NestedContentFieldJSON;
+export type FieldJSON<TClassInfoJSON = ClassInfoJSON> = BaseFieldJSON | PropertiesFieldJSON<TClassInfoJSON> | NestedContentFieldJSON<TClassInfoJSON>;
 
 /** Is supplied field a properties field. */
-const isPropertiesField = (field: FieldJSON | Field): field is PropertiesFieldJSON | PropertiesField => {
+const isPropertiesField = (field: FieldJSON | Field): field is PropertiesFieldJSON<any> | PropertiesField => {
   return !!(field as any).properties;
 };
 
 /** Is supplied field a nested content field. */
-const isNestedContentField = (field: FieldJSON | Field): field is NestedContentFieldJSON | NestedContentField => {
+const isNestedContentField = (field: FieldJSON | Field): field is NestedContentFieldJSON<any> | NestedContentField => {
   return !!(field as any).nestedFields;
 };
 
@@ -163,6 +166,27 @@ export class Field {
     };
   }
 
+  /** Serialize this object to compressed JSON */
+  public toCompressedJSON(classesMap: { [id: string]: CompressedClassInfoJSON }): FieldJSON<string> {
+    if (this.isPropertiesField())
+      return {
+        ...this.toJSON(),
+        properties: this.properties.map((property) => Property.toCompressedJSON(property, classesMap)),
+      };
+
+    if (this.isNestedContentField()) {
+      const { id, ...leftOverInfo } = this.contentClassInfo;
+      classesMap[id] = leftOverInfo;
+      return {
+        ...this.toJSON(),
+        contentClassInfo: id,
+        pathToPrimaryClass: this.pathToPrimaryClass.map((classInfo) => RelatedClassInfo.toCompressedJSON(classInfo, classesMap)),
+      };
+    }
+
+    return this.toJSON();
+  }
+
   /** Deserialize [[Field]] from JSON */
   public static fromJSON(json: FieldJSON | undefined, categories: CategoryDescription[]): Field | undefined;
   /**
@@ -181,6 +205,23 @@ export class Field {
       return PropertiesField.fromJSON(json, categories!);
     if (isNestedContentField(json))
       return NestedContentField.fromJSON(json, categories!);
+    const field = Object.create(Field.prototype);
+    return Object.assign(field, json, {
+      category: Field.getCategoryFromFieldJson(json, categories),
+    });
+  }
+
+  /**
+   * Deserialize a [[Field]] from compressed JSON.
+   * @public
+   */
+  public static fromCompressedJSON(json: FieldJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }, categories: CategoryDescription[]): Field | undefined {
+    if (isPropertiesField(json))
+      return PropertiesField.fromCompressedJSON(json, classesMap, categories);
+
+    if (isNestedContentField(json))
+      return NestedContentField.fromCompressedJSON(json, classesMap, categories);
+
     const field = Object.create(Field.prototype);
     return Object.assign(field, json, {
       category: Field.getCategoryFromFieldJson(json, categories),
@@ -308,6 +349,18 @@ export class PropertiesField extends Field {
     return Object.assign(field, json, {
       category: this.getCategoryFromFieldJson(json, categories),
       properties: json.properties.map(Property.fromJSON),
+    });
+  }
+
+  /**
+   * Deserialize a [[PropertiesField]] from compressed JSON.
+   * @public
+   */
+  public static override fromCompressedJSON(json: PropertiesFieldJSON<Id64String>, classesMap: { [id: string]: CompressedClassInfoJSON }, categories: CategoryDescription[]): PropertiesField | undefined {
+    const field = Object.create(PropertiesField.prototype);
+    return Object.assign(field, json, {
+      category: this.getCategoryFromFieldJson(json, categories),
+      properties: json.properties.map((propertyJson) => fromCompressedPropertyJSON(propertyJson, classesMap)),
     });
   }
 
@@ -449,16 +502,36 @@ export class NestedContentField extends Field {
       return JSON.parse(json, Field.reviver);
     }
     const field = Object.create(NestedContentField.prototype);
-    return Object.assign(field, json, {
-      category: this.getCategoryFromFieldJson(json, categories),
+    return Object.assign(field, json, this.fromCommonJSON(json, categories), {
       nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromJSON(nestedFieldJson, categories!))
         .filter((nestedField): nestedField is Field => !!nestedField),
       contentClassInfo: ClassInfo.fromJSON(json.contentClassInfo),
       pathToPrimaryClass: json.pathToPrimaryClass.map(RelatedClassInfo.fromJSON),
+    });
+  }
+
+  /**
+   * Deserialize a [[NestedContentField]] from compressed JSON.
+   * @public
+   */
+  public static override fromCompressedJSON(json: NestedContentFieldJSON<Id64String>, classesMap: { [id: string]: CompressedClassInfoJSON }, categories: CategoryDescription[]) {
+    const field = Object.create(NestedContentField.prototype);
+    return Object.assign(field, json, this.fromCommonJSON(json, categories), {
+      category: this.getCategoryFromFieldJson(json, categories),
+      nestedFields: json.nestedFields.map((nestedFieldJson: FieldJSON) => Field.fromCompressedJSON(nestedFieldJson, classesMap, categories))
+        .filter((nestedField): nestedField is Field => !!nestedField),
+      contentClassInfo: ClassInfo.fromJSON({ id: json.contentClassInfo, ...classesMap[json.contentClassInfo] }),
+      pathToPrimaryClass: json.pathToPrimaryClass.map((stepJson) => RelatedClassInfo.fromCompressedJSON(stepJson, classesMap)),
+    });
+  }
+
+  private static fromCommonJSON(json: NestedContentFieldJSON<ClassInfoJSON | string>, categories: CategoryDescription[] | undefined): Partial<NestedContentField> {
+    return {
+      category: this.getCategoryFromFieldJson(json, categories),
       relationshipMeaning: json.relationshipMeaning ?? RelationshipMeaning.RelatedInstance,
       actualPrimaryClassIds: json.actualPrimaryClassIds ?? [],
       autoExpand: json.autoExpand,
-    });
+    };
   }
 
   /** @internal */
@@ -477,15 +550,17 @@ export class NestedContentField extends Field {
 }
 
 /** @internal */
-export const getFieldByName = (fields: Field[], name: string, recurse?: boolean): Field | undefined => {
-  for (const field of fields) {
-    if (field.name === name)
-      return field;
+export const getFieldByName = (fields: Field[], name: string | undefined, recurse?: boolean): Field | undefined => {
+  if (name) {
+    for (const field of fields) {
+      if (field.name === name)
+        return field;
 
-    if (recurse && field.isNestedContentField()) {
-      const nested = getFieldByName(field.nestedFields, name, recurse);
-      if (nested)
-        return nested;
+      if (recurse && field.isNestedContentField()) {
+        const nested = getFieldByName(field.nestedFields, name, recurse);
+        if (nested)
+          return nested;
+      }
     }
   }
   return undefined;
@@ -556,4 +631,19 @@ export interface PropertiesFieldDescriptor extends FieldDescriptorBase {
   propertyClass?: string;
   /** @deprecated Use [[properties]] array */
   propertyName?: string;
+}
+
+function fromCompressedPropertyJSON(compressedPropertyJSON: PropertyJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): Property {
+  return {
+    property: fromCompressedPropertyInfoJSON(compressedPropertyJSON.property, classesMap),
+    // eslint-disable-next-line deprecation/deprecation
+    relatedClassPath: compressedPropertyJSON.relatedClassPath.map((compressedInfoJSON) => RelatedClassInfo.fromCompressedJSON(compressedInfoJSON, classesMap)),
+  };
+}
+
+function fromCompressedPropertyInfoJSON(compressedPropertyJSON: PropertyInfoJSON<string>, classesMap: { [id: string]: CompressedClassInfoJSON }): PropertyInfo {
+  return {
+    ...compressedPropertyJSON,
+    classInfo: { id: compressedPropertyJSON.classInfo, ...classesMap[compressedPropertyJSON.classInfo] },
+  };
 }

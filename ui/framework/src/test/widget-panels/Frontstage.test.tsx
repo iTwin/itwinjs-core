@@ -10,19 +10,19 @@ import produce from "immer";
 import { render } from "@testing-library/react";
 import { act, renderHook } from "@testing-library/react-hooks";
 import { Logger } from "@bentley/bentleyjs-core";
-import { AbstractWidgetProps, StagePanelLocation, UiItemsManager, UiItemsProvider, WidgetState } from "@bentley/ui-abstract";
+import { AbstractWidgetProps, StagePanelLocation, StagePanelSection, UiItemsManager, UiItemsProvider, WidgetState } from "@bentley/ui-abstract";
 import { Size, UiSettingsResult, UiSettingsStatus } from "@bentley/ui-core";
 import { addFloatingWidget, addPanelWidget, addTab, createDraggedTabState, createNineZoneState, NineZone, NineZoneState, toolSettingsTabId } from "@bentley/ui-ninezone";
 import {
   ActiveFrontstageDefProvider, addMissingWidgets, addPanelWidgets, addWidgets, CoreTools, expandWidget, Frontstage, FrontstageDef,
   FrontstageManager, FrontstageProvider, getWidgetId, initializeNineZoneState, initializePanel, isFrontstageStateSettingResult, ModalFrontstageComposer,
-  packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanel, StagePanelDef, StagePanelSection, StagePanelState, StagePanelZoneDef, StagePanelZonesDef,
+  packNineZoneState, restoreNineZoneState, setWidgetState, showWidget, StagePanel, StagePanelDef, StagePanelState, StagePanelZoneDef, StagePanelZonesDef,
   UiSettingsProvider, useActiveModalFrontstageInfo, useFrontstageManager, useNineZoneDispatch, useNineZoneState, useSavedFrontstageState,
   useSaveFrontstageSettings, useSyncDefinitions, useUpdateNineZoneSize, Widget, WidgetDef, WidgetPanelsFrontstage, WidgetPanelsFrontstageState, Zone, ZoneDef,
 } from "../../ui-framework";
 import TestUtils, { mount, storageMock, stubRaf, UiSettingsStub } from "../TestUtils";
 import { IModelApp, NoRenderApp } from "@bentley/imodeljs-frontend";
-import { should } from "chai";
+import { expect, should } from "chai";
 
 /* eslint-disable @typescript-eslint/no-floating-promises, react/display-name */
 
@@ -1980,6 +1980,7 @@ describe("Frontstage local storage wrapper", () => {
     const frontstageDef = new FrontstageDef();
     const spy = sinon.stub(frontstageDef, "popoutWidget");
 
+    addFloatingWidget;
     frontstageDef.nineZoneState = createNineZoneState();
     const { result } = renderHook(() => useNineZoneDispatch(frontstageDef));
     result.current({
@@ -1988,4 +1989,20 @@ describe("Frontstage local storage wrapper", () => {
     });
     spy.calledOnceWithExactly("t1");
   });
+
+  it("should set nineZoneSize when FLOATING_WIDGET_SET_BOUNDS is received", () => {
+    const frontstageDef = new FrontstageDef();
+    let nineZone = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    nineZone = addFloatingWidget(nineZone, "fw1", ["t1"], { bounds: { top: 10, left: 10, bottom: 40, right: 40 } });
+    nineZone = addTab(nineZone, "t1");
+    frontstageDef.nineZoneState = nineZone;
+    const { result } = renderHook(() => useNineZoneDispatch(frontstageDef));
+    result.current({
+      type: "FLOATING_WIDGET_SET_BOUNDS",
+      id: "fw1",
+      bounds: { top: 100, left: 100, bottom: 400, right: 400 },
+    });
+    expect(frontstageDef.nineZoneState.floatingWidgets.byId.fw1.bounds).to.eql({ top: 100, left: 100, bottom: 400, right: 400 });
+  });
+
 });

@@ -103,9 +103,6 @@ export interface NativeAppFunctions {
    */
   overrideInternetConnectivity: (_overriddenBy: OverriddenBy, _status: InternetConnectivityStatus) => Promise<void>;
 
-  /** Return configuration information from backend. */
-  getConfig: () => Promise<any>;
-
   /** Acquire a new BriefcaseId for the supplied iModelId from iModelHub */
   acquireNewBriefcaseId: (_iModelId: GuidString) => Promise<number>;
 

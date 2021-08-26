@@ -9,7 +9,7 @@ import * as moq from "typemoq";
 import { BeEvent } from "@bentley/bentleyjs-core";
 import { PropertyRecord } from "@bentley/ui-abstract";
 import { CheckBoxState } from "@bentley/ui-core";
-import { cleanup, fireEvent, render, RenderResult, wait, waitForElement, within } from "@testing-library/react";
+import { fireEvent, render, RenderResult, waitFor, within } from "@testing-library/react";
 import {
   DelayLoadedTreeNodeItem, ImmediatelyLoadedTreeNodeItem, ITreeDataProvider, PageOptions, SelectionMode, TreeCellUpdatedArgs, TreeDataChangesListener,
   TreeDataProviderMethod, TreeDataProviderRaw, TreeNodeItem,
@@ -337,7 +337,7 @@ describe("Tree", () => {
           selectionLoadCanceledListener.resetHistory();
           selectionLoadFinishedListener.resetHistory();
           renderSpy.resetHistory();
-          cleanup();
+
         });
 
         const createPropsForDelayLoadedShiftSelection = () => {
@@ -1194,12 +1194,12 @@ describe("Tree", () => {
       expect(checkbox!.checked, "Initial checkbox state is wrong").to.be.false;
 
       fireEvent.click(getNode("0").checkbox!);
-      await wait(() => expect(onRender.called).to.be.true);
+      await waitFor(() => expect(onRender.called).to.be.true);
       expect(checkbox!.checked, "Checkbox did not get checked").to.be.true;
       onRender.resetHistory();
 
       fireEvent.click(getNode("0").checkbox!);
-      await wait(() => expect(onRender.called).to.be.true);
+      await waitFor(() => expect(onRender.called).to.be.true);
       expect(checkbox!.checked, "Checkbox did not get unchecked").to.be.false;
     });
   });
@@ -1568,7 +1568,7 @@ describe("Tree", () => {
           showDescriptions={true}
         />);
 
-      await waitForElement(() => tree.getByText("Test label"));
+      await waitFor(() => tree.getByText("Test label"));
     });
 
     it("does not render description when showDescriptions prop is set to false", async () => {
@@ -1580,7 +1580,7 @@ describe("Tree", () => {
           showDescriptions={false}
         />);
 
-      await expect(waitForElement(() => tree.getByText("Test label"), { timeout: 500 })).to.be.rejected;
+      await expect(waitFor(() => tree.getByText("Test label"), { timeout: 500 })).to.be.rejected;
     });
   });
 

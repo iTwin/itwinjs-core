@@ -555,12 +555,14 @@ class OrthographicAttachment {
 
     this._props = props;
     this._sheetModelId = sheetView.baseModelId;
-    this._viewFlagOverrides = new ViewFlagOverrides(view.viewFlags);
 
     const applyClip = true; // set to false for debugging
-    this._viewFlagOverrides.setShowClipVolume(applyClip);
-    this._viewFlagOverrides.setApplyLighting(false);
-    this._viewFlagOverrides.setShowShadows(false);
+    this._viewFlagOverrides = {
+      ...view.viewFlags,
+      clipVolume: applyClip,
+      lighting: false,
+      shadows: false,
+    };
 
     const placement = Placement2d.fromJSON(props.placement);
     const range = placement.calculateRange();

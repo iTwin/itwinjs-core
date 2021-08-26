@@ -32,6 +32,7 @@ export * from "./ui-framework/backstage/Separator";
 export * from "./ui-framework/backstage/useDefaultBackstageItems";
 export * from "./ui-framework/backstage/TaskLaunch";
 export * from "./ui-framework/backstage/UserProfile";
+export * from "./ui-framework/backstage/useUiItemsProviderBackstageItems";
 
 export * from "./ui-framework/clientservices/IModelServices";
 export * from "./ui-framework/clientservices/ProjectServices";
@@ -82,6 +83,7 @@ export * from "./ui-framework/frontstage/ModalFrontstage";
 export * from "./ui-framework/frontstage/ModalSettingsStage";
 
 export * from "./ui-framework/hooks/useActiveIModelConnection";
+export * from "./ui-framework/hooks/useActiveStageId";
 export * from "./ui-framework/hooks/useActiveViewport";
 export * from "./ui-framework/hooks/useAvailableUiItemsProviders";
 export * from "./ui-framework/hooks/useAnalysisAnimationDataProvider";
@@ -99,7 +101,6 @@ export * from "./ui-framework/imodel-components/VisibilityTreeRenderer";
 
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcut";
 export * from "./ui-framework/keyboardshortcut/KeyboardShortcutMenu";
-export * from "./ui-framework/keyboardshortcut/deprecated/KeyboardKey";
 export * from "./ui-framework/keyinbrowser/KeyinBrowser";
 
 export * from "./ui-framework/messages/ActivityMessage";
@@ -107,7 +108,7 @@ export * from "./ui-framework/messages/ActivityMessagePopup";
 export * from "./ui-framework/messages/AppNotificationManager";
 export * from "./ui-framework/messages/InputField";
 export * from "./ui-framework/messages/MessageManager";
-export * from "./ui-framework/messages/MessageRenderer";
+export * from "./ui-framework/messages/StatusMessageRenderer";
 export * from "./ui-framework/messages/Pointer";
 export * from "./ui-framework/messages/ReactNotifyMessageDetails";
 export * from "./ui-framework/messages/StickyMessage";
@@ -152,9 +153,11 @@ export * from "./ui-framework/selection/ClearEmphasisStatusField";
 
 export * from "./ui-framework/settings/ui/UiSettingsPage";
 export * from "./ui-framework/settings/quantityformatting/QuantityFormat";
+export * from "./ui-framework/settings/quantityformatting/UnitSystemSelector";
 
 export * from "./ui-framework/shared/ActionButtonItemDef";
 export * from "./ui-framework/shared/AnyItemDef";
+export * from "./ui-framework/shared/AnyToolbarItemDef";
 export * from "./ui-framework/shared/CommandItemDef";
 export * from "./ui-framework/shared/CustomItemDef";
 export * from "./ui-framework/shared/CustomItemProps";
@@ -163,6 +166,7 @@ export * from "./ui-framework/shared/ItemDefBase";
 export * from "./ui-framework/shared/ItemMap";
 export * from "./ui-framework/shared/ItemProps";
 export * from "./ui-framework/shared/MenuItem";
+export * from "./ui-framework/shared/SelectionScope";
 export * from "./ui-framework/shared/ToolItemDef";
 
 export * from "./ui-framework/stagepanels/FrameworkStagePanel";
@@ -266,7 +270,6 @@ export * from "./ui-framework/widgets/WidgetHost";
 export * from "./ui-framework/widgets/WidgetManager";
 export * from "./ui-framework/widgets/WidgetProps";
 export * from "./ui-framework/widgets/WidgetStack";
-export * from "./ui-framework/widgets/WidgetState";
 export * from "./ui-framework/widgets/VisibilityWidget";
 
 export * from "./ui-framework/workflow/Task";

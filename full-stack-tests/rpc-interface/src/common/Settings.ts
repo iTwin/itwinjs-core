@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import { BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
 import { LogLevel } from "@bentley/bentleyjs-core";
-import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface } from "@bentley/imodeljs-common";
+import { DevToolsRpcInterface, IModelReadRpcInterface, IModelTileRpcInterface } from "@bentley/imodeljs-common";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 
@@ -38,8 +38,6 @@ export function getRpcInterfaces(settings: Settings) {
     rpcInterfaces.push(PresentationRpcInterface);
   if (settings.runiModelReadRpcTests)
     rpcInterfaces.push(IModelReadRpcInterface);
-  if (settings.runiModelWriteRpcTests)
-    rpcInterfaces.push(IModelWriteRpcInterface);
   if (settings.runiModelTileRpcTests)
     rpcInterfaces.push(IModelTileRpcInterface);
 
@@ -193,6 +191,13 @@ export class Settings {
     });
 
     // Get client configuration
+    if (process.env.CLIENT_WITH_ACCESS_ID === undefined)
+      throw new Error("Could not find CLIENT_WITH_ACCESS_ID");
+    if (process.env.CLIENT_WITH_ACCESS_SECRET === undefined)
+      throw new Error("Could not find CLIENT_WITH_ACCESS_SECRET");
+    if (process.env.CLIENT_WITH_ACCESS_SCOPES === undefined)
+      throw new Error("Could not find CLIENT_WITH_ACCESS_SCOPES");
+
     if (undefined !== process.env.CLIENT_WITH_ACCESS_ID && undefined !== process.env.CLIENT_WITH_ACCESS_SECRET && undefined !== process.env.CLIENT_WITH_ACCESS_SCOPES) {
       this.clientConfiguration = {
         clientId: process.env.CLIENT_WITH_ACCESS_ID,

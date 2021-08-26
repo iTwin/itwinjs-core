@@ -15,6 +15,7 @@ import {
 import { DownloaderNode } from "@bentley/orbitgt-core/lib/system/runtime/DownloaderNode";
 
 interface OrbitGtPointCloudProps {
+  rdsUrl?: string;
   accountName: string;
   sasToken: string;
   containerName: string;
@@ -38,7 +39,7 @@ export class OrbitGtContextIModelCreator {
   }
   /** Perform the import */
   public async create(): Promise<void> {
-    const { accountName, containerName, blobFileName, sasToken } = this._props;
+    const { rdsUrl, accountName, containerName, blobFileName, sasToken } = this._props;
     try {
       this.definitionModelId = DefinitionModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Definitions");
       this.physicalModelId = PhysicalModel.insert(this.iModelDb, IModelDb.rootSubjectId, "Empty Model");
@@ -77,7 +78,7 @@ export class OrbitGtContextIModelCreator {
         worldRange = ecefToWorld.multiplyRange(ecefRange);
         geoLocated = true;
       }
-      const orbitGtBlob = { containerName, blobFileName, accountName, sasToken };
+      const orbitGtBlob = { rdsUrl, containerName, blobFileName, accountName, sasToken };
       this.insertSpatialView("OrbitGT Model View", worldRange, [{ tilesetUrl: "", orbitGtBlob, name: this._name }], geoLocated);
       this.iModelDb.updateProjectExtents(worldRange);
       this.iModelDb.saveChanges();
@@ -90,10 +91,7 @@ export class OrbitGtContextIModelCreator {
   protected insertSpatialView(viewName: string, range: AxisAlignedBox3d, realityModels: ContextRealityModelProps[], geoLocated: boolean): Id64String {
     const modelSelectorId: Id64String = ModelSelector.insert(this.iModelDb, this.definitionModelId, viewName, [this.physicalModelId]);
     const categorySelectorId: Id64String = CategorySelector.insert(this.iModelDb, this.definitionModelId, viewName, []);
-    const vf = new ViewFlags();
-    vf.backgroundMap = geoLocated;
-    vf.renderMode = RenderMode.SmoothShade;
-    vf.cameraLights = true;
+    const vf = new ViewFlags({ backgroundMap: geoLocated, renderMode: RenderMode.SmoothShade, lighting: true });
     const displayStyleId: Id64String = DisplayStyle3d.insert(this.iModelDb, this.definitionModelId, viewName, { viewFlags: vf, contextRealityModels: realityModels });
     return SpatialViewDefinition.insertWithCamera(this.iModelDb, this.definitionModelId, viewName, modelSelectorId, categorySelectorId, displayStyleId, range, StandardViewIndex.Iso);
   }

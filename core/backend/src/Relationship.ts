@@ -13,7 +13,7 @@ import { ECSqlStatement } from "./ECSqlStatement";
 import { Entity } from "./Entity";
 import { IModelDb } from "./IModelDb";
 
-export { SourceAndTarget, RelationshipProps } from "@bentley/imodeljs-common"; // for backwards compatibility
+export type { SourceAndTarget, RelationshipProps } from "@bentley/imodeljs-common"; // for backwards compatibility
 
 const loggerCategory = BackendLoggerCategory.Relationship;
 

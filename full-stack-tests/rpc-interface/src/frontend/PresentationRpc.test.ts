@@ -135,6 +135,11 @@ describe("PresentationRpcInterface tests", () => {
       props = { imodel: iModel, rulesetOrId: ruleset.id };
     });
 
+    it("getContentSources works as expected", async () => {
+      const result = await Presentation.presentation.getContentSources({ imodel: iModel, classes: [] });
+      expect(result).to.not.be.undefined;
+    });
+
     it("getContentDescriptor works as expected", async () => {
       await using(await Presentation.presentation.rulesets().add(ruleset), async (_r) => {
         descriptor = await Presentation.presentation.getContentDescriptor(props, "Grid", keys, undefined);

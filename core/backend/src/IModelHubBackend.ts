@@ -10,17 +10,19 @@ import { join } from "path";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
 import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient, IModelHubClient, IModelQuery,
-  Lock, LockLevel, LockQuery, LockType, VersionQuery,
+  BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient,
+  IModelHubClient, IModelQuery, Lock, LockLevel, LockQuery, LockType, VersionQuery,
 } from "@bentley/imodelhub-client";
-import { CodeProps, IModelError, IModelVersion } from "@bentley/imodeljs-common";
+import {
+  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
+} from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import {
-  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetIndexArg, ChangesetProps, ChangesetRangeArg, CheckPointArg,
-  IModelIdArg, LocalDirName, LockProps,
+  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps, V2CheckpointAccessProps,
 } from "./BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseManager } from "./BriefcaseManager";
+import { CheckpointProps } from "./CheckpointManager";
 import { ConcurrencyControl } from "./ConcurrencyControl";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
@@ -261,7 +263,7 @@ export class IModelHubBackend {
   public static async downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointQuery().selectDownloadUrl();
-    checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeSetId);
+    checkpointQuery = checkpointQuery.precedingCheckpoint(checkpoint.changeset.id);
     const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
     const checkpoints = await this.iModelClient.checkpoints.get(requestContext, checkpoint.iModelId, checkpointQuery);
     if (checkpoints.length !== 1)
@@ -277,10 +279,30 @@ export class IModelHubBackend {
     return checkpoints[0].mergedChangeSetId!;
   }
 
+  public static async queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined> {
+    const checkpointQuery = new CheckpointV2Query().byChangeSetId(arg.changeset.id).selectContainerAccessKey();
+    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
+    const checkpoints = await this.iModelClient.checkpointsV2.get(requestContext, arg.iModelId, checkpointQuery);
+    if (checkpoints.length < 1)
+      return undefined;
+
+    const { containerAccessKeyContainer, containerAccessKeySAS, containerAccessKeyAccount, containerAccessKeyDbName } = checkpoints[0];
+    if (!containerAccessKeyContainer || !containerAccessKeySAS || !containerAccessKeyAccount || !containerAccessKeyDbName)
+      throw new Error("Invalid V2 checkpoint in iModelHub");
+
+    return {
+      container: containerAccessKeyContainer,
+      auth: containerAccessKeySAS,
+      user: containerAccessKeyAccount,
+      dbAlias: containerAccessKeyDbName,
+      storageType: "azure?sas=1",
+    };
+  }
+
   public static async downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId> {
     const checkpoint = arg.checkpoint;
     let checkpointQuery = new CheckpointV2Query();
-    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeSetId).selectContainerAccessKey();
+    checkpointQuery = checkpointQuery.precedingCheckpointV2(checkpoint.changeset.id).selectContainerAccessKey();
     const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
     let checkpoints: CheckpointV2[] = [];
     try {
@@ -331,14 +353,14 @@ export class IModelHubBackend {
     return checkpoints[0].changeSetId!;
   }
 
-  public static async releaseAllLocks(arg: BriefcaseIdArg & ChangesetIndexArg) {
+  public static async releaseAllLocks(arg: BriefcaseDbArg) {
     const requestContext = await this.getRequestContext(arg);
-    return this.iModelClient.locks.deleteAll(requestContext, arg.iModelId, arg.briefcaseId);
+    return this.iModelClient.locks.deleteAll(requestContext, arg.briefcase.iModelId, arg.briefcase.briefcaseId);
   }
 
-  public static async releaseAllCodes(arg: BriefcaseIdArg) {
+  public static async releaseAllCodes(arg: BriefcaseDbArg) {
     const requestContext = await this.getRequestContext(arg);
-    return this.iModelClient.codes.deleteAll(requestContext, arg.iModelId, arg.briefcaseId);
+    return this.iModelClient.codes.deleteAll(requestContext, arg.briefcase.iModelId, arg.briefcase.briefcaseId);
   }
 
   public static async queryAllLocks(arg: BriefcaseDbArg): Promise<LockProps[]> {
@@ -359,7 +381,7 @@ export class IModelHubBackend {
     lock.lockLevel = reqLock.scope as number;
     lock.lockType = LockType.Element;
     lock.objectId = reqLock.entityId;
-    lock.releasedWithChangeSet = arg.briefcase.changeSetId;
+    lock.releasedWithChangeSet = arg.briefcase.changeset.id;
     lock.seedFileId = arg.briefcase.iModelId;
     return lock;
   }
@@ -377,8 +399,8 @@ export class IModelHubBackend {
     await this.acquireLocks({ ...arg, locks: [ConcurrencyControl.Request.schemaLock] });
   }
 
-  public static async querySchemaLock(arg: BriefcaseDbArg): Promise<boolean> {
-    const locks = await this.iModelClient.locks.get(await this.getRequestContext(arg), arg.briefcase.iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
+  public static async querySchemaLock(arg: IModelIdArg): Promise<boolean> {
+    const locks = await this.iModelClient.locks.get(await this.getRequestContext(arg), arg.iModelId, new LockQuery().byLockType(LockType.Schemas).byLockLevel(LockLevel.Exclusive));
     return locks.length > 0;
   }
 }

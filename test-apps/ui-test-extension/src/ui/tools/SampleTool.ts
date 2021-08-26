@@ -14,7 +14,7 @@ import {
 import {
   ColorEditorParams, DialogItem, DialogItemValue, DialogPropertySyncItem,
   InputEditorSizeParams,
-  PropertyDescription, PropertyEditorParamTypes, SuppressLabelEditorParams, ToolbarItemUtilities,
+  PropertyDescription, PropertyEditorParamTypes, StandardEditorNames, SuppressLabelEditorParams, ToolbarItemUtilities,
 } from "@bentley/ui-abstract";
 
 import { Logger } from "@bentley/bentleyjs-core";
@@ -147,7 +147,7 @@ export class SampleTool extends PrimitiveTool {
       displayLabel: SampleTool.getPrompt("Weight"),
       typename: "number",
       editor: {
-        name: "weight-picker",
+        name: StandardEditorNames.WeightPicker,
       },
     };
   };

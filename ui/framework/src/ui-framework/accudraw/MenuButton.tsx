@@ -8,7 +8,8 @@
 
 import "./MenuButton.scss";
 import * as React from "react";
-import { ContextMenu, Icon, PointProps, Size, SizeProps } from "@bentley/ui-core";
+import { PointProps } from "@bentley/ui-abstract";
+import { ContextMenu, Icon, Size, SizeProps } from "@bentley/ui-core";
 import { SquareButton, SquareButtonProps } from "./SquareButton";
 
 /** @alpha */

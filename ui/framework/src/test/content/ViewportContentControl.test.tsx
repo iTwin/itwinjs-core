@@ -7,7 +7,7 @@ import * as React from "react";
 import * as sinon from "sinon";
 import * as moq from "typemoq";
 import { MockRender, ScreenViewport, ViewState3d } from "@bentley/imodeljs-frontend";
-import { ViewportComponentEvents } from "@bentley/ui-components";
+import { ViewportComponentEvents } from "@bentley/ui-imodel-components";
 import {
   ConfigurableCreateInfo, ConfigurableUiControlType, ConfigurableUiManager, ContentGroup, ContentLayoutDef, ContentLayoutManager, ContentViewManager,
   CoreTools, Frontstage, FrontstageComposer, FrontstageManager, FrontstageProps, FrontstageProvider, NavigationWidget, SupportsViewSelectorChange,

@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/itwin-client",
+      "comment": "Removed config.app usage",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/itwin-client",
+  "email": "20171969+pbell97@users.noreply.github.com "
+}

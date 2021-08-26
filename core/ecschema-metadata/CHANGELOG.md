@@ -1,6 +1,90 @@
 # Change Log - @bentley/ecschema-metadata
 
-This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+This log was last generated on Fri, 20 Aug 2021 17:47:22 GMT and should not be manually modified.
+
+## 2.19.7
+Fri, 20 Aug 2021 17:47:22 GMT
+
+### Updates
+
+- remove alpha toXmlString method and its implicit xmldom dependency
+
+## 2.19.6
+Tue, 17 Aug 2021 20:34:28 GMT
+
+_Version update only_
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:08 GMT
+
+_Version update only_
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+_Version update only_
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+### Updates
+
+- switch to xmldom@0.6.0 which correctly escapes entities in attributes when serializing
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+_Version update only_
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+### Updates
+
+- remove internal barrel-import usage
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+_Version update only_
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- ECSchema validation and editing APIs moved from the ecschema-metadata package to the ecschema-editing package.
+- Addet setVersion method to the Schema class.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:30 GMT
@@ -15,6 +99,11 @@ Mon, 28 Jun 2021 16:20:11 GMT
 - Add functions to encode and decode ECNames.
 - Added tests for validating custom attribute namespace and schema version
 - Added get fullName tests for each schema item type if they didn't exist before
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:44 GMT
+
+_Version update only_
 
 ## 2.16.9
 Tue, 06 Jul 2021 22:08:34 GMT
@@ -439,7 +528,7 @@ Wed, 06 May 2020 13:17:49 GMT
 
 - new EC Rule 501 - CustomAttribute schemas must be referenced by the container's schema.
 - Removing deprecated API. Please see NextVersion.md under the heading 'ecschema-metadata Package' for details.
-- Deprecating schema classes' method 'toJson' and replacing it with the JSON.stringify supported method 'toJSON'.  Also deprecating the 'deserialize' method and replacing it with 'fromJSON' for naming consistency.
+- Deprecating schema classes' method 'toJson' and replacing it with the JSON.stringify supported method 'toJSON'.  Also deprecating the 'deserialize' method and replacing it with 'fromJSON' for naming consistency. 
 - Undefined display labels should equal empty display labels during schema comparison.
 - order imports.
 - Removed unused package dependencies
@@ -565,7 +654,7 @@ Mon, 13 May 2019 15:52:05 GMT
 - Adds parameter for api-extractor to validate missing release tags
 - Adds ignoreMissingTags flag
 - Fix broken links
-- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization.
+- Setup a generic context for tracking client requests, and made various related enhancements to logging, usage tracking and authorization. 
 - Added ability to suppress rule violations from being reported during schema validation.
 - Upgrade TypeDoc dependency to 0.14.2
 - Updated BIS and EC schema validation documentation and adjusted diagnostic codes to match documentation.

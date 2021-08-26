@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/ui-framework",
+      "comment": "Replaced ui-core Slider with one from iTwinUi-react. Update DefaultViewOverlay to opt-in to dislay of view overlays.",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/ui-framework",
+  "email": "65047615+bsteinbk@users.noreply.github.com"
+}

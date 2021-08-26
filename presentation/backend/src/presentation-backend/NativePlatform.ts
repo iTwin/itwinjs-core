@@ -22,6 +22,7 @@ export enum NativePlatformRequestTypes {
   GetNodePaths = "GetNodePaths",
   GetFilteredNodePaths = "GetFilteredNodePaths",
   LoadHierarchy = "LoadHierarchy",
+  GetContentSources = "GetContentSources",
   GetContentDescriptor = "GetContentDescriptor",
   GetContentSetSize = "GetContentSetSize",
   GetContent = "GetContent",

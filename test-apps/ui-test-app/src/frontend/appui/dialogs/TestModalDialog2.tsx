@@ -6,8 +6,9 @@ import "./TestModalDialog2.scss";
 import * as React from "react";
 import { ColorDef } from "@bentley/imodeljs-common";
 import { IModelApp, NotifyMessageDetails, OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { ColorPickerButton } from "@bentley/ui-components";
-import { Dialog, DialogButtonType } from "@bentley/ui-core";
+import { ColorPickerButton } from "@bentley/ui-imodel-components";
+import { Dialog } from "@bentley/ui-core";
+import { DialogButtonType } from "@bentley/ui-abstract";
 
 export interface TestModalDialog2Props {
   opened: boolean;

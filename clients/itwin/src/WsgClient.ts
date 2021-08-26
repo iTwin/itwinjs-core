@@ -212,8 +212,6 @@ export interface HttpRequestOptions {
  * @beta
  */
 export abstract class WsgClient extends Client {
-  public static readonly configHostRelyingPartyUri = "imjs_default_relying_party_uri";
-  public static readonly configUseHostRelyingPartyUriAsFallback = "imjs_use_default_relying_party_uri_as_fallback";
   private static _defaultWsgRequestOptionsProvider: DefaultWsgRequestOptionsProvider;
   protected override _url?: string;
 
@@ -237,13 +235,6 @@ export abstract class WsgClient extends Client {
       WsgClient._defaultWsgRequestOptionsProvider = new DefaultWsgRequestOptionsProvider();
     return WsgClient._defaultWsgRequestOptionsProvider.assignOptions(options);
   }
-
-  /**
-   * Implemented by clients to specify the relyingPartyUrl for the service.
-   * @protected
-   * @returns Default relyingPartyUrl for the service.
-   */
-  protected abstract getRelyingPartyUrl(): string;
 
   /**
    * Gets the URL of the service.

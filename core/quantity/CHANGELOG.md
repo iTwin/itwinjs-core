@@ -1,6 +1,83 @@
 # Change Log - @bentley/imodeljs-quantity
 
-This log was last generated on Tue, 06 Jul 2021 22:08:34 GMT and should not be manually modified.
+This log was last generated on Fri, 20 Aug 2021 17:47:22 GMT and should not be manually modified.
+
+## 2.19.7
+Fri, 20 Aug 2021 17:47:22 GMT
+
+_Version update only_
+
+## 2.19.6
+Tue, 17 Aug 2021 20:34:29 GMT
+
+_Version update only_
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:09 GMT
+
+_Version update only_
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+_Version update only_
+
+## 2.19.3
+Wed, 04 Aug 2021 20:29:34 GMT
+
+_Version update only_
+
+## 2.19.2
+Tue, 03 Aug 2021 18:26:23 GMT
+
+_Version update only_
+
+## 2.19.1
+Thu, 29 Jul 2021 20:01:11 GMT
+
+_Version update only_
+
+## 2.19.0
+Mon, 26 Jul 2021 12:21:25 GMT
+
+_Version update only_
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
+
+_Version update only_
+
+## 2.18.3
+Wed, 28 Jul 2021 17:16:30 GMT
+
+_Version update only_
+
+## 2.18.2
+Mon, 26 Jul 2021 16:18:31 GMT
+
+_Version update only_
+
+## 2.18.1
+Fri, 16 Jul 2021 17:45:09 GMT
+
+_Version update only_
+
+## 2.18.0
+Fri, 09 Jul 2021 18:11:24 GMT
+
+### Updates
+
+- Add ability to clone Format and to add property setters. This allows a user to synchronously tweak a format in the frontend.
+
+## 2.17.3
+Mon, 26 Jul 2021 16:08:36 GMT
+
+_Version update only_
+
+## 2.17.2
+Thu, 08 Jul 2021 15:23:00 GMT
+
+_Version update only_
 
 ## 2.17.1
 Fri, 02 Jul 2021 15:38:31 GMT
@@ -9,6 +86,11 @@ _Version update only_
 
 ## 2.17.0
 Mon, 28 Jun 2021 16:20:11 GMT
+
+_Version update only_
+
+## 2.16.10
+Thu, 22 Jul 2021 20:23:45 GMT
 
 _Version update only_
 

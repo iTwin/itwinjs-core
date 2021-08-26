@@ -11,7 +11,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { StandardViewId } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { ViewportComponentEvents } from "@bentley/ui-components";
+import { ViewportComponentEvents } from "@bentley/ui-imodel-components";
 import { CommonProps, Icon, Popup } from "@bentley/ui-core";
 import {
   containHorizontally, GroupColumn as NZ_Column, ExpandableButton as NZ_Expandable, ToolbarIcon as NZ_Icon, GroupTool as NZ_Item, Group as NZ_Tray,
@@ -26,7 +26,7 @@ const NZ_ContainedTray = withContainIn(NZ_Tray);
 
 /** A 3D Standard Rotation Navigation Aid control.
  * @alpha
- */
+ */
 export class StandardRotationNavigationAidControl extends NavigationAidControl {
   public static navigationAidId = "StandardRotationNavigationAid";
 
@@ -52,7 +52,7 @@ interface StandardRotationNavigationAidState {
 
 /** A 3D Standard Rotation Navigation Aid.
  * @alpha
- */
+ */
 export class StandardRotationNavigationAid extends React.Component<CommonProps, StandardRotationNavigationAidState> {
   private _title = UiFramework.translate("standardRotationNavigationAid.title");
 

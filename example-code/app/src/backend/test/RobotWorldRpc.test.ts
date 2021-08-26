@@ -8,7 +8,7 @@ import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { Angle, Point3d } from "@bentley/geometry-core";
 import { IModelJsFs, PhysicalModel, StandaloneDb } from "@bentley/imodeljs-backend";
 import {
-  BentleyCloudRpcManager, BentleyCloudRpcParams, GeometricElement3dProps, IModel, IModelReadRpcInterface, IModelWriteRpcInterface,
+  BentleyCloudRpcManager, BentleyCloudRpcParams, GeometricElement3dProps, IModel, IModelReadRpcInterface,
   RpcInterfaceDefinition, SnapshotIModelRpcInterface, TestRpcManager,
 } from "@bentley/imodeljs-common";
 import { BriefcaseConnection, NullRenderSystem } from "@bentley/imodeljs-frontend";
@@ -57,7 +57,7 @@ if (ProcessDetector.isElectronAppFrontend) {
       await ElectronApp.startup({ iModelApp: { renderSys: new NullRenderSystem() } });
 
       // expose interfaces using a direct call mechanism
-      TestRpcManager.initialize([SnapshotIModelRpcInterface, IModelReadRpcInterface, IModelWriteRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);
+      TestRpcManager.initialize([SnapshotIModelRpcInterface, IModelReadRpcInterface, RobotWorldReadRpcInterface, RobotWorldWriteRpcInterface]);// eslint-disable-line deprecation/deprecation
       const roWrite = RobotWorldWriteRpcInterface.getClient();
       const roRead = RobotWorldReadRpcInterface.getClient();
 

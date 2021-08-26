@@ -7,7 +7,7 @@
  */
 
 import * as React from "react";
-import { CubeNavigationAid } from "@bentley/ui-components";
+import { CubeNavigationAid } from "@bentley/ui-imodel-components";
 import { ConfigurableCreateInfo } from "../configurableui/ConfigurableUiControl";
 import { NavigationAidControl } from "./NavigationAidControl";
 

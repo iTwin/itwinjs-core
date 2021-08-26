@@ -6,18 +6,19 @@ import * as React from "react";
 import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
 import automationIconSvg from "@bentley/icons-generic/icons/automation.svg?sprite";
 import {
+  ActivityMessageDetails, ActivityMessageEndReason,
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
   QuantityType, SelectionTool, SnapMode,
 } from "@bentley/imodeljs-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import {
-  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType, StatusBarSection,
-  UiItemsManager, UiItemsProvider, WidgetState,
+  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
+  MessageSeverity, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
-import { Dialog, MessageSeverity, Radio, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
+import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
-  Backstage, BaseItemState, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
+  Backstage, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
@@ -29,6 +30,8 @@ import { AnalysisAnimationTool } from "../tools/AnalysisAnimation";
 import { Tool1 } from "../tools/Tool1";
 import { Tool2 } from "../tools/Tool2";
 import { ToolWithSettings } from "./ToolWithSettings";
+import { Radio } from "@itwin/itwinui-react";
+import { BeDuration } from "@bentley/bentleyjs-core";
 
 // cSpell:ignore appui appuiprovider
 // eslint-disable-next-line @typescript-eslint/naming-convention
@@ -203,18 +206,12 @@ export class AppTools {
       label: () => AnalysisAnimationTool.flyover,
       description: () => AnalysisAnimationTool.description,
       execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
-      isVisible: false, // default to not show and then allow stateFunc to redefine.
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
+      isHidden: new ConditionalBooleanValue(() => {
         const activeContentControl = ContentViewManager.getActiveContentControl();
-
-        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle))
-          returnState.isVisible = true;
-        else
-          returnState.isVisible = false;
-        return returnState;
-      },
+        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
+          return false;
+        return true;
+      }, [SyncUiEventId.ActiveContentChanged]),
     });
   }
 
@@ -483,7 +480,7 @@ export class AppTools {
       labelKey: "SampleApp:buttons.errorMessageBox",
       execute: () => IModelApp.notifications.outputMessage(new NotifyMessageDetails(OutputMessagePriority.Error,
         "This is an error message", this._longMessage,
-        OutputMessageType.Alert, OutputMessageAlert.Dialog)),
+        OutputMessageType.Alert, OutputMessageAlert.Balloon)),
     });
   }
 
@@ -696,4 +693,33 @@ export class AppTools {
       },
     });
   }
+
+  /** Tool that will start a sample activity and display ActivityMessage.
+   */
+  private static _activityTool = async () => {
+    let isCancelled = false;
+    let progress = 0;
+
+    const details = new ActivityMessageDetails(true, true, true, true);
+    details.onActivityCancelled = () => {
+      isCancelled = true;
+    };
+    IModelApp.notifications.setupActivityMessage(details);
+
+    while (!isCancelled && progress <= 100) {
+      IModelApp.notifications.outputActivityMessage("This is a sample activity message", progress);
+      await BeDuration.wait(100);
+      progress++;
+    }
+
+    const endReason = isCancelled ? ActivityMessageEndReason.Cancelled : ActivityMessageEndReason.Completed;
+    IModelApp.notifications.endActivityMessage(endReason);
+  };
+
+  public static get activityMessageItem() {
+    return new CommandItemDef({
+      iconSpec: "icon-placeholder", labelKey: "SampleApp:buttons.activityMessage", execute: async () => { await this._activityTool(); },
+    });
+  }
+
 }

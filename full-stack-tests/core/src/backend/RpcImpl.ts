@@ -2,11 +2,9 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
-import { ClientRequestContext, ClientRequestContextProps, Config } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, ClientRequestContextProps } from "@bentley/bentleyjs-core";
 import { IModelBankClient } from "@bentley/imodelhub-client";
-import {
-  BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelDb, IModelHost, IModelJsFs,
-} from "@bentley/imodeljs-backend";
+import { IModelDb, IModelHost, IModelJsFs } from "@bentley/imodeljs-backend";
 import { V1CheckpointManager } from "@bentley/imodeljs-backend/lib/CheckpointManager";
 import { IModelRpcProps, RpcInterface, RpcManager } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, AuthorizedClientRequestContextProps } from "@bentley/itwin-client";
@@ -21,21 +19,6 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async restartIModelHost(): Promise<void> {
     await IModelHost.shutdown();
     await IModelHost.startup();
-  }
-
-  public async createChangeSummary(tokenProps: IModelRpcProps): Promise<void> {
-    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
-    // eslint-disable-next-line @typescript-eslint/no-unnecessary-type-assertion
-    await ChangeSummaryManager.createChangeSummary(requestContext, BriefcaseDb.findByKey(tokenProps.key) as BriefcaseDb);
-  }
-
-  public async deleteChangeCache(tokenProps: IModelRpcProps): Promise<void> {
-    if (!tokenProps.iModelId)
-      throw new Error("iModelToken is invalid. Must not be a standalone iModel");
-
-    const changesPath: string = BriefcaseManager.getChangeCachePathName(tokenProps.iModelId);
-    if (IModelJsFs.existsSync(changesPath))
-      IModelJsFs.unlinkSync(changesPath);
   }
 
   public async executeTest(tokenProps: IModelRpcProps, testName: string, params: any): Promise<any> {
@@ -58,7 +41,7 @@ export class TestRpcImpl extends RpcInterface implements TestRpcInterface {
   public async getCloudEnv(): Promise<CloudEnvProps> {
     const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
     if (CloudEnv.cloudEnv.isIModelHub) {
-      const region = Config.App.get("imjs_buddi_resolve_url_using_region") || "0";
+      const region = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION || "0";
       return { iModelHub: { region } };
     }
     const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl(requestContext);

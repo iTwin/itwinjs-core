@@ -18,9 +18,8 @@ import { ScreenViewport, Viewport } from "../../Viewport";
 import {
   MapCartoRectangle, MapLayerImageryProvider, MapLayerTileTreeReference, MapTile, QuadId, RealityTile, RealityTileLoader, RealityTileTree,
   RealityTileTreeParams, Tile, TileContent, TileDrawArgs, TileLoadPriority, TileParams, TileRequest, TileTree, TileTreeLoadStatus, TileTreeOwner,
-  TileTreeSupplier,
+  TileTreeSupplier, WebMercatorTilingScheme,
 } from "../internal";
-import { WebMercatorTilingScheme } from "./MapTilingScheme";
 
 /** @internal */
 export interface ImageryTileContent extends TileContent {
@@ -157,7 +156,7 @@ export class ImageryMapTileTree extends RealityTileTree {
   }
   public get imageryLoader(): ImageryTileLoader { return this._imageryLoader; }
   public override get is3d(): boolean { assert(false); return false; }
-  public override get viewFlagOverrides(): ViewFlagOverrides { assert(false); return new ViewFlagOverrides(); }
+  public override get viewFlagOverrides(): ViewFlagOverrides { assert(false); return { }; }
   public override get isContentUnbounded(): boolean { assert(false); return true; }
   protected override _selectTiles(_args: TileDrawArgs): Tile[] { assert(false); return []; }
   public override draw(_args: TileDrawArgs): void { assert(false); }
@@ -275,7 +274,7 @@ class ImageryMapLayerTreeSupplier implements TileTreeSupplier {
     const rootRange = Range3d.createXYZXYZ(-Angle.piRadians, -Angle.piOver2Radians, 0, Angle.piRadians, Angle.piOver2Radians, 0);
     const rootTileProps = { contentId: rootTileId, range: rootRange, maximumSize: 0 };
     const loader = new ImageryTileLoader(imageryProvider, iModel);
-    const treeProps = { rootTile: rootTileProps, id: modelId, modelId, iModel, location: Transform.createIdentity(), priority: TileLoadPriority.Map, loader };
+    const treeProps = { rootTile: rootTileProps, id: modelId, modelId, iModel, location: Transform.createIdentity(), priority: TileLoadPriority.Map, loader, gcsConverterAvailable: false };
     return new ImageryMapTileTree(treeProps, loader);
   }
 }

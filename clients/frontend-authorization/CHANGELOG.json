@@ -2,6 +2,120 @@
   "name": "@bentley/frontend-authorization-client",
   "entries": [
     {
+      "version": "2.19.7",
+      "tag": "@bentley/frontend-authorization-client_v2.19.7",
+      "date": "Fri, 20 Aug 2021 17:47:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.6",
+      "tag": "@bentley/frontend-authorization-client_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:28 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add silent redirect uri to BrowserAuthClientConfig. If not provided default to redirectUri"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.5",
+      "tag": "@bentley/frontend-authorization-client_v2.19.5",
+      "date": "Fri, 13 Aug 2021 21:48:08 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add explicit check for BrowserAuthorizationLogger initialization, instead of inferring the initialization state from the oidc-client library"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.4",
+      "tag": "@bentley/frontend-authorization-client_v2.19.4",
+      "date": "Thu, 12 Aug 2021 13:09:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.3",
+      "tag": "@bentley/frontend-authorization-client_v2.19.3",
+      "date": "Wed, 04 Aug 2021 20:29:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.2",
+      "tag": "@bentley/frontend-authorization-client_v2.19.2",
+      "date": "Tue, 03 Aug 2021 18:26:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.1",
+      "tag": "@bentley/frontend-authorization-client_v2.19.1",
+      "date": "Thu, 29 Jul 2021 20:01:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.0",
+      "tag": "@bentley/frontend-authorization-client_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "match default BrowserAuthorizationCallbackHandler userstore to value of BrowserAuthorizationClient's userstore"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.4",
+      "tag": "@bentley/frontend-authorization-client_v2.18.4",
+      "date": "Tue, 10 Aug 2021 19:35:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@bentley/frontend-authorization-client_v2.18.3",
+      "date": "Wed, 28 Jul 2021 17:16:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.2",
+      "tag": "@bentley/frontend-authorization-client_v2.18.2",
+      "date": "Mon, 26 Jul 2021 16:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.1",
+      "tag": "@bentley/frontend-authorization-client_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.0",
+      "tag": "@bentley/frontend-authorization-client_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add optional prompt configuration option to browser auth startup and request calls"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.3",
+      "tag": "@bentley/frontend-authorization-client_v2.17.3",
+      "date": "Mon, 26 Jul 2021 16:08:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@bentley/frontend-authorization-client_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.17.1",
       "tag": "@bentley/frontend-authorization-client_v2.17.1",
       "date": "Fri, 02 Jul 2021 15:38:30 GMT",
@@ -11,6 +125,12 @@
       "version": "2.17.0",
       "tag": "@bentley/frontend-authorization-client_v2.17.0",
       "date": "Mon, 28 Jun 2021 16:20:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.16.10",
+      "tag": "@bentley/frontend-authorization-client_v2.16.10",
+      "date": "Thu, 22 Jul 2021 20:23:45 GMT",
       "comments": {}
     },
     {

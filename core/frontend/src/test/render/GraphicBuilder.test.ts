@@ -13,7 +13,8 @@ import { IModelConnection } from "../../IModelConnection";
 import { createBlankConnection } from "../createBlankConnection";
 import { RenderSystem } from "../../render/RenderSystem";
 import { ScreenViewport } from "../../Viewport";
-import { MeshArgs, MeshParams, SurfaceType } from "../../render-primitives";
+import { MeshParams, SurfaceType } from "../../render/primitives/VertexTable";
+import { MeshArgs } from "../../render/primitives/mesh/MeshPrimitives";
 import { MeshGraphic } from "../../render/webgl/Mesh";
 import { InstancedGraphicParams } from "../../render/InstancedGraphicParams";
 import { openBlankViewport } from "../openBlankViewport";
@@ -90,9 +91,7 @@ describe("GraphicBuilder", () => {
     });
 
     it("never, if view flags do not require them", () => {
-      const vf = viewport.viewFlags.clone();
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.visibleEdges = false;
+      const vf = viewport.viewFlags.copy({ renderMode: RenderMode.SmoothShade, visibleEdges: false });
       viewport.viewFlags = vf;
       expect(viewport.viewFlags.edgesRequired()).to.be.false;
 

@@ -2,6 +2,138 @@
   "name": "@bentley/geometry-core",
   "entries": [
     {
+      "version": "2.19.7",
+      "tag": "@bentley/geometry-core_v2.19.7",
+      "date": "Fri, 20 Aug 2021 17:47:22 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.6",
+      "tag": "@bentley/geometry-core_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:28 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.5",
+      "tag": "@bentley/geometry-core_v2.19.5",
+      "date": "Fri, 13 Aug 2021 21:48:08 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.4",
+      "tag": "@bentley/geometry-core_v2.19.4",
+      "date": "Thu, 12 Aug 2021 13:09:26 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.3",
+      "tag": "@bentley/geometry-core_v2.19.3",
+      "date": "Wed, 04 Aug 2021 20:29:34 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.2",
+      "tag": "@bentley/geometry-core_v2.19.2",
+      "date": "Tue, 03 Aug 2021 18:26:23 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.1",
+      "tag": "@bentley/geometry-core_v2.19.1",
+      "date": "Thu, 29 Jul 2021 20:01:11 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.0",
+      "tag": "@bentley/geometry-core_v2.19.0",
+      "date": "Mon, 26 Jul 2021 12:21:25 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add AuxChannel.computeDisplacementRange."
+          },
+          {
+            "comment": "accessor for InterpolationCurve3dOptions"
+          },
+          {
+            "comment": "remove internal barrel-import usage"
+          },
+          {
+            "comment": "Eliminate artificial interior edge splits when clipping with a UnionOfConvexClipPlaneSets"
+          },
+          {
+            "comment": "New curve type InterpolationCurve3d.   Supported in IMJS, FB.  Construction methods to be added."
+          },
+          {
+            "comment": "Handle imjs and flatbuffer inputs with numPerFace blocking"
+          },
+          {
+            "comment": "Added compare of numbers in Geographic CRS classes with tolerances."
+          },
+          {
+            "comment": "Adjusted WGS84 polar radius to be more precise than millimeter"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.18.4",
+      "tag": "@bentley/geometry-core_v2.18.4",
+      "date": "Tue, 10 Aug 2021 19:35:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.3",
+      "tag": "@bentley/geometry-core_v2.18.3",
+      "date": "Wed, 28 Jul 2021 17:16:30 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.2",
+      "tag": "@bentley/geometry-core_v2.18.2",
+      "date": "Mon, 26 Jul 2021 16:18:31 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.1",
+      "tag": "@bentley/geometry-core_v2.18.1",
+      "date": "Fri, 16 Jul 2021 17:45:09 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.18.0",
+      "tag": "@bentley/geometry-core_v2.18.0",
+      "date": "Fri, 09 Jul 2021 18:11:24 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Add union type AnyCurveVector."
+          },
+          {
+            "comment": "Use ZXY axis order in Arc3d.createCenterNormalRadius()."
+          },
+          {
+            "comment": "Range equality functions accept Readonly<Range>. Add XYZ.toArray."
+          },
+          {
+            "comment": "PolyfaceData.tryTransformInPlace now also transforms PolyfaceAuxData."
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.17.3",
+      "tag": "@bentley/geometry-core_v2.17.3",
+      "date": "Mon, 26 Jul 2021 16:08:36 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.17.2",
+      "tag": "@bentley/geometry-core_v2.17.2",
+      "date": "Thu, 08 Jul 2021 15:23:00 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.17.1",
       "tag": "@bentley/geometry-core_v2.17.1",
       "date": "Fri, 02 Jul 2021 15:38:30 GMT",
@@ -18,6 +150,12 @@
           }
         ]
       }
+    },
+    {
+      "version": "2.16.10",
+      "tag": "@bentley/geometry-core_v2.16.10",
+      "date": "Thu, 22 Jul 2021 20:23:45 GMT",
+      "comments": {}
     },
     {
       "version": "2.16.9",

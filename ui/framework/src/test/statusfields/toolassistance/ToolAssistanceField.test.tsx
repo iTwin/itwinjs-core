@@ -9,8 +9,9 @@ import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
 import { MockRender, ToolAssistance, ToolAssistanceImage, ToolAssistanceInputMethod } from "@bentley/imodeljs-frontend";
 import { WidgetState } from "@bentley/ui-abstract";
-import { LocalSettingsStorage, Toggle } from "@bentley/ui-core";
+import { LocalSettingsStorage } from "@bentley/ui-core";
 import { FooterPopup, TitleBarButton } from "@bentley/ui-ninezone";
+import { ToggleSwitch } from "@itwin/itwinui-react";
 import {
   AppNotificationManager, ConfigurableCreateInfo, ConfigurableUiControlType, CursorPopupManager, FrontstageManager, StatusBar, StatusBarWidgetControl,
   StatusBarWidgetControlArgs, ToolAssistanceField, WidgetDef,
@@ -387,7 +388,7 @@ describe("ToolAssistanceField", () => {
 
     clickIndicator(wrapper);
 
-    const toggle = wrapper.find(Toggle);
+    const toggle = wrapper.find(ToggleSwitch);
     expect(toggle.length).to.eq(1);
     toggle.find("input").simulate("change", { target: { checked: false } });
 
@@ -466,12 +467,10 @@ describe("ToolAssistanceField", () => {
 
     const tabIndex = wrapper.find(ToolAssistanceField).state("mouseTouchTabIndex");
     expect(tabIndex).to.satisfy((index: number) => index === 0 || index === 1);
-    const nonActive = tabList.find("li:not(.core-active)");
+    const nonActive = tabList.find(".iui-tab:not(.iui-active)");
     expect(nonActive.length).to.eq(1);
 
-    const anchor = nonActive.find("a");
-    expect(anchor.length).to.eq(1);
-    anchor.simulate("click");
+    nonActive.simulate("click");
 
     const newTabIndex = wrapper.find(ToolAssistanceField).state("mouseTouchTabIndex");
     expect(tabIndex !== newTabIndex).to.be.true;

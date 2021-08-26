@@ -20,7 +20,9 @@ import { ColorDef, ColorDefProps } from "./ColorDef";
 import { DefinitionElementProps } from "./ElementProps";
 import { GroundPlaneProps } from "./GroundPlane";
 import { HiddenLine } from "./HiddenLine";
-import { FeatureAppearance, FeatureAppearanceProps, PlanarClipMaskProps, PlanarClipMaskSettings, SubCategoryOverride } from "./imodeljs-common";
+import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
+import { PlanarClipMaskProps, PlanarClipMaskSettings } from "./PlanarClipMask";
+import { SubCategoryOverride } from "./SubCategoryOverride";
 import { LightSettings, LightSettingsProps } from "./LightSettings";
 import { MapImageryProps, MapImagerySettings } from "./MapImagerySettings";
 import { PlanProjectionSettings, PlanProjectionSettingsProps } from "./PlanProjectionSettings";
@@ -438,7 +440,7 @@ export interface DisplayStyleSettingsOptions {
  */
 export class DisplayStyleSettings {
   protected readonly _json: DisplayStyleSettingsProps;
-  private readonly _viewFlags: ViewFlags;
+  private _viewFlags: ViewFlags;
   private _background: ColorDef;
   private _monochrome: ColorDef;
   private _monochromeMode: MonochromeMode;
@@ -580,20 +582,14 @@ export class DisplayStyleSettings {
     this._contextRealityModels = new ContextRealityModels(this._json, options?.createContextRealityModel);
   }
 
-  /** Flags controlling various aspects of the display style. To change the style's view flags, do something like:
-   * ```ts
-   *  const flags = settings.viewFlags.clone();
-   *  flags.renderMode = RenderMode.SmoothShade; // or any other alterations.
-   *  settings.viewFlags = flags;
-   * @note Don't modify this object directly - clone it and modify the clone, then pass the clone to the setter.
-   */
+  /** Flags controlling various aspects of the display style. */
   public get viewFlags(): ViewFlags { return this._viewFlags; }
   public set viewFlags(flags: ViewFlags) {
     if (this.viewFlags.equals(flags))
       return;
 
     this.onViewFlagsChanged.raiseEvent(flags);
-    flags.clone(this._viewFlags);
+    this._viewFlags = flags;
     this._json.viewflags = flags.toJSON();
   }
 

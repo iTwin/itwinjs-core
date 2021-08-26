@@ -6,7 +6,7 @@
  * @module RpcInterface
  */
 
-import { IModelReadRpcInterface, IModelTileRpcInterface, IModelWriteRpcInterface, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
+import { IModelReadRpcInterface, IModelTileRpcInterface, IpcSocket, IpcSocketBackend, IpcSocketFrontend, RpcConfiguration, RpcInterfaceDefinition, RpcManager, SnapshotIModelRpcInterface } from "@bentley/imodeljs-common";
 import { PresentationRpcInterface } from "@bentley/presentation-common";
 import { ElectronRpcProtocol } from "./ElectronRpcProtocol";
 
@@ -39,7 +39,6 @@ export class ElectronRpcManager extends RpcManager {
     const interfaces = rpcs ?? [
       IModelReadRpcInterface,
       IModelTileRpcInterface,
-      IModelWriteRpcInterface,
       SnapshotIModelRpcInterface,
       PresentationRpcInterface,
     ];

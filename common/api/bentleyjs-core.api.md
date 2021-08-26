@@ -20,6 +20,14 @@ export function asInstanceOf<T>(obj: any, constructor: Constructor<T>): T | unde
 // @public
 export function assert(condition: boolean, msg?: string): asserts condition;
 
+// @public
+export type AsyncFunction = (...args: any) => Promise<any>;
+
+// @public
+export type AsyncMethodsOf<T> = {
+    [P in keyof T]: T[P] extends AsyncFunction ? P : never;
+}[keyof T];
+
 // @alpha
 export class AsyncMutex {
     lock(): Promise<AsyncMutexUnlockFnType>;
@@ -172,7 +180,9 @@ export class ByteStream {
 export enum ChangeSetApplyOption {
     Merge = 1,
     None = 0,
+    // @deprecated
     Reinstate = 3,
+    // @deprecated
     Reverse = 2
 }
 
@@ -278,23 +288,6 @@ export namespace CompressedId64Set {
 
 // @public (undocumented)
 export type ComputePriorityFunction<T> = (value: T) => number;
-
-// @public
-export class Config {
-    addEnvVarsStartingWith(prefix: string): void;
-    static get App(): Config;
-    get(varName: string, defaultVal?: boolean | string | number): any;
-    getBoolean(name: string, defaultVal?: boolean): boolean;
-    getContainer(): any;
-    getNumber(name: string, defaultVal?: number): number;
-    getString(name: string, defaultVal?: string): string;
-    getVars(): string[];
-    has(varName: string): boolean;
-    merge(source: any): void;
-    query(varName: string): any;
-    remove(varName: string): void;
-    set(varName: string, value: boolean | string | number): void;
-}
 
 // @public
 export type Constructor<T> = new (...args: any[]) => T;
@@ -546,14 +539,6 @@ export interface EntryContainer<K, V> {
     readonly size: number;
 }
 
-// @alpha
-export class EnvMacroSubst {
-    static anyPropertyContainsEnvvars(obj: any, recurse: boolean): boolean;
-    static containsEnvvars(str: string): boolean;
-    static replace(str: string, defaultValues?: any): string;
-    static replaceInProperties(obj: any, recurse: boolean, defaultValues?: any): void;
-}
-
 // @beta
 export enum ExtensionStatus {
     // (undocumented)
@@ -624,8 +609,6 @@ export enum HttpStatus {
 
 // @public
 export namespace Id64 {
-    // @deprecated
-    export function forEach(arg: Id64Arg, callback: (id: Id64String) => void): void;
     export function fromJSON(prop?: string): Id64String;
     export function fromLocalAndBriefcaseIds(localId: number, briefcaseId: number): Id64String;
     export function fromString(val: string): Id64String;
@@ -644,11 +627,9 @@ export namespace Id64 {
     export function isTransientId64(id: string): boolean;
     export function isValid(id: Id64String): boolean;
     export function isValidId64(id: string): boolean;
-    export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
     const invalid = "0";
+    export function isValidUint32Pair(lowBytes: number, highBytes: number): boolean;
     export function iterable(ids: Id64Arg): Iterable<Id64String>;
-    // @deprecated
-    export function iterate(arg: Id64Arg, callback: (id: Id64String) => boolean): boolean;
     export function iterator(ids: Id64Arg): Iterator<Id64String>;
     export function sizeOf(arg: Id64Arg): number;
     export function toIdSet(arg: Id64Arg, makeCopy?: boolean): Id64Set;
@@ -1016,12 +997,6 @@ export class IndexMap<T> {
     toArray(): T[];
 }
 
-// @internal @deprecated
-export const isElectronMain: boolean;
-
-// @internal @deprecated
-export const isElectronRenderer: boolean;
-
 // @public
 export function isIDisposable(obj: unknown): obj is IDisposable;
 
@@ -1172,6 +1147,14 @@ export class MutableCompressedId64Set implements OrderedId64Iterable {
     }
 
 // @public
+export type NonFunctionPropertiesOf<T> = Pick<T, NonFunctionPropertyNamesOf<T>>;
+
+// @public
+export type NonFunctionPropertyNamesOf<T> = {
+    [K in keyof T]: T[K] extends Function ? never : K;
+}[keyof T];
+
+// @public
 export class ObservableSet<T> extends Set<T> {
     constructor(elements?: Iterable<T> | undefined);
     // @internal (undocumented)
@@ -1291,6 +1274,9 @@ export class ProcessDetector {
     static get isNativeAppFrontend(): boolean;
     static get isNodeProcess(): boolean;
 }
+
+// @public
+export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
 
 // @public
 export class ReadonlyOrderedSet<T> implements Iterable<T> {

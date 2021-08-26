@@ -53,6 +53,7 @@ module.exports = {
     "fs": "fs",
     "process": "process",
     "child_process": "child_process",
+    "ws": "commonjs ws",
   },
   node: {
     net: 'empty'
