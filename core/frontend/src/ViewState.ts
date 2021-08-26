@@ -1767,6 +1767,32 @@ export abstract class ViewState3d extends ViewState {
     return this.lookAt(this.getEyePoint(), newTarget, upVec);
   }
 
+  /** Move camera about the global ellipsoid. This rotates the camera position about the center of the global ellipsoid maintaining the current height.
+   * @param fromPoint Point to pan from.
+   * @param point Point to point to.
+   * @returns Status indicating whether the camera was successfully positioned. See values at [[ViewStatus]] for possible errors.
+   */
+  public moveCameraGlobal(fromPoint: Point3d, toPoint: Point3d): ViewStatus {
+    if (!this.iModel.ecefLocation)
+      return ViewStatus.NotGeolocated;
+
+    if (this.globeMode !== GlobeMode.Ellipsoid)
+      return ViewStatus.NotEllipsoidGlobeMode;
+
+    const earthCenter = this.iModel.ecefLocation?.earthCenter;
+    const rMatrix = Matrix3d.createRotationVectorToVector(Vector3d.createStartEnd(earthCenter, toPoint), Vector3d.createStartEnd(earthCenter, fromPoint));
+    if (!rMatrix)
+      return ViewStatus.DegenerateGeometry;
+
+    const transitionTransform = Transform.createFixedPointAndMatrix(earthCenter, rMatrix);
+    const frustum = this.calculateFrustum();
+    if (!frustum)
+      return ViewStatus.DegenerateGeometry;
+
+    frustum.multiply(transitionTransform);
+    return this.setupFromFrustum(frustum);
+  }
+
   /** Get the distance from the eyePoint to the front plane for this view. */
   public getFrontDistance(): number { return this.getBackDistance() - this.extents.z; }
 

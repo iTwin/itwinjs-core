@@ -1093,13 +1093,13 @@ class ViewPan extends HandleWithInertia {
     const vp = tool.viewport!;
     const view = vp.view;
     const lastWorld = vp.npcToWorld(this._lastPtNpc);
-    const dist = vp.npcToWorld(thisPtNpc).vectorTo(lastWorld);
-
+    const thisWorld = vp.npcToWorld(thisPtNpc);
+    const dist = thisWorld.vectorTo(lastWorld);
     if (view.is3d()) {
-      if (ViewStatus.Success !== view.moveCameraWorld(dist))
+      if (ViewStatus.Success !==  (view.isGlobalView ? view.moveCameraGlobal(lastWorld, thisWorld) :  view.moveCameraWorld(dist)))
         return false;
+
       this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
-      view.transitionToGloballyCenteredCamera(lastWorld);
     } else {
       view.setOrigin(view.getOrigin().plus(dist));
     }
@@ -3631,6 +3631,7 @@ export class WindowAreaTool extends ViewTool {
       onExtentsError: (stat) => view.outputStatusMessage(stat),
     };
 
+    let globeCenteringTarget;
     if (view.isCameraEnabled()) {
       const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
       vp.worldToViewArray(windowArray);
@@ -3660,6 +3661,7 @@ export class WindowAreaTool extends ViewTool {
 
       if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle, undefined, undefined, opts))
         return;
+      globeCenteringTarget = { pivot: newTarget };
     } else {
       const rot = vp.rotation;
       rot.multiplyVectorArrayInPlace(corners);
@@ -3678,9 +3680,11 @@ export class WindowAreaTool extends ViewTool {
 
       view.setExtents(delta);
       view.setOrigin(originVec);
+      if (view.is3d())
+        globeCenteringTarget = { pivot: range.center };
     }
 
-    vp.synchWithView({ animateFrustumChange: true });
+    vp.synchWithView({ animateFrustumChange: true, globeCenteringTarget });
   }
 }
 
