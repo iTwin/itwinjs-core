@@ -81,14 +81,46 @@ export class Loop extends CurveChain {
   }
 }
 
+/**
+ * structure carrying a pair of loops with curve geometry.
+ *
+ */
+export class LoopCurveLoopCurve {
+  public loopA?: Loop;
+  public curveA?: CurvePrimitive;
+  public loopB?: Loop;
+  public curveB?: CurvePrimitive;
+  public constructor(loopA: Loop | undefined, curveA: CurvePrimitive | undefined, loopB: Loop | undefined, curveB: CurvePrimitive | undefined) {
+    this.loopA = loopA;
+    this.curveA = curveA;
+    this.loopB = loopB;
+    this.curveB = curveB;
+  }
+  public setA(loop: Loop, curve: CurvePrimitive) {
+    this.loopA = loop;
+    this.curveA = curve;
+  }
+  public setB(loop: Loop, curve: CurvePrimitive) {
+    this.loopB = loop;
+    this.curveB = curve;
+  }
+}
 /** Carrier object for loops characterized by area sign
  * @public
  */
-export interface SignedLoops {
+export class SignedLoops {
   /** Array of loops that have positive area sign.  (i.e. counterclockwise loops) */
-  positiveAreaLoops: Loop[];
+  public positiveAreaLoops: Loop[];
   /** Array of loops that have negative area sign. (i.e. clockwise loops. */
-  negativeAreaLoops: Loop[];
+  public negativeAreaLoops: Loop[];
   /** slivers where there are coincident sections of input curves. */
-  slivers: Loop[];
+  public slivers: Loop[];
+/** Array indicating edges between loops */
+  public edges: LoopCurveLoopCurve[];
+  public constructor() {
+    this.positiveAreaLoops = [];
+    this.negativeAreaLoops = [];
+    this.slivers = [];
+    this.edges = [];
+  }
 }

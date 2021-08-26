@@ -7,7 +7,7 @@ import { HalfEdgeGraphSearch } from "../../topology/HalfEdgeGraphSearch";
 import { HalfEdgeGraphMerge } from "../../topology/Merging";
 import { CurveLocationDetail, CurveLocationDetailPair } from "../CurveLocationDetail";
 import { CurvePrimitive } from "../CurvePrimitive";
-import { Loop, SignedLoops } from "../Loop";
+import { Loop, LoopCurveLoopCurve, SignedLoops } from "../Loop";
 import { RegionOps } from "../RegionOps";
 
 /** @packageDocumentation
@@ -106,7 +106,9 @@ export class PlanarSubdivision {
     return graph;
   }
 
-  public static collectSignedLoop(loop: Loop, signedAreas: SignedLoops, zeroAreaTolerance: number = 1.0e-10) {
+  // based on computed (and toleranced) area, push the loop (pointer) onto the appropriate array of positive, negative, or sliver loops.
+  // return the area (forced to zero if within tolerance)
+  public static collectSignedLoop(loop: Loop, signedAreas: SignedLoops, zeroAreaTolerance: number = 1.0e-10): number{
     let area = RegionOps.computeXYArea(loop);
     if (area === undefined)
       area = 0;
@@ -118,9 +120,10 @@ export class PlanarSubdivision {
       signedAreas.negativeAreaLoops.push(loop);
     else
       signedAreas.slivers.push(loop);
-
+    return area;
   }
-  public static createLoopInFace(faceSeed: HalfEdge): Loop {
+  public static createLoopInFace(faceSeed: HalfEdge,
+    announce?: (he: HalfEdge, curve: CurvePrimitive, loop: Loop) => void): Loop {
     let he = faceSeed;
     const loop = Loop.create();
     do {
@@ -131,23 +134,40 @@ export class PlanarSubdivision {
           curve = detail.curve!.clonePartialCurve(detail.fraction, detail.fraction1!);
         else
           curve = detail.curve!.clonePartialCurve(detail.fraction1!, detail.fraction);
-        if (curve)
+        if (curve) {
+          if (announce !== undefined)
+            announce(he, curve, loop);
           loop.tryAddChild(curve);
+        }
       }
       he = he.faceSuccessor;
     } while (he !== faceSeed);
     return loop;
   }
-  public static collectSignedLoopSetsInHalfEdgeGraph(graph: HalfEdgeGraph, _zeroAreaTolerance: number = 1.0e-10): SignedLoops[] {
+  public static collectSignedLoopSetsInHalfEdgeGraph(graph: HalfEdgeGraph, zeroAreaTolerance: number = 1.0e-10): SignedLoops[] {
     const q = HalfEdgeGraphSearch.collectConnectedComponentsWithExteriorParityMasks(graph, undefined);
     const result: SignedLoops[] = [];
+    const edgeMap = new Map<HalfEdge, LoopCurveLoopCurve>();
     for (const faceSeeds of q) {
-      const componentAreas = { positiveAreaLoops: [], negativeAreaLoops: [], slivers: [] };
+      const componentAreas = new SignedLoops();
       for (const faceSeed of faceSeeds) {
-        const loop = this.createLoopInFace(faceSeed);
-        this.collectSignedLoop(loop, componentAreas);
+        const loop = this.createLoopInFace(faceSeed, (he: HalfEdge, curveC: CurvePrimitive, loopC: Loop) => {
+          const mate = he.edgeMate;
+          const e = edgeMap.get (mate);
+          if (e === undefined) {
+            // Record this as loopA,edgeA of a shared edge to be completed later from the other side of the edge
+            const e1 = new LoopCurveLoopCurve(loopC, curveC, undefined, undefined);
+            edgeMap.set(he, e1);
+          } else if (e instanceof LoopCurveLoopCurve) {
+            e.setB(loopC, curveC);
+            componentAreas.edges.push(e);
+            edgeMap.delete(mate);
+          }
+        });
+        this.collectSignedLoop(loop, componentAreas, zeroAreaTolerance);
       }
       result.push(componentAreas);
+      edgeMap.clear();
     }
     return result;
   }

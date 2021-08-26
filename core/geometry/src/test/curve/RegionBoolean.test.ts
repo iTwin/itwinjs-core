@@ -33,7 +33,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 /* eslint-disable no-console */
 
 describe("RegionBoolean", () => {
-  it("SimpleSplits", () => {
+  it.only("SimpleSplits", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const candidates: CurvePrimitive[] = [];
@@ -58,8 +58,8 @@ describe("RegionBoolean", () => {
       for (const c of candidates)
         GeometryCoreTestIO.captureCloneGeometry(allGeometry, c, x0, y0);
       const loops = RegionOps.constructAllXYRegionLoops(candidates);
-      y0 += 5.0;
-      saveShiftedLoops(allGeometry, loops, x0, y0, 5.0);
+      y0 += 0.75;
+      saveShiftedLoops(allGeometry, loops, x0, y0, 1.0);
       if (stepData.expectedFaces >= 0 && loops.length === 1)
         ck.testExactNumber(stepData.expectedFaces, loops[0].positiveAreaLoops.length + loops[0].negativeAreaLoops.length + loops[0].slivers.length, "Face loop count");
       x0 += 5.0;
@@ -242,8 +242,31 @@ describe("RegionBoolean", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "ParityRegionWithBadBoundary");
     expect(ck.getNumErrors()).equals(0);
   });
-});
-/**
+  it.only("SectioningExample", () => {
+    const ck = new Checker();
+    const allGeometry: GeometryQuery[] = [];
+    const xOut = 0.0;
+    const yOut0 = 0.0;
+    const allLines: CurvePrimitive[] = [];
+    const ax = 10.0;
+    const ay1 = 1.0;
+    const dy = 1.0;
+    const ay2 = ay1 + dy;
+    const by = 0.2;
+    allLines.push(LineString3d.create([[0, 0], [ax, ay1], [ax, ay2], [0, ay1]]));
+    for (const fraction of [0.0, 0.25, 0.5, 0.9]) {
+      const x = fraction * ax;
+      const y = fraction * ay1;   // "on" the lower line
+      allLines.push(LineSegment3d.createXYXY(x, y- by, x, y + dy + by));
+    }
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, allLines, xOut, yOut0);
+    const regions = RegionOps.constructAllXYRegionLoops(allLines);
+    saveShiftedLoops(allGeometry, regions, xOut, yOut0, 1.5 * dy);
+    GeometryCoreTestIO.saveGeometry(allGeometry, "RegionBoolean", "SectioningExample");
+    expect(ck.getNumErrors()).equals(0);
+    });
+  });
+  /**
  *
  * @param allGeometry array to receive (cloned) geometry
  * @param loops geometry to output
@@ -259,18 +282,35 @@ function saveShiftedLoops(allGeometry: GeometryQuery[], loops: SignedLoops | Sig
       x0 += dy;
     }
   } else {
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops.positiveAreaLoops, x0, y0);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops.negativeAreaLoops, x0, y0 + dy);
-    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops.slivers, x0, y0 + 2 * dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops.positiveAreaLoops, x0, y0 + 2 * dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops.negativeAreaLoops, x0, y0 + 3 * dy);
+    GeometryCoreTestIO.captureCloneGeometry(allGeometry, loops.slivers, x0, y0 + 4 * dy);
     if (positiveLoopOffset !== 0.0) {
+      const yy = y0 + dy;
+      const zz = 0.01;    // raise the tic marks above the faces
       for (const loop of loops.positiveAreaLoops) {
         const offsetLoop = RegionOps.constructCurveXYOffset(loop, positiveLoopOffset);
-        GeometryCoreTestIO.captureGeometry(allGeometry, offsetLoop, x0, y0 + 3 * dy);
-
+        GeometryCoreTestIO.captureGeometry(allGeometry, offsetLoop, x0, yy);
+      }
+      // draw a tic mark starting at a fractional position along an edge, leading "to the left" of the edge.
+      const drawEdgeTic = (curve: CurvePrimitive | undefined, fraction: number) => {
+        if (curve) {
+          const midpointRay = curve.fractionToPointAndUnitTangent(fraction);
+          const perp = midpointRay.direction.unitPerpendicularXY();
+          GeometryCoreTestIO.captureCloneGeometry(allGeometry,
+            [midpointRay.origin, midpointRay.origin.plusScaled(perp, 3 * positiveLoopOffset)],
+            x0, yy, zz
+          );
+        }
+      };
+      for (const e of loops.edges) {
+        drawEdgeTic(e.curveA, 0.48);
+        drawEdgeTic(e.curveB, 0.48);
+        }
       }
     }
   }
-}
+
 function runRegionTest(allGeometry: GeometryQuery[], pointArrayA: number[][], pointArrayB: number[][], xBase: number, yBase: number) {
   let x0 = xBase;
   let y0 = yBase;
