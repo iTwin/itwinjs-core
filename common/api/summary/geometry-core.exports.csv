@@ -50,6 +50,8 @@ public;class BSpline2dNd
 public;BSplineCurve3d 
 public;class BSplineCurve3dBase 
 public;BSplineCurve3dH 
+public;BSplineCurveOps
+public;BSplineCurveOps
 public;BSplineSurface3d 
 public;BSplineSurface3dH 
 public;BSplineSurface3dQuery

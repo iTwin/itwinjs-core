@@ -383,6 +383,12 @@ The cli tool has been deprecated due to an impending change of Extensions and th
 
 The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using .env files will not be affected.
 
+## @bentley/geometry-core
+
+The method `BSplineCurve3d.createThroughPoints` has been deprecated in favor of the more general method `BSplineCurve3d.createFromInterpolationCurve3dOptions`.
+
+The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated due to a naming inconsistency with similar adjacent properties. Use `InterpolationCurve3dOptions.isChordLenTangents` instead.
+
 ## new @bentley/imodeljs-transformer package split out of backend package
 
 The iModel Transformer APIs, such as the classes [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer)
