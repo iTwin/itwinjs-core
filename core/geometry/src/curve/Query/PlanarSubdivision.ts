@@ -149,7 +149,8 @@ export class PlanarSubdivision {
     const result: SignedLoops[] = [];
     const edgeMap = new Map<HalfEdge, LoopCurveLoopCurve>();
     for (const faceSeeds of q) {
-      const componentAreas = new SignedLoops();
+      const componentAreas: SignedLoops = { positiveAreaLoops: [], negativeAreaLoops: [], slivers: [] };
+      const edges: LoopCurveLoopCurve[] = [];
       for (const faceSeed of faceSeeds) {
         const loop = this.createLoopInFace(faceSeed, (he: HalfEdge, curveC: CurvePrimitive, loopC: Loop) => {
           const mate = he.edgeMate;
@@ -160,12 +161,13 @@ export class PlanarSubdivision {
             edgeMap.set(he, e1);
           } else if (e instanceof LoopCurveLoopCurve) {
             e.setB(loopC, curveC);
-            componentAreas.edges.push(e);
+            edges.push(e);
             edgeMap.delete(mate);
           }
         });
         this.collectSignedLoop(loop, componentAreas, zeroAreaTolerance);
       }
+      componentAreas.edges = edges;
       result.push(componentAreas);
       edgeMap.clear();
     }

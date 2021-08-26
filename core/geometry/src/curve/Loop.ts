@@ -108,19 +108,14 @@ export class LoopCurveLoopCurve {
 /** Carrier object for loops characterized by area sign
  * @public
  */
-export class SignedLoops {
+export interface SignedLoops {
   /** Array of loops that have positive area sign.  (i.e. counterclockwise loops) */
-  public positiveAreaLoops: Loop[];
+  positiveAreaLoops: Loop[];
   /** Array of loops that have negative area sign. (i.e. clockwise loops. */
-  public negativeAreaLoops: Loop[];
+  negativeAreaLoops: Loop[];
   /** slivers where there are coincident sections of input curves. */
-  public slivers: Loop[];
+  slivers: Loop[];
 /** Array indicating edges between loops */
-  public edges: LoopCurveLoopCurve[];
-  public constructor() {
-    this.positiveAreaLoops = [];
-    this.negativeAreaLoops = [];
-    this.slivers = [];
-    this.edges = [];
-  }
+  edges?: LoopCurveLoopCurve[];
+
 }

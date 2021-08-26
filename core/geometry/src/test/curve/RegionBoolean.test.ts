@@ -33,7 +33,7 @@ import { Sample } from "../../serialization/GeometrySamples";
 /* eslint-disable no-console */
 
 describe("RegionBoolean", () => {
-  it.only("SimpleSplits", () => {
+  it("SimpleSplits", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const candidates: CurvePrimitive[] = [];
@@ -242,7 +242,7 @@ describe("RegionBoolean", () => {
     GeometryCoreTestIO.saveGeometry(allGeometry, "Solids", "ParityRegionWithBadBoundary");
     expect(ck.getNumErrors()).equals(0);
   });
-  it.only("SectioningExample", () => {
+  it("SectioningExample", () => {
     const ck = new Checker();
     const allGeometry: GeometryQuery[] = [];
     const xOut = 0.0;
@@ -303,12 +303,14 @@ function saveShiftedLoops(allGeometry: GeometryQuery[], loops: SignedLoops | Sig
           );
         }
       };
-      for (const e of loops.edges) {
-        drawEdgeTic(e.curveA, 0.48);
-        drawEdgeTic(e.curveB, 0.48);
+      if (loops.edges) {
+        for (const e of loops.edges) {
+          drawEdgeTic(e.curveA, 0.48);
+          drawEdgeTic(e.curveB, 0.48);
         }
       }
     }
+  }
   }
 
 function runRegionTest(allGeometry: GeometryQuery[], pointArrayA: number[][], pointArrayB: number[][], xBase: number, yBase: number) {
