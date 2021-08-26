@@ -17,7 +17,7 @@ export interface TableCellProps {
 
 export function ReactTableCell(props: TableCellProps) {
   const { columnProperty, tableDataProvider, value, rowIndex, cellKey, useCellPropertyDescription } = props;
-  const [displayValue, setDisplayValue] = React.useState<string | undefined>("");
+  const [displayValue, setDisplayValue] = React.useState<string>();
 
   const getCellItem = (rowItem: RowItem, colKey: string): CellItem | undefined => {
     return rowItem.cells.find((cellItem) => cellItem.key === colKey);
