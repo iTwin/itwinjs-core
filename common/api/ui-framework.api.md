@@ -162,6 +162,7 @@ import { TreeSelectionReplacementEventArgs } from '@bentley/ui-components';
 import { UiAdmin } from '@bentley/ui-abstract';
 import { UiDataProvider } from '@bentley/ui-abstract';
 import { UiEvent } from '@bentley/ui-core';
+import { UiItemsProvider } from '@bentley/ui-abstract';
 import { UiLayoutDataProvider } from '@bentley/ui-abstract';
 import { UiSetting } from '@bentley/ui-core';
 import { UiSettings } from '@bentley/ui-core';
@@ -1347,6 +1348,16 @@ export interface ContentProps {
     id?: string;
 }
 
+// @beta
+export function ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element;
+
+// @beta
+export interface ContentToolWidgetComposerProps {
+    cornerButton?: React.ReactNode;
+    horizontalItems?: CommonToolbarItem[];
+    verticalItems?: CommonToolbarItem[];
+}
+
 // @public
 export class ContentViewManager {
     static contentSupportsCamera(content: ContentControl | undefined): boolean;
@@ -1675,6 +1686,24 @@ export type DeepReadonlyObject<T> = {
 };
 
 // @beta
+export interface DefaultContentTools {
+    // (undocumented)
+    horizontal?: {
+        clearSelection?: boolean;
+        clearDisplayOverrides?: boolean;
+        hide?: "group" | "element";
+        isolate?: "group" | "element";
+        emphasize?: "element";
+    };
+    // (undocumented)
+    vertical?: {
+        selectElement?: boolean;
+        measureGroup?: boolean;
+        sectionGroup?: boolean;
+    };
+}
+
+// @beta
 export function DefaultDialogGridContainer({ componentGenerator, isToolSettings }: {
     componentGenerator: ComponentGenerator;
     isToolSettings?: boolean;
@@ -1688,11 +1717,60 @@ export interface DefaultNavigationProps {
     suffixVerticalItems?: ItemList;
 }
 
+// @beta
+export interface DefaultNavigationTools {
+    // (undocumented)
+    horizontal?: {
+        rotateView?: boolean;
+        panView?: boolean;
+        fitView?: boolean;
+        windowArea?: boolean;
+        viewUndoRedo?: boolean;
+    };
+    // (undocumented)
+    vertical?: {
+        walk?: boolean;
+        toggleCamera?: boolean;
+    };
+}
+
 // @beta @deprecated
 export class DefaultNavigationWidget extends React.Component<DefaultNavigationProps> {
     // (undocumented)
     render(): JSX.Element;
     }
+
+// @beta
+export interface DefaultStatusbarItems {
+    // (undocumented)
+    accuSnapModePicker?: boolean;
+    // (undocumented)
+    activityCenter?: boolean;
+    // (undocumented)
+    messageCenter?: boolean;
+    // (undocumented)
+    postToolAssistanceSeparator?: boolean;
+    // (undocumented)
+    preToolAssistanceSeparator?: boolean;
+    // (undocumented)
+    selectionInfo?: boolean;
+    // (undocumented)
+    selectionScope?: boolean;
+    // (undocumented)
+    tileLoadIndicator?: boolean;
+    // (undocumented)
+    toolAssistance?: boolean;
+}
+
+// @public
+export class DefaultStatusBarWidgetControl extends StatusBarWidgetControl {
+    // (undocumented)
+    static controlId: string;
+    // (undocumented)
+    getReactNode(): React.ReactNode;
+    // (undocumented)
+    readonly id: string;
+}
 
 // @internal
 export class DefaultToolSettingsProvider extends ToolUiProvider {
@@ -5585,7 +5663,7 @@ export class StagePanelDef extends WidgetHost {
     get size(): number | undefined;
     set size(size: number | undefined);
     // @internal (undocumented)
-    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, _section: StagePanelSection_2 | undefined, widgetDefs: WidgetDef[]): void;
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, _section: StagePanelSection_2 | undefined, widgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
 }
 
@@ -5729,6 +5807,21 @@ export interface StagePanelZonesProps {
     start?: StagePanelZoneProps;
 }
 
+// @beta
+export class StandardContentToolsProvider implements UiItemsProvider {
+    constructor(defaultContextTools?: DefaultContentTools | undefined, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    static providerId: string;
+    // (undocumented)
+    provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
+    // (undocumented)
+    static register(defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
+    // (undocumented)
+    static unregister(): void;
+}
+
 // @public
 export class StandardMessageBox extends React.PureComponent<StandardMessageBoxProps, StandardMessageBoxState> {
     constructor(props: StandardMessageBoxProps);
@@ -5747,6 +5840,21 @@ export interface StandardMessageBoxProps extends CommonProps {
     title: string;
 }
 
+// @beta
+export class StandardNavigationToolsProvider implements UiItemsProvider {
+    constructor(defaultNavigationTools?: DefaultNavigationTools | undefined, isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    static providerId: string;
+    // (undocumented)
+    provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
+    // (undocumented)
+    static register(defaultNavigationTools?: DefaultNavigationTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
+    // (undocumented)
+    static unregister(): void;
+}
+
 // @alpha
 export class StandardRotationNavigationAid extends React.Component<CommonProps, StandardRotationNavigationAidState> {
     constructor(props: any);
@@ -5761,6 +5869,21 @@ export class StandardRotationNavigationAidControl extends NavigationAidControl {
     constructor(info: ConfigurableCreateInfo, options: any);
     // (undocumented)
     static navigationAidId: string;
+}
+
+// @beta
+export class StandardStatusbarItemsProvider implements UiItemsProvider {
+    constructor(_defaultItems?: DefaultStatusbarItems | undefined, _isSupportedStage?: ((stageId: string, stageUsage: string, stageAppData?: any) => boolean) | undefined);
+    // (undocumented)
+    readonly id: string;
+    // (undocumented)
+    static providerId: string;
+    // (undocumented)
+    provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
+    // (undocumented)
+    static register(defaultItems?: DefaultStatusbarItems, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
+    // (undocumented)
+    static unregister(): void;
 }
 
 // @public
@@ -7050,6 +7173,16 @@ export interface ViewSelectorProps {
 }
 
 // @public
+export function ViewToolWidgetComposer(props: ViewToolWidgetComposerProps): JSX.Element;
+
+// @public
+export interface ViewToolWidgetComposerProps {
+    horizontalItems?: CommonToolbarItem[];
+    navigationAidHost?: React.ReactNode;
+    verticalItems?: CommonToolbarItem[];
+}
+
+// @public
 export class ViewUtilities {
     static getBisBaseClass(classFullName: string): string;
     static is3dView(viewport: ScreenViewport): boolean;
@@ -7337,7 +7470,7 @@ export class WidgetHost {
     findWidgetDef(id: string): WidgetDef | undefined;
     getSingleWidgetDef(): WidgetDef | undefined;
     // @internal
-    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section: StagePanelSection_2 | undefined, widgetDefs: WidgetDef[]): void;
+    updateDynamicWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section: StagePanelSection_2 | undefined, widgetDefs: WidgetDef[], frontstageApplicationData?: any): void;
     get widgetCount(): number;
     get widgetDefs(): ReadonlyArray<WidgetDef>;
     }
@@ -7360,7 +7493,7 @@ export interface WidgetInfo {
 export class WidgetManager {
     addWidgetDef(widgetDef: WidgetDef, stageId: string | undefined, stageUsage: string | undefined, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2): boolean;
     addWidgetProvider(widgetProvider: WidgetProvider): void;
-    getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2): ReadonlyArray<WidgetDef> | undefined;
+    getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2, frontstageApplicationData?: any): ReadonlyArray<WidgetDef> | undefined;
     // @internal
     readonly onWidgetProvidersChanged: WidgetProvidersChangedEvent;
     // @internal
@@ -7420,7 +7553,7 @@ export interface WidgetProps extends Omit<AbstractWidgetProps, "getWidgetContent
 
 // @beta
 export interface WidgetProvider {
-    getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2): ReadonlyArray<WidgetDef> | undefined;
+    getWidgetDefs(stageId: string, stageUsage: string, location: ZoneLocation | StagePanelLocation_2, section?: StagePanelSection_2, frontstageApplicationData?: any): ReadonlyArray<WidgetDef> | undefined;
     readonly id: string;
 }
 

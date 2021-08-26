@@ -140,6 +140,8 @@ public;ContentLayoutDef
 public;ContentLayoutManager
 public;ContentLayoutProps 
 public;ContentProps
+beta;ContentToolWidgetComposer(props: ContentToolWidgetComposerProps): JSX.Element
+beta;ContentToolWidgetComposerProps
 public;ContentViewManager
 public;CoreTools
 public;createAction
@@ -171,11 +173,15 @@ public;CustomItemProps
 public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
+beta;DefaultContentTools
 beta;DefaultDialogGridContainer({ componentGenerator, isToolSettings }:
 beta;DefaultNavigationProps
 deprecated;DefaultNavigationProps
+beta;DefaultNavigationTools
 beta;DefaultNavigationWidget 
 deprecated;DefaultNavigationWidget 
+beta;DefaultStatusbarItems
+public;DefaultStatusBarWidgetControl 
 internal;DefaultToolSettingsProvider 
 public;DefaultViewOverlay({ viewport, onPlayPause, featureOptions }: ViewOverlayProps): JSX.Element | null
 public;DialogChangedEvent 
@@ -534,10 +540,13 @@ internal;StagePanelZoneDefKeys = keyof Pick
 public;StagePanelZoneProps
 internal;StagePanelZonesDef
 public;StagePanelZonesProps
+beta;StandardContentToolsProvider 
 public;StandardMessageBox 
 public;StandardMessageBoxProps 
+beta;StandardNavigationToolsProvider 
 alpha;StandardRotationNavigationAid 
 alpha;StandardRotationNavigationAidControl 
+beta;StandardStatusbarItemsProvider 
 public;StateManager
 public;StateType
 public;StatusBar 
@@ -705,6 +714,8 @@ beta;ViewSelectorChangedEvent
 beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
+public;ViewToolWidgetComposer(props: ViewToolWidgetComposerProps): JSX.Element
+public;ViewToolWidgetComposerProps
 public;ViewUtilities
 alpha;VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map
 beta;VisibilityComponent 

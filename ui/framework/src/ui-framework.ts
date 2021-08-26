@@ -263,7 +263,7 @@ export * from "./ui-framework/widgets/NavigationWidget";
 export * from "./ui-framework/widgets/NavigationWidgetComposer";
 export * from "./ui-framework/widgets/ReviewToolWidget";
 export * from "./ui-framework/widgets/ViewToolWidgetComposer";
-export * from "./ui-framework/widgets/SimpleStatusBar";
+export * from "./ui-framework/widgets/DefaultStatusBarWidgetControl";
 export * from "./ui-framework/widgets/ContentToolWidgetComposer";
 export * from "./ui-framework/widgets/StableWidgetDef";
 export * from "./ui-framework/widgets/ToolbarWidgetBase";

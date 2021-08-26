@@ -6,7 +6,7 @@ import * as React from "react";
 import {
   BackstageAppButton, ContentGroup, ContentToolWidgetComposer,
   CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
-  IModelViewportControl, SimpleStatusBarWidgetControl, StagePanel, StagePanelState, SyncUiEventArgs, SyncUiEventDispatcher,
+  IModelViewportControl, StagePanel, StagePanelState, SyncUiEventArgs, SyncUiEventDispatcher,
   ToolbarHelper, UiFramework, ViewToolWidgetComposer, Widget, Zone,
 } from "@bentley/ui-framework";
 import { CommonToolbarItem, StageUsage } from "@bentley/ui-abstract";
@@ -133,7 +133,7 @@ export class FrontstageUi2 extends FrontstageProvider {
           <Zone
             widgets={
               [
-                <Widget isStatusBar={true} control={SimpleStatusBarWidgetControl} />,
+                <Widget isStatusBar={true} />, // same as <Widget isStatusBar={true} control={DefaultStatusBarWidgetControl} />
               ]}
           />
         }
