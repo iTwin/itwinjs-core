@@ -17,7 +17,7 @@ export class TableDataProviderAdapter {
   private _tableColumns: Column<Record<string, unknown>>[] = [];
   private _adaptedRowsCount = 0;
 
-  constructor(dataProvider: TableDataProvider) {
+  constructor(dataProvider: TableDataProvider, public useCellPropertyDescription?: boolean) {
     this._dataProvider = dataProvider;
   }
 
@@ -85,6 +85,7 @@ export class TableDataProviderAdapter {
                 value={props.value}
                 rowIndex={props.row.index}
                 cellKey={props.cell.column.id}
+                useCellPropertyDescription={this.useCellPropertyDescription}
               />
             );
           }

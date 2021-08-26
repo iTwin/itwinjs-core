@@ -12,10 +12,11 @@ export interface TableCellProps {
   value: any;
   rowIndex: number;
   cellKey: string;
+  useCellPropertyDescription?: boolean;
 }
 
 export function ReactTableCell(props: TableCellProps) {
-  const { columnProperty, tableDataProvider, value, rowIndex, cellKey } = props;
+  const { columnProperty, tableDataProvider, value, rowIndex, cellKey, useCellPropertyDescription } = props;
   const [displayValue, setDisplayValue] = React.useState<string | undefined>("");
 
   const getCellItem = (rowItem: RowItem, colKey: string): CellItem | undefined => {
@@ -24,9 +25,12 @@ export function ReactTableCell(props: TableCellProps) {
 
   React.useEffect(() => {
     const formatValue = async () => {
-      const rowItem = await tableDataProvider.getRow(rowIndex);
-      const cellItem = getCellItem(rowItem, cellKey);
-      const cellProperty = cellItem ? cellItem.record?.property : undefined;
+      let cellProperty: PropertyDescription | undefined;
+      if (useCellPropertyDescription) {
+        const rowItem = await tableDataProvider.getRow(rowIndex);
+        const cellItem = getCellItem(rowItem, cellKey);
+        cellProperty = cellItem ? cellItem.record?.property : undefined;
+      }
 
       const description = cellProperty ?? columnProperty;
 
@@ -43,7 +47,7 @@ export function ReactTableCell(props: TableCellProps) {
     };
 
     formatValue();  // eslint-disable-line @typescript-eslint/no-floating-promises
-  }, [cellKey, columnProperty, rowIndex, tableDataProvider, value]);
+  }, [cellKey, columnProperty, rowIndex, tableDataProvider, useCellPropertyDescription, value]);
 
   return (
     <span>

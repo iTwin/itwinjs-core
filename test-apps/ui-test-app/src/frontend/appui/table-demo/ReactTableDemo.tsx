@@ -4,10 +4,11 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import { Column, TableState } from "react-table";
-import { Table } from "@itwin/itwinui-react";
+import { Table, ToggleSwitch } from "@itwin/itwinui-react";
 import { ConfigurableCreateInfo, ContentControl } from "@bentley/ui-framework";
 import { TableExampleData } from "../contentviews/TableExampleData";
 import { TableDataProviderAdapter } from "./TableDataProviderAdapter";
+import { BodyText } from "@bentley/ui-core";
 
 export interface ReactTableDemoProps {
   isSortable?: boolean;
@@ -20,13 +21,14 @@ export function ReactTableDemo(args: ReactTableDemoProps) {
   const [fetchedColumns, setFetchedColumns] = React.useState<Column<Record<string, unknown>>[]>(() => []);
   const isMounted = React.useRef(false);
   const [isLoading, setIsLoading] = React.useState(false);
+  const [useCellPropertyDescription, setUseCellPropertyDescription] = React.useState(false);
 
   React.useEffect(() => {
     isMounted.current = true;
     async function fetchData() {
       tableExampleData.loadData(false);
       const dataProvider = tableExampleData.dataProvider;
-      providerAdapter.current = new TableDataProviderAdapter(dataProvider);
+      providerAdapter.current = new TableDataProviderAdapter(dataProvider, useCellPropertyDescription);
       const rowsCount = await providerAdapter.current.getRowsCount();
 
       await providerAdapter.current.adaptColumns();
@@ -50,7 +52,7 @@ export function ReactTableDemo(args: ReactTableDemoProps) {
       fetchData(); // eslint-disable-line @typescript-eslint/no-floating-promises
       setIsLoading(false);
     });
-  }, [tableExampleData]);
+  }, [tableExampleData, useCellPropertyDescription]);
 
   // runs returned function only when component is unmounted.
   React.useEffect(() => {
@@ -79,21 +81,37 @@ export function ReactTableDemo(args: ReactTableDemoProps) {
     }
   }, []);
 
+  const onCellPropertyDescriptionChange = React.useCallback((e: React.ChangeEvent<HTMLInputElement>) => {
+    const checked = e.target.checked;
+    setUseCellPropertyDescription(checked);
+  }, []);
+
   return (
-    <Table
-      style={{ height: "100%" }}
-      density="extra-condensed"
-      columns={fetchedColumns}
-      data={fetchedData}
-      emptyTableContent="No data."
-      onBottomReached={onBottomReached}
-      isLoading={isLoading}
-      isSelectable={true}
-      onSelect={onSelect}
-      isSortable={isSortable}
-      onSort={onSort}
-      {...rest}
-    />
+    <div style={{ width: "100%", height: "100%", display: "flex", flexFlow: "column" }}>
+      <div style={{ display: "flex", alignItems: "center", height: "32px" }}>
+        <label style={{ display: "flex" }}>
+          <BodyText>Use Cell PropertyDescription</BodyText>
+          &nbsp;
+          <ToggleSwitch checked={useCellPropertyDescription} onChange={onCellPropertyDescriptionChange} title="Use PropertyDescription from Cell" />
+        </label>
+      </div>
+      <div style={{ flex: "1", height: "calc(100% - 32px)" }}>
+        <Table
+          style={{ height: "100%" }}
+          density="extra-condensed"
+          columns={fetchedColumns}
+          data={fetchedData}
+          emptyTableContent="No data."
+          onBottomReached={onBottomReached}
+          isLoading={isLoading}
+          isSelectable={true}
+          onSelect={onSelect}
+          isSortable={isSortable}
+          onSort={onSort}
+          {...rest}
+        />
+      </div>
+    </div>
   );
 }
 
@@ -106,4 +124,3 @@ export class ReactTableDemoContentControl extends ContentControl {
     this.reactNode = <ReactTableDemo isSortable={true} />;
   }
 }
-
