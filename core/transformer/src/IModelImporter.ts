@@ -10,14 +10,10 @@ import {
   AxisAlignedBox3d, Base64EncodedString, ElementAspectProps, ElementProps, EntityProps, IModel, IModelError, ModelProps, PrimitiveTypeCode,
   PropertyMetaData, RelatedElement,
 } from "@bentley/imodeljs-common";
-import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { ElementAspect, ElementMultiAspect } from "./ElementAspect";
-import { Entity } from "./Entity";
-import { IModelDb } from "./IModelDb";
-import { Model } from "./Model";
-import { Relationship, RelationshipProps, SourceAndTarget } from "./Relationship";
+import { TransformerLoggerCategory } from "./TransformerLoggerCategory";
+import { ElementAspect, ElementMultiAspect, Entity, IModelDb, Model, Relationship, RelationshipProps, SourceAndTarget } from "@bentley/imodeljs-backend";
 
-const loggerCategory: string = BackendLoggerCategory.IModelImporter;
+const loggerCategory: string = TransformerLoggerCategory.IModelImporter;
 
 /** Options provided to the [[IModelImporter]] constructor.
  * @beta
@@ -26,15 +22,15 @@ export interface IModelImportOptions {
   /** If `true` (the default), compute the projectExtents of the target iModel after elements are imported.
    * The computed projectExtents will either include or exclude *outliers* depending on the `excludeOutliers` flag that defaults to `false`.
    * @see [[IModelImporter.autoExtendProjectExtents]]
-   * @see [IModelImporter Options]($docs/learning/backend/IModelTransformation.md#IModelImporter)
+   * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
    */
   autoExtendProjectExtents?: boolean | { excludeOutliers: boolean };
 }
 
 /** Base class for importing data into an iModel.
- * @see [iModel Transformation and Data Exchange]($docs/learning/backend/IModelTransformation.md)
- * @see [IModelExporter]($backend)
- * @see [IModelTransformer]($backend)
+ * @see [iModel Transformation and Data Exchange]($docs/learning/transformer/index.md)
+ * @see [IModelExporter]($transformer)
+ * @see [IModelTransformer]($transformer)
  * @beta
  */
 export class IModelImporter {
@@ -43,7 +39,7 @@ export class IModelImporter {
   /** If `true` (the default), compute the projectExtents of the target iModel after elements are imported.
    * The computed projectExtents will either include or exclude *outliers* depending on the `excludeOutliers` flag that defaults to `false`.
    * @see [[IModelImportOptions.autoExtendProjectExtents]]
-   * @see [IModelImporter Options]($docs/learning/backend/IModelTransformation.md#IModelImporter)
+   * @see [IModelImporter Options]($docs/learning/transformer/index.md#IModelImporter)
    */
   public autoExtendProjectExtents: boolean | { excludeOutliers: boolean };
   /** If `true`, simplify the element geometry for visualization purposes. For example, convert b-reps into meshes.
@@ -403,7 +399,7 @@ export class IModelImporter {
   protected onProgress(): void { }
 
   /** Optionally compute the projectExtents for the target iModel depending on the options for this IModelImporter.
-   * @note This method is automatically called from [IModelTransformer.processChanges]($backend) and [IModelTransformer.processAll]($backend).
+   * @note This method is automatically called from [IModelTransformer.processChanges]($transformer) and [IModelTransformer.processAll]($transformer).
    * @see [IModelDb.computeProjectExtents]($backend), [[autoExtendProjectExtents]]
    */
   public computeProjectExtents(): void {
