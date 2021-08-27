@@ -17,8 +17,10 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
   public static providerId = "sampleApp:ui2-stage-widget-provider";
   public readonly id = AppUi2StageItemsProvider.providerId;
 
-  public static register() {
-    UiItemsManager.register(new AppUi2StageItemsProvider());
+  constructor(private toolWidgetDisplayCornerButton: boolean) { }
+
+  public static register(toolWidgetDisplayCornerButton: boolean) {
+    UiItemsManager.register(new AppUi2StageItemsProvider(toolWidgetDisplayCornerButton));
   }
 
   public static unregister() {
@@ -267,10 +269,11 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
     const allowedStages = ["Ui2"];
     if (allowedStages.includes(stageId)) {
       if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
-        return [
-          ToolbarHelper.createToolbarItemFromItemDef(10, AppTools.toggleHideShowItemsCommand, { groupPriority: 3000 }),
-          ToolbarHelper.createToolbarItemFromItemDef(20, BackstageManager.getBackstageToggleCommand("icon-bentley-systems"), { groupPriority: 3000 }),
-        ];
+        const items: CommonToolbarItem[] = [];
+        items.push(ToolbarHelper.createToolbarItemFromItemDef(10, AppTools.toggleHideShowItemsCommand, { groupPriority: 3000 }));
+        if (!this.toolWidgetDisplayCornerButton)
+          items.push(ToolbarHelper.createToolbarItemFromItemDef(20, BackstageManager.getBackstageToggleCommand("icon-bentley-systems"), { groupPriority: 3000 }));
+        return items;
       }
     }
     return [];
