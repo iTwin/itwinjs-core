@@ -19,7 +19,6 @@ import { SnapModeField } from "../statusfields/SnapMode";
 import { SelectionInfoField } from "../statusfields/SelectionInfo";
 import { TileLoadingIndicator } from "../statusfields/tileloading/TileLoadingIndicator";
 import { SelectionScopeField } from "../statusfields/SelectionScope";
-import { FooterModeField } from "../statusfields/FooterModeField";
 
 /** Defines what tools to include
  * @beta

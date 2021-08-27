@@ -116,6 +116,31 @@ export class AppUi {
     ConfigurableUiManager.addFrontstageProvider(new Frontstage3());
     ConfigurableUiManager.addFrontstageProvider(new Frontstage4());
     ConfigurableUiManager.addFrontstageProvider(new FrontstageUi2());
+    /* TODO
+    ConfigurableUiManager.addFrontstage(
+      {
+        id: "Ui2",
+        showStatusBar: true,
+        usage: StageUsage.General,
+        defaultLayout="SingleContent"
+        contentGroup={myContentGroup}
+        defaultContentId="singleIModelView"
+        applicationData:{
+          contentToolGroupsProps: {
+            vertical: {
+              selectElementGroupPriority: 100,
+              measureGroupPriority: 200,
+              selectionGroupPriority: 300,
+            },
+            horizontal: {
+              clearSelectionGroupPriority: 100,
+              overridesGroupPriority: 200,
+            },
+          },
+        }
+      }
+      );
+    */
     ConfigurableUiManager.addFrontstageProvider(new IModelIndexFrontstage());
     ConfigurableUiManager.addFrontstageProvider(new IModelOpenFrontstage());
     ConfigurableUiManager.addFrontstageProvider(new SignInFrontstage());

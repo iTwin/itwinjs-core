@@ -4,12 +4,12 @@
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
 import {
-  BackstageAppButton, ContentGroup, ContentToolWidgetComposer,
+  ContentGroup, ContentToolWidgetComposer,
   CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
-  IModelViewportControl, StagePanel, StagePanelState, StatusBarWidgetComposerControl, SyncUiEventArgs, SyncUiEventDispatcher,
-  ToolbarHelper, UiFramework, ViewToolWidgetComposer, Widget, Zone,
+  IModelViewportControl, StagePanel, StagePanelState, SyncUiEventArgs, SyncUiEventDispatcher,
+  UiFramework, ViewToolWidgetComposer, Widget, Zone,
 } from "@bentley/ui-framework";
-import { AbstractStatusBarItemUtilities, CommonToolbarItem, StageUsage, StatusBarSection } from "@bentley/ui-abstract";
+import { StageUsage } from "@bentley/ui-abstract";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
@@ -85,22 +85,22 @@ export class FrontstageUi2 extends FrontstageProvider {
         defaultContentId="singleIModelView"
         isInFooterMode={true}
         usage={StageUsage.General}
-        applicationData={
-          {
-            verticalContentToolGroups: {
+        applicationData={{
+          contentToolGroupsProps: {
+            vertical: {
               selectElementGroupPriority: 100,
               measureGroupPriority: 200,
               selectionGroupPriority: 300,
             },
-            horizontalContentToolGroups: {
+            horizontal: {
               clearSelectionGroupPriority: 100,
               overridesGroupPriority: 200,
             },
-          }
-        }
+          },
+        }}
 
         contentManipulationTools={
-          <Zone
+          < Zone
             widgets={
               [
                 <Widget isFreeform={true}
@@ -110,7 +110,7 @@ export class FrontstageUi2 extends FrontstageProvider {
           />
         }
         viewNavigationTools={
-          <Zone
+          < Zone
             widgets={
               [
                 <Widget isFreeform={true} element={<ViewToolWidgetComposer hideNavigationAid />} />,
@@ -118,21 +118,20 @@ export class FrontstageUi2 extends FrontstageProvider {
           />
         }
         toolSettings={
-          <Zone
+          < Zone
             widgets={
               [
                 <Widget isToolSettings={true} />,
               ]}
           />
         }
-        statusBar={
-          <Zone
+        statusBar={ /* if stage does not need statusBar then do not include this entry */
+          < Zone
             widgets={
               [
                 <Widget isStatusBar={true} />, // <Widget isStatusBar={true} control={StatusBarWidgetComposerControl} />,
               ]}
           />
-
         }
 
         leftPanel={

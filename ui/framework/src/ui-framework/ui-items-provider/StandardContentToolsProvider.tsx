@@ -6,20 +6,46 @@
  * @module UiItemsProvider
  */
 
-import { CommonToolbarItem, StageUsage, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
+import * as React from "react";
+import { CommonStatusBarItem, CommonToolbarItem, StageUsage, StatusBarSection, ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
 import { SelectionContextToolDefinitions } from "../selection/SelectionContextItemDef";
+import { StatusBarItemUtilities } from "../statusbar/StatusBarItemUtilities";
+import { withStatusFieldProps } from "../statusbar/withStatusFieldProps";
+import { SectionsStatusField } from "../statusfields/SectionsField";
 import { ToolbarHelper } from "../toolbar/ToolbarHelper";
 import { CoreTools } from "../tools/CoreToolDefinitions";
 
-/** Defines what tools to include
+/**
+ * Defines options that may be set in frontstage app data to control what group priorities
+ * to use for each tool button that can be added by this extension.
+ * @beta
+ */
+export interface DefaultContentToolsAppData {
+  contentToolGroupsProps?: {
+    vertical?: {
+      selectElementGroupPriority?: number;
+      measureGroupPriority?: number;
+      selectionGroupPriority?: number;
+    };
+    horizontal?: {
+      clearSelectionGroupPriority?: number;
+      overridesGroupPriority?: number;
+    };
+  };
+}
+
+/** Defines what tools to include.
  * @beta
  */
 export interface DefaultContentTools {
   horizontal?: {
     clearSelection?: boolean;
     clearDisplayOverrides?: boolean;
+    /** if group then group button is shown to allow user to hide by element, category, model */
     hide?: "group" | "element";
+    /** if group then group button is shown to allow user to isolate by element, category, model */
     isolate?: "group" | "element";
+    /** only element is currently support for emphasize */
     emphasize?: "element";
   };
   vertical?: {
@@ -68,8 +94,8 @@ export class StandardContentToolsProvider implements UiItemsProvider {
     }
 
     if (provideToStage && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
-      const clearSelectionGroupPriority = getGroupPriority(stageAppData?.horizontalContentToolGroups?.clearSelectionGroupPriority, 10);
-      const overridesGroupPriority = getGroupPriority(stageAppData?.horizontalContentToolGroups?.overridesGroupPriority, 20);
+      const clearSelectionGroupPriority = getGroupPriority(stageAppData?.contentToolGroupsProps?.horizontal?.clearSelectionGroupPriority, 10);
+      const overridesGroupPriority = getGroupPriority(stageAppData?.contentToolGroupsProps?.horizontal?.overridesGroupPriority, 20);
 
       if (!this.defaultContextTools || !this.defaultContextTools?.horizontal || this.defaultContextTools?.horizontal?.clearSelection)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.clearSelectionItemDef, { groupPriority: clearSelectionGroupPriority }));
@@ -96,9 +122,9 @@ export class StandardContentToolsProvider implements UiItemsProvider {
       }
 
     } else if (provideToStage && toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Vertical) {
-      const selectElementGroupPriority = getGroupPriority(stageAppData?.verticalContentToolGroups?.selectElementGroupPriority, 10);
-      const measureGroupPriority = getGroupPriority(stageAppData?.verticalContentToolGroups?.measureGroupPriority, 10);
-      const selectionGroupPriority = getGroupPriority(stageAppData?.verticalContentToolGroups?.selectionGroupPriority, 10);
+      const selectElementGroupPriority = getGroupPriority(stageAppData?.contentToolGroupsProps?.vertical?.selectElementGroupPriority, 10);
+      const measureGroupPriority = getGroupPriority(stageAppData?.contentToolGroupsProps?.vertical?.measureGroupPriority, 10);
+      const selectionGroupPriority = getGroupPriority(stageAppData?.contentToolGroupsProps?.vertical?.selectionGroupPriority, 10);
 
       if (!this.defaultContextTools || !this.defaultContextTools?.vertical || this.defaultContextTools?.vertical?.selectElement)
         items.push(ToolbarHelper.createToolbarItemFromItemDef(10, CoreTools.selectElementCommand, { groupPriority: selectElementGroupPriority }));
@@ -111,4 +137,26 @@ export class StandardContentToolsProvider implements UiItemsProvider {
     }
     return items;
   }
+
+  public provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[] {
+    const statusBarItems: CommonStatusBarItem[] = [];
+    let provideToStage = false;
+
+    if (this.isSupportedStage) {
+      provideToStage = this.isSupportedStage(stageId, stageUsage, stageAppData);
+    } else {
+      provideToStage = (stageUsage === StageUsage.General);
+    }
+
+    if (provideToStage) {
+      // if the sectionGroup tools are to be shown then we want the status field added to allow clearing or manipulation the section
+      if (!this.defaultContextTools || !this.defaultContextTools?.vertical || this.defaultContextTools?.vertical?.sectionGroup) {
+        const Sections = withStatusFieldProps(SectionsStatusField);
+        statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("uifw.Sections", StatusBarSection.Center, 20, <Sections />));
+      }
+    }
+
+    return statusBarItems;
+  }
+
 }
