@@ -14,8 +14,8 @@ import {
 } from "@bentley/bentleyjs-core";
 import { IModelHubError } from "@bentley/imodelhub-client";
 import {
-  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, ChangesetFileProps, ChangesetIndexOrId, ChangesetProps, ChangesetType, CreateIModelProps,
-  IModelError, IModelRpcOpenProps, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
+  BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, ChangesetFileProps, ChangesetIndexOrId, ChangesetProps, ChangesetType,
+  IModelError, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
@@ -557,28 +557,19 @@ export class BriefcaseManager {
     }
   }
 
-  /** Create an iModel on iModelHub
-   * @deprecated use IModelHost.hubAccess.createIModel
-   */
-  // public static async create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString> {
-  //   return IModelHost.hubAccess.createIModel({ requestContext, contextId, iModelName, description: args.rootSubject.description });
-  // }
-
   /** @internal */
-  public static logUsage(requestContext: ClientRequestContext, token: IModelRpcOpenProps) {
+  public static logUsage(requestContext: ClientRequestContext, imodel: IModelDb) {
     // NEEDS_WORK: Move usage logging to the native layer, and make it happen even if not authorized
-    if (!(requestContext instanceof AuthorizedClientRequestContext)) {
-      Logger.logTrace(loggerCategory, "Cannot log usage without appropriate authorization", () => token);
+    if (!(requestContext instanceof AuthorizedClientRequestContext))
       return;
-    }
 
     requestContext.enter();
     const telemetryEvent = new TelemetryEvent(
       "imodeljs-backend - Open iModel",
       "7a6424d1-2114-4e89-b13b-43670a38ccd4", // Feature: "iModel Use"
-      token.contextId,
-      token.iModelId,
-      token.changeset?.id,
+      imodel.contextId,
+      imodel.iModelId,
+      imodel.changeset?.id,
     );
     IModelHost.telemetry.postTelemetry(requestContext, telemetryEvent); // eslint-disable-line @typescript-eslint/no-floating-promises
   }

@@ -13,11 +13,11 @@ import {
 import { Range3d } from "@bentley/geometry-core";
 import { ChangesType } from "@bentley/imodelhub-client";
 import {
-  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, ChangesetIndexAndId, Code, CodeSpec,
+  AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code, CodeSpec,
   CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation,
   ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData,
   EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
-  GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelProps, IModelRpcProps,
+  GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelProps,
   IModelTileTreeProps, IModelVersion, LocalBriefcaseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
   ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
   SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions,
@@ -82,6 +82,7 @@ export interface ComputedProjectExtents {
 }
 
 export interface LockControl {
+  /** true if the LockControl uses a server-based concurrency approach. */
   readonly isServerBased: boolean;
   /** Close the local lock control database */
   close(): void;
@@ -111,6 +112,7 @@ export interface LockControl {
   releaseAllLocks(): Promise<void>;
 }
 
+/** a LockControl that does not attempt to limit access between briefcases. This relies on change-merging to resolve conflicts. */
 class NoLocks implements LockControl {
   public get isServerBased() { return false; }
   public close(): void { }
@@ -200,9 +202,9 @@ export abstract class IModelDb extends IModel {
   public get pathName(): string { return this.nativeDb.getFilePath(); }
 
   /** @internal */
-  protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps) {
-    super(iModelToken);
-    this._nativeDb = nativeDb;
+  protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
+    super({ ...args, contextId: args.nativeDb.queryProjectGuid(), iModelId: args.nativeDb.getDbGuid() });
+    this._nativeDb = args.nativeDb;
     this.nativeDb.setIModelDb(this);
     this.initializeIModelDb();
     IModelDb._openDbs.set(this._fileKey, this);
@@ -2205,10 +2207,10 @@ export class BriefcaseDb extends IModelDb {
     return (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
   }
 
-  protected constructor(nativeDb: IModelJsNative.DgnDb, token: IModelRpcProps, openMode: OpenMode) {
-    super(nativeDb, token);
-    this._openMode = openMode;
-    this.briefcaseId = this.nativeDb.getBriefcaseId();
+  protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
+    super({ ...args, changeset: args.nativeDb.getParentChangeset() });
+    this._openMode = args.openMode;
+    this.briefcaseId = args.briefcaseId;
 
     if (this.useServerLocks)
       this._locks = new ServerBasedLocks(this);
@@ -2286,17 +2288,9 @@ export class BriefcaseDb extends IModelDb {
     const file = { path: args.fileName, key: args.key };
     const openMode = args.readonly ? OpenMode.Readonly : OpenMode.ReadWrite;
     const nativeDb = this.openDgnDb(file, openMode);
-    const changeset = nativeDb.getParentChangeset();
-    const token: IModelRpcProps = {
-      key: file.key ?? Guid.createValue(),
-      iModelId: nativeDb.getDbGuid(),
-      contextId: nativeDb.queryProjectGuid(),
-      changeset,
-    };
+    const briefcaseDb = new BriefcaseDb({ nativeDb, key: file.key ?? Guid.createValue(), openMode, briefcaseId: nativeDb.getBriefcaseId() });
 
-    const briefcaseDb = new BriefcaseDb(nativeDb, token, openMode);
-
-    BriefcaseManager.logUsage(requestContext, token);
+    BriefcaseManager.logUsage(requestContext, briefcaseDb);
     this.onOpened.raiseEvent(requestContext, briefcaseDb);
     return briefcaseDb;
   }
@@ -2393,9 +2387,7 @@ export class SnapshotDb extends IModelDb {
   private _createClassViewsOnClose?: boolean;
 
   private constructor(nativeDb: IModelJsNative.DgnDb, key: string) {
-    const changeset = nativeDb.getParentChangeset();
-    const iModelRpcProps: IModelRpcProps = { key, iModelId: nativeDb.getDbGuid(), changeset };
-    super(nativeDb, iModelRpcProps);
+    super({ nativeDb, key, changeset: nativeDb.getParentChangeset() });
     this._openMode = nativeDb.isReadonly() ? OpenMode.Readonly : OpenMode.ReadWrite;
   }
 
@@ -2523,11 +2515,10 @@ export class SnapshotDb extends IModelDb {
   }
 
   /** Used to refresh the checkpoint daemon's access to this checkpoint's storage container if it's nearly expired.
-   * @param requestContext The client request context.
    * @throws [[IModelError]] If the db is not a checkpoint.
    * @internal
    */
-  public override async reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void> {
+  public override async reattachDaemon(requestContext?: AuthorizedClientRequestContext): Promise<void> {
     if (undefined !== this._reattachDueTimestamp && this._reattachDueTimestamp <= Date.now()) {
       const { expiryTimestamp } = await V2CheckpointManager.attach({ requestContext, contextId: this.contextId!, iModelId: this.iModelId, changeset: this.changeset });
       this.setReattachDueTimestamp(expiryTimestamp);
@@ -2573,7 +2564,7 @@ export class SnapshotDb extends IModelDb {
  */
 export class StandaloneDb extends BriefcaseDb {
   public override get isStandalone(): boolean { return true; }
-
+  protected override get useServerLocks() { return false; }
   public static override findByKey(key: string): StandaloneDb {
     return super.findByKey(key) as StandaloneDb;
   }
@@ -2594,7 +2585,7 @@ export class StandaloneDb extends BriefcaseDb {
     nativeDb.saveProjectGuid(Guid.empty);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();
-    return new StandaloneDb(nativeDb, { key: Guid.createValue(), iModelId: nativeDb.getDbGuid(), contextId: Guid.empty }, OpenMode.ReadWrite);
+    return new StandaloneDb({ nativeDb, key: Guid.createValue(), briefcaseId: BriefcaseIdValue.Unassigned, openMode: OpenMode.ReadWrite });
   }
 
   /**
@@ -2624,16 +2615,15 @@ export class StandaloneDb extends BriefcaseDb {
     const nativeDb = this.openDgnDb(file, openMode);
 
     try {
-      const iModelId = nativeDb.getDbGuid();
       const contextId = nativeDb.queryProjectGuid();
       const briefcaseId = nativeDb.getBriefcaseId();
-      if (contextId !== Guid.empty || briefcaseId !== BriefcaseIdValue.Unassigned)
+      if (contextId !== Guid.empty || !(briefcaseId === BriefcaseIdValue.Unassigned || briefcaseId === BriefcaseIdValue.DeprecatedStandalone))// eslint-disable-line deprecation/deprecation
         throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. contextId=${contextId}, briefcaseId=${briefcaseId}`);
 
       if (openMode === OpenMode.ReadWrite && (undefined === nativeDb.queryLocalValue(BriefcaseLocalValue.StandaloneEdit)))
         throw new IModelError(IModelStatus.ReadOnly, `${filePath} is not editable`);
 
-      return new StandaloneDb(nativeDb, { iModelId, contextId, key: file.key! }, openMode);
+      return new StandaloneDb({ nativeDb, key: file.key!, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
     } catch (error) {
       nativeDb.closeIModel();
       throw error;
