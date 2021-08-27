@@ -69,7 +69,7 @@ describe("FloatingWidget", () => {
   it("should dispatch FLOATING_WIDGET_RESIZE", () => {
     const dispatch = sinon.stub<NineZoneDispatch>();
     let nineZone = createNineZoneState();
-    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true });
+    nineZone = addFloatingWidget(nineZone, "w1", ["t1"], undefined, { minimized: true, isFloatingStateWindowResizable: true });
     nineZone = addTab(nineZone, "t1");
     const { container } = render(
       <NineZoneProvider
@@ -92,6 +92,26 @@ describe("FloatingWidget", () => {
       type: "FLOATING_WIDGET_RESIZE",
       id: "w1",
     })).should.true;
+  });
+
+  it("tool settings should NOT have resize handles", () => {
+    const dispatch = sinon.stub<NineZoneDispatch>();
+    let nineZone = createNineZoneState();
+    nineZone = addFloatingWidget(nineZone, "toolSettings", ["nz-tool-settings-tab"], undefined, { minimized: true, isFloatingStateWindowResizable: false });
+    nineZone = addTab(nineZone, "nz-tool-settings-tab");
+    const { container } = render(
+      <NineZoneProvider
+        state={nineZone}
+        dispatch={dispatch}
+      >
+        <FloatingWidget
+          floatingWidget={nineZone.floatingWidgets.byId.toolSettings!}
+          widget={nineZone.widgets.toolSettings}
+        />
+      </NineZoneProvider>,
+    );
+    const handleList = container.getElementsByClassName("nz-widget-floatingWidget_handle");
+    handleList.length.should.eq(0);
   });
 });
 

@@ -8,12 +8,11 @@ import { mount, shallow } from "enzyme";
 import { fireEvent, render } from "@testing-library/react";
 import * as React from "react";
 import sinon from "sinon";
-import { PrimitiveValue, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
+import { PrimitiveValue, SpecialKey } from "@bentley/ui-abstract";
 import { BooleanEditor } from "../../ui-components/editors/BooleanEditor";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import TestUtils from "../TestUtils";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import TestUtils, { MineDataController } from "../TestUtils";
+import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 
 describe("<BooleanEditor />", () => {
   it("should render", () => {
@@ -103,12 +102,6 @@ describe("<BooleanEditor />", () => {
 
     wrapper.unmount();
   });
-
-  class MineDataController extends DataControllerBase {
-    public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
-    }
-  }
 
   it("should not commit if DataController fails to validate", async () => {
     PropertyEditorManager.registerDataController("myData", MineDataController);

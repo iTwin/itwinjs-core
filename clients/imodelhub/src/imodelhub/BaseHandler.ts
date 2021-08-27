@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { assert, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
+import { assert, ClientRequestContext } from "@bentley/bentleyjs-core";
 import {
   AuthorizedClientRequestContext, ChunkedQueryContext, DefaultWsgRequestOptionsProvider, FileHandler, HttpRequestOptions, RequestGlobalOptions, RequestOptions,
   RequestQueryOptions, WsgClient, WsgInstance, WsgRequestOptions,
@@ -70,7 +70,6 @@ export function addCsrfHeader(headerName: string = "X-XSRF-TOKEN", cookieName: s
 export class IModelBaseHandler extends WsgClient {
   protected override _url?: string;
   private _defaultIModelHubOptionsProvider: DefaultIModelHubRequestOptionsProvider;
-  public static readonly configRelyingPartyUri = "imjs_imodelhub_relying_party_uri";
   protected _agent: any;
   protected _fileHandler: FileHandler | undefined;
   private _customRequestOptions: CustomRequestOptions = new CustomRequestOptions();
@@ -142,23 +141,6 @@ export class IModelBaseHandler extends WsgClient {
    */
   public use(func: HttpRequestOptionsTransformer) {
     this._httpRequestOptionsTransformers.push(func);
-  }
-
-  /**
-   * Gets theRelyingPartyUrl for the service.
-   * @returns RelyingPartyUrl for the service.
-   * @internal
-   */
-  protected getRelyingPartyUrl(): string {
-    if (Config.App.has(IModelBaseHandler.configRelyingPartyUri))
-      return `${Config.App.get(IModelBaseHandler.configRelyingPartyUri)}/`;
-
-    if (Config.App.getBoolean(WsgClient.configUseHostRelyingPartyUriAsFallback, true)) {
-      if (Config.App.has(WsgClient.configHostRelyingPartyUri))
-        return `${Config.App.get(WsgClient.configHostRelyingPartyUri)}/`;
-    }
-
-    throw new Error(`RelyingPartyUrl not set. Set it in Config.App using key ${IModelBaseHandler.configRelyingPartyUri}`);
   }
 
   /**

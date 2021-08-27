@@ -342,6 +342,12 @@
       "tooltip": "Display Style",
       "label": "Display"
     },
+    "pullMergePushFailed": "Pull or push failed.",
+    "pullMergeFailed": "Failed to pull changes from server",
+    "pushButtonTitle": "Push",
+    "pushButtonDisabledTitle": "No local changes to push",
+    "pullButtonTitle": "Pull",
+    "pullButtonDisabledTitle": "No server changes to pull",
     "sampleField": "Sample StatusBar Field",
     "sampleButton": "Sample Button",
     "unnamedDisplayStyle": "unnamed"

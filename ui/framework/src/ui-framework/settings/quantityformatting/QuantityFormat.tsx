@@ -14,7 +14,7 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { FormatProps, FormatterSpec } from "@bentley/imodeljs-quantity";
 import { DialogButtonType } from "@bentley/ui-abstract";
-import { FormatSample, QuantityFormatPanel } from "@bentley/ui-components";
+import { FormatSample, QuantityFormatPanel } from "@bentley/ui-imodel-components";
 import {
   Dialog, Listbox, ListboxItem, SettingsTabEntry,
   useSaveBeforeActivatingNewSettingsTab, useSaveBeforeClosingSettingsContainer,

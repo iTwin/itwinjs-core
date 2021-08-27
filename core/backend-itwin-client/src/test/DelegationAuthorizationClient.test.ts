@@ -5,12 +5,27 @@
 
 import * as chai from "chai";
 import * as path from "path";
-import { ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
-import { AccessToken, SamlAccessToken } from "@bentley/itwin-client";
+import { ClientRequestContext } from "@bentley/bentleyjs-core";
+import { AccessToken } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { DelegationAuthorizationClient, DelegationAuthorizationClientConfiguration } from "../oidc/DelegationAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
+import * as fs from "fs";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 
@@ -25,9 +40,14 @@ describe("DelegationAuthorizationClient (#integration)", () => {
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
 
+    if (process.env.IMJS_AGENT_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_ID");
+    if (process.env.IMJS_AGENT_TEST_CLIENT_SECRET === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_SECRET");
+
     const agentConfiguration: AgentAuthorizationClientConfiguration = {
-      clientId: Config.App.getString("imjs_agent_test_client_id"),
-      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
+      clientId: process.env.IMJS_AGENT_TEST_CLIENT_ID ?? "",
+      clientSecret: process.env.IMJS_AGENT_TEST_CLIENT_SECRET ?? "",
       scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
     };
 
@@ -35,26 +55,15 @@ describe("DelegationAuthorizationClient (#integration)", () => {
     jwt = await agentClient.getAccessToken(requestContext);
   });
 
-  it("should get valid SAML delegation tokens", async () => {
-
-    const delegationConfiguration: DelegationAuthorizationClientConfiguration = {
-      clientId: Config.App.getString("imjs_delegation_test_client_id"),
-      clientSecret: Config.App.getString("imjs_delegation_test_client_secret"),
-      scope: Config.App.getString("imjs_default_relying_party_uri"),
-    };
-
-    const delegationClient = new DelegationAuthorizationClient(delegationConfiguration);
-    const saml: SamlAccessToken = await delegationClient.getSamlFromJwt(requestContext, jwt); // eslint-disable-line deprecation/deprecation
-    const str = saml.toTokenString();
-    chai.assert.isTrue(str.length > 10);
-    // Note: No SAML support for existing clients anymore. Testing any further requires a new client that
-    // only works with SAML.
-  });
-
   it("should get valid OIDC delegation tokens", async () => {
+    if (process.env.IMJS_DELEGATION_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_DELEGATION_TEST_CLIENT_ID");
+    if (process.env.IMJS_DELEGATION_TEST_CLIENT_SECRET === undefined)
+      throw new Error("Could not find IMJS_DELEGATION_TEST_CLIENT_SECRET");
+
     const delegationConfiguration: DelegationAuthorizationClientConfiguration = {
-      clientId: Config.App.getString("imjs_delegation_test_client_id"),
-      clientSecret: Config.App.getString("imjs_delegation_test_client_secret"),
+      clientId:process.env.IMJS_DELEGATION_TEST_CLIENT_ID ?? "",
+      clientSecret: process.env.IMJS_DELEGATION_TEST_CLIENT_SECRET ?? "",
       scope: "context-registry-service imodelhub rbac-service",
     };
 

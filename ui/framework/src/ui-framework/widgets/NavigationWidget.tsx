@@ -9,7 +9,7 @@
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiError } from "@bentley/ui-abstract";
-import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
+import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-imodel-components";
 import { CommonProps } from "@bentley/ui-core";
 import { Direction, Tools as NZ_ToolsWidget, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";
@@ -51,12 +51,6 @@ export class NavigationWidgetDef extends ToolbarWidgetDefBase {
       this._reactNode = <NavigationWidgetWithDef navigationWidgetDef={this} />;
 
     return this._reactNode;
-  }
-
-  /** @deprecated use reactNode */
-  // istanbul ignore next
-  public override get reactElement(): React.ReactNode {
-    return this.reactNode;
   }
 
   public renderCornerItem(): React.ReactNode {

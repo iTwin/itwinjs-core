@@ -467,5 +467,49 @@ describe("float and dock widget", () => {
     nineZoneStateSetter.calledOnce.should.true;
   });
 
+  it("set floating widget bounds", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addFloatingWidget(state, "fw1", ["t1"]);
+    state = addTab(state, "t1");
+
+    const frontstageDef = new FrontstageDef();
+    const nineZoneStateSetter = sinon.spy();
+
+    sinon.stub(UiFramework, "uiVersion").get(() => "2");
+    sinon.stub(frontstageDef, "nineZoneState").get(() => state).set(nineZoneStateSetter);
+    expect(frontstageDef.setFloatingWidgetContainerBounds("fw1", { top: 55, left: 105, bottom: 155, right: 255 })).to.be.true;
+    expect(frontstageDef.setFloatingWidgetContainerBounds("bad", { top: 55, left: 105, bottom: 155, right: 255 })).to.be.false;
+    frontstageDef.setFloatingWidgetBoundsInternal("fw1", { top: 55, left: 105, bottom: 155, right: 255 }, true); // should not trigger setter
+    nineZoneStateSetter.calledOnce.should.true;
+  });
+
+  it("get floating containers 1 available", () => {
+    let state = createNineZoneState({ size: { height: 1000, width: 1600 } });
+    state = addFloatingWidget(state, "fw1", ["t1"], { bounds: { top: 55, left: 105, bottom: 155, right: 255 } });
+    state = addTab(state, "t1");
+    const frontstageDef = new FrontstageDef();
+    sinon.stub(UiFramework, "uiVersion").get(() => "2");
+    sinon.stub(frontstageDef, "nineZoneState").get(() => state);
+    expect(frontstageDef.getFloatingWidgetContainerIds().length).to.eql(1);
+    expect(frontstageDef.getFloatingWidgetContainerIdByWidgetId("t1")).to.eql("fw1");
+    expect(frontstageDef.getFloatingWidgetContainerBounds("fw1")).to.eql({
+      left: 105,
+      top: 55,
+      bottom: 155,
+      right: 255,
+    });
+
+  });
+
+  it("get floating containers 0 available", () => {
+    const frontstageDef = new FrontstageDef();
+    sinon.stub(UiFramework, "uiVersion").get(() => "2");
+    sinon.stub(frontstageDef, "nineZoneState").get(() => undefined);
+    expect(frontstageDef.getFloatingWidgetContainerIds().length).to.eql(0);
+    expect(frontstageDef.getFloatingWidgetContainerIdByWidgetId("t1")).to.be.undefined;
+    expect(frontstageDef.getFloatingWidgetContainerBounds("t1")).to.be.undefined;
+    expect(frontstageDef.getFloatingWidgetContainerBounds(undefined)).to.be.undefined;
+  });
+
 });
 

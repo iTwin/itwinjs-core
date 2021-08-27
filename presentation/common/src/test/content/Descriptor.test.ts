@@ -4,13 +4,24 @@
 *--------------------------------------------------------------------------------------------*/
 import { expect } from "chai";
 import * as faker from "faker";
-import { Descriptor, Field, NestedContentField, PropertyValueFormat, StructTypeDescription } from "../../presentation-common";
-import { CompressedDescriptorJSON, DescriptorJSON, DescriptorSource, SortDirection } from "../../presentation-common/content/Descriptor";
-import { FieldDescriptorType, FieldJSON, NestedContentFieldJSON, PropertiesFieldJSON } from "../../presentation-common/content/Fields";
-import { RelatedClassInfoJSON } from "../../presentation-common/EC";
+import { Id64String } from "@bentley/bentleyjs-core";
+import {
+  CompressedDescriptorJSON, Descriptor, DescriptorJSON, DescriptorSource, SelectClassInfo, SelectClassInfoJSON, SortDirection,
+} from "../../presentation-common/content/Descriptor";
+import {
+  Field, FieldDescriptorType, FieldJSON, NestedContentField, NestedContentFieldJSON, PropertiesFieldJSON,
+} from "../../presentation-common/content/Fields";
+import { PropertyValueFormat, StructTypeDescription } from "../../presentation-common/content/TypeDescription";
+import { ClassInfo, RelatedClassInfo, RelatedClassInfoJSON } from "../../presentation-common/EC";
+import {
+  createTestCategoryDescription, createTestContentDescriptor, createTestNestedContentField, createTestPropertiesContentField,
+  createTestSelectClassInfo, createTestSimpleContentField,
+} from "../_helpers/Content";
+import { createTestECClassInfo, createTestPropertyInfo, createTestRelatedClassInfo, createTestRelationshipPath } from "../_helpers/EC";
 import {
   createRandomCategory, createRandomCategoryJSON, createRandomDescriptor, createRandomDescriptorJSON, createRandomECClassInfo,
-  createRandomNestedFieldJSON, createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomPrimitiveTypeDescription, createRandomPropertiesFieldJSON, createRandomRelationshipPath,
+  createRandomNestedFieldJSON, createRandomPrimitiveField, createRandomPrimitiveFieldJSON, createRandomPrimitiveTypeDescription,
+  createRandomRelationshipPath,
 } from "../_helpers/random";
 
 describe("Descriptor", () => {
@@ -150,23 +161,6 @@ describe("Descriptor", () => {
       expect(descriptorFromCompressedJSON).to.matchSnapshot();
     });
 
-    it("creates valid CompressedDescriptorJSON", () => {
-      testDescriptorJSON = createRandomDescriptorJSON();
-      testDescriptorJSON.categories!.push(createRandomCategoryJSON());
-      testDescriptorJSON.fields.push(createRandomPropertiesFieldJSON(testDescriptorJSON.categories![1], 2), createRandomNestedFieldJSON(testDescriptorJSON.categories![1]));
-
-      Object.assign(testDescriptorJSON, {
-        sortDirection: SortDirection.Ascending,
-        filterExpression: "testFilterExpression",
-        selectionInfo: { providerName: "testProviderName", level: 1 },
-        sortingFieldName: testDescriptorJSON.fields[0].name,
-      });
-
-      const descriptor = Descriptor.fromJSON(JSON.stringify(testDescriptorJSON))!;
-      const compressedDescriptorJSON = descriptor.toCompressedJSON();
-      expect(compressedDescriptorJSON).to.matchSnapshot();
-    });
-
     it("skips fields that fail to deserialize", () => {
       testDescriptorJSON.fields = [createRandomPrimitiveFieldJSON(testDescriptorJSON.categories![0]), undefined as any];
       const descriptor = Descriptor.fromJSON(testDescriptorJSON);
@@ -176,6 +170,40 @@ describe("Descriptor", () => {
     it("returns undefined for undefined JSON", () => {
       const descriptor = Descriptor.fromJSON(undefined);
       expect(descriptor).to.be.undefined;
+    });
+
+  });
+
+  describe("toCompressedJSON", () => {
+
+    it("creates valid CompressedDescriptorJSON", () => {
+      const category = createTestCategoryDescription();
+      const fields = [
+        createTestSimpleContentField(),
+        createTestPropertiesContentField({
+          category,
+          properties: [{ property: createTestPropertyInfo(), relatedClassPath: [createTestRelatedClassInfo()] }],
+        }),
+        createTestNestedContentField({
+          category,
+          nestedFields: [createTestSimpleContentField()],
+        }),
+      ];
+      const descriptor = createTestContentDescriptor({
+        selectClasses: [createTestSelectClassInfo({
+          pathToPrimaryClass: [createTestRelatedClassInfo()],
+          navigationPropertyClasses: [createTestRelatedClassInfo()],
+          relatedInstanceClasses: [createTestRelatedClassInfo()],
+          relatedPropertyPaths: [[createTestRelatedClassInfo()]],
+        })],
+        categories: [category],
+        fields,
+        filterExpression: "testFilterExpression",
+        selectionInfo: { providerName: "testProviderName", level: 1 },
+        sortingField: fields[0],
+        sortDirection: SortDirection.Ascending,
+      });
+      expect(descriptor.toCompressedJSON()).to.matchSnapshot();
     });
 
   });
@@ -316,6 +344,188 @@ describe("Descriptor", () => {
         },
       });
     });
+
+  });
+
+});
+
+describe("SelectClassInfo", () => {
+
+  const testSelectClassInfo = {
+    selectClassInfo: createTestECClassInfo({ id: "0x123" }),
+    isSelectPolymorphic: true,
+    pathToPrimaryClass: [],
+    navigationPropertyClasses: [],
+    relatedInstanceClasses: [],
+    relatedPropertyPaths: [],
+  };
+
+  describe("fromJSON", () => {
+
+    it("doesn't create unnecessary members", () => {
+      const json: SelectClassInfoJSON = {
+        ...testSelectClassInfo,
+        selectClassInfo: ClassInfo.toJSON(testSelectClassInfo.selectClassInfo),
+      };
+      const result = SelectClassInfo.fromJSON(json);
+      expect(result).to.not.haveOwnProperty("pathFromInputToSelectClass");
+      expect(result).to.not.haveOwnProperty("relatedInstancePaths");
+    });
+
+    it("parses `pathFromInputToSelectClass`", () => {
+      const pathFromInputToSelectClass = createTestRelationshipPath(2);
+      const json: SelectClassInfoJSON = {
+        ...testSelectClassInfo,
+        selectClassInfo: ClassInfo.toJSON(testSelectClassInfo.selectClassInfo),
+        pathFromInputToSelectClass: pathFromInputToSelectClass.map(RelatedClassInfo.toJSON),
+      };
+      expect(SelectClassInfo.fromJSON(json)).to.deep.eq({
+        ...testSelectClassInfo,
+        pathFromInputToSelectClass,
+      });
+    });
+
+    it("parses `relatedInstancePaths`", () => {
+      const relatedInstancePaths = [createTestRelationshipPath(2)];
+      const json: SelectClassInfoJSON = {
+        ...testSelectClassInfo,
+        selectClassInfo: ClassInfo.toJSON(testSelectClassInfo.selectClassInfo),
+        relatedInstancePaths: relatedInstancePaths.map((p) => p.map(RelatedClassInfo.toJSON)),
+      };
+      expect(SelectClassInfo.fromJSON(json)).to.deep.eq({
+        ...testSelectClassInfo,
+        relatedInstancePaths,
+      });
+    });
+
+  });
+
+  describe("fromCompressedJSON", () => {
+
+    it("doesn't create unnecessary members", () => {
+      const classesMap = {
+        [testSelectClassInfo.selectClassInfo.id]: {
+          name: testSelectClassInfo.selectClassInfo.name,
+          label: testSelectClassInfo.selectClassInfo.label,
+        },
+      };
+      const json: SelectClassInfoJSON<Id64String> = {
+        ...testSelectClassInfo,
+        selectClassInfo: testSelectClassInfo.selectClassInfo.id,
+      };
+      const result = SelectClassInfo.fromCompressedJSON(json, classesMap);
+      expect(result).to.not.haveOwnProperty("pathFromInputToSelectClass");
+      expect(result).to.not.haveOwnProperty("relatedInstancePaths");
+    });
+
+    it("parses `pathFromInputToSelectClass`", () => {
+      const classesMap = {
+        [testSelectClassInfo.selectClassInfo.id]: {
+          name: testSelectClassInfo.selectClassInfo.name,
+          label: testSelectClassInfo.selectClassInfo.label,
+        },
+      };
+      const pathFromInputToSelectClass = createTestRelationshipPath(1);
+      const json: SelectClassInfoJSON<Id64String> = {
+        ...testSelectClassInfo,
+        selectClassInfo: testSelectClassInfo.selectClassInfo.id,
+        pathFromInputToSelectClass: pathFromInputToSelectClass.map((item) => RelatedClassInfo.toCompressedJSON(item, classesMap)),
+      };
+      expect(SelectClassInfo.fromCompressedJSON(json, classesMap)).to.deep.eq({
+        ...testSelectClassInfo,
+        pathFromInputToSelectClass,
+      });
+    });
+
+    it("parses `relatedInstancePaths`", () => {
+      const classesMap = {
+        [testSelectClassInfo.selectClassInfo.id]: {
+          name: testSelectClassInfo.selectClassInfo.name,
+          label: testSelectClassInfo.selectClassInfo.label,
+        },
+      };
+      const relatedInstancePaths = [createTestRelationshipPath(1)];
+      const json: SelectClassInfoJSON<Id64String> = {
+        ...testSelectClassInfo,
+        selectClassInfo: testSelectClassInfo.selectClassInfo.id,
+        relatedInstancePaths: relatedInstancePaths.map((p) => p.map((i) => RelatedClassInfo.toCompressedJSON(i, classesMap))),
+      };
+      expect(SelectClassInfo.fromCompressedJSON(json, classesMap)).to.deep.eq({
+        ...testSelectClassInfo,
+        relatedInstancePaths,
+      });
+    });
+
+  });
+
+  describe("toCompressedJSON", () => {
+
+    it("doesn't create unnecessary members", () => {
+      const classesMap = {};
+      const info: SelectClassInfo = {
+        ...testSelectClassInfo,
+      };
+      const json = SelectClassInfo.toCompressedJSON(info, classesMap);
+      expect(json).to.not.haveOwnProperty("pathFromInputToSelectClass");
+      expect(json).to.not.haveOwnProperty("relatedInstancePaths");
+    });
+
+    it("serializes `pathFromInputToSelectClass`", () => {
+      const classesMap = {};
+      const pathFromInputToSelectClass = createTestRelationshipPath(1);
+      const info: SelectClassInfo = {
+        ...testSelectClassInfo,
+        pathFromInputToSelectClass,
+      };
+      expect(SelectClassInfo.toCompressedJSON(info, classesMap)).to.deep.eq({
+        ...testSelectClassInfo,
+        selectClassInfo: testSelectClassInfo.selectClassInfo.id,
+        pathFromInputToSelectClass: pathFromInputToSelectClass.map((p) => RelatedClassInfo.toCompressedJSON(p, {})),
+      });
+    });
+
+    it("serializes `relatedInstancePaths`", () => {
+      const classesMap = {};
+      const relatedInstancePaths = [createTestRelationshipPath(1)];
+      const info: SelectClassInfo = {
+        ...testSelectClassInfo,
+        relatedInstancePaths,
+      };
+      expect(SelectClassInfo.toCompressedJSON(info, classesMap)).to.deep.eq({
+        ...testSelectClassInfo,
+        selectClassInfo: testSelectClassInfo.selectClassInfo.id,
+        relatedInstancePaths: relatedInstancePaths.map((p) => p.map((i) => RelatedClassInfo.toCompressedJSON(i, {}))),
+      });
+    });
+
+  });
+
+  describe("listFromCompressedJSON", () => {
+
+    const classesMap = {
+      [testSelectClassInfo.selectClassInfo.id]: {
+        name: testSelectClassInfo.selectClassInfo.name,
+        label: testSelectClassInfo.selectClassInfo.label,
+      },
+    };
+    const compressedSelectClassInfoJson: Array<SelectClassInfoJSON<Id64String>> = [{
+      selectClassInfo: testSelectClassInfo.selectClassInfo.id,
+      isSelectPolymorphic: testSelectClassInfo.isSelectPolymorphic,
+      pathToPrimaryClass: [],
+      navigationPropertyClasses: [],
+      relatedInstanceClasses: [],
+      relatedPropertyPaths: [],
+    }];
+
+    it("creates valid SelectClassInfo[] from compressed JSON", () => {
+      const result = SelectClassInfo.listFromCompressedJSON(compressedSelectClassInfoJson, classesMap);
+      expect(result).to.deep.equal([testSelectClassInfo]);
+    });
+
+    // it("creates valid SelectClassInfo[] from serialized compressed JSON", () => {
+    //   const result = SelectClassInfo.listFromCompressedJSON(JSON.stringify({ selectClassInfos: compressedSelectClassInfoJson, classesMap }));
+    //   expect(result).to.deep.equal([testSelectClassInfo]);
+    // });
 
   });
 

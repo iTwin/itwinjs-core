@@ -8,6 +8,10 @@ Example command line:
 
 `npm start -- --sourceFile=<sourceIModelFileName> --targetFile=<targetIModelFileName>`
 
+The target file must be a `StandaloneDb`, you can use the utility script `test-apps/display-test-app/src/backend/SetToStandalone.ts`
+to turn a snapshot into a `StandaloneDb` for testing purposes.
+You can also perform a transform onto an empty target by specifying `--targetDestination=<path>` instead.
+
 To get usage help run:
 
 `npm start -- --help`
@@ -38,7 +42,7 @@ Here are the steps that can be used:
   - `--logTransformer`
   - `--sourceContextId='<context GUID>'`
   - `--sourceIModelId='<iModel GUID>'`
-  - `--targetFile='<full path to file on local computer>'`
+  - `--targetDestination='<full path to file on local computer>'`
 
 A common strategy is to run with verbose logging on to find the problem element or spot where the problem occurs.
 Once the problem area has been identified, you can employ various strategies to set a conditional breakpoint.

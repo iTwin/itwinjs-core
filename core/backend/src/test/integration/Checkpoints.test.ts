@@ -70,7 +70,7 @@ describe("Checkpoints (#integration)", () => {
       requestContext,
       contextId: testContextId,
       iModelId: testIModelId,
-      changeSetId: testChangeSet.id,
+      changeset: testChangeSet,
     });
     assert.equal(iModel.getGuid(), testIModelId);
     assert.equal(iModel.changeset.id, testChangeSet.id);

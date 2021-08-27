@@ -7,14 +7,12 @@ import * as React from "react";
 import * as sinon from "sinon";
 import { mount } from "enzyme";
 import { BadgeType, ConditionalBooleanValue, SpecialKey } from "@bentley/ui-abstract";
-import { cleanup, render } from "@testing-library/react";
+import { render } from "@testing-library/react";
 import { ContextMenu, ContextMenuDirection, ContextMenuDivider, ContextMenuItem, ContextSubMenu, GlobalContextMenu } from "../../ui-core";
 import { TildeFinder } from "../../ui-core/contextmenu/TildeFinder";
 import TestUtils from "../TestUtils";
 
 describe("ContextMenu", () => {
-
-  afterEach(cleanup);
 
   const createBubbledEvent = (type: string, props = {}) => {
     return TestUtils.createBubbledEvent(type, props);
@@ -627,6 +625,17 @@ describe("ContextMenu", () => {
       const item = component.getByTestId("core-context-submenu-container");
       item.dispatchEvent(createBubbledEvent("click"));
       handleClick.should.have.been.calledOnce;
+    });
+    it("onFocus handled correctly", () => {
+      const component = render(
+        <ContextMenu opened={true}>
+          <ContextSubMenu label="test" >
+            <ContextMenuItem> Test </ContextMenuItem>
+          </ContextSubMenu>
+        </ContextMenu>);
+      const item = component.getByTestId("core-context-menu-item");
+      item.focus();
+      expect(document.activeElement).to.eq(item);
     });
     it("should support changing direction", () => {
       const wrapper = mount<ContextSubMenu>(

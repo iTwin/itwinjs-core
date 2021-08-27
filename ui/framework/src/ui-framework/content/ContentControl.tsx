@@ -88,16 +88,6 @@ export class ContentControl extends ConfigurableUiControl {
 
   public set reactNode(r: React.ReactNode) { this._reactNode = r; }
 
-  /** The React element associated with this control.
-   * @deprecated use `reactNode` instead
-   */
-  // istanbul ignore next
-  public get reactElement(): React.ReactNode {
-    return this.reactNode;
-  }
-  // istanbul ignore next
-  public set reactElement(r: React.ReactNode) { this.reactNode = r; }
-
   /** Get the NavigationAidControl associated with this ContentControl */
   public get navigationAidControl(): string {
     return "";

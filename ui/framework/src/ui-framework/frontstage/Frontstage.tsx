@@ -71,7 +71,7 @@ export interface FrontstageProps extends CommonProps {
    * @deprecated Place widgets in appropriate stage panel zone. */
   centerLeft?: React.ReactElement<ZoneProps>;
   /** The Zone along the center-right edge.
-   * @deprecated  Place widgets in appropriate stage panel zone. */
+   * @deprecated Place widgets in appropriate stage panel zone. */
   centerRight?: React.ReactElement<ZoneProps>;
   /** The Zone in the bottom-left corner.
    * @deprecated Place widgets in appropriate stage panel zone.  */
@@ -407,6 +407,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
       const activeTabIndex = openWidgetId ? zones.widgets[openWidgetId].tabIndex : 0;
       const draggedWidget = runtimeProps.nineZone.zones.draggedWidget;
       const disabledResizeHandles = zonesManager.getDisabledResizeHandles(zoneId, zones);
+      // istanbul ignore next
       const zoneRuntimeProps: ZoneRuntimeProps = {
         activeTabIndex,
         disabledResizeHandles,
@@ -414,7 +415,7 @@ export class Frontstage extends React.Component<FrontstageProps, FrontstageState
         dropTarget,
         getWidgetContentRef: this._getContentRef,
         ghostOutline,
-        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && /* istanbul ignore next */ (this.state.isUiVisible || !UiShowHideManager.showHideFooter)) ?
+        isHidden: (zoneDef.isStatusBar && this.props.isInFooterMode && ( /* istanbul ignore next */ this.state.isUiVisible || /* istanbul ignore next */ !UiShowHideManager.showHideFooter)) ?
           /* istanbul ignore next */ false : !this.state.isUiVisible,
         isInFooterMode: runtimeProps.nineZone.zones.isInFooterMode,
         openWidgetId,

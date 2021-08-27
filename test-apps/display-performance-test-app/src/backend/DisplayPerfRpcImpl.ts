@@ -99,8 +99,8 @@ export default class DisplayPerfRpcImpl extends DisplayPerfRpcInterface {
       }
     } else {
       const rowObject = this.mapToObj(rowData);
-      if (process.env.browser) {
-        rowObject.browser = process.env.browser;
+      if (process.env.BROWSER) {
+        rowObject.browser = process.env.BROWSER;
       }
       const cpuTotalTime = rowObject["CPU Total Time"] as number;
       this._reporter.addEntry("DisplayTests", testName, "CPU Total Time", cpuTotalTime, rowObject);

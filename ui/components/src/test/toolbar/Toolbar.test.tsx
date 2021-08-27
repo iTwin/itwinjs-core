@@ -7,7 +7,7 @@ import { expect } from "chai";
 import React from "react";
 import * as sinon from "sinon";
 import { ActionButton, BadgeType, CommonToolbarItem, SpecialKey, ToolbarItemUtilities } from "@bentley/ui-abstract";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import * as useTargetedModule from "@bentley/ui-core/lib/ui-core/utils/hooks/useTargeted";
 import { CustomToolbarItem, ToolbarOpacitySetting, ToolbarPanelAlignment, ToolbarPanelAlignmentHelpers } from "../../ui-components/toolbar/ToolbarWithOverflow";
 import { Toolbar } from "../../ui-components/toolbar/Toolbar";
@@ -28,7 +28,7 @@ describe("<Toolbar (No Overflow) />", () => {
 
   afterEach(() => {
     sandbox.restore();
-    afterEach(cleanup);
+
   });
 
   describe("<Horizontal Toolbar />", () => {
