@@ -10,7 +10,6 @@ import { GuidString, IModelStatus } from "@bentley/bentleyjs-core";
 import { addCsrfHeader, ChangeSet, ChangeSetQuery, IModelClient, IModelHubClient, VersionQuery } from "@bentley/imodelhub-client";
 import { IModelError, IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
-import { FrontendFeatureUsageTelemetryClient } from "@bentley/usage-logging-client";
 import { IModelApp } from "./IModelApp";
 
 /** @internal */
@@ -44,12 +43,6 @@ export class IModelHubFrontend {
           IModelApp.securityOptions.csrfProtection.cookieName,
         ));
     }
-
-    if (this._imodelClient instanceof IModelHubClient) {
-      const featureUsageClient = new FrontendFeatureUsageTelemetryClient();
-      IModelApp.telemetry.addClient(featureUsageClient);
-    }
-
   }
 
   public static async getLatestChangesetId(arg: IModelIdArg): Promise<ChangeSetId> {

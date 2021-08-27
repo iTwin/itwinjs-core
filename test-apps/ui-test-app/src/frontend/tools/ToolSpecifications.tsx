@@ -6,20 +6,19 @@ import * as React from "react";
 import imperialIconSvg from "@bentley/icons-generic/icons/app-2.svg?sprite";
 import automationIconSvg from "@bentley/icons-generic/icons/automation.svg?sprite";
 import {
-  ActivityMessageDetails,
-  ActivityMessageEndReason,
+  ActivityMessageDetails, ActivityMessageEndReason,
   IModelApp, MessageBoxIconType, MessageBoxType, MessageBoxValue, NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType,
   QuantityType, SelectionTool, SnapMode,
 } from "@bentley/imodeljs-frontend";
 import { PresentationUnitSystem } from "@bentley/presentation-common";
 import { Presentation } from "@bentley/presentation-frontend";
 import {
-  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType, StatusBarSection,
-  UiItemsManager, UiItemsProvider, WidgetState,
+  BackstageItem, BackstageItemUtilities, CommonStatusBarItem, ConditionalBooleanValue, ConditionalStringValue, DialogButtonType,
+  MessageSeverity, StatusBarSection, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
-import { Dialog, MessageSeverity, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
+import { Dialog, ReactMessage, SvgPath, SvgSprite, UnderlinedButton } from "@bentley/ui-core";
 import {
-  Backstage, BaseItemState, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
+  Backstage, CommandItemDef, ContentViewManager, FrontstageManager, MessageManager, ModalDialogManager, ReactNotifyMessageDetails,
   StatusBarItemUtilities, SyncUiEventDispatcher, SyncUiEventId, ToolItemDef, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { FooterSeparator } from "@bentley/ui-ninezone";
@@ -207,18 +206,12 @@ export class AppTools {
       label: () => AnalysisAnimationTool.flyover,
       description: () => AnalysisAnimationTool.description,
       execute: () => { IModelApp.tools.run(AnalysisAnimationTool.toolId); },
-      isVisible: false, // default to not show and then allow stateFunc to redefine.
-      stateSyncIds: [SyncUiEventId.ActiveContentChanged],
-      stateFunc: (currentState: Readonly<BaseItemState>): BaseItemState => {
-        const returnState: BaseItemState = { ...currentState };
+      isHidden: new ConditionalBooleanValue(() => {
         const activeContentControl = ContentViewManager.getActiveContentControl();
-
-        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle))
-          returnState.isVisible = true;
-        else
-          returnState.isVisible = false;
-        return returnState;
-      },
+        if (activeContentControl && activeContentControl.viewport && (undefined !== activeContentControl.viewport.view.analysisStyle || undefined !== activeContentControl.viewport.view.scheduleScript))
+          return false;
+        return true;
+      }, [SyncUiEventId.ActiveContentChanged]),
     });
   }
 

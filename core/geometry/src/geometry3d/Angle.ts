@@ -48,6 +48,13 @@ export class Angle implements BeJSONFunctions {
    */
   public static createRadians(radians: number) { return new Angle(radians); }
   /**
+   * Return a (new) Angle object that is interpolated between two inputs
+   * @param radians angle in radians
+   */
+  public static createInterpolate(angle0: Angle, fraction: number, angle1: Angle) {
+    return new Angle(Geometry.interpolate(angle0.radians, fraction, angle1.radians));
+  }
+  /**
    * Return a (new) Angle object, with angle scaled from existing angle.
    * @param scale scale factor to apply to angle.
    */

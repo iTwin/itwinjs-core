@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/oidc-signin-tool",
+      "comment": "Bumped dotenv and removed deprecated @types/dotenv",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/oidc-signin-tool",
+  "email": "54333460+SpencerWBarnes@users.noreply.github.com"
+}

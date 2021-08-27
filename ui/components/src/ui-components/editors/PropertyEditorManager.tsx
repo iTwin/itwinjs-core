@@ -8,19 +8,16 @@
 
 import * as React from "react";
 import { TextEditor } from "./TextEditor";
-import { PropertyDescription, PropertyRecord, PropertyValue, StandardTypeNames } from "@bentley/ui-abstract";
-import { OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
+import { DisplayMessageType, MessageSeverity, PropertyDescription, PropertyRecord, PropertyValue, StandardTypeNames } from "@bentley/ui-abstract";
 
 /** Asynchronous Error Message returned as part of [[AsyncValueProcessingResult]]
  * @beta
  */
 export interface AsyncErrorMessage {
-  priority: OutputMessagePriority;
+  severity: MessageSeverity;
   briefMessage: string;
   detailedMessage?: string;
-  msgType?: OutputMessageType;
-  alertType?: OutputMessageAlert;
-  displayTime?: number;
+  messageType?: DisplayMessageType;
 }
 
 /** Asynchronous Value Process Result

@@ -84,7 +84,7 @@ export * from "./presentation-components/tree/controlled/TreeHooks";
  * @module Viewport
  *
  * @docs-group-description Viewport
- * Presentation features for [ViewportComponent]($ui-components).
+ * Presentation features for [ViewportComponent]($ui-imodel-components).
  */
 export * from "./presentation-components/viewport/WithUnifiedSelection";
 

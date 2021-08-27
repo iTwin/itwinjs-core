@@ -14,13 +14,13 @@ export * from "./effects/LensDistortion";
 export * from "./effects/Random";
 export * from "./effects/Saturation";
 export * from "./effects/Snow";
+export * from "./effects/Vignette";
 
 export * from "./tools/AnimationIntervalTool";
 export * from "./tools/ChangeUnitsTool";
 export * from "./tools/ClipTools";
 export * from "./tools/DisplayStyleTools";
 export * from "./tools/EmphasizeElementsTool";
-export * from "./tools/ExtensionServiceTool";
 export * from "./tools/FrustumDecoration";
 export * from "./tools/InspectElementTool";
 export * from "./tools/MapLayerTool";
@@ -43,6 +43,7 @@ export * from "./tools/SetGpuMemoryLimitTool";
 export * from "./tools/SourceAspectIdTools";
 export * from "./tools/TileRequestDecoration";
 export * from "./tools/TileTreeBoundsDecoration";
+export * from "./tools/ToolTipProvider";
 export * from "./tools/ViewportTools";
 
 export * from "./ui/Button";

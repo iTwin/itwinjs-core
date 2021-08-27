@@ -3,7 +3,8 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { AsyncMethodsOf, IpcApp, PromiseReturnType } from "@bentley/imodeljs-frontend";
+import { AsyncMethodsOf, PromiseReturnType } from "@bentley/bentleyjs-core";
+import { IpcApp } from "@bentley/imodeljs-frontend";
 import {
   NodeKey, NodeKeyJSON, PRESENTATION_IPC_CHANNEL_NAME, PresentationIpcInterface, RulesetVariable, RulesetVariableJSON, SetRulesetVariableParams,
   UnsetRulesetVariableParams, UpdateHierarchyStateParams,

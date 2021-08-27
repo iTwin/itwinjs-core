@@ -11,6 +11,8 @@ import { ScrollableWidgetContent, TabIdContext } from "@bentley/ui-ninezone";
 import { useActiveFrontstageDef } from "../frontstage/Frontstage";
 import { WidgetDef } from "../widgets/WidgetDef";
 import { UiFramework } from "../UiFramework";
+import { FrontstageManager } from "../frontstage/FrontstageManager";
+import { FrontstageNineZoneStateChangedEventArgs } from "../frontstage/FrontstageDef";
 
 /** @internal */
 export function WidgetContent() {
@@ -26,10 +28,19 @@ export function WidgetContent() {
 export function useWidgetDef(): WidgetDef | undefined {
   const tabId = React.useContext(TabIdContext);
   const frontstage = useActiveFrontstageDef();
-  const [widgetDef, setWidgetDef] = React.useState(frontstage?.findWidgetDef(tabId));
+  const [widgetDef, setWidgetDef] = React.useState(() => frontstage?.findWidgetDef(tabId));
 
   React.useEffect(() => {
-    setWidgetDef(frontstage?.findWidgetDef(tabId));
+    const listener = (args: FrontstageNineZoneStateChangedEventArgs) => {
+      // istanbul ignore next
+      if (args.frontstageDef !== frontstage || !frontstage || frontstage.isStageClosing || frontstage.isApplicationClosing)
+        return;
+      setWidgetDef(frontstage.findWidgetDef(tabId));
+    };
+    FrontstageManager.onFrontstageNineZoneStateChangedEvent.addListener(listener);
+    return () => {
+      FrontstageManager.onFrontstageNineZoneStateChangedEvent.removeListener(listener);
+    };
   }, [frontstage, tabId]);
 
   React.useEffect(() => {

@@ -131,6 +131,8 @@ export class TileAdmin {
   /** @internal */
   public readonly useProjectExtents: boolean;
   /** @internal */
+  public readonly optimizeBRepProcessing: boolean;
+  /** @internal */
   public readonly maximumLevelsToSkip: number;
   /** @internal */
   public readonly mobileRealityTileMinToleranceRatio: number;
@@ -214,6 +216,7 @@ export class TileAdmin {
     this.alwaysSubdivideIncompleteTiles = options.alwaysSubdivideIncompleteTiles ?? defaultTileOptions.alwaysSubdivideIncompleteTiles;
     this.maximumMajorTileFormatVersion = options.maximumMajorTileFormatVersion ?? defaultTileOptions.maximumMajorTileFormatVersion;
     this.useProjectExtents = options.useProjectExtents ?? defaultTileOptions.useProjectExtents;
+    this.optimizeBRepProcessing = options.optimizeBRepProcessing ?? defaultTileOptions.optimizeBRepProcessing;
     this.mobileRealityTileMinToleranceRatio = Math.max(options.mobileRealityTileMinToleranceRatio ?? 3.0, 1.0);
 
     const gpuMemoryLimits = options.gpuMemoryLimits;
@@ -592,7 +595,7 @@ export class TileAdmin {
   private getTileRequestProps(tile: IModelTile) {
     const tree = tile.iModelTree;
     const tokenProps = tree.iModel.getRpcProps();
-    let guid = tree.geometryGuid || tokenProps.changeSetId || "first";
+    let guid = tree.geometryGuid || tokenProps.changeset?.id || "first";
     if (tree.contentIdQualifier)
       guid = `${guid}_${tree.contentIdQualifier}`;
 
@@ -943,6 +946,12 @@ export namespace TileAdmin { // eslint-disable-line no-redeclare
      * @internal
      */
     useProjectExtents?: boolean;
+
+    /** When producing facets from BRep entities, use an optimized pipeline to improve performance.
+     * Default value: true
+     * @internal
+     */
+    optimizeBRepProcessing?: boolean;
 
     /** The minimum number of seconds to keep a Tile in memory after it has become unused.
      * Each tile has an expiration timer. Each time tiles are selected for drawing in a view, if we decide to draw a tile we reset its expiration timer.

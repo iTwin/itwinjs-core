@@ -773,5 +773,13 @@ export function addUniformFeatureSymbology(builder: ProgramBuilder, addFeatureCo
     builder.vert.set(VertexShaderComponent.ApplyFeatureColor, applyFeatureColor);
   }
 
+  // Non-Locatable...  Discard if picking
+  builder.vert.addUniform("feature_invisible", VariableType.Boolean, (prog) => {
+    prog.addGraphicUniform("feature_invisible", (uniform, params) => {
+      params.target.uniforms.batch.bindUniformNonLocatable(uniform, params.target.drawNonLocatable);
+    });
+  });
+  builder.vert.set(VertexShaderComponent.CheckForDiscard, "return feature_invisible;");
+
   addApplyFlash(builder.frag);
 }

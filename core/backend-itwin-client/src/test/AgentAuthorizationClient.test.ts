@@ -6,11 +6,26 @@
 import * as chai from "chai";
 import { Client, Issuer } from "openid-client";
 import * as path from "path";
-import { BeDuration, ClientRequestContext, Config } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
+import { BeDuration, ClientRequestContext } from "@bentley/bentleyjs-core";
 import { AccessToken, IncludePrefix } from "@bentley/itwin-client";
 import { AgentAuthorizationClient, AgentAuthorizationClientConfiguration } from "../oidc/AgentAuthorizationClient";
 import { HubAccessTestValidator } from "./HubAccessTestValidator";
+import * as fs from "fs";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 loadEnv(path.join(__dirname, "..", "..", ".env"));
 
@@ -26,9 +41,14 @@ describe("AgentAuthorizationClient (#integration)", () => {
   before(async () => {
     validator = await HubAccessTestValidator.getInstance();
 
+    if (process.env.IMJS_AGENT_TEST_CLIENT_ID === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_ID");
+    if (process.env.IMJS_AGENT_TEST_CLIENT_SECRET === undefined)
+      throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_SECRET");
+
     agentConfiguration = {
-      clientId: Config.App.getString("imjs_agent_test_client_id"),
-      clientSecret: Config.App.getString("imjs_agent_test_client_secret"),
+      clientId: process.env.IMJS_AGENT_TEST_CLIENT_ID ?? "",
+      clientSecret: process.env.IMJS_AGENT_TEST_CLIENT_SECRET ?? "",
       scope: "imodelhub rbac-user:external-client reality-data:read urlps-third-party context-registry-service:read-only imodeljs-backend-2686",
     };
 

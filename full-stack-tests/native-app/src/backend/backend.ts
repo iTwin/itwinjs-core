@@ -7,17 +7,32 @@
 import "@bentley/oidc-signin-tool/lib/certa/certaBackend";
 import * as nock from "nock";
 import * as path from "path";
-import { BentleyLoggerCategory, ClientRequestContext, Config, Logger, LogLevel } from "@bentley/bentleyjs-core";
-import { loadEnv } from "@bentley/config-loader";
+import { BentleyLoggerCategory, ClientRequestContext, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { ElectronHost } from "@bentley/electron-manager/lib/ElectronBackend";
 import { IModelBankClient, IModelHubClientLoggerCategory } from "@bentley/imodelhub-client";
-import { BackendLoggerCategory, IModelHostConfiguration, IModelJsFs, IpcHandler, NativeHost, NativeLoggerCategory } from "@bentley/imodeljs-backend";
-import { RpcConfiguration } from "@bentley/imodeljs-common";
+import { BackendLoggerCategory, BriefcaseDb, BriefcaseManager, ChangeSummaryManager, IModelHostConfiguration, IModelJsFs, IpcHandler, NativeHost, NativeLoggerCategory } from "@bentley/imodeljs-backend";
+import { IModelRpcProps, RpcConfiguration } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ITwinClientLoggerCategory } from "@bentley/itwin-client";
 import { TestUtility } from "@bentley/oidc-signin-tool";
 import { TestUserCredentials } from "@bentley/oidc-signin-tool/lib/TestUsers";
 import { testIpcChannel, TestIpcInterface, TestProjectProps } from "../common/IpcInterfaces";
 import { CloudEnv } from "./cloudEnv";
+import * as fs from "fs";
+
+/** Loads the provided `.env` file into process.env */
+function loadEnv(envFile: string) {
+  if (!fs.existsSync(envFile))
+    return;
+
+  const dotenv = require("dotenv"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const dotenvExpand = require("dotenv-expand"); // eslint-disable-line @typescript-eslint/no-var-requires
+  const envResult = dotenv.config({ path: envFile });
+  if (envResult.error) {
+    throw envResult.error;
+  }
+
+  dotenvExpand(envResult);
+}
 
 function initDebugLogLevels(reset?: boolean) {
   Logger.setLevelDefault(reset ? LogLevel.Error : LogLevel.Warning);
@@ -29,7 +44,6 @@ function initDebugLogLevels(reset?: boolean) {
   Logger.setLevel(ITwinClientLoggerCategory.Request, reset ? LogLevel.Error : LogLevel.Trace);
   Logger.setLevel(NativeLoggerCategory.DgnCore, reset ? LogLevel.Error : LogLevel.Trace);
   Logger.setLevel(NativeLoggerCategory.BeSQLite, reset ? LogLevel.Error : LogLevel.Trace);
-  Logger.setLevel(NativeLoggerCategory.Licensing, reset ? LogLevel.Error : LogLevel.Trace);
   Logger.setLevel(NativeLoggerCategory.ECDb, reset ? LogLevel.Error : LogLevel.Trace);
   Logger.setLevel(NativeLoggerCategory.ECObjectsNative, reset ? LogLevel.Error : LogLevel.Trace);
 }
@@ -45,10 +59,10 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
     // first, perform silent login
     NativeHost.authorization.setAccessToken(await TestUtility.getAccessToken(user));
 
-    const projectName = Config.App.get("imjs_test_project_name");
+    const projectName = process.env.IMJS_TEST_PROJECT_NAME ?? "";
 
     if (CloudEnv.cloudEnv.isIModelHub) {
-      const region = Config.App.get("imjs_buddi_resolve_url_using_region") || "0";
+      const region = process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION || "0";
       return { projectName, iModelHub: { region } };
     }
     const url = await (CloudEnv.cloudEnv.imodelClient as IModelBankClient).getUrl(ClientRequestContext.current as AuthorizedClientRequestContext);
@@ -70,6 +84,21 @@ class TestIpcHandler extends IpcHandler implements TestIpcInterface {
   public async endOfflineScope(): Promise<void> {
     nock.cleanAll();
   }
+
+  public async createChangeSummary(iModelRpcProps: IModelRpcProps): Promise<string> {
+    const requestContext = ClientRequestContext.current as AuthorizedClientRequestContext;
+    return ChangeSummaryManager.createChangeSummary(requestContext, BriefcaseDb.findByKey(iModelRpcProps.key));
+  }
+
+  public async deleteChangeCache(tokenProps: IModelRpcProps): Promise<void> {
+    if (!tokenProps.iModelId)
+      throw new Error("iModelToken is invalid");
+
+    const changesPath = BriefcaseManager.getChangeCachePathName(tokenProps.iModelId);
+    if (IModelJsFs.existsSync(changesPath))
+      IModelJsFs.unlinkSync(changesPath);
+  }
+
 }
 
 async function init() {

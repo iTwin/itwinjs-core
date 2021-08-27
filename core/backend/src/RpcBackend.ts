@@ -12,6 +12,7 @@ import { BentleyStatus, HttpServerRequest, IModelError, RpcMultipart, RpcSeriali
 
 let initialized = false;
 
+/** @internal */
 export function initializeRpcBackend() {
   if (initialized) {
     return;

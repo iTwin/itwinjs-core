@@ -10,13 +10,7 @@ import { BeDuration } from "@bentley/bentleyjs-core";
 import { Point2d, XAndY } from "@bentley/geometry-core";
 import { NotifyMessageDetails, OutputMessageAlert, OutputMessagePriority, OutputMessageType } from "@bentley/imodeljs-frontend";
 import { RelativePosition } from "@bentley/ui-abstract";
-import { ReactMessage as Core_ReactMessage, MessageType } from "@bentley/ui-core";
-
-/** Describes a React based message
- * @public
- * @deprecated Use ReactMessage in bentley/ui-core instead
- */
-export type ReactMessage = Core_ReactMessage;
+import { MessageType } from "@bentley/ui-core";
 
 /** Types for message in [[MessageManager]]
  * @public
