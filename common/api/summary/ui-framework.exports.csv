@@ -98,6 +98,7 @@ beta;ChildWindowLocationProps
 beta;ChildWindowManager
 beta;ClassGroupingOption
 beta;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
+deprecated;ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element
 internal;clearKeyinPaletteHistory(): void
 public;ColorTheme
 public;CombinedReducerState
@@ -174,6 +175,7 @@ public;DeepReadonly
 public;DeepReadonlyArray
 public;DeepReadonlyObject
 beta;DefaultContentTools
+beta;DefaultContentToolsAppData
 beta;DefaultDialogGridContainer({ componentGenerator, isToolSettings }:
 beta;DefaultNavigationProps
 deprecated;DefaultNavigationProps
@@ -714,7 +716,8 @@ beta;ViewSelectorChangedEvent
 beta;ViewSelectorChangedEventArgs
 beta;ViewSelectorDefaultProps = Pick
 beta;ViewSelectorProps
-public;ViewToolWidgetComposer(): JSX.Element
+public;ViewToolWidgetComposer(props: ViewToolWidgetComposerProps): JSX.Element
+public;ViewToolWidgetComposerProps
 public;ViewUtilities
 alpha;VisibilityChangeListener = (nodeIds?: string[], visibilityStatus?: Map
 beta;VisibilityComponent 

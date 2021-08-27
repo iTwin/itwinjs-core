@@ -955,7 +955,7 @@ export enum ClassGroupingOption {
     YesWithCounts = 2
 }
 
-// @beta
+// @beta @deprecated
 export function ClearEmphasisStatusField(props: ClearEmphasisStatusFieldProps): JSX.Element;
 
 // @internal (undocumented)
@@ -1698,6 +1698,22 @@ export interface DefaultContentTools {
         selectElement?: boolean;
         measureGroup?: boolean;
         sectionGroup?: boolean;
+    };
+}
+
+// @beta
+export interface DefaultContentToolsAppData {
+    // (undocumented)
+    contentToolGroupsProps?: {
+        vertical?: {
+            selectElementGroupPriority?: number;
+            measureGroupPriority?: number;
+            selectionGroupPriority?: number;
+        };
+        horizontal?: {
+            clearSelectionGroupPriority?: number;
+            overridesGroupPriority?: number;
+        };
     };
 }
 
@@ -4158,6 +4174,7 @@ export function NavigationWidgetComposer(props: NavigationWidgetComposerProps): 
 
 // @public
 export interface NavigationWidgetComposerProps extends CommonProps {
+    hideNavigationAid?: boolean;
     horizontalToolbar?: React.ReactNode;
     navigationAidHost?: React.ReactNode;
     verticalToolbar?: React.ReactNode;
@@ -5803,6 +5820,8 @@ export class StandardContentToolsProvider implements UiItemsProvider {
     // (undocumented)
     static providerId: string;
     // (undocumented)
+    provideStatusBarItems(stageId: string, stageUsage: string, stageAppData?: any): CommonStatusBarItem[];
+    // (undocumented)
     provideToolbarButtonItems(stageId: string, stageUsage: string, toolbarUsage: ToolbarUsage, toolbarOrientation: ToolbarOrientation, stageAppData?: any): CommonToolbarItem[];
     // (undocumented)
     static register(defaultContextTools?: DefaultContentTools, isSupportedStage?: (stageId: string, stageUsage: string, stageAppData?: any) => boolean): void;
@@ -7171,7 +7190,12 @@ export interface ViewSelectorProps {
 }
 
 // @public
-export function ViewToolWidgetComposer(): JSX.Element;
+export function ViewToolWidgetComposer(props: ViewToolWidgetComposerProps): JSX.Element;
+
+// @public
+export interface ViewToolWidgetComposerProps {
+    hideNavigationAid?: boolean;
+}
 
 // @public
 export class ViewUtilities {
