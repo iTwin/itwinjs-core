@@ -207,12 +207,12 @@ void (async () => {
         assert(undefined === targetIModelId, "should not specify targetIModelId if targetIModelName is specified");
         targetIModelId = await IModelHubUtils.queryIModelId(requestContext, targetContextId, args.targetIModelName);
         if ((args.clean) && (undefined !== targetIModelId)) {
-          await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: targetContextId, iModelId: targetIModelId });
+          await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId: targetContextId, iModelId: targetIModelId });
           targetIModelId = undefined;
         }
         if (undefined === targetIModelId) {
           // create target iModel if it doesn't yet exist or was just cleaned/deleted above
-          targetIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: targetContextId, iModelName: args.targetIModelName });
+          targetIModelId = await IModelHost.hubAccess.createNewIModel({ requestContext, iTwinId: targetContextId, iModelName: args.targetIModelName });
         }
       }
       assert(undefined !== targetIModelId);

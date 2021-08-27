@@ -47,8 +47,8 @@ export namespace IModelHubUtils {
     process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = String(value);
   }
 
-  export async function queryIModelId(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString | undefined> {
-    return IModelHost.hubAccess.queryIModelByName({ requestContext, contextId, iModelName });
+  export async function queryIModelId(requestContext: AuthorizedClientRequestContext, iTwinId: GuidString, iModelName: string): Promise<GuidString | undefined> {
+    return IModelHost.hubAccess.queryIModelByName({ requestContext, iTwinId, iModelName });
   }
 
   /** Temporarily needed to convert from the now preferred ChangesetIndex to the legacy ChangesetId.

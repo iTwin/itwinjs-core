@@ -61,15 +61,15 @@ async function queryProjectIdByName(requestContext: AuthorizedClientRequestConte
   });
 }
 
-async function createIModel(requestContext: AuthorizedClientRequestContext, contextId: string, iModelName: string, seedFile: string) {
+async function createIModel(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelName: string, seedFile: string) {
   try {
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext, contextId, iModelName });
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext, iTwinId, iModelName });
     if (iModelId !== undefined)
-      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId, iModelId });
+      await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId, iModelId });
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code
-  const imodelRepository: HubIModel = await IModelHubBackend.iModelClient.iModels.create(requestContext, contextId, iModelName, { path: seedFile });
+  const imodelRepository: HubIModel = await IModelHubBackend.iModelClient.iModels.create(requestContext, iTwinId, iModelName, { path: seedFile });
   // __PUBLISH_EXTRACT_END__
   return imodelRepository;
 }
