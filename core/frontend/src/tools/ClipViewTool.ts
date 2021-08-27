@@ -129,9 +129,8 @@ export class ViewClipTool extends PrimitiveTool {
   public static enableClipVolume(viewport: Viewport): boolean {
     if (viewport.viewFlags.clipVolume)
       return false;
-    const viewFlags = viewport.viewFlags.clone();
-    viewFlags.clipVolume = true;
-    viewport.viewFlags = viewFlags;
+
+    viewport.viewFlags = viewport.viewFlags.with("clipVolume", true);
     return true;
   }
 
@@ -948,7 +947,7 @@ export class ViewClipByElementTool extends ViewClipTool {
 
   protected async doClipToElements(viewport: Viewport, ids: Id64Arg, alwaysUseRange: boolean = false): Promise<boolean> {
     try {
-      const placements = await viewport.iModel.elements.getPlacements(ids);
+      const placements = await viewport.iModel.elements.getPlacements(ids, { type: viewport.view.is3d() ? "3d" : "2d" });
       if (0 === placements.length)
         return false;
 

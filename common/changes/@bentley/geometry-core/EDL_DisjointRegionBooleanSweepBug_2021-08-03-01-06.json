@@ -1,0 +1,11 @@
+{
+  "changes": [
+    {
+      "packageName": "@bentley/geometry-core",
+      "comment": "Fix bug in polygon booleans when inputs are disjoint",
+      "type": "none"
+    }
+  ],
+  "packageName": "@bentley/geometry-core",
+  "email": "69321059+EarlinLutz@users.noreply.github.com"
+}

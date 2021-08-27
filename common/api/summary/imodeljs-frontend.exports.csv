@@ -44,8 +44,10 @@ internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
-public;AsyncFunction = (...args: any) => Promise
+public;AsyncFunction = AsyncFunction_2
+deprecated;AsyncFunction = AsyncFunction_2
 public;AsyncMethodsOf
+deprecated;AsyncMethodsOf
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -135,10 +137,6 @@ public;DrawingModelState
 public;DrawingViewState 
 internal;class DynamicIModelTile 
 public;DynamicsContext 
-alpha;EditingFunctions
-deprecated;EditingFunctions
-alpha;EditingFunctions
-deprecated;EditingFunctions
 public;EditManipulator
 internal;ELEMENT_MARKED_FOR_REMOVAL: unique symbol
 alpha;ElementAgenda
@@ -157,21 +155,16 @@ public;EventController
 public;EventHandled
 beta;class Extension
 beta;ExtensionAdmin
-beta;ExtensionAdminProps
 beta;ExtensionLoader
-beta;ExtensionServiceExtensionLoader 
+beta;ExtensionProps
 public;ExtentLimits
 beta;ExternalServerExtensionLoader 
 internal;ExternalTileStatistics
 public;extractImageSourceDimensions(source: ImageSource): Promise
 internal;eyeToCartographicOnGlobe(viewport: ScreenViewport, preserveHeight?: boolean): Cartographic | undefined
 internal;eyeToCartographicOnGlobeFromGcs(viewport: ScreenViewport, preserveHeight?: boolean): Promise
-alpha;FeatureLogBatchClient
-alpha;FeatureLogBatchOptions
 public;FeatureOverrideProvider
 public;FeatureSymbology
-alpha;FeatureTrackingManager
-alpha;FeatureTrackingProps
 internal;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
 deprecated;findAvailableRealityModels(contextId: GuidString, modelCartographicRange?: CartographicRange | undefined): Promise
 internal;findAvailableUnattachedRealityModels(contextId: GuidString, iModel?: IModelConnection, modelCartographicRange?: CartographicRange | undefined): Promise
@@ -380,15 +373,13 @@ internal;NativeAppLogger
 public;NativeAppOpts 
 internal;NoRenderApp
 public;class NotificationHandler
-public;NotificationManager
+public;NotificationManager 
 public;NotifyMessageDetails
 internal;NullRenderSystem 
 internal;NullTarget 
 internal;OffScreenTarget 
 public;OffScreenViewport 
 public;OffScreenViewportOptions
-beta;OidcBrowserClient 
-deprecated;OidcBrowserClient 
 public;OnFlashedIdChangedEventArgs =
 alpha;OnFrameStatsReadyEvent = BeEvent
 internal;OnScreenTarget 
@@ -427,6 +418,7 @@ internal;PlanarTilePatch
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
 public;PromiseReturnType
+deprecated;PromiseReturnType
 internal;QuadId
 beta;QuantityFormatOverridesChangedArgs
 beta;QuantityFormatsChangedArgs
@@ -455,10 +447,9 @@ internal;RealityTile
 internal;RealityTileDrawArgs 
 internal;class RealityTileLoader
 internal;RealityTileParams 
+internal;RealityTileRegion
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
-public;RemoteBriefcaseConnection 
-deprecated;RemoteBriefcaseConnection 
 public;class RenderClipVolume
 public;RenderContext
 internal;RenderDiagnostics

@@ -10,9 +10,9 @@
   .components-numeric-input-editor {
 
     &.iui-input {
-      min-height: $uicore-component-height-small;
-      padding-top: 0px;
-      padding-bottom: 0px;
+      min-height: $uicore-component-height-small !important;
+      padding-top: 0px !important;
+      padding-bottom: 0px !important;
     }
   }
 }

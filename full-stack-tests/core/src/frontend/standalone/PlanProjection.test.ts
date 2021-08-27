@@ -70,8 +70,7 @@ describe("Plan projections", () => {
     await testOnScreenViewport("0x29", mirukuru, 100, 100, async (vp) => {
       for (const test of tests) {
         // Top view; rectangle is coincident with background map.
-        vp.viewFlags.backgroundMap = true;
-        vp.viewFlags.lighting = false;
+        vp.viewFlags = vp.viewFlags.copy({ backgroundMap: true, lighting: false });
         vp.displayStyle.backgroundColor = ColorDef.fromJSON(ColorByName.magenta);
         vp.backgroundMapSettings = BackgroundMapSettings.fromJSON({
           useDepthBuffer: test.mapDepth,

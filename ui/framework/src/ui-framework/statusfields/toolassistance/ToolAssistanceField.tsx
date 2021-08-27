@@ -16,13 +16,13 @@ import {
 } from "@bentley/imodeljs-frontend";
 import { IconSpecUtilities } from "@bentley/ui-abstract";
 import {
-  FillCentered, HorizontalTabs, Icon, LocalSettingsStorage, SvgSprite, UiCore, UiSetting, UiSettingsResult, UiSettingsStatus, UiSettingsStorage,
+  FillCentered, Icon, LocalSettingsStorage, SvgSprite, UiCore, UiSetting, UiSettingsResult, UiSettingsStatus, UiSettingsStorage,
 } from "@bentley/ui-core";
 import {
   FooterPopup, ToolAssistanceInstruction as NZ_ToolAssistanceInstruction, TitleBarButton, ToolAssistance, ToolAssistanceDialog, ToolAssistanceItem,
   ToolAssistanceSeparator,
 } from "@bentley/ui-ninezone";
-import { ToggleSwitch } from "@itwin/itwinui-react";
+import { HorizontalTabs, ToggleSwitch } from "@itwin/itwinui-react";
 import { CursorPrompt } from "../../cursor/cursorprompt/CursorPrompt";
 import { FrontstageManager, ToolIconChangedEventArgs } from "../../frontstage/FrontstageManager";
 import { MessageManager, ToolAssistanceChangedEventArgs } from "../../messages/MessageManager";
@@ -314,7 +314,11 @@ export class ToolAssistanceField extends React.Component<ToolAssistanceFieldProp
       dialogContent = (
         <div>
           {this.state.showMouseTouchTabs &&
-            <HorizontalTabs className="uifw-toolAssistance-tabs" labels={[mouseLabel, touchLabel]} activeIndex={this.state.mouseTouchTabIndex} onClickLabel={this._handleMouseTouchTab} />
+            <HorizontalTabs
+              tabsClassName="uifw-toolAssistance-tabs"
+              labels={[mouseLabel, touchLabel]}
+              activeIndex={this.state.mouseTouchTabIndex}
+              onTabSelected={this._handleMouseTouchTab} />
           }
 
           <div className="uifw-toolAssistance-content">

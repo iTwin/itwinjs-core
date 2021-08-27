@@ -2,6 +2,7 @@
 * Copyright (c) Bentley Systems, Incorporated. All rights reserved.
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
+
 export * from "./AccuDraw";
 export * from "./AccuSnap";
 export * from "./AuxCoordSys";
@@ -13,17 +14,15 @@ export * from "./ChangeFlags";
 export * from "./ContextRealityModelState";
 export * from "./CoordSystem";
 export * from "./DecorationsCache";
+export * from "./DeprecatedUtils";
 export * from "./DevTools";
 export * from "./DisplayStyleState";
 export * from "./DrawingViewState";
-export * from "./EditingFunctions";
 export * from "./ElementLocateManager";
 export * from "./EmphasizeElements";
 export * from "./EmphasizeElementsProps";
 export * from "./EntityState";
-export * from "./FeatureLogBatchClient";
 export * from "./FeatureOverrideProvider";
-export * from "./FeatureTrackingManager";
 export * from "./FlashSettings";
 export * from "./FrontendLoggerCategory";
 export * from "./FrontendRequestContext";
@@ -76,10 +75,8 @@ export * from "./ViewRect";
 export * from "./ViewState";
 export * from "./ViewStatus";
 export * from "./WebViewerApp";
-export * from "./oidc/OidcBrowserClient";
 export * from "./extension/Extension";
 export * from "./extension/ExtensionAdmin";
-export * from "./extension/loaders/ExtensionServiceExtensionLoader";
 export * from "./extension/loaders/ExternalServerExtensionLoader";
 export * from "./properties/AngleDescription";
 export * from "./properties/FormattedQuantityDescription";
@@ -198,10 +195,6 @@ export * from "./LocalhostIpcApp";
 /**
  * @docs-group-description NativeApp
  * Classes for working with Native Applications
- */
-/**
- * @docs-group-description OIDC
- * Classes for working with the OpenID Connect (OIDC) protocol
  */
 /**
  * @docs-group-description Utils

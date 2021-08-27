@@ -212,13 +212,13 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
   public getWorldDecorations(decs: GraphicList): Branch {
     if (undefined === this._worldDecorations) {
       // Don't allow flags like monochrome etc to affect world decorations. Allow lighting in 3d only.
-      const vf = new ViewFlags();
-      vf.renderMode = RenderMode.SmoothShade;
-      vf.clipVolume = false;
-      vf.whiteOnWhiteReversal = false;
-
-      vf.lighting = !this.is2d;
-      vf.shadows = false; // don't want shadows applied to these
+      const vf = new ViewFlags({
+        renderMode: RenderMode.SmoothShade,
+        clipVolume: false,
+        whiteOnWhiteReversal: false,
+        lighting: !this.is2d,
+        shadows: false,
+      });
 
       this._worldDecorations = new WorldDecorations(vf);
     }
@@ -454,7 +454,6 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
     this.uniforms.frustum.changeFrustum(newFrustum, newFraction, is3d);
   }
 
-  private readonly _scratchViewFlags = new ViewFlags();
   public changeRenderPlan(plan: RenderPlan): void {
     this.plan = plan;
 
@@ -480,15 +479,16 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     this.uniforms.branch.updateViewClip(plan.clip, plan.clipStyle);
 
-    const vf = ViewFlags.createFrom(plan.viewFlags, this._scratchViewFlags);
+    let vf = plan.viewFlags;
     if (!plan.is3d)
-      vf.renderMode = RenderMode.Wireframe;
+      vf = vf.withRenderMode(RenderMode.Wireframe);
 
     if (RenderMode.SmoothShade === vf.renderMode && plan.is3d && undefined !== plan.ao && vf.ambientOcclusion) {
       this._wantAmbientOcclusion = true;
       this.ambientOcclusionSettings = plan.ao;
     } else {
-      this._wantAmbientOcclusion = vf.ambientOcclusion = false;
+      this._wantAmbientOcclusion = false;
+      vf = vf.with("ambientOcclusion", false);
     }
 
     this.uniforms.branch.changeRenderPlan(vf, plan.is3d, plan.hline);
@@ -762,12 +762,18 @@ export abstract class Target extends RenderTarget implements RenderTargetDebugCo
 
     // Temporarily turn off lighting to speed things up.
     // ###TODO: Disable textures *unless* they contain transparency. If we turn them off unconditionally then readPixels() will locate fully-transparent pixels, which we don't want.
-    const vf = this.currentViewFlags.clone(this._scratchViewFlags);
-    vf.transparency = vf.lighting = vf.shadows = vf.acsTriad = vf.grid = vf.monochrome = vf.materials = vf.ambientOcclusion = false;
-    if (!this.uniforms.thematic.wantIsoLines)
-      vf.thematicDisplay = false;
+    const vf = this.currentViewFlags.copy({
+      transparency: false,
+      lighting: false,
+      shadows: false,
+      acsTriad: false,
+      grid: false,
+      monochrome: false,
+      materials: false,
+      ambientOcclusion: false,
+      thematicDisplay: this.currentViewFlags.thematicDisplay && this.uniforms.thematic.wantIsoLines,
+    });
 
-    vf.noGeometryMap = true;
     const top = this.currentBranch;
     const state = new BranchState({
       viewFlags: vf,

@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import { Logger } from "@bentley/bentleyjs-core";
-import { AbstractWidgetProps, AbstractZoneLocation, StagePanelLocation, StagePanelSection, StageUsage, UiItemsManager, UiItemsProvider } from "@bentley/ui-abstract";
+import { AbstractWidgetProps, AbstractZoneLocation, StagePanelLocation, StagePanelSection, StageUsage, UiItemsManager, UiItemsProvider, WidgetState } from "@bentley/ui-abstract";
 import { WidgetDef, WidgetManager, WidgetProvider, ZoneLocation } from "../../ui-framework";
 import { TestUtils } from "../TestUtils";
 
@@ -28,6 +28,29 @@ class TestUiProvider implements UiItemsProvider {
         saveTransientState: () => { },
         restoreTransientState: () => false,
       });
+    } else if (stageId === "TestStageWithFloatingWidgets" && location === StagePanelLocation.Right) {
+      widgets.push({
+        id: "test-floating-1",
+        getWidgetContent: () => "Hello World!",
+        saveTransientState: () => { },
+        restoreTransientState: () => false,
+        defaultState: WidgetState.Floating,
+        defaultFloatingPosition: { x: 100, y: 200 },
+        floatingContainerId: "my-floating-container",
+        isFloatingStateSupported: true,
+        isFloatingStateWindowResizable: false,
+        priority: 0,
+      });
+      widgets.push({
+        id: "test-floating-2",
+        getWidgetContent: () => "Hello World 2!",
+        saveTransientState: () => { },
+        restoreTransientState: () => false,
+        defaultState: WidgetState.Floating,
+        isFloatingStateSupported: true,
+        priority: 100,
+      });
+
     }
     return widgets;
   }
@@ -175,6 +198,19 @@ describe("WidgetManager", () => {
     if (zoneWidgetDefs)
       expect(zoneWidgetDefs.length).to.eq(1);
 
+    UiItemsManager.unregister(testUiProvider.id);
+  });
+
+  it("getWidgetDefs should get a WidgetDef with default floating stage from an 'addon' UiItemsProvider", async () => {
+    const testUiProvider = new TestUiProvider();
+    UiItemsManager.register(testUiProvider);
+    await TestUtils.flushAsyncOperations();
+
+    const widgetDefs = widgetManager.getWidgetDefs("TestStageWithFloatingWidgets", StageUsage.General, StagePanelLocation.Right);
+    expect(widgetDefs).to.not.be.undefined;
+    expect(widgetDefs?.length).to.eq(2);
+    expect(widgetDefs?.[0].floatingContainerId).to.eq("my-floating-container");
+    expect(widgetDefs?.[0].defaultFloatingPosition).to.eql({ x: 100, y: 200 });
     UiItemsManager.unregister(testUiProvider.id);
   });
 

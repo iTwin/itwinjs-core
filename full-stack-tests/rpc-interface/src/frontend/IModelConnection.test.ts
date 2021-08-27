@@ -7,7 +7,7 @@ import { Id64, Id64Set } from "@bentley/bentleyjs-core";
 import { Matrix4d, Point3d, XYZProps, YawPitchRollAngles } from "@bentley/geometry-core";
 import {
   EcefLocation, GeoCoordStatus, IModelCoordinatesResponseProps, IModelReadRpcInterface, IModelVersion, MassPropertiesOperation,
-  MassPropertiesRequestProps, ModelQueryParams, SnapResponseProps,
+  MassPropertiesRequestProps, ModelQueryParams,
 } from "@bentley/imodeljs-common";
 import { CheckpointConnection, IModelApp, IModelConnection, SpatialModelState, ViewState } from "@bentley/imodeljs-frontend";
 import { AccessToken } from "@bentley/itwin-client";
@@ -78,7 +78,7 @@ describe("IModel Connection with client credentials", () => {
   it("should successfully open an IModelConnection for read", async () => {
     const contextId = testContext.iModelWithChangesets!.contextId;
     const iModelId = testContext.iModelWithChangesets!.iModelId;
-    const changeSetId = (await testContext.iModelWithChangesets!.getConnection()).changeSetId;
+    const changeSetId = (await testContext.iModelWithChangesets!.getConnection()).changeset.id;
 
     const iModel: IModelConnection = await CheckpointConnection.openRemote(contextId, iModelId, undefined === changeSetId ? IModelVersion.latest() : IModelVersion.asOfChangeSet(changeSetId));
 
@@ -369,15 +369,17 @@ describe("Snapping", () => {
       worldToView: worldToView.toJSON(),
     };
 
-    const requestSnapPromises: Array<Promise<SnapResponseProps>> = [];
-    requestSnapPromises.push(IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps));
-    await IModelReadRpcInterface.getClient().cancelSnap(iModel.getRpcProps(), id);
-
+    // eslint-disable-next-line @typescript-eslint/no-floating-promises
+    const promise = IModelReadRpcInterface.getClient().requestSnap(iModel.getRpcProps(), id, snapProps);
     try {
-      const snaps = await Promise.all(requestSnapPromises);
-      expect(snaps[0].status).to.not.be.undefined; // This is what we expect if the snap is completed before the cancellation is processed.
+      await IModelReadRpcInterface.getClient().cancelSnap(iModel.getRpcProps(), id);
+      const snap = await promise;
+
+      // This is what we expect if the snap is completed before the cancellation is processed.
+      expect(snap.status).not.to.be.undefined;
     } catch (err) {
       // This is what we expect if the cancellation occurs in time to really cancel the snap.
+      expect(err.message).to.equal("aborted");
     }
   });
 });

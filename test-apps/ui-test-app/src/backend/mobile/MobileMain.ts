@@ -13,7 +13,7 @@ import { PresentationRpcInterface } from "@bentley/presentation-common";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
-    // Load .env file first so it's added to `Config.App` below when it parses the environment variables.
+    // Load .env file first
     if (fs.existsSync(path.join(process.cwd(), ".env"))) {
       require("dotenv-expand")( // eslint-disable-line @typescript-eslint/no-var-requires
         require("dotenv").config(), // eslint-disable-line @typescript-eslint/no-var-requires

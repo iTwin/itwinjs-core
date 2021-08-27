@@ -27,14 +27,14 @@ describe("AppUiSettings", () => {
   });
 
   it("should get/set settings", async () => {
-
     const uiSetting = new AppUiSettings({});
     await uiSetting.loadUserSettings(UiFramework.getUiSettingsStorage());
     const uiVersion = "2";
     const opacity = 0.5;
     const colorTheme = "dark";
     const useDragInteraction = true;
-    UiFramework.setUiVersion (uiVersion);
+    UiFramework.setUiVersion(uiVersion);
+    UiFramework.setWidgetOpacity(opacity);
     UiFramework.setWidgetOpacity(opacity);
     UiFramework.setUseDragInteraction(true);
     UiFramework.setColorTheme(colorTheme);

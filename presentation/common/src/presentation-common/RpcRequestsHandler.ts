@@ -21,11 +21,13 @@ import { NodePathElementJSON } from "./hierarchy/NodePathElement";
 import { KeySetJSON } from "./KeySet";
 import { LabelDefinitionJSON } from "./LabelDefinition";
 import {
-  ContentDescriptorRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions, DistinctValuesRequestOptions,
-  ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions, HierarchyCompareOptions, Paged, RequestOptions,
-  SelectionScopeRequestOptions,
+  ContentDescriptorRequestOptions, ContentSourcesRequestOptions, DisplayLabelRequestOptions, DisplayLabelsRequestOptions,
+  DistinctValuesRequestOptions, ElementPropertiesRequestOptions, ExtendedContentRequestOptions, ExtendedHierarchyRequestOptions,
+  HierarchyCompareOptions, Paged, RequestOptions, SelectionScopeRequestOptions,
 } from "./PresentationManagerOptions";
-import { PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse } from "./PresentationRpcInterface";
+import {
+  ContentSourcesRpcResult, PresentationRpcInterface, PresentationRpcRequestOptions, PresentationRpcResponse,
+} from "./PresentationRpcInterface";
 import { RulesetVariableJSON } from "./RulesetVariables";
 import { SelectionScope } from "./selection/SelectionScope";
 import { HierarchyCompareInfoJSON, PartialHierarchyModificationJSON } from "./Update";
@@ -145,6 +147,10 @@ export class RpcRequestsHandler implements IDisposable {
       this.rpcClient.getFilteredNodePaths.bind(this.rpcClient), options, filterText);
   }
 
+  public async getContentSources(options: ContentSourcesRequestOptions<IModelRpcProps>): Promise<ContentSourcesRpcResult> {
+    return this.request<ContentSourcesRpcResult, ContentSourcesRequestOptions<IModelRpcProps>>(
+      this.rpcClient.getContentSources.bind(this.rpcClient), options);
+  }
   public async getContentDescriptor(options: ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>): Promise<DescriptorJSON | undefined> {
     return this.request<DescriptorJSON | undefined, ContentDescriptorRequestOptions<IModelRpcProps, KeySetJSON, RulesetVariableJSON>>(
       this.rpcClient.getContentDescriptor.bind(this.rpcClient), options); // eslint-disable-line deprecation/deprecation

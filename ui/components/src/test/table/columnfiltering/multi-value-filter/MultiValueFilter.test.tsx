@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import * as sinon from "sinon";
 import * as React from "react";
-import { cleanup, fireEvent, render } from "@testing-library/react";
+import { fireEvent, render } from "@testing-library/react";
 import { MultiValueFilter } from "../../../../ui-components/table/columnfiltering/multi-value-filter/MultiValueFilter";
 import { ReactDataGridColumn, TableColumn } from "../../../../ui-components/table/component/TableColumn";
 import { FilterableColumn, TableDistinctValue } from "../../../../ui-components/table/columnfiltering/ColumnFiltering";
@@ -74,7 +74,6 @@ describe("MultiValueFilter", () => {
 
   afterEach(() => {
     fakeTimers.restore();
-    cleanup();
   });
 
   it("renders filter Ui", () => {
