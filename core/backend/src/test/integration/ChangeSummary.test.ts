@@ -375,7 +375,7 @@ describe("ChangeSummary (#integration)", () => {
     // Recreate iModel
     const managerRequestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
     const testContextId = await HubUtility.getTestContextId(managerRequestContext);
-    const testIModelId = await HubUtility.recreateIModel({ requestContext: managerRequestContext, contextId: testContextId, iModelName, noLocks: true });
+    const testIModelId = await HubUtility.recreateIModel({ requestContext: managerRequestContext, iTwinId: testContextId, iModelName, noLocks: true });
 
     // Cleanup local cache
     setupTest(testIModelId);
@@ -443,7 +443,7 @@ describe("ChangeSummary (#integration)", () => {
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, iModel);
     }
 
-    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: testContextId, iModelId: testIModelId });
+    await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId: testContextId, iModelId: testIModelId });
   });
 
   it.skip("should be able to extract the last change summary right after applying a change set", async () => {

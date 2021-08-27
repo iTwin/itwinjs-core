@@ -49,7 +49,7 @@ export class TestChangeSetUtility {
     this.projectId = await HubUtility.getTestContextId(this._requestContext);
 
     // Re-create iModel on iModelHub
-    this.iModelId = await HubUtility.recreateIModel({ requestContext: this._requestContext, contextId: this.projectId, iModelName: this._iModelName, noLocks: true });
+    this.iModelId = await HubUtility.recreateIModel({ requestContext: this._requestContext, iTwinId: this.projectId, iModelName: this._iModelName, noLocks: true });
 
     // Populate sample data
     await this.addTestModel();
@@ -72,6 +72,6 @@ export class TestChangeSetUtility {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await IModelTestUtils.closeAndDeleteBriefcaseDb(this._requestContext, this._iModel);
-    await IModelHost.hubAccess.deleteIModel({ requestContext: this._requestContext, contextId: this.projectId, iModelId: this.iModelId });
+    await IModelHost.hubAccess.deleteIModel({ requestContext: this._requestContext, iTwinId: this.projectId, iModelId: this.iModelId });
   }
 }

@@ -117,10 +117,10 @@ async function pushIModelAfterDataChanges(requestContext: AuthorizedClientReques
   // delete any existing imodel with given name
   const iModels = await IModelHubBackend.iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels) {
-    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: iModelTemp.id! });
+    await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId: projectId, iModelId: iModelTemp.id! });
   }
   // create new imodel with given name
-  const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
+  const rwIModelId = await IModelHost.hubAccess.createNewIModel({ requestContext, iTwinId: projectId, iModelName, description: "TestSubject" });
   assert.isNotEmpty(rwIModelId);
   const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
@@ -143,10 +143,10 @@ async function pushIModelAfterSchemaChanges(requestContext: AuthorizedClientRequ
   // delete any existing imodel with given name
   const iModels = await IModelHubBackend.iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels) {
-    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: iModelTemp.id! });
+    await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId: projectId, iModelId: iModelTemp.id! });
   }
   // create new imodel with given name
-  const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
+  const rwIModelId = await IModelHost.hubAccess.createNewIModel({ requestContext, iTwinId: projectId, iModelName, description: "TestSubject" });
   assert.isNotEmpty(rwIModelId);
   const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
@@ -188,10 +188,10 @@ async function reverseChanges(requestContext: AuthorizedClientRequestContext, re
   // delete any existing imodel with given name
   const iModels = await IModelHubBackend.iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels)
-    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: iModelTemp.id! });
+    await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId: projectId, iModelId: iModelTemp.id! });
 
   // create new imodel with given name
-  const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
+  const rwIModelId = await IModelHost.hubAccess.createNewIModel({ requestContext, iTwinId: projectId, iModelName, description: "TestSubject" });
   assert.isNotEmpty(rwIModelId);
   const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
@@ -233,10 +233,10 @@ async function reinstateChanges(requestContext: AuthorizedClientRequestContext, 
   // delete any existing imodel with given name
   const iModels = await IModelHubBackend.iModelClient.iModels.get(requestContext, projectId, new IModelQuery().byName(iModelName));
   for (const iModelTemp of iModels)
-    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId: iModelTemp.id! });
+    await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId: projectId, iModelId: iModelTemp.id! });
 
   // create new imodel with given name
-  const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
+  const rwIModelId = await IModelHost.hubAccess.createNewIModel({ requestContext, iTwinId: projectId, iModelName, description: "TestSubject" });
   assert.isNotEmpty(rwIModelId);
   const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: rwIModelId });
 
@@ -650,7 +650,7 @@ describe("ImodelChangesetPerformance own data", () => {
           // create iModel and push changesets 1) with schema 2) with 1M records of PerfElementSub3 3) insert of opSize for actual testing
           // eslint-disable-next-line no-console
           console.log(`iModel ${iModelName} does not exist on iModelHub. Creating with changesets...`);
-          const imodelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName, description: "TestSubject" });
+          const imodelId = await IModelHost.hubAccess.createNewIModel({ requestContext, iTwinId: projectId, iModelName, description: "TestSubject" });
           const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: imodelId });
 
           const schemaPathname = path.join(outDir, `${schemaName}.01.00.00.ecschema.xml`);

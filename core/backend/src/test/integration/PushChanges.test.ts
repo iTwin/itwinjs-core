@@ -99,7 +99,7 @@ describe("PushChangesTest (#integration)", () => {
 
   it("Push changes while refreshing token", async () => {
     const iModelName = HubUtility.generateUniqueName("PushChangesTest");
-    const iModelId = await HubUtility.recreateIModel({ requestContext, contextId, iModelName, noLocks: true });
+    const iModelId = await HubUtility.recreateIModel({ requestContext, iTwinId: contextId, iModelName, noLocks: true });
 
     const briefcaseProps = await BriefcaseManager.downloadBriefcase(requestContext, { contextId, iModelId });
     let iModel: BriefcaseDb | undefined;

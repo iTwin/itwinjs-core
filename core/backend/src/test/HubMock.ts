@@ -7,21 +7,20 @@ import { join } from "path";
 import * as sinon from "sinon";
 import { Guid, GuidString } from "@bentley/bentleyjs-core";
 import {
-  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName, LocalFileName,
+  ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, ChangesetRange, CodeProps, IModelVersion, LocalDirName,
 } from "@bentley/imodeljs-common";
-import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps, V2CheckpointAccessProps,
+  BackendHubAccess, BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg, LockMap,
+  LockProps, V2CheckpointAccessProps,
 } from "../BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "../BackendRequestContext";
 import { CheckpointProps } from "../CheckpointManager";
-import { SnapshotDb } from "../IModelDb";
 import { IModelHost } from "../IModelHost";
 import { IModelHubBackend } from "../IModelHubBackend";
 import { IModelJsFs } from "../IModelJsFs";
 import { HubUtility } from "./integration/HubUtility";
 import { KnownTestLocations } from "./KnownTestLocations";
-import { LocalHub, LocalHubProps } from "./LocalHub";
+import { LocalHub } from "./LocalHub";
 
 /**
  * Mocks iModelHub for testing creating Briefcases, downloading checkpoints, and simulating multiple users pushing and pulling changesets, etc.
@@ -114,12 +113,14 @@ export class HubMock {
   }
 
   /** create a [[LocalHub]] for an iModel.  */
-  public static create(arg: LocalHubProps) {
+  public static async createNewIModel(arg: CreateNewIModelProps): Promise<GuidString> {
     if (!this.mockRoot)
       throw new Error("call startup first");
 
-    const mock = new LocalHub(join(this.mockRoot, arg.iModelId), arg);
-    this.hubs.set(arg.iModelId, mock);
+    const props = { ...arg, iModelId: Guid.createValue() };
+    const mock = new LocalHub(join(this.mockRoot, props.iModelId), props);
+    this.hubs.set(props.iModelId, mock);
+    return props.iModelId;
   }
 
   /** remove the [[LocalHub]] for an iModel */
@@ -214,9 +215,6 @@ export class HubMock {
       hub.releaseLock(props, arg);
   }
 
-  public static async shouldUseLocks(arg: IModelIdArg) {
-    return this.findLocalHub(arg.iModelId).wantLocks;
-  }
   public static async releaseAllCodes(_arg: BriefcaseDbArg) {
   }
 
@@ -228,42 +226,23 @@ export class HubMock {
     return [];
   }
 
-  public static async acquireLocks(arg: BriefcaseDbArg & { locks: LockProps[] }): Promise<void> {
+  public static async acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void> {
     const hub = this.findLocalHub(arg.iModelId);
-    for (const lock of arg.locks) {
-      hub.requestLock(lock, arg);
+    for (const lock of locks) {
+      hub.requestLock({ id: lock[0], state: lock[1] }, arg);
     }
   }
 
-  public static async queryIModelByName(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string }): Promise<GuidString | undefined> {
+  public static async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
     for (const hub of this.hubs) {
       const localHub = hub[1];
-      if (localHub.contextId === arg.contextId && localHub.iModelName === arg.iModelName)
+      if (localHub.iTwinId === arg.iTwinId && localHub.iModelName === arg.iModelName)
         return localHub.iModelId;
     }
     return undefined;
   }
 
-  public static async createIModel(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string, revision0?: LocalFileName }): Promise<GuidString> {
-    const revision0 = arg.revision0 ?? join(this.mockRoot!, "revision0.bim");
-
-    const localProps = { ...arg, iModelId: Guid.createValue(), revision0 };
-    if (!arg.revision0) { // if they didn't supply a revision0 file, create a blank one.
-      const blank = SnapshotDb.createEmpty(revision0, { rootSubject: { name: arg.description ?? arg.iModelName } });
-      blank.saveChanges();
-      blank.close();
-    }
-
-    this.create(localProps);
-    if (!arg.revision0)
-      IModelJsFs.removeSync(revision0);
-
-    return localProps.iModelId;
-  }
-
-  public static async deleteIModel(arg: IModelIdArg & { contextId: GuidString }): Promise<void> {
+  public static async deleteIModel(arg: IModelIdArg & { iTwinId: GuidString }): Promise<void> {
     return this.destroy(arg.iModelId);
   }
-
 }
-

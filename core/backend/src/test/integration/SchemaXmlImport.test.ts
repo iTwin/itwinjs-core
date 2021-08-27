@@ -30,12 +30,12 @@ describe("Schema XML Import Tests (#integration)", () => {
     HubMock.startup("schemaImport");
     requestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
     testContextId = await HubUtility.getTestContextId(requestContext);
-    readWriteTestIModelId = await HubUtility.recreateIModel({ requestContext, contextId: testContextId, iModelName: HubUtility.generateUniqueName("ReadWriteTest"), noLocks: true });
+    readWriteTestIModelId = await HubUtility.recreateIModel({ requestContext, iTwinId: testContextId, iModelName: HubUtility.generateUniqueName("ReadWriteTest"), noLocks: true });
   });
 
   after(async () => {
     try {
-      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
+      await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId: testContextId, iModelId: readWriteTestIModelId });
       HubMock.shutdown();
     } catch (err) {
       // eslint-disable-next-line no-console

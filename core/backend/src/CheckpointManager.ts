@@ -10,7 +10,7 @@
 
 import * as path from "path";
 import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, IModelError } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, IModelError, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -51,7 +51,7 @@ export type ProgressFunction = (loaded: number, total: number) => number;
  */
 export interface DownloadRequest {
   /** name of local file to hold the downloaded data. */
-  localFile: string;
+  localFile: LocalFileName;
 
   /** A list of full fileName paths to test before downloading. If a valid file exists by one of these names,
    * no download is performed and `localFile` is updated to reflect the fact that the file exists with that name.
@@ -88,7 +88,7 @@ export class Downloads {
     }
   }
 
-  public static isInProgress(pathName: string): DownloadJob | undefined {
+  public static isInProgress(pathName: LocalFileName): DownloadJob | undefined {
     return this._active.get(pathName);
   }
 
@@ -120,7 +120,7 @@ export class V2CheckpointManager {
     }
   }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: string, expiryTimestamp: number }> {
+  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: LocalFileName, expiryTimestamp: number }> {
     const args = await this.getCommandArgs(checkpoint);
     if (undefined === args.daemonDir || args.daemonDir === "")
       throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
@@ -157,11 +157,11 @@ export class V2CheckpointManager {
  * @internal
  */
 export class V1CheckpointManager {
-  public static getFolder(iModelId: GuidString): string {
+  public static getFolder(iModelId: GuidString): LocalDirName {
     return path.join(BriefcaseManager.getIModelPath(iModelId), "checkpoints");
   }
 
-  public static getFileName(checkpoint: CheckpointProps): string {
+  public static getFileName(checkpoint: CheckpointProps): LocalFileName {
     const changeSetId = checkpoint.changeset.id || "first";
     return path.join(this.getFolder(checkpoint.iModelId), `${changeSetId}.bim`);
   }
@@ -300,7 +300,7 @@ export class CheckpointManager {
   }
 
   /** @returns true if the file is the checkpoint requested */
-  public static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean {
+  public static verifyCheckpoint(checkpoint: CheckpointProps, fileName: LocalFileName): boolean {
     if (!IModelJsFs.existsSync(fileName))
       return false;
 

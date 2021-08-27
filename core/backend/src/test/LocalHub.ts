@@ -8,9 +8,10 @@ import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMo
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
 import { LockProps, LockState } from "../BackendHubAccess";
 import { BriefcaseId, BriefcaseManager } from "../BriefcaseManager";
-import { IModelDb } from "../IModelDb";
+import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
 import { SQLiteDb } from "../SQLiteDb";
+import { IModelHost } from "../IModelHost";
 
 // cspell:ignore rowid
 
@@ -22,11 +23,11 @@ export interface MockBriefcaseIdProps {
 
 /** @internal */
 export interface LocalHubProps {
-  readonly contextId: GuidString;
+  readonly iTwinId: GuidString;
   readonly iModelId: GuidString;
   readonly iModelName: string;
   readonly description?: string;
-  readonly revision0: string;
+  readonly revision0?: string;
   readonly noLocks?: true;
 }
 
@@ -53,21 +54,19 @@ type LockStatus = LockStatusNone | LockStatusExclusive | LockStatusShared;
  * @internal
  */
 export class LocalHub {
-  public readonly contextId: GuidString;
+  public readonly iTwinId: GuidString;
   public readonly iModelId: GuidString;
   public readonly iModelName: string;
   public readonly description?: string;
-  public readonly wantLocks: boolean;
   private _hubDb?: SQLiteDb;
   private _nextBriefcaseId = BriefcaseIdValue.FirstValid;
   private _latestChangesetIndex = 0;
   public get latestChangesetIndex() { return this._latestChangesetIndex; }
 
-  public constructor(public readonly rootDir: string, arg: LocalHubProps) {
-    this.contextId = arg.contextId;
+  public constructor(public readonly rootDir: LocalDirName, arg: LocalHubProps) {
+    this.iTwinId = arg.iTwinId;
     this.iModelId = arg.iModelId;
     this.iModelName = arg.iModelName;
-    this.wantLocks = !arg.noLocks;
     this.description = arg.description;
 
     this.cleanup();
@@ -88,14 +87,27 @@ export class LocalHub {
     db.executeSQL("CREATE INDEX SharedLockIdx ON sharedLocks(briefcaseId)");
     db.saveChanges();
 
-    const path = this.uploadCheckpoint({ changesetIndex: 0, localFile: arg.revision0 });
+    const revision0 = arg.revision0 ?? join(IModelHost.cacheDir, "revision0.bim");
+
+    if (!arg.revision0) { // if they didn't supply a revision0 file, create a blank one.
+      IModelJsFs.removeSync(revision0);
+      const blank = SnapshotDb.createEmpty(revision0, { rootSubject: { name: arg.description ?? arg.iModelName } });
+      blank.saveChanges();
+      blank.close();
+    }
+
+    const path = this.uploadCheckpoint({ changesetIndex: 0, localFile: revision0 });
+    if (!arg.revision0)
+      IModelJsFs.removeSync(revision0);
+
     const nativeDb = IModelDb.openDgnDb({ path }, OpenMode.ReadWrite);
     try {
-      nativeDb.saveProjectGuid(this.contextId);
+      nativeDb.saveProjectGuid(this.iTwinId);
       nativeDb.setDbGuid(this.iModelId);
       nativeDb.saveChanges();
       nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
       nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+      nativeDb.saveLocalValue(BriefcaseLocalValue.NoLocking, arg.noLocks ? "true" : "");
       nativeDb.saveChanges();
     } finally {
       nativeDb.closeIModel();

@@ -19,7 +19,7 @@ import { LockStatusExclusive, LockStatusShared } from "../LocalHub";
 
 describe("HubMock", () => {
   const tmpDir = join(KnownTestLocations.outputDir, "HubMockTest");
-  const contextId = Guid.createValue();
+  const iTwinId = Guid.createValue();
   const revision0 = IModelTestUtils.resolveAssetFile("test.bim");
   let requestContext: AuthorizedClientRequestContext;
 
@@ -32,7 +32,7 @@ describe("HubMock", () => {
   });
 
   it("should be able to create HubMock", async () => {
-    const iModelId = await IModelHost.hubAccess.createIModel({ contextId, iModelName: "test imodel", revision0 });
+    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", revision0 });
     const localHub = HubMock.findLocalHub(iModelId);
     let checkpoints = localHub.getCheckpoints();
     assert.equal(checkpoints.length, 1);
@@ -219,16 +219,16 @@ describe("HubMock", () => {
     const locks = localHub.queryAllLocks(5);
     assert.equal(locks.length, 3);
 
-    await IModelHost.hubAccess.deleteIModel({ contextId, iModelId });
+    await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId });
   });
 
   it("use HubMock with BriefcaseManager", async () => {
-    const iModelId = await IModelHost.hubAccess.createIModel({ contextId, iModelName: "test imodel", revision0 });
-    const briefcase = await BriefcaseManager.downloadBriefcase(requestContext, { contextId, iModelId });
+    const iModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: "test imodel", revision0 });
+    const briefcase = await BriefcaseManager.downloadBriefcase(requestContext, { contextId: iTwinId, iModelId });
     assert.equal(briefcase.briefcaseId, 2);
     assert.equal(briefcase.changeset.id, "");
     assert.equal(briefcase.iModelId, iModelId);
-    assert.equal(briefcase.contextId, contextId);
-    await IModelHost.hubAccess.deleteIModel({ contextId, iModelId });
+    assert.equal(briefcase.contextId, iTwinId);
+    await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId });
   });
 });

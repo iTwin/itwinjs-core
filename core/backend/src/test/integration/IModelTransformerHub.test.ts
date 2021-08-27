@@ -23,7 +23,7 @@ import { HubUtility } from "./HubUtility";
 
 describe("IModelTransformerHub (#integration)", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
-  let projectId: GuidString;
+  let iTwinId: GuidString;
   let requestContext: AuthorizedClientRequestContext;
 
   before(async () => {
@@ -31,7 +31,7 @@ describe("IModelTransformerHub (#integration)", () => {
     IModelJsFs.recursiveMkDirSync(outputDir);
 
     requestContext = await IModelTestUtils.getUserContext(TestUserType.Regular);
-    projectId = HubUtility.contextId!;
+    iTwinId = HubUtility.contextId!;
 
     // initialize logging
     if (false) {
@@ -58,7 +58,7 @@ describe("IModelTransformerHub (#integration)", () => {
     sourceSeedDb.saveChanges();
     sourceSeedDb.close();
 
-    const sourceIModelId = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: sourceIModelName, revision0: sourceSeedFileName, noLocks: true });
+    const sourceIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: sourceIModelName, description: "source", revision0: sourceSeedFileName, noLocks: true });
 
     // Create and push seed of target IModel
     const targetIModelName = "TransformerTarget";
@@ -72,11 +72,11 @@ describe("IModelTransformerHub (#integration)", () => {
     assert.isTrue(targetSeedDb.codeSpecs.hasName("TargetCodeSpec")); // inserted by prepareTargetDb
     targetSeedDb.saveChanges();
     targetSeedDb.close();
-    const targetIModelId = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: targetIModelName, revision0: targetSeedFileName, noLocks: true });
+    const targetIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: targetIModelName, description: "target", revision0: targetSeedFileName, noLocks: true });
 
     try {
-      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: sourceIModelId });
-      const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: targetIModelId });
+      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: sourceIModelId });
+      const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: targetIModelId });
       assert.isTrue(sourceDb.isBriefcaseDb());
       assert.isTrue(targetDb.isBriefcaseDb());
       assert.isFalse(sourceDb.isSnapshot);
@@ -84,7 +84,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isTrue(targetDb.codeSpecs.hasName("TargetCodeSpec")); // make sure prepareTargetDb changes were saved and pushed to iModelHub
 
       if (true) { // initial import
-        IModelTransformerUtils.populateSourceDb(sourceDb);
+        await IModelTransformerUtils.populateSourceDb(sourceDb);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, "Populate source");
 
@@ -253,8 +253,8 @@ describe("IModelTransformerHub (#integration)", () => {
       await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
     } finally {
       try {
-        await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: sourceIModelId });
-        await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: targetIModelId });
+        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: sourceIModelId });
+        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: targetIModelId });
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log("can't destroy", err);
@@ -265,15 +265,15 @@ describe("IModelTransformerHub (#integration)", () => {
 
   it("Clone/upgrade test", async () => {
     const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
-    const sourceIModelId = await HubUtility.recreateIModel({ requestContext, contextId: projectId, iModelName: sourceIModelName, noLocks: true });
+    const sourceIModelId = await HubUtility.recreateIModel({ requestContext, iTwinId, iModelName: sourceIModelName, noLocks: true });
     assert.isTrue(Guid.isGuid(sourceIModelId));
     const targetIModelName: string = HubUtility.generateUniqueName("CloneTarget");
-    const targetIModelId = await HubUtility.recreateIModel({ requestContext, contextId: projectId, iModelName: targetIModelName, noLocks: true });
+    const targetIModelId = await HubUtility.recreateIModel({ requestContext, iTwinId, iModelName: targetIModelName, noLocks: true });
     assert.isTrue(Guid.isGuid(targetIModelId));
 
     try {
       // open/upgrade sourceDb
-      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: sourceIModelId });
+      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: sourceIModelId });
       const seedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
       assert.isTrue(semver.satisfies(seedBisCoreVersion, ">= 1.0.1"));
       await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
@@ -301,7 +301,7 @@ describe("IModelTransformerHub (#integration)", () => {
       await sourceDb.pushChanges(requestContext, "Populate Source");
 
       // open/upgrade targetDb
-      const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: targetIModelId });
+      const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: targetIModelId });
       await targetDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
 
@@ -323,8 +323,8 @@ describe("IModelTransformerHub (#integration)", () => {
     } finally {
       try {
         // delete iModel briefcases
-        await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: sourceIModelId });
-        await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: targetIModelId });
+        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: sourceIModelId });
+        await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: targetIModelId });
       } catch (err) {
         // eslint-disable-next-line no-console
         console.log("can't destroy", err);
@@ -343,45 +343,45 @@ describe("IModelTransformerHub (#integration)", () => {
     const masterSeedDb = SnapshotDb.createEmpty(masterSeedFileName, { rootSubject: { name: "Master" } });
     populateMaster(masterSeedDb, state0);
     assert.isTrue(IModelJsFs.existsSync(masterSeedFileName));
-    masterSeedDb.nativeDb.saveProjectGuid(projectId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
+    masterSeedDb.nativeDb.saveProjectGuid(iTwinId); // WIP: attempting a workaround for "ContextId was not properly setup in the checkpoint" issue
     masterSeedDb.saveChanges();
     masterSeedDb.close();
-    const masterIModelId = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: masterIModelName, revision0: masterSeedFileName, noLocks: true });
+    const masterIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: masterIModelName, description: "master", revision0: masterSeedFileName, noLocks: true });
     assert.isTrue(Guid.isGuid(masterIModelId));
     IModelJsFs.removeSync(masterSeedFileName); // now that iModel is pushed, can delete local copy of the seed
-    const masterDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: masterIModelId });
+    const masterDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: masterIModelId });
     assert.isTrue(masterDb.isBriefcaseDb());
-    assert.equal(masterDb.contextId, projectId);
+    assert.equal(masterDb.contextId, iTwinId);
     assert.equal(masterDb.iModelId, masterIModelId);
     assertPhysicalObjects(masterDb, state0);
     const changeSetMasterState0 = masterDb.changeset.id;
 
     // create Branch1 iModel using Master as a template
     const branchIModelName1 = "Branch1";
-    const branchIModelId1 = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: branchIModelName1, description: `Branch1 of ${masterIModelName}`, revision0: masterDb.pathName, noLocks: true });
+    const branchIModelId1 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName1, description: `Branch1 of ${masterIModelName}`, revision0: masterDb.pathName, noLocks: true });
 
-    const branchDb1 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: branchIModelId1 });
+    const branchDb1 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: branchIModelId1 });
     assert.isTrue(branchDb1.isBriefcaseDb());
-    assert.equal(branchDb1.contextId, projectId);
+    assert.equal(branchDb1.contextId, iTwinId);
     assertPhysicalObjects(branchDb1, state0);
     const changeSetBranch1First = branchDb1.changeset.id;
 
     // create Branch2 iModel using Master as a template
     const branchIModelName2 = "Branch2";
-    const branchIModelId2 = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: branchIModelName2, description: `Branch2 of ${masterIModelName}`, revision0: masterDb.pathName, noLocks: true });
-    const branchDb2 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: branchIModelId2 });
+    const branchIModelId2 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName2, description: `Branch2 of ${masterIModelName}`, revision0: masterDb.pathName, noLocks: true });
+    const branchDb2 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: branchIModelId2 });
     assert.isTrue(branchDb2.isBriefcaseDb());
-    assert.equal(branchDb2.contextId, projectId);
+    assert.equal(branchDb2.contextId, iTwinId);
     assertPhysicalObjects(branchDb2, state0);
     const changeSetBranch2First = branchDb2.changeset.id;
 
     // create empty iModel meant to contain replayed master history
     const replayedIModelName = "Replayed";
-    const replayedIModelId = await IModelHost.hubAccess.createIModel({ contextId: projectId, iModelName: replayedIModelName, description: "blank", noLocks: true });
+    const replayedIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: replayedIModelName, description: "blank", revision0: masterSeedFileName, noLocks: true });
 
-    const replayedDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: replayedIModelId });
+    const replayedDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: replayedIModelId });
     assert.isTrue(replayedDb.isBriefcaseDb());
-    assert.equal(replayedDb.contextId, projectId);
+    assert.equal(replayedDb.contextId, iTwinId);
 
     try {
       // record provenance in Branch1 and Branch2 iModels
@@ -510,7 +510,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isAtLeast(masterDeletedElementIds.size, 1);
 
       // replay master history to create replayed iModel
-      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: projectId, iModelId: masterIModelId, asOf: IModelVersion.first().toJSON() });
+      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: masterIModelId, asOf: IModelVersion.first().toJSON() });
       const replayTransformer = new IModelTransformer(sourceDb, replayedDb);
       // this replay strategy pretends that deleted elements never existed
       for (const elementId of masterDeletedElementIds) {
@@ -552,10 +552,10 @@ describe("IModelTransformerHub (#integration)", () => {
       branchDb2.close();
       replayedDb.close();
     } finally {
-      await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: masterIModelId });
-      await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: branchIModelId1 });
-      await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: branchIModelId2 });
-      await IModelHost.hubAccess.deleteIModel({ contextId: projectId, iModelId: replayedIModelId });
+      await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: masterIModelId });
+      await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: branchIModelId1 });
+      await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: branchIModelId2 });
+      await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: replayedIModelId });
     }
   });
 

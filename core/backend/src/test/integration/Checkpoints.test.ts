@@ -67,6 +67,7 @@ describe("Checkpoints (#integration)", () => {
 
   it("should be able to open and read V2 checkpoint", async () => {
     const iModel = await SnapshotDb.openCheckpointV2({
+      requestContext,
       contextId: testContextId,
       iModelId: testIModelId,
       changeset: testChangeSet,
@@ -78,7 +79,7 @@ describe("Checkpoints (#integration)", () => {
     let numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
 
-    await iModel.reattachDaemon();
+    await iModel.reattachDaemon(requestContext);
     numModels = await iModel.queryRowCount("SELECT * FROM bis.model");
     assert.equal(numModels, 32);
 

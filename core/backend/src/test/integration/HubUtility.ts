@@ -63,7 +63,7 @@ export class HubUtility {
   }
 
   public static async queryIModelByName(requestContext: AuthorizedClientRequestContext, projectId: string, iModelName: string): Promise<GuidString | undefined> {
-    return IModelHost.hubAccess.queryIModelByName({ requestContext, contextId: projectId, iModelName });
+    return IModelHost.hubAccess.queryIModelByName({ requestContext, iTwinId: projectId, iModelName });
   }
 
   private static async queryIModelById(requestContext: AuthorizedClientRequestContext, projectId: string, iModelId: GuidString): Promise<HubIModel | undefined> {
@@ -198,10 +198,10 @@ export class HubUtility {
 
   /** Delete an IModel from the hub */
   public static async deleteIModel(requestContext: AuthorizedClientRequestContext, projectName: string, iModelName: string): Promise<void> {
-    const contextId = await HubUtility.queryProjectIdByName(requestContext, projectName);
-    const iModelId = await HubUtility.queryIModelIdByName(requestContext, contextId, iModelName);
+    const iTwinId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const iModelId = await HubUtility.queryIModelIdByName(requestContext, iTwinId, iModelName);
 
-    await IModelHost.hubAccess.deleteIModel({ requestContext, contextId, iModelId });
+    await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId, iModelId });
   }
 
   /** Get the pathname of the briefcase in the supplied directory - assumes a standard layout of the supplied directory */
@@ -354,11 +354,11 @@ export class HubUtility {
     if (iModelId) {
       if (!overwrite)
         return iModelId;
-      await IModelHost.hubAccess.deleteIModel({ requestContext, contextId: projectId, iModelId });
+      await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId: projectId, iModelId });
     }
 
     // Upload a new iModel
-    return IModelHost.hubAccess.createIModel({ requestContext, contextId: projectId, iModelName: locIModelName, revision0: pathname });
+    return IModelHost.hubAccess.createNewIModel({ requestContext, iTwinId: projectId, iModelName: locIModelName, revision0: pathname });
   }
 
   /** Upload an IModel's seed files and change sets to the hub
@@ -575,22 +575,22 @@ export class HubUtility {
   /** Deletes and re-creates an iModel with the provided name in the Context.
    * @returns the iModelId of the newly created iModel.
   */
-  public static async recreateIModel(arg: { requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
+  public static async recreateIModel(arg: { requestContext: AuthorizedClientRequestContext, iTwinId: GuidString, iModelName: string, noLocks?: true }): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    const deleteIModel = await HubUtility.queryIModelByName(arg.requestContext, arg.contextId, arg.iModelName);
+    const deleteIModel = await HubUtility.queryIModelByName(arg.requestContext, arg.iTwinId, arg.iModelName);
     if (undefined !== deleteIModel)
-      await IModelHost.hubAccess.deleteIModel({ requestContext: arg.requestContext, contextId: arg.contextId, iModelId: deleteIModel });
+      await IModelHost.hubAccess.deleteIModel({ requestContext: arg.requestContext, iTwinId: arg.iTwinId, iModelId: deleteIModel });
 
     // Create a new iModel
-    return IModelHost.hubAccess.createIModel({ ...arg, description: `Description for ${arg.iModelName}` });
+    return IModelHost.hubAccess.createNewIModel({ ...arg, description: `Description for ${arg.iModelName}` });
   }
 
   /** Create an iModel with the name provided if it does not already exist. If it does exist, the iModelId is returned. */
-  public static async createIModel(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string): Promise<GuidString> {
+  public static async createIModel(requestContext: AuthorizedClientRequestContext, iTwinId: GuidString, iModelName: string): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that modify iModels");
-    let iModelId = await HubUtility.queryIModelByName(requestContext, contextId, iModelName);
+    let iModelId = await HubUtility.queryIModelByName(requestContext, iTwinId, iModelName);
     if (!iModelId)
-      iModelId = await IModelHost.hubAccess.createIModel({ requestContext, contextId, iModelName, description: `Description for iModel` });
+      iModelId = await IModelHost.hubAccess.createNewIModel({ requestContext, iTwinId, iModelName, description: `Description for iModel` });
     return iModelId;
   }
 }

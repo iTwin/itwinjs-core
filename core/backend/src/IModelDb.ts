@@ -18,7 +18,7 @@ import {
   ElementAspectProps, ElementGeometryRequest, ElementGeometryUpdate, ElementGraphicsRequestProps, ElementLoadProps, ElementProps, EntityMetaData,
   EntityProps, EntityQueryParams, FilePropertyProps, FontMap, FontProps, GeoCoordinatesResponseProps, GeometryContainmentRequestProps,
   GeometryContainmentResponseProps, IModel, IModelCoordinatesResponseProps, IModelError, IModelNotFoundResponse, IModelProps,
-  IModelTileTreeProps, IModelVersion, LocalBriefcaseProps, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
+  IModelTileTreeProps, IModelVersion, LocalBriefcaseProps, LocalFileName, MassPropertiesRequestProps, MassPropertiesResponseProps, ModelLoadProps, ModelProps,
   ModelSelectorProps, OpenBriefcaseProps, ProfileOptions, PropertyCallback, QueryLimit, QueryPriority, QueryQuota, QueryResponse, QueryResponseStatus,
   SchemaState, SheetProps, SnapRequestProps, SnapResponseProps, SnapshotOpenOptions, SpatialViewDefinitionProps, StandaloneOpenOptions,
   TextureLoadProps, ThumbnailProps, UpgradeOptions, ViewDefinitionProps, ViewQueryParams, ViewStateLoadProps, ViewStateProps,
@@ -107,7 +107,7 @@ export interface LockControl {
    * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
    * > Note: acquiring a shared lock on an element requires also obtaining a shared lock on all its owner elements.
    */
-  acquireSharedLocks(ids: Id64Arg): Promise<void>;
+  acquireSharedLock(ids: Id64Arg): Promise<void>;
   /** Release all locks currently held from the lock server. */
   releaseAllLocks(): Promise<void>;
 }
@@ -123,7 +123,7 @@ class NoLocks implements LockControl {
   public checkSharedLock(): void { }
   public elementWasCreated(): void { }
   public async acquireExclusiveLock(): Promise<void> { }
-  public async acquireSharedLocks(): Promise<void> { }
+  public async acquireSharedLock(): Promise<void> { }
   public async releaseAllLocks(): Promise<void> { }
 }
 
@@ -199,7 +199,7 @@ export abstract class IModelDb extends IModel {
   /** Get the full path fileName of this iModelDb
    * @note this member is only valid while the iModel is opened.
    */
-  public get pathName(): string { return this.nativeDb.getFilePath(); }
+  public get pathName(): LocalFileName { return this.nativeDb.getFilePath(); }
 
   /** @internal */
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, changeset?: ChangesetIdWithIndex }) {
@@ -798,7 +798,7 @@ export abstract class IModelDb extends IModel {
    * @note Changes are saved if importSchemas is successful and abandoned if not successful.
    * @see querySchemaVersion
    */
-  public async importSchemas(requestContext: ClientRequestContext, schemaFileNames: string[]): Promise<void> {
+  public async importSchemas(requestContext: ClientRequestContext, schemaFileNames: LocalFileName[]): Promise<void> {
     requestContext.enter();
     if (this.isSnapshot || this.isStandalone) {
       const status = this.nativeDb.importSchemas(schemaFileNames);
@@ -854,7 +854,7 @@ export abstract class IModelDb extends IModel {
   /** Find an opened instance of any subclass of IModelDb, by filename
    * @note this method returns an IModelDb if the filename is open for *any* subclass of IModelDb
   */
-  public static findByFilename(fileName: string): IModelDb | undefined {
+  public static findByFilename(fileName: LocalFileName): IModelDb | undefined {
     for (const entry of this._openDbs) {
       if (entry[1].pathName === fileName)
         return entry[1];
@@ -884,7 +884,7 @@ export abstract class IModelDb extends IModel {
   }
 
   /** @internal */
-  public static openDgnDb(file: { path: string, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions): IModelJsNative.DgnDb {
+  public static openDgnDb(file: { path: LocalFileName, key?: string }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions): IModelJsNative.DgnDb {
     file.key = file.key ?? Guid.createValue();
     if (this.tryFindByKey(file.key))
       throw new IModelError(IModelStatus.AlreadyOpen, `key [${file.key}] for file [${file.path}] is already in use`);
@@ -912,7 +912,7 @@ export abstract class IModelDb extends IModel {
    * @see [[BriefcaseDb.upgradeSchemas]] or [[StandaloneDb.upgradeSchemas]]
    * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
    */
-  public static validateSchemas(filePath: string, forReadWrite: boolean): SchemaState {
+  public static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState {
     const openMode = forReadWrite ? OpenMode.ReadWrite : OpenMode.Readonly;
     const file = { path: filePath };
     let result = DbResult.BE_SQLITE_OK;
@@ -2159,7 +2159,8 @@ export namespace IModelDb { // eslint-disable-line no-redeclare
   }
 }
 
-/** A local copy of an iModel from iModelHub that can pull and potentially push changesets.
+/**
+ * A local copy of an iModel from iModelHub that can pull and potentially push changesets.
  * BriefcaseDb raises a set of events to allow apps and subsystems to track its object life cycle, including [[onOpen]] and [[onOpened]].
  * @public
  */
@@ -2202,9 +2203,14 @@ export class BriefcaseDb extends IModelDb {
   /** The Guid that identifies the *context* that owns this iModel. */
   public override get contextId(): GuidString { return super.contextId!; } // GuidString | undefined for the superclass, but required for BriefcaseDb
 
-  protected get useServerLocks(): boolean {
-    // locks apply to assigned briefcases without the "no locking" flag
-    return (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
+  /** Determine whether this BriefcaseDb should use a lock server.
+   * All must be true:
+   * - file is open for write
+   * - has an assigned briefcaseId
+   * - the "no locking" flag is not present. This is a server property of an iModel, set when the briefcase is downloaded.
+   */
+  protected get useLockServer(): boolean {
+    return !this.isReadonly && (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
   }
 
   protected constructor(args: { nativeDb: IModelJsNative.DgnDb, key: string, openMode: OpenMode, briefcaseId: number }) {
@@ -2212,7 +2218,7 @@ export class BriefcaseDb extends IModelDb {
     this._openMode = args.openMode;
     this.briefcaseId = args.briefcaseId;
 
-    if (this.useServerLocks)
+    if (this.useLockServer)
       this._locks = new ServerBasedLocks(this);
   }
 
@@ -2408,7 +2414,7 @@ export class SnapshotDb extends IModelDb {
    * @returns A writeable SnapshotDb
    * @see [Snapshot iModels]($docs/learning/backend/AccessingIModels.md#snapshot-imodels)
    */
-  public static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotDb {
+  public static createEmpty(filePath: LocalFileName, options: CreateEmptySnapshotIModelProps): SnapshotDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.createIModel(filePath, options);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
@@ -2460,7 +2466,7 @@ export class SnapshotDb extends IModelDb {
   /** open this SnapshotDb read/write, strictly to apply incoming changesets. Used for creating new checkpoints.
    * @internal
    */
-  public static openForApplyChangesets(path: string, props?: SnapshotOpenOptions): SnapshotDb {
+  public static openForApplyChangesets(path: LocalFileName, props?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: props?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.ReadWrite, undefined, props);
     return new SnapshotDb(nativeDb, file.key!);
@@ -2472,7 +2478,7 @@ export class SnapshotDb extends IModelDb {
    * @see [[close]]
    * @throws [[IModelError]] If the file is not found or is not a valid *snapshot*.
    */
-  public static openFile(path: string, opts?: SnapshotOpenOptions): SnapshotDb {
+  public static openFile(path: LocalFileName, opts?: SnapshotOpenOptions): SnapshotDb {
     const file = { path, key: opts?.key };
     const nativeDb = this.openDgnDb(file, OpenMode.Readonly, undefined, opts);
     return new SnapshotDb(nativeDb, file.key!);
@@ -2484,7 +2490,7 @@ export class SnapshotDb extends IModelDb {
    * servicing the same checkpoint.
    * @internal
    */
-  public static openCheckpointV1(fileName: string, checkpoint: CheckpointProps) {
+  public static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps) {
     const snapshot = this.openFile(fileName, { key: CheckpointManager.getKey(checkpoint) });
     snapshot._contextId = checkpoint.contextId;
     return snapshot;
@@ -2545,26 +2551,26 @@ export class SnapshotDb extends IModelDb {
   }
 }
 
-/** Standalone iModels are read/write files that are not managed by iModelHub.
- * They are relevant only for small-scale single-user scenarios.
+/**
+ * Standalone iModels are read/write files that are not associated with an Itwin or managed by iModelHub.
+ * They are relevant only for testing, or for small-scale single-user scenarios.
  * Standalone iModels are designed such that the API for Standalone iModels and Briefcase
  * iModels (those synchronized with iModelHub) are as similar and consistent as possible.
  * This leads to a straightforward process where the a user starts with StandaloneDb and can
- * optionally choose to upgrade to iModelHub.
+ * optionally choose to upgrade to an iTwin.
  *
  * Some additional details. Standalone iModels:
- * - always have [Guid.empty]($bentley) for their contextId (they are "unassociated" files)
+ * - always have [Guid.empty]($bentley) for their iTwinId (they are "unassociated" files)
  * - always have BriefcaseId === [BriefcaseIdValue.Unassigned]($common)
  * - are connected to the frontend via [BriefcaseConnection.openStandalone]($frontend)
  * - may be opened without supplying any user credentials
  * - may be opened read/write
- * - may optionally support undo/redo via [[TxnManager]]
  * - cannot apply a changeset to nor generate a changesets (since there is no timeline from which to get/push changesets)
  * @public
  */
 export class StandaloneDb extends BriefcaseDb {
   public override get isStandalone(): boolean { return true; }
-  protected override get useServerLocks() { return false; }
+  protected override get useLockServer() { return false; } // standalone iModels have no lock server
   public static override findByKey(key: string): StandaloneDb {
     return super.findByKey(key) as StandaloneDb;
   }
@@ -2578,7 +2584,7 @@ export class StandaloneDb extends BriefcaseDb {
    * @param filePath The file path for the iModel
    * @param args The parameters that define the new iModel
    */
-  public static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
+  public static createEmpty(filePath: LocalFileName, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.createIModel(filePath, args);
     nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, undefined === args.allowEdit ? "" : args.allowEdit);
@@ -2595,10 +2601,9 @@ export class StandaloneDb extends BriefcaseDb {
    * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
    * @see [[StandaloneDb.validateSchemas]]
    */
-  public static upgradeStandaloneSchemas(filePath: string) {
+  public static upgradeStandaloneSchemas(filePath: LocalFileName) {
     let nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { profile: ProfileOptions.Upgrade });
     nativeDb.closeIModel();
-
     nativeDb = this.openDgnDb({ path: filePath }, OpenMode.ReadWrite, { domain: DomainOptions.Upgrade });
     nativeDb.closeIModel();
   }
@@ -2606,22 +2611,17 @@ export class StandaloneDb extends BriefcaseDb {
   /** Open a standalone iModel file.
    * @param filePath The path of the standalone iModel file.
    * @param openMode Optional open mode for the standalone iModel. The default is read/write.
-   * @returns a new StandaloneDb if the file is not currently open, and the existing StandaloneDb if it is already
    * @throws [[IModelError]] if the file is not a standalone iModel.
    * @see [BriefcaseConnection.openStandalone]($frontend) to open a StandaloneDb from the frontend
    */
-  public static openFile(filePath: string, openMode: OpenMode = OpenMode.ReadWrite, options?: StandaloneOpenOptions): StandaloneDb {
+  public static openFile(filePath: LocalFileName, openMode: OpenMode = OpenMode.ReadWrite, options?: StandaloneOpenOptions): StandaloneDb {
     const file = { path: filePath, key: options?.key };
     const nativeDb = this.openDgnDb(file, openMode);
 
     try {
-      const contextId = nativeDb.queryProjectGuid();
-      const briefcaseId = nativeDb.getBriefcaseId();
-      if (contextId !== Guid.empty || !(briefcaseId === BriefcaseIdValue.Unassigned || briefcaseId === BriefcaseIdValue.DeprecatedStandalone))// eslint-disable-line deprecation/deprecation
-        throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. contextId=${contextId}, briefcaseId=${briefcaseId}`);
-
-      if (openMode === OpenMode.ReadWrite && (undefined === nativeDb.queryLocalValue(BriefcaseLocalValue.StandaloneEdit)))
-        throw new IModelError(IModelStatus.ReadOnly, `${filePath} is not editable`);
+      const iTwinId = nativeDb.queryProjectGuid();
+      if (iTwinId !== Guid.empty) // a "standalone" iModel means it is not associated with an iTwin
+        throw new IModelError(IModelStatus.WrongIModel, `${filePath} is not a Standalone iModel. iTwinId=${iTwinId}`);
 
       return new StandaloneDb({ nativeDb, key: file.key!, openMode, briefcaseId: BriefcaseIdValue.Unassigned });
     } catch (error) {

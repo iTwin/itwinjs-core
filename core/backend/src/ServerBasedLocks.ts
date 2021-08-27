@@ -19,7 +19,7 @@ import { SQLiteDb } from "./SQLiteDb";
  * 1) they must hold at least a shared lock before an exclusive lock can be acquired for their members
  * 2) if they hold an exclusive lock, then all of their members are exclusively locked implicitly.
  */
-export interface ElementOwners { modelId: Id64String, parentId: Id64String }
+export interface ElementOwners { modelId: Id64String, parentId: Id64String | undefined }
 
 export class ServerBasedLocks implements LockControl {
   public get isServerBased() { return true; }
@@ -61,8 +61,8 @@ export class ServerBasedLocks implements LockControl {
     });
   }
 
-  private getLockState(id: Id64String): LockState | undefined {
-    return !Id64.isValid(id) ? LockState.None : this.lockDb.withPreparedSqliteStatement("SELECT state FROM locks WHERE id=?", (stmt) => {
+  private getLockState(id?: Id64String): LockState | undefined {
+    return !id || !Id64.isValid(id) ? LockState.None : this.lockDb.withPreparedSqliteStatement("SELECT state FROM locks WHERE id=?", (stmt) => {
       stmt.bindId(1, id);
       return (DbResult.BE_SQLITE_ROW === stmt.step()) ? stmt.getValueInteger(0) : undefined;
     });
@@ -92,7 +92,10 @@ export class ServerBasedLocks implements LockControl {
   }
 
   /** Determine whether an the exclusive lock is already held by an element (or one of its owners) */
-  public holdsExclusiveLock(id: Id64String): boolean {
+  public holdsExclusiveLock(id: Id64String | undefined): boolean {
+    if (!id)
+      return false;
+
     if (this.getLockState(id) === LockState.Exclusive)
       return true; // yes, we hold the lock.
 
@@ -118,10 +121,10 @@ export class ServerBasedLocks implements LockControl {
   }
 
   /** if the shared lock on the element supplied is not already held, add it to the set of shared locks required. Then, check owners. */
-  private addSharedLock(id: Id64String, locks: Set<Id64String>) {
+  private addSharedLock(id: Id64String | undefined, locks: Set<Id64String>) {
     // if the id is not valid, or of the lock is already in the set, or if we already hold a shared lock, we're done
     // Note: if we hold a shared lock, it is guaranteed that we also hold all required shared locks on owners.
-    if (!Id64.isValid(id) || locks.has(id) || this.holdsSharedLock(id))
+    if (!id || !Id64.isValid(id) || locks.has(id) || this.holdsSharedLock(id))
       return;
 
     locks.add(id); // add to set of needed shared locks
@@ -172,7 +175,7 @@ export class ServerBasedLocks implements LockControl {
    * Acquire a shared lock on one or more elements. This also attempts to acquire a shared lock on all of the element's owners, recursively.
    * If *any* lock cannot be obtained, no locks are acquired.
    */
-  public async acquireSharedLocks(ids: Id64Arg): Promise<void> {
+  public async acquireSharedLock(ids: Id64Arg): Promise<void> {
     const locks = new Map<Id64String, LockState>();
     for (const id of Id64.iterable(ids)) {
       if (!this.holdsSharedLock(id))

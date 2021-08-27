@@ -12,7 +12,7 @@ import {
   SqliteValue, SqliteValueType,
 } from "../../imodeljs-backend";
 import { HubMock } from "../HubMock";
-import { IModelTestUtils, TestUserType, Timer } from "../IModelTestUtils";
+import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
 import { HubUtility } from "./HubUtility";
 
 export async function createNewModelAndCategory(requestContext: AuthorizedBackendRequestContext, rwIModel: BriefcaseDb, parent?: Id64String) {
@@ -49,7 +49,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     testContextId = await HubUtility.getTestContextId(managerRequestContext);
     readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
-    readWriteTestIModelId = await HubUtility.recreateIModel({ requestContext: managerRequestContext, contextId: testContextId, iModelName: readWriteTestIModelName, noLocks: true });
+    readWriteTestIModelId = await HubUtility.recreateIModel({ requestContext: managerRequestContext, iTwinId: testContextId, iModelName: readWriteTestIModelName });
 
     // Purge briefcases that are close to reaching the acquire limit
     await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, readWriteTestIModelId);
@@ -67,20 +67,16 @@ describe("IModelWriteTest (#integration)", () => {
 
   it("should handle undo/redo (#integration)", async () => {
     const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
-    let timer = new Timer("delete iModels");
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesUndoRedoPushTest";
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext: adminRequestContext, contextId: testContextId, iModelName });
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext: adminRequestContext, iTwinId: testContextId, iModelName });
     if (iModelId)
-      await IModelHost.hubAccess.deleteIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelId });
-    timer.end();
+      await IModelHost.hubAccess.deleteIModel({ requestContext: adminRequestContext, iTwinId: testContextId, iModelId });
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    timer = new Timer("create iModel");
-    const rwIModelId = await IModelHost.hubAccess.createIModel({ requestContext: adminRequestContext, contextId: testContextId, iModelName, description: "TestSubject", noLocks: true });
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ requestContext: adminRequestContext, iTwinId: testContextId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
-    timer.end();
 
     // create and insert a new model with code1
     const code1 = IModelTestUtils.getUniqueModelCode(rwIModel, "newPhysicalModel1");
@@ -114,16 +110,12 @@ describe("IModelWriteTest (#integration)", () => {
     // The iModel should have a model with code1 and not code2
     assert.isTrue(rwIModel.elements.getElement(code2) !== undefined); // throws if element is not found
 
-    timer = new Timer("push changes");
-
     // Push the changes to the hub
     const prePushChangeset = rwIModel.changeset;
     await rwIModel.pushChanges(adminRequestContext, "test");
     const postPushChangeset = rwIModel.changeset;
     assert(!!postPushChangeset);
     expect(prePushChangeset !== postPushChangeset);
-
-    timer.end();
 
     rwIModel.close();
     // The iModel should have code1 marked as used and not code2
@@ -322,6 +314,6 @@ describe("IModelWriteTest (#integration)", () => {
     await BriefcaseDb.upgradeSchemas(superRequestContext, superBriefcaseProps);
     superRequestContext.enter();
 
-    await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, contextId: projectId, iModelId });
+    await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, iTwinId: projectId, iModelId });
   });
 });

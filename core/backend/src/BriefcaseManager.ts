@@ -15,13 +15,13 @@ import {
 import { IModelHubError } from "@bentley/imodelhub-client";
 import {
   BriefcaseIdValue, BriefcaseProps, BriefcaseStatus, ChangesetFileProps, ChangesetIndexOrId, ChangesetProps, ChangesetType,
-  IModelError, IModelVersion, LocalBriefcaseProps, RequestNewBriefcaseProps,
+  IModelError, IModelVersion, LocalBriefcaseProps, LocalDirName, LocalFileName, RequestNewBriefcaseProps,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, WsgError } from "@bentley/itwin-client";
 import { TelemetryEvent } from "@bentley/telemetry-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
 import { CheckpointManager, ProgressFunction } from "./CheckpointManager";
-import { BriefcaseDb, BriefcaseLocalValue, IModelDb } from "./IModelDb";
+import { BriefcaseDb, IModelDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
 
@@ -47,20 +47,20 @@ export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
  */
 export class BriefcaseManager {
   /** Get the local path of the folder storing files that are associated with an imodel */
-  public static getIModelPath(iModelId: GuidString): string { return path.join(this._cacheDir, iModelId); }
+  public static getIModelPath(iModelId: GuidString): LocalDirName { return path.join(this._cacheDir, iModelId); }
 
   /** @internal */
-  public static getChangeSetsPath(iModelId: GuidString): string { return path.join(this.getIModelPath(iModelId), "csets"); }
+  public static getChangeSetsPath(iModelId: GuidString): LocalDirName { return path.join(this.getIModelPath(iModelId), "csets"); }
 
   /** @internal */
-  public static getChangeCachePathName(iModelId: GuidString): string { return path.join(this.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
+  public static getChangeCachePathName(iModelId: GuidString): LocalFileName { return path.join(this.getIModelPath(iModelId), iModelId.concat(".bim.ecchanges")); }
 
   /** @internal */
-  public static getChangedElementsPathName(iModelId: GuidString): string { return path.join(this.getIModelPath(iModelId), iModelId.concat(".bim.elems")); }
+  public static getChangedElementsPathName(iModelId: GuidString): LocalFileName { return path.join(this.getIModelPath(iModelId), iModelId.concat(".bim.elems")); }
 
   private static _briefcaseSubDir = "briefcases";
   /** @internal */
-  public static getBriefcaseBasePath(iModelId: GuidString): string {
+  public static getBriefcaseBasePath(iModelId: GuidString): LocalDirName {
     return path.join(this.getIModelPath(iModelId), this._briefcaseSubDir);
   }
 
@@ -69,11 +69,11 @@ export class BriefcaseManager {
    * @param briefcase the iModelId and BriefcaseId for the filename
    * @see getIModelPath
    */
-  public static getFileName(briefcase: BriefcaseProps): string {
+  public static getFileName(briefcase: BriefcaseProps): LocalFileName {
     return path.join(this.getBriefcaseBasePath(briefcase.iModelId), `${briefcase.briefcaseId}.bim`);
   }
 
-  private static setupCacheDir(cacheRootDir: string) {
+  private static setupCacheDir(cacheRootDir: LocalDirName) {
     this._cacheDir = cacheRootDir;
     IModelJsFs.recursiveMkDirSync(this._cacheDir);
   }
@@ -84,7 +84,7 @@ export class BriefcaseManager {
    * Briefcases are stored relative to this path in sub-folders organized by IModelId.
    * @note It is perfectly valid for applications to store briefcases in locations they manage, outside of `cacheRootDir`.
    */
-  public static initialize(cacheRootDir: string) {
+  public static initialize(cacheRootDir: LocalDirName) {
     if (this._initialized)
       return;
     this.setupCacheDir(cacheRootDir);
@@ -131,9 +131,9 @@ export class BriefcaseManager {
     return briefcaseList;
   }
 
-  private static _cacheDir: string;
+  private static _cacheDir: LocalDirName;
   /** Get the root directory for the briefcase cache */
-  public static get cacheDir() { return this._cacheDir; }
+  public static get cacheDir(): LocalDirName { return this._cacheDir; }
 
   /** Determine whether the supplied briefcaseId is in the range of assigned BriefcaseIds issued by iModelHub
    * @note this does check whether the id was actually acquired by the caller.
@@ -214,9 +214,6 @@ export class BriefcaseManager {
       nativeDb.resetBriefcaseId(briefcaseId);
       if (nativeDb.getParentChangeset().id !== args.checkpoint.changeset.id)
         throw new IModelError(IModelStatus.InvalidId, `Downloaded briefcase has wrong changesetId: ${fileName}`);
-      // query the server to see if this iModel uses locks or not. If not, save that flag in the localValue table.
-      if (false === await IModelHost.hubAccess.shouldUseLocks(request))
-        nativeDb.saveLocalValue(BriefcaseLocalValue.NoLocking, "true");
     } finally {
       nativeDb.saveChanges();
       nativeDb.closeIModel();
@@ -228,7 +225,7 @@ export class BriefcaseManager {
    * @internal
    */
   public static deleteChangeSetsFromLocalDisk(iModelId: string) {
-    const changeSetsPath: string = BriefcaseManager.getChangeSetsPath(iModelId);
+    const changeSetsPath = BriefcaseManager.getChangeSetsPath(iModelId);
     if (BriefcaseManager.deleteFolderAndContents(changeSetsPath))
       Logger.logTrace(loggerCategory, "Deleted change sets from local disk", () => ({ iModelId, changeSetsPath }));
   }
@@ -249,7 +246,7 @@ export class BriefcaseManager {
    * @param filePath the full file name of the Briefcase to delete
    * @param requestContext context for releasing the briefcaseId
    */
-  public static async deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void> {
+  public static async deleteBriefcaseFiles(filePath: LocalFileName, requestContext?: AuthorizedClientRequestContext): Promise<void> {
     try {
       const db = IModelDb.openDgnDb({ path: filePath }, OpenMode.Readonly);
       const briefcase: BriefcaseProps = {
@@ -291,7 +288,7 @@ export class BriefcaseManager {
    *  - Does not throw any error, but logs it instead
    *  - Returns true if the delete was successful
    */
-  private static deleteFile(pathname: string): boolean {
+  private static deleteFile(pathname: LocalFileName): boolean {
     try {
       IModelJsFs.unlinkSync(pathname);
     } catch (error) {
@@ -305,7 +302,7 @@ export class BriefcaseManager {
    *  - Does not throw any error, but logs it instead
    *  - Returns true if the delete was successful
    */
-  private static deleteFolderIfEmpty(folderPathname: string): boolean {
+  private static deleteFolderIfEmpty(folderPathname: LocalDirName): boolean {
     try {
       const files = IModelJsFs.readdirSync(folderPathname);
       if (files.length > 0)
@@ -323,7 +320,7 @@ export class BriefcaseManager {
    *  - Does not throw any errors, but logs them.
    *  - returns true if the delete was successful.
    */
-  private static deleteFolderContents(folderPathname: string): boolean {
+  private static deleteFolderContents(folderPathname: LocalDirName): boolean {
     if (!IModelJsFs.existsSync(folderPathname))
       return false;
 
@@ -342,7 +339,7 @@ export class BriefcaseManager {
    *  - Does not throw any errors, but logs them.
    *  - returns true if the delete was successful.
    */
-  private static deleteFolderAndContents(folderPathname: string): boolean {
+  private static deleteFolderAndContents(folderPathname: LocalDirName): boolean {
     if (!IModelJsFs.existsSync(folderPathname))
       return true;
 
@@ -532,7 +529,6 @@ export class BriefcaseManager {
    * @param requestContext The client request context
    * @param briefcase Identifies the IModelDb that contains the pending changes.
    * @param description a description of the changeset that is to be pushed.
-   * @param relinquishCodesLocks release locks held after pushing?
    * @internal
    */
   public static async pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, _changeType: ChangesetType = ChangesetType.Regular, releaseLocks: boolean = true): Promise<void> {

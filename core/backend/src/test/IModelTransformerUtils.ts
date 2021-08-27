@@ -44,7 +44,7 @@ export namespace IModelTransformerUtils {
     FunctionalSchema.registerSchema();
   }
 
-  export function populateSourceDb(sourceDb: IModelDb): void {
+  export async function populateSourceDb(sourceDb: IModelDb): Promise<void> {
     // Embed font
     if (Platform.platformName.startsWith("win")) {
       sourceDb.embedFont({ id: 1, type: FontType.TrueType, name: "Arial" });
@@ -61,6 +61,7 @@ export namespace IModelTransformerUtils {
     assert.isTrue(Id64.isValidId64(codeSpecId1));
     assert.isTrue(Id64.isValidId64(codeSpecId2));
     assert.isTrue(Id64.isValidId64(codeSpecId3));
+    await sourceDb.locks.acquireSharedLock(IModel.rootSubjectId);
     // Insert RepositoryModel structure
     const subjectId = Subject.insert(sourceDb, IModel.rootSubjectId, "Subject", "Subject Description");
     assert.isTrue(Id64.isValidId64(subjectId));

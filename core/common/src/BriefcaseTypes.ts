@@ -7,7 +7,7 @@
  */
 
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ChangesetIdWithIndex } from "./ChangesetProps";
+import { ChangesetIdWithIndex, LocalFileName } from "./ChangesetProps";
 import { IModelEncryptionProps, OpenDbKey } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
 
@@ -92,7 +92,7 @@ export interface BriefcaseProps {
  */
 export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
   /** the full path to the briefcase file  */
-  fileName: string;
+  fileName: LocalFileName;
   /** If true, open the briefcase readonly */
   readonly?: boolean;
 }
@@ -102,7 +102,7 @@ export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
  */
 export interface LocalBriefcaseProps {
   /** Full path of local file. */
-  fileName: string;
+  fileName: LocalFileName;
 
   /** Context (Project or Asset) of the iModel. */
   contextId: GuidString;
@@ -136,7 +136,7 @@ export interface RequestNewBriefcaseProps {
    * Callers can use this to open the briefcase after the download completes.
    * @note this member is both an input and an output.
    */
-  fileName?: string;
+  fileName?: LocalFileName;
 
   /**
    * The BriefcaseId for the new briefcase. If undefined, a new BriefcaseId will be acquired from iModelHub before the download, and is returned in this member.
@@ -161,7 +161,7 @@ export interface BriefcaseDownloader {
   briefcaseId: number;
 
   /** the name of the local file for the briefcase */
-  fileName: string;
+  fileName: LocalFileName;
 
   /** Promise that resolves when the download completes. await this to complete the download */
   downloadPromise: Promise<void>;

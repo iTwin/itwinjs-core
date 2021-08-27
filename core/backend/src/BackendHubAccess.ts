@@ -64,7 +64,7 @@ export interface IModelIdArg {
  */
 export interface IModelNameArg {
   requestContext?: AuthorizedClientRequestContext;
-  contextId: GuidString;
+  iTwinId: GuidString;
   iModelName: string;
 }
 
@@ -107,6 +107,12 @@ export interface ChangesetRangeArg extends IModelIdArg {
 /** @internal */
 export type CheckPointArg = DownloadRequest;
 
+export interface CreateNewIModelProps extends IModelNameArg {
+  readonly description?: string;
+  readonly revision0?: LocalFileName;
+  readonly noLocks?: true;
+}
+
 /** Methods for accessing services of IModelHub from the backend.
  * @note these methods may be mocked for tests
  * @internal
@@ -147,8 +153,6 @@ export interface BackendHubAccess {
   /** download a v2 checkpoint */
   downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
 
-  shouldUseLocks(arg: IModelIdArg): Promise<boolean>;
-
   /** acquire one or more locks. Throws if unsuccessful */
   acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
 
@@ -165,9 +169,10 @@ export interface BackendHubAccess {
 
   /** get the iModelId of an iModel by name. Undefined if no iModel with that name exists.  */
   queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
-  /** create a new iModel. Returns the Guid of the newly created iModel */
-  createIModel(arg: IModelNameArg & { description?: string, revision0?: LocalFileName, readonly noLocks?: true }): Promise<GuidString>;
-  /** delete an iModel  */
-  deleteIModel(arg: IModelIdArg & { contextId: GuidString }): Promise<void>;
-}
 
+  /** create a new iModel. Returns the Guid of the newly created iModel */
+  createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
+
+  /** delete an iModel  */
+  deleteIModel(arg: IModelIdArg & { iTwinId: GuidString }): Promise<void>;
+}

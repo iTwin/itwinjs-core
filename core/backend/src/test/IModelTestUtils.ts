@@ -374,6 +374,7 @@ export class IModelTestUtils {
       code: newModelCode,
     };
     const modeledElement: Element = testDb.elements.createElement(modeledElementProps);
+    await testDb.locks.acquireSharedLock(model);
     return testDb.elements.insertElement(modeledElement);
   }
 

@@ -111,8 +111,8 @@ export class Model extends Entity implements ModelProps {
    * @note `this` is the class of the Model that was inserted
    * @beta
    */
-  protected static onInserted(arg: OnModelIdArg): void {
-    arg.iModel.locks.elementWasCreated(arg.id);
+  protected static onInserted(_arg: OnModelIdArg): void {
+    // we don't need to tell LockControl about models being created - their ModeledElement does that
   }
 
   /** Called before a Model is updated.

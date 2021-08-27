@@ -8,23 +8,25 @@
 
 import { join } from "path";
 import { AzureFileHandler } from "@bentley/backend-itwin-client";
-import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger } from "@bentley/bentleyjs-core";
+import { BentleyError, BriefcaseStatus, GuidString, IModelHubStatus, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
 import {
   BriefcaseQuery, ChangeSet, ChangeSetQuery, ChangesType, CheckpointQuery, CheckpointV2, CheckpointV2Query, CodeQuery, IModelBankClient, IModelClient,
   IModelHubClient, IModelQuery, Lock, LockQuery, LockType, VersionQuery,
 } from "@bentley/imodelhub-client";
 import {
+  BriefcaseIdValue,
   ChangesetFileProps, ChangesetId, ChangesetIndex, ChangesetProps, CodeProps, IModelError, IModelVersion, LocalDirName,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext, ProgressCallback, UserCancelledError } from "@bentley/itwin-client";
 import {
-  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, IModelIdArg, LockProps, V2CheckpointAccessProps,
+  BriefcaseDbArg, BriefcaseIdArg, ChangesetArg, ChangesetRangeArg, CheckPointArg, CreateNewIModelProps, IModelIdArg, IModelNameArg, LockProps, V2CheckpointAccessProps,
 } from "./BackendHubAccess";
 import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 import { BriefcaseManager } from "./BriefcaseManager";
 import { CheckpointProps } from "./CheckpointManager";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
+import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "./IModelDb";
 
 /** @internal */
 export class IModelHubBackend {
@@ -84,27 +86,50 @@ export class IModelHubBackend {
     return this.getLatestChangeset(arg);
   }
 
-  public static async createIModel(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string, description?: string, revision0?: string }): Promise<GuidString> {
+  public static async createNewIModel(arg: CreateNewIModelProps): Promise<GuidString> {
     if (this.isUsingIModelBankClient)
       throw new IModelError(IModelStatus.BadRequest, "This is a iModelHub only operation");
 
+    const revision0 = join(IModelHost.cacheDir, "temp-revision0.bim");
+    IModelJsFs.removeSync(revision0);
+    if (!arg.revision0) { // if they didn't supply a revision0 file, create a blank one.
+      const blank = SnapshotDb.createEmpty(revision0, { rootSubject: { name: arg.description ?? arg.iModelName } });
+      blank.saveChanges();
+      blank.close();
+    } else {
+      IModelJsFs.copySync(revision0, arg.revision0);
+    }
+
+    const nativeDb = IModelDb.openDgnDb({ path: revision0 }, OpenMode.ReadWrite);
+    try {
+      nativeDb.saveProjectGuid(arg.iTwinId);
+      // nativeDb.setDbGuid(this.iModelId); NEEDS_WORK - iModelHub should accept this value, not create it.
+      nativeDb.saveChanges();
+      nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
+      nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
+      nativeDb.saveLocalValue(BriefcaseLocalValue.NoLocking, arg.noLocks ? "true" : "");
+      nativeDb.saveChanges();
+    } finally {
+      nativeDb.closeIModel();
+    }
+
     const requestContext = await this.getRequestContext(arg);
-    const hubIModel = await this.iModelClient.iModels.create(requestContext, arg.contextId, arg.iModelName, { path: arg.revision0, description: arg.description });
-    requestContext.enter();
+    const hubIModel = await this.iModelClient.iModels.create(requestContext, arg.iTwinId, arg.iModelName, { path: revision0, description: arg.description });
+    IModelJsFs.removeSync(revision0);
     return hubIModel.wsgId;
   }
 
-  public static async deleteIModel(arg: IModelIdArg & { contextId: GuidString }): Promise<void> {
+  public static async deleteIModel(arg: IModelIdArg & { iTwinId: GuidString }): Promise<void> {
     const dirName = BriefcaseManager.getIModelPath(arg.iModelId);
     if (IModelJsFs.existsSync(dirName)) {
       IModelJsFs.purgeDirSync(dirName);
       IModelJsFs.rmdirSync(dirName);
     }
-    return this.iModelClient.iModels.delete(await this.getRequestContext(arg), arg.contextId, arg.iModelId);
+    return this.iModelClient.iModels.delete(await this.getRequestContext(arg), arg.iTwinId, arg.iModelId);
   }
 
-  public static async queryIModelByName(arg: { requestContext?: AuthorizedClientRequestContext, contextId: GuidString, iModelName: string }): Promise<GuidString | undefined> {
-    const iModels = await this.iModelClient.iModels.get(await this.getRequestContext(arg), arg.contextId, new IModelQuery().byName(arg.iModelName));
+  public static async queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined> {
+    const iModels = await this.iModelClient.iModels.get(await this.getRequestContext(arg), arg.iTwinId, new IModelQuery().byName(arg.iModelName));
     return iModels.length === 0 ? undefined : iModels[0].id!;
   }
 

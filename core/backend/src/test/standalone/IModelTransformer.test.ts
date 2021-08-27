@@ -51,7 +51,7 @@ describe("IModelTransformer", () => {
     const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
     await IModelTransformerUtils.prepareSourceDb(sourceDb);
-    IModelTransformerUtils.populateSourceDb(sourceDb);
+    await IModelTransformerUtils.populateSourceDb(sourceDb);
     sourceDb.saveChanges();
     // Target IModelDb
     const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Target.bim");
@@ -183,7 +183,7 @@ describe("IModelTransformer", () => {
     const masterDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "Master.bim");
     const masterDb = SnapshotDb.createEmpty(masterDbFile, { rootSubject: { name: "Branching Workflow" }, createClassViews: true });
     await IModelTransformerUtils.prepareSourceDb(masterDb);
-    IModelTransformerUtils.populateSourceDb(masterDb);
+    await IModelTransformerUtils.populateSourceDb(masterDb);
     masterDb.saveChanges();
     const branchDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "Branch.bim");
     const branchDb = SnapshotDb.createFrom(masterDb, branchDbFile, { createClassViews: true });
@@ -251,7 +251,7 @@ describe("IModelTransformer", () => {
     const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "SourceImportSubject.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "SourceImportSubject" } });
     await IModelTransformerUtils.prepareSourceDb(sourceDb);
-    IModelTransformerUtils.populateSourceDb(sourceDb);
+    await IModelTransformerUtils.populateSourceDb(sourceDb);
     const sourceSubjectId = sourceDb.elements.queryElementIdByCode(Subject.createCode(sourceDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(sourceSubjectId));
     sourceDb.saveChanges();
@@ -282,7 +282,7 @@ describe("IModelTransformer", () => {
     const iModelFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "CloneModel.bim");
     const iModelDb = SnapshotDb.createEmpty(iModelFile, { rootSubject: { name: "CloneModel" } });
     await IModelTransformerUtils.prepareSourceDb(iModelDb);
-    IModelTransformerUtils.populateSourceDb(iModelDb);
+    await IModelTransformerUtils.populateSourceDb(iModelDb);
     const sourceSubjectId = iModelDb.elements.queryElementIdByCode(Subject.createCode(iModelDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(sourceSubjectId));
     const targetSubjectId = Subject.insert(iModelDb, IModel.rootSubjectId, "Target Subject");
@@ -1023,7 +1023,7 @@ describe("IModelTransformer", () => {
     const _physicalMaterialId = sourceDb.elements.insertElement({
       classFullName: GenericPhysicalMaterial.classFullName,
       model: IModel.dictionaryId,
-      code: new Code({spec: myCodeSpecId, scope: drawingId, value: "physical material"}),
+      code: new Code({ spec: myCodeSpecId, scope: drawingId, value: "physical material" }),
     } as DefinitionElementProps);
 
     sourceDb.saveChanges();
@@ -1040,7 +1040,7 @@ describe("IModelTransformer", () => {
     const drawingIdTarget = targetDb.elements.queryElementIdByCode(Drawing.createCode(targetDb, documentListModelId, "Drawing"));
     expect(drawingIdTarget).to.not.be.undefined;
     expect(Id64.isValidId64((drawingIdTarget as string))).to.be.true;
-    const physicalMaterialIdTarget = targetDb.elements.queryElementIdByCode(new Code({spec: myCodeSpecId, scope: drawingId, value: "physical material"}));
+    const physicalMaterialIdTarget = targetDb.elements.queryElementIdByCode(new Code({ spec: myCodeSpecId, scope: drawingId, value: "physical material" }));
     expect(physicalMaterialIdTarget).to.not.be.undefined;
     expect(Id64.isValidId64((physicalMaterialIdTarget as string))).to.be.true;
 
@@ -1090,14 +1090,14 @@ describe("IModelTransformer", () => {
     const drawingGraphic2Id = new DrawingGraphic({
       classFullName: DrawingGraphic.classFullName,
       model: drawingModel2Id,
-      code: new Code({spec: modelCodeSpec, scope: drawingModel2Id, value: "drawing graphic 2"}),
+      code: new Code({ spec: modelCodeSpec, scope: drawingModel2Id, value: "drawing graphic 2" }),
       category: categoryId,
     }, sourceDb).insert();
 
     const _drawingGraphic1Id = new DrawingGraphic({
       classFullName: DrawingGraphic.classFullName,
       model: drawingModel1Id,
-      code: new Code({spec: relatedCodeSpecId, scope: drawingGraphic2Id, value: "drawing graphic 1"}),
+      code: new Code({ spec: relatedCodeSpecId, scope: drawingGraphic2Id, value: "drawing graphic 1" }),
       category: categoryId,
     }, sourceDb).insert();
 
@@ -1140,7 +1140,7 @@ describe("IModelTransformer", () => {
     nativeDb.saveChanges(); // save change to ProjectId
     nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned); // standalone iModels should always have BriefcaseId unassigned
-    nativeDb.saveLocalValue("StandaloneEdit", JSON.stringify({txns: true}));
+    nativeDb.saveLocalValue("StandaloneEdit", JSON.stringify({ txns: true }));
     nativeDb.saveChanges(); // save change to briefcaseId
     nativeDb.closeIModel();
   }
