@@ -1,35 +1,33 @@
-# Content-related Rules
+# Content
 
-There are 2 primary concepts for creating content: rules and specifications.
+The Presentation library provides a declarative way to create content for tables, property grid and other content components based on iModel data. There are 2 primary concepts for creating content: [rules](#rules) and [specifications](#specifications).
+
+![Content rules' example](./media/content-rules-example.png)
 
 ## Rules
 
-Define *if* specific set of specifications should be used to create content for specific instances:
+There are two types of content rules:
 
-- [ContentRule](./ContentRule.md) is a container for [specifications](#specifications) that produce content.
-- [ContentModifier](./ContentModifier.md) is a container for [modifiers](#modifiers) that are applied to all content produced by content rules and specifications.
+- [Content rule](./ContentRule.md) is a container for [specifications](#specifications) that produce content.
+- [Content modifier](./ContentModifier.md) is a container for [modifiers](#modifiers) that are applied to all content produced by [content rules](./ContentRule.md) and their [specifications](#specifications).
+
+Both rules have *picking attributes* to specify what [input](./Terminology.md#input-instance) the rule applies to.
 
 ## Specifications
 
-Define *what content* is returned. There are 3 types of specifications:
+Content specifications define **result of the rule** if it does get used after evaluating it's [condition](./ContentRule.md#attribute-condition) and other *picking attributes*. There are 3 types of specifications:
 
-- [SelectedNodeInstances](./SelectedNodeInstances.md)
-- [ContentInstancesOfSpecificClasses](./ContentInstancesOfSpecificClasses.md)
-- [ContentRelatedInstances](./ContentRelatedInstances.md)
-
-Multiple specifications can contribute to the same content rule if:
-
-- There are multiple of them specified in a single rule
-- There are multiple rules whose condition returns `true`
+- [Selected node instances](./SelectedNodeInstances.md) specification returns properties of the [input instance](./Terminology.md#input-instance).
+- [Content instances of specific classes](./ContentInstancesOfSpecificClasses.md) specification returns properties of instances of classes given classes. The returned content doesn't depend on the [input](./Terminology.md#input-instance).
+- [Content related instances](./ContentRelatedInstances.md) specification returns properties of instances that are related to [input instances](./Terminology.md#input-instance) through given relationship(s).
 
 ## Modifiers
 
-Content modifiers allow modifying content by hiding or showing properties, including additional ones,
-or specifying custom renderers and editors.
+Content modifiers allow modifying content by hiding or showing properties, including additional ones, or specifying custom renderers and editors. Available modifiers:
 
-- [CalculatedProperties](./CalculatedPropertiesSpecification.md)
-- [RelatedProperties](./RelatedPropertiesSpecification.md)
-- [PropertyCategory](./PropertyCategorySpecification.md)
-- [PropertyOverrides](./PropertySpecification.md)
+- [Calculated properties](./CalculatedPropertiesSpecification.md) specification allows creating a calculated property.
+- [Related properties](./RelatedPropertiesSpecification.md) specification allows including properties of related instances.
+- [Property category](./PropertyCategorySpecification.md) specification allows grouping properties under custom categories.
+- [Property overrides](./PropertySpecification.md) allow customizing display of specific properties - hiding them, changing label, category, renderer, editor.
 
-Modifiers can be specified as part of [content specifications](#specifications) or [content modifiers](#rules).
+Modifiers can be specified as part of [content specifications](#specifications) or [content modifiers](./ContentModifier.md).
