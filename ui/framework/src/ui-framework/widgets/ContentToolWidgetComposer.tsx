@@ -14,6 +14,15 @@ import { ToolWidgetComposer } from "./ToolWidgetComposer";
 import { useUiVisibility } from "./BasicToolWidget";
 
 /**
+ * Props for [[ContentToolWidgetComposer]].
+ * @public
+ */
+export interface ContentToolWidgetComposerProps {
+  /** If default backstage button is desired use <BackstageAppButton />. */
+  cornerButton?: React.ReactNode;
+}
+
+/**
  * ContentToolWidgetComposer composes a Tool Widget with no tools defined by default. UiItemsProviders
  * are used to populate the toolbars. See [[StandardContentToolsProvider]].
  * @example
@@ -26,15 +35,6 @@ import { useUiVisibility } from "./BasicToolWidget";
  * const cornerButton = <BackstageAppButton icon={"icon-bentley-systems"} />;
  * <ContentToolWidgetComposer cornerButton={cornerButton} />
  * ```
- * @public
- */
-export interface ContentToolWidgetComposerProps {
-  /** If default backstage button is desired use <BackstageAppButton />. */
-  cornerButton?: React.ReactNode;
-}
-
-/** Default Tool Widget for standard "review" applications. Provides standard tools to review, and measure elements.
- * This definition will also show a overflow button if there is not enough room to display all the toolbar buttons.
  * @public
  */
 export function ContentToolWidgetComposer(props: ContentToolWidgetComposerProps) {

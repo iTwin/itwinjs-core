@@ -11,7 +11,6 @@ import {
 } from "@bentley/ui-framework";
 import { AbstractStatusBarItemUtilities, CommonToolbarItem, StageUsage, StatusBarSection } from "@bentley/ui-abstract";
 import { ScreenViewport } from "@bentley/imodeljs-frontend";
-import { AppTools } from "../../tools/ToolSpecifications";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../..";
 
 /* eslint-disable react/jsx-key */
@@ -55,7 +54,6 @@ export function MyCustomViewOverlay() {
       </div>
     </div> : null;
 }
-
 
 export class FrontstageUi2 extends FrontstageProvider {
   private _supplyViewOverlay = (viewport: ScreenViewport) => {
@@ -106,7 +104,7 @@ export class FrontstageUi2 extends FrontstageProvider {
             widgets={
               [
                 <Widget isFreeform={true}
-                  element={<ContentToolWidgetComposer cornerButton={<BackstageAppButton icon={"icon-bentley-systems"} />} />}
+                  element={<ContentToolWidgetComposer />} /* cornerButton={<BackstageAppButton icon={"icon-bentley-systems"} />} */
                 />,
               ]}
           />
@@ -115,7 +113,7 @@ export class FrontstageUi2 extends FrontstageProvider {
           <Zone
             widgets={
               [
-                <Widget isFreeform={true} element={<ViewToolWidgetComposer />} />,
+                <Widget isFreeform={true} element={<ViewToolWidgetComposer hideNavigationAid />} />,
               ]}
           />
         }

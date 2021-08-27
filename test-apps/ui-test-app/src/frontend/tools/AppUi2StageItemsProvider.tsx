@@ -9,7 +9,7 @@ import {
   AbstractWidgetProps, CommonToolbarItem, StagePanelLocation, StagePanelSection,
   ToolbarOrientation, ToolbarUsage, UiItemsManager, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
-import { ToolbarHelper } from "@bentley/ui-framework";
+import { BackstageManager, ToolbarHelper } from "@bentley/ui-framework";
 import { FloatingLayoutInfo, LayoutControls, LayoutInfo } from "../appui/widgets/LayoutWidget";
 import { AppTools } from "./ToolSpecifications";
 
@@ -269,6 +269,7 @@ export class AppUi2StageItemsProvider implements UiItemsProvider {
       if (toolbarUsage === ToolbarUsage.ContentManipulation && toolbarOrientation === ToolbarOrientation.Horizontal) {
         return [
           ToolbarHelper.createToolbarItemFromItemDef(10, AppTools.toggleHideShowItemsCommand, { groupPriority: 3000 }),
+          ToolbarHelper.createToolbarItemFromItemDef(20, BackstageManager.getBackstageToggleCommand("icon-bentley-systems"), { groupPriority: 3000 }),
         ];
       }
     }

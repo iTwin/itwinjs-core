@@ -14,22 +14,36 @@ import { useUiVisibility } from "./BasicToolWidget";
 import { NavigationWidgetComposer } from "./NavigationWidgetComposer";
 
 /**
+ * Props for [[ViewToolWidgetComposer]].
+ * @public
+ */
+export interface ViewToolWidgetComposerProps {
+  /** If true no navigation aid will be shown. Defaults to false. */
+  hideNavigationAid?: boolean;
+}
+
+/**
  * ViewToolWidgetComposer composes a Navigation Widget with no tools defined by default. UiItemsProviders
  * must be used to provide tools to populate the toolbars. See [[StandardNavigationToolsProvider]].
  *  @example
  * ```
  * <ViewToolWidgetComposer />
  * ```
+ * If no NavigationAid control is to be shown set hideNavigationAid.
+ *  * ```
+ * <ViewToolWidgetComposer hideNavigationAid />
+ * ```
+
  * @public
  */
-export function ViewToolWidgetComposer() {
+export function ViewToolWidgetComposer(props: ViewToolWidgetComposerProps) {
   const uiIsVisible = useUiVisibility();
   const className = classnames(
     !uiIsVisible && "nz-hidden",
   );
 
   return (
-    <NavigationWidgetComposer className={className}
+    <NavigationWidgetComposer className={className} hideNavigationAid={props.hideNavigationAid}
       horizontalToolbar={<ToolbarComposer items={[]} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Horizontal} />}
       verticalToolbar={<ToolbarComposer items={[]} usage={ToolbarUsage.ViewNavigation} orientation={ToolbarOrientation.Vertical} />}
     />
