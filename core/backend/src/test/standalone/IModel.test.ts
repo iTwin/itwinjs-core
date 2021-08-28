@@ -2136,11 +2136,6 @@ describe("iModel", () => {
     snapshotDb2.close();
     snapshotDb3.close();
 
-    assert.throws(() => { StandaloneDb.openFile(snapshotFile1); }); // attempt to open snapshot writeable should throw
-    snapshotDb1 = StandaloneDb.openFile(snapshotFile1, OpenMode.Readonly);
-    assert.isDefined(snapshotDb1, "should open readonly");
-    snapshotDb1.close();
-
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb1.key));
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb2.key));
     assert.isUndefined(SnapshotDb.tryFindByKey(snapshotDb3.key));
