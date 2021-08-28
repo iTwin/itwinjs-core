@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-components",
-  "version": "3.0.0-dev.38",
+  "version": "3.0.0-dev.39",
   "description": "iModel.js UI complex components",
   "main": "lib/ui-components.js",
   "typings": "lib/ui-components",
@@ -33,10 +33,10 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.38",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.38",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.38",
-    "@bentley/ui-core": "workspace:^3.0.0-dev.38",
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.39",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.39",
+    "@bentley/ui-abstract": "workspace:^3.0.0-dev.39",
+    "@bentley/ui-core": "workspace:^3.0.0-dev.39",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
