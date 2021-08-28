@@ -237,7 +237,7 @@ describe("IModelWriteTest (#integration)", () => {
   });
 
   it("should be able to upgrade a briefcase with an older schema", async () => {
-    const projectId = await HubUtility.getTestContextId(managerRequestContext);
+    const iTwinId = await HubUtility.getTestContextId(managerRequestContext);
 
     /**
      * Test validates that -
@@ -248,10 +248,10 @@ describe("IModelWriteTest (#integration)", () => {
     /* Setup test - Push an iModel with an old BisCore schema up to the Hub */
     const pathname = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const hubName = HubUtility.generateUniqueName("CompatibilityTest");
-    const iModelId = await HubUtility.pushIModel(managerRequestContext, projectId, pathname, hubName, true);
+    const iModelId = await HubUtility.pushIModel(managerRequestContext, iTwinId, pathname, hubName, true);
 
     // Download two copies of the briefcase - manager and super
-    const args: RequestNewBriefcaseProps = { contextId: projectId, iModelId };
+    const args: RequestNewBriefcaseProps = { contextId: iTwinId, iModelId };
     const managerBriefcaseProps = await BriefcaseManager.downloadBriefcase(managerRequestContext, args);
     const superBriefcaseProps = await BriefcaseManager.downloadBriefcase(superRequestContext, args);
 
@@ -314,6 +314,6 @@ describe("IModelWriteTest (#integration)", () => {
     await BriefcaseDb.upgradeSchemas(superRequestContext, superBriefcaseProps);
     superRequestContext.enter();
 
-    await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, iTwinId: projectId, iModelId });
+    await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, iTwinId, iModelId });
   });
 });

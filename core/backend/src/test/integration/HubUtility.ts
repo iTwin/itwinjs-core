@@ -346,28 +346,28 @@ export class HubUtility {
   }
 
   /** Push an iModel to the Hub */
-  public static async pushIModel(requestContext: AuthorizedClientRequestContext, projectId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
+  public static async pushIModel(requestContext: AuthorizedClientRequestContext, iTwinId: string, pathname: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
     assert.isTrue(HubMock.isValid, "Must use HubMock for tests that create iModels");
     // Delete any existing iModels with the same name as the required iModel
     const locIModelName = iModelName || path.basename(pathname, ".bim");
-    const iModelId = await HubUtility.queryIModelByName(requestContext, projectId, locIModelName);
+    const iModelId = await HubUtility.queryIModelByName(requestContext, iTwinId, locIModelName);
     if (iModelId) {
       if (!overwrite)
         return iModelId;
-      await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId: projectId, iModelId });
+      await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId, iModelId });
     }
 
     // Upload a new iModel
-    return IModelHost.hubAccess.createNewIModel({ requestContext, iTwinId: projectId, iModelName: locIModelName, revision0: pathname });
+    return IModelHost.hubAccess.createNewIModel({ requestContext, iTwinId, iModelName: locIModelName, revision0: pathname });
   }
 
   /** Upload an IModel's seed files and change sets to the hub
    * It's assumed that the uploadDir contains a standard hierarchy of seed files and change sets.
    */
   public static async pushIModelAndChangeSets(requestContext: AuthorizedClientRequestContext, projectName: string, uploadDir: string, iModelName?: string, overwrite?: boolean): Promise<GuidString> {
-    const projectId = await HubUtility.queryProjectIdByName(requestContext, projectName);
+    const iTwinId = await HubUtility.queryProjectIdByName(requestContext, projectName);
     const seedPathname = HubUtility.getSeedPathname(uploadDir);
-    const iModelId = await HubUtility.pushIModel(requestContext, projectId, seedPathname, iModelName, overwrite);
+    const iModelId = await HubUtility.pushIModel(requestContext, iTwinId, seedPathname, iModelName, overwrite);
 
     let briefcase: Briefcase;
     const hubBriefcases = await IModelHubBackend.iModelClient.briefcases.get(requestContext, iModelId);
