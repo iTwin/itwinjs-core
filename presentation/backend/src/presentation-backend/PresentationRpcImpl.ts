@@ -199,12 +199,6 @@ export class PresentationRpcImpl extends PresentationRpcInterface {
     });
   }
 
-  /** @deprecated This is a noop now. Keeping just to avoid breaking the RPC interface. */
-  // eslint-disable-next-line deprecation/deprecation
-  public override async loadHierarchy(_token: IModelRpcProps, _requestOptions: HierarchyRpcRequestOptions): PresentationRpcResponse<void> {
-    return { statusCode: PresentationStatus.Success };
-  }
-
   public override async getContentSources(token: IModelRpcProps, requestOptions: ContentSourcesRpcRequestOptions): PresentationRpcResponse<ContentSourcesRpcResult> {
     return this.makeRequest(token, "getContentSources", requestOptions, async (options) => {
       const result = await this.getManager(requestOptions.clientId).getContentSources(options);
