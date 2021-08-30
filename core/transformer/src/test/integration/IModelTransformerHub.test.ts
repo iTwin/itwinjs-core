@@ -11,7 +11,7 @@ import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { ChangesetType, Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements,
+  BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements,
   ExternalSourceAspect, GenericSchema, IModelDb, IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory,
   PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
 } from "@bentley/imodeljs-backend";
@@ -89,7 +89,6 @@ describe("IModelTransformerHub (#integration)", () => {
 
       if (true) { // initial import
         ExtensiveTestScenario.populateDb(sourceDb);
-        await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, "Populate source");
 
@@ -182,7 +181,6 @@ describe("IModelTransformerHub (#integration)", () => {
 
       if (true) { // update source db, then import again
         ExtensiveTestScenario.updateDb(sourceDb);
-        await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, "Update source");
 
@@ -303,7 +301,6 @@ describe("IModelTransformerHub (#integration)", () => {
       // populate sourceDb
       IModelTransformerTestUtils.populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
       IModelTransformerTestUtils.assertTeamIModelContents(sourceDb, "Test");
-      await sourceDb.concurrencyControl.request(requestContext);
       sourceDb.saveChanges();
       await sourceDb.pushChanges(requestContext, "Populate Source");
 
@@ -321,7 +318,6 @@ describe("IModelTransformerHub (#integration)", () => {
       await transformer.processAll();
       transformer.dispose();
       IModelTransformerTestUtils.assertTeamIModelContents(targetDb, "Test");
-      await targetDb.concurrencyControl.request(requestContext);
       targetDb.saveChanges();
       await targetDb.pushChanges(requestContext, "Import changes from sourceDb");
 
