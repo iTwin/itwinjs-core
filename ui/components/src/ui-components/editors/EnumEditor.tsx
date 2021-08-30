@@ -163,6 +163,9 @@ export class EnumEditor extends React.PureComponent<PropertyEditorProps, EnumEdi
       minWidth: `6em`,
     };
 
+    // The iTwinUI-react Select onBlur still does not work properly, so it cannot be used yet. NEEDSWORK
+    // onBlur={this.props.onBlur}
+
     /* The following popoverProps are required for the popup to properly show in floating widgets because this makes it work similar to a portal */
     return (
       <div ref={this._divElement}>

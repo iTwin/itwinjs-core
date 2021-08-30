@@ -1,28 +1,28 @@
 # iModel Transformation and Data Exchange
 
-The `@bentley/imodeljs-backend` package provides some classes that implement [Extract, Transform, and Load](https://en.wikipedia.org/wiki/Extract,_transform,_load) (ETL) functionality:
+The `@bentley/imodeljs-transformer` package provides some classes that implement [Extract, Transform, and Load](https://en.wikipedia.org/wiki/Extract,_transform,_load) (ETL) functionality:
 
-- [IModelExporter]($backend) and [IModelExportHandler]($backend) are the base classes that implement the *extract* (or *export*) part of ETL functionality.
-- [IModelTransformer]($backend) is the base class that implements the *transform* part of ETL functionality.
-- [IModelImporter]($backend) is the base class that implements the *load* (or *import*) part of ETL functionality.
+- [IModelExporter]($transformer) and [IModelExportHandler]($transformer) are the base classes that implement the *extract* (or *export*) part of ETL functionality.
+- [IModelTransformer]($transformer) is the base class that implements the *transform* part of ETL functionality.
+- [IModelImporter]($transformer) is the base class that implements the *load* (or *import*) part of ETL functionality.
 
 The above classes contain the lower-level functionality required to implement transformation and data exchange services.
 These classes should be considered a framework and not confused with the actual packaged and deployed services that use the framework.
 
 ## IModelExporter
 
-The [IModelExporter]($backend) and [IModelExportHandler]($backend) base classes are used when the **source** data in an ETL workflow is contained within an iModel.
+The [IModelExporter]($transformer) and [IModelExportHandler]($transformer) base classes are used when the **source** data in an ETL workflow is contained within an iModel.
 
-While it is possible to export data from an iModel using the standard [IModelDb]($backend) API, the [IModelExporter]($backend) and [IModelExportHandler]($backend) base classes offer the following capabilities:
+While it is possible to export data from an iModel using the standard [IModelDb]($backend) API, the [IModelExporter]($transformer) and [IModelExportHandler]($transformer) base classes offer the following capabilities:
 
 - An implementation of a [visitor](https://en.wikipedia.org/wiki/Visitor_pattern) pattern that makes it easy to iterate the iModel in a prescribed order that attempts to visit dependencies/prerequisites before dependents.
-- Visit the entire iModel using [IModelExporter.exportAll]($backend)
-- Visit only changed entities using [IModelExporter.exportChanges]($backend)
-- Visit a subset of the iModel using [IModelExporter.exportModel]($backend), [IModelExporter.exportModelContents]($backend), or [IModelExporter.exportElement]($backend)
-- Easily exclude certain entity types to filter the export content using [IModelExporter.excludeElementCategory]($backend), [IModelExporter.excludeElementClass]($backend), or [IModelExporter.excludeElementAspectClass]($backend)
-- Integration with [IModelTransformer]($backend)
+- Visit the entire iModel using [IModelExporter.exportAll]($transformer)
+- Visit only changed entities using [IModelExporter.exportChanges]($transformer)
+- Visit a subset of the iModel using [IModelExporter.exportModel]($transformer), [IModelExporter.exportModelContents]($transformer), or [IModelExporter.exportElement]($transformer)
+- Easily exclude certain entity types to filter the export content using [IModelExporter.excludeElementCategory]($transformer), [IModelExporter.excludeElementClass]($transformer), or [IModelExporter.excludeElementAspectClass]($transformer)
+- Integration with [IModelTransformer]($transformer)
 
-Below is an example of using [IModelExporter]($backend) and [IModelExportHandler]($backend) to export all [Code]($common) values from an iModel:
+Below is an example of using [IModelExporter]($transformer) and [IModelExportHandler]($transformer) to export all [Code]($common) values from an iModel:
 
 ```ts
 [[include:IModelExporter_CodeExporter.code]]
@@ -30,18 +30,18 @@ Below is an example of using [IModelExporter]($backend) and [IModelExportHandler
 
 ## IModelImporter
 
-The [IModelImporter]($backend) base class is used when the **target** in an ETL workflow is an iModel.
+The [IModelImporter]($transformer) base class is used when the **target** in an ETL workflow is an iModel.
 
-While it is possible to import data into an iModel using the standard [IModelDb]($backend) API, the [IModelImporter]($backend) class offers the following capabilities:
+While it is possible to import data into an iModel using the standard [IModelDb]($backend) API, the [IModelImporter]($transformer) class offers the following capabilities:
 
 - Callbacks whenever IModelImporter is used to insert, update, or delete entities. Simply override one of the protected `onInsert*`, `onUpdate*`, or `onDelete*` methods.
-- Automatically compute the [IModel.projectExtents]($common) during import via the [IModelImporter.autoExtendProjectExtents]($backend) setting.
-- The ability to optionally simplify element geometry to optimize visualization workflows via the [IModelImporter.simplifyElementGeometry]($backend) setting.
-- Integration with [IModelTransformer]($backend)
+- Automatically compute the [IModel.projectExtents]($common) during import via the [IModelImporter.autoExtendProjectExtents]($transformer) setting.
+- The ability to optionally simplify element geometry to optimize visualization workflows via the [IModelImporter.simplifyElementGeometry]($transformer) setting.
+- Integration with [IModelTransformer]($transformer)
 
 ### IModelImporter.autoExtendProjectExtents
 
-[IModelImporter.autoExtendProjectExtents]($backend) and [IModelImportOptions.autoExtendProjectExtents]($backend) provide different options for handling the projectExtents of the target iModel.
+[IModelImporter.autoExtendProjectExtents]($transformer) and [IModelImportOptions.autoExtendProjectExtents]($transformer) provide different options for handling the projectExtents of the target iModel.
 See the following for more information about projectExtents:
 
 - [IModel.projectExtents]($common)
@@ -65,7 +65,7 @@ This setting assumes every Element is there for a reason.
 #### autoExtendProjectExtents = { excludeOutliers: true }
 
 This setting causes the projectExtents to be extended to include the range box of every element that is imported **except** for *outliers*.
-In this case, *outliers* are assumed to be a mistake and [IModelImporter]($backend) tries to detect them using *fuzzy logic* from the [IModelDb.computeProjectExtents]($backend) method in order to exclude them from the projectExtents calculation.
+In this case, *outliers* are assumed to be a mistake and [IModelImporter]($transformer) tries to detect them using *fuzzy logic* from the [IModelDb.computeProjectExtents]($backend) method in order to exclude them from the projectExtents calculation.
 
 Either of the non-false autoExtendProjectExtents options are useful for consolidation cases or filtering cases where the target iModel will have different optimal projectExtents than the source iModel(s).
 
@@ -77,7 +77,7 @@ iModel entities are highly related to each other. Therefore, *cloning* an entity
 
 ## IModelTransformer
 
-The [IModelTransformer]($backend) base class is used when the **source** and **target** in an ETL workflow are both/different iModels and some sort of data transformation is needed in the middle.
+The [IModelTransformer]($transformer) base class is used when the **source** and **target** in an ETL workflow are both/different iModels and some sort of data transformation is needed in the middle.
 An instance of `IModelTransformer` holds instances of `IModelExporter`, `IModelImporter`, and `IModelCloneContext`.
 This means that customization is possible at the export stage, the transformation stage, and the import stage of the overall ETL process.
 
@@ -94,6 +94,6 @@ Potential transformations include:
 With batch processes like iModel transformation and data exchange, logging is often the only way to figure out what is actually happening.
 The following logger categories are provided for use with the [Logger]($bentley):
 
-- [BackendLoggerCategory.IModelExporter]($backend)
-- [BackendLoggerCategory.IModelTransformer]($backend)
-- [BackendLoggerCategory.IModelImporter]($backend)
+- [TransformerLoggerCategory.IModelExporter]($transformer)
+- [TransformerLoggerCategory.IModelTransformer]($transformer)
+- [TransformerLoggerCategory.IModelImporter]($transformer)

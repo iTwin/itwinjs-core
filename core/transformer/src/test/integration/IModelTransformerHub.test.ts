@@ -11,15 +11,19 @@ import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
 import { ChangesetType, Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
-  BackendLoggerCategory, BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements,
-  ExternalSourceAspect, GenericSchema, IModelDb, IModelExporter, IModelHost, IModelJsFs, IModelJsNative, IModelTransformer, NativeLoggerCategory,
+  BisCoreSchema, BriefcaseDb, BriefcaseManager, ConcurrencyControl, ECSqlStatement, Element, ElementRefersToElements,
+  ExternalSourceAspect, GenericSchema, IModelDb, IModelHost, IModelJsFs, IModelJsNative, NativeLoggerCategory,
   PhysicalModel, PhysicalObject, PhysicalPartition, SnapshotDb, SpatialCategory,
-} from "../../imodeljs-backend";
-import { HubMock } from "../HubMock";
-import { IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerUtils, TestIModelTransformer } from "../IModelTransformerUtils";
-import { KnownTestLocations } from "../KnownTestLocations";
-import { HubUtility } from "./HubUtility";
+} from "@bentley/imodeljs-backend";
+import {
+  IModelExporter,
+  IModelTransformer, TransformerLoggerCategory,
+} from "../../imodeljs-transformer";
+import { HubMock } from "@bentley/imodeljs-backend/lib/test/HubMock";
+import { ExtensiveTestScenario, IModelTestUtils, TestUserType } from "@bentley/imodeljs-backend/lib/test/IModelTestUtils";
+import { CountingIModelImporter, IModelToTextFileExporter, IModelTransformerTestUtils, TestIModelTransformer, TransformerExtensiveTestScenario as TransformerExtensiveTestScenario } from "../IModelTransformerUtils";
+import { KnownTestLocations } from "@bentley/imodeljs-backend/lib/test/KnownTestLocations";
+import { HubUtility } from "@bentley/imodeljs-backend/lib/test/integration/HubUtility";
 
 describe("IModelTransformerHub (#integration)", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
@@ -37,9 +41,9 @@ describe("IModelTransformerHub (#integration)", () => {
     if (false) {
       Logger.initializeToConsole();
       Logger.setLevelDefault(LogLevel.Error);
-      Logger.setLevel(BackendLoggerCategory.IModelExporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelImporter, LogLevel.Trace);
-      Logger.setLevel(BackendLoggerCategory.IModelTransformer, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelExporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelImporter, LogLevel.Trace);
+      Logger.setLevel(TransformerLoggerCategory.IModelTransformer, LogLevel.Trace);
       Logger.setLevel(NativeLoggerCategory.Changeset, LogLevel.Trace);
     }
   });
@@ -54,7 +58,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
     const sourceSeedDb = SnapshotDb.createEmpty(sourceSeedFileName, { rootSubject: { name: "TransformerSource" } });
     assert.isTrue(IModelJsFs.existsSync(sourceSeedFileName));
-    await IModelTransformerUtils.prepareSourceDb(sourceSeedDb);
+    await ExtensiveTestScenario.prepareDb(sourceSeedDb);
     sourceSeedDb.saveChanges();
     sourceSeedDb.close();
 
@@ -68,7 +72,7 @@ describe("IModelTransformerHub (#integration)", () => {
     }
     const targetSeedDb = SnapshotDb.createEmpty(targetSeedFileName, { rootSubject: { name: "TransformerTarget" } });
     assert.isTrue(IModelJsFs.existsSync(targetSeedFileName));
-    await IModelTransformerUtils.prepareTargetDb(targetSeedDb);
+    await TransformerExtensiveTestScenario.prepareTargetDb(targetSeedDb);
     assert.isTrue(targetSeedDb.codeSpecs.hasName("TargetCodeSpec")); // inserted by prepareTargetDb
     targetSeedDb.saveChanges();
     targetSeedDb.close();
@@ -84,7 +88,8 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isTrue(targetDb.codeSpecs.hasName("TargetCodeSpec")); // make sure prepareTargetDb changes were saved and pushed to iModelHub
 
       if (true) { // initial import
-        await IModelTransformerUtils.populateSourceDb(sourceDb);
+        ExtensiveTestScenario.populateDb(sourceDb);
+        await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, "Populate source");
 
@@ -120,7 +125,7 @@ describe("IModelTransformerHub (#integration)", () => {
         transformer.dispose();
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, "Import #1");
-        IModelTransformerUtils.assertTargetDbContents(sourceDb, targetDb);
+        TransformerExtensiveTestScenario.assertTargetDbContents(sourceDb, targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
         const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-1.txt");
@@ -176,7 +181,8 @@ describe("IModelTransformerHub (#integration)", () => {
       }
 
       if (true) { // update source db, then import again
-        IModelTransformerUtils.updateSourceDb(sourceDb);
+        ExtensiveTestScenario.updateDb(sourceDb);
+        await sourceDb.concurrencyControl.request(requestContext);
         sourceDb.saveChanges();
         await sourceDb.pushChanges(requestContext, "Update source");
 
@@ -188,21 +194,21 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.isTrue(IModelJsFs.existsSync(sourceExportFileName));
         const sourceDbChanges: any = (sourceExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(sourceDbChanges);
-        // expect some inserts from updateSourceDb
+        // expect some inserts from updateDb
         assert.equal(sourceDbChanges.codeSpec.insertIds.size, 0);
         assert.equal(sourceDbChanges.element.insertIds.size, 1);
         assert.equal(sourceDbChanges.aspect.insertIds.size, 0);
         assert.equal(sourceDbChanges.model.insertIds.size, 0);
         assert.equal(sourceDbChanges.relationship.insertIds.size, 2);
-        // expect some updates from updateSourceDb
+        // expect some updates from updateDb
         assert.isAtLeast(sourceDbChanges.element.updateIds.size, 1);
         assert.isAtLeast(sourceDbChanges.aspect.updateIds.size, 1);
         assert.isAtLeast(sourceDbChanges.model.updateIds.size, 1);
         assert.isAtLeast(sourceDbChanges.relationship.updateIds.size, 1);
-        // expect some deletes from updateSourceDb
+        // expect some deletes from updateDb
         assert.isAtLeast(sourceDbChanges.element.deleteIds.size, 1);
         assert.equal(sourceDbChanges.relationship.deleteIds.size, 1);
-        // don't expect other changes from updateSourceDb
+        // don't expect other changes from updateDb
         assert.equal(sourceDbChanges.codeSpec.updateIds.size, 0);
         assert.equal(sourceDbChanges.codeSpec.deleteIds.size, 0);
         assert.equal(sourceDbChanges.aspect.deleteIds.size, 0);
@@ -213,7 +219,7 @@ describe("IModelTransformerHub (#integration)", () => {
         transformer.dispose();
         targetDb.saveChanges();
         await targetDb.pushChanges(requestContext, "Import #2");
-        IModelTransformerUtils.assertUpdatesInDb(targetDb);
+        ExtensiveTestScenario.assertUpdatesInDb(targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
         const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-2.txt");
@@ -223,22 +229,22 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.isTrue(IModelJsFs.existsSync(targetExportFileName));
         const targetDbChanges: any = (targetExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(targetDbChanges);
-        // expect some inserts from transforming the result of updateSourceDb
+        // expect some inserts from transforming the result of updateDb
         assert.equal(targetDbChanges.codeSpec.insertIds.size, 0);
         assert.equal(targetDbChanges.element.insertIds.size, 1);
         assert.equal(targetDbChanges.aspect.insertIds.size, 3);
         assert.equal(targetDbChanges.model.insertIds.size, 0);
         assert.equal(targetDbChanges.relationship.insertIds.size, 2);
-        // expect some updates from transforming the result of updateSourceDb
+        // expect some updates from transforming the result of updateDb
         assert.isAtLeast(targetDbChanges.element.updateIds.size, 1);
         assert.isAtLeast(targetDbChanges.aspect.updateIds.size, 1);
         assert.isAtLeast(targetDbChanges.model.updateIds.size, 1);
         assert.isAtLeast(targetDbChanges.relationship.updateIds.size, 1);
-        // expect some deletes from transforming the result of updateSourceDb
+        // expect some deletes from transforming the result of updateDb
         assert.isAtLeast(targetDbChanges.element.deleteIds.size, 1);
         assert.isAtLeast(targetDbChanges.aspect.deleteIds.size, 1);
         assert.equal(targetDbChanges.relationship.deleteIds.size, 1);
-        // don't expect other changes from transforming the result of updateSourceDb
+        // don't expect other changes from transforming the result of updateDb
         assert.equal(targetDbChanges.codeSpec.updateIds.size, 0);
         assert.equal(targetDbChanges.codeSpec.deleteIds.size, 0);
         assert.equal(targetDbChanges.model.deleteIds.size, 0);
@@ -295,8 +301,9 @@ describe("IModelTransformerHub (#integration)", () => {
       await sourceDb.pushChanges(requestContext, "Import schemas again"); // will be no changes to push in this case
 
       // populate sourceDb
-      IModelTransformerUtils.populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
-      IModelTransformerUtils.assertTeamIModelContents(sourceDb, "Test");
+      IModelTransformerTestUtils.populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
+      IModelTransformerTestUtils.assertTeamIModelContents(sourceDb, "Test");
+      await sourceDb.concurrencyControl.request(requestContext);
       sourceDb.saveChanges();
       await sourceDb.pushChanges(requestContext, "Populate Source");
 
@@ -313,7 +320,8 @@ describe("IModelTransformerHub (#integration)", () => {
       const transformer = new IModelTransformer(new IModelExporter(sourceDb), targetDb);
       await transformer.processAll();
       transformer.dispose();
-      IModelTransformerUtils.assertTeamIModelContents(targetDb, "Test");
+      IModelTransformerTestUtils.assertTeamIModelContents(targetDb, "Test");
+      await targetDb.concurrencyControl.request(requestContext);
       targetDb.saveChanges();
       await targetDb.pushChanges(requestContext, "Import changes from sourceDb");
 
@@ -635,7 +643,7 @@ describe("IModelTransformerHub (#integration)", () => {
           category: categoryId,
           code: Code.createEmpty(),
           userLabel: n.toString(),
-          geom: IModelTransformerUtils.createBox(Point3d.create(1, 1, 1)),
+          geom: IModelTestUtils.createBox(Point3d.create(1, 1, 1)),
           placement: {
             origin: Point3d.create(n, n, 0),
             angles: YawPitchRollAngles.createDegrees(0, 0, 0),
