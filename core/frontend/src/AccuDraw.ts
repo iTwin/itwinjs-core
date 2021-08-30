@@ -1295,9 +1295,11 @@ export class AccuDraw {
     rMatrix.setFrom(ViewState.getStandardViewMatrix(nStandard));
     const useVp = vp ? vp : IModelApp.viewManager.selectedView;
 
-    const globeToWorld = vp?.view.getGlobeRotation();
-    if (globeToWorld)
-      rMatrix.multiplyMatrixMatrix(globeToWorld, rMatrix);
+    if (!useACS) {
+      const globeToWorld = vp?.view.getGlobeRotation();
+      if (globeToWorld)
+        rMatrix.multiplyMatrixMatrix(globeToWorld, rMatrix);
+    }
 
     if (!useACS || !useVp)
       return rMatrix;

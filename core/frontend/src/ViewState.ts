@@ -1321,6 +1321,13 @@ export abstract class ViewState3d extends ViewState {
     return (undefined === eyeHeight) ? (this.extents.magnitudeXY() / Constant.earthRadiusWGS84.equator) : (eyeHeight / ViewState3d._minGlobeEyeHeight);
   }
 
+  /** A value representing the degree to which a view is viewing the globe as opposed to a specific location
+   * a value of zero or less indicates that the view is not global, a value between zero and one represent a semi
+   * global view.  Values greater than one indicate a global view.
+   *
+   * A Global view is arbitrarily designated as a camera view with the camera height greater than one fourth of the globe
+   * radius or an orthographic view with view diagonal greater than one fourth of the globe radius.
+   */
   public globalViewTransition(): number {
     if (undefined === this.iModel.ecefLocation)
       return 0.0;
@@ -2068,7 +2075,7 @@ export abstract class ViewState3d extends ViewState {
   /**
    * For a geoLocated project, align the view with the global allipsoid by rotating
    * around the supplied target point such that the view axis points toward the
-   * globe center.
+   * globe center. If the viewing height is below the global transition threshold.
    * @param target The rotation target or pivot point.  This point will remain stationary in the view.
    * @param transition If this is defined and true then the rotation is scaled by the [[ViewState.globalViewTransition]]  This
    * will cause a smooth transition as a view is zoomed out from a specific location to a more global representation.
