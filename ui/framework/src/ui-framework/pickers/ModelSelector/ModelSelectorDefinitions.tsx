@@ -180,7 +180,4 @@ export class ModelSelectorDataProvider implements IPresentationTreeDataProvider 
   ): TreeNodeArrayPromise => {
     return this._baseProvider.getNodes(parentNode, pageOptions);
   };
-
-  // istanbul ignore next
-  public async loadHierarchy() { }
 }
