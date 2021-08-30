@@ -3042,8 +3042,8 @@ export class ScreenViewport extends Viewport {
     options = (undefined === options) ? {} :
       (typeof options !== "boolean") ? options : { noSaveInUndo: !options }; // for backwards compatibility, was "saveInUndo"
 
-    if (this.view.is3d() && options?.globeCenteringTarget)
-      this.view.transitionToGloballyCenteredCamera(options.globeCenteringTarget.pivot, options.globeCenteringTarget.transition);
+    if (this.view.is3d() && options?.globalAlignment)
+      this.view.alignToGlobe(options.globalAlignment.target, options.globalAlignment.transition);
 
     super.synchWithView(options);
 

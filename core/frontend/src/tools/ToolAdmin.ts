@@ -1809,9 +1809,9 @@ export class WheelEventProcessor {
     }
 
     const view = vp.view;
-    let globeCenteringTarget;
+    let globalAlignment;
     if (view.is3d() && view.iModel.ecefLocation)
-      globeCenteringTarget = { pivot: target, transition: zoomRatio > 1 };
+      globalAlignment = { target, transition: zoomRatio > 1 };
 
     const animationOptions: ViewChangeOptions = {
       animateFrustumChange: true,
@@ -1819,7 +1819,7 @@ export class WheelEventProcessor {
       animationTime: ScreenViewport.animation.time.wheel.milliseconds,
       easingFunction: Easing.Cubic.Out,
       onExtentsError: (err) => view.outputStatusMessage(err),
-      globeCenteringTarget ,
+      globalAlignment,
     };
 
     const currentInputState = IModelApp.toolAdmin.currentInputState;

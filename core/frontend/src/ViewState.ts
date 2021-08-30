@@ -2066,15 +2066,16 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /**
-   * For a global, ellipsoid view rotate the view around the supplied target
-   * point such that the view center transitions to the ellipsoid center. The amount
-   * of rotation is applied applied linearly as the camera height or orthographic
-   * view size increases such that the view transitions to centered as the view
-   * is zoomed out.
+   * For a geoLocated project, align the view with the global allipsoid by rotating
+   * around the supplied target point such that the view axis points toward the
+   * globe center.
+   * @param target The rotation target or pivot point.  This point will remain stationary in the view.
+   * @param transition If this is defined and true then the rotation is scaled by the [[ViewState.globalViewTransition]]  This
+   * will cause a smooth transition as a view is zoomed out from a specific location to a more global representation.
    * @beta
    */
 
-  public transitionToGloballyCenteredCamera(target: Point3d, transition?: boolean): ViewStatus {
+  public alignToGlobe(target: Point3d, transition?: boolean): ViewStatus {
     if (!this.iModel.ecefLocation)
       return ViewStatus.NotGeolocated;
 

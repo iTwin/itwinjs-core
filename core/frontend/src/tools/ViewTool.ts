@@ -1210,7 +1210,7 @@ class ViewRotate extends HandleWithInertia {
       const frustum = this._frustum.transformBy(worldTransform);
       view.setupFromFrustum(frustum);
       if (view.is3d())
-        view.transitionToGloballyCenteredCamera(view.getCenter());
+        view.alignToGlobe(view.getCenter());
       this.changeFocusFromDepthPoint(); // if we have a valid depth point, set it focus distance from it
       vp.setupFromView();
     }
@@ -3631,7 +3631,7 @@ export class WindowAreaTool extends ViewTool {
       onExtentsError: (stat) => view.outputStatusMessage(stat),
     };
 
-    let globeCenteringTarget;
+    let globalAlignment;
     if (view.isCameraEnabled()) {
       const windowArray: Point3d[] = [corners[0].clone(), corners[1].clone()];
       vp.worldToViewArray(windowArray);
@@ -3661,7 +3661,7 @@ export class WindowAreaTool extends ViewTool {
 
       if (ViewStatus.Success !== view.lookAtUsingLensAngle(newEye, newTarget, view.getYVector(), lensAngle, undefined, undefined, opts))
         return;
-      globeCenteringTarget = { pivot: newTarget };
+      globalAlignment = { target: newTarget };
     } else {
       const rot = vp.rotation;
       rot.multiplyVectorArrayInPlace(corners);
@@ -3681,10 +3681,10 @@ export class WindowAreaTool extends ViewTool {
       view.setExtents(delta);
       view.setOrigin(originVec);
       if (view.is3d())
-        globeCenteringTarget = { pivot: range.center };
+        globalAlignment = { target: range.center };
     }
 
-    vp.synchWithView({ animateFrustumChange: true, globeCenteringTarget });
+    vp.synchWithView({ animateFrustumChange: true, globalAlignment });
   }
 }
 
