@@ -154,8 +154,9 @@ export class ITwinAccessClient extends WsgClient implements ITwinAccess {
    */
   private async getByQuery(requestContext: AuthorizedClientRequestContext, queryOptions?: RequestQueryOptions): Promise<ITwin[]> {
     requestContext.enter();
-    const projectQuery = queryOptions;
-    const assetQuery = queryOptions;
+    // Spread operator possible since there are no nested properties
+    const projectQuery = {...queryOptions};
+    const assetQuery = {...queryOptions};
 
     if (queryOptions?.$skip && (projectQuery && assetQuery)) {
       // Ceiling to skip a project object on Odd skips
