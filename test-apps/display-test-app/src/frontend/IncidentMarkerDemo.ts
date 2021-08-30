@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import { Logger } from "@bentley/bentleyjs-core";
-import { AngleSweep, Arc3d, Point2d, Point3d, Sphere, Transform, XAndY, XYAndZ } from "@bentley/geometry-core";
+import { AngleSweep, Arc3d, Point2d, Point3d, XAndY, XYAndZ } from "@bentley/geometry-core";
 import { AxisAlignedBox3d, ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import {
   BeButton, BeButtonEvent, Cluster, DecorateContext, GraphicType, imageElementFromUrl, IModelApp, Marker, MarkerImage, MarkerSet, MessageBoxIconType,
@@ -149,7 +149,6 @@ export class IncidentMarkerDemo {
   public readonly incidents = new IncidentMarkerSet();
   private static _numMarkers = 500;
   public static decorator?: IncidentMarkerDemo; // static variable so we can tell if the demo is active.
-  private _center: Point3d;
 
   public get warningSign() { return this._images[0]; }
 
@@ -195,7 +194,6 @@ export class IncidentMarkerDemo {
   }
 
   public constructor(extents: AxisAlignedBox3d) {
-    this._center = extents.center;
     this.loadAll(extents); // eslint-disable-line @typescript-eslint/no-floating-promises
   }
 
@@ -204,54 +202,22 @@ export class IncidentMarkerDemo {
 
   /** We added this class as a ViewManager.decorator below. This method is called to ask for our decorations. We add the MarkerSet. */
   public decorate(context: DecorateContext) {
-    const w = 0.5;
-    const h = 0.5;
-    const shape = [
-      new Point3d(0, 0, 0),
-      new Point3d(w, 0, 0),
-      new Point3d(w, h, 0),
-      new Point3d(0, h, 0),
-      new Point3d(0, 0, 0),
-    ];
-    context.viewport.npcToWorldArray(shape);
+    if (!context.viewport.view.isSpatialView())
+      return;
 
-    const builder = context.createGraphic({
-      placement: Transform.createTranslationXYZ(1000, 1000),
-      // placement: this.placement,
-      type: GraphicType.Scene,
-      // pickable: this.pickable,
-    });
+    if (undefined === this._loading) {
+      this.incidents.addDecoration(context);
+      return;
+    }
 
-    builder.setSymbology(ColorDef.red, ColorDef.red, 1);
-    builder.addShape(shape);
-    context.addDecorationFromBuilder(builder);
-
-    // const transform = Transform.createTranslationXYZ(0, 0);
-    // const builder = context.createGraphicBuilder(GraphicType.Scene, transform);
-
-    // builder.setSymbology(ColorDef.white, ColorDef.red, 1);
-
-    // const sphere = Sphere.createCenterRadius(this._center, 45);
-    // builder.addSolidPrimitive(sphere);
-
-    // context.addDecoration(GraphicType.Scene, builder.finish());
-    /// ///////////////////
-    // if (!context.viewport.view.isSpatialView())
-    //   return;
-
-    // if (undefined === this._loading) {
-    //   this.incidents.addDecoration(context);
-    //   return;
-    // }
-
-    // // if we're still loading, just mark this viewport as needing decorations when all loads are complete
-    // if (!this._awaiting) {
-    //   this._awaiting = true;
-    //   this._loading.then(() => {
-    //     context.viewport.invalidateCachedDecorations(this);
-    //     this._awaiting = false;
-    //   }).catch(() => undefined);
-    // }
+    // if we're still loading, just mark this viewport as needing decorations when all loads are complete
+    if (!this._awaiting) {
+      this._awaiting = true;
+      this._loading.then(() => {
+        context.viewport.invalidateCachedDecorations(this);
+        this._awaiting = false;
+      }).catch(() => undefined);
+    }
   }
 
   /** start the demo by creating the IncidentMarkerDemo object and adding it as a ViewManager decorator. */
