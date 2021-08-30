@@ -65,13 +65,23 @@ export abstract class Geometry {
     if (!this.displayParams.ignoreLighting) // ###TODO don't generate normals for 2d views.
       facetOptions.needNormals = true;
 
-    return this._getPolyfaces(facetOptions);
+    const polyfaceList = this._getPolyfaces(facetOptions);
+    if (undefined !== polyfaceList)
+      polyfaceList.forEach((polyface: PolyfacePrimitive) => {
+        polyface.transform(this.transform);
+      });
+    return polyfaceList;
   }
 
   public getStrokes(tolerance: number): StrokesPrimitiveList | undefined {
     const strokeOptions = StrokeOptions.createForCurves();
     strokeOptions.chordTol = tolerance;
-    return this._getStrokes(strokeOptions);
+    const strokesList = this._getStrokes(strokeOptions);
+    if (undefined !== strokesList)
+      strokesList.forEach((stroke: StrokesPrimitive) => {
+        stroke.transform(this.transform);
+      });
+    return strokesList;
   }
 
   public get hasTexture() { return this.displayParams.isTextured; }
@@ -241,7 +251,6 @@ export class PrimitivePolyfaceGeometry extends Geometry {
       PolyfaceQuery.buildAverageNormals(this.polyface);
     }
 
-    assert(this.transform.isIdentity);
     return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, this.polyface));
   }
 
