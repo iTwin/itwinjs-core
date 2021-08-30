@@ -48,20 +48,20 @@ describe("IModelTransformer", () => {
 
   it("should transform changes from source to target", async () => {
     // Source IModelDb
-    const sourceDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
+    const sourceDbFile = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Source.bim");
     const sourceDb = SnapshotDb.createEmpty(sourceDbFile, { rootSubject: { name: "TestIModelTransformer-Source" } });
     await ExtensiveTestScenario.prepareDb(sourceDb);
     ExtensiveTestScenario.populateDb(sourceDb);
     sourceDb.saveChanges();
     // Target IModelDb
-    const targetDbFile: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Target.bim");
+    const targetDbFile = IModelTestUtils.prepareOutputFile("IModelTransformer", "TestIModelTransformer-Target.bim");
     const targetDb = SnapshotDb.createEmpty(targetDbFile, { rootSubject: { name: "TestIModelTransformer-Target" } });
     await TransformerExtensiveTestScenario.prepareTargetDb(targetDb);
     targetDb.saveChanges();
 
-    const numSourceUniqueAspects: number = count(sourceDb, ElementUniqueAspect.classFullName);
-    const numSourceMultiAspects: number = count(sourceDb, ElementMultiAspect.classFullName);
-    const numSourceRelationships: number = count(sourceDb, ElementRefersToElements.classFullName);
+    const numSourceUniqueAspects = count(sourceDb, ElementUniqueAspect.classFullName);
+    const numSourceMultiAspects = count(sourceDb, ElementMultiAspect.classFullName);
+    const numSourceRelationships = count(sourceDb, ElementRefersToElements.classFullName);
     assert.isAtLeast(numSourceUniqueAspects, 1);
     assert.isAtLeast(numSourceMultiAspects, 1);
     assert.isAtLeast(numSourceRelationships, 1);
@@ -95,11 +95,11 @@ describe("IModelTransformer", () => {
       transformer.dispose();
     }
 
-    const numTargetElements: number = count(targetDb, Element.classFullName);
-    const numTargetUniqueAspects: number = count(targetDb, ElementUniqueAspect.classFullName);
-    const numTargetMultiAspects: number = count(targetDb, ElementMultiAspect.classFullName);
-    const numTargetExternalSourceAspects: number = count(targetDb, ExternalSourceAspect.classFullName);
-    const numTargetRelationships: number = count(targetDb, ElementRefersToElements.classFullName);
+    const numTargetElements = count(targetDb, Element.classFullName);
+    const numTargetUniqueAspects = count(targetDb, ElementUniqueAspect.classFullName);
+    const numTargetMultiAspects = count(targetDb, ElementMultiAspect.classFullName);
+    const numTargetExternalSourceAspects = count(targetDb, ExternalSourceAspect.classFullName);
+    const numTargetRelationships = count(targetDb, ElementRefersToElements.classFullName);
     assert.isAtLeast(numTargetUniqueAspects, 1);
     assert.isAtLeast(numTargetMultiAspects, 1);
     assert.isAtLeast(numTargetRelationships, 1);
@@ -301,7 +301,7 @@ describe("IModelTransformer", () => {
     // open source iModel
     const sourceFileName = IModelTestUtils.resolveAssetFile("CompatibilityTestSeed.bim");
     const sourceDb = SnapshotDb.openFile(sourceFileName);
-    const numSourceElements: number = count(sourceDb, Element.classFullName);
+    const numSourceElements = count(sourceDb, Element.classFullName);
     assert.exists(sourceDb);
     assert.isAtLeast(numSourceElements, 12);
     // create target iModel
@@ -320,7 +320,7 @@ describe("IModelTransformer", () => {
     await transformer.processSchemas(new BackendRequestContext());
     await transformer.processAll();
     transformer.dispose();
-    const numTargetElements: number = count(targetDb, Element.classFullName);
+    const numTargetElements = count(targetDb, Element.classFullName);
     assert.isAtLeast(numTargetElements, numSourceElements);
     assert.deepEqual(sourceDb.ecefLocation, targetDb.ecefLocation);
     // clean up
@@ -715,7 +715,7 @@ describe("IModelTransformer", () => {
     // class that asserts if it encounters an element or relationship
     class TestExporter extends IModelExportHandler {
       public iModelExporter: IModelExporter;
-      public modelCount: number = 0;
+      public modelCount = 0;
       public constructor(iModelDb: IModelDb) {
         super();
         this.iModelExporter = new IModelExporter(iModelDb);

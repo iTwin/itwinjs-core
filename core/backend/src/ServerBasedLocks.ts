@@ -81,7 +81,7 @@ export class ServerBasedLocks implements LockControl {
   }
 
   private insertLock(id: Id64String, state: LockState, acquired: boolean) {
-    this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,acquired) VALUES (?,?,?)", (stmt) => {
+    this.lockDb.withPreparedSqliteStatement("INSERT INTO locks(id,state,acquired) VALUES (?,?,?) ON CONFLICT(id) DO UPDATE SET state=excluded.state,acquired=excluded.acquired", (stmt) => {
       stmt.bindId(1, id);
       stmt.bindInteger(2, state);
       stmt.bindInteger(3, acquired ? 1 : 0);

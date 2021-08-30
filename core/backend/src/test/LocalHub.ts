@@ -107,7 +107,7 @@ export class LocalHub {
       nativeDb.saveChanges();
       nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
       nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-      nativeDb.saveLocalValue(BriefcaseLocalValue.NoLocking, arg.noLocks ? "true" : "");
+      nativeDb.saveLocalValue(BriefcaseLocalValue.NoLocking, arg.noLocks ? "true" : undefined);
       nativeDb.saveChanges();
     } finally {
       nativeDb.closeIModel();
@@ -527,15 +527,21 @@ export class LocalHub {
         return this.reserveLock(lockStatus, props, briefcase);
 
       case LockState.Shared:
-        if (props.state !== LockState.Shared)
-          throw new Error("element is locked with shared access, cannot obtain exclusive lock");
-        if (!lockStatus.sharedBy.has(briefcase.briefcaseId))
-          this.reserveLock(lockStatus, props, briefcase);
+        if (props.state === LockState.Shared) {
+          if (!lockStatus.sharedBy.has(briefcase.briefcaseId))
+            this.reserveLock(lockStatus, props, briefcase);
+        } else {
+          // if requester is the only one holding a shared lock, "upgrade" the lock from shared to exclusive
+          if (lockStatus.sharedBy.size > 1 || !lockStatus.sharedBy.has(briefcase.briefcaseId))
+            throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "element is locked with shared access, cannot obtain exclusive lock");
+          this.releaseLock(props, briefcase);
+          this.reserveLock(this.queryLockStatus(props.id), props, briefcase);
+        }
         return;
 
       case LockState.Exclusive:
         if (lockStatus.briefcaseId !== briefcase.briefcaseId)
-          throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock is already owned by another user");
+          throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock is already held by another user");
     }
   }
 
