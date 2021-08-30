@@ -831,7 +831,7 @@ export class TileAdmin {
     const retryInterval = this._retryInterval;
     RpcOperation.lookup(IModelTileRpcInterface, "requestTileTreeProps").policy.retryInterval = () => retryInterval;
 
-    const policy = RpcOperation.lookup(IModelTileRpcInterface, "requestTileContent").policy;
+    const policy = RpcOperation.lookup(IModelTileRpcInterface, "generateTileContent").policy;
     policy.retryInterval = () => retryInterval;
     policy.allowResponseCaching = () => RpcResponseCacheControl.Immutable;
 
