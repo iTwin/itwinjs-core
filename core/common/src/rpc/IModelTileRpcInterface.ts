@@ -8,12 +8,12 @@
 
 import { Id64Array } from "@bentley/bentleyjs-core";
 import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../CloudStorage";
+import { TileContentIdentifier } from "../CloudStorageTileCache";
 import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { IModelTileTreeProps, TileContentSource, TileVersionInfo } from "../TileProps";
 import { ElementGraphicsRequestProps } from "../tile/ElementGraphics";
-import { TileContentIdentifier } from "../CloudStorageTileCache";
+import { IModelTileTreeProps, TileContentSource, TileVersionInfo } from "../TileProps";
 
 /** @public */
 export abstract class IModelTileRpcInterface extends RpcInterface {

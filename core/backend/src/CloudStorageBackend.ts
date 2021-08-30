@@ -107,19 +107,14 @@ export class AzureBlobStorage extends CloudStorageService {
     });
   }
 
-  private async getBlockBlobUrl(container: string, name: string): Promise<Azure.BlockBlobURL> {
-    await this.ensureContainer(container);
-
-    const containerUrl = Azure.ContainerURL.fromServiceURL(this._service, container);
-    const blob = Azure.BlobURL.fromContainerURL(containerUrl, name);
-    return Azure.BlockBlobURL.fromBlobURL(blob);
-  }
-
   public async upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string> {
     return new Promise(async (resolve, reject) => {
       try {
-        const blocks = await this.getBlockBlobUrl(container, name);
+        await this.ensureContainer(container);
 
+        const containerUrl = Azure.ContainerURL.fromServiceURL(this._service, container);
+        const blob = Azure.BlobURL.fromContainerURL(containerUrl, name);
+        const blocks = Azure.BlockBlobURL.fromBlobURL(blob);
         const blobHTTPHeaders = {
           blobContentType: options?.type ?? "application/octet-stream",
           blobCacheControl: options?.cacheControl ?? "private, max-age=31536000, immutable",
