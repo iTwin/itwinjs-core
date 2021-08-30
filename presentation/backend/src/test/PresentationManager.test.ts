@@ -1449,57 +1449,6 @@ describe("PresentationManager", () => {
 
     });
 
-    describe("loadHierarchy", () => {
-
-      it("[deprecated] requests hierarchy load", async () => {
-        // what the addon receives
-        const expectedParams = {
-          requestId: NativePlatformRequestTypes.LoadHierarchy,
-          params: {
-            rulesetId: manager.getRulesetId(testData.rulesetOrId),
-          },
-        };
-
-        // what addon returns
-        setup("");
-
-        // test
-        const options: HierarchyRequestOptions<IModelDb> = {
-          imodel: imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-        };
-        await manager.loadHierarchy(ClientRequestContext.current, options);
-
-        // verify the addon was called with correct params
-        verifyMockRequest(expectedParams);
-      });
-
-      it("requests hierarchy load", async () => {
-        // what the addon receives
-        const expectedParams = {
-          requestId: NativePlatformRequestTypes.LoadHierarchy,
-          params: {
-            rulesetId: manager.getRulesetId(testData.rulesetOrId),
-          },
-        };
-
-        // what addon returns
-        setup("");
-
-        // test
-        const options: WithClientRequestContext<HierarchyRequestOptions<IModelDb>> = {
-          requestContext: ClientRequestContext.current,
-          imodel: imodelMock.object,
-          rulesetOrId: testData.rulesetOrId,
-        };
-        await manager.loadHierarchy(options);
-
-        // verify the addon was called with correct params
-        verifyMockRequest(expectedParams);
-      });
-
-    });
-
     describe("getContentSources", () => {
 
       it("returns content sources", async () => {

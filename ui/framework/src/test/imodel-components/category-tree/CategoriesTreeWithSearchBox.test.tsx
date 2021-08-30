@@ -98,7 +98,6 @@ describe("CategoryTreeWithSearchBox", () => {
       sinon.stub(PresentationTreeDataProvider.prototype, "getNodeKey").callsFake((node: any) => node.__key);
       sinon.stub(PresentationTreeDataProvider.prototype, "getNodesCount").resolves(0);
       sinon.stub(PresentationTreeDataProvider.prototype, "getNodes").resolves([]);
-      sinon.stub(PresentationTreeDataProvider.prototype, "loadHierarchy");
 
       visibilityHandler.reset();
       visibilityHandler.setup((x) => x.onVisibilityChange).returns(() => new BeEvent<VisibilityChangeListener>());

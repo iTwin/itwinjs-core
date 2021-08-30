@@ -2045,8 +2045,6 @@ export class PresentationRpcInterface extends RpcInterface {
     getSelectionScopes(_token: IModelRpcProps, _options: SelectionScopeRpcRequestOptions): PresentationRpcResponse<SelectionScope[]>;
     static readonly interfaceName = "PresentationRpcInterface";
     static interfaceVersion: string;
-    // @alpha @deprecated (undocumented)
-    loadHierarchy(_token: IModelRpcProps, _options: HierarchyRpcRequestOptions): PresentationRpcResponse<void>;
 }
 
 // @public

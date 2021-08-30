@@ -96,7 +96,6 @@ describe("CategoryTree", () => {
       sinon.stub(PresentationTreeDataProvider.prototype, "getNodeKey").callsFake((node: any) => node.__key);
       sinon.stub(PresentationTreeDataProvider.prototype, "getNodesCount").resolves(0);
       sinon.stub(PresentationTreeDataProvider.prototype, "getNodes").resolves([]);
-      sinon.stub(PresentationTreeDataProvider.prototype, "loadHierarchy");
 
       resetVisibilityHandlerMock();
       visibilityHandler.setup((x) => x.getVisibilityStatus(moq.It.isAny(), moq.It.isAny())).returns(() => ({ state: "visible", isDisabled: false }));
@@ -385,7 +384,6 @@ describe("CategoryTree", () => {
           getNodeKey: (node: TreeNodeItem) => (node as any).__key,
           getNodesCount: async () => 1,
           getNodes: async () => [{ ...testNode, __key: createKey(testNode.id) }],
-          loadHierarchy: async () => { },
         };
       });
 

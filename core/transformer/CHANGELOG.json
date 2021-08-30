@@ -1,0 +1,17 @@
+{
+  "name": "@bentley/imodeljs-transformer",
+  "entries": [
+    {
+      "version": "3.0.0",
+      "tag": "@bentley/imodeljs-transformer_v3.0.0",
+      "date": "Fri, 20 Aug 2021 20:34:29 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "Initial release"
+          }
+        ]
+      }
+    }
+  ]
+}
