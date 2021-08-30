@@ -44,10 +44,16 @@ export interface AbstractWidgetProps extends ProvidedItem {
   /** Indicates if widget can be popped out to a child window.
    * @beta */
   readonly canPopout?: boolean;
+  /** If the widget state is changed to `floating` and the floatingContainerId is defined then the widget will be added to a
+   * floating panel by that name. If no name is specified the current practice of using a GUID is used.
+   * @beta */
+  readonly floatingContainerId?: string;
   /** Indicates if widget can be in floating state. */
   readonly isFloatingStateSupported?: boolean;
   /** Indicates if floating widget is resizable. */
   readonly isFloatingStateWindowResizable?: boolean;
+  /** Defines that default Top Left position when widget is floated via API calls */
+  readonly defaultFloatingPosition?: { x: number, y: number };
   /** Widget priority */
   readonly priority?: number;
   /** Defines the SyncUi event Ids that will trigger the stateFunc to run to determine the state of the widget. */

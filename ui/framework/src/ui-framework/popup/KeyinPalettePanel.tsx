@@ -88,6 +88,7 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
   }, [historyKeyins, keyins]);
 
   const submitKeyin = React.useCallback(async (value: string) => {
+    let detailedMessage: string | undefined;
     let message: string | undefined;
     try {
       switch (IModelApp.tools.parseAndRun(value)) {
@@ -105,13 +106,15 @@ export function KeyinPalettePanel({ keyins, onKeyinExecuted, historyLength: allo
       }
     } catch (ex) {
       // istanbul ignore next
-      message = `${UiFramework.translate("keyinbrowser.exceptionOccurred")}: ${ex}`;
+      {
+        message = UiFramework.translate("keyinbrowser.exceptionOccurred");
+        detailedMessage = `${UiFramework.translate("keyinbrowser.exceptionOccurred")}: ${ex}`;
+      }
     }
 
     // istanbul ignore else
     if (undefined !== message) {
-      const briefMessage = UiFramework.translate("keyinbrowser.exceptionOccurred");
-      const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Error, briefMessage, message, OutputMessageType.Sticky);
+      const errorDetails = new NotifyMessageDetails(OutputMessagePriority.Error, message, detailedMessage, OutputMessageType.Sticky);
       IModelApp.notifications.outputMessage(errorDetails);
     } else {
       // istanbul ignore next

@@ -128,8 +128,6 @@ export class RealityData extends WsgInstance {
 // @internal
 export class RealityDataClient extends WsgClient {
     constructor();
-    // (undocumented)
-    static readonly configRelyingPartyUri = "imjs_reality_data_service_relying_party_uri";
     createRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityData: RealityData): Promise<RealityData>;
     createRealityDataRelationship(requestContext: AuthorizedClientRequestContext, projectId: string, relationship: RealityDataRelationship): Promise<RealityDataRelationship>;
     deleteRealityData(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, realityDataId: string): Promise<void>;
@@ -143,7 +141,6 @@ export class RealityDataClient extends WsgClient {
     getRealityDataRelationships(requestContext: AuthorizedClientRequestContext, projectId: string, realityDataId: string): Promise<RealityDataRelationship[]>;
     getRealityDatas(requestContext: AuthorizedClientRequestContext, projectId: string | undefined, queryOptions: RealityDataRequestQueryOptions): Promise<RealityData[]>;
     getRealityDataUrl(requestContext: ClientRequestContext, projectId: string | undefined, tilesId: string): Promise<string>;
-    protected getRelyingPartyUrl(): string;
     protected getUrlSearchKey(): string;
     // (undocumented)
     static readonly searchKey: string;

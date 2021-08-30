@@ -10,10 +10,11 @@
 
 import * as React from "react";
 import { IModelApp, ScreenViewport } from "@bentley/imodeljs-frontend";
-import { StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
+import { PointProps, StagePanelLocation, StageUsage, UiError } from "@bentley/ui-abstract";
+import { RectangleProps, SizeProps } from "@bentley/ui-core";
 import {
   dockWidgetContainer, findTab, findWidget, floatWidget, isFloatingLocation, isPopoutLocation, isPopoutWidgetLocation,
-  NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow,
+  NineZoneManagerProps, NineZoneState, popoutWidgetToChildWindow, setFloatingWidgetContainerBounds,
 } from "@bentley/ui-ninezone";
 import { ContentControl } from "../content/ContentControl";
 import { ContentGroup, ContentGroupManager } from "../content/ContentGroup";
@@ -31,7 +32,6 @@ import { Frontstage, FrontstageProps } from "./Frontstage";
 import { FrontstageManager } from "./FrontstageManager";
 import { FrontstageProvider } from "./FrontstageProvider";
 import { TimeTracker } from "../configurableui/TimeTracker";
-import { PointProps, SizeProps } from "@bentley/ui-core";
 import { ChildWindowLocationProps } from "../childwindow/ChildWindowManager";
 import { PopoutWidget } from "../childwindow/PopoutWidget";
 import { setImmediate } from "timers";
@@ -595,7 +595,7 @@ export class FrontstageDef {
 
   /** Create a new floating panel that contains the widget specified by its Id. Supported only when in
    *  UI 2.0 or higher.
-   * @param widgetId case sensitive Wigdet Id
+   * @param widgetId case sensitive Widget Id
    * @param point Position of top left corner of floating panel in pixels. If undefined {x:50, y:100} is used.
    * @param size defines the width and height of the floating panel. If undefined and widget has been floated before
    * the previous size is used, else {height:400, width:400} is used.
@@ -614,9 +614,9 @@ export class FrontstageDef {
         // istanbul ignore else
         if (state) {
           this.nineZoneState = state;
-          setImmediate(() => {
+          setTimeout(() => {
             popoutWidgetContainerId && UiFramework.childWindowManager.closeChildWindow(popoutWidgetContainerId, true);
-          });
+          }, 600);
         }
       }
     }
@@ -710,7 +710,19 @@ export class FrontstageDef {
     }
   }
 
-  /** Method used to possibly change a Popout Wigdet back to a docked widget if the user was the one closing the popout's child
+  /** @internal */
+  public setFloatingWidgetBoundsInternal(floatingWidgetId: string, bounds: RectangleProps, inhibitNineZoneStateChangedEvent = false) {
+    // istanbul ignore else
+    if (this.nineZoneState) {
+      const newState = setFloatingWidgetContainerBounds(this.nineZoneState, floatingWidgetId, bounds);
+      if (inhibitNineZoneStateChangedEvent)
+        this._nineZoneState = newState; // set without triggering new render
+      else
+        this.nineZoneState = newState;
+    }
+  }
+
+  /** Method used to possibly change a Popout Widget back to a docked widget if the user was the one closing the popout's child
    * window (i.e. UiFramework.childWindowManager.isClosingChildWindow === false).
    *  @internal
    */
@@ -730,7 +742,7 @@ export class FrontstageDef {
   /** Finds the container with the specified widget and re-docks all widgets
    * back to the panel zone location that was used when the floating container
    * was generated. Supported only when in UI 2.0 or higher.
-   * @param widgetId  case sensitive Wigdet Id.
+   * @param widgetId  case sensitive Widget Id.
    * @beta
    */
   public dockWidgetContainer(widgetId: string) {
@@ -746,5 +758,50 @@ export class FrontstageDef {
         }
       }
     }
+  }
+
+  public setFloatingWidgetContainerBounds(floatingWidgetId: string, bounds: RectangleProps) {
+    if (!this.nineZoneState || !(floatingWidgetId in this.nineZoneState.floatingWidgets.byId))
+      return false;
+
+    this.setFloatingWidgetBoundsInternal(floatingWidgetId, bounds);
+    return true;
+  }
+
+  public getFloatingWidgetContainerIds(): string[] {
+    if (!this.nineZoneState)
+      return [];
+
+    return [...this.nineZoneState.floatingWidgets.allIds];
+  }
+
+  public getFloatingWidgetContainerIdByWidgetId(widgetId: string): string | undefined {
+    if (!this.nineZoneState)
+      return undefined;
+
+    const location = findTab(this.nineZoneState, widgetId);
+    // istanbul ignore else
+    if (location && isFloatingLocation(location)) {
+      return location.floatingWidgetId;
+    }
+    // istanbul ignore next
+    return undefined;
+  }
+
+  public getFloatingWidgetContainerBounds(floatingWidgetId: string | undefined) {
+    if (!floatingWidgetId)
+      return undefined;
+
+    // istanbul ignore else
+    if (this.nineZoneState && (floatingWidgetId in this.nineZoneState.floatingWidgets.byId)) {
+      const foundWidget = document.querySelector(`div.nz-widget-floatingWidget[data-widget-id='${floatingWidgetId}']`);
+      // istanbul ignore next
+      if (foundWidget) {
+        const domRect = foundWidget.getBoundingClientRect();
+        return { left: domRect.left, right: domRect.right, top: domRect.top, bottom: domRect.bottom };
+      }
+      return this.nineZoneState.floatingWidgets.byId[floatingWidgetId].bounds;
+    }
+    return undefined;
   }
 }

@@ -1,6 +1,36 @@
 # Change Log - @bentley/extension-webpack-tools
 
-This log was last generated on Wed, 04 Aug 2021 20:29:34 GMT and should not be manually modified.
+This log was last generated on Wed, 25 Aug 2021 15:36:01 GMT and should not be manually modified.
+
+## 2.19.9
+Wed, 25 Aug 2021 15:36:01 GMT
+
+_Version update only_
+
+## 2.19.8
+Mon, 23 Aug 2021 13:23:13 GMT
+
+_Version update only_
+
+## 2.19.7
+Fri, 20 Aug 2021 17:47:22 GMT
+
+_Version update only_
+
+## 2.19.6
+Tue, 17 Aug 2021 20:34:28 GMT
+
+_Version update only_
+
+## 2.19.5
+Fri, 13 Aug 2021 21:48:08 GMT
+
+_Version update only_
+
+## 2.19.4
+Thu, 12 Aug 2021 13:09:26 GMT
+
+_Version update only_
 
 ## 2.19.3
 Wed, 04 Aug 2021 20:29:34 GMT
@@ -19,6 +49,11 @@ _Version update only_
 
 ## 2.19.0
 Mon, 26 Jul 2021 12:21:25 GMT
+
+_Version update only_
+
+## 2.18.4
+Tue, 10 Aug 2021 19:35:13 GMT
 
 _Version update only_
 

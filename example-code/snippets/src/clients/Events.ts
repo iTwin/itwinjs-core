@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { AgentAuthorizationClient, BackendAuthorizationClientConfiguration } from "@bentley/backend-itwin-client";
-import { ClientRequestContext, Config, Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Guid, GuidString, Logger } from "@bentley/bentleyjs-core";
 import { EventSAS, EventSubscription, IModelHubClient, IModelHubEvent } from "@bentley/imodelhub-client";
 import { AccessToken, AuthorizedClientRequestContext } from "@bentley/itwin-client";
 
@@ -13,10 +13,17 @@ class MockAccessToken extends AccessToken {
   public override toTokenString() { return ""; }
 }
 
+if (process.env.IMJS_AGENT_TEST_CLIENT_ID === undefined)
+  throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_ID");
+if (process.env.IMJS_AGENT_TEST_CLIENT_SECRET === undefined)
+  throw new Error("Could not find IMJS_AGENT_TEST_CLIENT_SECRET");
+if (process.env.IMJS_OIDC_BROWSER_TEST_SCOPES === undefined)
+  throw new Error("Could not find IMJS_OIDC_BROWSER_TEST_SCOPES");
+
 const clientConfig: BackendAuthorizationClientConfiguration = {
-  clientId: Config.App.get("imjs_agent_test_client_id"),
-  clientSecret: Config.App.get("imjs_agent_test_client_secret"),
-  scope: Config.App.get("imjs_oidc_browser_test_scopes"),
+  clientId: process.env.IMJS_AGENT_TEST_CLIENT_ID ?? "",
+  clientSecret: process.env.IMJS_AGENT_TEST_CLIENT_SECRET ?? "",
+  scope: process.env.IMJS_OIDC_BROWSER_TEST_SCOPES ?? "",
 };
 
 const authorizationClient = new AgentAuthorizationClient(clientConfig);

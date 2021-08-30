@@ -36,9 +36,7 @@ export class AmbientOcclusionEditor {
     };
 
     const enableAO = (enabled: boolean) => {
-      const vf = this._vp.viewFlags.clone(this._scratchViewFlags);
-      vf.ambientOcclusion = enabled;
-      this._vp.viewFlags = vf;
+      this._vp.viewFlags = this._vp.viewFlags.with("ambientOcclusion", enabled);
       showHideDropDowns(enabled);
       this.sync();
     };

@@ -6,13 +6,13 @@
  * @module ClientServices
  */
 
-import { GuidString, Logger, OpenMode } from "@bentley/bentleyjs-core";
+import { GuidString, Logger } from "@bentley/bentleyjs-core";
 import {
   ChangeSet, ChangeSetQuery, HubIModel, HubUserInfo, IModelHubClient, IModelQuery, UserInfoQuery, Version, VersionQuery,
 } from "@bentley/imodelhub-client";
 // import GatewayProxyApi from "./gatewayProxy";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { AuthorizedFrontendRequestContext, IModelConnection, RemoteBriefcaseConnection } from "@bentley/imodeljs-frontend";
+import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import { ChangeSetInfo, IModelInfo, IModelServices, IModelUserInfo, VersionInfo } from "./IModelServices";
 import { ProjectInfo } from "./ProjectServices";
@@ -81,10 +81,10 @@ export class DefaultIModelServices implements IModelServices {
   }
 
   /** Open the specified version of the IModel */
-  public async openIModel(contextId: string, iModelId: GuidString, openMode?: OpenMode, changeSetId?: string): Promise<IModelConnection> {
+  public async openIModel(contextId: string, iModelId: GuidString, changeSetId?: string): Promise<IModelConnection> {
     try {
       // GatewayProxyApi.setAccessToken(accessToken);
-      const iModelConnection = await RemoteBriefcaseConnection.open(contextId, iModelId, openMode ? openMode : OpenMode.Readonly, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest()); // eslint-disable-line deprecation/deprecation
+      const iModelConnection = await CheckpointConnection.openRemote(contextId, iModelId, changeSetId ? IModelVersion.asOfChangeSet(changeSetId) : IModelVersion.latest()); // eslint-disable-line deprecation/deprecation
       return iModelConnection;
     } catch (e) {
       alert(JSON.stringify(e));

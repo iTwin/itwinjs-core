@@ -7,7 +7,7 @@ import { Id64String } from "@bentley/bentleyjs-core";
 import { ViewDefinitionProps, ViewQueryParams } from "@bentley/imodeljs-common";
 import { IModelConnection, ScreenViewport, ViewState } from "@bentley/imodeljs-frontend";
 import { viewWithUnifiedSelection } from "@bentley/presentation-components";
-import { TimelineComponent, TimelineDataProvider, ViewportComponent } from "@bentley/ui-components";
+import { TimelineComponent, TimelineDataProvider, ViewportComponent } from "@bentley/ui-imodel-components";
 import { LoadingSpinner } from "@bentley/ui-core";
 import {
   AnalysisAnimationTimelineDataProvider, ConfigurableCreateInfo, ConfigurableUiManager, ContentViewManager, ScheduleAnimationTimelineDataProvider,
@@ -20,7 +20,7 @@ import { SampleAppIModelApp } from "../..";
 const UnifiedSelectionViewport = viewWithUnifiedSelection(ViewportComponent);
 
 /** iModel Viewport Control
- */
+ */
 export class ScheduleAnimationViewportControl extends ViewportContentControl {
 
   constructor(info: ConfigurableCreateInfo, options: any) {

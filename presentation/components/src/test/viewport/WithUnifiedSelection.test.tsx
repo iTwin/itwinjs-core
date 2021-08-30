@@ -20,7 +20,7 @@ import { createRandomECInstanceKey, createRandomId } from "@bentley/presentation
 import {
   HiliteSet, Presentation, SelectionChangeEvent, SelectionChangeEventArgs, SelectionChangeType, SelectionManager, SelectionScopesManager,
 } from "@bentley/presentation-frontend";
-import { ViewportComponent } from "@bentley/ui-components";
+import { ViewportComponent } from "@bentley/ui-imodel-components";
 import { IUnifiedSelectionComponent, viewWithUnifiedSelection } from "../../presentation-components";
 import { ViewportSelectionHandler } from "../../presentation-components/viewport/WithUnifiedSelection";
 
@@ -87,7 +87,7 @@ describe("Viewport withUnifiedSelection", () => {
       const selectionManagerMock = moq.Mock.ofType<SelectionManager>();
       selectionManagerMock.setup((x) => x.selectionChange).returns(() => new SelectionChangeEvent());
       selectionManagerMock.setup((x) => x.suspendIModelToolSelectionSync(imodelMock.object)).returns(() => ({ dispose: () => { } }));
-      selectionManagerMock.setup(async (x) => x.getHiliteSet(imodelMock.object)).returns(async () => ({ }));
+      selectionManagerMock.setup(async (x) => x.getHiliteSet(imodelMock.object)).returns(async () => ({}));
       Presentation.setSelectionManager(selectionManagerMock.object);
 
       const viewport = shallow(<PresentationViewport

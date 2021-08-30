@@ -11,9 +11,9 @@ import classnames from "classnames";
 import * as _ from "lodash";
 import * as React from "react";
 import { using } from "@bentley/bentleyjs-core";
-import { PropertyRecord, SpecialKey } from "@bentley/ui-abstract";
+import { MessageSeverity, PropertyRecord, SpecialKey } from "@bentley/ui-abstract";
 import {
-  CommonProps, ContextMenu, ContextMenuItem, DialogButtonType, MessageBox, MessageSeverity, SplitButton, withOnOutsideClick,
+  CommonProps, ContextMenu, ContextMenuItem, DialogButtonType, MessageBox, SplitButton, withOnOutsideClick,
 } from "@bentley/ui-core";
 import { getPropertyRecordAsString } from "../common/getPropertyRecordAsString";
 import { PropertyValueRendererManager } from "../properties/ValueRendererManager";
