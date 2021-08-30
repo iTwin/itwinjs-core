@@ -42,9 +42,9 @@ describe("Backstage", () => {
       shallow(<Backstage isVisible={false} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
     });
 
-    it("renders correctly with header", () => {
-      shallow(<Backstage header={<div> Hello World! </div>} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
-    });
+    // it("renders correctly with header", () => {
+    //   shallow(<Backstage header={<div> Hello World! </div>} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
+    // });
 
     it("renders correctly with UserInfo", () => {
       shallow(<Backstage userInfo={mockUserInfo()} />).dive().should.matchSnapshot(); // eslint-disable-line deprecation/deprecation
