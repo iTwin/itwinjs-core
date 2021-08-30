@@ -276,6 +276,32 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | `Config`                               | Use `process.env` to access environment variables directly |
 | `EnvMacroSubst`                        | *eliminated*  |
 
+### @bentley/presentation-common
+
+| Removed                                  | Replacement                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationRpcInterface.loadHierarchy` | *eliminated*                                                                           |
+
+### @bentley/presentation-backend
+
+| Removed                                  | Replacement                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`      | *eliminated*                                                                           |
+
+### @bentley/presentation-frontend
+
+| Removed                                  | Replacement                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`      | *eliminated*                                                                           |
+
+### @bentley/presentation-components
+
+| Removed                                               | Replacement                                                                            |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `IPresentationTreeDataProvider.loadHierarchy`         | *eliminated*                                                                           |
+| `PresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                                                           |
+| `FilteredPresentationTreeDataProvider.loadHierarchy`  | *eliminated*                                                                           |
+
 <!---
 User Interface Changes - section to comment below
 -->

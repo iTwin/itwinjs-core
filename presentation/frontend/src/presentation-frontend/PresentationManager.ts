@@ -402,16 +402,6 @@ export class PresentationManager implements IDisposable {
   }
 
   /**
-   * A no-op that used to request the whole hierarchy to be loaded on the backend.
-   * @alpha @deprecated Will be removed in 3.0.
-   */
-  // istanbul ignore next
-  // eslint-disable-next-line deprecation/deprecation
-  public async loadHierarchy(_requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void> {
-    // This is noop just to avoid breaking the API.
-  }
-
-  /**
    * Get all content sources for a given list of classes.
    * @beta
    */
