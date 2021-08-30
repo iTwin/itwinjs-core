@@ -6,7 +6,7 @@
  * @module DisplayStyles
  */
 
-import { BackgroundMapProps, BackgroundMapSettings } from "./BackgroundMapSettings";
+import { BackgroundMapProps, BackgroundMapProviderName, BackgroundMapSettings, BackgroundMapType } from "./BackgroundMapSettings";
 import { ColorDef, ColorDefProps } from "./ColorDef";
 import { MapLayerProps, MapLayerSettings } from "./MapLayerSettings";
 
@@ -28,10 +28,100 @@ export interface MapImageryProps {
   overlayLayers?: MapLayerProps[];
 }
 
+export interface BackgroundMapProviderDataProps {
+  mapType?: BackgroundMapType;
+}
+export interface BackgroundMapProviderProps {
+  providerName?: string;
+  providerData?: {
+    /** The type of map graphics to request. Default value: BackgroundMapType.Hybrid. */
+    mapType?: BackgroundMapType;
+  };
+}
+
+function normalizeMapType2(props?: BackgroundMapProviderProps): BackgroundMapType {
+  switch (props?.providerData?.mapType) {
+    case BackgroundMapType.Street:
+    case BackgroundMapType.Aerial:
+      return props.providerData.mapType;
+    default:
+      return BackgroundMapType.Hybrid;
+  }
+}
+
+function normalizeProviderName2(provider?: string): BackgroundMapProviderName {
+  return "MapBoxProvider" === provider ? provider : "BingProvider";
+}
+
+export class BackgroundMapProvider {
+  public readonly providerName: BackgroundMapProviderName;
+  /** The type of map graphics to be drawn. */
+  public readonly mapType: BackgroundMapType;
+
+  private constructor(props: BackgroundMapProviderProps) {
+    this.providerName = normalizeProviderName2(props.providerName);
+    this.mapType =  normalizeMapType2(props);
+
+  }
+
+  /** Construct from JSON, performing validation and applying default values for undefined fields. */
+  public static fromJSON(props: BackgroundMapProviderProps) {
+    return new BackgroundMapProvider(props);
+  }
+}
+
 /** Normalized representation of base layer properties -- these can be represented by either a full map layer or a simple color.
  * @beta
  */
 export type BaseLayerSettings = MapLayerSettings | ColorDef;
+
+export type BaseLayerSource = MapLayerSettings | ColorDef | BackgroundMapProvider;
+export type BaseLayerSourceProps = MapLayerProps | ColorDefProps | BackgroundMapProviderProps;
+
+
+export interface BaseLayerSettings2Props {
+  displaySettings: BackgroundMapProps;
+  source: BaseLayerSourceProps;
+}
+export class BaseLayerSettings2 {
+  private _displaySettings: BackgroundMapSettings;
+  private _source: BaseLayerSource;
+
+  private constructor(sourceProps?: BaseLayerSourceProps, displaySettingsProps?: BackgroundMapProps) {
+
+    let source;
+     if (typeof sourceProps === "number") {
+      source = ColorDef.create(sourceProps)
+     } else if (sourceProps?.hasOwnProperty('providerName')) {
+        source = BackgroundMapProvider.fromJSON(sourceProps as BackgroundMapProviderProps)
+     } else {
+      source = MapLayerSettings.fromJSON(sourceProps as MapLayerProps|undefined);
+     }
+
+    if (source) {
+      this._source = source;
+    } else {
+      // That annoying, MapLayerSettings might fails to create, default to white base map for now.
+      this._source = ColorDef.white;
+    }s;
+
+    this._displaySettings = BackgroundMapSettings.fromJSON(displaySettingsProps);
+
+  }
+
+  /** Construct from JSON, performing validation and applying default values for undefined fields. */
+  public static fromJSON(baseLayerSettingsProps: BaseLayerSettings2Props) {
+    return new BaseLayerSettings2(baseLayerSettingsProps.source, baseLayerSettingsProps.displaySettings);
+  }
+
+  public toJSON(): BaseLayerSettings2Props {
+    return {
+      displaySettings: this._displaySettings.toJSON(),
+      source: this._source.toJSON();
+    };
+  }
+
+}
 
 /** Provides access to the map imagery settings (Base and layers).
  * In earlier versions only a background map was supported as specified by the providerName and mapType members of [[BackgroundMapSettings]] object.
