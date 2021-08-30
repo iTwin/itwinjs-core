@@ -1355,7 +1355,7 @@ export class BackgroundMapGeometry {
     // (undocumented)
     getEarthEllipsoid(radiusOffset?: number): Ellipsoid;
     // (undocumented)
-    getFrustumIntersectionDepthRange(frustum: Frustum, bimRange: Range3d, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d;
+    getFrustumIntersectionDepthRange(frustum: Frustum, _bimRange: Range3d, heightRange?: Range1d, gridPlane?: Plane3dByOriginAndUnitNormal, doGlobalScope?: boolean): Range1d;
     // (undocumented)
     getPlane(offset?: number): Plane3dByOriginAndUnitNormal;
     // (undocumented)
@@ -3472,6 +3472,12 @@ export function getImageSourceMimeType(format: ImageSourceFormat): string;
 // @beta
 export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
 
+// @beta
+export interface GlobalAlignmentOptions {
+    target: Point3d;
+    transition?: boolean;
+}
+
 // @public
 export interface GlobalLocation {
     // (undocumented)
@@ -3490,7 +3496,9 @@ export interface GlobalLocationArea {
 
 // @public
 export class GlobeAnimator implements Animator {
-    protected constructor(viewport: ScreenViewport, destination: GlobalLocation, afterLanding: Frustum);
+    protected constructor(viewport: ScreenViewport, destination: GlobalLocation, afterLanding: Frustum, afterFocus: number);
+    // (undocumented)
+    protected _afterFocusDistance: number;
     // (undocumented)
     protected _afterLanding: Frustum;
     // @internal (undocumented)
@@ -11156,7 +11164,7 @@ export interface ViewAnimationOptions {
 // @public
 export interface ViewChangeOptions extends ViewAnimationOptions {
     animateFrustumChange?: boolean;
-    globeCenteringTarget?: Point3d;
+    globalAlignment?: GlobalAlignmentOptions;
     marginPercent?: MarginPercent;
     noSaveInUndo?: boolean;
     onExtentsError?: (status: ViewStatus) => ViewStatus;
@@ -12600,7 +12608,6 @@ export abstract class ViewState extends ElementState {
     getAuxiliaryCoordinateSystemId(): Id64String;
     getCenter(result?: Point3d): Point3d;
     abstract getExtents(): Vector3d;
-    // (undocumented)
     getGlobeRotation(): Matrix3d | undefined;
     getGridOrientation(): GridOrientationType;
     getGridSettings(vp: Viewport, origin: Point3d, rMatrix: Matrix3d, orientation: GridOrientationType): void;
@@ -12608,7 +12615,6 @@ export abstract class ViewState extends ElementState {
     getGridSpacing(): XAndY;
     // (undocumented)
     getGridsPerRef(): number;
-    // (undocumented)
     getIsViewingProject(): boolean;
     getModelAppearanceOverride(id: Id64String): FeatureAppearance | undefined;
     // @beta
@@ -12679,6 +12685,7 @@ export abstract class ViewState extends ElementState {
     abstract setOrigin(viewOrg: XYAndZ): void;
     abstract setRotation(viewRot: Matrix3d): void;
     setRotationAboutPoint(rotation: Matrix3d, point?: Point3d): void;
+    setStandardGlobalRotation(id: StandardViewId): void;
     setStandardRotation(id: StandardViewId): void;
     setupFromFrustum(inFrustum: Frustum, opts?: ViewChangeOptions): ViewStatus;
     setViewClip(clip?: ClipVector): void;
@@ -12759,6 +12766,8 @@ export abstract class ViewState2d extends ViewState {
 // @public
 export abstract class ViewState3d extends ViewState {
     constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState);
+    // @beta
+    alignToGlobe(target: Point3d, transition?: boolean): ViewStatus;
     // (undocumented)
     allow3dManipulations(): boolean;
     // @internal (undocumented)
@@ -12820,10 +12829,7 @@ export abstract class ViewState3d extends ViewState {
     // (undocumented)
     getRotation(): Matrix3d;
     getTargetPoint(result?: Point3d): Point3d;
-    // (undocumented)
-    globalOrthographicZoom(target: Point3d, zoomRatio: number): ViewStatus;
     get globalScopeFactor(): number;
-    // (undocumented)
     globalViewTransition(): number;
     // @internal (undocumented)
     is3d(): this is ViewState3d;
@@ -12844,6 +12850,7 @@ export abstract class ViewState3d extends ViewState {
     lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // (undocumented)
     minimumFrontDistance(): number;
+    moveCameraGlobal(fromPoint: Point3d, toPoint: Point3d): ViewStatus;
     moveCameraLocal(distance: Vector3d): ViewStatus;
     moveCameraWorld(distance: Vector3d): ViewStatus;
     readonly origin: Point3d;
@@ -12870,8 +12877,6 @@ export abstract class ViewState3d extends ViewState {
     supportsCamera(): boolean;
     // (undocumented)
     toJSON(): ViewDefinition3dProps;
-    // (undocumented)
-    transitionToGloballyCenteredCamera(target: Point3d): ViewStatus;
     turnCameraOff(): void;
     verifyFocusPlane(): void;
 }

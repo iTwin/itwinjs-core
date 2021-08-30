@@ -209,6 +209,7 @@ internal;getGcsConverterAvailable(iModel: IModelConnection): Promise
 public;getImageSourceFormatForMimeType(mimeType: string): ImageSourceFormat | undefined
 public;getImageSourceMimeType(format: ImageSourceFormat): string
 beta;getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey
+beta;GlobalAlignmentOptions
 public;GlobalLocation
 public;GlobalLocationArea
 public;GlobeAnimator 
