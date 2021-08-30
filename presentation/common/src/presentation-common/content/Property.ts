@@ -38,8 +38,8 @@ export interface Property {
   property: PropertyInfo;
 
   /**
-   * Relationship path from [Primary instance]($docs/learning/presentation/Content/Terminology#primary-instance) to
-   * this property. This array is not empty only for [Related properties]($docs/learning/presentation/Content/Terminology#related-properties).
+   * Relationship path from [Primary instance]($docs/presentation/Content/Terminology#primary-instance) to
+   * this property. This array is not empty only for [Related properties]($docs/presentation/Content/Terminology#related-properties).
    *
    * @deprecated All property fields are now contained inside a [[NestedContentField]] with `pathToPrimaryClass` attribute.
    */

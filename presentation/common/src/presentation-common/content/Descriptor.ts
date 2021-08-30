@@ -25,25 +25,25 @@ export interface SelectClassInfo {
   isSelectPolymorphic: boolean;
 
   /**
-   * Relationship path to the [Primary class]($docs/learning/presentation/Content/Terminology#primary-class).
+   * Relationship path to the [Primary class]($docs/presentation/Content/Terminology#primary-class).
    * @deprecated Use [[pathFromInputToSelectClass]]
    */
   pathToPrimaryClass: RelationshipPath;
   /** Relationship path from input class to the select class. */
   pathFromInputToSelectClass?: RelationshipPath;
 
-  /** Relationship paths to [Related property]($docs/learning/presentation/Content/Terminology#related-properties) classes */
+  /** Relationship paths to [Related property]($docs/presentation/Content/Terminology#related-properties) classes */
   relatedPropertyPaths: RelationshipPath[];
 
   /** Relationship paths to navigation property classes */
   navigationPropertyClasses: RelatedClassInfo[];
 
   /**
-   * Relationship paths to [Related instance]($docs/learning/presentation/Content/Terminology#related-instance) classes.
+   * Relationship paths to [Related instance]($docs/presentation/Content/Terminology#related-instance) classes.
    * @deprecated Use [[relatedInstancePaths]]
    */
   relatedInstanceClasses: RelatedClassInfo[];
-  /** Relationship paths to [related instance]($docs/learning/presentation/Content/Terminology#related-instance) classes. */
+  /** Relationship paths to [related instance]($docs/presentation/Content/Terminology#related-instance) classes. */
   relatedInstancePaths?: RelationshipPath[];
 }
 
@@ -143,7 +143,7 @@ export enum ContentFlags {
   /** Each content record additionally has a display label */
   ShowLabels = 1 << 2,
 
-  /** All content records are merged into a single record (see [Merging values]($docs/learning/presentation/content/terminology#value-merging)) */
+  /** All content records are merged into a single record (see [Merging values]($docs/presentation/content/terminology#value-merging)) */
   MergeResults = 1 << 3,
 
   /** Content has only distinct values */
@@ -267,7 +267,7 @@ export interface DescriptorOverrides {
     direction: SortDirection;
   };
 
-  /** [ECExpression]($docs/learning/presentation/Advanced/ECExpressions.md) for filtering content */
+  /** [ECExpression]($docs/presentation/Advanced/ECExpressions.md) for filtering content */
   filterExpression?: string;
 }
 
@@ -292,7 +292,7 @@ export interface DescriptorSource {
   readonly sortingField?: Field;
   /** Sorting direction */
   readonly sortDirection?: SortDirection;
-  /** Content filtering [ECExpression]($docs/learning/presentation/Advanced/ECExpressions) */
+  /** Content filtering [ECExpression]($docs/presentation/Advanced/ECExpressions) */
   readonly filterExpression?: string;
 }
 
@@ -325,7 +325,7 @@ export class Descriptor implements DescriptorSource {
   public sortingField?: Field;
   /** Sorting direction */
   public sortDirection?: SortDirection;
-  /** Content filtering [ECExpression]($docs/learning/presentation/Advanced/ECExpressions) */
+  /** Content filtering [ECExpression]($docs/presentation/Advanced/ECExpressions) */
   public filterExpression?: string;
 
   /** Construct a new Descriptor using a `DescriptorSource` */
