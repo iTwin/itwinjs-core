@@ -317,8 +317,6 @@ export class PresentationManager implements IDisposable {
     getPagedDistinctValues(requestOptions: DistinctValuesRequestOptions<IModelConnection, Descriptor, KeySet, RulesetVariable>): Promise<PagedResponse<DisplayValueGroup>>;
     // @internal (undocumented)
     get ipcRequestsHandler(): IpcRequestsHandler | undefined;
-    // @alpha @deprecated
-    loadHierarchy(_requestOptions: HierarchyRequestOptions<IModelConnection>): Promise<void>;
     // @alpha
     onIModelContentChanged: BeEvent<(args: IModelContentChangeEventArgs) => void>;
     // @alpha

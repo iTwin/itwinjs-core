@@ -187,20 +187,14 @@ public;class IModelDb
 public;IModelDb
 internal;TileContentState
 internal;Tiles
-beta;IModelExporter
-beta;class IModelExportHandler
 public;IModelHost
 public;IModelHostConfiguration
 internal;IModelHubBackend
 internal;IModelIdArg
-beta;IModelImporter
-beta;IModelImportOptions
 public;IModelJsFs
 public;IModelJsFsStats
 internal;IModelNameArg
 alpha;IModelSchemaLoader
-beta;IModelTransformer 
-beta;IModelTransformOptions
 public;class InformationContentElement 
 public;class InformationModel 
 public;class InformationPartitionElement 
@@ -312,7 +306,6 @@ public;SubjectOwnsSubjects
 beta;SynchronizationConfigLink 
 beta;SynchronizationConfigProcessesSources 
 beta;SynchronizationConfigSpecifiesRootSources 
-beta;TemplateModelCloner 
 beta;TemplateRecipe2d 
 beta;TemplateRecipe3d 
 internal;TemplateViewDefinition2d 
