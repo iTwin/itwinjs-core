@@ -8,7 +8,7 @@
 
 import * as hash from "object-hash";
 import * as path from "path";
-import { ClientRequestContext, Id64String, Logger } from "@bentley/bentleyjs-core";
+import { ClientRequestContext, Id64String } from "@bentley/bentleyjs-core";
 import { BriefcaseDb, IModelDb, IModelJsNative, IpcHost } from "@bentley/imodeljs-backend";
 import { FormatProps } from "@bentley/imodeljs-quantity";
 import {
@@ -19,7 +19,6 @@ import {
   LabelRequestOptions, Node, NodeKey, NodePathElement, Paged, PagedResponse, PartialHierarchyModification, PresentationError, PresentationStatus,
   PresentationUnitSystem, RequestPriority, Ruleset, SelectClassInfo, SelectionInfo, SelectionScope, SelectionScopeRequestOptions,
 } from "@bentley/presentation-common";
-import { PresentationBackendLoggerCategory } from "./BackendLoggerCategory";
 import { PRESENTATION_BACKEND_ASSETS_ROOT, PRESENTATION_COMMON_ASSETS_ROOT } from "./Constants";
 import { buildElementProperties } from "./ElementPropertiesHelper";
 import { createDefaultNativePlatform, NativePlatformDefinition, NativePlatformRequestTypes } from "./NativePlatform";
@@ -606,39 +605,6 @@ export class PresentationManager {
       ...strippedOptions,
     };
     return this.request(params, NodePathElement.listReviver);
-  }
-
-  /**
-   * Loads the whole hierarchy with the specified parameters
-   * @return A promise object that resolves when the hierarchy is fully loaded
-   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
-   * @deprecated Use an overload with one argument
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async loadHierarchy(requestContext: ClientRequestContext, requestOptions: HierarchyRequestOptions<IModelDb>): Promise<void>;
-  /**
-   * Loads the whole hierarchy with the specified parameters
-   * @return A promise object that resolves when the hierarchy is fully loaded
-   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
-   */
-  // eslint-disable-next-line deprecation/deprecation
-  public async loadHierarchy(requestOptions: WithClientRequestContext<HierarchyRequestOptions<IModelDb>>): Promise<void>;
-  // eslint-disable-next-line deprecation/deprecation
-  public async loadHierarchy(requestContextOrOptions: ClientRequestContext | WithClientRequestContext<HierarchyRequestOptions<IModelDb>>, deprecatedRequestOptions?: HierarchyRequestOptions<IModelDb>): Promise<void> {
-    if (requestContextOrOptions instanceof ClientRequestContext) {
-      return this.loadHierarchy({ ...deprecatedRequestOptions!, requestContext: requestContextOrOptions });
-    }
-    const { rulesetId, strippedOptions } = this.registerRuleset(requestContextOrOptions);
-    const params = {
-      requestId: NativePlatformRequestTypes.LoadHierarchy,
-      rulesetId,
-      ...strippedOptions,
-    };
-    const start = new Date();
-    await this.request(params);
-    Logger.logInfo(PresentationBackendLoggerCategory.PresentationManager, `Loading full hierarchy for `
-      + `iModel "${requestContextOrOptions.imodel.iModelId}" and ruleset "${rulesetId}" `
-      + `completed in ${((new Date()).getTime() - start.getTime()) / 1000} s.`);
   }
 
   /** @beta */
