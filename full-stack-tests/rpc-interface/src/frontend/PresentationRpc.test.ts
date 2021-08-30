@@ -104,20 +104,6 @@ describe("PresentationRpcInterface tests", () => {
     });
   });
 
-  it("loadHierarchy works as expected", async () => {
-    ruleset = defaultRuleset as any;
-    const props = { imodel: iModel, rulesetOrId: ruleset.id };
-    await using<RegisteredRuleset, Promise<void>>(await Presentation.presentation.rulesets().add(ruleset), async () => {
-      let success = true;
-      try {
-        await Presentation.presentation.loadHierarchy(props);
-      } catch (ex) {
-        success = false;
-      }
-      expect(success).to.be.true;
-    });
-  });
-
   describe("tests that require a descriptor", async () => {
     let descriptor: Descriptor | undefined;
     let props: any;

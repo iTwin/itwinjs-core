@@ -31,6 +31,132 @@ Each of these interfaces originally had only a member `changeSetId: string`, In 
 
 > Note: "Changeset" is one word. Apis should not use a capital "S" when referring to them.
 
+## ViewFlags
+
+### Immutability
+
+[ViewFlags]($common) has long been a common source of surprising behavior. Consider the following code:
+```ts
+  function turnOnShadows(vp: Viewport) {
+    vp.viewFlags.shadows = true;
+  }
+```
+
+You could be forgiven for expecting the image displayed in the Viewport to include shadows after calling this function, but that will not be the case. Instead, you must write the function as follows:
+```ts
+  function turnOnShadows(vp: Viewport) {
+    const vf = vp.viewFlags.clone();
+    vf.shadows = true;
+    vp.viewFlags = vf;
+  }
+```
+
+To rectify this, and to eliminate various other pitfalls associated with mutable state, ViewFlags has been converted to an immutable type - all of its properties are read-only and the only way to change a property is to create a copy. The function above can now be written as:
+```ts
+  function turnOnShadows(vp: Viewport) {
+    vp.viewFlags = vp.viewFlags.with("shadows", true);
+    // or, equivalently, but less efficiently in this case:
+    vp.viewFlags = vp.viewFlags.copy({ shadows: true });
+  }
+```
+
+Methods that mutate a ViewFlags object have been removed.
+- `clone` has been replaced with [ViewFlags.copy]($common), which returns a new object instead of modifying `this`.
+- `createFrom` has been removed. Because ViewFlags is immutable, it is never necessary to create an identical copy of one - just use the same object. Or, if for some reason you really want an identical copy, use the object spread operator.
+
+If your code used to modify a single property, change it to use [ViewFlags.with]($common) or [ViewFlags.withRenderMode]($common):
+```ts
+  // Replace this...
+  viewport.viewFlags.clipVolume = true;
+  // ...with this:
+  viewport.viewFlags = viewFlags.with("clipVolume", true);
+```
+
+If your code used to modify multiple properties, change it to use [ViewFlags.copy]($common):
+```ts
+  // Replace this...
+  viewport.viewFlags.shadows = viewport.viewFlags.lighting = true;
+  // ...with this:
+  viewport.viewFlags = viewport.viewFlags.copy({ shadows: true, lighting: true });
+```
+
+If your code used to create a new ViewFlags and then modify its properties, pass the initial properties to [ViewFlags.create]($common) instead:
+```ts
+  // Replace this...
+  const vf = new ViewFlags();
+  vf.shadows = vf.lighting = true;
+  // ...with this:
+  const vf = ViewFlags.create({ shadows: true, lighting: true });
+```
+
+### Removal of unused properties
+
+The following deprecated [ViewFlagProps]($common) properties were removed: hlMatColors, edgeMask.
+
+The following deprecated [ViewFlags]($common) properties were removed: noGeometryMap, hLineMaterialColors, edgeMask, noSolarLight, noCameraLights, noSourceLights.
+
+If you were using noCameraLights, noSourceLights, or noSolarLight, use [ViewFlags.lighting]($common) instead. Set it to true if any of the old light-related properties were false.
+
+### Construction
+
+[ViewFlags.fromJSON]($common) accepts a [ViewFlagProps]($common), which is awkward and error-prone for reasons discussed in that type's documentation. The [ViewFlags.constructor]($common) - like the new [ViewFlags.create]($common) static method - now takes an optional [ViewFlagsProperties]($common), which has exactly the same properties as ViewFlags. Prefer to use either `create` or the constructor instead of `fromJSON`.
+
+## ViewFlagOverrides
+
+This cumbersome, inefficient class has been replaced with the identically-named [ViewFlagOverrides]($common) type, which is simply an interface that has all the same properties as [ViewFlags]($common), but each is optional. A flag is overridden if its value is not `undefined`.
+
+Upgrade instructions:
+```
+  let ovrs = new ViewFlagOverrides(); // Old code - nothing overridden.
+  let ovrs = { }; // New code
+
+  let ovrs = new ViewFlagOverrides(viewFlags); // Old code - override everything according to a ViewFlags
+  let ovrs = { ...viewFlags }; // New code
+
+  ovrs.overrideAll(viewFlags); // Old code - override everything according to a ViewFlags
+  ovrs = { ...viewFlags }; // New code.
+
+  ovrs.setThematicDisplay(true); // Old code - override thematic display to be true.
+  ovrs.thematicDisplay = true; // New code
+
+  ovrs.clone(other); // Old code - make other be a copy of ovrs
+  other = { ...other }; // New code
+
+  ovrs.copyFrom(other); // Old code - make ovrs be a copy of other
+  ovrs = { ...other }; // New code
+
+  if (ovrs.isPresent(ViewFlagPresence.ThematicDisplay)) // Old code
+  if (undefined !== ovrs.thematicDisplay) // New code
+
+  ovrs.setPresent(ViewFlagPresence.ThematicDisplay) // Old code
+  ovrs.thematicDisplay = value; // New code, where "value" is whatever value thematicDisplay was set to in the old code
+
+  ovrs.clearPresent(ViewFlagPresence.ThematicDisplay) // Old code
+  ovrs.thematicDisplay = undefined; // New code
+
+  if (ovrs.anyOverridden()); // Old code - determine if any flags are overridden
+  if (JsonUtils.isNonEmptyObject(ovrs)); // New code
+
+  ovrs.clear(); // Old code - mark all flags as not overridden
+  ovrs = { }; // New code
+
+  ovrs.clearClipVolume(); // Old code - mark clip volume as not overridden
+  ovrs.clipVolume = undefined; // New code
+
+  const vf = ovrs.apply(viewFlags); // Old code - create a ViewFlags by applying the overrides to the input ViewFlags
+  const vf = viewFlags.override(ovrs); // New code
+
+  const props = ovrs.toJSON(); // Old code - obtain JSON representation
+  const props = ovrs; // New code
+
+  let ovrs = ViewFlagOverrides.fromJSON(props); // Old code - create from JSON representation
+  let ovrs = { ...props }; // New code
+```
+
+## Moved utility types
+
+The [AsyncFunction]($bentleyjs-core), [AsyncMethodsOf]($bentleyjs-core), and [PromiseReturnType]($bentleyjs-core) types have moved to the @bentley/bentleyjs-core package. The ones in @bentley/imodeljs-frontend have been deprecated.
+
 ## Removal of previously deprecated APIs
 
 In this 3.0 major release, we have removed several APIs that were previously marked as deprecated in 2.x. Generally, the reason for the deprecation as well as the alternative suggestions can be found in the 2.x release notes. They are summarized here for quick reference.
@@ -61,16 +187,26 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 
 ### @bentley/imodeljs-common
 
-| Removed                                      | Replacement                                                    |
-| -------------------------------------------- | -------------------------------------------------------------- |
-| `Code.getValue`                              | `Code.value`                                                   |
-| `CodeSpec.specScopeType`                     | `CodeSpec.scopeType`                                           |
-| `IModel.changeSetId`                         | `IModel.changeset.id`                                          |
-| `IModelVersion.evaluateChangeSet`            | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IModelVersion.fromJson`                     | `IModelVersion.fromJSON`                                       |
-| `IModelVersion.getChangeSetFromNamedVersion` | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IModelVersion.getLatestChangeSetId`         | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion` |
-| `IModelWriteRpcInterface`                    | Use IPC for writing to iModels                                 |
+| Removed                                       | Replacement                                                     |
+| --------------------------------------------- | --------------------------------------------------------------- |
+| `Code.getValue`                               | `Code.value`                                                    |
+| `CodeSpec.specScopeType`                      | `CodeSpec.scopeType`                                            |
+| `IModel.changeSetId`                          | `IModel.changeset.id`                                           |
+| `IModelVersion.evaluateChangeSet`             | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion`  |
+| `IModelVersion.fromJson`                      | `IModelVersion.fromJSON`                                        |
+| `IModelVersion.getChangeSetFromNamedVersion`  | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion`  |
+| `IModelVersion.getLatestChangeSetId`          | `IModelHost`/`IModelApp` `hubAccess.getChangesetIdFromVersion`  |
+| `IModelWriteRpcInterface`                     | Use IPC for writing to iModels                                  |
+| `ViewFlagOverrides` class                     | [ViewFlagOverrides]($common) type                               |
+| `ViewFlagProps.edgeMask`                      | *eliminated*                                                    |
+| `ViewFlagProps.hlMatColors`                   | *eliminated*                                                    |
+| `ViewFlags.clone`                             | [ViewFlags.copy]($common)
+| `ViewFlags.edgeMask`                          | *eliminated*                                                    |
+| `ViewFlags.hLineMaterialColors`               | *eliminated*                                                    |
+| `ViewFlags.noCameraLights`                    | [ViewFlags.lighting]($common)                                   |
+| `ViewFlags.noGeometryMap`                     | *eliminated*                                                    |
+| `ViewFlags.noSolarLight`                      | [ViewFlags.lighting]($common)                                   |
+| `ViewFlags.noSourceLights`                    | [ViewFlags.lighting]($common)                                   |
 
 ### @bentley/imodeljs-frontend
 
@@ -139,6 +275,32 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | -------------------------------------- | -------------------------------------------------------------------------------------- |
 | `Config`                               | Use `process.env` to access environment variables directly |
 | `EnvMacroSubst`                        | *eliminated*  |
+
+### @bentley/presentation-common
+
+| Removed                                  | Replacement                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationRpcInterface.loadHierarchy` | *eliminated*                                                                           |
+
+### @bentley/presentation-backend
+
+| Removed                                  | Replacement                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`      | *eliminated*                                                                           |
+
+### @bentley/presentation-frontend
+
+| Removed                                  | Replacement                                                                            |
+| ---------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`      | *eliminated*                                                                           |
+
+### @bentley/presentation-components
+
+| Removed                                               | Replacement                                                                            |
+| ----------------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `IPresentationTreeDataProvider.loadHierarchy`         | *eliminated*                                                                           |
+| `PresentationTreeDataProvider.loadHierarchy`          | *eliminated*                                                                           |
+| `FilteredPresentationTreeDataProvider.loadHierarchy`  | *eliminated*                                                                           |
 
 <!---
 User Interface Changes - section to comment below
@@ -246,3 +408,14 @@ The cli tool has been deprecated due to an impending change of Extensions and th
 ## @bentley/config-loader
 
 The loader has been deprecated due to a preference for using the dotenv package instead. Any workflows using .env files will not be affected.
+
+## @bentley/geometry-core
+
+The method `BSplineCurve3d.createThroughPoints` has been deprecated in favor of the more general method `BSplineCurve3d.createFromInterpolationCurve3dOptions`.
+
+The property `InterpolationCurve3dOptions.isChordLenTangent` has been deprecated due to a naming inconsistency with similar adjacent properties. Use `InterpolationCurve3dOptions.isChordLenTangents` instead.
+
+## new @bentley/imodeljs-transformer package split out of backend package
+
+The iModel Transformer APIs, such as the classes [IModelExporter]($transformer), [IModelImporter]($transformer), and [IModelTransformer]($transformer)
+were removed from the `@bentley/imodeljs-backend` package and moved to a new package, `@bentley/imodeljs-transformer`.

@@ -8,21 +8,6 @@
 
 import { BeEvent, Logger } from "@bentley/bentleyjs-core";
 import { Extension, ExtensionLoader, loggerCategory, PendingExtension } from "./Extension";
-import { ExtensionServiceExtensionLoader } from "./loaders/ExtensionServiceExtensionLoader";
-
-/**
- * Describes configuration options to the ExtensionAdmin
- * @beta
- */
-export interface ExtensionAdminProps {
-  /** Whether or not to configure Extension Service by default.
-   *
-   * Requires the `imodel-extension-service-api` OIDC scope.
-   *
-   * @beta
-   */
-  configureExtensionServiceLoader?: boolean;
-}
 
 /** Handles the loading of Extensions, and maintains a list of registered, currently loaded, and currently being downloaded extensions.
  *
@@ -32,7 +17,6 @@ export interface ExtensionAdminProps {
  * @beta
  */
 export class ExtensionAdmin {
-  private _extensionAdminProps?: ExtensionAdminProps;
   private _extensionLoaders: ExtensionLoader[] = [];
   private _pendingExtensions: Map<string, PendingExtension> = new Map<string, PendingExtension>();
   private _registeredExtensions: Map<string, Extension> = new Map<string, Extension>();
@@ -42,17 +26,12 @@ export class ExtensionAdmin {
    */
   public readonly onExtensionLoaded = new BeEvent<(extensionName: string) => void>();
 
-  public constructor(props?: ExtensionAdminProps) {
-    this._extensionAdminProps = props;
-  }
+  public constructor() { }
 
-  /** On view startup, [[IModelApp.viewManager.onViewOpen]], [[ExtensionAdmin]] will be setup according to the provided [[ExtensionAdminProps]].
+  /** On view startup, [[IModelApp.viewManager.onViewOpen]], [[ExtensionAdmin]] will be setup.
    * @beta
    */
-  public onInitialized() {
-    if (this._extensionAdminProps?.configureExtensionServiceLoader ?? true)
-      this.addExtensionLoaderFront(new ExtensionServiceExtensionLoader("00000000-0000-0000-0000-000000000000"));
-  }
+  public onInitialized() { }
 
   /** @internal */
   public addPendingExtension(extensionRootName: string, pendingExtension: PendingExtension) {

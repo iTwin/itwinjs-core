@@ -98,33 +98,29 @@ describe("ViewState", () => {
 
     // query and change various viewFlags and displayStyle settings and ensure the changes propagate when cloning the state
 
-    const vf = vs0.viewFlags.clone();
-    vf.acsTriad = !vf.acsTriad;
-    vf.ambientOcclusion = !vf.ambientOcclusion;
-    vf.backgroundMap = !vf.backgroundMap;
-    vf.cameraLights = !vf.cameraLights;
-    vf.clipVolume = !vf.clipVolume;
-    vf.constructions = !vf.constructions;
-    vf.dimensions = !vf.dimensions;
-    vf.edgeMask = vf.edgeMask === 0 ? 1 : 0;
-    vf.fill = !vf.fill;
-    vf.grid = !vf.grid;
-    vf.hLineMaterialColors = !vf.hLineMaterialColors;
-    vf.hiddenEdges = !vf.hiddenEdges;
-    vf.materials = !vf.materials;
-    vf.monochrome = !vf.monochrome;
-    vf.noGeometryMap = !vf.noGeometryMap;
-    vf.patterns = !vf.patterns;
-    vf.renderMode = vf.renderMode === RenderMode.HiddenLine ? RenderMode.SmoothShade : RenderMode.HiddenLine;
-    vf.shadows = !vf.shadows;
-    vf.solarLight = !vf.solarLight;
-    vf.sourceLights = !vf.sourceLights;
-    vf.styles = !vf.styles;
-    vf.textures = !vf.textures;
-    vf.transparency = !vf.transparency;
-    vf.visibleEdges = !vf.visibleEdges;
-    vf.weights = !vf.weights;
-    vs0.displayStyle.viewFlags = vf;
+    const vf = vs0.viewFlags;
+    vs0.viewFlags = vf.copy({
+      acsTriad: !vf.acsTriad,
+      ambientOcclusion: !vf.ambientOcclusion,
+      backgroundMap: !vf.backgroundMap,
+      lighting: !vf.lighting,
+      clipVolume: !vf.clipVolume,
+      constructions: !vf.constructions,
+      dimensions: !vf.dimensions,
+      fill: !vf.fill,
+      grid: !vf.grid,
+      hiddenEdges: !vf.hiddenEdges,
+      materials: !vf.materials,
+      monochrome: !vf.monochrome,
+      patterns: !vf.patterns,
+      renderMode: vf.renderMode === RenderMode.HiddenLine ? RenderMode.SmoothShade : RenderMode.HiddenLine,
+      shadows: !vf.shadows,
+      styles: !vf.styles,
+      textures: !vf.textures,
+      transparency: !vf.transparency,
+      visibleEdges: !vf.visibleEdges,
+      weights: !vf.weights,
+    });
 
     const vs0DisplayStyle3d = (vs0 as ViewState3d).getDisplayStyle3d();
 
@@ -183,14 +179,13 @@ describe("ViewState", () => {
     assert.equal(vs0.viewFlags.acsTriad, vs1.viewFlags.acsTriad, "clone should copy viewFlags.acsTriad");
     assert.equal(vs0.viewFlags.ambientOcclusion, vs1.viewFlags.ambientOcclusion, "clone should copy viewFlags.ambientOcclusion");
     assert.equal(vs0.viewFlags.backgroundMap, vs1.viewFlags.backgroundMap, "clone should copy viewFlags.backgroundMap");
-    assert.equal(vs0.viewFlags.cameraLights, vs1.viewFlags.cameraLights, "clone should copy viewFlags.cameraLights");
+    assert.equal(vs0.viewFlags.lighting, vs1.viewFlags.lighting);
     assert.equal(vs0.viewFlags.clipVolume, vs1.viewFlags.clipVolume, "clone should copy viewFlags.clipVolume");
     assert.equal(vs0.viewFlags.constructions, vs1.viewFlags.constructions, "clone should copy viewFlags.constructions");
     assert.equal(vs0.viewFlags.dimensions, vs1.viewFlags.dimensions, "clone should copy viewFlags.dimensions");
     // This flag is hidden - assert.equal(vs0.viewFlags.edgeMask, vs1.viewFlags.edgeMask, "clone should copy viewFlags.edgeMask"); //
     assert.equal(vs0.viewFlags.fill, vs1.viewFlags.fill, "clone should copy viewFlags.fill");
     assert.equal(vs0.viewFlags.grid, vs1.viewFlags.grid, "clone should copy viewFlags.grid");
-    assert.equal(vs0.viewFlags.hLineMaterialColors, vs1.viewFlags.hLineMaterialColors, "clone should copy viewFlags.hLineMaterialColors");
     assert.equal(vs0.viewFlags.hiddenEdges, vs1.viewFlags.hiddenEdges, "clone should copy viewFlags.hiddenEdges");
     assert.equal(vs0.viewFlags.materials, vs1.viewFlags.materials, "clone should copy viewFlags.materials");
     assert.equal(vs0.viewFlags.monochrome, vs1.viewFlags.monochrome, "clone should copy viewFlags.monochrome");
@@ -198,8 +193,6 @@ describe("ViewState", () => {
     assert.equal(vs0.viewFlags.patterns, vs1.viewFlags.patterns, "clone should copy viewFlags.patterns");
     assert.equal(vs0.viewFlags.renderMode, vs1.viewFlags.renderMode, "clone should copy viewFlags.renderMode");
     assert.equal(vs0.viewFlags.shadows, vs1.viewFlags.shadows, "clone should copy viewFlags.shadows");
-    assert.equal(vs0.viewFlags.solarLight, vs1.viewFlags.solarLight, "clone should copy viewFlags.solarLight");
-    assert.equal(vs0.viewFlags.sourceLights, vs1.viewFlags.sourceLights, "clone should copy viewFlags.sourceLights");
     assert.equal(vs0.viewFlags.styles, vs1.viewFlags.styles, "clone should copy viewFlags.styles");
     assert.equal(vs0.viewFlags.textures, vs1.viewFlags.textures, "clone should copy viewFlags.textures");
     assert.equal(vs0.viewFlags.transparency, vs1.viewFlags.transparency, "clone should copy viewFlags.transparency");

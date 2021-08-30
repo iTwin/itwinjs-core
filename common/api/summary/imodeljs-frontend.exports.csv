@@ -44,8 +44,10 @@ internal;ArcGisTokenManager
 internal;ArcGisUtilities
 internal;areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): number
 internal;areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise
-public;AsyncFunction = (...args: any) => Promise
+public;AsyncFunction = AsyncFunction_2
+deprecated;AsyncFunction = AsyncFunction_2
 public;AsyncMethodsOf
+deprecated;AsyncMethodsOf
 public;AuthorizedFrontendRequestContext 
 public;AuxCoordSystem2dState 
 public;AuxCoordSystem3dState 
@@ -153,9 +155,8 @@ public;EventController
 public;EventHandled
 beta;class Extension
 beta;ExtensionAdmin
-beta;ExtensionAdminProps
 beta;ExtensionLoader
-beta;ExtensionServiceExtensionLoader 
+beta;ExtensionProps
 public;ExtentLimits
 beta;ExternalServerExtensionLoader 
 internal;ExternalTileStatistics
@@ -417,6 +418,7 @@ internal;PlanarTilePatch
 public;class PrimitiveTool 
 internal;PrimitiveVisibility
 public;PromiseReturnType
+deprecated;PromiseReturnType
 internal;QuadId
 beta;QuantityFormatOverridesChangedArgs
 beta;QuantityFormatsChangedArgs
@@ -445,6 +447,7 @@ internal;RealityTile
 internal;RealityTileDrawArgs 
 internal;class RealityTileLoader
 internal;RealityTileParams 
+internal;RealityTileRegion
 internal;RealityTileTree 
 internal;RealityTileTreeParams 
 public;class RenderClipVolume

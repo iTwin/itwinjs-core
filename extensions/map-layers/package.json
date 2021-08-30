@@ -1,6 +1,6 @@
 {
   "name": "@bentley/map-layers",
-  "version": "3.0.0-dev.31",
+  "version": "3.0.0-dev.41",
   "description": "Extension that adds a Map Layers Widget",
   "main": "lib/map-layers.js",
   "typings": "lib/map-layers",
@@ -51,8 +51,8 @@
     "@bentley/ui-imodel-components": "workspace:*",
     "@bentley/ui-framework": "workspace:*",
     "@bentley/ui-ninezone": "workspace:*",
-    "@itwin/itwinui-css": "^0.25.0",
-    "@itwin/itwinui-react": "^1.14.0",
+    "@itwin/itwinui-css": "^0.27.0",
+    "@itwin/itwinui-react": "^1.16.2",
     "@testing-library/react": "^12.0.0",
     "@testing-library/react-hooks": "^3.2.1",
     "@types/chai": "^4.1.4",

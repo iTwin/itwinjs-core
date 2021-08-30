@@ -7,6 +7,7 @@ packageClassification:  [
          "imodeljs-frontend",
          "imodeljs-common",
          "imodeljs-backend",
+         "imodeljs-transformer",
          "imodeljs-markup",
          "imodeljs-i18n",
          "imodeljs-quantity",

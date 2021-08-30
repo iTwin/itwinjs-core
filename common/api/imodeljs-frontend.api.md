@@ -13,6 +13,8 @@ import { AngleSweep } from '@bentley/geometry-core';
 import { AnyCurvePrimitive } from '@bentley/geometry-core';
 import { AppearanceOverrideProps as AppearanceOverrideProps_2 } from '@bentley/imodeljs-common';
 import { Arc3d } from '@bentley/geometry-core';
+import { AsyncFunction as AsyncFunction_2 } from '@bentley/bentleyjs-core';
+import { AsyncMethodsOf as AsyncMethodsOf_2 } from '@bentley/bentleyjs-core';
 import { AuthorizedClientRequestContext } from '@bentley/itwin-client';
 import { AuxChannel } from '@bentley/geometry-core';
 import { AuxCoordSystem2dProps } from '@bentley/imodeljs-common';
@@ -86,7 +88,6 @@ import { EmphasizeElementsProps as EmphasizeElementsProps_2 } from '@bentley/imo
 import { EntityProps } from '@bentley/imodeljs-common';
 import { EntityQueryParams } from '@bentley/imodeljs-common';
 import { EnvironmentProps } from '@bentley/imodeljs-common';
-import { ExtensionProps } from '@bentley/extension-client';
 import { Feature } from '@bentley/imodeljs-common';
 import { FeatureAppearance } from '@bentley/imodeljs-common';
 import { FeatureAppearanceProps } from '@bentley/imodeljs-common';
@@ -218,6 +219,7 @@ import { PolylineFlags } from '@bentley/imodeljs-common';
 import { PolylineTypeFlags } from '@bentley/imodeljs-common';
 import { PrimaryTileTreeId } from '@bentley/imodeljs-common';
 import { ProgressCallback } from '@bentley/itwin-client';
+import { PromiseReturnType as PromiseReturnType_2 } from '@bentley/bentleyjs-core';
 import { PropertyDescription } from '@bentley/ui-abstract';
 import { QParams2d } from '@bentley/imodeljs-common';
 import { QParams3d } from '@bentley/imodeljs-common';
@@ -1206,13 +1208,11 @@ export function areaToEyeHeight(view3d: ViewState3d, area: GlobalLocationArea, o
 // @internal
 export function areaToEyeHeightFromGcs(view3d: ViewState3d, area: GlobalLocationArea, offset?: number): Promise<number>;
 
-// @public
-export type AsyncFunction = (...args: any) => Promise<any>;
+// @public @deprecated (undocumented)
+export type AsyncFunction = AsyncFunction_2;
 
-// @public
-export type AsyncMethodsOf<T> = {
-    [P in keyof T]: T[P] extends AsyncFunction ? P : never;
-}[keyof T];
+// @public @deprecated (undocumented)
+export type AsyncMethodsOf<T> = AsyncMethodsOf_2<T>;
 
 // @public
 export class AuthorizedFrontendRequestContext extends AuthorizedClientRequestContext {
@@ -2947,7 +2947,7 @@ export abstract class Extension {
 
 // @beta
 export class ExtensionAdmin {
-    constructor(props?: ExtensionAdminProps);
+    constructor();
     addExtensionLoader(extensionLoader: ExtensionLoader): void;
     addExtensionLoaderFront(extensionLoader: ExtensionLoader): void;
     // @internal (undocumented)
@@ -2957,11 +2957,6 @@ export class ExtensionAdmin {
     onInitialized(): void;
     register(extension: Extension): void;
     }
-
-// @beta
-export interface ExtensionAdminProps {
-    configureExtensionServiceLoader?: boolean;
-}
 
 // @beta
 export interface ExtensionLoader {
@@ -2974,15 +2969,24 @@ export interface ExtensionLoader {
 }
 
 // @beta
-export class ExtensionServiceExtensionLoader implements ExtensionLoader {
-    constructor(_contextId: string);
+export interface ExtensionProps {
     // (undocumented)
-    getExtensionName(extensionRoot: string): string;
+    contextId: string;
     // (undocumented)
-    loadExtension(extensionName: string, extensionVersion?: string, args?: string[] | undefined): Promise<PendingExtension | undefined>;
+    extensionName: string;
     // (undocumented)
-    resolveResourceUrl(extensionName: string, relativeFileName: string): string;
-    }
+    files: FileInfo[];
+    // (undocumented)
+    isPublic: boolean;
+    // (undocumented)
+    status: ExtensionUploadStatus;
+    // (undocumented)
+    timestamp: Date;
+    // (undocumented)
+    uploadedBy: string;
+    // (undocumented)
+    version: string;
+}
 
 // @public
 export interface ExtentLimits {
@@ -3759,7 +3763,7 @@ export class GraphicBranch implements IDisposable {
     collectStatistics(stats: RenderMemory.Statistics): void;
     dispose(): void;
     readonly entries: RenderGraphic[];
-    getViewFlags(flags: ViewFlags, out?: ViewFlags): ViewFlags;
+    getViewFlags(flags: ViewFlags): ViewFlags;
     get isEmpty(): boolean;
     readonly ownsEntries: boolean;
     setViewFlagOverrides(ovr: ViewFlagOverrides): void;
@@ -4737,7 +4741,7 @@ export class IModelTileTree extends TileTree {
     readonly stringifiedSectionClip?: string;
     get tileState(): "static" | "dynamic" | "interactive" | "disposed";
     // (undocumented)
-    get viewFlagOverrides(): ViewFlagOverrides;
+    get viewFlagOverrides(): {};
 }
 
 // @internal (undocumented)
@@ -4878,7 +4882,7 @@ export class IpcApp {
     // @internal
     static callIpcChannel(channelName: string, methodName: string, ...args: any[]): Promise<any>;
     // (undocumented)
-    static callIpcHost<T extends AsyncMethodsOf<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>): Promise<PromiseReturnType<IpcAppFunctions[T]>>;
+    static callIpcHost<T extends AsyncMethodsOf_2<IpcAppFunctions>>(methodName: T, ...args: Parameters<IpcAppFunctions[T]>): Promise<PromiseReturnType_2<IpcAppFunctions[T]>>;
     static invoke(channel: string, ...args: any[]): Promise<any>;
     static get isValid(): boolean;
     static removeListener(channel: string, listener: IpcListener): void;
@@ -5744,7 +5748,7 @@ export class MapTileTreeReference extends TileTreeReference {
     // (undocumented)
     getToolTip(hit: HitDetail): Promise<HTMLElement | string | undefined>;
     // (undocumented)
-    protected getViewFlagOverrides(_tree: TileTree): import("@bentley/imodeljs-common").ViewFlagOverrides;
+    protected getViewFlagOverrides(_tree: TileTree): Partial<import("@bentley/bentleyjs-core").Mutable<import("@bentley/bentleyjs-core").NonFunctionPropertiesOf<import("@bentley/imodeljs-common").ViewFlags>>>;
     // (undocumented)
     imageryTreeFromTreeModelIds(mapTreeModelId: Id64String, layerTreeModelId: Id64String): ImageryMapLayerTreeReference | undefined;
     // (undocumented)
@@ -6496,7 +6500,7 @@ export class MutableChangeFlags extends ChangeFlags {
 // @public
 export class NativeApp {
     // (undocumented)
-    static callNativeHost<T extends AsyncMethodsOf<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>): Promise<PromiseReturnType<NativeAppFunctions[T]>>;
+    static callNativeHost<T extends AsyncMethodsOf_2<NativeAppFunctions>>(methodName: T, ...args: Parameters<NativeAppFunctions[T]>): Promise<PromiseReturnType_2<NativeAppFunctions[T]>>;
     static checkInternetConnectivity(): Promise<InternetConnectivityStatus>;
     static closeStorage(storage: Storage, deleteStorage?: boolean): Promise<void>;
     static deleteBriefcase(fileName: string): Promise<void>;
@@ -7197,8 +7201,8 @@ export enum PrimitiveVisibility {
     Uninstanced = 2
 }
 
-// @public
-export type PromiseReturnType<T extends AsyncFunction> = T extends (...args: any) => Promise<infer R> ? R : any;
+// @public @deprecated (undocumented)
+export type PromiseReturnType<T extends AsyncFunction_2> = PromiseReturnType_2<T>;
 
 // @internal (undocumented)
 export class QuadId {
@@ -7515,6 +7519,7 @@ export class RealityModelTileUtils {
     static rangeFromBoundingVolume(boundingVolume: any): {
         range: Range3d;
         corners?: Point3d[];
+        region?: RealityTileRegion;
     } | undefined;
     // (undocumented)
     static transformFromJson(jTrans: number[] | undefined): Transform;
@@ -7531,8 +7536,6 @@ export class RealityTile extends Tile {
     allChildrenIncluded(tiles: Tile[]): boolean;
     // (undocumented)
     protected get _anyChildNotFound(): boolean;
-    // (undocumented)
-    readonly boundedByRegion: boolean | undefined;
     // (undocumented)
     get channel(): TileRequestChannel;
     // (undocumented)
@@ -7594,6 +7597,10 @@ export class RealityTile extends Tile {
     // (undocumented)
     get realityRoot(): RealityTileTree;
     // (undocumented)
+    readonly region?: RealityTileRegion;
+    // (undocumented)
+    reproject(rootReprojection: Transform): void;
+    // (undocumented)
     protected _reprojectionTransform?: Transform;
     // (undocumented)
     requestContent(isCanceled: () => boolean): Promise<TileRequest.Response>;
@@ -7603,8 +7610,6 @@ export class RealityTile extends Tile {
     selectRealityTiles(context: TraversalSelectionContext, args: TileDrawArgs, traversalDetails: TraversalDetails): void;
     // (undocumented)
     selectSecondaryTiles(_args: TileDrawArgs, _context: TraversalSelectionContext): void;
-    // (undocumented)
-    setReprojection(rootReprojection: Transform): void;
     // (undocumented)
     readonly transformToRoot?: Transform;
     // (undocumented)
@@ -7672,13 +7677,46 @@ export interface RealityTileParams extends TileParams {
     // (undocumented)
     readonly additiveRefinement?: boolean;
     // (undocumented)
-    readonly boundedByRegion?: boolean;
-    // (undocumented)
     readonly noContentButTerminateOnSelection?: boolean;
     // (undocumented)
     readonly rangeCorners?: Point3d[];
     // (undocumented)
+    readonly region?: RealityTileRegion;
+    // (undocumented)
     readonly transformToRoot?: Transform;
+}
+
+// @internal (undocumented)
+export class RealityTileRegion {
+    constructor(values: {
+        minLongitude: number;
+        minLatitude: number;
+        minHeight: number;
+        maxLongitude: number;
+        maxLatitude: number;
+        maxHeight: number;
+    });
+    // (undocumented)
+    static create(region: number[]): RealityTileRegion;
+    // (undocumented)
+    getRange(): {
+        range: Range3d;
+        corners?: Point3d[];
+    };
+    // (undocumented)
+    static isGlobal(boundingVolume: any): boolean;
+    // (undocumented)
+    maxHeight: number;
+    // (undocumented)
+    maxLatitude: number;
+    // (undocumented)
+    maxLongitude: number;
+    // (undocumented)
+    minHeight: number;
+    // (undocumented)
+    minLatitude: number;
+    // (undocumented)
+    minLongitude: number;
 }
 
 // @internal (undocumented)
