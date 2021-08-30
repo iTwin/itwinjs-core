@@ -454,7 +454,12 @@ export abstract class ViewState extends ElementState {
   }
 
   /** Orient this view to one of the [[StandardView]] rotations. */
-  public setStandardRotation(id: StandardViewId) {
+  public setStandardRotation(id: StandardViewId) { this.setRotation(ViewState.getStandardViewMatrix(id)); }
+
+  /** Orient this view to one of the [[StandardView]] rotations, if the the view is not viewing the project then the
+   * standard rotation is relative to the global position rather than the project.
+   */
+  public setStandardGlobalRotation(id: StandardViewId) {
     const worldToView = ViewState.getStandardViewMatrix(id);
     const globeToWorld = this.getGlobeRotation();
     if (globeToWorld)
@@ -1030,6 +1035,10 @@ export abstract class ViewState extends ElementState {
 
     return normal;
   }
+
+  /** Return true if the view is looking at the current iModel project extents or
+   * false if the viewed area do does not include more than one percent of the project.
+   */
   public getIsViewingProject(): boolean {
     const worldToNpc =  this.computeWorldToNpc();
     if (!worldToNpc || !worldToNpc.map)
@@ -1048,6 +1057,10 @@ export abstract class ViewState extends ElementState {
     return area > 1.0E-2;
   }
 
+  /** If the view is not of the project as determined by [[getIsViewingProject]] then return
+   * the rotation from a global reference frame to world coordinates.  The global reference frame includes
+   * Y vector towards true north, X parallel to the equator and Z perpendicular to the ellipspoid surface
+   */
   public getGlobeRotation(): Matrix3d | undefined {
     if (!this.iModel.isGeoLocated || this.globeMode !== GlobeMode.Ellipsoid || this.getIsViewingProject())
       return undefined;
