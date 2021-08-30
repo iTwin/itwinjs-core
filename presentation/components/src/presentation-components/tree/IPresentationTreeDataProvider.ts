@@ -24,10 +24,4 @@ export interface IPresentationTreeDataProvider extends ITreeDataProvider, IPrese
    * Returns filtered node paths.
    */
   getFilteredNodePaths(filter: string): Promise<NodePathElement[]>;
-
-  /**
-   * Loads the hierarchy so on-demand requests and filtering works quicker
-   * @alpha Hierarchy loading performance needs to be improved before this becomes publicly available.
-   */
-  loadHierarchy?(): Promise<void>;
 }

@@ -149,11 +149,4 @@ export class FilteredPresentationTreeDataProvider implements IFilteredPresentati
   public nodeMatchesFilter(node: TreeNodeItem): boolean {
     return this._filteredResultMatches.some((result) => result.id === node.id);
   }
-
-  /** @alpha Hierarchy loading performance needs to be improved before this becomes publicly available. */
-  // istanbul ignore next
-  public async loadHierarchy() {
-    // the hierarchy is already loaded when this provider is created
-  }
-
 }
