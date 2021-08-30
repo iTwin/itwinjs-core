@@ -66,7 +66,7 @@ export abstract class Geometry {
       facetOptions.needNormals = true;
 
     const polyfaceList = this._getPolyfaces(facetOptions);
-    if (undefined !== polyfaceList)
+    if (undefined !== polyfaceList && !this.transform.isIdentity)
       polyfaceList.forEach((polyface: PolyfacePrimitive) => {
         polyface.transform(this.transform);
       });
@@ -77,7 +77,7 @@ export abstract class Geometry {
     const strokeOptions = StrokeOptions.createForCurves();
     strokeOptions.chordTol = tolerance;
     const strokesList = this._getStrokes(strokeOptions);
-    if (undefined !== strokesList)
+    if (undefined !== strokesList && !this.transform.isIdentity)
       strokesList.forEach((stroke: StrokesPrimitive) => {
         stroke.transform(this.transform);
       });
