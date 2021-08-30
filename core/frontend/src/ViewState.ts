@@ -1784,12 +1784,12 @@ export abstract class ViewState3d extends ViewState {
     if (!rMatrix)
       return ViewStatus.DegenerateGeometry;
 
-    const transitionTransform = Transform.createFixedPointAndMatrix(earthCenter, rMatrix);
+    const rotationTransform = Transform.createFixedPointAndMatrix(earthCenter, rMatrix);
     const frustum = this.calculateFrustum();
     if (!frustum)
       return ViewStatus.DegenerateGeometry;
 
-    frustum.multiply(transitionTransform);
+    frustum.multiply(rotationTransform);
     return this.setupFromFrustum(frustum);
   }
 
@@ -2116,7 +2116,7 @@ export abstract class ViewState3d extends ViewState {
       return ViewStatus.DegenerateGeometry;
 
     frustum.multiply(transitionTransform);
-    return this.setupFromFrustum(frustum);
+    return  this.setupFromFrustum(frustum);
   }
 }
 
