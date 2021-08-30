@@ -4303,7 +4303,7 @@ export { IModelStatus }
 // @public (undocumented)
 export abstract class IModelTileRpcInterface extends RpcInterface {
     // @internal
-    generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<string | TileContentKey>;
+    generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<TileContentSource>;
     // (undocumented)
     static getClient(): IModelTileRpcInterface;
     // @beta (undocumented)
@@ -4321,7 +4321,7 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
     // @internal (undocumented)
     requestTileTreeProps(_tokenProps: IModelRpcProps, _id: string): Promise<IModelTileTreeProps>;
     // @internal
-    retrieveTileContent(_rpcProps: IModelRpcProps, _key: TileContentKey): Promise<Uint8Array>;
+    retrieveTileContent(_rpcProps: IModelRpcProps, _key: TileContentIdentifier): Promise<Uint8Array>;
 }
 
 // @internal
@@ -8140,14 +8140,6 @@ export interface TileContentIdentifier {
 }
 
 // @internal
-export interface TileContentKey {
-    // (undocumented)
-    contentId: string;
-    // (undocumented)
-    treeId: string;
-}
-
-// @internal
 export interface TileContentMetadata {
     // (undocumented)
     readonly contentRange: Range3d;
@@ -8157,6 +8149,14 @@ export interface TileContentMetadata {
     readonly isLeaf: boolean;
     // (undocumented)
     readonly sizeMultiplier?: number;
+}
+
+// @internal (undocumented)
+export enum TileContentSource {
+    // (undocumented)
+    Backend = 0,
+    // (undocumented)
+    ExternalCache = 1
 }
 
 // @internal

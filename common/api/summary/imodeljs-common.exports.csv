@@ -637,8 +637,8 @@ public;ThumbnailFormatProps
 public;ThumbnailProps 
 internal;TileContentDescription 
 beta;TileContentIdentifier
-internal;TileContentKey
 internal;TileContentMetadata
+internal;TileContentSource
 internal;TileFormat
 internal;tileFormatFromNumber(formatNumber: number): TileFormat
 internal;class TileHeader
