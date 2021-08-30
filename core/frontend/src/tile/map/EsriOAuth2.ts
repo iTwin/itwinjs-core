@@ -215,14 +215,4 @@ export class EsriOAuth2 {
     }
 
   }
-
-  /*
-  public static get clientIds(): EsriOAuthClientIds|undefined {
-    return EsriOAuth2._clientIds;
-  }
-
-  public static set clientIds(clientIds: EsriOAuthClientIds|undefined) {
-    EsriOAuth2._clientIds = clientIds;
-  }
-*/
 }
