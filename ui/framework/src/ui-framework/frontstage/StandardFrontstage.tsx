@@ -3,19 +3,27 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 import * as React from "react";
-import {
-  ContentGroup, ContentGroupProps, ContentToolWidgetComposer,
-  CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
-  StagePanel, StagePanelProps, StagePanelState, StatusBarWidgetComposerControl,
-  ViewToolWidgetComposer, Widget, Zone,
-} from "@bentley/ui-framework";
 import { StageUsage } from "@bentley/ui-abstract";
+import { StagePanel, StagePanelProps } from "../stagepanels/StagePanel";
+import { ContentGroup, ContentGroupProps } from "../content/ContentGroup";
+import { FrontstageProvider } from "./FrontstageProvider";
+import { Frontstage, FrontstageProps } from "./Frontstage";
+import { CoreTools } from "../tools/CoreToolDefinitions";
+import { Zone } from "../zones/Zone";
+import { ContentToolWidgetComposer } from "../widgets/ContentToolWidgetComposer";
+import { Widget } from "../widgets/Widget";
+import { ViewToolWidgetComposer } from "../widgets/ViewToolWidgetComposer";
+import { StatusBarWidgetComposerControl } from "../widgets/StatusBarWidgetComposerControl";
+import { StagePanelState } from "../stagepanels/StagePanelDef";
 
 /** Properties of a [[WidgetPanelProps]] component
  * @beta
  */
 export type WidgetPanelProps = Omit<StagePanelProps, "widgets" | "runtimeProps" | "header" | "allowedZones" | "panelZones">;
 
+/**
+ * @beta
+ */
 export interface StandardStageProps {
   /* unique stage id */
   id: string;
@@ -48,6 +56,9 @@ export interface StandardStageProps {
   applicationData?: any;
 }
 
+/**
+ * @beta
+ */
 export class StandardFrontstageProvider extends FrontstageProvider {
 
   constructor(private props: StandardStageProps) {

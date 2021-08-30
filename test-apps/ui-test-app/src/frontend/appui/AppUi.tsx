@@ -39,7 +39,9 @@ import {
   KeyboardShortcutManager,
   KeyboardShortcutProps,
   StandardContentToolsProvider,
+  StandardFrontstageProvider,
   StandardNavigationToolsProvider,
+  StandardStageProps,
   StandardStatusbarItemsProvider,
   TaskPropsList,
   UiFramework,
@@ -62,7 +64,6 @@ import { AccuDrawPopupTools } from "../tools/AccuDrawPopupTools";
 import { AppTools } from "../tools/ToolSpecifications";
 import { ColorByName, ColorDef } from "@bentley/imodeljs-common";
 import { AppUi2StageItemsProvider } from "../tools/AppUi2StageItemsProvider";
-import { StandardFrontstageProvider, StandardStageProps } from "./frontstages/StandardFrontstage";
 import { ui2ContentGroupProps } from "./frontstages/FrontstageUi2";
 
 // cSpell:ignore uitestapp
