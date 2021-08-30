@@ -7,11 +7,11 @@
  */
 
 import {
-  assert, BeDuration, BeEvent, BeTimePoint, Id64Array, ProcessDetector,
+  assert, BeDuration, BeEvent, BentleyStatus, BeTimePoint, Id64Array, IModelStatus, ProcessDetector,
 } from "@bentley/bentleyjs-core";
 import {
-  CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelTileRpcInterface,
-  IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileVersionInfo,
+  BackendError, CloudStorageTileCache, defaultTileOptions, ElementGraphicsRequestProps, getMaximumMajorTileFormatVersion, IModelError, IModelTileRpcInterface,
+  IModelTileTreeProps, RpcOperation, RpcResponseCacheControl, ServerTimeoutError, TileContentSource, TileVersionInfo,
 } from "@bentley/imodeljs-common";
 import { IModelApp } from "../IModelApp";
 import { IpcApp } from "../IpcApp";
@@ -585,12 +585,16 @@ export class TileAdmin {
   public async generateTileContent(tile: IModelTile): Promise<Uint8Array> {
     this.initializeRpc();
     const props = this.getTileRequestProps(tile);
-    const url = await IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
-    if (typeof url === "string") {
-      const response = await fetch(url);
-      return new Uint8Array(await response.arrayBuffer());
+    const retrieveMethod = await IModelTileRpcInterface.getClient().generateTileContent(props.tokenProps, props.treeId, props.contentId, props.guid);
+    if (retrieveMethod === TileContentSource.ExternalCache) {
+      const tileContent = await this.requestCachedTileContent(tile);
+      if (tileContent === undefined)
+        throw new IModelError(IModelStatus.NoContent, "Failed to fetch generated tile from external cache");
+      return tileContent;
+    } else if (retrieveMethod === TileContentSource.Backend) {
+      return IModelTileRpcInterface.getClient().retrieveTileContent(props.tokenProps, this.getTileRequestProps(tile));
     }
-    return IModelTileRpcInterface.getClient().retrieveTileContent(props.tokenProps, url);
+    throw new BackendError(BentleyStatus.ERROR, "", "Invalid response from RPC backend");
   }
 
   /** @internal */

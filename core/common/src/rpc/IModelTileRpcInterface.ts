@@ -11,8 +11,9 @@ import { CloudStorageContainerDescriptor, CloudStorageContainerUrl } from "../Cl
 import { IModelRpcProps } from "../IModel";
 import { RpcInterface } from "../RpcInterface";
 import { RpcManager } from "../RpcManager";
-import { IModelTileTreeProps, TileContentKey, TileVersionInfo } from "../TileProps";
+import { IModelTileTreeProps, TileContentSource, TileVersionInfo } from "../TileProps";
 import { ElementGraphicsRequestProps } from "../tile/ElementGraphics";
+import { TileContentIdentifier } from "../CloudStorageTileCache";
 
 /** @public */
 export abstract class IModelTileRpcInterface extends RpcInterface {
@@ -48,14 +49,14 @@ export abstract class IModelTileRpcInterface extends RpcInterface {
    * Use `CloudStorageTileCache.retrieve` for that.
    * @internal
    */
-  public async generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<string | TileContentKey> {
+  public async generateTileContent(_rpcProps: IModelRpcProps, _treeId: string, _contentId: string, _guid: string | undefined): Promise<TileContentSource> {
     return this.forward(arguments);
   }
 
   /** Retrieves tile content from the backend using a key returned by generateTileContent.
    *  @internal
    */
-  public async retrieveTileContent(_rpcProps: IModelRpcProps, _key: TileContentKey): Promise<Uint8Array> {
+  public async retrieveTileContent(_rpcProps: IModelRpcProps, _key: TileContentIdentifier): Promise<Uint8Array> {
     return this.forward(arguments);
   }
 

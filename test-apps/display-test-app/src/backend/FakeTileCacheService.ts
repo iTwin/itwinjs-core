@@ -44,8 +44,4 @@ export class FakeTileCacheService extends CloudStorageService {
 
     return "ok";
   }
-
-  public async getResourceUrl(container: string, name: string): Promise<string> {
-    return `${this._host}/tiles/${container}/${name}`;
-  }
 }

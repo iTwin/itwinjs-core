@@ -6,7 +6,7 @@ import { expect } from "chai";
 import { ByteStream, Id64, Id64String } from "@bentley/bentleyjs-core";
 import {
   BatchType, CurrentImdlVersion, ImdlFlags, ImdlHeader, IModelRpcProps, IModelTileRpcInterface, IModelTileTreeId,
-  iModelTileTreeIdToString, ModelProps, RelatedElementProps, RenderMode, TileFormat, TileReadStatus,
+  iModelTileTreeIdToString, ModelProps, RelatedElementProps, RenderMode, TileContentSource, TileFormat, TileReadStatus,
 } from "@bentley/imodeljs-common";
 import {
   GeometricModelState, ImdlReader, IModelApp, IModelConnection, IModelTileTree, iModelTileTreeParamsFromJSON, MockRender, RenderGraphic,
@@ -891,7 +891,7 @@ describe.skip("TileAdmin", () => {
           else
             expect(guid).to.equal(`first_${qualifier!}`);
 
-          return "";
+          return TileContentSource.Backend;
         };
 
         await tree.staticBranch.requestContent();

@@ -34,7 +34,6 @@ export abstract class CloudStorageService {
   public abstract id: CloudStorageProvider;
   public abstract obtainContainerUrl(id: CloudStorageContainerDescriptor, expiry: Date, clientIp?: string): CloudStorageContainerUrl;
   public abstract upload(container: string, name: string, data: Uint8Array, options?: CloudStorageUploadOptions, metadata?: object): Promise<string>;
-  public abstract getResourceUrl(container: string, name: string): Promise<string>;
   public async download(_name: string): Promise<Readable | undefined> { return undefined; }
 
   protected makeDescriptor(id: CloudStorageContainerDescriptor) {
@@ -160,10 +159,6 @@ export class AzureBlobStorage extends CloudStorageService {
       }
     });
   }
-
-  public async getResourceUrl(container: string, name: string): Promise<string> {
-    return (await this.getBlockBlobUrl(container, name)).url;
-  }
 }
 
 /** @internal */
@@ -192,16 +187,6 @@ export class CloudStorageTileUploader {
     }
 
     this._activeUploads.delete(containerKey + resourceKey);
-  }
-
-  public async getUploadUrl(tokenProps: IModelRpcProps, treeId: string, contentId: string, guid: string | undefined): Promise<string> {
-    const id: TileContentIdentifier = { tokenProps, treeId, contentId, guid };
-
-    const cache = CloudStorageTileCache.getCache();
-    const containerKey = cache.formContainerName(id);
-    const resourceKey = cache.formResourceName(id);
-
-    return IModelHost.tileCacheService.getResourceUrl(containerKey, resourceKey);
   }
 
   public async cacheTile(tokenProps: IModelRpcProps, treeId: string, contentId: string, content: Uint8Array, guid: string | undefined, metadata?: object): Promise<void> {
