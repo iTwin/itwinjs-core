@@ -15,6 +15,7 @@ import { IDisposable } from '@bentley/bentleyjs-core';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { RpcInterface } from '@bentley/imodeljs-common';
+import { UnitSystemKey } from '@bentley/imodeljs-quantity';
 
 // @alpha (undocumented)
 export function addFieldHierarchy(rootHierarchies: FieldHierarchy[], hierarchy: FieldHierarchy): void;
@@ -2079,18 +2080,6 @@ export enum PresentationStatus {
     UseAfterDisposal = 65538
 }
 
-// @beta
-export enum PresentationUnitSystem {
-    // (undocumented)
-    BritishImperial = "british-imperial",
-    // (undocumented)
-    Metric = "metric",
-    // (undocumented)
-    UsCustomary = "us-customary",
-    // (undocumented)
-    UsSurvey = "us-survey"
-}
-
 // @public
 export type PrimitivePropertyValue = string | number | boolean | Point | InstanceKey | undefined;
 
@@ -2532,8 +2521,7 @@ export interface RequestOptions<TIModel> {
     imodel: TIModel;
     locale?: string;
     priority?: number;
-    // @beta
-    unitSystem?: PresentationUnitSystem;
+    unitSystem?: UnitSystemKey;
 }
 
 // @public

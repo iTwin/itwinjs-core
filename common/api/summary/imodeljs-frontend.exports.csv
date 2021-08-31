@@ -606,7 +606,6 @@ public;UniformContext
 public;UniformParams
 public;UniformType
 beta;UnitFormattingSettingsProvider
-beta;UnitSystemKey = "metric" | "imperial" | "usCustomary" | "usSurvey"
 internal;UpsampledMapTile 
 public;VaryingType
 public;ViewAnimationOptions
