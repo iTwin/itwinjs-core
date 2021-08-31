@@ -15,7 +15,7 @@ import { ToolbarButtonItemProps } from "./Item";
 import { useToolbarWithOverflowDirectionContext, useToolItemEntryContext } from "./ToolbarWithOverflow";
 import { toToolbarPopupRelativePosition } from "./PopupItemWithDrag";
 
-/** @internal */
+/** @public */
 export interface ToolbarPopupContextProps {
   readonly closePanel: () => void;
   readonly setSelectedItem?: (buttonItem: ActionButton) => void;

@@ -10,18 +10,16 @@
 
 import * as React from "react";
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
-import { Button } from "@itwin/itwinui-react";
 
 import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
-  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarLabelSide, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
-import { FillCentered, Icon } from "@bentley/ui-core";
-import { FooterIndicator } from "@bentley/ui-ninezone";
+import { FillCentered } from "@bentley/ui-core";
 import {
   ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, createAction,
-  ReducerRegistryInstance, StateManager, StatusBarItemUtilities, SyncUiEventArgs, SyncUiEventDispatcher, UiFramework, withStatusFieldProps,
+  ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { ShadowField } from "../appui/statusfields/ShadowField";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
