@@ -101,9 +101,9 @@ export class Model extends Entity implements ModelProps {
    * @beta
    */
   protected static onInsert(arg: OnModelPropsArg): void {
-    const { iModel, props } = arg;
+    const { props } = arg;
     if (props.parentModel)   // inserting requires shared lock on parent, if present
-      iModel.locks.checkSharedLock(props.parentModel, "parent model", "insert");
+      arg.iModel.locks.checkSharedLock(props.parentModel, "parent model", "insert");
   }
 
   /** Called after a new Model is inserted.

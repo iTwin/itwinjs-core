@@ -107,7 +107,7 @@ export class IModelHubBackend {
       nativeDb.saveChanges();
       nativeDb.deleteAllTxns(); // necessary before resetting briefcaseId
       nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
-      nativeDb.saveLocalValue(BriefcaseLocalValue.NoLocking, arg.noLocks ? "true" : "");
+      nativeDb.saveLocalValue(BriefcaseLocalValue.NoLocking, arg.noLocks ? "true" : undefined);
       nativeDb.saveChanges();
     } finally {
       nativeDb.closeIModel();
@@ -375,10 +375,6 @@ export class IModelHubBackend {
         clearInterval(timer);
     }
     return checkpoints[0].changeSetId!;
-  }
-
-  public static async shouldUseLocks(_arg: IModelIdArg) {
-    return true; // NEEDS_WORK
   }
 
   public static async releaseAllLocks(arg: BriefcaseDbArg) {

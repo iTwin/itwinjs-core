@@ -17,6 +17,7 @@ public;BriefcaseDb
 internal;BriefcaseDbArg
 public;BriefcaseId = number
 internal;BriefcaseIdArg 
+internal;BriefcaseLocalValue
 public;BriefcaseManager
 public;class Callout 
 public;Category 
@@ -42,17 +43,10 @@ beta;CloudStorageUploadOptions
 public;CodeSpecs
 public;ComputedProjectExtents
 public;ComputeProjectExtentsOptions
-beta;ConcurrencyControl
-beta;ConcurrencyControl
-alpha;Channel
-alpha;ChannelInfo
-alpha;ChannelRootInfo 
-alpha;RepositoryChannelInfo 
-internal;StateCache
-alpha;ConcurrencyControlChannel = ConcurrencyControl.Channel
 alpha;CrashReportingConfig
 alpha;CrashReportingConfigNameValuePair
 beta;CreateChangeSummaryArgs
+internal;CreateNewIModelProps 
 public;DefinitionContainer 
 public;class DefinitionElement 
 public;DefinitionGroup 
@@ -214,8 +208,10 @@ public;class LinkElement
 public;LinkModel 
 public;LinkPartition 
 internal;LocalhostIpcHost
+beta;LockControl
+internal;LockMap = Map
 beta;LockProps
-public;LockScope
+public;LockState
 internal;MetaDataRegistry
 public;Model 
 public;ModelSelector 

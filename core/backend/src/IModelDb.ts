@@ -81,6 +81,7 @@ export interface ComputedProjectExtents {
   outliers?: Id64Array;
 }
 
+/** @beta */
 export interface LockControl {
   /** true if the LockControl uses a server-based concurrency approach. */
   readonly isServerBased: boolean;
@@ -100,12 +101,14 @@ export interface LockControl {
   checkSharedLock(id: Id64String, type: string, operation: string): void;
   /** Acquire the exclusive lock on one or more elements from the lock server, if locks are required and not already held.
    * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
-   * > Note: acquiring the exclusive lock on an element requires also obtaining a shared lock on all its owner elements.
+   * > Note: acquiring the exclusive lock on an element requires also obtaining a shared lock on all its owner elements. This method will
+   * attempt to acquire all necessary locks for the set of input ids.
    */
   acquireExclusiveLock(ids: Id64Arg): Promise<void>;
   /** Acquire a shared lock on one or more elements from the lock server, if locks are required and not already held.
    * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
-   * > Note: acquiring a shared lock on an element requires also obtaining a shared lock on all its owner elements.
+   * > Note: acquiring the shared lock on an element requires also obtaining a shared lock on all its owner elements. This method will
+   * attempt to acquire all necessary locks for the set of input ids.
    */
   acquireSharedLock(ids: Id64Arg): Promise<void>;
   /** Release all locks currently held from the lock server. */
@@ -159,7 +162,12 @@ export abstract class IModelDb extends IModel {
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
 
+  /** @internal */
   protected _locks?: LockControl = new NoLocks();
+  /**
+   * Get the lock control for this iModel.
+   * @beta
+   */
   public get locks() { return this._locks!; }
 
   /** Acquire the exclusive schema lock on this iModel.
@@ -2208,7 +2216,7 @@ export class BriefcaseDb extends IModelDb {
    * All must be true:
    * - file is open for write
    * - has an assigned briefcaseId
-   * - the "no locking" flag is not present. This is a server property of an iModel, set when the briefcase is downloaded.
+   * - the "no locking" flag is not present. This is a property of an iModel, established when the iModel is created in IModelHub.
    */
   protected get useLockServer(): boolean {
     return !this.isReadonly && (this.briefcaseId !== BriefcaseIdValue.Unassigned) && (undefined === this.nativeDb.queryLocalValue(BriefcaseLocalValue.NoLocking));
@@ -2588,7 +2596,7 @@ export class StandaloneDb extends BriefcaseDb {
   public static createEmpty(filePath: LocalFileName, args: CreateEmptyStandaloneIModelProps): StandaloneDb {
     const nativeDb = new IModelHost.platform.DgnDb();
     nativeDb.createIModel(filePath, args);
-    nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, undefined === args.allowEdit ? "" : args.allowEdit);
+    nativeDb.saveLocalValue(BriefcaseLocalValue.StandaloneEdit, args.allowEdit);
     nativeDb.saveProjectGuid(Guid.empty);
     nativeDb.resetBriefcaseId(BriefcaseIdValue.Unassigned);
     nativeDb.saveChanges();

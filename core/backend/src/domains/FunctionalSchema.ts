@@ -33,7 +33,6 @@ export class FunctionalSchema extends Schema {
 
   /** @deprecated Use [[schemaFilePath]] and IModelDb.importSchemas instead */
   public static async importSchema(requestContext: AuthorizedClientRequestContext | ClientRequestContext, iModelDb: IModelDb) {
-    // NOTE: this concurrencyControl logic was copied from IModelDb.importSchema
     requestContext.enter();
     if (iModelDb.isBriefcaseDb())
       await iModelDb.acquireSchemaLock();

@@ -4,20 +4,20 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { assert, expect } from "chai";
+import { restore as sinonRestore, spy as sinonSpy } from "sinon";
 import { Guid, GuidString, Id64, Id64Arg } from "@bentley/bentleyjs-core";
 import { Code, IModel, IModelError, LocalBriefcaseProps, PhysicalElementProps, RequestNewBriefcaseProps } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
+import { LockState } from "../../BackendHubAccess";
 import { BriefcaseManager } from "../../BriefcaseManager";
+import { PhysicalObject } from "../../domains/GenericElements";
+import { PhysicalElement } from "../../Element";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
 import { IModelHost } from "../../IModelHost";
+import { ElementOwnsChildElements } from "../../NavigationRelationship";
+import { ServerBasedLocks } from "../../ServerBasedLocks";
 import { HubMock } from "../HubMock";
 import { ExtensiveTestScenario, IModelTestUtils, TestUserType } from "../IModelTestUtils";
-import { restore as sinonRestore, spy as sinonSpy } from "sinon";
-import { ServerBasedLocks } from "../../ServerBasedLocks";
-import { LockState } from "../../BackendHubAccess";
-import { PhysicalObject } from "../../domains/GenericElements";
-import { PhysicalElement, Subject } from "../../Element";
-import { ElementOwnsChildElements } from "../../NavigationRelationship";
 
 describe("Server-based locks", () => {
   const createRev0 = async () => {
@@ -52,7 +52,6 @@ describe("Server-based locks", () => {
     const args: RequestNewBriefcaseProps = { contextId: iModelProps.iTwinId, iModelId };
     briefcase1Props = await BriefcaseManager.downloadBriefcase(user1, args);
     briefcase2Props = await BriefcaseManager.downloadBriefcase(user2, args);
-
   });
 
   const assertSharedLocks = (locks: ServerBasedLocks, ids: Id64Arg) => {

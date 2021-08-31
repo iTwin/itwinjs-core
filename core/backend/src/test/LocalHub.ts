@@ -16,13 +16,13 @@ import { IModelHost } from "../IModelHost";
 // cspell:ignore rowid
 
 /** @internal */
-export interface MockBriefcaseIdProps {
+interface MockBriefcaseIdProps {
   id: number;
   user: string;
 }
 
 /** @internal */
-export interface LocalHubProps {
+interface LocalHubProps {
   readonly iTwinId: GuidString;
   readonly iModelId: GuidString;
   readonly iModelName: string;
@@ -31,7 +31,7 @@ export interface LocalHubProps {
   readonly noLocks?: true;
 }
 
-export interface LockStatusNone {
+interface LockStatusNone {
   state: LockState.None;
   lastCsIndex?: ChangesetIndex;
 }
@@ -45,6 +45,11 @@ export interface LockStatusShared {
   state: LockState.Shared;
   sharedBy: Set<BriefcaseId>;
   lastCsIndex?: ChangesetIndex;
+}
+
+interface BriefcaseIdAndChangeset {
+  changeset: ChangesetIdWithIndex;
+  briefcaseId: BriefcaseId;
 }
 
 type LockStatus = LockStatusNone | LockStatusExclusive | LockStatusShared;
@@ -467,7 +472,7 @@ export class LocalHub {
     });
   }
 
-  private reserveLock(currStatus: LockStatus, props: LockProps, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
+  private reserveLock(currStatus: LockStatus, props: LockProps, briefcase: BriefcaseIdAndChangeset) {
     if (props.state === LockState.Exclusive && currStatus.lastCsIndex && (currStatus.lastCsIndex > this.getIndexFromChangeset(briefcase.changeset)))
       throw new IModelError(IModelHubStatus.PullIsRequired, "pull is required to obtain lock");
 
@@ -517,7 +522,7 @@ export class LocalHub {
     });
   }
 
-  private requestLock(props: LockProps, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
+  private requestLock(props: LockProps, briefcase: BriefcaseIdAndChangeset) {
     if (props.state === LockState.None)
       throw new Error("cannot request lock for LockState.None");
 
@@ -576,7 +581,7 @@ export class LocalHub {
   }
 
   /** Acquire a set of locks. If any lock cannot be acquired, no locks are acquired  */
-  public acquireLocks(locks: LockMap, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
+  public acquireLocks(locks: LockMap, briefcase: BriefcaseIdAndChangeset) {
     try {
       for (const lock of locks)
         this.requestLock({ id: lock[0], state: lock[1] }, briefcase);
@@ -587,7 +592,7 @@ export class LocalHub {
     }
   }
 
-  public acquireLock(props: LockProps, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
+  public acquireLock(props: LockProps, briefcase: BriefcaseIdAndChangeset) {
     const locks = new Map<Id64String, LockState>();
     locks.set(props.id, props.state);
     this.acquireLocks(locks, briefcase);

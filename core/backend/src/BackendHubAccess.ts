@@ -39,13 +39,15 @@ export interface V2CheckpointAccessProps {
   storageType: string;
 }
 
+/** @internal */
 export type LockMap = Map<Id64String, LockState>;
+
 /**
  * The properties of an iModel server lock.
  * @beta
  */
 export interface LockProps {
-  /** The entityId for the lock */
+  /** The elementId for the lock */
   id: Id64String;
   /** the lock scope */
   state: LockState;
@@ -107,6 +109,7 @@ export interface ChangesetRangeArg extends IModelIdArg {
 /** @internal */
 export type CheckPointArg = DownloadRequest;
 
+/** @internal */
 export interface CreateNewIModelProps extends IModelNameArg {
   readonly description?: string;
   readonly revision0?: LocalFileName;

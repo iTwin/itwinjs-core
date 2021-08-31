@@ -26,10 +26,10 @@ export interface ElementOwners { modelId: Id64String, parentId: Id64String | und
 export class ServerBasedLocks implements LockControl {
   public get isServerBased() { return true; }
   protected lockDb = new SQLiteDb();
-  protected iModel: BriefcaseDb;
+  protected briefcase: BriefcaseDb;
 
   public constructor(iModel: BriefcaseDb) {
-    this.iModel = iModel;
+    this.briefcase = iModel;
     const dbName = `${iModel.nativeDb.getTempFileBaseName()}-locks`;
     try {
       this.lockDb.openDb(dbName, OpenMode.ReadWrite);
@@ -46,7 +46,7 @@ export class ServerBasedLocks implements LockControl {
   }
 
   private getOwners(id: Id64String): ElementOwners {
-    return this.iModel.withPreparedSqliteStatement("SELECT ModelId,ParentId FROM bis_Element WHERE id=?", (stmt) => {
+    return this.briefcase.withPreparedSqliteStatement("SELECT ModelId,ParentId FROM bis_Element WHERE id=?", (stmt) => {
       stmt.bindId(1, id);
       const rc = stmt.step();
       if (DbResult.BE_SQLITE_ROW !== rc)
@@ -57,7 +57,7 @@ export class ServerBasedLocks implements LockControl {
   }
 
   private getLockState(id?: Id64String): LockState | undefined {
-    return !id || !Id64.isValid(id) ? LockState.None : this.lockDb.withPreparedSqliteStatement("SELECT state FROM locks WHERE id=?", (stmt) => {
+    return (id === undefined || !Id64.isValid(id)) ? undefined : this.lockDb.withPreparedSqliteStatement("SELECT state FROM locks WHERE id=?", (stmt) => {
       stmt.bindId(1, id);
       return (DbResult.BE_SQLITE_ROW === stmt.step()) ? stmt.getValueInteger(0) : undefined;
     });
@@ -80,7 +80,7 @@ export class ServerBasedLocks implements LockControl {
   }
 
   public async releaseAllLocks() {
-    await IModelHost.hubAccess.releaseAllLocks(this.iModel); // throws if unsuccessful
+    await IModelHost.hubAccess.releaseAllLocks(this.briefcase); // throws if unsuccessful
     this.clearAllLocks();
   }
 
@@ -97,7 +97,7 @@ export class ServerBasedLocks implements LockControl {
 
   /** Determine whether an the exclusive lock is already held by an element (or one of its owners) */
   public holdsExclusiveLock(id: Id64String | undefined): boolean {
-    if (!id)
+    if (id === undefined)
       return false;
 
     if (this.getLockState(id) === LockState.Exclusive)
@@ -128,7 +128,7 @@ export class ServerBasedLocks implements LockControl {
   private addSharedLock(id: Id64String | undefined, locks: Set<Id64String>) {
     // if the id is not valid, or of the lock is already in the set, or if we already hold a shared lock, we're done
     // Note: if we hold a shared lock, it is guaranteed that we also hold all required shared locks on owners.
-    if (!id || !Id64.isValid(id) || locks.has(id) || this.holdsSharedLock(id))
+    if (id === undefined || !Id64.isValid(id) || locks.has(id) || this.holdsSharedLock(id))
       return;
 
     locks.add(id); // add to set of needed shared locks
@@ -156,7 +156,7 @@ export class ServerBasedLocks implements LockControl {
         locks.set(shared, LockState.Shared);
     }
 
-    await IModelHost.hubAccess.acquireLocks(this.iModel, locks); // throws if unsuccessful
+    await IModelHost.hubAccess.acquireLocks(this.briefcase, locks); // throws if unsuccessful
     for (const lock of locks)
       this.insertLock(lock[0], lock[1], true);
     this.lockDb.saveChanges();
@@ -193,14 +193,16 @@ export class ServerBasedLocks implements LockControl {
     this.insertLock(id, LockState.Exclusive, false);
     this.lockDb.saveChanges();
   }
+
   /** locks are not necessary during change propagation. */
-  private get _locksAreRequired() { return !this.iModel.txns.isIndirectChanges; }
+  private get _locksAreRequired() { return !this.briefcase.txns.isIndirectChanges; }
 
   /** throw if locks are currently required and the exclusive lock is not held on the supplied element */
   public checkExclusiveLock(id: Id64String, type: string, operation: string) {
     if (this._locksAreRequired && !this.holdsExclusiveLock(id))
       throw new IModelError(IModelStatus.LockNotHeld, `exclusive lock not held on ${type} for ${operation} (id=${id})`);
   }
+
   /** throw if locks are currently required and a shared lock is not held on the supplied element */
   public checkSharedLock(id: Id64String, type: string, operation: string) {
     if (this._locksAreRequired && !this.holdsSharedLock(id))

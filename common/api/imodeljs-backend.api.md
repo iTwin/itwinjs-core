@@ -49,9 +49,7 @@ import { CodeSpec } from '@bentley/imodeljs-common';
 import { ColorDef } from '@bentley/imodeljs-common';
 import { CreateEmptySnapshotIModelProps } from '@bentley/imodeljs-common';
 import { CreateEmptyStandaloneIModelProps } from '@bentley/imodeljs-common';
-import { CreateIModelProps } from '@bentley/imodeljs-common';
 import { CreateSnapshotIModelProps } from '@bentley/imodeljs-common';
-import { DbOpcode } from '@bentley/bentleyjs-core';
 import { DbResult } from '@bentley/bentleyjs-core';
 import { DefinitionElementProps } from '@bentley/imodeljs-common';
 import { DisplayStyle3dProps } from '@bentley/imodeljs-common';
@@ -93,7 +91,6 @@ import { GeometryContainmentResponseProps } from '@bentley/imodeljs-common';
 import { GeometryPartProps } from '@bentley/imodeljs-common';
 import { GeometryStreamProps } from '@bentley/imodeljs-common';
 import { GuidString } from '@bentley/bentleyjs-core';
-import { HubCode } from '@bentley/imodelhub-client';
 import { Id64Arg } from '@bentley/bentleyjs-core';
 import { Id64Array } from '@bentley/bentleyjs-core';
 import { Id64Set } from '@bentley/bentleyjs-core';
@@ -105,7 +102,6 @@ import { IModelClient } from '@bentley/imodelhub-client';
 import { IModelCoordinatesResponseProps } from '@bentley/imodeljs-common';
 import { IModelError } from '@bentley/imodeljs-common';
 import { IModelJsNative } from '@bentley/imodeljs-native';
-import { IModelRpcOpenProps } from '@bentley/imodeljs-common';
 import { IModelRpcProps } from '@bentley/imodeljs-common';
 import { IModelStatus } from '@bentley/bentleyjs-core';
 import { IModelTileTreeProps } from '@bentley/imodeljs-common';
@@ -306,17 +302,11 @@ export class AzureBlobStorage extends CloudStorageService {
 
 // @internal
 export interface BackendHubAccess {
-    acquireLocks(arg: BriefcaseDbArg & {
-        locks: LockProps[];
-    }): Promise<void>;
+    acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
     acquireNewBriefcaseId(arg: IModelIdArg): Promise<number>;
-    acquireSchemaLock(arg: BriefcaseDbArg): Promise<void>;
-    createIModel(arg: IModelNameArg & {
-        description?: string;
-        revision0?: LocalFileName;
-    }): Promise<GuidString>;
+    createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
     deleteIModel(arg: IModelIdArg & {
-        contextId: GuidString;
+        iTwinId: GuidString;
     }): Promise<void>;
     downloadChangeset(arg: ChangesetArg & {
         targetDir: LocalDirName;
@@ -342,7 +332,6 @@ export interface BackendHubAccess {
     queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
     queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
     queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
-    querySchemaLock(arg: IModelIdArg): Promise<boolean>;
     queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
     releaseAllCodes(arg: BriefcaseDbArg): Promise<void>;
     releaseAllLocks(arg: BriefcaseDbArg): Promise<void>;
@@ -353,7 +342,6 @@ export interface BackendHubAccess {
 export enum BackendLoggerCategory {
     Authorization = "imodeljs-backend.Authorization",
     CodeSpecs = "imodeljs-backend.CodeSpecs",
-    ConcurrencyControl = "imodeljs-backend.ConcurrencyControl",
     // @internal
     DevTools = "imodeljs-backend.DevTools",
     ECDb = "imodeljs-backend.ECDb",
@@ -395,15 +383,14 @@ export class BisCoreSchema extends Schema {
 
 // @public
 export class BriefcaseDb extends IModelDb {
-    // (undocumented)
-    abandonChanges(): void;
-    get allowLocalChanges(): boolean;
-    // @internal (undocumented)
-    beforeClose(): void;
+    protected constructor(args: {
+        nativeDb: IModelJsNative.DgnDb;
+        key: string;
+        openMode: OpenMode;
+        briefcaseId: number;
+    });
     // (undocumented)
     readonly briefcaseId: number;
-    // @beta
-    readonly concurrencyControl: ConcurrencyControl;
     get contextId(): GuidString;
     // (undocumented)
     static findByKey(key: string): BriefcaseDb;
@@ -417,23 +404,21 @@ export class BriefcaseDb extends IModelDb {
     reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @deprecated
     reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
-    saveChanges(description?: string): void;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
     readonly txns: TxnManager;
     static upgradeSchemas(requestContext: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps): Promise<void>;
+    protected get useLockServer(): boolean;
 }
 
 // @internal
 export interface BriefcaseDbArg {
     // (undocumented)
-    briefcase: {
-        briefcaseId: BriefcaseId;
-        iModelId: GuidString;
-        changeset: ChangesetIdWithIndex;
-    };
+    briefcaseId: BriefcaseId;
     // (undocumented)
-    requestContext?: AuthorizedClientRequestContext;
+    changeset: ChangesetIdWithIndex;
+    // (undocumented)
+    iModelId: GuidString;
 }
 
 // @public
@@ -445,33 +430,39 @@ export interface BriefcaseIdArg extends IModelIdArg {
     briefcaseId: number;
 }
 
+// @internal (undocumented)
+export enum BriefcaseLocalValue {
+    // (undocumented)
+    NoLocking = "NoLocking",
+    // (undocumented)
+    StandaloneEdit = "StandaloneEdit"
+}
+
 // @public
 export class BriefcaseManager {
     static acquireNewBriefcaseId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number>;
-    static get cacheDir(): string;
+    static get cacheDir(): LocalDirName;
     // @internal (undocumented)
     static changesetFromVersion(requestContext: AuthorizedClientRequestContext, version: IModelVersion, iModelId: string): Promise<ChangesetProps>;
-    // @deprecated
-    static create(requestContext: AuthorizedClientRequestContext, contextId: GuidString, iModelName: GuidString, args: CreateIModelProps): Promise<GuidString>;
-    static deleteBriefcaseFiles(filePath: string, requestContext?: AuthorizedClientRequestContext): Promise<void>;
+    static deleteBriefcaseFiles(filePath: LocalFileName, requestContext?: AuthorizedClientRequestContext): Promise<void>;
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
     static downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
     // @internal (undocumented)
-    static getBriefcaseBasePath(iModelId: GuidString): string;
+    static getBriefcaseBasePath(iModelId: GuidString): LocalDirName;
     static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[];
     // @internal (undocumented)
-    static getChangeCachePathName(iModelId: GuidString): string;
+    static getChangeCachePathName(iModelId: GuidString): LocalFileName;
     // @internal (undocumented)
-    static getChangedElementsPathName(iModelId: GuidString): string;
+    static getChangedElementsPathName(iModelId: GuidString): LocalFileName;
     // @internal (undocumented)
-    static getChangeSetsPath(iModelId: GuidString): string;
-    static getFileName(briefcase: BriefcaseProps): string;
-    static getIModelPath(iModelId: GuidString): string;
-    static initialize(cacheRootDir: string): void;
+    static getChangeSetsPath(iModelId: GuidString): LocalDirName;
+    static getFileName(briefcase: BriefcaseProps): LocalFileName;
+    static getIModelPath(iModelId: GuidString): LocalDirName;
+    static initialize(cacheRootDir: LocalDirName): void;
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal (undocumented)
-    static logUsage(requestContext: ClientRequestContext, token: IModelRpcOpenProps): void;
+    static logUsage(requestContext: ClientRequestContext, imodel: IModelDb): void;
     // @internal
     static processChangesets(requestContext: AuthorizedClientRequestContext, db: IModelDb, target: ChangesetIndexOrId): Promise<void>;
     // @internal
@@ -640,7 +631,7 @@ export class CheckpointManager {
     static updateToRequestedVersion(request: DownloadRequest): Promise<void>;
     static validateCheckpointGuids(checkpoint: CheckpointProps, nativeDb: IModelJsNative.DgnDb): void;
     // (undocumented)
-    static verifyCheckpoint(checkpoint: CheckpointProps, fileName: string): boolean;
+    static verifyCheckpoint(checkpoint: CheckpointProps, fileName: LocalFileName): boolean;
 }
 
 // @public
@@ -746,273 +737,6 @@ export interface ComputeProjectExtentsOptions {
     reportOutliers?: boolean;
 }
 
-// @beta
-export class ConcurrencyControl {
-    constructor(_iModel: BriefcaseDb);
-    abandonRequest(): void;
-    abandonResources(requestContext: AuthorizedClientRequestContext): Promise<void>;
-    areAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
-    // @internal @deprecated (undocumented)
-    areCodesAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
-    // @internal (undocumented)
-    areCodesAvailable0(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
-    areLocksAvailable(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<boolean>;
-    buildConcurrencyControlRequestForDb(): void;
-    // @internal
-    buildRequestForElement(element: ElementProps, opcode: DbOpcode): void;
-    // @internal
-    buildRequestForElementTo(request: ConcurrencyControl.Request, element: ElementProps, opcode: DbOpcode, elementClass?: typeof Element): void;
-    // @internal
-    buildRequestForModel(model: ModelProps, opcode: DbOpcode): void;
-    // @internal
-    buildRequestForRelationship(_instance: RelationshipProps, _opcode: DbOpcode): void;
-    // @alpha
-    get channel(): ConcurrencyControl.Channel;
-    get codes(): ConcurrencyControl.CodesManager;
-    endBulkMode(rqctx: AuthorizedClientRequestContext): Promise<void>;
-    // @internal (undocumented)
-    getHeldLock0(objectId: Id64String): LockScope;
-    // @internal (undocumented)
-    getPolicy(): ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy;
-    get hasPendingRequests(): boolean;
-    // @internal (undocumented)
-    hasReservedCode0(code: CodeProps): boolean;
-    // @internal (undocumented)
-    holdsLock0(lock: LockProps): boolean;
-    // @internal (undocumented)
-    get iModel(): BriefcaseDb;
-    get isBulkMode(): boolean;
-    // @internal (undocumented)
-    lockCodeSpecs0(requestContext: AuthorizedClientRequestContext): Promise<void>;
-    get locks(): ConcurrencyControl.LocksManager;
-    // @internal (undocumented)
-    lockSchema0(requestContext: AuthorizedClientRequestContext): Promise<void>;
-    // @internal (undocumented)
-    get needLocks(): boolean;
-    // @internal (undocumented)
-    onClose(): void;
-    // (undocumented)
-    onElementWrite(elementClass: typeof Element, element: ElementProps, opcode: DbOpcode): void;
-    // (undocumented)
-    onElementWritten(_elementClass: typeof Element, id: Id64String, opcode: DbOpcode): void;
-    // @internal (undocumented)
-    onMergeChanges(): void;
-    // (undocumented)
-    onModelWrite(modelClass: typeof Model, model: ModelProps, opcode: DbOpcode): void;
-    // (undocumented)
-    onModelWritten(_modelClass: typeof Model, id: Id64String, opcode: DbOpcode): void;
-    // @internal (undocumented)
-    onOpened(requestContext: AuthorizedClientRequestContext): Promise<void>;
-    // @internal (undocumented)
-    onPushChanges(_requestContext: AuthorizedClientRequestContext): Promise<void>;
-    // @internal (undocumented)
-    onPushedChanges(requestContext: AuthorizedClientRequestContext): Promise<void>;
-    // @internal (undocumented)
-    onPushEmpty(requestContext: AuthorizedClientRequestContext): Promise<void>;
-    // @internal (undocumented)
-    onSaveChanges(): void;
-    // @internal (undocumented)
-    get pendingRequest(): ConcurrencyControl.Request;
-    request(requestContext: AuthorizedClientRequestContext, req?: ConcurrencyControl.Request): Promise<void>;
-    requestResources(ctx: AuthorizedClientRequestContext, elements: ConcurrencyControl.ElementAndOpcode[], models?: ConcurrencyControl.ModelAndOpcode[], relationships?: ConcurrencyControl.RelationshipAndOpcode[]): Promise<void>;
-    requestResourcesForDelete(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
-    requestResourcesForInsert(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
-    // @internal (undocumented)
-    requestResourcesForOpcode(ctx: AuthorizedClientRequestContext, opcode: DbOpcode, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
-    requestResourcesForUpdate(ctx: AuthorizedClientRequestContext, elements: ElementProps[], models?: ModelProps[], relationships?: RelationshipProps[]): Promise<void>;
-    setPolicy(policy: ConcurrencyControl.PessimisticPolicy | ConcurrencyControl.OptimisticPolicy): void;
-    startBulkMode(): void;
-    syncCache(requestContext: AuthorizedClientRequestContext): Promise<void>;
-    }
-
-// @beta (undocumented)
-export namespace ConcurrencyControl {
-    // @alpha
-    export class Channel {
-        constructor(_iModel: BriefcaseDb);
-        get channelRoot(): Id64String | undefined;
-        set channelRoot(id: Id64String | undefined);
-        // @internal (undocumented)
-        checkCanWriteElementToCurrentChannel(props: ElementProps, req: Request, opcode: DbOpcode): void;
-        // @internal (undocumented)
-        checkLockRequest(locks: Lock[]): void;
-        // @internal (undocumented)
-        checkModelAccess(modelId: Id64String, req: Request, opcode: DbOpcode): void;
-        getChannelOfElement(props: ElementProps): ChannelInfo;
-        getChannelOfModel(modelId: Id64String): ChannelInfo;
-        getChannelRootInfo(props: ElementProps): any | undefined;
-        // @internal (undocumented)
-        getChannelRootInfo0(props: ElementProps): any;
-        isChannelRoot(props: ElementProps): any | undefined;
-        get isChannelRootLocked(): boolean;
-        get isRepositoryChannel(): boolean;
-        lockChannelRoot(req: AuthorizedClientRequestContext): Promise<void>;
-        static get repositoryChannelRoot(): Id64String;
-        }
-    // @alpha
-    export interface ChannelInfo {
-        channelRoot: Id64String;
-    }
-    // @alpha
-    export class ChannelRootInfo implements ChannelInfo {
-        constructor(cpid: Id64String, props: any); /** The channel of which the element is the root or a member */
-        // (undocumented)
-        readonly channelRoot: Id64String; /** The channel of which the element is the root or a member */
-        // (undocumented)
-        readonly ownerInfo: any;
-    }
-    export class CodesManager {
-        // @internal
-        constructor(_iModel: BriefcaseDb);
-        areAvailable(requestContext: AuthorizedClientRequestContext, codes: CodeProps[]): Promise<boolean>;
-        isReserved(code: CodeProps): boolean;
-        query(requestContext: AuthorizedClientRequestContext, specId: Id64String, scopeId: string, value?: string): Promise<HubCode[]>;
-        reserve(requestContext: AuthorizedClientRequestContext, codes?: CodeProps[]): Promise<void>;
-    }
-    export class ConflictResolutionPolicy {
-        constructor(updateVsUpdate?: OnConflict, updateVsDelete?: OnConflict, deleteVsUpdate?: OnConflict);
-        deleteVsUpdate: OnConflict;
-        updateVsDelete: OnConflict;
-        updateVsUpdate: OnConflict;
-    }
-    // (undocumented)
-    export interface ElementAndOpcode {
-        // (undocumented)
-        element: ElementProps;
-        // (undocumented)
-        opcode: DbOpcode;
-    }
-    export class LocksManager {
-        // @internal
-        constructor(_iModel: BriefcaseDb);
-        // @alpha
-        getHeldElementLock(elementId: Id64String): LockScope;
-        // @alpha
-        getHeldLock(objectId: Id64String): LockScope;
-        // @alpha
-        getHeldModelLock(modelId: Id64String): LockScope;
-        get hasCodeSpecsLock(): boolean;
-        get hasSchemaLock(): boolean;
-        holdsLock(lock: LockProps): boolean;
-        lockCodeSpecs(requestContext: AuthorizedClientRequestContext): Promise<void>;
-        lockModels(requestContext: AuthorizedClientRequestContext, models: ModelProps[]): Promise<void>;
-        lockSchema(requestContext: AuthorizedClientRequestContext): Promise<void>;
-    }
-    // (undocumented)
-    export interface ModelAndOpcode {
-        // (undocumented)
-        model: ModelProps;
-        // (undocumented)
-        opcode: DbOpcode;
-    }
-    export enum OnConflict {
-        AcceptIncomingChange = 1,
-        RejectIncomingChange = 0
-    }
-    export class OptimisticPolicy {
-        constructor(policy?: ConflictResolutionPolicy);
-        // (undocumented)
-        conflictResolution: ConflictResolutionPolicy;
-    }
-    export class PessimisticPolicy {
-        constructor();
-        }
-    // (undocumented)
-    export interface RelationshipAndOpcode {
-        // (undocumented)
-        opcode: DbOpcode;
-        // (undocumented)
-        relationship: RelationshipProps;
-    }
-    // @alpha
-    export class RepositoryChannelInfo extends ChannelRootInfo {
-        constructor();
-    }
-    export class Request {
-        // (undocumented)
-        addCodes(codes: CodeProps[]): this;
-        // (undocumented)
-        addLocks(locks: LockProps[]): this;
-        // (undocumented)
-        clear(): void;
-        // (undocumented)
-        clone(): Request;
-        // (undocumented)
-        get codes(): CodeProps[];
-        // (undocumented)
-        static get codeSpecsLock(): LockProps;
-        // (undocumented)
-        static get dbLock(): LockProps;
-        // (undocumented)
-        static getElementLock(entityId: Id64String, scope: LockScope): LockProps;
-        // (undocumented)
-        static getHubCodeSpecsLock(concurrencyControl: ConcurrencyControl): Lock;
-        // (undocumented)
-        static getHubSchemaLock(concurrencyControl: ConcurrencyControl): Lock;
-        // (undocumented)
-        getLockByKey(entityId: string): LockProps | undefined;
-        // (undocumented)
-        static getModelLock(entityId: Id64String, scope: LockScope): LockProps;
-        // (undocumented)
-        get isEmpty(): boolean;
-        // (undocumented)
-        get locks(): LockProps[];
-        // (undocumented)
-        removeCodes(filter: (c: CodeProps) => boolean, context: any): void;
-        // (undocumented)
-        removeLocks(filter: (l: LockProps) => boolean, context: any): void;
-        // (undocumented)
-        replaceLocksWithChannelLock(channelRootId: Id64String): void;
-        // (undocumented)
-        static get schemaLock(): LockProps;
-        // (undocumented)
-        static toHubCode(concurrencyControl: ConcurrencyControl, code: CodeProps): HubCode;
-        // (undocumented)
-        static toHubCodes(concurrencyControl: ConcurrencyControl, codes: CodeProps[]): HubCode[];
-        // (undocumented)
-        static toHubLock(concurrencyControl: ConcurrencyControl, reqLock: LockProps): Lock;
-        // (undocumented)
-        static toHubLocks(concurrencyControl: ConcurrencyControl, locks: LockProps[]): Lock[];
-    }
-    // @internal
-    export class StateCache {
-        constructor(concurrencyControl: ConcurrencyControl);
-        // (undocumented)
-        clear(): void;
-        // (undocumented)
-        close(saveChanges: boolean): void;
-        // (undocumented)
-        concurrencyControl: ConcurrencyControl;
-        // (undocumented)
-        create(): void;
-        // (undocumented)
-        deleteFile(): void;
-        // (undocumented)
-        deleteLocksForTxn(txnId: string): void;
-        // (undocumented)
-        getHeldLock(entityId: string): LockScope;
-        // (undocumented)
-        insertCodes(codes: CodeProps[]): void;
-        // (undocumented)
-        insertLocks(locks: LockProps[], txnId?: string): void;
-        // (undocumented)
-        isCodeReserved(code: CodeProps): boolean;
-        // (undocumented)
-        isLockHeld(lock: LockProps): boolean;
-        // (undocumented)
-        get isOpen(): boolean;
-        // (undocumented)
-        open(): boolean;
-        // (undocumented)
-        populate(requestContext: AuthorizedClientRequestContext): Promise<void>;
-        // (undocumented)
-        saveChanges(): void;
-    }
-}
-
-// @alpha
-export type ConcurrencyControlChannel = ConcurrencyControl.Channel;
-
 // @alpha
 export interface CrashReportingConfig {
     crashDir: string;
@@ -1039,6 +763,16 @@ export interface CreateChangeSummaryArgs {
     iModelId: GuidString;
     range: ChangesetRange;
     requestContext?: AuthorizedClientRequestContext;
+}
+
+// @internal (undocumented)
+export interface CreateNewIModelProps extends IModelNameArg {
+    // (undocumented)
+    readonly description?: string;
+    // (undocumented)
+    readonly noLocks?: true;
+    // (undocumented)
+    readonly revision0?: LocalFileName;
 }
 
 // @public
@@ -1251,7 +985,7 @@ export interface DownloadJob {
 export interface DownloadRequest {
     readonly aliasFiles?: ReadonlyArray<string>;
     readonly checkpoint: CheckpointProps;
-    localFile: string;
+    localFile: LocalFileName;
     readonly onProgress?: ProgressFunction;
 }
 
@@ -1260,7 +994,7 @@ export class Downloads {
     // (undocumented)
     static download<T>(request: DownloadRequest, downloadFn: (job: DownloadJob) => Promise<T>): Promise<any>;
     // (undocumented)
-    static isInProgress(pathName: string): DownloadJob | undefined;
+    static isInProgress(pathName: LocalFileName): DownloadJob | undefined;
     }
 
 // @public
@@ -1530,7 +1264,6 @@ export class ECSqlValueIterator implements IterableIterator<ECSqlValue> {
 export class Element extends Entity implements ElementProps {
     // @internal
     constructor(props: ElementProps, iModel: IModelDb);
-    buildConcurrencyControlRequest(opcode: DbOpcode): void;
     // @internal (undocumented)
     static get className(): string;
     code: Code;
@@ -1595,10 +1328,8 @@ export class Element extends Entity implements ElementProps {
     // @beta
     protected static onUpdate(arg: OnElementPropsArg): void;
     // @beta
-    protected static onUpdated(arg: OnElementIdArg): void;
+    protected static onUpdated(_arg: OnElementIdArg): void;
     parent?: RelatedElement;
-    // @beta
-    static populateRequest(req: ConcurrencyControl.Request, props: ElementProps, iModel: IModelDb, opcode: DbOpcode, original: ElementProps | undefined): void;
     // @internal (undocumented)
     static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
@@ -1746,8 +1477,6 @@ export class Entity implements EntityProps {
     constructor(props: EntityProps, iModel: IModelDb);
     // @internal
     get asAny(): any;
-    // @alpha
-    buildConcurrencyControlRequest(_opcode: DbOpcode): void;
     static get classFullName(): string;
     get classFullName(): string;
     static get className(): string;
@@ -2396,8 +2125,13 @@ export class IModelCloneContext {
 // @public
 export abstract class IModelDb extends IModel {
     // @internal
-    protected constructor(nativeDb: IModelJsNative.DgnDb, iModelToken: IModelRpcProps);
+    protected constructor(args: {
+        nativeDb: IModelJsNative.DgnDb;
+        key: string;
+        changeset?: ChangesetIdWithIndex;
+    });
     abandonChanges(): void;
+    acquireSchemaLock(): Promise<void>;
     // @internal
     protected beforeClose(): void;
     cancelSnap(sessionId: string): void;
@@ -2421,8 +2155,6 @@ export abstract class IModelDb extends IModel {
     // (undocumented)
     static readonly defaultLimit = 1000;
     deleteFileProperty(prop: FilePropertyProps): DbResult;
-    // (undocumented)
-    protected static readonly _edit = "StandaloneEdit";
     // @alpha
     elementGeometryRequest(requestProps: ElementGeometryRequest): DbResult;
     // @alpha
@@ -2433,7 +2165,7 @@ export abstract class IModelDb extends IModel {
     embedFont(prop: FontProps): FontProps;
     exportGraphics(exportProps: ExportGraphicsOptions): DbResult;
     exportPartGraphics(exportProps: ExportPartGraphicsOptions): DbResult;
-    static findByFilename(fileName: string): IModelDb | undefined;
+    static findByFilename(fileName: LocalFileName): IModelDb | undefined;
     static findByKey(key: string): IModelDb;
     // (undocumented)
     get fontMap(): FontMap;
@@ -2451,8 +2183,9 @@ export abstract class IModelDb extends IModel {
     getMetaData(classFullName: string): EntityMetaData;
     // @alpha
     getTextureImage(requestContext: ClientRequestContext, props: TextureLoadProps): Promise<Uint8Array | undefined>;
+    get holdsSchemaLock(): boolean;
     get iModelId(): GuidString;
-    importSchemas(requestContext: ClientRequestContext, schemaFileNames: string[]): Promise<void>;
+    importSchemas(requestContext: ClientRequestContext, schemaFileNames: LocalFileName[]): Promise<void>;
     // @alpha
     importSchemaStrings(requestContext: ClientRequestContext, serializedXmlSchemas: string[]): Promise<void>;
     // @internal (undocumented)
@@ -2470,6 +2203,10 @@ export abstract class IModelDb extends IModel {
     get isStandalone(): boolean;
     // @internal
     isStandaloneDb(): this is StandaloneDb;
+    // @beta
+    get locks(): LockControl;
+    // @internal (undocumented)
+    protected _locks?: LockControl;
     // (undocumented)
     static readonly maxLimit = 10000;
     // (undocumented)
@@ -2482,10 +2219,10 @@ export abstract class IModelDb extends IModel {
     readonly onChangesetApplied: BeEvent<() => void>;
     // @internal (undocumented)
     static openDgnDb(file: {
-        path: string;
+        path: LocalFileName;
         key?: string;
     }, openMode: OpenMode, upgradeOptions?: UpgradeOptions, props?: SnapshotOpenOptions): IModelJsNative.DgnDb;
-    get pathName(): string;
+    get pathName(): LocalFileName;
     // @internal
     prepareSqliteStatement(sql: string): SqliteStatement;
     prepareStatement(sql: string): ECSqlStatement;
@@ -2521,7 +2258,7 @@ export abstract class IModelDb extends IModel {
     updateEcefLocation(ecef: EcefLocation): void;
     updateIModelProps(): void;
     updateProjectExtents(newExtents: AxisAlignedBox3d): void;
-    static validateSchemas(filePath: string, forReadWrite: boolean): SchemaState;
+    static validateSchemas(filePath: LocalFileName, forReadWrite: boolean): SchemaState;
     // (undocumented)
     readonly views: IModelDb.Views;
     withPreparedSqliteStatement<T>(sql: string, callback: (stmt: SqliteStatement) => T): T;
@@ -2714,18 +2451,10 @@ export class IModelHubBackend {
         iModelId: GuidString;
     }): Promise<number>;
     // (undocumented)
-    static acquireSchemaLock(arg: BriefcaseDbArg): Promise<void>;
-    // (undocumented)
-    static createIModel(arg: {
-        requestContext?: AuthorizedClientRequestContext;
-        contextId: GuidString;
-        iModelName: string;
-        description?: string;
-        revision0?: string;
-    }): Promise<GuidString>;
+    static createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
     // (undocumented)
     static deleteIModel(arg: IModelIdArg & {
-        contextId: GuidString;
+        iTwinId: GuidString;
     }): Promise<void>;
     // (undocumented)
     static downloadChangeset(arg: ChangesetArg & {
@@ -2751,7 +2480,7 @@ export class IModelHubBackend {
     // (undocumented)
     static getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
     // (undocumented)
-    static getRequestContext(arg: {
+    static getRequestContext(arg?: {
         requestContext?: AuthorizedClientRequestContext;
     }): Promise<AuthorizedClientRequestContext>;
     // (undocumented)
@@ -2770,13 +2499,7 @@ export class IModelHubBackend {
     static queryChangeset(arg: ChangesetArg): Promise<ChangesetProps>;
     static queryChangesets(arg: ChangesetRangeArg): Promise<ChangesetProps[]>;
     // (undocumented)
-    static queryIModelByName(arg: {
-        requestContext?: AuthorizedClientRequestContext;
-        contextId: GuidString;
-        iModelName: string;
-    }): Promise<GuidString | undefined>;
-    // (undocumented)
-    static querySchemaLock(arg: IModelIdArg): Promise<boolean>;
+    static queryIModelByName(arg: IModelNameArg): Promise<GuidString | undefined>;
     // (undocumented)
     static queryV2Checkpoint(arg: CheckpointProps): Promise<V2CheckpointAccessProps | undefined>;
     // (undocumented)
@@ -2851,9 +2574,9 @@ export { IModelJsNative }
 // @internal
 export interface IModelNameArg {
     // (undocumented)
-    contextId: GuidString;
-    // (undocumented)
     iModelName: string;
+    // (undocumented)
+    iTwinId: GuidString;
     // (undocumented)
     requestContext?: AuthorizedClientRequestContext;
 }
@@ -3185,14 +2908,31 @@ export class LocalhostIpcHost {
     }): Promise<void>;
 }
 
+// @beta (undocumented)
+export interface LockControl {
+    acquireExclusiveLock(ids: Id64Arg): Promise<void>;
+    acquireSharedLock(ids: Id64Arg): Promise<void>;
+    checkExclusiveLock(id: Id64String, type: string, operation: string): void;
+    checkSharedLock(id: Id64String, type: string, operation: string): void;
+    close(): void;
+    elementWasCreated(id: Id64String): void;
+    holdsExclusiveLock(id: Id64String): boolean;
+    holdsSharedLock(id: Id64String): boolean;
+    readonly isServerBased: boolean;
+    releaseAllLocks(): Promise<void>;
+}
+
+// @internal (undocumented)
+export type LockMap = Map<Id64String, LockState>;
+
 // @beta
 export interface LockProps {
-    entityId: Id64String;
-    scope: LockScope;
+    id: Id64String;
+    state: LockState;
 }
 
 // @public
-export enum LockScope {
+export enum LockState {
     Exclusive = 2,
     None = 0,
     Shared = 1
@@ -3208,7 +2948,6 @@ export class MetaDataRegistry {
 export class Model extends Entity implements ModelProps {
     // @internal
     constructor(props: ModelProps, iModel: IModelDb);
-    buildConcurrencyControlRequest(opcode: DbOpcode): void;
     // @internal (undocumented)
     static get className(): string;
     delete(): void;
@@ -3239,7 +2978,7 @@ export class Model extends Entity implements ModelProps {
     // @beta
     protected static onInsert(arg: OnModelPropsArg): void;
     // @beta
-    protected static onInserted(arg: OnModelIdArg): void;
+    protected static onInserted(_arg: OnModelIdArg): void;
     // @beta
     protected static onInsertedElement(_arg: OnElementInModelIdArg): void;
     // @beta
@@ -3247,15 +2986,13 @@ export class Model extends Entity implements ModelProps {
     // @beta
     protected static onUpdate(arg: OnModelPropsArg): void;
     // @beta
-    protected static onUpdated(arg: OnModelIdArg): void;
+    protected static onUpdated(_arg: OnModelIdArg): void;
     // @beta
     protected static onUpdatedElement(_arg: OnElementInModelIdArg): void;
     // @beta
     protected static onUpdateElement(_arg: OnElementInModelPropsArg): void;
     // (undocumented)
     readonly parentModel: Id64String;
-    // @beta
-    static populateRequest(req: ConcurrencyControl.Request, props: ModelProps, iModel: IModelDb, opcode: DbOpcode): void;
     // @internal (undocumented)
     static get protectedOperations(): string[];
     removeUserProperties(nameSpace: string): void;
@@ -3589,7 +3326,6 @@ export abstract class RecipeDefinitionElement extends DefinitionElement {
 export class Relationship extends Entity implements RelationshipProps {
     // @internal
     constructor(props: RelationshipProps, iModel: IModelDb);
-    buildConcurrencyControlRequest(opcode: DbOpcode): void;
     // @internal (undocumented)
     static get className(): string;
     delete(): void;
@@ -3848,21 +3584,21 @@ export class SheetViewDefinition extends ViewDefinition2d {
 export class SnapshotDb extends IModelDb {
     // @internal (undocumented)
     beforeClose(): void;
-    static createEmpty(filePath: string, options: CreateEmptySnapshotIModelProps): SnapshotDb;
+    static createEmpty(filePath: LocalFileName, options: CreateEmptySnapshotIModelProps): SnapshotDb;
     static createFrom(iModelDb: IModelDb, snapshotFile: string, options?: CreateSnapshotIModelProps): SnapshotDb;
     // (undocumented)
     static findByKey(key: string): SnapshotDb;
     // (undocumented)
     get isSnapshot(): boolean;
     // @internal
-    static openCheckpointV1(fileName: string, checkpoint: CheckpointProps): SnapshotDb;
+    static openCheckpointV1(fileName: LocalFileName, checkpoint: CheckpointProps): SnapshotDb;
     // @internal
     static openCheckpointV2(checkpoint: CheckpointProps): Promise<SnapshotDb>;
-    static openFile(path: string, opts?: SnapshotOpenOptions): SnapshotDb;
+    static openFile(path: LocalFileName, opts?: SnapshotOpenOptions): SnapshotDb;
     // @internal
-    static openForApplyChangesets(path: string, props?: SnapshotOpenOptions): SnapshotDb;
+    static openForApplyChangesets(path: LocalFileName, props?: SnapshotOpenOptions): SnapshotDb;
     // @internal
-    reattachDaemon(requestContext: AuthorizedClientRequestContext): Promise<void>;
+    reattachDaemon(requestContext?: AuthorizedClientRequestContext): Promise<void>;
     // (undocumented)
     static tryFindByKey(key: string): SnapshotDb | undefined;
 }
@@ -4040,17 +3776,18 @@ export enum SqliteValueType {
 }
 
 // @public
-export class StandaloneDb extends IModelDb {
-    static createEmpty(filePath: string, args: CreateEmptyStandaloneIModelProps): StandaloneDb;
+export class StandaloneDb extends BriefcaseDb {
+    static createEmpty(filePath: LocalFileName, args: CreateEmptyStandaloneIModelProps): StandaloneDb;
     // (undocumented)
     static findByKey(key: string): StandaloneDb;
     // (undocumented)
     get isStandalone(): boolean;
-    static openFile(filePath: string, openMode?: OpenMode, options?: StandaloneOpenOptions): StandaloneDb;
+    static openFile(filePath: LocalFileName, openMode?: OpenMode, options?: StandaloneOpenOptions): StandaloneDb;
     // (undocumented)
     static tryFindByKey(key: string): StandaloneDb | undefined;
-    readonly txns: TxnManager;
-    static upgradeSchemas(filePath: string): void;
+    static upgradeStandaloneSchemas(filePath: LocalFileName): void;
+    // (undocumented)
+    protected get useLockServer(): boolean;
 }
 
 // @internal
@@ -4259,8 +3996,6 @@ export class TxnManager {
     constructor(_iModel: BriefcaseDb | StandaloneDb);
     beginMultiTxnOperation(): DbResult;
     cancelTo(txnId: TxnIdString): IModelStatus;
-    // @deprecated
-    checkUndoPossible(): boolean;
     endMultiTxnOperation(): DbResult;
     getCurrentTxnId(): TxnIdString;
     getMultiTxnOperationDepth(): number;
@@ -4273,6 +4008,7 @@ export class TxnManager {
     get hasUnsavedChanges(): boolean;
     // @internal (undocumented)
     get isDisposed(): boolean;
+    get isIndirectChanges(): boolean;
     get isRedoPossible(): boolean;
     isTxnIdValid(txnId: TxnIdString): boolean;
     get isUndoPossible(): boolean;
@@ -4365,9 +4101,9 @@ export class V1CheckpointManager {
     // (undocumented)
     static getCheckpointDb(request: DownloadRequest): Promise<SnapshotDb>;
     // (undocumented)
-    static getFileName(checkpoint: CheckpointProps): string;
+    static getFileName(checkpoint: CheckpointProps): LocalFileName;
     // (undocumented)
-    static getFolder(iModelId: GuidString): string;
+    static getFolder(iModelId: GuidString): LocalDirName;
     }
 
 // @beta
@@ -4388,7 +4124,7 @@ export interface V2CheckpointAccessProps {
 export class V2CheckpointManager {
     // (undocumented)
     static attach(checkpoint: CheckpointProps): Promise<{
-        filePath: string;
+        filePath: LocalFileName;
         expiryTimestamp: number;
     }>;
     static downloadCheckpoint(request: DownloadRequest): Promise<ChangesetId>;

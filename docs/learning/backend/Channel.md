@@ -85,27 +85,19 @@ requestContext.enter();
 const imodel1 = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
 requestContext.enter();
 
-// To make things simple, set optimistic concurrency and go into bulk mode.
-// That way, we don't have to worry about locks or code-reservations.
-imodel1.concurrencyControl.setPolicy(new ConcurrencyControl.OptimisticPolicy());
-imodel1.concurrencyControl.startBulkMode();
-
 // Create the channel root. Note that, initially, we are in the repository channel.
 const channel3 = imodel1.elements.insertElement(Subject.create(imodel1, imodel1.elements.getRootSubject().id, "channel3"));
 const channel3Info = "this is channel3"; // could be an object or anything you like
 ChannelRootAspect.insert(imodel1, channel3, channel3Info); // Create one of the channels using the new aspect in the way iTwin.js apps would set them up.
 
 // Push the change to the repository channel.
-await imodel1.concurrencyControl.request(requestContext);
 imodel1.saveChanges();
 await imodel1.pushChanges(requestContext, "channel3 root created");
 
 // Now enter channel3 and write to it.
-imodel1.concurrencyControl.channel.channelRoot = channel3;
 const m3 = createAndInsertPhysicalPartitionAndModel(imodel1, "m3", true, channel3; // some function that creates a model
 
 // Push the changes to channel3
-await imodel1.concurrencyControl.request(requestContext);
 imodel1.saveChanges();
 await imodel1.pushChanges(requestContext, "channel3 populated");
 ```
@@ -116,11 +108,8 @@ The next example is how to enter an existing channel and lock it in a pessimisti
 // Get the channel root element
 const channel3 = imodel1.elements.getElement<Subject>({code: "channel3"});
 
-// Enter that channel
-imodel1.concurrencyControl.channel.channelRoot = channel3;
 
 // Lock that channel. That effectively locks everything in that channel.
-await imodel1.concurrencyControl.channel.lockChannelRoot(requestContext);
 requestContext.enter();
 
 ... make changes to elements and models in this channel.
