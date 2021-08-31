@@ -1893,7 +1893,7 @@ export class Cluster<T extends Marker> {
     readonly rect: ViewRect;
 }
 
-// @internal (undocumented)
+// @alpha (undocumented)
 export enum CompassMode {
     // (undocumented)
     Polar = 0,

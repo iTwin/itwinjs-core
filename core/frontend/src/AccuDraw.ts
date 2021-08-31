@@ -55,7 +55,7 @@ export enum AccuDrawFlags {
   SmartRotation = (1 << 24),
 }
 
-/** @internal */
+/** @alpha */
 export enum CompassMode {
   Polar = 0,
   Rectangular = 1,
@@ -3114,9 +3114,9 @@ export class AccuDrawHintBuilder {
   public setLockDistance = false;
   /** Lock current angle value in polar mode */
   public setLockAngle = false;
-  /** Lock current x delta value in rectanglar mode */
+  /** Lock current x delta value in rectangular mode */
   public setLockX = false;
-  /** Lock current y delta value in rectanglar mode  */
+  /** Lock current y delta value in rectangular mode  */
   public setLockY = false;
   /** Lock current z delta value in 3d views */
   public setLockZ = false;
