@@ -3472,7 +3472,7 @@ export function getImageSourceMimeType(format: ImageSourceFormat): string;
 // @beta
 export function getQuantityTypeKey(type: QuantityTypeArg): QuantityTypeKey;
 
-// @beta
+// @public
 export interface GlobalAlignmentOptions {
     target: Point3d;
     transition?: boolean;
@@ -12766,7 +12766,6 @@ export abstract class ViewState2d extends ViewState {
 // @public
 export abstract class ViewState3d extends ViewState {
     constructor(props: ViewDefinition3dProps, iModel: IModelConnection, categories: CategorySelectorState, displayStyle: DisplayStyle3dState);
-    // @beta
     alignToGlobe(target: Point3d, transition?: boolean): ViewStatus;
     // (undocumented)
     allow3dManipulations(): boolean;
@@ -12806,7 +12805,6 @@ export abstract class ViewState3d extends ViewState {
     // (undocumented)
     getCartographicHeight(point: XYAndZ): number | undefined;
     getDisplayStyle3d(): DisplayStyle3dState;
-    // (undocumented)
     getEarthFocalPoint(): Point3d | undefined;
     // (undocumented)
     getExtents(): Vector3d;
