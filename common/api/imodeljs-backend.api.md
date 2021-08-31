@@ -303,7 +303,7 @@ export class AzureBlobStorage extends CloudStorageService {
 // @internal
 export interface BackendHubAccess {
     acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
-    acquireNewBriefcaseId(arg: IModelIdArg): Promise<number>;
+    acquireNewBriefcaseId(arg: IModelIdArg): Promise<BriefcaseId>;
     createNewIModel(arg: CreateNewIModelProps): Promise<GuidString>;
     deleteIModel(arg: IModelIdArg & {
         iTwinId: GuidString;
@@ -323,7 +323,7 @@ export interface BackendHubAccess {
         version: IModelVersion;
     }): Promise<ChangesetProps>;
     getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
-    getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
+    getMyBriefcaseIds(arg: IModelIdArg): Promise<BriefcaseId[]>;
     pushChangeset(arg: IModelIdArg & {
         changesetProps: ChangesetFileProps;
     }): Promise<ChangesetIndex>;
@@ -412,13 +412,9 @@ export class BriefcaseDb extends IModelDb {
 }
 
 // @internal
-export interface BriefcaseDbArg {
+export interface BriefcaseDbArg extends BriefcaseIdArg {
     // (undocumented)
-    briefcaseId: BriefcaseId;
-    // (undocumented)
-    changeset: ChangesetIdWithIndex;
-    // (undocumented)
-    iModelId: GuidString;
+    readonly changeset: ChangesetIdWithIndex;
 }
 
 // @public
@@ -427,7 +423,7 @@ export type BriefcaseId = number;
 // @internal
 export interface BriefcaseIdArg extends IModelIdArg {
     // (undocumented)
-    briefcaseId: number;
+    readonly briefcaseId: BriefcaseId;
 }
 
 // @internal (undocumented)
@@ -546,18 +542,18 @@ export class ChangedElementsDb implements IDisposable {
 // @internal
 export interface ChangesetArg extends IModelIdArg {
     // (undocumented)
-    changeset: ChangesetIndexOrId;
+    readonly changeset: ChangesetIndexOrId;
 }
 
 // @internal (undocumented)
 export interface ChangesetIndexArg extends IModelIdArg {
     // (undocumented)
-    changeset: ChangesetIdWithIndex;
+    readonly changeset: ChangesetIdWithIndex;
 }
 
 // @internal
 export interface ChangesetRangeArg extends IModelIdArg {
-    range?: ChangesetRange;
+    readonly range?: ChangesetRange;
 }
 
 // @beta
@@ -2522,9 +2518,9 @@ export class IModelHubBackend {
 // @internal
 export interface IModelIdArg {
     // (undocumented)
-    iModelId: GuidString;
+    readonly iModelId: GuidString;
     // (undocumented)
-    requestContext?: AuthorizedClientRequestContext;
+    readonly requestContext?: AuthorizedClientRequestContext;
 }
 
 // @public
@@ -2574,11 +2570,11 @@ export { IModelJsNative }
 // @internal
 export interface IModelNameArg {
     // (undocumented)
-    iModelName: string;
+    readonly iModelName: string;
     // (undocumented)
-    iTwinId: GuidString;
+    readonly iTwinId: GuidString;
     // (undocumented)
-    requestContext?: AuthorizedClientRequestContext;
+    readonly requestContext?: AuthorizedClientRequestContext;
 }
 
 // @alpha
@@ -2927,8 +2923,8 @@ export type LockMap = Map<Id64String, LockState>;
 
 // @beta
 export interface LockProps {
-    id: Id64String;
-    state: LockState;
+    readonly id: Id64String;
+    readonly state: LockState;
 }
 
 // @public
@@ -4109,15 +4105,15 @@ export class V1CheckpointManager {
 // @beta
 export interface V2CheckpointAccessProps {
     // (undocumented)
-    auth: string;
+    readonly auth: string;
     // (undocumented)
-    container: string;
+    readonly container: string;
     // (undocumented)
-    dbAlias: string;
+    readonly dbAlias: string;
     // (undocumented)
-    storageType: string;
+    readonly storageType: string;
     // (undocumented)
-    user: string;
+    readonly user: string;
 }
 
 // @internal

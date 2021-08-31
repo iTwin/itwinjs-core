@@ -654,7 +654,7 @@ describe("ImodelChangesetPerformance own data", () => {
           const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: imodelId });
 
           const schemaPathname = path.join(outDir, `${schemaName}.01.00.00.ecschema.xml`);
-          const sxml: string = PerfTestUtility.genSchemaXML(schemaName, baseClassName, hier, true, true, []);
+          const sxml = PerfTestUtility.genSchemaXML(schemaName, baseClassName, hier, true, true, []);
           fs.writeFileSync(schemaPathname, sxml);
 
           await iModelDb.importSchemas(requestContext, [schemaPathname]).catch(() => { });

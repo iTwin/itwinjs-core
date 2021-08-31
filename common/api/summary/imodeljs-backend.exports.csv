@@ -14,7 +14,7 @@ public;BackendRequestContext
 public;BindParameter = number | string
 public;BisCoreSchema 
 public;BriefcaseDb 
-internal;BriefcaseDbArg
+internal;BriefcaseDbArg 
 public;BriefcaseId = number
 internal;BriefcaseIdArg 
 internal;BriefcaseLocalValue

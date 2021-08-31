@@ -663,7 +663,7 @@ export interface BRepThickenProps {
 export interface BriefcaseDownloader {
     briefcaseId: number;
     downloadPromise: Promise<void>;
-    fileName: string;
+    fileName: LocalFileName;
     requestCancel: () => Promise<boolean>;
 }
 
@@ -4749,7 +4749,7 @@ export interface LocalBriefcaseProps {
     briefcaseId: number;
     changeset: ChangesetIdWithIndex;
     contextId: GuidString;
-    fileName: string;
+    fileName: LocalFileName;
     fileSize: number;
     iModelId: GuidString;
 }
@@ -5404,7 +5404,7 @@ export interface OpenBriefcaseOptions {
 
 // @public
 export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
-    fileName: string;
+    fileName: LocalFileName;
     readonly?: boolean;
 }
 
@@ -6593,7 +6593,7 @@ export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
     briefcaseId?: number;
     contextId: GuidString;
-    fileName?: string;
+    fileName?: LocalFileName;
     iModelId: GuidString;
 }
 

@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { join } from "path";
-import { Guid } from "@bentley/bentleyjs-core";
+import { Guid, Mutable } from "@bentley/bentleyjs-core";
 import { ChangesetFileProps, ChangesetType } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { LockProps, LockState } from "../../BackendHubAccess";
@@ -159,7 +159,7 @@ describe("HubMock", () => {
     assert.deepEqual(orig2, downloaded2);
     assert.notDeepEqual(orig1, orig2);
 
-    const lock1: LockProps = {
+    const lock1: Mutable<LockProps> = {
       state: LockState.Shared,
       id: "0x12",
     };

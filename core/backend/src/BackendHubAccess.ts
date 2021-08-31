@@ -15,15 +15,17 @@ import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseId } from "./BriefcaseManager";
 import { CheckpointProps, DownloadRequest } from "./CheckpointManager";
 
-/** The scope of a lock.
+/** The state of a lock.
  * @public
  */
 export enum LockState {
   /** The entity is not locked */
   None = 0,
-  /** Holding a shared lock blocks other users from acquiring the Exclusive lock on an entity. More than one user may acquire the shared lock. */
+  /** Holding a shared lock on an element blocks other users from acquiring the Exclusive lock it. More than one user may acquire the shared lock. */
   Shared = 1,
-  /** A Lock that blocks other users from making modifications to an entity. */
+  /** A Lock that permits modifications to an element and blocks other users from making modifications to it.
+   * Holding an exclusive lock on an "owner" (a model or a parent element), implicitly exclusively locks all its members.
+   */
   Exclusive = 2,
 }
 
@@ -32,70 +34,68 @@ export enum LockState {
  * @beta
  */
 export interface V2CheckpointAccessProps {
-  container: string;
-  auth: string;
-  user: string;
-  dbAlias: string;
-  storageType: string;
+  readonly container: string;
+  readonly auth: string;
+  readonly user: string;
+  readonly dbAlias: string;
+  readonly storageType: string;
 }
 
 /** @internal */
 export type LockMap = Map<Id64String, LockState>;
 
 /**
- * The properties of an iModel server lock.
+ * The properties of a lock that may be obtained from a lock server.
  * @beta
  */
 export interface LockProps {
   /** The elementId for the lock */
-  id: Id64String;
+  readonly id: Id64String;
   /** the lock scope */
-  state: LockState;
+  readonly state: LockState;
 }
 
 /** Argument for methods that must supply an IModelId
  * @internal
  */
 export interface IModelIdArg {
-  iModelId: GuidString;
-  requestContext?: AuthorizedClientRequestContext;
+  readonly iModelId: GuidString;
+  readonly requestContext?: AuthorizedClientRequestContext;
 }
 
 /** Argument for methods that must supply an IModel name and ContextId
  * @internal
  */
 export interface IModelNameArg {
-  requestContext?: AuthorizedClientRequestContext;
-  iTwinId: GuidString;
-  iModelName: string;
-}
-
-/** Argument for methods that must supply briefcase properties
- * @internal
- */
-export interface BriefcaseDbArg {
-  briefcaseId: BriefcaseId;
-  iModelId: GuidString;
-  changeset: ChangesetIdWithIndex;
+  readonly requestContext?: AuthorizedClientRequestContext;
+  readonly iTwinId: GuidString;
+  readonly iModelName: string;
 }
 
 /** Argument for methods that must supply an IModelId and a BriefcaseId
  * @internal
  */
 export interface BriefcaseIdArg extends IModelIdArg {
-  briefcaseId: number;
+  readonly briefcaseId: BriefcaseId;
+}
+
+/** Argument for methods that must supply a briefcaseId and a changeset
+ * @internal
+ */
+export interface BriefcaseDbArg extends BriefcaseIdArg {
+  readonly changeset: ChangesetIdWithIndex;
 }
 
 /** Argument for methods that must supply an IModelId and a changeset
  * @internal
  */
 export interface ChangesetArg extends IModelIdArg {
-  changeset: ChangesetIndexOrId;
+  readonly changeset: ChangesetIndexOrId;
 }
 
 /** @internal */
 export interface ChangesetIndexArg extends IModelIdArg {
-  changeset: ChangesetIdWithIndex;
+  readonly changeset: ChangesetIdWithIndex;
 }
 
 /** Argument for methods that must supply an IModelId and a range of ChangesetIds.
@@ -103,7 +103,7 @@ export interface ChangesetIndexArg extends IModelIdArg {
  */
 export interface ChangesetRangeArg extends IModelIdArg {
   /** the range of changesets desired. If is undefined, *all* changesets are returned. */
-  range?: ChangesetRange;
+  readonly range?: ChangesetRange;
 }
 
 /** @internal */
@@ -116,7 +116,7 @@ export interface CreateNewIModelProps extends IModelNameArg {
   readonly noLocks?: true;
 }
 
-/** Methods for accessing services of IModelHub from an iModel.js backend.
+/** Methods for accessing services of IModelHub from an iTwin.js backend.
  * @internal
  */
 export interface BackendHubAccess {
@@ -140,12 +140,12 @@ export interface BackendHubAccess {
   /** Acquire a new briefcaseId for the supplied iModelId
      * @note usually there should only be one briefcase per iModel per user.
      */
-  acquireNewBriefcaseId(arg: IModelIdArg): Promise<number>;
+  acquireNewBriefcaseId(arg: IModelIdArg): Promise<BriefcaseId>;
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */
   releaseBriefcase(arg: BriefcaseIdArg): Promise<void>;
 
   /** get an array of the briefcases assigned to the current user. */
-  getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
+  getMyBriefcaseIds(arg: IModelIdArg): Promise<BriefcaseId[]>;
 
   /** download a v1 checkpoint */
   downloadV1Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;

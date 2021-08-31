@@ -20,13 +20,16 @@ import { SQLiteDb } from "./SQLiteDb";
  * 2) if they hold an exclusive lock, then all of their members are exclusively locked implicitly.
  * @internal
  */
-export interface ElementOwners { modelId: Id64String, parentId: Id64String | undefined }
+export interface ElementOwners {
+  readonly modelId: Id64String;
+  readonly parentId: Id64String | undefined;
+}
 
 /** @internal */
 export class ServerBasedLocks implements LockControl {
   public get isServerBased() { return true; }
-  protected lockDb = new SQLiteDb();
-  protected briefcase: BriefcaseDb;
+  protected readonly lockDb = new SQLiteDb();
+  protected readonly briefcase: BriefcaseDb;
 
   public constructor(iModel: BriefcaseDb) {
     this.briefcase = iModel;
