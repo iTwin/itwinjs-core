@@ -1580,7 +1580,7 @@ export abstract class ViewState3d extends ViewState {
   }
 
   /** Setup view state for either perspective or othographic view.
-   * @param args see [[LookAtPerspectiveArgs]] and [[LookAtOrthgoArgs]].
+   * @param args see [[LookAtPerspectiveArgs]] and [[LookAtOrthoArgs]].
    * @returns A [[ViewStatus]] indicating whether the camera was successfully positioned.
    * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
    * adjusted when the [[Viewport]] is synchronized from this view.
