@@ -63,6 +63,46 @@ export interface ModelDisplayTransformProvider {
   getModelDisplayTransform(modelId: Id64String, baseTransform: Transform): Transform;
 }
 
+/** Interface adopted by caller that wants to set up a perspective or orthographic view for a [[ViewState3d]].
+ * @see [[ViewState3d.LookAtPerspectiveOrOrtho]].
+ */
+export interface LookAtArgs {
+  /** The new location of the camera/eye. */
+  readonly eyePoint: XYAndZ;
+  /** A vector that orients the camera's "up" (view y). This vector must not be parallel to the view direction. */
+  readonly upVector: Vector3d;
+  /** The distance from the eyePoint to the front plane. If undefined, the existing front distance is used. */
+  readonly frontDistance?: number;
+  /** The distance from the eyePoint to the back plane. If undefined, the existing back distance is used. */
+  readonly backDistance?: number;
+  /** Used for providing onExtentsError. */
+  readonly opts?: ViewChangeOptions;
+}
+
+/** Interface adopted by caller that wants to set up a perspective view for a [[ViewState3d]].
+ * @see [[LookAtArgs]]
+ * @see [[ViewState3d.lookAtPerspectiveOrOrtho]].
+ */
+export interface LookAtPerspectiveArgs extends LookAtArgs {
+  /** The direction in which the view should look. */
+  readonly targetPoint: XYAndZ;
+  /** The new size (width and height) of the view rectangle. The view rectangle is on the focus plane centered on the targetPoint.
+   * If newExtents is undefined, the existing size is unchanged.
+   */
+  readonly newExtents?: XAndY;
+}
+
+/** Interface adopted by caller that wants to set up an ortho view for a [[ViewState3d]].
+ * @see [[LookAtArgs]]
+ * @see [[ViewState3d.lookAtPerspectiveOrOrtho]].
+ */
+export interface LookAtOrthoArgs extends LookAtArgs {
+  /** The direction in which the view should look. */
+  readonly viewDirection: Vector3d;
+  /** The vertical size of the view in world space. */
+  readonly viewToWorldScale: number;
+}
+
 /** Decorates the viewport with the view's grid. Graphics are cached as long as scene remains valid. */
 class GridDecorator {
   public constructor(private readonly _view: ViewState) { }
@@ -1533,33 +1573,46 @@ export abstract class ViewState3d extends ViewState {
    * adjusted when the [[Viewport]] is synchronized from this view.
    */
   public lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus {
-    return this._lookAt(eyePoint, upVector, targetPoint, undefined, newExtents, frontDistance, backDistance, opts);
+    return this.lookAtPerspectiveOrOrtho({ eyePoint, targetPoint, upVector, newExtents, frontDistance, backDistance, opts });
   }
 
-  private _lookAt(eyePoint: XYAndZ, upVector: Vector3d, targetPoint?: XYAndZ, viewDirection?: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus {
-    // Must have either a target point for perspective or a viewDirection for ortho.
-    const eye = new Point3d(eyePoint.x, eyePoint.y, eyePoint.z);
-    const yVec = upVector.normalize();
+  /** Setup view state for either perspective or othographic view.
+   * @param args see [[LookAtPerspectiveArgs]] and [[LookAtOrthgoArgs]].
+   * @returns A [[ViewStatus]] indicating whether the camera was successfully positioned.
+   * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
+   * adjusted when the [[Viewport]] is synchronized from this view.
+   * @internal
+   */
+  public lookAtPerspectiveOrOrtho(args: LookAtPerspectiveArgs | LookAtOrthoArgs): ViewStatus {
+    const pArgs = args as LookAtPerspectiveArgs;
+    const isPerpective = undefined !== pArgs.targetPoint;
+
+    const eye = new Point3d(args.eyePoint.x, args.eyePoint.y, args.eyePoint.z);
+    const yVec = args.upVector.normalize();
     if (!yVec) // up vector zero length?
       return ViewStatus.InvalidUpVector;
 
     let zVec;
     let focusDist;
-    if (undefined !== targetPoint) {
-      zVec = Vector3d.createStartEnd(targetPoint, eye); // z defined by direction from eye to target
+    let newExtents;
+    if (isPerpective) {
+      zVec = Vector3d.createStartEnd(pArgs.targetPoint, eye); // z defined by direction from eye to target
       focusDist = zVec.normalizeWithLength(zVec).mag; // set focus at target point
-    } else if (undefined !== viewDirection) {
-      zVec = viewDirection.normalize();
-      if (!zVec)
+      newExtents = pArgs.newExtents;
+    } else {
+      const oArgs = args as LookAtOrthoArgs;
+      zVec = oArgs.viewDirection.clone();
+      if (!zVec.normalizeInPlace())
         return ViewStatus.InvalidDirection;
       focusDist = this.getFocusDistance();
-    } else {
-      return ViewStatus.InvalidTargetPoint;
+      if (oArgs.viewToWorldScale <= 0)
+        return ViewStatus.InvalidViewToWorldScale;
+      newExtents = Vector2d.create(this.getAspectRatio() * oArgs.viewToWorldScale, oArgs.viewToWorldScale);
     }
     const minFrontDist = this.minimumFrontDistance();
 
     if (focusDist <= minFrontDist) { // eye and target are too close together
-      opts?.onExtentsError?.(ViewStatus.InvalidTargetPoint);
+      args.opts?.onExtentsError?.(ViewStatus.InvalidTargetPoint);
       return ViewStatus.InvalidTargetPoint;
     }
 
@@ -1573,28 +1626,28 @@ export abstract class ViewState3d extends ViewState {
     // we now have rows of the rotation matrix
     const rotation = Matrix3d.createRows(xVec, yVec, zVec);
 
-    backDistance = backDistance ? backDistance : this.getBackDistance();
-    frontDistance = frontDistance ? frontDistance : this.getFrontDistance();
+    let backDist = args.backDistance ? args.backDistance : this.getBackDistance();
+    let frontDist = args.frontDistance ? args.frontDistance : this.getFrontDistance();
 
     const delta = newExtents ? new Vector3d(Math.abs(newExtents.x), Math.abs(newExtents.y), this.extents.z) : this.extents.clone();
 
     // The front/back distance are relatively arbitrary -- the frustum will be adjusted to include geometry.
     // Set them here to reasonable in front of eye and just beyond target.
-    frontDistance = Math.min(frontDistance, (.5 * Constant.oneMeter));
-    backDistance = Math.min(backDistance, focusDist + (.5 * Constant.oneMeter));
+    frontDist = Math.min(frontDist, (.5 * Constant.oneMeter));
+    backDist = Math.min(backDist, focusDist + (.5 * Constant.oneMeter));
 
-    if (backDistance < focusDist) // make sure focus distance is in front of back distance.
-      backDistance = focusDist + Constant.oneMillimeter;
+    if (backDist < focusDist) // make sure focus distance is in front of back distance.
+      backDist = focusDist + Constant.oneMillimeter;
 
-    if (frontDistance > focusDist)
-      frontDistance = focusDist - minFrontDist;
+    if (frontDist > focusDist)
+      frontDist = focusDist - minFrontDist;
 
-    if (frontDistance < minFrontDist)
-      frontDistance = minFrontDist;
+    if (frontDist < minFrontDist)
+      frontDist = minFrontDist;
 
-    delta.z = (backDistance - frontDistance);
+    delta.z = (backDist - frontDist);
 
-    const stat = this.adjustViewDelta(delta, eye, rotation, undefined, opts);
+    const stat = this.adjustViewDelta(delta, eye, rotation, undefined, args.opts);
     if (ViewStatus.Success !== stat)
       return stat;
 
@@ -1603,15 +1656,15 @@ export abstract class ViewState3d extends ViewState {
 
     // The origin is defined as the lower left of the view rectangle on the focus plane, projected to the back plane.
     // Start at eye point, and move to center of back plane, then move left half of width. and down half of height
-    const origin = eye.plus3Scaled(zVec, -backDistance, xVec, -0.5 * delta.x, yVec, -0.5 * delta.y);
+    const origin = eye.plus3Scaled(zVec, -backDist, xVec, -0.5 * delta.x, yVec, -0.5 * delta.y);
 
-    this.setEyePoint(eyePoint);
+    this.setEyePoint(args.eyePoint);
     this.setRotation(rotation);
     this.setFocusDistance(focusDist);
     this.setOrigin(origin);
     this.setExtents(delta);
     this.setLensAngle(this.calcLensAngle());
-    if (undefined !== targetPoint)
+    if (isPerpective)
       this.enableCamera();
     else
       this.turnCameraOff();
@@ -1643,25 +1696,7 @@ export abstract class ViewState3d extends ViewState {
     const delta = Vector2d.create(this.extents.x, this.extents.y);
     delta.scale(extent / delta.x, delta);
 
-    return this.lookAt(eyePoint, targetPoint, upVector, delta, frontDistance, backDistance, opts);
-  }
-
-  /** Position an ortho view in the given direction, using a specified scale.
-   * @param eyePoint The new location of the camera.
-   * @param viewDirection The direction in which the view should look.
-   * @param upVector A vector that orients the camera's "up" (view y). This vector must not be parallel to the view direction.
-   * @param viewToWorldScale vertical size of the view in world space.
-   * @param frontDistance The distance from the eyePoint to the front plane. If undefined, the existing front distance is used.
-   * @param backDistance The distance from the eyePoint to the back plane. If undefined, the existing back distance is used.
-   * @param opts for providing onExtentsError
-   * @returns [[ViewStatus]] indicating whether the camera was successfully positioned.
-   * @note The aspect ratio of the view remains unchanged.
-   */
-  public lookAtUsingOrtho(eyePoint: Point3d, viewDirection: Vector3d, upVector: Vector3d, viewToWorldScale: number, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus {
-    if (viewToWorldScale <= 0)
-      return ViewStatus.InvalidViewToWorldScale;
-    const newExtents = Vector2d.create(this.getAspectRatio() * viewToWorldScale, viewToWorldScale);
-    return this._lookAt(eyePoint, upVector, undefined, viewDirection, newExtents, frontDistance, backDistance, opts);
+    return this.lookAtPerspectiveOrOrtho({eyePoint, targetPoint, upVector, newExtents: delta, frontDistance, backDistance, opts});
   }
 
   /** Change the focus distance for this ViewState3d. Preserves the content of the view.
@@ -1706,9 +1741,9 @@ export abstract class ViewState3d extends ViewState {
       return ViewStatus.Success;
     }
 
-    const newTarget = this.getTargetPoint().plus(distance);
-    const newEyePt = this.getEyePoint().plus(distance);
-    return this.lookAt(newEyePt, newTarget, this.getYVector());
+    const targetPoint = this.getTargetPoint().plus(distance);
+    const eyePoint = this.getEyePoint().plus(distance);
+    return this.lookAtPerspectiveOrOrtho({eyePoint, targetPoint, upVector: this.getYVector()});
   }
 
   /** Rotate the camera from its current location about an axis relative to its current orientation.
@@ -1737,9 +1772,9 @@ export abstract class ViewState3d extends ViewState {
     if (!rotation)
       return ViewStatus.InvalidUpVector;    // Invalid axis given
     const trans = Transform.createFixedPointAndMatrix(about, rotation);
-    const newTarget = trans.multiplyPoint3d(this.getTargetPoint());
-    const upVec = rotation.multiplyVector(this.getYVector());
-    return this.lookAt(this.getEyePoint(), newTarget, upVec);
+    const targetPoint = trans.multiplyPoint3d(this.getTargetPoint());
+    const upVector = rotation.multiplyVector(this.getYVector());
+    return this.lookAtPerspectiveOrOrtho({eyePoint: this.getEyePoint(), targetPoint, upVector});
   }
 
   /** Get the distance from the eyePoint to the front plane for this view. */
