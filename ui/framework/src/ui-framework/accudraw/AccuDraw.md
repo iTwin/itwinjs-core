@@ -6,13 +6,13 @@ cSpell:ignore dont
 
 AccuDraw is an aide for entering coordinate data.
 The source code for the AccuDraw core is in
-[AccuDraw.ts](../../../../core/frontend/src/AccuDraw.ts) and
-[AccuDrawTool.ts](../../../../core/frontend/src/tools/AccuDrawTool.ts).
-The source code for a UI implementation using React components is in [ui/framework](../accudraw).
+[AccuDraw.ts](../../../../../core/frontend/src/AccuDraw.ts) and
+[AccuDrawTool.ts](../../../../../core/frontend/src/tools/AccuDrawTool.ts).
+The source code for a UI implementation using React components is in [ui/framework](../../accudraw).
 
 ## AccuDraw.ts
 
-[AccuDraw.ts](../../../../core/frontend/src/AccuDraw.ts) contains the AccuDraw main class, which can be subclassed to provide a UI implementation for AccuDraw.
+[AccuDraw.ts](../../../../../core/frontend/src/AccuDraw.ts) contains the AccuDraw main class, which can be subclassed to provide a UI implementation for AccuDraw.
 An AccuDraw class instance is setup in the IModelApp instance using `IModelApp.startup` options containing the `iModelApp.accuDraw` member.
 
 ### Methods with overrides in subclasses to implement UI
@@ -57,14 +57,14 @@ Source files that contain the AccuDraw UI implementation include:
 
 | Source File | Description
 | ----------- | ------------
-| [AccuDrawCommandItems.ts](./AccuDrawCommandItems.ts) | Contains ToolItemDef instances for AccuDraw tools
-| [AccuDrawDialog.tsx](./AccuDrawDialog.tsx) | Dialog that displays AccuDrawFieldContainer
-| [AccuDrawFieldContainer.tsx](./AccuDrawFieldContainer.tsx) | Displays an AccuDrawInputField component for each field
-| [AccuDrawInputField.tsx](./AccuDrawInputField.tsx) | Displays an Input component and a Lock icon along with an optional field icon
-| [AccuDrawKeyboardShortcuts.ts](./AccuDrawKeyboardShortcuts.ts) | Defines default AccuDraw Keyboard Shortcuts using ToolItemDefs from AccuDrawCommandItems
-| [AccuDrawUiSettings.ts](./AccuDrawUiSettings.ts) | User Interface Settings for each field, including CSS styles, colors, labels & icons
-| [AccuDrawWidget.tsx](./AccuDrawWidget.tsx) | Widget that displays AccuDrawFieldContainer
-| [FrameworkAccuDraw.ts](./FrameworkAccuDraw.ts) | Subclass of the AccuDraw core class that sends events for UI and status changes
+| [AccuDrawCommandItems.ts](../AccuDrawCommandItems.ts) | Contains ToolItemDef instances for AccuDraw tools
+| [AccuDrawDialog.tsx](../AccuDrawDialog.tsx) | Dialog that displays AccuDrawFieldContainer
+| [AccuDrawFieldContainer.tsx](../AccuDrawFieldContainer.tsx) | Displays an AccuDrawInputField component for each field
+| [AccuDrawInputField.tsx](../AccuDrawInputField.tsx) | Displays an Input component and a Lock icon along with an optional field icon
+| [AccuDrawKeyboardShortcuts.ts](../AccuDrawKeyboardShortcuts.ts) | Defines default AccuDraw Keyboard Shortcuts using ToolItemDefs from AccuDrawCommandItems
+| [AccuDrawUiSettings.ts](../AccuDrawUiSettings.ts) | User Interface Settings for each field, including CSS styles, colors, labels & icons
+| [AccuDrawWidget.tsx](../AccuDrawWidget.tsx) | Widget that displays AccuDrawFieldContainer
+| [FrameworkAccuDraw.ts](../FrameworkAccuDraw.ts) | Subclass of the AccuDraw core class that sends events for UI and status changes
 
 ### FrameworkAccuDraw Setup in IModelApp
 
