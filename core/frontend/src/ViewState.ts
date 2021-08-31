@@ -2053,9 +2053,9 @@ export abstract class ViewState3d extends ViewState {
     return settings && settings.elevation ? settings.elevation : 0;
   }
 
-  /*  If the background map is displayed, return the point on the globe in directly front of the eye (or in center of vieww if camera off)
+  /** If the background map is displayed, return the point on the globe in directly front of the eye (or in center of view if camera off)
    *  This is generally a better target point for orthographic views than the view center which can be far from the area of interest.
-   * @beta
+   * @public
    */
   public getEarthFocalPoint(): Point3d | undefined {
     if (!this.iModel.ecefLocation || this.globeMode !== GlobeMode.Ellipsoid)
@@ -2092,7 +2092,7 @@ export abstract class ViewState3d extends ViewState {
    * @param target The rotation target or pivot point.  This point will remain stationary in the view.
    * @param transition If this is defined and true then the rotation is scaled by the [[ViewState.globalViewTransition]]  This
    * will cause a smooth transition as a view is zoomed out from a specific location to a more global representation.
-   * @beta
+   * @public
    */
 
   public alignToGlobe(target: Point3d, transition?: boolean): ViewStatus {

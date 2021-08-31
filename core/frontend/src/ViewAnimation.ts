@@ -41,7 +41,7 @@ export interface ViewAnimationOptions {
 }
 
 /**  Options that control how a view is aligned with the globe.
- * @beta
+ * @public
  */
 export interface GlobalAlignmentOptions {
   /** The target point about which the alignment occurs.  This point will remain stationary in the view */
