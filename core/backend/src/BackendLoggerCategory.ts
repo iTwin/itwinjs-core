@@ -58,21 +58,6 @@ export enum BackendLoggerCategory {
    */
   IModelHost = "imodeljs-backend.IModelHost",
 
-  /** The logger category used by the [IModelExporter]($backend) class.
-   * @beta
-   */
-  IModelExporter = "imodeljs-backend.IModelExporter",
-
-  /** The logger category used by the [IModelImporter]($backend) class.
-   * @beta
-   */
-  IModelImporter = "imodeljs-backend.IModelImporter",
-
-  /** The logger category used by the [IModelTransformer]($backend) class.
-   * @beta
-   */
-  IModelTransformer = "imodeljs-backend.IModelTransformer",
-
   /** The logger category used by the following classes:
    * - TileRequestMemoizer
    */

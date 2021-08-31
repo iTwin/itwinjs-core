@@ -128,7 +128,7 @@ function generateActionStatusLabelItem(item: AbstractStatusBarLabelItem, isInFoo
     isInFooterMode={isInFooterMode}
   >
     {item.icon && <Icon iconSpec={item.icon} />}
-    {item.label && <span className={iconPaddingClass}>{item.label}</span>}
+    {item.label && <span className={iconPaddingClass}>{ConditionalStringValue.getValue(item.label)}</span>}
   </FooterIndicator>
   );
 }
