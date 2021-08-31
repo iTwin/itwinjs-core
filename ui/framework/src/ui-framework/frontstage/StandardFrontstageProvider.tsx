@@ -24,7 +24,7 @@ export type WidgetPanelProps = Omit<StagePanelProps, "widgets" | "runtimeProps" 
 /**
  * @beta
  */
-export interface StandardStageProps {
+export interface StandardFrontstageProp {
   /* unique stage id */
   id: string;
   /* version id that is used to store state of stage */
@@ -61,7 +61,7 @@ export interface StandardStageProps {
  */
 export class StandardFrontstageProvider extends FrontstageProvider {
 
-  constructor(private props: StandardStageProps) {
+  constructor(private props: StandardFrontstageProp) {
     super();
   }
 

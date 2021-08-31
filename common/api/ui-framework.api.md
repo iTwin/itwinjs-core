@@ -132,6 +132,7 @@ import { SpecialKey } from '@bentley/ui-abstract';
 import { StagePanelLocation as StagePanelLocation_2 } from '@bentley/ui-abstract';
 import { StagePanelSection as StagePanelSection_2 } from '@bentley/ui-abstract';
 import { StagePanelType } from '@bentley/ui-ninezone';
+import { StageUsage } from '@bentley/ui-abstract';
 import { StandardViewId } from '@bentley/imodeljs-frontend';
 import { StatusBarItemsManager as StatusBarItemsManager_2 } from '@bentley/ui-abstract';
 import { StatusBarSection } from '@bentley/ui-abstract';
@@ -5829,6 +5830,34 @@ export class StandardContentToolsProvider implements UiItemsProvider {
     static unregister(): void;
 }
 
+// @beta (undocumented)
+export interface StandardFrontstageProp {
+    // (undocumented)
+    applicationData?: any;
+    bottomPanelProps?: WidgetPanelProps;
+    contentGroupProps: ContentGroupProps;
+    cornerButton?: React.ReactNode;
+    defaultLayout: string;
+    hideNavigationAid?: boolean;
+    hideStatusBar?: boolean;
+    // (undocumented)
+    id: string;
+    leftPanelProps?: WidgetPanelProps;
+    rightPanelProps?: WidgetPanelProps;
+    topPanelProps?: WidgetPanelProps;
+    // (undocumented)
+    usage?: StageUsage | string;
+    // (undocumented)
+    version?: number;
+}
+
+// @beta (undocumented)
+export class StandardFrontstageProvider extends FrontstageProvider {
+    constructor(props: StandardFrontstageProp);
+    // (undocumented)
+    get frontstage(): React.ReactElement<FrontstageProps>;
+    }
+
 // @public
 export class StandardMessageBox extends React.PureComponent<StandardMessageBoxProps, StandardMessageBoxState> {
     constructor(props: StandardMessageBoxProps);
@@ -7524,6 +7553,9 @@ export class WidgetManager {
     get widgets(): ReadonlyArray<WidgetInfo>;
     set widgets(w: ReadonlyArray<WidgetInfo>);
     }
+
+// @beta
+export type WidgetPanelProps = Omit<StagePanelProps, "widgets" | "runtimeProps" | "header" | "allowedZones" | "panelZones">;
 
 // @internal (undocumented)
 export const WidgetPanelsFrontstage: React.NamedExoticComponent<object>;

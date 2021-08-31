@@ -41,7 +41,7 @@ import {
   StandardContentToolsProvider,
   StandardFrontstageProvider,
   StandardNavigationToolsProvider,
-  StandardStageProps,
+  StandardFrontstageProp,
   StandardStatusbarItemsProvider,
   TaskPropsList,
   UiFramework,
@@ -160,7 +160,7 @@ export class AppUi {
       },
     } : undefined;
 
-    const ui2StageProps: StandardStageProps = {
+    const ui2StageProps: StandardFrontstageProp = {
       id: "Ui2",
       version: 1.1,
       defaultLayout: "SingleContent",

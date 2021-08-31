@@ -542,6 +542,8 @@ public;StagePanelZoneProps
 internal;StagePanelZonesDef
 public;StagePanelZonesProps
 beta;StandardContentToolsProvider 
+beta;StandardFrontstageProp
+beta;StandardFrontstageProvider 
 public;StandardMessageBox 
 public;StandardMessageBoxProps 
 beta;StandardNavigationToolsProvider 
@@ -749,6 +751,7 @@ internal;WidgetEventArgs
 public;WidgetHost
 internal;WidgetInfo
 beta;WidgetManager
+beta;WidgetPanelProps = Omit
 internal;WidgetPanelsFrontstage: React.NamedExoticComponent
 internal;WidgetPanelsFrontstageContent(): JSX.Element | null
 internal;WidgetPanelsFrontstageState
