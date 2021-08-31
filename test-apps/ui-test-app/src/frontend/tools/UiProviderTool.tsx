@@ -10,15 +10,18 @@
 
 import * as React from "react";
 import { IModelApp, Tool } from "@bentley/imodeljs-frontend";
+import { Button } from "@itwin/itwinui-react";
+
 import {
   AbstractStatusBarItemUtilities, AbstractWidgetProps, BadgeType, CommonStatusBarItem, CommonToolbarItem, ConditionalBooleanValue,
-  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
+  ConditionalStringValue, IconSpecUtilities, StagePanelLocation, StagePanelSection, StageUsage, StatusBarLabelSide, StatusBarSection, ToolbarItemUtilities, ToolbarOrientation, ToolbarUsage,
   UiItemsManager, UiItemsProvider, WidgetState,
 } from "@bentley/ui-abstract";
-import { FillCentered } from "@bentley/ui-core";
+import { FillCentered, Icon } from "@bentley/ui-core";
+import { FooterIndicator } from "@bentley/ui-ninezone";
 import {
   ActionCreatorsObject, ActionsUnion, ChildWindowLocationProps, createAction,
-  ReducerRegistryInstance, StateManager, StatusBarItemUtilities, UiFramework, withStatusFieldProps,
+  ReducerRegistryInstance, StateManager, StatusBarItemUtilities, SyncUiEventArgs, SyncUiEventDispatcher, UiFramework, withStatusFieldProps,
 } from "@bentley/ui-framework";
 import { ShadowField } from "../appui/statusfields/ShadowField";
 import { SampleAppIModelApp, SampleAppUiActionId } from "../index";
@@ -153,6 +156,8 @@ class TestUiProvider implements UiItemsProvider {
           () => {
             SampleExtensionStateManager.isExtensionUiVisible = !SampleExtensionStateManager.isExtensionUiVisible;
           }));
+
+      statusBarItems.push(AbstractStatusBarItemUtilities.createLabelItem("ExtensionTest:StatusBarLabel1", StatusBarSection.Center, 111, iconCondition, labelCondition));
 
       // add entry that supplies react component
       statusBarItems.push(StatusBarItemUtilities.createStatusBarItem("ShadowToggle", StatusBarSection.Right, 5, <ShadowToggle />));
@@ -368,4 +373,3 @@ export class OpenViewPopoutTool extends Tool {
       () => { IModelApp.tools.run(OpenViewPopoutTool.toolId); }, overrides);
   }
 }
-
