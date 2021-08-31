@@ -66,6 +66,9 @@ export interface ColumnDescription {
   showDistinctValueFilters?: boolean;
   /** Filtering is case-sensitive in Multi-Value column filtering popup. Defaults to false. */
   filterCaseSensitive?: boolean;
+
+  /** Sort type for react-table */
+  sortType?: string;
 }
 
 /**

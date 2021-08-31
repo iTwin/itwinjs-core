@@ -62,7 +62,6 @@ describe("ModelsTree", () => {
       sinon.stub(PresentationTreeDataProvider.prototype, "getNodeKey").callsFake((node: any) => node.__key);
       sinon.stub(PresentationTreeDataProvider.prototype, "getNodesCount").resolves(0);
       sinon.stub(PresentationTreeDataProvider.prototype, "getNodes").resolves([]);
-      sinon.stub(PresentationTreeDataProvider.prototype, "loadHierarchy");
 
       const selectionChangeEvent = new SelectionChangeEvent();
       selectionManagerMock.setup((x) => x.selectionChange).returns(() => selectionChangeEvent);
