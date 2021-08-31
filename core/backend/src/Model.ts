@@ -103,7 +103,7 @@ export class Model extends Entity implements ModelProps {
   protected static onInsert(arg: OnModelPropsArg): void {
     const { iModel, props } = arg;
     if (props.parentModel)   // inserting requires shared lock on parent, if present
-      iModel.locks.checkSharedLock(props.parentModel);
+      iModel.locks.checkSharedLock(props.parentModel, "parent model", "insert");
   }
 
   /** Called after a new Model is inserted.
@@ -122,7 +122,7 @@ export class Model extends Entity implements ModelProps {
    * @beta
    */
   protected static onUpdate(arg: OnModelPropsArg): void {
-    arg.iModel.locks.checkExclusiveLock(arg.props.id!);
+    arg.iModel.locks.checkExclusiveLock(arg.props.id!, "model", "update");
   }
 
   /** Called after a Model is updated.
@@ -140,7 +140,7 @@ export class Model extends Entity implements ModelProps {
    * @beta
    */
   protected static onDelete(arg: OnModelIdArg): void {
-    arg.iModel.locks.checkExclusiveLock(arg.id);
+    arg.iModel.locks.checkExclusiveLock(arg.id, "model", "delete");
   }
 
   /** Called after a Model was deleted.

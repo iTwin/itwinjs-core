@@ -494,8 +494,9 @@ export class BriefcaseManager {
     if (auth)
       requestContext.accessToken = await auth.getAccessToken();
 
-    const csIndex = await IModelHost.hubAccess.pushChangeset({ requestContext, iModelId: briefcase.iModelId, changesetProps });
-    briefcase.nativeDb.completeCreateChangeset({ index: csIndex });
+    const index = await IModelHost.hubAccess.pushChangeset({ requestContext, iModelId: briefcase.iModelId, changesetProps });
+    briefcase.changeset = { id: changesetProps.id, index };
+    briefcase.nativeDb.completeCreateChangeset({ index });
     if (releaseLocks)
       await IModelHost.hubAccess.releaseAllLocks(briefcase);
   }

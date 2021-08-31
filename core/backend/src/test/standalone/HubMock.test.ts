@@ -192,8 +192,8 @@ describe("HubMock", () => {
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.Exclusive);
     localHub.acquireLock(lock1, { briefcaseId: 4, changeset: cs1 });
-    expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("already owned");
-    expect(() => localHub.acquireLock({ ...lock1, state: LockState.Shared }, { briefcaseId: 5, changeset: cs1 })).to.throw("already owned");
+    expect(() => localHub.acquireLock(lock1, { briefcaseId: 5, changeset: cs1 })).to.throw("lock is already held by another user");
+    expect(() => localHub.acquireLock({ ...lock1, state: LockState.Shared }, { briefcaseId: 5, changeset: cs1 })).to.throw("lock is already held by another user");
     localHub.releaseLocks([lock1], { briefcaseId: 4, changeset: cs2 });
     lockStat = localHub.queryLockStatus(lock1.id);
     assert.equal(lockStat.state, LockState.None);

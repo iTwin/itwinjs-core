@@ -5,7 +5,7 @@
 
 import { assert, expect } from "chai";
 import { Guid, GuidString, Id64, Id64Arg } from "@bentley/bentleyjs-core";
-import { IModel, IModelError, LocalBriefcaseProps, RequestNewBriefcaseProps } from "@bentley/imodeljs-common";
+import { Code, IModel, IModelError, LocalBriefcaseProps, PhysicalElementProps, RequestNewBriefcaseProps } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BriefcaseManager } from "../../BriefcaseManager";
 import { BriefcaseDb, SnapshotDb } from "../../IModelDb";
@@ -15,11 +15,14 @@ import { ExtensiveTestScenario, IModelTestUtils, TestUserType } from "../IModelT
 import { restore as sinonRestore, spy as sinonSpy } from "sinon";
 import { ServerBasedLocks } from "../../ServerBasedLocks";
 import { LockState } from "../../BackendHubAccess";
+import { PhysicalObject } from "../../domains/GenericElements";
+import { PhysicalElement, Subject } from "../../Element";
+import { ElementOwnsChildElements } from "../../NavigationRelationship";
 
-describe.only("Server-based locks", () => {
+describe("Server-based locks", () => {
   const createRev0 = async () => {
     const dbName = IModelTestUtils.prepareOutputFile("ServerBasedLocks", "ServerBasedLocks.bim");
-    const sourceDb = SnapshotDb.createEmpty(dbName, { rootSubject: { name: "TestIModelTransformer-Source" } });
+    const sourceDb = SnapshotDb.createEmpty(dbName, { rootSubject: { name: "server lock test" } });
     assert.isFalse(sourceDb.locks.isServerBased);
     await ExtensiveTestScenario.prepareDb(sourceDb);
     ExtensiveTestScenario.populateDb(sourceDb);
@@ -77,11 +80,14 @@ describe.only("Server-based locks", () => {
     let bc2Locks = bc2.locks as ServerBasedLocks;
     const child1 = IModelTestUtils.queryByUserLabel(bc1, "ChildObject1A");
     const child2 = IModelTestUtils.queryByUserLabel(bc1, "ChildObject1B");
-    const childProps = bc1.elements.getElementProps(child1);
-    const parentId = childProps.parent!.id;
-    const modelId = childProps.model;
+    const childEl = bc1.elements.getElement<PhysicalElement>(child1);
+    const parentId = childEl.parent!.id;
+    const modelId = childEl.model;
     const modelProps = bc1.elements.getElementProps(modelId);
     const subjectId = modelProps.parent!.id;
+
+    const sharedLockError = "element is locked with shared";
+    const exclusiveLockError = "lock is already held";
 
     await bc1.acquireSchemaLock();
     assert.equal(lockSpy.callCount, 1);
@@ -93,8 +99,8 @@ describe.only("Server-based locks", () => {
     assert.equal(lockSpy.callCount, 1);
 
     assert.isFalse(bc2.holdsSchemaLock);
-    await expect(bc2.acquireSchemaLock()).to.eventually.be.rejectedWith(IModelError, "lock is already held", "acquire schema exclusive");
-    await expect(bc2Locks.acquireSharedLock(childProps.model)).to.eventually.be.rejectedWith(IModelError, "lock is already held");
+    await expect(bc2.acquireSchemaLock()).rejectedWith(IModelError, exclusiveLockError, "acquire schema exclusive");
+    await expect(bc2Locks.acquireSharedLock(childEl.model)).rejectedWith(IModelError, exclusiveLockError);
 
     await bc1Locks.releaseAllLocks();
     await bc1Locks.acquireExclusiveLock(parentId);
@@ -122,9 +128,9 @@ describe.only("Server-based locks", () => {
     assertExclusiveLocks(bc1Locks, child1);
     assert.equal(lockSpy.callCount, 2); // should not need to call server on a lock already held
 
-    await expect(bc2.acquireSchemaLock()).to.eventually.be.rejectedWith(IModelError, "element is locked with shared");
+    await expect(bc2.acquireSchemaLock()).rejectedWith(IModelError, sharedLockError);
     assert.equal(lockSpy.callCount, 3);
-    await expect(bc2Locks.acquireExclusiveLock(parentId)).to.eventually.be.rejectedWith(IModelError, "element is locked with shared");
+    await expect(bc2Locks.acquireExclusiveLock(parentId)).rejectedWith(IModelError, sharedLockError);
     assert.equal(lockSpy.callCount, 4);
     await bc2Locks.acquireSharedLock(parentId);
     assert.equal(lockSpy.callCount, 5);
@@ -148,7 +154,7 @@ describe.only("Server-based locks", () => {
     assertLockCounts(bc1Locks, 4, 1);
     assertLockCounts(bc2Locks, 5, 0);
 
-    assertSharedLocks(bc1Locks, [parentId, childProps.model, IModel.rootSubjectId]);
+    assertSharedLocks(bc1Locks, [parentId, childEl.model, IModel.rootSubjectId]);
     assertSharedLocks(bc2Locks, [parentId, IModel.rootSubjectId, IModel.dictionaryId]);
     assertExclusiveLocks(bc1Locks, child1);
     assert.isFalse(bc2Locks.holdsExclusiveLock(child1));
@@ -156,11 +162,47 @@ describe.only("Server-based locks", () => {
     await bc2Locks.releaseAllLocks(); // release all locks from bc2 so we can test expected failures below
     assertLockCounts(bc2Locks, 0, 0);
 
-    await expect(bc2Locks.acquireExclusiveLock([IModel.dictionaryId, parentId])).to.eventually.be.rejectedWith(IModelError, "element is locked with shared");
+    await expect(bc2Locks.acquireExclusiveLock([IModel.dictionaryId, parentId])).rejectedWith(IModelError, sharedLockError);
     assertLockCounts(bc2Locks, 0, 0); // exclusive lock is available on dictionary, but not on parent - should get neither
     await bc2Locks.acquireExclusiveLock([IModel.dictionaryId]); // now attempt to get only dictionary
     assertExclusiveLocks(bc2Locks, IModel.dictionaryId); // that should work
     assertSharedLocks(bc2Locks, IModel.rootSubjectId); // it should also acquire the shared lock on the rootSubject
     assertLockCounts(bc2Locks, 1, 1);
+
+    await bc1Locks.releaseAllLocks();
+    await bc2Locks.releaseAllLocks();
+    lockSpy.resetHistory();
+
+    const physicalProps: PhysicalElementProps = {
+      classFullName: PhysicalObject.classFullName,
+      model: modelId,
+      parent: new ElementOwnsChildElements(parentId),
+      category: childEl.category,
+      code: Code.createEmpty(),
+    };
+    assert.throws(() => bc1.elements.insertElement(physicalProps), IModelError, "shared lock"); // insert requires shared lock on model
+    await bc1Locks.acquireSharedLock(parentId); // also acquires shared lock on model
+    const newElId = bc1.elements.insertElement(physicalProps);
+    assertExclusiveLocks(bc1Locks, newElId);
+
+    childEl.userLabel = "new user label";
+    assert.throws(() => bc1.elements.updateElement(childEl), "exclusive lock");
+    await bc1Locks.acquireExclusiveLock(child1);
+    bc1.elements.updateElement(childEl);
+    bc1.saveChanges();
+
+    bc1.elements.deleteElement(child1); // make sure delete now works
+    bc1.abandonChanges();
+
+    await bc1.pushChanges(user1, "my changes");
+
+    assert.throws(() => bc2.elements.deleteElement(child1), "exclusive lock"); // bc2 can't delete because it doesn't hold lock
+    await expect(bc2Locks.acquireExclusiveLock(child1)).rejectedWith(IModelError, "pull is required"); // can't get lock since other briefcase changed it
+
+    await bc2.pullAndMergeChanges(user2);
+    await bc2Locks.acquireExclusiveLock(child1);
+    const child2El = bc2.elements.getElement<PhysicalElement>(child1);
+    assert.equal(child2El.userLabel, childEl.userLabel);
+
   });
 });

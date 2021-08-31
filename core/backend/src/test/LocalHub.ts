@@ -469,7 +469,7 @@ export class LocalHub {
 
   private reserveLock(currStatus: LockStatus, props: LockProps, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
     if (props.state === LockState.Exclusive && currStatus.lastCsIndex && (currStatus.lastCsIndex > this.getIndexFromChangeset(briefcase.changeset)))
-      throw new IModelError(IModelHubStatus.PullIsRequired, "Pull is required");
+      throw new IModelError(IModelHubStatus.PullIsRequired, "pull is required to obtain lock");
 
     const wantShared = props.state === LockState.Shared;
     if (wantShared && (currStatus.state === LockState.Exclusive))

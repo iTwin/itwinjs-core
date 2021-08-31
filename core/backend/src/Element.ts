@@ -143,9 +143,9 @@ export class Element extends Entity implements ElementProps {
    */
   protected static onInsert(arg: OnElementPropsArg): void {
     const { iModel, props } = arg;
-    iModel.locks.checkSharedLock(props.model); // inserting requires shared lock on model
+    iModel.locks.checkSharedLock(props.model, "model", "insert"); // inserting requires shared lock on model
     if (props.parent)   // inserting requires shared lock on parent, if present
-      iModel.locks.checkSharedLock(props.parent.id);
+      iModel.locks.checkSharedLock(props.parent.id, "parent", "insert");
   }
 
   /** Called after a new Element was inserted.
@@ -164,7 +164,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onUpdate(arg: OnElementPropsArg): void {
-    arg.iModel.locks.checkExclusiveLock(arg.props.id!);
+    arg.iModel.locks.checkExclusiveLock(arg.props.id!, "element", "update");
   }
 
   /** Called after an Element was updated.
@@ -181,7 +181,7 @@ export class Element extends Entity implements ElementProps {
    * @beta
    */
   protected static onDelete(arg: OnElementIdArg): void {
-    arg.iModel.locks.checkExclusiveLock(arg.id);
+    arg.iModel.locks.checkExclusiveLock(arg.id, "element", "delete");
   }
 
   /** Called after an Element was deleted.

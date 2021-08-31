@@ -95,9 +95,9 @@ export interface LockControl {
   /** Throw if locks are required and the exclusive lock is not held on the supplied element.
    * Note: there is no need to check the shared locks on parents/models since an element cannot hold the exclusive lock without first obtaining them.
    */
-  checkExclusiveLock(id: Id64String): void;
+  checkExclusiveLock(id: Id64String, type: string, operation: string): void;
   /** Throw if locks are required and a shared lock is not held on the supplied element */
-  checkSharedLock(id: Id64String): void;
+  checkSharedLock(id: Id64String, type: string, operation: string): void;
   /** Acquire the exclusive lock on one or more elements from the lock server, if locks are required and not already held.
    * If any required lock is not available, this method throws an exception and *none* of the requested locks are acquired.
    * > Note: acquiring the exclusive lock on an element requires also obtaining a shared lock on all its owner elements.

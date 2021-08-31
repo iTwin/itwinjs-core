@@ -197,14 +197,14 @@ export class ServerBasedLocks implements LockControl {
   private get _locksAreRequired() { return !this.iModel.txns.isIndirectChanges; }
 
   /** throw if locks are currently required and the exclusive lock is not held on the supplied element */
-  public checkExclusiveLock(id: Id64String) {
+  public checkExclusiveLock(id: Id64String, type: string, operation: string) {
     if (this._locksAreRequired && !this.holdsExclusiveLock(id))
-      throw new IModelError(IModelStatus.LockNotHeld, `exclusive lock on element ${id} not held`);
+      throw new IModelError(IModelStatus.LockNotHeld, `exclusive lock not held on ${type} for ${operation} (id=${id})`);
   }
   /** throw if locks are currently required and a shared lock is not held on the supplied element */
-  public checkSharedLock(id: Id64String) {
+  public checkSharedLock(id: Id64String, type: string, operation: string) {
     if (this._locksAreRequired && !this.holdsSharedLock(id))
-      throw new IModelError(IModelStatus.LockNotHeld, `shared lock on element ${id} not held`);
+      throw new IModelError(IModelStatus.LockNotHeld, `shared lock not held on ${type} for ${operation} (id=${id})`);
   }
 
 }

@@ -1129,7 +1129,7 @@ export class ExtensiveTestScenario {
     // Update Subject element
     const subjectId = sourceDb.elements.queryElementIdByCode(Subject.createCode(sourceDb, IModel.rootSubjectId, "Subject"))!;
     assert.isTrue(Id64.isValidId64(subjectId));
-    const subject: Subject = sourceDb.elements.getElement<Subject>(subjectId);
+    const subject = sourceDb.elements.getElement<Subject>(subjectId);
     subject.description = "Subject description (Updated)";
     sourceDb.elements.updateElement(subject);
     // Update spatialCategory element
