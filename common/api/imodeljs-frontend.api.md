@@ -5070,6 +5070,27 @@ export class LookAndMoveTool extends ViewManip {
 }
 
 // @public
+export interface LookAtArgs {
+    readonly backDistance?: number;
+    readonly eyePoint: XYAndZ;
+    readonly frontDistance?: number;
+    readonly opts?: ViewChangeOptions;
+    readonly upVector: Vector3d;
+}
+
+// @public
+export interface LookAtOrthoArgs extends LookAtArgs {
+    readonly viewDirection: Vector3d;
+    readonly viewToWorldScale: number;
+}
+
+// @public
+export interface LookAtPerspectiveArgs extends LookAtArgs {
+    readonly newExtents?: XAndY;
+    readonly targetPoint: XYAndZ;
+}
+
+// @public
 export class LookViewTool extends ViewManip {
     constructor(vp: ScreenViewport, oneShot?: boolean, isDraggingRequired?: boolean);
     // (undocumented)
@@ -12832,8 +12853,9 @@ export abstract class ViewState3d extends ViewState {
     lookAt(eyePoint: XYAndZ, targetPoint: XYAndZ, upVector: Vector3d, newExtents?: XAndY, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     lookAtGlobalLocation(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): number;
     lookAtGlobalLocationFromGcs(eyeHeight: number, pitchAngleRadians?: number, location?: GlobalLocation, eyePoint?: Point3d): Promise<number>;
+    // @internal
+    lookAtPerspectiveOrOrtho(args: LookAtPerspectiveArgs | LookAtOrthoArgs): ViewStatus;
     lookAtUsingLensAngle(eyePoint: Point3d, targetPoint: Point3d, upVector: Vector3d, fov: Angle, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
-    lookAtUsingOrtho(eyePoint: Point3d, viewDirection: Vector3d, upVector: Vector3d, viewToWorldScale: number, frontDistance?: number, backDistance?: number, opts?: ViewChangeOptions): ViewStatus;
     // (undocumented)
     minimumFrontDistance(): number;
     moveCameraLocal(distance: Vector3d): ViewStatus;

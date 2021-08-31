@@ -65,6 +65,7 @@ export interface ModelDisplayTransformProvider {
 
 /** Interface adopted by caller that wants to set up a perspective or orthographic view for a [[ViewState3d]].
  * @see [[ViewState3d.LookAtPerspectiveOrOrtho]].
+ * @beta
  */
 export interface LookAtArgs {
   /** The new location of the camera/eye. */
@@ -82,6 +83,7 @@ export interface LookAtArgs {
 /** Interface adopted by caller that wants to set up a perspective view for a [[ViewState3d]].
  * @see [[LookAtArgs]]
  * @see [[ViewState3d.lookAtPerspectiveOrOrtho]].
+ * @beta
  */
 export interface LookAtPerspectiveArgs extends LookAtArgs {
   /** The direction in which the view should look. */
@@ -95,6 +97,7 @@ export interface LookAtPerspectiveArgs extends LookAtArgs {
 /** Interface adopted by caller that wants to set up an ortho view for a [[ViewState3d]].
  * @see [[LookAtArgs]]
  * @see [[ViewState3d.lookAtPerspectiveOrOrtho]].
+ * @beta
  */
 export interface LookAtOrthoArgs extends LookAtArgs {
   /** The direction in which the view should look. */
@@ -1581,7 +1584,7 @@ export abstract class ViewState3d extends ViewState {
    * @returns A [[ViewStatus]] indicating whether the camera was successfully positioned.
    * @note If the aspect ratio of viewDelta does not match the aspect ratio of a Viewport into which this view is displayed, it will be
    * adjusted when the [[Viewport]] is synchronized from this view.
-   * @internal
+   * @beta
    */
   public lookAtPerspectiveOrOrtho(args: LookAtPerspectiveArgs | LookAtOrthoArgs): ViewStatus {
     const pArgs = args as LookAtPerspectiveArgs;
