@@ -18,36 +18,31 @@ import { SQLiteDb } from "./SQLiteDb";
  * Both the Model and Parent of an element are considered "owners" of their member elements. That means:
  * 1) they must hold at least a shared lock before an exclusive lock can be acquired for their members
  * 2) if they hold an exclusive lock, then all of their members are exclusively locked implicitly.
+ * @internal
  */
 export interface ElementOwners { modelId: Id64String, parentId: Id64String | undefined }
 
+/** @internal */
 export class ServerBasedLocks implements LockControl {
   public get isServerBased() { return true; }
-  private _db?: SQLiteDb;
-  private _iModel?: BriefcaseDb;
-
-  private get iModel() { return this._iModel!; } // eslint-disable-line @typescript-eslint/naming-convention
-  private get lockDb() { return this._db!; } // eslint-disable-line @typescript-eslint/naming-convention
+  protected lockDb = new SQLiteDb();
+  protected iModel: BriefcaseDb;
 
   public constructor(iModel: BriefcaseDb) {
-    this._iModel = iModel;
-    this._db = new SQLiteDb();
-
+    this.iModel = iModel;
     const dbName = `${iModel.nativeDb.getTempFileBaseName()}-locks`;
     try {
-      this._db.openDb(dbName, OpenMode.ReadWrite);
+      this.lockDb.openDb(dbName, OpenMode.ReadWrite);
     } catch (_e) {
-      this._db.createDb(dbName);
-      this._db.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,acquired INTEGER)");
-      this._db.saveChanges();
+      this.lockDb.createDb(dbName);
+      this.lockDb.executeSQL("CREATE TABLE locks(id INTEGER PRIMARY KEY NOT NULL,state INTEGER NOT NULL,acquired INTEGER)");
+      this.lockDb.saveChanges();
     }
   }
 
   public close() {
-    if (this._db?.isOpen) {
-      this._db.closeDb();
-      this._db = undefined;
-    }
+    if (this.lockDb.isOpen)
+      this.lockDb.closeDb();
   }
 
   private getOwners(id: Id64String): ElementOwners {
@@ -73,6 +68,15 @@ export class ServerBasedLocks implements LockControl {
    */
   private clearAllLocks() {
     this.lockDb.executeSQL("DELETE FROM locks");
+  }
+
+  /** only for tests */
+  public getLockCount(state: LockState) {
+    return this.lockDb.withSqliteStatement("SELECT count(*) FROM locks WHERE state=?", (stmt) => {
+      stmt.bindInteger(1, state);
+      stmt.step();
+      return stmt.getValueInteger(0);
+    });
   }
 
   public async releaseAllLocks() {

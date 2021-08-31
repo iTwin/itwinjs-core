@@ -113,8 +113,7 @@ export interface CreateNewIModelProps extends IModelNameArg {
   readonly noLocks?: true;
 }
 
-/** Methods for accessing services of IModelHub from the backend.
- * @note these methods may be mocked for tests
+/** Methods for accessing services of IModelHub from an iModel.js backend.
  * @internal
  */
 export interface BackendHubAccess {
@@ -153,7 +152,7 @@ export interface BackendHubAccess {
   /** download a v2 checkpoint */
   downloadV2Checkpoint(arg: CheckPointArg): Promise<ChangesetId>;
 
-  /** acquire one or more locks. Throws if unsuccessful */
+  /** acquire one or more locks. Throws if unsuccessful. If *any* lock cannot be obtained, no locks are acquired */
   acquireLocks(arg: BriefcaseDbArg, locks: LockMap): Promise<void>;
 
   /** get the full list of held locks for a briefcase */

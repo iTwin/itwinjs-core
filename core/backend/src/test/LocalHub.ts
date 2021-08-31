@@ -6,7 +6,7 @@
 import { join } from "path";
 import { DbResult, GuidString, Id64String, IModelHubStatus, IModelStatus, OpenMode } from "@bentley/bentleyjs-core";
 import { BriefcaseIdValue, ChangesetFileProps, ChangesetId, ChangesetIdWithIndex, ChangesetIndex, ChangesetIndexOrId, ChangesetProps, ChangesetRange, IModelError, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
-import { LockProps, LockState } from "../BackendHubAccess";
+import { LockMap, LockProps, LockState } from "../BackendHubAccess";
 import { BriefcaseId, BriefcaseManager } from "../BriefcaseManager";
 import { BriefcaseLocalValue, IModelDb, SnapshotDb } from "../IModelDb";
 import { IModelJsFs } from "../IModelJsFs";
@@ -493,7 +493,6 @@ export class LocalHub {
           throw new Error("cannot insert shared lock");
       });
     }
-    this.db.saveChanges();
   }
 
   private clearLock(id: Id64String) {
@@ -504,6 +503,7 @@ export class LocalHub {
         throw new Error("can't release lock");
     });
   }
+
   private updateLockChangeset(id: Id64String, index: ChangesetIndex) {
     if (index <= 0)
       return;
@@ -517,7 +517,7 @@ export class LocalHub {
     });
   }
 
-  public requestLock(props: LockProps, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
+  private requestLock(props: LockProps, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
     if (props.state === LockState.None)
       throw new Error("cannot request lock for LockState.None");
 
@@ -545,7 +545,7 @@ export class LocalHub {
     }
   }
 
-  public releaseLock(props: LockProps, arg: { briefcaseId: BriefcaseId, changeset: ChangesetIdWithIndex }) {
+  private releaseLock(props: LockProps, briefcase: { briefcaseId: BriefcaseId, changeset: ChangesetIdWithIndex }) {
     const lockId = props.id;
     const lockStatus = this.queryLockStatus(lockId);
     switch (lockStatus.state) {
@@ -553,19 +553,19 @@ export class LocalHub {
         throw new IModelError(IModelHubStatus.LockDoesNotExist, "lock not held");
 
       case LockState.Exclusive:
-        if (lockStatus.briefcaseId !== arg.briefcaseId)
+        if (lockStatus.briefcaseId !== briefcase.briefcaseId)
           throw new IModelError(IModelHubStatus.LockOwnedByAnotherBriefcase, "lock not held by this briefcase");
-        this.updateLockChangeset(lockId, this.getIndexFromChangeset(arg.changeset));
+        this.updateLockChangeset(lockId, this.getIndexFromChangeset(briefcase.changeset));
         this.clearLock(lockId);
         break;
 
       case LockState.Shared:
-        if (!lockStatus.sharedBy.has(arg.briefcaseId))
+        if (!lockStatus.sharedBy.has(briefcase.briefcaseId))
           throw new IModelError(IModelHubStatus.LockDoesNotExist, "shared lock not held by this briefcase");
 
         this.db.withPreparedSqliteStatement("DELETE FROM sharedLocks WHERE lockId=? AND briefcaseId=?", (stmt) => {
           stmt.bindId(1, lockId);
-          stmt.bindInteger(2, arg.briefcaseId);
+          stmt.bindInteger(2, briefcase.briefcaseId);
           const rc = stmt.step();
           if (rc !== DbResult.BE_SQLITE_DONE)
             throw new Error("can't remove shared lock");
@@ -573,6 +573,29 @@ export class LocalHub {
         if (lockStatus.sharedBy.size === 1)
           this.clearLock(lockId);
     }
+  }
+
+  /** Acquire a set of locks. If any lock cannot be acquired, no locks are acquired  */
+  public acquireLocks(locks: LockMap, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
+    try {
+      for (const lock of locks)
+        this.requestLock({ id: lock[0], state: lock[1] }, briefcase);
+      this.db.saveChanges(); // only after all locks have been acquired
+    } catch (err) {
+      this.db.abandonChanges(); // abandon all locks that may have been acquired
+      throw err;
+    }
+  }
+
+  public acquireLock(props: LockProps, briefcase: { changeset: ChangesetIdWithIndex, briefcaseId: BriefcaseId }) {
+    const locks = new Map<Id64String, LockState>();
+    locks.set(props.id, props.state);
+    this.acquireLocks(locks, briefcase);
+  }
+
+  public releaseLocks(locks: LockProps[], briefcase: { briefcaseId: BriefcaseId, changeset: ChangesetIdWithIndex }) {
+    for (const props of locks)
+      this.releaseLock(props, briefcase);
     this.db.saveChanges();
   }
 

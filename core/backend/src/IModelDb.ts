@@ -159,8 +159,8 @@ export abstract class IModelDb extends IModel {
   private readonly _snaps = new Map<string, IModelJsNative.SnapRequest>();
   private static _shutdownListener: VoidFunction | undefined; // so we only register listener once
 
-  protected _locks: LockControl = new NoLocks();
-  public get locks() { return this._locks; }
+  protected _locks?: LockControl = new NoLocks();
+  public get locks() { return this._locks!; }
 
   /** Acquire the exclusive schema lock on this iModel.
    * > Note: To acquire the schema lock, all other briefcases must first release *all* their locks. No other briefcases
@@ -228,6 +228,8 @@ export abstract class IModelDb extends IModel {
 
     this.beforeClose();
     IModelDb._openDbs.delete(this._fileKey);
+    this.locks.close();
+    this._locks = undefined;
     this.nativeDb.closeIModel();
     this._nativeDb = undefined; // the underlying nativeDb has been freed by closeIModel
   }
@@ -246,7 +248,6 @@ export abstract class IModelDb extends IModel {
     this.onBeforeClose.raiseEvent();
     this.clearCaches();
     this._concurrentQueryStats.dispose();
-    this._locks.close();
   }
 
   /** @internal */
