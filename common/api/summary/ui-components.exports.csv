@@ -461,8 +461,8 @@ beta;ToolbarOpacitySetting
 internal;ToolbarOverflowContextProps
 beta;ToolbarPanelAlignment
 internal;ToolbarPanelAlignmentHelpers
-internal;ToolbarPopupContext: React.Context
-internal;ToolbarPopupContextProps
+public;ToolbarPopupContext: React.Context
+public;ToolbarPopupContextProps
 beta;ToolbarProps 
 beta;ToolbarWithOverflow(props: ToolbarWithOverflowProps): JSX.Element
 internal;ToolbarWithOverflowDirectionContext: React.Context
@@ -540,7 +540,7 @@ beta;usePropertyGridEventHandler(props:
 beta;usePropertyGridModel(props:
 beta;usePropertyGridModelSource(props:
 internal;useRenderedStringValue(record: PropertyRecord, stringValueCalculator: (record: PropertyRecord) => string | Promise
-internal;useToolbarPopupContext(): ToolbarPopupContextProps
+public;useToolbarPopupContext(): ToolbarPopupContextProps
 internal;useToolbarWithOverflowDirectionContext(): ToolbarOverflowContextProps
 internal;useToolItemEntryContext(): ToolbarItemContextArgs
 public;useTreeEventsHandler
