@@ -127,14 +127,8 @@ describe("TileUpload (#integration)", () => {
     const blob = containerUrl.getBlockBlobClient(blobName);
     const blobProperties = await blob.getProperties();
     const blobStream = (await blob.download()).readableStreamBody!;
-    let decompressor: NodeJS.ReadableStream;
-    if (IModelHost.compressCachedTiles) {
-      const gunzip = zlib.createGunzip();
-      blobStream.pipe(gunzip);
-      decompressor = gunzip;
-    } else {
-      decompressor = blobStream;
-    }
+    const decompressor: NodeJS.ReadableStream = IModelHost.compressCachedTiles ? blobStream.pipe(zlib.createGunzip()) : blobStream;
+
     let tileSize = 0;
     decompressor.on("data", (chunk: Buffer | string) => { tileSize += chunk.length; });
     await new Promise((resolve, reject) => {
