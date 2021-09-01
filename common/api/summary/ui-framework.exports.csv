@@ -3,10 +3,21 @@ Release Tag;API Item
 alpha;AccuDrawCommandItems
 alpha;AccuDrawDialog(props: AccuDrawDialogProps): JSX.Element
 alpha;AccuDrawDialogProps 
+alpha;AccuDrawGrabInputFocusEvent 
 alpha;AccuDrawKeyboardShortcuts
 alpha;AccuDrawPopupManager
+alpha;AccuDrawSetCompassModeEvent 
+alpha;AccuDrawSetCompassModeEventArgs
+alpha;AccuDrawSetFieldFocusEvent 
+alpha;AccuDrawSetFieldFocusEventArgs
+alpha;AccuDrawSetFieldLockEvent 
+alpha;AccuDrawSetFieldLockEventArgs
+alpha;AccuDrawSetFieldValueFromUiEvent 
+alpha;AccuDrawSetFieldValueFromUiEventArgs
+alpha;AccuDrawSetFieldValueToUiEvent 
+alpha;AccuDrawSetFieldValueToUiEventArgs
 alpha;AccuDrawUiSettings
-internal;AccuDrawUiSettingsChangedEvent 
+alpha;AccuDrawUiSettingsChangedEvent 
 alpha;AccuDrawWidget(): JSX.Element
 alpha;AccuDrawWidgetControl 
 public;Action
@@ -211,7 +222,7 @@ beta;featureOverridesActiveStateFunc(state: Readonly
 alpha;FocusToolSettings 
 public;FooterModeField 
 public;FooterModeFieldProps 
-internal;FrameworkAccuDraw 
+alpha;FrameworkAccuDraw 
 beta;FrameworkRootState
 internal;FrameworkStagePanel 
 internal;FrameworkStagePanelProps

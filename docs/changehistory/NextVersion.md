@@ -224,6 +224,7 @@ In this 3.0 major release, we have removed several APIs that were previously mar
 | `RemoteBriefcaseConnection`            | `CheckpointConnection`                                    |
 | `ScreenViewport.decorationDiv`         | `DecorateContext.addHtmlDecoration`                       |
 | `ViewManager.forEachViewport`          | Use a `for..of` loop                                      |
+| `UnitSystemKey`                        | Moved to `@bentley/imodeljs-quantity`                     |
 
 ### @bentley/backend-itwin-client
 
@@ -281,18 +282,24 @@ SAML support has officially been dropped as a supported workflow. All related AP
 | Removed                                  | Replacement                                                                            |
 | ---------------------------------------- | -------------------------------------------------------------------------------------- |
 | `PresentationRpcInterface.loadHierarchy` | *eliminated*                                                                           |
+| `PresentationUnitSystem`                 | Removed in favor of `UnitSystemKey` from `@bentley/imodeljs-quantity`                  |
 
 ### @bentley/presentation-backend
 
-| Removed                                  | Replacement                                                                            |
-| ---------------------------------------- | -------------------------------------------------------------------------------------- |
-| `PresentationManager.loadHierarchy`      | *eliminated*                                                                           |
+| Removed                                     | Replacement                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
+| `UnitSystemFormat.unitSystems`              | Changed type from `PresentationUnitSystem[]` to `UnitSystemKey[]`                      |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
 
 ### @bentley/presentation-frontend
 
-| Removed                                  | Replacement                                                                            |
-| ---------------------------------------- | -------------------------------------------------------------------------------------- |
-| `PresentationManager.loadHierarchy`      | *eliminated*                                                                           |
+| Removed                                     | Replacement                                                                            |
+| ------------------------------------------- | -------------------------------------------------------------------------------------- |
+| `PresentationManager.loadHierarchy`         | *eliminated*                                                                           |
+| `PresentationManagerProps.activeUnitSystem` | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
+| `PresentationManager.activeUnitSystem`      | Changed type from `PresentationUnitSystem` to `UnitSystemKey`                          |
 
 ### @bentley/presentation-components
 

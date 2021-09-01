@@ -422,6 +422,7 @@ export class IModelHost {
 
   private static setupCacheDirs(configuration: IModelHostConfiguration) {
     this._cacheDir = configuration.cacheDir ? path.normalize(configuration.cacheDir) : NativeLibrary.defaultCacheDir;
+    IModelJsFs.recursiveMkDirSync(this._cacheDir); // make sure the directory for cacheDir exists.
     this._briefcaseCacheDir = path.join(this._cacheDir, "imodels");
   }
 
