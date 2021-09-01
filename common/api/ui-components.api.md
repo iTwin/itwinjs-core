@@ -4164,10 +4164,10 @@ export class ToolbarPanelAlignmentHelpers {
     static readonly START_CLASS_NAME = "components-panel-alignment-start";
 }
 
-// @internal
+// @public
 export const ToolbarPopupContext: React.Context<ToolbarPopupContextProps>;
 
-// @internal (undocumented)
+// @public (undocumented)
 export interface ToolbarPopupContextProps {
     // (undocumented)
     readonly closePanel: () => void;
@@ -4838,7 +4838,7 @@ export function useRenderedStringValue(record: PropertyRecord, stringValueCalcul
     element: React.ReactNode;
 };
 
-// @internal (undocumented)
+// @public
 export function useToolbarPopupContext(): ToolbarPopupContextProps;
 
 // @internal (undocumented)

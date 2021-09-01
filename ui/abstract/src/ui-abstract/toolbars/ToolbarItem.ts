@@ -51,7 +51,10 @@ export interface ToolbarItem extends ProvidedItem {
   readonly isHidden?: boolean | ConditionalBooleanValue;
   /** Describes if the item is enabled or disabled. The default is for the item to be enabled. */
   readonly isDisabled?: boolean | ConditionalBooleanValue;
-  /** Describes if the item should appear pressed (used for displaying toggle state). */
+  /** Describes if the item should appear pressed (used for displaying toggle state). This property is NOT used by Toolbars
+   * constructed using the `ToolbarWithOverflow` component, which are used in AppUi 2.0 and later. For these later toolbars
+   * the icon is usually changed to denote the state of a toggle.
+   */
   readonly isPressed?: boolean;
   /** Specifies the item's grouping value. Items are sorted by group and then item priority. When
    * group priority changes a separator is inserted. It is recommended using values 10 through 100, incrementing by 10. This
