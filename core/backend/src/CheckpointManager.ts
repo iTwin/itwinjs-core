@@ -132,13 +132,14 @@ export class V2CheckpointManager {
         user: containerAccessKeyAccount,
         dbAlias: containerAccessKeyDbName,
         writeable: false,
+        secure: true,
       };
     } catch (err) {
       throw new IModelError(IModelStatus.NotFound, `V2 checkpoint not found: err: ${err.message}`);
     }
   }
 
-  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: string, expiryTimestamp: number }> {
+  public static async attach(checkpoint: CheckpointProps): Promise<{ filePath: string, expiryTimestamp: number, sasKey: string }> {
     const args = await this.getCommandArgs(checkpoint);
     if (undefined === args.daemonDir || args.daemonDir === "")
       throw new IModelError(IModelStatus.BadRequest, "Invalid config: BLOCKCACHE_DIR is not set");
@@ -154,7 +155,7 @@ export class V2CheckpointManager {
     }
     const sasTokenExpiry = new URLSearchParams(args.auth).get("se");
 
-    return { filePath: BlobDaemon.getDbFileName(args), expiryTimestamp: sasTokenExpiry ? Date.parse(sasTokenExpiry) : 0 };
+    return { filePath: BlobDaemon.getDbFileName(args), expiryTimestamp: sasTokenExpiry ? Date.parse(sasTokenExpiry) : 0 , sasKey: args.auth};
   }
 
   private static async performDownload(job: DownloadJob): Promise<ChangesetId> {

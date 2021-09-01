@@ -2016,7 +2016,7 @@ describe("iModel", () => {
   it("attempting to re-attach a non-checkpoint snapshot should be a no-op", async () => {
     process.env.BLOCKCACHE_DIR = "/foo/";
     const ctx = ClientRequestContext.current as AuthorizedClientRequestContext;
-    const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now() }));
+    const attachMock = sinon.stub(V2CheckpointManager, "attach").callsFake(async () => ({ filePath: "BAD", expiryTimestamp: Date.now(), sasKey: "FAKE" }));
     await imodel1.reattachDaemon(ctx);
     assert.isTrue(attachMock.notCalled);
   });
