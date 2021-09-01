@@ -105,7 +105,7 @@ export interface SerializedClientRequestContext {
   applicationId: string;
   applicationVersion: string;
   sessionId: string;
-  authorization?: string | undefined;
+  authorization?: string;
   userId?: string;
   csrfToken?: { headerName: string, headerValue: string };
 }

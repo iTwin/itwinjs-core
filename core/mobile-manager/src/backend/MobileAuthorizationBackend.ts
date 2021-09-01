@@ -80,7 +80,7 @@ export class MobileAuthorizationBackend extends NativeAppAuthorizationBackend {
     return new Promise<AccessTokenString>((resolve, reject) => {
       MobileHost.device.authGetAccessToken((tokenString?: string, err?: string) => {
         if (!err && tokenString) {
-          resolve(tokenString);
+          resolve((JSON.parse(tokenString) as AccessTokenProps).tokenString);
         } else {
           reject(new Error(err));
         }

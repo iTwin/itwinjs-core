@@ -29,6 +29,11 @@ export function TokenPrefix(prefix: string) { // eslint-disable-line @typescript
   };
 }
 
+/**
+ * Function to remove any prefix from an access token string.
+ * @param accessToken Access token string
+ * @internal
+ */
 export function removeAccessTokenPrefix(accessToken: AccessTokenString | undefined): AccessTokenString | undefined {
   return accessToken ? accessToken.substr(accessToken.indexOf(" ") + 1) : undefined;
 }
