@@ -7,9 +7,9 @@
  */
 
 import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Point3d, Range2d, Range3d, Transform } from "@bentley/geometry-core";
+import { Point3d, Range2d, Range3d, Transform, XYZProps } from "@bentley/geometry-core";
 import {
-  BatchType, ColorDef, ElementAlignedBox3d, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
+  BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
   TileReadError, TileReadStatus,
 } from "@bentley/imodeljs-common";
@@ -52,6 +52,100 @@ export async function readElementGraphics(bytes: Uint8Array, iModel: IModelConne
 
   const result = await reader.read();
   return result.graphic;
+}
+
+interface ImdlMaterialAtlas {
+  readonly numMaterials: number;
+  readonly hasTranslucency?: boolean;
+  readonly overridesAlpha?: boolean;
+}
+
+interface ImdlVertexTable {
+  readonly bufferView: string;
+  readonly count: number;
+  readonly numRgbaPerVertex: number;
+  readonly numColors?: number;
+  readonly width: number;
+  readonly height: number;
+  readonly hasTranslucency: boolean;
+  readonly featureIndexType: FeatureIndexType;
+  readonly featureID?: number;
+  readonly uniformColor?: ColorDefProps;
+  readonly params: {
+    readonly decodedMin: number[];
+    readonly decodedMax: number[];
+  };
+  readonly materialAtlas?: ImdlMaterialAtlas;
+}
+
+interface ImdlInstances {
+  readonly count: number;
+  readonly transformCenter: number[];
+  readonly featureIds: string;
+  readonly transforms: string;
+  readonly symbologyOverrides?: string;
+}
+
+interface ImdlPrimitive {
+  readonly material?: string;
+  readonly vertices: ImdlVertexTable;
+  readonly isPlanar?: boolean;
+  readonly viewIndependentOrigin?: XYZProps;
+  readonly instances?: ImdlInstances;
+}
+
+type ImdlAuxChannelTable = Omit<AuxChannelTableProps, "data"> & { bufferView: string };
+
+interface ImdlSegmentEdges {
+  readonly indices: string;
+  readonly endPointAndQuadIndices: string;
+}
+
+interface ImdlSilhouetteEdges extends ImdlSegmentEdges {
+  readonly normalPairs: string;
+}
+
+interface ImdlMeshEdges {
+  readonly segments?: ImdlSegmentEdges;
+  readonly silhouettes?: ImdlSilhouetteEdges;
+  readonly polylines?: ImdlPolyline;
+}
+
+interface ImdlPolyline {
+  readonly indices: string;
+  readonly prevIndices: string;
+  readonly nextIndicesAndParams: string;
+}
+
+interface ImdlMeshPrimitive extends ImdlPrimitive {
+  readonly type: Mesh.PrimitiveType.Mesh;
+  readonly auxChannels?: ImdlAuxChannelTable;
+  readonly surface?: {
+    readonly type: SurfaceType;
+    readonly indices: string;
+    readonly alwaysDisplayTexture?: boolean;
+    readonly uvParams?: {
+      readonly decodedMin: number[];
+      readonly decodedMax: number[];
+    };
+  };
+  readonly edges?: ImdlMeshEdges;
+}
+
+interface ImdlPolylinePrimitive extends ImdlPrimitive, ImdlPolyline {
+  readonly type: Mesh.PrimitiveType.Polyline;
+}
+
+interface ImdlPointStringPrimitive extends ImdlPrimitive {
+  readonly type: Mesh.PrimitiveType.Point;
+  readonly indices: string;
+}
+
+type AnyImdlPrimitive = ImdlMeshPrimitive | ImdlPolylinePrimitive | ImdlPointStringPrimitive;
+
+interface ImdlMesh {
+  readonly primitives?: AnyImdlPrimitive[];
+  readonly layer?: string;
 }
 
 /** Deserializes tile content in iMdl format. These tiles contain element geometry encoded into a format optimized for the imodeljs webgl renderer.
@@ -343,8 +437,8 @@ export class ImdlReader extends GltfReader {
     return undefined !== header;
   }
 
-  private readMeshGraphic(primitive: any): RenderGraphic | undefined {
-    const materialName = JsonUtils.asString(primitive.material);
+  private readMeshGraphic(primitive: AnyImdlPrimitive): RenderGraphic | undefined {
+    const materialName = primitive.material ?? "";
     const materialValue = 0 < materialName.length ? JsonUtils.asObject(this._materialValues[materialName]) : undefined;
     const displayParams = undefined !== materialValue ? this.createDisplayParams(materialValue) : undefined;
     if (undefined === displayParams)
@@ -357,9 +451,8 @@ export class ImdlReader extends GltfReader {
     }
 
     const isPlanar = !this._is3d || JsonUtils.asBool(primitive.isPlanar);
-    const primitiveType = JsonUtils.asInt(primitive.type, Mesh.PrimitiveType.Mesh);
     const instances = this.readInstances(primitive);
-    switch (primitiveType) {
+    switch (primitive.type) {
       case Mesh.PrimitiveType.Mesh:
         return this.createMeshGraphic(primitive, displayParams, vertices, isPlanar, this.readAuxChannelTable(primitive), instances);
       case Mesh.PrimitiveType.Polyline:
@@ -388,7 +481,7 @@ export class ImdlReader extends GltfReader {
     return this._binaryData.subarray(byteOffset, byteOffset + byteLength);
   }
 
-  private readVertexTable(primitive: any): VertexTable | undefined {
+  private readVertexTable(primitive: AnyImdlPrimitive): VertexTable | undefined {
     const json = primitive.vertices;
     if (undefined === json)
       return undefined;
@@ -408,12 +501,9 @@ export class ImdlReader extends GltfReader {
 
     const uniformColor = undefined !== json.uniformColor ? ColorDef.fromJSON(json.uniformColor) : undefined;
     let uvParams: QParams2d | undefined;
-    if (undefined !== primitive.surface && undefined !== primitive.surface.uvParams) {
-      const uvMin = JsonUtils.asArray(primitive.surface.uvParams.decodedMin);
-      const uvMax = JsonUtils.asArray(primitive.surface.uvParams.decodedMax);
-      if (undefined === uvMin || undefined === uvMax)
-        return undefined;
-
+    if (Mesh.PrimitiveType.Mesh === primitive.type && primitive.surface && primitive.surface.uvParams) {
+      const uvMin = primitive.surface.uvParams.decodedMin;
+      const uvMax = primitive.surface.uvParams.decodedMax;
       const uvRange = new Range2d(uvMin[0], uvMin[1], uvMax[0], uvMax[1]);
       uvParams = QParams2d.fromRange(uvRange);
     }
@@ -433,7 +523,7 @@ export class ImdlReader extends GltfReader {
     });
   }
 
-  private readAuxChannelTable(primitive: any): AuxChannelTable | undefined {
+  private readAuxChannelTable(primitive: ImdlMeshPrimitive): AuxChannelTable | undefined {
     const json = primitive.auxChannels;
     if (undefined === json)
       return undefined;
@@ -456,7 +546,7 @@ export class ImdlReader extends GltfReader {
     return AuxChannelTable.fromJSON(props);
   }
 
-  private readInstances(primitive: any): Point3d | InstancedGraphicParams | undefined {
+  private readInstances(primitive: ImdlPrimitive): Point3d | InstancedGraphicParams | undefined {
     const viJson = primitive.viewIndependentOrigin;
     if (undefined !== viJson)
       return Point3d.fromJSON(viJson);
@@ -497,12 +587,12 @@ export class ImdlReader extends GltfReader {
     return { count, transforms, transformCenter, featureIds, symbologyOverrides };
   }
 
-  private readVertexIndices(json: any): VertexIndices | undefined {
-    const bytes = this.findBuffer(json as string);
+  private readVertexIndices(bufferName: string): VertexIndices | undefined {
+    const bytes = this.findBuffer(bufferName);
     return undefined !== bytes ? new VertexIndices(bytes) : undefined;
   }
 
-  private createPointStringGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, instances: Point3d | InstancedGraphicParams | undefined): RenderGraphic | undefined {
+  private createPointStringGraphic(primitive: ImdlPointStringPrimitive, displayParams: DisplayParams, vertices: VertexTable, instances: Point3d | InstancedGraphicParams | undefined): RenderGraphic | undefined {
     const indices = this.readVertexIndices(primitive.indices);
     if (undefined === indices)
       return undefined;
@@ -511,22 +601,18 @@ export class ImdlReader extends GltfReader {
     return this._system.createPointString(params, instances);
   }
 
-  private readTesselatedPolyline(json: any): TesselatedPolyline | undefined {
+  private readTesselatedPolyline(json: ImdlPolyline): TesselatedPolyline | undefined {
     const indices = this.readVertexIndices(json.indices);
     const prevIndices = this.readVertexIndices(json.prevIndices);
     const nextIndicesAndParams = this.findBuffer(json.nextIndicesAndParams);
 
-    if (undefined === indices || undefined === prevIndices || undefined === nextIndicesAndParams)
+    if (!indices || !prevIndices || !nextIndicesAndParams)
       return undefined;
 
-    return {
-      indices,
-      prevIndices,
-      nextIndicesAndParams,
-    };
+    return { indices, prevIndices, nextIndicesAndParams };
   }
 
-  private createPolylineGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, instances: Point3d | InstancedGraphicParams | undefined): RenderGraphic | undefined {
+  private createPolylineGraphic(primitive: ImdlPolylinePrimitive, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, instances: Point3d | InstancedGraphicParams | undefined): RenderGraphic | undefined {
     const polyline = this.readTesselatedPolyline(primitive);
     if (undefined === polyline)
       return undefined;
@@ -539,7 +625,7 @@ export class ImdlReader extends GltfReader {
     return this._system.createPolyline(params, instances);
   }
 
-  private readSurface(mesh: any, displayParams: DisplayParams): SurfaceParams | undefined {
+  private readSurface(mesh: ImdlMeshPrimitive, displayParams: DisplayParams): SurfaceParams | undefined {
     const surf = mesh.surface;
     if (undefined === surf)
       return undefined;
@@ -548,7 +634,7 @@ export class ImdlReader extends GltfReader {
     if (undefined === indices)
       return undefined;
 
-    const type = JsonUtils.asInt(surf.type, -1);
+    const type = surf.type;
     if (!isValidSurfaceType(type))
       return undefined;
 
@@ -580,19 +666,19 @@ export class ImdlReader extends GltfReader {
     };
   }
 
-  private readSegmentEdges(json: any): SegmentEdgeParams | undefined {
+  private readSegmentEdges(json: ImdlSegmentEdges): SegmentEdgeParams | undefined {
     const indices = this.readVertexIndices(json.indices);
     const endPointAndQuadIndices = this.findBuffer(json.endPointAndQuadIndices);
     return undefined !== indices && undefined !== endPointAndQuadIndices ? { indices, endPointAndQuadIndices } : undefined;
   }
 
-  private readSilhouettes(json: any): SilhouetteParams | undefined {
+  private readSilhouettes(json: ImdlSilhouetteEdges): SilhouetteParams | undefined {
     const segments = this.readSegmentEdges(json);
     const normalPairs = this.findBuffer(json.normalPairs);
     return undefined !== segments && undefined !== normalPairs ? { normalPairs, indices: segments.indices, endPointAndQuadIndices: segments.endPointAndQuadIndices } : undefined;
   }
 
-  private readEdges(json: any, displayParams: DisplayParams): { succeeded: boolean, params?: EdgeParams } {
+  private readEdges(json: ImdlMeshEdges, displayParams: DisplayParams): { succeeded: boolean, params?: EdgeParams } {
     let segments: SegmentEdgeParams | undefined;
     let silhouettes: SilhouetteParams | undefined;
     let polylines: TesselatedPolyline | undefined;
@@ -622,7 +708,7 @@ export class ImdlReader extends GltfReader {
     return { succeeded, params };
   }
 
-  private createMeshGraphic(primitive: any, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, auxChannels: AuxChannelTable | undefined, instances: Point3d | InstancedGraphicParams | undefined): RenderGraphic | undefined {
+  private createMeshGraphic(primitive: ImdlMeshPrimitive, displayParams: DisplayParams, vertices: VertexTable, isPlanar: boolean, auxChannels: AuxChannelTable | undefined, instances: Point3d | InstancedGraphicParams | undefined): RenderGraphic | undefined {
     const surface = this.readSurface(primitive, displayParams);
     if (undefined === surface)
       return undefined;
@@ -647,10 +733,11 @@ export class ImdlReader extends GltfReader {
     if (undefined === this._nodes.Node_Root) {
       // Unstructured -- prior to animation support....
       for (const meshKey of Object.keys(this._meshes)) {
-        const meshValue = this._meshes[meshKey];
-        const primitives = JsonUtils.asArray(meshValue.primitives);
-        if (undefined === primitives)
+        const meshValue = this._meshes[meshKey] as ImdlMesh | undefined;
+        const primitives = meshValue?.primitives;
+        if (!primitives || !meshValue)
           continue;
+
         for (const primitive of primitives) {
           const graphic = this.readMeshGraphic(primitive);
           if (undefined !== graphic)
@@ -659,13 +746,12 @@ export class ImdlReader extends GltfReader {
       }
     } else {
       for (const nodeKey of Object.keys(this._nodes)) {
-        const meshValue = this._meshes[this._nodes[nodeKey]];
-        const primitives = JsonUtils.asArray(meshValue?.primitives);
-        if (undefined === primitives)
+        const meshValue = this._meshes[this._nodes[nodeKey]] as ImdlMesh | undefined;
+        const primitives = meshValue?.primitives;
+        if (!primitives || !meshValue)
           continue;
 
-        const layerId = meshValue.layer as string | undefined;
-
+        const layerId = meshValue.layer;
         if ("Node_Root" === nodeKey) {
           for (const primitive of primitives) {
             const graphic = this.readMeshGraphic(primitive);
