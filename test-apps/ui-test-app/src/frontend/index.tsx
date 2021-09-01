@@ -40,7 +40,7 @@ import {
 } from "@bentley/ui-framework";
 import { SafeAreaInsets } from "@bentley/ui-ninezone";
 import { getSupportedRpcs } from "../common/rpcs";
-import { TestAppConfiguration } from "../common/TestAppConfiguration";
+import { loggerCategory, TestAppConfiguration } from "../common/TestAppConfiguration";
 import { ActiveSettingsManager } from "./api/ActiveSettingsManager";
 import { BearingQuantityType } from "./api/BearingQuantityType";
 import { ErrorHandling } from "./api/ErrorHandling";
@@ -663,8 +663,8 @@ async function main() {
   // initialize logging
   Logger.initializeToConsole();
   Logger.setLevelDefault(LogLevel.Warning);
-  Logger.setLevel("ui-test-app", LogLevel.Info);
-  Logger.setLevel("ui-framework.UiFramework", LogLevel.Info);
+  Logger.setLevel(loggerCategory, LogLevel.Info);
+  Logger.setLevel( "ui-framework.UiFramework", LogLevel.Info);
 
   ToolAdmin.exceptionHandler = async (err: any) => Promise.resolve(ErrorHandling.onUnexpectedError(err));
 
