@@ -7,7 +7,7 @@
  */
 
 import { assert, ByteStream, Id64String, JsonUtils } from "@bentley/bentleyjs-core";
-import { Point3d, Range2d, Range3d, Transform, XYZProps } from "@bentley/geometry-core";
+import { Point3d, Range2d, Range2dProps, Range3d, Transform, TransformProps, XYZProps } from "@bentley/geometry-core";
 import {
   BatchType, ColorDef, ColorDefProps, ElementAlignedBox3d, FeatureIndexType, FeatureTableHeader, FillFlags, Gradient, ImageSource, ImdlHeader, LinePixels,
   PackedFeatureTable, PolylineTypeFlags, QParams2d, QParams3d, readTileContentDescription, RenderMaterial, RenderTexture, TextureMapping,
@@ -117,19 +117,28 @@ interface ImdlPolyline {
   readonly nextIndicesAndParams: string;
 }
 
+interface ImdlAreaPattern {
+  readonly scale: number;
+  readonly spacing: number[];
+  readonly orgTransform: TransformProps;
+}
+
+interface ImdlSurface {
+  readonly type: SurfaceType;
+  readonly indices: string;
+  readonly alwaysDisplayTexture?: boolean;
+  readonly uvParams?: {
+    readonly decodedMin: number[];
+    readonly decodedMax: number[];
+  };
+}
+
 interface ImdlMeshPrimitive extends ImdlPrimitive {
   readonly type: Mesh.PrimitiveType.Mesh;
-  readonly auxChannels?: ImdlAuxChannelTable;
-  readonly surface?: {
-    readonly type: SurfaceType;
-    readonly indices: string;
-    readonly alwaysDisplayTexture?: boolean;
-    readonly uvParams?: {
-      readonly decodedMin: number[];
-      readonly decodedMax: number[];
-    };
-  };
+  readonly surface: ImdlSurface;
   readonly edges?: ImdlMeshEdges;
+  readonly auxChannels?: ImdlAuxChannelTable;
+  readonly areaPattern?: ImdlAreaPattern;
 }
 
 interface ImdlPolylinePrimitive extends ImdlPrimitive, ImdlPolyline {
