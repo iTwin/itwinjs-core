@@ -251,6 +251,8 @@ public;PlanCallout
 public;Platform
 internal;ProcessChangesetOptions
 public;ProgressFunction = (loaded: number, total: number) => number
+public;PullChangesArgs = ToChangesetArgs
+public;PushChangesArgs 
 beta;class RecipeDefinitionElement 
 public;Relationship 
 public;Relationships
@@ -311,12 +313,14 @@ public;TextAnnotation3d
 public;Texture 
 internal;TextureCreateProps 
 public;TitleText 
+public;ToChangesetArgs 
 public;TxnChangedEntities
 public;TxnIdString = string
 public;TxnManager
 public;class TypeDefinitionElement 
 public;UpdateModelOptions 
 public;UrlLink 
+public;UserArg
 internal;V1CheckpointManager
 beta;V2CheckpointAccessProps
 internal;V2CheckpointManager

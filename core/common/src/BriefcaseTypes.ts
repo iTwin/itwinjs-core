@@ -11,14 +11,12 @@ import { ChangesetIdWithIndex, LocalFileName } from "./ChangesetProps";
 import { IModelEncryptionProps, OpenDbKey } from "./IModel";
 import { IModelVersionProps } from "./IModelVersion";
 
-
 /** The Id assigned to a briefcase by iModelHub, or [[BriefcaseIdValue.Unassigned]] .
  * @public
  */
 export type BriefcaseId = number;
 
-/** Values of BriefcaseId that have special meaning.
- * @see [[BriefcaseId]]
+/** Values of [[BriefcaseId]] that have special meaning.
  * @public
  */
 export enum BriefcaseIdValue {

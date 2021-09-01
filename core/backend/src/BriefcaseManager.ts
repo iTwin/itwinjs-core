@@ -42,18 +42,41 @@ export type RequestNewBriefcaseArg = RequestNewBriefcaseProps & {
   onProgress?: ProgressFunction;
 };
 
+/**
+ * An argument to a function that can accept an authenticated user.
+ * @public
+ */
 export interface UserArg {
+  /** If present, the user's access token for the requested operation. If not present, use [[IModelHost.getAccessToken]] */
   user?: AuthorizedClientRequestContext;
 }
+/**
+ * Parameters for pushing changesets to iModelHub
+ * @public
+ */
 export interface PushChangesArgs extends UserArg {
+  /** A description of the changes. This is visible on the iModel's timeline. */
   description: string;
+  /** if present, the locks are retained after the operation. Otherwise, *all* locks are released after the changeset is successfully pushed. */
   retainLocks?: true;
+  /** the number of time to attempt to retry to push the changeset upon failure. Default is 3 */
   retryPushCount?: number;
+  /** The delay to wait between retry attempts on failed pushes. Default is 3 seconds. */
   retryDelay?: BeDuration;
 }
+
+/**
+ * Specifies a specific index for pulling changes.
+ * @public
+ */
 export interface ToChangesetArgs extends UserArg {
+  /** The last ChangesetIndex to pull. If not present, pull *all* newer changesets. */
   toIndex?: ChangesetIndex;
 }
+
+/** Arguments for [[BriefcaseManager.pullAndApplyChangesets]]
+ * @public
+ */
 export type PullChangesArgs = ToChangesetArgs;
 
 /** Manages downloading Briefcases and downloading and uploading changesets.

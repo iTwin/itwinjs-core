@@ -172,7 +172,7 @@ const getElementCount = (iModel: IModelDb): number => {
 };
 
 async function executeQueryTime(user: AuthorizedClientRequestContext, reporter: Reporter, iTwinId: GuidString, imodelId: string) {
-  const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({  user, iTwinId, iModelId: imodelId, asOf: IModelVersion.named("latest").toJSON() });
+  const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: imodelId, asOf: IModelVersion.named("latest").toJSON() });
   assert.exists(iModelDb);
   const startTime = new Date().getTime();
   const stat = IModelTestUtils.executeQuery(iModelDb, "SELECT * FROM BisCore.LineStyle");
@@ -650,8 +650,8 @@ describe("ImodelChangesetPerformance own data", () => {
           // create iModel and push changesets 1) with schema 2) with 1M records of PerfElementSub3 3) insert of opSize for actual testing
           // eslint-disable-next-line no-console
           console.log(`iModel ${iModelName} does not exist on iModelHub. Creating with changesets...`);
-          const imodelId = await IModelHost.hubAccess.createNewIModel({ user: user, iTwinId, iModelName, description: "TestSubject" });
-          const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId: imodelId });
+          const iModelId = await IModelHost.hubAccess.createNewIModel({ user, iTwinId, iModelName, description: "TestSubject" });
+          const iModelDb = await IModelTestUtils.downloadAndOpenBriefcase({ user, iTwinId, iModelId });
 
           const schemaPathname = path.join(outDir, `${schemaName}.01.00.00.ecschema.xml`);
           const sxml = PerfTestUtility.genSchemaXML(schemaName, baseClassName, hier, true, true, []);
@@ -660,8 +660,8 @@ describe("ImodelChangesetPerformance own data", () => {
           await iModelDb.importSchemas(user, [schemaPathname]).catch(() => { });
           assert.isDefined(iModelDb.getMetaData(`${schemaName}:${baseClassName}`), `${baseClassName} is not present in iModel.`);
           iModelDb.saveChanges("schema changes");
-          await iModelDb.pullChanges({ user: user });
-          await iModelDb.pushChanges({ user: user, description: "perf schema import" });
+          await iModelDb.pullChanges({ user });
+          await iModelDb.pushChanges({ user, description: "perf schema import" });
 
           // seed with existing elements
           const [, newModelId] = IModelTestUtils.createAndInsertPhysicalPartitionAndModel(iModelDb, Code.createEmpty(), true);
@@ -678,12 +678,12 @@ describe("ImodelChangesetPerformance own data", () => {
           }
           user = await TestUtility.getAuthorizedClientRequestContext(TestUsers.regular);
           iModelDb.saveChanges();
-          await iModelDb.pushChanges({ user: user, description: `Seed data for ${className}` });
+          await iModelDb.pushChanges({ user, description: `Seed data for ${className}` });
 
           // create named version here
-          const changeSets = await IModelHubBackend.iModelClient.changeSets.get(user, imodelId);
+          const changeSets = await IModelHubBackend.iModelClient.changeSets.get(user, iModelId);
           const lastCSId = changeSets[changeSets.length - 1].wsgId;
-          const seedData = await IModelHubBackend.iModelClient.versions.create(user, imodelId, lastCSId, seedVersionName);
+          const seedData = await IModelHubBackend.iModelClient.versions.create(user, iModelId, lastCSId, seedVersionName);
           assert.equal(seedData.name, seedVersionName);
 
           const minId: number = PerfTestUtility.getMinId(iModelDb, "bis.PhysicalElement");
@@ -698,7 +698,7 @@ describe("ImodelChangesetPerformance own data", () => {
                 assert.isTrue(Id64.isValidId64(id), "insert failed");
               }
               iModelDb.saveChanges();
-              await iModelDb.pushChanges({ user: user, description: `${className} inserts: ${opSize}` });
+              await iModelDb.pushChanges({ user, description: `${className} inserts: ${opSize}` });
               break;
             case "D": // create changeset with Delete operation
               for (let i = 0; i < opSize; ++i) {
@@ -710,7 +710,7 @@ describe("ImodelChangesetPerformance own data", () => {
                 }
               }
               iModelDb.saveChanges();
-              await iModelDb.pushChanges({ user: user, description: `${className} deletes: ${opSize}` });
+              await iModelDb.pushChanges({ user, description: `${className} deletes: ${opSize}` });
               break;
             case "U": // create changeset with Update operation
               const geomArray: Arc3d[] = [
@@ -736,7 +736,7 @@ describe("ImodelChangesetPerformance own data", () => {
                 }
               }
               iModelDb.saveChanges();
-              await iModelDb.pushChanges({ user: user, description: `${className} updates: ${opSize}` });
+              await iModelDb.pushChanges({ user, description: `${className} updates: ${opSize}` });
               break;
             default:
               break;

@@ -13,6 +13,7 @@ import { AuxCoordSystem3dProps } from '@bentley/imodeljs-common';
 import { AuxCoordSystemProps } from '@bentley/imodeljs-common';
 import { AxisAlignedBox3d } from '@bentley/imodeljs-common';
 import { Base64EncodedString } from '@bentley/imodeljs-common';
+import { BeDuration } from '@bentley/bentleyjs-core';
 import { BeEvent } from '@bentley/bentleyjs-core';
 import { BRepGeometryCreate } from '@bentley/imodeljs-common';
 import { BriefcaseProps } from '@bentley/imodeljs-common';
@@ -34,7 +35,6 @@ import { ChangesetIndexAndId } from '@bentley/imodeljs-common';
 import { ChangesetIndexOrId } from '@bentley/imodeljs-common';
 import { ChangesetProps } from '@bentley/imodeljs-common';
 import { ChangesetRange } from '@bentley/imodeljs-common';
-import { ChangesetType } from '@bentley/imodeljs-common';
 import { ChannelRootAspectProps } from '@bentley/imodeljs-common';
 import { ClientRequestContext } from '@bentley/bentleyjs-core';
 import { ClipVector } from '@bentley/geometry-core';
@@ -398,16 +398,16 @@ export class BriefcaseDb extends IModelDb {
     static readonly onOpen: BeEvent<(_requestContext: ClientRequestContext, _args: OpenBriefcaseProps) => void>;
     static readonly onOpened: BeEvent<(_requestContext: ClientRequestContext, _imodelDb: BriefcaseDb) => void>;
     static open(requestContext: ClientRequestContext, args: OpenBriefcaseProps): Promise<BriefcaseDb>;
-    pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<ChangesetIndexAndId>;
-    pushChanges(requestContext: AuthorizedClientRequestContext, description: string, _unused?: any): Promise<ChangesetIndexAndId>;
+    pullChanges(arg?: PullChangesArgs): Promise<ChangesetIndexAndId>;
+    pushChanges(arg: PushChangesArgs): Promise<ChangesetIndexAndId>;
     // @deprecated
-    reinstateChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
+    reinstateChanges(user: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
     // @deprecated
-    reverseChanges(requestContext: AuthorizedClientRequestContext, version?: IModelVersion): Promise<void>;
+    reverseChanges(user: AuthorizedClientRequestContext, version: IModelVersion): Promise<void>;
     // (undocumented)
     static tryFindByKey(key: string): BriefcaseDb | undefined;
     readonly txns: TxnManager;
-    static upgradeSchemas(requestContext: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps): Promise<void>;
+    static upgradeSchemas(user: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps): Promise<void>;
     protected get useLockServer(): boolean;
 }
 
@@ -436,14 +436,12 @@ export enum BriefcaseLocalValue {
 
 // @public
 export class BriefcaseManager {
-    static acquireNewBriefcaseId(requestContext: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number>;
+    static acquireNewBriefcaseId(user: AuthorizedClientRequestContext, iModelId: GuidString): Promise<number>;
     static get cacheDir(): LocalDirName;
-    // @internal (undocumented)
-    static changesetFromVersion(requestContext: AuthorizedClientRequestContext, version: IModelVersion, iModelId: string): Promise<ChangesetProps>;
     static deleteBriefcaseFiles(filePath: LocalFileName, requestContext?: AuthorizedClientRequestContext): Promise<void>;
     // @internal
     static deleteChangeSetsFromLocalDisk(iModelId: string): void;
-    static downloadBriefcase(requestContext: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
+    static downloadBriefcase(user: AuthorizedClientRequestContext, request: RequestNewBriefcaseArg): Promise<LocalBriefcaseProps>;
     // @internal (undocumented)
     static getBriefcaseBasePath(iModelId: GuidString): LocalDirName;
     static getCachedBriefcases(iModelId?: GuidString): LocalBriefcaseProps[];
@@ -459,17 +457,11 @@ export class BriefcaseManager {
     static isValidBriefcaseId(id: BriefcaseId): boolean;
     // @internal (undocumented)
     static logUsage(requestContext: ClientRequestContext, imodel: IModelDb): void;
+    // @internal (undocumented)
+    static pullAndApplyChangesets(db: IModelDb, arg: ToChangesetArgs): Promise<void>;
     // @internal
-    static processChangesets(requestContext: AuthorizedClientRequestContext, db: IModelDb, target: ChangesetIndexOrId): Promise<void>;
-    // @internal
-    static pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, mergeToVersion?: IModelVersion): Promise<void>;
-    // @internal
-    static pushChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, description: string, _changeType?: ChangesetType, releaseLocks?: boolean): Promise<void>;
-    // @internal @deprecated (undocumented)
-    static reinstateChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reinstateToVersion?: IModelVersion): Promise<void>;
-    static releaseBriefcase(requestContext: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void>;
-    // @internal @deprecated (undocumented)
-    static reverseChanges(requestContext: AuthorizedClientRequestContext, db: BriefcaseDb, reverseToVersion: IModelVersion): Promise<void>;
+    static pullMergePush(db: BriefcaseDb, arg: PushChangesArgs): Promise<void>;
+    static releaseBriefcase(user: AuthorizedClientRequestContext, briefcase: BriefcaseProps): Promise<void>;
     }
 
 // @public
@@ -535,8 +527,8 @@ export class ChangedElementsDb implements IDisposable {
     // (undocumented)
     get nativeDb(): IModelJsNative.ChangedElementsECDb;
     static openDb(pathName: string, openMode?: ECDbOpenMode): ChangedElementsDb;
-    processChangesets(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
-    processChangesetsAndRoll(requestContext: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
+    processChangesets(user: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
+    processChangesetsAndRoll(user: AuthorizedClientRequestContext, briefcase: IModelDb, options: ProcessChangesetOptions): Promise<DbResult>;
 }
 
 // @internal
@@ -588,10 +580,10 @@ export class ChangeSummaryManager {
         };
     }, changedValueState: ChangedValueState, changedPropertyNames?: string[]): string;
     static createChangeSummaries(args: CreateChangeSummaryArgs): Promise<Id64String[]>;
-    static createChangeSummary(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb): Promise<Id64String>;
+    static createChangeSummary(user: AuthorizedClientRequestContext, iModel: BriefcaseDb): Promise<Id64String>;
     static detachChangeCache(iModel: IModelDb): void;
     // @deprecated
-    static extractChangeSummaries(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
+    static extractChangeSummaries(user: AuthorizedClientRequestContext, iModel: BriefcaseDb, options?: ChangeSummaryExtractOptions): Promise<Id64String[]>;
     static getChangedPropertyValueNames(iModel: IModelDb, instanceChangeId: Id64String): string[];
     static isChangeCacheAttached(iModel: IModelDb): boolean;
     static queryChangeSummary(iModel: BriefcaseDb, changeSummaryId: Id64String): ChangeSummary;
@@ -633,12 +625,12 @@ export class CheckpointManager {
 // @public
 export interface CheckpointProps {
     readonly changeset: ChangesetIdWithIndex;
-    readonly contextId: GuidString;
     // (undocumented)
     readonly expectV2?: boolean;
     readonly iModelId: GuidString;
+    readonly iTwinId: GuidString;
     // (undocumented)
-    readonly requestContext?: AuthorizedClientRequestContext;
+    readonly user?: AuthorizedClientRequestContext;
 }
 
 // @public
@@ -755,10 +747,10 @@ export interface CrashReportingConfigNameValuePair {
 
 // @beta
 export interface CreateChangeSummaryArgs {
-    contextId: GuidString;
     iModelId: GuidString;
+    iTwinId: GuidString;
     range: ChangesetRange;
-    requestContext?: AuthorizedClientRequestContext;
+    user?: AuthorizedClientRequestContext;
 }
 
 // @internal (undocumented)
@@ -2443,7 +2435,7 @@ export class IModelHubBackend {
     }): Promise<void>;
     // (undocumented)
     static acquireNewBriefcaseId(arg: {
-        requestContext?: AuthorizedClientRequestContext;
+        user?: AuthorizedClientRequestContext;
         iModelId: GuidString;
     }): Promise<number>;
     // (undocumented)
@@ -2475,10 +2467,6 @@ export class IModelHubBackend {
     static getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps>;
     // (undocumented)
     static getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]>;
-    // (undocumented)
-    static getRequestContext(arg?: {
-        requestContext?: AuthorizedClientRequestContext;
-    }): Promise<AuthorizedClientRequestContext>;
     // (undocumented)
     static get iModelClient(): IModelClient;
     // (undocumented)
@@ -2520,7 +2508,7 @@ export interface IModelIdArg {
     // (undocumented)
     readonly iModelId: GuidString;
     // (undocumented)
-    readonly requestContext?: AuthorizedClientRequestContext;
+    readonly user?: AuthorizedClientRequestContext;
 }
 
 // @public
@@ -2574,7 +2562,7 @@ export interface IModelNameArg {
     // (undocumented)
     readonly iTwinId: GuidString;
     // (undocumented)
-    readonly requestContext?: AuthorizedClientRequestContext;
+    readonly user?: AuthorizedClientRequestContext;
 }
 
 // @alpha
@@ -3310,6 +3298,17 @@ export interface ProcessChangesetOptions {
 // @public
 export type ProgressFunction = (loaded: number, total: number) => number;
 
+// @public
+export type PullChangesArgs = ToChangesetArgs;
+
+// @public
+export interface PushChangesArgs extends UserArg {
+    description: string;
+    retainLocks?: true;
+    retryDelay?: BeDuration;
+    retryPushCount?: number;
+}
+
 // @beta
 export abstract class RecipeDefinitionElement extends DefinitionElement {
     // @internal
@@ -3594,7 +3593,7 @@ export class SnapshotDb extends IModelDb {
     // @internal
     static openForApplyChangesets(path: LocalFileName, props?: SnapshotOpenOptions): SnapshotDb;
     // @internal
-    reattachDaemon(requestContext?: AuthorizedClientRequestContext): Promise<void>;
+    reattachDaemon(user?: AuthorizedClientRequestContext): Promise<void>;
     // (undocumented)
     static tryFindByKey(key: string): SnapshotDb | undefined;
 }
@@ -3971,6 +3970,11 @@ export class TitleText extends DetailingSymbol {
 }
 
 // @public
+export interface ToChangesetArgs extends UserArg {
+    toIndex?: ChangesetIndex;
+}
+
+// @public
 export interface TxnChangedEntities {
     // @deprecated
     deleted: OrderedId64Array;
@@ -4089,6 +4093,11 @@ export class UrlLink extends LinkElement implements UrlLinkProps {
     toJSON(): UrlLinkProps;
     // (undocumented)
     url?: string;
+}
+
+// @public
+export interface UserArg {
+    user?: AuthorizedClientRequestContext;
 }
 
 // @internal

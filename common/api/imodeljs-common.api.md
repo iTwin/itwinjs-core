@@ -661,11 +661,14 @@ export interface BRepThickenProps {
 
 // @public
 export interface BriefcaseDownloader {
-    briefcaseId: number;
-    downloadPromise: Promise<void>;
-    fileName: LocalFileName;
-    requestCancel: () => Promise<boolean>;
+    readonly briefcaseId: BriefcaseId;
+    readonly downloadPromise: Promise<void>;
+    readonly fileName: LocalFileName;
+    readonly requestCancel: () => Promise<boolean>;
 }
+
+// @public
+export type BriefcaseId = number;
 
 // @public
 export enum BriefcaseIdValue {
@@ -682,8 +685,8 @@ export enum BriefcaseIdValue {
 
 // @public
 export interface BriefcaseProps {
-    briefcaseId: number;
-    iModelId: GuidString;
+    readonly briefcaseId: BriefcaseId;
+    readonly iModelId: GuidString;
 }
 
 export { BriefcaseStatus }
@@ -4439,7 +4442,7 @@ export interface IpcAppFunctions {
     log: (_timestamp: number, _level: LogLevel, _category: string, _message: string, _metaData?: any) => Promise<void>;
     openBriefcase: (_args: OpenBriefcaseProps) => Promise<IModelConnectionProps>;
     openStandalone: (_filePath: string, _openMode: OpenMode, _opts?: StandaloneOpenOptions) => Promise<IModelConnectionProps>;
-    pullAndMergeChanges: (key: string, version?: IModelVersionProps) => Promise<ChangesetIndexAndId>;
+    pullChanges: (key: string, toIndex?: ChangesetIndex) => Promise<ChangesetIndexAndId>;
     pushChanges: (key: string, description: string) => Promise<ChangesetIndexAndId>;
     queryConcurrency: (pool: "io" | "cpu") => Promise<number>;
     // (undocumented)
@@ -4746,12 +4749,12 @@ export type LocalAlignedBox3d = Range3d;
 
 // @public
 export interface LocalBriefcaseProps {
-    briefcaseId: number;
-    changeset: ChangesetIdWithIndex;
-    contextId: GuidString;
-    fileName: LocalFileName;
-    fileSize: number;
-    iModelId: GuidString;
+    readonly briefcaseId: BriefcaseId;
+    readonly changeset: ChangesetIdWithIndex;
+    readonly fileName: LocalFileName;
+    readonly fileSize: number;
+    readonly iModelId: GuidString;
+    readonly iTwinId: GuidString;
 }
 
 // @public (undocumented)
@@ -5399,13 +5402,13 @@ export interface OpenAPISchema {
 
 // @public
 export interface OpenBriefcaseOptions {
-    openAsReadOnly?: boolean;
+    readonly openAsReadOnly?: boolean;
 }
 
 // @public
 export interface OpenBriefcaseProps extends IModelEncryptionProps, OpenDbKey {
-    fileName: LocalFileName;
-    readonly?: boolean;
+    readonly fileName: LocalFileName;
+    readonly readonly?: boolean;
 }
 
 // @public
@@ -6591,10 +6594,10 @@ export { RepositoryStatus }
 // @public
 export interface RequestNewBriefcaseProps {
     asOf?: IModelVersionProps;
-    briefcaseId?: number;
-    contextId: GuidString;
-    fileName?: LocalFileName;
-    iModelId: GuidString;
+    readonly briefcaseId?: BriefcaseId;
+    readonly fileName?: LocalFileName;
+    readonly iModelId: GuidString;
+    readonly iTwinId: GuidString;
 }
 
 // @public (undocumented)
@@ -8466,8 +8469,8 @@ export type UpdateCallback = (obj: any, t: number) => void;
 
 // @beta
 export interface UpgradeOptions {
-    domain?: DomainOptions;
-    profile?: ProfileOptions;
+    readonly domain?: DomainOptions;
+    readonly profile?: ProfileOptions;
 }
 
 // @public
