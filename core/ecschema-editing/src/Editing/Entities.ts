@@ -22,6 +22,16 @@ export class Entities extends ECClasses {
   public constructor(_schemaEditor: SchemaContextEditor) {
     super(_schemaEditor);
   }
+
+  public async createEx(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClassKey?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
+    if (baseClassKey) {
+      if (!baseClassKey.matchesFullName("BisCore.Element") && !baseClassKey.matchesFullName("BisCore.ElementUniqueAspect") &&
+        !baseClassKey.matchesFullName("BisCore.ElementMultiAspect"))
+        throw new Error(`The class ${name} could not be created because the specified base class ${baseClassKey.fullName} is not supported.`);
+    }
+    return this.create(schemaKey, name, modifier, displayLabel, baseClassKey, mixins);
+  }
+
   public async create(schemaKey: SchemaKey, name: string, modifier: ECClassModifier, displayLabel?: string, baseClassKey?: SchemaItemKey, mixins?: Mixin[]): Promise<SchemaItemEditResults> {
     const schema = await this._schemaEditor.getSchema(schemaKey);
     if (schema === undefined) return { errorMessage: `Schema Key ${schemaKey.toString(true)} not found in context` };
