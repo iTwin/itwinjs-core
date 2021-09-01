@@ -6640,7 +6640,9 @@ export class ToolUiProvider extends ConfigurableUiControl {
     syncToolSettingsProperties(_args: SyncToolSettingsPropertiesEventArgs): void;
     get toolSettingsNode(): React.ReactNode;
     set toolSettingsNode(r: React.ReactNode);
-    }
+    // (undocumented)
+    get uniqueId(): string;
+}
 
 // @public @deprecated
 export class ToolWidget extends React.Component<ToolWidgetPropsEx, ToolWidgetState> {
