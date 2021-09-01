@@ -60,7 +60,7 @@ export class GeometryAccumulator {
   }
 
   private calculateTransform(transform: Transform, range: Range3d): Transform {
-    const xform = transform.clone();
+    const xform = this.haveTransform ? transform : transform.clone();
     if (this.haveTransform) this._transform.multiplyTransformTransform(xform, xform);
     xform.multiplyRange(range, range);
     return xform;
