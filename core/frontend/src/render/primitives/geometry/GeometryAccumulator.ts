@@ -59,9 +59,11 @@ export class GeometryAccumulator {
     return range.isNull ? undefined : range;
   }
 
-  private calculateTransform(transform: Transform, range: Range3d): void {
-    if (this.haveTransform) this._transform.multiplyTransformTransform(transform, transform);
-    transform.multiplyRange(range, range);
+  private calculateTransform(transform: Transform, range: Range3d): Transform {
+    const xform = transform.clone();
+    if (this.haveTransform) this._transform.multiplyTransformTransform(xform, xform);
+    xform.multiplyRange(range, range);
+    return xform;
   }
 
   public addLoop(loop: Loop, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
@@ -69,8 +71,8 @@ export class GeometryAccumulator {
     if (!range)
       return false;
 
-    this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromLoop(loop, transform, range, displayParams, disjoint));
+    const xform = this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromLoop(loop, xform, range, displayParams, disjoint));
   }
 
   public addLineString(pts: Point3d[], displayParams: DisplayParams, transform: Transform): boolean {
@@ -80,8 +82,8 @@ export class GeometryAccumulator {
     if (range.isNull)
       return false;
 
-    this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromLineString(pts, transform, range, displayParams));
+    const xform = this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromLineString(pts, xform, range, displayParams));
   }
 
   public addPointString(pts: Point3d[], displayParams: DisplayParams, transform: Transform): boolean {
@@ -91,8 +93,8 @@ export class GeometryAccumulator {
     if (range.isNull)
       return false;
 
-    this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromPointString(pts, transform, range, displayParams));
+    const xform = this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromPointString(pts, xform, range, displayParams));
   }
 
   public addPath(path: Path, displayParams: DisplayParams, transform: Transform, disjoint: boolean): boolean {
@@ -100,8 +102,8 @@ export class GeometryAccumulator {
     if (!range)
       return false;
 
-    this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromPath(path, transform, range, displayParams, disjoint));
+    const xform = this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromPath(path, xform, range, displayParams, disjoint));
   }
 
   public addPolyface(pf: IndexedPolyface, displayParams: DisplayParams, transform: Transform): boolean {
@@ -124,8 +126,8 @@ export class GeometryAccumulator {
     if (!range && !(range = this.getPrimitiveRange(pf)))
       return false;
 
-    this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromPolyface(pf, transform, range, displayParams));
+    const xform = this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromPolyface(pf, xform, range, displayParams));
   }
 
   public addSolidPrimitive(primitive: SolidPrimitive, displayParams: DisplayParams, transform: Transform): boolean {
@@ -133,8 +135,8 @@ export class GeometryAccumulator {
     if (!range)
       return false;
 
-    this.calculateTransform(transform, range);
-    return this.addGeometry(Geometry.createFromSolidPrimitive(primitive, transform, range, displayParams));
+    const xform = this.calculateTransform(transform, range);
+    return this.addGeometry(Geometry.createFromSolidPrimitive(primitive, xform, range, displayParams));
   }
 
   public addGeometry(geom: Geometry): boolean { this.geometries.push(geom); return true; }

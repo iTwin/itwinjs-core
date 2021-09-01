@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { ColorDef } from "@bentley/imodeljs-common";
-import { Point3d, Transform } from "@bentley/geometry-core";
+import { Point3d, Sphere, Transform } from "@bentley/geometry-core";
 import { IModelApp } from "../IModelApp";
 import { DecorateContext } from "../ViewContext";
 import { ScreenViewport } from "../Viewport";
@@ -16,6 +16,10 @@ import { GraphicType, PickableGraphicOptions } from "../render/GraphicBuilder";
 export class BoxDecorator {
   public constructor(public readonly vp: ScreenViewport, public readonly color: ColorDef, public readonly pickable?: PickableGraphicOptions, public readonly placement?: Transform, private _shapePoints?: Point3d[]) {
     IModelApp.viewManager.addDecorator(this);
+  }
+
+  public drop() {
+    IModelApp.viewManager.dropDecorator(this);
   }
 
   public decorate(context: DecorateContext): void {
@@ -40,6 +44,32 @@ export class BoxDecorator {
 
     builder.setSymbology(this.color, this.color, 1);
     builder.addShape(this._shapePoints);
+    context.addDecorationFromBuilder(builder);
+  }
+}
+
+/** A simple configurable sphere decorator for tests.
+ * @internal
+ */
+export class SphereDecorator {
+  public constructor(public readonly vp: ScreenViewport, public readonly color: ColorDef, public readonly pickable?: PickableGraphicOptions, public readonly placement?: Transform, private _center: Point3d = new Point3d(), private _radius: number = 1) {
+    IModelApp.viewManager.addDecorator(this);
+  }
+
+  public drop() {
+    IModelApp.viewManager.dropDecorator(this);
+  }
+
+  public decorate(context: DecorateContext): void {
+    const builder = context.createGraphic({
+      placement: this.placement,
+      type: GraphicType.Scene,
+      pickable: this.pickable,
+    });
+
+    builder.setSymbology(this.color, this.color, 1);
+    const sphere = Sphere.createCenterRadius(this._center, this._radius);
+    builder.addSolidPrimitive(sphere);
     context.addDecorationFromBuilder(builder);
   }
 }
