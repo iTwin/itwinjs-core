@@ -17,7 +17,6 @@ import { GraphicBuilder } from "../render/GraphicBuilder";
 import { SceneContext } from "../ViewContext";
 import { GraphicsCollectorDrawArgs, MapTile, RealityTile, RealityTileDrawArgs, RealityTileLoader, RealityTileParams, Tile, TileDrawArgs, TileGraphicType, TileParams, TileTree, TileTreeParams } from "./internal";
 
-/** @internal */
 export class TraversalDetails {
   public queuedChildren = new Array<Tile>();
   public childrenLoading = false;
@@ -182,8 +181,12 @@ export class RealityTileTree extends TileTree {
     const graphicTypeBranches = new Map<TileGraphicType, GraphicBranch>();
 
     const selectedTiles = this.selectRealityTiles(args, displayedTileDescendants, preloadDebugBuilder);
-    if (!this.parentsAndChildrenExclusive)
-      selectedTiles.sort((a, b) => a.depth - b.depth);                    // If parent and child are not exclusive then display parents (low resolution) first.
+    let sortIndices;
+
+    if (!this.parentsAndChildrenExclusive) {
+      sortIndices = selectedTiles.map((_x,i) => i);
+      sortIndices.sort((a, b) => selectedTiles[a].depth - selectedTiles[b].depth);
+    }
 
     const classifier = args.context.planarClassifiers.get(this.modelId);
     if (classifier && !(args instanceof GraphicsCollectorDrawArgs))
@@ -191,7 +194,8 @@ export class RealityTileTree extends TileTree {
 
     assert(selectedTiles.length === displayedTileDescendants.length);
     for (let i = 0; i < selectedTiles.length; i++) {
-      const selectedTile = selectedTiles[i];
+      const index = sortIndices ? sortIndices[i] : i;
+      const selectedTile = selectedTiles[index];
       const graphics = args.getTileGraphics(selectedTile);
       const tileGraphicType = selectedTile.graphicType;
       let targetBranch;
@@ -207,7 +211,7 @@ export class RealityTileTree extends TileTree {
         targetBranch = args.graphics;
 
       if (undefined !== graphics) {
-        const displayedDescendants = displayedTileDescendants[i];
+        const displayedDescendants = displayedTileDescendants[index];
         if (0 === displayedDescendants.length || !this.loader.parentsAndChildrenExclusive || selectedTile.allChildrenIncluded(displayedDescendants)) {
           targetBranch.add(graphics);
           if (selectBuilder) selectedTile.addBoundingGraphic(selectBuilder, ColorDef.green);
