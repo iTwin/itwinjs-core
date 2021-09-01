@@ -443,6 +443,8 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
         setLayerAttachPending(false);
         handleOk(); // Add the layer the same way the user would do by clicking 'ok'
       } else {
+        setShowEsriOauth2Popup(false);
+        setLayerAttachPending(false);
         setEsriOAuth2Succeeded(false);
       }
 
