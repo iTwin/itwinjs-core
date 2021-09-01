@@ -6,8 +6,12 @@ import * as fs from "fs";
 import * as path from "path";
 import { Logger, ProcessDetector } from "@bentley/bentleyjs-core";
 import { Presentation } from "@bentley/presentation-backend";
-import { initializeLogging, initializeWeb } from "./web/BackendServer";
+import { initializeLogging } from "./logging";
+import { initializeWeb } from "./web/BackendServer";
 import { initializeElectron } from "./electron/ElectronMain";
+import { loggerCategory } from "../common/TestAppConfiguration";
+import { AndroidHost, IOSHost } from "@bentley/mobile-manager/lib/MobileBackend";
+import { getSupportedRpcs } from "../common/rpcs";
 
 (async () => { // eslint-disable-line @typescript-eslint/no-floating-promises
   try {
@@ -18,13 +22,15 @@ import { initializeElectron } from "./electron/ElectronMain";
       );
     }
 
-    if (!ProcessDetector.isElectronAppBackend) {
-      initializeLogging();
-    }
+    initializeLogging();
 
     // invoke platform-specific initialization
     if (ProcessDetector.isElectronAppBackend) {
       await initializeElectron();
+    } else if (ProcessDetector.isIOSAppBackend) {
+      await IOSHost.startup({ mobileHost: { rpcInterfaces: getSupportedRpcs() } });
+    } else if (ProcessDetector.isAndroidAppBackend) {
+      await AndroidHost.startup({ mobileHost: { rpcInterfaces: getSupportedRpcs() } });
     } else {
       await initializeWeb();
     }
@@ -38,7 +44,7 @@ import { initializeElectron } from "./electron/ElectronMain";
       updatesPollInterval: 100,
     });
   } catch (error) {
-    Logger.logError("ui-test-app", error);
+    Logger.logError(loggerCategory, error);
     process.exitCode = 1;
   }
 })();
