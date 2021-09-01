@@ -64,10 +64,11 @@ describe("Tile tolerance", () => {
         iModel: imodel,
         geometryGuid: undefined,
         contentIdQualifier: undefined,
+        id: treeId,
       },
       contentId,
     } as IModelTile;
-    const stream = new ByteStream(await IModelApp.tileAdmin.generateTileContent(tile));
+    const stream = new ByteStream((await IModelApp.tileAdmin.generateTileContent(tile)).buffer);
     const header = new ImdlHeader(stream);
     expect(header.isValid).to.be.true;
     expect(header.isReadableVersion).to.be.true;
