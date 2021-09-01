@@ -8,7 +8,7 @@ import { IModelApp } from "@bentley/imodeljs-frontend";
 import {
   ConfigurableCreateInfo, ContentControl, ContentGroup, CoreTools, Frontstage, FrontstageProps, FrontstageProvider,
 } from "@bentley/ui-framework";
-import { SignIn } from "../oidc/SignIn"
+import { SignIn } from "../oidc/SignIn";
 import { SampleAppIModelApp } from "../../index";
 
 class SignInControl extends ContentControl {

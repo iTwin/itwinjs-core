@@ -11,7 +11,7 @@ import { UserInfo } from "@bentley/itwin-client";
 import { CommonProps, getUserColor } from "@bentley/ui-core";
 import { UserProfile as NZ_UserProfile } from "@bentley/ui-ninezone";
 import { SignOutModalFrontstage } from "../oidc/SignOut";
-import { FrontstageManager, SafeAreaContext, UiFramework, Backstage } from "@bentley/ui-framework";
+import { Backstage, FrontstageManager, SafeAreaContext, UiFramework } from "@bentley/ui-framework";
 
 // cSpell:ignore safearea
 
