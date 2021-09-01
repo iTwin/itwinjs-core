@@ -10,7 +10,7 @@ import { ScreenViewport } from "../../../Viewport";
 import { IModelApp } from "../../../IModelApp";
 import { SpatialViewState } from "../../../SpatialViewState";
 import { createBlankConnection } from "../../createBlankConnection";
-import { BoxDecorator } from "../../BoxDecorator";
+import { BoxDecorator } from "../../TestDecorators";
 import { expectColors } from "../../ExpectColors";
 
 describe("Pickable graphic", () => {
@@ -61,16 +61,16 @@ describe("Pickable graphic", () => {
   }
 
   it("is pickable", () => {
-    const dec = new BoxDecorator(viewport, ColorDef.red, {id: "0x123", locateOnly: false});
+    const dec = new BoxDecorator(viewport, ColorDef.red, { id: "0x123", locateOnly: false });
     expectColors(viewport, [dec.color, viewport.view.displayStyle.backgroundColor]);
-    expect (dec.pickable).to.not.be.undefined;
+    expect(dec.pickable).to.not.be.undefined;
     expectIds([dec.pickable!.id]);
   }).timeout(20000); // macOS is slow.
 
   it("optionally draws only for pick", () => {
-    const dec = new BoxDecorator(viewport, ColorDef.blue, {id: "0x456", locateOnly: true});
+    const dec = new BoxDecorator(viewport, ColorDef.blue, { id: "0x456", locateOnly: true });
     expectColors(viewport, [viewport.view.displayStyle.backgroundColor]);
-    expect (dec.pickable).to.not.be.undefined;
+    expect(dec.pickable).to.not.be.undefined;
     expectIds([dec.pickable!.id]);
   }).timeout(20000); // macOS is slow.
 });
