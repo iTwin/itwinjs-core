@@ -88,8 +88,6 @@ export * from "./ui-framework/hooks/useActiveViewport";
 export * from "./ui-framework/hooks/useAvailableUiItemsProviders";
 export * from "./ui-framework/hooks/useAnalysisAnimationDataProvider";
 export * from "./ui-framework/hooks/useFrameworkVersion";
-export * from "./ui-framework/hooks/useInterval";
-export * from "./ui-framework/hooks/usePopup";
 export * from "./ui-framework/hooks/useScheduleAnimationDataProvider";
 export * from "./ui-framework/hooks/useSolarDataProvider";
 

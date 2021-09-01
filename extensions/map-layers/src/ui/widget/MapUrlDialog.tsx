@@ -5,8 +5,8 @@
 // cSpell:ignore Modeless WMTS
 
 import * as React from "react";
-import { Dialog, Icon} from "@bentley/ui-core";
-import { ModalDialogManager, usePopup } from "@bentley/ui-framework";
+import { Dialog, Icon, useCrossOriginPopup} from "@bentley/ui-core";
+import { ModalDialogManager} from "@bentley/ui-framework";
 import { Button, Input, LabeledInput, ProgressLinear, Radio, Select, SelectOption } from "@itwin/itwinui-react";
 import { MapLayersUiItemsProvider } from "../MapLayersUiItemsProvider";
 import { MapTypesOptions } from "../Interfaces";
@@ -515,7 +515,7 @@ export function MapUrlDialog(props: MapUrlDialogProps) {
 
   // Use a hook to display the popup.
   // The display of the popup is controlled by the 'showEsriOauth2Popup' state variable.
-  usePopup(showEsriOauth2Popup, authTokenUrl, externalLoginTitle, 450, 450, handleEsriOAuth2PopupClose);
+  useCrossOriginPopup(showEsriOauth2Popup, authTokenUrl, externalLoginTitle, 450, 450, handleEsriOAuth2PopupClose);
   return (
     <div ref={dialogContainer}>
       <Dialog

@@ -7,16 +7,16 @@
  */
 
 import * as React from "react";
-import useInterval from "./useInterval";
+import {useInterval} from "./useInterval";
 
 /** Hook that will show a popup window
  * @beta
  */
-export function usePopup(visible: boolean, url: string | undefined, title: string, width: number, height: number, onClose: () => void) {
+export function useCrossOriginPopup(visible: boolean, url: string | undefined, title: string, width: number, height: number, onClose: () => void) {
 
   const [checkPopupAliveDelay, setCheckPopupAliveDelay] = React.useState<number | undefined>();
 
-  // ONLY re-render the popup when visibility changes, any other changes get differed until next visibility change
+  // ONLY re-render the popup when visibility changes, any other changes get deferred until next visibility change
   // hence the massive use of 'useRef'
   const popupWindow = React.useRef<Window>();
   const savedUrl = React.useRef(url);
@@ -33,12 +33,17 @@ export function usePopup(visible: boolean, url: string | undefined, title: strin
 
   // Cleanup method after a popup closure.  Also calls the OnClose callback.
   const handleClosedPopup = React.useCallback(() => {
-    if (popupWindow.current?.closed) {
-      savedOnClose.current();
-      setCheckPopupAliveDelay(undefined);
-      popupWindow.current = undefined;
-    }
+    savedOnClose.current();
+    setCheckPopupAliveDelay(undefined);
+    popupWindow.current = undefined;
   }, []);
+
+  const checkPopupClosed = React.useCallback(() => {
+    if (popupWindow.current?.closed) {
+      // Popup has been closed by end-user, inform our host and cleanup
+      handleClosedPopup();
+    }
+  }, [handleClosedPopup]);
 
   // Whenever the hook is unloaded, make sure the underlying popup get closed.
   // Note: An interval is used to check if popup was closed by user: because we access
@@ -48,14 +53,14 @@ export function usePopup(visible: boolean, url: string | undefined, title: strin
   React.useEffect(() => {
     return () => {
       if (popupWindow.current !== undefined) {
-        popupWindow.current.close();
+        popupWindow.current.close();    // Manually close the popup
         handleClosedPopup();
       }
     };
   }, [handleClosedPopup]);
 
   // Timer that checks if popup was closed by end-user
-  useInterval(handleClosedPopup, checkPopupAliveDelay);
+  useInterval(checkPopupClosed, checkPopupAliveDelay);
 
   // ==> Main render effect
   // Monitors visibility changes and open/close the popup accordingly.
@@ -75,10 +80,9 @@ export function usePopup(visible: boolean, url: string | undefined, title: strin
     // If not visible but a previous popup window is still open, close it.
     if (!visible && popupWindow.current !== undefined) {
       popupWindow.current.close();
+
       handleClosedPopup();
     }
 
   }, [handleClosedPopup, visible]);
 }
-
-export default usePopup;
