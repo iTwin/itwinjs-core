@@ -10,20 +10,6 @@ public;AbstractStatusBarLabelItem
 public;AbstractToolbarProps
 public;AbstractWidgetProps 
 public;AbstractZoneLocation
-alpha;AccuDrawField
-alpha;AccuDrawGrabInputFocusEvent 
-alpha;AccuDrawMode
-alpha;AccuDrawSetFieldFocusEvent 
-alpha;AccuDrawSetFieldFocusEventArgs
-alpha;AccuDrawSetFieldLockEvent 
-alpha;AccuDrawSetFieldLockEventArgs
-alpha;AccuDrawSetFieldValueFromUiEvent 
-alpha;AccuDrawSetFieldValueFromUiEventArgs
-alpha;AccuDrawSetFieldValueToUiEvent 
-alpha;AccuDrawSetFieldValueToUiEventArgs
-alpha;AccuDrawSetModeEvent 
-alpha;AccuDrawSetModeEventArgs
-alpha;AccuDrawUiAdmin
 public;ActionButton 
 public;AlternateDateFormats
 public;ArrayValue 
@@ -65,6 +51,7 @@ public;DialogPropertyItem
 public;DialogPropertySyncItem 
 public;DialogProps
 public;DialogRow
+public;DisplayMessageType
 public;EditorPosition
 public;EnumerationChoice
 public;EnumerationChoicesInfo
@@ -113,6 +100,8 @@ internal;matchesPrefix: IFilter
 internal;matchesStrictPrefix: IFilter
 internal;matchesSubString(word: string, wordToMatchAgainst: string): IMatch[] | null
 internal;matchesWords(word: string, target: string, contiguous?: boolean): IMatch[] | null
+public;MessagePresenter
+public;MessageSeverity
 public;MultilineTextEditorParams 
 public;OnCancelFunc = () => void
 public;OnItemExecutedFunc = (item: any) => void
@@ -120,6 +109,7 @@ public;OnNumberCommitFunc = (value: number) => void
 public;OnValueCommitFunc = (value: Primitives.Value) => void
 internal;or(...filter: IFilter[]): IFilter
 public;ParseResults
+public;PointProps
 public;Primitives
 public;PrimitiveValue 
 public;PropertyChangeResult

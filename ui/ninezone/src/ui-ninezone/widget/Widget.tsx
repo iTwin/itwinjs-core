@@ -40,6 +40,7 @@ export const WidgetProvider = React.memo<WidgetProviderProps>(function WidgetPro
 export interface WidgetProps extends CommonProps {
   children?: React.ReactNode;
   onTransitionEnd?(): void;
+  widgetId?: string;
 }
 
 /** @internal */
@@ -130,6 +131,7 @@ export const Widget = React.memo( // eslint-disable-line react/display-name, @ty
             onTransitionEnd={props.onTransitionEnd}
             ref={elementRef}
             style={props.style}
+            data-widget-id={props.widgetId}
           >
             {props.children}
           </div>

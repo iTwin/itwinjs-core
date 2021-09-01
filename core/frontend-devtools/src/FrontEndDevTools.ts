@@ -24,7 +24,6 @@ import { ApplyRenderingStyleTool, ChangeViewFlagsTool, OverrideSubCategoryTool, 
 import {
   ClearEmphasizedElementsTool, ClearIsolatedElementsTool, EmphasizeSelectedElementsTool, EmphasizeVisibleElementsTool, IsolateSelectedElementsTool,
 } from "./tools/EmphasizeElementsTool";
-import { ExtensionServiceTool } from "./tools/ExtensionServiceTool";
 import { ToggleFrustumSnapshotTool, ToggleSelectedViewFrustumTool, ToggleShadowFrustumTool } from "./tools/FrustumDecoration";
 import { InspectElementTool } from "./tools/InspectElementTool";
 import {
@@ -111,7 +110,6 @@ export class FrontendDevTools {
       EmphasizeSelectedElementsTool,
       EmphasizeVisibleElementsTool,
       ExplosionEffect,
-      ExtensionServiceTool,
       FadeOutTool,
       FlipImageConfig,
       FlipImageEffect,

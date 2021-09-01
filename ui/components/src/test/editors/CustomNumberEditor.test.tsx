@@ -8,12 +8,13 @@ import { mount, shallow } from "enzyme";
 import React from "react";
 import * as sinon from "sinon";
 import { fireEvent, render } from "@testing-library/react";
-import { IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParamTypes, PropertyRecord, PropertyValue, SpecialKey } from "@bentley/ui-abstract";
-import { OutputMessagePriority } from "@bentley/imodeljs-frontend";
+import {
+  IconEditorParams, InputEditorSizeParams, PrimitiveValue, PropertyEditorParamTypes, SpecialKey,
+} from "@bentley/ui-abstract";
 import { CustomNumberEditor } from "../../ui-components/editors/CustomNumberEditor";
 import { EditorContainer, PropertyUpdatedArgs } from "../../ui-components/editors/EditorContainer";
-import TestUtils from "../TestUtils";
-import { AsyncValueProcessingResult, DataControllerBase, PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
+import TestUtils, { MineDataController } from "../TestUtils";
+import { PropertyEditorManager } from "../../ui-components/editors/PropertyEditorManager";
 
 // cSpell:ignore customnumber
 
@@ -30,7 +31,7 @@ describe("<CustomNumberEditor />", () => {
 
   it("renders correctly with style", () => {
     const record = TestUtils.createCustomNumberProperty("FormattedNumber", numVal, displayVal);
-    shallow(<CustomNumberEditor propertyRecord={record}  style={{color: "red"}} />).should.matchSnapshot();
+    shallow(<CustomNumberEditor propertyRecord={record} style={{ color: "red" }} />).should.matchSnapshot();
   });
 
   it("change input value", () => {
@@ -190,12 +191,6 @@ describe("<CustomNumberEditor />", () => {
 
     wrapper.unmount();
   });
-
-  class MineDataController extends DataControllerBase {
-    public override async validateValue(_newValue: PropertyValue, _record: PropertyRecord): Promise<AsyncValueProcessingResult> {
-      return { encounteredError: true, errorMessage: { priority: OutputMessagePriority.Error, briefMessage: "Test"} };
-    }
-  }
 
   it("should not commit if DataController fails to validate", async () => {
     PropertyEditorManager.registerDataController("myData", MineDataController);

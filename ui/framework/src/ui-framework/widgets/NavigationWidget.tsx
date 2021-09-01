@@ -9,7 +9,7 @@
 import * as React from "react";
 import { IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiError } from "@bentley/ui-abstract";
-import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-components";
+import { ViewClassFullNameChangedEventArgs, ViewportComponentEvents } from "@bentley/ui-imodel-components";
 import { CommonProps } from "@bentley/ui-core";
 import { Direction, Tools as NZ_ToolsWidget, ToolbarPanelAlignment } from "@bentley/ui-ninezone";
 import { ConfigurableUiControlType } from "../configurableui/ConfigurableUiControl";

@@ -49,6 +49,7 @@
       "analytical-backend": "analytical-backend",
       "backend-itwin-client": "backend-itwin-client",
       "backend": "imodeljs-backend",
+      "transformer": "imodeljs-transformer",
       "bentley": "bentleyjs-core",
       "common": "imodeljs-common",
       "context-registry-client": "context-registry-client",
@@ -79,8 +80,8 @@
       "ui-components": "ui-components",
       "ui-core": "ui-core",
       "ui-framework": "ui-framework",
+      "ui-imodel-components": "ui-imodel-components",
       "ui-ninezone": "ui-ninezone",
-      "usage-logging-client": "usage-logging-client",
       "webgl-compatibility": "webgl-compatibility"
     },
     "headerHTML": "<meta property=\"og:description\" content=\"Create Immersive Connections with your Infrastructure Digital Twin.\"><meta property=\"og:url\" content=\"itwinjs.org\"><meta name=\"twitter:card\" content=\"summary_large_image\">",

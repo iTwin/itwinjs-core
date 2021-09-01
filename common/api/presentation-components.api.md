@@ -84,7 +84,7 @@ import { TreeProps } from '@bentley/ui-components';
 import { TreeSelectionModificationEventArgs } from '@bentley/ui-components';
 import { TreeSelectionReplacementEventArgs } from '@bentley/ui-components';
 import { TypeDescription } from '@bentley/presentation-common';
-import { ViewportProps } from '@bentley/ui-components';
+import { ViewportProps } from '@bentley/ui-imodel-components';
 import { VisibleTreeNodes } from '@bentley/ui-components';
 
 // @internal (undocumented)
@@ -323,8 +323,6 @@ export class FilteredPresentationTreeDataProvider implements IFilteredPresentati
     getNodesCount(parent?: TreeNodeItem): Promise<number>;
     // (undocumented)
     get imodel(): IModelConnection;
-    // @alpha
-    loadHierarchy(): Promise<void>;
     nodeMatchesFilter(node: TreeNodeItem): boolean;
     // (undocumented)
     get parentDataProvider(): IPresentationTreeDataProvider;
@@ -402,8 +400,6 @@ export type IPresentationTableDataProvider = TableDataProvider & IContentDataPro
 export interface IPresentationTreeDataProvider extends ITreeDataProvider, IPresentationDataProvider {
     getFilteredNodePaths(filter: string): Promise<NodePathElement[]>;
     getNodeKey(node: TreeNodeItem): NodeKey;
-    // @alpha
-    loadHierarchy?(): Promise<void>;
 }
 
 // @internal (undocumented)
@@ -521,8 +517,6 @@ export class PresentationTreeDataProvider implements IPresentationTreeDataProvid
     getNodes(parentNode?: TreeNodeItem, pageOptions?: PageOptions_2): Promise<DelayLoadedTreeNodeItem[]>;
     getNodesCount(parentNode?: TreeNodeItem): Promise<number>;
     get imodel(): IModelConnection;
-    // @alpha @deprecated
-    loadHierarchy(): Promise<void>;
     get pagingSize(): number | undefined;
     set pagingSize(value: number | undefined);
     get rulesetId(): string;

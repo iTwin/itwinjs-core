@@ -7,7 +7,7 @@
  */
 
 import { assert, JsonUtils } from "@bentley/bentleyjs-core";
-import { ViewFlagOverrides, ViewFlagOverridesProps } from "./ViewFlags";
+import { ViewFlagOverrides } from "./ViewFlags";
 import { RgbColor, RgbColorProps } from "./RgbColor";
 import { HiddenLine } from "./HiddenLine";
 import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
@@ -18,7 +18,7 @@ import { FeatureAppearance, FeatureAppearanceProps } from "./FeatureSymbology";
  */
 export interface CutStyleProps {
   /** If defined, overrides aspects of the view's [[ViewFlags]] when drawing the cut geometry. */
-  viewflags?: ViewFlagOverridesProps;
+  viewflags?: ViewFlagOverrides;
   /** If defined, overrides the view's [[HiddenLine.Settings]] when drawing the cut geometry. */
   hiddenLine?: HiddenLine.SettingsProps;
   /** If defined, overrides aspects of the cut geometry's symbology. */
@@ -41,7 +41,7 @@ export class CutStyle {
   public static readonly defaults = new CutStyle();
 
   private constructor(viewflags?: Readonly<ViewFlagOverrides>, hiddenLine?: HiddenLine.Settings, appearance?: FeatureAppearance) {
-    this.viewflags = viewflags ?? ViewFlagOverrides.fromJSON();
+    this.viewflags = viewflags ?? { };
     if (hiddenLine && !hiddenLine.matchesDefaults)
       this.hiddenLine = hiddenLine;
 
@@ -51,7 +51,7 @@ export class CutStyle {
 
   /** Create a CutStyle from its components. */
   public static create(viewflags?: Readonly<ViewFlagOverrides>, hiddenLine?: HiddenLine.Settings, appearance?: FeatureAppearance): CutStyle {
-    if ((viewflags && viewflags.anyOverridden()) || (hiddenLine && !hiddenLine.matchesDefaults) || (appearance && !appearance.matchesDefaults))
+    if ((viewflags && JsonUtils.isNonEmptyObject(viewflags)) || (hiddenLine && !hiddenLine.matchesDefaults) || (appearance && !appearance.matchesDefaults))
       return new CutStyle(viewflags, hiddenLine, appearance);
 
     return this.defaults;
@@ -59,7 +59,7 @@ export class CutStyle {
 
   public static fromJSON(props?: CutStyleProps): CutStyle {
     if (JsonUtils.isNonEmptyObject(props)) {
-      const viewflags = ViewFlagOverrides.fromJSON(props?.viewflags);
+      const viewflags = { ...props?.viewflags };
       const hiddenLine = props?.hiddenLine ? HiddenLine.Settings.fromJSON(props.hiddenLine) : undefined;
       const appearance = props?.appearance ? FeatureAppearance.fromJSON(props.appearance) : undefined;
 
@@ -75,8 +75,8 @@ export class CutStyle {
       return undefined;
 
     const props: CutStyleProps = { };
-    if (this.viewflags.anyOverridden())
-      props.viewflags = this.viewflags.toJSON();
+    if (JsonUtils.isNonEmptyObject(this.viewflags))
+      props.viewflags = this.viewflags;
 
     if (this.hiddenLine && !this.hiddenLine.matchesDefaults)
       props.hiddenLine = this.hiddenLine?.toJSON();
@@ -92,7 +92,7 @@ export class CutStyle {
     if (this === CutStyle.defaults)
       return true;
 
-    return !this.viewflags.anyOverridden() && (!this.hiddenLine || this.hiddenLine.matchesDefaults) && (!this.appearance || this.appearance.matchesDefaults);
+    return !JsonUtils.isNonEmptyObject(this.viewflags) && (!this.hiddenLine || this.hiddenLine.matchesDefaults) && (!this.appearance || this.appearance.matchesDefaults);
   }
 }
 

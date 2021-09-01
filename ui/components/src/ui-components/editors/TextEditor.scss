@@ -14,9 +14,9 @@
 .components-smallEditor-host {
   .components-text-editor {
     &.iui-input {
-      min-height: $uicore-component-height-small;
-      padding-top: 1px;
-      padding-bottom: 1px;
+      min-height: $uicore-component-height-small !important;
+      padding-top: 1px !important;
+      padding-bottom: 1px !important;
     }
   }
 }

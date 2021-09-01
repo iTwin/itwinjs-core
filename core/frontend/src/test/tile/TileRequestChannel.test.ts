@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Range3d, Transform } from "@bentley/geometry-core";
-import { ServerTimeoutError, ViewFlagOverrides } from "@bentley/imodeljs-common";
+import { ServerTimeoutError } from "@bentley/imodeljs-common";
 import { IModelConnection } from "../../IModelConnection";
 import { IModelApp } from "../../IModelApp";
 import { Viewport } from "../../Viewport";
@@ -158,7 +158,7 @@ class TestTree extends TileTree {
   public get rootTile(): TestTile { return this._rootTile; }
   public get is3d() { return true; }
   public get maxDepth() { return undefined; }
-  public get viewFlagOverrides() { return new ViewFlagOverrides(); }
+  public get viewFlagOverrides() { return { }; }
   protected _selectTiles(): Tile[] { return []; }
   public draw() { }
   public prune() { }

@@ -9,8 +9,8 @@
 import "./Tree.scss";
 import classnames from "classnames";
 import * as React from "react";
-import { Range2d } from "@bentley/geometry-core";
 import { CommonProps } from "../utils/Props";
+import { Rectangle } from "../utils/Rectangle";
 
 /** Properties for the [[Tree]] presentational React component
  * @public
@@ -60,28 +60,28 @@ export class Tree extends React.PureComponent<TreeProps> {
     }
 
     const elementBox = element.getBoundingClientRect();
-    const elementRange = Range2d.createXYXY(elementBox.left, elementBox.top, elementBox.right, elementBox.bottom);
+    const elementRange = Rectangle.createXYXY(elementBox.left, elementBox.top, elementBox.right, elementBox.bottom);
     const containerBox = container.getBoundingClientRect();
-    const containerRange = Range2d.createXYXY(containerBox.left - container.scrollLeft, containerBox.top - container.scrollTop,
+    const containerRange = Rectangle.createXYXY(containerBox.left - container.scrollLeft, containerBox.top - container.scrollTop,
       containerBox.right - container.scrollLeft, containerBox.bottom - container.scrollTop);
 
     let left: number;
-    if (container.scrollLeft > 0 && elementRange.high.x <= containerRange.high.x) {
+    if (container.scrollLeft > 0 && elementRange.right <= containerRange.right) {
       // always attempt to keep horizontal scroll at 0
       left = 0;
-    } else if (containerRange.low.x <= elementRange.low.x && containerRange.high.x >= elementRange.high.x) {
+    } else if (containerRange.left <= elementRange.left && containerRange.right >= elementRange.right) {
       // already visible - no need to scroll to
       left = container.scrollLeft;
     } else {
-      left = elementRange.low.x - containerRange.low.x;
+      left = elementRange.left - containerRange.left;
     }
 
     let top: number;
-    if (containerRange.low.y <= elementRange.low.y && containerRange.high.y >= elementRange.high.y) {
+    if (containerRange.top <= elementRange.top && containerRange.bottom >= elementRange.bottom) {
       // already visible - no need to scroll to
       top = container.scrollTop;
     } else {
-      top = elementRange.low.y - containerRange.low.y;
+      top = elementRange.top - containerRange.top;
     }
 
     container.scrollTo({ left, top });

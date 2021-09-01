@@ -1,6 +1,6 @@
 {
   "name": "@bentley/ui-core",
-  "version": "3.0.0-dev.27",
+  "version": "3.0.0-dev.43",
   "description": "iModel.js UI core components",
   "main": "lib/ui-core.js",
   "typings": "lib/ui-core",
@@ -35,10 +35,9 @@
     "url": "http://www.bentley.com"
   },
   "peerDependencies": {
-    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.27",
-    "@bentley/geometry-core": "workspace:^3.0.0-dev.27",
-    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.27",
-    "@bentley/ui-abstract": "workspace:^3.0.0-dev.27",
+    "@bentley/bentleyjs-core": "workspace:^3.0.0-dev.43",
+    "@bentley/imodeljs-i18n": "workspace:^3.0.0-dev.43",
+    "@bentley/ui-abstract": "workspace:^3.0.0-dev.43",
     "react": "^16.8.6 || ^17.0.0",
     "react-dom": "^16.8.6 || ^17.0.0"
   },
@@ -50,7 +49,6 @@
     "@bentley/bentleyjs-core": "workspace:*",
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
-    "@bentley/geometry-core": "workspace:*",
     "@bentley/imodeljs-i18n": "workspace:*",
     "@bentley/react-scripts": "4.0.3",
     "@bentley/ui-abstract": "workspace:*",
@@ -107,8 +105,8 @@
   ],
   "dependencies": {
     "@bentley/icons-generic-webfont": "^1.0.15",
-    "@itwin/itwinui-css": "^0.24.0",
-    "@itwin/itwinui-react": "^1.14.0",
+    "@itwin/itwinui-css": "^0.27.0",
+    "@itwin/itwinui-react": "^1.16.2",
     "classnames": "^2.3.1",
     "dompurify": "^2.0.12",
     "lodash": "^4.17.10",

@@ -14,7 +14,7 @@ To start the application, simply install its dependencies and run it:
   rush install
   ```
 
-2. Build the application using `rushx build`, or to rebuild ui-test-app, use `npm run build` in the `imodeljs\test-apps\ui-test-app` directory.
+2. Build the application using `rush build`, or to rebuild ui-test-app, use `npm run build` in the `imodeljs\test-apps\ui-test-app` directory.
 
   ```sh
   rush build
@@ -54,13 +54,13 @@ then start the Electron frontend in another shell using:
 
 You can now open snapshot files using ui-test-app. These are the relevant environment variables to set before using `npm run start:servers`:
 
-* imjs_TESTAPP_SNAPSHOT_FILEPATH - set to folder containing .bim or .ibim files (required)
-* imjs_TESTAPP_START_WITH_SNAPSHOTS - set to 1 to start with File Open dialog (optional)
+* IMJS_TESTAPP_SNAPSHOT_FILEPATH - set to folder containing .bim or .ibim files (required)
+* IMJS_TESTAPP_START_WITH_SNAPSHOTS - set to 1 to start with File Open dialog (optional)
 
 __Note:__ You must navigate to your snapshot folder the first time you use the File Open dialog. To open other files, click the "Home" button in the upper-left then click "Open Local File". You still need to sign-in.
 
 ## Using the Edit frontstage to test editing an iModel
 
-To test editing an iModel, the '.env' file in the ui-test-app directory should set the variable imjs_TESTAPP_ALLOW_WRITE=1. Optionally this variable can be set in the command shell before starting the servers.
+To test editing an iModel, the '.env' file in the ui-test-app directory should set the variable IMJS_TESTAPP_ALLOW_WRITE=1. Optionally this variable can be set in the command shell before starting the servers.
 
 > Note: Editing requires Briefcase files and IPC. Currently IPC is only supported in the Electron application.

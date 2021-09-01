@@ -6,7 +6,7 @@ import { assert } from "chai";
 import * as fs from "fs-extra";
 import * as os from "os";
 import * as path from "path";
-import { Config, Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
+import { Logger, LogLevel, OpenMode } from "@bentley/bentleyjs-core";
 import { IModelVersion } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { TestUsers, TestUtility } from "@bentley/oidc-signin-tool";
@@ -187,7 +187,9 @@ async function generateIModelDbTiles(requestContext: AuthorizedClientRequestCont
 }
 
 describe("TilesGenerationPerformance", () => {
-  const config = require(Config.App.getString("imjs_tile_perf_config")); // eslint-disable-line @typescript-eslint/no-var-requires
+  if (process.env.IMJS_TILE_PERF_CONFIG === undefined)
+    throw new Error("Could not find IMJS_TILE_PERF_CONFIG");
+  const config = require(process.env.IMJS_TILE_PERF_CONFIG); // eslint-disable-line @typescript-eslint/no-var-requires
   const imodels: ConfigData[] = config.iModels;
 
   let requestContext: AuthorizedClientRequestContext;
@@ -203,7 +205,7 @@ describe("TilesGenerationPerformance", () => {
 
     csvResultPath = IModelTestUtils.prepareOutputFile("TilesGen", "TilesGen.results.csv");
 
-    Config.App.merge({ imjs_buddi_resolve_url_using_region: config.regionId }); // eslint-disable-line @typescript-eslint/naming-convention
+    process.env.IMJS_BUDDI_RESOLVE_URL_USING_REGION = config.regionId;
     if (IModelJsFs.existsSync(config.iModelLocation)) {
       imodels.forEach((element) => element.localPath = path.join(config.iModelLocation, `${element.iModelName}.bim`));
       // delete the .tile file

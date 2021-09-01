@@ -187,7 +187,11 @@ export class IModelHost {
 
   private static _platform?: typeof IModelJsNative;
   /** @internal */
-  public static get platform(): typeof IModelJsNative { return this._platform!; }
+  public static get platform(): typeof IModelJsNative {
+    if (this._platform === undefined)
+      throw new Error("IModelHost.startup must be called first");
+    return this._platform;
+  }
 
   public static configuration?: IModelHostConfiguration;
   /** Event raised just after the backend IModelHost was started */
@@ -386,13 +390,6 @@ export class IModelHost {
     IModelHost.setupTileCache();
 
     this.platform.setUseTileCache(configuration.tileCacheCredentials ? false : true);
-
-    // const introspectionClientId = Config.App.getString("imjs_introspection_client_id", "");
-    // const introspectionClientSecret = Config.App.getString("imjs_introspection_client_secret", "");
-    // if (introspectionClientId && introspectionClientSecret) {
-    //   const introspectionClient = new IntrospectionClient(introspectionClientId, introspectionClientSecret);
-    //   this._clientAuthIntrospectionManager = new ImsClientAuthIntrospectionManager(introspectionClient);
-    // }
 
     process.once("beforeExit", IModelHost.shutdown);
     IModelHost.onAfterStartup.raiseEvent();

@@ -587,8 +587,7 @@ describe("iModel", () => {
     expect(style.settings.viewFlags.renderMode).to.equal(RenderMode.SolidFill);
     expect(style.settings.backgroundColor.equals(ColorDef.blue)).to.be.true;
 
-    const newFlags = style.settings.viewFlags.clone();
-    newFlags.renderMode = RenderMode.SmoothShade;
+    const newFlags = style.settings.viewFlags.copy({ renderMode: RenderMode.SmoothShade });
     style.settings.viewFlags = newFlags;
     style.settings.backgroundColor = ColorDef.red;
     style.settings.monochromeColor = ColorDef.green;
@@ -606,10 +605,7 @@ describe("iModel", () => {
   it("should create display styles", () => {
     const defaultViewFlags = new ViewFlags().toJSON();
 
-    const viewFlags = new ViewFlags();
-    viewFlags.patterns = false;
-    viewFlags.visibleEdges = true;
-
+    const viewFlags = new ViewFlags({ patterns: false, visibleEdges: true });
     const viewflags: ViewFlagProps = { noWhiteOnWhiteReversal: true, shadows: true, noTransp: true };
 
     const mapImagery: MapImageryProps = {

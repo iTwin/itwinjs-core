@@ -2,6 +2,48 @@
   "name": "@bentley/imodeljs-backend",
   "entries": [
     {
+      "version": "2.19.9",
+      "tag": "@bentley/imodeljs-backend_v2.19.9",
+      "date": "Wed, 25 Aug 2021 15:36:01 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "throw better exception if IModelHost.startup has not been called"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.8",
+      "tag": "@bentley/imodeljs-backend_v2.19.8",
+      "date": "Mon, 23 Aug 2021 13:23:13 GMT",
+      "comments": {}
+    },
+    {
+      "version": "2.19.7",
+      "tag": "@bentley/imodeljs-backend_v2.19.7",
+      "date": "Fri, 20 Aug 2021 17:47:22 GMT",
+      "comments": {
+        "none": [
+          {
+            "comment": "add queryV2Checkpoint to BackendHubAccess"
+          },
+          {
+            "comment": "use native serializer for processing schemas in transformer"
+          },
+          {
+            "comment": "only export necessary schemas during imodel transformation"
+          }
+        ]
+      }
+    },
+    {
+      "version": "2.19.6",
+      "tag": "@bentley/imodeljs-backend_v2.19.6",
+      "date": "Tue, 17 Aug 2021 20:34:29 GMT",
+      "comments": {}
+    },
+    {
       "version": "2.19.5",
       "tag": "@bentley/imodeljs-backend_v2.19.5",
       "date": "Fri, 13 Aug 2021 21:48:08 GMT",

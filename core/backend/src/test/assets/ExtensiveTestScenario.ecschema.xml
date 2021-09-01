@@ -1,0 +1,103 @@
+﻿<?xml version="1.0" encoding="UTF-8"?>
+<ECSchema schemaName="ExtensiveTestScenario" alias="source" version="01.00.00" xmlns="http://www.bentley.com/schemas/Bentley.ECXML.3.1" description="Extensive schema items collection for testing various schema processing">
+
+    <ECSchemaReference name="BisCore" version="01.00.04" alias="bis"/>
+
+    <ECEntityClass typeName="SourcePhysicalElement" modifier="Sealed" description="For testing transformation SourcePhysicalElement --> TargetPhysicalElement">
+        <BaseClass>bis:PhysicalElement</BaseClass>
+        <ECProperty propertyName="CommonString" typeName="string" description="A string property that exists on both SourcePhysicalElement and TargetPhysicalElement"/>
+        <ECProperty propertyName="SourceString" typeName="string" description="A string property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="CommonDouble" typeName="double" description="A double property that exists in both schemas"/>
+        <ECProperty propertyName="SourceDouble" typeName="double" description="A double property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="CommonBinary" typeName="binary" description="A binary property that exists in both schemas"/>
+        <ECProperty propertyName="SourceBinary" typeName="binary" description="A binary property that only exists in the source schema but should be remapped"/>
+        <ECNavigationProperty propertyName="SourceNavigation" relationshipName="SourcePhysicalElementUsesSourceDefinition" direction="Forward" description="A NavigationProperty that only exists in the source schema but should be remapped"/>
+        <ECNavigationProperty propertyName="CommonNavigation" relationshipName="SourcePhysicalElementUsesCommonDefinition" direction="Forward" description="A NavigationProperty that exists in both schemas"/>
+        <ECProperty propertyName="ExtraString" typeName="string" description="A string property that only exists in the source schema and should be dropped"/>
+    </ECEntityClass>
+
+    <ECRelationshipClass typeName="SourcePhysicalElementUsesSourceDefinition" strength="referencing" modifier="None">
+        <Source multiplicity="(0..*)" roleLabel="uses" polymorphic="true">
+            <Class class="SourcePhysicalElement" />
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is used by" polymorphic="true">
+            <Class class="bis:DefinitionElement"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="SourcePhysicalElementUsesCommonDefinition" strength="referencing" modifier="Sealed">
+        <Source multiplicity="(0..*)" roleLabel="uses" polymorphic="true">
+            <Class class="SourcePhysicalElement" />
+        </Source>
+        <Target multiplicity="(0..1)" roleLabel="is used by" polymorphic="true">
+            <Class class="bis:DefinitionElement"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="SourceRelToExclude" strength="referencing" modifier="None" description="For testing relationship exclusion by class.">
+        <BaseClass>bis:ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Target>
+    </ECRelationshipClass>
+
+    <ECRelationshipClass typeName="SourceRelWithProps" strength="referencing" modifier="None" description="For testing relationship property remapping.">
+        <BaseClass>bis:ElementRefersToElements</BaseClass>
+        <Source multiplicity="(0..*)" roleLabel="refers to" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Source>
+        <Target multiplicity="(0..*)" roleLabel="is referenced by" polymorphic="true">
+            <Class class="bis:Element"/>
+        </Target>
+        <ECProperty propertyName="SourceString" typeName="string" description="A string property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="SourceDouble" typeName="double" description="A double property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="SourceLong" typeName="long" extendedTypeName="Id" description="A long property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="SourceGuid" typeName="binary" extendedTypeName="BeGuid" description="A GUID property that only exists in the source schema but should be remapped"/>
+    </ECRelationshipClass>
+
+    <ECEntityClass typeName="SourceUniqueAspect" description="For testing transformation of SourceUniqueAspect --> TargetUniqueAspect.">
+        <BaseClass>bis:ElementUniqueAspect</BaseClass>
+        <ECProperty propertyName="CommonDouble" typeName="double" description="A double property that exists on both SourceUniqueAspect and TargetUniqueAspect"/>
+        <ECProperty propertyName="CommonString" typeName="string" description="A string property that exists on both SourceUniqueAspect and TargetUniqueAspect"/>
+        <ECProperty propertyName="CommonLong" typeName="long" extendedTypeName="Id" description="A long property that exists on both SourceUniqueAspect and TargetUniqueAspect"/>
+        <ECProperty propertyName="CommonBinary" typeName="binary" description="A binary property that exists on both SourceUniqueAspect and TargetUniqueAspect"/>
+        <ECProperty propertyName="SourceDouble" typeName="double" description="A double property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="SourceString" typeName="string" description="A string property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="SourceLong" typeName="long" extendedTypeName="Id" description="A long property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="SourceGuid" typeName="binary" extendedTypeName="BeGuid" description="A GUID property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="ExtraString" typeName="string" description="A string property that only exists in the source schema and should be filtered out when transforming to the target schema"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="SourceMultiAspect" description="For testing transformation of SourceMultiAspect --> TargetMultiAspect.">
+        <BaseClass>bis:ElementMultiAspect</BaseClass>
+        <ECProperty propertyName="CommonDouble" typeName="double" description="A double property that exists on both SourceMultiAspect and TargetMultiAspect"/>
+        <ECProperty propertyName="CommonString" typeName="string" description="A string property that exists on both SourceMultiAspect and TargetMultiAspect"/>
+        <ECProperty propertyName="CommonLong" typeName="long" extendedTypeName="Id" description="A long property that exists on both SourceMultiAspect and TargetMultiAspect"/>
+        <ECProperty propertyName="CommonBinary" typeName="binary" description="A binary property that exists on both SourceMultiAspect and TargetMultiAspect"/>
+        <ECProperty propertyName="SourceDouble" typeName="double" description="A double property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="SourceString" typeName="string" description="A string property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="SourceLong" typeName="long" extendedTypeName="Id" description="A long property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="SourceGuid" typeName="binary" extendedTypeName="BeGuid" description="A GUID property that only exists in the source schema but should be remapped"/>
+        <ECProperty propertyName="ExtraString" typeName="string" description="A string property that only exists in the source schema and should be filtered out when transforming to the target schema"/>
+    </ECEntityClass>
+
+    <ECEntityClass typeName="SourceUniqueAspectToExclude" description="For testing ElementUniqueAspect exclusion by class.">
+        <BaseClass>bis:ElementUniqueAspect</BaseClass>
+        <ECProperty propertyName="Description" typeName="string" />
+    </ECEntityClass>
+
+    <ECEntityClass typeName="SourceMultiAspectToExclude" description="For testing ElementMultiAspect exclusion by class.">
+        <BaseClass>bis:ElementMultiAspect</BaseClass>
+        <ECProperty propertyName="Description" typeName="string" />
+    </ECEntityClass>
+
+    <ECEntityClass typeName="SourceInformationRecord" modifier="Sealed">
+        <BaseClass>bis:InformationRecordElement</BaseClass>
+        <ECProperty propertyName="CommonString" typeName="string" description="A string property that exists on both SourceInformationRecord and TargetInformationRecord"/>
+        <ECProperty propertyName="SourceString" typeName="string" description="A string property that only exists in the source schema but should be remapped"/>
+    </ECEntityClass>
+
+</ECSchema>

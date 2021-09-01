@@ -1,0 +1,67 @@
+/*---------------------------------------------------------------------------------------------
+* Copyright (c) Bentley Systems, Incorporated. All rights reserved.
+* See LICENSE.md in the project root for license terms and full copyright notice.
+*--------------------------------------------------------------------------------------------*/
+import { expect } from "chai";
+import * as sinon from "sinon";
+import { Logger } from "@bentley/bentleyjs-core";
+import { IModelApp, MockRender } from "@bentley/imodeljs-frontend";
+import { UiIModelComponents } from "../ui-imodel-components";
+import TestUtils from "./TestUtils";
+
+describe("UiIModelComponents", () => {
+
+  beforeEach(() => {
+    TestUtils.terminateUiIModelComponents();
+  });
+
+  it("i18n should throw Error without initialize", () => {
+    expect(() => UiIModelComponents.i18n).to.throw(Error);
+  });
+
+  it("i18nNamespace should return 'UiIModelComponents'", () => {
+    expect(UiIModelComponents.i18nNamespace).to.eq("UiIModelComponents");
+  });
+
+  it("packageName should return 'ui-imodel-components'", () => {
+    expect(UiIModelComponents.packageName).to.eq("ui-imodel-components");
+  });
+
+  it("translate should return the key (in test environment)", async () => {
+    await TestUtils.initializeUiIModelComponents();
+    expect(UiIModelComponents.translate("test1.test2")).to.eq("test1.test2");
+    TestUtils.terminateUiIModelComponents();
+  });
+
+  it("translate should return blank and log error if UiIModelComponents not initialized", () => {
+    const spyLogger = sinon.spy(Logger, "logError");
+    expect(UiIModelComponents.translate("xyz")).to.eq("");
+    spyLogger.calledOnce.should.true;
+    (Logger.logError as any).restore();
+  });
+
+  it("calling initialize twice should log", async () => {
+    const spyLogger = sinon.spy(Logger, "logInfo");
+    expect(UiIModelComponents.initialized).to.be.false;
+    await UiIModelComponents.initialize(TestUtils.i18n);
+    expect(UiIModelComponents.initialized).to.be.true;
+    await UiIModelComponents.initialize(TestUtils.i18n);
+    spyLogger.calledOnce.should.true;
+    (Logger.logInfo as any).restore();
+  });
+
+  it("calling initialize without I18N will use IModelApp.i18n", async () => {
+    await MockRender.App.startup();
+
+    await UiIModelComponents.initialize();
+    expect(UiIModelComponents.i18n).to.eq(IModelApp.i18n);
+
+    await MockRender.App.shutdown();
+  });
+
+  it("calling loggerCategory without an obj should return packageName", () => {
+    const category = UiIModelComponents.loggerCategory(undefined);
+    expect(category).to.eq(UiIModelComponents.packageName);
+  });
+
+});
