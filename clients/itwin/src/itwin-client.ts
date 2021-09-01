@@ -10,7 +10,6 @@ export * from "./ECJsonTypeMap";
 export * from "./FileHandler";
 export * from "./Request";
 export * from "./Token";
-// export * from "./UserInfo";
 export * from "./WsgClient";
 export * from "./WsgQuery";
 export * from "./ImsAuthorizationClient";

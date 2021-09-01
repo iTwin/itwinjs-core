@@ -34,10 +34,6 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     this.config = config;
   }
 
-  public get isAuthorized(): boolean {
-    return !!this._accessToken;
-  }
-
   public setAccessToken(token?: AccessTokenString) {
     if (token === this._accessToken)
       return;
@@ -45,10 +41,10 @@ export abstract class NativeAppAuthorizationBackend extends ImsAuthorizationClie
     NativeHost.onUserStateChanged.raiseEvent(token);
   }
 
-  public async getAccessToken(): Promise<AccessTokenString> {
-    if (!this.isAuthorized)
+  public async getAccessToken(): Promise<AccessTokenString | undefined> {
+    if (!this._accessToken)
       this.setAccessToken(await this.refreshToken());
-    return this._accessToken!;
+    return this._accessToken;
   }
 
   public getClientRequestContext() { return ClientRequestContext.fromJSON(IModelHost.session); }

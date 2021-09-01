@@ -12,6 +12,7 @@ import { ClientMetadata, custom, Issuer, Client as OpenIdClient } from "openid-c
 import { BackendITwinClientLoggerCategory } from "../../BackendITwinClientLoggerCategory";
 import { IntrospectionResponse } from "./IntrospectionResponse";
 import { IntrospectionResponseCache, MemoryIntrospectionResponseCache } from "./IntrospectionResponseCache";
+import { removeAccessTokenPrefix } from "@bentley/itwin-client";
 
 /** @alpha */
 export class IntrospectionClient {
@@ -66,7 +67,7 @@ export class IntrospectionClient {
   }
 
   public async introspect(requestContext: AuthorizedClientRequestContext): Promise<IntrospectionResponse> {
-    const accessTokenStr = requestContext.accessToken?.substr(requestContext.accessToken.indexOf(" ") + 1) ?? "";
+    const accessTokenStr = removeAccessTokenPrefix(requestContext.accessToken);
 
     try {
       const cachedResponse = await this._cache.get(accessTokenStr);

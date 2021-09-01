@@ -11,7 +11,7 @@ import * as React from "react";
 import { ClientRequestContext, Logger } from "@bentley/bentleyjs-core";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { IModelApp } from "@bentley/imodeljs-frontend";
-import {UserInfo} from "../UserInfo";
+import { UserInfo } from "../UserInfo";
 import { getUserColor } from "@bentley/ui-core";
 import { Button } from "@itwin/itwinui-react";
 import { FrontstageManager, ModalFrontstageInfo } from "../frontstage/FrontstageManager";

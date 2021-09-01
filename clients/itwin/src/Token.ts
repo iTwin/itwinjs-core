@@ -29,6 +29,10 @@ export function TokenPrefix(prefix: string) { // eslint-disable-line @typescript
   };
 }
 
+export function removeAccessTokenPrefix(accessToken: AccessTokenString): string {
+  return accessToken.substr(accessToken.indexOf(" ") + 1);
+}
+
 /**
  * Class solely to hold the dictionary of mappings from token prefix (string) to the token's constructor
  * @internal
@@ -45,4 +49,4 @@ export interface AccessTokenProps {
   expiresAt?: string;
 }
 
-export type AccessTokenString = string | undefined;
+export type AccessTokenString = string;

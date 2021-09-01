@@ -7,7 +7,7 @@
  */
 
 import { ClientRequestContext } from "@bentley/bentleyjs-core";
-import { AccessTokenString} from "@bentley/itwin-client";
+import { AccessTokenString, removeAccessTokenPrefix } from "@bentley/itwin-client";
 import { GrantBody, TokenSet } from "openid-client";
 import { BackendAuthorizationClient, BackendAuthorizationClientConfiguration } from "./BackendAuthorizationClient";
 
@@ -34,7 +34,7 @@ export class DelegationAuthorizationClient extends BackendAuthorizationClient {
     const grantParams: GrantBody = {
       grant_type: grantType, // eslint-disable-line @typescript-eslint/naming-convention
       scope: this._configuration.scope,
-      assertion: accessToken?.substr(accessToken.indexOf(" ") + 1),
+      assertion: removeAccessTokenPrefix(accessToken),
     };
 
     const client = await this.getClient(requestContext);
