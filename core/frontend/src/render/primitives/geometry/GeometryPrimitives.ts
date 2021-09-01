@@ -252,7 +252,8 @@ class SolidPrimitiveGeometry extends Geometry {
 
   public constructor(primitive: SolidPrimitive, tf: Transform, range: Range3d, params: DisplayParams) {
     super(tf, range, params);
-    this._primitive = primitive;
+    const xformPrim = tf.isIdentity ? primitive : primitive.cloneTransformed(tf);
+    this._primitive = xformPrim !== undefined ? xformPrim as SolidPrimitive : primitive;
   }
 
   protected _getStrokes() { return undefined; }
@@ -260,9 +261,6 @@ class SolidPrimitiveGeometry extends Geometry {
   protected _getPolyfaces(opts: StrokeOptions): PolyfacePrimitiveList {
     const builder = PolyfaceBuilder.create(opts);
     builder.addGeometryQuery(this._primitive);
-    const pf = builder.claimPolyface();
-    if (!this.transform.isIdentity)
-      pf.tryTransformInPlace(this.transform);
-    return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, pf));
+    return new PolyfacePrimitiveList(PolyfacePrimitive.create(this.displayParams, builder.claimPolyface()));
   }
 }
