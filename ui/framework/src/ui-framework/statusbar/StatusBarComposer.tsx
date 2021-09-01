@@ -70,6 +70,7 @@ export function DockedStatusBarItem(props: StatusBarItemProps) {
   return (
     <div
       data-item-id={props.itemId}
+      data-item-type="status-bar-item"
       className={className}
       ref={ref}
       style={props.style}

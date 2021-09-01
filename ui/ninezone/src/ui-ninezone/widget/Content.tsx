@@ -41,6 +41,7 @@ export const ScrollableWidgetContent = React.memo<ScrollableWidgetContentProps>(
   return (
     <div
       data-item-id={props.itemId}
+      data-item-type="widget-content"
       className="nz-widget-content"
       ref={ref}
     >
