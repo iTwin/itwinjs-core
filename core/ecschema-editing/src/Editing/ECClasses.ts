@@ -33,7 +33,7 @@ export class ECClasses {
 
     if (type !== PrimitiveType.Double && type !== PrimitiveType.String && type !== PrimitiveType.DateTime
       && type !== PrimitiveType.Integer)
-      throw new Error ("Property creation is restricted to type Double, String, DateTIme, and Integer.");
+      throw new Error ("Property creation is restricted to type Double, String, DateTime, and Integer.");
 
     if ("" === prefix)
       throw new Error("The specified property name prefix is invalid");

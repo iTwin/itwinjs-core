@@ -47,7 +47,7 @@ describe("SchemaEditor tests", () => {
       testSchemaKey = result.schemaKey as SchemaKey;
       const result2 =  await testEditor.schemaContext.getCachedSchema(testSchemaKey);
       if (!result2)
-        throw new Error("Could retrieve cached schema.");
+        throw new Error("Could not retrieve cached schema!");
       testSchema = result2;
     });
 
@@ -137,8 +137,8 @@ describe("SchemaEditor tests", () => {
         expect(property.name).to.equal("p_TestProperty");
       });
 
-      it("try to create a PrimitiveProperty of type boolean, throws", async () => {
-        await expect(testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.Boolean, "p")).to.be.rejectedWith(Error, "Property creation is restricted to type Double, String, DateTIme, and Integer.");
+      it("try to create a property of unsupported type, throws", async () => {
+        await expect(testEditor.entities.createProperty(entityKey as SchemaItemKey, "TestProperty", PrimitiveType.Boolean, "p")).to.be.rejectedWith(Error, "Property creation is restricted to type Double, String, DateTime, and Integer.");
       });
 
       it("should successfully delete PrimitiveProperty.", async () => {
