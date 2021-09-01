@@ -4,6 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 @import "~@bentley/ui-core/lib/ui-core/inputs/variables";
 @import "~@bentley/ui-core/lib/ui-core/style/themecolors";
+@import "~@itwin/itwinui-css/scss/style/space";
 
 .uifw-accudraw-field-container {
   padding: 6px;
@@ -23,4 +24,5 @@
   max-width: 250px;
   display: grid;
   grid-template-columns: auto 1fr auto;
+  row-gap: $iui-xs;
 }

@@ -22,7 +22,7 @@ interface TileContentRequestProps {
 }
 
 // Goes through models in imodel until it finds a root tile for a non empty model, returns tile content request props for that tile
-async function getTileProps(iModel: IModelDb, requestContext: AuthorizedBackendRequestContext): Promise<TileContentRequestProps | undefined> {
+export async function getTileProps(iModel: IModelDb, requestContext: AuthorizedBackendRequestContext): Promise<TileContentRequestProps | undefined> {
   const queryParams = { from: GeometricModel3d.classFullName, limit: IModelDb.maxLimit };
   for (const modelId of iModel.queryEntityIds(queryParams)) {
     let model;
