@@ -396,7 +396,7 @@ The node packages you'll need can be installed using
 ```Shell
 $npm install  @bentley/backend-itwin-client
 $npm install  @bentley/bentleyjs-core
-$npm install  @bentley/context-registry-client
+$npm install  @bentley/itwin-registry-client
 $npm install  @bentley/ecschema-metadata
 $npm install  @bentley/geometry-core
 $npm install  @bentley/imodelhub-client

@@ -49,8 +49,8 @@
       "versionPolicyName": "prerelease-monorepo-lockStep"
     },
     {
-      "packageName": "@bentley/context-registry-client",
-      "projectFolder": "clients/context-registry",
+      "packageName": "@bentley/itwin-registry-client",
+      "projectFolder": "clients/itwin-registry",
       "reviewCategory": "common",
       "shouldPublish": true,
       "versionPolicyName": "prerelease-monorepo-lockStep"

@@ -6,7 +6,7 @@
  * @module iModelBankClient
  */
 import { IModelHubStatus, Logger, WSStatus } from "@bentley/bentleyjs-core";
-import { ITwin } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/itwin-registry-client";
 import { AuthorizedClientRequestContext, request, RequestOptions, Response, WsgError, WsgInstance } from "@bentley/itwin-client";
 import { ContextManagerClient } from "../IModelCloudEnvironment";
 import { IModelHubClientError } from "../imodelhub/Errors";

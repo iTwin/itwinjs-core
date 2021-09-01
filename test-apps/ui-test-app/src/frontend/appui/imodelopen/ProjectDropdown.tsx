@@ -7,7 +7,7 @@ import classnames from "classnames";
 import * as React from "react";
 import { RelativePosition } from "@bentley/ui-abstract";
 import { Popup } from "@bentley/ui-core";
-import { ITwin } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/itwin-registry-client";
 
 /** Properties for the [[ProjectDropdown]] component */
 export interface ProjectDropdownProps {

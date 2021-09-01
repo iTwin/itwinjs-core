@@ -9,7 +9,7 @@ import { connect, Provider } from "react-redux";
 import { Store } from "redux"; // createStore,
 import reactAxe from "@axe-core/react";
 import { ClientRequestContext, Id64String, Logger, LogLevel, ProcessDetector } from "@bentley/bentleyjs-core";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { ElectronApp } from "@bentley/electron-manager/lib/ElectronFrontend";
 import { isFrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { FrontendDevTools } from "@bentley/frontend-devtools";

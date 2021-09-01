@@ -15,7 +15,7 @@ import { ProjectDropdown } from "./ProjectDropdown";
 import { ActivityMessageDetails, ActivityMessageEndReason, IModelApp } from "@bentley/imodeljs-frontend";
 import { BeDuration } from "@bentley/bentleyjs-core";
 import { Button } from "@itwin/itwinui-react";
-import { ITwin } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/itwin-registry-client";
 
 /** Properties for the [[IModelOpen]] component */
 export interface IModelOpenProps {

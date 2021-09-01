@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 
 import { Id64String, Logger } from "@bentley/bentleyjs-core";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection, IModelHubFrontend } from "@bentley/imodeljs-frontend";
 import { SampleAppIModelApp } from "..";

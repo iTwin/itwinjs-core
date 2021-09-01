@@ -7,7 +7,7 @@ import * as fs from "fs";
 import { Base64 } from "js-base64";
 import * as path from "path";
 import { ClientRequestContext, Guid, GuidString, Id64, Id64String, Logger, WSStatus } from "@bentley/bentleyjs-core";
-import { ITwin } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/itwin-registry-client";
 import {
   Briefcase, BriefcaseQuery, ChangeSet, ChangeSetQuery, CodeState, HubCode, IModelBankClient, IModelBankFileSystemContextClient,
   IModelCloudEnvironment, IModelHubClient, IModelQuery, LargeThumbnail, Lock, LockLevel, LockType, MultiCode, MultiLock, SmallThumbnail, Thumbnail,

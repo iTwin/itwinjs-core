@@ -95,7 +95,7 @@
     "NOTE: imodeljs-frontend should remain UI technology agnostic, so no react/angular dependencies are allowed"
   ],
   "dependencies": {
-    "@bentley/context-registry-client": "workspace:*",
+    "@bentley/itwin-registry-client": "workspace:*",
     "@bentley/reality-data-client": "workspace:*",
     "fuse.js": "^3.3.0",
     "semver": "^5.5.0",

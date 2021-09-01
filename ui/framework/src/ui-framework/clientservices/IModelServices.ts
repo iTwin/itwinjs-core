@@ -7,7 +7,7 @@
  */
 
 import { IModelConnection } from "@bentley/imodeljs-frontend";
-import { ITwin } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/itwin-registry-client";
 
 /** Enumeration for iModel scope
  * @internal

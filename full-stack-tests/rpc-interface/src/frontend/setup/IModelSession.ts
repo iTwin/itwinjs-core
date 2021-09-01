@@ -5,7 +5,7 @@
 import { expect } from "chai";
 import { AuthorizedFrontendRequestContext, CheckpointConnection } from "@bentley/imodeljs-frontend";
 import { IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { IModelData } from "../../common/Settings";
 import { IModelVersion } from "@bentley/imodeljs-common";
 

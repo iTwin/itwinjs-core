@@ -72,7 +72,7 @@ import { Interaction } from 'scheduler/tracing';
 import { InteractiveTool } from '@bentley/imodeljs-frontend';
 import { IPresentationTreeDataProvider } from '@bentley/presentation-components';
 import { ItemField } from '@bentley/imodeljs-frontend';
-import { ITwin } from '@bentley/context-registry-client';
+import { ITwin } from '@bentley/itwin-registry-client';
 import { MessageBoxIconType } from '@bentley/imodeljs-frontend';
 import { MessageBoxType } from '@bentley/imodeljs-frontend';
 import { MessageBoxValue } from '@bentley/imodeljs-frontend';

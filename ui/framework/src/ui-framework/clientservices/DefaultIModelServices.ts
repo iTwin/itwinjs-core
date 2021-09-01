@@ -12,7 +12,7 @@ import {
 } from "@bentley/imodelhub-client";
 // import GatewayProxyApi from "./gatewayProxy";
 import { IModelVersion } from "@bentley/imodeljs-common";
-import { ITwin } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/itwin-registry-client";
 import { AuthorizedFrontendRequestContext, CheckpointConnection, IModelConnection } from "@bentley/imodeljs-frontend";
 import { UiFramework } from "../UiFramework";
 import { ChangeSetInfo, IModelInfo, IModelServices, IModelUserInfo, VersionInfo } from "./IModelServices";

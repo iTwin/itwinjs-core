@@ -49,7 +49,7 @@
     "@bentley/build-tools": "workspace:*",
     "@bentley/eslint-plugin": "workspace:*",
     "@bentley/certa": "workspace:*",
-    "@bentley/context-registry-client": "workspace:*",
+    "@bentley/itwin-registry-client": "workspace:*",
     "@bentley/frontend-authorization-client": "workspace:*",
     "@bentley/oidc-signin-tool": "workspace:*",
     "@bentley/product-settings-client": "workspace:*",

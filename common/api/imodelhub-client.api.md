@@ -17,7 +17,7 @@ import { HttpRequestOptions } from '@bentley/itwin-client';
 import { HttpStatus } from '@bentley/bentleyjs-core';
 import { Id64String } from '@bentley/bentleyjs-core';
 import { IModelHubStatus } from '@bentley/bentleyjs-core';
-import { ITwin } from '@bentley/context-registry-client';
+import { ITwin } from '@bentley/itwin-registry-client';
 import { LogFunction } from '@bentley/bentleyjs-core';
 import { ProgressCallback } from '@bentley/itwin-client';
 import { RequestOptions } from '@bentley/itwin-client';

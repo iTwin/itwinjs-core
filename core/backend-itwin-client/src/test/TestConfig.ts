@@ -4,7 +4,7 @@
 *--------------------------------------------------------------------------------------------*/
 import * as path from "path";
 import { GuidString } from "@bentley/bentleyjs-core";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { HubIModel, IModelClient, IModelHubClient, IModelQuery } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import * as fs from "fs";

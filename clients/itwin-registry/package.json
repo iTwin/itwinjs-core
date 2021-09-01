@@ -1,21 +1,21 @@
 {
-  "name": "@bentley/context-registry-client",
+  "name": "@bentley/itwin-registry-client",
   "version": "3.0.0-dev.41",
   "description": "iModel.js Context Registry Client",
-  "main": "lib/context-registry-client.js",
-  "typings": "lib/context-registry-client",
+  "main": "lib/itwin-registry-client.js",
+  "typings": "lib/itwin-registry-client",
   "imodeljsSharedLibrary": true,
   "license": "MIT",
   "repository": {
     "type": "git",
-    "url": "https://github.com/imodeljs/imodeljs/tree/master/clients/context-registry"
+    "url": "https://github.com/imodeljs/imodeljs/tree/master/clients/itwin-registry"
   },
   "scripts": {
     "compile": "npm run build",
     "build": "tsc 1>&2",
     "clean": "rimraf lib .rush/temp/package-deps*.json",
-    "extract-api": "betools extract-api --entry=context-registry-client",
-    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/context-registry-client/file.json --tsIndexFile=context-registry-client.ts --onlyJson",
+    "extract-api": "betools extract-api --entry=itwin-registry-client",
+    "docs": "betools docs --includes=../../generated-docs/extract --json=../../generated-docs/clients/itwin-registry-client/file.json --tsIndexFile=itwin-registry-client.ts --onlyJson",
     "lint": "eslint -f visualstudio \"./src/**/*.ts\" 1>&2",
     "webpackTests": "webpack --config ./src/test/utils/webpack.config.js 1>&2",
     "test": "",

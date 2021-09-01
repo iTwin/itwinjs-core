@@ -1,4 +1,4 @@
-# Change Log - @bentley/context-registry-client
+# Change Log - @bentley/itwin-registry-client
 
 This log was last generated on Wed, 25 Aug 2021 15:36:01 GMT and should not be manually modified.
 

@@ -5,53 +5,6 @@ importers:
   .:
     specifiers: {}
 
-  ../../clients/context-registry:
-    specifiers:
-      '@bentley/bentleyjs-core': workspace:*
-      '@bentley/build-tools': workspace:*
-      '@bentley/certa': workspace:*
-      '@bentley/eslint-plugin': workspace:*
-      '@bentley/itwin-client': workspace:*
-      '@bentley/oidc-signin-tool': workspace:*
-      '@types/chai': ^4.1.4
-      '@types/deep-assign': ^0.1.0
-      '@types/mocha': ^8.2.2
-      '@types/node': 10.14.1
-      chai: ^4.1.2
-      deep-assign: ^2.0.0
-      dotenv: ^10.0.0
-      dotenv-expand: ^5.1.0
-      eslint: ^7.11.0
-      internal-tools: workspace:*
-      mocha: ^8.3.2
-      rimraf: ^3.0.2
-      source-map-loader: ^1.0.0
-      typescript: ~4.3.0
-      webpack: 4.42.0
-    dependencies:
-      deep-assign: 2.0.0
-    devDependencies:
-      '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/build-tools': link:../../tools/build
-      '@bentley/certa': link:../../tools/certa
-      '@bentley/eslint-plugin': link:../../tools/eslint-plugin
-      '@bentley/itwin-client': link:../itwin
-      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
-      '@types/chai': 4.2.21
-      '@types/deep-assign': 0.1.1
-      '@types/mocha': 8.2.3
-      '@types/node': 10.14.1
-      chai: 4.3.4
-      dotenv: 10.0.0
-      dotenv-expand: 5.1.0
-      eslint: 7.31.0
-      internal-tools: link:../../tools/internal
-      mocha: 8.4.0
-      rimraf: 3.0.2
-      source-map-loader: 1.1.3_webpack@4.42.0
-      typescript: 4.3.5
-      webpack: 4.42.0
-
   ../../clients/frontend-authorization:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
@@ -79,10 +32,10 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@types/deep-assign': ^0.1.0
       '@types/node': 10.14.1
       deep-assign: ^2.0.0
@@ -91,7 +44,7 @@ importers:
       rimraf: ^3.0.2
       typescript: ~4.3.0
     dependencies:
-      '@bentley/context-registry-client': link:../context-registry
+      '@bentley/itwin-registry-client': link:../itwin-registry
       deep-assign: 2.0.0
       js-base64: 3.6.1
     devDependencies:
@@ -167,15 +120,62 @@ importers:
       typescript: 4.3.5
       webpack: 4.42.0
 
+  ../../clients/itwin-registry:
+    specifiers:
+      '@bentley/bentleyjs-core': workspace:*
+      '@bentley/build-tools': workspace:*
+      '@bentley/certa': workspace:*
+      '@bentley/eslint-plugin': workspace:*
+      '@bentley/itwin-client': workspace:*
+      '@bentley/oidc-signin-tool': workspace:*
+      '@types/chai': ^4.1.4
+      '@types/deep-assign': ^0.1.0
+      '@types/mocha': ^8.2.2
+      '@types/node': 10.14.1
+      chai: ^4.1.2
+      deep-assign: ^2.0.0
+      dotenv: ^10.0.0
+      dotenv-expand: ^5.1.0
+      eslint: ^7.11.0
+      internal-tools: workspace:*
+      mocha: ^8.3.2
+      rimraf: ^3.0.2
+      source-map-loader: ^1.0.0
+      typescript: ~4.3.0
+      webpack: 4.42.0
+    dependencies:
+      deep-assign: 2.0.0
+    devDependencies:
+      '@bentley/bentleyjs-core': link:../../core/bentley
+      '@bentley/build-tools': link:../../tools/build
+      '@bentley/certa': link:../../tools/certa
+      '@bentley/eslint-plugin': link:../../tools/eslint-plugin
+      '@bentley/itwin-client': link:../itwin
+      '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
+      '@types/chai': 4.2.21
+      '@types/deep-assign': 0.1.1
+      '@types/mocha': 8.2.3
+      '@types/node': 10.14.1
+      chai: 4.3.4
+      dotenv: 10.0.0
+      dotenv-expand: 5.1.0
+      eslint: 7.31.0
+      internal-tools: link:../../tools/internal
+      mocha: 8.4.0
+      rimraf: 3.0.2
+      source-map-loader: 1.1.3_webpack@4.42.0
+      typescript: 4.3.5
+      webpack: 4.42.0
+
   ../../clients/product-settings:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/mocha': ^8.2.2
@@ -194,10 +194,10 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/context-registry-client': link:../context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/imodelhub-client': link:../imodelhub
       '@bentley/itwin-client': link:../itwin
+      '@bentley/itwin-registry-client': link:../itwin-registry
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
       '@types/mocha': 8.2.3
@@ -218,10 +218,10 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/chai-as-promised': ^7
@@ -245,10 +245,10 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/context-registry-client': link:../context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../../core/geometry
       '@bentley/itwin-client': link:../itwin
+      '@bentley/itwin-registry-client': link:../itwin-registry
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@types/chai': 4.2.21
       '@types/chai-as-promised': 7.1.4
@@ -309,7 +309,6 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/ecschema-metadata': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -317,6 +316,7 @@ importers:
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-native': 3.0.6
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/perf-tools': workspace:*
       '@bentley/telemetry-client': workspace:*
@@ -364,8 +364,8 @@ importers:
       ws: ^7.5.3
     dependencies:
       '@azure/storage-blob': 10.4.0
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/imodeljs-native': 3.0.6
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       deep-assign: 2.0.0
       form-data: 2.5.1
       fs-extra: 8.1.0
@@ -426,13 +426,13 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/telemetry-client': workspace:*
       '@types/chai': ^4.1.4
@@ -487,13 +487,13 @@ importers:
     devDependencies:
       '@bentley/bentleyjs-core': link:../bentley
       '@bentley/build-tools': link:../../tools/build
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/geometry-core': link:../geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-common': link:../common
       '@bentley/itwin-client': link:../../clients/itwin
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/telemetry-client': link:../../clients/telemetry
       '@types/chai': 4.2.21
@@ -906,7 +906,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -915,6 +914,7 @@ importers:
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/orbitgt-core': workspace:*
       '@bentley/product-settings-client': workspace:*
       '@bentley/reality-data-client': workspace:*
@@ -944,7 +944,7 @@ importers:
       wms-capabilities: 0.4.0
       xml-js: ~1.6.11
     dependencies:
-      '@bentley/context-registry-client': link:../../clients/context-registry
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/reality-data-client': link:../../clients/reality-data
       fuse.js: 3.6.1
       semver: 5.7.1
@@ -990,7 +990,6 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/extension-webpack-tools': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -998,6 +997,7 @@ importers:
       '@bentley/imodeljs-frontend': workspace:*
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@types/file-saver': ^2.0.1
       '@types/node': 10.14.1
       cpx: ^1.5.0
@@ -1007,12 +1007,12 @@ importers:
       typescript: ~4.3.0
     dependencies:
       '@bentley/bentleyjs-core': link:../bentley
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/geometry-core': link:../geometry
       '@bentley/imodeljs-common': link:../common
       '@bentley/imodeljs-frontend': link:../frontend
       '@bentley/imodeljs-i18n': link:../i18n
       '@bentley/itwin-client': link:../../clients/itwin
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       file-saver: 2.0.5
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
@@ -1692,7 +1692,6 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -1701,6 +1700,7 @@ importers:
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-frontend': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
@@ -1729,7 +1729,6 @@ importers:
       xmlhttprequest: ^1.8.0
     dependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
@@ -1737,6 +1736,7 @@ importers:
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/itwin-client': link:../../clients/itwin
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       body-parser: 1.19.0
       chai: 4.3.4
       electron: 11.4.10
@@ -1772,7 +1772,6 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
       '@bentley/imodelhub-client': workspace:*
@@ -1781,6 +1780,7 @@ importers:
       '@bentley/imodeljs-frontend': workspace:*
       '@bentley/imodeljs-transformer': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/body-parser': ^1.17.0
       '@types/chai': ^4.1.4
@@ -1810,7 +1810,6 @@ importers:
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-backend': link:../../core/backend
@@ -1818,6 +1817,7 @@ importers:
       '@bentley/imodeljs-frontend': link:../../core/frontend
       '@bentley/imodeljs-transformer': link:../../core/transformer
       '@bentley/itwin-client': link:../../clients/itwin
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       body-parser: 1.19.0
       chai: 4.3.4
       electron: 11.4.10
@@ -2004,7 +2004,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
@@ -2022,6 +2021,7 @@ importers:
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-markup': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/product-settings-client': workspace:*
       '@types/chai': ^4.1.4
@@ -2072,10 +2072,10 @@ importers:
     devDependencies:
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/extension-webpack-tools': link:../../tools/extension-webpack
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/product-settings-client': link:../../clients/product-settings
       '@types/chai': 4.2.21
@@ -2189,12 +2189,12 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/imodelhub-client': workspace:*
       '@bentley/imodeljs-common': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/deep-assign': ^0.1.0
@@ -2217,11 +2217,11 @@ importers:
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/imodelhub-client': link:../../clients/imodelhub
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/itwin-client': link:../../clients/itwin
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       chai: 4.3.4
       deep-assign: 2.0.0
       fs-extra: 8.1.0
@@ -2251,7 +2251,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
@@ -2264,6 +2263,7 @@ importers:
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-markup': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
@@ -2288,7 +2288,6 @@ importers:
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/express-server': link:../../core/express-server
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
@@ -2300,6 +2299,7 @@ importers:
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-markup': link:../../core/markup
       '@bentley/itwin-client': link:../../clients/itwin
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       chai: 4.3.4
       electron: 11.4.10
       fs-extra: 8.1.0
@@ -2522,7 +2522,6 @@ importers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
       '@bentley/certa': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -2533,6 +2532,7 @@ importers:
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/oidc-signin-tool': workspace:*
       '@bentley/presentation-backend': workspace:*
       '@bentley/presentation-common': workspace:*
@@ -2565,7 +2565,6 @@ importers:
       '@bentley/bentleyjs-core': link:../../core/bentley
       '@bentley/build-tools': link:../../tools/build
       '@bentley/certa': link:../../tools/certa
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/eslint-plugin': link:../../tools/eslint-plugin
       '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
@@ -2574,6 +2573,7 @@ importers:
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/oidc-signin-tool': link:../../tools/oidc-signin-tool
       '@bentley/presentation-common': link:../../presentation/common
       '@bentley/presentation-frontend': link:../../presentation/frontend
@@ -3041,7 +3041,6 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
@@ -3054,6 +3053,7 @@ importers:
       '@bentley/imodeljs-i18n': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/mobile-manager': workspace:*
       '@bentley/perf-tools': workspace:*
       '@bentley/react-scripts': 4.0.3
@@ -3079,7 +3079,6 @@ importers:
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
       '@bentley/geometry-core': link:../../core/geometry
@@ -3091,6 +3090,7 @@ importers:
       '@bentley/imodeljs-i18n': link:../../core/i18n
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/mobile-manager': link:../../core/mobile-manager
       '@bentley/ui-abstract': link:../../ui/abstract
       body-parser: 1.19.0
@@ -3401,7 +3401,6 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -3410,6 +3409,7 @@ importers:
       '@bentley/imodeljs-common': workspace:*
       '@bentley/imodeljs-transformer': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@types/chai': ^4.1.4
       '@types/fs-extra': ^4.0.7
       '@types/lodash': ^4.14.0
@@ -3424,7 +3424,6 @@ importers:
       yargs: ^16.0.0
     dependencies:
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/geometry-core': link:../../core/geometry
       '@bentley/imodelhub-client': link:../../clients/imodelhub
@@ -3432,6 +3431,7 @@ importers:
       '@bentley/imodeljs-common': link:../../core/common
       '@bentley/imodeljs-transformer': link:../../core/transformer
       '@bentley/itwin-client': link:../../clients/itwin
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       fs-extra: 8.1.0
       yargs: 16.2.0
     devDependencies:
@@ -3590,7 +3590,6 @@ importers:
       '@bentley/backend-itwin-client': workspace:*
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/electron-manager': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/express-server': workspace:*
@@ -3611,6 +3610,7 @@ importers:
       '@bentley/imodeljs-markup': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/map-layers': workspace:*
       '@bentley/mobile-manager': workspace:*
       '@bentley/presentation-backend': workspace:*
@@ -3659,7 +3659,6 @@ importers:
     dependencies:
       '@bentley/backend-itwin-client': link:../../core/backend-itwin-client
       '@bentley/bentleyjs-core': link:../../core/bentley
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/electron-manager': link:../../core/electron-manager
       '@bentley/express-server': link:../../core/express-server
       '@bentley/frontend-authorization-client': link:../../clients/frontend-authorization
@@ -3679,6 +3678,7 @@ importers:
       '@bentley/imodeljs-markup': link:../../core/markup
       '@bentley/imodeljs-quantity': link:../../core/quantity
       '@bentley/itwin-client': link:../../clients/itwin
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/map-layers': link:../../extensions/map-layers
       '@bentley/mobile-manager': link:../../core/mobile-manager
       '@bentley/presentation-backend': link:../../presentation/backend
@@ -4642,7 +4642,6 @@ importers:
     specifiers:
       '@bentley/bentleyjs-core': workspace:*
       '@bentley/build-tools': workspace:*
-      '@bentley/context-registry-client': workspace:*
       '@bentley/eslint-plugin': workspace:*
       '@bentley/frontend-authorization-client': workspace:*
       '@bentley/geometry-core': workspace:*
@@ -4655,6 +4654,7 @@ importers:
       '@bentley/imodeljs-markup': workspace:*
       '@bentley/imodeljs-quantity': workspace:*
       '@bentley/itwin-client': workspace:*
+      '@bentley/itwin-registry-client': workspace:*
       '@bentley/presentation-common': workspace:*
       '@bentley/presentation-components': workspace:*
       '@bentley/presentation-frontend': workspace:*
@@ -4725,9 +4725,9 @@ importers:
       typescript: ~4.3.0
       xmlhttprequest: ^1.8.0
     dependencies:
-      '@bentley/context-registry-client': link:../../clients/context-registry
       '@bentley/icons-generic': 1.0.34
       '@bentley/icons-generic-webfont': 1.0.34
+      '@bentley/itwin-registry-client': link:../../clients/itwin-registry
       '@bentley/presentation-components': link:../../presentation/components
       '@itwin/itwinui-css': 0.27.3
       '@itwin/itwinui-react': 1.16.2_react-dom@17.0.2+react@17.0.2

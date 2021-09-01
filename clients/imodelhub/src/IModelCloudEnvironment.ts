@@ -5,7 +5,7 @@
 /** @packageDocumentation
  * @module iModelHubClient
  */
-import { ITwin } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/itwin-registry-client";
 import { FrontendAuthorizationClient } from "@bentley/frontend-authorization-client";
 import { AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 import { IModelClient } from "./IModelClient";

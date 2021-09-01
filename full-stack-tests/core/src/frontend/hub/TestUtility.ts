@@ -12,7 +12,7 @@ import { getAccessTokenFromBackend, TestUserCredentials } from "@bentley/oidc-si
 import { TestRpcInterface } from "../../common/RpcInterfaces";
 import { IModelBankCloudEnv } from "./IModelBankCloudEnv";
 import { IModelHubCloudEnv } from "./IModelHubCloudEnv";
-import { ITwin } from "@bentley/context-registry-client";
+import { ITwin } from "@bentley/itwin-registry-client";
 
 export class TestUtility {
   public static testContextName = "iModelJsIntegrationTest";

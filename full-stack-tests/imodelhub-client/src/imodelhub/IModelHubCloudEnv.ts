@@ -3,7 +3,7 @@
 * See LICENSE.md in the project root for license terms and full copyright notice.
 *--------------------------------------------------------------------------------------------*/
 
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { ContextManagerClient, IModelCloudEnvironment } from "@bentley/imodelhub-client";
 import { AuthorizedClientRequestContext, UserInfo } from "@bentley/itwin-client";
 

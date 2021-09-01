@@ -6,7 +6,7 @@
 import * as path from "path";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
 import { Id64String } from "@bentley/bentleyjs-core";
-import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/context-registry-client";
+import { ITwin, ITwinAccessClient, ITwinSearchableProperty } from "@bentley/itwin-registry-client";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { HubIModel } from "@bentley/imodelhub-client";
 import {
