@@ -162,13 +162,13 @@ export class HubMock {
   }
 
   public static async getMyBriefcaseIds(arg: IModelIdArg): Promise<number[]> {
-    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    return this.findLocalHub(arg.iModelId).getBriefcaseIds(requestContext.accessToken.getUserInfo()!.id);
+    const user = arg.user ?? await AuthorizedBackendRequestContext.create();
+    return this.findLocalHub(arg.iModelId).getBriefcaseIds(user.accessToken.getUserInfo()!.id);
   }
 
   public static async acquireNewBriefcaseId(arg: IModelIdArg): Promise<number> {
-    const requestContext = arg.requestContext ?? await AuthorizedBackendRequestContext.create();
-    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(requestContext.accessToken.getUserInfo()!.id);
+    const user = arg.user ?? await AuthorizedBackendRequestContext.create();
+    return this.findLocalHub(arg.iModelId).acquireNewBriefcaseId(user.accessToken.getUserInfo()!.id);
 
   }
   /** Release a briefcaseId. After this call it is illegal to generate changesets for the released briefcaseId. */

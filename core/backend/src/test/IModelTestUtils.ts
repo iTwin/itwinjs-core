@@ -217,7 +217,7 @@ export class IModelTestUtils {
       tokenProps: {
         contextId: args.contextId,
         iModelId: args.iModelId,
-        changeset: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)),
+        changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ user: args.requestContext, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
       },
       requestContext: args.requestContext,
       syncMode: args.briefcaseId === 0 ? SyncMode.PullOnly : SyncMode.PullAndPush,
@@ -244,7 +244,7 @@ export class IModelTestUtils {
       contextId: args.contextId,
       iModelId: args.iModelId,
       requestContext: args.requestContext,
-      changeset: (await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId)),
+      changeset: (await IModelHost.hubAccess.getChangesetFromVersion({ user: args.requestContext, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId })),
     };
 
     return V1CheckpointManager.getCheckpointDb({ checkpoint, localFile: V1CheckpointManager.getFileName(checkpoint) });
@@ -255,7 +255,7 @@ export class IModelTestUtils {
     if (undefined === args.asOf)
       args.asOf = IModelVersion.latest().toJSON();
 
-    const changeset = await BriefcaseManager.changesetFromVersion(args.requestContext, IModelVersion.fromJSON(args.asOf), args.iModelId);
+    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ user: args.requestContext, version: IModelVersion.fromJSON(args.asOf), iModelId: args.iModelId });
     const openArgs: DownloadAndOpenArgs = {
       tokenProps: {
         contextId: args.contextId,

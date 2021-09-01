@@ -5,7 +5,7 @@
 
 import * as path from "path";
 // __PUBLISH_EXTRACT_START__ Bridge.imports.example-code
-import { Id64String } from "@bentley/bentleyjs-core";
+import { GuidString, Id64String } from "@bentley/bentleyjs-core";
 import { ContextRegistryClient, Project } from "@bentley/context-registry-client";
 import { Angle, AngleProps, Point3d, Range3d, XYZProps } from "@bentley/geometry-core";
 import { HubIModel } from "@bentley/imodelhub-client";
@@ -61,36 +61,33 @@ async function queryProjectIdByName(requestContext: AuthorizedClientRequestConte
   });
 }
 
-async function createIModel(requestContext: AuthorizedClientRequestContext, iTwinId: string, iModelName: string, seedFile: string) {
+async function createIModel(user: AuthorizedClientRequestContext, iTwinId: GuidString, iModelName: string, seedFile: string) {
   try {
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext, iTwinId, iModelName });
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ user, iTwinId, iModelName });
     if (iModelId !== undefined)
-      await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId, iModelId });
+      await IModelHost.hubAccess.deleteIModel({ user, iTwinId, iModelId });
   } catch (_err) {
   }
   // __PUBLISH_EXTRACT_START__ Bridge.create-imodel.example-code
-  const imodelRepository: HubIModel = await IModelHubBackend.iModelClient.iModels.create(requestContext, iTwinId, iModelName, { path: seedFile });
+  const imodelRepository: HubIModel = await IModelHubBackend.iModelClient.iModels.create(user, iTwinId, iModelName, { path: seedFile });
   // __PUBLISH_EXTRACT_END__
   return imodelRepository;
 }
 
 // __PUBLISH_EXTRACT_START__ Bridge.firstTime.example-code
-async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext, iModelId: string, projectId: string, assetsDir: string) {
+async function runBridgeFirstTime(user: AuthorizedClientRequestContext, iModelId: GuidString, projectId: GuidString, assetsDir: string) {
   // Start the IModelHost
   await IModelHost.startup();
-  requestContext.enter();
 
-  const props = await BriefcaseManager.downloadBriefcase(requestContext, { contextId: projectId, iModelId });
-  requestContext.enter();
-  const briefcase = await BriefcaseDb.open(requestContext, { fileName: props.fileName });
-  requestContext.enter();
+  const props = await BriefcaseManager.downloadBriefcase(user, { contextId: projectId, iModelId });
+  const briefcase = await BriefcaseDb.open(user, { fileName: props.fileName });
 
   // I. Import the schema.
-  await briefcase.importSchemas(requestContext, [path.join(assetsDir, "RobotWorld.ecschema.xml")]);
+  await briefcase.importSchemas(user, [path.join(assetsDir, "RobotWorld.ecschema.xml")]);
   //    You *must* push this to the iModel right now.
   briefcase.saveChanges();
-  await briefcase.pullAndMergeChanges(requestContext);
-  await briefcase.pushChanges(requestContext, "bridge test");
+  await briefcase.pullChanges({ user });
+  await briefcase.pushChanges({ user, description: "bridge test" });
 
   // II. Import data
 
@@ -138,8 +135,8 @@ async function runBridgeFirstTime(requestContext: AuthorizedClientRequestContext
   //    Note that you pull and merge first, in case another user has pushed.
   //    Also note that after pushing, all locks will be released.
   briefcase.saveChanges();
-  await briefcase.pullAndMergeChanges(requestContext);
-  await briefcase.pushChanges(requestContext, "bridge test");
+  await briefcase.pullChanges({ user });
+  await briefcase.pushChanges({ user, description: "bridge test" });
 }
 // __PUBLISH_EXTRACT_END__
 

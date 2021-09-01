@@ -49,7 +49,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     testContextId = await HubUtility.getTestContextId(managerRequestContext);
     readWriteTestIModelName = HubUtility.generateUniqueName("ReadWriteTest");
-    readWriteTestIModelId = await HubUtility.recreateIModel({ requestContext: managerRequestContext, iTwinId: testContextId, iModelName: readWriteTestIModelName });
+    readWriteTestIModelId = await HubUtility.recreateIModel({ user: managerRequestContext, iTwinId: testContextId, iModelName: readWriteTestIModelName });
 
     // Purge briefcases that are close to reaching the acquire limit
     await HubUtility.purgeAcquiredBriefcasesById(managerRequestContext, readWriteTestIModelId);
@@ -69,12 +69,12 @@ describe("IModelWriteTest (#integration)", () => {
     const adminRequestContext = await IModelTestUtils.getUserContext(TestUserType.SuperManager);
     // Delete any existing iModels with the same name as the read-write test iModel
     const iModelName = "CodesUndoRedoPushTest";
-    const iModelId = await IModelHost.hubAccess.queryIModelByName({ requestContext: adminRequestContext, iTwinId: testContextId, iModelName });
+    const iModelId = await IModelHost.hubAccess.queryIModelByName({ user: adminRequestContext, iTwinId: testContextId, iModelName });
     if (iModelId)
-      await IModelHost.hubAccess.deleteIModel({ requestContext: adminRequestContext, iTwinId: testContextId, iModelId });
+      await IModelHost.hubAccess.deleteIModel({ user: adminRequestContext, iTwinId: testContextId, iModelId });
 
     // Create a new empty iModel on the Hub & obtain a briefcase
-    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ requestContext: adminRequestContext, iTwinId: testContextId, iModelName, description: "TestSubject" });
+    const rwIModelId = await IModelHost.hubAccess.createNewIModel({ user: adminRequestContext, iTwinId: testContextId, iModelName, description: "TestSubject" });
     assert.isNotEmpty(rwIModelId);
     const rwIModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: adminRequestContext, contextId: testContextId, iModelId: rwIModelId });
 
@@ -112,7 +112,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Push the changes to the hub
     const prePushChangeset = rwIModel.changeset;
-    await rwIModel.pushChanges(adminRequestContext, "test");
+    await rwIModel.pushChanges({ user: adminRequestContext, description: "test" });
     const postPushChangeset = rwIModel.changeset;
     assert(!!postPushChangeset);
     expect(prePushChangeset !== postPushChangeset);
@@ -299,7 +299,7 @@ describe("IModelWriteTest (#integration)", () => {
 
     // Open briefcase and pull change sets to upgrade
     const superIModel = await BriefcaseDb.open(superRequestContext, { fileName: superBriefcaseProps.fileName });
-    superBriefcaseProps.changeset = await superIModel.pullAndMergeChanges(superRequestContext);
+    superBriefcaseProps.changeset = await superIModel.pullChanges({ user: superRequestContext });
     const superVersion = superIModel.querySchemaVersion("BisCore");
     assert.isTrue(semver.satisfies(superVersion!, ">= 1.0.10"));
     assert.isFalse(superIModel.nativeDb.hasUnsavedChanges()); // Validate no changes were made
@@ -314,6 +314,6 @@ describe("IModelWriteTest (#integration)", () => {
     await BriefcaseDb.upgradeSchemas(superRequestContext, superBriefcaseProps);
     superRequestContext.enter();
 
-    await IModelHost.hubAccess.deleteIModel({ requestContext: managerRequestContext, iTwinId, iModelId });
+    await IModelHost.hubAccess.deleteIModel({ user: managerRequestContext, iTwinId, iModelId });
   });
 });

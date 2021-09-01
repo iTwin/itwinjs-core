@@ -746,15 +746,12 @@ class ChangedInstanceIds {
   public font = new ChangedInstanceOps();
   private constructor() { }
 
-  public static async initialize(requestContext: AuthorizedClientRequestContext, iModel: BriefcaseDb, firstChangesetId: string): Promise<ChangedInstanceIds> {
-    requestContext.enter();
-
+  public static async initialize(user: AuthorizedClientRequestContext, iModel: BriefcaseDb, firstChangesetId: string): Promise<ChangedInstanceIds> {
     const iModelId = iModel.iModelId;
-    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangesetId }, requestContext })).index;
-    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: iModel.changeset.id }, requestContext })).index;
-    const changesets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
+    const first = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: firstChangesetId }, user })).index;
+    const end = (await IModelHost.hubAccess.queryChangeset({ iModelId, changeset: { id: iModel.changeset.id }, user })).index;
+    const changesets = await IModelHost.hubAccess.downloadChangesets({ user, iModelId, range: { first, end }, targetDir: BriefcaseManager.getChangeSetsPath(iModelId) });
 
-    requestContext.enter();
     const changedInstanceIds = new ChangedInstanceIds();
     changesets.forEach((changeset): void => {
       const changesetPath = changeset.pathname;

@@ -10,7 +10,7 @@
 
 import * as path from "path";
 import { BeEvent, ChangeSetStatus, DbResult, Guid, GuidString, IModelStatus, Logger, OpenMode } from "@bentley/bentleyjs-core";
-import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, IModelError, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
+import { BriefcaseIdValue, ChangesetId, ChangesetIdWithIndex, IModelError, IModelVersion, LocalDirName, LocalFileName } from "@bentley/imodeljs-common";
 import { BlobDaemon, BlobDaemonCommandArg, IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
@@ -18,7 +18,6 @@ import { BriefcaseManager } from "./BriefcaseManager";
 import { SnapshotDb } from "./IModelDb";
 import { IModelHost } from "./IModelHost";
 import { IModelJsFs } from "./IModelJsFs";
-import { AuthorizedBackendRequestContext } from "./BackendRequestContext";
 
 const loggerCategory = BackendLoggerCategory.IModelDb;
 
@@ -214,7 +213,7 @@ export class CheckpointManager {
   public static async updateToRequestedVersion(request: DownloadRequest) {
     const checkpoint = request.checkpoint;
     const targetFile = request.localFile;
-    const traceInfo = { contextId: checkpoint.contextId, iModelId: checkpoint.iModelId, changeSetId: checkpoint.changeset.id };
+    const traceInfo = { iTwinId: checkpoint.contextId, iModelId: checkpoint.iModelId, changeset: checkpoint.changeset };
     try {
       // Open checkpoint for write
       const db = SnapshotDb.openForApplyChangesets(targetFile);
@@ -233,8 +232,10 @@ export class CheckpointManager {
         // Apply change sets if necessary
         const parentChangeset = nativeDb.getParentChangeset();
         if (parentChangeset.id !== checkpoint.changeset.id) {
-          const requestContext = checkpoint.requestContext ?? await AuthorizedBackendRequestContext.create();
-          await BriefcaseManager.processChangesets(requestContext, db, checkpoint.changeset);
+          const user = checkpoint.requestContext;
+          const toIndex = checkpoint.changeset.index ??
+            (await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId: checkpoint.iModelId, version: IModelVersion.asOfChangeSet(checkpoint.changeset.id) })).index;
+          await BriefcaseManager.pullAndApplyChangesets(db, { user, toIndex });
         } else {
           // make sure the parent changeset index is saved in the file - old versions didn't have it.
           parentChangeset.index = checkpoint.changeset.index;
@@ -255,7 +256,6 @@ export class CheckpointManager {
       }
       throw error;
     }
-
   }
 
   /** Download a checkpoint file from iModelHub into a local file specified in the request parameters. */

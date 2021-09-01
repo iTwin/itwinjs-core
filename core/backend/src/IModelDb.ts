@@ -11,7 +11,6 @@ import {
   IModelStatus, JsonUtils, Logger, OpenMode,
 } from "@bentley/bentleyjs-core";
 import { Range3d } from "@bentley/geometry-core";
-import { ChangesType } from "@bentley/imodelhub-client";
 import {
   AxisAlignedBox3d, Base64EncodedString, BRepGeometryCreate, BriefcaseIdValue, CategorySelectorProps, ChangesetIdWithIndex, ChangesetIndexAndId, Code, CodeSpec,
   CreateEmptySnapshotIModelProps, CreateEmptyStandaloneIModelProps, CreateSnapshotIModelProps, DisplayStyleProps, DomainOptions, EcefLocation,
@@ -26,7 +25,7 @@ import {
 import { IModelJsNative } from "@bentley/imodeljs-native";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "./BackendLoggerCategory";
-import { BriefcaseId, BriefcaseManager } from "./BriefcaseManager";
+import { BriefcaseId, BriefcaseManager, PullChangesArgs, PushChangesArgs } from "./BriefcaseManager";
 import { CheckpointManager, CheckpointProps, V2CheckpointManager } from "./CheckpointManager";
 import { ClassRegistry, MetaDataRegistry } from "./ClassRegistry";
 import { CodeSpecs } from "./CodeSpecs";
@@ -2232,11 +2231,11 @@ export class BriefcaseDb extends IModelDb {
   }
 
   /** Upgrades the profile or domain schemas */
-  private static async upgradeProfileOrDomainSchemas(arg: { requestContext: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps, upgradeOptions: UpgradeOptions, description: string }): Promise<void> {
+  private static async upgradeProfileOrDomainSchemas(arg: { user: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps, upgradeOptions: UpgradeOptions, description: string }): Promise<void> {
     const lockArg = {
       briefcaseId: arg.briefcase.briefcaseId, changeset: arg.briefcase.changeset, iModelId: arg.briefcase.iModelId,
     };
-    const requestContext = arg.requestContext;
+    const user = arg.user;
     // Lock schemas
     // await IModelHost.hubAccess.acquireSchemaLock(lockArg);
 
@@ -2262,13 +2261,12 @@ export class BriefcaseDb extends IModelDb {
       return;
 
     // Push changes
-    const briefcaseDb = await BriefcaseDb.open(requestContext, { ...arg.briefcase, readonly: false });
+    const briefcaseDb = await BriefcaseDb.open(user, { ...arg.briefcase, readonly: false });
     try {
-      await briefcaseDb.pushChanges(requestContext, arg.description, ChangesType.Schema);
+      await briefcaseDb.pushChanges(arg);
       arg.briefcase.changeset = briefcaseDb.changeset;
     } finally {
       briefcaseDb.close();
-      requestContext.enter();
     }
   }
 
@@ -2278,19 +2276,17 @@ export class BriefcaseDb extends IModelDb {
    * * Pushes the resulting change set(s) to the iModel Hub.
    * Note that the upgrade requires that the local briefcase be closed, and may result in one or two change sets depending on whether both
    * profile and domain schemas need to get upgraded. At the end of the call, the local database is left back in the closed state.
-   * @param requestContext The context for authorization to push upgraded change sets
    * @param briefcaseProps Properties of the downloaded briefcase and any additional parameters needed to open the briefcase. @see [[BriefcaseManager.downloadBriefcase]]
    * @throws [[IModelError]] If there was a problem with upgrading schemas
    * @see [[BriefcaseDb.validateSchemas]]
    * @see ($docs/learning/backend/IModelDb.md#upgrading-schemas-in-an-imodel)
   */
-  public static async upgradeSchemas(requestContext: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps): Promise<void> {
+  public static async upgradeSchemas(user: AuthorizedClientRequestContext, briefcase: LocalBriefcaseProps & OpenBriefcaseProps): Promise<void> {
     // Note: For admins we do not care about translations and keep description consistent, but we do need to enhance this to
     // include more information on versions
-    const upgradeArg = { requestContext, briefcase };
+    const upgradeArg = { user, briefcase };
     await this.upgradeProfileOrDomainSchemas({ ...upgradeArg, upgradeOptions: { profile: ProfileOptions.Upgrade }, description: "Upgraded profile" });
     await this.upgradeProfileOrDomainSchemas({ ...upgradeArg, upgradeOptions: { domain: DomainOptions.Upgrade }, description: "Upgraded domain schemas" });
-    requestContext.enter();
   }
 
   /** Open a briefcase file and return a new BriefcaseDb to interact with it.
@@ -2316,77 +2312,61 @@ export class BriefcaseDb extends IModelDb {
     this.nativeDb.openIModel(fileName, openMode);
   }
 
-  /** Pull and Merge changes from iModelHub
-   * @param requestContext Context used for authorization to pull change sets
-   * @param version Version to pull and merge to.
-   * @throws [[IModelError]] If the pull and merge fails.
+  /** Pull and apply changesets from iModelHub
    * @returns the new changeSetId of this BriefcaseDb after pulling
    */
-  public async pullAndMergeChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<ChangesetIndexAndId> {
+  public async pullChanges(arg?: PullChangesArgs): Promise<ChangesetIndexAndId> {
     if (this.isReadonly) // we allow pulling changes into a briefcase that is readonly - close and reopen it writeable
       this.closeAndReopen(OpenMode.ReadWrite);
     try {
-      await BriefcaseManager.pullAndMergeChanges(requestContext, this, version);
+      await BriefcaseManager.pullAndApplyChangesets(this, arg ?? {});
     } finally {
       if (this.isReadonly) // if the briefcase was opened readonly - close and reopen it readonly
         this.closeAndReopen(OpenMode.Readonly);
     }
 
-    const changeset = this.nativeDb.getParentChangeset() as ChangesetIndexAndId;
-    this.changeset = changeset;
+    const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPulledChanges", changeset);
-
     this.initializeIModelDb();
     return changeset;
   }
 
-  /* changeType argument is unused and will be removed in 3.0*/
-
-  /** Push changes to iModelHub. Locks are released and codes are marked as used as part of a successful push.
-   * If there are no changes, then locks are released and reserved codes are released.
-   * @param requestContext Context used for authorization to push change sets
-   * @param description The changeset description
-   * @throws [[IModelError]] If there are unsaved changes or the pull and merge fails.
-   * @note This function is a no-op if there are no changes to push.
+  /** Push changes to iModelHub.
+   * @returns The [[ChangesetIndexAndId]] of the successfully pushed changeset
    */
-  public async pushChanges(requestContext: AuthorizedClientRequestContext, description: string, _unused?: any): Promise<ChangesetIndexAndId> {
+  public async pushChanges(arg: PushChangesArgs): Promise<ChangesetIndexAndId> {
     if (this.nativeDb.hasUnsavedChanges())
-      throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push changeset with unsaved changes");
+      throw new IModelError(ChangeSetStatus.HasUncommittedChanges, "Cannot push with unsaved changes");
     if (!this.nativeDb.hasPendingTxns())
       return this.changeset as ChangesetIndexAndId; // nothing to push
 
-    await BriefcaseManager.pushChanges(requestContext, this, description);
-    const changeset = this.nativeDb.getParentChangeset() as ChangesetIndexAndId;
-    this.changeset = changeset;
+    await BriefcaseManager.pullMergePush(this, arg);
     this.initializeIModelDb();
 
+    const changeset = this.changeset as ChangesetIndexAndId;
     IpcHost.notifyTxns(this, "notifyPushedChanges", changeset);
     return changeset;
   }
 
   /** Reverse a previously applied set of changes
-   * @param requestContext Context used for authorization to pull change sets
    * @param version Version to reverse changes to.
    * @throws [[IModelError]] If the reversal fails.
    * @deprecated reversing previously applied changes is not supported
    */
-  public async reverseChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    requestContext.enter();
-    await BriefcaseManager.reverseChanges(requestContext, this, version);// eslint-disable-line deprecation/deprecation
-    requestContext.enter();
+  public async reverseChanges(user: AuthorizedClientRequestContext, version: IModelVersion): Promise<void> {
+    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId: this.iModelId, version });
+    await BriefcaseManager.pullAndApplyChangesets(this, { user, toIndex: changeset.index });
     this.initializeIModelDb();
   }
 
   /** Reinstate a previously reversed set of changes
-   * @param requestContext The client request context.
    * @param version Version to reinstate changes to.
    * @throws [[IModelError]] If the reinstate fails.
    * @deprecated reversing previously applied changes is not supported
    */
-  public async reinstateChanges(requestContext: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
-    requestContext.enter();
-    await BriefcaseManager.reinstateChanges(requestContext, this, version);// eslint-disable-line deprecation/deprecation
-    requestContext.enter();
+  public async reinstateChanges(user: AuthorizedClientRequestContext, version: IModelVersion = IModelVersion.latest()): Promise<void> {
+    const changeset = await IModelHost.hubAccess.getChangesetFromVersion({ user, iModelId: this.iModelId, version });
+    await BriefcaseManager.pullAndApplyChangesets(this, { user, toIndex: changeset.index });
     this.initializeIModelDb();
   }
 }

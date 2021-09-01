@@ -8,7 +8,7 @@
 
 import { BeDuration, IModelStatus, Logger } from "@bentley/bentleyjs-core";
 import {
-  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, RequestNewBriefcaseProps, RpcPendingResponse, SyncMode,
+  BriefcaseProps, IModelConnectionProps, IModelError, IModelRpcOpenProps, IModelRpcProps, IModelVersion, RequestNewBriefcaseProps, RpcPendingResponse, SyncMode,
 } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import { BackendLoggerCategory } from "../BackendLoggerCategory";
@@ -43,7 +43,7 @@ export class RpcBriefcaseUtility {
       myBriefcaseIds = [0]; // PullOnly means briefcaseId 0
     } else {
       // check with iModelHub and see if we already have acquired any briefcaseIds
-      myBriefcaseIds = await IModelHost.hubAccess.getMyBriefcaseIds({ requestContext, iModelId });
+      myBriefcaseIds = await IModelHost.hubAccess.getMyBriefcaseIds({ user: requestContext, iModelId });
     }
 
     const resolvers = args.fileNameResolvers ?? [(arg) => BriefcaseManager.getFileName(arg)];
@@ -61,9 +61,12 @@ export class RpcBriefcaseUtility {
               if (args.forceDownload)
                 throw new Error(); // causes delete below
               const db = await BriefcaseDb.open(requestContext, { fileName });
-              if (db.changeset.id !== tokenProps.changeset?.id)
-                await BriefcaseManager.processChangesets(requestContext, db, tokenProps.changeset!);
-              return db;
+              if (db.changeset.id !== tokenProps.changeset?.id) {
+                const toIndex = tokenProps.changeset?.index ??
+                  (await IModelHost.hubAccess.getChangesetFromVersion({ user: requestContext, iModelId, version: IModelVersion.asOfChangeSet(tokenProps.changeset!.id) })).index;
+                await BriefcaseManager.pullAndApplyChangesets(db, { user: requestContext, toIndex });
+                return db;
+              }
             } catch (error) {
               if (!(error instanceof IModelError && error.errorNumber === IModelStatus.AlreadyOpen))
                 // somehow we have this briefcaseId and the file exists, but we can't open it. Delete it.

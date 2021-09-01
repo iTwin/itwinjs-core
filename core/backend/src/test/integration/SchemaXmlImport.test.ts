@@ -22,20 +22,20 @@ import { HubUtility } from "./HubUtility";
 //      - Required: "openid imodelhub context-registry-service:read-only"
 
 describe("Schema XML Import Tests (#integration)", () => {
-  let requestContext: AuthorizedBackendRequestContext;
+  let user: AuthorizedBackendRequestContext;
   let testContextId: string;
   let readWriteTestIModelId: GuidString;
 
   before(async () => {
     HubMock.startup("schemaImport");
-    requestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
-    testContextId = await HubUtility.getTestContextId(requestContext);
-    readWriteTestIModelId = await HubUtility.recreateIModel({ requestContext, iTwinId: testContextId, iModelName: HubUtility.generateUniqueName("ReadWriteTest"), noLocks: true });
+    user = await IModelTestUtils.getUserContext(TestUserType.Manager);
+    testContextId = await HubUtility.getTestContextId(user);
+    readWriteTestIModelId = await HubUtility.recreateIModel({ user, iTwinId: testContextId, iModelName: HubUtility.generateUniqueName("ReadWriteTest"), noLocks: true });
   });
 
   after(async () => {
     try {
-      await IModelHost.hubAccess.deleteIModel({ requestContext, iTwinId: testContextId, iModelId: readWriteTestIModelId });
+      await IModelHost.hubAccess.deleteIModel({ user, iTwinId: testContextId, iModelId: readWriteTestIModelId });
       HubMock.shutdown();
     } catch (err) {
       // eslint-disable-next-line no-console
@@ -47,8 +47,8 @@ describe("Schema XML Import Tests (#integration)", () => {
     const schemaFilePath = path.join(KnownTestLocations.assetsDir, "Test3.ecschema.xml");
     const schemaString = fs.readFileSync(schemaFilePath, "utf8");
 
-    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: testContextId, iModelId: readWriteTestIModelId });
-    await iModel.importSchemaStrings(requestContext, [schemaString]); // will throw an exception if import fails
+    const iModel = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: user, contextId: testContextId, iModelId: readWriteTestIModelId });
+    await iModel.importSchemaStrings(user, [schemaString]); // will throw an exception if import fails
 
     const testDomainClass = iModel.getMetaData("Test3:Test3Element"); // will throw on failure
 

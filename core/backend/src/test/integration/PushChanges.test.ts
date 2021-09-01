@@ -77,19 +77,19 @@ class TestIModelWriter {
 }
 
 describe("PushChangesTest (#integration)", () => {
-  let contextId: GuidString;
-  let requestContext: AuthorizedClientRequestContext;
+  let iTwinId: GuidString;
+  let user: AuthorizedClientRequestContext;
 
   before(async () => {
     // IModelTestUtils.setupDebugLogLevels();
     HubMock.startup("PushChangesTest");
 
-    requestContext = await IModelTestUtils.getUserContext(TestUserType.Manager);
-    contextId = await HubUtility.getTestContextId(requestContext);
+    user = await IModelTestUtils.getUserContext(TestUserType.Manager);
+    iTwinId = await HubUtility.getTestContextId(user);
 
     IModelHost.authorizationClient = {
       isAuthorized: true,
-      getAccessToken: async (_requestContext?: ClientRequestContext) => requestContext.accessToken,
+      getAccessToken: async (_requestContext?: ClientRequestContext) => user.accessToken,
     };
   });
 
@@ -99,12 +99,12 @@ describe("PushChangesTest (#integration)", () => {
 
   it("Push changes while refreshing token", async () => {
     const iModelName = HubUtility.generateUniqueName("PushChangesTest");
-    const iModelId = await HubUtility.recreateIModel({ requestContext, iTwinId: contextId, iModelName, noLocks: true });
+    const iModelId = await HubUtility.recreateIModel({ user, iTwinId, iModelName, noLocks: true });
 
-    const briefcaseProps = await BriefcaseManager.downloadBriefcase(requestContext, { contextId, iModelId });
+    const briefcaseProps = await BriefcaseManager.downloadBriefcase(user, { contextId: iTwinId, iModelId });
     let iModel: BriefcaseDb | undefined;
     try {
-      iModel = await BriefcaseDb.open(requestContext, { fileName: briefcaseProps.fileName });
+      iModel = await BriefcaseDb.open(user, { fileName: briefcaseProps.fileName });
 
       // Initialize project extents
       const projectExtents = new Range3d(-1000, -1000, -1000, 1000, 1000, 1000);
@@ -127,21 +127,21 @@ describe("PushChangesTest (#integration)", () => {
       iModel.saveChanges();
 
       // Set the token to expire four minutes from now
-      const jwt = requestContext.accessToken;
+      const jwt = user.accessToken;
       const fourMinFromNow = new Date(Date.now() + 2 * 60 * 1000);
       const expiringToken = new AccessToken(jwt.toTokenString(IncludePrefix.No), jwt.getStartsAt(), fourMinFromNow, jwt.getUserInfo());
       const expiringContext = new AuthorizedClientRequestContext(expiringToken);
 
       // Push changes
-      await iModel.pushChanges(expiringContext, "Some changes");
+      await iModel.pushChanges({ user: expiringContext, description: "Some changes" });
 
       // Validate that the token did refresh before the push
       assert.notStrictEqual(expiringContext.accessToken.getExpiresAt(), expiringToken.getExpiresAt());
-      assert.strictEqual(expiringContext.accessToken.getExpiresAt(), requestContext.accessToken.getExpiresAt());
+      assert.strictEqual(expiringContext.accessToken.getExpiresAt(), user.accessToken.getExpiresAt());
     } finally {
       if (iModel !== undefined)
         iModel.close();
-      await BriefcaseManager.deleteBriefcaseFiles(briefcaseProps.fileName, requestContext);
+      await BriefcaseManager.deleteBriefcaseFiles(briefcaseProps.fileName, user);
     }
   });
 

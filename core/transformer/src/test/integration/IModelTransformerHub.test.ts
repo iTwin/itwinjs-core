@@ -8,7 +8,7 @@ import { join } from "path";
 import * as semver from "semver";
 import { DbResult, Guid, GuidString, Id64, Id64String, IModelStatus, Logger, LogLevel } from "@bentley/bentleyjs-core";
 import { Point3d, YawPitchRollAngles } from "@bentley/geometry-core";
-import { ChangesetType, Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
+import { Code, ColorDef, IModel, IModelVersion, PhysicalElementProps, SubCategoryAppearance } from "@bentley/imodeljs-common";
 import { AuthorizedClientRequestContext } from "@bentley/itwin-client";
 import {
   BisCoreSchema, BriefcaseDb, BriefcaseManager, ECSqlStatement, Element, ElementRefersToElements,
@@ -28,13 +28,13 @@ import { HubUtility } from "@bentley/imodeljs-backend/lib/test/integration/HubUt
 describe("IModelTransformerHub (#integration)", () => {
   const outputDir = join(KnownTestLocations.outputDir, "IModelTransformerHub");
   let iTwinId: GuidString;
-  let requestContext: AuthorizedClientRequestContext;
+  let user: AuthorizedClientRequestContext;
 
   before(async () => {
     HubMock.startup("IModelTransformerHub");
     IModelJsFs.recursiveMkDirSync(outputDir);
 
-    requestContext = await IModelTestUtils.getUserContext(TestUserType.Regular);
+    user = await IModelTestUtils.getUserContext(TestUserType.Regular);
     iTwinId = HubUtility.contextId!;
 
     // initialize logging
@@ -79,8 +79,8 @@ describe("IModelTransformerHub (#integration)", () => {
     const targetIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: targetIModelName, description: "target", revision0: targetSeedFileName, noLocks: true });
 
     try {
-      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: sourceIModelId });
-      const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: targetIModelId });
+      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: user, contextId: iTwinId, iModelId: sourceIModelId });
+      const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: user, contextId: iTwinId, iModelId: targetIModelId });
       assert.isTrue(sourceDb.isBriefcaseDb());
       assert.isTrue(targetDb.isBriefcaseDb());
       assert.isFalse(sourceDb.isSnapshot);
@@ -90,13 +90,13 @@ describe("IModelTransformerHub (#integration)", () => {
       if (true) { // initial import
         ExtensiveTestScenario.populateDb(sourceDb);
         sourceDb.saveChanges();
-        await sourceDb.pushChanges(requestContext, "Populate source");
+        await sourceDb.pushChanges({ user, description: "Populate source" });
 
         // Use IModelExporter.exportChanges to verify the changes to the sourceDb
         const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-1.txt");
         assert.isFalse(IModelJsFs.existsSync(sourceExportFileName));
         const sourceExporter = new IModelToTextFileExporter(sourceDb, sourceExportFileName);
-        await sourceExporter.exportChanges(requestContext);
+        await sourceExporter.exportChanges(user);
         assert.isTrue(IModelJsFs.existsSync(sourceExportFileName));
         const sourceDbChanges: any = (sourceExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(sourceDbChanges);
@@ -120,17 +120,17 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(sourceDbChanges.relationship.deleteIds.size, 0);
 
         const transformer = new TestIModelTransformer(sourceDb, targetDb);
-        await transformer.processChanges(requestContext);
+        await transformer.processChanges(user);
         transformer.dispose();
         targetDb.saveChanges();
-        await targetDb.pushChanges(requestContext, "Import #1");
+        await targetDb.pushChanges({ user, description: "Import #1" });
         TransformerExtensiveTestScenario.assertTargetDbContents(sourceDb, targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
         const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-1.txt");
         assert.isFalse(IModelJsFs.existsSync(targetExportFileName));
         const targetExporter = new IModelToTextFileExporter(targetDb, targetExportFileName);
-        await targetExporter.exportChanges(requestContext);
+        await targetExporter.exportChanges(user);
         assert.isTrue(IModelJsFs.existsSync(targetExportFileName));
         const targetDbChanges: any = (targetExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(targetDbChanges);
@@ -160,7 +160,7 @@ describe("IModelTransformerHub (#integration)", () => {
         const numTargetRelationships: number = count(targetDb, ElementRefersToElements.classFullName);
         const targetImporter = new CountingIModelImporter(targetDb);
         const transformer = new TestIModelTransformer(sourceDb, targetImporter);
-        await transformer.processChanges(requestContext);
+        await transformer.processChanges(user);
         assert.equal(targetImporter.numModelsInserted, 0);
         assert.equal(targetImporter.numModelsUpdated, 0);
         assert.equal(targetImporter.numElementsInserted, 0);
@@ -176,19 +176,19 @@ describe("IModelTransformerHub (#integration)", () => {
         transformer.dispose();
         targetDb.saveChanges();
         assert.isFalse(targetDb.nativeDb.hasPendingTxns());
-        await targetDb.pushChanges(requestContext, "Should not actually push because there are no changes");
+        await targetDb.pushChanges({ user, description: "Should not actually push because there are no changes" });
       }
 
       if (true) { // update source db, then import again
         ExtensiveTestScenario.updateDb(sourceDb);
         sourceDb.saveChanges();
-        await sourceDb.pushChanges(requestContext, "Update source");
+        await sourceDb.pushChanges({ user, description: "Update source" });
 
         // Use IModelExporter.exportChanges to verify the changes to the sourceDb
         const sourceExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerSource-ExportChanges-2.txt");
         assert.isFalse(IModelJsFs.existsSync(sourceExportFileName));
         const sourceExporter = new IModelToTextFileExporter(sourceDb, sourceExportFileName);
-        await sourceExporter.exportChanges(requestContext);
+        await sourceExporter.exportChanges(user);
         assert.isTrue(IModelJsFs.existsSync(sourceExportFileName));
         const sourceDbChanges: any = (sourceExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(sourceDbChanges);
@@ -213,17 +213,17 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(sourceDbChanges.model.deleteIds.size, 0);
 
         const transformer = new TestIModelTransformer(sourceDb, targetDb);
-        await transformer.processChanges(requestContext);
+        await transformer.processChanges(user);
         transformer.dispose();
         targetDb.saveChanges();
-        await targetDb.pushChanges(requestContext, "Import #2");
+        await targetDb.pushChanges({ user, description: "Import #2" });
         ExtensiveTestScenario.assertUpdatesInDb(targetDb);
 
         // Use IModelExporter.exportChanges to verify the changes to the targetDb
         const targetExportFileName: string = IModelTestUtils.prepareOutputFile("IModelTransformer", "TransformerTarget-ExportChanges-2.txt");
         assert.isFalse(IModelJsFs.existsSync(targetExportFileName));
         const targetExporter = new IModelToTextFileExporter(targetDb, targetExportFileName);
-        await targetExporter.exportChanges(requestContext);
+        await targetExporter.exportChanges(user);
         assert.isTrue(IModelJsFs.existsSync(targetExportFileName));
         const targetDbChanges: any = (targetExporter.exporter as any)._sourceDbChanges; // access private member for testing purposes
         assert.exists(targetDbChanges);
@@ -248,13 +248,13 @@ describe("IModelTransformerHub (#integration)", () => {
         assert.equal(targetDbChanges.model.deleteIds.size, 0);
       }
 
-      const sourceIModelChangeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: sourceIModelId });
-      const targetIModelChangeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: targetIModelId });
+      const sourceIModelChangeSets = await IModelHost.hubAccess.queryChangesets({ user, iModelId: sourceIModelId });
+      const targetIModelChangeSets = await IModelHost.hubAccess.queryChangesets({ user, iModelId: targetIModelId });
       assert.equal(sourceIModelChangeSets.length, 2);
       assert.equal(targetIModelChangeSets.length, 2);
 
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, sourceDb);
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(user, sourceDb);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(user, targetDb);
     } finally {
       try {
         await IModelHost.hubAccess.deleteIModel({ iTwinId, iModelId: sourceIModelId });
@@ -269,18 +269,18 @@ describe("IModelTransformerHub (#integration)", () => {
 
   it("Clone/upgrade test", async () => {
     const sourceIModelName: string = HubUtility.generateUniqueName("CloneSource");
-    const sourceIModelId = await HubUtility.recreateIModel({ requestContext, iTwinId, iModelName: sourceIModelName, noLocks: true });
+    const sourceIModelId = await HubUtility.recreateIModel({ user, iTwinId, iModelName: sourceIModelName, noLocks: true });
     assert.isTrue(Guid.isGuid(sourceIModelId));
     const targetIModelName: string = HubUtility.generateUniqueName("CloneTarget");
-    const targetIModelId = await HubUtility.recreateIModel({ requestContext, iTwinId, iModelName: targetIModelName, noLocks: true });
+    const targetIModelId = await HubUtility.recreateIModel({ user, iTwinId, iModelName: targetIModelName, noLocks: true });
     assert.isTrue(Guid.isGuid(targetIModelId));
 
     try {
       // open/upgrade sourceDb
-      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: sourceIModelId });
+      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: user, contextId: iTwinId, iModelId: sourceIModelId });
       const seedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
       assert.isTrue(semver.satisfies(seedBisCoreVersion, ">= 1.0.1"));
-      await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
+      await sourceDb.importSchemas(user, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       const updatedBisCoreVersion = sourceDb.querySchemaVersion(BisCoreSchema.schemaName)!;
       assert.isTrue(semver.satisfies(updatedBisCoreVersion, ">= 1.0.10"));
       assert.isTrue(sourceDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
@@ -289,29 +289,29 @@ describe("IModelTransformerHub (#integration)", () => {
       // push sourceDb schema changes
       assert.equal(sourceDb.nativeDb.hasPendingTxns(), expectedHasPendingTxns, "Expect importSchemas to have saved changes");
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect no unsaved changes after importSchemas");
-      await sourceDb.pushChanges(requestContext, "Import schemas to upgrade BisCore"); // may push schema changes
+      await sourceDb.pushChanges({ user, description: "Import schemas to upgrade BisCore" }); // may push schema changes
 
       // import schemas again to test common scenario of not knowing whether schemas are up-to-date or not..
-      await sourceDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
+      await sourceDb.importSchemas(user, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isFalse(sourceDb.nativeDb.hasPendingTxns(), "Expect importSchemas to be a no-op");
       assert.isFalse(sourceDb.nativeDb.hasUnsavedChanges(), "Expect importSchemas to be a no-op");
       sourceDb.saveChanges(); // will be no changes to save in this case
-      await sourceDb.pushChanges(requestContext, "Import schemas again"); // will be no changes to push in this case
+      await sourceDb.pushChanges({ user, description: "Import schemas again" }); // will be no changes to push in this case
 
       // populate sourceDb
       IModelTransformerTestUtils.populateTeamIModel(sourceDb, "Test", Point3d.createZero(), ColorDef.green);
       IModelTransformerTestUtils.assertTeamIModelContents(sourceDb, "Test");
       sourceDb.saveChanges();
-      await sourceDb.pushChanges(requestContext, "Populate Source");
+      await sourceDb.pushChanges({ user, description: "Populate Source" });
 
       // open/upgrade targetDb
-      const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: targetIModelId });
-      await targetDb.importSchemas(requestContext, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
+      const targetDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: user, contextId: iTwinId, iModelId: targetIModelId });
+      await targetDb.importSchemas(user, [BisCoreSchema.schemaFilePath, GenericSchema.schemaFilePath]);
       assert.isTrue(targetDb.containsClass(ExternalSourceAspect.classFullName), "Expect BisCore to be updated and contain ExternalSourceAspect");
 
       // push targetDb schema changes
       targetDb.saveChanges();
-      await targetDb.pushChanges(requestContext, "Upgrade BisCore");
+      await targetDb.pushChanges({ user, description: "Upgrade BisCore" });
 
       // import sourceDb changes into targetDb
       const transformer = new IModelTransformer(new IModelExporter(sourceDb), targetDb);
@@ -319,11 +319,11 @@ describe("IModelTransformerHub (#integration)", () => {
       transformer.dispose();
       IModelTransformerTestUtils.assertTeamIModelContents(targetDb, "Test");
       targetDb.saveChanges();
-      await targetDb.pushChanges(requestContext, "Import changes from sourceDb");
+      await targetDb.pushChanges({ user, description: "Import changes from sourceDb" });
 
       // close iModel briefcases
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, sourceDb);
-      await IModelTestUtils.closeAndDeleteBriefcaseDb(requestContext, targetDb);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(user, sourceDb);
+      await IModelTestUtils.closeAndDeleteBriefcaseDb(user, targetDb);
     } finally {
       try {
         // delete iModel briefcases
@@ -353,7 +353,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const masterIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: masterIModelName, description: "master", revision0: masterSeedFileName, noLocks: true });
     assert.isTrue(Guid.isGuid(masterIModelId));
     IModelJsFs.removeSync(masterSeedFileName); // now that iModel is pushed, can delete local copy of the seed
-    const masterDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: masterIModelId });
+    const masterDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: user, contextId: iTwinId, iModelId: masterIModelId });
     assert.isTrue(masterDb.isBriefcaseDb());
     assert.equal(masterDb.contextId, iTwinId);
     assert.equal(masterDb.iModelId, masterIModelId);
@@ -364,7 +364,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const branchIModelName1 = "Branch1";
     const branchIModelId1 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName1, description: `Branch1 of ${masterIModelName}`, revision0: masterDb.pathName, noLocks: true });
 
-    const branchDb1 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: branchIModelId1 });
+    const branchDb1 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: user, contextId: iTwinId, iModelId: branchIModelId1 });
     assert.isTrue(branchDb1.isBriefcaseDb());
     assert.equal(branchDb1.contextId, iTwinId);
     assertPhysicalObjects(branchDb1, state0);
@@ -373,7 +373,7 @@ describe("IModelTransformerHub (#integration)", () => {
     // create Branch2 iModel using Master as a template
     const branchIModelName2 = "Branch2";
     const branchIModelId2 = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: branchIModelName2, description: `Branch2 of ${masterIModelName}`, revision0: masterDb.pathName, noLocks: true });
-    const branchDb2 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: branchIModelId2 });
+    const branchDb2 = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: user, contextId: iTwinId, iModelId: branchIModelId2 });
     assert.isTrue(branchDb2.isBriefcaseDb());
     assert.equal(branchDb2.contextId, iTwinId);
     assertPhysicalObjects(branchDb2, state0);
@@ -383,7 +383,7 @@ describe("IModelTransformerHub (#integration)", () => {
     const replayedIModelName = "Replayed";
     const replayedIModelId = await IModelHost.hubAccess.createNewIModel({ iTwinId, iModelName: replayedIModelName, description: "blank", revision0: masterSeedFileName, noLocks: true });
 
-    const replayedDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: replayedIModelId });
+    const replayedDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: user, contextId: iTwinId, iModelId: replayedIModelId });
     assert.isTrue(replayedDb.isBriefcaseDb());
     assert.equal(replayedDb.contextId, iTwinId);
 
@@ -433,7 +433,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const branch1ToMaster = new IModelTransformer(branchDb1, masterDb, {
         isReverseSynchronization: true, // provenance stored in source/branch
       });
-      await branch1ToMaster.processChanges(requestContext, changeSetBranch1State1);
+      await branch1ToMaster.processChanges(user, changeSetBranch1State1);
       branch1ToMaster.dispose();
       assertPhysicalObjects(masterDb, state2);
       assertPhysicalObjectUpdated(masterDb, 1);
@@ -446,7 +446,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // merge changes from Master to Branch2
       const masterToBranch2 = new IModelTransformer(masterDb, branchDb2);
-      await masterToBranch2.processChanges(requestContext, changeSetMasterState2);
+      await masterToBranch2.processChanges(user, changeSetMasterState2);
       masterToBranch2.dispose();
       assertPhysicalObjects(branchDb2, state2);
       await saveAndPushChanges(branchDb2, "State0 -> State2");
@@ -466,7 +466,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const branch2ToMaster = new IModelTransformer(branchDb2, masterDb, {
         isReverseSynchronization: true, // provenance stored in source/branch
       });
-      await branch2ToMaster.processChanges(requestContext, changeSetBranch2State3);
+      await branch2ToMaster.processChanges(user, changeSetBranch2State3);
       branch2ToMaster.dispose();
       assertPhysicalObjects(masterDb, state3);
       assert.equal(count(masterDb, ExternalSourceAspect.classFullName), 0);
@@ -486,7 +486,7 @@ describe("IModelTransformerHub (#integration)", () => {
 
       // merge Master to Branch1
       const masterToBranch1 = new IModelTransformer(masterDb, branchDb1);
-      await masterToBranch1.processChanges(requestContext, changeSetMasterState3);
+      await masterToBranch1.processChanges(user, changeSetMasterState3);
       masterToBranch1.dispose();
       assertPhysicalObjects(branchDb1, state4);
       assertPhysicalObjectUpdated(branchDb1, 6);
@@ -494,7 +494,7 @@ describe("IModelTransformerHub (#integration)", () => {
       const changeSetBranch1State4 = branchDb1.changeset.id;
       assert.notEqual(changeSetBranch1State4, changeSetBranch1State2);
 
-      const masterDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: masterIModelId, targetDir: BriefcaseManager.getChangeSetsPath(masterIModelId) });
+      const masterDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ user, iModelId: masterIModelId, targetDir: BriefcaseManager.getChangeSetsPath(masterIModelId) });
       assert.equal(masterDbChangeSets.length, 3);
       const masterDeletedElementIds = new Set<Id64String>();
       for (const masterDbChangeSet of masterDbChangeSets) {
@@ -514,7 +514,7 @@ describe("IModelTransformerHub (#integration)", () => {
       assert.isAtLeast(masterDeletedElementIds.size, 1);
 
       // replay master history to create replayed iModel
-      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext, contextId: iTwinId, iModelId: masterIModelId, asOf: IModelVersion.first().toJSON() });
+      const sourceDb = await IModelTestUtils.downloadAndOpenBriefcase({ requestContext: user, contextId: iTwinId, iModelId: masterIModelId, asOf: IModelVersion.first().toJSON() });
       const replayTransformer = new IModelTransformer(sourceDb, replayedDb);
       // this replay strategy pretends that deleted elements never existed
       for (const elementId of masterDeletedElementIds) {
@@ -524,16 +524,16 @@ describe("IModelTransformerHub (#integration)", () => {
       await replayTransformer.processAll(); // process any elements that were part of the "seed"
       await saveAndPushChanges(replayedDb, "changes from source seed");
       for (const masterDbChangeSet of masterDbChangeSets) {
-        await sourceDb.pullAndMergeChanges(requestContext, IModelVersion.asOfChangeSet(masterDbChangeSet.id));
-        await replayTransformer.processChanges(requestContext, sourceDb.changeset.id);
-        await saveAndPushChanges(replayedDb, masterDbChangeSet.description ?? "", masterDbChangeSet.changesType);
+        await sourceDb.pullChanges({ user, toIndex: masterDbChangeSet.index });
+        await replayTransformer.processChanges(user, sourceDb.changeset.id);
+        await saveAndPushChanges(replayedDb, masterDbChangeSet.description ?? "");
       }
       replayTransformer.dispose();
       sourceDb.close();
       assertPhysicalObjects(replayedDb, state4); // should have same ending state as masterDb
 
       // make sure there are no deletes in the replay history (all elements that were eventually deleted from masterDb were excluded)
-      const replayedDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ requestContext, iModelId: replayedIModelId, targetDir: BriefcaseManager.getChangeSetsPath(replayedIModelId) });
+      const replayedDbChangeSets = await IModelHost.hubAccess.downloadChangesets({ user, iModelId: replayedIModelId, targetDir: BriefcaseManager.getChangeSetsPath(replayedIModelId) });
       assert.isAtLeast(replayedDbChangeSets.length, masterDbChangeSets.length); // replayedDb will have more changeSets when seed contains elements
       const replayedDeletedElementIds = new Set<Id64String>();
       for (const replayedDbChangeSet of replayedDbChangeSets) {
@@ -569,9 +569,9 @@ describe("IModelTransformerHub (#integration)", () => {
     });
   }
 
-  async function saveAndPushChanges(briefcaseDb: BriefcaseDb, description: string, changesType?: ChangesetType): Promise<void> {
+  async function saveAndPushChanges(briefcaseDb: BriefcaseDb, description: string): Promise<void> {
     briefcaseDb.saveChanges(description);
-    await briefcaseDb.pushChanges(requestContext, description, changesType as number);
+    await briefcaseDb.pushChanges({ user, description });
   }
 
   function populateMaster(iModelDb: IModelDb, numbers: number[]): void {

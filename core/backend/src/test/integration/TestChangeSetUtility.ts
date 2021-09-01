@@ -49,7 +49,7 @@ export class TestChangeSetUtility {
     this.projectId = await HubUtility.getTestContextId(this._requestContext);
 
     // Re-create iModel on iModelHub
-    this.iModelId = await HubUtility.recreateIModel({ requestContext: this._requestContext, iTwinId: this.projectId, iModelName: this._iModelName, noLocks: true });
+    this.iModelId = await HubUtility.recreateIModel({ user: this._requestContext, iTwinId: this.projectId, iModelName: this._iModelName, noLocks: true });
 
     // Populate sample data
     await this.addTestModel();
@@ -57,7 +57,7 @@ export class TestChangeSetUtility {
     await this.addTestElements();
 
     // Push changes to the hub
-    await this._iModel.pushChanges(this._requestContext, "Setup test model");
+    await this._iModel.pushChanges({ user: this._requestContext, description: "Setup test model" });
     return this._iModel;
   }
 
@@ -65,13 +65,13 @@ export class TestChangeSetUtility {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await this.addTestElements();
-    await this._iModel.pushChanges(this._requestContext, "Added test elements");
+    await this._iModel.pushChanges({ user: this._requestContext, description: "Added test elements" });
   }
 
   public async deleteTestIModel(): Promise<void> {
     if (!this._iModel)
       throw new Error("Must first call createTestIModel");
     await IModelTestUtils.closeAndDeleteBriefcaseDb(this._requestContext, this._iModel);
-    await IModelHost.hubAccess.deleteIModel({ requestContext: this._requestContext, iTwinId: this.projectId, iModelId: this.iModelId });
+    await IModelHost.hubAccess.deleteIModel({ user: this._requestContext, iTwinId: this.projectId, iModelId: this.iModelId });
   }
 }

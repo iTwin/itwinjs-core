@@ -51,8 +51,8 @@ export class IModelHubBackend {
     return this._imodelClient;
   }
 
-  public static async getRequestContext(arg?: { requestContext?: AuthorizedClientRequestContext }): Promise<AuthorizedClientRequestContext> {
-    return arg?.requestContext ?? AuthorizedBackendRequestContext.create();
+  public static async getRequestContext(arg?: { user?: AuthorizedClientRequestContext }): Promise<AuthorizedClientRequestContext> {
+    return arg?.user ?? AuthorizedBackendRequestContext.create();
   }
 
   public static async getLatestChangeset(arg: IModelIdArg): Promise<ChangesetProps> {
@@ -113,8 +113,8 @@ export class IModelHubBackend {
       nativeDb.closeIModel();
     }
 
-    const requestContext = await this.getRequestContext(arg);
-    const hubIModel = await this.iModelClient.iModels.create(requestContext, arg.iTwinId, arg.iModelName, { path: revision0, description: arg.description });
+    const user = await this.getRequestContext(arg);
+    const hubIModel = await this.iModelClient.iModels.create(user, arg.iTwinId, arg.iModelName, { path: revision0, description: arg.description });
     IModelJsFs.removeSync(revision0);
     return hubIModel.wsgId;
   }
@@ -179,7 +179,7 @@ export class IModelHubBackend {
     return myBriefcaseIds;
   }
 
-  public static async acquireNewBriefcaseId(arg: { requestContext?: AuthorizedClientRequestContext, iModelId: GuidString }): Promise<number> {
+  public static async acquireNewBriefcaseId(arg: { user?: AuthorizedClientRequestContext, iModelId: GuidString }): Promise<number> {
     const requestContext = await this.getRequestContext(arg);
     const briefcase = await this.iModelClient.briefcases.create(requestContext, arg.iModelId);
     requestContext.enter();

@@ -60,14 +60,14 @@ export interface LockProps {
  */
 export interface IModelIdArg {
   readonly iModelId: GuidString;
-  readonly requestContext?: AuthorizedClientRequestContext;
+  readonly user?: AuthorizedClientRequestContext;
 }
 
 /** Argument for methods that must supply an IModel name and ContextId
  * @internal
  */
 export interface IModelNameArg {
-  readonly requestContext?: AuthorizedClientRequestContext;
+  readonly user?: AuthorizedClientRequestContext;
   readonly iTwinId: GuidString;
   readonly iModelName: string;
 }

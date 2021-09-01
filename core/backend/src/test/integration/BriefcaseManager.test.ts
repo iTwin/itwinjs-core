@@ -57,7 +57,7 @@ describe("BriefcaseManager (#integration)", () => {
     // Validate that the IModelDb is readonly
     assert(iModel.isReadonly, "iModel not set to Readonly mode");
 
-    const expectedChangeSet = await IModelHost.hubAccess.getChangesetFromVersion({ version: IModelVersion.first(), requestContext, iModelId: readOnlyTestIModelId });
+    const expectedChangeSet = await IModelHost.hubAccess.getChangesetFromVersion({ version: IModelVersion.first(), user: requestContext, iModelId: readOnlyTestIModelId });
     assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
     assert.strictEqual(iModel.changeset.id, expectedChangeSet.id);
 
@@ -111,7 +111,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.exists(iModelFirstVersion);
     assert.strictEqual(iModelFirstVersion.changeset.id, "");
 
-    const changeSets = await IModelHost.hubAccess.queryChangesets({ requestContext, iModelId: readOnlyTestIModelId });
+    const changeSets = await IModelHost.hubAccess.queryChangesets({ user: requestContext, iModelId: readOnlyTestIModelId });
 
     for (const [arrayIndex, versionName] of readOnlyTestVersions.entries()) {
       const iModelFromVersion = await IModelTestUtils.openCheckpointUsingRpc({ requestContext, contextId: testContextId, iModelId: readOnlyTestIModelId, asOf: IModelVersion.asOfChangeSet(changeSets[arrayIndex + 1].id).toJSON() });
@@ -314,7 +314,7 @@ describe("BriefcaseManager (#integration)", () => {
     assert.isTrue(iModelPullAndPush.nativeDb.hasPendingTxns());
 
     // User2 should be able to push the changes now
-    await iModelPullAndPush.pushChanges(userContext2, "test change");
+    await iModelPullAndPush.pushChanges({ user: userContext2, description: "test change" });
     const changesetPullAndPush4 = iModelPullAndPush.changeset;
     assert.notStrictEqual(changesetPullAndPush4, changesetPullAndPush3);
 
